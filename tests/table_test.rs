@@ -39,3 +39,39 @@ fn table_empty_vector_structures() {
 
     assert_eq!(expected, table);
 }
+
+#[test]
+fn table_option() {
+    #[derive(Tabled)]
+    struct St {
+        f1: u8,
+        f2: &'static str,
+    }
+
+    let st = Some(St { f1: 0, f2: "0" });
+    let expected = "+----+----+\n\
+                    | f1 | f2 |\n\
+                    +----+----+\n\
+                    | 0  | 0  |\n\
+                    +----+----+\n";
+
+    let table = table(st);
+    assert_eq!(expected, table);
+}
+
+#[test]
+fn table_option_none() {
+    #[derive(Tabled)]
+    struct St {
+        f1: u8,
+        f2: &'static str,
+    }
+
+    let st: Option<St> = None;
+    let expected = "+----+----+\n\
+                    | f1 | f2 |\n\
+                    +----+----+\n";
+
+    let table = table(st);
+    assert_eq!(expected, table);
+}
