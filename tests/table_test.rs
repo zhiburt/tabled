@@ -21,3 +21,21 @@ fn table_vector_structures() {
 
     assert_eq!(expected, table);
 }
+
+#[test]
+fn table_empty_vector_structures() {
+    #[derive(Tabled)]
+    struct St {
+        f1: u8,
+        f2: &'static str,
+    }
+
+    let st: Vec<St> = Vec::new();
+    let expected = "+----+----+\n\
+                    | f1 | f2 |\n\
+                    +----+----+\n";
+
+    let table = table(st);
+
+    assert_eq!(expected, table);
+}
