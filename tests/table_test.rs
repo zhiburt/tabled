@@ -75,3 +75,260 @@ fn table_option_none() {
     let table = table(st);
     assert_eq!(expected, table);
 }
+
+mod default_types {
+    use super::*;
+
+    #[test]
+    fn table_str_vec() {
+        let data = vec!["hello", "world"];
+        let expected = "+-------+\n\
+                        | &str  |\n\
+                        +-------+\n\
+                        | hello |\n\
+                        +-------+\n\
+                        | world |\n\
+                        +-------+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_char_vec() {
+        let data = vec!['a', 'b', 'c'];
+        let expected = "+------+\n\
+                        | char |\n\
+                        +------+\n\
+                        |  a   |\n\
+                        +------+\n\
+                        |  b   |\n\
+                        +------+\n\
+                        |  c   |\n\
+                        +------+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_bool_vec() {
+        let data = vec![true, false, true];
+        let expected = "+-------+\n\
+                        | bool  |\n\
+                        +-------+\n\
+                        | true  |\n\
+                        +-------+\n\
+                        | false |\n\
+                        +-------+\n\
+                        | true  |\n\
+                        +-------+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_usize_vec() {
+        let data = vec![0usize, 1usize, 2usize];
+        let expected = "+-------+\n\
+                        | usize |\n\
+                        +-------+\n\
+                        |   0   |\n\
+                        +-------+\n\
+                        |   1   |\n\
+                        +-------+\n\
+                        |   2   |\n\
+                        +-------+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_isize_vec() {
+        let data = vec![0isize, 1isize, 2isize];
+        let expected = "+-------+\n\
+                        | isize |\n\
+                        +-------+\n\
+                        |   0   |\n\
+                        +-------+\n\
+                        |   1   |\n\
+                        +-------+\n\
+                        |   2   |\n\
+                        +-------+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_u8_vec() {
+        let data = vec![0u8, 1u8, 2u8];
+        let expected = "+----+\n\
+                        | u8 |\n\
+                        +----+\n\
+                        | 0  |\n\
+                        +----+\n\
+                        | 1  |\n\
+                        +----+\n\
+                        | 2  |\n\
+                        +----+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_u16_vec() {
+        let data = vec![0u16, 1u16, 2u16];
+        let expected = "+-----+\n\
+                        | u16 |\n\
+                        +-----+\n\
+                        |  0  |\n\
+                        +-----+\n\
+                        |  1  |\n\
+                        +-----+\n\
+                        |  2  |\n\
+                        +-----+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_u32_vec() {
+        let data = vec![0u32, 1u32, 2u32];
+        let expected = "+-----+\n\
+                        | u32 |\n\
+                        +-----+\n\
+                        |  0  |\n\
+                        +-----+\n\
+                        |  1  |\n\
+                        +-----+\n\
+                        |  2  |\n\
+                        +-----+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_u64_vec() {
+        let data = vec![0u64, 1u64, 2u64];
+        let expected = "+-----+\n\
+                        | u64 |\n\
+                        +-----+\n\
+                        |  0  |\n\
+                        +-----+\n\
+                        |  1  |\n\
+                        +-----+\n\
+                        |  2  |\n\
+                        +-----+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_u128_vec() {
+        let data = vec![0u128, 1u128, 2u128];
+        let expected = "+------+\n\
+                        | u128 |\n\
+                        +------+\n\
+                        |  0   |\n\
+                        +------+\n\
+                        |  1   |\n\
+                        +------+\n\
+                        |  2   |\n\
+                        +------+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_i8_vec() {
+        let data = vec![0i8, 1i8, 2i8];
+        let expected = "+----+\n\
+                        | i8 |\n\
+                        +----+\n\
+                        | 0  |\n\
+                        +----+\n\
+                        | 1  |\n\
+                        +----+\n\
+                        | 2  |\n\
+                        +----+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_i16_vec() {
+        let data = vec![0i16, 1i16, 2i16];
+        let expected = "+-----+\n\
+                        | i16 |\n\
+                        +-----+\n\
+                        |  0  |\n\
+                        +-----+\n\
+                        |  1  |\n\
+                        +-----+\n\
+                        |  2  |\n\
+                        +-----+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_i32_vec() {
+        let data = vec![0i32, 1i32, 2i32];
+        let expected = "+-----+\n\
+                        | i32 |\n\
+                        +-----+\n\
+                        |  0  |\n\
+                        +-----+\n\
+                        |  1  |\n\
+                        +-----+\n\
+                        |  2  |\n\
+                        +-----+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_i64_vec() {
+        let data = vec![0i64, 1i64, 2i64];
+        let expected = "+-----+\n\
+                        | i64 |\n\
+                        +-----+\n\
+                        |  0  |\n\
+                        +-----+\n\
+                        |  1  |\n\
+                        +-----+\n\
+                        |  2  |\n\
+                        +-----+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_i128_vec() {
+        let data = vec![0i128, 1i128, 2i128];
+        let expected = "+------+\n\
+                        | i128 |\n\
+                        +------+\n\
+                        |  0   |\n\
+                        +------+\n\
+                        |  1   |\n\
+                        +------+\n\
+                        |  2   |\n\
+                        +------+\n";
+
+        let table = table(data);
+        assert_eq!(expected, table);
+    }
+}
