@@ -15,9 +15,11 @@ fn impl_tabled(ast: &syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let headers = get_headers(&ast.data);
     let fields = get_fields(&ast.data);
+    
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let expanded = quote! {
-        impl Tabled for #name {
+        impl #impl_generics Tabled for #name #ty_generics #where_clause {
             fn fields(&self) -> Vec<String> {
                 vec![#(format!("{}", self.#fields),)*]
             }
