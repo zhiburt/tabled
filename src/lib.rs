@@ -27,3 +27,40 @@ where
 
     grid.to_string()
 }
+
+macro_rules! default_table {
+    ( $t:ty ) => {
+        impl Tabled for $t {
+            fn fields(&self) -> Vec<String> {
+                vec![format!("{}", self)]
+            }
+            fn headers() -> Vec<String> {
+                vec![stringify!($t).to_string()]
+            }
+        }
+    };
+}
+
+default_table!(&str);
+
+default_table!(char);
+
+default_table!(bool);
+
+default_table!(isize);
+default_table!(usize);
+
+default_table!(u8);
+default_table!(u16);
+default_table!(u32);
+default_table!(u64);
+default_table!(u128);
+
+default_table!(i8);
+default_table!(i16);
+default_table!(i32);
+default_table!(i64);
+default_table!(i128);
+
+default_table!(f32);
+default_table!(f64);
