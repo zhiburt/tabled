@@ -6,12 +6,13 @@ pub trait Tabled {
     fn headers() -> Vec<String>;
 }
 
-pub fn table<T>(s: &[T]) -> String
+pub fn table<T, Iter>(iter: Iter) -> String
 where
-    T: Tabled,
+    T: Tabled+Sized,
+    Iter: IntoIterator<Item = T>
 {
     let headers = T::headers();
-    let obj: Vec<Vec<String>> = s.iter().map(|t| t.fields()).collect();
+    let obj: Vec<Vec<String>> = iter.into_iter().map(|t| t.fields()).collect();
 
     let mut grid = papergrid::Grid::new(obj.len()+1, headers.len());
     for (i, h) in headers.iter().enumerate() {
