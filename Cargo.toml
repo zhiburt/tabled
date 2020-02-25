@@ -1,0 +1,11 @@
+[package]
+name = "tabled"
+version = "0.1.0"
+authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tabled_derive = { path = "tabled_derive" }
+papergrid = { path = "papergrid" }
