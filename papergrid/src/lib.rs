@@ -86,7 +86,7 @@ impl std::fmt::Display for Grid {
             .map(|r| (r, r.iter().map(|c| c.span_row).collect::<Vec<_>>()))
             .fold(Vec::new(), |mut spans: Vec<Vec<(_, _)>>, (r, span)| {
                 match spans.last_mut() {
-                    Some(block) if block.last().unwrap().1 == span => {
+                    Some(ref mut block) if block.last().unwrap().1 == span => {
                         block.push((r, span));
                     }
                     Some(..) => {
@@ -292,10 +292,10 @@ impl CellFormatter {
         };
 
         let mut content = c.content.clone();
-        let count_lines = c.content.lines().count();
+        let count_lines = c.content.chars().filter(|&c| c == '\n').count();
 
-        if count_lines < self.height {
-            content.push_str(&"\n".repeat(self.height - count_lines + 1))
+        if self.height > count_lines {
+            content.push_str(&"\n".repeat(self.height - count_lines))
         }
 
         content.push_str(&"\n".repeat(c.ident.bottom));
@@ -420,7 +420,8 @@ mod tests {
                 "+----------------------------------------+---------+\n",
             );
 
-            assert_eq!(expected, grid.to_string());
+            let g = grid.to_string();
+            assert_eq!(expected, g);
         }
 
         #[test]
@@ -471,7 +472,6 @@ mod tests {
 
             assert_eq!(expected, grid.to_string());
         }
-
     }
 
     #[test]
@@ -516,5 +516,49 @@ mod tests {
             expected,
             CellFormatter::new().boxed().height(2).format(&cell)
         );
+    }
+
+    #[test]
+    fn empty_cell_formating_with_height_2() {
+        let mut cell = Cell::new();
+        cell.set_content("").set_corner("-");
+
+        let expected = concat!("--\n", "||\n", "||\n", "--");
+        let formated_cell = CellFormatter::new().boxed().height(2).format(&cell);
+
+        assert_eq!(expected, formated_cell);
+    }
+
+    #[test]
+    fn empty_cell_formating_with_height_1() {
+        let mut cell = Cell::new();
+        cell.set_content("").set_corner("-");
+
+        let expected = concat!("--\n", "||\n", "--");
+        let formated_cell = CellFormatter::new().boxed().height(1).format(&cell);
+
+        assert_eq!(expected, formated_cell);
+    }
+
+    #[test]
+    fn cell_formating_with_height_2() {
+        let mut cell = Cell::new();
+        cell.set_content("text").set_corner("-");
+
+        let expected = concat!("------\n", "|text|\n", "|    |\n", "------");
+        let formated_cell = CellFormatter::new().boxed().height(2).format(&cell);
+
+        assert_eq!(expected, formated_cell);
+    }
+
+    #[test]
+    fn cell_new_line_formating_with_height_2() {
+        let mut cell = Cell::new();
+        cell.set_content("\n").set_corner("-");
+
+        let expected = concat!("--\n", "||\n", "||\n", "--");
+        let formated_cell = CellFormatter::new().boxed().height(2).format(&cell);
+
+        assert_eq!(expected, formated_cell);
     }
 }
