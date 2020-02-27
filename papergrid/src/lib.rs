@@ -420,6 +420,25 @@ mod tests {
 
             assert_eq!(expected, grid.to_string());
         }
+
+        #[test]
+        fn render_empty_cell() {
+            let mut grid = Grid::new(2, 2);
+            grid.cell(0, 0).set_content("0-0");
+            grid.cell(0, 1).set_content("");
+            grid.cell(1, 0).set_content("1-0");
+            grid.cell(1, 1).set_content("1-1");
+
+            let expected = concat!(
+                "+---+---+\n",
+                "|0-0|   |\n",
+                "+---+---+\n",
+                "|1-0|1-1|\n",
+                "+---+---+\n",
+            );
+
+            assert_eq!(expected, grid.to_string());
+        }
     }
 
     #[test]
