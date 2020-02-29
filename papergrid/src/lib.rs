@@ -67,7 +67,7 @@ impl Grid {
     }
 }
 
-fn columns<'a>(cells: &'a [&'a [Cell]]) -> Vec<Vec<&'a Cell>> {
+fn columns<'a>(cells: &'a [Vec<Cell>]) -> Vec<Vec<&'a Cell>> {
     let count_columns = cells[0].len();
     let count_rows = cells.len();
     (0..count_columns)
@@ -78,45 +78,66 @@ fn columns<'a>(cells: &'a [&'a [Cell]]) -> Vec<Vec<&'a Cell>> {
         })
         .collect()
 }
+
 impl std::fmt::Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let blocks = self
             .rows()
+            .iter()
+            .map(|r| r.iter().map(|c| c.span_row).collect::<Vec<usize>>())
+            .zip(self.rows())
+            .fold(
+                Vec::new(),
+                |mut blocks: Vec<Vec<(Vec<usize>, &[Cell])>>, (spans, row)| {
+                    match blocks.last_mut() {
+                        Some(ref mut block) => match block.last() {
+                            Some(block_row) if &block_row.0 == &spans => block.push((spans, row)),
+                            _ => blocks.push(vec![(spans, row)]),
+                        },
+                        None => {
+                            blocks.push(vec![(spans, row)]);
+                        }
+                    }
+                    blocks
+                },
+            )
             .into_iter()
-            .map(|r| (r, r.iter().map(|c| c.span_row).collect::<Vec<_>>()))
-            .fold(Vec::new(), |mut spans: Vec<Vec<(_, _)>>, (r, span)| {
-                match spans.last_mut() {
-                    Some(ref mut block) if block.last().unwrap().1 == span => {
-                        block.push((r, span));
-                    }
-                    Some(..) => {
-                        spans.push(vec![(r, span)]);
-                    }
-                    None => {
-                        spans.push(vec![(r, span)]);
-                    }
-                }
-                spans
+            .map(|rows| rows.into_iter().map(|(.., b)| b).collect::<Vec<_>>())
+            .map(|b| {
+                b.into_iter()
+                    .map(|row| {
+                        row.into_iter()
+                            .scan(0, |skip, cell| {
+                                if *skip > 0 {
+                                    *skip -= 1;
+                                    Some(None)
+                                } else {
+                                    *skip = cell.span_row;
+                                    Some(Some(cell.clone()))
+                                }
+                            })
+                            .flatten()
+                            .collect::<Vec<Cell>>()
+                    })
+                    .collect::<Vec<_>>()
             })
-            .into_iter()
-            .map(|rows| rows.into_iter().map(|(r, ..)| r).collect::<Vec<_>>())
             .collect::<Vec<_>>();
 
         let blocks = blocks
-            .iter()
+            .into_iter()
             .map(|block_rows| {
                 let rows_height = block_rows
                     .iter()
                     .map(|r| r.iter().map(|c| c.height()).max().map_or(0, |m| m))
                     .collect::<Vec<usize>>();
 
-                let columns_weight = columns(block_rows)
+                let columns_weight = columns(block_rows.as_slice())
                     .iter()
-                    .map(|r| r.iter().map(|c| c.weight()).max().map_or(0, |m| m))
+                    .map(|r| r.iter().map(|c| c.weight() + c.ident.left + c.ident.right).max().map_or(0, |m| m))
                     .collect::<Vec<usize>>();
 
                 block_rows
-                    .iter()
+                    .into_iter()
                     .enumerate()
                     .map(move |(row_index, row)| {
                         row.iter()
@@ -135,7 +156,7 @@ impl std::fmt::Display for Grid {
                                     formatter = formatter.un_top();
                                 }
 
-                                rows.push(formatter.format(&cell));
+                                rows.push((formatter, cell.clone().clone()));
 
                                 rows
                             })
@@ -144,10 +165,70 @@ impl std::fmt::Display for Grid {
             })
             .collect::<Vec<_>>();
 
-        blocks.iter().for_each(|rows| {
-            rows.iter()
-                .for_each(|row| writeln!(f, "{}", concat_row(row)).unwrap());
+        let blocks_weight = blocks
+            .iter()
+            .map(|b| {
+                let weight = b
+                    .iter()
+                    .map(|r| r.iter().map(|(f, ..)| f.weight).sum::<usize>() + r.len() - 1)
+                    .max()
+                    .map_or(0, |m| m);
+                weight
+            })
+            .max()
+            .map_or(0, |m| m);
+
+        let mut relative_weight = blocks_weight;
+        while true {
+            let block_weights = blocks
+                .iter()
+                .map(|b| {
+                    b.iter()
+                        .map(|r| relative_border_hint_weight(r.as_slice(), relative_weight))
+                        .collect::<Vec<usize>>()
+                        .first()
+                        .map_or(0, |w| *w)
+                })
+                .collect::<Vec<usize>>();
+
+            relative_weight = block_weights.iter().max().map_or(0, |m| *m);
+            if block_weights.iter().all(|i| *i == relative_weight) {
+                break;
+            };
+        }
+        let mut blocks = blocks
+            .iter()
+            .map(|b| {
+                b.iter()
+                    .map(|r| relative_border(relative_weight, r.as_slice()))
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+
+        blocks.iter_mut().rev().skip(1).for_each(|b| {
+            b.iter_mut().last().map(|row| {
+                row.iter_mut().for_each(|(f, c)| {
+                    f.bottom = None;
+                });
+            });
         });
+
+        blocks
+            .iter()
+            .map(|block| {
+                block
+                    .iter()
+                    .map(|row| {
+                        row.iter()
+                            .map(|(f, cell)| f.format(cell))
+                            .collect::<Vec<String>>()
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .for_each(|rows| {
+                rows.iter()
+                    .for_each(|row| writeln!(f, "{}", concat_row(row)).unwrap());
+            });
 
         Ok(())
     }
@@ -220,6 +301,7 @@ impl Cell {
     }
 }
 
+#[derive(Clone)]
 struct CellFormatter {
     left: Option<()>,
     right: Option<()>,
@@ -257,6 +339,11 @@ impl CellFormatter {
 
     fn un_top(mut self) -> Self {
         self.top = None;
+        self
+    }
+
+    fn un_bottom(mut self) -> Self {
+        self.bottom = None;
         self
     }
 
@@ -301,16 +388,12 @@ impl CellFormatter {
         content.push_str(&"\n".repeat(c.ident.bottom));
         content.insert_str(0, &"\n".repeat(c.ident.top));
 
-        let left_ident = " ".repeat(c.ident.left);
-        let right_ident = " ".repeat(c.ident.right);
-
         let left_border = self.left.map_or("", |_| &c.border.left);
         let right_border = self.right.map_or("", |_| &c.border.right);
 
         let mut lines = content
             .lines()
             .map(|l| align(l, c.alignment, weight))
-            .map(|l| format!("{}{}{}", left_ident, l, right_ident))
             .map(|l| {
                 format!(
                     "{left:}{}{right:}",
@@ -324,7 +407,7 @@ impl CellFormatter {
         let lhs = self.left_connection.map_or("", |_| &c.border.corner);
         let rhs = self.right_connection.map_or("", |_| &c.border.corner);
 
-        let weight = weight + c.ident.left + c.ident.right;
+        let weight = weight;
 
         if self.top.is_some() {
             let line = lhs.to_owned() + &c.border.top.repeat(weight) + rhs;
@@ -368,6 +451,34 @@ fn concat_lines(a: &str, b: &str) -> String {
         .map(|(a, b)| a.to_owned() + b)
         .collect::<Vec<String>>()
         .join("\n")
+}
+
+fn relative_border(
+    new_weight: usize,
+    cells: &[(CellFormatter, Cell)],
+) -> Vec<(CellFormatter, Cell)> {
+    let size = relative_border_hint_weight(cells, new_weight);
+    let cells_weight = cells.iter().map(|(f, ..)| f.weight).sum::<usize>();
+    assert!(new_weight >= cells_weight);
+    let cells_new_weight = cells
+        .iter()
+        .map(|(f, ..)| ((f.weight as f32 / cells_weight as f32) * new_weight as f32) as usize)
+        .collect::<Vec<_>>();
+    cells
+        .iter()
+        .enumerate()
+        .map(|(i, (f, c))| (f.clone().weight(cells_new_weight[i]), c.clone()))
+        .collect()
+}
+
+fn relative_border_hint_weight(cells: &[(CellFormatter, Cell)], w: usize) -> usize {
+    let cells_weight = cells.iter().map(|(f, c)| f.weight).sum::<usize>();
+    cells
+        .iter()
+        .map(|(f, ..)| ((f.weight as f32 / cells_weight as f32) * w as f32) as usize)
+        .sum::<usize>()
+        + cells.len()
+        - 1
 }
 
 #[cfg(test)]
