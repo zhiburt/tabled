@@ -472,6 +472,94 @@ mod tests {
 
             assert_eq!(expected, grid.to_string());
         }
+
+        #[test]
+        fn render_row_span() {
+            let mut grid = Grid::new(2, 2);
+            grid.cell(0, 0).set_content("0-0").set_row_span(1);
+            grid.cell(1, 0).set_content("1-0");
+            grid.cell(1, 1).set_content("1-1");
+
+            let expected = concat!(
+                "+-------+\n",
+                "|  0-0  |\n",
+                "+---+---+\n",
+                "|1-0|1-1|\n",
+                "+---+---+\n"
+            );
+
+            assert_eq!(expected, grid.to_string());
+        }
+
+        #[test]
+        fn render_row_span_multilane() {
+            let mut grid = Grid::new(4, 3);
+            grid.cell(0, 0).set_content("first line").set_row_span(1);
+            grid.cell(0, 2).set_content("e.g.");
+            grid.cell(1, 0).set_content("0");
+            grid.cell(1, 1).set_content("1");
+            grid.cell(1, 2).set_content("2");
+            grid.cell(2, 0).set_content("0");
+            grid.cell(2, 1).set_content("1");
+            grid.cell(2, 2).set_content("2");
+            grid.cell(3, 0)
+                .set_content("full last line")
+                .set_row_span(2);
+
+            let expected = concat!(
+                "+------------+----+\n",
+                "| first line |e.g.|\n",
+                "+-----+-----+-----+\n",
+                "|  0  |  1  |  2  |\n",
+                "+-----+-----+-----+\n",
+                "|  0  |  1  |  2  |\n",
+                "+-----------------+\n",
+                "| full last line  |\n",
+                "+-----------------+\n"
+            );
+
+            assert_eq!(expected, grid.to_string());
+        }
+
+        #[test]
+        fn render_row_span_with_horizontal_ident() {
+            let mut grid = Grid::new(3, 2);
+            grid.cell(0, 0).set_content("0-0").set_row_span(1);
+            grid.cell(1, 0).set_content("1-0").set_horizontal_ident(4);
+            grid.cell(1, 1).set_content("1-1");
+            grid.cell(2, 0).set_content("2-0");
+            grid.cell(2, 1).set_content("2-1");
+
+            let expected = concat!(
+                "+---------------+\n",
+                "|      0-0      |\n",
+                "+-----------+---+\n",
+                "|    1-0    |1-1|\n",
+                "+-----------+---+\n",
+                "|    2-0    |2-1|\n",
+                "+-----------+---+\n",
+            );
+
+            assert_eq!(expected, grid.to_string());
+        }
+
+        #[test]
+        fn render_row_span_with_odd_length() {
+            let mut grid = Grid::new(2, 2);
+            grid.cell(0, 0).set_content("3   ").set_row_span(1);
+            grid.cell(1, 0).set_content("2");
+            grid.cell(1, 1).set_content("3");
+
+            let expected = concat!(
+                "+-----+\n",
+                "|3    |\n",
+                "+--+--+\n",
+                "|2 |3 |\n",
+                "+--+--+\n",
+            );
+
+            assert_eq!(expected, grid.to_string());
+        }
     }
 
     #[test]
