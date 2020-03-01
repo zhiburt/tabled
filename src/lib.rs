@@ -108,6 +108,33 @@ where
     grid.to_string()
 }
 
+macro_rules! tuple_table {
+    ( $($name:ident)+ ) => {
+        impl<$($name: Tabled),+> Tabled for ($($name,)+){
+            fn fields(&self) -> Vec<String> {
+                #![allow(non_snake_case)]
+                let ($($name,)+) = self;
+                let mut fields = Vec::new();
+                $(fields.append(&mut $name.fields());)+
+                fields
+            }
+
+            fn headers() -> Vec<String> {
+                let mut fields = Vec::new();
+                $(fields.append(&mut $name::headers());)+
+                fields
+            }
+        }
+    };
+}
+
+tuple_table! { A }
+tuple_table! { A B }
+tuple_table! { A B C }
+tuple_table! { A B C D}
+tuple_table! { A B C D E}
+tuple_table! { A B C D E F}
+
 macro_rules! default_table {
     ( $t:ty ) => {
         impl Tabled for $t {

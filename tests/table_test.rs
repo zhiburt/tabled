@@ -76,6 +76,68 @@ fn table_option_none() {
     assert_eq!(expected, table);
 }
 
+#[test]
+fn table_tuple() {
+    let t = ("we are in", 2020);
+    let expected = "+-----------+------+\n\
+                    |   &str    | i32  |\n\
+                    +-----------+------+\n\
+                    | we are in | 2020 |\n\
+                    +-----------+------+\n";
+
+    let table = table(&[t]);
+    assert_eq!(expected, table);
+}
+
+#[test]
+fn table_single_tuple() {
+    let t = (2020,);
+    let expected = "+------+\n\
+                    | i32  |\n\
+                    +------+\n\
+                    | 2020 |\n\
+                    +------+\n";
+
+    let table = table(&[t]);
+    assert_eq!(expected, table);
+}
+
+#[test]
+fn table_tuple_vec() {
+    let map = [(0, "Monday"), (1, "Thursday")];
+    let expected = "+-----+----------+\n\
+                    | i32 |   &str   |\n\
+                    +-----+----------+\n\
+                    |  0  |  Monday  |\n\
+                    +-----+----------+\n\
+                    |  1  | Thursday |\n\
+                    +-----+----------+\n";
+
+    let table = table(&map);
+    assert_eq!(expected, table);
+}
+
+#[test]
+fn table_tuple_with_structure_vec() {
+    #[derive(Tabled)]
+    struct St {
+        f1: u8,
+        f2: &'static str,
+    }
+
+    let map = [(0, St { f1: 0, f2: "0str" }), (1, St { f1: 1, f2: "1str" })];
+    let expected = "+-----+----+------+\n\
+                    | i32 | f1 |  f2  |\n\
+                    +-----+----+------+\n\
+                    |  0  | 0  | 0str |\n\
+                    +-----+----+------+\n\
+                    |  1  | 1  | 1str |\n\
+                    +-----+----+------+\n";
+
+    let table = table(&map);
+    assert_eq!(expected, table);
+}
+
 mod default_types {
     use super::*;
 
