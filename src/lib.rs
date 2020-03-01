@@ -31,7 +31,7 @@
 //!         invented_year: 2010},
 //! ];
 //!
-//! let table = table(languages);
+//! let table = table(&languages);
 //! let expected = "+------+----------------+---------------+\n\
 //!                 | name |  designed_by   | invented_year |\n\
 //!                 +------+----------------+---------------+\n\
@@ -64,8 +64,8 @@
 //! use tabled::{Tabled, table};
 //!
 //! # fn main() {
-//! let some_numbers = vec![1, 2, 3];
-//! let table = table(some_numbers);
+//! let some_numbers = [1, 2, 3];
+//! let table = table(&some_numbers);
 //! # let expected = "+-----+\n\
 //! #                 | i32 |\n\
 //! #                 +-----+\n\
@@ -86,10 +86,10 @@ pub trait Tabled {
     fn headers() -> Vec<String>;
 }
 
-pub fn table<T, Iter>(iter: Iter) -> String
+pub fn table<'a, T, Iter>(iter: Iter) -> String
 where
-    T: Tabled+Sized,
-    Iter: IntoIterator<Item = T>
+    T: 'a + Tabled+Sized,
+    Iter: IntoIterator<Item = &'a T>
 {
     let headers = T::headers();
     let obj: Vec<Vec<String>> = iter.into_iter().map(|t| t.fields()).collect();

@@ -17,7 +17,7 @@ fn table_vector_structures() {
                     | 1  | 1  |\n\
                     +----+----+\n";
 
-    let table = table(st);
+    let table = table(&st);
 
     assert_eq!(expected, table);
 }
@@ -35,7 +35,7 @@ fn table_empty_vector_structures() {
                     | f1 | f2 |\n\
                     +----+----+\n";
 
-    let table = table(st);
+    let table = table(&st);
 
     assert_eq!(expected, table);
 }
@@ -55,7 +55,7 @@ fn table_option() {
                     | 0  | 0  |\n\
                     +----+----+\n";
 
-    let table = table(st);
+    let table = table(&st);
     assert_eq!(expected, table);
 }
 
@@ -72,7 +72,7 @@ fn table_option_none() {
                     | f1 | f2 |\n\
                     +----+----+\n";
 
-    let table = table(st);
+    let table = table(&st);
     assert_eq!(expected, table);
 }
 
@@ -90,7 +90,7 @@ mod default_types {
                         | world |\n\
                         +-------+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -107,7 +107,7 @@ mod default_types {
                         |  c   |\n\
                         +------+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -124,7 +124,7 @@ mod default_types {
                         | true  |\n\
                         +-------+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -141,7 +141,7 @@ mod default_types {
                         |   2   |\n\
                         +-------+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -158,7 +158,7 @@ mod default_types {
                         |   2   |\n\
                         +-------+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -175,7 +175,7 @@ mod default_types {
                         | 2  |\n\
                         +----+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -192,7 +192,7 @@ mod default_types {
                         |  2  |\n\
                         +-----+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -209,7 +209,7 @@ mod default_types {
                         |  2  |\n\
                         +-----+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -226,7 +226,7 @@ mod default_types {
                         |  2  |\n\
                         +-----+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -243,7 +243,7 @@ mod default_types {
                         |  2   |\n\
                         +------+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -260,7 +260,7 @@ mod default_types {
                         | 2  |\n\
                         +----+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -277,7 +277,7 @@ mod default_types {
                         |  2  |\n\
                         +-----+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -294,7 +294,7 @@ mod default_types {
                         |  2  |\n\
                         +-----+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -311,7 +311,7 @@ mod default_types {
                         |  2  |\n\
                         +-----+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 
@@ -328,7 +328,7 @@ mod default_types {
                         |  2   |\n\
                         +------+\n";
 
-        let table = table(data);
+        let table = table(&data);
         assert_eq!(expected, table);
     }
 }
