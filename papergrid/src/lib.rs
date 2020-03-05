@@ -79,51 +79,17 @@ fn rows<T>(slice: &[T], count_rows: usize, count_columns: usize) -> Vec<&[T]> {
         .collect()
 }
 
-fn remove_covered_cells(rows: &[&[Cell]]) -> Vec<Vec<Cell>> {
-    rows.iter()
-        .map(|row| {
-            row.iter()
-                .scan(0, |skip, cell| {
-                    if *skip > 0 {
-                        *skip -= 1;
-                        Some(None)
-                    } else {
-                        *skip = cell.span_row;
-                        Some(Some(cell.clone()))
-                    }
-                })
-                .flatten()
-                .collect::<Vec<Cell>>()
-        })
-        .collect()
-}
-
 impl std::fmt::Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let rows = rows(&self.cells, self.size.0, self.size.1);
-
-        let rows_weight = rows
-            .iter()
-            .map(|row| row.iter().map(|c| c.weight()).collect())
-            .collect::<Vec<Vec<usize>>>();
-
-        println!("0000 {:?}", rows_weight);
-
-        let columns_weight = rows
+        let weight = rows
             .iter()
             .map(|r| r.iter().map(|c| c.weight()).sum::<usize>())
             .max()
             .map_or(0, |m| m);
 
-        println!("weight {}", columns_weight);
-
-        let portions = row_portions_blocks(&rows);
-        println!("portions {:?}", portions);
-        // let rows = remove_covered_cells(&rows);
-        let size = cell_size(&rows, &portions, columns_weight);
-
-        println!("sizes {:?}", size);
-
+        let portions = portions(&rows);
+        let size = cell_size(&rows, &portions, weight);
         let grid = rows
             .into_iter()
             .enumerate()
@@ -177,26 +143,15 @@ fn cell_size(
         .collect::<Vec<usize>>();
 
     let mut sizes = measure_cell_size(rows, portions, &rows_height, weight);
-    while !is_rows_size(&sizes, weight) {
+    while !rows_has_equal_weigh(&sizes) {
         weight += 1;
         sizes = measure_cell_size(rows, portions, &rows_height, weight);
     }
 
-    println!("{}", is_rows_size(&sizes, weight));
-    println!("{:?}", sizes);
-
     sizes
 }
 
-fn row_cell_weight(row: &[Cell]) -> usize {
-    row_weight(
-        &row.iter()
-            .map(|cell| cell.weight() + cell.ident.left + cell.ident.right)
-            .collect::<Vec<usize>>(),
-    )
-}
-
-fn is_rows_size(rows: &[Vec<(usize, usize)>], weight: usize) -> bool {
+fn rows_has_equal_weigh(rows: &[Vec<(usize, usize)>]) -> bool {
     let row_weights = rows
         .iter()
         .map(|row| {
@@ -221,14 +176,6 @@ fn measure_cell_size(
         .map(|(row_index, row)| {
             (0..row.len())
                 .map(|cell_index| {
-                    {
-                        println!(
-                            "portion; {} w; {} res: {}",
-                            portions[row_index][cell_index],
-                            weight,
-                            weight as f32 * portions[row_index][cell_index]
-                        )
-                    };
                     let portion = portions[row_index][cell_index];
                     (
                         (weight as f32 * portion).floor() as usize,
@@ -245,52 +192,23 @@ fn row_weight(row: &[usize]) -> usize {
 }
 
 fn row_portions(rows: &[&[Cell]]) -> Vec<Vec<f32>> {
+    let weight = rows
+        .iter()
+        .map(|r| r.iter().map(|c| c.weight()).sum::<usize>())
+        .max()
+        .map_or(0, |m| m);
+
     rows.iter()
         .map(|row| {
             row.iter()
-                .scan(0, |skip, cell| {
-                    if *skip > 0 {
-                        *skip -= 1;
-                        Some(0.0)
-                    } else {
-                        let span = cell.span_row;
-                        *skip = span;
-                        Some((1.0 + span as f32) / row.len() as f32)
-                    }
-                })
+                .map(|c| c.weight() as f32 / weight as f32)
                 .collect()
         })
         .collect()
 }
 
-fn row_portions_honest(rows: &[&[Cell]]) -> Vec<Vec<f32>> {
-    rows.iter()
-        .map(|row| {
-            let row_weight = row
-                .iter()
-                .map(|cell| cell.weight() + cell.ident.left + cell.ident.right)
-                .sum::<usize>();
-            row.iter()
-                .scan(0, |skip, cell| {
-                    if *skip > 0 {
-                        *skip -= 1;
-                        Some(0.0)
-                    } else {
-                        let span = cell.span_row;
-                        *skip = span;
-                        Some(
-                            ((cell.weight() + cell.ident.left + cell.ident.right) as f32)
-                                / row_weight as f32,
-                        )
-                    }
-                })
-                .collect()
-        })
-        .collect()
-}
-
-fn row_portions_blocks(rows: &[&[Cell]]) -> Vec<Vec<f32>> {
-    let mut blocks: Vec<Vec<&[Cell]>> = rows
+fn portions(rows: &[&[Cell]]) -> Vec<Vec<f32>> {
+    let blocks: Vec<Vec<&[Cell]>> = rows
         .iter()
         .map(|r| r.iter().map(|c| c.span_row).collect::<Vec<usize>>())
         .zip(0..rows.len())
@@ -321,41 +239,17 @@ fn row_portions_blocks(rows: &[&[Cell]]) -> Vec<Vec<f32>> {
     blocks
         .iter()
         .flat_map(|block| {
-            let columns_weight = block
-                .iter()
-                .map(|column| column.iter().map(|cell| cell.weight()).collect())
-                .collect::<Vec<Vec<usize>>>();
-
-            let weight = block
-                .iter()
-                .map(|r| r.iter().map(|c| c.weight()).sum::<usize>())
-                .max()
-                .map_or(0, |m| m);
-
-            println!("ww {}", weight);
-
-            let row_portions = block
-                .iter()
-                .enumerate()
-                .map(|(row_index, row)| {
-                    row.iter()
-                        .enumerate()
-                        .map(|(cell_index, c)| {
-                            columns_weight[row_index][cell_index] as f32 / weight as f32
-                        })
-                        .collect()
-                })
-                .collect::<Vec<Vec<f32>>>();
-
-            let max_portions = row_portions.iter().skip(1).fold(
-                row_portions[0].clone(),
-                |mut max_portions, row| {
-                    row.iter().enumerate().for_each(|(index, portion)| {
-                        max_portions[index] = f32::max(max_portions[index], *portion)
+            let portions = row_portions(block);
+            let max_portions =
+                portions
+                    .iter()
+                    .skip(1)
+                    .fold(portions[0].clone(), |mut max_portions, row| {
+                        row.iter().enumerate().for_each(|(index, portion)| {
+                            max_portions[index] = f32::max(max_portions[index], *portion)
+                        });
+                        max_portions
                     });
-                    max_portions
-                },
-            );
 
             (0..block.len())
                 .map(|_| max_portions.clone())
@@ -570,21 +464,11 @@ fn adjust<'a>(rows: &[Vec<CellFormatter<'a>>]) -> Vec<Vec<CellFormatter<'a>>> {
         .max()
         .map_or(0, |m| m);
 
-    let w = rows
-        .iter()
-        .map(|r| r.iter().map(|f| f.full_weight()).collect::<Vec<usize>>())
-        .collect::<Vec<_>>();
-
-    println!("iii {:?}", weight);
-    println!("zzx {:?}", w);
-
     rows.iter()
         .map(|r| {
             let row_weight = r.iter().map(|f| f.full_weight()).sum::<usize>();
             let rest_weight = weight - row_weight;
             let squized_space = rest_weight / r.len();
-
-            println!("rw={} rew={} qs={}", row_weight, rest_weight, squized_space);
 
             r.iter()
                 .map(|f| f.clone().weight(f.weight + squized_space))
