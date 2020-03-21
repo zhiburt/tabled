@@ -12,6 +12,7 @@ readme = "README.md"
 
 [badges]
 travis-ci = { repository = "https://github.com/zhiburt/tabled", branch = "master" }
+coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master", service = "github" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]

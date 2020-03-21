@@ -24,6 +24,11 @@ matrix:
     rust: stable
     script:
       - cargo check --tests
+  - name: 'Rust: code coverage'
+    rust: stable
+    os: linux
+    script:
+    - cargo tarpaulin --verbose --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
 
 jobs:
   allow_failures:
