@@ -1063,6 +1063,29 @@ mod tests {
         }
 
         #[test]
+        #[ignore = "
+            This seems to be an issue.
+        
+            It relates to `parent` logic in weight and height
+            calculations. We cannot find anything to the cell with index (1, 1).
+            And as a result it panic.
+
+            I am not sure how to squeeze this acting in current logic.
+            Which shows that the current architecture should be reframed.
+        "]
+        fn render_one_cell_with_column_and_row_span() {
+            let mut grid = Grid::new(2, 2);
+            grid.cell(0, 0)
+                .set_content("field")
+                .set_row_span(1)
+                .set_column_span(1);
+
+            let expected = concat!("+-----+\n", "|field|\n", "+-----+\n",);
+
+            assert_eq!(expected, grid.to_string());
+        }
+
+        #[test]
         #[ignore = "The behavior should be determined"]
         fn render_empty_line_biside_column_span() {
             let mut grid = Grid::new(3, 3);
