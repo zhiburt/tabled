@@ -221,7 +221,7 @@ fn size(rows: &[Vec<CellFormatter>]) -> Vec<Vec<CellFormatter>> {
 
         (0..rows.len())
             .filter(|&row| !rows[row][cell].is_empty())
-            .filter(|&row| !(golden_cells[cell] && rows[row][cell].span_column() == 0))
+            .filter(|&row| !(golden_cells[row] && rows[row][cell].span_column() == 0))
             .cycle()
             .take(rest)
             .collect::<Vec<_>>()
