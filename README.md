@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.com/zhiburt/tabled.svg?branch=master)](https://travis-ci.org/https://github.com/zhiburt/tabled)
+[![Coverage Status](https://coveralls.io/repos/github/zhiburt/tabled/badge.svg?branch=master)](https://coveralls.io/repos/github/zhiburt/tabled/badge.svg?branch=branch)
+[![dependency status](https://deps.rs/repo/github/zhiburt/tabled/status.svg)](https://deps.rs/repo/github/zhiburt/tabled)
+
 # tabled
 
 This library provides an interface to pretty print vectors of structs
@@ -32,7 +36,7 @@ let languages = vec![
         invented_year: 2010},
 ];
 
-let table = table(languages);
+let table = table(&languages);
 let expected = "+------+----------------+---------------+\n\
                 | name |  designed_by   | invented_year |\n\
                 +------+----------------+---------------+\n\
@@ -63,6 +67,8 @@ Therefore you can use this to print one column vectors
 ```rust
 use tabled::{Tabled, table};
 
-let some_numbers = vec![1, 2, 3];
-let table = table(some_numbers);
+let some_numbers = [1, 2, 3];
+let table = table(&some_numbers);
 ```
+
+License: Apache-2.0
