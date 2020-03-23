@@ -3,6 +3,9 @@ name = "tabled_derive"
 version = "0.1.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
+description = "Derive macros which is used by tabled crate"
+repository = "https://github.com/zhiburt/tabled"
+license = "Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
