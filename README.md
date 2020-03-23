@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.com/zhiburt/tabled.svg?branch=master)](https://travis-ci.org/https://github.com/zhiburt/tabled)
 [![Coverage Status](https://coveralls.io/repos/github/zhiburt/tabled/badge.svg?branch=master)](https://coveralls.io/repos/github/zhiburt/tabled/badge.svg?branch=branch)
 [![dependency status](https://deps.rs/repo/github/zhiburt/tabled/status.svg)](https://deps.rs/repo/github/zhiburt/tabled)
+[![Crate](https://img.shields.io/crates/v/tabled)](https://crates.io/crates/tabled)
 
 # tabled
 
