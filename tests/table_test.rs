@@ -393,4 +393,47 @@ mod default_types {
         let table = table(&data);
         assert_eq!(expected, table);
     }
+
+    #[test]
+    fn table_enum() {
+        #[derive(Tabled)]
+        enum Letters {
+            Vowels { character: char, lang: u8 },
+            Consonant,
+        }
+
+        let data = vec![
+            Letters::Vowels {
+                character: 'a',
+                lang: 0,
+            },
+            Letters::Consonant,
+            Letters::Vowels {
+                character: 'b',
+                lang: 1,
+            },
+            Letters::Vowels {
+                character: 'c',
+                lang: 2,
+            },
+        ];
+
+        let expected = "+-------------------+--------------+-----------+\n\
+                             | Vowels::character | Vowels::lang | Consonant |\n\
+                             +-------------------+--------------+-----------+\n\
+                             |         a         |      0       |           |\n\
+                             +-------------------+--------------+-----------+\n\
+                             |                   |              |     +     |\n\
+                             +-------------------+--------------+-----------+\n\
+                             |         b         |      1       |           |\n\
+                             +-------------------+--------------+-----------+\n\
+                             |         c         |      2       |           |\n\
+                             +-------------------+--------------+-----------+\n";
+
+        let table = table(&data);
+        assert_eq!(expected, table);
+    }
 }
+
+
+

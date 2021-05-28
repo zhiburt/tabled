@@ -81,4 +81,52 @@ mod structure {
         assert_eq!(vec!["0".to_owned()], headers);
         assert_eq!(vec!["1".to_owned()], fields);
     }
+
+    #[test]
+    fn enum_structure() {
+        #[derive(Tabled)]
+        enum E {
+            A { a: u8, b: i32 },
+            K,
+        }
+
+        assert_eq!(
+            vec![
+                "A::a".to_owned(),
+                "A::b".to_owned(),
+                "K".to_owned()
+            ],
+            E::headers()
+        );
+        assert_eq!(
+            vec!["1".to_owned(), "2".to_owned(), "".to_owned()],
+            E::A { a: 1, b: 2 }.fields()
+        );
+        assert_eq!(
+            vec!["".to_owned(), "".to_owned(), "+".to_owned()],
+            E::K.fields()
+        );
+    }
+
+    #[test]
+    #[ignore = "the tuple based variants arent't handled as I didn't cope in generation of idents for the tuple"]
+    fn enum_tuple_variant() {
+        // #[derive(Tabled)]
+        // enum E {
+        //     C(String),
+        // }
+
+        // assert_eq!(
+        //     vec![
+        //         "C::0".to_owned(),
+        //     ],
+        //     E::headers()
+        // );
+        // assert_eq!(
+        //     vec![
+        //         "Hello World".to_owned(),
+        //     ],
+        //     E::C("Hello World".to_string()).fields()
+        // );
+    }
 }
