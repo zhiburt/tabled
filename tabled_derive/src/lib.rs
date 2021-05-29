@@ -57,6 +57,9 @@ fn get_enum_headers(e: &syn::DataEnum) -> Vec<String> {
             let variant = v.ident.to_string();
             if v.fields.len() == 0 {
                 vec![format!("{}", variant)]
+            } else if matches!(v.fields, syn::Fields::Unnamed(..)) {
+                // TODO: a tuple based struct doesn't implemented
+                vec![format!("{}", variant)]
             } else {
                 v.fields
                     .iter()
@@ -119,21 +122,19 @@ fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
     let mut variant_fields_len = Vec::new();
     let mut count_fields = 0;
     for variant in &e.variants {
-        let fields = if variant.fields.is_empty() {
-            vec![quote! { "+".to_string() }]
-        } else {
-            variant
-                .fields
+        let fields = match &variant.fields {
+            syn::Fields::Named(fields) => fields
+                .named
                 .iter()
-                .map(|f| f.ident.as_ref())
-                .enumerate()
-                .map(|(i, f)| {
-                    f.map_or_else(
-                        || todo!("a tuple based struct doesn't implemented; here supposed to be a generated Ident for a tuple"),
-                        |f| f.to_token_stream(),
-                    )
-                })
-                .collect::<Vec<_>>()
+                .map(|f| f.ident.to_token_stream())
+                .collect::<Vec<_>>(),
+            syn::Fields::Unnamed(_) => {
+                // TODO: "a tuple based struct doesn't implemented; here supposed to be a generated Ident for a tuple"
+                vec![quote! { "+".to_string() }]
+            }
+            syn::Fields::Unit => {
+                vec![quote! { "+".to_string() }]
+            }
         };
 
         variant_field_shift.push(count_fields);
@@ -149,23 +150,30 @@ fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
             let mut token = proc_macro2::TokenStream::new();
             token.append_all(v.ident.to_token_stream());
 
-            let parameters = v
-                .fields
-                .iter()
-                .map(|f| f.ident.as_ref())
-                .enumerate()
-                .map(|(i, f)| {
-                    f.map_or_else(
-                        || todo!("a tuple based struct doesn't implemented; here supposed to be a generated Ident for a tuple"),
-                        |f| quote! { #f,},
-                    )
-                })
-                .collect::<Vec<_>>();
+            match &v.fields {
+                syn::Fields::Named(fields) => {
+                    let parameters = fields
+                        .named
+                        .iter()
+                        .map(|f| f.ident.as_ref())
+                        .flatten()
+                        .map(|f| {
+                            quote! { #f,}
+                        })
+                        .collect::<Vec<_>>();
 
-            // todo: for tuple struct we should use a syn::token::Paren::default()
-            syn::token::Brace::default().surround(&mut token, |s| {
-                s.append_all(parameters);
-            });
+                    syn::token::Brace::default().surround(&mut token, |s| {
+                        s.append_all(parameters);
+                    });
+                }
+                syn::Fields::Unnamed(_) => {
+                    // TODO: "a tuple based struct doesn't implemented; here supposed to be a generated Ident for a tuple"
+                    syn::token::Paren::default().surround(&mut token, |s| {
+                        s.append_all(quote! {_});
+                    });
+                }
+                syn::Fields::Unit => {}
+            };
 
             token
         })
