@@ -18,7 +18,6 @@
 //!     invented_year: usize,
 //! }
 //!
-//! # fn main() {
 //! let languages = vec![
 //!     Language{
 //!         name: "C".to_owned(),
@@ -41,7 +40,6 @@
 //!                 +------+----------------+---------------+\n";
 //!
 //! assert_eq!(expected, table);
-//! # }
 //! ```
 //!
 //! It should have a clue in what why print the field
@@ -63,7 +61,6 @@
 //! ```rust
 //! use tabled::{Tabled, table};
 //!
-//! # fn main() {
 //! let some_numbers = [1, 2, 3];
 //! let table = table(&some_numbers);
 //! # let expected = "+-----+\n\
@@ -76,9 +73,7 @@
 //! #                 |  3  |\n\
 //! #                 +-----+\n";
 //! # assert_eq!(expected, table);
-//! # }
 //! ```
-use papergrid;
 pub use tabled_derive::Tabled;
 
 pub trait Tabled {
