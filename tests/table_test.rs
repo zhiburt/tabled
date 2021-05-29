@@ -1,3 +1,4 @@
+use std::collections::{BTreeMap, BTreeSet};
 use tabled::{table, Tabled};
 
 #[test]
@@ -435,6 +436,60 @@ mod default_types {
                              +--------+-----------+-------+\n";
 
         let table = table(&data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_btreemap() {
+        #[derive(Tabled)]
+        struct A {
+            b: u8,
+            c: &'static str,
+        }
+
+        let mut map = BTreeMap::new();
+        map.insert(0, A { b: 1, c: "s1" });
+        map.insert(1, A { b: 2, c: "s2" });
+        map.insert(3, A { b: 3, c: "s3" });
+
+        let expected = "+-----+---+----+\n\
+                             | i32 | b | c  |\n\
+                             +-----+---+----+\n\
+                             |  0  | 1 | s1 |\n\
+                             +-----+---+----+\n\
+                             |  1  | 2 | s2 |\n\
+                             +-----+---+----+\n\
+                             |  3  | 3 | s3 |\n\
+                             +-----+---+----+\n";
+
+        let table = table(&map);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_btreeset() {
+        #[derive(Tabled, PartialEq, Eq, PartialOrd, Ord)]
+        struct A {
+            b: u8,
+            c: &'static str,
+        }
+
+        let mut map = BTreeSet::new();
+        map.insert(A { b: 1, c: "s1" });
+        map.insert(A { b: 2, c: "s2" });
+        map.insert(A { b: 3, c: "s3" });
+
+        let expected = "+---+----+\n\
+                             | b | c  |\n\
+                             +---+----+\n\
+                             | 1 | s1 |\n\
+                             +---+----+\n\
+                             | 2 | s2 |\n\
+                             +---+----+\n\
+                             | 3 | s3 |\n\
+                             +---+----+\n";
+
+        let table = table(&map);
         assert_eq!(expected, table);
     }
 }

@@ -43,18 +43,18 @@
 //! assert_eq!(expected, table);
 //! # }
 //! ```
-//! 
+//!
 //! It should have a clue in what why print the field
 //! accordingly each field should implement `std::fmt::Display`
 //! The example below is not compiled
-//! 
+//!
 //! ```rust,compile_fail
 //! # use tabled::Tabled;
 //! #[derive(Tabled)]
 //! struct SomeType {
 //!     field1: SomeOtherType,
 //! }
-//! 
+//!
 //! struct SomeOtherType;
 //! ```
 //! This crate implement the trait for default types.
@@ -86,22 +86,20 @@ pub trait Tabled {
     fn headers() -> Vec<String>;
 }
 
-pub fn table<'a, T, Iter>(iter: Iter) -> String
-where
-    T: 'a + Tabled+Sized,
-    Iter: IntoIterator<Item = &'a T>
-{
+pub fn table<T: Tabled>(iter: impl IntoIterator<Item = T>) -> String {
     let headers = T::headers();
     let obj: Vec<Vec<String>> = iter.into_iter().map(|t| t.fields()).collect();
 
-    let mut grid = papergrid::Grid::new(obj.len()+1, headers.len());
+    let mut grid = papergrid::Grid::new(obj.len() + 1, headers.len());
     for (i, h) in headers.iter().enumerate() {
         grid.cell(0, i).set_content(h).set_horizontal_ident(1);
     }
 
     for (i, fields) in obj.iter().enumerate() {
         for (j, field) in fields.iter().enumerate() {
-            grid.cell(i+1, j).set_content(field).set_horizontal_ident(1);
+            grid.cell(i + 1, j)
+                .set_content(field)
+                .set_horizontal_ident(1);
         }
     }
 
@@ -171,3 +169,15 @@ default_table!(i128);
 
 default_table!(f32);
 default_table!(f64);
+
+impl<T> Tabled for &T
+where
+    T: Tabled,
+{
+    fn fields(&self) -> Vec<String> {
+        T::fields(self)
+    }
+    fn headers() -> Vec<String> {
+        T::headers()
+    }
+}
