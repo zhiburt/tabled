@@ -74,7 +74,7 @@ mod structure {
         fn infer_type<T: std::fmt::Display>(v: T) -> (Vec<String>, Vec<String>) {
             let st = St(v);
             (<St<T> as Tabled>::headers(), st.fields())
-        };
+        }
 
         let (headers, fields) = infer_type(1);
 
@@ -92,44 +92,20 @@ mod structure {
         }
 
         assert_eq!(
-            vec![
-                "A::a".to_owned(),
-                "A::b".to_owned(),
-                "B".to_owned(),
-                "K".to_owned()
-            ],
+            vec!["A".to_owned(), "B".to_owned(), "K".to_owned()],
             E::headers()
         );
         assert_eq!(
-            vec!["1".to_owned(), "2".to_owned(), "".to_owned(), "".to_owned()],
+            vec!["+".to_owned(), "".to_owned(), "".to_owned()],
             E::A { a: 1, b: 2 }.fields()
         );
         assert_eq!(
-            vec!["".to_owned(), "".to_owned(), "".to_owned(), "+".to_owned()],
+            vec!["".to_owned(), "".to_owned(), "+".to_owned()],
             E::K.fields()
         );
         assert_eq!(
-            vec!["".to_owned(), "".to_owned(), "+".to_owned(), "".to_owned()],
+            vec!["".to_owned(), "+".to_owned(), "".to_owned()],
             E::B(String::new()).fields()
-        );
-    }
-
-    #[test]
-    #[ignore = "
-        the tuple based variants arent't handled as
-        I didn't cope in generation of idents for the tuple;
-        this is how it supposed to look"]
-    #[should_panic]
-    fn enum_tuple_variant() {
-        #[derive(Tabled)]
-        enum E {
-            C(String),
-        }
-
-        assert_eq!(vec!["C::0".to_owned(),], E::headers());
-        assert_eq!(
-            vec!["Hello World".to_owned(),],
-            E::C("Hello World".to_string()).fields()
         );
     }
 }

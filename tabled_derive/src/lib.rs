@@ -37,7 +37,7 @@ fn get_headers(d: &syn::Data) -> Vec<String> {
     match d {
         syn::Data::Struct(st) => get_st_headers(st),
         syn::Data::Enum(e) => get_enum_headers(e),
-        syn::Data::Union(u) => get_union_headers(u),
+        syn::Data::Union(_) => todo!("it's not clear how to handle union type"),
     }
 }
 
@@ -55,36 +55,10 @@ fn get_enum_headers(e: &syn::DataEnum) -> Vec<String> {
         .iter()
         .map(|v| {
             let variant = v.ident.to_string();
-            if v.fields.len() == 0 {
-                vec![format!("{}", variant)]
-            } else if matches!(v.fields, syn::Fields::Unnamed(..)) {
-                // TODO: a tuple based struct doesn't implemented
-                vec![format!("{}", variant)]
-            } else {
-                v.fields
-                    .iter()
-                    .map(|f| f.ident.as_ref())
-                    .enumerate()
-                    .map(|(i, f)| {
-                        f.map_or_else(
-                            || format!("{}::{}", variant, i),
-                            |f| format!("{}::{}", variant, f.to_string()),
-                        )
-                    })
-                    .collect()
-            }
+            vec![format!("{}", variant)]
         })
         .collect::<Vec<Vec<_>>>()
         .concat()
-}
-
-fn get_union_headers(u: &syn::DataUnion) -> Vec<String> {
-    u.fields
-        .named
-        .iter()
-        .enumerate()
-        .map(|(i, _)| format!("field-{}", i))
-        .collect()
 }
 
 fn get_fields(d: &syn::Data) -> proc_macro2::TokenStream {
@@ -121,21 +95,8 @@ fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
     let mut variant_field_shift = Vec::new();
     let mut variant_fields_len = Vec::new();
     let mut count_fields = 0;
-    for variant in &e.variants {
-        let fields = match &variant.fields {
-            syn::Fields::Named(fields) => fields
-                .named
-                .iter()
-                .map(|f| f.ident.to_token_stream())
-                .collect::<Vec<_>>(),
-            syn::Fields::Unnamed(_) => {
-                // TODO: "a tuple based struct doesn't implemented; here supposed to be a generated Ident for a tuple"
-                vec![quote! { "+".to_string() }]
-            }
-            syn::Fields::Unit => {
-                vec![quote! { "+".to_string() }]
-            }
-        };
+    for _ in &e.variants {
+        let fields = vec![quote! { "+".to_string() }];
 
         variant_field_shift.push(count_fields);
         variant_fields_len.push(fields.len());
@@ -182,6 +143,7 @@ fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
     quote! {
         let size = #count_fields;
         let mut v: Vec<String> = std::iter::repeat(String::new()).take(size).collect();
+        #[allow(unused_variables)]
         match &self {
             #(Self::#variants => {
                 let fields = vec![#(#fields_per_variant.to_string()),*];
