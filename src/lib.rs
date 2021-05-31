@@ -42,7 +42,7 @@
 //!         invented_year: 2010},
 //! ];
 //!
-//! let table = table(&languages);
+//! let table = table!(&languages);
 //! let expected = "+------+----------------+---------------+\n\
 //!                 | name |  designed_by   | invented_year |\n\
 //!                 +------+----------------+---------------+\n\
@@ -74,7 +74,7 @@
 //! use tabled::{Tabled, table};
 //!
 //! let some_numbers = [1, 2, 3];
-//! let table = table(&some_numbers);
+//! let table = table!(&some_numbers);
 //! # let expected = "+-----+\n\
 //! #                 | i32 |\n\
 //! #                 +-----+\n\
@@ -87,7 +87,7 @@
 //! # assert_eq!(expected, table);
 //! ```
 
-use papergrid::{Alignment, Entity, Grid, Settings};
+use papergrid::{Alignment, Border, Entity, Grid, Settings};
 
 pub use tabled_derive::Tabled;
 
@@ -96,11 +96,11 @@ pub trait Tabled {
     fn headers() -> Vec<String>;
 }
 
-pub fn table<T: Tabled>(iter: impl IntoIterator<Item = T>) -> String {
+pub fn print_table<T: Tabled>(iter: impl IntoIterator<Item = T>, style: Style) -> String {
     let headers = T::headers();
     let obj: Vec<Vec<String>> = iter.into_iter().map(|t| t.fields()).collect();
 
-    let mut grid = Grid::new(obj.len() + 1, headers.len());
+    let mut grid = create_grid(obj.len() + 1, headers.len(), style);
     for (i, h) in headers.iter().enumerate() {
         grid.set(
             Entity::Cell(0, i),
@@ -124,6 +124,116 @@ pub fn table<T: Tabled>(iter: impl IntoIterator<Item = T>) -> String {
     }
 
     grid.to_string()
+}
+
+fn create_grid(count_rows: usize, count_columns: usize, style: Style) -> Grid {
+    let mut grid = Grid::new(count_rows, count_columns);
+
+    for row in 0..count_rows {
+        let border = grid.get_border_mut(row);
+        style.make(border, row, count_rows);
+    }
+
+    grid
+}
+
+pub enum Style {
+    Default,
+    Psql,
+    GithubMarkdown,
+    Pseudo,
+    PseudoClean,
+    NoBorder,
+}
+
+impl Style {
+    fn make(&self, border: &mut Border, row: usize, count_rows: usize) {
+        match self {
+            Style::Default => (),
+            Style::NoBorder => Self::noborder_style(border),
+            Style::GithubMarkdown => Self::github_markdown_style(border, row),
+            Style::Pseudo => Self::pseudo_style(border, row, count_rows),
+            Style::PseudoClean => Self::pseudo_clean_style(border, row, count_rows),
+            Style::Psql => Self::psql_style(border, row),
+        }
+    }
+
+    fn noborder_style(border: &mut Border) {
+        border.empty().inner(Some(' '), None, None);
+    }
+
+    fn psql_style(border: &mut Border, row: usize) {
+        if row == 0 {
+            border
+                .empty()
+                .bottom('-', '+', None, None)
+                .inner(Some('|'), None, None);
+        } else {
+            border.empty().inner(Some('|'), None, None);
+        }
+    }
+
+    fn github_markdown_style(border: &mut Border, row: usize) {
+        if row == 0 {
+            border.empty().bottom('-', '+', Some('|'), Some('|')).inner(
+                Some('|'),
+                Some('|'),
+                Some('|'),
+            );
+        } else {
+            border.empty().inner(Some('|'), Some('|'), Some('|'));
+        }
+    }
+
+    fn pseudo_style(border: &mut Border, row: usize, count_rows: usize) {
+        if row == 0 {
+            border
+                .empty()
+                .top('─', '┬', Some('┌'), Some('┐'))
+                .bottom('─', '┼', Some('├'), Some('┤'))
+                .inner(Some('│'), Some('│'), Some('│'));
+        } else if row == count_rows - 1 {
+            border.empty().bottom('─', '┴', Some('└'), Some('┘')).inner(
+                Some('│'),
+                Some('│'),
+                Some('│'),
+            );
+        } else {
+            border.empty().bottom('─', '┼', Some('├'), Some('┤')).inner(
+                Some('│'),
+                Some('│'),
+                Some('│'),
+            );
+        }
+    }
+
+    fn pseudo_clean_style(border: &mut Border, row: usize, count_rows: usize) {
+        if row == 0 {
+            border
+                .empty()
+                .top('─', '┬', Some('┌'), Some('┐'))
+                .bottom('─', '┼', Some('├'), Some('┤'))
+                .inner(Some('│'), Some('│'), Some('│'));
+        } else if row == count_rows - 1 {
+            border.empty().bottom('─', '┴', Some('└'), Some('┘')).inner(
+                Some('│'),
+                Some('│'),
+                Some('│'),
+            );
+        } else {
+            border.empty().inner(Some('│'), Some('│'), Some('│'));
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! table {
+    ( $data:expr ) => {
+        tabled::print_table($data, tabled::Style::Default)
+    };
+    ( $data:expr, $style:expr ) => {
+        tabled::print_table($data, $style)
+    };
 }
 
 macro_rules! tuple_table {

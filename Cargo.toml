@@ -17,4 +17,4 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 tabled_derive = "~0.1.2"
-papergrid = "~0.1.1"
+papergrid = "~0.1.3"
