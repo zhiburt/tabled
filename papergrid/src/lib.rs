@@ -138,12 +138,12 @@ impl Grid {
     ///    let mut grid = Grid::new(2, 2);
     ///    grid.set(Entity::Global, Settings::new().text("asd"));
     ///    grid.get_border_mut(0).empty()
-    ///         .top('─', '┬', '┌', '┐')
-    ///         .bottom('─', '┼', '├', '┤')
+    ///         .top('─', '┬', Some('┌'), Some('┐'))
+    ///         .bottom('─', '┼', Some('├'), Some('┤'))
     ///         .inner(Some('│'), Some('│'), Some('│'));
     ///    grid.get_border_mut(1).empty()
-    ///         .top('─', '┬', '┌', '┐')
-    ///         .bottom('─', '┴', '└', '┘')
+    ///         .top('─', '┬', Some('┌'), Some('┐'))
+    ///         .bottom('─', '┴', Some('└'), Some('┘'))
     ///         .inner(Some('│'), Some('│'), Some('│'));
     ///
     ///    let str = grid.to_string();
@@ -389,14 +389,14 @@ impl Border {
         &mut self,
         main: char,
         intersection: char,
-        left_intersection: char,
-        right_intersection: char,
+        left_intersection: Option<char>,
+        right_intersection: Option<char>,
     ) -> &mut Self {
         self.top_line = LineStyle {
             main: Some(main),
             intersection: Some(intersection),
-            left_intersection: Some(left_intersection),
-            right_intersection: Some(right_intersection),
+            left_intersection,
+            right_intersection,
         };
 
         self
@@ -412,14 +412,14 @@ impl Border {
         &mut self,
         main: char,
         intersection: char,
-        left_intersection: char,
-        right_intersection: char,
+        left_intersection: Option<char>,
+        right_intersection: Option<char>,
     ) -> &mut Self {
         self.bottom_line = LineStyle {
             main: Some(main),
             intersection: Some(intersection),
-            left_intersection: Some(left_intersection),
-            right_intersection: Some(right_intersection),
+            left_intersection,
+            right_intersection,
         };
 
         self
@@ -758,11 +758,11 @@ mod tests {
         grid.set(Entity::Global, Settings::new().text("asd"));
 
         grid.get_border_mut(0)
-            .top('*', ' ', ' ', ' ')
+            .top('*', ' ', Some(' '), Some(' '))
             .inner(Some('@'), Some('$'), Some('%'));
         grid.get_border_mut(1)
-            .top('*', ' ', ' ', ' ')
-            .bottom('*', ' ', ' ', ' ')
+            .top('*', ' ', Some(' '), Some(' '))
+            .bottom('*', ' ', Some(' '), Some(' '))
             .inner(Some('^'), Some('#'), Some('!'));
 
         let str = grid.to_string();
