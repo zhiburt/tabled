@@ -5,7 +5,7 @@ authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Tabled provides an interface to build tables from standard collections"
 repository = "https://github.com/zhiburt/tabled"
-license = "Apache-2.0"
+license = "MIT"
 keywords = ["sheet", "table", "graphics", "terminal"]
 categories = ["text-processing", "visualization"]
 readme = "README.md"
@@ -17,4 +17,4 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 tabled_derive = "~0.1.2"
-papergrid = "~0.1.0"
+papergrid = "~0.1.1"

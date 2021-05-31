@@ -1,11 +1,11 @@
 [package]
 name = "papergrid"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Papergrid is a library which provide an paper like table printing"
 repository = "https://github.com/zhiburt/tabled"
-license = "Apache-2.0"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
