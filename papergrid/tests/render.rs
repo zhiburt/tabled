@@ -1,100 +1,143 @@
-// use papergrid::Grid;
+use papergrid::{Alignment, Entity, Grid, Settings};
 
-// #[test]
-// fn render() {
-//     let mut grid = Grid::new(2, 2);
-//     grid.cell(0, 0).set_content("0-0");
-//     grid.cell(0, 1).set_content("0-1");
-//     grid.cell(1, 0).set_content("1-0");
-//     grid.cell(1, 1).set_content("1-1");
+#[test]
+fn render() {
+    let mut grid = Grid::new(2, 2);
+    grid.set(Entity::Cell(0, 0), Settings::new().text("0-0"));
+    grid.set(Entity::Cell(0, 1), Settings::new().text("0-1"));
+    grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
+    grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
 
-//     let expected = concat!(
-//         "+---+---+\n",
-//         "|0-0|0-1|\n",
-//         "+---+---+\n",
-//         "|1-0|1-1|\n",
-//         "+---+---+\n",
-//     );
+    let expected = concat!(
+        "+---+---+\n",
+        "|0-0|0-1|\n",
+        "+---+---+\n",
+        "|1-0|1-1|\n",
+        "+---+---+\n",
+    );
 
-//     assert_eq!(expected, grid.to_string());
-// }
+    assert_eq!(expected, grid.to_string());
+}
 
-// #[test]
-// fn render_multilane() {
-//     let mut grid = Grid::new(2, 2);
-//     grid.cell(0, 0).set_content("left\ncell");
-//     grid.cell(0, 1).set_content("right one");
-//     grid.cell(1, 0)
-//         .set_content("the second column got the beginning here");
-//     grid.cell(1, 1)
-//         .set_content("and here\nwe\nsee\na\nlong\nstring");
+#[test]
+fn render_multilane() {
+    let mut grid = Grid::new(2, 2);
+    grid.set(Entity::Cell(0, 0), Settings::new().text("left\ncell"));
+    grid.set(Entity::Cell(0, 1), Settings::new().text("right one"));
+    grid.set(
+        Entity::Cell(1, 0),
+        Settings::new().text("the second column got the beginning here"),
+    );
+    grid.set(
+        Entity::Cell(1, 1),
+        Settings::new().text("and here\nwe\nsee\na\nlong\nstring"),
+    );
 
-//     let expected = concat!(
-//         "+----------------------------------------+---------+\n",
-//         "|                  left                  |right one|\n",
-//         "|                  cell                  |         |\n",
-//         "+----------------------------------------+---------+\n",
-//         "|the second column got the beginning here|and here |\n",
-//         "|                                        |   we    |\n",
-//         "|                                        |   see   |\n",
-//         "|                                        |    a    |\n",
-//         "|                                        |  long   |\n",
-//         "|                                        | string  |\n",
-//         "+----------------------------------------+---------+\n",
-//     );
+    let expected = concat!(
+        "+----------------------------------------+---------+\n",
+        "|left                                    |right one|\n",
+        "|cell                                    |         |\n",
+        "+----------------------------------------+---------+\n",
+        "|the second column got the beginning here|and here |\n",
+        "|                                        |we       |\n",
+        "|                                        |see      |\n",
+        "|                                        |a        |\n",
+        "|                                        |long     |\n",
+        "|                                        |string   |\n",
+        "+----------------------------------------+---------+\n"
+    );
 
-//     let g = grid.to_string();
-//     assert_eq!(expected, g);
-// }
+    let g = grid.to_string();
+    assert_eq!(expected, g);
+}
 
-// #[test]
-// fn render_one_line() {
-//     let mut grid = Grid::new(1, 1);
-//     grid.cell(0, 0).set_content("one line");
+#[test]
+fn render_multilane_alignment() {
+    let mut grid = Grid::new(2, 2);
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .text("left\ncell")
+            .alignment(Alignment::Center),
+    );
+    grid.set(Entity::Cell(0, 1), Settings::new().text("right one"));
+    grid.set(
+        Entity::Cell(1, 0),
+        Settings::new().text("the second column got the beginning here"),
+    );
+    grid.set(
+        Entity::Cell(1, 1),
+        Settings::new()
+            .text("and here\nwe\nsee\na\nlong\nstring")
+            .alignment(Alignment::Right),
+    );
 
-//     let expected = concat!("+--------+\n", "|one line|\n", "+--------+\n",);
+    let expected = concat!(
+        "+----------------------------------------+---------+\n\
+         |                  left                  |right one|\n\
+         |                  cell                  |         |\n\
+         +----------------------------------------+---------+\n\
+         |the second column got the beginning here| and here|\n\
+         |                                        |       we|\n\
+         |                                        |      see|\n\
+         |                                        |        a|\n\
+         |                                        |     long|\n\
+         |                                        |   string|\n\
+         +----------------------------------------+---------+\n"
+    );
 
-//     assert_eq!(expected, grid.to_string());
-// }
+    let g = grid.to_string();
+    assert_eq!(expected, g);
+}
 
-// #[test]
-// fn render_not_quadratic() {
-//     let mut grid = Grid::new(1, 2);
-//     grid.cell(0, 0).set_content("hello");
-//     grid.cell(0, 1).set_content("world");
+#[test]
+fn render_one_line() {
+    let mut grid = Grid::new(1, 1);
+    grid.set(Entity::Cell(0, 0), Settings::new().text("one line"));
 
-//     let expected = concat!("+-----+-----+\n", "|hello|world|\n", "+-----+-----+\n",);
+    let expected = concat!("+--------+\n", "|one line|\n", "+--------+\n",);
 
-//     assert_eq!(expected, grid.to_string());
-// }
+    assert_eq!(expected, grid.to_string());
+}
 
-// #[test]
-// fn render_empty() {
-//     let grid = Grid::new(0, 0);
+#[test]
+fn render_not_quadratic() {
+    let mut grid = Grid::new(1, 2);
+    grid.set(Entity::Cell(0, 0), Settings::new().text("hello"));
+    grid.set(Entity::Cell(0, 1), Settings::new().text("world"));
 
-//     let expected = "";
+    let expected = concat!("+-----+-----+\n", "|hello|world|\n", "+-----+-----+\n",);
 
-//     assert_eq!(expected, grid.to_string());
-// }
+    assert_eq!(expected, grid.to_string());
+}
 
-// #[test]
-// fn render_empty_cell() {
-//     let mut grid = Grid::new(2, 2);
-//     grid.cell(0, 0).set_content("0-0");
-//     grid.cell(0, 1).set_content("");
-//     grid.cell(1, 0).set_content("1-0");
-//     grid.cell(1, 1).set_content("1-1");
+#[test]
+fn render_empty() {
+    let grid = Grid::new(0, 0);
 
-//     let expected = concat!(
-//         "+---+---+\n",
-//         "|0-0|   |\n",
-//         "+---+---+\n",
-//         "|1-0|1-1|\n",
-//         "+---+---+\n",
-//     );
+    let expected = "";
 
-//     assert_eq!(expected, grid.to_string());
-// }
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_empty_cell() {
+    let mut grid = Grid::new(2, 2);
+    grid.set(Entity::Cell(0, 0), Settings::new().text("0-0"));
+    grid.set(Entity::Cell(0, 1), Settings::new().text(""));
+    grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
+    grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
+
+    let expected = concat!(
+        "+---+---+\n",
+        "|0-0|   |\n",
+        "+---+---+\n",
+        "|1-0|1-1|\n",
+        "+---+---+\n",
+    );
+
+    assert_eq!(expected, grid.to_string());
+}
 
 // #[test]
 // fn render_row_span() {
@@ -352,7 +395,7 @@
 // #[test]
 // #[ignore = "
 //             This seems to be an issue.
-        
+
 //             It relates to `parent` logic in weight and height
 //             calculations. We cannot find anything to the cell with index (1, 1).
 //             And as a result it panic.
@@ -399,11 +442,11 @@
 // #[ignore = "
 //             This issue is related to horizontal indent when we have
 //             a cell which will be widen by largest row.
-            
+
 //             Indeed now all indents which is does not make difference in weight ignores.
 //             It means that at the represented example there's no any indents.
-//             There's only space which is increased by bigger row. 
-            
+//             There's only space which is increased by bigger row.
+
 //             The similar issue must be with vertical_indent and column_span too.
 
 //             And what's the right result?

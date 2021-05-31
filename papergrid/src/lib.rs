@@ -1,11 +1,34 @@
+//! Papergrid is a library for generating text-based tables for display
+//!
+//! # Example
+//! ```rust
+//!     use papergrid::{Grid, Entity, Settings};
+//!     let mut grid = Grid::new(2, 2);
+//!     grid.set(Entity::Cell(0, 0), Settings::new().text("0-0"));
+//!     grid.set(Entity::Cell(0, 1), Settings::new().text("0-1"));
+//!     grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
+//!     grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
+//!     
+//!     let expected = concat!(
+//!         "+---+---+\n",
+//!         "|0-0|0-1|\n",
+//!         "+---+---+\n",
+//!         "|1-0|1-1|\n",
+//!         "+---+---+\n",
+//!     );
+//!
+//!     assert_eq!(expected, grid.to_string());
+//! ```
+
 use std::{
     borrow::Cow,
     cmp::max,
     collections::HashMap,
-    fmt::{self, write, Display},
-    io, iter,
+    fmt::{self, Display},
+    iter,
 };
 
+/// Grid provides a set of methods for building a text-based table
 pub struct Grid {
     size: (usize, usize),
     border_styles: Vec<Border>,
@@ -13,179 +36,26 @@ pub struct Grid {
     cells: Vec<Vec<String>>,
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct Settings {
-    text: Option<String>,
-    ident: Option<Ident>,
-    alignment: Option<Alignment>,
-}
-
-impl Settings {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn text<S: Into<String>>(mut self, text: S) -> Self {
-        self.text = Some(text.into());
-        self
-    }
-
-    pub fn ident(mut self, left: usize, right: usize, top: usize, bottom: usize) -> Self {
-        self.ident = Some(Ident {
-            left,
-            right,
-            top,
-            bottom,
-        });
-        self
-    }
-
-    pub fn alignment(mut self, alignment: Alignment) -> Self {
-        self.alignment = Some(alignment);
-        self
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Border {
-    top_line: LineStyle,
-    bottom_line: LineStyle,
-    inner: LineStyle,
-}
-
-impl Border {
-    pub fn empty(&mut self) -> &mut Self {
-        *self = Self {
-            top_line: LineStyle::default(),
-            bottom_line: LineStyle::default(),
-            inner: LineStyle::default(),
-        };
-
-        self
-    }
-
-    pub fn top(
-        &mut self,
-        main: char,
-        intersection: char,
-        left_intersection: char,
-        right_intersection: char,
-    ) -> &mut Self {
-        self.top_line = LineStyle {
-            main: Some(main),
-            intersection: Some(intersection),
-            left_intersection: Some(left_intersection),
-            right_intersection: Some(right_intersection),
-        };
-
-        self
-    }
-
-    pub fn bottom(
-        &mut self,
-        main: char,
-        intersection: char,
-        left_intersection: char,
-        right_intersection: char,
-    ) -> &mut Self {
-        self.bottom_line = LineStyle {
-            main: Some(main),
-            intersection: Some(intersection),
-            left_intersection: Some(left_intersection),
-            right_intersection: Some(right_intersection),
-        };
-
-        self
-    }
-
-    pub fn inner(
-        &mut self,
-        intersection: Option<char>,
-        left_intersection: Option<char>,
-        right_intersection: Option<char>,
-    ) -> &mut Self {
-        self.inner = LineStyle {
-            main: None,
-            intersection,
-            left_intersection,
-            right_intersection,
-        };
-
-        self
-    }
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct LineStyle {
-    main: Option<char>,
-    intersection: Option<char>,
-    left_intersection: Option<char>,
-    right_intersection: Option<char>,
-}
-
-impl LineStyle {
-    fn is_empty(&self) -> bool {
-        self.left_intersection.is_none()
-            && self.right_intersection.is_none()
-            && self.intersection.is_none()
-            && self.main.is_none()
-    }
-}
-
-#[derive(PartialEq, Eq, Debug, Hash)]
-pub enum Entity {
-    Global,
-    Column(usize),
-    Row(usize),
-    Cell(usize, usize),
-}
-
-#[derive(Debug, Clone)]
-struct Style {
-    ident: Ident,
-    alignment: Alignment,
-}
-
-impl Default for Style {
-    fn default() -> Self {
-        Self {
-            alignment: Alignment::Left,
-            ident: Ident {
-                bottom: 0,
-                left: 0,
-                right: 0,
-                top: 0,
-            },
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-struct Ident {
-    top: usize,
-    bottom: usize,
-    left: usize,
-    right: usize,
-}
-
-#[derive(Debug, Clone)]
-pub enum Alignment {
-    Center,
-    Left,
-    Right,
-}
-
-impl Alignment {
-    fn align(&self, text: &str, length: usize) -> String {
-        match self {
-            Alignment::Center => format!("{: ^1$}", text, length),
-            Alignment::Left => format!("{: <1$}", text, length),
-            Alignment::Right => format!("{: >1$}", text, length),
-        }
-    }
-}
-
 impl Grid {
+    /// The new method creates a grid instance with default styles.
+    ///
+    /// The size of the grid can not be changed after the instance is created.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///     use papergrid::{Grid, Entity, Settings};
+    ///     let mut grid = Grid::new(2, 2);
+    ///     let str = grid.to_string();
+    ///     assert_eq!(
+    ///          str,
+    ///          "+++\n\
+    ///           |||\n\
+    ///           +++\n\
+    ///           |||\n\
+    ///           +++\n"
+    ///     )
+    /// ```
     pub fn new(rows: usize, columns: usize) -> Self {
         let mut styles = HashMap::new();
         styles.insert(Entity::Global, Style::default());
@@ -200,6 +70,27 @@ impl Grid {
         }
     }
 
+    /// Set method is responsible for modification of cell/row/column.
+    ///
+    /// The method panics if incorrect cell/row/column index is given.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///     use papergrid::{Grid, Entity, Settings};
+    ///     let mut grid = Grid::new(2, 2);
+    ///     grid.set(Entity::Row(0), Settings::new().text("row 1"));
+    ///     grid.set(Entity::Row(1), Settings::new().text("row 2"));
+    ///     let str = grid.to_string();
+    ///     assert_eq!(
+    ///          str,
+    ///          "+-----+-----+\n\
+    ///           |row 1|row 1|\n\
+    ///           +-----+-----+\n\
+    ///           |row 2|row 2|\n\
+    ///           +-----+-----+\n"
+    ///     )
+    /// ```
     pub fn set(&mut self, entity: Entity, settings: Settings) {
         if let Some(text) = settings.text {
             self.set_text(&entity, text);
@@ -216,12 +107,46 @@ impl Grid {
         self.styles.insert(entity, s);
     }
 
+    /// Count_rows returns an amount of rows on the grid
     pub fn count_rows(&self) -> usize {
         self.size.0
     }
-
+    /// Count_rows returns an amount of columns on the grid
     pub fn count_columns(&self) -> usize {
         self.size.1
+    }
+
+    /// Get_border_mut returns a border for a given row.
+    /// The border can be modified.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    ///    use papergrid::{Grid, Entity, Settings};
+    ///    let mut grid = Grid::new(2, 2);
+    ///    grid.set(Entity::Global, Settings::new().text("asd"));
+    ///    grid.get_border_mut(0).empty()
+    ///         .top('─', '┬', '┌', '┐')
+    ///         .bottom('─', '┼', '├', '┤')
+    ///         .inner(Some('│'), Some('│'), Some('│'));
+    ///    grid.get_border_mut(1).empty()
+    ///         .top('─', '┬', '┌', '┐')
+    ///         .bottom('─', '┴', '└', '┘')
+    ///         .inner(Some('│'), Some('│'), Some('│'));
+    ///
+    ///    let str = grid.to_string();
+    ///    assert_eq!(
+    ///        str,
+    ///        "┌───┬───┐\n\
+    ///         │asd│asd│\n\
+    ///         ├───┼───┤\n\
+    ///         │asd│asd│\n\
+    ///         └───┴───┘\n"
+    ///    )
+    /// ```
+    pub fn get_border_mut(&mut self, row: usize) -> &mut Border {
+        debug_assert!(row < self.count_rows());
+        &mut self.border_styles[row]
     }
 
     fn columns_width(&self) -> Vec<usize> {
@@ -230,53 +155,10 @@ impl Grid {
             .collect()
     }
 
-    // the function suppose you provide a correct column index
-    fn column_width(&self, column: usize) -> usize {
-        let mut width = 0;
-        for row in 0..self.count_rows() {
-            let style = self.style(row, column);
-            let cell = &self.cells[row][column];
-            let cell_width = string_width(cell) + style.ident.left + style.ident.right;
-            width = max(width, cell_width);
-        }
-
-        width
-    }
-
     fn rows_height(&self) -> Vec<usize> {
         (0..self.count_rows())
             .map(|row| self.row_height(row))
             .collect()
-    }
-
-    // the function suppose you provide a correct column index
-    fn row_height(&self, row: usize) -> usize {
-        let mut height = 0;
-        for column in 0..self.count_columns() {
-            let style = self.style(row, column);
-            let cell = &self.cells[row][column];
-            let cell_height = cell.lines().count() + style.ident.top + style.ident.bottom;
-            height = max(height, cell_height);
-        }
-
-        height
-    }
-
-    fn style(&self, row: usize, column: usize) -> Style {
-        let v = [
-            self.styles.get(&Entity::Cell(row, column)),
-            self.styles.get(&Entity::Column(column)),
-            self.styles.get(&Entity::Row(row)),
-            self.styles.get(&Entity::Global),
-        ];
-
-        for styles in &v {
-            if let Some(style) = styles {
-                return (*style).clone();
-            }
-        }
-
-        unreachable!("there's a global settings guaranted in the map")
     }
 
     fn set_text<S: Into<String>>(&mut self, entity: &Entity, text: S) {
@@ -305,9 +187,47 @@ impl Grid {
         }
     }
 
-    fn get_border_mut(&mut self, row: usize) -> &mut Border {
-        debug_assert!(row < self.count_rows());
-        &mut self.border_styles[row]
+    // the function suppose you provide a correct column index
+    fn row_height(&self, row: usize) -> usize {
+        let mut height = 0;
+        for column in 0..self.count_columns() {
+            let style = self.style(row, column);
+            let cell = &self.cells[row][column];
+            let cell_height = cell.lines().count() + style.ident.top + style.ident.bottom;
+            height = max(height, cell_height);
+        }
+
+        height
+    }
+
+    // the function suppose you provide a correct column index
+    fn column_width(&self, column: usize) -> usize {
+        let mut width = 0;
+        for row in 0..self.count_rows() {
+            let style = self.style(row, column);
+            let cell = &self.cells[row][column];
+            let cell_width = string_width(cell) + style.ident.left + style.ident.right;
+            width = max(width, cell_width);
+        }
+
+        width
+    }
+
+    fn style(&self, row: usize, column: usize) -> Style {
+        let v = [
+            self.styles.get(&Entity::Cell(row, column)),
+            self.styles.get(&Entity::Column(column)),
+            self.styles.get(&Entity::Row(row)),
+            self.styles.get(&Entity::Global),
+        ];
+
+        for styles in &v {
+            if let Some(style) = styles {
+                return (*style).clone();
+            }
+        }
+
+        unreachable!("there's a global settings guaranted in the map")
     }
 
     fn default_border() -> Border {
@@ -386,6 +306,208 @@ impl Grid {
         }
 
         Ok(())
+    }
+}
+
+/// Settings represent setting of a particular cell
+#[derive(Debug, Clone, Default)]
+pub struct Settings {
+    text: Option<String>,
+    ident: Option<Ident>,
+    alignment: Option<Alignment>,
+}
+
+impl Settings {
+    /// New method constructs an instance of settings
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Text method sets content for a cell
+    pub fn text<S: Into<String>>(mut self, text: S) -> Self {
+        self.text = Some(text.into());
+        self
+    }
+
+    /// Ident method sets ident for a cell
+    pub fn ident(mut self, left: usize, right: usize, top: usize, bottom: usize) -> Self {
+        self.ident = Some(Ident {
+            left,
+            right,
+            top,
+            bottom,
+        });
+        self
+    }
+
+    /// Ident method sets alignment for a cell
+    pub fn alignment(mut self, alignment: Alignment) -> Self {
+        self.alignment = Some(alignment);
+        self
+    }
+}
+
+/// Border structure represent all borders of a row
+#[derive(Debug, Clone)]
+pub struct Border {
+    top_line: LineStyle,
+    bottom_line: LineStyle,
+    inner: LineStyle,
+}
+
+impl Border {
+    /// empty border returns a border for a row with no frame and no internal separation
+    pub fn empty(&mut self) -> &mut Self {
+        *self = Self {
+            top_line: LineStyle::default(),
+            bottom_line: LineStyle::default(),
+            inner: LineStyle::default(),
+        };
+
+        self
+    }
+
+    /// The method sets a top border line.
+    ///
+    /// * `main` - is a character which is used for building line.
+    /// * `intersection` - a character which is used for internal separation on the line.
+    /// * `left_intersection` - a left border character.
+    /// * `right_intersection` - a right border character.
+    pub fn top(
+        &mut self,
+        main: char,
+        intersection: char,
+        left_intersection: char,
+        right_intersection: char,
+    ) -> &mut Self {
+        self.top_line = LineStyle {
+            main: Some(main),
+            intersection: Some(intersection),
+            left_intersection: Some(left_intersection),
+            right_intersection: Some(right_intersection),
+        };
+
+        self
+    }
+
+    /// The method sets a bottom border line.
+    ///
+    /// * `main` - is a character which is used for building line.
+    /// * `intersection` - a character which is used for internal separation on the line.
+    /// * `left_intersection` - a left border character.
+    /// * `right_intersection` - a right border character.
+    pub fn bottom(
+        &mut self,
+        main: char,
+        intersection: char,
+        left_intersection: char,
+        right_intersection: char,
+    ) -> &mut Self {
+        self.bottom_line = LineStyle {
+            main: Some(main),
+            intersection: Some(intersection),
+            left_intersection: Some(left_intersection),
+            right_intersection: Some(right_intersection),
+        };
+
+        self
+    }
+
+    /// The method sets an inner row symbols.
+    ///
+    /// * `intersection` - a character which is used for internal separation on the line.
+    /// * `left_intersection` - a left border character.
+    /// * `right_intersection` - a right border character.
+    pub fn inner(
+        &mut self,
+        intersection: Option<char>,
+        left_intersection: Option<char>,
+        right_intersection: Option<char>,
+    ) -> &mut Self {
+        self.inner = LineStyle {
+            main: None,
+            intersection,
+            left_intersection,
+            right_intersection,
+        };
+
+        self
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+struct LineStyle {
+    main: Option<char>,
+    intersection: Option<char>,
+    left_intersection: Option<char>,
+    right_intersection: Option<char>,
+}
+
+impl LineStyle {
+    fn is_empty(&self) -> bool {
+        self.left_intersection.is_none()
+            && self.right_intersection.is_none()
+            && self.intersection.is_none()
+            && self.main.is_none()
+    }
+}
+
+/// Entity a structure which represent a set of cells.
+#[derive(PartialEq, Eq, Debug, Hash)]
+pub enum Entity {
+    /// All cells on the grid.
+    Global,
+    /// All cells in a column on the grid.
+    Column(usize),
+    /// All cells in a row on the grid.
+    Row(usize),
+    /// A particular cell (row, column) on the grid.
+    Cell(usize, usize),
+}
+
+#[derive(Debug, Clone)]
+struct Style {
+    ident: Ident,
+    alignment: Alignment,
+}
+
+impl Default for Style {
+    fn default() -> Self {
+        Self {
+            alignment: Alignment::Left,
+            ident: Ident {
+                bottom: 0,
+                left: 0,
+                right: 0,
+                top: 0,
+            },
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct Ident {
+    top: usize,
+    bottom: usize,
+    left: usize,
+    right: usize,
+}
+
+/// Alignment represents an horizontal aligment of a cell content.
+#[derive(Debug, Clone)]
+pub enum Alignment {
+    Center,
+    Left,
+    Right,
+}
+
+impl Alignment {
+    fn align(&self, text: &str, length: usize) -> String {
+        match self {
+            Alignment::Center => format!("{: ^1$}", text, length),
+            Alignment::Left => format!("{: <1$}", text, length),
+            Alignment::Right => format!("{: >1$}", text, length),
+        }
     }
 }
 
