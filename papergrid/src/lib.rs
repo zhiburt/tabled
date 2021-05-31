@@ -8,16 +8,111 @@ use std::{
 
 pub struct Grid {
     size: (usize, usize),
-    rows_styles: Vec<RowStyle>,
-    styles: HashMap<Entity, Settings>,
+    border_styles: Vec<Border>,
+    styles: HashMap<Entity, Style>,
     cells: Vec<Vec<String>>,
 }
 
+#[derive(Debug, Clone, Default)]
+pub struct Settings {
+    text: Option<String>,
+    ident: Option<Ident>,
+    alignment: Option<Alignment>,
+}
+
+impl Settings {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn text<S: Into<String>>(mut self, text: S) -> Self {
+        self.text = Some(text.into());
+        self
+    }
+
+    pub fn ident(mut self, left: usize, right: usize, top: usize, bottom: usize) -> Self {
+        self.ident = Some(Ident {
+            left,
+            right,
+            top,
+            bottom,
+        });
+        self
+    }
+
+    pub fn alignment(mut self, alignment: Alignment) -> Self {
+        self.alignment = Some(alignment);
+        self
+    }
+}
+
 #[derive(Debug, Clone)]
-pub struct RowStyle {
+pub struct Border {
     top_line: LineStyle,
     bottom_line: LineStyle,
     inner: LineStyle,
+}
+
+impl Border {
+    pub fn empty(&mut self) -> &mut Self {
+        *self = Self {
+            top_line: LineStyle::default(),
+            bottom_line: LineStyle::default(),
+            inner: LineStyle::default(),
+        };
+
+        self
+    }
+
+    pub fn top(
+        &mut self,
+        main: char,
+        intersection: char,
+        left_intersection: char,
+        right_intersection: char,
+    ) -> &mut Self {
+        self.top_line = LineStyle {
+            main: Some(main),
+            intersection: Some(intersection),
+            left_intersection: Some(left_intersection),
+            right_intersection: Some(right_intersection),
+        };
+
+        self
+    }
+
+    pub fn bottom(
+        &mut self,
+        main: char,
+        intersection: char,
+        left_intersection: char,
+        right_intersection: char,
+    ) -> &mut Self {
+        self.bottom_line = LineStyle {
+            main: Some(main),
+            intersection: Some(intersection),
+            left_intersection: Some(left_intersection),
+            right_intersection: Some(right_intersection),
+        };
+
+        self
+    }
+
+    pub fn inner(
+        &mut self,
+        intersection: Option<char>,
+        left_intersection: Option<char>,
+        right_intersection: Option<char>,
+    ) -> &mut Self {
+        self.inner = LineStyle {
+            main: None,
+            intersection,
+            left_intersection,
+            right_intersection,
+        };
+
+        self
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -30,15 +125,15 @@ pub struct LineStyle {
 
 impl LineStyle {
     fn is_empty(&self) -> bool {
-        self.main.is_none()
-            && self.intersection.is_none()
-            && self.left_intersection.is_none()
+        self.left_intersection.is_none()
             && self.right_intersection.is_none()
+            && self.intersection.is_none()
+            && self.main.is_none()
     }
 }
 
 #[derive(PartialEq, Eq, Debug, Hash)]
-enum Entity {
+pub enum Entity {
     Global,
     Column(usize),
     Row(usize),
@@ -46,9 +141,23 @@ enum Entity {
 }
 
 #[derive(Debug, Clone)]
-struct Settings {
+struct Style {
     ident: Ident,
     alignment: Alignment,
+}
+
+impl Default for Style {
+    fn default() -> Self {
+        Self {
+            alignment: Alignment::Left,
+            ident: Ident {
+                bottom: 0,
+                left: 0,
+                right: 0,
+                top: 0,
+            },
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -79,52 +188,32 @@ impl Alignment {
 impl Grid {
     pub fn new(rows: usize, columns: usize) -> Self {
         let mut styles = HashMap::new();
-        styles.insert(
-            Entity::Global,
-            Settings {
-                alignment: Alignment::Left,
-                ident: Ident {
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                },
-            },
-        );
+        styles.insert(Entity::Global, Style::default());
 
-        let rows_styles = iter::repeat(RowStyle {
-            inner: LineStyle {
-                main: Some('-'),
-                intersection: Some('|'),
-                left_intersection: Some('|'),
-                right_intersection: Some('|'),
-            },
-            bottom_line: LineStyle {
-                main: Some('-'),
-                intersection: Some('+'),
-                left_intersection: Some('+'),
-                right_intersection: Some('+'),
-            },
-            top_line: LineStyle {
-                main: Some('-'),
-                intersection: Some('+'),
-                left_intersection: Some('+'),
-                right_intersection: Some('+'),
-            },
-        })
-        .take(rows)
-        .collect();
+        let border_styles = iter::repeat(Self::default_border()).take(rows).collect();
 
         Grid {
             size: (rows, columns),
             cells: vec![vec![String::new(); columns]; rows],
-            rows_styles,
+            border_styles,
             styles,
         }
     }
 
-    pub fn cell(&mut self, i: usize, j: usize) -> &mut String {
-        self.cells.get_mut(i).unwrap().get_mut(j).unwrap()
+    pub fn set(&mut self, entity: Entity, settings: Settings) {
+        if let Some(text) = settings.text {
+            self.set_text(&entity, text);
+        }
+
+        let mut s = Style::default();
+        if let Some(ident) = settings.ident {
+            s.ident = ident;
+        }
+        if let Some(alignment) = settings.alignment {
+            s.alignment = alignment;
+        }
+
+        self.styles.insert(entity, s);
     }
 
     pub fn count_rows(&self) -> usize {
@@ -173,7 +262,7 @@ impl Grid {
         height
     }
 
-    fn style(&self, row: usize, column: usize) -> Settings {
+    fn style(&self, row: usize, column: usize) -> Style {
         let v = [
             self.styles.get(&Entity::Cell(row, column)),
             self.styles.get(&Entity::Column(column)),
@@ -188,6 +277,60 @@ impl Grid {
         }
 
         unreachable!("there's a global settings guaranted in the map")
+    }
+
+    fn set_text<S: Into<String>>(&mut self, entity: &Entity, text: S) {
+        let text = text.into();
+        match *entity {
+            Entity::Cell(row, column) => {
+                self.cells[row][column] = text;
+            }
+            Entity::Column(column) => {
+                for row in 0..self.count_rows() {
+                    self.cells[row][column] = text.clone();
+                }
+            }
+            Entity::Row(row) => {
+                for column in 0..self.count_columns() {
+                    self.cells[row][column] = text.clone();
+                }
+            }
+            Entity::Global => {
+                for row in 0..self.count_rows() {
+                    for column in 0..self.count_columns() {
+                        self.cells[row][column] = text.clone();
+                    }
+                }
+            }
+        }
+    }
+
+    fn get_border_mut(&mut self, row: usize) -> &mut Border {
+        debug_assert!(row < self.count_rows());
+        &mut self.border_styles[row]
+    }
+
+    fn default_border() -> Border {
+        Border {
+            inner: LineStyle {
+                main: Some('-'),
+                intersection: Some('|'),
+                left_intersection: Some('|'),
+                right_intersection: Some('|'),
+            },
+            bottom_line: LineStyle {
+                main: Some('-'),
+                intersection: Some('+'),
+                left_intersection: Some('+'),
+                right_intersection: Some('+'),
+            },
+            top_line: LineStyle {
+                main: Some('-'),
+                intersection: Some('+'),
+                left_intersection: Some('+'),
+                right_intersection: Some('+'),
+            },
+        }
     }
 
     fn build_cells<'a>(&'a self) -> Vec<Vec<Vec<String>>> {
@@ -256,7 +399,7 @@ impl std::fmt::Display for Grid {
 
         for (i, row) in rows.iter().enumerate() {
             let border = self
-                .rows_styles
+                .border_styles
                 .get(i)
                 .expect("it's expected that grid has N styles where N is an amount of rows");
 
@@ -272,7 +415,7 @@ impl std::fmt::Display for Grid {
     }
 }
 
-fn build_cell(text: &str, style: Settings, column_w: usize, row_h: usize) -> Vec<String> {
+fn build_cell(text: &str, style: Style, column_w: usize, row_h: usize) -> Vec<String> {
     let width = column_w - style.ident.left - style.ident.right;
     let height = row_h - style.ident.top - style.ident.bottom;
     let text = split_text(text, width, height);
@@ -304,10 +447,14 @@ fn build_line(
     cells_width: &[usize],
     border: &LineStyle,
 ) -> fmt::Result {
+    if border.is_empty() {
+        return Ok(());
+    }
+
     write_option(f, border.left_intersection)?;
 
     for (i, w) in cells_width.iter().enumerate() {
-        write_option(f, border.main.map(|s| s.to_string().repeat(*w)))?;
+        write_option(f, border.main.map(|m| m.to_string().repeat(*w)))?;
 
         if i != cells_width.len() - 1 {
             write_option(f, border.intersection)?;
@@ -315,10 +462,8 @@ fn build_line(
     }
 
     write_option(f, border.right_intersection)?;
-    
-    if !border.is_empty() {
-        writeln!(f)?;
-    }
+
+    writeln!(f)?;
 
     Ok(())
 }
@@ -353,7 +498,7 @@ mod tests {
     #[test]
     fn grid_1x1_test() {
         let mut grid = Grid::new(1, 1);
-        *grid.cell(0, 0) = "asd".to_string();
+        grid.set(Entity::Cell(0, 0), Settings::new().text("asd"));
         let str = grid.to_string();
         assert_eq!(
             str,
@@ -366,10 +511,7 @@ mod tests {
     #[test]
     fn grid_2x2_test() {
         let mut grid = Grid::new(2, 2);
-        *grid.cell(0, 0) = "asd".to_string();
-        *grid.cell(0, 1) = "asd".to_string();
-        *grid.cell(1, 0) = "asd".to_string();
-        *grid.cell(1, 1) = "asd".to_string();
+        grid.set(Entity::Global, Settings::new().text("asd"));
         let str = grid.to_string();
         assert_eq!(
             str,
@@ -382,89 +524,74 @@ mod tests {
     }
 
     #[test]
-    fn grid_2x2_without_vertical_border_test() {
+    fn grid_2x2_entity_settings_test() {
         let mut grid = Grid::new(2, 2);
-        *grid.cell(0, 0) = "asd".to_string();
-        *grid.cell(0, 1) = "asd".to_string();
-        *grid.cell(1, 0) = "asd".to_string();
-        *grid.cell(1, 1) = "asd".to_string();
-        let mut first_line = grid.rows_styles.get_mut(0).unwrap();
-        first_line.top_line = LineStyle::default();
-        first_line.bottom_line = LineStyle::default();
-        first_line.inner = LineStyle {
-            intersection: Some(' '),
-            left_intersection: None,
-            right_intersection: None,
-            main: None,
-        };
-        drop(first_line);
-
-        let mut second_line = grid.rows_styles.get_mut(1).unwrap();
-        second_line.top_line = LineStyle::default();
-        second_line.bottom_line = LineStyle::default();
-        second_line.inner = LineStyle {
-            intersection: Some(' '),
-            left_intersection: None,
-            right_intersection: None,
-            main: None,
-        };
-
+        grid.set(Entity::Global, Settings::new().text("asd"));
+        grid.set(Entity::Column(0), Settings::new().text("zxc"));
+        grid.set(Entity::Row(0), Settings::new().text("qwe"));
+        grid.set(Entity::Cell(1, 1), Settings::new().text("iop"));
         let str = grid.to_string();
         assert_eq!(
             str,
-            "asd asd\n\
-             asd asd\n"
+            "+---+---+\n\
+             |qwe|qwe|\n\
+             +---+---+\n\
+             |zxc|iop|\n\
+             +---+---+\n"
         )
     }
 
     #[test]
-    fn grid_2x2_custom_vertical_border_test() {
+    fn grid_2x2_alignment_test() {
         let mut grid = Grid::new(2, 2);
-        *grid.cell(0, 0) = "asd".to_string();
-        *grid.cell(0, 1) = "asd".to_string();
-        *grid.cell(1, 0) = "asd".to_string();
-        *grid.cell(1, 1) = "asd".to_string();
-
-        // todo: public interface
-        let mut first_line = grid.rows_styles.get_mut(0).unwrap();
-        first_line.top_line = LineStyle::default();
-        first_line.bottom_line = LineStyle::default();
-        first_line.inner = LineStyle {
-            intersection: Some('@'),
-            left_intersection: Some('$'),
-            right_intersection: Some('%'),
-            main: None,
-        };
-        drop(first_line);
-
-        let mut second_line = grid.rows_styles.get_mut(1).unwrap();
-        second_line.top_line = LineStyle::default();
-        second_line.bottom_line = LineStyle::default();
-        second_line.inner = LineStyle {
-            intersection: Some('^'),
-            left_intersection: Some('#'),
-            right_intersection: Some('!'),
-            main: None,
-        };
-
+        grid.set(Entity::Global, Settings::new().text("asd    "));
+        grid.set(
+            Entity::Column(0),
+            Settings::new().alignment(Alignment::Left),
+        );
+        grid.set(
+            Entity::Column(1),
+            Settings::new().alignment(Alignment::Right),
+        );
         let str = grid.to_string();
         assert_eq!(
             str,
-            "$asd@asd%\n\
-             #asd^asd!\n"
+            "+-------+-------+\n\
+             |asd    |    asd|\n\
+             +-------+-------+\n\
+             |asd    |    asd|\n\
+             +-------+-------+\n"
+        )
+    }
+
+    #[test]
+    fn grid_2x2_ident_test() {
+        let mut grid = Grid::new(2, 2);
+        grid.set(
+            Entity::Global,
+            Settings::new().text("asd").ident(1, 1, 1, 1),
+        );
+        grid.set(Entity::Column(0), Settings::new());
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "+---+-----+\n\
+             |asd|     |\n\
+             |   | asd |\n\
+             |   |     |\n\
+             +---+-----+\n\
+             |asd|     |\n\
+             |   | asd |\n\
+             |   |     |\n\
+             +---+-----+\n"
         )
     }
 
     #[test]
     fn grid_2x2_vertical_resize_test() {
         let mut grid = Grid::new(2, 2);
-        assert_eq!(string_width("asd  "), 5);
-        *grid.cell(0, 0) = "asd".to_string();
-        *grid.cell(0, 1) = "asd".to_string();
-        *grid.cell(1, 0) = "asd".to_string();
-        *grid.cell(1, 1) = "asd     ".to_string();
-        // grid.with_column(0, Ident::Left(20));
-        // grid.with_cell((1 ,1), Border('-'));
+        grid.set(Entity::Global, Settings::new().text("asd"));
+        grid.set(Entity::Cell(1, 1), Settings::new().text("asd     "));
         let str = grid.to_string();
         assert_eq!(
             str,
@@ -477,14 +604,48 @@ mod tests {
     }
 
     #[test]
+    fn grid_2x2_without_frame_test() {
+        let mut grid = Grid::new(2, 2);
+        grid.set(Entity::Global, Settings::new().text("asd"));
+        grid.get_border_mut(0).empty().inner(Some(' '), None, None);
+        grid.get_border_mut(1).empty().inner(Some(' '), None, None);
+
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "asd asd\n\
+             asd asd\n"
+        )
+    }
+
+    #[test]
+    fn grid_2x2_custom_border_test() {
+        let mut grid = Grid::new(2, 2);
+        grid.set(Entity::Global, Settings::new().text("asd"));
+
+        grid.get_border_mut(0)
+            .top('*', ' ', ' ', ' ')
+            .inner(Some('@'), Some('$'), Some('%'));
+        grid.get_border_mut(1)
+            .top('*', ' ', ' ', ' ')
+            .bottom('*', ' ', ' ', ' ')
+            .inner(Some('^'), Some('#'), Some('!'));
+
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            " *** *** \n\
+             $asd@asd%\n\
+             +---+---+\n\
+             #asd^asd!\n\
+             \u{0020}*** *** \n"
+        )
+    }
+
+    #[test]
     fn grid_3x2_test() {
         let mut grid = Grid::new(3, 2);
-        *grid.cell(0, 0) = "asd".to_string();
-        *grid.cell(0, 1) = "asd".to_string();
-        *grid.cell(1, 0) = "asd".to_string();
-        *grid.cell(1, 1) = "asd".to_string();
-        *grid.cell(2, 0) = "asd".to_string();
-        *grid.cell(2, 1) = "asd".to_string();
+        grid.set(Entity::Global, Settings::new().text("asd"));
         let str = grid.to_string();
         assert_eq!(
             str,
