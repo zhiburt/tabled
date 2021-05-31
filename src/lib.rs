@@ -86,6 +86,9 @@
 //! #                 +-----+\n";
 //! # assert_eq!(expected, table);
 //! ```
+
+use papergrid::{Alignment, Entity, Grid, Settings};
+
 pub use tabled_derive::Tabled;
 
 pub trait Tabled {
@@ -97,16 +100,26 @@ pub fn table<T: Tabled>(iter: impl IntoIterator<Item = T>) -> String {
     let headers = T::headers();
     let obj: Vec<Vec<String>> = iter.into_iter().map(|t| t.fields()).collect();
 
-    let mut grid = papergrid::Grid::new(obj.len() + 1, headers.len());
+    let mut grid = Grid::new(obj.len() + 1, headers.len());
     for (i, h) in headers.iter().enumerate() {
-        grid.cell(0, i).set_content(h).set_horizontal_ident(1);
+        grid.set(
+            Entity::Cell(0, i),
+            Settings::new()
+                .text(h)
+                .ident(1, 1, 0, 0)
+                .alignment(Alignment::Center),
+        );
     }
 
     for (i, fields) in obj.iter().enumerate() {
         for (j, field) in fields.iter().enumerate() {
-            grid.cell(i + 1, j)
-                .set_content(field)
-                .set_horizontal_ident(1);
+            grid.set(
+                Entity::Cell(i + 1, j),
+                Settings::new()
+                    .text(field)
+                    .ident(1, 1, 0, 0)
+                    .alignment(Alignment::Center),
+            );
         }
     }
 
