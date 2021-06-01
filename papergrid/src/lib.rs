@@ -245,6 +245,8 @@ impl Grid {
             self.styles.get(&Entity::Global),
         ];
 
+        println!("{:?}", v);
+
         for styles in &v {
             if let Some(style) = styles {
                 return (*style).clone();
@@ -628,9 +630,19 @@ fn split_text(text: &str, width: usize, height: usize) -> Vec<Cow<str>> {
     lines
 }
 
+#[cfg(not(feature = "color"))]
 fn string_width(text: &str) -> usize {
     text.lines()
         .map(|line| line.chars().filter(|c| !c.is_control()).count())
+        .max()
+        .unwrap_or_else(|| 0)
+}
+
+#[cfg(feature = "color")]
+fn string_width(text: &str) -> usize {
+    use colored::Colorize;
+    text.lines()
+        .map(|line| line.clear().chars().filter(|c| !c.is_control()).count())
         .max()
         .unwrap_or_else(|| 0)
 }
@@ -715,7 +727,7 @@ mod tests {
             Entity::Global,
             Settings::new().text("asd").ident(1, 1, 1, 1),
         );
-        grid.set(Entity::Column(0), Settings::new());
+        grid.set(Entity::Column(0), Settings::new().ident(0, 0, 0, 0));
         let str = grid.to_string();
         assert_eq!(
             str,
@@ -801,5 +813,13 @@ mod tests {
              |asd|asd|\n\
              +---+---+\n"
         )
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn colored_string_width_test() {
+        use colored::Colorize;
+        assert_eq!(string_width(&"hello world".red()), 11);
+        assert_eq!(string_width(&"hello\nworld".blue()), 5);
     }
 }

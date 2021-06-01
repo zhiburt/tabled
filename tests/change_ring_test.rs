@@ -10,7 +10,6 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use colored::Colorize;
 use papergrid::Alignment;
 use tabled::{
     table, AlignmentObject, ChangeRing, Column, Full, Head, HorizontalAlignment, Row, Style, Tabled,
@@ -178,4 +177,55 @@ fn formatting_column_test() {
     );
 
     assert_eq!(table, expected);
+}
+
+#[cfg(feature = "color")]
+mod color {
+
+    use colored::Colorize;
+
+    #[test]
+    fn color_column_test() {
+        let data = vec![
+            Linux {
+                id: 0,
+                destribution: "Fedora",
+                link: "https://getfedora.org/",
+            },
+            Linux {
+                id: 2,
+                destribution: "OpenSUSE",
+                link: "https://www.opensuse.org/",
+            },
+            Linux {
+                id: 3,
+                destribution: "Endeavouros",
+                link: "https://endeavouros.com/",
+            },
+        ];
+
+        let expected = concat!(
+            " \u{1b}[31mid\u{1b}[0m | \u{1b}[31mdestribution\u{1b}[0m |          \u{1b}[31mlink\u{1b}[0m           \n",
+            "-----------+---------------------+----------------------------------\n",
+            " \u{1b}[34m0\u{1b}[0m |   \u{1b}[34mFedora\u{1b}[0m   | \u{1b}[34mhttps://getfedora.org/\u{1b}[0m  \n",
+            " \u{1b}[31m2\u{1b}[0m |  \u{1b}[31mOpenSUSE\u{1b}[0m  | \u{1b}[31mhttps://www.opensuse.org/\u{1b}[0m \n",
+            " \u{1b}[34m3\u{1b}[0m | \u{1b}[34mEndeavouros\u{1b}[0m | \u{1b}[34mhttps://endeavouros.com/\u{1b}[0m \n",
+        );
+
+        let table = table!(
+            &data,
+            Style::Psql,
+            ChangeRing(
+                Column(..),
+                vec![
+                    Box::new(|s| { s.red().to_string() }),
+                    Box::new(|s| { s.blue().to_string() }),
+                ]
+            ),
+        );
+
+        println!("{}", table);
+
+        assert_eq!(table, expected);
+    }
 }
