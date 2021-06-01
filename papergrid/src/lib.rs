@@ -760,22 +760,6 @@ mod tests {
     }
 
     #[test]
-    fn grid_2x2_row_span_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set(Entity::Global, Settings::new().text("asd"));
-        grid.set(Entity::Cell(0, 0), Settings::new().text("asd").row_span(1));
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "+------------+\n\
-             |    asd     |\n\
-             +------------+\n\
-             |asd|asd     |\n\
-             +---+--------+\n"
-        )
-    }
-
-    #[test]
     fn grid_2x2_custom_border_test() {
         let mut grid = Grid::new(2, 2);
         grid.set(Entity::Global, Settings::new().text("asd"));
