@@ -1,6 +1,6 @@
 [package]
 name = "papergrid"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Papergrid is a library which provide an paper like table printing"
@@ -9,9 +9,12 @@ license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+color = ["console"]
+
 [dependencies]
 textwrap = "0.13.4"
-colored = { version = "2.0.0", optional = true }
+console = { version = "0.14.1", optional = true }
 
-[features]
-color = ["colored"]
+[dev-dependencies]
+colored = "2.0.0"

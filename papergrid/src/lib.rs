@@ -245,8 +245,6 @@ impl Grid {
             self.styles.get(&Entity::Global),
         ];
 
-        println!("{:?}", v);
-
         for styles in &v {
             if let Some(style) = styles {
                 return (*style).clone();
@@ -255,6 +253,7 @@ impl Grid {
 
         unreachable!("there's a global settings guaranted in the map")
     }
+
     fn default_border() -> Border {
         Border {
             inner: LineStyle {
@@ -640,9 +639,9 @@ fn string_width(text: &str) -> usize {
 
 #[cfg(feature = "color")]
 fn string_width(text: &str) -> usize {
-    use colored::Colorize;
-    text.lines()
-        .map(|line| line.clear().chars().filter(|c| !c.is_control()).count())
+    console::strip_ansi_codes(text)
+        .lines()
+        .map(|line| line.chars().filter(|c| !c.is_control()).count())
         .max()
         .unwrap_or_else(|| 0)
 }
@@ -819,7 +818,8 @@ mod tests {
     #[test]
     fn colored_string_width_test() {
         use colored::Colorize;
-        assert_eq!(string_width(&"hello world".red()), 11);
-        assert_eq!(string_width(&"hello\nworld".blue()), 5);
+        assert_eq!(string_width(&"hello world".red().to_string()), 11);
+        assert_eq!(string_width(&"hello\nworld".blue().to_string()), 5);
+        assert_eq!(string_width("\u{1b}[34m0\u{1b}[0m"), 1);
     }
 }
