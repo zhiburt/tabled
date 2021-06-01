@@ -29,6 +29,49 @@ mod structure {
     }
 
     #[test]
+    fn rename_structure_field() {
+        #[derive(Tabled)]
+        struct St {
+            #[header(name = "field 1")]
+            f1: u8,
+            #[header("field 2")]
+            f2: &'static str,
+        }
+
+        let st = St { f1: 0, f2: "v2" };
+        assert_eq!(vec!["0".to_owned(), "v2".to_owned()], st.fields());
+        assert_eq!(
+            vec!["field 1".to_owned(), "field 2".to_owned()],
+            St::headers()
+        );
+    }
+
+    #[test]
+    fn rename_enum_variant() {
+        #[allow(dead_code)]
+        #[derive(Tabled)]
+        enum E {
+            #[header("Variant 1")]
+            A {
+                a: u8,
+                b: i32,
+            },
+            #[header(name = "Variant 2")]
+            B(String),
+            K,
+        }
+
+        assert_eq!(
+            vec![
+                "Variant 1".to_owned(),
+                "Variant 2".to_owned(),
+                "K".to_owned()
+            ],
+            E::headers()
+        );
+    }
+
+    #[test]
     fn empty() {
         #[derive(Tabled)]
         struct St {}

@@ -14,9 +14,12 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::*;
-use syn::{parse_macro_input, DeriveInput};
+use syn::{
+    parse_macro_input, punctuated::Punctuated, token::Comma, Attribute, DeriveInput, Field, Lit,
+    Meta, NestedMeta,
+};
 
-#[proc_macro_derive(Tabled)]
+#[proc_macro_derive(Tabled, attributes(header))]
 pub fn tabled(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
@@ -54,11 +57,22 @@ fn get_headers(d: &syn::Data) -> Vec<String> {
 }
 
 fn get_st_headers(st: &syn::DataStruct) -> Vec<String> {
-    st.fields
-        .iter()
-        .map(|f| f.ident.as_ref())
+    get_fields_headers(st.fields.iter())
+}
+
+fn get_fields_headers<'a>(fields: impl Iterator<Item = &'a Field>) -> Vec<String> {
+    fields
         .enumerate()
-        .map(|(i, f)| f.map_or_else(|| format!("{}", i), |f| f.to_string()))
+        .map(|(i, f)| {
+            let override_name = find_name_attribute(&f.attrs, "header", "name");
+            match override_name {
+                Some(name) => name,
+                None => f
+                    .ident
+                    .as_ref()
+                    .map_or_else(|| format!("{}", i), |f| f.to_string()),
+            }
+        })
         .collect()
 }
 
@@ -66,8 +80,14 @@ fn get_enum_headers(e: &syn::DataEnum) -> Vec<String> {
     e.variants
         .iter()
         .map(|v| {
-            let variant = v.ident.to_string();
-            vec![format!("{}", variant)]
+            let override_name = find_name_attribute(&v.attrs, "header", "name");
+            match override_name {
+                Some(name) => vec![name],
+                None => {
+                    let variant = v.ident.to_string();
+                    vec![format!("{}", variant)]
+                }
+            }
         })
         .collect::<Vec<Vec<_>>>()
         .concat()
@@ -168,4 +188,54 @@ fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
             },)*
         }
     }
+}
+
+fn parse_name_attribute(attr: &Attribute, method: &str, name: &str) -> Option<String> {
+    if attr.path.is_ident(method) {
+        let meta = &attr.parse_meta();
+        match meta {
+            Ok(Meta::List(meta_list)) => {
+                if meta_list.path.is_ident(method) {
+                    for nested_meta in &meta_list.nested {
+                        match nested_meta {
+                            NestedMeta::Lit(Lit::Str(value)) => return Some(value.value()),
+                            NestedMeta::Lit(Lit::ByteStr(value)) => return Some(
+                                std::str::from_utf8(&value.value())
+                                    .expect(&format!("Expected a valid UTF-8 string for a macro {macro} field {name}", macro=method, name=name))
+                                    .to_owned(),
+                            ),
+                            NestedMeta::Meta(Meta::NameValue(value)) => {
+                                if value.path.is_ident(name) {
+                                    match &value.lit {
+                                        Lit::Str(value) => return Some(value.value()),
+                                        Lit::ByteStr(value) => return Some(
+                                            std::str::from_utf8(&value.value())
+                                                .expect(&format!("Expected a valid UTF-8 string for a macro {macro} field {name}", macro=method, name=name))
+                                                .to_owned(),
+                                        ),
+                                        _ => panic!("Parameter {name} for macro {macro} should be String", name=name, macro=method)
+
+                                    }
+                                }
+                            }
+                            _ => {
+                                
+                            }
+                        }
+                    }
+                }
+
+                None
+            }
+            _ => None,
+        }
+    } else {
+        None
+    }
+}
+
+fn find_name_attribute(attributes: &[Attribute], method: &str, name: &str) -> Option<String> {
+    attributes
+        .iter()
+        .find_map(|attr| parse_name_attribute(attr, method, name))
 }

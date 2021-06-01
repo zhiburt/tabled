@@ -16,5 +16,5 @@ coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-tabled_derive = "~0.1.2"
+tabled_derive = "~0.1.3"
 papergrid = "~0.1.3"
