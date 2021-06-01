@@ -487,7 +487,6 @@ pub enum Entity {
 struct Style {
     ident: Ident,
     alignment: Alignment,
-    row_span: usize,
 }
 
 impl Default for Style {
@@ -500,7 +499,6 @@ impl Default for Style {
                 right: 0,
                 top: 0,
             },
-            row_span: 0,
         }
     }
 }
