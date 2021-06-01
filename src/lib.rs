@@ -96,42 +96,49 @@ pub trait Tabled {
     fn headers() -> Vec<String>;
 }
 
-pub fn print_table<T: Tabled>(iter: impl IntoIterator<Item = T>, style: Style) -> String {
+pub trait TableOption {
+    fn change(&self, grid: &mut Grid);
+}
+
+#[macro_export]
+macro_rules! table {
+    ( $data:expr ) => {
+        tabled::table!($data, tabled::Style::Default)
+    };
+    ( $data:expr, $($opt:expr),+ $(,)? ) => {{
+        use tabled::TableOption;
+        let mut grid = tabled::build_grid($data);
+        $(
+            $opt.change(&mut grid);
+        )+
+
+        grid.to_string()
+    }};
+}
+
+pub fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
     let headers = T::headers();
     let obj: Vec<Vec<String>> = iter.into_iter().map(|t| t.fields()).collect();
 
-    let mut grid = create_grid(obj.len() + 1, headers.len(), style);
+    let mut grid = Grid::new(obj.len() + 1, headers.len());
+
+    // it's crusial to set a global setting rather than a setting for an each cell
+    // as it will be hard to override that since how Grid::style method works
+    grid.set(
+        Entity::Global,
+        Settings::new()
+            .ident(1, 1, 0, 0)
+            .alignment(Alignment::Center),
+    );
+
     for (i, h) in headers.iter().enumerate() {
-        grid.set(
-            Entity::Cell(0, i),
-            Settings::new()
-                .text(h)
-                .ident(1, 1, 0, 0)
-                .alignment(Alignment::Center),
-        );
+        grid.set(Entity::Cell(0, i), Settings::new().text(h));
     }
 
     for (i, fields) in obj.iter().enumerate() {
         for (j, field) in fields.iter().enumerate() {
-            grid.set(
-                Entity::Cell(i + 1, j),
-                Settings::new()
-                    .text(field)
-                    .ident(1, 1, 0, 0)
-                    .alignment(Alignment::Center),
-            );
+            grid.set(Entity::Cell(i + 1, j), Settings::new().text(field));
         }
-    }
-
-    grid.to_string()
-}
-
-fn create_grid(count_rows: usize, count_columns: usize, style: Style) -> Grid {
-    let mut grid = Grid::new(count_rows, count_columns);
-
-    for row in 0..count_rows {
-        let border = grid.get_border_mut(row);
-        style.make(border, row, count_rows);
     }
 
     grid
@@ -226,14 +233,71 @@ impl Style {
     }
 }
 
-#[macro_export]
-macro_rules! table {
-    ( $data:expr ) => {
-        tabled::print_table($data, tabled::Style::Default)
-    };
-    ( $data:expr, $style:expr ) => {
-        tabled::print_table($data, $style)
-    };
+#[derive(Debug)]
+pub struct HorizontalAlignment {
+    alignment: Alignment,
+    object: AlignmentObject,
+}
+
+impl HorizontalAlignment {
+    pub fn new(alignment: Alignment, object: AlignmentObject) -> Self {
+        Self { alignment, object }
+    }
+}
+
+#[derive(Debug)]
+pub enum AlignmentObject {
+    Header,
+    Data,
+    Full,
+}
+
+impl TableOption for HorizontalAlignment {
+    fn change(&self, grid: &mut Grid) {
+        match self.object {
+            AlignmentObject::Data => {
+                for row in 1..grid.count_rows() {
+                    grid.set(
+                        Entity::Row(row),
+                        Settings::new().alignment(self.alignment.clone()),
+                    )
+                }
+            }
+            AlignmentObject::Header => grid.set(
+                Entity::Row(0),
+                Settings::new().alignment(self.alignment.clone()),
+            ),
+            AlignmentObject::Full => grid.set(
+                Entity::Global,
+                Settings::new().alignment(self.alignment.clone()),
+            ),
+        }
+    }
+}
+
+impl TableOption for Style {
+    fn change(&self, grid: &mut Grid) {
+        let count_rows = grid.count_rows();
+        for row in 0..count_rows {
+            let border = grid.get_border_mut(row);
+            self.make(border, row, count_rows);
+        }
+    }
+}
+
+impl TableOption for () {
+    fn change(&self, _: &mut Grid) {}
+}
+
+impl<E> TableOption for Vec<E>
+where
+    E: TableOption,
+{
+    fn change(&self, grid: &mut Grid) {
+        for e in self {
+            e.change(grid);
+        }
+    }
 }
 
 macro_rules! tuple_table {
