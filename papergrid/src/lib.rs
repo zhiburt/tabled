@@ -126,6 +126,11 @@ impl Grid {
         self.styles.insert(entity, s);
     }
 
+    /// get_cell_content returns content without any style changes
+    pub fn get_cell_content(&mut self, row: usize, column: usize) -> &str {
+        self.cells[row][column].as_str()
+    }
+
     /// Count_rows returns an amount of rows on the grid
     pub fn count_rows(&self) -> usize {
         self.size.0
