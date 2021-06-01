@@ -108,6 +108,13 @@ impl Grid {
             self.set_text(&entity, text);
         }
 
+        if settings.ident.is_none() && settings.alignment.is_none() {
+            return;
+        }
+
+        // todo: might it's worth to be able to modify only ident/alignemt of a cell instead of the whole style
+        // an example when we have a global setting with ident and we only want to modify an alignment of a partical cell
+        // but Style::default() will override global ident...
         let mut s = Style::default();
         if let Some(ident) = settings.ident {
             s.ident = ident;
@@ -241,7 +248,6 @@ impl Grid {
 
         unreachable!("there's a global settings guaranted in the map")
     }
-
     fn default_border() -> Border {
         Border {
             inner: LineStyle {
@@ -352,7 +358,7 @@ impl Settings {
         self
     }
 
-    /// Ident method sets alignment for a cell
+    /// Alignment method sets alignment for a cell
     pub fn alignment(mut self, alignment: Alignment) -> Self {
         self.alignment = Some(alignment);
         self
@@ -481,6 +487,7 @@ pub enum Entity {
 struct Style {
     ident: Ident,
     alignment: Alignment,
+    row_span: usize,
 }
 
 impl Default for Style {
@@ -493,6 +500,7 @@ impl Default for Style {
                 right: 0,
                 top: 0,
             },
+            row_span: 0,
         }
     }
 }
@@ -527,7 +535,6 @@ impl Alignment {
 
 impl std::fmt::Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // fixme: calculate it correctly
         let columns_width = self.columns_width();
         let rows = self.build_cells();
 
@@ -749,6 +756,22 @@ mod tests {
             str,
             "asd asd\n\
              asd asd\n"
+        )
+    }
+
+    #[test]
+    fn grid_2x2_row_span_test() {
+        let mut grid = Grid::new(2, 2);
+        grid.set(Entity::Global, Settings::new().text("asd"));
+        grid.set(Entity::Cell(0, 0), Settings::new().text("asd").row_span(1));
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "+------------+\n\
+             |    asd     |\n\
+             +------------+\n\
+             |asd|asd     |\n\
+             +---+--------+\n"
         )
     }
 
