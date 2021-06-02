@@ -39,6 +39,6 @@ jobs:
 
 script:
   - cargo build --all
-  - cargo test -p papergrid
-  - cargo test --all
+  - cargo test --all-features --workspace
+  - cd papergrid && cargo test --all-features 
 
