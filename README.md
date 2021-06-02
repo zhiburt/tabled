@@ -11,22 +11,22 @@ An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
 
 # Agenda
 
-* [Usage](Usage)
-    * [Derive information](Derive-information)
-* [Style](Style)
-    * [Styles](Styles)
-        * [Default](Default)
-        * [Psql](Psql)
-        * [GithubMarkdown](GithubMarkdown)
-        * [Pseudo](Pseudo)
-        * [PseudoClean](PseudoClean)
-        * [Noborder](Noborder)
-    * [Alignment](Alignment)
-    * [Change function](Change-function)
-    * [Color](Color)
-* [Features](Features)
-    * [Column name override](Column-name-override)
-    * [Tuple combination](Tuple-combination)
+* [Usage](#Usage)
+    * [Derive information](#Derive-information)
+* [Style](#Style)
+    * [Styles](#Styles)
+        * [Default](#Default)
+        * [Psql](#Psql)
+        * [GithubMarkdown](#GithubMarkdown)
+        * [Pseudo](#Pseudo)
+        * [PseudoClean](#PseudoClean)
+        * [Noborder](#Noborder)
+    * [Alignment](#Alignment)
+    * [Change function](#Change-function)
+    * [Color](#Color)
+* [Features](#Features)
+    * [Column name override](#Column-name-override)
+    * [Tuple combination](#Tuple-combination)
 
 # Usage
 
@@ -104,7 +104,7 @@ let table = table!(&some_numbers);
 
 ## Styles
 
-A list of ready to use styles. A shocases for the data in the [Usage](Usage) section.
+A list of ready to use styles. A shocases for the data in the [Usage](#Usage) section.
 Styles can be chosen by passing a `Style` argument like this to `table!` macro.
 
 ```rust
