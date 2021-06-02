@@ -12,7 +12,8 @@
 
 use papergrid::Alignment;
 use tabled::{
-    table, AlignmentObject, ChangeRing, Column, Full, Head, HorizontalAlignment, Row, Style, Tabled,
+    multiline, table, AlignmentObject, ChangeRing, Column, Full, Head, HorizontalAlignment, Row,
+    Style, Tabled,
 };
 
 #[derive(Tabled)]
@@ -179,9 +180,60 @@ fn formatting_column_test() {
     assert_eq!(table, expected);
 }
 
+#[test]
+fn formatting_multiline_test() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 1,
+            destribution: "Open\nSUSE",
+            link: "https\n://\nwww.opensuse.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Red\nHat\nEnterprise",
+            link: "https://redhat.com/",
+        },
+    ];
+
+    let expected = concat!(
+        " (x) id | (x) destribution |           (x) link           \n",
+        "--------+------------------+------------------------------\n",
+        " (x) 0  |    (x) Fedora    |  (x) https://getfedora.org/  \n",
+        " (x) 1  |     (x) Open     |          (x) https           \n",
+        "        |     (x) SUSE     |           (x) ://            \n",
+        "        |                  |    (x) www.opensuse.org/     \n",
+        " (x) 2  | (x) Endeavouros  | (x) https://endeavouros.com/ \n",
+        " (x) 3  |     (x) Red      |   (x) https://redhat.com/    \n",
+        "        |     (x) Hat      |                              \n",
+        "        |  (x) Enterprise  |                              \n",
+    );
+
+    let table = table!(
+        &data,
+        Style::Psql,
+        ChangeRing(
+            Full,
+            vec![multiline(Box::new(|s| { format!("(x) {}", s) })),]
+        ),
+    );
+
+    assert_eq!(table, expected);
+}
+
 #[cfg(feature = "color")]
 mod color {
 
+    use super::*;
     use colored::Colorize;
 
     #[test]
@@ -205,11 +257,11 @@ mod color {
         ];
 
         let expected = concat!(
-            " \u{1b}[31mid\u{1b}[0m | \u{1b}[31mdestribution\u{1b}[0m |          \u{1b}[31mlink\u{1b}[0m           \n",
-            "-----------+---------------------+----------------------------------\n",
-            " \u{1b}[34m0\u{1b}[0m |   \u{1b}[34mFedora\u{1b}[0m   | \u{1b}[34mhttps://getfedora.org/\u{1b}[0m  \n",
-            " \u{1b}[31m2\u{1b}[0m |  \u{1b}[31mOpenSUSE\u{1b}[0m  | \u{1b}[31mhttps://www.opensuse.org/\u{1b}[0m \n",
-            " \u{1b}[34m3\u{1b}[0m | \u{1b}[34mEndeavouros\u{1b}[0m | \u{1b}[34mhttps://endeavouros.com/\u{1b}[0m \n",
+            " \u{1b}[31mid\u{1b}[0m | \u{1b}[31mdestribution\u{1b}[0m |           \u{1b}[31mlink\u{1b}[0m            \n",
+            "----+--------------+---------------------------\n",
+            " \u{1b}[34m0\u{1b}[0m  |    \u{1b}[34mFedora\u{1b}[0m    |  \u{1b}[34mhttps://getfedora.org/\u{1b}[0m   \n",
+            " \u{1b}[31m2\u{1b}[0m  |   \u{1b}[31mOpenSUSE\u{1b}[0m   | \u{1b}[31mhttps://www.opensuse.org/\u{1b}[0m \n",
+            " \u{1b}[34m3\u{1b}[0m  | \u{1b}[34mEndeavouros\u{1b}[0m  | \u{1b}[34mhttps://endeavouros.com/\u{1b}[0m  \n",
         );
 
         let table = table!(
@@ -220,6 +272,60 @@ mod color {
                 vec![
                     Box::new(|s| { s.red().to_string() }),
                     Box::new(|s| { s.blue().to_string() }),
+                ]
+            ),
+        );
+
+        println!("{}", table);
+
+        assert_eq!(table, expected);
+    }
+
+    #[test]
+    fn color_multiline_test() {
+        let data = vec![
+            Linux {
+                id: 0,
+                destribution: "Fedora",
+                link: "https://getfedora.org/",
+            },
+            Linux {
+                id: 2,
+                destribution: "OpenSUSE",
+                link: "https://www.opensuse.org/",
+            },
+            Linux {
+                id: 3,
+                destribution: "Endeavouros",
+                link: "https://endeavouros.com/",
+            },
+            Linux {
+                id: 4,
+                destribution: "Red\nHat\nEnterprise",
+                link: "https://redhat.com/",
+            },
+        ];
+
+        let expected = concat!(
+            " \u{1b}[31mid\u{1b}[0m | \u{1b}[34mdestribution\u{1b}[0m |           \u{1b}[32mlink\u{1b}[0m            \n",
+            "----+--------------+---------------------------\n",
+            " \u{1b}[31m0\u{1b}[0m  |    \u{1b}[34mFedora\u{1b}[0m    |  \u{1b}[32mhttps://getfedora.org/\u{1b}[0m   \n",
+            " \u{1b}[31m2\u{1b}[0m  |   \u{1b}[34mOpenSUSE\u{1b}[0m   | \u{1b}[32mhttps://www.opensuse.org/\u{1b}[0m \n",
+            " \u{1b}[31m3\u{1b}[0m  | \u{1b}[34mEndeavouros\u{1b}[0m  | \u{1b}[32mhttps://endeavouros.com/\u{1b}[0m  \n",
+            " \u{1b}[31m4\u{1b}[0m  |     \u{1b}[34mRed\u{1b}[0m      |    \u{1b}[32mhttps://redhat.com/\u{1b}[0m    \n",
+            "    |     \u{1b}[34mHat\u{1b}[0m      |                           \n",
+            "    |  \u{1b}[34mEnterprise\u{1b}[0m  |                           \n",
+        );
+
+        let table = table!(
+            &data,
+            Style::Psql,
+            ChangeRing(
+                Row(..),
+                vec![
+                    multiline(Box::new(|s| { s.red().to_string() })),
+                    multiline(Box::new(|s| { s.blue().to_string() })),
+                    multiline(Box::new(|s| { s.green().to_string() })),
                 ]
             ),
         );

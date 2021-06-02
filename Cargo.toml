@@ -16,12 +16,11 @@ coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master
 maintenance = { status = "actively-developed" }
 
 [features]
-color = ["colored"]
+color = ["papergrid/color"]
 
 [dependencies]
 tabled_derive = "~0.1.3"
 papergrid = { path = "./papergrid" }
 
-[dependencies.colored]
-version = "2.0.0"
-optional = true
+[dev-dependencies]
+colored = "2.0.0"
