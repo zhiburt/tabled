@@ -526,11 +526,31 @@ pub enum Alignment {
 }
 
 impl Alignment {
+    #[cfg(not(feature = "color"))]
     fn align(&self, text: &str, length: usize) -> String {
         match self {
             Alignment::Center => format!("{: ^1$}", text, length),
             Alignment::Left => format!("{: <1$}", text, length),
             Alignment::Right => format!("{: >1$}", text, length),
+        }
+    }
+
+    #[cfg(feature = "color")]
+    fn align(&self, text: &str, length: usize) -> String {
+        let mut diff = length - string_width(text);
+        match self {
+            Alignment::Left => format!("{text}{space}", space = " ".repeat(diff), text = text),
+            Alignment::Right => format!("{space}{text}", space = " ".repeat(diff), text = text),
+            Alignment::Center => {
+                let left = diff / 2;
+                let right = diff - left;
+                format!(
+                    "{left}{text}{right}",
+                    left = " ".repeat(left),
+                    right = " ".repeat(right),
+                    text = text,
+                )
+            }
         }
     }
 }
@@ -631,16 +651,24 @@ fn split_text(text: &str, width: usize, height: usize) -> Vec<Cow<str>> {
 
 #[cfg(not(feature = "color"))]
 fn string_width(text: &str) -> usize {
-    text.lines()
-        .map(|line| line.chars().filter(|c| !c.is_control()).count())
-        .max()
-        .unwrap_or_else(|| 0)
+    real_string_width(text)
 }
 
 #[cfg(feature = "color")]
 fn string_width(text: &str) -> usize {
-    console::strip_ansi_codes(text)
+    // console::strip_ansi_codes(text)
+    let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
+    let s = std::str::from_utf8(&b).unwrap();
+    let x = s
         .lines()
+        .map(|line| line.chars().count())
+        .max()
+        .unwrap_or_else(|| 0);
+    x
+}
+
+fn real_string_width(text: &str) -> usize {
+    text.lines()
         .map(|line| line.chars().filter(|c| !c.is_control()).count())
         .max()
         .unwrap_or_else(|| 0)
@@ -821,5 +849,6 @@ mod tests {
         assert_eq!(string_width(&"hello world".red().to_string()), 11);
         assert_eq!(string_width(&"hello\nworld".blue().to_string()), 5);
         assert_eq!(string_width("\u{1b}[34m0\u{1b}[0m"), 1);
+        assert_eq!(string_width(&"0".red().to_string()), 1);
     }
 }
