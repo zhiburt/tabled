@@ -1,9 +1,12 @@
 use std::ops::{Bound, RangeBounds};
 
+/// Object helps to locate a nessesary part of a `Grid`.
 pub trait Object {
+    /// Cells returns a set of cordinates of cells
     fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)>;
 }
 
+/// Head represent a row with column names
 pub struct Head;
 
 impl Object for Head {
@@ -12,6 +15,7 @@ impl Object for Head {
     }
 }
 
+/// Head represent all cells on a `Grid`
 pub struct Full;
 
 impl Object for Full {
@@ -27,6 +31,7 @@ impl Object for Full {
     }
 }
 
+/// Row denotes a set of cells on given rows on a `Grid`
 pub struct Row<R: RangeBounds<usize>>(pub R);
 
 impl<R: RangeBounds<usize>> Object for Row<R> {
@@ -40,6 +45,7 @@ impl<R: RangeBounds<usize>> Object for Row<R> {
     }
 }
 
+/// Column denotes a set of cells on given columns on a `Grid`
 pub struct Column<R: RangeBounds<usize>>(pub R);
 
 impl<R: RangeBounds<usize>> Object for Column<R> {

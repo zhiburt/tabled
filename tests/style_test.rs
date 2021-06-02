@@ -20,6 +20,43 @@ struct Linux {
 }
 
 #[test]
+fn default_style() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "+----+--------------+---------------------------+\n",
+        "| id | destribution |           link            |\n",
+        "+----+--------------+---------------------------+\n",
+        "| 0  |    Fedora    |  https://getfedora.org/   |\n",
+        "+----+--------------+---------------------------+\n",
+        "| 2  |   OpenSUSE   | https://www.opensuse.org/ |\n",
+        "+----+--------------+---------------------------+\n",
+        "| 3  | Endeavouros  | https://endeavouros.com/  |\n",
+        "+----+--------------+---------------------------+\n",
+    );
+
+    let table = table!(&data, tabled::Style::Default);
+
+    assert_eq!(table, expected);
+}
+
+#[test]
 fn psql_style() {
     let data = vec![
         Linux {

@@ -2,12 +2,82 @@ use papergrid::{Border, Grid};
 
 use crate::TableOption;
 
+/// Style is responsible for a look of a table
 pub enum Style {
+    /// Default style looks like the following table
+    ///
+    /// ```text
+    ///     +----+--------------+---------------------------+
+    ///     | id | destribution |           link            |
+    ///     +----+--------------+---------------------------+
+    ///     | 0  |    Fedora    |  https://getfedora.org/   |
+    ///     +----+--------------+---------------------------+
+    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
+    ///     +----+--------------+---------------------------+
+    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
+    ///     +----+--------------+---------------------------+
+    /// ```
+    ///
     Default,
+    /// Psql style looks like the following table
+    ///
+    /// ```text
+    ///      id | destribution |           link            
+    ///     ----+--------------+---------------------------
+    ///      0  |    Fedora    |  https://getfedora.org/   
+    ///      2  |   OpenSUSE   | https://www.opensuse.org/ 
+    ///      3  | Endeavouros  | https://endeavouros.com/  
+    /// ```
+    ///
     Psql,
+    /// GithubMarkdown style looks like the following table
+    ///
+    /// ```text
+    ///     | id | destribution |           link            |
+    ///     |----+--------------+---------------------------|
+    ///     | 0  |    Fedora    |  https://getfedora.org/   |
+    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
+    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
+    /// ```
+    ///
     GithubMarkdown,
+    /// Pseudo style looks like the following table
+    ///
+    /// ```text
+    ///     ┌────┬──────────────┬───────────────────────────┐
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     └────┴──────────────┴───────────────────────────┘
+    /// ```
+    ///
     Pseudo,
+    /// PseudoClean style looks like the following table
+    ///
+    /// ```text
+    ///     ┌────┬──────────────┬───────────────────────────┐
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     └────┴──────────────┴───────────────────────────┘
+    /// ```
+    ///
     PseudoClean,
+    /// NoBorder style looks like the following table
+    ///
+    /// ```text
+    ///      id   destribution             link            
+    ///      0       Fedora       https://getfedora.org/   
+    ///      2      OpenSUSE     https://www.opensuse.org/ 
+    ///      3    Endeavouros    https://endeavouros.com/  
+    /// ```
+    ///
     NoBorder,
 }
 

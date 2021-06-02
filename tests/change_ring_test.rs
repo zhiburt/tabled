@@ -10,11 +10,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::Alignment;
-use tabled::{
-    multiline, table, AlignmentObject, ChangeRing, Column, Full, Head, HorizontalAlignment, Row,
-    Style, Tabled,
-};
+use tabled::{multiline, table, ChangeRing, Column, Full, Head, Row, Style, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
