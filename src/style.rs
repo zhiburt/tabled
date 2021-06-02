@@ -25,7 +25,7 @@ pub enum Style {
     ///      id | destribution |           link            
     ///     ----+--------------+---------------------------
     ///      0  |    Fedora    |  https://getfedora.org/   
-    ///      2  |   OpenSUSE   | https://www.opensuse.org/ 
+    ///      2  |   OpenSUSE   | https://www.opensuse.org/
     ///      3  | Endeavouros  | https://endeavouros.com/  
     /// ```
     ///
@@ -74,7 +74,7 @@ pub enum Style {
     /// ```text
     ///      id   destribution             link            
     ///      0       Fedora       https://getfedora.org/   
-    ///      2      OpenSUSE     https://www.opensuse.org/ 
+    ///      2      OpenSUSE     https://www.opensuse.org/
     ///      3    Endeavouros    https://endeavouros.com/  
     /// ```
     ///
