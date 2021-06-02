@@ -87,11 +87,16 @@
 //! # assert_eq!(expected, table);
 //! ```
 
-use std::ops::{Bound, Range, RangeBounds};
+mod alignment;
+mod formating;
+mod object;
+mod style;
 
-use papergrid::{Alignment, Border, Entity, Grid, Settings};
-
+pub use crate::{alignment::*, formating::*, object::*, style::Style};
+pub use papergrid::Alignment;
 pub use tabled_derive::Tabled;
+
+use papergrid::{Entity, Grid, Settings};
 
 pub trait Tabled {
     fn fields(&self) -> Vec<String>;
@@ -100,6 +105,21 @@ pub trait Tabled {
 
 pub trait TableOption {
     fn change(&self, grid: &mut Grid);
+}
+
+impl TableOption for () {
+    fn change(&self, _: &mut Grid) {}
+}
+
+impl<E> TableOption for Vec<E>
+where
+    E: TableOption,
+{
+    fn change(&self, grid: &mut Grid) {
+        for e in self {
+            e.change(grid);
+        }
+    }
 }
 
 #[macro_export]
@@ -144,259 +164,6 @@ pub fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
     }
 
     grid
-}
-
-pub enum Style {
-    Default,
-    Psql,
-    GithubMarkdown,
-    Pseudo,
-    PseudoClean,
-    NoBorder,
-}
-
-impl Style {
-    fn make(&self, border: &mut Border, row: usize, count_rows: usize) {
-        match self {
-            Style::Default => (),
-            Style::NoBorder => Self::noborder_style(border),
-            Style::GithubMarkdown => Self::github_markdown_style(border, row),
-            Style::Pseudo => Self::pseudo_style(border, row, count_rows),
-            Style::PseudoClean => Self::pseudo_clean_style(border, row, count_rows),
-            Style::Psql => Self::psql_style(border, row),
-        }
-    }
-
-    fn noborder_style(border: &mut Border) {
-        border.empty().inner(Some(' '), None, None);
-    }
-
-    fn psql_style(border: &mut Border, row: usize) {
-        if row == 0 {
-            border
-                .empty()
-                .bottom('-', '+', None, None)
-                .inner(Some('|'), None, None);
-        } else {
-            border.empty().inner(Some('|'), None, None);
-        }
-    }
-
-    fn github_markdown_style(border: &mut Border, row: usize) {
-        if row == 0 {
-            border.empty().bottom('-', '+', Some('|'), Some('|')).inner(
-                Some('|'),
-                Some('|'),
-                Some('|'),
-            );
-        } else {
-            border.empty().inner(Some('|'), Some('|'), Some('|'));
-        }
-    }
-
-    fn pseudo_style(border: &mut Border, row: usize, count_rows: usize) {
-        if row == 0 {
-            border
-                .empty()
-                .top('─', '┬', Some('┌'), Some('┐'))
-                .bottom('─', '┼', Some('├'), Some('┤'))
-                .inner(Some('│'), Some('│'), Some('│'));
-        } else if row == count_rows - 1 {
-            border.empty().bottom('─', '┴', Some('└'), Some('┘')).inner(
-                Some('│'),
-                Some('│'),
-                Some('│'),
-            );
-        } else {
-            border.empty().bottom('─', '┼', Some('├'), Some('┤')).inner(
-                Some('│'),
-                Some('│'),
-                Some('│'),
-            );
-        }
-    }
-
-    fn pseudo_clean_style(border: &mut Border, row: usize, count_rows: usize) {
-        if row == 0 {
-            border
-                .empty()
-                .top('─', '┬', Some('┌'), Some('┐'))
-                .bottom('─', '┼', Some('├'), Some('┤'))
-                .inner(Some('│'), Some('│'), Some('│'));
-        } else if row == count_rows - 1 {
-            border.empty().bottom('─', '┴', Some('└'), Some('┘')).inner(
-                Some('│'),
-                Some('│'),
-                Some('│'),
-            );
-        } else {
-            border.empty().inner(Some('│'), Some('│'), Some('│'));
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct HorizontalAlignment {
-    alignment: Alignment,
-    object: AlignmentObject,
-}
-
-impl HorizontalAlignment {
-    pub fn new(alignment: Alignment, object: AlignmentObject) -> Self {
-        Self { alignment, object }
-    }
-}
-
-#[derive(Debug)]
-pub enum AlignmentObject {
-    Header,
-    Data,
-    Full,
-}
-
-impl TableOption for HorizontalAlignment {
-    fn change(&self, grid: &mut Grid) {
-        match self.object {
-            AlignmentObject::Data => {
-                for row in 1..grid.count_rows() {
-                    grid.set(
-                        Entity::Row(row),
-                        Settings::new().alignment(self.alignment.clone()),
-                    )
-                }
-            }
-            AlignmentObject::Header => grid.set(
-                Entity::Row(0),
-                Settings::new().alignment(self.alignment.clone()),
-            ),
-            AlignmentObject::Full => grid.set(
-                Entity::Global,
-                Settings::new().alignment(self.alignment.clone()),
-            ),
-        }
-    }
-}
-
-impl TableOption for Style {
-    fn change(&self, grid: &mut Grid) {
-        let count_rows = grid.count_rows();
-        for row in 0..count_rows {
-            let border = grid.get_border_mut(row);
-            self.make(border, row, count_rows);
-        }
-    }
-}
-
-impl TableOption for () {
-    fn change(&self, _: &mut Grid) {}
-}
-
-impl<E> TableOption for Vec<E>
-where
-    E: TableOption,
-{
-    fn change(&self, grid: &mut Grid) {
-        for e in self {
-            e.change(grid);
-        }
-    }
-}
-
-pub struct ChangeRing<O: Object>(pub O, pub Vec<Box<dyn Fn(&str) -> String>>);
-
-pub trait Object {
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)>;
-}
-
-pub struct Head;
-
-impl Object for Head {
-    fn cells(&self, _: usize, count_columns: usize) -> Vec<(usize, usize)> {
-        (0..count_columns).map(|column| (0, column)).collect()
-    }
-}
-
-pub struct Full;
-
-impl Object for Full {
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
-        (0..count_rows)
-            .map(|row| {
-                (0..count_columns)
-                    .map(|column| (row, column))
-                    .collect::<Vec<_>>()
-            })
-            .collect::<Vec<_>>()
-            .concat()
-    }
-}
-
-pub struct Row<R: RangeBounds<usize>>(pub R);
-
-impl<R: RangeBounds<usize>> Object for Row<R> {
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
-        let (x, y) = bounds_to_usize(self.0.start_bound(), self.0.end_bound(), count_rows);
-
-        (x..y)
-            .map(|row| (0..count_columns).map(|column| (row, column)).collect())
-            .collect::<Vec<Vec<_>>>()
-            .concat()
-    }
-}
-
-pub struct Column<R: RangeBounds<usize>>(pub R);
-
-impl<R: RangeBounds<usize>> Object for Column<R> {
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
-        let (x, y) = bounds_to_usize(self.0.start_bound(), self.0.end_bound(), count_columns);
-
-        (x..y)
-            .map(|column| (0..count_rows).map(|row| (row, column)).collect())
-            .collect::<Vec<Vec<_>>>()
-            .concat()
-    }
-}
-
-fn bounds_to_usize(
-    left: Bound<&usize>,
-    right: Bound<&usize>,
-    count_elements: usize,
-) -> (usize, usize) {
-    match (left, right) {
-        (Bound::Included(x), Bound::Included(y)) => (*x, y + 1),
-        (Bound::Included(x), Bound::Excluded(y)) => (*x, *y),
-        (Bound::Included(x), Bound::Unbounded) => (*x, count_elements),
-        (Bound::Unbounded, Bound::Unbounded) => (0, count_elements),
-        (Bound::Unbounded, Bound::Included(y)) => (0, y + 1),
-        (Bound::Unbounded, Bound::Excluded(y)) => (0, *y),
-        (Bound::Excluded(_), Bound::Unbounded)
-        | (Bound::Excluded(_), Bound::Included(_))
-        | (Bound::Excluded(_), Bound::Excluded(_)) => {
-            unreachable!("A start bound can't be excluded")
-        }
-    }
-}
-
-impl<O: Object> TableOption for ChangeRing<O> {
-    fn change(&self, grid: &mut Grid) {
-        if self.1.is_empty() {
-            return;
-        }
-
-        let mut ring = self.1.iter().cycle();
-
-        let cells = self.0.cells(grid.count_rows(), grid.count_columns());
-        for (row, column) in cells {
-            let change_function = ring.next().unwrap();
-            let content = grid.get_cell_content(row, column);
-            let content = change_function(content);
-            grid.set(Entity::Cell(row, column), Settings::new().text(content))
-        }
-    }
-}
-
-pub fn multiline(f: Box<dyn Fn(&str) -> String>) -> Box<dyn Fn(&str) -> String> {
-    Box::new(move |s: &str| s.lines().map(|s| f(s)).collect::<Vec<_>>().join("\n"))
 }
 
 macro_rules! tuple_table {
