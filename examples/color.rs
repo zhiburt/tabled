@@ -9,7 +9,9 @@ fn main() {
 #[cfg(feature = "color")]
 fn main() {
     use colored::Colorize;
-    use tabled::{table, Tabled, ChangeRing, Column, Style, Alignment, AlignmentObject, HorizontalAlignment};
+    use tabled::{
+        table, Alignment, AlignmentObject, ChangeRing, Column, HorizontalAlignment, Style, Tabled,
+    };
 
     #[derive(Tabled)]
     struct BSD {
