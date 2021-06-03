@@ -1,9 +1,29 @@
-use std::ops::{Bound, RangeBounds};
+use std::{
+    collections::BTreeSet,
+    iter::FromIterator,
+    ops::{Bound, RangeBounds},
+};
 
 /// Object helps to locate a nessesary part of a `Grid`.
-pub trait Object {
+pub trait Object: Sized {
     /// Cells returns a set of cordinates of cells
     fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)>;
+
+    fn and<O: Object>(self, rhs: O) -> Combination<Self, O> {
+        Combination {
+            lhs: self,
+            rhs: rhs,
+            combinator: combine_cells,
+        }
+    }
+
+    fn not<O: Object>(self, rhs: O) -> Combination<Self, O> {
+        Combination {
+            lhs: self,
+            rhs: rhs,
+            combinator: remove_cells,
+        }
+    }
 }
 
 /// Head represent a row with column names
@@ -66,6 +86,36 @@ impl Object for Cell {
     fn cells(&self, _: usize, _: usize) -> Vec<(usize, usize)> {
         vec![(self.0, self.1)]
     }
+}
+
+type Combinator = fn(Vec<(usize, usize)>, Vec<(usize, usize)>) -> Vec<(usize, usize)>;
+
+pub struct Combination<L, R> {
+    lhs: L,
+    rhs: R,
+    combinator: Combinator,
+}
+
+impl<L, R> Object for Combination<L, R>
+where
+    L: Object,
+    R: Object,
+{
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
+        let l = self.lhs.cells(count_rows, count_columns);
+        let r = self.rhs.cells(count_rows, count_columns);
+        (self.combinator)(l, r)
+    }
+}
+
+fn combine_cells(lhs: Vec<(usize, usize)>, rhs: Vec<(usize, usize)>) -> Vec<(usize, usize)> {
+    BTreeSet::from_iter(lhs.into_iter().chain(rhs.into_iter()))
+        .into_iter()
+        .collect()
+}
+
+fn remove_cells(lhs: Vec<(usize, usize)>, rhs: Vec<(usize, usize)>) -> Vec<(usize, usize)> {
+    lhs.into_iter().filter(|l| !rhs.contains(l)).collect()
 }
 
 fn bounds_to_usize(

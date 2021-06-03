@@ -10,7 +10,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use tabled::{multiline, table, Cell, ChangeRing, Column, Full, Head, Row, Style, Tabled};
+use tabled::{multiline, table, Cell, ChangeRing, Column, Full, Head, Object, Row, Style, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -260,6 +260,87 @@ fn formatting_cell_test() {
         ChangeRing(Cell(0, 0), vec![Box::new(|s| { format!("(x) {}", s) }),]),
         ChangeRing(Cell(0, 1), vec![Box::new(|s| { format!("(x) {}", s) }),]),
         ChangeRing(Cell(0, 2), vec![Box::new(|s| { format!("(x) {}", s) }),]),
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn formatting_and_combination_test() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        " (x) id | (x) destribution |         (x) link          \n",
+        "--------+------------------+---------------------------\n",
+        " (x) 0  |      Fedora      |  https://getfedora.org/   \n",
+        " (x) 2  |     OpenSUSE     | https://www.opensuse.org/ \n",
+        " (x) 3  |   Endeavouros    | https://endeavouros.com/  \n",
+    );
+
+    let table = table!(
+        &data,
+        Style::Psql,
+        ChangeRing(
+            Column(..1).and(Row(..1)),
+            vec![Box::new(|s| { format!("(x) {}", s) }),]
+        ),
+    );
+
+    assert_eq!(table, expected);
+}
+
+
+#[test]
+fn formatting_not_combination_test() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "  id   | (x) destribution |         (x) link          \n",
+        "-------+------------------+---------------------------\n",
+        " (x) 0 |      Fedora      |  https://getfedora.org/   \n",
+        " (x) 2 |     OpenSUSE     | https://www.opensuse.org/ \n",
+        " (x) 3 |   Endeavouros    | https://endeavouros.com/  \n",
+    );
+
+    let table = table!(
+        &data,
+        Style::Psql,
+        ChangeRing(
+            Column(..1).and(Row(..1)).not(Cell(0, 0)),
+            vec![Box::new(|s| { format!("(x) {}", s) }),]
+        ),
     );
 
     assert_eq!(table, expected);
