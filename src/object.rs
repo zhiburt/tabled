@@ -59,6 +59,15 @@ impl<R: RangeBounds<usize>> Object for Column<R> {
     }
 }
 
+/// Cell denotes a particular of cells on a `Grid`
+pub struct Cell(pub usize, pub usize);
+
+impl Object for Cell {
+    fn cells(&self, _: usize, _: usize) -> Vec<(usize, usize)> {
+        vec![(self.0, self.1)]
+    }
+}
+
 fn bounds_to_usize(
     left: Bound<&usize>,
     right: Bound<&usize>,
