@@ -22,11 +22,12 @@ An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
         * [PseudoClean](#PseudoClean)
         * [Noborder](#Noborder)
     * [Alignment](#Alignment)
-    * [Change function](#Change-function)
+    * [Format](#Format)
     * [Color](#Color)
 * [Features](#Features)
     * [Column name override](#Column-name-override)
     * [Tuple combination](#Tuple-combination)
+    * [Object](#Object)
 
 # Usage
 
@@ -188,26 +189,20 @@ You can set a alignemt for a Header, Column, Row or All Cells.
 table!(
     &data,
     Style::Psql,
-    HorizontalAlignment::new(Alignment::Left, AlignmentObject::Full)
+    HorizontalAlignment(Full, Alignment::Left)
 );
 ```
 
-## Change function
+## Format
 
-Change function provides an interface for a smart modification of cells.
-Even though it may look ugly at first.
+Format function provides an interface for a modification of cells.
 
 ```rust
 let table = table!(
     &data,
     Style::Psql,
-    ChangeRing(
-        Column(..),
-        vec![
-            Box::new(|s| { format!("<< {} >>", s) }),
-            Box::new(|s| { format!("!! {} !!", s) }),
-        ]
-    ),
+    Format(Column(..), |s| { format!("<< {} >>", s) }),
+    Format(Row(..1), |s| { format!("Head {}", s) }),
 );
 ```
 
@@ -220,14 +215,9 @@ The folowing change on the script in the usage and it's result
 let table = table!(
     &data,
     Style::Psql,
-    ChangeRing(
-        Column(..),
-        vec![
-            Box::new(|s| { s.red().to_string() }),
-            Box::new(|s| { s.blue().to_string() }),
-            Box::new(|s| { s.green().to_string() }),
-        ]
-    ),
+    Format(Column(..1), |s| { s.red().to_string() }),
+    Format(Column(1..2), |s| { s.blue().to_string() }),
+    Format(Column(2..), |s| { s.green().to_string() }),
 );
 ```
 
@@ -287,4 +277,13 @@ assert_eq!(
         "  Maxim Zhiburt  |          |         |          |    +    \n"
     )
 );
+```
+
+## Object
+
+You can peak your target for settings using `and` and `not` methods for an object.
+
+```rust
+Full.not(Row(..1)) // peak all cells except header
+Head.and(Column(..1)).not(Cell(0, 0)) // peak a header and first column except a (0, 0) cell
 ```
