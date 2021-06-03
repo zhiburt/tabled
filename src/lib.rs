@@ -208,12 +208,12 @@ where
 /// ## A list of settings
 ///
 /// ```rust,no_run
-///     use tabled::{table, Style, HorizontalAlignment, Alignment, AlignmentObject};
+///     use tabled::{table, Style, HorizontalAlignment, Alignment, Full};
 ///     let data = vec!["Hello", "2021"];
 ///     let table = table!(
 ///        &data,
 ///        Style::Psql,
-///        HorizontalAlignment::new(Alignment::Left, AlignmentObject::Full)
+///        HorizontalAlignment(Full, Alignment::Left)
 ///     );
 ///     println!("{}", table);
 /// ```

@@ -1,61 +1,25 @@
 use papergrid::{Alignment, Entity, Grid, Settings};
 
-use crate::TableOption;
+use crate::{Object, TableOption};
 
 /// HorizontalAlignment represent a horizontal alignemt setting for a [`table` macros](./macro.table.html)
 ///
 /// ```rust,no_run
-///   # use tabled::{Style, HorizontalAlignment, AlignmentObject, Alignment, table};
+///   # use tabled::{Style, HorizontalAlignment, Alignment, Row, table};
 ///   # let data: Vec<&'static str> = Vec::new();
-///     let table = table!(
-///         &data,
-///         HorizontalAlignment::new(Alignment::Center, AlignmentObject::Header)
-///     );
+///     let table = table!(&data, HorizontalAlignment(Row(..1), Alignment::Center));
 /// ```
 ///
 #[derive(Debug)]
-pub struct HorizontalAlignment {
-    alignment: Alignment,
-    object: AlignmentObject,
-}
+pub struct HorizontalAlignment<O: Object>(pub O, pub Alignment);
 
-impl HorizontalAlignment {
-    /// New creates a `HorizontalAlignment` object settings of which will be applied to a [`AlignmentObject`](./enum.AlignmentObject.html).
-    pub fn new(alignment: Alignment, object: AlignmentObject) -> Self {
-        Self { alignment, object }
-    }
-}
-
-/// AlignmentObject represent a set of cells/rows which should be aligned.
-#[derive(Debug)]
-pub enum AlignmentObject {
-    /// Header means a first row which contains names of columns
-    Header,
-    /// Data means all cells except the ones in a header
-    Data,
-    /// Full means all cells on a `Grid`
-    Full,
-}
-
-impl TableOption for HorizontalAlignment {
+impl<O: Object> TableOption for HorizontalAlignment<O> {
     fn change(&self, grid: &mut Grid) {
-        match self.object {
-            AlignmentObject::Data => {
-                for row in 1..grid.count_rows() {
-                    grid.set(
-                        Entity::Row(row),
-                        Settings::new().alignment(self.alignment.clone()),
-                    )
-                }
-            }
-            AlignmentObject::Header => grid.set(
-                Entity::Row(0),
-                Settings::new().alignment(self.alignment.clone()),
-            ),
-            AlignmentObject::Full => grid.set(
-                Entity::Global,
-                Settings::new().alignment(self.alignment.clone()),
-            ),
+        for (row, column) in self.0.cells(grid.count_rows(), grid.count_columns()) {
+            grid.set(
+                Entity::Cell(row, column),
+                Settings::new().alignment(self.1.clone()),
+            )
         }
     }
 }

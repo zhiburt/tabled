@@ -10,7 +10,7 @@ fn main() {
 fn main() {
     use colored::Colorize;
     use tabled::{
-        table, Alignment, AlignmentObject, ChangeRing, Column, HorizontalAlignment, Style, Tabled,
+        table, Alignment, ChangeRing, Column, HorizontalAlignment, Style, Tabled, Head, Row
     };
 
     #[derive(Tabled)]
@@ -59,8 +59,8 @@ fn main() {
     let table = table!(
         &data,
         Style::Psql,
-        HorizontalAlignment::new(Alignment::Center, AlignmentObject::Header),
-        HorizontalAlignment::new(Alignment::Left, AlignmentObject::Full),
+        HorizontalAlignment(Head, Alignment::Center),
+        HorizontalAlignment(Row(1..), Alignment::Left),
         ChangeRing(
             Column(..),
             vec![

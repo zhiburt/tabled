@@ -11,7 +11,7 @@
 // copies or substantial portions of the Software.
 
 use papergrid::Alignment;
-use tabled::{table, AlignmentObject, HorizontalAlignment, Style, Tabled};
+use tabled::{table, Full, Head, HorizontalAlignment, Row, Style, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -51,7 +51,7 @@ fn full_alignment() {
     let table = table!(
         &data,
         Style::Psql,
-        HorizontalAlignment::new(Alignment::Left, AlignmentObject::Full)
+        HorizontalAlignment(Full, Alignment::Left)
     );
 
     assert_eq!(table, expected);
@@ -92,8 +92,8 @@ fn head_and_data_alignment() {
     let table = table!(
         &data,
         Style::Default,
-        HorizontalAlignment::new(Alignment::Left, AlignmentObject::Header),
-        HorizontalAlignment::new(Alignment::Right, AlignmentObject::Data),
+        HorizontalAlignment(Head, Alignment::Left),
+        HorizontalAlignment(Row(1..), Alignment::Right),
     );
 
     assert_eq!(table, expected);
@@ -143,7 +143,7 @@ fn full_alignment_multiline() {
     let table = table!(
         &data,
         Style::Psql,
-        HorizontalAlignment::new(Alignment::Left, AlignmentObject::Full)
+        HorizontalAlignment(Full, Alignment::Left),
     );
 
     assert_eq!(table, expected);

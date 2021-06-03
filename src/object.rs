@@ -9,18 +9,20 @@ pub trait Object: Sized {
     /// Cells returns a set of cordinates of cells
     fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)>;
 
+    /// And combines output of self with rhs object
     fn and<O: Object>(self, rhs: O) -> Combination<Self, O> {
         Combination {
             lhs: self,
-            rhs: rhs,
+            rhs,
             combinator: combine_cells,
         }
     }
 
+    /// Not excludes output of rhs from output
     fn not<O: Object>(self, rhs: O) -> Combination<Self, O> {
         Combination {
             lhs: self,
-            rhs: rhs,
+            rhs,
             combinator: remove_cells,
         }
     }
@@ -90,6 +92,7 @@ impl Object for Cell {
 
 type Combinator = fn(Vec<(usize, usize)>, Vec<(usize, usize)>) -> Vec<(usize, usize)>;
 
+/// Combination struct which allows a chain of objects
 pub struct Combination<L, R> {
     lhs: L,
     rhs: R,
