@@ -10,8 +10,8 @@ fn main() {
 fn main() {
     use colored::Colorize;
     use tabled::{
-        table, Alignment, Column, Format, Full, Head, HorizontalAlignment, Object, Row,
-        Style, Tabled,
+        table, Alignment, Column, Format, Full, Head, HorizontalAlignment, Object, Row, Style,
+        Tabled,
     };
 
     #[derive(Tabled)]
