@@ -184,7 +184,7 @@ let table = table!(&data, Style::Psql);
 
 You can set a alignemt for a Header, Column, Row or All Cells.
 
-```
+```rust
 table!(
     &data,
     Style::Psql,
@@ -197,7 +197,7 @@ table!(
 Change function provides an interface for a smart modification of cells.
 Even though it may look ugly at first.
 
-```
+```rust
 let table = table!(
     &data,
     Style::Psql,
@@ -216,7 +216,7 @@ let table = table!(
 The library doesn't bind you in usage of any color library but to be able to work corectly with color input you should provide a `--features color`.
 The folowing change on the script in the usage and it's result
 
-```
+```rust
 let table = table!(
     &data,
     Style::Psql,
@@ -239,7 +239,7 @@ let table = table!(
 
 You can use a `#[header("")]` attribute to override a column name.
 
-```
+```rust
 #[derive(Tabled)]
 struct Person {
     #[header("Name")]
