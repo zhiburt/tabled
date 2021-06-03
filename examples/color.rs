@@ -10,7 +10,8 @@ fn main() {
 fn main() {
     use colored::Colorize;
     use tabled::{
-        table, Alignment, ChangeRing, Column, HorizontalAlignment, Style, Tabled, Head, Row
+        table, Alignment, Column, Format, Full, Head, HorizontalAlignment, Object, Row,
+        Style, Tabled,
     };
 
     #[derive(Tabled)]
@@ -48,26 +49,13 @@ fn main() {
         },
     ];
 
-    let expected = concat!(
-        " \u{1b}[31mid\u{1b}[0m | \u{1b}[31mdestribution\u{1b}[0m |           \u{1b}[31mlink\u{1b}[0m            \n",
-        "----+--------------+---------------------------\n",
-        " \u{1b}[34m0\u{1b}[0m  |    \u{1b}[34mFedora\u{1b}[0m    |  \u{1b}[34mhttps://getfedora.org/\u{1b}[0m   \n",
-        " \u{1b}[31m2\u{1b}[0m  |   \u{1b}[31mOpenSUSE\u{1b}[0m   | \u{1b}[31mhttps://www.opensuse.org/\u{1b}[0m \n",
-        " \u{1b}[34m3\u{1b}[0m  | \u{1b}[34mEndeavouros\u{1b}[0m  | \u{1b}[34mhttps://endeavouros.com/\u{1b}[0m  \n",
-    );
-
     let table = table!(
         &data,
         Style::Psql,
         HorizontalAlignment(Head, Alignment::Center),
         HorizontalAlignment(Row(1..), Alignment::Left),
-        ChangeRing(
-            Column(..),
-            vec![
-                Box::new(|s| { s.red().to_string() }),
-                Box::new(|s| { s.blue().to_string() }),
-            ]
-        ),
+        Format(Full, |s| { s.blue().to_string() }),
+        Format(Column(..1).and(Column(2..)), |s| { s.red().to_string() }),
     );
 
     println!("{}", table);

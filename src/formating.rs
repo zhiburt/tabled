@@ -15,7 +15,7 @@ use crate::{Object, TableOption};
 /// Look at these two examples.
 ///
 /// ```rust
-///    # use tabled::{table, ChangeRing, Row};
+///    # use tabled::{table, Format, Row};
 ///     let data = vec![
 ///         (0, "Grodno", true),    
 ///         (1, "Minsk", true),    
@@ -23,42 +23,29 @@ use crate::{Object, TableOption};
 ///         (3, "Brest", true),    
 ///     ];
 ///
-///     let table = table!(
-///         &data,
-///         ChangeRing(Row(1..), vec![
-///             Box::new(|s| { format!(": {} :", s) }),
-///             Box::new(|s| { format!("++ {} ++", s) }),
-///         ]),
-///     );
+///     let table = table!(&data, Format(Row(1..), |s| { format!(": {} :", s) }));
 ///
-///     assert_eq!(table, "+---------+---------------+------------+\n\
-///                        |   i32   |     &str      |    bool    |\n\
-///                        +---------+---------------+------------+\n\
-///                        |  : 0 :  | ++ Grodno ++  |  : true :  |\n\
-///                        +---------+---------------+------------+\n\
-///                        | ++ 1 ++ |   : Minsk :   | ++ true ++ |\n\
-///                        +---------+---------------+------------+\n\
-///                        |  : 2 :  | ++ Hamburg ++ | : false :  |\n\
-///                        +---------+---------------+------------+\n\
-///                        | ++ 3 ++ |   : Brest :   | ++ true ++ |\n\
-///                        +---------+---------------+------------+\n");
+///     assert_eq!(table, "+-------+-------------+-----------+\n\
+///                        |  i32  |    &str     |   bool    |\n\
+///                        +-------+-------------+-----------+\n\
+///                        | : 0 : | : Grodno :  | : true :  |\n\
+///                        +-------+-------------+-----------+\n\
+///                        | : 1 : |  : Minsk :  | : true :  |\n\
+///                        +-------+-------------+-----------+\n\
+///                        | : 2 : | : Hamburg : | : false : |\n\
+///                        +-------+-------------+-----------+\n\
+///                        | : 3 : |  : Brest :  | : true :  |\n\
+///                        +-------+-------------+-----------+\n");
 /// ```
 ///
-pub struct ChangeRing<O: Object>(pub O, pub Vec<Box<dyn Fn(&str) -> String>>);
+pub struct Format<O: Object, F: Fn(&str) -> String>(pub O, pub F);
 
-impl<O: Object> TableOption for ChangeRing<O> {
+impl<O: Object, F: Fn(&str) -> String> TableOption for Format<O, F> {
     fn change(&self, grid: &mut Grid) {
-        if self.1.is_empty() {
-            return;
-        }
-
-        let mut ring = self.1.iter().cycle();
-
         let cells = self.0.cells(grid.count_rows(), grid.count_columns());
         for (row, column) in cells {
-            let change_function = ring.next().unwrap();
             let content = grid.get_cell_content(row, column);
-            let content = change_function(content);
+            let content = (self.1)(content);
             grid.set(Entity::Cell(row, column), Settings::new().text(content))
         }
     }
@@ -67,17 +54,9 @@ impl<O: Object> TableOption for ChangeRing<O> {
 /// Multiline a helper function for changing multiline content of cell by rows not as a whole.
 ///
 /// ```rust,no_run
-///     use tabled::{table, ChangeRing, multiline, Full};
+///     use tabled::{table, Format, multiline, Full};
 ///     let data: Vec<&'static str> = Vec::new();
-///     table!(
-///         &data,
-///         ChangeRing(
-///             Full,
-///             vec![
-///                 multiline(Box::new(|s| { format!("{}", s) })),
-///             ]
-///         ),
-///     );
-pub fn multiline(f: Box<dyn Fn(&str) -> String>) -> Box<dyn Fn(&str) -> String> {
+///     table!(&data, Format(Full, multiline(|s| { format!("{}", s) })));
+pub fn multiline<F: 'static + Fn(&str) -> String>(f: F) -> Box<dyn Fn(&str) -> String> {
     Box::new(move |s: &str| s.lines().map(|s| f(s)).collect::<Vec<_>>().join("\n"))
 }
