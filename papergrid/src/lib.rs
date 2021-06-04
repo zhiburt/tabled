@@ -661,7 +661,7 @@ fn string_width(text: &str) -> usize {
     let s = std::str::from_utf8(&b).unwrap();
     let x = s
         .lines()
-        .map(|line| line.chars().count())
+        .map(|line| line.len())
         .max()
         .unwrap_or_else(|| 0);
     x
@@ -669,7 +669,7 @@ fn string_width(text: &str) -> usize {
 
 fn real_string_width(text: &str) -> usize {
     text.lines()
-        .map(|line| line.chars().filter(|c| !c.is_control()).count())
+        .map(|line| line.chars().filter(|c| !c.is_control()).collect::<String>().len())
         .max()
         .unwrap_or_else(|| 0)
 }
