@@ -15,7 +15,7 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::*;
 use syn::{
-    parse_macro_input, punctuated::Punctuated, token::Comma, Attribute, DeriveInput, Field, Lit,
+    parse_macro_input, Attribute, DeriveInput, Field, Lit,
     Meta, NestedMeta,
 };
 
@@ -63,6 +63,10 @@ fn get_st_headers(st: &syn::DataStruct) -> Vec<String> {
 fn get_fields_headers<'a>(fields: impl Iterator<Item = &'a Field>) -> Vec<String> {
     fields
         .enumerate()
+        .filter(|(_, f)| {
+            let is_ignored = find_bool_attribute(&f.attrs, "header", "hidden");
+            is_ignored != Some(true)
+        })
         .map(|(i, f)| {
             let override_name = find_name_attribute(&f.attrs, "header", "name");
             match override_name {
@@ -79,6 +83,10 @@ fn get_fields_headers<'a>(fields: impl Iterator<Item = &'a Field>) -> Vec<String
 fn get_enum_headers(e: &syn::DataEnum) -> Vec<String> {
     e.variants
         .iter()
+        .filter(|v| {
+            let is_ignored = find_bool_attribute(&v.attrs, "header", "hidden");
+            is_ignored != Some(true)
+        })
         .map(|v| {
             let override_name = find_name_attribute(&v.attrs, "header", "name");
             match override_name {
@@ -107,6 +115,10 @@ fn get_fields(d: &syn::Data) -> proc_macro2::TokenStream {
 fn get_st_fields(st: &syn::DataStruct) -> Vec<proc_macro2::TokenStream> {
     st.fields
         .iter()
+        .filter(|f| {
+            let is_ignored = find_bool_attribute(&f.attrs, "header", "hidden");
+            is_ignored != Some(true)
+        })
         .map(|f| f.ident.as_ref())
         .enumerate()
         .map(|(i, f)| {
@@ -127,7 +139,11 @@ fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
     let mut variant_field_shift = Vec::new();
     let mut variant_fields_len = Vec::new();
     let mut count_fields = 0;
-    for _ in &e.variants {
+    let variants = e.variants.iter().filter(|v| {
+        let is_ignored = find_bool_attribute(&v.attrs, "header", "hidden");
+        is_ignored != Some(true)
+    });
+    for _ in variants {
         let fields = vec![quote! { "+".to_string() }];
 
         variant_field_shift.push(count_fields);
@@ -139,6 +155,10 @@ fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
     let variants = e
         .variants
         .iter()
+        .filter(|v| {
+            let is_ignored = find_bool_attribute(&v.attrs, "header", "hidden");
+            is_ignored != Some(true)
+        })
         .map(|v| {
             let mut token = proc_macro2::TokenStream::new();
             token.append_all(v.ident.to_token_stream());
@@ -186,6 +206,7 @@ fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
 
                 v
             },)*
+            _ => vec![],
         }
     }
 }
@@ -238,4 +259,42 @@ fn find_name_attribute(attributes: &[Attribute], method: &str, name: &str) -> Op
     attributes
         .iter()
         .find_map(|attr| parse_name_attribute(attr, method, name))
+}
+
+fn parse_bool_attribute(attr: &Attribute, method: &str, name: &str) -> Option<bool> {
+    if attr.path.is_ident(method) {
+        let meta = &attr.parse_meta();
+        match meta {
+            Ok(Meta::List(meta_list)) => {
+                for nested_meta in &meta_list.nested {
+                    match nested_meta {
+                        NestedMeta::Meta(Meta::Path(path)) => if path.is_ident(name) { return Some(true) } else { return None },
+                        NestedMeta::Meta(Meta::NameValue(value)) => {
+                            if value.path.is_ident(name) {
+                                match &value.lit {
+                                    Lit::Bool(value) => return Some(value.value()),
+                                    Lit::Verbatim(literal) => panic!("{:?}", literal),
+                                    _ => panic!("Parameter {name} for macro {macro} should be a bool value", name=name, macro=method)
+                                }
+                            }
+                        }
+                        _ => {
+                            
+                        }
+                    }
+                }
+
+                None
+            }
+            _ => None,
+        }
+    } else {
+        None
+    }
+}
+
+fn find_bool_attribute(attributes: &[Attribute], method: &str, name: &str) -> Option<bool> {
+    attributes
+        .iter()
+        .find_map(|attr| parse_bool_attribute(attr, method, name))
 }

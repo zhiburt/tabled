@@ -46,6 +46,50 @@ mod structure {
         );
     }
 
+    #[allow(dead_code)]
+    #[test]
+    fn structure_hidden_field() {
+        #[derive(Tabled)]
+        struct St {
+            #[header(hidden = true)]
+            f1: u8,
+            #[header("field 2", hidden)]
+            f2: &'static str,
+            f3: &'static str,
+        }
+
+        let st = St {
+            f1: 0,
+            f2: "v2",
+            f3: "123",
+        };
+
+        assert_eq!(vec!["123".to_owned()], st.fields());
+        assert_eq!(vec!["f3".to_owned()], St::headers());
+    }
+
+    #[test]
+    fn enum_hidden_variant() {
+        #[derive(Tabled)]
+        enum E {
+            A {
+                a: u8,
+                b: i32,
+            },
+            #[header(hidden = true)]
+            B(String),
+            K,
+        }
+
+        assert_eq!(vec!["A".to_owned(), "K".to_owned()], E::headers());
+        assert_eq!(
+            vec!["+".to_owned(), "".to_owned()],
+            E::A { a: 1, b: 2 }.fields()
+        );
+        assert_eq!(vec!["".to_owned(), "+".to_owned()], E::K.fields());
+        assert!(E::B(String::new()).fields().is_empty());
+    }
+
     #[test]
     fn rename_enum_variant() {
         #[allow(dead_code)]
