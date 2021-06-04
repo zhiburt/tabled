@@ -134,8 +134,9 @@ mod alignment;
 mod formating;
 mod object;
 mod style;
+mod disable;
 
-pub use crate::{alignment::*, formating::*, object::*, style::Style};
+pub use crate::{alignment::*, formating::*, object::*, style::Style, disable::*};
 pub use papergrid::Alignment;
 pub use tabled_derive::Tabled;
 

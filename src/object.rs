@@ -121,7 +121,7 @@ fn remove_cells(lhs: Vec<(usize, usize)>, rhs: Vec<(usize, usize)>) -> Vec<(usiz
     lhs.into_iter().filter(|l| !rhs.contains(l)).collect()
 }
 
-fn bounds_to_usize(
+pub(crate) fn bounds_to_usize(
     left: Bound<&usize>,
     right: Bound<&usize>,
     count_elements: usize,
