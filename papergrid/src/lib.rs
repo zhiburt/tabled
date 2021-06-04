@@ -173,6 +173,25 @@ impl Grid {
         &mut self.border_styles[row]
     }
 
+    /// Remove_row removes a `row` from a grid.
+    ///
+    /// The row index must be started from 0
+    pub fn remove_row(&mut self, row: usize) {
+        self.cells.remove(row);
+        self.border_styles.remove(row);
+        self.size.0 -= 1;
+    }
+
+    /// Remove_row removes a `column` from a grid.
+    ///
+    /// The column index must be started from 0
+    pub fn remove_column(&mut self, column: usize) {
+        self.size.1 -= 1;
+        for row in 0..self.count_rows() {
+            self.cells[row].remove(column);
+        }
+    }
+
     fn columns_width(&self) -> Vec<usize> {
         (0..self.count_columns())
             .map(|column| self.column_width(column))
@@ -559,6 +578,11 @@ impl Alignment {
 
 impl std::fmt::Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // It may happen when all cells removed via `remove_row`, `remove_column` methods
+        if self.count_rows() == 0 || self.count_columns() == 0 {
+            return Ok(());
+        }
+
         let columns_width = self.columns_width();
         let rows = self.build_cells();
 
@@ -822,6 +846,36 @@ mod tests {
              +---+---+\n\
              #asd^asd!\n\
              \u{0020}*** *** \n"
+        )
+    }
+
+    #[test]
+    fn grid_2x2_remove_row_test() {
+        let mut grid = Grid::new(2, 2);
+        grid.set(Entity::Global, Settings::new().text("asd"));
+        grid.remove_row(0);
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "+---+---+\n\
+             |asd|asd|\n\
+             +---+---+\n"
+        )
+    }
+
+    #[test]
+    fn grid_2x2_remove_column_test() {
+        let mut grid = Grid::new(2, 2);
+        grid.set(Entity::Global, Settings::new().text("asd"));
+        grid.remove_column(0);
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "+---+\n\
+             |asd|\n\
+             +---+\n\
+             |asd|\n\
+             +---+\n"
         )
     }
 
