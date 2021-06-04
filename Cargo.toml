@@ -19,7 +19,7 @@ maintenance = { status = "actively-developed" }
 color = ["papergrid/color"]
 
 [dependencies]
-tabled_derive = "~0.1.3"
+tabled_derive = { path = "./tabled_derive" }
 papergrid = "~0.1.8"
 
 [dev-dependencies]

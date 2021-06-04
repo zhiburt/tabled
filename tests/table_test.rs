@@ -151,6 +151,29 @@ fn table_tuple_with_structure_vec() {
     assert_eq!(expected, table);
 }
 
+#[test]
+fn table_vector_structures_with_hidden_field() {
+    #[derive(Tabled)]
+    struct St {
+        #[header(hidden = true)]
+        f1: u8,
+        f2: &'static str,
+    }
+
+    let st = vec![St { f1: 0, f2: "0" }, St { f1: 1, f2: "1" }];
+    let expected = "+----+\n\
+                         | f2 |\n\
+                         +----+\n\
+                         | 0  |\n\
+                         +----+\n\
+                         | 1  |\n\
+                         +----+\n";
+
+    let table = table!(&st);
+
+    assert_eq!(expected, table);
+}
+
 mod default_types {
     use super::*;
 
@@ -446,6 +469,54 @@ mod default_types {
                              +--------+-----------+-------+\n\
                              |        |           |   +   |\n\
                              +--------+-----------+-------+\n";
+
+        let table = table!(&data);
+        assert_eq!(expected, table);
+    }
+
+    #[test]
+    fn table_enum_with_hidden_variant() {
+        #[derive(Tabled)]
+        enum Letters {
+            Vowels {
+                character: char,
+                lang: u8,
+            },
+            Consonant(char),
+            #[header(hidden)]
+            Digit,
+        }
+
+        let data = vec![
+            Letters::Vowels {
+                character: 'a',
+                lang: 0,
+            },
+            Letters::Consonant('w'),
+            Letters::Vowels {
+                character: 'b',
+                lang: 1,
+            },
+            Letters::Vowels {
+                character: 'c',
+                lang: 2,
+            },
+            Letters::Digit,
+        ];
+
+        let expected = "+--------+-----------+\n\
+                             | Vowels | Consonant |\n\
+                             +--------+-----------+\n\
+                             |   +    |           |\n\
+                             +--------+-----------+\n\
+                             |        |     +     |\n\
+                             +--------+-----------+\n\
+                             |   +    |           |\n\
+                             +--------+-----------+\n\
+                             |   +    |           |\n\
+                             +--------+-----------+\n\
+                             |        |           |\n\
+                             +--------+-----------+\n";
 
         let table = table!(&data);
         assert_eq!(expected, table);

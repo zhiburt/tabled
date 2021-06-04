@@ -255,9 +255,16 @@ pub fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
         grid.set(Entity::Cell(0, i), Settings::new().text(h));
     }
 
-    for (i, fields) in obj.iter().enumerate() {
-        for (j, field) in fields.iter().enumerate() {
-            grid.set(Entity::Cell(i + 1, j), Settings::new().text(field));
+    let mut row = 1;
+    for fields in &obj {
+        for (column, field) in fields.iter().enumerate() {
+            grid.set(Entity::Cell(row, column), Settings::new().text(field));
+        }
+
+        // don't show off a empty data array
+        // currently it's possible when `#[header(hidden)]` attribute used for a enum
+        if !fields.is_empty() {
+            row += 1;
         }
     }
 
