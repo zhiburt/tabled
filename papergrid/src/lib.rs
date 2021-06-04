@@ -890,6 +890,37 @@ mod tests {
         )
     }
 
+    #[test]
+    #[ignore = "I am not sure what is the right behaiviour here"]
+    fn hieroglyph_handling() {
+        let mut grid = Grid::new(1, 2);
+        grid.set(Entity::Cell(0, 0), Settings::new().text("哈哈"));
+        grid.set(Entity::Cell(0, 1), Settings::new().text("哈"));
+        let s = grid.to_string();
+        assert_eq!(
+            s,
+            "+----+--+\n\
+             |哈哈  |哈 |\n\
+             +----+--+\n"
+        )
+    }
+
+    #[test]
+    #[ignore = "I am not sure what is the right behaiviour here"]
+    fn hieroglyph_multiline_handling() {
+        let mut grid = Grid::new(1, 2);
+        grid.set(Entity::Cell(0, 0), Settings::new().text("哈哈"));
+        grid.set(Entity::Cell(0, 1), Settings::new().text("哈\n哈"));
+        let s = grid.to_string();
+        assert_eq!(
+            s,
+            "+----+--+\n\
+             |哈哈  |哈 |\n\
+             |    |哈 |\n\
+             +----+--+\n"
+        )
+    }
+
     #[cfg(feature = "color")]
     #[test]
     fn colored_string_width_test() {
