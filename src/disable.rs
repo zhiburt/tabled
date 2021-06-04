@@ -4,23 +4,23 @@ use papergrid::Grid;
 
 use crate::{bounds_to_usize, TableOption};
 
-/// Dissable represent a disable setting for a [`table` macros](./macro.table.html)
+/// Disable represent a disable setting for a [`table` macros](./macro.table.html)
 ///
 /// ```rust,no_run
-///   # use tabled::{Dissable, table};
+///   # use tabled::{Disable, table};
 ///   # let data: Vec<&'static str> = Vec::new();
-///     let table = table!(&data, Dissable::Row(..1));
+///     let table = table!(&data, Disable::Row(..1));
 /// ```
 ///
 #[derive(Debug)]
-pub enum Dissable<R: RangeBounds<usize>> {
+pub enum Disable<R: RangeBounds<usize>> {
     /// Columns of the grid. Range is used to locate columns.
     Column(R),
     /// Rows of the grid. Range is used to locate rows.
     Row(R),
 }
 
-impl<R: RangeBounds<usize>> TableOption for Dissable<R> {
+impl<R: RangeBounds<usize>> TableOption for Disable<R> {
     fn change(&self, grid: &mut Grid) {
         match self {
             Self::Column(range) => {

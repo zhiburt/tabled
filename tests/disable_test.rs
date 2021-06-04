@@ -11,7 +11,7 @@
 // copies or substantial portions of the Software.
 
 use papergrid::Alignment;
-use tabled::{table, Dissable, Full, HorizontalAlignment, Style, Tabled};
+use tabled::{table, Disable, Full, HorizontalAlignment, Style, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -21,7 +21,7 @@ struct Linux {
 }
 
 #[test]
-fn dissable_rows() {
+fn disable_rows() {
     let data = vec![
         Linux {
             id: 0,
@@ -50,14 +50,14 @@ fn dissable_rows() {
         &data,
         Style::Psql,
         HorizontalAlignment(Full, Alignment::Left),
-        Dissable::Row(1..=2),
+        Disable::Row(1..=2),
     );
 
     assert_eq!(table, expected);
 }
 
 #[test]
-fn dissable_header() {
+fn disable_header() {
     let data = vec![
         Linux {
             id: 0,
@@ -86,14 +86,14 @@ fn dissable_header() {
         &data,
         Style::Psql,
         HorizontalAlignment(Full, Alignment::Left),
-        Dissable::Row(..1),
+        Disable::Row(..1),
     );
 
     assert_eq!(table, expected);
 }
 
 #[test]
-fn dissable_all_table_via_rows() {
+fn disable_all_table_via_rows() {
     let data = vec![
         Linux {
             id: 0,
@@ -118,14 +118,14 @@ fn dissable_all_table_via_rows() {
         &data,
         Style::Psql,
         HorizontalAlignment(Full, Alignment::Left),
-        Dissable::Row(..),
+        Disable::Row(..),
     );
 
     assert_eq!(table, expected);
 }
 
 #[test]
-fn dissable_header_with_new_styling() {
+fn disable_header_with_new_styling() {
     let data = vec![
         Linux {
             id: 0,
@@ -156,7 +156,7 @@ fn dissable_header_with_new_styling() {
     let table = table!(
         &data,
         HorizontalAlignment(Full, Alignment::Left),
-        Dissable::Row(..1),
+        Disable::Row(..1),
         Style::PseudoClean,
     );
 
@@ -164,7 +164,7 @@ fn dissable_header_with_new_styling() {
 }
 
 #[test]
-fn dissable_columns() {
+fn disable_columns() {
     let data = vec![
         Linux {
             id: 0,
@@ -195,14 +195,14 @@ fn dissable_columns() {
         &data,
         Style::Psql,
         HorizontalAlignment(Full, Alignment::Left),
-        Dissable::Column(..1),
+        Disable::Column(..1),
     );
 
     assert_eq!(table, expected);
 }
 
 #[test]
-fn dissable_all_table_via_columns() {
+fn disable_all_table_via_columns() {
     let data = vec![
         Linux {
             id: 0,
@@ -227,7 +227,7 @@ fn dissable_all_table_via_columns() {
         &data,
         Style::Psql,
         HorizontalAlignment(Full, Alignment::Left),
-        Dissable::Column(..),
+        Disable::Column(..),
     );
 
     assert_eq!(table, expected);
