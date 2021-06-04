@@ -9,7 +9,7 @@ use crate::{bounds_to_usize, TableOption};
 /// ```rust,no_run
 ///   # use tabled::{Dissable, table};
 ///   # let data: Vec<&'static str> = Vec::new();
-///     let table = table!(&data, Dissable::Row(..1), Alignment::Center));
+///     let table = table!(&data, Dissable::Row(..1));
 /// ```
 ///
 #[derive(Debug)]
