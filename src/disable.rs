@@ -26,10 +26,8 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
             Self::Column(range) => {
                 let (x, y) =
                     bounds_to_usize(range.start_bound(), range.end_bound(), grid.count_columns());
-                let mut shifted = 0;
-                for i in x..y {
+                for (shifted, i) in (x..y).enumerate() {
                     grid.remove_column(i - shifted);
-                    shifted += 1;
                 }
             }
             Self::Row(range) => {
@@ -38,10 +36,8 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
 
                 // It's kindof a bad design that we must controll shift.
                 // It basically unveils an implementation...
-                let mut shifted = 0;
-                for i in x..y {
+                for (shifted, i) in (x..y).enumerate() {
                     grid.remove_row(i - shifted);
-                    shifted += 1;
                 }
             }
         }

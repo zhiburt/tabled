@@ -1,6 +1,5 @@
 use std::{
     collections::BTreeSet,
-    iter::FromIterator,
     ops::{Bound, RangeBounds},
 };
 
@@ -112,7 +111,9 @@ where
 }
 
 fn combine_cells(lhs: Vec<(usize, usize)>, rhs: Vec<(usize, usize)>) -> Vec<(usize, usize)> {
-    BTreeSet::from_iter(lhs.into_iter().chain(rhs.into_iter()))
+    lhs.into_iter()
+        .chain(rhs.into_iter())
+        .collect::<BTreeSet<_>>()
         .into_iter()
         .collect()
 }
