@@ -46,6 +46,7 @@ mod structure {
         );
     }
 
+    #[allow(dead_code)]
     #[test]
     fn structure_hidden_field() {
         #[derive(Tabled)]

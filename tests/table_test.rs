@@ -151,6 +151,7 @@ fn table_tuple_with_structure_vec() {
     assert_eq!(expected, table);
 }
 
+#[allow(dead_code)]
 #[test]
 fn table_vector_structures_with_hidden_field() {
     #[derive(Tabled)]
