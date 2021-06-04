@@ -20,7 +20,7 @@
 //!     grid.set(Entity::Cell(0, 1), Settings::new().text("0-1"));
 //!     grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
 //!     grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
-//!     
+//!
 //!     let expected = concat!(
 //!         "+---+---+\n",
 //!         "|0-0|0-1|\n",
@@ -651,27 +651,14 @@ fn split_text(text: &str, width: usize, height: usize) -> Vec<Cow<str>> {
 
 #[cfg(not(feature = "color"))]
 fn string_width(text: &str) -> usize {
-    real_string_width(text)
+    return textwrap::core::display_width(text);
 }
 
 #[cfg(feature = "color")]
 fn string_width(text: &str) -> usize {
     // console::strip_ansi_codes(text)
     let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
-    let s = std::str::from_utf8(&b).unwrap();
-    let x = s
-        .lines()
-        .map(|line| line.len())
-        .max()
-        .unwrap_or_else(|| 0);
-    x
-}
-
-fn real_string_width(text: &str) -> usize {
-    text.lines()
-        .map(|line| line.chars().filter(|c| !c.is_control()).collect::<String>().len())
-        .max()
-        .unwrap_or_else(|| 0)
+    return textwrap::core::display_width(std::str::from_utf8(&b).unwrap());
 }
 
 #[cfg(test)]
