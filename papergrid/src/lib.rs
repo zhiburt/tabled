@@ -675,14 +675,21 @@ fn split_text(text: &str, width: usize, height: usize) -> Vec<Cow<str>> {
 
 #[cfg(not(feature = "color"))]
 fn string_width(text: &str) -> usize {
-    return textwrap::core::display_width(text);
+    real_string_width(text)
 }
 
 #[cfg(feature = "color")]
 fn string_width(text: &str) -> usize {
-    // console::strip_ansi_codes(text)
     let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
-    return textwrap::core::display_width(std::str::from_utf8(&b).unwrap());
+    let s = std::str::from_utf8(&b).unwrap();
+    real_string_width(&s)
+}
+
+fn real_string_width(text: &str) -> usize {
+    text.lines()
+        .map(|line| textwrap::core::display_width(line))
+        .max()
+        .unwrap_or_else(|| 0)
 }
 
 #[cfg(test)]
