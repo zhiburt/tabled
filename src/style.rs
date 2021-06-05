@@ -53,7 +53,7 @@ impl Style {
                 right: Some('|'),
             },
             Some(line.clone()),
-            Some(line.clone()),
+            Some(line),
             '|',
         )
     }
@@ -269,15 +269,13 @@ fn make_style(style: &Style, border: &mut Border, is_first_row: bool, is_last_ro
                 line.right_corner,
             );
         }
-    } else {
-        if let Some(line) = &style.split {
-            border.bottom(
-                line.main,
-                line.intersection,
-                line.left_corner,
-                line.right_corner,
-            );
-        }
+    } else if let Some(line) = &style.split {
+        border.bottom(
+            line.main,
+            line.intersection,
+            line.left_corner,
+            line.right_corner,
+        );
     }
 
     border.inner(
