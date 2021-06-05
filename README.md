@@ -21,11 +21,14 @@ An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
         * [Pseudo](#Pseudo)
         * [PseudoClean](#PseudoClean)
         * [Noborder](#Noborder)
+    * [Custom Style](#Custom-Style)
     * [Alignment](#Alignment)
     * [Format](#Format)
+    * [Disable](#Disable)
     * [Color](#Color)
 * [Features](#Features)
     * [Column name override](#Column-name-override)
+    * [Hide a column](#Hide-a-column)
     * [Tuple combination](#Tuple-combination)
     * [Object](#Object)
 
@@ -109,7 +112,7 @@ A list of ready to use styles. A shocases for the data in the [Usage](#Usage) se
 Styles can be chosen by passing a `Style` argument like this to `table!` macro.
 
 ```rust
-let table = table!(&data, Style::Psql);
+let table = table!(&data, Style::psql());
 ```
 
 ### Default
@@ -177,8 +180,23 @@ let table = table!(&data, Style::Psql);
 ```
  name    designed_by     invented_year 
   C     Dennis Ritchie       1972      
-  Rust   Graydon Hoare        2010      
+  Rust   Graydon Hoare       2010      
   Go       Rob Pike          2009      
+```
+
+## Custom Style
+
+You can modify existing styles to fits your needs.
+
+```rust
+
+table!(
+   &data,
+   tabled::Style::noborder()
+      .frame_bottom(Some(Line::short('*', ' '')))
+      .split(Some(Line::short(' ', ' ')))
+      .inner(' ')
+)
 ```
 
 ## Alignment
@@ -188,7 +206,7 @@ You can set a alignemt for a Header, Column, Row or All Cells.
 ```rust
 table!(
     &data,
-    Style::Psql,
+    Style::psql(),
     HorizontalAlignment(Full, Alignment::Left)
 );
 ```
@@ -200,10 +218,18 @@ Format function provides an interface for a modification of cells.
 ```rust
 let table = table!(
     &data,
-    Style::Psql,
+    Style::psql(),
     Format(Column(..), |s| { format!("<< {} >>", s) }),
     Format(Row(..1), |s| { format!("Head {}", s) }),
 );
+```
+
+## Disable
+
+You can remove a certain rows or column from the table.
+
+```rust
+table!(&data, Disable::Row(..1), Disable::Column(3..4));
 ```
 
 ## Color
@@ -214,7 +240,7 @@ The folowing change on the script in the usage and it's result
 ```rust
 let table = table!(
     &data,
-    Style::Psql,
+    Style::psql(),
     Format(Column(..1), |s| { s.red().to_string() }),
     Format(Column(1..2), |s| { s.blue().to_string() }),
     Format(Column(2..), |s| { s.green().to_string() }),
@@ -236,6 +262,21 @@ struct Person {
     first_name: &'static str,
     #[header("Surname")]
     last_name: &'static str,
+}
+```
+
+## Hide a column
+
+You can mark filds as hidden in which case they fill be ignored and not be present on a sheet.
+A similar affect could be achived by the means of a `Disable` setting.
+
+```rust
+struct Person {
+   #[header(hidden = true)]
+   id: u8,
+   #[header("field 2", hidden)]
+   number: &'static str,
+   name: &'static str,
 }
 ```
 
@@ -264,7 +305,7 @@ let data = vec![
     (Developer("Maxim Zhiburt"), Domain::Unknown),
 ];
     
-let table = table!(data, Style::Psql);
+let table = table!(data, Style::psql());
 
 assert_eq!(
     table,
