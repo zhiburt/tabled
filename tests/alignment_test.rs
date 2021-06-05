@@ -50,7 +50,7 @@ fn full_alignment() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         HorizontalAlignment(Full, Alignment::Left)
     );
 
@@ -91,7 +91,7 @@ fn head_and_data_alignment() {
 
     let table = table!(
         &data,
-        Style::Default,
+        Style::default(),
         HorizontalAlignment(Head, Alignment::Left),
         HorizontalAlignment(Row(1..), Alignment::Right),
     );
@@ -142,7 +142,7 @@ fn full_alignment_multiline() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         HorizontalAlignment(Full, Alignment::Left),
     );
 

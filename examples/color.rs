@@ -51,7 +51,7 @@ fn main() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         HorizontalAlignment(Head, Alignment::Center),
         HorizontalAlignment(Row(1..), Alignment::Left),
         Format(Full, |s| { s.blue().to_string() }),

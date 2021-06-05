@@ -48,7 +48,7 @@ fn disable_rows() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         HorizontalAlignment(Full, Alignment::Left),
         Disable::Row(1..=2),
     );
@@ -84,7 +84,7 @@ fn disable_header() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         HorizontalAlignment(Full, Alignment::Left),
         Disable::Row(..1),
     );
@@ -116,7 +116,7 @@ fn disable_all_table_via_rows() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         HorizontalAlignment(Full, Alignment::Left),
         Disable::Row(..),
     );
@@ -157,7 +157,7 @@ fn disable_header_with_new_styling() {
         &data,
         HorizontalAlignment(Full, Alignment::Left),
         Disable::Row(..1),
-        Style::PseudoClean,
+        Style::pseudo_clean(),
     );
 
     assert_eq!(table, expected);
@@ -193,7 +193,7 @@ fn disable_columns() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         HorizontalAlignment(Full, Alignment::Left),
         Disable::Column(..1),
     );
@@ -225,7 +225,7 @@ fn disable_all_table_via_columns() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         HorizontalAlignment(Full, Alignment::Left),
         Disable::Column(..),
     );

@@ -114,7 +114,7 @@
 //!         (Developer("Maxim Zhiburt"), Domain::Unknown),
 //!     ];
 //!     
-//!     let table = table!(data, Style::Psql);
+//!     let table = table!(data, Style::psql());
 //!
 //!     assert_eq!(
 //!         table,
@@ -134,9 +134,10 @@ mod alignment;
 mod disable;
 mod formating;
 mod object;
-mod style;
+pub mod style;
 
 pub use crate::{alignment::*, disable::*, formating::*, object::*, style::Style};
+
 pub use papergrid::Alignment;
 pub use tabled_derive::Tabled;
 
@@ -213,7 +214,7 @@ where
 ///     let data = vec!["Hello", "2021"];
 ///     let table = table!(
 ///        &data,
-///        Style::Psql,
+///        Style::psql(),
 ///        HorizontalAlignment(Full, Alignment::Left)
 ///     );
 ///     println!("{}", table);
@@ -222,7 +223,7 @@ where
 #[macro_export]
 macro_rules! table {
     ( $data:expr ) => {
-        tabled::table!($data, tabled::Style::Default)
+        tabled::table!($data, tabled::Style::default())
     };
     ( $data:expr, $($opt:expr),+ $(,)? ) => {{
         use tabled::TableOption;

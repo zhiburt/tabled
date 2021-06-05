@@ -10,6 +10,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
+use tabled::style::Line;
 use tabled::{table, Tabled};
 
 #[derive(Tabled)]
@@ -51,7 +52,7 @@ fn default_style() {
         "+----+--------------+---------------------------+\n",
     );
 
-    let table = table!(&data, tabled::Style::Default);
+    let table = table!(&data, tabled::Style::default());
 
     assert_eq!(table, expected);
 }
@@ -84,7 +85,7 @@ fn psql_style() {
         " 3  | Endeavouros  | https://endeavouros.com/  \n",
     );
 
-    let table = table!(&data, tabled::Style::Psql);
+    let table = table!(&data, tabled::Style::psql());
 
     assert_eq!(table, expected);
 }
@@ -117,7 +118,7 @@ fn github_markdown_style() {
         "| 3  | Endeavouros  | https://endeavouros.com/  |\n",
     );
 
-    let table = table!(&data, tabled::Style::GithubMarkdown);
+    let table = table!(&data, tabled::Style::github_markdown());
 
     assert_eq!(table, expected);
 }
@@ -154,7 +155,7 @@ fn pseudo_style() {
         "└────┴──────────────┴───────────────────────────┘\n",
     );
 
-    let table = table!(&data, tabled::Style::Pseudo);
+    let table = table!(&data, tabled::Style::pseudo());
 
     assert_eq!(table, expected);
 }
@@ -189,7 +190,7 @@ fn pseudo_clean_style() {
         "└────┴──────────────┴───────────────────────────┘\n",
     );
 
-    let table = table!(&data, tabled::Style::PseudoClean);
+    let table = table!(&data, tabled::Style::pseudo_clean());
 
     assert_eq!(table, expected);
 }
@@ -221,7 +222,123 @@ fn noborder_style() {
         " 3    Endeavouros    https://endeavouros.com/  \n",
     );
 
-    let table = table!(&data, tabled::Style::NoBorder);
+    let table = table!(&data, tabled::Style::noborder());
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn style_head_changes() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "┌────┬──────────────┬───────────────────────────┐\n",
+        "│ id │ destribution │           link            │\n",
+        "│ 0  │    Fedora    │  https://getfedora.org/   │\n",
+        "│ 2  │   OpenSUSE   │ https://www.opensuse.org/ │\n",
+        "│ 3  │ Endeavouros  │ https://endeavouros.com/  │\n",
+        "└────┴──────────────┴───────────────────────────┘\n",
+    );
+
+    let table = table!(&data, tabled::Style::pseudo_clean().header(None));
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn style_frame_changes() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "│ id │ destribution │           link            │\n",
+        "├────┼──────────────┼───────────────────────────┤\n",
+        "│ 0  │    Fedora    │  https://getfedora.org/   │\n",
+        "│ 2  │   OpenSUSE   │ https://www.opensuse.org/ │\n",
+        "│ 3  │ Endeavouros  │ https://endeavouros.com/  │\n",
+    );
+
+    let table = table!(
+        &data,
+        tabled::Style::pseudo_clean()
+            .frame_bottom(None)
+            .frame_top(None)
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn custom_style() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        " id \' destribution \'           link            \n",
+        "````\'``````````````\'```````````````````````````\n",
+        " 0  \'    Fedora    \'  https://getfedora.org/   \n",
+        "````\'``````````````\'```````````````````````````\n",
+        " 2  \'   OpenSUSE   \' https://www.opensuse.org/ \n",
+        "````\'``````````````\'```````````````````````````\n",
+        " 3  \' Endeavouros  \' https://endeavouros.com/  \n",
+        "****\'**************\'***************************\n",
+    );
+
+    let table = table!(
+        &data,
+        tabled::Style::noborder()
+            .frame_bottom(Some(Line::short('*', '\'')))
+            .split(Some(Line::short('`', '\'')))
+            .inner('\'')
+    );
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }

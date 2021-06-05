@@ -86,7 +86,7 @@ fn formatting_head_test() {
 
     let table = table!(
         &data,
-        Style::GithubMarkdown,
+        Style::github_markdown(),
         Format(Head, |s| { format!(":{}", s) }),
     );
 
@@ -123,7 +123,7 @@ fn formatting_row_test() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         Format(Row(1..), |s| { format!("<{}>", s) }),
     );
 
@@ -160,7 +160,7 @@ fn formatting_column_test() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         Format(Column(..1), |s| { format!("(x) {}", s) }),
     );
 
@@ -207,7 +207,7 @@ fn formatting_multiline_test() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         Format(Full, multiline(|s| { format!("(x) {}", s) })),
     );
 
@@ -244,7 +244,7 @@ fn formatting_cell_test() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         Format(Cell(0, 0), |s| { format!("(x) {}", s) }),
         Format(Cell(0, 1), |s| { format!("(x) {}", s) }),
         Format(Cell(0, 2), |s| { format!("(x) {}", s) }),
@@ -283,7 +283,7 @@ fn formatting_and_combination_test() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         Format(Column(..1).and(Row(..1)), |s| { format!("(x) {}", s) }),
     );
 
@@ -320,7 +320,7 @@ fn formatting_not_combination_test() {
 
     let table = table!(
         &data,
-        Style::Psql,
+        Style::psql(),
         Format(Column(..1).and(Row(..1)).not(Cell(0, 0)), |s| {
             format!("(x) {}", s)
         }),
@@ -365,7 +365,7 @@ mod color {
 
         let table = table!(
             &data,
-            Style::Psql,
+            Style::psql(),
             Format(Column(..1).and(Column(2..)), |s| { s.red().to_string() }),
             Format(Column(1..2), |s| { s.blue().to_string() }),
         );
@@ -413,7 +413,7 @@ mod color {
 
         let table = table!(
             &data,
-            Style::Psql,
+            Style::psql(),
             Format(Column(..1), multiline(|s| { s.red().to_string() })),
             Format(Column(1..2), multiline(|s| { s.blue().to_string() })),
             Format(Column(2..), multiline(|s| { s.green().to_string() })),
