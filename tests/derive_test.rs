@@ -13,8 +13,6 @@
 use tabled::Tabled;
 
 mod structure {
-    use std::fmt::Display;
-
     use super::*;
 
     #[test]
