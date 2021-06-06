@@ -576,4 +576,88 @@ mod default_types {
         let table = table!(&map);
         assert_eq!(expected, table);
     }
+
+    #[test]
+    fn table_emojie() {
+        #[derive(Tabled)]
+        struct Language {
+            name: &'static str,
+            designed_by: &'static str,
+            invented_year: usize,
+        }
+
+        let languages = vec![
+            Language {
+                name: "C 💕",
+                designed_by: "Dennis Ritchie",
+                invented_year: 1972,
+            },
+            Language {
+                name: "Rust 👍",
+                designed_by: "Graydon Hoare",
+                invented_year: 2010,
+            },
+            Language {
+                name: "Go 🧋",
+                designed_by: "Rob Pike",
+                invented_year: 2009,
+            },
+        ];
+
+        println!("{}", table!(&languages));
+
+        let expected = "+---------+----------------+---------------+\n\
+                             |  name   |  designed_by   | invented_year |\n\
+                             +---------+----------------+---------------+\n\
+                             |  C 💕   | Dennis Ritchie |     1972      |\n\
+                             +---------+----------------+---------------+\n\
+                             | Rust 👍 | Graydon Hoare  |     2010      |\n\
+                             +---------+----------------+---------------+\n\
+                             |  Go 🧋  |    Rob Pike    |     2009      |\n\
+                             +---------+----------------+---------------+\n";
+
+        assert_eq!(expected, table!(&languages));
+    }
+
+    #[test]
+    fn table_emojie_multiline() {
+        #[derive(Tabled)]
+        struct Article {
+            name: &'static str,
+            author: &'static str,
+            text: &'static str,
+            rating: usize,
+        }
+
+        let languages = vec![
+            Article {
+                name: "Rebase vs Merge commit in depth 👋",
+                author: "Rose Kuphal DVM",
+                text: "A multiline\n text with 🤯 😳 🥵 🥶\n a bunch of emojies ☄️ 💥 🔥 🌪",
+                rating: 43,
+            },
+            Article {
+                name: "Keep it simple",
+                author: "Unknown",
+                text: "🍳",
+                rating: 100,
+            },
+        ];
+
+        println!("{}", table!(&languages));
+
+        // Note: it looks OK in a terminal
+        let expected = 
+            "+------------------------------------+-----------------+-------------------------------+--------+\n\
+             |                name                |     author      |             text              | rating |\n\
+             +------------------------------------+-----------------+-------------------------------+--------+\n\
+             | Rebase vs Merge commit in depth 👋 | Rose Kuphal DVM |          A multiline          |   43   |\n\
+             |                                    |                 |     text with 🤯 😳 🥵 🥶     |        |\n\
+             |                                    |                 |  a bunch of emojies ☄\u{fe0f} 💥 🔥 🌪 |        |\n\
+             +------------------------------------+-----------------+-------------------------------+--------+\n\
+             |           Keep it simple           |     Unknown     |              🍳               |  100   |\n\
+             +------------------------------------+-----------------+-------------------------------+--------+\n";
+
+        assert_eq!(expected, table!(&languages));
+    }
 }
