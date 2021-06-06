@@ -19,7 +19,7 @@ use syn::{
     Meta, NestedMeta,
 };
 
-#[proc_macro_derive(Tabled, attributes(header))]
+#[proc_macro_derive(Tabled, attributes(header, field))]
 pub fn tabled(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
@@ -68,7 +68,7 @@ fn get_fields_headers<'a>(fields: impl Iterator<Item = &'a Field>) -> Vec<String
             is_ignored != Some(true)
         })
         .map(|(i, f)| {
-            let override_name = find_name_attribute(&f.attrs, "header", "name");
+            let override_name = find_name_attribute(&f.attrs, "header", "name", true);
             match override_name {
                 Some(name) => name,
                 None => f
@@ -88,7 +88,7 @@ fn get_enum_headers(e: &syn::DataEnum) -> Vec<String> {
             is_ignored != Some(true)
         })
         .map(|v| {
-            let override_name = find_name_attribute(&v.attrs, "header", "name");
+            let override_name = find_name_attribute(&v.attrs, "header", "name", true);
             match override_name {
                 Some(name) => vec![name],
                 None => {
@@ -113,25 +113,32 @@ fn get_fields(d: &syn::Data) -> proc_macro2::TokenStream {
 }
 
 fn get_st_fields(st: &syn::DataStruct) -> Vec<proc_macro2::TokenStream> {
-    st.fields
-        .iter()
-        .filter(|f| {
-            let is_ignored = find_bool_attribute(&f.attrs, "header", "hidden");
-            is_ignored != Some(true)
-        })
-        .map(|f| f.ident.as_ref())
-        .enumerate()
-        .map(|(i, f)| {
-            f.map_or_else(
-                || {
-                    let mut s = quote!(self.);
-                    s.extend(syn::Index::from(i).to_token_stream());
-                    s
-                },
-                |f| quote!(self.#f),
-            )
-        })
-        .collect()
+    let mut v = Vec::new();
+    for (i, field) in st.fields.iter().enumerate() {
+        let is_ignored = find_bool_attribute(&field.attrs, "header", "hidden");
+        if is_ignored == Some(true) {
+            continue;
+        }
+
+        let mut value = field.ident.as_ref().map_or_else(
+            || {
+                let mut s = quote!(self.);
+                s.extend(syn::Index::from(i).to_token_stream());
+                s
+            },
+            |f| quote!(self.#f),
+        );
+
+        let with_function = find_name_attribute(&field.attrs, "field", "display_with", false);
+        if let Some(function) = with_function {
+            let function = syn::Ident::new(&function, proc_macro2::Span::call_site());
+            value = quote! { #function(&#value) };
+        }
+
+        v.push(value);
+    }
+
+    v
 }
 
 fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
@@ -211,7 +218,7 @@ fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
     }
 }
 
-fn parse_name_attribute(attr: &Attribute, method: &str, name: &str) -> Option<String> {
+fn parse_name_attribute(attr: &Attribute, method: &str, name: &str, flaged: bool) -> Option<String> {
     if attr.path.is_ident(method) {
         let meta = &attr.parse_meta();
         match meta {
@@ -219,8 +226,8 @@ fn parse_name_attribute(attr: &Attribute, method: &str, name: &str) -> Option<St
                 if meta_list.path.is_ident(method) {
                     for nested_meta in &meta_list.nested {
                         match nested_meta {
-                            NestedMeta::Lit(Lit::Str(value)) => return Some(value.value()),
-                            NestedMeta::Lit(Lit::ByteStr(value)) => return Some(
+                            NestedMeta::Lit(Lit::Str(value)) if flaged => return Some(value.value()),
+                            NestedMeta::Lit(Lit::ByteStr(value)) if flaged => return Some(
                                 std::str::from_utf8(&value.value())
                                     .expect(&format!("Expected a valid UTF-8 string for a macro {macro} field {name}", macro=method, name=name))
                                     .to_owned(),
@@ -255,10 +262,10 @@ fn parse_name_attribute(attr: &Attribute, method: &str, name: &str) -> Option<St
     }
 }
 
-fn find_name_attribute(attributes: &[Attribute], method: &str, name: &str) -> Option<String> {
+fn find_name_attribute(attributes: &[Attribute], method: &str, name: &str, flaged: bool) -> Option<String> {
     attributes
         .iter()
-        .find_map(|attr| parse_name_attribute(attr, method, name))
+        .find_map(|attr| parse_name_attribute(attr, method, name, flaged))
 }
 
 fn parse_bool_attribute(attr: &Attribute, method: &str, name: &str) -> Option<bool> {
