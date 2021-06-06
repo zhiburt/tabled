@@ -545,18 +545,8 @@ pub enum Alignment {
 }
 
 impl Alignment {
-    #[cfg(not(feature = "color"))]
     fn align(&self, text: &str, length: usize) -> String {
-        match self {
-            Alignment::Center => format!("{: ^1$}", text, length),
-            Alignment::Left => format!("{: <1$}", text, length),
-            Alignment::Right => format!("{: >1$}", text, length),
-        }
-    }
-
-    #[cfg(feature = "color")]
-    fn align(&self, text: &str, length: usize) -> String {
-        let mut diff = length - string_width(text);
+        let diff = length - string_width(text);
         match self {
             Alignment::Left => format!("{text}{space}", space = " ".repeat(diff), text = text),
             Alignment::Right => format!("{space}{text}", space = " ".repeat(diff), text = text),
@@ -929,5 +919,32 @@ mod tests {
         assert_eq!(string_width(&"hello\nworld".blue().to_string()), 5);
         assert_eq!(string_width("\u{1b}[34m0\u{1b}[0m"), 1);
         assert_eq!(string_width(&"0".red().to_string()), 1);
+    }
+
+    #[test]
+    fn string_width_emojie_test() {
+        // ...emojis such as “joy”, which normally take up two columns when printed in a terminal
+        // https://github.com/mgeisler/textwrap/pull/276
+        assert_eq!(string_width("🎩"), 2);
+        assert_eq!(string_width("Rust 💕"), 7);
+        assert_eq!(string_width("Go 👍\nC 😎"), 5);
+    }
+
+    #[test]
+    fn aligment_test() {
+        assert_eq!(Alignment::Right.align("AAA", 4), " AAA");
+        assert_eq!(Alignment::Left.align("AAA", 4), "AAA ");
+        assert_eq!(Alignment::Center.align("AAA", 4), "AAA ");
+        assert_eq!(Alignment::Center.align("🎩", 4), " 🎩 ");
+        assert_eq!(Alignment::Center.align("🎩", 3), "🎩 ");
+        #[cfg(feature = "color")]
+        {
+            use colored::Colorize;
+            let text = "Colored Text".red().to_string();
+            assert_eq!(
+                Alignment::Center.align(&text, 15),
+                format!(" {}  ", text),
+            );
+        }
     }
 }
