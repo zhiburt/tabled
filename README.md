@@ -29,6 +29,7 @@ An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
 * [Features](#Features)
     * [Column name override](#Column-name-override)
     * [Hide a column](#Hide-a-column)
+    * [Custom field formatting](#Custom-field-formatting)
     * [Tuple combination](#Tuple-combination)
     * [Object](#Object)
 
@@ -277,6 +278,34 @@ struct Person {
    #[header("field 2", hidden)]
    number: &'static str,
    name: &'static str,
+}
+```
+
+## Custom field formatting
+
+`#[derive(Tabled)]` is possible only when all fields implement a `Display` trait.
+But it may be often not the case for example `Option` type.
+
+There's 2 common ways how to solve it:
+
+* Implement Tabled trait manually for a type.
+* Wrap `Option` to something like DisplayedOption<T>(Option<T>) and implement a Display trait for it.
+
+Or to use an attribute `#[field(display_with = "func")]` for the field. To use it you must provide a function name in a `display_with` parameter.
+   
+```rust
+fn display_option(o: &Option<bool>) -> String {
+    match o {
+        Some(s) => format!("is valid thing = {}", s), 
+        None => format!("is not valid"),
+    }
+}
+
+#[derive(Tabled)]
+pub struct MyRecord {
+    pub id: i64,
+    #[field(display_with="display_option")]
+    pub valid: Option<bool>
 }
 ```
 
