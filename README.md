@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/travis/com/zhiburt/tabled/master?style=for-the-badge)](https://travis-ci.com/https://github.com/zhiburt/tabled)
+[![Build Status](https://img.shields.io/travis/com/zhiburt/tabled/master?style=for-the-badge)](https://travis-ci.com/zhiburt/tabled)
 [![Coverage Status](https://img.shields.io/coveralls/github/zhiburt/tabled/master?style=for-the-badge)](https://coveralls.io/repos/github/zhiburt/tabled/badge.svg?branch=branch)
 [![Crate](https://img.shields.io/crates/v/tabled?style=for-the-badge)](https://crates.io/crates/tabled)
 [![docs.rs](https://img.shields.io/docsrs/tabled?style=for-the-badge)](https://docs.rs/tabled/0.1.1/tabled/)
@@ -32,6 +32,8 @@ An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
     * [Custom field formatting](#Custom-field-formatting)
     * [Tuple combination](#Tuple-combination)
     * [Object](#Object)
+* [Notes](#Notes)
+   * [Emoji](#Emoji)
 
 # Usage
 
@@ -356,4 +358,48 @@ You can peak your target for settings using `and` and `not` methods for an objec
 ```rust
 Full.not(Row(..1)) // peak all cells except header
 Head.and(Column(..1)).not(Cell(0, 0)) // peak a header and first column except a (0, 0) cell
+```
+
+## Notes
+
+### Emoji
+   
+The library support emojies out of the box but be aware that some of the terminals and editors may not render them as you would expect.
+   
+Let's add emojies to an example from a [Usage](#Usage) section.
+
+```rust
+ let languages = vec![
+     Language {
+         name: "C 💕",
+         designed_by: "Dennis Ritchie",
+         invented_year: 1972,
+     },
+     Language {
+         name: "Rust 👍",
+         designed_by: "Graydon Hoare",
+         invented_year: 2010,
+     },
+     Language {
+         name: "Go 🧋",
+         designed_by: "Rob Pike",
+         invented_year: 2009,
+     },
+ ];
+ ```
+
+ The resultant table will look like the following.
+ 
+ As you can see Github triks a bit a return table, but `GNOME terminal` and `Alacritty` terminal handles it correctly.
+   
+ ```rust
++---------+----------------+---------------+
+|  name   |  designed_by   | invented_year |
++---------+----------------+---------------+
+|  C 💕   | Dennis Ritchie |     1972      |
++---------+----------------+---------------+
+| Rust 👍 | Graydon Hoare  |     2010      |
++---------+----------------+---------------+
+|  Go 🧋  |    Rob Pike    |     2009      |
++---------+----------------+---------------+
 ```
