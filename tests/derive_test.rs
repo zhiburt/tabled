@@ -13,6 +13,8 @@
 use tabled::Tabled;
 
 mod structure {
+    use std::fmt::Display;
+
     use super::*;
 
     #[test]
@@ -46,6 +48,17 @@ mod structure {
         );
     }
 
+    #[test]
+    fn rename_unit_structure_field() {
+        #[derive(Tabled)]
+        struct St(u8, #[header("field 2")] &'static str);
+
+        let st = St(0, "123");
+
+        assert_eq!(vec!["0".to_owned(), "123".to_owned()], st.fields());
+        assert_eq!(vec!["0".to_owned(), "field 2".to_owned()], St::headers());
+    }
+
     #[allow(dead_code)]
     #[test]
     fn structure_hidden_field() {
@@ -66,6 +79,69 @@ mod structure {
 
         assert_eq!(vec!["123".to_owned()], st.fields());
         assert_eq!(vec!["f3".to_owned()], St::headers());
+    }
+
+    #[test]
+    fn unit_structure_hidden_field() {
+        #[derive(Tabled)]
+        struct St(
+            #[header(hidden = true)] u8,
+            #[header("field 2", hidden)] &'static str,
+            &'static str,
+        );
+
+        let st = St(0, "v2", "123");
+
+        assert_eq!(vec!["123".to_owned()], st.fields());
+        assert_eq!(vec!["2".to_owned()], St::headers());
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn structure_display_with_field() {
+        fn display_option(o: &Option<&'static str>) -> String {
+            match o {
+                Some(s) => format!("some {}", s),
+                None => format!("none"),
+            }
+        }
+
+        #[derive(Tabled)]
+        struct St {
+            f1: u8,
+            #[field(display_with = "display_option")]
+            f2: Option<&'static str>,
+        }
+
+        let st = St {
+            f1: 0,
+            f2: Some("v2"),
+        };
+
+        assert_eq!(vec!["0".to_owned(), "some v2".to_owned()], st.fields());
+        assert_eq!(vec!["f1".to_owned(), "f2".to_owned()], St::headers());
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn unit_structure_display_with_field() {
+        fn display_option(o: &Option<&'static str>) -> String {
+            match o {
+                Some(s) => format!("some {}", s),
+                None => format!("none"),
+            }
+        }
+
+        #[derive(Tabled)]
+        struct St(
+            u8,
+            #[field(display_with = "display_option")] Option<&'static str>,
+        );
+
+        let st = St(0, Some("v2"));
+
+        assert_eq!(vec!["0".to_owned(), "some v2".to_owned()], st.fields());
+        assert_eq!(vec!["0".to_owned(), "1".to_owned()], St::headers());
     }
 
     #[test]
