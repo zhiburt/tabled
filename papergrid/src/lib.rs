@@ -108,7 +108,10 @@ impl Grid {
             self.set_text(&entity, text);
         }
 
-        if settings.ident.is_none() && settings.alignment.is_none() {
+        if settings.ident.is_none()
+            && settings.alignment_h.is_none()
+            && settings.alignment_v.is_none()
+        {
             return;
         }
 
@@ -119,8 +122,11 @@ impl Grid {
         if let Some(ident) = settings.ident {
             s.ident = ident;
         }
-        if let Some(alignment) = settings.alignment {
-            s.alignment = alignment;
+        if let Some(alignment) = settings.alignment_h {
+            s.alignment_h = alignment;
+        }
+        if let Some(alignment) = settings.alignment_v {
+            s.alignment_v = alignment;
         }
 
         self.styles.insert(entity, s);
@@ -357,7 +363,8 @@ impl Grid {
 pub struct Settings {
     text: Option<String>,
     ident: Option<Ident>,
-    alignment: Option<Alignment>,
+    alignment_h: Option<AlignmentHorizontal>,
+    alignment_v: Option<AlignmentVertical>,
 }
 
 impl Settings {
@@ -383,9 +390,15 @@ impl Settings {
         self
     }
 
-    /// Alignment method sets alignment for a cell
-    pub fn alignment(mut self, alignment: Alignment) -> Self {
-        self.alignment = Some(alignment);
+    /// Alignment method sets horizontal alignment for a cell
+    pub fn alignment(mut self, alignment: AlignmentHorizontal) -> Self {
+        self.alignment_h = Some(alignment);
+        self
+    }
+
+    /// Alignment method sets horizontal alignment for a cell
+    pub fn vertical_alignment(mut self, alignment: AlignmentVertical) -> Self {
+        self.alignment_v = Some(alignment);
         self
     }
 }
@@ -511,13 +524,15 @@ pub enum Entity {
 #[derive(Debug, Clone)]
 struct Style {
     ident: Ident,
-    alignment: Alignment,
+    alignment_h: AlignmentHorizontal,
+    alignment_v: AlignmentVertical,
 }
 
 impl Default for Style {
     fn default() -> Self {
         Self {
-            alignment: Alignment::Left,
+            alignment_h: AlignmentHorizontal::Left,
+            alignment_v: AlignmentVertical::Top,
             ident: Ident {
                 bottom: 0,
                 left: 0,
@@ -536,21 +551,25 @@ struct Ident {
     right: usize,
 }
 
-/// Alignment represents an horizontal aligment of a cell content.
+/// AlignmentHorizontal represents an horizontal aligment of a cell content.
 #[derive(Debug, Clone)]
-pub enum Alignment {
+pub enum AlignmentHorizontal {
     Center,
     Left,
     Right,
 }
 
-impl Alignment {
+impl AlignmentHorizontal {
     fn align(&self, text: &str, length: usize) -> String {
         let diff = length - string_width(text);
         match self {
-            Alignment::Left => format!("{text}{space}", space = " ".repeat(diff), text = text),
-            Alignment::Right => format!("{space}{text}", space = " ".repeat(diff), text = text),
-            Alignment::Center => {
+            AlignmentHorizontal::Left => {
+                format!("{text}{space}", space = " ".repeat(diff), text = text)
+            }
+            AlignmentHorizontal::Right => {
+                format!("{space}{text}", space = " ".repeat(diff), text = text)
+            }
+            AlignmentHorizontal::Center => {
                 let left = diff / 2;
                 let right = diff - left;
                 format!(
@@ -564,7 +583,42 @@ impl Alignment {
     }
 }
 
-// I like old solution with Full/Frame/Off
+/// AlignmentVertical represents an vertical aligment of a cell content.
+#[derive(Debug, Clone)]
+pub enum AlignmentVertical {
+    Center,
+    Top,
+    Bottom,
+}
+
+impl AlignmentVertical {
+    fn align(&self, lines: &mut Vec<String>, width: usize, length: usize) {
+        if length == 0 {
+            return;
+        }
+
+        let diff = length - lines.len();
+        match self {
+            &AlignmentVertical::Top => {
+                let iter = (0..diff).map(|_| str::repeat(" ", width).into());
+                lines.extend(iter);
+            }
+            &AlignmentVertical::Bottom => {
+                let mut v = Vec::with_capacity(lines.len() + diff);
+                let iter = (0..diff).map(|_| str::repeat(" ", width).into());
+                v.extend(iter);
+                v.append(lines);
+                *lines = v;
+            }
+            &AlignmentVertical::Center => {
+                let top = diff / 2;
+                let bottom = diff - top;
+                AlignmentVertical::Top.align(lines, width, lines.len() + top);
+                AlignmentVertical::Bottom.align(lines, width, lines.len() + bottom);
+            }
+        }
+    }
+}
 
 impl std::fmt::Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -597,13 +651,16 @@ impl std::fmt::Display for Grid {
 fn build_cell(text: &str, style: Style, column_w: usize, row_h: usize) -> Vec<String> {
     let width = column_w - style.ident.left - style.ident.right;
     let height = row_h - style.ident.top - style.ident.bottom;
-    let text = split_text(text, width, height);
+    let text = split_text(text, width);
 
-    let aligned_text = text
+    let mut aligned_text = text
         .into_iter()
-        .map(|line| style.alignment.align(&line, width));
+        .map(|line| style.alignment_h.align(&line, width))
+        .collect::<Vec<_>>();
 
-    let aligned_text = aligned_text.map(|line| {
+    style.alignment_v.align(&mut aligned_text, width, height);
+
+    let idented_text = aligned_text.into_iter().map(|line| {
         format!(
             "{}{}{}",
             " ".repeat(style.ident.left),
@@ -613,9 +670,9 @@ fn build_cell(text: &str, style: Style, column_w: usize, row_h: usize) -> Vec<St
     });
 
     let mut complete_text =
-        Vec::with_capacity(aligned_text.len() + style.ident.top + style.ident.bottom);
+        Vec::with_capacity(idented_text.len() + style.ident.top + style.ident.bottom);
     complete_text.extend(iter::repeat(" ".repeat(column_w)).take(style.ident.top));
-    complete_text.extend(aligned_text);
+    complete_text.extend(idented_text);
     complete_text.extend(iter::repeat(" ".repeat(column_w)).take(style.ident.bottom));
 
     complete_text
@@ -654,11 +711,8 @@ fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) ->
     }
 }
 
-fn split_text(text: &str, width: usize, height: usize) -> Vec<Cow<str>> {
-    let mut lines = textwrap::wrap(text, width);
-    while lines.len() < height {
-        lines.push(str::repeat(" ", width).into())
-    }
+fn split_text(text: &str, width: usize) -> Vec<Cow<str>> {
+    let lines = textwrap::wrap(text, width);
 
     lines
 }
@@ -738,11 +792,11 @@ mod tests {
         grid.set(Entity::Global, Settings::new().text("asd    "));
         grid.set(
             Entity::Column(0),
-            Settings::new().alignment(Alignment::Left),
+            Settings::new().alignment(AlignmentHorizontal::Left),
         );
         grid.set(
             Entity::Column(1),
-            Settings::new().alignment(Alignment::Right),
+            Settings::new().alignment(AlignmentHorizontal::Right),
         );
         let str = grid.to_string();
         assert_eq!(
@@ -931,19 +985,72 @@ mod tests {
     }
 
     #[test]
-    fn aligment_test() {
-        assert_eq!(Alignment::Right.align("AAA", 4), " AAA");
-        assert_eq!(Alignment::Left.align("AAA", 4), "AAA ");
-        assert_eq!(Alignment::Center.align("AAA", 4), "AAA ");
-        assert_eq!(Alignment::Center.align("🎩", 4), " 🎩 ");
-        assert_eq!(Alignment::Center.align("🎩", 3), "🎩 ");
+    fn horizontal_aligment_test() {
+        assert_eq!(AlignmentHorizontal::Right.align("AAA", 4), " AAA");
+        assert_eq!(AlignmentHorizontal::Left.align("AAA", 4), "AAA ");
+        assert_eq!(AlignmentHorizontal::Center.align("AAA", 4), "AAA ");
+        assert_eq!(AlignmentHorizontal::Center.align("🎩", 4), " 🎩 ");
+        assert_eq!(AlignmentHorizontal::Center.align("🎩", 3), "🎩 ");
         #[cfg(feature = "color")]
         {
             use colored::Colorize;
             let text = "Colored Text".red().to_string();
             assert_eq!(
-                Alignment::Center.align(&text, 15),
+                AlignmentHorizontal::Center.align(&text, 15),
                 format!(" {}  ", text),
+            );
+        }
+    }
+
+    #[test]
+    fn vertical_aligment_test() {
+        {
+            let mut lines = vec![format!("Hello World")];
+            AlignmentVertical::Bottom.align(&mut lines, 11, 3);
+            assert_eq!(
+                vec![
+                    format!("           "),
+                    format!("           "),
+                    format!("Hello World")
+                ],
+                lines,
+            );
+        }
+
+        {
+            let mut lines = vec![format!("Hello World")];
+            AlignmentVertical::Top.align(&mut lines, 11, 3);
+            assert_eq!(
+                vec![
+                    format!("Hello World"),
+                    format!("           "),
+                    format!("           "),
+                ],
+                lines,
+            );
+        }
+
+        {
+            let mut lines = vec![format!("Hello World")];
+            AlignmentVertical::Center.align(&mut lines, 11, 3);
+            assert_eq!(
+                vec![
+                    format!("           "),
+                    format!("Hello World"),
+                    format!("           "),
+                ],
+                lines,
+            );
+
+            AlignmentVertical::Center.align(&mut lines, 11, 4);
+            assert_eq!(
+                vec![
+                    format!("           "),
+                    format!("           "),
+                    format!("Hello World"),
+                    format!("           "),
+                ],
+                lines,
             );
         }
     }

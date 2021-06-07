@@ -10,7 +10,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::{Alignment, Entity, Grid, Settings};
+use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
 
 #[test]
 fn render() {
@@ -70,7 +70,7 @@ fn render_multilane_alignment() {
         Entity::Cell(0, 0),
         Settings::new()
             .text("left\ncell")
-            .alignment(Alignment::Center),
+            .alignment(AlignmentHorizontal::Center),
     );
     grid.set(Entity::Cell(0, 1), Settings::new().text("right one"));
     grid.set(
@@ -81,7 +81,7 @@ fn render_multilane_alignment() {
         Entity::Cell(1, 1),
         Settings::new()
             .text("and here\nwe\nsee\na\nlong\nstring")
-            .alignment(Alignment::Right),
+            .alignment(AlignmentHorizontal::Right),
     );
 
     let expected = concat!(
@@ -93,6 +93,47 @@ fn render_multilane_alignment() {
          |                                        |       we|\n\
          |                                        |      see|\n\
          |                                        |        a|\n\
+         |                                        |     long|\n\
+         |                                        |   string|\n\
+         +----------------------------------------+---------+\n"
+    );
+
+    let g = grid.to_string();
+    assert_eq!(expected, g);
+}
+
+#[test]
+fn render_multilane_vertical_alignment() {
+    let mut grid = Grid::new(2, 2);
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .text("left\ncell")
+            .alignment(AlignmentHorizontal::Center),
+    );
+    grid.set(Entity::Cell(0, 1), Settings::new().text("right one"));
+    grid.set(
+        Entity::Cell(1, 0),
+        Settings::new()
+            .text("the second column got the beginning here")
+            .vertical_alignment(AlignmentVertical::Center),
+    );
+    grid.set(
+        Entity::Cell(1, 1),
+        Settings::new()
+            .text("and here\nwe\nsee\na\nlong\nstring")
+            .alignment(AlignmentHorizontal::Right),
+    );
+
+    let expected = concat!(
+        "+----------------------------------------+---------+\n\
+         |                  left                  |right one|\n\
+         |                  cell                  |         |\n\
+         +----------------------------------------+---------+\n\
+         |                                        | and here|\n\
+         |                                        |       we|\n\
+         |                                        |      see|\n\
+         |the second column got the beginning here|        a|\n\
          |                                        |     long|\n\
          |                                        |   string|\n\
          +----------------------------------------+---------+\n"
