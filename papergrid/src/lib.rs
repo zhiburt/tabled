@@ -115,10 +115,13 @@ impl Grid {
             return;
         }
 
-        // todo: might it's worth to be able to modify only ident/alignemt of a cell instead of the whole style
-        // an example when we have a global setting with ident and we only want to modify an alignment of a partical cell
-        // but Style::default() will override global ident...
-        let mut s = Style::default();
+        // Check for existed style and don't rewrite it totally in case it exists,
+        // only change parts which are set in settings
+        let mut s = self
+            .styles
+            .get(&entity)
+            .map_or_else(|| Style::default(), |s| s.clone());
+
         if let Some(ident) = settings.ident {
             s.ident = ident;
         }
