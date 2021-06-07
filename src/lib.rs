@@ -133,10 +133,11 @@
 mod alignment;
 mod disable;
 mod formating;
+mod indent;
 mod object;
 pub mod style;
 
-pub use crate::{alignment::*, disable::*, formating::*, object::*, style::Style};
+pub use crate::{alignment::*, disable::*, formating::*, indent::*, object::*, style::Style};
 pub use tabled_derive::Tabled;
 
 use papergrid::{AlignmentHorizontal, Entity, Grid, Settings};
@@ -247,7 +248,7 @@ pub fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
     grid.set(
         Entity::Global,
         Settings::new()
-            .ident(1, 1, 0, 0)
+            .indent(1, 1, 0, 0)
             .alignment(AlignmentHorizontal::Center),
     );
 

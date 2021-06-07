@@ -208,7 +208,7 @@ You can set a alignemt for a Header, Column, Row or All Cells.
 table!(
     &data,
     Style::psql(),
-    HorizontalAlignment(Full, Alignment::Left)
+    Alignment::left(Full)
 );
 ```
 
