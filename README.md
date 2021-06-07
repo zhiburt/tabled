@@ -24,6 +24,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Custom Style](#Custom-Style)
     * [Alignment](#Alignment)
     * [Format](#Format)
+    * [Indent](#Indent)
     * [Disable](#Disable)
     * [Color](#Color)
 * [Features](#Features)
@@ -203,14 +204,10 @@ table!(
 
 ## Alignment
 
-You can set an alignment for a `Header`, `Column`, `Row` or `All` `Cells`.
+You can set a horizontal and vertical alignment for a `Header`, `Column`, `Row` or `Full` set of cells.
 
 ```rust
-table!(
-    &data,
-    Style::psql(),
-    Alignment::left(Full)
-);
+table!(&data, Alignment::left(Full), Alignment::top(Full));
 ```
 
 ## Format
@@ -224,6 +221,15 @@ let table = table!(
     Format(Column(..), |s| { format!("<< {} >>", s) }),
     Format(Row(..1), |s| { format!("Head {}", s) }),
 );
+```
+
+
+## Indent
+
+The `Indent` type provides an interface for a left, right, top and bottom indent of cells.
+
+```rust
+let table = table!(&data, Indent::new(Row(1..), 1, 1, 0, 2));
 ```
 
 ## Disable
