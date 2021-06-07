@@ -10,8 +10,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::Alignment;
-use tabled::{table, Full, Head, HorizontalAlignment, Row, Style, Tabled};
+use tabled::{table, Alignment, Column, Full, Head, Row, Style, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -48,11 +47,7 @@ fn full_alignment() {
         "3 |Endeavouros |https://endeavouros.com/ \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        HorizontalAlignment(Full, Alignment::Left)
-    );
+    let table = table!(&data, Style::psql(), Alignment::left(Full));
 
     assert_eq!(table, expected);
 }
@@ -92,8 +87,8 @@ fn head_and_data_alignment() {
     let table = table!(
         &data,
         Style::default(),
-        HorizontalAlignment(Head, Alignment::Left),
-        HorizontalAlignment(Row(1..), Alignment::Right),
+        Alignment::left(Head),
+        Alignment::right(Row(1..)),
     );
 
     assert_eq!(table, expected);
@@ -140,11 +135,56 @@ fn full_alignment_multiline() {
         "  |            |/en                      \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        HorizontalAlignment(Full, Alignment::Left),
-    );
+    let table = table!(&data, Style::psql(), Alignment::left(Full));
 
     assert_eq!(table, expected);
+}
+
+#[test]
+fn vertical_alignment_test() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "E\nnde\navou\nros",
+            link: "https://endeavouros.com/",
+        },
+        Linux {
+            id: 4,
+            destribution: "Red\nHat",
+            link: "https\n://\nwww\n.\nredhat\n.\ncom\n/en",
+        },
+    ];
+
+    let expected = concat!(
+        " id |destribution|link                     \n",
+        "----+------------+-------------------------\n",
+        " 0  |Fedora      |https://getfedora.org/   \n",
+        " 2  |OpenSUSE    |https://www.opensuse.org/\n",
+        " 3  |E           |                         \n",
+        "    |nde         |                         \n",
+        "    |avou        |                         \n",
+        "    |ros         |https://endeavouros.com/ \n",
+        " 4  |            |https                    \n",
+        "    |            |://                      \n",
+        "    |            |www                      \n",
+        "    |            |.                        \n",
+        "    |            |redhat                   \n",
+        "    |            |.                        \n",
+        "    |Red         |com                      \n",
+        "    |Hat         |/en                      \n",
+    );
+
+    let table = table!(&data, Style::psql(), Alignment::bottom(Column(1..)),);
+
+    assert_eq!(expected, table);
 }

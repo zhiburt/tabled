@@ -137,11 +137,9 @@ mod object;
 pub mod style;
 
 pub use crate::{alignment::*, disable::*, formating::*, object::*, style::Style};
-
-pub use papergrid::Alignment;
 pub use tabled_derive::Tabled;
 
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{AlignmentHorizontal, Entity, Grid, Settings};
 
 /// Tabled a trait responsible for providing a header filds and a row fields.
 ///
@@ -194,7 +192,7 @@ where
 
 /// Table macro returns a built table as a string.
 /// It may take a list of arguments such as [`Style`](./enum.Style.html),
-/// [`HorizontalAlignment`](./struct.HorizontalAlignment.html), [`ChangeRing`](./struct.ChangeRing.html)
+/// [`Alignment`](./struct.Alignment.html), [`ChangeRing`](./struct.ChangeRing.html)
 ///
 /// # Example
 ///
@@ -210,12 +208,12 @@ where
 /// ## A list of settings
 ///
 /// ```rust,no_run
-///     use tabled::{table, Style, HorizontalAlignment, Alignment, Full};
+///     use tabled::{table, Style, Alignment, Full};
 ///     let data = vec!["Hello", "2021"];
 ///     let table = table!(
 ///        &data,
 ///        Style::psql(),
-///        HorizontalAlignment(Full, Alignment::Left)
+///        Alignment::left(Full)
 ///     );
 ///     println!("{}", table);
 /// ```
@@ -250,7 +248,7 @@ pub fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
         Entity::Global,
         Settings::new()
             .ident(1, 1, 0, 0)
-            .alignment(Alignment::Center),
+            .alignment(AlignmentHorizontal::Center),
     );
 
     for (i, h) in headers.iter().enumerate() {

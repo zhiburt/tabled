@@ -10,8 +10,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::Alignment;
-use tabled::{table, Disable, Full, HorizontalAlignment, Style, Tabled};
+use tabled::{table, Alignment, Disable, Full, Style, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -49,7 +48,7 @@ fn disable_rows() {
     let table = table!(
         &data,
         Style::psql(),
-        HorizontalAlignment(Full, Alignment::Left),
+        Alignment::left(Full),
         Disable::Row(1..=2),
     );
 
@@ -85,7 +84,7 @@ fn disable_header() {
     let table = table!(
         &data,
         Style::psql(),
-        HorizontalAlignment(Full, Alignment::Left),
+        Alignment::left(Full),
         Disable::Row(..1),
     );
 
@@ -117,7 +116,7 @@ fn disable_all_table_via_rows() {
     let table = table!(
         &data,
         Style::psql(),
-        HorizontalAlignment(Full, Alignment::Left),
+        Alignment::left(Full),
         Disable::Row(..),
     );
 
@@ -155,7 +154,7 @@ fn disable_header_with_new_styling() {
 
     let table = table!(
         &data,
-        HorizontalAlignment(Full, Alignment::Left),
+        Alignment::left(Full),
         Disable::Row(..1),
         Style::pseudo_clean(),
     );
@@ -194,7 +193,7 @@ fn disable_columns() {
     let table = table!(
         &data,
         Style::psql(),
-        HorizontalAlignment(Full, Alignment::Left),
+        Alignment::left(Full),
         Disable::Column(..1),
     );
 
@@ -226,7 +225,7 @@ fn disable_all_table_via_columns() {
     let table = table!(
         &data,
         Style::psql(),
-        HorizontalAlignment(Full, Alignment::Left),
+        Alignment::left(Full),
         Disable::Column(..),
     );
 

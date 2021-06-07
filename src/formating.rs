@@ -42,10 +42,13 @@ pub struct Format<O: Object, F: Fn(&str) -> String>(pub O, pub F);
 
 impl<O: Object, F: Fn(&str) -> String> TableOption for Format<O, F> {
     fn change(&self, grid: &mut Grid) {
+        println!("-----");
         let cells = self.0.cells(grid.count_rows(), grid.count_columns());
         for (row, column) in cells {
             let content = grid.get_cell_content(row, column);
+            println!("{:?}", content);
             let content = (self.1)(content);
+            println!("new {:?}", content);
             grid.set(Entity::Cell(row, column), Settings::new().text(content))
         }
     }
