@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/travis/com/zhiburt/tabled/master?style=for-the-badge)](https://travis-ci.com/https://github.com/zhiburt/tabled)
+[![Build Status](https://img.shields.io/travis/com/zhiburt/tabled/master?style=for-the-badge)](https://travis-ci.com/zhiburt/tabled)
 [![Coverage Status](https://img.shields.io/coveralls/github/zhiburt/tabled/master?style=for-the-badge)](https://coveralls.io/repos/github/zhiburt/tabled/badge.svg?branch=branch)
 [![Crate](https://img.shields.io/crates/v/tabled?style=for-the-badge)](https://crates.io/crates/tabled)
 [![docs.rs](https://img.shields.io/docsrs/tabled?style=for-the-badge)](https://docs.rs/tabled/0.1.1/tabled/)
@@ -7,7 +7,7 @@
 
 # tabled
 
-An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
+An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
 # Agenda
 
@@ -32,11 +32,12 @@ An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
     * [Custom field formatting](#Custom-field-formatting)
     * [Tuple combination](#Tuple-combination)
     * [Object](#Object)
+* [Notes](#Notes)
+   * [Emoji](#Emoji)
 
 # Usage
 
-To print a list of structs or enums as a table.
-Implement `Tabled` trait for your struct/enum with or annotate it with a `#[derive(Tabled)]` macro. Then call a `table` macro.
+To print a list of structs or enums as a table your types should implement the the `Tabled` trait or derive with a `#[derive(Tabled)]` macro. Then call the `table` macro.
 
 ```rust
 use tabled::{Tabled, table};
@@ -109,7 +110,7 @@ let table = table!(&some_numbers);
 
 ## Styles
 
-A list of ready to use styles. A shocases for the data in the [Usage](#Usage) section.
+A list of ready to use styles.
 Styles can be chosen by passing a `Style` argument like this to `table!` macro.
 
 ```rust
@@ -202,7 +203,7 @@ table!(
 
 ## Alignment
 
-You can set a alignemt for a Header, Column, Row or All Cells.
+You can set an alignment for a `Header`, `Column`, `Row` or `All` `Cells`.
 
 ```rust
 table!(
@@ -214,7 +215,7 @@ table!(
 
 ## Format
 
-Format function provides an interface for a modification of cells.
+The `Format` function provides an interface for a modification of cells.
 
 ```rust
 let table = table!(
@@ -227,7 +228,7 @@ let table = table!(
 
 ## Disable
 
-You can remove a certain rows or column from the table.
+You can remove certain rows or columns from the table.
 
 ```rust
 table!(&data, Disable::Row(..1), Disable::Column(3..4));
@@ -236,7 +237,6 @@ table!(&data, Disable::Row(..1), Disable::Column(3..4));
 ## Color
 
 The library doesn't bind you in usage of any color library but to be able to work corectly with color input you should provide a `--features color`.
-The folowing change on the script in the usage and it's result
 
 ```rust
 let table = table!(
@@ -269,6 +269,7 @@ struct Person {
 ## Hide a column
 
 You can mark filds as hidden in which case they fill be ignored and not be present on a sheet.
+
 A similar affect could be achived by the means of a `Disable` setting.
 
 ```rust
@@ -284,11 +285,12 @@ struct Person {
 ## Custom field formatting
 
 `#[derive(Tabled)]` is possible only when all fields implement a `Display` trait.
-But it may be often not the case for example `Option` type.
 
-There's 2 common ways how to solve it:
+However, this may be often not the case for example when a field uses the `Option` type.
 
-* Implement Tabled trait manually for a type.
+There's 2 common ways how to solve this:
+
+* Implement `Tabled` trait manually for a type.
 * Wrap `Option` to something like DisplayedOption<T>(Option<T>) and implement a Display trait for it.
 
 Or to use an attribute `#[field(display_with = "func")]` for the field. To use it you must provide a function name in a `display_with` parameter.
@@ -356,4 +358,48 @@ You can peak your target for settings using `and` and `not` methods for an objec
 ```rust
 Full.not(Row(..1)) // peak all cells except header
 Head.and(Column(..1)).not(Cell(0, 0)) // peak a header and first column except a (0, 0) cell
+```
+
+## Notes
+
+### Emoji
+   
+The library support emojies out of the box but be aware that some of the terminals and editors may not render them as you would expect.
+   
+Let's add emojies to an example from a [Usage](#Usage) section.
+
+```rust
+ let languages = vec![
+     Language {
+         name: "C 💕",
+         designed_by: "Dennis Ritchie",
+         invented_year: 1972,
+     },
+     Language {
+         name: "Rust 👍",
+         designed_by: "Graydon Hoare",
+         invented_year: 2010,
+     },
+     Language {
+         name: "Go 🧋",
+         designed_by: "Rob Pike",
+         invented_year: 2009,
+     },
+ ];
+ ```
+
+ The resultant table will look like the following.
+ 
+ As you can see Github triks a bit a return table, but `GNOME terminal` and `Alacritty` terminal handles it correctly.
+   
+ ```rust
++---------+----------------+---------------+
+|  name   |  designed_by   | invented_year |
++---------+----------------+---------------+
+|  C 💕   | Dennis Ritchie |     1972      |
++---------+----------------+---------------+
+| Rust 👍 | Graydon Hoare  |     2010      |
++---------+----------------+---------------+
+|  Go 🧋  |    Rob Pike    |     2009      |
++---------+----------------+---------------+
 ```
