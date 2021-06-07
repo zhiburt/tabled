@@ -108,7 +108,7 @@ impl Grid {
             self.set_text(&entity, text);
         }
 
-        if settings.ident.is_none()
+        if settings.indent.is_none()
             && settings.alignment_h.is_none()
             && settings.alignment_v.is_none()
         {
@@ -122,8 +122,8 @@ impl Grid {
             .get(&entity)
             .map_or_else(|| Style::default(), |s| s.clone());
 
-        if let Some(ident) = settings.ident {
-            s.ident = ident;
+        if let Some(indent) = settings.indent {
+            s.indent = indent;
         }
         if let Some(alignment) = settings.alignment_h {
             s.alignment_h = alignment;
@@ -245,7 +245,7 @@ impl Grid {
         for column in 0..self.count_columns() {
             let style = self.style(row, column);
             let cell = &self.cells[row][column];
-            let cell_height = cell.lines().count() + style.ident.top + style.ident.bottom;
+            let cell_height = cell.lines().count() + style.indent.top + style.indent.bottom;
             height = max(height, cell_height);
         }
 
@@ -258,7 +258,7 @@ impl Grid {
         for row in 0..self.count_rows() {
             let style = self.style(row, column);
             let cell = &self.cells[row][column];
-            let cell_width = string_width(cell) + style.ident.left + style.ident.right;
+            let cell_width = string_width(cell) + style.indent.left + style.indent.right;
             width = max(width, cell_width);
         }
 
@@ -365,7 +365,7 @@ impl Grid {
 #[derive(Debug, Clone, Default)]
 pub struct Settings {
     text: Option<String>,
-    ident: Option<Ident>,
+    indent: Option<Indent>,
     alignment_h: Option<AlignmentHorizontal>,
     alignment_v: Option<AlignmentVertical>,
 }
@@ -382,9 +382,9 @@ impl Settings {
         self
     }
 
-    /// Ident method sets ident for a cell
-    pub fn ident(mut self, left: usize, right: usize, top: usize, bottom: usize) -> Self {
-        self.ident = Some(Ident {
+    /// Indent method sets indent for a cell
+    pub fn indent(mut self, left: usize, right: usize, top: usize, bottom: usize) -> Self {
+        self.indent = Some(Indent {
             left,
             right,
             top,
@@ -526,7 +526,7 @@ pub enum Entity {
 
 #[derive(Debug, Clone)]
 struct Style {
-    ident: Ident,
+    indent: Indent,
     alignment_h: AlignmentHorizontal,
     alignment_v: AlignmentVertical,
 }
@@ -536,7 +536,7 @@ impl Default for Style {
         Self {
             alignment_h: AlignmentHorizontal::Left,
             alignment_v: AlignmentVertical::Top,
-            ident: Ident {
+            indent: Indent {
                 bottom: 0,
                 left: 0,
                 right: 0,
@@ -547,7 +547,7 @@ impl Default for Style {
 }
 
 #[derive(Debug, Clone)]
-struct Ident {
+struct Indent {
     top: usize,
     bottom: usize,
     left: usize,
@@ -652,8 +652,8 @@ impl std::fmt::Display for Grid {
 }
 
 fn build_cell(text: &str, style: Style, column_w: usize, row_h: usize) -> Vec<String> {
-    let width = column_w - style.ident.left - style.ident.right;
-    let height = row_h - style.ident.top - style.ident.bottom;
+    let width = column_w - style.indent.left - style.indent.right;
+    let height = row_h - style.indent.top - style.indent.bottom;
     let text = split_text(text, width);
 
     let mut aligned_text = text
@@ -663,20 +663,20 @@ fn build_cell(text: &str, style: Style, column_w: usize, row_h: usize) -> Vec<St
 
     style.alignment_v.align(&mut aligned_text, width, height);
 
-    let idented_text = aligned_text.into_iter().map(|line| {
+    let indented_text = aligned_text.into_iter().map(|line| {
         format!(
             "{}{}{}",
-            " ".repeat(style.ident.left),
+            " ".repeat(style.indent.left),
             line,
-            " ".repeat(style.ident.right)
+            " ".repeat(style.indent.right)
         )
     });
 
     let mut complete_text =
-        Vec::with_capacity(idented_text.len() + style.ident.top + style.ident.bottom);
-    complete_text.extend(iter::repeat(" ".repeat(column_w)).take(style.ident.top));
-    complete_text.extend(idented_text);
-    complete_text.extend(iter::repeat(" ".repeat(column_w)).take(style.ident.bottom));
+        Vec::with_capacity(indented_text.len() + style.indent.top + style.indent.bottom);
+    complete_text.extend(iter::repeat(" ".repeat(column_w)).take(style.indent.top));
+    complete_text.extend(indented_text);
+    complete_text.extend(iter::repeat(" ".repeat(column_w)).take(style.indent.bottom));
 
     complete_text
 }
@@ -813,13 +813,13 @@ mod tests {
     }
 
     #[test]
-    fn grid_2x2_ident_test() {
+    fn grid_2x2_indent_test() {
         let mut grid = Grid::new(2, 2);
         grid.set(
             Entity::Global,
-            Settings::new().text("asd").ident(1, 1, 1, 1),
+            Settings::new().text("asd").indent(1, 1, 1, 1),
         );
-        grid.set(Entity::Column(0), Settings::new().ident(0, 0, 0, 0));
+        grid.set(Entity::Column(0), Settings::new().indent(0, 0, 0, 0));
         let str = grid.to_string();
         assert_eq!(
             str,
