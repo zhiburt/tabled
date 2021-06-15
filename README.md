@@ -4,7 +4,7 @@
 [![docs.rs](https://img.shields.io/docsrs/tabled?style=for-the-badge)](https://docs.rs/tabled/0.1.1/tabled/)
 [![license](https://img.shields.io/crates/l/tabled?style=for-the-badge)](./LICENSE.txt)
 [![dependency status](https://deps.rs/repo/github/zhiburt/tabled/status.svg?style=for-the-badge)](https://deps.rs/repo/github/zhiburt/tabled)
-
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fzhiburt%2Ftabled.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Fzhiburt%2Ftabled?ref=badge_small)
 # tabled
 
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
