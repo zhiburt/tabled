@@ -4,6 +4,7 @@
 [![docs.rs](https://img.shields.io/docsrs/tabled?style=for-the-badge)](https://docs.rs/tabled/0.1.1/tabled/)
 [![license](https://img.shields.io/crates/l/tabled?style=for-the-badge)](./LICENSE.txt)
 [![dependency status](https://deps.rs/repo/github/zhiburt/tabled/status.svg?style=for-the-badge)](https://deps.rs/repo/github/zhiburt/tabled)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fzhiburt%2Ftabled.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fzhiburt%2Ftabled?ref=badge_shield)
 
 # tabled
 
@@ -409,3 +410,7 @@ Let's add emojies to an example from a [Usage](#Usage) section.
 |  Go 🧋  |    Rob Pike    |     2009      |
 +---------+----------------+---------------+
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fzhiburt%2Ftabled.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fzhiburt%2Ftabled?ref=badge_large)
