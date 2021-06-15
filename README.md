@@ -1,7 +1,7 @@
 [![Build Status](https://img.shields.io/travis/com/zhiburt/tabled/master?style=for-the-badge)](https://travis-ci.com/zhiburt/tabled)
 [![Coverage Status](https://img.shields.io/coveralls/github/zhiburt/tabled/master?style=for-the-badge)](https://coveralls.io/repos/github/zhiburt/tabled/badge.svg?branch=branch)
 [![Crate](https://img.shields.io/crates/v/tabled?style=for-the-badge)](https://crates.io/crates/tabled)
-[![docs.rs](https://img.shields.io/docsrs/tabled?style=for-the-badge)](https://docs.rs/tabled/0.1.1/tabled/)
+[![docs.rs](https://img.shields.io/docsrs/tabled?color=blue&style=for-the-badge)](https://docs.rs/tabled/0.1.1/tabled/)
 [![license](https://img.shields.io/crates/l/tabled?style=for-the-badge)](./LICENSE.txt)
 [![dependency status](https://deps.rs/repo/github/zhiburt/tabled/status.svg?style=for-the-badge)](https://deps.rs/repo/github/zhiburt/tabled)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fzhiburt%2Ftabled.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Fzhiburt%2Ftabled?ref=badge_small)
