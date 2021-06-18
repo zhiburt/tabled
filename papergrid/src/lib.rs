@@ -61,7 +61,9 @@ impl Grid {
     ///     assert_eq!(
     ///          str,
     ///          "+++\n\
+    ///           |||\n\
     ///           +++\n\
+    ///           |||\n\
     ///           +++\n"
     ///     )
     /// ```
@@ -246,7 +248,18 @@ impl Grid {
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
         let mut column_widths = vec![0; count_columns];
-        let mut row_heights = vec![0; count_rows];
+        // default height is 1 as we consider empty string has height 1
+        //
+        // it's crusial since if the default height will be equal to 0
+        // cell line will be not present on the grid like this
+        //
+        //  default 0      default 1
+        //    +++            +++
+        //    +++            |||
+        //    +++            +++
+        //                   |||
+        //                   +++
+        let mut row_heights = vec![1; count_rows];
         let mut rows = Vec::with_capacity(count_rows);
 
         (0..count_rows).for_each(|row_index| {
@@ -603,8 +616,8 @@ fn build_row(
 ) -> fmt::Result {
     let mut top_indents = Vec::with_capacity(row.len());
     for (cell, style) in &row {
-        let cell_height = cell.len();
-        let content_height = cell_height;
+        let content_height = cell.len();
+        let height = height - style.indent.top - style.indent.bottom;
 
         let indent = style.alignment_v.top_ident(height, content_height);
         let indent = indent + style.indent.top;
