@@ -33,7 +33,6 @@
 //! ```
 
 use std::{
-    borrow::Cow,
     cmp::max,
     collections::HashMap,
     fmt::{self, Display},
@@ -653,7 +652,7 @@ fn build_row(
 }
 
 fn empty_line(f: &mut std::fmt::Formatter<'_>, n: usize) -> fmt::Result {
-    write!(f, "{: ^1$}", " ", n)
+    write!(f, "{: ^1$}", "", n)
 }
 
 fn line(
@@ -717,7 +716,7 @@ fn string_width(text: &str) -> usize {
 
 fn real_string_width(text: &str) -> usize {
     text.lines()
-        .map(textwrap::core::display_width)
+        .map(unicode_width::UnicodeWidthStr::width)
         .max()
         .unwrap_or(0)
 }

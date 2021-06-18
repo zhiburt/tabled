@@ -1,6 +1,6 @@
 [package]
 name = "papergrid"
-version = "0.1.13"
+version = "0.1.14"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Papergrid is a library which provide an paper like table printing"
@@ -13,7 +13,7 @@ license = "MIT"
 color = ["strip-ansi-escapes"]
 
 [dependencies]
-textwrap = "0.13.4"
+unicode-width = "0.1.8"
 strip-ansi-escapes = { version = "0.1.0", optional = true }
 
 [dev-dependencies]
