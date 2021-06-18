@@ -131,9 +131,9 @@ fn indent_multiline_with_vertical_alignment() {
         " 0 |   Fedora    |  https://getfedora.org/  \n",
         "   |             |                          \n",
         "   |             |                          \n",
-        "   |             |       https://www.       \n",
-        " 2 |    Open     |         opensuse         \n",
-        "   |    SUSE     |          .org/           \n",
+        "   |    Open     |       https://www.       \n",
+        " 2 |    SUSE     |         opensuse         \n",
+        "   |             |          .org/           \n",
         "   |             |                          \n",
         "   |             |                          \n",
         " 3 | Endeavouros | https://endeavouros.com/ \n",
@@ -147,6 +147,8 @@ fn indent_multiline_with_vertical_alignment() {
         Alignment::center_vertical(Full),
         Indent::new(Row(1..), 1, 1, 1, 1)
     );
+
+    println!("{}", table);
 
     assert_eq!(expected, table);
 }

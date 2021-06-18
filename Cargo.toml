@@ -20,7 +20,7 @@ color = ["papergrid/color"]
 
 [dependencies]
 tabled_derive = "0.1.5"
-papergrid = { path="./papergrid" }
+papergrid = "0.1.15"
 
 [dev-dependencies]
 colored = "2.0.0"
