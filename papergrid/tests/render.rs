@@ -132,8 +132,8 @@ fn render_multilane_vertical_alignment() {
          +----------------------------------------+---------+\n\
          |                                        | and here|\n\
          |                                        |       we|\n\
-         |                                        |      see|\n\
-         |the second column got the beginning here|        a|\n\
+         |the second column got the beginning here|      see|\n\
+         |                                        |        a|\n\
          |                                        |     long|\n\
          |                                        |   string|\n\
          +----------------------------------------+---------+\n"

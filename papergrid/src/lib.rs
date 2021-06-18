@@ -62,9 +62,7 @@ impl Grid {
     ///     assert_eq!(
     ///          str,
     ///          "+++\n\
-    ///           |||\n\
     ///           +++\n\
-    ///           |||\n\
     ///           +++\n"
     ///     )
     /// ```
@@ -120,7 +118,7 @@ impl Grid {
         let mut s = self
             .styles
             .get(&entity)
-            .map_or_else(|| Style::default(), |s| s.clone());
+            .map_or_else(Style::default, |s| s.clone());
 
         if let Some(indent) = settings.indent {
             s.indent = indent;
@@ -201,18 +199,6 @@ impl Grid {
         }
     }
 
-    fn columns_width(&self) -> Vec<usize> {
-        (0..self.count_columns())
-            .map(|column| self.column_width(column))
-            .collect()
-    }
-
-    fn rows_height(&self) -> Vec<usize> {
-        (0..self.count_rows())
-            .map(|row| self.row_height(row))
-            .collect()
-    }
-
     fn set_text<S: Into<String>>(&mut self, entity: &Entity, text: S) {
         let text = text.into();
         match *entity {
@@ -239,32 +225,6 @@ impl Grid {
         }
     }
 
-    // the function suppose you provide a correct column index
-    fn row_height(&self, row: usize) -> usize {
-        let mut height = 0;
-        for column in 0..self.count_columns() {
-            let style = self.style(row, column);
-            let cell = &self.cells[row][column];
-            let cell_height = cell.lines().count() + style.indent.top + style.indent.bottom;
-            height = max(height, cell_height);
-        }
-
-        height
-    }
-
-    // the function suppose you provide a correct column index
-    fn column_width(&self, column: usize) -> usize {
-        let mut width = 0;
-        for row in 0..self.count_rows() {
-            let style = self.style(row, column);
-            let cell = &self.cells[row][column];
-            let cell_width = string_width(cell) + style.indent.left + style.indent.right;
-            width = max(width, cell_width);
-        }
-
-        width
-    }
-
     fn style(&self, row: usize, column: usize) -> Style {
         let v = [
             self.styles.get(&Entity::Cell(row, column)),
@@ -273,6 +233,7 @@ impl Grid {
             self.styles.get(&Entity::Global),
         ];
 
+        #[allow(clippy::manual_flatten)]
         for styles in &v {
             if let Some(style) = styles {
                 return (*style).clone();
@@ -280,6 +241,42 @@ impl Grid {
         }
 
         unreachable!("there's a global settings guaranted in the map")
+    }
+
+    fn info(&self) -> Info<'_> {
+        let count_rows = self.count_rows();
+        let count_columns = self.count_columns();
+        let mut column_widths = vec![0; count_columns];
+        let mut row_heights = vec![0; count_rows];
+        let mut rows = Vec::with_capacity(count_rows);
+
+        (0..count_rows).for_each(|row_index| {
+            let mut row = Vec::with_capacity(count_columns);
+
+            (0..count_columns).for_each(|column_index| {
+                let content = &self.cells[row_index][column_index];
+                let cell: Vec<_> = content.lines().collect();
+                let style = self.style(row_index, column_index);
+
+                let content_height = cell.len();
+                let cell_height = content_height + style.indent.top + style.indent.bottom;
+
+                let content_width = string_width(content);
+                let cell_width = content_width + style.indent.left + style.indent.right;
+
+                column_widths[column_index] = max(column_widths[column_index], cell_width);
+                row_heights[row_index] = max(row_heights[row_index], cell_height);
+                row.push((cell, style));
+            });
+
+            rows.push(row);
+        });
+
+        Info {
+            cells: rows,
+            row_heights,
+            column_widths,
+        }
     }
 
     fn default_border() -> Border {
@@ -304,61 +301,13 @@ impl Grid {
             },
         }
     }
+}
 
-    fn build_cells<'a>(&'a self) -> Vec<Vec<Vec<String>>> {
-        let columns_widths = self.columns_width();
-        let rows_height = self.rows_height();
-
-        let count_rows = self.count_rows();
-        let count_columns = self.count_columns();
-        let mut rows = Vec::with_capacity(count_rows);
-        for row in 0..count_rows {
-            let mut cells = Vec::with_capacity(count_columns);
-
-            for column in 0..count_columns {
-                let style = self.style(row, column);
-
-                let text = build_cell(
-                    &self.cells[row][column],
-                    style,
-                    columns_widths[column],
-                    rows_height[row],
-                );
-
-                cells.push(text);
-            }
-
-            rows.push(cells);
-        }
-
-        rows
-    }
-
-    fn build_row(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        row: &[Vec<String>],
-        border: &LineStyle,
-    ) -> fmt::Result {
-        let height = row.iter().map(|cell| cell.len()).max().unwrap_or_else(|| 0);
-        for i in 0..height {
-            write_option(f, border.left_intersection)?;
-
-            for (y, cell) in row.iter().enumerate() {
-                if y != 0 {
-                    write_option(f, border.intersection)?;
-                }
-
-                write!(f, "{}", cell[i])?;
-            }
-
-            write_option(f, border.right_intersection)?;
-
-            writeln!(f)?;
-        }
-
-        Ok(())
-    }
+#[derive(Debug)]
+struct Info<'a> {
+    cells: Vec<Vec<(Vec<&'a str>, Style)>>,
+    row_heights: Vec<usize>,
+    column_widths: Vec<usize>,
 }
 
 /// Settings represent setting of a particular cell
@@ -385,10 +334,10 @@ impl Settings {
     /// Indent method sets indent for a cell
     pub fn indent(mut self, left: usize, right: usize, top: usize, bottom: usize) -> Self {
         self.indent = Some(Indent {
-            left,
-            right,
             top,
             bottom,
+            left,
+            right,
         });
         self
     }
@@ -555,7 +504,7 @@ struct Indent {
 }
 
 /// AlignmentHorizontal represents an horizontal aligment of a cell content.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum AlignmentHorizontal {
     Center,
     Left,
@@ -563,23 +512,31 @@ pub enum AlignmentHorizontal {
 }
 
 impl AlignmentHorizontal {
-    fn align(&self, text: &str, length: usize) -> String {
-        let diff = length - string_width(text);
+    fn align(&self, f: &mut std::fmt::Formatter<'_>, text: &str, width: usize) -> fmt::Result {
+        // it's important step
+        // we are ignoring trailing spaces which allows us to do alignment with more space
+        // example: tests::grid_2x2_alignment_test
+        let text = text.trim();
+        let text_width = string_width(text);
+        let diff = width - text_width;
         match self {
             AlignmentHorizontal::Left => {
-                format!("{text}{space}", space = " ".repeat(diff), text = text)
+                write!(f, "{text}{: <1$}", "", diff, text = text)
             }
             AlignmentHorizontal::Right => {
-                format!("{space}{text}", space = " ".repeat(diff), text = text)
+                write!(f, "{: <1$}{text}", "", diff, text = text)
             }
             AlignmentHorizontal::Center => {
                 let left = diff / 2;
                 let right = diff - left;
-                format!(
-                    "{left}{text}{right}",
-                    left = " ".repeat(left),
-                    right = " ".repeat(right),
-                    text = text,
+                write!(
+                    f,
+                    "{: <left$}{text}{: <right$}",
+                    "",
+                    "",
+                    left = left,
+                    right = right,
+                    text = text
                 )
             }
         }
@@ -587,7 +544,7 @@ impl AlignmentHorizontal {
 }
 
 /// AlignmentVertical represents an vertical aligment of a cell content.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum AlignmentVertical {
     Center,
     Top,
@@ -595,30 +552,11 @@ pub enum AlignmentVertical {
 }
 
 impl AlignmentVertical {
-    fn align(&self, lines: &mut Vec<String>, width: usize, length: usize) {
-        if length == 0 {
-            return;
-        }
-
-        let diff = length - lines.len();
+    fn top_ident(&self, height: usize, real_height: usize) -> usize {
         match self {
-            &AlignmentVertical::Top => {
-                let iter = (0..diff).map(|_| str::repeat(" ", width).into());
-                lines.extend(iter);
-            }
-            &AlignmentVertical::Bottom => {
-                let mut v = Vec::with_capacity(lines.len() + diff);
-                let iter = (0..diff).map(|_| str::repeat(" ", width).into());
-                v.extend(iter);
-                v.append(lines);
-                *lines = v;
-            }
-            &AlignmentVertical::Center => {
-                let top = diff / 2;
-                let bottom = diff - top;
-                AlignmentVertical::Top.align(lines, width, lines.len() + top);
-                AlignmentVertical::Bottom.align(lines, width, lines.len() + bottom);
-            }
+            AlignmentVertical::Top => 0,
+            AlignmentVertical::Bottom => height - real_height,
+            AlignmentVertical::Center => (height - real_height) / 2,
         }
     }
 }
@@ -630,55 +568,106 @@ impl std::fmt::Display for Grid {
             return Ok(());
         }
 
-        let columns_width = self.columns_width();
-        let rows = self.build_cells();
+        let information = self.info();
 
-        for (i, row) in rows.iter().enumerate() {
+        for (row_index, row) in information.cells.into_iter().enumerate() {
             let border = self
                 .border_styles
-                .get(i)
+                .get(row_index)
                 .expect("it's expected that grid has N styles where N is an amount of rows");
 
-            if i == 0 {
-                build_line(f, &columns_width, &border.top_line)?;
+            if row_index == 0 {
+                build_line(f, &information.column_widths, &border.top_line)?;
             }
 
-            self.build_row(f, &row, &border.inner)?;
-            build_line(f, &columns_width, &border.bottom_line)?;
+            build_row(
+                f,
+                row,
+                &information.column_widths,
+                information.row_heights[row_index],
+                &border.inner,
+            )?;
+
+            build_line(f, &information.column_widths, &border.bottom_line)?;
         }
 
         Ok(())
     }
 }
 
-fn build_cell(text: &str, style: Style, column_w: usize, row_h: usize) -> Vec<String> {
-    let width = column_w - style.indent.left - style.indent.right;
-    let height = row_h - style.indent.top - style.indent.bottom;
-    let text = split_text(text, width);
+fn build_row(
+    f: &mut std::fmt::Formatter<'_>,
+    mut row: Vec<(Vec<&str>, Style)>,
+    widths: &[usize],
+    height: usize,
+    border: &LineStyle,
+) -> fmt::Result {
+    let mut top_indents = Vec::with_capacity(row.len());
+    for (cell, style) in &row {
+        let cell_height = cell.len();
+        let content_height = cell_height;
 
-    let mut aligned_text = text
-        .into_iter()
-        .map(|line| style.alignment_h.align(&line, width))
-        .collect::<Vec<_>>();
+        let indent = style.alignment_v.top_ident(height, content_height);
+        let indent = indent + style.indent.top;
 
-    style.alignment_v.align(&mut aligned_text, width, height);
+        top_indents.push(indent);
+    }
 
-    let indented_text = aligned_text.into_iter().map(|line| {
-        format!(
-            "{}{}{}",
-            " ".repeat(style.indent.left),
-            line,
-            " ".repeat(style.indent.right)
-        )
-    });
+    for line_index in 0..height {
+        write_option(f, border.left_intersection)?;
 
-    let mut complete_text =
-        Vec::with_capacity(indented_text.len() + style.indent.top + style.indent.bottom);
-    complete_text.extend(iter::repeat(" ".repeat(column_w)).take(style.indent.top));
-    complete_text.extend(indented_text);
-    complete_text.extend(iter::repeat(" ".repeat(column_w)).take(style.indent.bottom));
+        for (column_index, (cell, style)) in row.iter_mut().enumerate() {
+            if column_index != 0 {
+                write_option(f, border.intersection)?;
+            }
 
-    complete_text
+            let width = widths[column_index];
+
+            if top_indents[column_index] > line_index {
+                empty_line(f, width)?;
+                continue;
+            }
+
+            let index = line_index - top_indents[column_index];
+            match cell.get(index) {
+                Some(s) => line(
+                    f,
+                    s,
+                    width,
+                    style.indent.left,
+                    style.indent.right,
+                    style.alignment_h,
+                )?,
+                None => {
+                    empty_line(f, width)?;
+                }
+            }
+        }
+
+        write_option(f, border.right_intersection)?;
+
+        writeln!(f)?;
+    }
+
+    Ok(())
+}
+
+fn empty_line(f: &mut std::fmt::Formatter<'_>, n: usize) -> fmt::Result {
+    write!(f, "{: ^1$}", " ", n)
+}
+
+fn line(
+    f: &mut std::fmt::Formatter<'_>,
+    text: &str,
+    width: usize,
+    left_indent: usize,
+    right_indent: usize,
+    alignment: AlignmentHorizontal,
+) -> fmt::Result {
+    write!(f, "{}", " ".repeat(left_indent))?;
+    alignment.align(f, text, width - left_indent - right_indent)?;
+    write!(f, "{}", " ".repeat(right_indent))?;
+    Ok(())
 }
 
 fn build_line(
@@ -714,12 +703,6 @@ fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) ->
     }
 }
 
-fn split_text(text: &str, width: usize) -> Vec<Cow<str>> {
-    let lines = textwrap::wrap(text, width);
-
-    lines
-}
-
 #[cfg(not(feature = "color"))]
 fn string_width(text: &str) -> usize {
     real_string_width(text)
@@ -729,14 +712,14 @@ fn string_width(text: &str) -> usize {
 fn string_width(text: &str) -> usize {
     let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
     let s = std::str::from_utf8(&b).unwrap();
-    real_string_width(&s)
+    real_string_width(s)
 }
 
 fn real_string_width(text: &str) -> usize {
     text.lines()
-        .map(|line| textwrap::core::display_width(line))
+        .map(textwrap::core::display_width)
         .max()
-        .unwrap_or_else(|| 0)
+        .unwrap_or(0)
 }
 
 #[cfg(test)]
@@ -802,6 +785,7 @@ mod tests {
             Settings::new().alignment(AlignmentHorizontal::Right),
         );
         let str = grid.to_string();
+
         assert_eq!(
             str,
             "+-------+-------+\n\
@@ -821,6 +805,7 @@ mod tests {
         );
         grid.set(Entity::Column(0), Settings::new().indent(0, 0, 0, 0));
         let str = grid.to_string();
+
         assert_eq!(
             str,
             "+---+-----+\n\
@@ -989,72 +974,40 @@ mod tests {
 
     #[test]
     fn horizontal_aligment_test() {
-        assert_eq!(AlignmentHorizontal::Right.align("AAA", 4), " AAA");
-        assert_eq!(AlignmentHorizontal::Left.align("AAA", 4), "AAA ");
-        assert_eq!(AlignmentHorizontal::Center.align("AAA", 4), "AAA ");
-        assert_eq!(AlignmentHorizontal::Center.align("🎩", 4), " 🎩 ");
-        assert_eq!(AlignmentHorizontal::Center.align("🎩", 3), "🎩 ");
+        use std::fmt;
+
+        struct F<'a>(&'a str, AlignmentHorizontal, usize);
+
+        impl fmt::Display for F<'_> {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                self.1.align(f, self.0, self.2)
+            }
+        }
+
+        assert_eq!(F("AAA", AlignmentHorizontal::Right, 4).to_string(), " AAA");
+        assert_eq!(F("AAA", AlignmentHorizontal::Left, 4).to_string(), "AAA ");
+        assert_eq!(F("AAA", AlignmentHorizontal::Center, 4).to_string(), "AAA ");
+        assert_eq!(F("🎩", AlignmentHorizontal::Center, 4).to_string(), " 🎩 ");
+        assert_eq!(F("🎩", AlignmentHorizontal::Center, 3).to_string(), "🎩 ");
         #[cfg(feature = "color")]
         {
             use colored::Colorize;
             let text = "Colored Text".red().to_string();
             assert_eq!(
-                AlignmentHorizontal::Center.align(&text, 15),
-                format!(" {}  ", text),
+                F(&text, AlignmentHorizontal::Center, 15).to_string(),
+                format!(" {}  ", text)
             );
         }
     }
 
     #[test]
     fn vertical_aligment_test() {
-        {
-            let mut lines = vec![format!("Hello World")];
-            AlignmentVertical::Bottom.align(&mut lines, 11, 3);
-            assert_eq!(
-                vec![
-                    format!("           "),
-                    format!("           "),
-                    format!("Hello World")
-                ],
-                lines,
-            );
-        }
-
-        {
-            let mut lines = vec![format!("Hello World")];
-            AlignmentVertical::Top.align(&mut lines, 11, 3);
-            assert_eq!(
-                vec![
-                    format!("Hello World"),
-                    format!("           "),
-                    format!("           "),
-                ],
-                lines,
-            );
-        }
-
-        {
-            let mut lines = vec![format!("Hello World")];
-            AlignmentVertical::Center.align(&mut lines, 11, 3);
-            assert_eq!(
-                vec![
-                    format!("           "),
-                    format!("Hello World"),
-                    format!("           "),
-                ],
-                lines,
-            );
-
-            AlignmentVertical::Center.align(&mut lines, 11, 4);
-            assert_eq!(
-                vec![
-                    format!("           "),
-                    format!("           "),
-                    format!("Hello World"),
-                    format!("           "),
-                ],
-                lines,
-            );
-        }
+        assert_eq!(AlignmentVertical::Bottom.top_ident(1, 1), 0);
+        assert_eq!(AlignmentVertical::Top.top_ident(1, 1), 0);
+        assert_eq!(AlignmentVertical::Center.top_ident(1, 1), 0);
+        assert_eq!(AlignmentVertical::Bottom.top_ident(3, 1), 2);
+        assert_eq!(AlignmentVertical::Top.top_ident(3, 1), 0);
+        assert_eq!(AlignmentVertical::Center.top_ident(3, 1), 1);
+        assert_eq!(AlignmentVertical::Center.top_ident(4, 1), 1);
     }
 }

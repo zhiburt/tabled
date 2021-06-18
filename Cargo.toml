@@ -11,16 +11,16 @@ categories = ["text-processing", "visualization"]
 readme = "README.md"
 
 [badges]
-travis-ci = { repository = "https://github.com/zhiburt/tabled", branch = "master" }
-coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master", service = "github" }
-maintenance = { status = "actively-developed" }
+travis-ci = { repository="https://github.com/zhiburt/tabled", branch="master" }
+coveralls = { repository="https://github.com/zhiburt/tabled", branch="master", service="github" }
+maintenance = { status="actively-developed" }
 
 [features]
 color = ["papergrid/color"]
 
 [dependencies]
 tabled_derive = "0.1.5"
-papergrid = "0.1.13"
+papergrid = { path="./papergrid" }
 
 [dev-dependencies]
 colored = "2.0.0"
