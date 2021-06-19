@@ -327,6 +327,78 @@ fn formatting_not_combination_test() {
     assert_eq!(table, expected);
 }
 
+#[test]
+fn formatting_using_lambda_test() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "| :id | :destribution |           :link           |\n",
+        "|-----+---------------+---------------------------|\n",
+        "|  0  |    Fedora     |  https://getfedora.org/   |\n",
+        "|  2  |   OpenSUSE    | https://www.opensuse.org/ |\n",
+        "|  3  |  Endeavouros  | https://endeavouros.com/  |\n",
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Head).with(|s: &str| format!(":{}", s)))
+        .to_string();
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn formatting_using_function_test() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "| ID | DESTRIBUTION |           LINK            |\n",
+        "|----+--------------+---------------------------|\n",
+        "| 0  |    Fedora    |  https://getfedora.org/   |\n",
+        "| 2  |   OpenSUSE   | https://www.opensuse.org/ |\n",
+        "| 3  | Endeavouros  | https://endeavouros.com/  |\n",
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Head).with(str::to_uppercase))
+        .to_string();
+
+    assert_eq!(table, expected);
+}
+
 #[cfg(feature = "color")]
 mod color {
 

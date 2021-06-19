@@ -42,6 +42,17 @@ impl<F: Fn(&str) -> String> CellOption for Format<F> {
     }
 }
 
+impl<F> CellOption for F
+where
+    F: for<'r> Fn(&'r str) -> String,
+{
+    fn change_cell(&self, grid: &mut Grid, row: usize, column: usize) {
+        let content = grid.get_cell_content(row, column);
+        let content = (self)(content);
+        grid.set(Entity::Cell(row, column), Settings::new().text(content))
+    }
+}
+
 /// Multiline a helper function for changing multiline content of cell by rows not as a whole.
 ///
 /// ```rust,no_run
