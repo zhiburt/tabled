@@ -224,6 +224,17 @@ Table::new(&data)
     .with(Modify::new(Row(..1)).with(Format(|s| format!("Head {}", s))));
 ```
 
+It's also possible to use functions with signature `Fn(&str) -> String` as a formatter.
+
+```rust
+Table::new(&data)
+    .with(Style::psql()),
+    .with(Modify::new(Column(..)).with(|s: &str| format!("<< {} >>", s)))
+    .with(Modify::new(Row(..1)).with(str::to_lowercase));
+```
+
+IMPORTANT: you may need to specify type in your lambda otherwise compiler may be disagreed to work :)
+
 ## Indent
 
 The `Indent` type provides an interface for a left, right, top and bottom indent of cells.
