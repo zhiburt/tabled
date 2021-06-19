@@ -18,7 +18,7 @@
 //! `#[derive(Tabled)]`. You can also implement it on your own as well.
 //!
 //! ```rust
-//!     use tabled::{Tabled, table};
+//!     use tabled::{Tabled, Table};
 //!
 //!     #[derive(Tabled)]
 //!     struct Language {
@@ -45,7 +45,8 @@
 //!         },
 //!     ];
 //!
-//!     let table = table!(&languages);
+//!     let table = Table::new(languages).to_string();
+//!
 //!     let expected = "+------+----------------+---------------+\n\
 //!                     | name |  designed_by   | invented_year |\n\
 //!                     +------+----------------+---------------+\n\
@@ -56,7 +57,7 @@
 //!                     |  Go  |    Rob Pike    |     2009      |\n\
 //!                     +------+----------------+---------------+\n";
 //!
-//!     assert_eq!(expected, table);
+//!     assert_eq!(table, expected);
 //! ```
 //!
 //! We must to know what we print in the field
@@ -76,9 +77,9 @@
 //! Most of the default types implements the trait out of the box.
 //!
 //! ```rust
-//!     use tabled::{Tabled, table};
+//!     use tabled::{Tabled, Table};
 //!     let some_numbers = [1, 2, 3];
-//!     let table = table!(&some_numbers);
+//!     let table = Table::new(&some_numbers);
 //!     # let expected = "+-----+\n\
 //!     #                 | i32 |\n\
 //!     #                 +-----+\n\
@@ -88,13 +89,13 @@
 //!     #                 +-----+\n\
 //!     #                 |  3  |\n\
 //!     #                 +-----+\n";
-//!     # assert_eq!(expected, table);
+//!     # assert_eq!(table.to_string(), expected);
 //! ```
 //!
 //! You also can combine structures by means of tuples.
 //!
 //! ```rust
-//!     use tabled::{Tabled, table, Style};
+//!     use tabled::{Tabled, Table, Style};
 //!
 //!     #[derive(Tabled)]
 //!     enum Domain {
@@ -114,7 +115,7 @@
 //!         (Developer("Maxim Zhiburt"), Domain::Unknown),
 //!     ];
 //!     
-//!     let table = table!(data, Style::psql());
+//!     let table = Table::new(data).with(Style::psql()).to_string();
 //!
 //!     assert_eq!(
 //!         table,
@@ -130,6 +131,9 @@
 //! ```
 //!
 
+use papergrid::{AlignmentHorizontal, Entity, Grid, Settings};
+use std::fmt;
+
 mod alignment;
 mod disable;
 mod formating;
@@ -138,9 +142,8 @@ mod object;
 pub mod style;
 
 pub use crate::{alignment::*, disable::*, formating::*, indent::*, object::*, style::Style};
+pub use papergrid;
 pub use tabled_derive::Tabled;
-
-use papergrid::{AlignmentHorizontal, Entity, Grid, Settings};
 
 /// Tabled a trait responsible for providing a header filds and a row fields.
 ///
@@ -176,63 +179,114 @@ pub trait TableOption {
     fn change(&self, grid: &mut Grid);
 }
 
-impl TableOption for () {
-    fn change(&self, _: &mut Grid) {}
+/// CellOption is trait for configuring a `Cell` which represented by 'row' and 'column' indexes.
+pub trait CellOption {
+    /// Modification function of a `Cell`
+    fn change_cell(&self, grid: &mut Grid, row: usize, column: usize);
 }
 
-impl<E> TableOption for Vec<E>
-where
-    E: TableOption,
-{
-    fn change(&self, grid: &mut Grid) {
-        for e in self {
-            e.change(grid);
-        }
-    }
-}
-
-/// Table macro returns a built table as a string.
-/// It may take a list of arguments such as [`Style`](./enum.Style.html),
-/// [`Alignment`](./struct.Alignment.html), [`ChangeRing`](./struct.ChangeRing.html)
+/// Table structure provides an interface for building a table for types that implements [`Tabled`].
 ///
 /// # Example
 ///
 /// ## Basic usage
 ///
 /// ```rust,no_run
-///     use tabled::table;
+///     use tabled::Table;
 ///     let data: Vec<&'static str> = Vec::new();
-///     let table = table!(data);
+///     let table = Table::new(data);
 ///     println!("{}", table);
 /// ```
 ///
 /// ## A list of settings
 ///
+/// It may take a list of arguments such as [`Style`](./enum.Style.html),
+/// [`Alignment`](./struct.Alignment.html), [`ChangeRing`](./struct.ChangeRing.html)
+///
 /// ```rust,no_run
-///     use tabled::{table, Style, Alignment, Full};
+///     use tabled::{Table, Style, Alignment, Full, Modify};
 ///     let data = vec!["Hello", "2021"];
-///     let table = table!(
-///        &data,
-///        Style::psql(),
-///        Alignment::left(Full)
-///     );
+///     let table = Table::new(&data)
+///                     .with(Style::psql())
+///                     .with(Modify::new(Full).with(Alignment::left()));
 ///     println!("{}", table);
 /// ```
 ///
-#[macro_export]
-macro_rules! table {
-    ( $data:expr ) => {
-        tabled::table!($data, tabled::Style::default())
-    };
-    ( $data:expr, $($opt:expr),+ $(,)? ) => {{
-        use tabled::TableOption;
-        let mut grid = tabled::build_grid($data);
-        $(
-            $opt.change(&mut grid);
-        )+
+/// [`Tabled`]: ./trait.Tabled.html
+pub struct Table {
+    grid: Grid,
+}
 
-        grid.to_string()
-    }};
+impl Table {
+    /// New creates a Table instance.
+    pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
+        let grid = build_grid(iter);
+
+        Self { grid }
+    }
+
+    /// With is a generic function which applies options to the table.
+    pub fn with<O>(mut self, option: O) -> Self
+    where
+        O: TableOption,
+    {
+        option.change(&mut self.grid);
+        self
+    }
+}
+
+impl fmt::Display for Table {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.grid)
+    }
+}
+
+/// Modify structure provide a conviniet way for applying a set of [`CellOption`]s to the same object.
+///
+/// [`CellOption`]: trait.CellOption.html
+pub struct Modify<O> {
+    obj: O,
+    modifiers: Vec<Box<dyn CellOption>>,
+}
+
+impl<O> Modify<O>
+where
+    O: Object,
+{
+    /// New creates a instance of Modify structure
+    pub fn new(obj: O) -> Self {
+        Self {
+            obj,
+            modifiers: Vec::new(),
+        }
+    }
+
+    /// With a generic function which stores a [`CellOption`] to apply it later to an [`Object`]
+    ///
+    /// [`CellOption`]: trait.CellOption.html
+    /// [`Object`]: trait.Object.html
+    pub fn with<F>(mut self, f: F) -> Self
+    where
+        F: CellOption + 'static,
+    {
+        let func = Box::new(f);
+        self.modifiers.push(func);
+        self
+    }
+}
+
+impl<O> TableOption for Modify<O>
+where
+    O: Object,
+{
+    fn change(&self, grid: &mut Grid) {
+        let cells = self.obj.cells(grid.count_rows(), grid.count_columns());
+        for func in &self.modifiers {
+            for &(row, column) in &cells {
+                func.change_cell(grid, row, column)
+            }
+        }
+    }
 }
 
 /// Build_grid function build a [`Grid`](../papergrid/struct.Grid.html) from a data.

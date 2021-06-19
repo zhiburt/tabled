@@ -1,15 +1,13 @@
+use crate::{bounds_to_usize, TableOption};
+use papergrid::Grid;
 use std::ops::RangeBounds;
 
-use papergrid::Grid;
-
-use crate::{bounds_to_usize, TableOption};
-
-/// Disable represent a disable setting for a [`table` macros](./macro.table.html)
+/// Disable represent a disable setting for a [`Table`](./struct.Table.html)
 ///
 /// ```rust,no_run
-///   # use tabled::{Disable, table};
+///   # use tabled::{Disable, Table};
 ///   # let data: Vec<&'static str> = Vec::new();
-///     let table = table!(&data, Disable::Row(..1));
+///     let table = Table::new(&data).with(Disable::Row(..1));
 /// ```
 ///
 #[derive(Debug)]

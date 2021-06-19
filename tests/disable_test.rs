@@ -10,7 +10,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use tabled::{table, Alignment, Disable, Full, Style, Tabled};
+use tabled::{Alignment, Disable, Full, Modify, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -45,12 +45,11 @@ fn disable_rows() {
         "3 |Endeavouros |https://endeavouros.com/\n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Alignment::left(Full),
-        Disable::Row(1..=2),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Disable::Row(1..=2))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -81,12 +80,11 @@ fn disable_header() {
         "3|Endeavouros|https://endeavouros.com/ \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Alignment::left(Full),
-        Disable::Row(..1),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Disable::Row(..1))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -113,12 +111,11 @@ fn disable_all_table_via_rows() {
 
     let expected = "";
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Alignment::left(Full),
-        Disable::Row(..),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Disable::Row(..))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -152,12 +149,11 @@ fn disable_header_with_new_styling() {
         "└─┴───────────┴─────────────────────────┘\n",
     );
 
-    let table = table!(
-        &data,
-        Alignment::left(Full),
-        Disable::Row(..1),
-        Style::pseudo_clean(),
-    );
+    let table = Table::new(&data)
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Disable::Row(..1))
+        .with(Style::pseudo_clean())
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -190,12 +186,11 @@ fn disable_columns() {
         "Endeavouros |https://endeavouros.com/ \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Alignment::left(Full),
-        Disable::Column(..1),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Disable::Column(..1))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -222,12 +217,11 @@ fn disable_all_table_via_columns() {
 
     let expected = "";
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Alignment::left(Full),
-        Disable::Column(..),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Disable::Column(..))
+        .to_string();
 
     assert_eq!(table, expected);
 }

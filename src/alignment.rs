@@ -1,72 +1,66 @@
+use crate::CellOption;
 use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
 
-use crate::{Object, TableOption};
-
-/// Alignment represent a horizontal and vertical alignemt setting for a [`table` macros](./macro.table.html)
+/// Alignment represent a horizontal and vertical alignemt setting for a [`Table`](./struct.Table.html)
 ///
 /// ```rust,no_run
-///   # use tabled::{Style, Alignment, Row, table};
+///   # use tabled::{Style, Alignment, Modify, Row, Table};
 ///   # let data: Vec<&'static str> = Vec::new();
-///     let table = table!(&data, Alignment::center_horizontal(Row(..1)));
+///     let table = Table::new(&data).with(Modify::new(Row(..1)).with(Alignment::center_horizontal()));
 /// ```
 #[derive(Debug)]
-pub struct Alignment<O: Object>(O, AlignmentType);
-
-#[derive(Debug)]
-enum AlignmentType {
+pub enum Alignment {
     Horizontal(AlignmentHorizontal),
     Vertical(AlignmentVertical),
 }
 
-impl<O: Object> Alignment<O> {
+impl Alignment {
     /// Top constructs a vertical alignment to TOP
-    pub fn top(obj: O) -> Self {
-        Self::vertical(obj, AlignmentVertical::Top)
+    pub fn top() -> Self {
+        Self::vertical(AlignmentVertical::Top)
     }
 
     /// Bottom constructs a vertical alignment to BOTTOM
-    pub fn bottom(obj: O) -> Self {
-        Self::vertical(obj, AlignmentVertical::Bottom)
+    pub fn bottom() -> Self {
+        Self::vertical(AlignmentVertical::Bottom)
     }
 
     /// Center_vertical constructs a vertical alignment to CENTER
-    pub fn center_vertical(obj: O) -> Self {
-        Self::vertical(obj, AlignmentVertical::Center)
+    pub fn center_vertical() -> Self {
+        Self::vertical(AlignmentVertical::Center)
     }
 
     /// Left constructs a horizontal alignment to LEFT
-    pub fn left(obj: O) -> Self {
-        Self::horizontal(obj, AlignmentHorizontal::Left)
+    pub fn left() -> Self {
+        Self::horizontal(AlignmentHorizontal::Left)
     }
 
     /// Right constructs a horizontal alignment to RIGHT
-    pub fn right(obj: O) -> Self {
-        Self::horizontal(obj, AlignmentHorizontal::Right)
+    pub fn right() -> Self {
+        Self::horizontal(AlignmentHorizontal::Right)
     }
 
     /// Center_horizontal constructs a horizontal alignment to CENTER
-    pub fn center_horizontal(obj: O) -> Self {
-        Self::horizontal(obj, AlignmentHorizontal::Center)
+    pub fn center_horizontal() -> Self {
+        Self::horizontal(AlignmentHorizontal::Center)
     }
 
-    fn horizontal(obj: O, alignment: AlignmentHorizontal) -> Self {
-        Self(obj, AlignmentType::Horizontal(alignment))
+    fn horizontal(alignment: AlignmentHorizontal) -> Self {
+        Self::Horizontal(alignment)
     }
 
-    fn vertical(obj: O, alignment: AlignmentVertical) -> Self {
-        Self(obj, AlignmentType::Vertical(alignment))
+    fn vertical(alignment: AlignmentVertical) -> Self {
+        Self::Vertical(alignment)
     }
 }
 
-impl<O: Object> TableOption for Alignment<O> {
-    fn change(&self, grid: &mut Grid) {
-        let setting = match &self.1 {
-            AlignmentType::Horizontal(a) => Settings::new().alignment(a.clone()),
-            AlignmentType::Vertical(a) => Settings::new().vertical_alignment(a.clone()),
+impl CellOption for Alignment {
+    fn change_cell(&self, grid: &mut Grid, row: usize, column: usize) {
+        let setting = match &self {
+            Self::Horizontal(a) => Settings::new().alignment(*a),
+            Self::Vertical(a) => Settings::new().vertical_alignment(*a),
         };
 
-        for (row, column) in self.0.cells(grid.count_rows(), grid.count_columns()) {
-            grid.set(Entity::Cell(row, column), setting.clone())
-        }
+        grid.set(Entity::Cell(row, column), setting)
     }
 }

@@ -9,15 +9,16 @@ use crate::TableOption;
 /// # Example
 ///
 /// ```rust,no_run
-///     use tabled::{table, Style, style::Line};
+///     use tabled::{Table, Style, style::Line};
 ///     let data = vec!["Hello", "2021"];
-///     let table = table!(
-///         &data,
-///         tabled::Style::noborder()
-///             .frame_bottom(Some(Line::short('*', ' ')))
-///             .split(Some(Line::short('*', ' ')))
-///             .inner(' ')
-///     );
+///     let table = Table::new(&data).with(
+///                     Style::noborder()
+///                         .frame_bottom(Some(Line::short('*', ' ')))
+///                         .split(Some(Line::short('*', ' ')))
+///                         .inner(' ')
+///                 )
+///                 .to_string();
+///
 ///     println!("{}", table);
 /// ```
 ///

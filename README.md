@@ -38,10 +38,10 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
 # Usage
 
-To print a list of structs or enums as a table your types should implement the the `Tabled` trait or derive with a `#[derive(Tabled)]` macro. Then call the `table` macro.
+To print a list of structs or enums as a table your types should implement the the `Tabled` trait or derive with a `#[derive(Tabled)]` macro.
 
 ```rust
-use tabled::{Tabled, table};
+use tabled::{Tabled, Table};
 
 #[derive(Tabled)]
 struct Language {
@@ -68,7 +68,8 @@ let languages = vec![
     },
 ];
 
-let table = table!(&languages);
+let table = Table::new(languages).to_string();
+
 let expected = "+------+----------------+---------------+\n\
                 | name |  designed_by   | invented_year |\n\
                 +------+----------------+---------------+\n\
@@ -79,7 +80,7 @@ let expected = "+------+----------------+---------------+\n\
                 |  Go  |    Rob Pike    |     2009      |\n\
                 +------+----------------+---------------+\n";
 
-assert_eq!(expected, table);
+assert_eq!(table, expected);
 ```
 
 ## Derive information
@@ -102,9 +103,9 @@ struct SomeOtherType;
 Most of the default types implements the trait out of the box.
 
 ```rust
-use tabled::table;
+use tabled::Table;
 let some_numbers = [1, 2, 3];
-let table = table!(&some_numbers);
+let table = Table::new(&some_numbers);
 ```
 
 # Style
@@ -112,10 +113,10 @@ let table = table!(&some_numbers);
 ## Styles
 
 A list of ready to use styles.
-Styles can be chosen by passing a `Style` argument like this to `table!` macro.
+Styles can be chosen by passing a `Style` argument option.
 
 ```rust
-let table = table!(&data, Style::psql());
+let table = Table::new(&data).with(Style::psql());
 ```
 
 ### Default
@@ -192,14 +193,12 @@ let table = table!(&data, Style::psql());
 You can modify existing styles to fits your needs.
 
 ```rust
+let style = tabled::Style::noborder()
+                .frame_bottom(Some(Line::short('*', ' '')))
+                .split(Some(Line::short(' ', ' ')))
+                .inner(' ');
 
-table!(
-   &data,
-   tabled::Style::noborder()
-      .frame_bottom(Some(Line::short('*', ' '')))
-      .split(Some(Line::short(' ', ' ')))
-      .inner(' ')
-)
+let table = Table::new(&data).with(style);
 ```
 
 ## Alignment
@@ -207,7 +206,11 @@ table!(
 You can set a horizontal and vertical alignment for a `Header`, `Column`, `Row` or `Full` set of cells.
 
 ```rust
-table!(&data, Alignment::left(Full), Alignment::top(Full));
+Table::new(&data)
+    .with(Modify::new(Full)
+        .with(Alignment::left())
+        .with(Alignment::top())
+    );
 ```
 
 ## Format
@@ -215,21 +218,18 @@ table!(&data, Alignment::left(Full), Alignment::top(Full));
 The `Format` function provides an interface for a modification of cells.
 
 ```rust
-let table = table!(
-    &data,
-    Style::psql(),
-    Format(Column(..), |s| { format!("<< {} >>", s) }),
-    Format(Row(..1), |s| { format!("Head {}", s) }),
-);
+Table::new(&data)
+    .with(Style::psql()),
+    .with(Modify::new(Column(..)).with(Format(|s| format!("<< {} >>", s))))
+    .with(Modify::new(Row(..1)).with(Format(|s| format!("Head {}", s))));
 ```
-
 
 ## Indent
 
 The `Indent` type provides an interface for a left, right, top and bottom indent of cells.
 
 ```rust
-let table = table!(&data, Indent::new(Row(1..), 1, 1, 0, 2));
+Table::new(&data).with(Modify::new(Row(1..)).with(Indent::new(1, 1, 0, 2)));
 ```
 
 ## Disable
@@ -237,7 +237,9 @@ let table = table!(&data, Indent::new(Row(1..), 1, 1, 0, 2));
 You can remove certain rows or columns from the table.
 
 ```rust
-table!(&data, Disable::Row(..1), Disable::Column(3..4));
+Table::new(&data)
+    .with(Disable::Row(..1))
+    .with(Disable::Column(3..4));
 ```
 
 ## Color
@@ -245,13 +247,11 @@ table!(&data, Disable::Row(..1), Disable::Column(3..4));
 The library doesn't bind you in usage of any color library but to be able to work corectly with color input you should provide a `--features color`.
 
 ```rust
-let table = table!(
-    &data,
-    Style::psql(),
-    Format(Column(..1), |s| { s.red().to_string() }),
-    Format(Column(1..2), |s| { s.blue().to_string() }),
-    Format(Column(2..), |s| { s.green().to_string() }),
-);
+Table::new(&data)
+    .with(Style::psql())
+    .with(Modify::new(Column(..1)).with(Format(|s| s.red().to_string())))
+    .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))
+    .with(Modify::new(Column(2..)).with(Format(|s| s.green().to_string())));
 ```
 
 ![carbon-2](https://user-images.githubusercontent.com/20165848/120526301-b95efc80-c3e1-11eb-8779-0ec48894463b.png)
@@ -322,7 +322,7 @@ pub struct MyRecord {
 You also can combine objets which implements `Tabled` by means of tuples, you will get a combined columns of them.
 
 ```rust
-use tabled::{Tabled, table, Style};
+use tabled::{Tabled, Table, Style};
 
 #[derive(Tabled)]
 enum Domain {
@@ -334,15 +334,15 @@ enum Domain {
 
 #[derive(Tabled)]
 struct Developer(#[header("name")] &'static str);
-    
+
 let data = vec![
     (Developer("Terri Kshlerin"), Domain::Embeded),
     (Developer("Catalina Dicki"), Domain::Security),
     (Developer("Jennie Schmeler"), Domain::Frontend),
     (Developer("Maxim Zhiburt"), Domain::Unknown),
 ];
-    
-let table = table!(data, Style::psql());
+
+let table = Table::new(data).with(Style::psql()).to_string();
 
 assert_eq!(
     table,

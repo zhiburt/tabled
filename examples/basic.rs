@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example basic`
 
-use tabled::{table, Alignment, Head, Row, Style, Tabled};
+use tabled::{papergrid::AlignmentHorizontal, Alignment, Head, Modify, Row, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {
@@ -41,12 +41,10 @@ fn main() {
         },
     ];
 
-    let table = table!(
-        &data,
-        Style::pseudo(),
-        Alignment::center_horizontal(Head),
-        Alignment::left(Row(1..)),
-    );
+    let table = Table::new(&data)
+        .with(Style::pseudo())
+        .with(Modify::new(Head).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
+        .with(Modify::new(Row(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Left)));
 
     println!("{}", table);
 }

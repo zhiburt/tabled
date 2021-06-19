@@ -10,7 +10,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use tabled::{table, Alignment, Full, Indent, Row, Style, Tabled};
+use tabled::{Alignment, Full, Indent, Modify, Row, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -53,14 +53,13 @@ fn indent() {
         "   |             |                           \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Alignment::left(Full),
-        Indent::new(Row(1..), 1, 1, 0, 2)
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Row(1..)).with(Indent::new(1, 1, 0, 2)))
+        .to_string();
 
-    assert_eq!(expected, table);
+    assert_eq!(table, expected);
 }
 
 #[test]
@@ -99,9 +98,12 @@ fn indent_multiline() {
         "    |              |                          \n",
     );
 
-    let table = table!(&data, Style::psql(), Indent::new(Row(1..), 1, 1, 1, 1));
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Row(1..)).with(Indent::new(1, 1, 1, 1)))
+        .to_string();
 
-    assert_eq!(expected, table);
+    assert_eq!(table, expected);
 }
 
 #[test]
@@ -140,15 +142,17 @@ fn indent_multiline_with_vertical_alignment() {
         "   |             |                          \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Alignment::center_horizontal(Full),
-        Alignment::center_vertical(Full),
-        Indent::new(Row(1..), 1, 1, 1, 1)
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(
+            Modify::new(Full)
+                .with(Alignment::center_horizontal())
+                .with(Alignment::center_vertical()),
+        )
+        .with(Modify::new(Row(1..)).with(Indent::new(1, 1, 1, 1)))
+        .to_string();
 
     println!("{}", table);
 
-    assert_eq!(expected, table);
+    assert_eq!(table, expected);
 }

@@ -11,7 +11,7 @@
 // copies or substantial portions of the Software.
 
 use tabled::style::Line;
-use tabled::{table, Tabled};
+use tabled::{Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -52,7 +52,7 @@ fn default_style() {
         "+----+--------------+---------------------------+\n",
     );
 
-    let table = table!(&data, tabled::Style::default());
+    let table = Table::new(&data).with(Style::default()).to_string();
 
     assert_eq!(table, expected);
 }
@@ -85,7 +85,7 @@ fn psql_style() {
         " 3  | Endeavouros  | https://endeavouros.com/  \n",
     );
 
-    let table = table!(&data, tabled::Style::psql());
+    let table = Table::new(&data).with(Style::psql()).to_string();
 
     assert_eq!(table, expected);
 }
@@ -118,7 +118,7 @@ fn github_markdown_style() {
         "| 3  | Endeavouros  | https://endeavouros.com/  |\n",
     );
 
-    let table = table!(&data, tabled::Style::github_markdown());
+    let table = Table::new(&data).with(Style::github_markdown()).to_string();
 
     assert_eq!(table, expected);
 }
@@ -155,7 +155,7 @@ fn pseudo_style() {
         "└────┴──────────────┴───────────────────────────┘\n",
     );
 
-    let table = table!(&data, tabled::Style::pseudo());
+    let table = Table::new(&data).with(Style::pseudo()).to_string();
 
     assert_eq!(table, expected);
 }
@@ -190,7 +190,7 @@ fn pseudo_clean_style() {
         "└────┴──────────────┴───────────────────────────┘\n",
     );
 
-    let table = table!(&data, tabled::Style::pseudo_clean());
+    let table = Table::new(&data).with(Style::pseudo_clean()).to_string();
 
     assert_eq!(table, expected);
 }
@@ -222,7 +222,7 @@ fn noborder_style() {
         " 3    Endeavouros    https://endeavouros.com/  \n",
     );
 
-    let table = table!(&data, tabled::Style::noborder());
+    let table = Table::new(&data).with(Style::noborder()).to_string();
 
     assert_eq!(table, expected);
 }
@@ -256,7 +256,9 @@ fn style_head_changes() {
         "└────┴──────────────┴───────────────────────────┘\n",
     );
 
-    let table = table!(&data, tabled::Style::pseudo_clean().header(None));
+    let table = Table::new(&data)
+        .with(Style::pseudo_clean().header(None))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -289,12 +291,9 @@ fn style_frame_changes() {
         "│ 3  │ Endeavouros  │ https://endeavouros.com/  │\n",
     );
 
-    let table = table!(
-        &data,
-        tabled::Style::pseudo_clean()
-            .frame_bottom(None)
-            .frame_top(None)
-    );
+    let table = Table::new(&data)
+        .with(Style::pseudo_clean().frame_bottom(None).frame_top(None))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -330,13 +329,14 @@ fn custom_style() {
         "****\'**************\'***************************\n",
     );
 
-    let table = table!(
-        &data,
-        tabled::Style::noborder()
-            .frame_bottom(Some(Line::short('*', '\'')))
-            .split(Some(Line::short('`', '\'')))
-            .inner('\'')
-    );
+    let table = Table::new(&data)
+        .with(
+            Style::noborder()
+                .frame_bottom(Some(Line::short('*', '\'')))
+                .split(Some(Line::short('`', '\'')))
+                .inner('\''),
+        )
+        .to_string();
 
     println!("{}", table);
 

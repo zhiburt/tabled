@@ -10,7 +10,9 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use tabled::{multiline, table, Cell, Column, Format, Full, Head, Object, Row, Style, Tabled};
+use tabled::{
+    multiline, Cell, Column, Format, Full, Head, Modify, Object, Row, Style, Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct Linux {
@@ -51,7 +53,9 @@ fn formatting_full_test() {
         "+------+----------------+-----------------------------+\n",
     );
 
-    let table = table!(&data, Format(Full, |s| { format!("[{}]", s) }));
+    let table = Table::new(&data)
+        .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -84,11 +88,10 @@ fn formatting_head_test() {
         "|  3  |  Endeavouros  | https://endeavouros.com/  |\n",
     );
 
-    let table = table!(
-        &data,
-        Style::github_markdown(),
-        Format(Head, |s| { format!(":{}", s) }),
-    );
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Head).with(Format(|s| format!(":{}", s))))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -121,11 +124,10 @@ fn formatting_row_test() {
         " <3> | <Endeavouros> | <https://endeavouros.com/>  \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Format(Row(1..), |s| { format!("<{}>", s) }),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Row(1..)).with(Format(|s| format!("<{}>", s))))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -158,11 +160,10 @@ fn formatting_column_test() {
         " (x) 3  | Endeavouros  | https://endeavouros.com/  \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Format(Column(..1), |s| { format!("(x) {}", s) }),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Column(..1)).with(Format(|s| format!("(x) {}", s))))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -205,11 +206,10 @@ fn formatting_multiline_test() {
         "        |  (x) Enterprise  |                              \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Format(Full, multiline(|s| { format!("(x) {}", s) })),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Format(multiline(|s| format!("(x) {}", s)))))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -242,13 +242,12 @@ fn formatting_cell_test() {
         "   3    |   Endeavouros    | https://endeavouros.com/  \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Format(Cell(0, 0), |s| { format!("(x) {}", s) }),
-        Format(Cell(0, 1), |s| { format!("(x) {}", s) }),
-        Format(Cell(0, 2), |s| { format!("(x) {}", s) }),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Cell(0, 0)).with(Format(|s| format!("(x) {}", s))))
+        .with(Modify::new(Cell(0, 1)).with(Format(|s| format!("(x) {}", s))))
+        .with(Modify::new(Cell(0, 2)).with(Format(|s| format!("(x) {}", s))))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -281,11 +280,10 @@ fn formatting_and_combination_test() {
         " (x) 3  |   Endeavouros    | https://endeavouros.com/  \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Format(Column(..1).and(Row(..1)), |s| { format!("(x) {}", s) }),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Column(..1).and(Row(..1))).with(Format(|s| format!("(x) {}", s))))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -318,13 +316,13 @@ fn formatting_not_combination_test() {
         " (x) 3 |   Endeavouros    | https://endeavouros.com/  \n",
     );
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Format(Column(..1).and(Row(..1)).not(Cell(0, 0)), |s| {
-            format!("(x) {}", s)
-        }),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(
+            Modify::new(Column(..1).and(Row(..1)).not(Cell(0, 0)))
+                .with(Format(|s| format!("(x) {}", s))),
+        )
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -363,12 +361,11 @@ mod color {
             " \u{1b}[31m3\u{1b}[0m  | \u{1b}[34mEndeavouros\u{1b}[0m  | \u{1b}[31mhttps://endeavouros.com/\u{1b}[0m  \n",
         );
 
-        let table = table!(
-            &data,
-            Style::psql(),
-            Format(Column(..1).and(Column(2..)), |s| { s.red().to_string() }),
-            Format(Column(1..2), |s| { s.blue().to_string() }),
-        );
+        let table = Table::new(&data)
+            .with(Style::psql())
+            .with(Modify::new(Column(..1).and(Column(2..))).with(Format(|s| s.red().to_string())))
+            .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))
+            .to_string();
 
         println!("{}", table);
 
@@ -411,13 +408,12 @@ mod color {
             "    |  \u{1b}[34mEnterprise\u{1b}[0m  |                           \n",
         );
 
-        let table = table!(
-            &data,
-            Style::psql(),
-            Format(Column(..1), multiline(|s| { s.red().to_string() })),
-            Format(Column(1..2), multiline(|s| { s.blue().to_string() })),
-            Format(Column(2..), multiline(|s| { s.green().to_string() })),
-        );
+        let table = Table::new(&data)
+            .with(Style::psql())
+            .with(Modify::new(Column(..1)).with(Format(multiline(|s| s.red().to_string()))))
+            .with(Modify::new(Column(1..2)).with(Format(multiline(|s| s.blue().to_string()))))
+            .with(Modify::new(Column(2..)).with(Format(multiline(|s| s.green().to_string()))))
+            .to_string();
 
         println!("{}", table);
 

@@ -9,7 +9,7 @@ fn main() {
 #[cfg(feature = "color")]
 fn main() {
     use colored::Colorize;
-    use tabled::{table, Alignment, Column, Format, Head, Object, Row, Style, Tabled};
+    use tabled::{Alignment, Column, Format, Head, Modify, Object, Row, Style, Table, Tabled};
 
     #[derive(Tabled)]
     struct BSD {
@@ -46,14 +46,12 @@ fn main() {
         },
     ];
 
-    let table = table!(
-        &data,
-        Style::psql(),
-        Alignment::center_horizontal(Head),
-        Alignment::left(Row(1..)),
-        Format(Column(1..2), |s| { s.blue().to_string() }),
-        Format(Column(..1).and(Column(2..)), |s| { s.red().to_string() }),
-    );
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Head).with(Alignment::center_horizontal()))
+        .with(Modify::new(Row(1..)).with(Alignment::left()))
+        .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))
+        .with(Modify::new(Column(..1).and(Column(2..))).with(Format(|s| s.red().to_string())));
 
     println!("{}", table);
 }

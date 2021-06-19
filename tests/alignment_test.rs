@@ -10,7 +10,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use tabled::{table, Alignment, Column, Full, Head, Row, Style, Tabled};
+use tabled::{Alignment, Column, Full, Head, Modify, Row, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -47,7 +47,10 @@ fn full_alignment() {
         "3 |Endeavouros |https://endeavouros.com/ \n",
     );
 
-    let table = table!(&data, Style::psql(), Alignment::left(Full));
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -84,12 +87,11 @@ fn head_and_data_alignment() {
         "+--+------------+-------------------------+\n",
     );
 
-    let table = table!(
-        &data,
-        Style::default(),
-        Alignment::left(Head),
-        Alignment::right(Row(1..)),
-    );
+    let table = Table::new(&data)
+        .with(Style::default())
+        .with(Modify::new(Head).with(Alignment::left()))
+        .with(Modify::new(Row(1..)).with(Alignment::right()))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -135,7 +137,10 @@ fn full_alignment_multiline() {
         "  |            |/en                      \n",
     );
 
-    let table = table!(&data, Style::psql(), Alignment::left(Full));
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .to_string();
 
     assert_eq!(table, expected);
 }
@@ -184,7 +189,10 @@ fn vertical_alignment_test() {
         "    |Hat         |/en                      \n",
     );
 
-    let table = table!(&data, Style::psql(), Alignment::bottom(Column(1..)),);
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Column(1..)).with(Alignment::bottom()))
+        .to_string();
 
-    assert_eq!(expected, table);
+    assert_eq!(table, expected);
 }

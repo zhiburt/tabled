@@ -11,7 +11,7 @@
 // copies or substantial portions of the Software.
 
 use std::collections::{BTreeMap, BTreeSet};
-use tabled::{table, Tabled};
+use tabled::{Table, Tabled};
 
 #[test]
 fn table_vector_structures() {
@@ -30,9 +30,9 @@ fn table_vector_structures() {
                          | 1  | 1  |\n\
                          +----+----+\n";
 
-    let table = table!(&st);
+    let table = Table::new(st).to_string();
 
-    assert_eq!(expected, table);
+    assert_eq!(table, expected);
 }
 
 #[test]
@@ -48,9 +48,9 @@ fn table_empty_vector_structures() {
                          | f1 | f2 |\n\
                          +----+----+\n";
 
-    let table = table!(&st);
+    let table = Table::new(st).to_string();
 
-    assert_eq!(expected, table);
+    assert_eq!(table, expected);
 }
 
 #[test]
@@ -68,8 +68,9 @@ fn table_option() {
                          | 0  | 0  |\n\
                          +----+----+\n";
 
-    let table = table!(&st);
-    assert_eq!(expected, table);
+    let table = Table::new(st).to_string();
+
+    assert_eq!(table, expected);
 }
 
 #[test]
@@ -85,8 +86,9 @@ fn table_option_none() {
                          | f1 | f2 |\n\
                          +----+----+\n";
 
-    let table = table!(&st);
-    assert_eq!(expected, table);
+    let table = Table::new(st).to_string();
+
+    assert_eq!(table, expected);
 }
 
 #[test]
@@ -98,8 +100,9 @@ fn table_tuple() {
                          | we are in | 2020 |\n\
                          +-----------+------+\n";
 
-    let table = table!(&[t]);
-    assert_eq!(expected, table);
+    let table = Table::new(&[t]).to_string();
+
+    assert_eq!(table, expected);
 }
 
 #[test]
@@ -111,8 +114,9 @@ fn table_single_tuple() {
                          | 2020 |\n\
                          +------+\n";
 
-    let table = table!(&[t]);
-    assert_eq!(expected, table);
+    let table = Table::new(&[t]).to_string();
+
+    assert_eq!(table, expected);
 }
 
 #[test]
@@ -126,8 +130,9 @@ fn table_tuple_vec() {
                          |  1  | Thursday |\n\
                          +-----+----------+\n";
 
-    let table = table!(&map);
-    assert_eq!(expected, table);
+    let table = Table::new(&map).to_string();
+
+    assert_eq!(table, expected);
 }
 
 #[test]
@@ -147,8 +152,9 @@ fn table_tuple_with_structure_vec() {
                          |  1  | 1  | 1str |\n\
                          +-----+----+------+\n";
 
-    let table = table!(&map);
-    assert_eq!(expected, table);
+    let table = Table::new(&map).to_string();
+
+    assert_eq!(table, expected);
 }
 
 #[allow(dead_code)]
@@ -170,9 +176,9 @@ fn table_vector_structures_with_hidden_field() {
                          | 1  |\n\
                          +----+\n";
 
-    let table = table!(&st);
+    let table = Table::new(&st).to_string();
 
-    assert_eq!(expected, table);
+    assert_eq!(table, expected);
 }
 
 mod default_types {
@@ -189,8 +195,9 @@ mod default_types {
                              | world |\n\
                              +-------+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -206,8 +213,9 @@ mod default_types {
                              |  c   |\n\
                              +------+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -223,8 +231,9 @@ mod default_types {
                              | true  |\n\
                              +-------+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -240,8 +249,9 @@ mod default_types {
                              |   2   |\n\
                              +-------+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -257,8 +267,9 @@ mod default_types {
                              |   2   |\n\
                              +-------+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -274,8 +285,9 @@ mod default_types {
                              | 2  |\n\
                              +----+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -291,8 +303,9 @@ mod default_types {
                              |  2  |\n\
                              +-----+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -308,8 +321,9 @@ mod default_types {
                              |  2  |\n\
                              +-----+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -325,8 +339,9 @@ mod default_types {
                              |  2  |\n\
                              +-----+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -342,8 +357,9 @@ mod default_types {
                              |  2   |\n\
                              +------+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -359,8 +375,9 @@ mod default_types {
                              | 2  |\n\
                              +----+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -376,8 +393,9 @@ mod default_types {
                              |  2  |\n\
                              +-----+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -393,8 +411,9 @@ mod default_types {
                              |  2  |\n\
                              +-----+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -410,8 +429,9 @@ mod default_types {
                              |  2  |\n\
                              +-----+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -427,8 +447,9 @@ mod default_types {
                              |  2   |\n\
                              +------+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -471,8 +492,9 @@ mod default_types {
                              |        |           |   +   |\n\
                              +--------+-----------+-------+\n";
 
-        let table = table!(&data);
-        assert_eq!(expected, table);
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -519,11 +541,11 @@ mod default_types {
                              |        |           |\n\
                              +--------+-----------+\n";
 
-        let table = table!(&data);
+        let table = Table::new(&data).to_string();
 
         println!("{}", table);
 
-        assert_eq!(expected, table);
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -549,8 +571,9 @@ mod default_types {
                              |  3  | 3 | s3 |\n\
                              +-----+---+----+\n";
 
-        let table = table!(&map);
-        assert_eq!(expected, table);
+        let table = Table::new(&map).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -576,8 +599,9 @@ mod default_types {
                              | 3 | s3 |\n\
                              +---+----+\n";
 
-        let table = table!(&map);
-        assert_eq!(expected, table);
+        let table = Table::new(&map).to_string();
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -607,8 +631,6 @@ mod default_types {
             },
         ];
 
-        println!("{}", table!(&languages));
-
         let expected = "+---------+----------------+---------------+\n\
                              |  name   |  designed_by   | invented_year |\n\
                              +---------+----------------+---------------+\n\
@@ -619,7 +641,11 @@ mod default_types {
                              |  Go 🧋  |    Rob Pike    |     2009      |\n\
                              +---------+----------------+---------------+\n";
 
-        assert_eq!(expected, table!(&languages));
+        let table = Table::new(&languages).to_string();
+
+        println!("{}", table);
+
+        assert_eq!(table, expected);
     }
 
     #[test]
@@ -647,8 +673,6 @@ mod default_types {
             },
         ];
 
-        println!("{}", table!(&languages));
-
         // Note: it looks OK in a terminal
         let expected =
             "+------------------------------------+-----------------+-------------------------------+--------+\n\
@@ -661,6 +685,10 @@ mod default_types {
              |           Keep it simple           |     Unknown     |              🍳               |  100   |\n\
              +------------------------------------+-----------------+-------------------------------+--------+\n";
 
-        assert_eq!(expected, table!(&languages));
+        let table = Table::new(&languages).to_string();
+
+        println!("{}", table);
+
+        assert_eq!(table, expected);
     }
 }
