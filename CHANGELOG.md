@@ -11,14 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add `MaxWidth` option for cells
-
-### Changed
-
-- Removed `table!` macros.
-
-### Fixed
-
-- Improved performance in papergrid; Now it makes 100 allocs on basic example where priviously 400!
+- Add blank `Tabled` implementaton for String
 
 ## [0.2.0] - 2021-06-19
 
