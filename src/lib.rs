@@ -141,7 +141,9 @@ mod indent;
 mod object;
 pub mod style;
 
-pub use crate::{alignment::*, disable::*, formating::*, indent::*, object::*, style::Style};
+pub use crate::{
+    alignment::*, disable::*, formating::*, indent::*, object::*, style::Style, 
+};
 pub use papergrid;
 pub use tabled_derive::Tabled;
 
@@ -367,6 +369,7 @@ macro_rules! default_table {
 }
 
 default_table!(&str);
+default_table!(String);
 
 default_table!(char);
 
