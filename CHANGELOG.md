@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## Unreleased
+
+### Added
+
+- Add `MaxWidth` option for cells
+
+### Changed
+
+- Removed `table!` macros.
+
+### Fixed
+
+- Improved performance in papergrid; Now it makes 100 allocs on basic example where priviously 400!
+
 ## [0.2.0] - 2021-06-19
 
 ### Added

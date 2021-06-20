@@ -140,9 +140,10 @@ mod formating;
 mod indent;
 mod object;
 pub mod style;
+mod width;
 
 pub use crate::{
-    alignment::*, disable::*, formating::*, indent::*, object::*, style::Style, 
+    alignment::*, disable::*, formating::*, indent::*, object::*, style::Style, width::*,
 };
 pub use papergrid;
 pub use tabled_derive::Tabled;

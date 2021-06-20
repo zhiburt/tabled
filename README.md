@@ -25,6 +25,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Alignment](#Alignment)
     * [Format](#Format)
     * [Indent](#Indent)
+    * [Max width](#Max-width)
     * [Disable](#Disable)
     * [Color](#Color)
 * [Features](#Features)
@@ -242,6 +243,16 @@ The `Indent` type provides an interface for a left, right, top and bottom indent
 ```rust
 Table::new(&data).with(Modify::new(Row(1..)).with(Indent::new(1, 1, 0, 2)));
 ```
+
+## Max width
+
+Using `MaxWidth` type its possible to set a max width of an object.
+
+```rust
+Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth(10, "...")));
+```
+
+NOTE: The implementation is not stable in terms of handling colors and emojies 
 
 ## Disable
 
