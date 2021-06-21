@@ -13,9 +13,10 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
+use proc_macro2::Ident;
 use quote::*;
 use std::str;
-use syn::{parse_macro_input, Attribute, DeriveInput, Field, Lit, Meta, NestedMeta};
+use syn::{parse_macro_input, Attribute, DeriveInput, Field, Lit, Meta, NestedMeta, Variant};
 
 #[proc_macro_derive(Tabled, attributes(header, field))]
 pub fn tabled(input: TokenStream) -> TokenStream {
@@ -47,23 +48,19 @@ fn impl_tabled(ast: &syn::DeriveInput) -> TokenStream {
 }
 
 fn get_headers(d: &syn::Data) -> proc_macro2::TokenStream {
-    match d {
-        syn::Data::Struct(st) => {
-            let headers = get_st_headers(st);
-            quote!({
-                let v: Vec<Vec<String>> = vec![
-                    #(#headers,)*
-                ];
-
-                v.concat()
-            })
-        }
-        syn::Data::Enum(e) => {
-            let headers = get_enum_headers(e);
-            quote!(vec![#(String::from(#headers),)*])
-        }
+    let headers = match d {
+        syn::Data::Struct(st) => get_st_headers(st),
+        syn::Data::Enum(e) => get_enum_headers(e).concat(),
         syn::Data::Union(_) => todo!("it's not clear how to handle union type"),
-    }
+    };
+
+    quote!({
+        let v: Vec<Vec<String>> = vec![
+            #(#headers,)*
+        ];
+
+        v.concat()
+    })
 }
 
 fn get_st_headers(st: &syn::DataStruct) -> Vec<proc_macro2::TokenStream> {
@@ -82,31 +79,49 @@ fn get_fields_headers<'a>(
 
 fn field_headers(field: &syn::Field, index: usize) -> proc_macro2::TokenStream {
     if should_be_inlined(&field.attrs) {
-        let t = &field.ty;
-        let inline_prefix = look_for_inline_prefix(&field.attrs);
-        if inline_prefix.is_empty() {
-            quote! {
-                #t::headers()
-            }
-        } else {
-            quote! {
-                #t::headers().into_iter()
-                    .map(|header| format!("{}{}", #inline_prefix, header))
-                    .collect::<Vec<_>>()
-            }
-        }
+        inline_header(&field.ty, &field.attrs)
     } else {
         let header = field_name(field, index);
         quote!(vec![String::from(#header)])
     }
 }
 
-fn get_enum_headers(e: &syn::DataEnum) -> Vec<String> {
+fn inline_header(t: &syn::Type, attrs: &[syn::Attribute]) -> proc_macro2::TokenStream {
+    let inline_prefix = look_for_inline_prefix(attrs);
+    if inline_prefix.is_empty() {
+        quote! {
+            <#t as Tabled>::headers()
+        }
+    } else {
+        quote! {
+            <#t as Tabled>::headers().into_iter()
+                .map(|header| format!("{}{}", #inline_prefix, header))
+                .collect::<Vec<_>>()
+        }
+    }
+}
+
+fn get_enum_headers(e: &syn::DataEnum) -> Vec<Vec<proc_macro2::TokenStream>> {
     e.variants
         .iter()
         .filter(|v| !is_ignored_variant(v))
-        .map(variant_name)
-        .collect()
+        .map(variant_headers)
+        .collect::<Vec<_>>()
+}
+
+fn variant_headers(variant: &Variant) -> Vec<proc_macro2::TokenStream> {
+    if should_be_inlined(&variant.attrs) {
+        let mut calls = Vec::new();
+        for (index, field) in variant.fields.iter().enumerate() {
+            let call = field_headers(field, index);
+            calls.push(call);
+        }
+
+        calls
+    } else {
+        let header = variant_name(variant);
+        vec![quote!(vec![String::from(#header)])]
+    }
 }
 
 fn get_fields(d: &syn::Data) -> proc_macro2::TokenStream {
@@ -135,23 +150,31 @@ fn get_st_fields(st: &syn::DataStruct) -> Vec<proc_macro2::TokenStream> {
             continue;
         }
 
-        let fields = get_field_fields(field, i);
+        let fields = fields_of_field(field, i);
+
         v.push(fields);
     }
 
     v
 }
 
-fn get_field_fields(field: &Field, index: usize) -> proc_macro2::TokenStream {
-    let mut field_value = field_field(field, index);
+fn fields_of_field(field: &Field, index: usize) -> proc_macro2::TokenStream {
+    let field_name = field_field(field, index);
+    get_field_fields(field_name, &field.attrs)
+}
 
-    let is_inline = should_be_inlined(&field.attrs);
+fn get_field_fields(
+    field: proc_macro2::TokenStream,
+    attrs: &[syn::Attribute],
+) -> proc_macro2::TokenStream {
+    let mut field_value = field;
+    let is_inline = should_be_inlined(&attrs);
     if is_inline {
         let value = quote! { #field_value.fields() };
         return value;
     }
 
-    let func = check_display_with_func(&field.attrs);
+    let func = check_display_with_func(&attrs);
     if let Some(func) = func {
         field_value = use_function_for(field_value, &func);
     }
@@ -178,74 +201,145 @@ fn field_field(field: &Field, index: usize) -> proc_macro2::TokenStream {
 }
 
 fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
-    let mut fields_per_variant = Vec::new();
-    let mut variant_field_shift = Vec::new();
-    let mut variant_fields_len = Vec::new();
-    let mut count_fields = 0;
-    let variants = e.variants.iter().filter(|v| !is_ignored_variant(v));
-    for _ in variants {
-        let fields = vec![quote! { "+".to_string() }];
+    let mut fields = Vec::new();
 
-        variant_field_shift.push(count_fields);
-        variant_fields_len.push(fields.len());
-        count_fields += fields.len();
-        fields_per_variant.push(fields);
+    let variants = e.variants.iter().filter(|v| !is_ignored_variant(v));
+    for v in variants {
+        let variant_fields = variant_fields(v);
+        fields.push(variant_fields);
     }
 
-    let variants = e
+    let branches = e
         .variants
         .iter()
         .filter(|v| !is_ignored_variant(v))
-        .map(|v| {
-            let mut token = proc_macro2::TokenStream::new();
-            token.append_all(v.ident.to_token_stream());
-
-            match &v.fields {
-                syn::Fields::Named(fields) => {
-                    let parameters = fields
-                        .named
-                        .iter()
-                        .map(|f| f.ident.as_ref())
-                        .flatten()
-                        .map(|f| {
-                            quote! { #f,}
-                        })
-                        .collect::<Vec<_>>();
-
-                    syn::token::Brace::default().surround(&mut token, |s| {
-                        s.append_all(parameters);
-                    });
-                }
-                syn::Fields::Unnamed(_) => {
-                    // TODO: "a tuple based struct doesn't implemented; here supposed to be a generated Ident for a tuple"
-                    syn::token::Paren::default().surround(&mut token, |s| {
-                        s.append_all(quote! {_});
-                    });
-                }
-                syn::Fields::Unit => {}
-            };
-
-            token
-        })
+        .map(variant_match_branches)
         .collect::<Vec<_>>();
 
-    quote! {
-        let size = #count_fields;
-        let mut v: Vec<String> = std::iter::repeat(String::new()).take(size).collect();
-        #[allow(unused_variables)]
-        match &self {
-            #(Self::#variants => {
-                let fields = vec![#(#fields_per_variant.to_string()),*];
+    assert_eq!(branches.len(), fields.len());
 
-                for i in #variant_field_shift..#variant_field_shift+#variant_fields_len {
-                    v[i] = fields[i-#variant_field_shift].clone();
+    let headers = get_enum_headers(e)
+        .into_iter()
+        .map(|headers| {
+            quote! {
+                vec![
+                    #(#headers,)*
+                ]
+            }
+        })
+        .collect::<Vec<proc_macro2::TokenStream>>();
+
+    let mut stream = proc_macro2::TokenStream::new();
+    for (i, (branch, fields)) in branches.into_iter().zip(fields).enumerate() {
+        let branch = quote! {
+            Self::#branch => {
+                // It's a bit strange trick but I haven't found any better
+                // how to calculate a size and offset
+                let headers: Vec<Vec<Vec<String>>> = vec![
+                    #(#headers,)*
+                ];
+                let lengths = headers.iter().map(|values| values.iter().map(|values| values.len()).sum::<usize>()).collect::<Vec<_>>();
+                let size = lengths.iter().sum::<usize>();
+                let offsets: Vec<usize> = lengths.iter().fold(Vec::new(), |mut acc, len| {
+                    // offset of 1 element is 0
+                    if acc.is_empty() {
+                        acc.push(0);
+                    }
+
+                    let privious_len: usize = acc.last().map(|l| *l).unwrap_or(0);
+                    acc.push(privious_len + len);
+                    acc
+                });
+                let offset = offsets[#i];
+
+                let mut v: Vec<String> = std::iter::repeat(String::new()).take(size).collect();
+
+                let fields: Vec<Vec<String>> = vec![
+                    #(#fields),*
+                ];
+                let fields = fields.concat();
+
+                for (i, field) in fields.into_iter().enumerate() {
+                    v[i+offset] = field;
                 }
 
                 v
-            },)*
+            },
+        };
+
+        stream.append_all(branch);
+    }
+
+    quote! {
+        #[allow(unused_variables)]
+        match &self {
+            #stream
             _ => vec![],
         }
     }
+}
+
+fn variant_fields(v: &Variant) -> Vec<proc_macro2::TokenStream> {
+    if !should_be_inlined(&v.attrs) {
+        return vec![quote!(vec!["+".to_string()])];
+    }
+
+    let branch_idents = variant_idents(v);
+    if branch_idents.is_empty() {
+        return vec![quote!(vec!["+".to_string()])];
+    }
+
+    branch_idents
+        .into_iter()
+        .map(|ident| get_field_fields(ident.to_token_stream(), &v.attrs))
+        .collect()
+}
+
+fn variant_idents(v: &Variant) -> Vec<Ident> {
+    v.fields
+        .iter()
+        .enumerate()
+        .map(|(index, field)| {
+            if let Some(ident) = field.ident.as_ref() {
+                ident.clone()
+            } else {
+                let tmp_var = syn::Ident::new(
+                    format!("x_{}", index).as_str(),
+                    proc_macro2::Span::call_site(),
+                );
+
+                tmp_var
+            }
+        })
+        .collect::<Vec<_>>()
+}
+
+fn variant_match_branches(v: &Variant) -> proc_macro2::TokenStream {
+    let mut token = proc_macro2::TokenStream::new();
+    token.append_all(v.ident.to_token_stream());
+
+    let fields = if should_be_inlined(&v.attrs) {
+        let fields = variant_idents(v);
+        quote! (#(#fields, )*)
+    } else {
+        quote!(..)
+    };
+
+    match &v.fields {
+        syn::Fields::Named(_) => {
+            syn::token::Brace::default().surround(&mut token, |s| {
+                s.append_all(fields);
+            });
+        }
+        syn::Fields::Unnamed(_) => {
+            syn::token::Paren::default().surround(&mut token, |s| {
+                s.append_all(fields);
+            });
+        }
+        syn::Fields::Unit => {}
+    };
+
+    token
 }
 
 fn field_name(f: &syn::Field, index: usize) -> String {

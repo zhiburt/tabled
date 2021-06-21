@@ -88,7 +88,7 @@ mod structure {
     fn structure_inline_field() {
         #[derive(Tabled)]
         struct Person {
-            #[header(inline = true)] // does nothing
+            #[header(inline = true)]
             id: u8,
             name: &'static str,
             #[header(inline)]
@@ -130,61 +130,102 @@ mod structure {
         );
     }
 
-    // #[test]
-    // fn enum_inline_field() {
-    //     #[derive(Tabled)]
-    //     enum Vehicle {
-    //         #[field(inline)]
-    //         Auto {
-    //             #[field(inline("->"))]
-    //             model: &'static str,
-    //         },
-    //         #[header(inline)]
-    //         Bikecycle(#[header("name")] &'static str, Bike),
-    //     }
+    #[test]
+    fn enum_basic() {
+        #[derive(Tabled)]
+        enum Domain {
+            Security,
+            Embeded,
+            Frontend,
+            Unknown,
+        }
 
-    //     #[derive(Tabled)]
-    //     struct Bike {
-    //         brand: &'static str,
-    //         price: f32,
-    //     }
+        assert_eq!(
+            vec![
+                "Security".to_owned(),
+                "Embeded".to_owned(),
+                "Frontend".to_owned(),
+                "Unknown".to_owned(),
+            ],
+            Domain::headers()
+        );
 
-    //     assert_eq!(
-    //         vec![
-    //             "Auto->model".to_owned(),
-    //             "Bikecycle::name".to_owned(),
-    //             "Bikecycle::brand".to_owned(),
-    //             "Bikecycle::price".to_owned(),
-    //         ],
-    //         Vehicle::headers()
-    //     );
+        assert_eq!(
+            vec!["+".to_owned(), "".to_owned(), "".to_owned(), "".to_owned(),],
+            Domain::Security.fields()
+        );
+    }
 
-    //     assert_eq!(
-    //         vec![
-    //             "Mini".to_owned(),
-    //             "".to_owned(),
-    //             "".to_owned(),
-    //             "".to_owned(),
-    //         ],
-    //         Vehicle::Auto { model: "Mini" }.fields()
-    //     );
-    //     assert_eq!(
-    //         vec![
-    //             "".to_owned(),
-    //             "A bike".to_owned(),
-    //             "Canyon".to_owned(),
-    //             "2000.0".to_owned(),
-    //         ],
-    //         Vehicle::Bikecycle(
-    //             "A bike",
-    //             Bike {
-    //                 brand: "Canyon",
-    //                 price: 2000.0
-    //             }
-    //         )
-    //         .fields()
-    //     );
-    // }
+    #[test]
+    fn enum_inline_field() {
+        #[derive(Tabled)]
+        enum Vehicle {
+            #[header(inline)]
+            Auto {
+                #[header("MODEL", inline("Auto::"))]
+                model: &'static str,
+            },
+            #[header(inline)]
+            Bikecycle(#[header("name")] &'static str, #[header(inline)] Bike),
+            Skateboard,
+        }
+
+        #[derive(Tabled)]
+        struct Bike {
+            brand: &'static str,
+            price: f32,
+        }
+
+        assert_eq!(
+            vec![
+                "Auto::&str".to_owned(),
+                "name".to_owned(),
+                "brand".to_owned(),
+                "price".to_owned(),
+                "Skateboard".to_owned(),
+            ],
+            Vehicle::headers()
+        );
+
+        assert_eq!(
+            vec![
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "+".to_owned(),
+            ],
+            Vehicle::Skateboard.fields()
+        );
+
+        assert_eq!(
+            vec![
+                "Mini".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+            ],
+            Vehicle::Auto { model: "Mini" }.fields()
+        );
+        assert_eq!(
+            vec![
+                "".to_owned(),
+                "A bike".to_owned(),
+                "Canyon".to_owned(),
+                "2000".to_owned(),
+                "".to_owned(),
+            ],
+            Vehicle::Bikecycle(
+                "A bike",
+                Bike {
+                    brand: "Canyon",
+                    price: 2000.0
+                }
+            )
+            .fields()
+        );
+    }
 
     #[test]
     fn structure_inline_field_with_rename() {

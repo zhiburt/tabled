@@ -11,7 +11,7 @@
 // copies or substantial portions of the Software.
 
 use std::collections::{BTreeMap, BTreeSet};
-use tabled::{Table, Tabled};
+use tabled::{Style, Table, Tabled};
 
 #[test]
 fn table_vector_structures() {
@@ -691,4 +691,39 @@ mod default_types {
 
         assert_eq!(table, expected);
     }
+}
+
+#[test]
+fn tuple_combination() {
+    #[derive(Tabled)]
+    enum Domain {
+        Security,
+        Embeded,
+        Frontend,
+        Unknown,
+    }
+
+    #[derive(Tabled)]
+    struct Developer(#[header("name")] &'static str);
+
+    let data = vec![
+        (Developer("Terri Kshlerin"), Domain::Embeded),
+        (Developer("Catalina Dicki"), Domain::Security),
+        (Developer("Jennie Schmeler"), Domain::Frontend),
+        (Developer("Maxim Zhiburt"), Domain::Unknown),
+    ];
+
+    let table = Table::new(data).with(Style::psql()).to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "      name       | Security | Embeded | Frontend | Unknown \n",
+            "-----------------+----------+---------+----------+---------\n",
+            " Terri Kshlerin  |          |    +    |          |         \n",
+            " Catalina Dicki  |    +     |         |          |         \n",
+            " Jennie Schmeler |          |         |    +     |         \n",
+            "  Maxim Zhiburt  |          |         |          |    +    \n"
+        )
+    );
 }
