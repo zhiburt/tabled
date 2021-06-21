@@ -38,7 +38,7 @@ fn impl_tabled(ast: &syn::DeriveInput) -> TokenStream {
             }
 
             fn headers() -> Vec<String> {
-                vec![#(String::from(#headers),)*]
+                #headers
             }
         }
     };
@@ -46,24 +46,59 @@ fn impl_tabled(ast: &syn::DeriveInput) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-fn get_headers(d: &syn::Data) -> Vec<String> {
+fn get_headers(d: &syn::Data) -> proc_macro2::TokenStream {
     match d {
-        syn::Data::Struct(st) => get_st_headers(st),
-        syn::Data::Enum(e) => get_enum_headers(e),
+        syn::Data::Struct(st) => {
+            let headers = get_st_headers(st);
+            quote!({
+                let v: Vec<Vec<String>> = vec![
+                    #(#headers,)*
+                ];
+
+                v.concat()
+            })
+        }
+        syn::Data::Enum(e) => {
+            let headers = get_enum_headers(e);
+            quote!(vec![#(String::from(#headers),)*])
+        }
         syn::Data::Union(_) => todo!("it's not clear how to handle union type"),
     }
 }
 
-fn get_st_headers(st: &syn::DataStruct) -> Vec<String> {
+fn get_st_headers(st: &syn::DataStruct) -> Vec<proc_macro2::TokenStream> {
     get_fields_headers(st.fields.iter())
 }
 
-fn get_fields_headers<'a>(fields: impl Iterator<Item = &'a Field>) -> Vec<String> {
+fn get_fields_headers<'a>(
+    fields: impl Iterator<Item = &'a Field>,
+) -> Vec<proc_macro2::TokenStream> {
     fields
         .enumerate()
         .filter(|(_, f)| !is_ignored_field(f))
-        .map(|(i, f)| field_name(f, i))
+        .map(|(i, f)| field_headers(f, i))
         .collect()
+}
+
+fn field_headers(field: &syn::Field, index: usize) -> proc_macro2::TokenStream {
+    if should_be_inlined(&field.attrs) {
+        let t = &field.ty;
+        let inline_prefix = look_for_inline_prefix(&field.attrs);
+        if inline_prefix.is_empty() {
+            quote! {
+                #t::headers()
+            }
+        } else {
+            quote! {
+                #t::headers().into_iter()
+                    .map(|header| format!("{}{}", #inline_prefix, header))
+                    .collect::<Vec<_>>()
+            }
+        }
+    } else {
+        let header = field_name(field, index);
+        quote!(vec![String::from(#header)])
+    }
 }
 
 fn get_enum_headers(e: &syn::DataEnum) -> Vec<String> {
@@ -78,46 +113,68 @@ fn get_fields(d: &syn::Data) -> proc_macro2::TokenStream {
     match d {
         syn::Data::Struct(st) => {
             let fields = get_st_fields(st);
-            quote! { vec![#(format!("{}", #fields),)*] }
+            quote! {
+                {
+                    let v: Vec<Vec<String>> = vec![
+                        #(#fields,)*
+                    ];
+
+                    v.concat()
+                }
+            }
         }
         syn::Data::Enum(e) => get_enum_fields(e),
-        syn::Data::Union(_) => todo!(),
+        syn::Data::Union(_) => todo!("it's not clear how to handle union type"),
     }
 }
 
 fn get_st_fields(st: &syn::DataStruct) -> Vec<proc_macro2::TokenStream> {
     let mut v = Vec::new();
     for (i, field) in st.fields.iter().enumerate() {
-        let is_ignored =
-            find_name_attribute(&field.attrs, "header", "hidden", look_up_nested_meta_bool);
-        if is_ignored == Some(true) {
+        if is_ignored_field(field) {
             continue;
         }
 
-        let mut value = field.ident.as_ref().map_or_else(
-            || {
-                let mut s = quote!(self.);
-                s.extend(syn::Index::from(i).to_token_stream());
-                s
-            },
-            |f| quote!(self.#f),
-        );
-
-        let with_function = find_name_attribute(
-            &field.attrs,
-            "field",
-            "display_with",
-            look_up_nested_meta_str,
-        );
-        if let Some(function) = with_function {
-            let function = syn::Ident::new(&function, proc_macro2::Span::call_site());
-            value = quote! { #function(&#value) };
-        }
-
-        v.push(value);
+        let fields = get_field_fields(field, i);
+        v.push(fields);
     }
 
     v
+}
+
+fn get_field_fields(field: &Field, index: usize) -> proc_macro2::TokenStream {
+    let mut field_value = field_field(field, index);
+
+    let is_inline = should_be_inlined(&field.attrs);
+    if is_inline {
+        let value = quote! { #field_value.fields() };
+        return value;
+    }
+
+    let func = check_display_with_func(&field.attrs);
+    if let Some(func) = func {
+        field_value = use_function_for(field_value, &func);
+    }
+
+    field_value = quote!(vec![format!("{}", #field_value)]);
+
+    field_value
+}
+
+fn use_function_for(field: proc_macro2::TokenStream, function: &str) -> proc_macro2::TokenStream {
+    let function = syn::Ident::new(function, proc_macro2::Span::call_site());
+    quote! { #function(&#field) }
+}
+
+fn field_field(field: &Field, index: usize) -> proc_macro2::TokenStream {
+    field.ident.as_ref().map_or_else(
+        || {
+            let mut s = quote!(self.);
+            s.extend(syn::Index::from(index).to_token_stream());
+            s
+        },
+        |f| quote!(self.#f),
+    )
 }
 
 fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
@@ -203,10 +260,30 @@ fn field_name(f: &syn::Field, index: usize) -> String {
     }
 }
 
+fn check_display_with_func(attrs: &[syn::Attribute]) -> Option<String> {
+    find_name_attribute(attrs, "field", "display_with", look_up_nested_meta_str)
+}
+
 fn variant_name(v: &syn::Variant) -> String {
     find_name_attribute(&v.attrs, "header", "name", look_up_nested_meta_str)
         .or_else(|| find_name_attribute(&v.attrs, "header", "name", look_up_nested_meta_flag_str))
         .unwrap_or_else(|| v.ident.to_string())
+}
+
+fn should_be_inlined(attrs: &[syn::Attribute]) -> bool {
+    let inline_attr = find_name_attribute(&attrs, "header", "inline", look_up_nested_meta_bool)
+        .or_else(|| find_name_attribute(&attrs, "field", "inline", look_up_nested_meta_bool))
+        .or_else(|| {
+            find_name_attribute(&attrs, "header", "inline", look_up_nested_flag_str_in_attr)
+                .map(|_| true)
+        });
+    inline_attr == Some(true)
+}
+
+fn look_for_inline_prefix(attrs: &[syn::Attribute]) -> String {
+    find_name_attribute(&attrs, "header", "inline", look_up_nested_flag_str_in_attr)
+        .or_else(|| find_name_attribute(&attrs, "field", "inline", look_up_nested_flag_str_in_attr))
+        .unwrap_or_else(|| "".to_owned())
 }
 
 fn is_ignored_field(f: &syn::Field) -> bool {
@@ -233,17 +310,33 @@ where
     let meta = attr.parse_meta().ok()?;
 
     if let Meta::List(meta_list) = meta {
-        for nested_meta in &meta_list.nested {
-            let val = lookup(nested_meta, name).unwrap_or_else(
-                |e| panic!("{error} macros {macro} field {name}", error=e, macro=method, name=name),
-            );
-
-            if val.is_some() {
-                return val;
-            }
+        let val = parse_name_attribute_nested(meta_list.nested.iter(), method, name, lookup);
+        if val.is_some() {
+            return val;
         }
     }
 
+    None
+}
+
+fn parse_name_attribute_nested<'a, R, F>(
+    nested: impl Iterator<Item = &'a NestedMeta>,
+    method: &str,
+    name: &str,
+    lookup: F,
+) -> Option<R>
+where
+    F: Fn(&syn::NestedMeta, &str) -> Result<Option<R>, String>,
+{
+    for nested_meta in nested {
+        let val = lookup(nested_meta, name).unwrap_or_else(
+            |e| panic!("{error} macros {macro} field {name}", error=e, macro=method, name=name),
+        );
+
+        if val.is_some() {
+            return val;
+        }
+    }
     None
 }
 
@@ -285,6 +378,20 @@ fn look_up_nested_meta_bool(meta: &syn::NestedMeta, name: &str) -> Result<Option
             Lit::Bool(value) => Ok(Some(value.value())),
             _ => Err("A parameter should be a bool value".to_string()),
         },
+        _ => Ok(None),
+    }
+}
+
+fn look_up_nested_flag_str_in_attr(
+    meta: &syn::NestedMeta,
+    name: &str,
+) -> Result<Option<String>, String> {
+    match meta {
+        NestedMeta::Meta(Meta::List(list)) => {
+            parse_name_attribute_nested(list.nested.iter(), "", name, look_up_nested_meta_flag_str)
+                .ok_or_else(|| "An attribute doesn't have expected value".to_string())
+                .map(Some)
+        }
         _ => Ok(None),
     }
 }

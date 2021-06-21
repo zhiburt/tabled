@@ -10,6 +10,11 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
+// todo: reframe structure of module by modules of functionality it tests
+// e.g. mod with_func { fn enum() fn struct() fn struct_unit() ... }
+
+// todo: add support for options inside enum arguments
+
 use tabled::Tabled;
 
 mod structure {
@@ -77,6 +82,154 @@ mod structure {
 
         assert_eq!(vec!["123".to_owned()], st.fields());
         assert_eq!(vec!["f3".to_owned()], St::headers());
+    }
+
+    #[test]
+    fn structure_inline_field() {
+        #[derive(Tabled)]
+        struct Person {
+            #[header(inline = true)] // does nothing
+            id: u8,
+            name: &'static str,
+            #[header(inline)]
+            ed: Education,
+        }
+
+        #[derive(Tabled)]
+        struct Education {
+            uni: &'static str,
+            graduated: bool,
+        }
+
+        let p = Person {
+            id: 0,
+            name: "Maxim",
+            ed: Education {
+                uni: "BNTU",
+                graduated: true,
+            },
+        };
+
+        assert_eq!(
+            vec![
+                "0".to_owned(),
+                "Maxim".to_owned(),
+                "BNTU".to_owned(),
+                "true".to_owned()
+            ],
+            p.fields()
+        );
+        assert_eq!(
+            vec![
+                "u8".to_owned(),
+                "name".to_owned(),
+                "uni".to_owned(),
+                "graduated".to_owned()
+            ],
+            Person::headers()
+        );
+    }
+
+    #[test]
+    fn enum_inline_field() {
+        #[derive(Tabled)]
+        enum Vehicle {
+            #[field(inline)]
+            Auto {
+                #[field(inline("->"))]
+                model: &'static str,
+            },
+            #[header(inline)]
+            Bikecycle(#[header("name")] &'static str, Bike),
+        }
+
+        #[derive(Tabled)]
+        struct Bike {
+            brand: &'static str,
+            price: f32,
+        }
+
+        assert_eq!(
+            vec![
+                "Auto->model".to_owned(),
+                "Bikecycle::name".to_owned(),
+                "Bikecycle::brand".to_owned(),
+                "Bikecycle::price".to_owned(),
+            ],
+            Vehicle::headers()
+        );
+
+        assert_eq!(
+            vec![
+                "Mini".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+            ],
+            Vehicle::Auto { model: "Mini" }.fields()
+        );
+        assert_eq!(
+            vec![
+                "".to_owned(),
+                "A bike".to_owned(),
+                "Canyon".to_owned(),
+                "2000.0".to_owned(),
+            ],
+            Vehicle::Bikecycle(
+                "A bike",
+                Bike {
+                    brand: "Canyon",
+                    price: 2000.0
+                }
+            )
+            .fields()
+        );
+    }
+
+    #[test]
+    fn structure_inline_field_with_rename() {
+        #[derive(Tabled)]
+        struct Person {
+            #[header("it's an ignored option", inline)] // does nothing
+            id: u8,
+            name: &'static str,
+            #[header(inline("education::"))]
+            ed: Education,
+        }
+
+        #[derive(Tabled)]
+        struct Education {
+            uni: &'static str,
+            graduated: bool,
+        }
+
+        let p = Person {
+            id: 0,
+            name: "Maxim",
+            ed: Education {
+                uni: "BNTU",
+                graduated: true,
+            },
+        };
+
+        assert_eq!(
+            vec![
+                "0".to_owned(),
+                "Maxim".to_owned(),
+                "BNTU".to_owned(),
+                "true".to_owned()
+            ],
+            p.fields()
+        );
+        assert_eq!(
+            vec![
+                "u8".to_owned(),
+                "name".to_owned(),
+                "education::uni".to_owned(),
+                "education::graduated".to_owned()
+            ],
+            Person::headers()
+        );
     }
 
     #[test]
@@ -254,6 +407,10 @@ mod structure {
         assert_eq!(vec!["0".to_owned()], headers);
         assert_eq!(vec!["1".to_owned()], fields);
     }
+}
+
+mod variants {
+    use super::*;
 
     #[test]
     fn enum_structure() {
