@@ -93,9 +93,8 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
-          working-directory: ./papergrid
           command: test
-          args: --workspace --no-fail-fast ${{ matrix.feature }}
+          args: --workspace --no-fail-fast ${{ matrix.feature }} --manifest-path papergrid/Cargo.toml
 
   fmt:
     name: Rustfmt
@@ -143,7 +142,7 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: '0.15.0'
-          args: '--workspace --out Lcov'
+          args: '--workspace --out Lcov --output-dir ./coverage'
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:

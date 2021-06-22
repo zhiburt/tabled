@@ -84,7 +84,7 @@ fn max_width_with_emoji() {
     let data = &["🤠", "😳🥵🥶😱😨", "🚴🏻‍♀️🚴🏻🚴🏻‍♂️🚵🏻‍♀️🚵🏻🚵🏻‍♂️"];
 
     // Is it right behaiviour?
-    let expected = concat!(
+    let _expected = concat!(
         "|  &st...   |\n",
         "|-----------|\n",
         "|    🤠     |\n",
@@ -92,7 +92,7 @@ fn max_width_with_emoji() {
         "|  🚴🏻\u{200d}...  |\n",
     );
     #[cfg(feature = "color")]
-    let expected = concat!(
+    let _expected = concat!(
         "| &st... |\n",
         "|--------|\n",
         "|   🤠   |\n",
@@ -105,7 +105,7 @@ fn max_width_with_emoji() {
         .with(Modify::new(Full).with(MaxWidth(3, "...")))
         .to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(table, _expected);
 }
 
 #[cfg(feature = "color")]
