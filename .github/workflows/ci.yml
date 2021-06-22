@@ -43,19 +43,6 @@ jobs:
       matrix:
         target:
           [
-            aarch64-unknown-linux-gnu,
-            armv7-unknown-linux-gnueabihf,
-            i686-unknown-linux-gnu,
-            i686-unknown-linux-musl,
-            mips-unknown-linux-gnu,
-            mips64-unknown-linux-gnuabi64,
-            mips64el-unknown-linux-gnuabi64,
-            mipsel-unknown-linux-gnu,
-            powerpc-unknown-linux-gnu,
-            powerpc64-unknown-linux-gnu,
-            powerpc64le-unknown-linux-gnu,
-            arm-unknown-linux-gnueabi,
-            x86_64-unknown-linux-gnu,
             x86_64-unknown-linux-gnu,
             x86_64-unknown-linux-musl,
           ]
@@ -70,7 +57,47 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --all-features --target ${{ matrix.target }}
+          args: --workspace --target ${{ matrix.target }}
+
+  test_color:
+    name: Unit Test Suite for color feature
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --workspace --all-features --no-fail-fast
+
+  test_papergrid:
+    name: Unit Test Suite for papegrid
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./papergrid
+    strategy:
+      matrix:
+        feature:
+          [
+            --all-features,
+            --no-default-features,
+          ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --workspace --no-fail-fast ${{ matrix.feature }}
 
   fmt:
     name: Rustfmt
