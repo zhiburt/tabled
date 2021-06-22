@@ -1,0 +1,125 @@
+name: Continuous integration
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Check
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [nightly, stable]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust || 'stable' }}
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: cargo check
+
+  test:
+    name: Unit Test Suite
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          [
+            aarch64-unknown-linux-gnu,
+            armv7-unknown-linux-gnueabihf,
+            i686-unknown-linux-gnu,
+            i686-unknown-linux-musl,
+            mips-unknown-linux-gnu,
+            mips64-unknown-linux-gnuabi64,
+            mips64el-unknown-linux-gnuabi64,
+            mipsel-unknown-linux-gnu,
+            powerpc-unknown-linux-gnu,
+            powerpc64-unknown-linux-gnu,
+            powerpc64le-unknown-linux-gnu,
+            arm-unknown-linux-gnueabi,
+            x86_64-unknown-linux-gnu,
+            x86_64-unknown-linux-gnu,
+            x86_64-unknown-linux-musl,
+          ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+          target: ${{ matrix.target }}
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --workspace --all-features --target ${{ matrix.target }}
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup component add clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+
+  coverage:
+    name: CodeCov
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Run cargo-tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          version: '0.15.0'
+          args: '--workspace'
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
