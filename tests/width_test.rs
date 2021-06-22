@@ -111,7 +111,7 @@ fn max_width_with_emoji() {
 #[cfg(feature = "color")]
 #[test]
 fn color_chars_are_stripped() {
-    use colored::Colorize;
+    use owo_colors::OwoColorize;
 
     let data = &[
         "asd".red().to_string(),
@@ -124,7 +124,7 @@ fn color_chars_are_stripped() {
         "|--------|\n",
         "|  \u{1b}[31masd\u{1b}[0m   |\n",
         "|  \u{1b}[34mzxc\u{1b}[0m   |\n",
-        "| \u{1b}[40;32masd\u{1b}[0m... |\n",
+        "| \u{1b}[32m\u{1b}[40masd\u{1b}[0m\u{1b}[0m... |\n",
     );
 
     let table = Table::new(data)
@@ -132,5 +132,7 @@ fn color_chars_are_stripped() {
         .with(Modify::new(Full).with(MaxWidth(3, "...")))
         .to_string();
 
-    assert_eq!(table, expected);
+    println!("{}", table);
+
+    assert_eq!(expected, table);
 }

@@ -8,7 +8,7 @@ fn main() {
 
 #[cfg(feature = "color")]
 fn main() {
-    use colored::Colorize;
+    use owo_colors::OwoColorize;
     use tabled::{Alignment, Column, Format, Head, Modify, Object, Row, Style, Table, Tabled};
 
     #[derive(Tabled)]

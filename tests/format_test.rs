@@ -391,7 +391,7 @@ fn formatting_using_function_test() {
 mod color {
 
     use super::*;
-    use colored::Colorize;
+    use owo_colors::OwoColorize;
 
     #[test]
     fn color_column_test() {

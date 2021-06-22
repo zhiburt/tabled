@@ -956,7 +956,7 @@ mod tests {
     #[cfg(feature = "color")]
     #[test]
     fn colored_string_width_test() {
-        use colored::Colorize;
+        use owo_colors::OwoColorize;
         assert_eq!(string_width(&"hello world".red().to_string()), 11);
         assert_eq!(string_width(&"hello\nworld".blue().to_string()), 5);
         assert_eq!(string_width("\u{1b}[34m0\u{1b}[0m"), 1);
