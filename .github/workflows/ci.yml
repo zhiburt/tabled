@@ -72,7 +72,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --features color --no-fail-fast
+          args: --workspace --no-fail-fast --features color
 
   test_papergrid:
     name: Unit Test Suite for papegrid
@@ -95,6 +95,38 @@ jobs:
         with:
           command: test
           args: --workspace --no-fail-fast ${{ matrix.feature }} --manifest-path papergrid/Cargo.toml
+
+  fmt_papergrid:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all --manifest-path papergrid/Cargo.toml -- --check
+
+  fmt_tabled_derive:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all --manifest-path tabled_derive/Cargo.toml -- --check
 
   fmt:
     name: Rustfmt
