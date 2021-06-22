@@ -1,174 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 use tabled::{Style, Table, Tabled};
 
-#[test]
-fn table_vector_structures() {
-    #[derive(Tabled)]
-    struct St {
-        f1: u8,
-        f2: &'static str,
-    }
-
-    let st = vec![St { f1: 0, f2: "0" }, St { f1: 1, f2: "1" }];
-    let expected = "+----+----+\n\
-                         | f1 | f2 |\n\
-                         +----+----+\n\
-                         | 0  | 0  |\n\
-                         +----+----+\n\
-                         | 1  | 1  |\n\
-                         +----+----+\n";
-
-    let table = Table::new(st).to_string();
-
-    assert_eq!(table, expected);
-}
-
-#[test]
-fn table_empty_vector_structures() {
-    #[derive(Tabled)]
-    struct St {
-        f1: u8,
-        f2: &'static str,
-    }
-
-    let st: Vec<St> = Vec::new();
-    let expected = "+----+----+\n\
-                         | f1 | f2 |\n\
-                         +----+----+\n";
-
-    let table = Table::new(st).to_string();
-
-    assert_eq!(table, expected);
-}
-
-#[test]
-fn table_option() {
-    #[derive(Tabled)]
-    struct St {
-        f1: u8,
-        f2: &'static str,
-    }
-
-    let st = Some(St { f1: 0, f2: "0" });
-    let expected = "+----+----+\n\
-                         | f1 | f2 |\n\
-                         +----+----+\n\
-                         | 0  | 0  |\n\
-                         +----+----+\n";
-
-    let table = Table::new(st).to_string();
-
-    assert_eq!(table, expected);
-}
-
-#[test]
-fn table_option_none() {
-    #[derive(Tabled)]
-    struct St {
-        f1: u8,
-        f2: &'static str,
-    }
-
-    let st: Option<St> = None;
-    let expected = "+----+----+\n\
-                         | f1 | f2 |\n\
-                         +----+----+\n";
-
-    let table = Table::new(st).to_string();
-
-    assert_eq!(table, expected);
-}
-
-#[test]
-fn table_tuple() {
-    let t = ("we are in", 2020);
-    let expected = "+-----------+------+\n\
-                         |   &str    | i32  |\n\
-                         +-----------+------+\n\
-                         | we are in | 2020 |\n\
-                         +-----------+------+\n";
-
-    let table = Table::new(&[t]).to_string();
-
-    assert_eq!(table, expected);
-}
-
-#[test]
-fn table_single_tuple() {
-    let t = (2020,);
-    let expected = "+------+\n\
-                         | i32  |\n\
-                         +------+\n\
-                         | 2020 |\n\
-                         +------+\n";
-
-    let table = Table::new(&[t]).to_string();
-
-    assert_eq!(table, expected);
-}
-
-#[test]
-fn table_tuple_vec() {
-    let map = [(0, "Monday"), (1, "Thursday")];
-    let expected = "+-----+----------+\n\
-                         | i32 |   &str   |\n\
-                         +-----+----------+\n\
-                         |  0  |  Monday  |\n\
-                         +-----+----------+\n\
-                         |  1  | Thursday |\n\
-                         +-----+----------+\n";
-
-    let table = Table::new(&map).to_string();
-
-    assert_eq!(table, expected);
-}
-
-#[test]
-fn table_tuple_with_structure_vec() {
-    #[derive(Tabled)]
-    struct St {
-        f1: u8,
-        f2: &'static str,
-    }
-
-    let map = [(0, St { f1: 0, f2: "0str" }), (1, St { f1: 1, f2: "1str" })];
-    let expected = "+-----+----+------+\n\
-                         | i32 | f1 |  f2  |\n\
-                         +-----+----+------+\n\
-                         |  0  | 0  | 0str |\n\
-                         +-----+----+------+\n\
-                         |  1  | 1  | 1str |\n\
-                         +-----+----+------+\n";
-
-    let table = Table::new(&map).to_string();
-
-    assert_eq!(table, expected);
-}
-
-#[allow(dead_code)]
-#[test]
-fn table_vector_structures_with_hidden_field() {
-    #[derive(Tabled)]
-    struct St {
-        #[header(hidden = true)]
-        f1: u8,
-        f2: &'static str,
-    }
-
-    let st = vec![St { f1: 0, f2: "0" }, St { f1: 1, f2: "1" }];
-    let expected = "+----+\n\
-                         | f2 |\n\
-                         +----+\n\
-                         | 0  |\n\
-                         +----+\n\
-                         | 1  |\n\
-                         +----+\n";
-
-    let table = Table::new(&st).to_string();
-
-    assert_eq!(table, expected);
-}
-
 mod default_types {
     use super::*;
 
@@ -439,246 +271,416 @@ mod default_types {
 
         assert_eq!(table, expected);
     }
+}
 
-    #[test]
-    fn table_enum() {
-        #[derive(Tabled)]
-        enum Letters {
-            Vowels { character: char, lang: u8 },
-            Consonant(char),
-            Digit,
-        }
-
-        let data = vec![
-            Letters::Vowels {
-                character: 'a',
-                lang: 0,
-            },
-            Letters::Consonant('w'),
-            Letters::Vowels {
-                character: 'b',
-                lang: 1,
-            },
-            Letters::Vowels {
-                character: 'c',
-                lang: 2,
-            },
-            Letters::Digit,
-        ];
-
-        let expected = "+--------+-----------+-------+\n\
-                             | Vowels | Consonant | Digit |\n\
-                             +--------+-----------+-------+\n\
-                             |   +    |           |       |\n\
-                             +--------+-----------+-------+\n\
-                             |        |     +     |       |\n\
-                             +--------+-----------+-------+\n\
-                             |   +    |           |       |\n\
-                             +--------+-----------+-------+\n\
-                             |   +    |           |       |\n\
-                             +--------+-----------+-------+\n\
-                             |        |           |   +   |\n\
-                             +--------+-----------+-------+\n";
-
-        let table = Table::new(&data).to_string();
-
-        assert_eq!(table, expected);
+#[test]
+fn table_vector_structures() {
+    #[derive(Tabled)]
+    struct St {
+        f1: u8,
+        f2: &'static str,
     }
 
-    #[test]
-    fn table_enum_with_hidden_variant() {
-        #[derive(Tabled)]
-        enum Letters {
-            Vowels {
-                character: char,
-                lang: u8,
-            },
-            Consonant(char),
-            #[header(hidden)]
-            Digit,
-        }
+    let st = vec![St { f1: 0, f2: "0" }, St { f1: 1, f2: "1" }];
+    let expected = "+----+----+\n\
+                         | f1 | f2 |\n\
+                         +----+----+\n\
+                         | 0  | 0  |\n\
+                         +----+----+\n\
+                         | 1  | 1  |\n\
+                         +----+----+\n";
 
-        let data = vec![
-            Letters::Vowels {
-                character: 'a',
-                lang: 0,
-            },
-            Letters::Consonant('w'),
-            Letters::Vowels {
-                character: 'b',
-                lang: 1,
-            },
-            Letters::Vowels {
-                character: 'c',
-                lang: 2,
-            },
-            Letters::Digit,
-        ];
+    let table = Table::new(st).to_string();
 
-        let expected = "+--------+-----------+\n\
-                             | Vowels | Consonant |\n\
-                             +--------+-----------+\n\
-                             |   +    |           |\n\
-                             +--------+-----------+\n\
-                             |        |     +     |\n\
-                             +--------+-----------+\n\
-                             |   +    |           |\n\
-                             +--------+-----------+\n\
-                             |   +    |           |\n\
-                             +--------+-----------+\n\
-                             |        |           |\n\
-                             +--------+-----------+\n";
+    assert_eq!(table, expected);
+}
 
-        let table = Table::new(&data).to_string();
-
-        println!("{}", table);
-
-        assert_eq!(table, expected);
+#[test]
+fn table_empty_vector_structures() {
+    #[derive(Tabled)]
+    struct St {
+        f1: u8,
+        f2: &'static str,
     }
 
-    #[test]
-    fn table_btreemap() {
-        #[derive(Tabled)]
-        struct A {
-            b: u8,
-            c: &'static str,
-        }
+    let st: Vec<St> = Vec::new();
+    let expected = "+----+----+\n\
+                         | f1 | f2 |\n\
+                         +----+----+\n";
 
-        let mut map = BTreeMap::new();
-        map.insert(0, A { b: 1, c: "s1" });
-        map.insert(1, A { b: 2, c: "s2" });
-        map.insert(3, A { b: 3, c: "s3" });
+    let table = Table::new(st).to_string();
 
-        let expected = "+-----+---+----+\n\
-                             | i32 | b | c  |\n\
-                             +-----+---+----+\n\
-                             |  0  | 1 | s1 |\n\
-                             +-----+---+----+\n\
-                             |  1  | 2 | s2 |\n\
-                             +-----+---+----+\n\
-                             |  3  | 3 | s3 |\n\
-                             +-----+---+----+\n";
+    assert_eq!(table, expected);
+}
 
-        let table = Table::new(&map).to_string();
-
-        assert_eq!(table, expected);
+#[test]
+fn table_option() {
+    #[derive(Tabled)]
+    struct St {
+        f1: u8,
+        f2: &'static str,
     }
 
-    #[test]
-    fn table_btreeset() {
-        #[derive(Tabled, PartialEq, Eq, PartialOrd, Ord)]
-        struct A {
-            b: u8,
-            c: &'static str,
-        }
+    let st = Some(St { f1: 0, f2: "0" });
+    let expected = "+----+----+\n\
+                         | f1 | f2 |\n\
+                         +----+----+\n\
+                         | 0  | 0  |\n\
+                         +----+----+\n";
 
-        let mut map = BTreeSet::new();
-        map.insert(A { b: 1, c: "s1" });
-        map.insert(A { b: 2, c: "s2" });
-        map.insert(A { b: 3, c: "s3" });
+    let table = Table::new(st).to_string();
 
-        let expected = "+---+----+\n\
-                             | b | c  |\n\
-                             +---+----+\n\
-                             | 1 | s1 |\n\
-                             +---+----+\n\
-                             | 2 | s2 |\n\
-                             +---+----+\n\
-                             | 3 | s3 |\n\
-                             +---+----+\n";
+    assert_eq!(table, expected);
+}
 
-        let table = Table::new(&map).to_string();
-
-        assert_eq!(table, expected);
+#[test]
+fn table_option_none() {
+    #[derive(Tabled)]
+    struct St {
+        f1: u8,
+        f2: &'static str,
     }
 
-    #[test]
-    fn table_emojie() {
-        #[derive(Tabled)]
-        struct Language {
-            name: &'static str,
-            designed_by: &'static str,
-            invented_year: usize,
-        }
+    let st: Option<St> = None;
+    let expected = "+----+----+\n\
+                         | f1 | f2 |\n\
+                         +----+----+\n";
 
-        let languages = vec![
-            Language {
-                name: "C 💕",
-                designed_by: "Dennis Ritchie",
-                invented_year: 1972,
-            },
-            Language {
-                name: "Rust 👍",
-                designed_by: "Graydon Hoare",
-                invented_year: 2010,
-            },
-            Language {
-                name: "Go 🧋",
-                designed_by: "Rob Pike",
-                invented_year: 2009,
-            },
-        ];
+    let table = Table::new(st).to_string();
 
-        let expected = "+---------+----------------+---------------+\n\
-                             |  name   |  designed_by   | invented_year |\n\
-                             +---------+----------------+---------------+\n\
-                             |  C 💕   | Dennis Ritchie |     1972      |\n\
-                             +---------+----------------+---------------+\n\
-                             | Rust 👍 | Graydon Hoare  |     2010      |\n\
-                             +---------+----------------+---------------+\n\
-                             |  Go 🧋  |    Rob Pike    |     2009      |\n\
-                             +---------+----------------+---------------+\n";
+    assert_eq!(table, expected);
+}
 
-        let table = Table::new(&languages).to_string();
+#[test]
+fn table_tuple() {
+    let t = ("we are in", 2020);
+    let expected = "+-----------+------+\n\
+                         |   &str    | i32  |\n\
+                         +-----------+------+\n\
+                         | we are in | 2020 |\n\
+                         +-----------+------+\n";
 
-        println!("{}", table);
+    let table = Table::new(&[t]).to_string();
 
-        assert_eq!(table, expected);
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn table_single_tuple() {
+    let t = (2020,);
+    let expected = "+------+\n\
+                         | i32  |\n\
+                         +------+\n\
+                         | 2020 |\n\
+                         +------+\n";
+
+    let table = Table::new(&[t]).to_string();
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn table_tuple_vec() {
+    let map = [(0, "Monday"), (1, "Thursday")];
+    let expected = "+-----+----------+\n\
+                         | i32 |   &str   |\n\
+                         +-----+----------+\n\
+                         |  0  |  Monday  |\n\
+                         +-----+----------+\n\
+                         |  1  | Thursday |\n\
+                         +-----+----------+\n";
+
+    let table = Table::new(&map).to_string();
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn table_tuple_with_structure_vec() {
+    #[derive(Tabled)]
+    struct St {
+        f1: u8,
+        f2: &'static str,
     }
 
-    #[test]
-    fn table_emojie_multiline() {
-        #[derive(Tabled)]
-        struct Article {
-            name: &'static str,
-            author: &'static str,
-            text: &'static str,
-            rating: usize,
-        }
+    let map = [(0, St { f1: 0, f2: "0str" }), (1, St { f1: 1, f2: "1str" })];
+    let expected = "+-----+----+------+\n\
+                         | i32 | f1 |  f2  |\n\
+                         +-----+----+------+\n\
+                         |  0  | 0  | 0str |\n\
+                         +-----+----+------+\n\
+                         |  1  | 1  | 1str |\n\
+                         +-----+----+------+\n";
 
-        let languages = vec![
-            Article {
-                name: "Rebase vs Merge commit in depth 👋",
-                author: "Rose Kuphal DVM",
-                text: "A multiline\n text with 🤯 😳 🥵 🥶\n a bunch of emojies ☄️ 💥 🔥 🌪",
-                rating: 43,
-            },
-            Article {
-                name: "Keep it simple",
-                author: "Unknown",
-                text: "🍳",
-                rating: 100,
-            },
-        ];
+    let table = Table::new(&map).to_string();
 
-        // Note: it looks OK in a terminal
-        let expected =
-            "+------------------------------------+-----------------+-------------------------------+--------+\n\
-             |                name                |     author      |             text              | rating |\n\
-             +------------------------------------+-----------------+-------------------------------+--------+\n\
-             | Rebase vs Merge commit in depth 👋 | Rose Kuphal DVM |          A multiline          |   43   |\n\
-             |                                    |                 |     text with 🤯 😳 🥵 🥶     |        |\n\
-             |                                    |                 | a bunch of emojies ☄️ 💥 🔥 🌪  |        |\n\
-             +------------------------------------+-----------------+-------------------------------+--------+\n\
-             |           Keep it simple           |     Unknown     |              🍳               |  100   |\n\
-             +------------------------------------+-----------------+-------------------------------+--------+\n";
+    assert_eq!(table, expected);
+}
 
-        let table = Table::new(&languages).to_string();
-
-        println!("{}", table);
-
-        assert_eq!(table, expected);
+#[allow(dead_code)]
+#[test]
+fn table_vector_structures_with_hidden_field() {
+    #[derive(Tabled)]
+    struct St {
+        #[header(hidden = true)]
+        f1: u8,
+        f2: &'static str,
     }
+
+    let st = vec![St { f1: 0, f2: "0" }, St { f1: 1, f2: "1" }];
+    let expected = "+----+\n\
+                         | f2 |\n\
+                         +----+\n\
+                         | 0  |\n\
+                         +----+\n\
+                         | 1  |\n\
+                         +----+\n";
+
+    let table = Table::new(&st).to_string();
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn table_enum() {
+    #[allow(dead_code)]
+    #[derive(Tabled)]
+    enum Letters {
+        Vowels { character: char, lang: u8 },
+        Consonant(char),
+        Digit,
+    }
+
+    let data = vec![
+        Letters::Vowels {
+            character: 'a',
+            lang: 0,
+        },
+        Letters::Consonant('w'),
+        Letters::Vowels {
+            character: 'b',
+            lang: 1,
+        },
+        Letters::Vowels {
+            character: 'c',
+            lang: 2,
+        },
+        Letters::Digit,
+    ];
+
+    let expected = "+--------+-----------+-------+\n\
+                         | Vowels | Consonant | Digit |\n\
+                         +--------+-----------+-------+\n\
+                         |   +    |           |       |\n\
+                         +--------+-----------+-------+\n\
+                         |        |     +     |       |\n\
+                         +--------+-----------+-------+\n\
+                         |   +    |           |       |\n\
+                         +--------+-----------+-------+\n\
+                         |   +    |           |       |\n\
+                         +--------+-----------+-------+\n\
+                         |        |           |   +   |\n\
+                         +--------+-----------+-------+\n";
+
+    let table = Table::new(&data).to_string();
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn table_enum_with_hidden_variant() {
+    #[allow(dead_code)]
+    #[derive(Tabled)]
+    enum Letters {
+        Vowels {
+            character: char,
+            lang: u8,
+        },
+        Consonant(char),
+        #[header(hidden)]
+        Digit,
+    }
+
+    let data = vec![
+        Letters::Vowels {
+            character: 'a',
+            lang: 0,
+        },
+        Letters::Consonant('w'),
+        Letters::Vowels {
+            character: 'b',
+            lang: 1,
+        },
+        Letters::Vowels {
+            character: 'c',
+            lang: 2,
+        },
+        Letters::Digit,
+    ];
+
+    let expected = "+--------+-----------+\n\
+                         | Vowels | Consonant |\n\
+                         +--------+-----------+\n\
+                         |   +    |           |\n\
+                         +--------+-----------+\n\
+                         |        |     +     |\n\
+                         +--------+-----------+\n\
+                         |   +    |           |\n\
+                         +--------+-----------+\n\
+                         |   +    |           |\n\
+                         +--------+-----------+\n\
+                         |        |           |\n\
+                         +--------+-----------+\n";
+
+    let table = Table::new(&data).to_string();
+
+    println!("{}", table);
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn table_btreemap() {
+    #[derive(Tabled)]
+    struct A {
+        b: u8,
+        c: &'static str,
+    }
+
+    let mut map = BTreeMap::new();
+    map.insert(0, A { b: 1, c: "s1" });
+    map.insert(1, A { b: 2, c: "s2" });
+    map.insert(3, A { b: 3, c: "s3" });
+
+    let expected = "+-----+---+----+\n\
+                         | i32 | b | c  |\n\
+                         +-----+---+----+\n\
+                         |  0  | 1 | s1 |\n\
+                         +-----+---+----+\n\
+                         |  1  | 2 | s2 |\n\
+                         +-----+---+----+\n\
+                         |  3  | 3 | s3 |\n\
+                         +-----+---+----+\n";
+
+    let table = Table::new(&map).to_string();
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn table_btreeset() {
+    #[derive(Tabled, PartialEq, Eq, PartialOrd, Ord)]
+    struct A {
+        b: u8,
+        c: &'static str,
+    }
+
+    let mut map = BTreeSet::new();
+    map.insert(A { b: 1, c: "s1" });
+    map.insert(A { b: 2, c: "s2" });
+    map.insert(A { b: 3, c: "s3" });
+
+    let expected = "+---+----+\n\
+                         | b | c  |\n\
+                         +---+----+\n\
+                         | 1 | s1 |\n\
+                         +---+----+\n\
+                         | 2 | s2 |\n\
+                         +---+----+\n\
+                         | 3 | s3 |\n\
+                         +---+----+\n";
+
+    let table = Table::new(&map).to_string();
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn table_emojie() {
+    #[derive(Tabled)]
+    struct Language {
+        name: &'static str,
+        designed_by: &'static str,
+        invented_year: usize,
+    }
+
+    let languages = vec![
+        Language {
+            name: "C 💕",
+            designed_by: "Dennis Ritchie",
+            invented_year: 1972,
+        },
+        Language {
+            name: "Rust 👍",
+            designed_by: "Graydon Hoare",
+            invented_year: 2010,
+        },
+        Language {
+            name: "Go 🧋",
+            designed_by: "Rob Pike",
+            invented_year: 2009,
+        },
+    ];
+
+    let expected = "+---------+----------------+---------------+\n\
+                         |  name   |  designed_by   | invented_year |\n\
+                         +---------+----------------+---------------+\n\
+                         |  C 💕   | Dennis Ritchie |     1972      |\n\
+                         +---------+----------------+---------------+\n\
+                         | Rust 👍 | Graydon Hoare  |     2010      |\n\
+                         +---------+----------------+---------------+\n\
+                         |  Go 🧋  |    Rob Pike    |     2009      |\n\
+                         +---------+----------------+---------------+\n";
+
+    let table = Table::new(&languages).to_string();
+
+    println!("{}", table);
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn table_emojie_multiline() {
+    #[derive(Tabled)]
+    struct Article {
+        name: &'static str,
+        author: &'static str,
+        text: &'static str,
+        rating: usize,
+    }
+
+    let languages = vec![
+        Article {
+            name: "Rebase vs Merge commit in depth 👋",
+            author: "Rose Kuphal DVM",
+            text: "A multiline\n text with 🤯 😳 🥵 🥶\n a bunch of emojies ☄️ 💥 🔥 🌪",
+            rating: 43,
+        },
+        Article {
+            name: "Keep it simple",
+            author: "Unknown",
+            text: "🍳",
+            rating: 100,
+        },
+    ];
+
+    // Note: it looks OK in a terminal
+    let expected =
+        "+------------------------------------+-----------------+-------------------------------+--------+\n\
+         |                name                |     author      |             text              | rating |\n\
+         +------------------------------------+-----------------+-------------------------------+--------+\n\
+         | Rebase vs Merge commit in depth 👋 | Rose Kuphal DVM |          A multiline          |   43   |\n\
+         |                                    |                 |     text with 🤯 😳 🥵 🥶     |        |\n\
+         |                                    |                 | a bunch of emojies ☄️ 💥 🔥 🌪  |        |\n\
+         +------------------------------------+-----------------+-------------------------------+--------+\n\
+         |           Keep it simple           |     Unknown     |              🍳               |  100   |\n\
+         +------------------------------------+-----------------+-------------------------------+--------+\n";
+
+    let table = Table::new(&languages).to_string();
+
+    println!("{}", table);
+
+    assert_eq!(table, expected);
 }
 
 #[test]

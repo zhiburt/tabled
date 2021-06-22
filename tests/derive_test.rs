@@ -35,7 +35,7 @@ mod tupple_structure {
         fn display_option(o: &Option<&'static str>) -> String {
             match o {
                 Some(s) => format!("some {}", s),
-                None => format!("none"),
+                None => "none".to_string(),
             }
         }
 
