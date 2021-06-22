@@ -100,8 +100,6 @@ fn max_width_with_emoji() {
         "| 🚴...  |\n",
     );
 
-
-
     let table = Table::new(data)
         .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth(3, "...")))

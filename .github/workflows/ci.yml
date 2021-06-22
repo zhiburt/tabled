@@ -72,14 +72,11 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --all-features --no-fail-fast
+          args: --workspace --features color --no-fail-fast
 
   test_papergrid:
     name: Unit Test Suite for papegrid
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./papergrid
     strategy:
       matrix:
         feature:
@@ -96,6 +93,7 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
+          working-directory: ./papergrid
           command: test
           args: --workspace --no-fail-fast ${{ matrix.feature }}
 
@@ -132,7 +130,7 @@ jobs:
           args: -- -D warnings
 
   coverage:
-    name: CodeCov
+    name: Coveralls
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -145,7 +143,7 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: '0.15.0'
-          args: '--workspace'
+          args: '--workspace --out Lcov'
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
