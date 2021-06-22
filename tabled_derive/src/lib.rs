@@ -1,10 +1,12 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
-use proc_macro2::Ident;
 use quote::*;
 use std::str;
-use syn::{parse_macro_input, Attribute, DeriveInput, Field, Lit, Meta, NestedMeta, Variant};
+use syn::{
+    parse_macro_input, token, Attribute, Data, DataEnum, DataStruct, DeriveInput, Field, Fields,
+    Ident, Index, Lit, Meta, NestedMeta, Type, Variant,
+};
 
 #[proc_macro_derive(Tabled, attributes(header, field))]
 pub fn tabled(input: TokenStream) -> TokenStream {
@@ -13,7 +15,7 @@ pub fn tabled(input: TokenStream) -> TokenStream {
     impl_tabled(&input)
 }
 
-fn impl_tabled(ast: &syn::DeriveInput) -> TokenStream {
+fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let headers = get_headers(&ast.data);
     let fields = get_fields(&ast.data);
@@ -35,11 +37,11 @@ fn impl_tabled(ast: &syn::DeriveInput) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-fn get_headers(d: &syn::Data) -> proc_macro2::TokenStream {
+fn get_headers(d: &Data) -> proc_macro2::TokenStream {
     let headers = match d {
-        syn::Data::Struct(st) => get_st_headers(st),
-        syn::Data::Enum(e) => get_enum_headers(e).concat(),
-        syn::Data::Union(_) => todo!("it's not clear how to handle union type"),
+        Data::Struct(st) => get_st_headers(st),
+        Data::Enum(e) => get_enum_headers(e).concat(),
+        Data::Union(_) => todo!("it's not clear how to handle union type"),
     };
 
     quote!({
@@ -51,7 +53,7 @@ fn get_headers(d: &syn::Data) -> proc_macro2::TokenStream {
     })
 }
 
-fn get_st_headers(st: &syn::DataStruct) -> Vec<proc_macro2::TokenStream> {
+fn get_st_headers(st: &DataStruct) -> Vec<proc_macro2::TokenStream> {
     get_fields_headers(st.fields.iter())
 }
 
@@ -65,7 +67,7 @@ fn get_fields_headers<'a>(
         .collect()
 }
 
-fn field_headers(field: &syn::Field, index: usize) -> proc_macro2::TokenStream {
+fn field_headers(field: &Field, index: usize) -> proc_macro2::TokenStream {
     if should_be_inlined(&field.attrs) {
         inline_header(&field.ty, &field.attrs)
     } else {
@@ -74,7 +76,7 @@ fn field_headers(field: &syn::Field, index: usize) -> proc_macro2::TokenStream {
     }
 }
 
-fn inline_header(t: &syn::Type, attrs: &[syn::Attribute]) -> proc_macro2::TokenStream {
+fn inline_header(t: &Type, attrs: &[Attribute]) -> proc_macro2::TokenStream {
     let inline_prefix = look_for_inline_prefix(attrs);
     if inline_prefix.is_empty() {
         quote! {
@@ -89,7 +91,7 @@ fn inline_header(t: &syn::Type, attrs: &[syn::Attribute]) -> proc_macro2::TokenS
     }
 }
 
-fn get_enum_headers(e: &syn::DataEnum) -> Vec<Vec<proc_macro2::TokenStream>> {
+fn get_enum_headers(e: &DataEnum) -> Vec<Vec<proc_macro2::TokenStream>> {
     e.variants
         .iter()
         .filter(|v| !is_ignored_variant(v))
@@ -112,9 +114,9 @@ fn variant_headers(variant: &Variant) -> Vec<proc_macro2::TokenStream> {
     }
 }
 
-fn get_fields(d: &syn::Data) -> proc_macro2::TokenStream {
+fn get_fields(d: &Data) -> proc_macro2::TokenStream {
     match d {
-        syn::Data::Struct(st) => {
+        Data::Struct(st) => {
             let fields = get_st_fields(st);
             quote! {
                 {
@@ -126,12 +128,12 @@ fn get_fields(d: &syn::Data) -> proc_macro2::TokenStream {
                 }
             }
         }
-        syn::Data::Enum(e) => get_enum_fields(e),
-        syn::Data::Union(_) => todo!("it's not clear how to handle union type"),
+        Data::Enum(e) => get_enum_fields(e),
+        Data::Union(_) => todo!("it's not clear how to handle union type"),
     }
 }
 
-fn get_st_fields(st: &syn::DataStruct) -> Vec<proc_macro2::TokenStream> {
+fn get_st_fields(st: &DataStruct) -> Vec<proc_macro2::TokenStream> {
     let mut v = Vec::new();
     for (i, field) in st.fields.iter().enumerate() {
         if is_ignored_field(field) {
@@ -153,7 +155,7 @@ fn fields_of_field(field: &Field, index: usize) -> proc_macro2::TokenStream {
 
 fn get_field_fields(
     field: proc_macro2::TokenStream,
-    attrs: &[syn::Attribute],
+    attrs: &[Attribute],
 ) -> proc_macro2::TokenStream {
     let mut field_value = field;
     let is_inline = should_be_inlined(&attrs);
@@ -173,7 +175,7 @@ fn get_field_fields(
 }
 
 fn use_function_for(field: proc_macro2::TokenStream, function: &str) -> proc_macro2::TokenStream {
-    let function = syn::Ident::new(function, proc_macro2::Span::call_site());
+    let function = Ident::new(function, proc_macro2::Span::call_site());
     quote! { #function(&#field) }
 }
 
@@ -181,14 +183,14 @@ fn field_field(field: &Field, index: usize) -> proc_macro2::TokenStream {
     field.ident.as_ref().map_or_else(
         || {
             let mut s = quote!(self.);
-            s.extend(syn::Index::from(index).to_token_stream());
+            s.extend(Index::from(index).to_token_stream());
             s
         },
         |f| quote!(self.#f),
     )
 }
 
-fn get_enum_fields(e: &syn::DataEnum) -> proc_macro2::TokenStream {
+fn get_enum_fields(e: &DataEnum) -> proc_macro2::TokenStream {
     let mut fields = Vec::new();
 
     let variants = e.variants.iter().filter(|v| !is_ignored_variant(v));
@@ -291,7 +293,7 @@ fn variant_idents(v: &Variant) -> Vec<Ident> {
             if let Some(ident) = field.ident.as_ref() {
                 ident.clone()
             } else {
-                let tmp_var = syn::Ident::new(
+                let tmp_var = Ident::new(
                     format!("x_{}", index).as_str(),
                     proc_macro2::Span::call_site(),
                 );
@@ -314,23 +316,23 @@ fn variant_match_branches(v: &Variant) -> proc_macro2::TokenStream {
     };
 
     match &v.fields {
-        syn::Fields::Named(_) => {
-            syn::token::Brace::default().surround(&mut token, |s| {
+        Fields::Named(_) => {
+            token::Brace::default().surround(&mut token, |s| {
                 s.append_all(fields);
             });
         }
-        syn::Fields::Unnamed(_) => {
-            syn::token::Paren::default().surround(&mut token, |s| {
+        Fields::Unnamed(_) => {
+            token::Paren::default().surround(&mut token, |s| {
                 s.append_all(fields);
             });
         }
-        syn::Fields::Unit => {}
+        Fields::Unit => {}
     };
 
     token
 }
 
-fn field_name(f: &syn::Field, index: usize) -> String {
+fn field_name(f: &Field, index: usize) -> String {
     let override_name = find_name_attribute(&f.attrs, "header", "name", look_up_nested_meta_str)
         .or_else(|| find_name_attribute(&f.attrs, "header", "name", look_up_nested_meta_flag_str));
     match override_name {
@@ -342,17 +344,17 @@ fn field_name(f: &syn::Field, index: usize) -> String {
     }
 }
 
-fn check_display_with_func(attrs: &[syn::Attribute]) -> Option<String> {
+fn check_display_with_func(attrs: &[Attribute]) -> Option<String> {
     find_name_attribute(attrs, "field", "display_with", look_up_nested_meta_str)
 }
 
-fn variant_name(v: &syn::Variant) -> String {
+fn variant_name(v: &Variant) -> String {
     find_name_attribute(&v.attrs, "header", "name", look_up_nested_meta_str)
         .or_else(|| find_name_attribute(&v.attrs, "header", "name", look_up_nested_meta_flag_str))
         .unwrap_or_else(|| v.ident.to_string())
 }
 
-fn should_be_inlined(attrs: &[syn::Attribute]) -> bool {
+fn should_be_inlined(attrs: &[Attribute]) -> bool {
     let inline_attr = find_name_attribute(&attrs, "header", "inline", look_up_nested_meta_bool)
         .or_else(|| find_name_attribute(&attrs, "field", "inline", look_up_nested_meta_bool))
         .or_else(|| {
@@ -362,28 +364,28 @@ fn should_be_inlined(attrs: &[syn::Attribute]) -> bool {
     inline_attr == Some(true)
 }
 
-fn look_for_inline_prefix(attrs: &[syn::Attribute]) -> String {
+fn look_for_inline_prefix(attrs: &[Attribute]) -> String {
     find_name_attribute(&attrs, "header", "inline", look_up_nested_flag_str_in_attr)
         .or_else(|| find_name_attribute(&attrs, "field", "inline", look_up_nested_flag_str_in_attr))
         .unwrap_or_else(|| "".to_owned())
 }
 
-fn is_ignored_field(f: &syn::Field) -> bool {
+fn is_ignored_field(f: &Field) -> bool {
     attrs_has_ignore_sign(&f.attrs)
 }
 
-fn is_ignored_variant(f: &syn::Variant) -> bool {
+fn is_ignored_variant(f: &Variant) -> bool {
     attrs_has_ignore_sign(&f.attrs)
 }
 
-fn attrs_has_ignore_sign(attrs: &[syn::Attribute]) -> bool {
+fn attrs_has_ignore_sign(attrs: &[Attribute]) -> bool {
     let is_ignored = find_name_attribute(&attrs, "header", "hidden", look_up_nested_meta_bool);
     is_ignored == Some(true)
 }
 
 fn parse_name_attribute<R, F>(attr: &Attribute, method: &str, name: &str, lookup: F) -> Option<R>
 where
-    F: Fn(&syn::NestedMeta, &str) -> Result<Option<R>, String>,
+    F: Fn(&NestedMeta, &str) -> Result<Option<R>, String>,
 {
     if !attr.path.is_ident(method) {
         return None;
@@ -408,7 +410,7 @@ fn parse_name_attribute_nested<'a, R, F>(
     lookup: F,
 ) -> Option<R>
 where
-    F: Fn(&syn::NestedMeta, &str) -> Result<Option<R>, String>,
+    F: Fn(&NestedMeta, &str) -> Result<Option<R>, String>,
 {
     for nested_meta in nested {
         let val = lookup(nested_meta, name).unwrap_or_else(
@@ -422,7 +424,7 @@ where
     None
 }
 
-fn look_up_nested_meta_str(meta: &syn::NestedMeta, name: &str) -> Result<Option<String>, String> {
+fn look_up_nested_meta_str(meta: &NestedMeta, name: &str) -> Result<Option<String>, String> {
     match meta {
         NestedMeta::Meta(Meta::NameValue(value)) => {
             if value.path.is_ident(name) {
@@ -435,14 +437,14 @@ fn look_up_nested_meta_str(meta: &syn::NestedMeta, name: &str) -> Result<Option<
     }
 }
 
-fn look_up_nested_meta_flag_str(meta: &syn::NestedMeta, _: &str) -> Result<Option<String>, String> {
+fn look_up_nested_meta_flag_str(meta: &NestedMeta, _: &str) -> Result<Option<String>, String> {
     match meta {
         NestedMeta::Lit(lit) => check_str_literal(lit),
         _ => Ok(None),
     }
 }
 
-fn check_str_literal(lit: &syn::Lit) -> Result<Option<String>, String> {
+fn check_str_literal(lit: &Lit) -> Result<Option<String>, String> {
     match lit {
         Lit::Str(value) => Ok(Some(value.value())),
         Lit::ByteStr(value) => str::from_utf8(&value.value())
@@ -453,7 +455,7 @@ fn check_str_literal(lit: &syn::Lit) -> Result<Option<String>, String> {
     }
 }
 
-fn look_up_nested_meta_bool(meta: &syn::NestedMeta, name: &str) -> Result<Option<bool>, String> {
+fn look_up_nested_meta_bool(meta: &NestedMeta, name: &str) -> Result<Option<bool>, String> {
     match meta {
         NestedMeta::Meta(Meta::Path(path)) if path.is_ident(name) => Ok(Some(true)),
         NestedMeta::Meta(Meta::NameValue(value)) if value.path.is_ident(name) => match &value.lit {
@@ -465,7 +467,7 @@ fn look_up_nested_meta_bool(meta: &syn::NestedMeta, name: &str) -> Result<Option
 }
 
 fn look_up_nested_flag_str_in_attr(
-    meta: &syn::NestedMeta,
+    meta: &NestedMeta,
     name: &str,
 ) -> Result<Option<String>, String> {
     match meta {
@@ -485,7 +487,7 @@ fn find_name_attribute<R, F>(
     lookup: F,
 ) -> Option<R>
 where
-    F: Fn(&syn::NestedMeta, &str) -> Result<Option<R>, String> + Clone,
+    F: Fn(&NestedMeta, &str) -> Result<Option<R>, String> + Clone,
 {
     attributes
         .iter()
