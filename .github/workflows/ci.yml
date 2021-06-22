@@ -74,60 +74,6 @@ jobs:
           command: test
           args: --workspace --no-fail-fast --features color
 
-  test_papergrid:
-    name: Unit Test Suite for papegrid
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        feature:
-          [
-            --all-features,
-            --no-default-features,
-          ]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --workspace --no-fail-fast ${{ matrix.feature }} --manifest-path papergrid/Cargo.toml
-
-  fmt_papergrid:
-    name: Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - run: rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all --manifest-path papergrid/Cargo.toml -- --check
-
-  fmt_tabled_derive:
-    name: Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - run: rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all --manifest-path tabled_derive/Cargo.toml -- --check
-
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
@@ -174,7 +120,7 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: '0.15.0'
-          args: '--workspace --out Lcov --output-dir ./coverage'
+          args: '--workspace --out Lcov --output-dir ./coverage --exclude-files */target/*'
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:

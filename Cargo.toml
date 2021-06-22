@@ -10,6 +10,9 @@ keywords = ["sheet", "table", "graphics", "terminal"]
 categories = ["text-processing", "visualization"]
 readme = "README.md"
 
+[workspace]
+members = ["papergrid", "tabled_derive"]
+
 [badges]
 travis-ci = { repository="https://github.com/zhiburt/tabled", branch="master" }
 coveralls = { repository="https://github.com/zhiburt/tabled", branch="master", service="github" }
