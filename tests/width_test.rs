@@ -85,12 +85,22 @@ fn max_width_with_emoji() {
 
     // Is it right behaiviour?
     let expected = concat!(
+        "|  &st...   |\n",
+        "|-----------|\n",
+        "|    🤠     |\n",
+        "| 😳🥵🥶... |\n",
+        "|  🚴🏻\u{200d}...  |\n",
+    );
+    #[cfg(feature = "color")]
+    let expected = concat!(
         "| &st... |\n",
         "|--------|\n",
         "|   🤠   |\n",
         "| 😳...  |\n",
         "| 🚴...  |\n",
     );
+
+
 
     let table = Table::new(data)
         .with(Style::github_markdown())
