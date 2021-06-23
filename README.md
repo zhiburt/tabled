@@ -4,7 +4,7 @@
 [![docs.rs](https://img.shields.io/docsrs/tabled?color=blue)](https://docs.rs/tabled/0.1.1/tabled/)
 [![license](https://img.shields.io/crates/l/tabled)](./LICENSE.txt)
 [![dependency status](https://deps.rs/repo/github/zhiburt/tabled/status.svg)](https://deps.rs/repo/github/zhiburt/tabled)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fzhiburt%2Ftabled.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Fzhiburt%2Ftabled?ref=badge_small)
+
 # tabled
 
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
@@ -32,6 +32,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Column name override](#Column-name-override)
     * [Hide a column](#Hide-a-column)
     * [Custom field formatting](#Custom-field-formatting)
+    * [Inline](#Inline)
     * [Tuple combination](#Tuple-combination)
     * [Object](#Object)
 * [Notes](#Notes)
@@ -247,12 +248,11 @@ Table::new(&data).with(Modify::new(Row(1..)).with(Indent::new(1, 1, 0, 2)));
 ## Max width
 
 Using `MaxWidth` type its possible to set a max width of an object.
+While tinkering content we don't forget about its color.
 
 ```rust
 Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth(10, "...")));
 ```
-
-NOTE: The implementation is not stable in terms of handling colors and emojies 
 
 ## Disable
 
@@ -319,7 +319,7 @@ However, this may be often not the case for example when a field uses the `Optio
 There's 2 common ways how to solve this:
 
 * Implement `Tabled` trait manually for a type.
-* Wrap `Option` to something like DisplayedOption<T>(Option<T>) and implement a Display trait for it.
+* Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and implement a Display trait for it.
 
 Or to use an attribute `#[field(display_with = "func")]` for the field. To use it you must provide a function name in a `display_with` parameter.
    
@@ -339,6 +339,50 @@ pub struct MyRecord {
 }
 ```
 
+## Inline
+   
+It's possible to inline internal data if it implements `Tabled` trait.
+Use `#[header(inline)]` or `#[header(inline("prefix>>"))]`.
+The string argument is a prefix which will be used for all inlined elements.
+
+```rust
+ #[derive(Tabled)]
+ struct Person {
+     id: u8,
+     name: &'static str,
+     #[header(inline)]
+     ed: Education,
+ }
+ 
+#[derive(Tabled)]
+struct Education {
+    uni: &'static str,
+    graduated: bool,
+}
+```
+
+And it works for enums as well.
+
+```rust
+#[derive(Tabled)]
+enum Vehicle {
+    #[header(inline("Auto::"))]
+    Auto {
+        model: &'static str,
+        engine: &'static str,
+    },
+    #[header(inline)]
+    Bikecycle(#[header("name")] &'static str, #[header(inline)] Bike),
+}
+        
+#[derive(Tabled)]
+struct Bike {
+    brand: &'static str,
+    price: f32,
+}
+```
+
+   
 ## Tuple combination
 
 You also can combine objets which implements `Tabled` by means of tuples, you will get a combined columns of them.
