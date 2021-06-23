@@ -8,10 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.2.1] - 2021-06-23
+
 ### Added
 
 - Add `MaxWidth` option for cells
+- Add `#[header(inline)]` attribute to inline internal data structures which implement `Tabled` trait
 - Add blank `Tabled` implementaton for String
+- Add `#[header(inline)]` example
+
+### Changed
+
+- Use `ansi-cut` instead of `console` to truncate string
+- Switch to `github CI` instead of `travis.ci` because free credit limit was reached
+
+### Fixed
+
+- A sublte refactoring in `tabled_derive`
 
 ## [0.2.0] - 2021-06-19
 
