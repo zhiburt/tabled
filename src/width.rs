@@ -1,4 +1,3 @@
-use std::cmp;
 use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
 
@@ -32,7 +31,7 @@ fn strip(s: &str, width: usize) -> String {
     }
     #[cfg(feature = "color")]
     {
-        let max_width = cmp::min(s.chars().count(), width);
+        let max_width = std::cmp::min(s.chars().count(), width);
         ansi_cut::AnsiCut::cut(&s, ..max_width).to_string()
     }
 }
