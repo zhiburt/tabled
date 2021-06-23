@@ -210,7 +210,7 @@ mod enum_ {
         enum Vehicle {
             #[header(inline("Auto::"))]
             Auto {
-                #[field("mod")]
+                #[header("mod")]
                 model: &'static str,
                 engine: &'static str,
             },
