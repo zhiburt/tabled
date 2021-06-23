@@ -375,6 +375,10 @@ fn should_be_inlined(attrs: &[Attribute]) -> bool {
         .or_else(|| {
             find_name_attribute(&attrs, "header", "inline", look_up_nested_flag_str_in_attr)
                 .map(|_| true)
+        })
+        .or_else(|| {
+            find_name_attribute(&attrs, "field", "inline", look_up_nested_flag_str_in_attr)
+                .map(|_| true)
         });
     inline_attr == Some(true)
 }
