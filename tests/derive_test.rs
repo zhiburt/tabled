@@ -208,10 +208,11 @@ mod enum_ {
     fn enum_inline_field() {
         #[derive(Tabled)]
         enum Vehicle {
-            #[header(inline)]
+            #[header(inline("Auto::"))]
             Auto {
-                #[header("MODEL", inline("Auto::"))]
+                #[header("mod")]
                 model: &'static str,
+                engine: &'static str,
             },
             #[header(inline)]
             Bikecycle(#[header("name")] &'static str, #[header(inline)] Bike),
@@ -226,7 +227,8 @@ mod enum_ {
 
         assert_eq!(
             vec![
-                "Auto::&str".to_owned(),
+                "Auto::mod".to_owned(),
+                "Auto::engine".to_owned(),
                 "name".to_owned(),
                 "brand".to_owned(),
                 "price".to_owned(),
@@ -241,6 +243,7 @@ mod enum_ {
                 "".to_owned(),
                 "".to_owned(),
                 "".to_owned(),
+                "".to_owned(),
                 "+".to_owned(),
             ],
             Vehicle::Skateboard.fields()
@@ -249,15 +252,21 @@ mod enum_ {
         assert_eq!(
             vec![
                 "Mini".to_owned(),
+                "v8".to_owned(),
                 "".to_owned(),
                 "".to_owned(),
                 "".to_owned(),
                 "".to_owned(),
             ],
-            Vehicle::Auto { model: "Mini" }.fields()
+            Vehicle::Auto {
+                model: "Mini",
+                engine: "v8"
+            }
+            .fields()
         );
         assert_eq!(
             vec![
+                "".to_owned(),
                 "".to_owned(),
                 "A bike".to_owned(),
                 "Canyon".to_owned(),

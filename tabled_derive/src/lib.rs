@@ -69,23 +69,36 @@ fn get_fields_headers<'a>(
 
 fn field_headers(field: &Field, index: usize) -> proc_macro2::TokenStream {
     if should_be_inlined(&field.attrs) {
-        inline_header(&field.ty, &field.attrs)
+        inline_header(&field.ty, &field.attrs, "")
     } else {
         let header = field_name(field, index);
         quote!(vec![String::from(#header)])
     }
 }
 
-fn inline_header(t: &Type, attrs: &[Attribute]) -> proc_macro2::TokenStream {
+fn field_headers_with_prefix(
+    field: &Field,
+    index: usize,
+    prefix: &str,
+) -> proc_macro2::TokenStream {
+    if should_be_inlined(&field.attrs) {
+        inline_header(&field.ty, &field.attrs, prefix)
+    } else {
+        let header = field_name(field, index);
+        quote!(vec![format!("{}{}", #prefix, #header)])
+    }
+}
+
+fn inline_header(t: &Type, attrs: &[Attribute], prefix: &str) -> proc_macro2::TokenStream {
     let inline_prefix = look_for_inline_prefix(attrs);
-    if inline_prefix.is_empty() {
+    if inline_prefix.is_empty() && prefix.is_empty() {
         quote! {
             <#t as Tabled>::headers()
         }
     } else {
         quote! {
             <#t as Tabled>::headers().into_iter()
-                .map(|header| format!("{}{}", #inline_prefix, header))
+                .map(|header| format!("{}{}{}", #prefix, #inline_prefix, header))
                 .collect::<Vec<_>>()
         }
     }
@@ -101,9 +114,11 @@ fn get_enum_headers(e: &DataEnum) -> Vec<Vec<proc_macro2::TokenStream>> {
 
 fn variant_headers(variant: &Variant) -> Vec<proc_macro2::TokenStream> {
     if should_be_inlined(&variant.attrs) {
+        let prefix = look_for_inline_prefix(&variant.attrs);
+
         let mut calls = Vec::new();
         for (index, field) in variant.fields.iter().enumerate() {
-            let call = field_headers(field, index);
+            let call = field_headers_with_prefix(field, index, &prefix);
             calls.push(call);
         }
 
