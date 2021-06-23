@@ -205,12 +205,12 @@ mod enum_ {
     }
 
     #[test]
-    fn enum_inline_field() {
+    fn inline_variant() {
         #[derive(Tabled)]
         enum Vehicle {
             #[header(inline("Auto::"))]
             Auto {
-                #[header("mod")]
+                #[field("mod")]
                 model: &'static str,
                 engine: &'static str,
             },
@@ -281,6 +281,36 @@ mod enum_ {
                 }
             )
             .fields()
+        );
+    }
+
+    #[test]
+    fn inline_field_with_display_function() {
+        #[derive(Tabled)]
+        enum Developer {
+            #[header(inline("backend::"))]
+            Backend {
+                #[header("name")]
+                #[field(display_with = "display")]
+                specific: &'static str,
+            },
+            Frontend,
+        }
+        fn display(_: &'static str) -> String {
+            "asd".to_string()
+        }
+
+        assert_eq!(
+            vec!["backend::name".to_owned(), "Frontend".to_owned()],
+            Developer::headers()
+        );
+        assert_eq!(
+            vec!["asd".to_owned(), "".to_owned()],
+            Developer::Backend { specific: "123" }.fields(),
+        );
+        assert_eq!(
+            vec!["".to_owned(), "+".to_owned()],
+            Developer::Frontend.fields(),
         );
     }
 }

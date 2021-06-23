@@ -296,7 +296,8 @@ fn variant_fields(v: &Variant) -> Vec<proc_macro2::TokenStream> {
 
     branch_idents
         .into_iter()
-        .map(|ident| get_field_fields(ident.to_token_stream(), &v.attrs))
+        .zip(v.fields.iter())
+        .map(|(ident, field)| get_field_fields(ident.to_token_stream(), &field.attrs))
         .collect()
 }
 
