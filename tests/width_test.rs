@@ -83,21 +83,12 @@ fn dont_change_content_if_width_is_less_then_max_width() {
 fn max_width_with_emoji() {
     let data = &["🤠", "😳🥵🥶😱😨", "🚴🏻‍♀️🚴🏻🚴🏻‍♂️🚵🏻‍♀️🚵🏻🚵🏻‍♂️"];
 
-    // Is it right behaiviour?
     let _expected = concat!(
         "|  &st...   |\n",
         "|-----------|\n",
         "|    🤠     |\n",
         "| 😳🥵🥶... |\n",
         "|  🚴🏻\u{200d}...  |\n",
-    );
-    #[cfg(feature = "color")]
-    let _expected = concat!(
-        "| &st... |\n",
-        "|--------|\n",
-        "|   🤠   |\n",
-        "| 😳...  |\n",
-        "| 🚴...  |\n",
     );
 
     let table = Table::new(data)

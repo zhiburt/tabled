@@ -1,3 +1,4 @@
+use std::cmp;
 use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
 
@@ -24,13 +25,14 @@ impl<S: AsRef<str>> CellOption for MaxWidth<S> {
     }
 }
 
-fn strip(s: &str, w: usize) -> String {
+fn strip(s: &str, width: usize) -> String {
     #[cfg(not(feature = "color"))]
     {
-        s.chars().take(w).collect::<String>()
+        s.chars().take(width).collect::<String>()
     }
     #[cfg(feature = "color")]
     {
-        console::truncate_str(s, w, "").to_string()
+        let max_width = cmp::min(s.chars().count(), width);
+        ansi_cut::AnsiCut::cut(&s, ..max_width).to_string()
     }
 }
