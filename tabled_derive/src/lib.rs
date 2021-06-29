@@ -4,8 +4,8 @@ use proc_macro::TokenStream;
 use quote::*;
 use std::str;
 use syn::{
-    parse_macro_input, token, Attribute, Data, DataEnum,
-    DataStruct, DeriveInput, Field, Fields, Ident, Index, Lit, Meta, NestedMeta, Type, Variant,
+    parse_macro_input, token, Attribute, Data, DataEnum, DataStruct, DeriveInput, Field, Fields,
+    Ident, Index, Lit, Meta, NestedMeta, Type, Variant,
 };
 
 #[proc_macro_derive(Tabled, attributes(header, field))]

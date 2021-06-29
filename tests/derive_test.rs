@@ -354,10 +354,7 @@ mod enum_ {
             }
         }
 
-        assert_eq!(
-            vec!["0".to_owned(), "Unknown".to_owned(),],
-            Fact::headers()
-        );
+        assert_eq!(vec!["0".to_owned(), "Unknown".to_owned(),], Fact::headers());
         assert_eq!(
             vec!["4".to_owned(), "".to_owned(),],
             Fact::Known("Hello World").fields()
