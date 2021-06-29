@@ -116,7 +116,7 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: "0.15.0"
-          args: "--workspace --out Lcov --output-dir ./coverage --exclude-files */target/* --exclude-files */tabled_derive/*"
+          args: "--workspace --out Lcov --output-dir ./coverage --exclude-files */target/* --exclude-files /tabled_derive/*"
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
