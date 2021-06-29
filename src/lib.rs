@@ -170,6 +170,15 @@ pub trait TableOption {
     fn change(&self, grid: &mut Grid);
 }
 
+impl<T> TableOption for &T
+where
+    T: TableOption + ?Sized,
+{
+    fn change(&self, grid: &mut Grid) {
+        T::change(self, grid)
+    }
+}
+
 /// CellOption is trait for configuring a `Cell` which represented by 'row' and 'column' indexes.
 pub trait CellOption {
     /// Modification function of a `Cell`
