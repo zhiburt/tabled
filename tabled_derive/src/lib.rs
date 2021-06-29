@@ -4,8 +4,8 @@ use proc_macro::TokenStream;
 use quote::*;
 use std::str;
 use syn::{
-    parse_macro_input, token, Attribute, Data, DataEnum, DataStruct, DeriveInput, Field, Fields,
-    Ident, Index, Lit, Meta, NestedMeta, Type, Variant,
+    parse_macro_input, parse_macro_input::ParseMacroInput, token, Attribute, Data, DataEnum,
+    DataStruct, DeriveInput, Field, Fields, Ident, Index, Lit, Meta, NestedMeta, Type, Variant,
 };
 
 #[proc_macro_derive(Tabled, attributes(header, field))]
@@ -190,8 +190,16 @@ fn get_field_fields(
 }
 
 fn use_function_for(field: proc_macro2::TokenStream, function: &str) -> proc_macro2::TokenStream {
-    let function = Ident::new(function, proc_macro2::Span::call_site());
-    quote! { #function(&#field) }
+    let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
+    match path {
+        Ok(path) => {
+            quote! { #path(&#field) }
+        }
+        _ => {
+            let function = Ident::new(function, proc_macro2::Span::call_site());
+            quote! { #function(&#field) }
+        }
+    }
 }
 
 fn field_field(field: &Field, index: usize) -> proc_macro2::TokenStream {
