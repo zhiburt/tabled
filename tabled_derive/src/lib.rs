@@ -4,7 +4,7 @@ use proc_macro::TokenStream;
 use quote::*;
 use std::str;
 use syn::{
-    parse_macro_input, parse_macro_input::ParseMacroInput, token, Attribute, Data, DataEnum,
+    parse_macro_input, token, Attribute, Data, DataEnum,
     DataStruct, DeriveInput, Field, Fields, Ident, Index, Lit, Meta, NestedMeta, Type, Variant,
 };
 
