@@ -6,16 +6,18 @@ use tabled::{papergrid::AlignmentHorizontal, Alignment, Head, Modify, Row, Style
 #[derive(Tabled)]
 struct Distribution {
     name: &'static str,
-    #[field(display_with = "display_based_on")]
+    #[field(display_with = "Self::display_based_on")]
     based_on: Option<&'static str>,
     is_active: bool,
     is_cool: bool,
 }
 
-fn display_based_on(o: &Option<&'static str>) -> String {
-    match o {
-        &Some(s) => s.into(),
-        None => "Independent".into(),
+impl Distribution {
+    fn display_based_on(o: &Option<&'static str>) -> String {
+        match o {
+            &Some(s) => s.into(),
+            None => "Independent".into(),
+        }
     }
 }
 
