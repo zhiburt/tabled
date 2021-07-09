@@ -390,3 +390,13 @@ default_table!(i128);
 
 default_table!(f32);
 default_table!(f64);
+
+impl<T: fmt::Display, const N: usize> Tabled for [T; N] {
+    fn fields(&self) -> Vec<String> {
+        (&self).iter().map(|e| e.to_string()).collect()
+    }
+
+    fn headers() -> Vec<String> {
+        (0..N).map(|i| format!("{}", i)).collect()
+    }
+}

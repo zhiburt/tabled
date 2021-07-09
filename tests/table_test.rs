@@ -271,6 +271,24 @@ mod default_types {
 
         assert_eq!(table, expected);
     }
+
+    #[test]
+    fn table_array() {
+        let data = vec![[0, 1, 2], [3, 4, 5], [6, 7, 8]];
+        let expected = "+---+---+---+\n\
+                             | 0 | 1 | 2 |\n\
+                             +---+---+---+\n\
+                             | 0 | 1 | 2 |\n\
+                             +---+---+---+\n\
+                             | 3 | 4 | 5 |\n\
+                             +---+---+---+\n\
+                             | 6 | 7 | 8 |\n\
+                             +---+---+---+\n";
+
+        let table = Table::new(&data).to_string();
+
+        assert_eq!(table, expected);
+    }
 }
 
 #[test]
