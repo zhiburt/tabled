@@ -560,7 +560,7 @@ impl std::fmt::Display for Grid {
                 .expect("it's expected that grid has N styles where N is an amount of rows");
 
             if row_index == 0 {
-                build_line(f, &column_widths, &border.top_line)?;
+                build_split_line(f, &column_widths, &border.top_line)?;
             }
 
             build_row(
@@ -571,7 +571,7 @@ impl std::fmt::Display for Grid {
                 &border.inner,
             )?;
 
-            build_line(f, &column_widths, &border.bottom_line)?;
+            build_split_line(f, &column_widths, &border.bottom_line)?;
         }
 
         Ok(())
@@ -586,30 +586,22 @@ fn build_row(
     border: &LineStyle,
 ) -> fmt::Result {
     for _line in 0..height {
-        write_option(f, border.left_intersection)?;
-
-        for (column_index, (cell, style)) in row.iter().enumerate() {
-            if column_index != 0 {
-                write_option(f, border.intersection)?;
-            }
-
+        build_line(f, row.len(), border, |f, column_index| {
+            let (cell, style) = &row[column_index];
             let width = widths[column_index];
 
             let top_indent = top_indent(cell, style, height);
             if top_indent > _line {
-                empty_line(f, width)?;
-                continue;
+                return empty_line(f, width);
             }
 
             let cell_line_index = _line - top_indent;
             let is_cell_has_this_line = cell.len() > cell_line_index;
             if !is_cell_has_this_line {
-                empty_line(f, width)?;
-                continue;
+                return empty_line(f, width);
             }
 
             let line_text = cell[cell_line_index];
-
             line(
                 f,
                 line_text,
@@ -617,12 +609,8 @@ fn build_row(
                 style.indent.left,
                 style.indent.right,
                 style.alignment_h,
-            )?
-        }
-
-        write_option(f, border.right_intersection)?;
-
-        writeln!(f)?;
+            )
+        })?;
     }
 
     Ok(())
@@ -636,7 +624,15 @@ fn top_indent(cell: &[&str], style: &Style, height: usize) -> usize {
 }
 
 fn empty_line(f: &mut std::fmt::Formatter<'_>, n: usize) -> fmt::Result {
-    write!(f, "{: ^1$}", "", n)
+    write!(f, "{:1$}", "", n)
+}
+
+fn repeat_char(f: &mut std::fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
+    if n > 0 {
+        write!(f, "{:1$}", c, n)
+    } else {
+        Ok(())
+    }
 }
 
 fn line(
@@ -647,29 +643,26 @@ fn line(
     right_indent: usize,
     alignment: AlignmentHorizontal,
 ) -> fmt::Result {
-    write!(f, "{}", " ".repeat(left_indent))?;
+    repeat_char(f, ' ', left_indent)?;
     alignment.align(f, text, width - left_indent - right_indent)?;
-    write!(f, "{}", " ".repeat(right_indent))?;
+    repeat_char(f, ' ', right_indent)?;
     Ok(())
 }
 
-fn build_line(
+fn build_line<F: Fn(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
     f: &mut std::fmt::Formatter<'_>,
-    cells_width: &[usize],
+    length: usize,
     border: &LineStyle,
+    writer: F,
 ) -> fmt::Result {
-    if border.is_empty() {
-        return Ok(());
-    }
-
     write_option(f, border.left_intersection)?;
 
-    for (i, w) in cells_width.iter().enumerate() {
-        write_option(f, border.main.map(|m| m.to_string().repeat(*w)))?;
-
-        if i != cells_width.len() - 1 {
+    for i in 0..length {
+        if i != 0 {
             write_option(f, border.intersection)?;
         }
+
+        writer(f, i)?;
     }
 
     write_option(f, border.right_intersection)?;
@@ -677,6 +670,20 @@ fn build_line(
     writeln!(f)?;
 
     Ok(())
+}
+
+fn build_split_line(
+    f: &mut std::fmt::Formatter<'_>,
+    widths: &[usize],
+    border: &LineStyle,
+) -> fmt::Result {
+    if border.is_empty() {
+        return Ok(());
+    }
+
+    build_line(f, widths.len(), border, |f, i| {
+        write_option(f, border.main.map(|m| m.to_string().repeat(widths[i])))
+    })
 }
 
 fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) -> fmt::Result {
