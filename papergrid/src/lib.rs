@@ -580,51 +580,44 @@ impl std::fmt::Display for Grid {
 
 fn build_row(
     f: &mut std::fmt::Formatter<'_>,
-    mut row: Vec<(Vec<&str>, Style)>,
+    row: Vec<(Vec<&str>, Style)>,
     widths: &[usize],
     height: usize,
     border: &LineStyle,
 ) -> fmt::Result {
-    let mut top_indents = Vec::with_capacity(row.len());
-    for (cell, style) in &row {
-        let content_height = cell.len();
-        let height = height - style.indent.top - style.indent.bottom;
-
-        let indent = style.alignment_v.top_ident(height, content_height);
-        let indent = indent + style.indent.top;
-
-        top_indents.push(indent);
-    }
-
-    for line_index in 0..height {
+    for _line in 0..height {
         write_option(f, border.left_intersection)?;
 
-        for (column_index, (cell, style)) in row.iter_mut().enumerate() {
+        for (column_index, (cell, style)) in row.iter().enumerate() {
             if column_index != 0 {
                 write_option(f, border.intersection)?;
             }
 
             let width = widths[column_index];
 
-            if top_indents[column_index] > line_index {
+            let top_indent = top_indent(cell, style, height);
+            if top_indent > _line {
                 empty_line(f, width)?;
                 continue;
             }
 
-            let index = line_index - top_indents[column_index];
-            match cell.get(index) {
-                Some(s) => line(
-                    f,
-                    s,
-                    width,
-                    style.indent.left,
-                    style.indent.right,
-                    style.alignment_h,
-                )?,
-                None => {
-                    empty_line(f, width)?;
-                }
+            let cell_line_index = _line - top_indent;
+            let is_cell_has_this_line = cell.len() > cell_line_index;
+            if !is_cell_has_this_line {
+                empty_line(f, width)?;
+                continue;
             }
+
+            let line_text = cell[cell_line_index];
+
+            line(
+                f,
+                line_text,
+                width,
+                style.indent.left,
+                style.indent.right,
+                style.alignment_h,
+            )?
         }
 
         write_option(f, border.right_intersection)?;
@@ -633,6 +626,13 @@ fn build_row(
     }
 
     Ok(())
+}
+
+fn top_indent(cell: &[&str], style: &Style, height: usize) -> usize {
+    let height = height - style.indent.top;
+    let content_height = cell_height(cell, style) - style.indent.top - style.indent.bottom;
+    let indent = style.alignment_v.top_ident(height, content_height);
+    indent + style.indent.top
 }
 
 fn empty_line(f: &mut std::fmt::Formatter<'_>, n: usize) -> fmt::Result {
