@@ -98,6 +98,7 @@ impl Grid {
         if settings.indent.is_none()
             && settings.alignment_h.is_none()
             && settings.alignment_v.is_none()
+            && settings.span.is_none()
         {
             return;
         }
@@ -117,6 +118,9 @@ impl Grid {
         }
         if let Some(alignment) = settings.alignment_v {
             s.alignment_v = alignment;
+        }
+        if let Some(span) = settings.span {
+            s.span = span;
         }
 
         self.styles.insert(entity, s);
@@ -232,24 +236,8 @@ impl Grid {
         unreachable!("there's a global settings guaranted in the map")
     }
 
-    fn info(&self) -> Info<'_> {
-        let count_rows = self.count_rows();
-        let count_columns = self.count_columns();
-        let mut column_widths = vec![0; count_columns];
-        // default height is 1 as we consider empty string has height 1
-        //
-        // it's crusial since if the default height will be equal to 0
-        // cell line will be not present on the grid like this
-        //
-        //  default 0      default 1
-        //    +++            +++
-        //    +++            |||
-        //    +++            +++
-        //                   |||
-        //                   +++
-        let mut row_heights = vec![1; count_rows];
+    fn build_cells(&self, count_rows: usize, count_columns: usize) -> Vec<Vec<(Vec<&str>, Style)>> {
         let mut rows = Vec::with_capacity(count_rows);
-
         (0..count_rows).for_each(|row_index| {
             let mut row = Vec::with_capacity(count_columns);
 
@@ -258,25 +246,13 @@ impl Grid {
                 let cell: Vec<_> = content.lines().collect();
                 let style = self.style(row_index, column_index);
 
-                let content_height = cell.len();
-                let cell_height = content_height + style.indent.top + style.indent.bottom;
-
-                let content_width = string_width(content);
-                let cell_width = content_width + style.indent.left + style.indent.right;
-
-                column_widths[column_index] = max(column_widths[column_index], cell_width);
-                row_heights[row_index] = max(row_heights[row_index], cell_height);
                 row.push((cell, style));
             });
 
             rows.push(row);
         });
 
-        Info {
-            cells: rows,
-            row_heights,
-            column_widths,
-        }
+        rows
     }
 
     fn default_border() -> Border {
@@ -303,13 +279,6 @@ impl Grid {
     }
 }
 
-#[derive(Debug)]
-struct Info<'a> {
-    cells: Vec<Vec<(Vec<&'a str>, Style)>>,
-    row_heights: Vec<usize>,
-    column_widths: Vec<usize>,
-}
-
 /// Settings represent setting of a particular cell
 #[derive(Debug, Clone, Default)]
 pub struct Settings {
@@ -317,6 +286,7 @@ pub struct Settings {
     indent: Option<Indent>,
     alignment_h: Option<AlignmentHorizontal>,
     alignment_v: Option<AlignmentVertical>,
+    span: Option<usize>,
 }
 
 impl Settings {
@@ -351,6 +321,12 @@ impl Settings {
     /// Alignment method sets horizontal alignment for a cell
     pub fn vertical_alignment(mut self, alignment: AlignmentVertical) -> Self {
         self.alignment_v = Some(alignment);
+        self
+    }
+
+    /// Set the settings's span.
+    pub fn set_span(mut self, span: usize) -> Self {
+        self.span = Some(span);
         self
     }
 }
@@ -478,6 +454,7 @@ struct Style {
     indent: Indent,
     alignment_h: AlignmentHorizontal,
     alignment_v: AlignmentVertical,
+    span: usize,
 }
 
 impl Default for Style {
@@ -491,6 +468,7 @@ impl Default for Style {
                 right: 0,
                 top: 0,
             },
+            span: 1,
         }
     }
 }
@@ -563,32 +541,37 @@ impl AlignmentVertical {
 
 impl std::fmt::Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let count_rows = self.count_rows();
+        let count_columns = self.count_columns();
+
         // It may happen when all cells removed via `remove_row`, `remove_column` methods
-        if self.count_rows() == 0 || self.count_columns() == 0 {
+        if count_rows == 0 || count_columns == 0 {
             return Ok(());
         }
 
-        let information = self.info();
+        let cells = self.build_cells(count_rows, count_columns);
+        let row_heights = rows_height(&cells, count_rows, count_columns);
+        let column_widths = columns_width(&cells, count_rows, count_columns);
 
-        for (row_index, row) in information.cells.into_iter().enumerate() {
+        for (row_index, row) in cells.into_iter().enumerate() {
             let border = self
                 .border_styles
                 .get(row_index)
                 .expect("it's expected that grid has N styles where N is an amount of rows");
 
             if row_index == 0 {
-                build_line(f, &information.column_widths, &border.top_line)?;
+                build_line(f, &column_widths, &border.top_line)?;
             }
 
             build_row(
                 f,
                 row,
-                &information.column_widths,
-                information.row_heights[row_index],
+                &column_widths,
+                row_heights[row_index],
                 &border.inner,
             )?;
 
-            build_line(f, &information.column_widths, &border.bottom_line)?;
+            build_line(f, &column_widths, &border.bottom_line)?;
         }
 
         Ok(())
@@ -716,10 +699,64 @@ fn string_width(text: &str) -> usize {
 }
 
 fn real_string_width(text: &str) -> usize {
-    text.lines()
-        .map(unicode_width::UnicodeWidthStr::width)
-        .max()
-        .unwrap_or(0)
+    text.lines().map(line_width).max().unwrap_or(0)
+}
+
+fn line_width(line: &str) -> usize {
+    unicode_width::UnicodeWidthStr::width(line)
+}
+
+fn columns_width(
+    cells: &[Vec<(Vec<&str>, Style)>],
+    count_rows: usize,
+    count_columns: usize,
+) -> Vec<usize> {
+    let mut column_widths = vec![0; count_columns];
+    (0..count_rows).for_each(|row_index| {
+        (0..count_columns).for_each(|column_index| {
+            let (cell, style) = &cells[row_index][column_index];
+            column_widths[column_index] = max(column_widths[column_index], cell_width(cell, style));
+        });
+    });
+
+    column_widths
+}
+
+fn cell_width(cell: &[&str], style: &Style) -> usize {
+    let content_width = cell.iter().map(|l| line_width(l)).max().unwrap_or(0);
+    content_width + style.indent.left + style.indent.right
+}
+
+fn rows_height(
+    cells: &[Vec<(Vec<&str>, Style)>],
+    count_rows: usize,
+    count_columns: usize,
+) -> Vec<usize> {
+    // default height is 1 as we consider empty string has height 1
+    //
+    // it's crusial since if the default height will be equal to 0
+    // cell line will be not present on the grid like this
+    //
+    //  default 0      default 1
+    //    +++            +++
+    //    +++            |||
+    //    +++            +++
+    //                   |||
+    //                   +++
+    let mut row_heights = vec![1; count_rows];
+    (0..count_rows).for_each(|row_index| {
+        (0..count_columns).for_each(|column_index| {
+            let (cell, style) = &cells[row_index][column_index];
+            row_heights[row_index] = max(row_heights[row_index], cell_height(cell, style));
+        });
+    });
+
+    row_heights
+}
+
+fn cell_height(cell: &[&str], style: &Style) -> usize {
+    let content_height = cell.len();
+    content_height + style.indent.top + style.indent.bottom
 }
 
 #[cfg(test)]
