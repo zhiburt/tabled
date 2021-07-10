@@ -114,22 +114,6 @@ fn indent_multiline_with_vertical_alignment() {
         },
     ];
 
-    let expected = concat!(
-        "id |destribution |           link           \n",
-        "---+-------------+--------------------------\n",
-        "   |             |                          \n",
-        " 0 |   Fedora    |  https://getfedora.org/  \n",
-        "   |             |                          \n",
-        "   |             |                          \n",
-        "   |    Open     |       https://www.       \n",
-        " 2 |    SUSE     |         opensuse         \n",
-        "   |             |          .org/           \n",
-        "   |             |                          \n",
-        "   |             |                          \n",
-        " 3 | Endeavouros | https://endeavouros.com/ \n",
-        "   |             |                          \n",
-    );
-
     let table = Table::new(&data)
         .with(Style::psql())
         .with(
@@ -141,6 +125,22 @@ fn indent_multiline_with_vertical_alignment() {
         .to_string();
 
     println!("{}", table);
+
+    let expected = concat!(
+        "id |destribution |           link           \n",
+        "---+-------------+--------------------------\n",
+        "   |             |                          \n",
+        " 0 |   Fedora    |  https://getfedora.org/  \n",
+        "   |             |                          \n",
+        "   |             |                          \n",
+        "   |             |       https://www.       \n",
+        " 2 |    Open     |         opensuse         \n",
+        "   |    SUSE     |          .org/           \n",
+        "   |             |                          \n",
+        "   |             |                          \n",
+        " 3 | Endeavouros | https://endeavouros.com/ \n",
+        "   |             |                          \n",
+    );
 
     assert_eq!(table, expected);
 }
