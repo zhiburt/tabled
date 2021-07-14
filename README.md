@@ -27,7 +27,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Indent](#Indent)
     * [Max width](#Max-width)
     * [Disable](#Disable)
-    * [Header/Footer](#Header/Footer)
+    * [Header and Footer](#Header-and-Footer)
     * [Color](#Color)
 * [Features](#Features)
     * [Column name override](#Column-name-override)
@@ -265,7 +265,7 @@ Table::new(&data)
     .with(Disable::Column(3..4));
 ```
 
-## Header/Footer
+## Header and Footer
 
 You can add a `Header` and `Footer` to display some information.
 By the way you can even add such line by using `Panel`
