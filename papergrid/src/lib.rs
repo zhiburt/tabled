@@ -737,8 +737,6 @@ fn __columns_width(
         });
     });
 
-    println!("{:?}", widths);
-
     // check if we don't need to check all spans as it a heavy load function.
     // it suppose to save us time and resources
     if cells
@@ -751,8 +749,6 @@ fn __columns_width(
     } else {
         __adjust_width(&mut widths, cells, count_rows, count_columns, 1);
     }
-
-    println!("{:?}", widths);
 
     // remove not visible cells to print everything correctly
     (0..count_rows).for_each(|row| {
