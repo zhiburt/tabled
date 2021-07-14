@@ -27,6 +27,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Indent](#Indent)
     * [Max width](#Max-width)
     * [Disable](#Disable)
+    * [Header/Footer](#Header/Footer)
     * [Color](#Color)
 * [Features](#Features)
     * [Column name override](#Column-name-override)
@@ -262,6 +263,30 @@ You can remove certain rows or columns from the table.
 Table::new(&data)
     .with(Disable::Row(..1))
     .with(Disable::Column(3..4));
+```
+
+## Header/Footer
+
+You can add a `Header` and `Footer` to display some information.
+By the way you can even add such line by using `Panel`
+
+```rust
+Table::new(&data)
+    .with(Header("Tabled Name"))
+    .with(Footer(format!("{} elements", data.len())))
+```
+
+A look will differ from a style you choose.
+But it's how it may look like.
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│                       Tabled Name                          │
+├────────────────────────────────────────────────────────────┤
+                            ...
+├───────┼──────────────┼─────────┼───────────────────────────┤
+│                        3 elements                          │
+└────────────────────────────────────────────────────────────┘
 ```
 
 ## Color
