@@ -2,8 +2,7 @@
 //! `cargo run --example panel`
 
 use tabled::{
-    papergrid::AlignmentHorizontal, Alignment, Footer, Head, Header, Modify, Row, Style, Table,
-    Tabled,
+    papergrid::AlignmentHorizontal, Alignment, Footer, Full, Header, Modify, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -40,11 +39,7 @@ fn main() {
         .with(Header("Tabled Releases"))
         .with(Footer(format!("N - {}", data.len())))
         .with(Style::pseudo())
-        .with(Modify::new(Head).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
-        .with(Modify::new(Row(2..)).with(Alignment::Horizontal(AlignmentHorizontal::Left)))
-        .with(
-            Modify::new(Row(data.len()..)).with(Alignment::Horizontal(AlignmentHorizontal::Center)),
-        );
+        .with(Modify::new(Full).with(Alignment::Horizontal(AlignmentHorizontal::Center)));
 
     println!("{}", table);
 }
