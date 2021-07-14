@@ -158,6 +158,11 @@ fn vertical_alignment_test() {
         },
     ];
 
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Column(1..)).with(Alignment::bottom()))
+        .to_string();
+
     let expected = concat!(
         " id |destribution|link                     \n",
         "----+------------+-------------------------\n",
@@ -176,11 +181,6 @@ fn vertical_alignment_test() {
         "    |Red         |com                      \n",
         "    |Hat         |/en                      \n",
     );
-
-    let table = Table::new(&data)
-        .with(Style::psql())
-        .with(Modify::new(Column(1..)).with(Alignment::bottom()))
-        .to_string();
 
     assert_eq!(table, expected);
 }
