@@ -754,13 +754,15 @@ fn __columns_width(
     // remove not visible cells to print everything correctly
     (0..count_rows).for_each(|row| {
         let mut n_removed = 0;
-        (0..count_columns).for_each(|column| {
-            if !is_cell_visible(&cells[row], column - n_removed) {
+        (0..count_columns)
+            .filter(|&column| !is_cell_visible(&cells[row], column))
+            .collect::<Vec<_>>() // it's here becouse of borrow rules...
+            .into_iter()
+            .for_each(|column| {
                 widths[row].remove(column - n_removed);
                 cells[row].remove(column - n_removed);
                 n_removed += 1;
-            }
-        });
+            });
     });
 
     widths
@@ -810,14 +812,18 @@ fn __adjust_width(
                         .for_each(|r| {
                             inc_width_to_cells(
                                 &cells[r],
-                                &mut widths[r][column..column + span],
+                                &mut widths[r],
+                                column,
+                                column + span,
                                 cell_width,
                             );
                         });
                 } else {
                     inc_width_to_cells(
                         &cells[row],
-                        &mut widths[row][column..column + 1],
+                        &mut widths[row],
+                        column,
+                        column + 1,
                         others_width,
                     );
                 }
@@ -850,18 +856,23 @@ fn row_width(row: &[(Vec<&str>, Style)], widths: &[usize]) -> usize {
 }
 
 // relyes on fix_spans
-fn inc_width_to_cells(row: &[(Vec<&str>, Style)], widths: &mut [usize], width: usize) {
-    let a = row_width(row, &widths);
+fn inc_width_to_cells(
+    row: &[(Vec<&str>, Style)],
+    widths: &mut [usize],
+    start_range: usize,
+    end_range: usize,
+    width: usize,
+) {
+    let a = row_width(row, &widths[start_range..end_range]);
     let diff = width - a;
+
     (0..diff)
         .zip(
-            (0..widths.len())
+            (start_range..end_range)
                 .filter(|&i| is_cell_visible(row, i))
                 .cycle(),
         )
-        .collect::<Vec<_>>()
-        .iter()
-        .for_each(|&(_, i)| widths[i] += 1);
+        .for_each(|(_, i)| widths[i] += 1);
 }
 
 fn cell_width(cell: &[&str], style: &Style) -> usize {
