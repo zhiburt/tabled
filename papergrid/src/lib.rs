@@ -730,9 +730,18 @@ fn __columns_width(
         });
     });
 
-    (1..count_columns + 1).for_each(|span| {
-        __adjust_width(&mut widths, cells, count_rows, count_columns, span);
-    });
+    // check if we don't need to check all spans as it a heavy load function.
+    // it suppose to save us time and resources
+    if cells
+        .iter()
+        .any(|row| row.iter().any(|(_, style)| style.span > 1))
+    {
+        (1..count_columns + 1).for_each(|span| {
+            __adjust_width(&mut widths, cells, count_rows, count_columns, span);
+        });
+    } else {
+        __adjust_width(&mut widths, cells, count_rows, count_columns, 1);
+    }
 
     // remove not visible cells to print everything correctly
     (0..count_rows).for_each(|row| {
