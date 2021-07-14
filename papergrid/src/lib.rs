@@ -714,11 +714,7 @@ fn string_width(text: &str) -> usize {
 }
 
 fn real_string_width(text: &str) -> usize {
-    text.lines().map(line_width).max().unwrap_or(0)
-}
-
-fn line_width(line: &str) -> usize {
-    unicode_width::UnicodeWidthStr::width(line)
+    text.lines().map(unicode_width::UnicodeWidthStr::width).max().unwrap_or(0)
 }
 
 fn __columns_width(
@@ -738,6 +734,8 @@ fn __columns_width(
         });
     });
 
+    println!("{:?}", widths);
+
     // check if we don't need to check all spans as it a heavy load function.
     // it suppose to save us time and resources
     if cells
@@ -750,6 +748,8 @@ fn __columns_width(
     } else {
         __adjust_width(&mut widths, cells, count_rows, count_columns, 1);
     }
+
+    println!("{:?}", widths);
 
     // remove not visible cells to print everything correctly
     (0..count_rows).for_each(|row| {
@@ -876,7 +876,7 @@ fn inc_width_to_cells(
 }
 
 fn cell_width(cell: &[&str], style: &Style) -> usize {
-    let content_width = cell.iter().map(|l| line_width(l)).max().unwrap_or(0);
+    let content_width = cell.iter().map(|l| string_width(l)).max().unwrap_or(0);
     content_width + style.indent.left + style.indent.right
 }
 
