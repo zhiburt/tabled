@@ -173,6 +173,14 @@ impl Grid {
         &mut self.border_styles[row]
     }
 
+    /// Insert row in a grid.
+    pub fn insert_row(&mut self, index: usize) {
+        self.cells
+            .insert(index, vec![String::new(); self.count_columns()]);
+        self.border_styles.insert(index, Self::default_border());
+        self.size.0 += 1;
+    }
+
     /// Remove_row removes a `row` from a grid.
     ///
     /// The row index must be started from 0
@@ -747,7 +755,7 @@ fn __columns_width(
     (0..count_rows).for_each(|row| {
         let mut n_removed = 0;
         (0..count_columns).for_each(|column| {
-            if !is_cell_visible(&cells[row], column) {
+            if !is_cell_visible(&cells[row], column - n_removed) {
                 widths[row].remove(column - n_removed);
                 cells[row].remove(column - n_removed);
                 n_removed += 1;
