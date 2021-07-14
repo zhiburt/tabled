@@ -1,6 +1,4 @@
-use tabled::{
-    Alignment, Footer, Full, Header, Modify, Object, Panel, Row, Style, Table, Tabled,
-};
+use tabled::{Alignment, Footer, Full, Header, Modify, Object, Panel, Row, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {

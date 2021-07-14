@@ -132,8 +132,7 @@ pub mod style;
 mod width;
 
 pub use crate::{
-    alignment::*, disable::*, formating::*, indent::*, object::*, panel::*, style::Style,
-    width::*,
+    alignment::*, disable::*, formating::*, indent::*, object::*, panel::*, style::Style, width::*,
 };
 pub use papergrid;
 pub use tabled_derive::Tabled;
