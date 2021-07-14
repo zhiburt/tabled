@@ -714,7 +714,10 @@ fn string_width(text: &str) -> usize {
 }
 
 fn real_string_width(text: &str) -> usize {
-    text.lines().map(unicode_width::UnicodeWidthStr::width).max().unwrap_or(0)
+    text.lines()
+        .map(unicode_width::UnicodeWidthStr::width)
+        .max()
+        .unwrap_or(0)
 }
 
 fn __columns_width(
