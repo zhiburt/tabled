@@ -1,6 +1,6 @@
 [package]
 name = "papergrid"
-version = "0.1.18"
+version = "0.1.19"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Papergrid is a library which provide an paper like table printing"
