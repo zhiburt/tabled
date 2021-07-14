@@ -1,6 +1,6 @@
 [package]
 name = "tabled"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."
@@ -24,7 +24,7 @@ maintenance = { status = "actively-developed" }
 color = ["papergrid/color", "ansi-cut"]
 
 [dependencies]
-tabled_derive = { path = "./tabled_derive" }
+tabled_derive = "0.1.7"
 papergrid = "0.1.21"
 ansi-cut = { version = "0.1.0", optional = true }
 
