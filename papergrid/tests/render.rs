@@ -192,100 +192,151 @@ fn render_empty_cell() {
     assert_eq!(expected, grid.to_string());
 }
 
-// #[test]
-// fn render_row_span() {
-//     let mut grid = Grid::new(2, 2);
-//     grid.cell(0, 0).set_content("0-0").set_row_span(1);
-//     grid.cell(1, 0).set_content("1-0");
-//     grid.cell(1, 1).set_content("1-1");
+#[test]
+fn render_row_span() {
+    let mut grid = Grid::new(2, 2);
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .text("0-0")
+            .set_span(2)
+            .alignment(AlignmentHorizontal::Center),
+    );
+    grid.set(Entity::Cell(0, 1), Settings::new().text(""));
+    grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
+    grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
 
-//     let expected = concat!(
-//         "+-------+\n",
-//         "|  0-0  |\n",
-//         "+-------+\n",
-//         "|1-0|1-1|\n",
-//         "+---+---+\n"
-//     );
+    let expected = concat!(
+        "+-------+\n",
+        "|  0-0  |\n",
+        "+-------+\n",
+        "|1-0|1-1|\n",
+        "+---+---+\n"
+    );
 
-//     assert_eq!(expected, grid.to_string());
-// }
+    assert_eq!(expected, grid.to_string());
+}
 
-// #[test]
-// fn render_row_span_multilane() {
-//     let mut grid = Grid::new(4, 3);
-//     grid.cell(0, 0).set_content("first line").set_row_span(1);
-//     grid.cell(0, 2).set_content("e.g.");
-//     grid.cell(1, 0).set_content("0");
-//     grid.cell(1, 1).set_content("1");
-//     grid.cell(1, 2).set_content("2");
-//     grid.cell(2, 0).set_content("0");
-//     grid.cell(2, 1).set_content("1");
-//     grid.cell(2, 2).set_content("2");
-//     grid.cell(3, 0)
-//         .set_content("full last line")
-//         .set_row_span(2);
+#[test]
+fn render_miltiline_span() {
+    let mut grid = Grid::new(2, 2);
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .text("0-0\n0-1")
+            .set_span(2)
+            .alignment(AlignmentHorizontal::Center),
+    );
+    grid.set(Entity::Cell(0, 1), Settings::new().text(""));
+    grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
+    grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
 
-//     let expected = concat!(
-//         "+----------+----+\n",
-//         "|first line|e.g.|\n",
-//         "+----------+----+\n",
-//         "|  0  | 1  | 2  |\n",
-//         "+-----+----+----+\n",
-//         "|  0  | 1  | 2  |\n",
-//         "+-----+----+----+\n",
-//         "|full last line |\n",
-//         "+---------------+\n",
-//     );
+    let expected = concat!(
+        "+-------+\n",
+        "|  0-0  |\n",
+        "|  0-1  |\n",
+        "+-------+\n",
+        "|1-0|1-1|\n",
+        "+---+---+\n"
+    );
 
-//     assert_eq!(expected, grid.to_string());
-// }
+    assert_eq!(expected, grid.to_string());
+}
 
-// #[test]
-// fn render_row_span_with_horizontal_ident() {
-//     let mut grid = Grid::new(3, 2);
-//     grid.cell(0, 0).set_content("0-0").set_row_span(1);
-//     grid.cell(1, 0).set_content("1-0").set_horizontal_ident(4);
-//     grid.cell(1, 1).set_content("1-1");
-//     grid.cell(2, 0).set_content("2-0");
-//     grid.cell(2, 1).set_content("2-1");
+#[test]
+fn render_row_span_multilane() {
+    let mut grid = Grid::new(4, 3);
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().text("first line").set_span(2),
+    );
+    grid.set(Entity::Cell(0, 2), Settings::new().text("e.g."));
+    grid.set(Entity::Cell(1, 0), Settings::new().text("0"));
+    grid.set(Entity::Cell(1, 1), Settings::new().text("1"));
+    grid.set(Entity::Cell(1, 2), Settings::new().text("2"));
+    grid.set(Entity::Cell(2, 0), Settings::new().text("0"));
+    grid.set(Entity::Cell(2, 1), Settings::new().text("1"));
+    grid.set(Entity::Cell(2, 2), Settings::new().text("2"));
+    grid.set(
+        Entity::Cell(3, 0),
+        Settings::new().text("full last line").set_span(3),
+    );
 
-//     let expected = concat!(
-//         "+---------------+\n",
-//         "|      0-0      |\n",
-//         "+---------------+\n",
-//         "|    1-0    |1-1|\n",
-//         "+-----------+---+\n",
-//         "|    2-0    |2-1|\n",
-//         "+-----------+---+\n",
-//     );
+    let expected = concat!(
+        "+----------+----+\n",
+        "|first line|e.g.|\n",
+        "+----------+----+\n",
+        "|0    |1   |2   |\n",
+        "+-----+----+----+\n",
+        "|0    |1   |2   |\n",
+        "+-----+----+----+\n",
+        "|full last line |\n",
+        "+---------------+\n",
+    );
 
-//     assert_eq!(expected, grid.to_string());
-// }
+    println!("{}", grid);
 
-// #[test]
-// fn render_row_span_with_odd_length() {
-//     let mut grid = Grid::new(2, 2);
-//     grid.cell(0, 0).set_content("3   ").set_row_span(1);
-//     grid.cell(1, 0).set_content("2");
-//     grid.cell(1, 1).set_content("3");
+    assert_eq!(expected, grid.to_string());
+}
 
-//     let expected = concat!("+----+\n", "|3   |\n", "+----+\n", "|2 |3|\n", "+--+-+\n",);
+#[test]
+fn render_row_span_with_horizontal_ident() {
+    let mut grid = Grid::new(3, 2);
+    grid.set(Entity::Cell(0, 0), Settings::new().text("0-0").set_span(2));
+    grid.set(
+        Entity::Cell(1, 0),
+        Settings::new().text("1-0").indent(4, 4, 0, 0),
+    );
+    grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
+    grid.set(Entity::Cell(2, 0), Settings::new().text("2-0"));
+    grid.set(Entity::Cell(2, 1), Settings::new().text("2-1"));
 
-//     assert_eq!(expected, grid.to_string());
-// }
+    let grid = grid.to_string();
 
-// #[test]
-// fn render_only_row_spaned() {
-//     let mut grid = Grid::new(3, 2);
-//     grid.cell(0, 0).set_content("0-0").set_row_span(1);
-//     grid.cell(1, 0).set_content("1-0").set_row_span(1);
-//     grid.cell(2, 0).set_content("2-0").set_row_span(1);
+    let expected = concat!(
+        "+---------------+\n",
+        "|0-0            |\n",
+        "+---------------+\n",
+        "|    1-0    |1-1|\n",
+        "+-----------+---+\n",
+        "|2-0        |2-1|\n",
+        "+-----------+---+\n",
+    );
 
-//     let expected =
-//         concat!("+---+\n", "|0-0|\n", "+---+\n", "|1-0|\n", "+---+\n", "|2-0|\n", "+---+\n",);
+    println!("{}", grid);
 
-//     assert_eq!(expected, grid.to_string());
-// }
+    assert_eq!(grid, expected);
+}
+
+#[test]
+fn render_row_span_with_odd_length() {
+    let mut grid = Grid::new(2, 2);
+    grid.set(Entity::Cell(0, 0), Settings::new().text("3   ").set_span(2));
+    grid.set(Entity::Cell(1, 0), Settings::new().text("2"));
+    grid.set(Entity::Cell(1, 1), Settings::new().text("4"));
+
+    let expected = concat!("+----+\n", "|3   |\n", "+----+\n", "|2 |4|\n", "+--+-+\n",);
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_only_row_spaned() {
+    let mut grid = Grid::new(3, 2);
+    grid.set(Entity::Cell(0, 0), Settings::new().text("0-0").set_span(2));
+    grid.set(Entity::Cell(1, 0), Settings::new().text("1-0").set_span(2));
+    grid.set(Entity::Cell(2, 0), Settings::new().text("2-0").set_span(2));
+
+    let expected = "+---+\n\
+                         |0-0|\n\
+                         +---+\n\
+                         |1-0|\n\
+                         +---+\n\
+                         |2-0|\n\
+                         +---+\n";
+
+    assert_eq!(grid.to_string(), expected);
+}
 
 // #[test]
 // fn render_column_span_left() {

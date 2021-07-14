@@ -549,9 +549,9 @@ impl std::fmt::Display for Grid {
             return Ok(());
         }
 
-        let cells = self.build_cells(count_rows, count_columns);
+        let mut cells = self.build_cells(count_rows, count_columns);
         let row_heights = rows_height(&cells, count_rows, count_columns);
-        let column_widths = columns_width(&cells, count_rows, count_columns);
+        let widths = __columns_width(&mut cells, count_rows, count_columns);
 
         for (row_index, row) in cells.into_iter().enumerate() {
             let border = self
@@ -560,18 +560,18 @@ impl std::fmt::Display for Grid {
                 .expect("it's expected that grid has N styles where N is an amount of rows");
 
             if row_index == 0 {
-                build_split_line(f, &column_widths, &border.top_line)?;
+                build_split_line(f, &widths[row_index], &border.top_line)?;
             }
 
             build_row(
                 f,
                 row,
-                &column_widths,
+                &widths[row_index],
                 row_heights[row_index],
                 &border.inner,
             )?;
 
-            build_split_line(f, &column_widths, &border.bottom_line)?;
+            build_split_line(f, &widths[row_index], &border.bottom_line)?;
         }
 
         Ok(())
@@ -586,9 +586,9 @@ fn build_row(
     border: &LineStyle,
 ) -> fmt::Result {
     for _line in 0..height {
-        build_line(f, row.len(), border, |f, column_index| {
-            let (cell, style) = &row[column_index];
-            let width = widths[column_index];
+        build_line(f, row.len(), border, |f, column| {
+            let (cell, style) = &row[column];
+            let width = widths[column];
 
             let top_indent = top_indent(cell, style, height);
             if top_indent > _line {
@@ -713,20 +713,138 @@ fn line_width(line: &str) -> usize {
     unicode_width::UnicodeWidthStr::width(line)
 }
 
-fn columns_width(
-    cells: &[Vec<(Vec<&str>, Style)>],
+fn __columns_width(
+    cells: &mut [Vec<(Vec<&str>, Style)>],
     count_rows: usize,
     count_columns: usize,
-) -> Vec<usize> {
-    let mut column_widths = vec![0; count_columns];
-    (0..count_rows).for_each(|row_index| {
-        (0..count_columns).for_each(|column_index| {
-            let (cell, style) = &cells[row_index][column_index];
-            column_widths[column_index] = max(column_widths[column_index], cell_width(cell, style));
+) -> Vec<Vec<usize>> {
+    let mut widths = vec![vec! {0; count_columns}; count_rows];
+    (0..count_rows).for_each(|row| {
+        (0..count_columns).for_each(|column| {
+            let (cell, style) = &cells[row][column];
+            if is_cell_visible(&cells[row], column) {
+                widths[row][column] = cell_width(cell, style);
+            } else {
+                widths[row][column] = 0;
+            }
         });
     });
 
-    column_widths
+    (1..count_columns + 1).for_each(|span| {
+        __adjust_width(&mut widths, cells, count_rows, count_columns, span);
+    });
+
+    // remove not visible cells to print everything correctly
+    (0..count_rows).for_each(|row| {
+        let mut n_removed = 0;
+        (0..count_columns).for_each(|column| {
+            if !is_cell_visible(&cells[row], column) {
+                widths[row].remove(column - n_removed);
+                cells[row].remove(column - n_removed);
+                n_removed += 1;
+            }
+        });
+    });
+
+    widths
+}
+
+fn __adjust_width(
+    widths: &mut [Vec<usize>],
+    cells: &[Vec<(Vec<&str>, Style)>],
+    count_rows: usize,
+    count_columns: usize,
+    span: usize,
+) {
+    (0..count_rows).for_each(|row| {
+        (0..count_columns)
+            .filter(|&column| cells[row][column].1.span == span)
+            .filter(|&column| is_cell_visible(&cells[row], column))
+            .for_each(|column| {
+                let (cell, style) = &cells[row][column];
+                let cell_width = cell_width(cell, style);
+                // calc other's width
+
+                let others_width = (0..count_rows)
+                    .filter(|&r| r != row)
+                    .filter(|&r| {
+                        cells[r][column..column + span]
+                            .iter()
+                            .map(|(_, style)| style.span)
+                            .sum::<usize>()
+                            <= span
+                    })
+                    .map(|r| row_width(&cells[r], &widths[r][column..column + span]))
+                    .max()
+                    .unwrap_or(0);
+
+                if cell_width > others_width {
+                    widths[row][column] = cell_width;
+
+                    (0..count_rows)
+                        .filter(|&r| r != row)
+                        .filter(|&r| {
+                            cells[r][column..column + span]
+                                .iter()
+                                .map(|(_, style)| style.span)
+                                .sum::<usize>()
+                                <= span
+                        }) // not sure if it's correct
+                        .for_each(|r| {
+                            inc_width_to_cells(
+                                &cells[r],
+                                &mut widths[r][column..column + span],
+                                cell_width,
+                            );
+                        });
+                } else {
+                    inc_width_to_cells(
+                        &cells[row],
+                        &mut widths[row][column..column + 1],
+                        others_width,
+                    );
+                }
+            });
+    });
+}
+
+fn is_cell_visible(row: &[(Vec<&str>, Style)], column: usize) -> bool {
+    !row[..column]
+        .iter()
+        .zip(column..)
+        .any(|((_, style), span)| style.span > span)
+}
+
+// relyes on fix_spans
+fn row_width(row: &[(Vec<&str>, Style)], widths: &[usize]) -> usize {
+    let w = (0..widths.len())
+        .filter(|&i| is_cell_visible(row, i))
+        .map(|i| widths[i])
+        .sum::<usize>();
+
+    if w == 0 {
+        return 0;
+    }
+
+    w + (0..widths.len())
+        .filter(|&i| is_cell_visible(row, i))
+        .count()
+        - 1
+}
+
+// relyes on fix_spans
+fn inc_width_to_cells(row: &[(Vec<&str>, Style)], widths: &mut [usize], width: usize) {
+    let a = row_width(row, &widths);
+    let diff = width - a;
+    (0..diff)
+        .zip(
+            (0..widths.len())
+                .filter(|&i| is_cell_visible(row, i))
+                .cycle(),
+        )
+        .collect::<Vec<_>>()
+        .iter()
+        .for_each(|&(_, i)| widths[i] += 1);
 }
 
 fn cell_width(cell: &[&str], style: &Style) -> usize {
@@ -1053,5 +1171,21 @@ mod tests {
         assert_eq!(AlignmentVertical::Top.top_ident(3, 1), 0);
         assert_eq!(AlignmentVertical::Center.top_ident(3, 1), 1);
         assert_eq!(AlignmentVertical::Center.top_ident(4, 1), 1);
+    }
+
+    #[test]
+    fn grid_2x2_span_test() {
+        let mut grid = Grid::new(2, 2);
+        grid.set(Entity::Global, Settings::new().text("asd"));
+        grid.set(Entity::Cell(0, 0), Settings::new().text("123").set_span(2));
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "+-------+\n\
+             |123    |\n\
+             +-------+\n\
+             |asd|asd|\n\
+             +---+---+\n"
+        )
     }
 }
