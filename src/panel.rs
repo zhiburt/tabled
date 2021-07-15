@@ -3,7 +3,6 @@ use papergrid::{Entity, Grid, Settings};
 
 /// Panel allows to add a custom panel to table.
 ///
-/// Don't use [Disable] after the calling [Panel].
 #[derive(Debug)]
 pub struct Panel<S: AsRef<str>>(pub S, pub usize);
 

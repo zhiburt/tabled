@@ -201,7 +201,7 @@ pub trait CellOption {
 ///
 /// ## A list of settings
 ///
-/// It may take a list of arguments such as [Style], [Alignment], [`ChangeRing`](./struct.ChangeRing.html)
+/// It may take a list of arguments such as [Style] and [Alignment].
 ///
 /// ```rust,no_run
 ///     use tabled::{Table, Style, Alignment, Full, Modify};
