@@ -4,7 +4,7 @@ use crate::TableOption;
 
 /// Style is responsible for a look of a table.
 ///
-/// It's suppose to take only 1 type of `Line`s short or bordered.  
+/// It's suppose to take only 1 type of [Line]s short or bordered.  
 ///
 /// # Example
 ///

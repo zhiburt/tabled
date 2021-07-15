@@ -1,8 +1,10 @@
+#[allow(unused)]
+use crate::Table;
 use crate::{bounds_to_usize, TableOption};
 use papergrid::Grid;
 use std::ops::RangeBounds;
 
-/// Disable represent a disable setting for a [`Table`](./struct.Table.html)
+/// Disable represent a disable setting for a [Table].
 ///
 /// ```rust,no_run
 ///   # use tabled::{Disable, Table};

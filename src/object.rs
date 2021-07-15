@@ -1,9 +1,11 @@
+#[allow(unused)]
+use papergrid::Grid;
 use std::{
     collections::BTreeSet,
     ops::{Bound, RangeBounds},
 };
 
-/// Object helps to locate a nessesary part of a `Grid`.
+/// Object helps to locate a nessesary part of a [Grid].
 pub trait Object: Sized {
     /// Cells returns a set of cordinates of cells
     fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)>;
@@ -36,7 +38,7 @@ impl Object for Head {
     }
 }
 
-/// Head represent all cells on a `Grid`
+/// Head represent all cells on a [Grid]
 pub struct Full;
 
 impl Object for Full {
@@ -52,7 +54,7 @@ impl Object for Full {
     }
 }
 
-/// Row denotes a set of cells on given rows on a `Grid`
+/// Row denotes a set of cells on given rows on a [Grid]
 pub struct Row<R: RangeBounds<usize>>(pub R);
 
 impl<R: RangeBounds<usize>> Object for Row<R> {
@@ -66,7 +68,7 @@ impl<R: RangeBounds<usize>> Object for Row<R> {
     }
 }
 
-/// Column denotes a set of cells on given columns on a `Grid`
+/// Column denotes a set of cells on given columns on a [Grid]
 pub struct Column<R: RangeBounds<usize>>(pub R);
 
 impl<R: RangeBounds<usize>> Object for Column<R> {
@@ -80,7 +82,7 @@ impl<R: RangeBounds<usize>> Object for Column<R> {
     }
 }
 
-/// Cell denotes a particular of cells on a `Grid`
+/// Cell denotes a particular of cells on a [Grid].
 pub struct Cell(pub usize, pub usize);
 
 impl Object for Cell {

@@ -1,7 +1,7 @@
 use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
 
-/// Format a structure which modifies a `Grid`
+/// Format a structure which modifies a [Grid]
 ///
 /// # Example
 ///

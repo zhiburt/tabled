@@ -137,7 +137,7 @@ pub use crate::{
 pub use papergrid;
 pub use tabled_derive::Tabled;
 
-/// Tabled a trait responsible for providing a header filds and a row fields.
+/// Tabled a trait responsible for providing a header fields and a row fields.
 ///
 /// It's urgent that `header` len is equal to `fields` len.
 ///
@@ -163,11 +163,11 @@ where
     }
 }
 
-/// A trait for configuring a `Grid`.
+/// A trait for configuring a [Grid].
 ///
 /// Mainly was created to be able to have a variadic set of parameters in a [the `table` macros](./macros.table.html)
 pub trait TableOption {
-    /// Modification function of a `Grid`
+    /// Modification function of a [Grid]
     fn change(&self, grid: &mut Grid);
 }
 
@@ -180,13 +180,13 @@ where
     }
 }
 
-/// CellOption is trait for configuring a `Cell` which represented by 'row' and 'column' indexes.
+/// CellOption is trait for configuring a [Cell] which represented by 'row' and 'column' indexes.
 pub trait CellOption {
-    /// Modification function of a `Cell`
+    /// Modification function of a [Cell]
     fn change_cell(&self, grid: &mut Grid, row: usize, column: usize);
 }
 
-/// Table structure provides an interface for building a table for types that implements [`Tabled`].
+/// Table structure provides an interface for building a table for types that implements [Tabled].
 ///
 /// # Example
 ///
@@ -201,8 +201,7 @@ pub trait CellOption {
 ///
 /// ## A list of settings
 ///
-/// It may take a list of arguments such as [`Style`](./enum.Style.html),
-/// [`Alignment`](./struct.Alignment.html), [`ChangeRing`](./struct.ChangeRing.html)
+/// It may take a list of arguments such as [Style] and [Alignment].
 ///
 /// ```rust,no_run
 ///     use tabled::{Table, Style, Alignment, Full, Modify};
@@ -213,7 +212,6 @@ pub trait CellOption {
 ///     println!("{}", table);
 /// ```
 ///
-/// [`Tabled`]: ./trait.Tabled.html
 pub struct Table {
     grid: Grid,
 }
@@ -242,9 +240,8 @@ impl fmt::Display for Table {
     }
 }
 
-/// Modify structure provide a conviniet way for applying a set of [`CellOption`]s to the same object.
+/// Modify structure provide a conviniet way for applying a set of [CellOption]s to the same object.
 ///
-/// [`CellOption`]: trait.CellOption.html
 pub struct Modify<O> {
     obj: O,
     modifiers: Vec<Box<dyn CellOption>>,
@@ -254,7 +251,7 @@ impl<O> Modify<O>
 where
     O: Object,
 {
-    /// New creates a instance of Modify structure
+    /// Creates a new [Modify] without any options.
     pub fn new(obj: O) -> Self {
         Self {
             obj,
@@ -262,10 +259,8 @@ where
         }
     }
 
-    /// With a generic function which stores a [`CellOption`] to apply it later to an [`Object`]
+    /// With a generic function which stores a [CellOption] to apply it later to an [Object]
     ///
-    /// [`CellOption`]: trait.CellOption.html
-    /// [`Object`]: trait.Object.html
     pub fn with<F>(mut self, f: F) -> Self
     where
         F: CellOption + 'static,
@@ -290,7 +285,7 @@ where
     }
 }
 
-/// Build_grid function build a [`Grid`](../papergrid/struct.Grid.html) from a data.
+/// Build_grid function build a [Grid] from a data.
 /// A [`table` macros](./macro.table.html) should be prefered over this function.
 pub fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
     let headers = T::headers();
