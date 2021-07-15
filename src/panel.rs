@@ -3,7 +3,7 @@ use papergrid::{Entity, Grid, Settings};
 
 /// Panel allows to add a custom panel to table.
 ///
-/// Don't use `Disable` after the calling `Panel`.
+/// Don't use `Disable` after the calling [Panel].
 #[derive(Debug)]
 pub struct Panel<S: AsRef<str>>(pub S, pub usize);
 
@@ -20,7 +20,7 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
 }
 
 /// Header renders information at the top.
-/// see `Panel`
+/// See [Panel]
 #[derive(Debug)]
 pub struct Header<S: AsRef<str>>(pub S);
 
@@ -31,7 +31,7 @@ impl<S: AsRef<str>> TableOption for Header<S> {
 }
 
 /// Footer renders information at the bottom.
-/// see `Panel`
+/// See [Panel]
 #[derive(Debug)]
 pub struct Footer<S: AsRef<str>>(pub S);
 

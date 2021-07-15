@@ -1,7 +1,7 @@
-use crate::CellOption;
+use crate::{CellOption, Table};
 use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
 
-/// Alignment represent a horizontal and vertical alignemt setting for a [`Table`](./struct.Table.html)
+/// Alignment represent a horizontal and vertical alignemt setting for a [Table].
 ///
 /// ```rust,no_run
 ///   # use tabled::{Style, Alignment, Modify, Row, Table};
@@ -15,40 +15,42 @@ pub enum Alignment {
 }
 
 impl Alignment {
-    /// Top constructs a vertical alignment to TOP
+    /// Top constructs a vertical alignment to [AlignmentVertical::Top]
     pub fn top() -> Self {
         Self::vertical(AlignmentVertical::Top)
     }
 
-    /// Bottom constructs a vertical alignment to BOTTOM
+    /// Bottom constructs a vertical alignment to [AlignmentVertical::Bottom]
     pub fn bottom() -> Self {
         Self::vertical(AlignmentVertical::Bottom)
     }
 
-    /// Center_vertical constructs a vertical alignment to CENTER
+    /// Center_vertical constructs a vertical alignment to [AlignmentVertical::Center]
     pub fn center_vertical() -> Self {
         Self::vertical(AlignmentVertical::Center)
     }
 
-    /// Left constructs a horizontal alignment to LEFT
+    /// Left constructs a horizontal alignment to [AlignmentHorizontal::Left]
     pub fn left() -> Self {
         Self::horizontal(AlignmentHorizontal::Left)
     }
 
-    /// Right constructs a horizontal alignment to RIGHT
+    /// Right constructs a horizontal alignment to [AlignmentHorizontal::Right]
     pub fn right() -> Self {
         Self::horizontal(AlignmentHorizontal::Right)
     }
 
-    /// Center_horizontal constructs a horizontal alignment to CENTER
+    /// Center_horizontal constructs a horizontal alignment to [AlignmentHorizontal::Center]
     pub fn center_horizontal() -> Self {
         Self::horizontal(AlignmentHorizontal::Center)
     }
 
+    /// Returns an alignment with the given horizontal alignment.
     fn horizontal(alignment: AlignmentHorizontal) -> Self {
         Self::Horizontal(alignment)
     }
 
+    /// Returns an alignment with the given vertical alignment.
     fn vertical(alignment: AlignmentVertical) -> Self {
         Self::Vertical(alignment)
     }

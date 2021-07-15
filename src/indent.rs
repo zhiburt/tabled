@@ -1,7 +1,7 @@
 use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
 
-/// Indent is responsilbe for a left/right/top/bottom indent.
+/// Indent is responsible for a left/right/top/bottom indent.
 ///
 /// ```rust,no_run
 ///   # use tabled::{Style, Indent, Row, Table, Modify};

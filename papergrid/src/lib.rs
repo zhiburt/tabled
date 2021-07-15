@@ -181,7 +181,7 @@ impl Grid {
         self.size.0 += 1;
     }
 
-    /// Remove_row removes a `row` from a grid.
+    /// Removes a `row` from a grid.
     ///
     /// The row index must be started from 0
     pub fn remove_row(&mut self, row: usize) {
@@ -190,7 +190,7 @@ impl Grid {
         self.size.0 -= 1;
     }
 
-    /// Remove_row removes a `column` from a grid.
+    /// Removes a `column` from a grid.
     ///
     /// The column index must be started from 0
     pub fn remove_column(&mut self, column: usize) {
