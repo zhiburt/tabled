@@ -1,4 +1,6 @@
-use crate::{bounds_to_usize, Table, TableOption};
+#[allow(unused)]
+use crate::Table;
+use crate::{bounds_to_usize, TableOption};
 use papergrid::Grid;
 use std::ops::RangeBounds;
 

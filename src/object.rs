@@ -1,9 +1,9 @@
+#[allow(unused)]
+use papergrid::Grid;
 use std::{
     collections::BTreeSet,
     ops::{Bound, RangeBounds},
 };
-
-use papergrid::Grid;
 
 /// Object helps to locate a nessesary part of a [Grid].
 pub trait Object: Sized {

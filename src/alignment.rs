@@ -1,4 +1,6 @@
-use crate::{CellOption, Table};
+use crate::CellOption;
+#[allow(unused)]
+use crate::Table;
 use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
 
 /// Alignment represent a horizontal and vertical alignemt setting for a [Table].

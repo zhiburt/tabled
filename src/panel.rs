@@ -1,4 +1,6 @@
-use crate::{Disable, TableOption};
+#[allow(unused)]
+use crate::Disable;
+use crate::TableOption;
 use papergrid::{Entity, Grid, Settings};
 
 /// Panel allows to add a custom panel to table.
