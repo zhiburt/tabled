@@ -160,7 +160,7 @@ impl Style {
     }
 
     /// The header's top line.
-    /// 
+    ///
     /// It's suppose that [Self::frame_bottom] and [Self::split]  has the same type of [Line] short or bordered.  
     pub fn frame_top(mut self, frame: Option<Line>) -> Self {
         self.frame.top = frame;
@@ -168,7 +168,7 @@ impl Style {
     }
 
     /// The footer's bottom line.
-    /// 
+    ///
     /// It's suppose that [Self::frame_top] and [Self::split] has the same type of [Line] short or bordered.
     pub fn frame_bottom(mut self, frame: Option<Line>) -> Self {
         self.frame.bottom = frame;

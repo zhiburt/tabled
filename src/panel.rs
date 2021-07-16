@@ -1,6 +1,7 @@
+#[allow(unused)]
+use crate::Table;
 use crate::TableOption;
 use papergrid::{Entity, Grid, Settings};
-#[allow(unused)] use crate::Table;
 
 /// Panel allows to add a Row which has 1 continues Cell to a [Table].
 ///

@@ -10,7 +10,7 @@ use papergrid::{Entity, Grid, Settings};
 ///
 /// let data = vec![
 ///     (0, "Grodno", true),
-///     (1, "Minsk", true), 
+///     (1, "Minsk", true),
 ///     (2, "Hamburg", false),
 ///     (3, "Brest", true),
 /// ];
