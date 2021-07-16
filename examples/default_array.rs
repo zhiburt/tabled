@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example basic`
+//! `cargo run --example default_array`
 
 use tabled::{Style, Table};
 

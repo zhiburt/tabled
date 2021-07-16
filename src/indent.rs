@@ -1,7 +1,7 @@
 use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
 
-/// Indent is responsible for a left/right/top/bottom indent.
+/// Indent is responsible for a left/right/top/bottom indent of particular cells.
 ///
 /// ```rust,no_run
 ///   # use tabled::{Style, Indent, Row, Table, Modify};
@@ -12,6 +12,7 @@ use papergrid::{Entity, Grid, Settings};
 pub struct Indent(usize, usize, usize, usize);
 
 impl Indent {
+    /// Construct's an Indent object.
     pub fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
         Self(left, right, top, bottom)
     }

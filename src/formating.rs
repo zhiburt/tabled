@@ -1,7 +1,7 @@
 use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
 
-/// Format a structure which modifies a [Grid]
+/// Formatting of particular cells on a [Grid].
 ///
 /// # Example
 ///
@@ -9,14 +9,14 @@ use papergrid::{Entity, Grid, Settings};
 /// use tabled::{Table, Format, Row, Modify};
 ///
 /// let data = vec![
-///     (0, "Grodno", true),    
-///     (1, "Minsk", true),    
-///     (2, "Hamburg", false),    
-///     (3, "Brest", true),    
+///     (0, "Grodno", true),
+///     (1, "Minsk", true),
+///     (2, "Hamburg", false),
+///     (3, "Brest", true),
 /// ];
 ///
 /// let table = Table::new(&data)
-///                .with(Modify::new(Row(1..)).with(Format(|s| { format!(": {} :", s) })))
+///                .with(Modify::new(Row(1..)).with(Format(|s| format!(": {} :", s))))
 ///                .to_string();
 ///
 /// assert_eq!(table, "+-------+-------------+-----------+\n\
@@ -53,14 +53,15 @@ where
     }
 }
 
-/// Multiline a helper function for changing multiline content of cell by rows not as a whole.
+/// Multiline a helper function for changing multiline content of cell.
+/// Using this formatting applied for all rows not to a string as a whole.
 ///
 /// ```rust,no_run
-///     use tabled::{Table, Format, multiline, Full, Modify};
-///     let data: Vec<&'static str> = Vec::new();
-///     let table = Table::new(&data)
-///         .with(Modify::new(Full).with(Format(multiline(|s| format!("{}", s)))))
-///         .to_string();
+/// use tabled::{Table, Format, multiline, Full, Modify};
+/// let data: Vec<&'static str> = Vec::new();
+/// let table = Table::new(&data)
+///     .with(Modify::new(Full).with(Format(multiline(|s| format!("{}", s)))))
+///     .to_string();
 /// ```
 pub fn multiline<F: 'static + Fn(&str) -> String>(f: F) -> Box<dyn Fn(&str) -> String> {
     Box::new(move |s: &str| s.lines().map(|s| f(s)).collect::<Vec<_>>().join("\n"))
