@@ -1,56 +1,60 @@
 //! An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
 //!
-//! # Get started
+//! The library is based on a [Tabled] trait which is used to actually build tables.
+//! It also provides an variate of dynamic settings for customization of a [Table].
 //!
-//! The common and probably the best way to begin is to annotate your type with
-//! `#[derive(Tabled)]`. You can also implement it on your own as well.
+//! [Table] can be build from vast majority of Rust's standart types.
+//!
+//! ## Examples
+//!
+//! If you wan't to build a table for your data.
+//! Most likely a starting point is to anotate your type with `#[derive(Tabled)]`.
 //!
 //! ```rust
-//!     use tabled::{Tabled, Table};
+//! use tabled::{Tabled, Table};
 //!
-//!     #[derive(Tabled)]
-//!     struct Language {
-//!         name: &'static str,
-//!         designed_by: &'static str,
-//!         invented_year: usize,
-//!     }
+//! #[derive(Tabled)]
+//! struct Language {
+//!     name: &'static str,
+//!     designed_by: &'static str,
+//!     invented_year: usize,
+//! }
 //!
-//!     let languages = vec![
-//!         Language{
-//!             name: "C",
-//!             designed_by: "Dennis Ritchie",
-//!             invented_year: 1972
-//!         },
-//!         Language{
-//!             name: "Rust",
-//!             designed_by: "Graydon Hoare",
-//!             invented_year: 2010
-//!         },
-//!         Language{
-//!             name: "Go",
-//!             designed_by: "Rob Pike",
-//!             invented_year: 2009
-//!         },
-//!     ];
+//! let languages = vec![
+//!     Language{
+//!         name: "C",
+//!         designed_by: "Dennis Ritchie",
+//!         invented_year: 1972
+//!     },
+//!     Language{
+//!         name: "Rust",
+//!         designed_by: "Graydon Hoare",
+//!         invented_year: 2010
+//!     },
+//!     Language{
+//!         name: "Go",
+//!         designed_by: "Rob Pike",
+//!         invented_year: 2009
+//!     },
+//! ];
 //!
-//!     let table = Table::new(languages).to_string();
+//! let table = Table::new(languages).to_string();
 //!
-//!     let expected = "+------+----------------+---------------+\n\
-//!                     | name |  designed_by   | invented_year |\n\
-//!                     +------+----------------+---------------+\n\
-//!                     |  C   | Dennis Ritchie |     1972      |\n\
-//!                     +------+----------------+---------------+\n\
-//!                     | Rust | Graydon Hoare  |     2010      |\n\
-//!                     +------+----------------+---------------+\n\
-//!                     |  Go  |    Rob Pike    |     2009      |\n\
-//!                     +------+----------------+---------------+\n";
+//! let expected = "+------+----------------+---------------+\n\
+//!                 | name |  designed_by   | invented_year |\n\
+//!                 +------+----------------+---------------+\n\
+//!                 |  C   | Dennis Ritchie |     1972      |\n\
+//!                 +------+----------------+---------------+\n\
+//!                 | Rust | Graydon Hoare  |     2010      |\n\
+//!                 +------+----------------+---------------+\n\
+//!                 |  Go  |    Rob Pike    |     2009      |\n\
+//!                 +------+----------------+---------------+\n";
 //!
-//!     assert_eq!(table, expected);
+//! assert_eq!(table, expected);
 //! ```
 //!
-//! We must to know what we print in the field
-//! accordingly each field should implement `std::fmt::Display`
-//! The example below is not compiled
+//! Not all types can derive [Tabled] trait though.
+//! The example below can't be compiled.
 //!
 //! ```rust,compile_fail
 //!   # use tabled::Tabled;
@@ -62,61 +66,79 @@
 //!     struct SomeOtherType;
 //! ```
 //!
-//! Most of the default types implements the trait out of the box.
+//! We must know what we're up to print as a field. Because of this
+//! each field must implement [std::fmt::Display].
+//!
+//! ### Default implementations
+//!
+//! As I've already mentioned most of the default types implements the trait out of the box.
+//!
+//! This allows you to run the following code.
 //!
 //! ```rust
-//!     use tabled::{Tabled, Table};
-//!     let some_numbers = [1, 2, 3];
-//!     let table = Table::new(&some_numbers);
-//!     # let expected = "+-----+\n\
-//!     #                 | i32 |\n\
-//!     #                 +-----+\n\
-//!     #                 |  1  |\n\
-//!     #                 +-----+\n\
-//!     #                 |  2  |\n\
-//!     #                 +-----+\n\
-//!     #                 |  3  |\n\
-//!     #                 +-----+\n";
-//!     # assert_eq!(table.to_string(), expected);
+//! use tabled::{Tabled, Table};
+//! let table = Table::new(&[1, 2, 3]);
+//! # let expected = "+-----+\n\
+//! #                 | i32 |\n\
+//! #                 +-----+\n\
+//! #                 |  1  |\n\
+//! #                 +-----+\n\
+//! #                 |  2  |\n\
+//! #                 +-----+\n\
+//! #                 |  3  |\n\
+//! #                 +-----+\n";
+//! # assert_eq!(table.to_string(), expected);
 //! ```
 //!
-//! You also can combine structures by means of tuples.
+//! ### Combination of types via tuples
+//!
+//! Personally I consider this a feature which drives the library to shine.
+//! You can combine any types that implements [Tabled] trait into one table.
+//!
+//! You can also see in this example a `#[header("name")]` usage which configures a header
+//! of a table which will be printed.
+//! You could change it dynamically as well.
 //!
 //! ```rust
-//!     use tabled::{Tabled, Table, Style};
+//! use tabled::{Tabled, Table, Style};
 //!
-//!     #[derive(Tabled)]
-//!     enum Domain {
-//!         Security,
-//!         Embeded,
-//!         Frontend,
-//!         Unknown,
-//!     }
+//! #[derive(Tabled)]
+//! enum Domain {
+//!     Security,
+//!     Embeded,
+//!     Frontend,
+//!     Unknown,
+//! }
 //!
-//!     #[derive(Tabled)]
-//!     struct Developer(#[header("name")] &'static str);
+//! #[derive(Tabled)]
+//! struct Developer(#[header("name")] &'static str);
 //!     
-//!     let data = vec![
-//!         (Developer("Terri Kshlerin"), Domain::Embeded),
-//!         (Developer("Catalina Dicki"), Domain::Security),
-//!         (Developer("Jennie Schmeler"), Domain::Frontend),
-//!         (Developer("Maxim Zhiburt"), Domain::Unknown),
-//!     ];
+//! let data = vec![
+//!     (Developer("Terri Kshlerin"), Domain::Embeded),
+//!     (Developer("Catalina Dicki"), Domain::Security),
+//!     (Developer("Jennie Schmeler"), Domain::Frontend),
+//!     (Developer("Maxim Zhiburt"), Domain::Unknown),
+//! ];
 //!     
-//!     let table = Table::new(data).with(Style::psql()).to_string();
+//! let table = Table::new(data).with(Style::psql()).to_string();
 //!
-//!     assert_eq!(
-//!         table,
-//!         concat!(
-//!             "      name       | Security | Embeded | Frontend | Unknown \n",
-//!             "-----------------+----------+---------+----------+---------\n",
-//!             " Terri Kshlerin  |          |    +    |          |         \n",
-//!             " Catalina Dicki  |    +     |         |          |         \n",
-//!             " Jennie Schmeler |          |         |    +     |         \n",
-//!             "  Maxim Zhiburt  |          |         |          |    +    \n"
-//!         )
-//!     );
+//! assert_eq!(
+//!     table,
+//!     concat!(
+//!         "      name       | Security | Embeded | Frontend | Unknown \n",
+//!         "-----------------+----------+---------+----------+---------\n",
+//!         " Terri Kshlerin  |          |    +    |          |         \n",
+//!         " Catalina Dicki  |    +     |         |          |         \n",
+//!         " Jennie Schmeler |          |         |    +     |         \n",
+//!         "  Maxim Zhiburt  |          |         |          |    +    \n"
+//!     )
+//! );
 //! ```
+//!
+//! ## Settings
+//!
+//! You can find more examples of settings and attributes in
+//! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
 //!
 
 use papergrid::{AlignmentHorizontal, Entity, Grid, Settings};
@@ -142,12 +164,14 @@ pub use tabled_derive::Tabled;
 /// It's urgent that `header` len is equal to `fields` len.
 ///
 /// ```text
-///     Self::headers().len() == self.fields().len()
+/// Self::headers().len() == self.fields().len()
 /// ```
 pub trait Tabled {
-    /// Fields must return a list of cell in a row
+    /// Fields method must return a list of cells.
+    ///
+    /// The cells will be placed in the same row, preserving the order.
     fn fields(&self) -> Vec<String>;
-    /// Headers return a list of names for columns
+    /// Headers must return a list of column names.
     fn headers() -> Vec<String>;
 }
 
@@ -163,11 +187,9 @@ where
     }
 }
 
-/// A trait for configuring a [Grid].
-///
-/// Mainly was created to be able to have a variadic set of parameters in a [the `table` macros](./macros.table.html)
+/// A trait which is responsilbe for configuration of a [Grid].
 pub trait TableOption {
-    /// Modification function of a [Grid]
+    /// The function modifies a [Grid] object.
     fn change(&self, grid: &mut Grid);
 }
 
@@ -180,7 +202,8 @@ where
     }
 }
 
-/// CellOption is trait for configuring a [Cell] which represented by 'row' and 'column' indexes.
+/// A trait for configuring a [Cell] a single cell.
+/// Where cell represented by 'row' and 'column' indexes.
 pub trait CellOption {
     /// Modification function of a [Cell]
     fn change_cell(&self, grid: &mut Grid, row: usize, column: usize);
@@ -188,30 +211,28 @@ pub trait CellOption {
 
 /// Table structure provides an interface for building a table for types that implements [Tabled].
 ///
-/// # Example
+/// To build a string representation of a table you must use a [std::fmt::Display].
+/// Or simply call `.to_string()` method.
 ///
-/// ## Basic usage
+/// ## Example
 ///
-/// ```rust,no_run
-///     use tabled::Table;
-///     let data: Vec<&'static str> = Vec::new();
-///     let table = Table::new(data);
-///     println!("{}", table);
-/// ```
-///
-/// ## A list of settings
-///
-/// It may take a list of arguments such as [Style] and [Alignment].
+/// ### Basic usage
 ///
 /// ```rust,no_run
-///     use tabled::{Table, Style, Alignment, Full, Modify};
-///     let data = vec!["Hello", "2021"];
-///     let table = Table::new(&data)
-///                     .with(Style::psql())
-///                     .with(Modify::new(Full).with(Alignment::left()));
-///     println!("{}", table);
+/// use tabled::Table;
+/// let table = Table::new(["Year", "2021"]);
 /// ```
 ///
+/// ### With settings
+///
+/// ```rust,no_run
+/// use tabled::{Table, Style, Alignment, Full, Modify};
+/// let data = vec!["Hello", "2021"];
+/// let table = Table::new(&data)
+///                 .with(Style::psql())
+///                 .with(Modify::new(Full).with(Alignment::left()));
+/// println!("{}", table);
+/// ```
 pub struct Table {
     grid: Grid,
 }
@@ -224,7 +245,9 @@ impl Table {
         Self { grid }
     }
 
-    /// With is a generic function which applies options to the table.
+    /// With is a generic function which applies options to the [Table].
+    ///
+    /// It applies settings immediately.
     pub fn with<O>(mut self, option: O) -> Self
     where
         O: TableOption,
@@ -240,8 +263,8 @@ impl fmt::Display for Table {
     }
 }
 
-/// Modify structure provide a conviniet way for applying a set of [CellOption]s to the same object.
-///
+/// Modify structure provide an abstraction, to be able to apply
+/// a set of [CellOption]s to the same object.
 pub struct Modify<O> {
     obj: O,
     modifiers: Vec<Box<dyn CellOption>>,
@@ -259,8 +282,10 @@ where
         }
     }
 
-    /// With a generic function which stores a [CellOption] to apply it later to an [Object]
+    /// With a generic function which stores a [CellOption].
     ///
+    /// The function *doesn't* changes a [Grid]. [Grid] will be changed
+    /// only after passing [Modify] object to [Table::with].
     pub fn with<F>(mut self, f: F) -> Self
     where
         F: CellOption + 'static,
@@ -285,9 +310,9 @@ where
     }
 }
 
-/// Build_grid function build a [Grid] from a data.
-/// A [`table` macros](./macro.table.html) should be prefered over this function.
-pub fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
+/// Building [Grid] from a data.
+/// You must prefer [Table] over this function.
+fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
     let headers = T::headers();
     let obj: Vec<Vec<String>> = iter.into_iter().map(|t| t.fields()).collect();
 
@@ -345,9 +370,9 @@ macro_rules! tuple_table {
 tuple_table! { A }
 tuple_table! { A B }
 tuple_table! { A B C }
-tuple_table! { A B C D}
-tuple_table! { A B C D E}
-tuple_table! { A B C D E F}
+tuple_table! { A B C D }
+tuple_table! { A B C D E }
+tuple_table! { A B C D E F }
 
 macro_rules! default_table {
     ( $t:ty ) => {

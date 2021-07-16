@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example inline_structure`
+//! `cargo run --example inline`
 
 use tabled::{
     papergrid::AlignmentHorizontal, Alignment, Full, Head, Indent, Modify, Row, Style, Table,

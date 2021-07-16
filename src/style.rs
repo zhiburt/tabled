@@ -1,27 +1,25 @@
+#[allow(unused)]
+use crate::Table;
+use crate::TableOption;
 use papergrid::{Border, Grid};
 
-use crate::TableOption;
-
-/// Style is responsible for a look of a table.
-///
-/// It's suppose to take only 1 type of [Line]s short or bordered.  
+/// Style is responsible for a look of a [Table].
 ///
 /// # Example
 ///
 /// ```rust,no_run
-///     use tabled::{Table, Style, style::Line};
-///     let data = vec!["Hello", "2021"];
-///     let table = Table::new(&data).with(
-///                     Style::noborder()
-///                         .frame_bottom(Some(Line::short('*', ' ')))
-///                         .split(Some(Line::short('*', ' ')))
-///                         .inner(' ')
-///                 )
-///                 .to_string();
+/// use tabled::{Table, Style, style::Line};
+/// let data = vec!["Hello", "2021"];
+/// let table = Table::new(&data).with(
+///                 Style::noborder()
+///                     .frame_bottom(Some(Line::short('*', ' ')))
+///                     .split(Some(Line::short('*', ' ')))
+///                     .inner(' ')
+///             )
+///             .to_string();
 ///
-///     println!("{}", table);
+/// println!("{}", table);
 /// ```
-///
 pub struct Style {
     frame: Frame,
     header_split_line: Option<Line>,
@@ -149,37 +147,50 @@ impl Style {
         pseudo
     }
 
+    /// Left frame character.
     pub fn frame_left(mut self, frame: Option<char>) -> Self {
         self.frame.left = frame;
         self
     }
 
+    /// Right frame character.
     pub fn frame_right(mut self, frame: Option<char>) -> Self {
         self.frame.right = frame;
         self
     }
 
+    /// The header's top line.
+    /// 
+    /// It's suppose that [Self::frame_bottom] and [Self::split]  has the same type of [Line] short or bordered.  
     pub fn frame_top(mut self, frame: Option<Line>) -> Self {
         self.frame.top = frame;
         self
     }
 
+    /// The footer's bottom line.
+    /// 
+    /// It's suppose that [Self::frame_top] and [Self::split] has the same type of [Line] short or bordered.
     pub fn frame_bottom(mut self, frame: Option<Line>) -> Self {
         self.frame.bottom = frame;
         self
     }
 
+    /// The header's bottom line.
     pub fn header(mut self, line: Option<Line>) -> Self {
         self.header_split_line = line;
         self
     }
 
+    /// Row split line.
+    ///
+    /// [Self::frame_top] and [Self::frame_bottom]
     pub fn split(mut self, line: Option<Line>) -> Self {
         self.header_split_line = line.clone();
         self.split = line;
         self
     }
 
+    /// Inner split character.
     pub fn inner(mut self, c: char) -> Self {
         self.inner_split_char = c;
         self
@@ -195,6 +206,7 @@ impl Style {
     }
 }
 
+/// Line represents a horizontal line on a [Table].
 #[derive(Debug, Clone, Default)]
 pub struct Line {
     main: char,
@@ -204,6 +216,7 @@ pub struct Line {
 }
 
 impl Line {
+    /// A line for frame styles.
     pub fn bordered(main: char, intersection: char, left: char, right: char) -> Self {
         Self {
             intersection,
@@ -213,6 +226,7 @@ impl Line {
         }
     }
 
+    /// A line for no-frame styles.
     pub fn short(main: char, intersection: char) -> Self {
         Self {
             main,
