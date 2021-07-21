@@ -3,7 +3,7 @@ use crate::CellOption;
 use crate::Table;
 use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
 
-/// Alignment represent a horizontal and vertical alignemt setting for a [Table].
+/// Alignment represent a horizontal and vertical alignemt setting for any cell on a [Table].
 ///
 /// ```rust,no_run
 ///   # use tabled::{Style, Alignment, Modify, Row, Table};

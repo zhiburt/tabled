@@ -10,7 +10,8 @@ pub trait Object: Sized {
     /// Cells returns a set of cordinates of cells
     fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)>;
 
-    /// And combines output of self with rhs object
+    /// Combines cells.
+    /// It doesn't repeat cells.
     fn and<O: Object>(self, rhs: O) -> Combination<Self, O> {
         Combination {
             lhs: self,
@@ -19,7 +20,7 @@ pub trait Object: Sized {
         }
     }
 
-    /// Not excludes output of rhs from output
+    /// Excludes rhs cells from this cells.
     fn not<O: Object>(self, rhs: O) -> Combination<Self, O> {
         Combination {
             lhs: self,
@@ -29,7 +30,7 @@ pub trait Object: Sized {
     }
 }
 
-/// Head represent a row with column names
+/// Head represents the row at the top of a [Table].
 pub struct Head;
 
 impl Object for Head {
@@ -38,7 +39,7 @@ impl Object for Head {
     }
 }
 
-/// Head represent all cells on a [Grid]
+/// Full represents all cells on a [Grid]
 pub struct Full;
 
 impl Object for Full {
@@ -54,7 +55,7 @@ impl Object for Full {
     }
 }
 
-/// Row denotes a set of cells on given rows on a [Grid]
+/// Row denotes a set of cells on given rows on a [Grid].
 pub struct Row<R: RangeBounds<usize>>(pub R);
 
 impl<R: RangeBounds<usize>> Object for Row<R> {
@@ -68,7 +69,7 @@ impl<R: RangeBounds<usize>> Object for Row<R> {
     }
 }
 
-/// Column denotes a set of cells on given columns on a [Grid]
+/// Column denotes a set of cells on given columns on a [Grid].
 pub struct Column<R: RangeBounds<usize>>(pub R);
 
 impl<R: RangeBounds<usize>> Object for Column<R> {
@@ -82,7 +83,7 @@ impl<R: RangeBounds<usize>> Object for Column<R> {
     }
 }
 
-/// Cell denotes a particular of cells on a [Grid].
+/// Cell denotes a particular cell on a [Grid].
 pub struct Cell(pub usize, pub usize);
 
 impl Object for Cell {
@@ -91,9 +92,10 @@ impl Object for Cell {
     }
 }
 
+/// Combinator is a transformation function
 type Combinator = fn(Vec<(usize, usize)>, Vec<(usize, usize)>) -> Vec<(usize, usize)>;
 
-/// Combination struct which allows a chain of objects
+/// Combination struct used for chaning [Object]'s.
 pub struct Combination<L, R> {
     lhs: L,
     rhs: R,
@@ -112,6 +114,9 @@ where
     }
 }
 
+/// Combines 2 sets of cells into one.
+///
+/// Dublicates are removed from the output set.
 fn combine_cells(lhs: Vec<(usize, usize)>, rhs: Vec<(usize, usize)>) -> Vec<(usize, usize)> {
     lhs.into_iter()
         .chain(rhs.into_iter())
@@ -120,10 +125,12 @@ fn combine_cells(lhs: Vec<(usize, usize)>, rhs: Vec<(usize, usize)>) -> Vec<(usi
         .collect()
 }
 
+/// Removes cells from fist set which are present in a second set.
 fn remove_cells(lhs: Vec<(usize, usize)>, rhs: Vec<(usize, usize)>) -> Vec<(usize, usize)> {
     lhs.into_iter().filter(|l| !rhs.contains(l)).collect()
 }
 
+/// Converts a range bound to its indexes.
 pub(crate) fn bounds_to_usize(
     left: Bound<&usize>,
     right: Bound<&usize>,

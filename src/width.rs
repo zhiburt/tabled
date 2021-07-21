@@ -1,7 +1,25 @@
 use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
 
-/// Format a structure which modifies a [Grid]
+/// Using MaxWidth you can set a max width of an object on a [Grid].
+///
+/// ## Example
+///
+/// ```
+/// use tabled::{Full, MaxWidth, Modify, Style, Table};
+///
+/// let data = [
+///     "123456789",
+///     "qwertyuiop[]",
+///     "[[[[[[[[[[[[[[[[[",
+/// ];
+///
+/// let table = Table::new(&data)
+///     .with(Style::github_markdown())
+///     .with(Modify::new(Full).with(MaxWidth(5, "...")));
+/// ```
+///
+/// While working with colors you must setup `colors` feature.
 pub struct MaxWidth<S>(pub usize, pub S)
 where
     S: AsRef<str>;
