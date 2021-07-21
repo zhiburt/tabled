@@ -9,7 +9,7 @@ use papergrid::{Entity, Grid, Settings};
 pub struct Panel<S: AsRef<str>>(pub S, pub usize);
 
 impl<S: AsRef<str>> TableOption for Panel<S> {
-    fn change(&self, grid: &mut Grid) {
+    fn change(&mut self, grid: &mut Grid) {
         grid.insert_row(self.1);
         grid.set(
             Entity::Cell(self.1, 0),
@@ -26,7 +26,7 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
 pub struct Header<S: AsRef<str>>(pub S);
 
 impl<S: AsRef<str>> TableOption for Header<S> {
-    fn change(&self, grid: &mut Grid) {
+    fn change(&mut self, grid: &mut Grid) {
         Panel(self.0.as_ref(), 0).change(grid)
     }
 }
@@ -37,7 +37,7 @@ impl<S: AsRef<str>> TableOption for Header<S> {
 pub struct Footer<S: AsRef<str>>(pub S);
 
 impl<S: AsRef<str>> TableOption for Footer<S> {
-    fn change(&self, grid: &mut Grid) {
+    fn change(&mut self, grid: &mut Grid) {
         Panel(self.0.as_ref(), grid.count_rows()).change(grid)
     }
 }

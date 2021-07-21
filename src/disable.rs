@@ -21,7 +21,7 @@ pub enum Disable<R: RangeBounds<usize>> {
 }
 
 impl<R: RangeBounds<usize>> TableOption for Disable<R> {
-    fn change(&self, grid: &mut Grid) {
+    fn change(&mut self, grid: &mut Grid) {
         match self {
             Self::Column(range) => {
                 let (x, y) =

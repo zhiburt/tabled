@@ -18,7 +18,7 @@ impl Indent {
 }
 
 impl CellOption for Indent {
-    fn change_cell(&self, grid: &mut Grid, row: usize, column: usize) {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         grid.set(
             Entity::Cell(row, column),
             Settings::new().indent(self.0, self.1, self.2, self.3),

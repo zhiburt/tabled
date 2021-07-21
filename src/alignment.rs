@@ -59,7 +59,7 @@ impl Alignment {
 }
 
 impl CellOption for Alignment {
-    fn change_cell(&self, grid: &mut Grid, row: usize, column: usize) {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let setting = match &self {
             Self::Horizontal(a) => Settings::new().alignment(*a),
             Self::Vertical(a) => Settings::new().vertical_alignment(*a),

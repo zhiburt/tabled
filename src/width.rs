@@ -7,7 +7,7 @@ where
     S: AsRef<str>;
 
 impl<S: AsRef<str>> CellOption for MaxWidth<S> {
-    fn change_cell(&self, grid: &mut Grid, row: usize, column: usize) {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let width = self.0;
         let filler = self.1.as_ref();
 

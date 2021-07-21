@@ -231,7 +231,7 @@ struct Frame {
 }
 
 impl TableOption for Style {
-    fn change(&self, grid: &mut Grid) {
+    fn change(&mut self, grid: &mut Grid) {
         let count_rows = grid.count_rows();
         for row in 0..count_rows {
             let border = grid.get_border_mut(row);

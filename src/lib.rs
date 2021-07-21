@@ -168,14 +168,14 @@ where
 /// Mainly was created to be able to have a variadic set of parameters in a [the `table` macros](./macros.table.html)
 pub trait TableOption {
     /// Modification function of a [Grid]
-    fn change(&self, grid: &mut Grid);
+    fn change(&mut self, grid: &mut Grid);
 }
 
-impl<T> TableOption for &T
+impl<T> TableOption for &mut T
 where
     T: TableOption + ?Sized,
 {
-    fn change(&self, grid: &mut Grid) {
+    fn change(&mut self, grid: &mut Grid) {
         T::change(self, grid)
     }
 }
@@ -183,7 +183,7 @@ where
 /// CellOption is trait for configuring a [Cell] which represented by 'row' and 'column' indexes.
 pub trait CellOption {
     /// Modification function of a [Cell]
-    fn change_cell(&self, grid: &mut Grid, row: usize, column: usize);
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize);
 }
 
 /// Table structure provides an interface for building a table for types that implements [Tabled].
@@ -225,7 +225,7 @@ impl Table {
     }
 
     /// With is a generic function which applies options to the table.
-    pub fn with<O>(mut self, option: O) -> Self
+    pub fn with<O>(mut self, mut option: O) -> Self
     where
         O: TableOption,
     {
@@ -275,9 +275,9 @@ impl<O> TableOption for Modify<O>
 where
     O: Object,
 {
-    fn change(&self, grid: &mut Grid) {
+    fn change(&mut self, grid: &mut Grid) {
         let cells = self.obj.cells(grid.count_rows(), grid.count_columns());
-        for func in &self.modifiers {
+        for func in &mut self.modifiers {
             for &(row, column) in &cells {
                 func.change_cell(grid, row, column)
             }

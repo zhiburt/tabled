@@ -35,7 +35,7 @@ use papergrid::{Entity, Grid, Settings};
 pub struct Format<F: Fn(&str) -> String>(pub F);
 
 impl<F: Fn(&str) -> String> CellOption for Format<F> {
-    fn change_cell(&self, grid: &mut Grid, row: usize, column: usize) {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let content = grid.get_cell_content(row, column);
         let content = (self.0)(content);
         grid.set(Entity::Cell(row, column), Settings::new().text(content))
@@ -44,9 +44,9 @@ impl<F: Fn(&str) -> String> CellOption for Format<F> {
 
 impl<F> CellOption for F
 where
-    F: for<'r> Fn(&'r str) -> String,
+    F: for<'r> FnMut(&'r str) -> String,
 {
-    fn change_cell(&self, grid: &mut Grid, row: usize, column: usize) {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let content = grid.get_cell_content(row, column);
         let content = (self)(content);
         grid.set(Entity::Cell(row, column), Settings::new().text(content))
@@ -64,4 +64,30 @@ where
 /// ```
 pub fn multiline<F: 'static + Fn(&str) -> String>(f: F) -> Box<dyn Fn(&str) -> String> {
     Box::new(move |s: &str| s.lines().map(|s| f(s)).collect::<Vec<_>>().join("\n"))
+}
+
+pub struct FormatFrom<A>(pub Vec<A>)
+where
+    A: Into<String>;
+
+impl<A> CellOption for FormatFrom<A>
+where
+    A: Into<String>,
+{
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        if !self.0.is_empty()  {
+            let new_content = self.0.remove(0).into();
+            grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
+        }
+    }
+}
+
+pub struct FormatWithIndex<F: FnMut(&str, usize, usize) -> String>(pub F);
+
+impl<F: FnMut(&str, usize, usize) -> String> CellOption for FormatWithIndex<F> {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        let content = grid.get_cell_content(row, column);
+        let content = (self.0)(content, row, column);
+        grid.set(Entity::Cell(row, column), Settings::new().text(content))
+    }
 }

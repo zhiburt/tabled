@@ -1,5 +1,6 @@
 use tabled::{
-    multiline, Cell, Column, Format, Full, Head, Modify, Object, Row, Style, Table, Tabled,
+    multiline, Cell, Column, Format, FormatFrom, FormatWithIndex, Full, Head, Modify, Object, Row,
+    Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -383,6 +384,89 @@ fn formatting_using_function_test() {
         .with(Style::github_markdown())
         .with(Modify::new(Head).with(str::to_uppercase))
         .to_string();
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn format_from() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Head).with(FormatFrom(vec![
+            "Header Name 1",
+            "Header Name 2",
+            "Header Name 3",
+        ])))
+        .to_string();
+
+    let expected = concat!(
+        "| Header Name 1 | Header Name 2 |       Header Name 3       |\n",
+        "|---------------+---------------+---------------------------|\n",
+        "|       0       |    Fedora     |  https://getfedora.org/   |\n",
+        "|       2       |   OpenSUSE    | https://www.opensuse.org/ |\n",
+        "|       3       |  Endeavouros  | https://endeavouros.com/  |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn format_with_index() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(
+            Modify::new(Head).with(FormatWithIndex(|a, b, c| match (b, c) {
+                (0, 0) => "(0, 0)".to_string(),
+                (0, 1) => "(0, 1)".to_string(),
+                (0, 2) => "(0, 2)".to_string(),
+                _ => a.to_string(),
+            })),
+        )
+        .to_string();
+
+    let expected = concat!(
+        "| (0, 0) |   (0, 1)    |          (0, 2)           |\n",
+        "|--------+-------------+---------------------------|\n",
+        "|   0    |   Fedora    |  https://getfedora.org/   |\n",
+        "|   2    |  OpenSUSE   | https://www.opensuse.org/ |\n",
+        "|   3    | Endeavouros | https://endeavouros.com/  |\n",
+    );
 
     assert_eq!(table, expected);
 }
