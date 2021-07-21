@@ -238,6 +238,11 @@ Table::new(&data)
 
 IMPORTANT: you may need to specify type in your lambda otherwise compiler may be disagreed to work :)
 
+There's 2 more Format modifiers. You can find more imformation about theire usage in the documentation.
+
+- `FormatFrom` - Uses `Vec` elements as new content.
+- `FormatWithIndex` - Like `Format` but with `row` and `column` index in lambda.
+
 ## Indent
 
 The `Indent` type provides an interface for a left, right, top and bottom indent of cells.
