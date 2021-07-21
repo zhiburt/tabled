@@ -66,6 +66,37 @@ pub fn multiline<F: 'static + Fn(&str) -> String>(f: F) -> Box<dyn Fn(&str) -> S
     Box::new(move |s: &str| s.lines().map(|s| f(s)).collect::<Vec<_>>().join("\n"))
 }
 
+/// FormatFrom repeatedly uses first possible element
+/// from given array unless there's any elements.
+///
+/// # Example
+///
+/// ```
+/// use tabled::{Table, FormatFrom, Row, Modify};
+///
+/// let data = vec![
+///     (0, "Grodno", true),
+///     (1, "Minsk", true),
+///     (2, "Hamburg", false),
+///     (3, "Brest", true),
+/// ];
+///
+/// let table = Table::new(&data)
+///                .with(Modify::new(Row(..1)).with(FormatFrom(vec!["N", "City", "is in Belarus"])))
+///                .to_string();
+///
+/// assert_eq!(table, "+---+---------+---------------+\n\
+///                    | N |  City   | is in Belarus |\n\
+///                    +---+---------+---------------+\n\
+///                    | 0 | Grodno  |     true      |\n\
+///                    +---+---------+---------------+\n\
+///                    | 1 |  Minsk  |     true      |\n\
+///                    +---+---------+---------------+\n\
+///                    | 2 | Hamburg |     false     |\n\
+///                    +---+---------+---------------+\n\
+///                    | 3 |  Brest  |     true      |\n\
+///                    +---+---------+---------------+\n");
+/// ```
 pub struct FormatFrom<A>(pub Vec<A>)
 where
     A: Into<String>;
@@ -75,13 +106,45 @@ where
     A: Into<String>,
 {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        if !self.0.is_empty()  {
+        if !self.0.is_empty() {
             let new_content = self.0.remove(0).into();
             grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
         }
     }
 }
 
+/// FormatWithIndex is like a [Format].
+/// But it also provides a row and column index.
+///
+/// # Example
+///
+/// ```
+/// use tabled::{Table, FormatWithIndex, Row, Modify};
+///
+/// let data = vec![
+///     (0, "Grodno", true),
+///     (1, "Minsk", true),
+///     (2, "Hamburg", false),
+///     (3, "Brest", true),
+/// ];
+///
+/// let table = Table::new(&data)
+///                .with(Modify::new(Row(..1))
+///                     .with(FormatWithIndex(|_, _, column| column.to_string())))
+///                .to_string();
+///
+/// assert_eq!(table, "+---+---------+-------+\n\
+///                    | 0 |    1    |   2   |\n\
+///                    +---+---------+-------+\n\
+///                    | 0 | Grodno  | true  |\n\
+///                    +---+---------+-------+\n\
+///                    | 1 |  Minsk  | true  |\n\
+///                    +---+---------+-------+\n\
+///                    | 2 | Hamburg | false |\n\
+///                    +---+---------+-------+\n\
+///                    | 3 |  Brest  | true  |\n\
+///                    +---+---------+-------+\n");
+/// ```
 pub struct FormatWithIndex<F: FnMut(&str, usize, usize) -> String>(pub F);
 
 impl<F: FnMut(&str, usize, usize) -> String> CellOption for FormatWithIndex<F> {
