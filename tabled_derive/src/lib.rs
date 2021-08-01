@@ -173,13 +173,13 @@ fn get_field_fields(
     attrs: &[Attribute],
 ) -> proc_macro2::TokenStream {
     let mut field_value = field;
-    let is_inline = should_be_inlined(&attrs);
+    let is_inline = should_be_inlined(attrs);
     if is_inline {
         let value = quote! { #field_value.fields() };
         return value;
     }
 
-    let func = check_display_with_func(&attrs);
+    let func = check_display_with_func(attrs);
     if let Some(func) = func {
         field_value = use_function_for(field_value, &func);
     }
@@ -379,22 +379,22 @@ fn variant_name(v: &Variant) -> String {
 }
 
 fn should_be_inlined(attrs: &[Attribute]) -> bool {
-    let inline_attr = find_name_attribute(&attrs, "header", "inline", look_up_nested_meta_bool)
-        .or_else(|| find_name_attribute(&attrs, "field", "inline", look_up_nested_meta_bool))
+    let inline_attr = find_name_attribute(attrs, "header", "inline", look_up_nested_meta_bool)
+        .or_else(|| find_name_attribute(attrs, "field", "inline", look_up_nested_meta_bool))
         .or_else(|| {
-            find_name_attribute(&attrs, "header", "inline", look_up_nested_flag_str_in_attr)
+            find_name_attribute(attrs, "header", "inline", look_up_nested_flag_str_in_attr)
                 .map(|_| true)
         })
         .or_else(|| {
-            find_name_attribute(&attrs, "field", "inline", look_up_nested_flag_str_in_attr)
+            find_name_attribute(attrs, "field", "inline", look_up_nested_flag_str_in_attr)
                 .map(|_| true)
         });
     inline_attr == Some(true)
 }
 
 fn look_for_inline_prefix(attrs: &[Attribute]) -> String {
-    find_name_attribute(&attrs, "header", "inline", look_up_nested_flag_str_in_attr)
-        .or_else(|| find_name_attribute(&attrs, "field", "inline", look_up_nested_flag_str_in_attr))
+    find_name_attribute(attrs, "header", "inline", look_up_nested_flag_str_in_attr)
+        .or_else(|| find_name_attribute(attrs, "field", "inline", look_up_nested_flag_str_in_attr))
         .unwrap_or_else(|| "".to_owned())
 }
 
@@ -407,7 +407,7 @@ fn is_ignored_variant(f: &Variant) -> bool {
 }
 
 fn attrs_has_ignore_sign(attrs: &[Attribute]) -> bool {
-    let is_ignored = find_name_attribute(&attrs, "header", "hidden", look_up_nested_meta_bool);
+    let is_ignored = find_name_attribute(attrs, "header", "hidden", look_up_nested_meta_bool);
     is_ignored == Some(true)
 }
 
