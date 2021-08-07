@@ -71,20 +71,11 @@ fn get_st_headers(st: &DataStruct, attrs: &[Attr]) -> Vec<proc_macro2::TokenStre
         .iter()
         .enumerate()
         .filter(|(i, _)| !is_ignored_field(attrs, *i))
-        .map(|(i, f)| field_headers(f, &attrs[i], i))
+        .map(|(i, f)| field_headers(f, &attrs[i], i, ""))
         .collect()
 }
 
-fn field_headers(field: &Field, attr: &Attr, index: usize) -> proc_macro2::TokenStream {
-    if attr.inline {
-        inline_header(&field.ty, attr, "")
-    } else {
-        let header = field_name(field, index);
-        quote!(vec![String::from(#header)])
-    }
-}
-
-fn field_headers_with_prefix(
+fn field_headers(
     field: &Field,
     attr: &Attr,
     index: usize,
@@ -94,7 +85,11 @@ fn field_headers_with_prefix(
         inline_header(&field.ty, attr, prefix)
     } else {
         let header = field_name(field, index);
-        quote!(vec![format!("{}{}", #prefix, #header)])
+        if !prefix.is_empty() {
+            quote!(vec![format!("{}{}", #prefix, #header)])
+        } else {
+            quote!(vec![String::from(#header)])
+        }
     }
 }
 
@@ -128,7 +123,7 @@ fn variant_headers(variant: &Variant, attr: &Attr) -> Vec<proc_macro2::TokenStre
 
         let mut calls = Vec::new();
         for (index, field) in variant.fields.iter().enumerate() {
-            let call = field_headers_with_prefix(field, attr, index, &prefix);
+            let call = field_headers(field, attr, index, &prefix);
             calls.push(call);
         }
 

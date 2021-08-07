@@ -24,7 +24,7 @@ maintenance = { status = "actively-developed" }
 color = ["papergrid/color", "ansi-cut"]
 
 [dependencies]
-tabled_derive = "0.1.7"
+tabled_derive = {path = "./tabled_derive"}
 papergrid = "0.1.21"
 ansi-cut = { version = "0.1.0", optional = true }
 
