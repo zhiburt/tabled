@@ -364,6 +364,38 @@ fn field_header_name(f: &Field, attr: &Attr, index: usize) -> String {
     }
 }
 
+// It would be cool to create a library for a parsing attributes
+#[derive(Debug)]
+struct Attr {
+    hidden: bool,
+    inline: bool,
+    inline_prefix: String,
+    name: Option<String>,
+    display_with: Option<String>,
+}
+
+impl Attr {
+    fn parse(attrs: &[Attribute]) -> Self {
+        let is_ignored = attrs_has_ignore_sign(attrs);
+        let should_be_inlined = should_be_inlined(attrs);
+        let inline_prefix = look_for_inline_prefix(attrs);
+        let display_with = check_display_with_func(attrs);
+        let override_header_name = override_header_name(attrs);
+
+        Attr {
+            display_with,
+            hidden: is_ignored,
+            inline: should_be_inlined,
+            inline_prefix,
+            name: override_header_name,
+        }
+    }
+
+    fn is_ignored(&self) -> bool {
+        self.hidden
+    }
+}
+
 fn override_header_name(attrs: &[Attribute]) -> Option<String> {
     find_name_attribute(attrs, "header", "name", look_up_nested_meta_str)
         .or_else(|| find_name_attribute(attrs, "header", "name", look_up_nested_meta_flag_str))
@@ -507,36 +539,4 @@ where
     attributes
         .iter()
         .find_map(|attr| parse_name_attribute(attr, method, name, lookup.clone()))
-}
-
-// It would be cool to create a library for a parsing attributes
-#[derive(Debug)]
-struct Attr {
-    hidden: bool,
-    inline: bool,
-    inline_prefix: String,
-    name: Option<String>,
-    display_with: Option<String>,
-}
-
-impl Attr {
-    fn parse(attrs: &[Attribute]) -> Self {
-        let is_ignored = attrs_has_ignore_sign(attrs);
-        let should_be_inlined = should_be_inlined(attrs);
-        let inline_prefix = look_for_inline_prefix(attrs);
-        let display_with = check_display_with_func(attrs);
-        let override_header_name = override_header_name(attrs);
-
-        Attr {
-            display_with,
-            hidden: is_ignored,
-            inline: should_be_inlined,
-            inline_prefix,
-            name: override_header_name,
-        }
-    }
-
-    fn is_ignored(&self) -> bool {
-        self.hidden
-    }
 }
