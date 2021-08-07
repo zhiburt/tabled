@@ -123,7 +123,8 @@ fn variant_headers(variant: &Variant, attr: &Attr) -> Vec<proc_macro2::TokenStre
 
         let mut calls = Vec::new();
         for (index, field) in variant.fields.iter().enumerate() {
-            let call = field_headers(field, attr, index, prefix);
+            let field_attr = Attr::parse_header_attr(&field.attrs);
+            let call = field_headers(field, &field_attr, index, prefix);
             calls.push(call);
         }
 
@@ -517,6 +518,7 @@ where
 }
 
 // It would be cool to create a library for a parsing attributes
+#[derive(Debug)]
 struct Attr {
     hidden: bool,
     inline: bool,
