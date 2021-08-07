@@ -62,7 +62,7 @@ fn data_attributes(d: &Data) -> Vec<Attr> {
 
     attrs_of_fields
         .into_iter()
-        .map(|attrs| Attr::parse_header_attr(attrs))
+        .map(|attrs| Attr::parse(attrs))
         .collect()
 }
 
@@ -70,7 +70,7 @@ fn get_st_headers(st: &DataStruct, attrs: &[Attr]) -> Vec<proc_macro2::TokenStre
     st.fields
         .iter()
         .enumerate()
-        .filter(|(i, _)| !is_ignored_field(attrs, *i))
+        .filter(|(i, _)| !attrs[*i].is_ignored())
         .map(|(i, f)| field_headers(f, &attrs[i], i, ""))
         .collect()
 }
@@ -112,7 +112,7 @@ fn get_enum_headers(e: &DataEnum, attrs: &[Attr]) -> Vec<Vec<proc_macro2::TokenS
     e.variants
         .iter()
         .enumerate()
-        .filter(|(i, _)| !is_ignored_field(attrs, *i))
+        .filter(|(i, _)| !attrs[*i].is_ignored())
         .map(|(i, v)| variant_headers(v, &attrs[i]))
         .collect::<Vec<_>>()
 }
@@ -123,7 +123,7 @@ fn variant_headers(variant: &Variant, attr: &Attr) -> Vec<proc_macro2::TokenStre
 
         let mut calls = Vec::new();
         for (index, field) in variant.fields.iter().enumerate() {
-            let field_attr = Attr::parse_header_attr(&field.attrs);
+            let field_attr = Attr::parse(&field.attrs);
             let call = field_headers(field, &field_attr, index, prefix);
             calls.push(call);
         }
@@ -160,7 +160,7 @@ fn get_fields(d: &Data, attrs: &[Attr]) -> proc_macro2::TokenStream {
 fn get_st_fields(st: &DataStruct, attrs: &[Attr]) -> Vec<proc_macro2::TokenStream> {
     let mut v = Vec::new();
     for (i, field) in st.fields.iter().enumerate() {
-        if is_ignored_field(attrs, i) {
+        if attrs[i].is_ignored() {
             continue;
         }
 
@@ -215,7 +215,7 @@ fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
         .variants
         .iter()
         .enumerate()
-        .filter(|(i, _)| !is_ignored_field(attrs, *i))
+        .filter(|(i, _)| !attrs[*i].is_ignored())
         .map(|(i, v)| variant_fields(v, &attrs[i]))
         .collect::<Vec<_>>();
 
@@ -223,7 +223,7 @@ fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
         .variants
         .iter()
         .enumerate()
-        .filter(|(i, _)| !is_ignored_field(attrs, *i))
+        .filter(|(i, _)| !attrs[*i].is_ignored())
         .map(|(i, v)| variant_match_branches(v, &attrs[i]))
         .collect::<Vec<_>>();
 
@@ -302,11 +302,7 @@ fn variant_fields(v: &Variant, attr: &Attr) -> Vec<proc_macro2::TokenStream> {
 
     branch_idents
         .into_iter()
-        .zip(
-            v.fields
-                .iter()
-                .map(|field| Attr::parse_header_attr(&field.attrs)),
-        )
+        .zip(v.fields.iter().map(|field| Attr::parse(&field.attrs)))
         .map(|(ident, attr)| get_field_fields(ident.to_token_stream(), &attr))
         .collect()
 }
@@ -395,10 +391,6 @@ fn look_for_inline_prefix(attrs: &[Attribute]) -> String {
     find_name_attribute(attrs, "header", "inline", look_up_nested_flag_str_in_attr)
         .or_else(|| find_name_attribute(attrs, "field", "inline", look_up_nested_flag_str_in_attr))
         .unwrap_or_else(|| "".to_owned())
-}
-
-fn is_ignored_field(attrs: &[Attr], index: usize) -> bool {
-    attrs[index].hidden
 }
 
 fn attrs_has_ignore_sign(attrs: &[Attribute]) -> bool {
@@ -528,7 +520,7 @@ struct Attr {
 }
 
 impl Attr {
-    fn parse_header_attr(attrs: &[Attribute]) -> Self {
+    fn parse(attrs: &[Attribute]) -> Self {
         let is_ignored = attrs_has_ignore_sign(attrs);
         let should_be_inlined = should_be_inlined(attrs);
         let inline_prefix = look_for_inline_prefix(attrs);
@@ -542,5 +534,9 @@ impl Attr {
             inline_prefix,
             name: override_header_name,
         }
+    }
+
+    fn is_ignored(&self) -> bool {
+        self.hidden
     }
 }
