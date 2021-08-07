@@ -84,7 +84,7 @@ fn field_headers(
     if attr.inline {
         inline_header(&field.ty, attr, prefix)
     } else {
-        let header = field_name(field, index);
+        let header = field_header_name(field, attr, index);
         if !prefix.is_empty() {
             quote!(vec![format!("{}{}", #prefix, #header)])
         } else {
@@ -118,18 +118,21 @@ fn get_enum_headers(e: &DataEnum, attrs: &[Attr]) -> Vec<Vec<proc_macro2::TokenS
 }
 
 fn variant_headers(variant: &Variant, attr: &Attr) -> Vec<proc_macro2::TokenStream> {
-    if should_be_inlined(&variant.attrs) {
-        let prefix = look_for_inline_prefix(&variant.attrs);
+    if attr.inline {
+        let prefix = &attr.inline_prefix;
 
         let mut calls = Vec::new();
         for (index, field) in variant.fields.iter().enumerate() {
-            let call = field_headers(field, attr, index, &prefix);
+            let call = field_headers(field, attr, index, prefix);
             calls.push(call);
         }
 
         calls
     } else {
-        let header = variant_name(variant);
+        let header = attr
+            .name
+            .clone()
+            .unwrap_or_else(|| variant.ident.to_string());
         vec![quote!(vec![String::from(#header)])]
     }
 }
@@ -160,7 +163,8 @@ fn get_st_fields(st: &DataStruct, attrs: &[Attr]) -> Vec<proc_macro2::TokenStrea
             continue;
         }
 
-        let fields = fields_of_field(field, i);
+        let field_var = field_var_name(field, i);
+        let fields = get_field_fields(field_var, &attrs[i]);
 
         v.push(fields);
     }
@@ -168,30 +172,17 @@ fn get_st_fields(st: &DataStruct, attrs: &[Attr]) -> Vec<proc_macro2::TokenStrea
     v
 }
 
-fn fields_of_field(field: &Field, index: usize) -> proc_macro2::TokenStream {
-    let field_name = field_field(field, index);
-    get_field_fields(field_name, &field.attrs)
-}
-
-fn get_field_fields(
-    field: proc_macro2::TokenStream,
-    attrs: &[Attribute],
-) -> proc_macro2::TokenStream {
-    let mut field_value = field;
-    let is_inline = should_be_inlined(attrs);
-    if is_inline {
-        let value = quote! { #field_value.fields() };
-        return value;
+fn get_field_fields(field: proc_macro2::TokenStream, attr: &Attr) -> proc_macro2::TokenStream {
+    if attr.inline {
+        return quote! { #field.fields() };
     }
 
-    let func = check_display_with_func(attrs);
-    if let Some(func) = func {
-        field_value = use_function_for(field_value, &func);
+    if let Some(func) = &attr.display_with {
+        let func_call = use_function_for(field, func);
+        return quote!(vec![#func_call]);
     }
 
-    field_value = quote!(vec![format!("{}", #field_value)]);
-
-    field_value
+    quote!(vec![format!("{}", #field)])
 }
 
 fn use_function_for(field: proc_macro2::TokenStream, function: &str) -> proc_macro2::TokenStream {
@@ -207,7 +198,7 @@ fn use_function_for(field: proc_macro2::TokenStream, function: &str) -> proc_mac
     }
 }
 
-fn field_field(field: &Field, index: usize) -> proc_macro2::TokenStream {
+fn field_var_name(field: &Field, index: usize) -> proc_macro2::TokenStream {
     field.ident.as_ref().map_or_else(
         || {
             let mut s = quote!(self.);
@@ -224,8 +215,7 @@ fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
         .iter()
         .enumerate()
         .filter(|(i, _)| !is_ignored_field(attrs, *i))
-        .map(|(_, v)| v)
-        .map(|v| variant_fields(v))
+        .map(|(i, v)| variant_fields(v, &attrs[i]))
         .collect::<Vec<_>>();
 
     let branches = e
@@ -233,8 +223,7 @@ fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
         .iter()
         .enumerate()
         .filter(|(i, _)| !is_ignored_field(attrs, *i))
-        .map(|(_, v)| v)
-        .map(variant_match_branches)
+        .map(|(i, v)| variant_match_branches(v, &attrs[i]))
         .collect::<Vec<_>>();
 
     assert_eq!(branches.len(), fields.len());
@@ -300,8 +289,8 @@ fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
     }
 }
 
-fn variant_fields(v: &Variant) -> Vec<proc_macro2::TokenStream> {
-    if !should_be_inlined(&v.attrs) {
+fn variant_fields(v: &Variant, attr: &Attr) -> Vec<proc_macro2::TokenStream> {
+    if !attr.inline {
         return vec![quote!(vec!["+".to_string()])];
     }
 
@@ -312,8 +301,12 @@ fn variant_fields(v: &Variant) -> Vec<proc_macro2::TokenStream> {
 
     branch_idents
         .into_iter()
-        .zip(v.fields.iter())
-        .map(|(ident, field)| get_field_fields(ident.to_token_stream(), &field.attrs))
+        .zip(
+            v.fields
+                .iter()
+                .map(|field| Attr::parse_header_attr(&field.attrs)),
+        )
+        .map(|(ident, attr)| get_field_fields(ident.to_token_stream(), &attr))
         .collect()
 }
 
@@ -336,11 +329,11 @@ fn variant_idents(v: &Variant) -> Vec<Ident> {
         .collect::<Vec<_>>()
 }
 
-fn variant_match_branches(v: &Variant) -> proc_macro2::TokenStream {
+fn variant_match_branches(v: &Variant, attr: &Attr) -> proc_macro2::TokenStream {
     let mut token = proc_macro2::TokenStream::new();
     token.append_all(v.ident.to_token_stream());
 
-    let fields = if should_be_inlined(&v.attrs) {
+    let fields = if attr.inline {
         let fields = variant_idents(v);
         quote! (#(#fields, )*)
     } else {
@@ -364,10 +357,9 @@ fn variant_match_branches(v: &Variant) -> proc_macro2::TokenStream {
     token
 }
 
-fn field_name(f: &Field, index: usize) -> String {
-    let override_name = override_header_name(&f.attrs);
-    match override_name {
-        Some(name) => name,
+fn field_header_name(f: &Field, attr: &Attr, index: usize) -> String {
+    match &attr.name {
+        Some(name) => name.to_string(),
         None => match f.ident.as_ref() {
             Some(name) => name.to_string(),
             None => format!("{}", index),
@@ -382,12 +374,6 @@ fn override_header_name(attrs: &[Attribute]) -> Option<String> {
 
 fn check_display_with_func(attrs: &[Attribute]) -> Option<String> {
     find_name_attribute(attrs, "field", "display_with", look_up_nested_meta_str)
-}
-
-fn variant_name(v: &Variant) -> String {
-    find_name_attribute(&v.attrs, "header", "name", look_up_nested_meta_str)
-        .or_else(|| find_name_attribute(&v.attrs, "header", "name", look_up_nested_meta_flag_str))
-        .unwrap_or_else(|| v.ident.to_string())
 }
 
 fn should_be_inlined(attrs: &[Attribute]) -> bool {
