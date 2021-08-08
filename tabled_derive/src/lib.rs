@@ -244,37 +244,12 @@ fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
     for (i, (branch, fields)) in branches.into_iter().zip(fields).enumerate() {
         let branch = quote! {
             Self::#branch => {
-                // It's a bit strange trick but I haven't found any better
-                // how to calculate a size and offset
-                let headers: Vec<Vec<Vec<String>>> = vec![
-                    #(#headers,)*
-                ];
-                let lengths = headers.iter().map(|values| values.iter().map(|values| values.len()).sum::<usize>()).collect::<Vec<_>>();
-                let size = lengths.iter().sum::<usize>();
-                let offsets: Vec<usize> = lengths.iter().fold(Vec::new(), |mut acc, len| {
-                    // offset of 1 element is 0
-                    if acc.is_empty() {
-                        acc.push(0);
-                    }
-
-                    let privious_len: usize = acc.last().map(|l| *l).unwrap_or(0);
-                    acc.push(privious_len + len);
-                    acc
-                });
                 let offset = offsets[#i];
-
-                let mut v: Vec<String> = std::iter::repeat(String::new()).take(size).collect();
-
-                let fields: Vec<Vec<String>> = vec![
-                    #(#fields),*
-                ];
-                let fields = fields.concat();
+                let fields: Vec<String> = vec![#(#fields),*].concat();
 
                 for (i, field) in fields.into_iter().enumerate() {
-                    v[i+offset] = field;
+                    out_vec[i+offset] = field;
                 }
-
-                v
             },
         };
 
@@ -282,11 +257,36 @@ fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
     }
 
     quote! {
+        // To be able to insert variant fields in proper places we do this MAGIC with offset.
+        // 
+        // We check headers output as it's static and has an information
+        // about length of each field header if it was inlined.
+        // 
+        // It's a bit strange trick but I haven't found any better
+        // how to calculate a size and offset.
+        let headers: Vec<Vec<Vec<String>>> = vec![#(#headers,)*];
+        let lengths = headers.iter().map(|values| values.iter().map(|values| values.len()).sum::<usize>()).collect::<Vec<_>>();
+        let size = lengths.iter().sum::<usize>();
+        let offsets: Vec<usize> = lengths.iter().fold(Vec::new(), |mut acc, len| {
+            // offset of 1 element is 0
+            if acc.is_empty() {
+                acc.push(0);
+            }
+
+            let privious_len: usize = acc.last().map(|l| *l).unwrap_or(0);
+            acc.push(privious_len + len);
+            acc
+        });
+
+        let mut out_vec: Vec<String> = std::iter::repeat(String::new()).take(size).collect();
+
         #[allow(unused_variables)]
         match &self {
             #stream
-            _ => vec![],
-        }
+            _ => return vec![], // variant is hidden so we return an empty vector
+        };
+
+        out_vec
     }
 }
 
