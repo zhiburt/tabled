@@ -258,10 +258,10 @@ fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
 
     quote! {
         // To be able to insert variant fields in proper places we do this MAGIC with offset.
-        // 
+        //
         // We check headers output as it's static and has an information
         // about length of each field header if it was inlined.
-        // 
+        //
         // It's a bit strange trick but I haven't found any better
         // how to calculate a size and offset.
         let headers: Vec<Vec<Vec<String>>> = vec![#(#headers,)*];
