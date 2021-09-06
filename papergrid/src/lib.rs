@@ -131,6 +131,23 @@ impl Grid {
         self.cells[row][column].as_str()
     }
 
+    /// get_cell_settings returns a settings of a cell
+    pub fn get_cell_settings(&mut self, row: usize, column: usize) -> Settings {
+        let style = self.style(row, column);
+        let content = &self.cells[row][column];
+        Settings::default()
+            .text(content)
+            .alignment(style.alignment_h)
+            .vertical_alignment(style.alignment_v)
+            .set_span(style.span)
+            .indent(
+                style.indent.left,
+                style.indent.right,
+                style.indent.top,
+                style.indent.bottom,
+            )
+    }
+
     /// Count_rows returns an amount of rows on the grid
     pub fn count_rows(&self) -> usize {
         self.size.0
