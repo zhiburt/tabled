@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.2.3] - 2021-09-06
+
+### Added
+
+- `Rotate` option for grid to rotate grid over 90 degrees.
+- `FormatWithIndex` modifier for cells
+- `FormatFrom` modifier for cells
+
+### Changed
+
+- Refactoring in `tabled_derive`
+
+### Fixed
+
+- Improve documentation by [@CGMossa](https://github.com/CGMossa)
+
 ## [0.2.2] - 2021-07-14
 
 ### Added
