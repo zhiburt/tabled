@@ -25,7 +25,7 @@ color = ["papergrid/color", "ansi-cut"]
 
 [dependencies]
 tabled_derive = {path = "./tabled_derive"}
-papergrid = {path = "./papergrid"}
+papergrid = "0.1.22"
 ansi-cut = { version = "0.1.0", optional = true }
 
 [dev-dependencies]
