@@ -26,6 +26,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Format](#Format)
     * [Indent](#Indent)
     * [Max width](#Max-width)
+    * [Rotate](#Rotate)
     * [Disable](#Disable)
     * [Header and Footer](#Header-and-Footer)
     * [Color](#Color)
@@ -258,6 +259,36 @@ While tinkering content we don't forget about its color.
 
 ```rust
 Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth(10, "...")));
+```
+
+## Rotate
+
+You can rotate table using `Rotate`.
+
+Imagine you have a table already. And the output may look like this.
+
+```text
+┌────┬──────────────┬───────────────────────────┐
+│ id │ destribution │ link                      │
+├────┼──────────────┼───────────────────────────┤
+│ 0  │ Fedora       │ https://getfedora.org/    │
+├────┼──────────────┼───────────────────────────┤
+│ 2  │ OpenSUSE     │ https://www.opensuse.org/ │
+├────┼──────────────┼───────────────────────────┤
+│ 3  │ Endeavouros  │ https://endeavouros.com/  │
+└────┴──────────────┴───────────────────────────┘
+```
+
+Now we will add `table.with(Rotate::Left)` and the output will be;
+
+```text
+┌──────────────┬────────────────────────┬───────────────────────────┬──────────────────────────┐
+│     link     │ https://getfedora.org/ │ https://www.opensuse.org/ │ https://endeavouros.com/ │
+├──────────────┼────────────────────────┼───────────────────────────┼──────────────────────────┤
+│ destribution │         Fedora         │         OpenSUSE          │       Endeavouros        │
+├──────────────┼────────────────────────┼───────────────────────────┼──────────────────────────┤
+│      id      │           0            │             2             │            3             │
+└──────────────┴────────────────────────┴───────────────────────────┴──────────────────────────┘
 ```
 
 ## Disable
