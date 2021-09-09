@@ -7,10 +7,9 @@ use crate::Tabled;
 ///
 /// It escapes strings to resolve a multi-line ones.
 /// Because of that `colors` may not be rendered.
-#[derive(Debug)]
 pub struct ExpandedDisplay {
     format_record_splitter: fn(usize) -> String,
-    format_value: fn(String) -> String,
+    format_value: Box<dyn Fn(String) -> String>,
     fields: Vec<String>,
     records: Vec<Vec<String>>,
 }
@@ -25,7 +24,7 @@ impl ExpandedDisplay {
             records: data,
             fields: header,
             format_record_splitter: |i| format!("-[ RECORD {} ]-", i),
-            format_value: |s| s,
+            format_value: Box::new(|s| s),
         }
     }
 
@@ -40,14 +39,47 @@ impl ExpandedDisplay {
     }
 
     /// Use a value formatter.
-    pub fn format_value(&mut self, f: fn(String) -> String) -> &mut Self {
-        self.format_value = f;
+    pub fn format_value(&mut self, f: impl Fn(String) -> String + 'static) -> &mut Self {
+        self.format_value = Box::new(f);
         self
     }
 
     /// Turn off a wrapping of multiline value.
     pub fn format_value_in_one_line(&mut self) -> &mut Self {
-        self.format_value = |s| s.escape_debug().to_string();
+        self.format_value = Box::new(|s| s.escape_debug().to_string());
+        self
+    }
+
+    /// Sets max width of value.
+    /// The rest will be trunceted.
+    pub fn format_value_max_width(&mut self, max: usize) -> &mut Self {
+        self.format_value = Box::new(move |s| {
+            s.chars()
+                .take(max)
+                .collect::<String>()
+                .escape_debug()
+                .to_string()
+        });
+        self
+    }
+
+    /// Sets max width of value,
+    /// when limit is reached next chars will be placed on the next line.
+    pub fn format_value_max_width_wrapped(&mut self, max: usize) -> &mut Self {
+        self.format_value = Box::new(move |s| {
+            s.chars()
+                .enumerate()
+                .flat_map(|(i, c)| {
+                    if i != 0 && i % max == 0 {
+                        Some('\n')
+                    } else {
+                        None
+                    }
+                    .into_iter()
+                    .chain(std::iter::once(c))
+                })
+                .collect::<String>()
+        });
         self
     }
 }
