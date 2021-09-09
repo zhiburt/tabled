@@ -7,8 +7,10 @@ use crate::Tabled;
 ///
 /// It escapes strings to resolve a multi-line ones.
 /// Because of that `colors` may not be rendered.
+#[derive(Debug)]
 pub struct ExpandedDisplay {
     format_record_splitter: fn(usize) -> String,
+    format_value: fn(String) -> String,
     fields: Vec<String>,
     records: Vec<Vec<String>>,
 }
@@ -20,9 +22,10 @@ impl ExpandedDisplay {
         let header = T::headers();
 
         Self {
-            format_record_splitter: |i| format!("-[ RECORD {} ]-", i),
             records: data,
             fields: header,
+            format_record_splitter: |i| format!("-[ RECORD {} ]-", i),
+            format_value: |s| s,
         }
     }
 
@@ -33,6 +36,18 @@ impl ExpandedDisplay {
     /// At least one '\n' char will be printed at the end regardless if you set it or not.
     pub fn format_record_head(&mut self, f: fn(usize) -> String) -> &mut Self {
         self.format_record_splitter = f;
+        self
+    }
+
+    /// Use a value formatter.
+    pub fn format_value(&mut self, f: fn(String) -> String) -> &mut Self {
+        self.format_value = f;
+        self
+    }
+
+    /// Turn off a wrapping of multiline value.
+    pub fn format_value_in_one_line(&mut self) -> &mut Self {
+        self.format_value = |s| s.escape_debug().to_string();
         self
     }
 }
@@ -65,7 +80,8 @@ impl std::fmt::Display for ExpandedDisplay {
 
             writeln!(f, "{}", (self.format_record_splitter)(i))?;
             for (value, field) in record.iter().zip(fields.iter()) {
-                write_record_line(f, field, value, max_field_width)?;
+                let value = (self.format_value)(value.clone());
+                write_record_line(f, field, &value, max_field_width)?;
             }
         }
 
@@ -79,9 +95,14 @@ fn write_record_line(
     value: &str,
     max_field_width: usize,
 ) -> std::fmt::Result {
+    if value.is_empty() {
+        writeln!(f, "{:width$} | {}", field, value, width = max_field_width)?;
+        return Ok(());
+    }
+
     for (i, line) in value.lines().enumerate() {
         let field = if i == 0 { field } else { "" };
-        writeln!(f, "{:width$} | {:?}", field, line, width = max_field_width)?;
+        writeln!(f, "{:width$} | {}", field, line, width = max_field_width)?;
     }
     Ok(())
 }
