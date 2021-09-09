@@ -61,12 +61,14 @@ impl<S: AsRef<str>> CellOption for MaxWidth<S> {
                     let new_content = format!("{}{}", striped_content, filler.as_ref());
                     grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
                 }
-        
             }
             Wrap::Wrap => {
                 let wrapped_content = split(content, self.width);
                 if wrapped_content.len() != content.len() {
-                    grid.set(Entity::Cell(row, column), Settings::new().text(wrapped_content))
+                    grid.set(
+                        Entity::Cell(row, column),
+                        Settings::new().text(wrapped_content),
+                    )
                 }
             }
         }
@@ -81,15 +83,26 @@ fn strip(s: &str, width: usize) -> String {
     #[cfg(feature = "color")]
     {
         let max_width = std::cmp::min(s.chars().count(), width);
-        ansi_cut::AnsiCut::cut(&s, ..max_width).to_string()
+        ansi_cut::AnsiCut::cut(&s, ..max_width)
     }
 }
 
 fn split(s: &str, width: usize) -> String {
-    s.chars()
-        .collect::<Vec<char>>()
-        .chunks(width)
-        .map(|chunk| chunk.iter().collect::<String>())
-        .collect::<Vec<String>>()
-        .join("\n")
+    #[cfg(not(feature = "color"))]
+    {
+        s.chars()
+            .collect::<Vec<char>>()
+            .chunks(width)
+            .map(|chunk| chunk.iter().collect::<String>())
+            .collect::<Vec<String>>()
+            .join("\n")
+    }
+    #[cfg(feature = "color")]
+    {
+        if width == 0 {
+            s.to_string()
+        } else {
+            ansi_cut::chunks(s, width).join("\n")
+        }
+    }
 }
