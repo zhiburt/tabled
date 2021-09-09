@@ -8,6 +8,7 @@ use crate::Tabled;
 /// It escapes strings to resolve a multi-line ones.
 /// Because of that `colors` may not be rendered.
 pub struct ExpandedDisplay {
+    format_record_splitter: fn(usize) -> String,
     fields: Vec<String>,
     records: Vec<Vec<String>>,
 }
@@ -19,9 +20,18 @@ impl ExpandedDisplay {
         let header = T::headers();
 
         Self {
+            format_record_splitter: |i| format!("-[ RECORD {} ]-", i),
             records: data,
             fields: header,
         }
+    }
+
+    /// Sets a line format which will be used to split records.
+    ///
+    /// At least one '\n' char will be printed at the end regardless if you set it or not.
+    pub fn format_record_head(&mut self, f: fn(usize) -> String) -> &mut Self {
+        self.format_record_splitter = f;
+        self
     }
 }
 
@@ -51,7 +61,7 @@ impl std::fmt::Display for ExpandedDisplay {
         for (i, record) in self.records.iter().enumerate() {
             assert_eq!(record.len(), fields.len());
 
-            writeln!(f, "-[ RECORD {} ]-", i)?;
+            writeln!(f, "{}", (self.format_record_splitter)(i))?;
             for (value, field) in record.iter().zip(fields.iter()) {
                 writeln!(f, "{:width$} | {:?}", field, value, width = max_field_width)?;
             }

@@ -127,3 +127,52 @@ fn display_multiline_record_value() {
 
     assert_eq!(table, expected);
 }
+
+#[test]
+fn display_with_custom_record_split() {
+    #[derive(Tabled)]
+    struct Linux {
+        id: u8,
+        destribution: &'static str,
+        link: &'static str,
+    }
+
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "=== Record => 0\n",
+        "id           | \"0\"\n",
+        "destribution | \"Fedora\"\n",
+        "link         | \"https://getfedora.org/\"\n",
+        "=== Record => 1\n",
+        "id           | \"2\"\n",
+        "destribution | \"OpenSUSE\"\n",
+        "link         | \"https://www.opensuse.org/\"\n",
+        "=== Record => 2\n",
+        "id           | \"3\"\n",
+        "destribution | \"Endeavouros\"\n",
+        "link         | \"https://endeavouros.com/\"\n",
+    );
+
+    let table = ExpandedDisplay::new(&data)
+        .format_record_head(|i| format!("=== Record => {}", i))
+        .to_string();
+
+    assert_eq!(table, expected);
+}
