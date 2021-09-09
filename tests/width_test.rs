@@ -37,7 +37,49 @@ fn max_width() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth(3, "...")))
+        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(3, "...")))
+        .to_string();
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn max_width_wrapped() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "| id | destribution |    link    |\n",
+        "|----+--------------+------------|\n",
+        "| 0  |    Fedora    | https://ge |\n",
+        "|    |              | tfedora.or |\n",
+        "|    |              |     g/     |\n",
+        "| 2  |   OpenSUSE   | https://ww |\n",
+        "|    |              | w.opensuse |\n",
+        "|    |              |   .org/    |\n",
+        "| 3  |  Endeavouro  | https://en |\n",
+        "|    |      s       | deavouros. |\n",
+        "|    |              |    com/    |\n",
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::wrapping(10)))
         .to_string();
 
     assert_eq!(table, expected);
@@ -73,7 +115,7 @@ fn dont_change_content_if_width_is_less_then_max_width() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Full).with(MaxWidth(1000, "...")))
+        .with(Modify::new(Full).with(MaxWidth::truncating(1000, "...")))
         .to_string();
 
     assert_eq!(table, expected);
@@ -93,7 +135,7 @@ fn max_width_with_emoji() {
 
     let table = Table::new(data)
         .with(Style::github_markdown())
-        .with(Modify::new(Full).with(MaxWidth(3, "...")))
+        .with(Modify::new(Full).with(MaxWidth::truncating(3, "...")))
         .to_string();
 
     assert_eq!(table, _expected);
@@ -120,7 +162,7 @@ fn color_chars_are_stripped() {
 
     let table = Table::new(data)
         .with(Style::github_markdown())
-        .with(Modify::new(Full).with(MaxWidth(3, "...")))
+        .with(Modify::new(Full).with(MaxWidth::truncating(3, "...")))
         .to_string();
 
     println!("{}", table);
