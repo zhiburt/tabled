@@ -8,8 +8,8 @@ use crate::Tabled;
 /// It escapes strings to resolve a multi-line ones.
 /// Because of that `colors` may not be rendered.
 pub struct ExpandedDisplay {
-    format_record_splitter: fn(usize) -> String,
-    format_value: Box<dyn Fn(String) -> String>,
+    format_record_splitter: Option<fn(usize) -> String>,
+    format_value: Option<Box<dyn Fn(&str) -> String>>,
     fields: Vec<String>,
     records: Vec<Vec<String>>,
 }
@@ -23,8 +23,8 @@ impl ExpandedDisplay {
         Self {
             records: data,
             fields: header,
-            format_record_splitter: |i| format!("-[ RECORD {} ]-", i),
-            format_value: Box::new(|s| s),
+            format_record_splitter: None,
+            format_value: None,
         }
     }
 
@@ -34,39 +34,39 @@ impl ExpandedDisplay {
     ///
     /// At least one '\n' char will be printed at the end regardless if you set it or not.
     pub fn format_record_head(&mut self, f: fn(usize) -> String) -> &mut Self {
-        self.format_record_splitter = f;
+        self.format_record_splitter = Some(f);
         self
     }
 
     /// Use a value formatter.
-    pub fn format_value(&mut self, f: impl Fn(String) -> String + 'static) -> &mut Self {
-        self.format_value = Box::new(f);
+    pub fn format_value(&mut self, f: impl Fn(&str) -> String + 'static) -> &mut Self {
+        self.format_value = Some(Box::new(f));
         self
     }
 
     /// Turn off a wrapping of multiline value.
     pub fn format_value_in_one_line(&mut self) -> &mut Self {
-        self.format_value = Box::new(|s| s.escape_debug().to_string());
+        self.format_value = Some(Box::new(|s| s.escape_debug().to_string()));
         self
     }
 
     /// Sets max width of value.
     /// The rest will be trunceted.
     pub fn format_value_max_width(&mut self, max: usize) -> &mut Self {
-        self.format_value = Box::new(move |s| {
+        self.format_value = Some(Box::new(move |s| {
             s.chars()
                 .take(max)
                 .collect::<String>()
                 .escape_debug()
                 .to_string()
-        });
+        }));
         self
     }
 
     /// Sets max width of value,
     /// when limit is reached next chars will be placed on the next line.
     pub fn format_value_max_width_wrapped(&mut self, max: usize) -> &mut Self {
-        self.format_value = Box::new(move |s| {
+        self.format_value = Some(Box::new(move |s| {
             s.chars()
                 .enumerate()
                 .flat_map(|(i, c)| {
@@ -79,7 +79,7 @@ impl ExpandedDisplay {
                     .chain(std::iter::once(c))
                 })
                 .collect::<String>()
-        });
+        }));
         self
     }
 }
@@ -110,10 +110,39 @@ impl std::fmt::Display for ExpandedDisplay {
         for (i, record) in self.records.iter().enumerate() {
             assert_eq!(record.len(), fields.len());
 
-            writeln!(f, "{}", (self.format_record_splitter)(i))?;
-            for (value, field) in record.iter().zip(fields.iter()) {
-                let value = (self.format_value)(value.clone());
-                write_record_line(f, field, &value, max_field_width)?;
+            let values = record
+                .iter()
+                .map(|value| match &self.format_value {
+                    Some(f) => (f)(value),
+                    None => value.to_string(),
+                })
+                .collect::<Vec<_>>();
+
+            match self.format_record_splitter {
+                Some(f_header) => {
+                    let header = (f_header)(i);
+                    writeln!(f, "{}", header)?;
+                }
+                None => {
+                    let record_max_width = values
+                        .iter()
+                        .map(|value| value.lines().map(|l| l.chars().count()).max())
+                        .max()
+                        .unwrap_or_default()
+                        .unwrap_or_default();
+
+                    writeln!(
+                        f,
+                        "-[ RECORD {} ]{:-<width$}",
+                        i,
+                        "-",
+                        width = record_max_width + 2 // 2 is is space and '|' char which we use in our formatting
+                    )?;
+                }
+            }
+
+            for (value, field) in values.iter().zip(fields.iter()) {
+                write_record_line(f, field, value, max_field_width)?;
             }
         }
 

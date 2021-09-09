@@ -28,15 +28,15 @@ fn display() {
     ];
 
     let expected = concat!(
-        "-[ RECORD 0 ]-\n",
+        "-[ RECORD 0 ]------------------------\n",
         "id           | 0\n",
         "destribution | Fedora\n",
         "link         | https://getfedora.org/\n",
-        "-[ RECORD 1 ]-\n",
+        "-[ RECORD 1 ]---------------------------\n",
         "id           | 2\n",
         "destribution | OpenSUSE\n",
         "link         | https://www.opensuse.org/\n",
-        "-[ RECORD 2 ]-\n",
+        "-[ RECORD 2 ]--------------------------\n",
         "id           | 3\n",
         "destribution | Endeavouros\n",
         "link         | https://endeavouros.com/\n",
@@ -77,7 +77,7 @@ fn display_multiline_field() {
     }];
 
     let expected = concat!(
-        "-[ RECORD 0 ]-\n",
+        "-[ RECORD 0 ]--\n",
         "Hello\\nWorld | \n",
         "123          | \n",
         "asd          | \n",
@@ -118,7 +118,7 @@ fn display_multiline_record_value() {
     }];
 
     let expected = concat!(
-        "-[ RECORD 0 ]-\n",
+        "-[ RECORD 0 ]-------\n",
         "1 | Hello\n",
         "  | World\n",
         "2 | 123\n",
@@ -207,7 +207,7 @@ fn display_with_custom_record_value_formatter() {
     ];
 
     let expected = concat!(
-        "-[ RECORD 0 ]-\n",
+        "-[ RECORD 0 ]-------------------------\n",
         "id           | 0!\n",
         "             | \n",
         "destribution | Fed\n",
@@ -215,14 +215,14 @@ fn display_with_custom_record_value_formatter() {
         "             | \n",
         "link         | https://getfedora.org/!\n",
         "             | \n",
-        "-[ RECORD 1 ]-\n",
+        "-[ RECORD 1 ]----------------------------\n",
         "id           | 2!\n",
         "             | \n",
         "destribution | OpenSUSE!\n",
         "             | \n",
         "link         | https://www.opensuse.org/!\n",
         "             | \n",
-        "-[ RECORD 2 ]-\n",
+        "-[ RECORD 2 ]---------------------------\n",
         "id           | 3!\n",
         "             | \n",
         "destribution | Endeavouros!\n",
@@ -232,7 +232,7 @@ fn display_with_custom_record_value_formatter() {
     );
 
     let table = ExpandedDisplay::new(&data)
-        .format_value(|s| s + "!\n\n")
+        .format_value(|s| format!("{}!\n\n", s))
         .to_string();
 
     assert_eq!(table, expected);
@@ -268,7 +268,7 @@ fn display_with_custom_record_value_one_line_formatter() {
     }];
 
     let expected = concat!(
-        "-[ RECORD 0 ]-\n",
+        "-[ RECORD 0 ]--------------\n",
         "1 | Hello\\nWorld\n",
         "2 | 123\n",
         "3 | asd\n",
@@ -309,15 +309,15 @@ fn display_with_max_width() {
     ];
 
     let expected = concat!(
-        "-[ RECORD 0 ]-\n",
+        "-[ RECORD 0 ]-----\n",
         "id           | 0\n",
         "destribution | Fed\n",
         "link         | htt\n",
-        "-[ RECORD 1 ]-\n",
+        "-[ RECORD 1 ]-----\n",
         "id           | 2\n",
         "destribution | Ope\n",
         "link         | htt\n",
-        "-[ RECORD 2 ]-\n",
+        "-[ RECORD 2 ]-----\n",
         "id           | 3\n",
         "destribution | End\n",
         "link         | htt\n",
@@ -358,7 +358,7 @@ fn display_with_max_width_wrapped() {
     ];
 
     let expected = concat!(
-        "-[ RECORD 0 ]-\n",
+        "-[ RECORD 0 ]-----\n",
         "id           | 0\n",
         "destribution | Fed\n",
         "             | ora\n",
@@ -370,7 +370,7 @@ fn display_with_max_width_wrapped() {
         "             | ra.\n",
         "             | org\n",
         "             | /\n",
-        "-[ RECORD 1 ]-\n",
+        "-[ RECORD 1 ]-----\n",
         "id           | 2\n",
         "destribution | Ope\n",
         "             | nSU\n",
@@ -384,7 +384,7 @@ fn display_with_max_width_wrapped() {
         "             | se.\n",
         "             | org\n",
         "             | /\n",
-        "-[ RECORD 2 ]-\n",
+        "-[ RECORD 2 ]-----\n",
         "id           | 3\n",
         "destribution | End\n",
         "             | eav\n",
