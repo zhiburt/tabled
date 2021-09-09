@@ -28,6 +28,8 @@ impl ExpandedDisplay {
 
     /// Sets a line format which will be used to split records.
     ///
+    /// Default formating is "-[ RECORD {} ]-"
+    ///
     /// At least one '\n' char will be printed at the end regardless if you set it or not.
     pub fn format_record_head(&mut self, f: fn(usize) -> String) -> &mut Self {
         self.format_record_splitter = f;
@@ -63,10 +65,23 @@ impl std::fmt::Display for ExpandedDisplay {
 
             writeln!(f, "{}", (self.format_record_splitter)(i))?;
             for (value, field) in record.iter().zip(fields.iter()) {
-                writeln!(f, "{:width$} | {:?}", field, value, width = max_field_width)?;
+                write_record_line(f, field, value, max_field_width)?;
             }
         }
 
         Ok(())
     }
+}
+
+fn write_record_line(
+    f: &mut std::fmt::Formatter<'_>,
+    field: &str,
+    value: &str,
+    max_field_width: usize,
+) -> std::fmt::Result {
+    for (i, line) in value.lines().enumerate() {
+        let field = if i == 0 { field } else { "" };
+        writeln!(f, "{:width$} | {:?}", field, line, width = max_field_width)?;
+    }
+    Ok(())
 }

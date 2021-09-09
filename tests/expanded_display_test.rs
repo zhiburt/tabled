@@ -107,7 +107,7 @@ fn display_multiline_record_value() {
         }
 
         fn headers() -> Vec<String> {
-            vec![String::new(), String::new(), String::new()]
+            vec!["1".to_string(), "2".to_string(), "3".to_string()]
         }
     }
 
@@ -119,8 +119,10 @@ fn display_multiline_record_value() {
 
     let expected = concat!(
         "-[ RECORD 0 ]-\n",
-        " | \"Hello\\nWorld\"\n",
-        " | \"123\"\n | \"asd\"\n",
+        "1 | \"Hello\"\n",
+        "  | \"World\"\n",
+        "2 | \"123\"\n",
+        "3 | \"asd\"\n",
     );
 
     let table = ExpandedDisplay::new(&data).to_string();
