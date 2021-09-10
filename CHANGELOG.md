@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `ExpandedDisplay` a different view of data structures. It eases viewing structures with a lot a fields.
+- `ExpandedDisplay` a different view of data structures. It eases viewing structures with a lot a fields. Proposed by [@sd2k](https://github.com/sd2k)
 - `MaxWidth::wrapping` a wrapping mechanism. Setting it will make text wrap to next line after reaching limit.
 
 ### Changed
