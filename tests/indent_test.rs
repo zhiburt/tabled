@@ -28,17 +28,17 @@ fn indent() {
     ];
 
     let expected = concat!(
-        "id |destribution |link                       \n",
-        "---+-------------+---------------------------\n",
-        " 0 | Fedora      | https://getfedora.org/    \n",
-        "   |             |                           \n",
-        "   |             |                           \n",
-        " 2 | OpenSUSE    | https://www.opensuse.org/ \n",
-        "   |             |                           \n",
-        "   |             |                           \n",
-        " 3 | Endeavouros | https://endeavouros.com/  \n",
-        "   |             |                           \n",
-        "   |             |                           \n",
+        " id | destribution | link                      \n",
+        "----+--------------+---------------------------\n",
+        " 0  | Fedora       | https://getfedora.org/    \n",
+        "    |              |                           \n",
+        "    |              |                           \n",
+        " 2  | OpenSUSE     | https://www.opensuse.org/ \n",
+        "    |              |                           \n",
+        "    |              |                           \n",
+        " 3  | Endeavouros  | https://endeavouros.com/  \n",
+        "    |              |                           \n",
+        "    |              |                           \n",
     );
 
     let table = Table::new(&data)
@@ -127,19 +127,19 @@ fn indent_multiline_with_vertical_alignment() {
     println!("{}", table);
 
     let expected = concat!(
-        "id |destribution |           link           \n",
-        "---+-------------+--------------------------\n",
-        "   |             |                          \n",
-        " 0 |   Fedora    |  https://getfedora.org/  \n",
-        "   |             |                          \n",
-        "   |             |                          \n",
-        "   |             |       https://www.       \n",
-        " 2 |    Open     |         opensuse         \n",
-        "   |    SUSE     |          .org/           \n",
-        "   |             |                          \n",
-        "   |             |                          \n",
-        " 3 | Endeavouros | https://endeavouros.com/ \n",
-        "   |             |                          \n",
+        " id | destribution |           link           \n",
+        "----+--------------+--------------------------\n",
+        "    |              |                          \n",
+        " 0  |    Fedora    |  https://getfedora.org/  \n",
+        "    |              |                          \n",
+        "    |              |                          \n",
+        "    |              |       https://www.       \n",
+        " 2  |     Open     |         opensuse         \n",
+        "    |     SUSE     |          .org/           \n",
+        "    |              |                          \n",
+        "    |              |                          \n",
+        " 3  | Endeavouros  | https://endeavouros.com/ \n",
+        "    |              |                          \n",
     );
 
     assert_eq!(table, expected);

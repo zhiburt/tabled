@@ -1,4 +1,4 @@
-use tabled::{Alignment, Column, Full, Head, Modify, Row, Style, Table, Tabled};
+use tabled::{Alignment, Column, Full, Head, Indent, Modify, Row, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -28,11 +28,11 @@ fn full_alignment() {
     ];
 
     let expected = concat!(
-        "id|destribution|link                     \n",
-        "--+------------+-------------------------\n",
-        "0 |Fedora      |https://getfedora.org/   \n",
-        "2 |OpenSUSE    |https://www.opensuse.org/\n",
-        "3 |Endeavouros |https://endeavouros.com/ \n",
+        " id | destribution | link                      \n",
+        "----+--------------+---------------------------\n",
+        " 0  | Fedora       | https://getfedora.org/    \n",
+        " 2  | OpenSUSE     | https://www.opensuse.org/ \n",
+        " 3  | Endeavouros  | https://endeavouros.com/  \n",
     );
 
     let table = Table::new(&data)
@@ -64,15 +64,15 @@ fn head_and_data_alignment() {
     ];
 
     let expected = concat!(
-        "+--+------------+-------------------------+\n",
-        "|id|destribution|link                     |\n",
-        "+--+------------+-------------------------+\n",
-        "| 0|      Fedora|   https://getfedora.org/|\n",
-        "+--+------------+-------------------------+\n",
-        "| 2|    OpenSUSE|https://www.opensuse.org/|\n",
-        "+--+------------+-------------------------+\n",
-        "| 3| Endeavouros| https://endeavouros.com/|\n",
-        "+--+------------+-------------------------+\n",
+        "+----+--------------+---------------------------+\n",
+        "| id | destribution | link                      |\n",
+        "+----+--------------+---------------------------+\n",
+        "|  0 |       Fedora |    https://getfedora.org/ |\n",
+        "+----+--------------+---------------------------+\n",
+        "|  2 |     OpenSUSE | https://www.opensuse.org/ |\n",
+        "+----+--------------+---------------------------+\n",
+        "|  3 |  Endeavouros |  https://endeavouros.com/ |\n",
+        "+----+--------------+---------------------------+\n",
     );
 
     let table = Table::new(&data)
@@ -110,19 +110,19 @@ fn full_alignment_multiline() {
     ];
 
     let expected = concat!(
-        "id|destribution|link                     \n",
-        "--+------------+-------------------------\n",
-        "0 |Fedora      |https://getfedora.org/   \n",
-        "2 |OpenSUSE    |https://www.opensuse.org/\n",
-        "3 |Endeavouros |https://endeavouros.com/ \n",
-        "4 |Red         |https                    \n",
-        "  |Hat         |://                      \n",
-        "  |            |www                      \n",
-        "  |            |.                        \n",
-        "  |            |redhat                   \n",
-        "  |            |.                        \n",
-        "  |            |com                      \n",
-        "  |            |/en                      \n",
+        " id | destribution | link                      \n",
+        "----+--------------+---------------------------\n",
+        " 0  | Fedora       | https://getfedora.org/    \n",
+        " 2  | OpenSUSE     | https://www.opensuse.org/ \n",
+        " 3  | Endeavouros  | https://endeavouros.com/  \n",
+        " 4  | Red          | https                     \n",
+        "    | Hat          | ://                       \n",
+        "    |              | www                       \n",
+        "    |              | .                         \n",
+        "    |              | redhat                    \n",
+        "    |              | .                         \n",
+        "    |              | com                       \n",
+        "    |              | /en                       \n",
     );
 
     let table = Table::new(&data)
@@ -164,23 +164,60 @@ fn vertical_alignment_test() {
         .to_string();
 
     let expected = concat!(
-        " id |destribution|link                     \n",
-        "----+------------+-------------------------\n",
-        " 0  |Fedora      |https://getfedora.org/   \n",
-        " 2  |OpenSUSE    |https://www.opensuse.org/\n",
-        " 3  |E           |                         \n",
-        "    |nde         |                         \n",
-        "    |avou        |                         \n",
-        "    |ros         |https://endeavouros.com/ \n",
-        " 4  |            |https                    \n",
-        "    |            |://                      \n",
-        "    |            |www                      \n",
-        "    |            |.                        \n",
-        "    |            |redhat                   \n",
-        "    |            |.                        \n",
-        "    |Red         |com                      \n",
-        "    |Hat         |/en                      \n",
+        " id | destribution |           link            \n",
+        "----+--------------+---------------------------\n",
+        " 0  |    Fedora    |  https://getfedora.org/   \n",
+        " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
+        " 3  |      E       |                           \n",
+        "    |     nde      |                           \n",
+        "    |     avou     |                           \n",
+        "    |     ros      | https://endeavouros.com/  \n",
+        " 4  |              |           https           \n",
+        "    |              |            ://            \n",
+        "    |              |            www            \n",
+        "    |              |             .             \n",
+        "    |              |          redhat           \n",
+        "    |              |             .             \n",
+        "    |     Red      |            com            \n",
+        "    |     Hat      |            /en            \n",
     );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn alignment_doesnt_change_indent() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "   id|   destribution|   link                     \n",
+        "-----+---------------+----------------------------\n",
+        "   0 |   Fedora      |   https://getfedora.org/   \n",
+        "   2 |   OpenSUSE    |   https://www.opensuse.org/\n",
+        "   3 |   Endeavouros |   https://endeavouros.com/ \n",
+    );
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Indent::new(3, 0, 0, 0)))
+        .with(Modify::new(Full).with(Alignment::left()))
+        .to_string();
 
     assert_eq!(table, expected);
 }

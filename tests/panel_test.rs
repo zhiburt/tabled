@@ -16,12 +16,12 @@ fn top_panel() {
         .to_string();
 
     let expected = concat!(
-        "            Linux Distributions             \n",
-        "--------------------------------------------\n",
-        "id |destribution |           link           \n",
-        " 0 |   Fedora    |  https://getfedora.org/  \n",
-        " 2 |  OpenSUSE   |https://www.opensuse.org/ \n",
-        " 3 | Endeavouros | https://endeavouros.com/ \n",
+        "              Linux Distributions              \n",
+        "-----------------------------------------------\n",
+        " id | destribution |           link            \n",
+        " 0  |    Fedora    |  https://getfedora.org/   \n",
+        " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
+        " 3  | Endeavouros  | https://endeavouros.com/  \n",
     );
 
     assert_eq!(table, expected);
@@ -57,12 +57,12 @@ fn inner_panel() {
         .to_string();
 
     let expected = concat!(
-        " id | destribution |          link           \n",
-        "----+--------------+-------------------------\n",
-        " 0  |    Fedora    | https://getfedora.org/  \n",
-        "             Linux Distributions             \n",
-        " 2  |   OpenSUSE   |https://www.opensuse.org/\n",
-        " 3  | Endeavouros  |https://endeavouros.com/ \n",
+        " id | destribution |           link            \n",
+        "----+--------------+---------------------------\n",
+        " 0  |    Fedora    |  https://getfedora.org/   \n",
+        "              Linux Distributions              \n",
+        " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
+        " 3  | Endeavouros  | https://endeavouros.com/  \n",
     );
 
     assert_eq!(table, expected);
@@ -99,13 +99,13 @@ fn footer() {
         .to_string();
 
     let expected = concat!(
-        "             Linux Distributions             \n",
-        "---------------------------------------------\n",
-        " id | destribution |          link           \n",
-        " 0  |    Fedora    | https://getfedora.org/  \n",
-        " 2  |   OpenSUSE   |https://www.opensuse.org/\n",
-        " 3  | Endeavouros  |https://endeavouros.com/ \n",
-        "                   The end                   \n",
+        "              Linux Distributions              \n",
+        "-----------------------------------------------\n",
+        " id | destribution |           link            \n",
+        " 0  |    Fedora    |  https://getfedora.org/   \n",
+        " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
+        " 3  | Endeavouros  | https://endeavouros.com/  \n",
+        "                    The end                    \n",
     );
 
     assert_eq!(table, expected);

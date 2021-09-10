@@ -28,9 +28,9 @@ fn disable_rows() {
     ];
 
     let expected = concat!(
-        "id|destribution|link                    \n",
-        "--+------------+------------------------\n",
-        "3 |Endeavouros |https://endeavouros.com/\n",
+        " id | destribution | link                     \n",
+        "----+--------------+--------------------------\n",
+        " 3  | Endeavouros  | https://endeavouros.com/ \n",
     );
 
     let table = Table::new(&data)
@@ -63,9 +63,9 @@ fn disable_header() {
     ];
 
     let expected = concat!(
-        "0|Fedora     |https://getfedora.org/   \n",
-        "2|OpenSUSE   |https://www.opensuse.org/\n",
-        "3|Endeavouros|https://endeavouros.com/ \n",
+        " 0 | Fedora      | https://getfedora.org/    \n",
+        " 2 | OpenSUSE    | https://www.opensuse.org/ \n",
+        " 3 | Endeavouros | https://endeavouros.com/  \n",
     );
 
     let table = Table::new(&data)
@@ -129,12 +129,12 @@ fn disable_header_with_new_styling() {
     ];
 
     let expected = concat!(
-        "┌─┬───────────┬─────────────────────────┐\n",
-        "│0│Fedora     │https://getfedora.org/   │\n",
-        "├─┼───────────┼─────────────────────────┤\n",
-        "│2│OpenSUSE   │https://www.opensuse.org/│\n",
-        "│3│Endeavouros│https://endeavouros.com/ │\n",
-        "└─┴───────────┴─────────────────────────┘\n",
+        "┌───┬─────────────┬───────────────────────────┐\n",
+        "│ 0 │ Fedora      │ https://getfedora.org/    │\n",
+        "├───┼─────────────┼───────────────────────────┤\n",
+        "│ 2 │ OpenSUSE    │ https://www.opensuse.org/ │\n",
+        "│ 3 │ Endeavouros │ https://endeavouros.com/  │\n",
+        "└───┴─────────────┴───────────────────────────┘\n",
     );
 
     let table = Table::new(&data)
@@ -167,11 +167,11 @@ fn disable_columns() {
     ];
 
     let expected = concat!(
-        "destribution|link                     \n",
-        "------------+-------------------------\n",
-        "Fedora      |https://getfedora.org/   \n",
-        "OpenSUSE    |https://www.opensuse.org/\n",
-        "Endeavouros |https://endeavouros.com/ \n",
+        " destribution | link                      \n",
+        "--------------+---------------------------\n",
+        " Fedora       | https://getfedora.org/    \n",
+        " OpenSUSE     | https://www.opensuse.org/ \n",
+        " Endeavouros  | https://endeavouros.com/  \n",
     );
 
     let table = Table::new(&data)
