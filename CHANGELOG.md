@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.3.0] - 2021-09-10
+
+### Added
+
+- `ExpandedDisplay` a different view of data structures. It eases viewing structures with a lot a fields.
+- `MaxWidth::wrapping` a wrapping mechanism. Setting it will make text wrap to next line after reaching limit.
+
+### Changed
+
+- `MaxWidth` interface changed in regard to support `wrapping`. Now old `MaxWidth` logic can be called by `MaxWidth::trucating`.
+
+### Fixed
+
+- Fix an issue that setting `Alignment` was changing `Indent` settings.
+
 ## [0.2.3] - 2021-09-06
 
 ### Added
