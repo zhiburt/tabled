@@ -1,6 +1,6 @@
 use tabled::{
-    multiline, Cell, Column, Format, FormatFrom, FormatWithIndex, Full, Head, Modify, Object, Row,
-    Style, Table, Tabled,
+    multiline, Cell, Column, Format, FormatFrom, FormatWithIndex, Full, Head, Indent, Modify,
+    Object, Row, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -563,4 +563,44 @@ mod color {
 
         assert_eq!(table, expected);
     }
+}
+
+#[test]
+fn format_doesnt_change_indent() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "+--------+------------------+-------------------------------+\n",
+        "|   [id] |   [destribution] |   [link]                      |\n",
+        "+--------+------------------+-------------------------------+\n",
+        "|   [0]  |   [Fedora]       |   [https://getfedora.org/]    |\n",
+        "+--------+------------------+-------------------------------+\n",
+        "|   [2]  |   [OpenSUSE]     |   [https://www.opensuse.org/] |\n",
+        "+--------+------------------+-------------------------------+\n",
+        "|   [3]  |   [Endeavouros]  |   [https://endeavouros.com/]  |\n",
+        "+--------+------------------+-------------------------------+\n",
+    );
+
+    let table = Table::new(&data)
+        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
+        .to_string();
+
+    assert_eq!(table, expected);
 }
