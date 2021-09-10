@@ -75,7 +75,7 @@ impl<S: AsRef<str>> CellOption for MaxWidth<S> {
     }
 }
 
-fn strip(s: &str, width: usize) -> String {
+pub(crate) fn strip(s: &str, width: usize) -> String {
     #[cfg(not(feature = "color"))]
     {
         s.chars().take(width).collect::<String>()
@@ -87,15 +87,21 @@ fn strip(s: &str, width: usize) -> String {
     }
 }
 
-fn split(s: &str, width: usize) -> String {
+pub(crate) fn split(s: &str, width: usize) -> String {
     #[cfg(not(feature = "color"))]
     {
         s.chars()
-            .collect::<Vec<char>>()
-            .chunks(width)
-            .map(|chunk| chunk.iter().collect::<String>())
-            .collect::<Vec<String>>()
-            .join("\n")
+            .enumerate()
+            .flat_map(|(i, c)| {
+                if i != 0 && i % width == 0 {
+                    Some('\n')
+                } else {
+                    None
+                }
+                .into_iter()
+                .chain(std::iter::once(c))
+            })
+            .collect::<String>()
     }
     #[cfg(feature = "color")]
     {

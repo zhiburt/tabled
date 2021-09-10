@@ -195,38 +195,10 @@ fn write_record_line(
     Ok(())
 }
 
-#[cfg(not(feature = "color"))]
 fn truncate(s: &str, max: usize) -> String {
-    s.chars()
-        .take(max)
-        .collect::<String>()
-        .escape_debug()
-        .to_string()
+    crate::width::strip(s, max)
 }
 
-#[cfg(feature = "color")]
-fn truncate(s: &str, max: usize) -> String {
-    let max = std::cmp::min(s.chars().count(), max);
-    ansi_cut::AnsiCut::cut(&s, 0..max)
-}
-
-#[cfg(not(feature = "color"))]
 fn wrap(s: &str, max: usize) -> String {
-    s.chars()
-        .enumerate()
-        .flat_map(|(i, c)| {
-            if i != 0 && i % max == 0 {
-                Some('\n')
-            } else {
-                None
-            }
-            .into_iter()
-            .chain(std::iter::once(c))
-        })
-        .collect::<String>()
-}
-
-#[cfg(feature = "color")]
-fn wrap(s: &str, max: usize) -> String {
-    ansi_cut::chunks(s, max).join("\n")
+    crate::width::split(s, max)
 }
