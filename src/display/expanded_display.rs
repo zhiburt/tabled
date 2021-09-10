@@ -46,13 +46,21 @@ impl ExpandedDisplay {
 
     /// Sets max width of value.
     /// The rest will be trunceted.
-    pub fn truncate(&mut self, max: usize) -> &mut Self {
+    pub fn truncate(&mut self, max: usize, tail: impl AsRef<str>) -> &mut Self {
+        let tail = tail.as_ref().to_string();
         self.format_value = Some(Box::new(move |s| {
-            s.chars()
+            let mut s = s
+                .chars()
                 .take(max)
                 .collect::<String>()
                 .escape_debug()
-                .to_string()
+                .to_string();
+
+            if s.chars().count() >= max {
+                s.push_str(&tail);
+            }
+
+            s
         }));
         self
     }
