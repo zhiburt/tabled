@@ -12,7 +12,7 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Full).with(MaxWidth(10, "...")));
+        .with(Modify::new(Full).with(MaxWidth::truncating(10, "...")));
 
     println!("{}", table);
 }
