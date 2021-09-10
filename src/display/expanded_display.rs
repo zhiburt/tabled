@@ -30,29 +30,23 @@ impl ExpandedDisplay {
 
     /// Sets a line format which will be used to split records.
     ///
-    /// Default formating is "-[ RECORD {} ]-"
+    /// Default formating is "-[ RECORD {} ]-".
     ///
     /// At least one '\n' char will be printed at the end regardless if you set it or not.
-    pub fn format_record_head(&mut self, f: fn(usize) -> String) -> &mut Self {
+    pub fn header_template(&mut self, f: fn(usize) -> String) -> &mut Self {
         self.format_record_splitter = Some(f);
         self
     }
 
-    /// Use a value formatter.
-    pub fn format_value(&mut self, f: impl Fn(&str) -> String + 'static) -> &mut Self {
+    /// Sets a value formatter.
+    pub fn formatter(&mut self, f: impl Fn(&str) -> String + 'static) -> &mut Self {
         self.format_value = Some(Box::new(f));
-        self
-    }
-
-    /// Turn off a wrapping of multiline value.
-    pub fn format_value_in_one_line(&mut self) -> &mut Self {
-        self.format_value = Some(Box::new(|s| s.escape_debug().to_string()));
         self
     }
 
     /// Sets max width of value.
     /// The rest will be trunceted.
-    pub fn format_value_max_width(&mut self, max: usize) -> &mut Self {
+    pub fn truncate(&mut self, max: usize) -> &mut Self {
         self.format_value = Some(Box::new(move |s| {
             s.chars()
                 .take(max)
@@ -65,7 +59,7 @@ impl ExpandedDisplay {
 
     /// Sets max width of value,
     /// when limit is reached next chars will be placed on the next line.
-    pub fn format_value_max_width_wrapped(&mut self, max: usize) -> &mut Self {
+    pub fn wrap(&mut self, max: usize) -> &mut Self {
         self.format_value = Some(Box::new(move |s| {
             s.chars()
                 .enumerate()

@@ -173,14 +173,14 @@ fn display_with_custom_record_split() {
     );
 
     let table = ExpandedDisplay::new(&data)
-        .format_record_head(|i| format!("=== Record => {}", i))
+        .header_template(|i| format!("=== Record => {}", i))
         .to_string();
 
     assert_eq!(table, expected);
 }
 
 #[test]
-fn display_with_custom_record_value_formatter() {
+fn display_with_formatter() {
     #[derive(Tabled)]
     struct Linux {
         id: u8,
@@ -232,14 +232,14 @@ fn display_with_custom_record_value_formatter() {
     );
 
     let table = ExpandedDisplay::new(&data)
-        .format_value(|s| format!("{}!\n\n", s))
+        .formatter(|s| format!("{}!\n\n", s))
         .to_string();
 
     assert_eq!(table, expected);
 }
 
 #[test]
-fn display_with_custom_record_value_one_line_formatter() {
+fn display_with_one_line_formatter() {
     #[allow(dead_code)]
     struct Linux {
         id: u8,
@@ -275,14 +275,14 @@ fn display_with_custom_record_value_one_line_formatter() {
     );
 
     let table = ExpandedDisplay::new(&data)
-        .format_value_in_one_line()
+        .formatter(|s| s.escape_debug().to_string())
         .to_string();
 
     assert_eq!(table, expected);
 }
 
 #[test]
-fn display_with_max_width() {
+fn display_with_truncate() {
     #[derive(Tabled)]
     struct Linux {
         id: u8,
@@ -323,15 +323,13 @@ fn display_with_max_width() {
         "link         | htt\n",
     );
 
-    let table = ExpandedDisplay::new(&data)
-        .format_value_max_width(3)
-        .to_string();
+    let table = ExpandedDisplay::new(&data).truncate(3).to_string();
 
     assert_eq!(table, expected);
 }
 
 #[test]
-fn display_with_max_width_wrapped() {
+fn display_with_wrap() {
     #[derive(Tabled)]
     struct Linux {
         id: u8,
@@ -400,9 +398,7 @@ fn display_with_max_width_wrapped() {
         "             | om/\n",
     );
 
-    let table = ExpandedDisplay::new(&data)
-        .format_value_max_width_wrapped(3)
-        .to_string();
+    let table = ExpandedDisplay::new(&data).wrap(3).to_string();
 
     assert_eq!(table, expected);
 }
