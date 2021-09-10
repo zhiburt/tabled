@@ -37,6 +37,8 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Inline](#Inline)
     * [Tuple combination](#Tuple-combination)
     * [Object](#Object)
+* [Views](#Views)
+    * [Expanded Display](#Expanded-Display)
 * [Notes](#Notes)
    * [Emoji](#Emoji)
 
@@ -258,7 +260,10 @@ Using `MaxWidth` type its possible to set a max width of an object.
 While tinkering content we don't forget about its color.
 
 ```rust
-Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth(10, "...")));
+// You can truncate it everything after 10 chars.
+Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth::truncating(10, "...")));
+// And you can wrap it content reaching 10 chars.
+Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth::wrapping(10, "...")));
 ```
 
 ## Rotate
@@ -493,7 +498,67 @@ Full.not(Row(..1)) // peak all cells except header
 Head.and(Column(..1)).not(Cell(0, 0)) // peak a header and first column except a (0, 0) cell
 ```
 
-## Notes
+## Views
+
+`Tabled` supports not only Table view!
+
+### Expanded display
+
+You can use `ExpanedDisplay` if your data structure has a lot of fields.
+
+Here's an example.
+
+```rust
+use tabled::{display::ExpandedDisplay, Tabled};
+
+#[derive(Tabled)]
+struct Distribution {
+    name: &'static str,
+    is_active: bool,
+    is_cool: bool,
+}
+
+fn main() {
+    let data = [
+        Distribution {
+            name: "Manjaro",
+            is_cool: true,
+            is_active: true,
+        },
+        Distribution {
+            name: "Debian",
+            is_cool: true,
+            is_active: true,
+        },
+        Distribution {
+            name: "Debian",
+            is_cool: true,
+            is_active: true,
+        },
+    ];
+
+    let table = ExpandedDisplay::new(&data);
+
+    println!("{}", table);
+}
+```
+
+You'll see the following.
+
+```text
+-[ RECORD 0 ]------
+name      | Manjaro
+is_active | true
+is_cool   | true
+-[ RECORD 1 ]------
+name      | Debian
+is_active | true
+is_cool   | true
+-[ RECORD 2 ]------
+name      | Debian
+is_active | true
+is_cool   | true
+```
 
 ### Emoji
    
