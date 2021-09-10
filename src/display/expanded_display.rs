@@ -39,6 +39,8 @@ impl ExpandedDisplay {
     }
 
     /// Sets a value formatter.
+    ///
+    /// This method overrides others formatters like [ExpandedDisplay::truncate] and [ExpandedDisplay::wrap].
     pub fn formatter(&mut self, f: impl Fn(&str) -> String + 'static) -> &mut Self {
         self.format_value = Some(Box::new(f));
         self
