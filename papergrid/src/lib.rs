@@ -719,12 +719,12 @@ fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) ->
 }
 
 #[cfg(not(feature = "color"))]
-fn string_width(text: &str) -> usize {
+pub fn string_width(text: &str) -> usize {
     real_string_width(text)
 }
 
 #[cfg(feature = "color")]
-fn string_width(text: &str) -> usize {
+pub fn string_width(text: &str) -> usize {
     let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
     let s = std::str::from_utf8(&b).unwrap();
     real_string_width(s)
