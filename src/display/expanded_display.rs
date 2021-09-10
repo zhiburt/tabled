@@ -51,18 +51,12 @@ impl ExpandedDisplay {
     pub fn truncate(&mut self, max: usize, tail: impl AsRef<str>) -> &mut Self {
         let tail = tail.as_ref().to_string();
         self.format_value = Some(Box::new(move |s| {
-            let mut s = s
-                .chars()
-                .take(max)
-                .collect::<String>()
-                .escape_debug()
-                .to_string();
-
-            if s.chars().count() >= max {
-                s.push_str(&tail);
+            let mut trucated = truncate(s, max);
+            if trucated.len() < s.len() {
+                trucated.push_str(&tail);
             }
 
-            s
+            trucated
         }));
         self
     }
@@ -70,20 +64,7 @@ impl ExpandedDisplay {
     /// Sets max width of value,
     /// when limit is reached next chars will be placed on the next line.
     pub fn wrap(&mut self, max: usize) -> &mut Self {
-        self.format_value = Some(Box::new(move |s| {
-            s.chars()
-                .enumerate()
-                .flat_map(|(i, c)| {
-                    if i != 0 && i % max == 0 {
-                        Some('\n')
-                    } else {
-                        None
-                    }
-                    .into_iter()
-                    .chain(std::iter::once(c))
-                })
-                .collect::<String>()
-        }));
+        self.format_value = Some(Box::new(move |s| wrap(s, max)));
         self
     }
 }
@@ -112,7 +93,7 @@ impl std::fmt::Display for ExpandedDisplay {
 
         let max_field_width = fields
             .iter()
-            .map(|f| f.chars().count())
+            .map(|f| papergrid::string_width(f))
             .max()
             .unwrap_or_default();
 
@@ -131,7 +112,7 @@ impl std::fmt::Display for ExpandedDisplay {
             .map(|record| {
                 record
                     .iter()
-                    .map(|v| v.lines().map(|l| l.chars().count()).max())
+                    .map(|v| v.lines().map(|l| papergrid::string_width(l)).max())
                     .max()
             })
             .max()
@@ -212,4 +193,40 @@ fn write_record_line(
         writeln!(f, "{:width$} | {}", field, line, width = max_field_width)?;
     }
     Ok(())
+}
+
+#[cfg(not(feature = "color"))]
+fn truncate(s: &str, max: usize) -> String {
+    s.chars()
+        .take(max)
+        .collect::<String>()
+        .escape_debug()
+        .to_string()
+}
+
+#[cfg(feature = "color")]
+fn truncate(s: &str, max: usize) -> String {
+    let max = std::cmp::min(s.chars().count(), max);
+    ansi_cut::AnsiCut::cut(&s, 0..max)
+}
+
+#[cfg(not(feature = "color"))]
+fn wrap(s: &str, max: usize) -> String {
+    s.chars()
+        .enumerate()
+        .flat_map(|(i, c)| {
+            if i != 0 && i % max == 0 {
+                Some('\n')
+            } else {
+                None
+            }
+            .into_iter()
+            .chain(std::iter::once(c))
+        })
+        .collect::<String>()
+}
+
+#[cfg(feature = "color")]
+fn wrap(s: &str, max: usize) -> String {
+    ansi_cut::chunks(s, max).join("\n")
 }

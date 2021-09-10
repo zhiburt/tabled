@@ -47,6 +47,62 @@ fn display() {
     assert_eq!(table, expected);
 }
 
+#[cfg(feature = "color")]
+#[test]
+fn display_colored() {
+    use owo_colors::{AnsiColors, OwoColorize};
+
+    #[derive(Tabled)]
+    struct Linux {
+        id: u8,
+        destribution: &'static str,
+        link: String,
+    }
+
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/"
+                .red()
+                .on_color(AnsiColors::Blue)
+                .to_string(),
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/"
+                .green()
+                .on_color(AnsiColors::Black)
+                .to_string(),
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/".blue().underline().to_string(),
+        },
+    ];
+
+    let expected = concat!(
+        "-[ RECORD 0 ]---------------------------\n",
+        "id           | 0\n",
+        "destribution | Fedora\n",
+        "link         | \u{1b}[44m\u{1b}[31mhttps://getfedora.org/\u{1b}[0m\u{1b}[0m\n",
+        "-[ RECORD 1 ]---------------------------\n",
+        "id           | 2\n",
+        "destribution | OpenSUSE\nlink         | \u{1b}[40m\u{1b}[32mhttps://www.opensuse.org/\u{1b}[0m\u{1b}[0m\n",
+        "-[ RECORD 2 ]---------------------------\n",
+        "id           | 3\ndestribution | Endeavouros\n",
+        "link         | \u{1b}[4m\u{1b}[34mhttps://endeavouros.com/\u{1b}[0m\u{1b}[0m\n",
+    );
+
+    let table = ExpandedDisplay::new(&data).to_string();
+
+    println!("{}", table);
+
+    assert_eq!(table, expected);
+}
+
 #[test]
 fn display_empty() {
     struct Type;
@@ -659,6 +715,89 @@ fn display_with_wrap() {
     );
 
     let table = ExpandedDisplay::new(&data).wrap(3).to_string();
+
+    assert_eq!(table, expected);
+}
+
+#[cfg(feature = "color")]
+#[test]
+fn display_with_wrap_colored() {
+    use owo_colors::{AnsiColors, OwoColorize};
+
+    #[derive(Tabled)]
+    struct Linux {
+        id: u8,
+        destribution: &'static str,
+        link: String,
+    }
+
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/".red().to_string(),
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/".to_string(),
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/"
+                .white()
+                .on_color(AnsiColors::Black)
+                .to_string(),
+        },
+    ];
+
+    let expected = concat!(
+        "-[ RECORD 0 ]-----\n",
+        "id           | 0\n",
+        "destribution | Fed",
+        "\n             | ora\n",
+        "link         | \u{1b}[31mhtt\u{1b}[0m\n",
+        "             | \u{1b}[31mps:\u{1b}[0m\n",
+        "             | \u{1b}[31m//g\u{1b}[0m\n",
+        "             | \u{1b}[31metf\u{1b}[0m\n",
+        "             | \u{1b}[31medo\u{1b}[0m\n",
+        "             | \u{1b}[31mra.\u{1b}[0m\n",
+        "             | \u{1b}[31morg\u{1b}[0m\n",
+        "             | \u{1b}[31m/\u{1b}[0m\n",
+        "-[ RECORD 1 ]-----\n",
+        "id           | 2\n",
+        "destribution | Ope\n",
+        "             | nSU\n",
+        "             | SE\n",
+        "link         | htt\n",
+        "             | ps:\n",
+        "             | //w\n",
+        "             | ww.\n",
+        "             | ope\n",
+        "             | nsu\n",
+        "             | se.\n",
+        "             | org\n",
+        "             | /\n",
+        "-[ RECORD 2 ]-----\n",
+        "id           | 3\n",
+        "destribution | End\n",
+        "             | eav\n",
+        "             | our\n",
+        "             | os\n",
+        "link         | \u{1b}[40m\u{1b}[37mhtt\u{1b}[0m\u{1b}[0m\n",
+        "             | \u{1b}[40m\u{1b}[37mps:\u{1b}[0m\u{1b}[0m\n",
+        "             | \u{1b}[40m\u{1b}[37m//e\u{1b}[0m\u{1b}[0m\n",
+        "             | \u{1b}[40m\u{1b}[37mnde\u{1b}[0m\u{1b}[0m\n",
+        "             | \u{1b}[40m\u{1b}[37mavo\u{1b}[0m\u{1b}[0m\n",
+        "             | \u{1b}[40m\u{1b}[37muro\u{1b}[0m\u{1b}[0m\n",
+        "             | \u{1b}[40m\u{1b}[37ms.c\u{1b}[0m\u{1b}[0m\n",
+        "             | \u{1b}[40m\u{1b}[37mom/\u{1b}[0m\u{1b}[0m\n",
+    );
+
+    let table = ExpandedDisplay::new(&data).wrap(3).to_string();
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }
