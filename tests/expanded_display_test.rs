@@ -28,7 +28,7 @@ fn display() {
     ];
 
     let expected = concat!(
-        "-[ RECORD 0 ]------------------------\n",
+        "-[ RECORD 0 ]---------------------------\n",
         "id           | 0\n",
         "destribution | Fedora\n",
         "link         | https://getfedora.org/\n",
@@ -36,7 +36,7 @@ fn display() {
         "id           | 2\n",
         "destribution | OpenSUSE\n",
         "link         | https://www.opensuse.org/\n",
-        "-[ RECORD 2 ]--------------------------\n",
+        "-[ RECORD 2 ]---------------------------\n",
         "id           | 3\n",
         "destribution | Endeavouros\n",
         "link         | https://endeavouros.com/\n",
@@ -331,7 +331,7 @@ fn display_multiline_record_value() {
     }];
 
     let expected = concat!(
-        "-[ RECORD 0 ]-------\n",
+        "-[ RECORD 0 ]-\n",
         "1 | Hello\n",
         "  | World\n",
         "2 | 123\n",
@@ -420,7 +420,7 @@ fn display_with_formatter() {
     ];
 
     let expected = concat!(
-        "-[ RECORD 0 ]-------------------------\n",
+        "-[ RECORD 0 ]----------------------------\n",
         "id           | 0!\n",
         "             | \n",
         "destribution | Fed\n",
@@ -435,7 +435,7 @@ fn display_with_formatter() {
         "             | \n",
         "link         | https://www.opensuse.org/!\n",
         "             | \n",
-        "-[ RECORD 2 ]---------------------------\n",
+        "-[ RECORD 2 ]----------------------------\n",
         "id           | 3!\n",
         "             | \n",
         "destribution | Endeavouros!\n",
@@ -481,7 +481,7 @@ fn display_with_one_line_formatter() {
     }];
 
     let expected = concat!(
-        "-[ RECORD 0 ]--------------\n",
+        "-[ RECORD 0 ]---\n",
         "1 | Hello\\nWorld\n",
         "2 | 123\n",
         "3 | asd\n",

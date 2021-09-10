@@ -146,40 +146,7 @@ impl std::fmt::Display for ExpandedDisplay {
                     writeln!(f, "{}", header)?;
                 }
                 None => {
-                    let mut template = format!("-[ RECORD {} ]-", i);
-                    let default_template_length = template.len();
-
-                    write!(f, "{}", template)?;
-
-                    // 3 - is responsible for ' | ' formatting
-                    let max_line_width = std::cmp::max(
-                        max_field_width + 3 + max_values_length,
-                        default_template_length,
-                    );
-                    let rest_to_print = max_line_width - default_template_length;
-
-                    if rest_to_print > 0 {
-                        // + 1 is a space after field name and we get a next pos so its +2
-                        if max_field_width + 2 > default_template_length {
-                            let plus_sign_first_part =
-                                (max_field_width + 1) - default_template_length;
-                            let plus_sign_last_part = rest_to_print - plus_sign_first_part - 1;
-
-                            if plus_sign_first_part > 0 {
-                                write!(f, "{:-<width$}", "-", width = plus_sign_first_part)?;
-                            }
-
-                            write!(f, "+",)?;
-
-                            if plus_sign_last_part > 0 {
-                                write!(f, "{:-<width$}", "-", width = plus_sign_last_part)?;
-                            }
-                        } else {
-                            write!(f, "{:-<width$}", "-", width = rest_to_print)?;
-                        }
-                    }
-
-                    writeln!(f)?;
+                    write_header_template(f, i, max_field_width, max_values_length)?;
                 }
             }
 
@@ -190,6 +157,43 @@ impl std::fmt::Display for ExpandedDisplay {
 
         Ok(())
     }
+}
+
+fn write_header_template(
+    f: &mut std::fmt::Formatter<'_>,
+    index: usize,
+    max_field_width: usize,
+    max_values_length: usize,
+) -> std::fmt::Result {
+    let mut template = format!("-[ RECORD {} ]-", index);
+    let default_template_length = template.len();
+
+    // 3 - is responsible for ' | ' formatting
+    let max_line_width = std::cmp::max(
+        max_field_width + 3 + max_values_length,
+        default_template_length,
+    );
+    let rest_to_print = max_line_width - default_template_length;
+    if rest_to_print > 0 {
+        // + 1 is a space after field name and we get a next pos so its +2
+        if max_field_width + 2 > default_template_length {
+            let part1 = (max_field_width + 1) - default_template_length;
+            let part2 = rest_to_print - part1 - 1;
+
+            template.extend(
+                std::iter::repeat('-')
+                    .take(part1)
+                    .chain(std::iter::once('+'))
+                    .chain(std::iter::repeat('-').take(part2)),
+            );
+        } else {
+            template.extend(std::iter::repeat('-').take(rest_to_print));
+        }
+    }
+
+    writeln!(f, "{}", template)?;
+
+    Ok(())
 }
 
 fn write_record_line(
