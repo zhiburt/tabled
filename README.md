@@ -560,6 +560,8 @@ is_active | true
 is_cool   | true
 ```
 
+## Notes
+
 ### Emoji
    
 The library support emojies out of the box but be aware that some of the terminals and editors may not render them as you would expect.
