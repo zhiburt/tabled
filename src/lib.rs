@@ -146,6 +146,7 @@ use std::fmt;
 
 mod alignment;
 mod disable;
+pub mod display;
 mod formating;
 mod indent;
 mod object;
