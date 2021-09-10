@@ -90,6 +90,11 @@ impl ExpandedDisplay {
 
 impl std::fmt::Display for ExpandedDisplay {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let format_value = |value: &String| match &self.format_value {
+            Some(f) => (f)(value),
+            None => value.to_string(),
+        };
+
         // It's possible that field|header can be a multiline string so
         // we escape it and trim \" chars.
         let fields = self
@@ -111,37 +116,70 @@ impl std::fmt::Display for ExpandedDisplay {
             .max()
             .unwrap_or_default();
 
-        for (i, record) in self.records.iter().enumerate() {
-            assert_eq!(record.len(), fields.len());
+        let values = self
+            .records
+            .iter()
+            .map(|record| {
+                assert_eq!(record.len(), fields.len());
 
-            let values = record
-                .iter()
-                .map(|value| match &self.format_value {
-                    Some(f) => (f)(value),
-                    None => value.to_string(),
-                })
-                .collect::<Vec<_>>();
+                record.iter().map(format_value).collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
 
+        let max_values_length = values
+            .iter()
+            .map(|record| {
+                record
+                    .iter()
+                    .map(|v| v.lines().map(|l| l.chars().count()).max())
+                    .max()
+            })
+            .max()
+            .unwrap_or_default()
+            .unwrap_or_default()
+            .unwrap_or_default();
+
+        for (i, values) in values.into_iter().enumerate() {
             match self.format_record_splitter {
                 Some(f_header) => {
                     let header = (f_header)(i);
                     writeln!(f, "{}", header)?;
                 }
                 None => {
-                    let record_max_width = values
-                        .iter()
-                        .map(|value| value.lines().map(|l| l.chars().count()).max())
-                        .max()
-                        .unwrap_or_default()
-                        .unwrap_or_default();
+                    let mut template = format!("-[ RECORD {} ]-", i);
+                    let default_template_length = template.len();
 
-                    writeln!(
-                        f,
-                        "-[ RECORD {} ]{:-<width$}",
-                        i,
-                        "-",
-                        width = record_max_width + 2 // 2 is is space and '|' char which we use in our formatting
-                    )?;
+                    write!(f, "{}", template)?;
+
+                    // 3 - is responsible for ' | ' formatting
+                    let max_line_width = std::cmp::max(
+                        max_field_width + 3 + max_values_length,
+                        default_template_length,
+                    );
+                    let rest_to_print = max_line_width - default_template_length;
+
+                    if rest_to_print > 0 {
+                        // + 1 is a space after field name and we get a next pos so its +2
+                        if max_field_width + 2 > default_template_length {
+                            let plus_sign_first_part =
+                                (max_field_width + 1) - default_template_length;
+                            let plus_sign_last_part = rest_to_print - plus_sign_first_part - 1;
+
+                            if plus_sign_first_part > 0 {
+                                write!(f, "{:-<width$}", "-", width = plus_sign_first_part)?;
+                            }
+
+                            write!(f, "+",)?;
+
+                            if plus_sign_last_part > 0 {
+                                write!(f, "{:-<width$}", "-", width = plus_sign_last_part)?;
+                            }
+                        } else {
+                            write!(f, "{:-<width$}", "-", width = rest_to_print)?;
+                        }
+                    }
+
+                    writeln!(f)?;
                 }
             }
 
