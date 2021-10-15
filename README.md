@@ -40,6 +40,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 * [Views](#Views)
     * [Expanded Display](#Expanded-Display)
 * [Notes](#Notes)
+   * [ANSI escape codes](#ANSI-escape-codes) 
    * [Emoji](#Emoji)
 
 # Usage
@@ -561,6 +562,19 @@ is_cool   | true
 ```
 
 ## Notes
+
+### ANSI escape codes
+
+By default `tabled` doesn't handle [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code).
+By default such things as hyperlinks, blinking and others things which can be achived via ANSI codes might not work correctly.
+
+`tabled` support it by setting a `color` feature.
+
+```toml
+tabled = { version = "*", features = ["color"] }
+```
+
+
 
 ### Emoji
    
