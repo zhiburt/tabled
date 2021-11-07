@@ -1,7 +1,7 @@
 #[allow(unused)]
 use crate::Table;
 use crate::TableOption;
-use papergrid::{Border, Grid};
+use papergrid::{Border, Entity, Grid};
 
 /// Style is responsible for a look of a [Table].
 ///
@@ -247,55 +247,194 @@ struct Frame {
 impl TableOption for Style {
     fn change(&mut self, grid: &mut Grid) {
         let count_rows = grid.count_rows();
+        let count_columns = grid.count_columns();
         for row in 0..count_rows {
-            let border = grid.get_border_mut(row);
-            make_style(self, border, row == 0, row == count_rows - 1);
+            for column in 0..count_columns {
+                let border = grid.get_border_mut(row, column);
+                // println!("BEFORE {}={} {:?}", row, column, border);
+                make_style(
+                    self,
+                    border,
+                    row == 0,
+                    row + 1 == count_rows,
+                    column == 0,
+                    column + 1 == count_columns,
+                );
+                // println!("AFTER {}={} {:?}", row, column, border);
+            }
         }
     }
 }
 
-fn make_style(style: &Style, border: &mut Border, is_first_row: bool, is_last_row: bool) {
-    let border = border.empty();
+fn make_style(
+    style: &Style,
+    border: &mut Border,
+    is_first_row: bool,
+    is_last_row: bool,
+    is_first_column: bool,
+    is_last_column: bool,
+) {
+    let mut top = None;
+    let mut bottom = None;
+    let mut left = None;
+    let mut right = None;
+    let mut left_corner_bottom = None;
+    let mut left_corner_top = None;
+    let mut right_corner_bottom = None;
+    let mut right_corner_top = None;
 
     if is_first_row {
-        if let Some(line) = &style.frame.top {
-            border.top(
-                line.main,
-                line.intersection,
-                line.left_corner,
-                line.right_corner,
-            );
-        }
+        if is_first_column && is_last_column {
+            left = style.frame.left;
+            right = style.frame.right;
 
-        if let Some(line) = &style.header_split_line {
-            border.bottom(
-                line.main,
-                line.intersection,
-                line.left_corner,
-                line.right_corner,
-            );
+            top = style.frame.top.as_ref().map(|l| l.main);
+            left_corner_top = style.frame.top.as_ref().and_then(|l| l.left_corner);
+            right_corner_top = style.frame.top.as_ref().and_then(|l| l.right_corner);
+
+            bottom = style.header_split_line.as_ref().map(|l| l.main);
+            left_corner_bottom = style.header_split_line.as_ref().and_then(|l| l.left_corner);
+            right_corner_bottom = style.header_split_line.as_ref().and_then(|l| l.right_corner);
+        } else if is_first_column {
+            left = style.frame.left;
+            right = Some(style.inner_split_char);
+
+            top = style.frame.top.as_ref().map(|l| l.main);
+            left_corner_top = style.frame.top.as_ref().and_then(|l| l.left_corner);
+            right_corner_top = style.frame.top.as_ref().map(|l| l.intersection);
+
+            bottom = style.header_split_line.as_ref().map(|l| l.main);
+            left_corner_bottom = style.header_split_line.as_ref().and_then(|l| l.left_corner);
+            right_corner_bottom = style.header_split_line.as_ref().map(|l| l.intersection);
+        } else if is_last_column {
+            left = Some(style.inner_split_char);
+            right = style.frame.right;
+
+            top = style.frame.top.as_ref().map(|l| l.main);
+            left_corner_top = style.frame.top.as_ref().map(|l| l.intersection);
+            right_corner_top = style.frame.top.as_ref().and_then(|l| l.right_corner);
+
+            bottom = style.header_split_line.as_ref().map(|l| l.main);
+            left_corner_bottom = style.header_split_line.as_ref().map(|l| l.intersection);
+            right_corner_bottom = style
+                .header_split_line
+                .as_ref()
+                .and_then(|l| l.right_corner);
+        } else {
+            left = Some(style.inner_split_char);
+            right = Some(style.inner_split_char);
+    
+            top = style.frame.top.as_ref().map(|l| l.main);
+            left_corner_top = style.frame.top.as_ref().map(|l| l.intersection);
+            right_corner_top = style.frame.top.as_ref().map(|l| l.intersection);
+
+            bottom = style.header_split_line.as_ref().map(|l| l.main);
+            left_corner_bottom = style.header_split_line.as_ref().map(|l| l.intersection);
+            right_corner_bottom = style.header_split_line.as_ref().map(|l| l.intersection);
         }
     } else if is_last_row {
-        if let Some(line) = &style.frame.bottom {
-            border.bottom(
-                line.main,
-                line.intersection,
-                line.left_corner,
-                line.right_corner,
-            );
+        if is_first_column && is_last_column {
+            left = style.frame.left;
+            right = style.frame.right;
+
+            top = style.frame.bottom.as_ref().map(|l| l.main);
+            left_corner_top = style.frame.bottom.as_ref().and_then(|l| l.left_corner);
+            right_corner_top = style.frame.bottom.as_ref().and_then(|l| l.right_corner);
+
+            bottom = style.frame.bottom.as_ref().map(|l| l.main);
+            left_corner_bottom = style.frame.bottom.as_ref().and_then(|l| l.left_corner);
+            right_corner_bottom = style.frame.bottom.as_ref().and_then(|l| l.right_corner);
+        } else if is_first_column {
+            left = style.frame.left;
+            right = Some(style.inner_split_char);
+
+            top = style.split.as_ref().map(|l| l.main);
+            left_corner_top = style.split.as_ref().map(|l| l.intersection);
+            right_corner_top = style.split.as_ref().map(|l| l.intersection);
+
+            bottom = style.frame.bottom.as_ref().map(|l| l.main);
+            left_corner_bottom = style.frame.bottom.as_ref().and_then(|l| l.left_corner);
+            right_corner_bottom = style.frame.bottom.as_ref().map(|l| l.intersection);
+        } else if is_last_column {
+            left = Some(style.inner_split_char);
+            right = style.frame.right;
+
+            top = style.split.as_ref().map(|l| l.main);
+            left_corner_top = style.split.as_ref().map(|l| l.intersection);
+            right_corner_top = style.split.as_ref().map(|l| l.intersection);
+
+            bottom = style.frame.bottom.as_ref().map(|l| l.main);
+            left_corner_bottom = style.frame.bottom.as_ref().map(|l| l.intersection);
+            right_corner_bottom = style.frame.bottom.as_ref().and_then(|l| l.right_corner);
+        } else {
+            left = Some(style.inner_split_char);
+            right = Some(style.inner_split_char);
+    
+            top = style.split.as_ref().map(|l| l.main);
+            left_corner_top = style.split.as_ref().map(|l| l.intersection);
+            right_corner_top = style.split.as_ref().map(|l| l.intersection);
+    
+            bottom = style.frame.bottom.as_ref().map(|l| l.main);
+            left_corner_bottom = style.frame.bottom.as_ref().map(|l| l.intersection);
+            right_corner_bottom = style.frame.bottom.as_ref().map(|l| l.intersection);
         }
-    } else if let Some(line) = &style.split {
-        border.bottom(
-            line.main,
-            line.intersection,
-            line.left_corner,
-            line.right_corner,
-        );
+    } else {
+        if is_first_column && is_last_column {
+            left = style.frame.left;
+            right = style.frame.right;
+
+            top = style.split.as_ref().map(|l| l.main);
+            left_corner_top = style.split.as_ref().and_then(|l| l.left_corner);
+            right_corner_top = style.split.as_ref().and_then(|l| l.right_corner);
+
+            bottom = style.split.as_ref().map(|l| l.main);
+            left_corner_bottom = style.split.as_ref().and_then(|l| l.left_corner);
+            right_corner_bottom = style.split.as_ref().and_then(|l| l.right_corner);
+        } else if is_first_column {
+            left = style.frame.left;
+            right = Some(style.inner_split_char);
+
+            top = style.split.as_ref().map(|l| l.main);
+            left_corner_top = style.split.as_ref().and_then(|l| l.left_corner);
+            right_corner_top = style.split.as_ref().map(|l| l.intersection);
+
+            bottom = style.split.as_ref().map(|l| l.main);
+            left_corner_bottom = style.split.as_ref().and_then(|l| l.left_corner);
+            right_corner_bottom = style.split.as_ref().map(|l| l.intersection);
+        } else if is_last_column {
+            left = Some(style.inner_split_char);
+            right = style.frame.right;
+
+            top = style.split.as_ref().map(|l| l.main);
+            left_corner_top = style.split.as_ref().map(|l| l.intersection);
+            right_corner_top = style.split.as_ref().and_then(|l| l.right_corner);
+
+            bottom = style.split.as_ref().map(|l| l.main);
+            left_corner_bottom = style.split.as_ref().map(|l| l.intersection);
+            right_corner_bottom = style.split.as_ref().and_then(|l| l.right_corner);
+
+        } else {
+            left = Some(style.inner_split_char);
+            right = Some(style.inner_split_char);
+
+            top = style.split.as_ref().map(|l| l.main);
+            left_corner_top = style.split.as_ref().map(|l| l.intersection);
+            right_corner_top = style.split.as_ref().map(|l| l.intersection);
+
+            bottom = style.split.as_ref().map(|l| l.main);
+            left_corner_bottom = style.split.as_ref().map(|l| l.intersection);
+            right_corner_bottom = style.split.as_ref().map(|l| l.intersection);
+        }
     }
 
-    border.inner(
-        Some(style.inner_split_char),
-        style.frame.left,
-        style.frame.right,
+    *border = Border::new(
+        top,
+        bottom,
+        right,
+        left,
+        left_corner_top,
+        right_corner_top,
+        left_corner_bottom,
+        right_corner_bottom,
     );
 }

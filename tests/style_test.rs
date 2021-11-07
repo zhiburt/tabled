@@ -145,6 +145,8 @@ fn pseudo_style() {
 
     let table = Table::new(&data).with(Style::pseudo()).to_string();
 
+    println!("{}", table);
+
     assert_eq!(table, expected);
 }
 

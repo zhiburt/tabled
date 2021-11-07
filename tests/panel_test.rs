@@ -16,13 +16,15 @@ fn top_panel() {
         .to_string();
 
     let expected = concat!(
-        "              Linux Distributions              \n",
-        "-----------------------------------------------\n",
+        "              Linux Distributions              |\n",
+        "-----------------------------------------------+\n",
         " id | destribution |           link            \n",
         " 0  |    Fedora    |  https://getfedora.org/   \n",
         " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
         " 3  | Endeavouros  | https://endeavouros.com/  \n",
     );
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }
@@ -42,7 +44,7 @@ fn bottom_panel() {
         " 0  |    Fedora    |  https://getfedora.org/   \n",
         " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
         " 3  | Endeavouros  | https://endeavouros.com/  \n",
-        "              Linux Distributions              \n",
+        "              Linux Distributions              |\n",
     );
 
     assert_eq!(table, expected);
@@ -60,7 +62,7 @@ fn inner_panel() {
         " id | destribution |           link            \n",
         "----+--------------+---------------------------\n",
         " 0  |    Fedora    |  https://getfedora.org/   \n",
-        "              Linux Distributions              \n",
+        "              Linux Distributions              |\n",
         " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
         " 3  | Endeavouros  | https://endeavouros.com/  \n",
     );
@@ -77,8 +79,8 @@ fn header() {
         .to_string();
 
     let expected = concat!(
-        "              Linux Distributions              \n",
-        "-----------------------------------------------\n",
+        "              Linux Distributions              |\n",
+        "-----------------------------------------------+\n",
         " id | destribution |           link            \n",
         " 0  |    Fedora    |  https://getfedora.org/   \n",
         " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
@@ -99,13 +101,13 @@ fn footer() {
         .to_string();
 
     let expected = concat!(
-        "              Linux Distributions              \n",
-        "-----------------------------------------------\n",
+        "              Linux Distributions              |\n",
+        "-----------------------------------------------+\n",
         " id | destribution |           link            \n",
         " 0  |    Fedora    |  https://getfedora.org/   \n",
         " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
         " 3  | Endeavouros  | https://endeavouros.com/  \n",
-        "                    The end                    \n",
+        "                    The end                    |\n",
     );
 
     assert_eq!(table, expected);

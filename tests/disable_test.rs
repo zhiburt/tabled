@@ -74,6 +74,8 @@ fn disable_header() {
         .with(Disable::Row(..1))
         .to_string();
 
+    println!("{}", table);
+
     assert_eq!(table, expected);
 }
 
@@ -167,11 +169,11 @@ fn disable_columns() {
     ];
 
     let expected = concat!(
-        " destribution | link                      \n",
-        "--------------+---------------------------\n",
-        " Fedora       | https://getfedora.org/    \n",
-        " OpenSUSE     | https://www.opensuse.org/ \n",
-        " Endeavouros  | https://endeavouros.com/  \n",
+        "| destribution | link                      \n",
+        "+--------------+---------------------------\n",
+        "| Fedora       | https://getfedora.org/    \n",
+        "| OpenSUSE     | https://www.opensuse.org/ \n",
+        "| Endeavouros  | https://endeavouros.com/  \n",
     );
 
     let table = Table::new(&data)
@@ -179,6 +181,8 @@ fn disable_columns() {
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Disable::Column(..1))
         .to_string();
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }
