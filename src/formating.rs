@@ -109,7 +109,10 @@ where
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         if !self.0.is_empty() {
             let new_content = self.0.remove(0).into();
-            grid.set(&Entity::Cell(row, column), Settings::new().text(new_content))
+            grid.set(
+                &Entity::Cell(row, column),
+                Settings::new().text(new_content),
+            )
         }
     }
 }

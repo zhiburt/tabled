@@ -1,4 +1,7 @@
-use tabled::{Alignment, Cell, Column, Format, FormatFrom, FormatWithIndex, Full, Head, Indent, Modify, Object, Row, Style, Table, Tabled, multiline};
+use tabled::{
+    multiline, Alignment, Cell, Column, Format, FormatFrom, FormatWithIndex, Full, Head, Indent,
+    Modify, Object, Row, Style, Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct Linux {

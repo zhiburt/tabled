@@ -59,7 +59,10 @@ impl<S: AsRef<str>> CellOption for MaxWidth<S> {
                 let striped_content = strip(content, self.width);
                 if striped_content.len() < content.len() {
                     let new_content = format!("{}{}", striped_content, filler.as_ref());
-                    grid.set(&Entity::Cell(row, column), Settings::new().text(new_content))
+                    grid.set(
+                        &Entity::Cell(row, column),
+                        Settings::new().text(new_content),
+                    )
                 }
             }
             Wrap::Wrap => {

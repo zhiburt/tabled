@@ -182,7 +182,6 @@ impl Grid {
         self.cells[row][column].as_str()
     }
 
-
     /// Get_border_mut returns a border for a given cell.
     pub fn get_border_mut(&mut self, row: usize, column: usize) -> &mut Border {
         debug_assert!(row < self.count_rows());
@@ -214,20 +213,20 @@ impl Grid {
 
         // shift styles
         self.styles.remove(&Entity::Row(row));
-        for row in row+1..self.count_rows() {
+        for row in row + 1..self.count_rows() {
             if self.styles.contains_key(&Entity::Row(row)) {
                 let prev = self.styles.remove(&Entity::Row(row)).unwrap();
-                self.styles.insert(Entity::Row(row-1), prev);
+                self.styles.insert(Entity::Row(row - 1), prev);
             }
         }
 
         for column in 0..self.count_columns() {
             self.styles.remove(&Entity::Cell(row, column));
         }
-        for row in row+1..self.count_rows() {
+        for row in row + 1..self.count_rows() {
             for column in 0..self.count_columns() {
                 if let Some(prev) = self.styles.remove(&Entity::Cell(row, column)) {
-                    self.styles.insert(Entity::Cell(row-1, column), prev);
+                    self.styles.insert(Entity::Cell(row - 1, column), prev);
                 }
             }
         }
@@ -245,20 +244,20 @@ impl Grid {
 
         // shift styles
         self.styles.remove(&Entity::Column(column));
-        for column in column+1..self.count_columns() {
+        for column in column + 1..self.count_columns() {
             if self.styles.contains_key(&Entity::Column(column)) {
                 let prev = self.styles.remove(&Entity::Column(column)).unwrap();
-                self.styles.insert(Entity::Column(column-1), prev);
+                self.styles.insert(Entity::Column(column - 1), prev);
             }
         }
 
         for row in 0..self.count_rows() {
             self.styles.remove(&Entity::Cell(row, column));
         }
-        for column in column+1..self.count_columns() {
+        for column in column + 1..self.count_columns() {
             for row in 0..self.count_rows() {
                 if let Some(prev) = self.styles.remove(&Entity::Cell(row, column)) {
-                    self.styles.insert(Entity::Cell(row, column-1), prev);
+                    self.styles.insert(Entity::Cell(row, column - 1), prev);
                 }
             }
         }
@@ -332,15 +331,6 @@ pub enum StyleResolverHorizontal {
     RightToLeft,
 }
 
-impl StyleResolverHorizontal {
-    fn resolve<'a, 'b>(&'a self, lhs: &'b Style, rhs: &'b Style) -> &'b Style {
-        match self {
-            Self::LeftToRight => lhs,
-            Self::RightToLeft => rhs,
-        }
-    }
-}
-
 /// An algorithm which is responsible for style merging on intersections
 #[derive(Debug, Clone)]
 pub enum StyleResolverVertical {
@@ -348,48 +338,40 @@ pub enum StyleResolverVertical {
     BottomToTop,
 }
 
-impl StyleResolverVertical {
-    fn resolve<'a, 'b>(&'a self, top: &'b Style, bottom: &'b Style) -> &'b Style {
-        match self {
-            Self::BottomToTop => bottom,
-            Self::TopToBottom => top,
-        }
-    }
-}
-
 /// Border structure represent all borders of a row
 #[derive(Debug, Clone)]
 pub struct Border {
-    top: Option<char>,
-    bottom: Option<char>,
-    right: Option<char>,
-    left: Option<char>,
-    top_left_intersection: Option<char>,
-    top_right_intersection: Option<char>,
-    bottom_left_intersection: Option<char>,
-    bottom_right_intersection: Option<char>,
+    pub top: Option<char>,
+    pub bottom: Option<char>,
+    pub left: Option<char>,
+    pub left_top_corner: Option<char>,
+    pub left_bottom_corner: Option<char>,
+    pub right: Option<char>,
+    pub right_top_corner: Option<char>,
+    pub right_bottom_corner: Option<char>,
 }
 
 impl Border {
-    pub fn new(
+    #[allow(clippy::too_many_arguments)]
+    fn new(
         top: Option<char>,
         bottom: Option<char>,
         right: Option<char>,
+        top_right_corner: Option<char>,
+        bottom_right_corner: Option<char>,
         left: Option<char>,
-        top_left_intersection: Option<char>,
-        top_right_intersection: Option<char>,
-        bottom_left_intersection: Option<char>,
-        bottom_right_intersection: Option<char>,
+        top_left_corner: Option<char>,
+        bottom_left_corner: Option<char>,
     ) -> Self {
         Self {
             top,
             bottom,
             right,
             left,
-            top_left_intersection,
-            top_right_intersection,
-            bottom_left_intersection,
-            bottom_right_intersection,
+            left_top_corner: top_left_corner,
+            right_top_corner: top_right_corner,
+            left_bottom_corner: bottom_left_corner,
+            right_bottom_corner: bottom_right_corner,
         }
     }
 
@@ -399,6 +381,7 @@ impl Border {
     }
 
     /// full returns a border all walls
+    #[allow(clippy::too_many_arguments)]
     pub fn full(
         top: char,
         bottom: char,
@@ -413,11 +396,11 @@ impl Border {
             Some(top),
             Some(bottom),
             Some(right),
+            Some(top_right_intersection),
+            Some(bottom_right_intersection),
             Some(left),
             Some(top_left_intersection),
-            Some(top_right_intersection),
             Some(bottom_left_intersection),
-            Some(bottom_right_intersection),
         )
     }
 
@@ -429,8 +412,8 @@ impl Border {
         bottom_right_intersection: char,
     ) -> Self {
         self.right = Some(right);
-        self.top_right_intersection = Some(top_right_intersection);
-        self.bottom_right_intersection = Some(bottom_right_intersection);
+        self.right_top_corner = Some(top_right_intersection);
+        self.right_bottom_corner = Some(bottom_right_intersection);
 
         self
     }
@@ -443,8 +426,8 @@ impl Border {
         bottom_left_intersection: char,
     ) -> Self {
         self.left = Some(left);
-        self.top_left_intersection = Some(top_left_intersection);
-        self.bottom_left_intersection = Some(bottom_left_intersection);
+        self.left_top_corner = Some(top_left_intersection);
+        self.left_bottom_corner = Some(bottom_left_intersection);
 
         self
     }
@@ -819,8 +802,8 @@ fn collect_row_bottom_line_styles(row_styles: &[Style]) -> Vec<BorderLine> {
     for style in row_styles {
         rows.push(BorderLine {
             main: style.border.bottom,
-            connector1: style.border.bottom_left_intersection,
-            connector2: style.border.bottom_right_intersection,
+            connector1: style.border.left_bottom_corner,
+            connector2: style.border.right_bottom_corner,
         });
     }
 
@@ -832,8 +815,8 @@ fn collect_row_top_line_styles(row_styles: &[Style]) -> Vec<BorderLine> {
     for style in row_styles {
         rows.push(BorderLine {
             main: style.border.top,
-            connector1: style.border.top_left_intersection,
-            connector2: style.border.top_right_intersection,
+            connector1: style.border.left_top_corner,
+            connector2: style.border.right_top_corner,
         });
     }
 
