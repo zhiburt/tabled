@@ -1,7 +1,7 @@
 #[allow(unused)]
 use crate::Table;
 use crate::TableOption;
-use papergrid::{Border, Entity, Grid};
+use papergrid::{Border, Grid};
 
 /// Style is responsible for a look of a [Table].
 ///
@@ -251,7 +251,6 @@ impl TableOption for Style {
         for row in 0..count_rows {
             for column in 0..count_columns {
                 let border = grid.get_border_mut(row, column);
-                // println!("BEFORE {}={} {:?}", row, column, border);
                 *border = make_style(
                     self,
                     row == 0,
@@ -259,7 +258,6 @@ impl TableOption for Style {
                     column == 0,
                     column + 1 == count_columns,
                 );
-                // println!("AFTER {}={} {:?}", row, column, border);
             }
         }
     }

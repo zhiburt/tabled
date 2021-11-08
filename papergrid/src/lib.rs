@@ -24,7 +24,6 @@ use std::{
     cmp::max,
     collections::HashMap,
     fmt::{self, Display},
-    iter,
 };
 
 /// Grid provides a set of methods for building a text-based table
@@ -633,18 +632,18 @@ impl std::fmt::Display for Grid {
         let widths = __columns_width(&mut cells, &mut styles, count_rows, count_columns);
 
         for row_index in 0..count_rows {
+            let (top_borders, inner_borders, bottom_borders) =
+                collect_row_borders(&styles[row_index]);
+
             if row_index == 0 {
-                let borders = collect_row_top_line_styles(&styles[row_index]);
-                println!("{:?}", borders);
                 build_split_line(
                     f,
                     &self.style_resolver_horizontal,
                     &widths[row_index],
-                    &borders,
+                    &top_borders,
                 )?;
             }
 
-            let borders = collect_row_center_line_styles(&styles[row_index]);
             build_row(
                 f,
                 &self.style_resolver_horizontal,
@@ -652,15 +651,14 @@ impl std::fmt::Display for Grid {
                 &styles[row_index],
                 &widths[row_index],
                 row_heights[row_index],
-                &borders,
+                &inner_borders,
             )?;
 
-            let borders = collect_row_bottom_line_styles(&styles[row_index]);
             build_split_line(
                 f,
                 &self.style_resolver_horizontal,
                 &widths[row_index],
-                &borders,
+                &bottom_borders,
             )?;
         }
 
@@ -678,7 +676,7 @@ fn build_row(
     border: &[BorderLine],
 ) -> fmt::Result {
     for _line in 0..height {
-        build_line(f, resolver, row.len(), border, |f, column| {
+        build_line(f, resolver, border, |f, column| {
             let cell = &row[column];
             let style = &row_styles[column];
             let width = widths[column];
@@ -745,26 +743,25 @@ fn line(
 fn build_line<F: Fn(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
     f: &mut std::fmt::Formatter<'_>,
     resolver: &StyleResolverHorizontal,
-    length: usize,
-    styles: &[BorderLine],
+    borders: &[BorderLine],
     writer: F,
 ) -> fmt::Result {
-    for i in 0..length {
+    for (i, border) in borders.iter().enumerate() {
         match resolver {
             StyleResolverHorizontal::LeftToRight => {
-                write_option(f, styles[i].connector1)?;
+                write_option(f, border.connector1)?;
                 writer(f, i)?;
-                if i + 1 == length || length == 1 {
-                    write_option(f, styles[i].connector2)?;
+                if i + 1 == borders.len() {
+                    write_option(f, border.connector2)?;
                 }
             }
             StyleResolverHorizontal::RightToLeft => {
                 if i == 0 {
-                    write_option(f, styles[i].connector1)?;
+                    write_option(f, border.connector1)?;
                 }
 
                 writer(f, i)?;
-                write_option(f, styles[i].connector2)?;
+                write_option(f, border.connector2)?;
             }
         };
     }
@@ -778,15 +775,15 @@ fn build_split_line(
     f: &mut std::fmt::Formatter<'_>,
     resolver: &StyleResolverHorizontal,
     widths: &[usize],
-    border: &[BorderLine],
+    borders: &[BorderLine],
 ) -> fmt::Result {
-    let theres_no_border = border.iter().all(|l| l.main.is_none());
-    if theres_no_border || border.is_empty() {
+    let theres_no_border = borders.iter().all(|l| l.main.is_none());
+    if theres_no_border || borders.is_empty() {
         return Ok(());
     }
 
-    build_line(f, resolver, widths.len(), border, |f, i| {
-        write_option(f, border[i].main.map(|m| m.to_string().repeat(widths[i])))
+    build_line(f, resolver, borders, |f, i| {
+        write_option(f, borders[i].main.map(|m| m.to_string().repeat(widths[i])))
     })
 }
 
@@ -797,43 +794,33 @@ fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) ->
     }
 }
 
-fn collect_row_bottom_line_styles(row_styles: &[Style]) -> Vec<BorderLine> {
-    let mut rows = Vec::with_capacity(row_styles.len());
+fn collect_row_borders(
+    row_styles: &[Style],
+) -> (Vec<BorderLine>, Vec<BorderLine>, Vec<BorderLine>) {
+    let mut top = Vec::with_capacity(row_styles.len());
+    let mut inner = Vec::with_capacity(row_styles.len());
+    let mut bottom = Vec::with_capacity(row_styles.len());
     for style in row_styles {
-        rows.push(BorderLine {
+        top.push(BorderLine {
+            main: style.border.top,
+            connector1: style.border.left_top_corner,
+            connector2: style.border.right_top_corner,
+        });
+
+        inner.push(BorderLine {
+            main: None,
+            connector1: style.border.left,
+            connector2: style.border.right,
+        });
+
+        bottom.push(BorderLine {
             main: style.border.bottom,
             connector1: style.border.left_bottom_corner,
             connector2: style.border.right_bottom_corner,
         });
     }
 
-    rows
-}
-
-fn collect_row_top_line_styles(row_styles: &[Style]) -> Vec<BorderLine> {
-    let mut rows = Vec::with_capacity(row_styles.len());
-    for style in row_styles {
-        rows.push(BorderLine {
-            main: style.border.top,
-            connector1: style.border.left_top_corner,
-            connector2: style.border.right_top_corner,
-        });
-    }
-
-    rows
-}
-
-fn collect_row_center_line_styles(row_styles: &[Style]) -> Vec<BorderLine> {
-    let mut rows = Vec::with_capacity(row_styles.len());
-    for style in row_styles {
-        rows.push(BorderLine {
-            main: None,
-            connector1: style.border.left,
-            connector2: style.border.right,
-        });
-    }
-
-    rows
+    (top, inner, bottom)
 }
 
 #[cfg(not(feature = "color"))]
@@ -1080,7 +1067,7 @@ mod tests {
                         main: Some('*'),
                     },
                 ];
-                build_line(f, &self.0, styles.len(), &styles, |f, _| write!(f, "00000"))
+                build_line(f, &self.0, &styles, |f, _| write!(f, "00000"))
             }
         }
 
