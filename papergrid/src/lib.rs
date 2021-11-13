@@ -147,11 +147,20 @@ impl Grid {
         let top_row_index = top_left.0;
         let bottom_row_index = bottom_left.0;
 
+        println!("{:?}", (top_left, top_right, bottom_left, bottom_right));
+
         if let Some(top) = border.top {
             for column in left_column_index..right_column_index {
                 self.borders
                     .set_row_symbol((top_row_index, column), top)
                     .unwrap();
+
+                // in case it continues line we change intersection symbol
+                if right_column_index - left_column_index > 1 {
+                    self.borders
+                        .set_intersection((top_row_index, column), top)
+                        .unwrap();
+                }
             }
         }
 
@@ -160,6 +169,13 @@ impl Grid {
                 self.borders
                     .set_row_symbol((bottom_row_index, column), bottom)
                     .unwrap();
+
+                // in case it continues line we change intersection symbol
+                if right_column_index - left_column_index > 1 {
+                    self.borders
+                        .set_intersection((bottom_row_index, column), bottom)
+                        .unwrap();
+                }
             }
         }
 
@@ -168,6 +184,13 @@ impl Grid {
                 self.borders
                     .set_column_symbol((row, left_column_index), left)
                     .unwrap();
+
+                // in case it continues line we change intersection symbol
+                if bottom_row_index - top_row_index > 1 {
+                    self.borders
+                        .set_intersection((row, left_column_index), left)
+                        .unwrap();
+                }
             }
         }
 
@@ -176,6 +199,13 @@ impl Grid {
                 self.borders
                     .set_column_symbol((row, right_column_index), right)
                     .unwrap();
+
+                // in case it continues line we change intersection symbol
+                if bottom_row_index - top_row_index > 1 {
+                    self.borders
+                        .set_intersection((row, right_column_index), right)
+                        .unwrap();
+                }
             }
         }
 
@@ -402,6 +432,10 @@ impl Grid {
     }
 
     fn frame_from_entity(&self, entity: &Entity) -> [GridPosition; 4] {
+        // why we bound to self.count_columns() && self.count_rows() but not the one +1 
+        // because we do this operation later
+        //
+        // todo: refactoring
         match entity {
             Entity::Global => [
                 (0, 0),
@@ -415,11 +449,11 @@ impl Grid {
                 (self.count_rows(), c),
                 (self.count_rows(), c + 1),
             ],
-            &Entity::Row(_) => [
-                (0, 0),
-                (0, self.count_columns()),
-                (self.count_rows(), 0),
-                (self.count_rows(), self.count_columns()),
+            &Entity::Row(r) => [
+                (r, 0),
+                (r, self.count_columns()),
+                (r+1, 0),
+                (r+1, self.count_columns()),
             ],
             &Entity::Cell(row, column) => [
                 (row, column),
@@ -707,12 +741,10 @@ impl std::fmt::Display for Grid {
         for row_index in 0..count_rows {
             if row_index == 0 {
                 let top_borders = self.get_split_line(row_index);
-                println!("top_borders={:?}", top_borders);
                 build_split_line(f, &widths[row_index], &top_borders)?;
             }
 
             let inner_borders = self.get_inner_split_line(row_index);
-            println!("inner_borders={:?}", inner_borders);
             build_row(
                 f,
                 &cells[row_index],
@@ -723,7 +755,6 @@ impl std::fmt::Display for Grid {
             )?;
 
             let bottom_borders = self.get_split_line(row_index + 1);
-            println!("bottom_borders={:?}", bottom_borders);
             build_split_line(f, &widths[row_index], &bottom_borders)?;
         }
 
@@ -1168,7 +1199,6 @@ impl Borders {
         line: &[char],
         intersections: &[char],
     ) -> Result<(), BorderError> {
-        println!("{:?} {:?}", row, self.count_rows);
         if row > self.count_rows {
             return Err(BorderError::WrongRowIndex);
         }
@@ -1243,10 +1273,10 @@ impl Borders {
     fn set_intersection(&mut self, pos: GridPosition, c: char) -> Result<(), BorderError> {
         let (row, column) = pos;
 
-        if row > self.count_rows || !self.horizontal.contains_key(&row) {
+        if row > self.count_rows + 1 || !self.horizontal.contains_key(&row) {
             return Err(BorderError::WrongRowIndex);
         }
-        if column > self.count_columns || !self.vertical.contains_key(&column) {
+        if column > self.count_columns + 1 || !self.vertical.contains_key(&column) {
             return Err(BorderError::WrongColumnIndex);
         }
 
@@ -1344,6 +1374,110 @@ enum BorderError {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn grid_2x2_custom_frame_test() {
+        let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+        grid.set(&Entity::Global, Settings::new().text("asd"));
+        grid.set(
+            &Entity::Global,
+            Settings::new()
+                .border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        );
+
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "#*******#\n\
+             |asd|asd|\n\
+             |---+---|\n\
+             |asd|asd|\n\
+             #*******#\n"
+        )
+    }
+
+    #[test]
+    fn grid_2x2_custom_column_test() {
+        let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+        grid.set(&Entity::Global, Settings::new().text("asd"));
+        grid.set(
+            &Entity::Column(1),
+            Settings::new()
+                .border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        );
+
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "+---#***#\n\
+             |asd|asd|\n\
+             +---|---|\n\
+             |asd|asd|\n\
+             +---#***#\n"
+        );
+
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+        grid.set(
+            &Entity::Column(0),
+            Settings::new()
+                .border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        );
+
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "#***#---+\n\
+             |asd|asd|\n\
+             |---|---+\n\
+             |asd|asd|\n\
+             #***#---+\n"
+        )
+    }
+
+    #[test]
+    fn grid_2x2_custom_row_test() {
+        let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+        grid.set(&Entity::Global, Settings::new().text("asd"));
+
+        grid.set(
+            &Entity::Row(0),
+            Settings::new()
+                .border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        );
+
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "#*******#\n\
+             |asd|asd|\n\
+             #*******#\n\
+             |asd|asd|\n\
+             +---+---+\n"
+        );
+
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+        grid.set(
+            &Entity::Row(1),
+            Settings::new()
+                .border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        );
+
+        let str = grid.to_string();
+        assert_eq!(
+            str,
+            "+---+---+\n\
+             |asd|asd|\n\
+             #*******#\n\
+             |asd|asd|\n\
+             #*******#\n"
+        );
+    }
 
     #[test]
     fn grid_2x2_change_cell_border_test() {
