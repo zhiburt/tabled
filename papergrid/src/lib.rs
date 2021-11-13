@@ -31,8 +31,7 @@ pub struct Grid {
     size: (usize, usize),
     styles: HashMap<Entity, Style>,
     cells: Vec<Vec<String>>,
-    style_resolver_horizontal: StyleResolverHorizontal,
-    style_resolver_vertical: StyleResolverVertical,
+    borders: Borders,
 }
 
 impl Grid {
@@ -63,8 +62,7 @@ impl Grid {
             size: (rows, columns),
             cells: vec![vec![String::new(); columns]; rows],
             styles,
-            style_resolver_horizontal: StyleResolverHorizontal::LeftToRight,
-            style_resolver_vertical: StyleResolverVertical::TopToBottom,
+            borders: Borders::new(rows, columns),
         }
     }
 
@@ -112,7 +110,103 @@ impl Grid {
         }
 
         if let Some(border) = settings.border {
-            self.style_mut(entity).border = border;
+            self.set_border(entity, border);
+        }
+    }
+
+    pub fn add_horizontal_split(&mut self, row: usize) {
+        let line = vec![' '; self.count_columns()];
+        let intersections = vec![' '; self.borders.need_horizontal_intersections()];
+        self.borders
+            .set_horizontal(row, &line, &intersections)
+            .unwrap();
+    }
+
+    pub fn add_vertical_split(&mut self, column: usize) {
+        let line = vec![' '; self.count_rows()];
+        let intersections = vec![' '; self.borders.need_vertical_intersections()];
+        self.borders
+            .set_vertical(column, &line, &intersections)
+            .unwrap();
+    }
+
+    pub fn add_split_grid(&mut self) {
+        for row in 0..self.count_rows()+1 {
+            self.add_horizontal_split(row)
+        }
+
+        for column in 0..self.count_columns()+1 {
+            self.add_vertical_split(column)
+        }
+    }
+
+    pub fn set_border(&mut self, entity: &Entity, border: Border) {
+        let [top_left, top_right, bottom_left, bottom_right] = self.frame_from_entity(entity);
+        let left_column_index = top_left.1;
+        let right_column_index = top_right.1;
+        let top_row_index = top_left.0;
+        let bottom_row_index = bottom_left.0;
+
+        if let Some(top) = border.top {
+            for column in left_column_index..right_column_index {
+                self.borders
+                    .set_row_symbol((top_row_index, column), top)
+                    .unwrap();
+            }
+        }
+
+        if let Some(bottom) = border.bottom {
+            for column in left_column_index..right_column_index {
+                self.borders
+                    .set_row_symbol((bottom_row_index, column), bottom)
+                    .unwrap();
+            }
+        }
+
+        if let Some(left) = border.left {
+            for row in top_row_index..bottom_row_index {
+                self.borders
+                    .set_column_symbol((row, left_column_index), left)
+                    .unwrap();
+            }
+        }
+
+        if let Some(right) = border.right {
+            for row in top_row_index..bottom_row_index {
+                self.borders
+                    .set_column_symbol((row, right_column_index), right)
+                    .unwrap();
+            }
+        }
+
+        if let Some(bottom_right_corner) = border.bottom_right_corner {
+            self.borders
+                .set_intersection(bottom_right, bottom_right_corner)
+                .unwrap();
+        }
+
+        if let Some(top_left_corner) = border.top_left_corner {
+            self.borders
+                .set_intersection(top_left, top_left_corner)
+                .unwrap();
+        }
+
+        if let Some(top_right_corner) = border.top_right_corner {
+            self.borders
+                .set_intersection(top_right, top_right_corner)
+                .unwrap();
+        }
+
+        if let Some(bottom_left_corner) = border.bottom_left_corner {
+            self.borders
+                .set_intersection(bottom_left, bottom_left_corner)
+                .unwrap();
+        }
+
+        if let Some(bottom_right_corner) = border.bottom_right_corner {
+            self.borders
+                .set_intersection(bottom_right, bottom_right_corner)
+                .unwrap();
         }
     }
 
@@ -167,24 +261,9 @@ impl Grid {
         style
     }
 
-    pub fn set_style_resolvers(
-        &mut self,
-        horizontal: StyleResolverHorizontal,
-        vertical: StyleResolverVertical,
-    ) {
-        self.style_resolver_horizontal = horizontal;
-        self.style_resolver_vertical = vertical;
-    }
-
     /// get_cell_content returns content without any style changes
     pub fn get_cell_content(&mut self, row: usize, column: usize) -> &str {
         self.cells[row][column].as_str()
-    }
-
-    /// Get_border_mut returns a border for a given cell.
-    pub fn get_border_mut(&mut self, row: usize, column: usize) -> &mut Border {
-        debug_assert!(row < self.count_rows());
-        &mut self.style_mut(&Entity::Cell(row, column)).border
     }
 
     /// Count_rows returns an amount of rows on the grid
@@ -321,130 +400,124 @@ impl Grid {
 
         rows
     }
-}
 
-/// An algorithm which is responsible for style merging on horizontal intersections
-#[derive(Debug, Clone)]
-pub enum StyleResolverHorizontal {
-    LeftToRight,
-    RightToLeft,
-}
-
-/// An algorithm which is responsible for style merging on intersections
-#[derive(Debug, Clone)]
-pub enum StyleResolverVertical {
-    TopToBottom,
-    BottomToTop,
-}
-
-/// Border structure represent all borders of a row
-#[derive(Debug, Clone)]
-pub struct Border {
-    pub top: Option<char>,
-    pub bottom: Option<char>,
-    pub left: Option<char>,
-    pub left_top_corner: Option<char>,
-    pub left_bottom_corner: Option<char>,
-    pub right: Option<char>,
-    pub right_top_corner: Option<char>,
-    pub right_bottom_corner: Option<char>,
-}
-
-impl Border {
-    #[allow(clippy::too_many_arguments)]
-    fn new(
-        top: Option<char>,
-        bottom: Option<char>,
-        right: Option<char>,
-        top_right_corner: Option<char>,
-        bottom_right_corner: Option<char>,
-        left: Option<char>,
-        top_left_corner: Option<char>,
-        bottom_left_corner: Option<char>,
-    ) -> Self {
-        Self {
-            top,
-            bottom,
-            right,
-            left,
-            left_top_corner: top_left_corner,
-            right_top_corner: top_right_corner,
-            left_bottom_corner: bottom_left_corner,
-            right_bottom_corner: bottom_right_corner,
+    fn frame_from_entity(&self, entity: &Entity) -> [GridPosition; 4] {
+        match entity {
+            Entity::Global => [
+                (0, 0),
+                (0, self.count_columns()),
+                (self.count_rows(), 0),
+                (self.count_rows(), self.count_columns()),
+            ],
+            &Entity::Column(c) => [
+                (0, c),
+                (0, c + 1),
+                (self.count_rows(), c),
+                (self.count_rows(), c + 1),
+            ],
+            &Entity::Row(_) => [
+                (0, 0),
+                (0, self.count_columns()),
+                (self.count_rows(), 0),
+                (self.count_rows(), self.count_columns()),
+            ],
+            &Entity::Cell(row, column) => [
+                (row, column),
+                (row, column + 1),
+                (row + 1, column),
+                (row + 1, column + 1),
+            ],
         }
     }
 
-    /// empty returns a border with no walls
-    pub fn empty() -> Self {
-        Self::new(None, None, None, None, None, None, None, None)
+    fn get_split_line(&self, index: usize) -> Vec<BorderLine> {
+        self.borders.get_row(index).unwrap()
     }
 
+    fn get_inner_split_line(&self, index: usize) -> Vec<BorderLine> {
+        self.borders.get_inner_row(index).unwrap()
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct Border {
+    pub top_left_corner: Option<char>,
+    pub top_right_corner: Option<char>,
+    pub bottom_left_corner: Option<char>,
+    pub bottom_right_corner: Option<char>,
+    pub top: Option<char>,
+    pub bottom: Option<char>,
+    pub left: Option<char>,
+    pub right: Option<char>,
+}
+
+impl Border {
     /// full returns a border all walls
     #[allow(clippy::too_many_arguments)]
     pub fn full(
         top: char,
         bottom: char,
-        right: char,
         left: char,
-        top_left_intersection: char,
-        top_right_intersection: char,
-        bottom_left_intersection: char,
-        bottom_right_intersection: char,
-    ) -> Self {
-        Self::new(
-            Some(top),
-            Some(bottom),
-            Some(right),
-            Some(top_right_intersection),
-            Some(bottom_right_intersection),
-            Some(left),
-            Some(top_left_intersection),
-            Some(bottom_left_intersection),
-        )
-    }
-
-    /// right returns a border with a wall on the right
-    pub fn right(
-        mut self,
         right: char,
-        top_right_intersection: char,
-        bottom_right_intersection: char,
+        top_left: char,
+        top_right: char,
+        bottom_left: char,
+        bottom_right: char,
     ) -> Self {
-        self.right = Some(right);
-        self.right_top_corner = Some(top_right_intersection);
-        self.right_bottom_corner = Some(bottom_right_intersection);
+        Self {
+            top: Some(top),
+            bottom: Some(bottom),
+            right: Some(right),
+            top_right_corner: Some(top_right),
+            bottom_right_corner: Some(bottom_right),
+            left: Some(left),
+            bottom_left_corner: Some(bottom_left),
+            top_left_corner: Some(top_left),
+        }
+    }
 
+    pub fn top(mut self, c: char) -> Self {
+        self.top = Some(c);
         self
     }
 
-    /// left returns a border with a wall on the left
-    pub fn left(
-        mut self,
-        left: char,
-        top_left_intersection: char,
-        bottom_left_intersection: char,
-    ) -> Self {
-        self.left = Some(left);
-        self.left_top_corner = Some(top_left_intersection);
-        self.left_bottom_corner = Some(bottom_left_intersection);
-
+    pub fn bottom(mut self, c: char) -> Self {
+        self.bottom = Some(c);
         self
     }
 
-    /// top returns a border with a wall on the top
-    pub fn top(mut self, top: char) -> Self {
-        self.top = Some(top);
+    pub fn left(mut self, c: char) -> Self {
+        self.left = Some(c);
         self
     }
 
-    /// bottom returns a border with a wall on the top
-    pub fn bottom(mut self, bottom: char) -> Self {
-        self.bottom = Some(bottom);
+    pub fn right(mut self, c: char) -> Self {
+        self.right = Some(c);
+        self
+    }
+
+    pub fn top_left_corner(mut self, c: char) -> Self {
+        self.top_left_corner = Some(c);
+        self
+    }
+
+    pub fn top_right_corner(mut self, c: char) -> Self {
+        self.top_right_corner = Some(c);
+        self
+    }
+
+    pub fn bottom_left_corner(mut self, c: char) -> Self {
+        self.bottom_left_corner = Some(c);
+        self
+    }
+
+    pub fn bottom_right_corner(mut self, c: char) -> Self {
+        self.bottom_right_corner = Some(c);
         self
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct BorderLine {
     main: Option<char>,
     connector1: Option<char>,
@@ -469,7 +542,6 @@ pub struct Style {
     indent: Indent,
     alignment_h: AlignmentHorizontal,
     alignment_v: AlignmentVertical,
-    border: Border,
     span: usize,
 }
 
@@ -484,7 +556,6 @@ impl Default for Style {
                 right: 0,
                 top: 0,
             },
-            border: Border::full('-', '-', '|', '|', '+', '+', '+', '+'),
             span: 1,
         }
     }
@@ -617,6 +688,8 @@ impl Settings {
 
 impl std::fmt::Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        eprintln!("{:?}", self.borders);
+
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
 
@@ -632,21 +705,16 @@ impl std::fmt::Display for Grid {
         let widths = __columns_width(&mut cells, &mut styles, count_rows, count_columns);
 
         for row_index in 0..count_rows {
-            let (top_borders, inner_borders, bottom_borders) =
-                collect_row_borders(&styles[row_index]);
-
             if row_index == 0 {
-                build_split_line(
-                    f,
-                    &self.style_resolver_horizontal,
-                    &widths[row_index],
-                    &top_borders,
-                )?;
+                let top_borders = self.get_split_line(row_index);
+                println!("top_borders={:?}", top_borders);
+                build_split_line(f, &widths[row_index], &top_borders)?;
             }
 
+            let inner_borders = self.get_inner_split_line(row_index);
+            println!("inner_borders={:?}", inner_borders);
             build_row(
                 f,
-                &self.style_resolver_horizontal,
                 &cells[row_index],
                 &styles[row_index],
                 &widths[row_index],
@@ -654,12 +722,9 @@ impl std::fmt::Display for Grid {
                 &inner_borders,
             )?;
 
-            build_split_line(
-                f,
-                &self.style_resolver_horizontal,
-                &widths[row_index],
-                &bottom_borders,
-            )?;
+            let bottom_borders = self.get_split_line(row_index + 1);
+            println!("bottom_borders={:?}", bottom_borders);
+            build_split_line(f, &widths[row_index], &bottom_borders)?;
         }
 
         Ok(())
@@ -668,7 +733,6 @@ impl std::fmt::Display for Grid {
 
 fn build_row(
     f: &mut std::fmt::Formatter<'_>,
-    resolver: &StyleResolverHorizontal,
     row: &[Vec<&str>],
     row_styles: &[Style],
     widths: &[usize],
@@ -676,7 +740,7 @@ fn build_row(
     border: &[BorderLine],
 ) -> fmt::Result {
     for _line in 0..height {
-        build_line(f, resolver, border, |f, column| {
+        build_line(f, row.len(), border, |f, column| {
             let cell = &row[column];
             let style = &row_styles[column];
             let width = widths[column];
@@ -742,28 +806,17 @@ fn line(
 
 fn build_line<F: Fn(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
     f: &mut std::fmt::Formatter<'_>,
-    resolver: &StyleResolverHorizontal,
+    length: usize,
     borders: &[BorderLine],
     writer: F,
 ) -> fmt::Result {
-    for (i, border) in borders.iter().enumerate() {
-        match resolver {
-            StyleResolverHorizontal::LeftToRight => {
-                write_option(f, border.connector1)?;
-                writer(f, i)?;
-                if i + 1 == borders.len() {
-                    write_option(f, border.connector2)?;
-                }
-            }
-            StyleResolverHorizontal::RightToLeft => {
-                if i == 0 {
-                    write_option(f, border.connector1)?;
-                }
-
-                writer(f, i)?;
-                write_option(f, border.connector2)?;
-            }
-        };
+    for i in 0 .. length {
+        let border = &borders[i];
+        write_option(f, border.connector1)?;
+        writer(f, i)?;
+        if i + 1 == length {
+            write_option(f, border.connector2)?;
+        }
     }
 
     writeln!(f)?;
@@ -773,7 +826,6 @@ fn build_line<F: Fn(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
 
 fn build_split_line(
     f: &mut std::fmt::Formatter<'_>,
-    resolver: &StyleResolverHorizontal,
     widths: &[usize],
     borders: &[BorderLine],
 ) -> fmt::Result {
@@ -782,7 +834,7 @@ fn build_split_line(
         return Ok(());
     }
 
-    build_line(f, resolver, borders, |f, i| {
+    build_line(f, widths.len(), borders, |f, i| {
         write_option(f, borders[i].main.map(|m| m.to_string().repeat(widths[i])))
     })
 }
@@ -792,35 +844,6 @@ fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) ->
         Some(text) => write!(f, "{}", text),
         None => Ok(()),
     }
-}
-
-fn collect_row_borders(
-    row_styles: &[Style],
-) -> (Vec<BorderLine>, Vec<BorderLine>, Vec<BorderLine>) {
-    let mut top = Vec::with_capacity(row_styles.len());
-    let mut inner = Vec::with_capacity(row_styles.len());
-    let mut bottom = Vec::with_capacity(row_styles.len());
-    for style in row_styles {
-        top.push(BorderLine {
-            main: style.border.top,
-            connector1: style.border.left_top_corner,
-            connector2: style.border.right_top_corner,
-        });
-
-        inner.push(BorderLine {
-            main: None,
-            connector1: style.border.left,
-            connector2: style.border.right,
-        });
-
-        bottom.push(BorderLine {
-            main: style.border.bottom,
-            connector1: style.border.left_bottom_corner,
-            connector2: style.border.right_bottom_corner,
-        });
-    }
-
-    (top, inner, bottom)
 }
 
 #[cfg(not(feature = "color"))]
@@ -1040,54 +1063,299 @@ fn cell_height(cell: &[&str], style: &Style) -> usize {
     content_height + style.indent.top + style.indent.bottom
 }
 
+#[derive(Debug)]
+struct Borders {
+    vertical: HashMap<CellIndex, Line>,
+    horizontal: HashMap<CellIndex, Line>,
+    intersections: HashMap<GridPosition, char>,
+    count_columns: usize,
+    count_rows: usize,
+}
+
+type CellIndex = usize;
+
+type GridPosition = (CellIndex, CellIndex);
+
+// self.len() == count of cells
+type Line = Vec<char>;
+
+impl Borders {
+    fn new(count_rows: usize, count_columns: usize) -> Self {
+        Self {
+            vertical: HashMap::new(),
+            horizontal: HashMap::new(),
+            intersections: HashMap::new(),
+            count_columns,
+            count_rows,
+        }
+    }
+
+    fn get_row(&self, row: usize) -> Result<Vec<BorderLine>, BorderError> {
+        if row > self.count_rows {
+            return Err(BorderError::WrongRowIndex);
+        }
+
+        if !self.horizontal.contains_key(&row) {
+            return Ok(Vec::new());
+        }
+
+        let symbols = self.horizontal.get(&row).unwrap();
+
+        assert_eq!(symbols.len(), self.count_columns);
+
+        let mut line = Vec::new();
+        for &main in symbols {
+            let border = BorderLine {
+                main: Some(main),
+                connector1: None,
+                connector2: None,
+            };
+
+            line.push(border);
+        }
+
+        for column in 0..self.count_columns {
+            let connector1 = self.intersections.get(&(row, column)).cloned();
+            let connector2 = self.intersections.get(&(row, column + 1)).cloned();
+
+            if let Some(connector) = connector1 {
+                line[column].connector1 = Some(connector);
+            }
+
+            if let Some(connector) = connector2 {
+                line[column].connector2 = Some(connector);
+            }
+        }
+
+        Ok(line)
+    }
+
+    fn get_inner_row(&self, row: usize) -> Result<Vec<BorderLine>, BorderError> {
+        if row > self.count_rows {
+            return Err(BorderError::WrongRowIndex);
+        }
+
+        let mut line: Vec<BorderLine> = Vec::new();
+        let mut last_index = None;
+        for column in 0 .. self.count_columns + 1 {
+            let mut border = BorderLine::default();
+
+            if let Some(symbols) = self.vertical.get(&column) {
+                assert_eq!(symbols.len(), self.count_rows);
+
+                let c = symbols[row];
+                border.connector1 = Some(c);
+
+                if let Some(last) = last_index {
+                    let mut last: &mut BorderLine = &mut line[last];
+                    last.connector2 = Some(c);
+                }
+
+                last_index = Some(line.len());
+            } else {
+                last_index = None;
+            }
+
+            line.push(border);
+        }
+
+        Ok(line)
+    }
+
+    fn set_horizontal(
+        &mut self,
+        row: usize,
+        line: &[char],
+        intersections: &[char],
+    ) -> Result<(), BorderError> {
+        println!("{:?} {:?}", row, self.count_rows);
+        if row > self.count_rows {
+            return Err(BorderError::WrongRowIndex);
+        }
+
+        if line.len() != self.count_columns {
+            return Err(BorderError::NotEnoughLineSymbols {
+                expected: self.count_columns,
+                got: line.len(),
+            });
+        }
+
+        let need_intersections = self.need_horizontal_intersections();
+        if intersections.len() != need_intersections {
+            return Err(BorderError::NotEnoughIntersections {
+                expected: need_intersections,
+                got: intersections.len(),
+            });
+        }
+
+        self.horizontal.insert(row, line.to_vec());
+
+        for (&vertical_line_index, &symbol) in self.vertical.keys().zip(intersections) {
+            self.intersections
+                .insert((row, vertical_line_index), symbol);
+        }
+
+        Ok(())
+    }
+
+    fn need_horizontal_intersections(&self) -> usize {
+        self.vertical.len() + 1
+    }
+
+    fn need_vertical_intersections(&self) -> usize {
+        self.horizontal.len() + 1
+    }
+
+    fn set_vertical(
+        &mut self,
+        column: usize,
+        line: &[char],
+        intersections: &[char],
+    ) -> Result<(), BorderError> {
+        if column > self.count_columns {
+            return Err(BorderError::WrongRowIndex);
+        }
+
+        if line.len() != self.count_rows {
+            return Err(BorderError::NotEnoughLineSymbols {
+                expected: self.count_rows,
+                got: line.len(),
+            });
+        }
+
+        let need_intersections = self.need_vertical_intersections();
+        if intersections.len() != need_intersections {
+            return Err(BorderError::NotEnoughIntersections {
+                expected: need_intersections,
+                got: intersections.len(),
+            });
+        }
+
+        self.vertical.insert(column, line.to_vec());
+
+        for (&row_index, &symbol) in self.horizontal.keys().zip(intersections) {
+            self.intersections.insert((row_index, column), symbol);
+        }
+
+        Ok(())
+    }
+
+    fn set_intersection(&mut self, pos: GridPosition, c: char) -> Result<(), BorderError> {
+        let (row, column) = pos;
+
+        if row > self.count_rows || !self.horizontal.contains_key(&row) {
+            return Err(BorderError::WrongRowIndex);
+        }
+        if column > self.count_columns || !self.vertical.contains_key(&column) {
+            return Err(BorderError::WrongColumnIndex);
+        }
+
+        match self.intersections.get_mut(&pos) {
+            Some(old) => {
+                *old = c;
+                Ok(())
+            }
+            None => Err(BorderError::WrongIntersectionIndex),
+        }
+    }
+
+    fn set_row_symbol(&mut self, (row, column): GridPosition, c: char) -> Result<(), BorderError> {
+        if row > self.count_rows || !self.horizontal.contains_key(&row) {
+            return Err(BorderError::WrongRowIndex);
+        }
+        if column > self.count_columns || !self.vertical.contains_key(&column) {
+            return Err(BorderError::WrongColumnIndex);
+        }
+
+        let chars = self.horizontal.get_mut(&row).unwrap();
+        if column > chars.len() {
+            return Err(BorderError::WrongColumnIndex);
+        }
+
+        *chars.get_mut(column).unwrap() = c;
+
+        Ok(())
+    }
+
+    fn set_column_symbol(
+        &mut self,
+        (row, column): GridPosition,
+        c: char,
+    ) -> Result<(), BorderError> {
+        if row > self.count_rows || !self.horizontal.contains_key(&row) {
+            return Err(BorderError::WrongRowIndex);
+        }
+        if column > self.count_columns || !self.vertical.contains_key(&column) {
+            return Err(BorderError::WrongColumnIndex);
+        }
+
+        let chars = self.vertical.get_mut(&column).unwrap();
+        if row > chars.len() {
+            return Err(BorderError::WrongColumnIndex);
+        }
+
+        *chars.get_mut(row).unwrap() = c;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone)]
+enum BorderError {
+    WrongIntersectionIndex,
+    WrongRowIndex,
+    WrongColumnIndex,
+    NotEnoughLineSymbols { expected: usize, got: usize },
+    NotEnoughIntersections { expected: usize, got: usize },
+}
+
+// fixme: make Style be a thing like this
+// HashMap<(Column, Column), Line>
+// HashMap<(Row, Row), Line>
+//
+// +++++┬──────────────┬───────────────────────────┐
+// + id │ destribution │           link            │
+// +++++┼──────────────┼───────────────────────────┤
+// │ 0  │    Fedora    │  https://getfedora.org/   │
+// │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+// │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+// └────┴──────────────┴───────────────────────────┘
+//
+// intersection, border, intersection
+// border,               intersection, border
+// intersection, border, intersection
+// border,
+// intersection
+
+// struct BorderGrid {
+//     matrix: Vec<Vec<char>>,
+//     size_row: usize,
+//     size_column: usize,
+// }
+
+// impl BorderGrid {
+//     fn new(row: usize, column: usize) -> Self {
+//         Self {
+//             matrix: Vec::new(),
+//         }
+//     }
+// }
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn build_line_test() {
-        struct Foo(StyleResolverHorizontal);
-
-        impl fmt::Display for Foo {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                let styles = [
-                    BorderLine {
-                        connector1: Some('+'),
-                        connector2: Some('='),
-                        main: Some('-'),
-                    },
-                    BorderLine {
-                        connector1: Some('x'),
-                        connector2: Some('y'),
-                        main: Some('u'),
-                    },
-                    BorderLine {
-                        connector1: Some('('),
-                        connector2: Some(')'),
-                        main: Some('*'),
-                    },
-                ];
-                build_line(f, &self.0, &styles, |f, _| write!(f, "00000"))
-            }
-        }
-
-        assert_eq!(
-            Foo(StyleResolverHorizontal::LeftToRight).to_string(),
-            "+00000x00000(00000)\n"
-        );
-        assert_eq!(
-            Foo(StyleResolverHorizontal::RightToLeft).to_string(),
-            "+00000=00000y00000)\n"
-        );
-    }
-
-    #[test]
     fn grid_2x2_change_cell_border_test() {
         let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
         grid.set(&Entity::Global, Settings::new().text("asd"));
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
         grid.set(
             &Entity::Cell(0, 1),
-            Settings::new().border(Border::full('*', '^', '#', '@', '~', '!', '%', '&')),
+            Settings::new()
+                .border(Border::full('*', '^', '@', '#', '~', '!', '%', '&')),
         );
         let str = grid.to_string();
         assert_eq!(
@@ -1103,10 +1371,15 @@ mod tests {
     #[test]
     fn grid_1x1_test() {
         let mut grid = Grid::new(1, 1);
-        grid.set(&Entity::Cell(0, 0), Settings::new().text("asd"));
-        let str = grid.to_string();
+        grid.add_split_grid();
+        grid.set(
+            &Entity::Cell(0, 0),
+            Settings::new()
+                .text("asd")
+                .border(Border::full('-', '-', '|', '|', '+', '+', '+', '+')),
+        );
         assert_eq!(
-            str,
+            grid.to_string(),
             "+---+\n\
              |asd|\n\
              +---+\n"
@@ -1117,6 +1390,8 @@ mod tests {
     fn grid_2x2_test() {
         let mut grid = Grid::new(2, 2);
         grid.set(&Entity::Global, Settings::new().text("asd"));
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
         let str = grid.to_string();
         assert_eq!(
             str,
@@ -1131,6 +1406,8 @@ mod tests {
     #[test]
     fn grid_2x2_entity_settings_test() {
         let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
         grid.set(&Entity::Global, Settings::new().text("asd"));
         grid.set(&Entity::Column(0), Settings::new().text("zxc"));
         grid.set(&Entity::Row(0), Settings::new().text("qwe"));
@@ -1149,6 +1426,9 @@ mod tests {
     #[test]
     fn grid_2x2_alignment_test() {
         let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
         grid.set(&Entity::Global, Settings::new().text("asd    "));
         grid.set(
             &Entity::Column(0),
@@ -1173,6 +1453,9 @@ mod tests {
     #[test]
     fn grid_2x2_indent_test() {
         let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
         grid.set(
             &Entity::Global,
             Settings::new().text("asd").indent(1, 1, 1, 1),
@@ -1197,6 +1480,9 @@ mod tests {
     #[test]
     fn grid_2x2_vertical_resize_test() {
         let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
         grid.set(&Entity::Global, Settings::new().text("asd"));
         grid.set(&Entity::Cell(1, 1), Settings::new().text("asd     "));
         let str = grid.to_string();
@@ -1215,58 +1501,82 @@ mod tests {
         let mut grid = Grid::new(2, 2);
         grid.set(&Entity::Global, Settings::new().text("asd"));
 
-        {
-            grid.set_style_resolvers(
-                StyleResolverHorizontal::RightToLeft,
-                StyleResolverVertical::BottomToTop,
-            );
-            grid.style_mut(&Entity::Global).border = Border::empty();
-            grid.style_mut(&Entity::Cell(0, 0)).border = Border::empty().right(' ', ' ', ' ');
-            grid.style_mut(&Entity::Cell(1, 0)).border = Border::empty().right(' ', ' ', ' ');
+        grid.add_vertical_split(1);
 
-            let str = grid.to_string();
-            assert_eq!(
-                str,
-                "asd asd\n\
-                 asd asd\n"
-            )
-        }
+        assert_eq!(
+            grid.to_string(),
+            "asd asd\n\
+             asd asd\n"
+        );
 
-        {
-            grid.set_style_resolvers(
-                StyleResolverHorizontal::LeftToRight,
-                StyleResolverVertical::BottomToTop,
-            );
-            grid.style_mut(&Entity::Global).border = Border::empty();
-            grid.style_mut(&Entity::Cell(0, 1)).border = Border::empty().left(' ', ' ', ' ');
-            grid.style_mut(&Entity::Cell(1, 1)).border = Border::empty().left(' ', ' ', ' ');
+        grid.add_horizontal_split(1);
 
-            let str = grid.to_string();
-            assert_eq!(
-                str,
-                "asd asd\n\
-                 asd asd\n"
-            )
-        }
+        assert_eq!(
+            grid.to_string(),
+            concat!(
+                "asd asd\n",
+                "       \n",
+                "asd asd\n",
+            ),
+        );
     }
 
     #[test]
     fn grid_2x2_custom_border_test() {
         let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
         grid.set(&Entity::Global, Settings::new().text("asd"));
-        grid.style_mut(&Entity::Cell(0, 0)).border =
-            Border::empty().top('*').bottom('-').left('$', ' ', '+');
-        grid.style_mut(&Entity::Cell(0, 1)).border = Border::empty()
-            .top('*')
-            .bottom('-')
-            .left('@', ' ', '+')
-            .right('%', ' ', '+');
-        grid.style_mut(&Entity::Cell(1, 0)).border =
-            Border::empty().bottom('*').left('#', '+', '\u{0020}');
-        grid.style_mut(&Entity::Cell(1, 1)).border = Border::empty()
-            .bottom('*')
-            .left('^', '+', ' ')
-            .right('!', '+', ' ');
+        grid.add_split_grid();
+        grid.set(
+            &Entity::Cell(0, 0),
+            Settings::new().border(
+                Border::default()
+                    .top('*')
+                    .bottom('-')
+                    .left('$')
+                    .top_left_corner(' ')
+                    .bottom_left_corner('+'),
+            ),
+        );
+        grid.set(
+            &Entity::Cell(0, 1),
+            Settings::new().border(
+                Border::default()
+                    .top('*')
+                    .bottom('-')
+                    .left('@')
+                    .top_left_corner(' ')
+                    .bottom_left_corner('+')
+                    .right('%')
+                    .top_right_corner(' ')
+                    .bottom_right_corner('+'),
+            ),
+        );
+        grid.set(
+            &Entity::Cell(1, 0),
+            Settings::new().border(
+                Border::default()
+                    .bottom('*')
+                    .left('#')
+                    .top_left_corner('+')
+                    .bottom_left_corner('\u{0020}'),
+            ),
+        );
+        grid.set(
+            &Entity::Cell(1, 1),
+            Settings::new().border(
+                Border::default()
+                    .bottom('*')
+                    .left('^')
+                    .top_left_corner('+')
+                    .bottom_left_corner(' ')
+                    .right('!')
+                    .top_right_corner('+')
+                    .bottom_right_corner(' '),
+            ),
+        );
 
         let str = grid.to_string();
         assert_eq!(
@@ -1282,6 +1592,8 @@ mod tests {
     #[test]
     fn grid_2x2_remove_row_test() {
         let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
         grid.set(&Entity::Global, Settings::new().text("asd"));
         grid.remove_row(0);
         let str = grid.to_string();
@@ -1296,6 +1608,9 @@ mod tests {
     #[test]
     fn grid_2x2_remove_column_test() {
         let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
         grid.set(&Entity::Global, Settings::new().text("asd"));
         grid.remove_column(0);
         let str = grid.to_string();
@@ -1312,6 +1627,9 @@ mod tests {
     #[test]
     fn grid_3x2_test() {
         let mut grid = Grid::new(3, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
         grid.set(&Entity::Global, Settings::new().text("asd"));
         let str = grid.to_string();
         assert_eq!(
@@ -1330,6 +1648,9 @@ mod tests {
     #[ignore = "I am not sure what is the right behaiviour here"]
     fn hieroglyph_handling() {
         let mut grid = Grid::new(1, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
         grid.set(&Entity::Cell(0, 0), Settings::new().text("哈哈"));
         grid.set(&Entity::Cell(0, 1), Settings::new().text("哈"));
         let s = grid.to_string();
@@ -1345,6 +1666,9 @@ mod tests {
     #[ignore = "I am not sure what is the right behaiviour here"]
     fn hieroglyph_multiline_handling() {
         let mut grid = Grid::new(1, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
         grid.set(&Entity::Cell(0, 0), Settings::new().text("哈哈"));
         grid.set(&Entity::Cell(0, 1), Settings::new().text("哈\n哈"));
         let s = grid.to_string();
@@ -1418,6 +1742,9 @@ mod tests {
     #[test]
     fn grid_2x2_span_test() {
         let mut grid = Grid::new(2, 2);
+        grid.add_split_grid();
+        add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
         grid.set(&Entity::Global, Settings::new().text("asd"));
         grid.set(&Entity::Cell(0, 0), Settings::new().text("123").span(2));
         let str = grid.to_string();
@@ -1430,4 +1757,23 @@ mod tests {
              +---+---+\n"
         )
     }
+
+    fn add_cell_borders(grid: &mut Grid, border: Border) {
+        for row in 0 .. grid.count_rows() {
+            for column in 0 .. grid.count_columns() {
+                grid.set(&Entity::Cell(row, column), Settings::new().border(border.clone()));
+            }
+        }
+    }
+
+    const DEFAULT_CELL_STYLE: Border = Border {
+        top: Some('-'),
+        bottom: Some('-'),
+        left: Some('|'),
+        right: Some('|'),
+        top_right_corner: Some('+'),
+        bottom_left_corner: Some('+'),
+        top_left_corner: Some('+'),
+        bottom_right_corner: Some('+'),
+    };
 }

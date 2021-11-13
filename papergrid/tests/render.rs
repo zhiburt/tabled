@@ -10,11 +10,14 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
+use papergrid::{AlignmentHorizontal, AlignmentVertical, Border, Entity, Grid, Settings};
 
 #[test]
 fn render() {
     let mut grid = Grid::new(2, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
     grid.set(&Entity::Cell(0, 1), Settings::new().text("0-1"));
     grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
@@ -34,6 +37,9 @@ fn render() {
 #[test]
 fn render_multilane() {
     let mut grid = Grid::new(2, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(&Entity::Cell(0, 0), Settings::new().text("left\ncell"));
     grid.set(&Entity::Cell(0, 1), Settings::new().text("right one"));
     grid.set(
@@ -66,6 +72,9 @@ fn render_multilane() {
 #[test]
 fn render_multilane_alignment() {
     let mut grid = Grid::new(2, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(
         &Entity::Cell(0, 0),
         Settings::new()
@@ -105,6 +114,9 @@ fn render_multilane_alignment() {
 #[test]
 fn render_multilane_vertical_alignment() {
     let mut grid = Grid::new(2, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(
         &Entity::Cell(0, 0),
         Settings::new()
@@ -146,6 +158,9 @@ fn render_multilane_vertical_alignment() {
 #[test]
 fn render_one_line() {
     let mut grid = Grid::new(1, 1);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(&Entity::Cell(0, 0), Settings::new().text("one line"));
 
     let expected = concat!("+--------+\n", "|one line|\n", "+--------+\n",);
@@ -156,6 +171,9 @@ fn render_one_line() {
 #[test]
 fn render_not_quadratic() {
     let mut grid = Grid::new(1, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(&Entity::Cell(0, 0), Settings::new().text("hello"));
     grid.set(&Entity::Cell(0, 1), Settings::new().text("world"));
 
@@ -176,6 +194,9 @@ fn render_empty() {
 #[test]
 fn render_empty_cell() {
     let mut grid = Grid::new(2, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
     grid.set(&Entity::Cell(0, 1), Settings::new().text(""));
     grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
@@ -195,6 +216,9 @@ fn render_empty_cell() {
 #[test]
 fn render_row_span() {
     let mut grid = Grid::new(2, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(
         &Entity::Cell(0, 0),
         Settings::new()
@@ -220,6 +244,9 @@ fn render_row_span() {
 #[test]
 fn render_miltiline_span() {
     let mut grid = Grid::new(2, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(
         &Entity::Cell(0, 0),
         Settings::new()
@@ -246,6 +273,9 @@ fn render_miltiline_span() {
 #[test]
 fn render_row_span_multilane() {
     let mut grid = Grid::new(4, 3);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(
         &Entity::Cell(0, 0),
         Settings::new().text("first line").span(2),
@@ -282,6 +312,9 @@ fn render_row_span_multilane() {
 #[test]
 fn render_row_span_with_horizontal_ident() {
     let mut grid = Grid::new(3, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
     grid.set(
         &Entity::Cell(1, 0),
@@ -311,6 +344,9 @@ fn render_row_span_with_horizontal_ident() {
 #[test]
 fn render_row_span_with_odd_length() {
     let mut grid = Grid::new(2, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(&Entity::Cell(0, 0), Settings::new().text("3   ").span(2));
     grid.set(&Entity::Cell(1, 0), Settings::new().text("2"));
     grid.set(&Entity::Cell(1, 1), Settings::new().text("4"));
@@ -323,6 +359,9 @@ fn render_row_span_with_odd_length() {
 #[test]
 fn render_only_row_spaned() {
     let mut grid = Grid::new(3, 2);
+    grid.add_split_grid();
+    add_cell_borders(&mut grid, DEFAULT_CELL_STYLE.clone());
+
     grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
     grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0").span(2));
     grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0").span(2));
@@ -573,3 +612,22 @@ fn render_only_row_spaned() {
 
 //     assert_eq!(expected, grid.to_string());
 // }
+
+fn add_cell_borders(grid: &mut Grid, border: Border) {
+    for row in 0 .. grid.count_rows() {
+        for column in 0 .. grid.count_columns() {
+            grid.set(&Entity::Cell(row, column), Settings::new().border(border.clone()));
+        }
+    }
+}
+
+const DEFAULT_CELL_STYLE: Border = Border {
+    top: Some('-'),
+    bottom: Some('-'),
+    left: Some('|'),
+    right: Some('|'),
+    top_right_corner: Some('+'),
+    bottom_left_corner: Some('+'),
+    top_left_corner: Some('+'),
+    bottom_right_corner: Some('+'),
+};
