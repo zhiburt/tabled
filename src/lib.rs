@@ -245,7 +245,8 @@ impl Table {
     pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
         let grid = build_grid(iter);
 
-        Self { grid }
+        let table = Self { grid };
+        table.with(Style::default())
     }
 
     /// With is a generic function which applies options to the [Table].

@@ -28,16 +28,20 @@ fn disable_rows() {
     ];
 
     let expected = concat!(
-        " id | destribution | link                     \n",
-        "----+--------------+--------------------------\n",
-        " 3  | Endeavouros  | https://endeavouros.com/ \n",
+        "+----+--------------+--------------------------+\n",
+        "| id | destribution | link                     |\n",
+        "+----+--------------+--------------------------+\n",
+        "| 3  | Endeavouros  | https://endeavouros.com/ |\n",
+        "+----+--------------+--------------------------+\n",
     );
 
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(Style::default())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Disable::Row(1..=2))
         .to_string();
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }
@@ -63,6 +67,7 @@ fn disable_header() {
     ];
 
     let expected = concat!(
+        "---+-------------+---------------------------\n",
         " 0 | Fedora      | https://getfedora.org/    \n",
         " 2 | OpenSUSE    | https://www.opensuse.org/ \n",
         " 3 | Endeavouros | https://endeavouros.com/  \n",

@@ -47,6 +47,8 @@ fn bottom_panel() {
         "              Linux Distributions              |\n",
     );
 
+    println!("{}", table);
+
     assert_eq!(table, expected);
 }
 
@@ -66,6 +68,8 @@ fn inner_panel() {
         " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
         " 3  | Endeavouros  | https://endeavouros.com/  \n",
     );
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }

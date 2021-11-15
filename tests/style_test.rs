@@ -1,3 +1,4 @@
+use papergrid::{Border, Entity};
 use tabled::style::Line;
 use tabled::{Style, Table, Tabled};
 
@@ -326,6 +327,53 @@ fn custom_style() {
                 .split(Some(Line::short('`', '\'')))
                 .inner('\''),
         )
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn style_highlingting() {
+    let data = vec![
+        Linux {
+            id: 0,
+            destribution: "Fedora",
+            link: "https://getfedora.org/",
+        },
+        Linux {
+            id: 2,
+            destribution: "OpenSUSE",
+            link: "https://www.opensuse.org/",
+        },
+        Linux {
+            id: 3,
+            destribution: "Endeavouros",
+            link: "https://endeavouros.com/",
+        },
+    ];
+
+    let expected = concat!(
+        "++++++──────────────┬───────────────────────────┐\n",
+        "+ id + destribution │           link            │\n",
+        "+++++****************───────────────────────────┤\n",
+        "│ 0  *    Fedora    *  https://getfedora.org/   │\n",
+        "├────****************───────────────────────────┤\n",
+        "│ 2  │   OpenSUSE   │ https://www.opensuse.org/ │\n",
+        "├────┼──────────────┼───────────────────────────┤\n",
+        "│ 3  │ Endeavouros  │ https://endeavouros.com/  │\n",
+        "└────┴──────────────┴───────────────────────────┘\n",
+    );
+
+    let table = Table::new(&data)
+        .with(Style::pseudo().highlight(
+            Entity::Cell(0, 0),
+            Border::full('+', '+', '+', '+', '+', '+', '+', '+'),
+        ).highlight(
+            Entity::Cell(1, 1),
+            Border::full('*', '*', '*', '*', '*', '*', '*', '*'),
+        ))
         .to_string();
 
     println!("{}", table);
