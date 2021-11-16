@@ -1221,7 +1221,7 @@ impl Borders {
                 border.connector1 = Some(connector);
             }
 
-            if let Some(connector) = self.intersections.get(&(row, column+1)).cloned() {
+            if let Some(connector) = self.intersections.get(&(row, column + 1)).cloned() {
                 border.connector2 = Some(connector);
             }
         }
