@@ -275,38 +275,3 @@ fn grid_2x2_custom_border_test() {
              \u{0020}*** *** \n"
     )
 }
-
-#[test]
-fn grid_2x2_remove_row_test() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-    grid.set(&Entity::Global, Settings::new().text("asd"));
-    grid.remove_row(0);
-    let str = grid.to_string();
-    assert_eq!(
-        str,
-        "+---+---+\n\
-             |asd|asd|\n\
-             +---+---+\n"
-    )
-}
-
-#[test]
-fn grid_2x2_remove_column_test() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    grid.set(&Entity::Global, Settings::new().text("asd"));
-    grid.remove_column(0);
-
-    println!("{}", grid.to_string());
-
-    assert_eq!(
-        grid.to_string(),
-        "+---+\n\
-             |asd|\n\
-             +---+\n\
-             |asd|\n\
-             +---+\n"
-    )
-}
