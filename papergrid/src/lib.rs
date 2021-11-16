@@ -731,7 +731,6 @@ impl Settings {
 
 impl std::fmt::Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        println!("{:?}", self.borders);
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
 
@@ -748,8 +747,8 @@ impl std::fmt::Display for Grid {
 
         for row in 0..count_rows {
             let top_border = self.get_split_line(row);
-            let bottom_border = self.get_split_line(row + 1);
             let inner_border = self.get_inner_split_line(row);
+            let bottom_border = self.get_split_line(row + 1);
 
             build_row(
                 f,
@@ -776,10 +775,10 @@ fn build_row(
     (top_borders, inner_borders, bottom_borders): (&[BorderLine], &[BorderLine], &[BorderLine]),
 ) -> fmt::Result {
     if is_first_row {
-        build_split_line(f, &cell_widths, top_borders)?;
+        build_split_line(f, cell_widths, top_borders)?;
     }
 
-    build_row_inners(
+    build_row_internals(
         f,
         cell_contents,
         cell_styles,
@@ -788,11 +787,11 @@ fn build_row(
         inner_borders,
     )?;
 
-    build_split_line(f, &cell_widths, &bottom_borders)?;
+    build_split_line(f, cell_widths, bottom_borders)?;
     Ok(())
 }
 
-fn build_row_inners(
+fn build_row_internals(
     f: &mut std::fmt::Formatter<'_>,
     row: &[Vec<&str>],
     row_styles: &[Style],
@@ -800,36 +799,51 @@ fn build_row_inners(
     height: usize,
     border: &[BorderLine],
 ) -> fmt::Result {
-    for _line in 0..height {
+    for line_index in 0..height {
         build_line(f, row.len(), border, |f, column| {
-            let cell = &row[column];
-            let style = &row_styles[column];
-            let width = widths[column];
-
-            let top_indent = top_indent(cell, style, height);
-            if top_indent > _line {
-                return empty_line(f, width);
-            }
-
-            let cell_line_index = _line - top_indent;
-            let is_cell_has_this_line = cell.len() > cell_line_index;
-            if !is_cell_has_this_line {
-                return empty_line(f, width);
-            }
-
-            let line_text = cell[cell_line_index];
-            line(
+            build_row_internal_line(
                 f,
-                line_text,
-                width,
-                style.indent.left,
-                style.indent.right,
-                style.alignment_h,
+                line_index,
+                &row[column],
+                &row_styles[column],
+                widths[column],
+                height,
             )
         })?;
     }
 
     Ok(())
+}
+
+fn build_row_internal_line(
+    f: &mut std::fmt::Formatter<'_>,
+    line_index: usize,
+    cell: &[&str],
+    style: &Style,
+    width: usize,
+    height: usize,
+) -> fmt::Result {
+    let top_indent = top_indent(cell, style, height);
+    if top_indent > line_index {
+        return empty_line(f, width);
+    }
+
+    let cell_line_index = line_index - top_indent;
+    let cell_has_this_line = cell.len() > cell_line_index;
+    // happen when other cells have bigger height
+    if !cell_has_this_line {
+        return empty_line(f, width);
+    }
+
+    let line_text = cell[cell_line_index];
+    line(
+        f,
+        line_text,
+        width,
+        style.indent.left,
+        style.indent.right,
+        style.alignment_h,
+    )
 }
 
 fn top_indent(cell: &[&str], style: &Style, height: usize) -> usize {
