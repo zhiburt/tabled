@@ -746,24 +746,20 @@ impl std::fmt::Display for Grid {
         let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
         let widths = __columns_width(&mut cells, &mut styles, count_rows, count_columns);
 
-        for row_index in 0..count_rows {
-            if row_index == 0 {
-                let top_borders = self.get_split_line(row_index);
-                build_split_line(f, &widths[row_index], &top_borders)?;
-            }
+        for row in 0..count_rows {
+            let top_border = self.get_split_line(row);
+            let bottom_border = self.get_split_line(row + 1);
+            let inner_border = self.get_inner_split_line(row);
 
-            let inner_borders = self.get_inner_split_line(row_index);
             build_row(
                 f,
-                &cells[row_index],
-                &styles[row_index],
-                &widths[row_index],
-                row_heights[row_index],
-                &inner_borders,
+                &cells[row],
+                &styles[row],
+                &widths[row],
+                row_heights[row],
+                row == 0,
+                (&top_border, &inner_border, &bottom_border),
             )?;
-
-            let bottom_borders = self.get_split_line(row_index + 1);
-            build_split_line(f, &widths[row_index], &bottom_borders)?;
         }
 
         Ok(())
@@ -771,6 +767,32 @@ impl std::fmt::Display for Grid {
 }
 
 fn build_row(
+    f: &mut std::fmt::Formatter<'_>,
+    cell_contents: &[Vec<&str>],
+    cell_styles: &[Style],
+    cell_widths: &[usize],
+    height: usize,
+    is_first_row: bool,
+    (top_borders, inner_borders, bottom_borders): (&[BorderLine], &[BorderLine], &[BorderLine]),
+) -> fmt::Result {
+    if is_first_row {
+        build_split_line(f, &cell_widths, top_borders)?;
+    }
+
+    build_row_inners(
+        f,
+        cell_contents,
+        cell_styles,
+        cell_widths,
+        height,
+        inner_borders,
+    )?;
+
+    build_split_line(f, &cell_widths, &bottom_borders)?;
+    Ok(())
+}
+
+fn build_row_inners(
     f: &mut std::fmt::Formatter<'_>,
     row: &[Vec<&str>],
     row_styles: &[Style],
