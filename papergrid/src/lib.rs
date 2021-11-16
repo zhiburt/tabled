@@ -1128,10 +1128,6 @@ impl Borders {
         }
     }
 
-    fn inc_count_columns(&mut self) {
-        self.count_columns += 1;
-    }
-
     fn inc_count_rows(&mut self) {
         self.count_rows += 1;
     }
@@ -1220,16 +1216,13 @@ impl Borders {
             line.push(border);
         }
 
-        for column in 0..self.count_columns {
-            let connector1 = self.intersections.get(&(row, column)).cloned();
-            let connector2 = self.intersections.get(&(row, column + 1)).cloned();
-
-            if let Some(connector) = connector1 {
-                line[column].connector1 = Some(connector);
+        for (column, border) in line.iter_mut().enumerate() {
+            if let Some(connector) = self.intersections.get(&(row, column)).cloned() {
+                border.connector1 = Some(connector);
             }
 
-            if let Some(connector) = connector2 {
-                line[column].connector2 = Some(connector);
+            if let Some(connector) = self.intersections.get(&(row, column+1)).cloned() {
+                border.connector2 = Some(connector);
             }
         }
 

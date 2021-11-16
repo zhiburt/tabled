@@ -2,7 +2,6 @@
 use crate::Table;
 use crate::TableOption;
 use papergrid::{Border, Entity, Grid, Settings};
-use std::collections::HashMap;
 
 /// Style is responsible for a look of a [Table].
 ///

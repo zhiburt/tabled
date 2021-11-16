@@ -11,7 +11,7 @@
 // copies or substantial portions of the Software.
 
 use papergrid::{
-    AlignmentHorizontal, AlignmentVertical, Border, Entity, Grid, Settings, DEFAULT_CELL_STYLE,
+    AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings, DEFAULT_CELL_STYLE,
 };
 
 #[test]
