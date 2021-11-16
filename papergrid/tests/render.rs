@@ -10,7 +10,9 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Border, DEFAULT_CELL_STYLE, Entity, Grid, Settings};
+use papergrid::{
+    AlignmentHorizontal, AlignmentVertical, Border, Entity, Grid, Settings, DEFAULT_CELL_STYLE,
+};
 
 #[test]
 fn render() {

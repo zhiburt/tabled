@@ -5,7 +5,7 @@
 //!     use papergrid::{Grid, Entity, Settings, DEFAULT_CELL_STYLE};
 //!     let mut grid = Grid::new(2, 2);
 //!     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-//! 
+//!
 //!     grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
 //!     grid.set(&Entity::Cell(0, 1), Settings::new().text("0-1"));
 //!     grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
@@ -143,11 +143,11 @@ impl Grid {
     }
 
     pub fn add_split_grid(&mut self) {
-        for row in 0..self.count_rows()+1 {
+        for row in 0..self.count_rows() + 1 {
             self.add_horizontal_split(row)
         }
 
-        for column in 0..self.count_columns()+1 {
+        for column in 0..self.count_columns() + 1 {
             self.add_vertical_split(column)
         }
     }
@@ -471,9 +471,12 @@ impl Grid {
 
     pub fn set_cell_borders(&mut self, border: Border) {
         self.add_split_grid();
-        for row in 0 .. self.count_rows() {
-            for column in 0 .. self.count_columns() {
-                self.set(&Entity::Cell(row, column), Settings::new().border(border.clone()));
+        for row in 0..self.count_rows() {
+            for column in 0..self.count_columns() {
+                self.set(
+                    &Entity::Cell(row, column),
+                    Settings::new().border(border.clone()),
+                );
             }
         }
     }
@@ -846,7 +849,7 @@ fn build_line<F: Fn(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
     borders: &[BorderLine],
     writer: F,
 ) -> fmt::Result {
-    for i in 0 .. length {
+    for i in 0..length {
         let border = &borders[i];
         write_option(f, border.connector1)?;
         writer(f, i)?;
@@ -1125,7 +1128,7 @@ impl Borders {
             count_rows,
         }
     }
-    
+
     fn inc_count_columns(&mut self) {
         self.count_columns += 1;
     }
@@ -1136,8 +1139,8 @@ impl Borders {
 
     fn remove_row(&mut self, row: usize) {
         self.horizontal.remove(&row);
-        
-        for column in 0 .. self.count_columns {
+
+        for column in 0..self.count_columns {
             self.intersections.remove(&(row, column));
         }
 
@@ -1145,18 +1148,18 @@ impl Borders {
             chars.remove(row);
         }
 
-        for row in row+1 ..= self.count_rows {
+        for row in row + 1..=self.count_rows {
             if self.horizontal.contains_key(&row) {
                 let chars = self.horizontal.remove(&row).unwrap();
-                self.horizontal.insert(row-1, chars);
+                self.horizontal.insert(row - 1, chars);
             }
         }
 
-        for row in row+1 ..= self.count_rows {
-            for column in 0 ..= self.count_columns {
+        for row in row + 1..=self.count_rows {
+            for column in 0..=self.count_columns {
                 if self.intersections.contains_key(&(row, column)) {
                     let chars = self.intersections.remove(&(row, column)).unwrap();
-                    self.intersections.insert((row-1, column), chars);
+                    self.intersections.insert((row - 1, column), chars);
                 }
             }
         }
@@ -1166,8 +1169,8 @@ impl Borders {
 
     fn remove_column(&mut self, column: usize) {
         self.vertical.remove(&column);
-        
-        for row in 0 .. self.count_rows {
+
+        for row in 0..self.count_rows {
             self.intersections.remove(&(row, column));
         }
 
@@ -1175,18 +1178,18 @@ impl Borders {
             chars.remove(column);
         }
 
-        for column in column+1 ..= self.count_columns {
+        for column in column + 1..=self.count_columns {
             if self.vertical.contains_key(&column) {
                 let chars = self.vertical.remove(&column).unwrap();
-                self.vertical.insert(column-1, chars);
+                self.vertical.insert(column - 1, chars);
             }
         }
 
-        for column in column+1 ..= self.count_columns {
-            for row in 0 ..= self.count_rows {
+        for column in column + 1..=self.count_columns {
+            for row in 0..=self.count_rows {
                 if self.intersections.contains_key(&(row, column)) {
                     let chars = self.intersections.remove(&(row, column)).unwrap();
-                    self.intersections.insert((row, column-1), chars);
+                    self.intersections.insert((row, column - 1), chars);
                 }
             }
         }
@@ -1241,7 +1244,7 @@ impl Borders {
 
         let mut line: Vec<BorderLine> = Vec::new();
         let mut last_index = None;
-        for column in 0 .. self.count_columns + 1 {
+        for column in 0..self.count_columns + 1 {
             let mut border = BorderLine::default();
 
             if let Some(symbols) = self.vertical.get(&column) {
@@ -1272,8 +1275,12 @@ impl Borders {
             return None;
         }
 
-        let [top_left, top_right, bottom_left, bottom_right] = entity_corners(&Entity::Cell(row, column), self.count_rows, self.count_columns);
-    
+        let [top_left, top_right, bottom_left, bottom_right] = entity_corners(
+            &Entity::Cell(row, column),
+            self.count_rows,
+            self.count_columns,
+        );
+
         let mut border = Border::default();
 
         if let Some(top_line) = self.horizontal.get(&top_left.0) {
@@ -1363,11 +1370,11 @@ impl Borders {
 
     fn is_there_vertical(&self, column: usize) -> bool {
         self.vertical.contains_key(&column)
-    } 
+    }
 
     fn is_there_horizontal(&self, row: usize) -> bool {
         self.horizontal.contains_key(&row)
-    } 
+    }
 
     fn set_vertical(
         &mut self,
@@ -1472,9 +1479,8 @@ enum BorderError {
     NotEnoughIntersections { expected: usize, got: usize },
 }
 
-
 fn entity_corners(entity: &Entity, count_rows: usize, count_columns: usize) -> [GridPosition; 4] {
-    // why we bound to self.count_columns() && self.count_rows() but not the one +1 
+    // why we bound to self.count_columns() && self.count_rows() but not the one +1
     // because we do this operation later
     //
     // todo: refactoring
@@ -1485,17 +1491,12 @@ fn entity_corners(entity: &Entity, count_rows: usize, count_columns: usize) -> [
             (count_rows, 0),
             (count_rows, count_columns),
         ],
-        &Entity::Column(c) => [
-            (0, c),
-            (0, c + 1),
-            (count_rows, c),
-            (count_rows, c + 1),
-        ],
+        &Entity::Column(c) => [(0, c), (0, c + 1), (count_rows, c), (count_rows, c + 1)],
         &Entity::Row(r) => [
             (r, 0),
             (r, count_columns),
-            (r+1, 0),
-            (r+1, count_columns),
+            (r + 1, 0),
+            (r + 1, count_columns),
         ],
         &Entity::Cell(row, column) => [
             (row, column),
@@ -1528,8 +1529,7 @@ mod tests {
         grid.set(&Entity::Global, Settings::new().text("asd"));
         grid.set(
             &Entity::Global,
-            Settings::new()
-                .border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+            Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
         );
 
         let str = grid.to_string();
@@ -1550,8 +1550,7 @@ mod tests {
         grid.set(&Entity::Global, Settings::new().text("asd"));
         grid.set(
             &Entity::Column(1),
-            Settings::new()
-                .border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+            Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
         );
 
         let str = grid.to_string();
@@ -1567,8 +1566,7 @@ mod tests {
         grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
         grid.set(
             &Entity::Column(0),
-            Settings::new()
-                .border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+            Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
         );
 
         let str = grid.to_string();
@@ -1591,8 +1589,7 @@ mod tests {
 
         grid.set(
             &Entity::Row(0),
-            Settings::new()
-                .border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+            Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
         );
 
         let str = grid.to_string();
@@ -1608,8 +1605,7 @@ mod tests {
         grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
         grid.set(
             &Entity::Row(1),
-            Settings::new()
-                .border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+            Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
         );
 
         let str = grid.to_string();
@@ -1631,8 +1627,7 @@ mod tests {
 
         grid.set(
             &Entity::Cell(0, 1),
-            Settings::new()
-                .border(Border::full('*', '^', '@', '#', '~', '!', '%', '&')),
+            Settings::new().border(Border::full('*', '^', '@', '#', '~', '!', '%', '&')),
         );
         let str = grid.to_string();
         assert_eq!(
@@ -1785,11 +1780,7 @@ mod tests {
 
         assert_eq!(
             grid.to_string(),
-            concat!(
-                "asd asd\n",
-                "       \n",
-                "asd asd\n",
-            ),
+            concat!("asd asd\n", "       \n", "asd asd\n",),
         );
     }
 
@@ -1882,7 +1873,7 @@ mod tests {
 
         grid.set(&Entity::Global, Settings::new().text("asd"));
         grid.remove_column(0);
-        
+
         println!("{}", grid.to_string());
 
         assert_eq!(
