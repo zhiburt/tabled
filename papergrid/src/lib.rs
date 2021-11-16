@@ -849,8 +849,7 @@ fn build_line<F: Fn(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
     borders: &[BorderLine],
     writer: F,
 ) -> fmt::Result {
-    for i in 0..length {
-        let border = &borders[i];
+    for (i, border) in borders.iter().enumerate().take(length) {
         write_option(f, border.connector1)?;
         writer(f, i)?;
         if i + 1 == length {

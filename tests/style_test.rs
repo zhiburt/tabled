@@ -367,13 +367,17 @@ fn style_highlingting() {
     );
 
     let table = Table::new(&data)
-        .with(Style::pseudo().highlight(
-            Entity::Cell(0, 0),
-            Border::full('+', '+', '+', '+', '+', '+', '+', '+'),
-        ).highlight(
-            Entity::Cell(1, 1),
-            Border::full('*', '*', '*', '*', '*', '*', '*', '*'),
-        ))
+        .with(
+            Style::pseudo()
+                .highlight(
+                    Entity::Cell(0, 0),
+                    Border::full('+', '+', '+', '+', '+', '+', '+', '+'),
+                )
+                .highlight(
+                    Entity::Cell(1, 1),
+                    Border::full('*', '*', '*', '*', '*', '*', '*', '*'),
+                ),
+        )
         .to_string();
 
     println!("{}", table);

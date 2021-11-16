@@ -26,17 +26,19 @@ impl TableOption for Rotate {
                             if border.left.is_some() && !new.is_vertical_split_set(row) {
                                 new.add_vertical_split(row)
                             }
-    
-                            if border.right.is_some() && !new.is_vertical_split_set(row+1) {
-                                new.add_vertical_split(row+1)
+
+                            if border.right.is_some() && !new.is_vertical_split_set(row + 1) {
+                                new.add_vertical_split(row + 1)
                             }
-    
+
                             if border.top.is_some() && !new.is_horizontal_split_set(rhs_column) {
                                 new.add_horizontal_split(rhs_column)
                             }
-    
-                            if border.bottom.is_some() && !new.is_horizontal_split_set(rhs_column+1) {
-                                new.add_horizontal_split(rhs_column+1)
+
+                            if border.bottom.is_some()
+                                && !new.is_horizontal_split_set(rhs_column + 1)
+                            {
+                                new.add_horizontal_split(rhs_column + 1)
                             }
                         }
 
@@ -55,21 +57,21 @@ impl TableOption for Rotate {
                     for column in 0..grid.count_columns() {
                         {
                             let border = grid.get_border(row, column);
-    
+
                             if border.left.is_some() && !new.is_vertical_split_set(last_row) {
                                 new.add_vertical_split(last_row)
                             }
-    
-                            if border.right.is_some() && !new.is_vertical_split_set(last_row+1) {
-                                new.add_vertical_split(last_row+1)
+
+                            if border.right.is_some() && !new.is_vertical_split_set(last_row + 1) {
+                                new.add_vertical_split(last_row + 1)
                             }
-    
+
                             if border.top.is_some() && !new.is_horizontal_split_set(column) {
                                 new.add_horizontal_split(column)
                             }
-    
-                            if border.bottom.is_some() && !new.is_horizontal_split_set(column+1) {
-                                new.add_horizontal_split(column+1)
+
+                            if border.bottom.is_some() && !new.is_horizontal_split_set(column + 1) {
+                                new.add_horizontal_split(column + 1)
                             }
                         }
 
@@ -90,17 +92,18 @@ impl TableOption for Rotate {
                             if border.left.is_some() && !new.is_vertical_split_set(column) {
                                 new.add_vertical_split(column)
                             }
-    
-                            if border.right.is_some() && !new.is_vertical_split_set(column+1) {
-                                new.add_vertical_split(column+1)
+
+                            if border.right.is_some() && !new.is_vertical_split_set(column + 1) {
+                                new.add_vertical_split(column + 1)
                             }
-    
+
                             if border.top.is_some() && !new.is_horizontal_split_set(last_row) {
                                 new.add_horizontal_split(last_row)
                             }
-    
-                            if border.bottom.is_some() && !new.is_horizontal_split_set(last_row+1) {
-                                new.add_horizontal_split(last_row+1)
+
+                            if border.bottom.is_some() && !new.is_horizontal_split_set(last_row + 1)
+                            {
+                                new.add_horizontal_split(last_row + 1)
                             }
                         }
 

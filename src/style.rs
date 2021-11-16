@@ -274,19 +274,22 @@ impl TableOption for Style {
                     grid.add_vertical_split(column)
                 }
 
-                if border.right.is_some() && !grid.is_vertical_split_set(column+1) {
-                    grid.add_vertical_split(column+1)
+                if border.right.is_some() && !grid.is_vertical_split_set(column + 1) {
+                    grid.add_vertical_split(column + 1)
                 }
 
                 if border.top.is_some() && !grid.is_horizontal_split_set(row) {
                     grid.add_horizontal_split(row)
                 }
 
-                if border.bottom.is_some() && !grid.is_horizontal_split_set(row+1) {
-                    grid.add_horizontal_split(row+1)
+                if border.bottom.is_some() && !grid.is_horizontal_split_set(row + 1) {
+                    grid.add_horizontal_split(row + 1)
                 }
 
-                grid.set(&Entity::Cell(row, column), Settings::default().border(border));
+                grid.set(
+                    &Entity::Cell(row, column),
+                    Settings::default().border(border),
+                );
             }
         }
 
