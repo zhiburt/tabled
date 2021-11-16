@@ -15,7 +15,7 @@ use papergrid::{
 };
 
 #[test]
-fn render() {
+fn render_2x2() {
     let mut grid = Grid::new(2, 2);
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
 
@@ -31,6 +31,39 @@ fn render() {
         "|1-0|1-1|\n",
         "+---+---+\n",
     );
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_1x1() {
+    let mut grid = Grid::new(1, 1);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("one line"));
+
+    let expected = concat!("+--------+\n", "|one line|\n", "+--------+\n",);
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_not_quadratic() {
+    let mut grid = Grid::new(1, 2);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("hello"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text("world"));
+
+    let expected = concat!("+-----+-----+\n", "|hello|world|\n", "+-----+-----+\n",);
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_empty() {
+    let grid = Grid::new(0, 0);
+
+    let expected = "";
 
     assert_eq!(expected, grid.to_string());
 }
@@ -151,40 +184,6 @@ fn render_multilane_vertical_alignment() {
 
     let g = grid.to_string();
     assert_eq!(expected, g);
-}
-
-#[test]
-fn render_one_line() {
-    let mut grid = Grid::new(1, 1);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("one line"));
-
-    let expected = concat!("+--------+\n", "|one line|\n", "+--------+\n",);
-
-    assert_eq!(expected, grid.to_string());
-}
-
-#[test]
-fn render_not_quadratic() {
-    let mut grid = Grid::new(1, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("hello"));
-    grid.set(&Entity::Cell(0, 1), Settings::new().text("world"));
-
-    let expected = concat!("+-----+-----+\n", "|hello|world|\n", "+-----+-----+\n",);
-
-    assert_eq!(expected, grid.to_string());
-}
-
-#[test]
-fn render_empty() {
-    let grid = Grid::new(0, 0);
-
-    let expected = "";
-
-    assert_eq!(expected, grid.to_string());
 }
 
 #[test]
@@ -364,4 +363,77 @@ fn render_only_row_spaned() {
                          +---+\n";
 
     assert_eq!(grid.to_string(), expected);
+}
+
+#[test]
+fn grid_3x2_test() {
+    let mut grid = Grid::new(3, 2);
+    grid.set(&Entity::Global, Settings::new().text("asd"));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    let str = grid.to_string();
+    assert_eq!(
+        str,
+        "+---+---+\n\
+         |asd|asd|\n\
+         +---+---+\n\
+         |asd|asd|\n\
+         +---+---+\n\
+         |asd|asd|\n\
+         +---+---+\n"
+    )
+}
+
+#[test]
+fn grid_2x2_span_test() {
+    let mut grid = Grid::new(2, 2);
+    grid.set(&Entity::Global, Settings::new().text("asd"));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("123").span(2));
+
+    let str = grid.to_string();
+    assert_eq!(
+        str,
+        "+-------+\n\
+         |123    |\n\
+         +-------+\n\
+         |asd|asd|\n\
+         +---+---+\n"
+    )
+}
+
+#[test]
+#[ignore = "I am not sure what is the right behaiviour here"]
+fn hieroglyph_handling() {
+    let mut grid = Grid::new(1, 2);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("哈哈"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text("哈"));
+    let s = grid.to_string();
+    assert_eq!(
+        s,
+        "+----+--+\n\
+         |哈哈  |哈 |\n\
+         +----+--+\n"
+    )
+}
+
+#[test]
+#[ignore = "I am not sure what is the right behaiviour here"]
+fn hieroglyph_multiline_handling() {
+    let mut grid = Grid::new(1, 2);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("哈哈"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text("哈\n哈"));
+    let s = grid.to_string();
+    assert_eq!(
+        s,
+        "+----+--+\n\
+         |哈哈  |哈 |\n\
+         |    |哈 |\n\
+         +----+--+\n"
+    )
 }
