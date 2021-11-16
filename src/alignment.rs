@@ -1,7 +1,7 @@
 use crate::CellOption;
 #[allow(unused)]
 use crate::Table;
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid};
+use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
 
 /// Alignment represent a horizontal and vertical alignemt setting for any cell on a [Table].
 ///
@@ -60,12 +60,11 @@ impl Alignment {
 
 impl CellOption for Alignment {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut used = grid.get_cell_settings(row, column);
-        match &self {
-            Self::Horizontal(a) => used = used.alignment(*a),
-            Self::Vertical(a) => used = used.vertical_alignment(*a),
-        }
+        let settings = match &self {
+            Self::Horizontal(a) => Settings::new().alignment(*a),
+            Self::Vertical(a) => Settings::new().vertical_alignment(*a),
+        };
 
-        grid.set(Entity::Cell(row, column), used)
+        grid.set(&Entity::Cell(row, column), settings);
     }
 }

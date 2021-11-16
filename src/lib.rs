@@ -245,7 +245,8 @@ impl Table {
     pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
         let grid = build_grid(iter);
 
-        Self { grid }
+        let table = Self { grid };
+        table.with(Style::default())
     }
 
     /// With is a generic function which applies options to the [Table].
@@ -324,20 +325,20 @@ fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
     // it's crusial to set a global setting rather than a setting for an each cell
     // as it will be hard to override that since how Grid::style method works
     grid.set(
-        Entity::Global,
+        &Entity::Global,
         Settings::new()
             .indent(1, 1, 0, 0)
             .alignment(AlignmentHorizontal::Center),
     );
 
     for (i, h) in headers.iter().enumerate() {
-        grid.set(Entity::Cell(0, i), Settings::new().text(h));
+        grid.set(&Entity::Cell(0, i), Settings::new().text(h));
     }
 
     let mut row = 1;
     for fields in &obj {
         for (column, field) in fields.iter().enumerate() {
-            grid.set(Entity::Cell(row, column), Settings::new().text(field));
+            grid.set(&Entity::Cell(row, column), Settings::new().text(field));
         }
 
         // don't show off a empty data array

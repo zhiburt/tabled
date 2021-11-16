@@ -1,6 +1,6 @@
 use tabled::{
-    multiline, Cell, Column, Format, FormatFrom, FormatWithIndex, Full, Head, Indent, Modify,
-    Object, Row, Style, Table, Tabled,
+    multiline, Alignment, Cell, Column, Format, FormatFrom, FormatWithIndex, Full, Head, Indent,
+    Modify, Object, Row, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -598,9 +598,12 @@ fn format_doesnt_change_indent() {
     );
 
     let table = Table::new(&data)
+        .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .to_string();
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }

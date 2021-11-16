@@ -13,10 +13,10 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
     fn change(&mut self, grid: &mut Grid) {
         grid.insert_row(self.1);
         grid.set(
-            Entity::Cell(self.1, 0),
+            &Entity::Cell(self.1, 0),
             Settings::new()
                 .text(self.0.as_ref().to_owned())
-                .set_span(grid.count_columns()),
+                .span(grid.count_columns()),
         )
     }
 }

@@ -10,15 +10,19 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
+use papergrid::{
+    AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings, DEFAULT_CELL_STYLE,
+};
 
 #[test]
 fn render() {
     let mut grid = Grid::new(2, 2);
-    grid.set(Entity::Cell(0, 0), Settings::new().text("0-0"));
-    grid.set(Entity::Cell(0, 1), Settings::new().text("0-1"));
-    grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text("0-1"));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
+    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
 
     let expected = concat!(
         "+---+---+\n",
@@ -34,14 +38,16 @@ fn render() {
 #[test]
 fn render_multilane() {
     let mut grid = Grid::new(2, 2);
-    grid.set(Entity::Cell(0, 0), Settings::new().text("left\ncell"));
-    grid.set(Entity::Cell(0, 1), Settings::new().text("right one"));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("left\ncell"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text("right one"));
     grid.set(
-        Entity::Cell(1, 0),
+        &Entity::Cell(1, 0),
         Settings::new().text("the second column got the beginning here"),
     );
     grid.set(
-        Entity::Cell(1, 1),
+        &Entity::Cell(1, 1),
         Settings::new().text("and here\nwe\nsee\na\nlong\nstring"),
     );
 
@@ -66,19 +72,21 @@ fn render_multilane() {
 #[test]
 fn render_multilane_alignment() {
     let mut grid = Grid::new(2, 2);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
     grid.set(
-        Entity::Cell(0, 0),
+        &Entity::Cell(0, 0),
         Settings::new()
             .text("left\ncell")
             .alignment(AlignmentHorizontal::Center),
     );
-    grid.set(Entity::Cell(0, 1), Settings::new().text("right one"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text("right one"));
     grid.set(
-        Entity::Cell(1, 0),
+        &Entity::Cell(1, 0),
         Settings::new().text("the second column got the beginning here"),
     );
     grid.set(
-        Entity::Cell(1, 1),
+        &Entity::Cell(1, 1),
         Settings::new()
             .text("and here\nwe\nsee\na\nlong\nstring")
             .alignment(AlignmentHorizontal::Right),
@@ -105,21 +113,23 @@ fn render_multilane_alignment() {
 #[test]
 fn render_multilane_vertical_alignment() {
     let mut grid = Grid::new(2, 2);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
     grid.set(
-        Entity::Cell(0, 0),
+        &Entity::Cell(0, 0),
         Settings::new()
             .text("left\ncell")
             .alignment(AlignmentHorizontal::Center),
     );
-    grid.set(Entity::Cell(0, 1), Settings::new().text("right one"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text("right one"));
     grid.set(
-        Entity::Cell(1, 0),
+        &Entity::Cell(1, 0),
         Settings::new()
             .text("the second column got the beginning here")
             .vertical_alignment(AlignmentVertical::Center),
     );
     grid.set(
-        Entity::Cell(1, 1),
+        &Entity::Cell(1, 1),
         Settings::new()
             .text("and here\nwe\nsee\na\nlong\nstring")
             .alignment(AlignmentHorizontal::Right),
@@ -146,7 +156,9 @@ fn render_multilane_vertical_alignment() {
 #[test]
 fn render_one_line() {
     let mut grid = Grid::new(1, 1);
-    grid.set(Entity::Cell(0, 0), Settings::new().text("one line"));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("one line"));
 
     let expected = concat!("+--------+\n", "|one line|\n", "+--------+\n",);
 
@@ -156,8 +168,10 @@ fn render_one_line() {
 #[test]
 fn render_not_quadratic() {
     let mut grid = Grid::new(1, 2);
-    grid.set(Entity::Cell(0, 0), Settings::new().text("hello"));
-    grid.set(Entity::Cell(0, 1), Settings::new().text("world"));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("hello"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text("world"));
 
     let expected = concat!("+-----+-----+\n", "|hello|world|\n", "+-----+-----+\n",);
 
@@ -176,10 +190,12 @@ fn render_empty() {
 #[test]
 fn render_empty_cell() {
     let mut grid = Grid::new(2, 2);
-    grid.set(Entity::Cell(0, 0), Settings::new().text("0-0"));
-    grid.set(Entity::Cell(0, 1), Settings::new().text(""));
-    grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text(""));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
+    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
 
     let expected = concat!(
         "+---+---+\n",
@@ -195,16 +211,18 @@ fn render_empty_cell() {
 #[test]
 fn render_row_span() {
     let mut grid = Grid::new(2, 2);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
     grid.set(
-        Entity::Cell(0, 0),
+        &Entity::Cell(0, 0),
         Settings::new()
             .text("0-0")
-            .set_span(2)
+            .span(2)
             .alignment(AlignmentHorizontal::Center),
     );
-    grid.set(Entity::Cell(0, 1), Settings::new().text(""));
-    grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text(""));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
+    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
 
     let expected = concat!(
         "+-------+\n",
@@ -220,16 +238,18 @@ fn render_row_span() {
 #[test]
 fn render_miltiline_span() {
     let mut grid = Grid::new(2, 2);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
     grid.set(
-        Entity::Cell(0, 0),
+        &Entity::Cell(0, 0),
         Settings::new()
             .text("0-0\n0-1")
-            .set_span(2)
+            .span(2)
             .alignment(AlignmentHorizontal::Center),
     );
-    grid.set(Entity::Cell(0, 1), Settings::new().text(""));
-    grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text(""));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
+    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
 
     let expected = concat!(
         "+-------+\n",
@@ -246,20 +266,22 @@ fn render_miltiline_span() {
 #[test]
 fn render_row_span_multilane() {
     let mut grid = Grid::new(4, 3);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
     grid.set(
-        Entity::Cell(0, 0),
-        Settings::new().text("first line").set_span(2),
+        &Entity::Cell(0, 0),
+        Settings::new().text("first line").span(2),
     );
-    grid.set(Entity::Cell(0, 2), Settings::new().text("e.g."));
-    grid.set(Entity::Cell(1, 0), Settings::new().text("0"));
-    grid.set(Entity::Cell(1, 1), Settings::new().text("1"));
-    grid.set(Entity::Cell(1, 2), Settings::new().text("2"));
-    grid.set(Entity::Cell(2, 0), Settings::new().text("0"));
-    grid.set(Entity::Cell(2, 1), Settings::new().text("1"));
-    grid.set(Entity::Cell(2, 2), Settings::new().text("2"));
+    grid.set(&Entity::Cell(0, 2), Settings::new().text("e.g."));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("0"));
+    grid.set(&Entity::Cell(1, 1), Settings::new().text("1"));
+    grid.set(&Entity::Cell(1, 2), Settings::new().text("2"));
+    grid.set(&Entity::Cell(2, 0), Settings::new().text("0"));
+    grid.set(&Entity::Cell(2, 1), Settings::new().text("1"));
+    grid.set(&Entity::Cell(2, 2), Settings::new().text("2"));
     grid.set(
-        Entity::Cell(3, 0),
-        Settings::new().text("full last line").set_span(3),
+        &Entity::Cell(3, 0),
+        Settings::new().text("full last line").span(3),
     );
 
     let expected = concat!(
@@ -282,14 +304,16 @@ fn render_row_span_multilane() {
 #[test]
 fn render_row_span_with_horizontal_ident() {
     let mut grid = Grid::new(3, 2);
-    grid.set(Entity::Cell(0, 0), Settings::new().text("0-0").set_span(2));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
     grid.set(
-        Entity::Cell(1, 0),
+        &Entity::Cell(1, 0),
         Settings::new().text("1-0").indent(4, 4, 0, 0),
     );
-    grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
-    grid.set(Entity::Cell(2, 0), Settings::new().text("2-0"));
-    grid.set(Entity::Cell(2, 1), Settings::new().text("2-1"));
+    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
+    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0"));
+    grid.set(&Entity::Cell(2, 1), Settings::new().text("2-1"));
 
     let grid = grid.to_string();
 
@@ -311,9 +335,11 @@ fn render_row_span_with_horizontal_ident() {
 #[test]
 fn render_row_span_with_odd_length() {
     let mut grid = Grid::new(2, 2);
-    grid.set(Entity::Cell(0, 0), Settings::new().text("3   ").set_span(2));
-    grid.set(Entity::Cell(1, 0), Settings::new().text("2"));
-    grid.set(Entity::Cell(1, 1), Settings::new().text("4"));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("3   ").span(2));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("2"));
+    grid.set(&Entity::Cell(1, 1), Settings::new().text("4"));
 
     let expected = concat!("+----+\n", "|3   |\n", "+----+\n", "|2 |4|\n", "+--+-+\n",);
 
@@ -323,9 +349,11 @@ fn render_row_span_with_odd_length() {
 #[test]
 fn render_only_row_spaned() {
     let mut grid = Grid::new(3, 2);
-    grid.set(Entity::Cell(0, 0), Settings::new().text("0-0").set_span(2));
-    grid.set(Entity::Cell(1, 0), Settings::new().text("1-0").set_span(2));
-    grid.set(Entity::Cell(2, 0), Settings::new().text("2-0").set_span(2));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0").span(2));
+    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0").span(2));
 
     let expected = "+---+\n\
                          |0-0|\n\
