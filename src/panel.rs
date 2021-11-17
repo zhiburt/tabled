@@ -15,13 +15,17 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
         
         for row in 0 ..= grid.count_rows() {
             if grid.is_horizontal_split_set(row) {
-                if row == self.1 {
-                    new_grid.add_horizontal_split(row+1);
-                    new_grid.add_horizontal_split(row);
-                } else if row > self.1 {
-                    new_grid.add_horizontal_split(row+1);
-                } else {
-                    new_grid.add_horizontal_split(row);
+                match row.cmp(&self.1) {
+                    std::cmp::Ordering::Equal => {
+                        new_grid.add_horizontal_split(row+1);
+                        new_grid.add_horizontal_split(row);
+                    }
+                    std::cmp::Ordering::Greater => {
+                        new_grid.add_horizontal_split(row+1);
+                    }
+                    std::cmp::Ordering::Less => {
+                        new_grid.add_horizontal_split(row);
+                    }
                 }
             }
         }
