@@ -15,7 +15,14 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
         
         for row in 0 ..= grid.count_rows() {
             if grid.is_horizontal_split_set(row) {
-                new_grid.add_horizontal_split(row);
+                if row == self.1 {
+                    new_grid.add_horizontal_split(row+1);
+                    new_grid.add_horizontal_split(row);
+                } else if row > self.1 {
+                    new_grid.add_horizontal_split(row+1);
+                } else {
+                    new_grid.add_horizontal_split(row);
+                }
             }
         }
 
@@ -24,8 +31,6 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
                 new_grid.add_vertical_split(column);
             }
         }
-
-        new_grid.add_horizontal_split(new_grid.count_rows());
 
         for row in 0 .. grid.count_rows() {
             for column in 0 ..grid.count_columns() {

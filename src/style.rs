@@ -293,6 +293,31 @@ impl TableOption for Style {
         }
 
         for (entity, brush) in &self.highlight {
+            {
+                let (start_column, end_column, start_row, end_row) = match entity {
+                    &Entity::Cell(row, column) => (column, column+1, row, row+1),
+                    &Entity::Column(column) => (column , column+1, 0, grid.count_rows()),
+                    &Entity::Row(row) => (0 , grid.count_columns(), row, row+1),
+                    Entity::Global => (0 , grid.count_columns(), 0, grid.count_rows()),
+                };
+
+                if brush.left.is_some() && !grid.is_vertical_split_set(start_column) {
+                    grid.add_vertical_split(start_column)
+                }
+
+                if brush.right.is_some() && !grid.is_vertical_split_set(end_column) {
+                    grid.add_vertical_split(end_column)
+                }
+
+                if brush.top.is_some() && !grid.is_horizontal_split_set(start_row) {
+                    grid.add_horizontal_split(start_row)
+                }
+
+                if brush.bottom.is_some() && !grid.is_horizontal_split_set(end_row) {
+                    grid.add_horizontal_split(end_row)
+                }
+            }
+
             grid.set(entity, Settings::default().border(brush.clone()));
         }
     }
