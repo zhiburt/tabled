@@ -32,14 +32,14 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
                 let new_column_size = grid.count_columns() - removal_size;
                 let mut new_grid = Grid::new(grid.count_rows(), new_column_size);
 
-                for row in 0 ..= new_grid.count_rows() {
+                for row in 0..=new_grid.count_rows() {
                     if grid.is_horizontal_split_set(row) {
                         new_grid.add_horizontal_split(row);
                     }
                 }
 
                 let mut new_column_index = 0;
-                for column in 0 ..= grid.count_columns() {
+                for column in 0..=grid.count_columns() {
                     let is_column_deleted = column >= x && column < y;
                     if is_column_deleted {
                         continue;
@@ -52,14 +52,14 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
                     new_column_index += 1;
                 }
 
-                for row in 0 .. grid.count_rows() {
+                for row in 0..grid.count_rows() {
                     let mut new_column_index = 0;
-                    for column in 0 .. grid.count_columns() {
+                    for column in 0..grid.count_columns() {
                         let is_column_deleted = column >= x && column < y;
                         if is_column_deleted {
                             continue;
                         }
-    
+
                         let cell_settings = grid.get_settings(row, column);
                         new_grid.set(&Entity::Cell(row, new_column_index), cell_settings);
                         new_column_index += 1;
@@ -76,15 +76,15 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
                 let new_row_size = grid.count_rows() - removal_size;
                 println!("{:?} {} {}", (x, y), removal_size, new_row_size);
                 let mut new_grid = Grid::new(new_row_size, grid.count_columns());
-            
-                for column in 0 ..= new_grid.count_columns() {
+
+                for column in 0..=new_grid.count_columns() {
                     if grid.is_vertical_split_set(column) {
                         new_grid.add_vertical_split(column);
                     }
                 }
 
                 let mut new_row_index = 0;
-                for row in 0 ..= grid.count_rows() {
+                for row in 0..=grid.count_rows() {
                     let is_row_deleted = row >= x && row < y;
                     if is_row_deleted {
                         continue;
@@ -97,15 +97,15 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
                     new_row_index += 1;
                 }
 
-                for column in 0 .. grid.count_columns() {
+                for column in 0..grid.count_columns() {
                     let mut new_row_index = 0;
-                    for row in 0 .. grid.count_rows() {
+                    for row in 0..grid.count_rows() {
                         let is_row_deleted = row >= x && row < y;
                         println!("{} {} {}", row, x, y);
                         if is_row_deleted {
                             continue;
                         }
-    
+
                         let cell_settings = grid.get_settings(row, column);
                         new_grid.set(&Entity::Cell(new_row_index, column), cell_settings);
                         new_row_index += 1;

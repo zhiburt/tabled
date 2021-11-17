@@ -295,10 +295,10 @@ impl TableOption for Style {
         for (entity, brush) in &self.highlight {
             {
                 let (start_column, end_column, start_row, end_row) = match entity {
-                    &Entity::Cell(row, column) => (column, column+1, row, row+1),
-                    &Entity::Column(column) => (column , column+1, 0, grid.count_rows()),
-                    &Entity::Row(row) => (0 , grid.count_columns(), row, row+1),
-                    Entity::Global => (0 , grid.count_columns(), 0, grid.count_rows()),
+                    &Entity::Cell(row, column) => (column, column + 1, row, row + 1),
+                    &Entity::Column(column) => (column, column + 1, 0, grid.count_rows()),
+                    &Entity::Row(row) => (0, grid.count_columns(), row, row + 1),
+                    Entity::Global => (0, grid.count_columns(), 0, grid.count_rows()),
                 };
 
                 if brush.left.is_some() && !grid.is_vertical_split_set(start_column) {

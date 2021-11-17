@@ -28,7 +28,10 @@ fn panel_has_no_style_by_default() {
 fn highligt_panel() {
     let table = Table::new(test_data())
         .with(Panel("Linux Distributions", 0))
-        .with(Style::psql().highlight(Entity::Cell(0, 0), Border::full('#', '#', '#', '#', '#', '#', '#', '#')))
+        .with(Style::psql().highlight(
+            Entity::Cell(0, 0),
+            Border::full('#', '#', '#', '#', '#', '#', '#', '#'),
+        ))
         .to_string();
 
     // todo: it would be better if vertical split was not set in panel line
