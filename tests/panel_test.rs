@@ -10,8 +10,8 @@ struct Linux {
 #[test]
 fn top_panel() {
     let table = Table::new(test_data())
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
         .with(Panel("Linux Distributions", 0))
+        .with(Modify::new(Full).with(Alignment::center_horizontal()))
         .with(Style::psql())
         .to_string();
 
