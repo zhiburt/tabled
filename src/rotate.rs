@@ -23,20 +23,20 @@ impl TableOption for Rotate {
                     {
                         {
                             let border = grid.get_border(row, lhs_column);
-                            if border.left.is_some() && !new.is_vertical_split_set(row) {
+                            if border.left.is_some() && !new.is_vertical_present(row) {
                                 new.add_vertical_split(row)
                             }
 
-                            if border.right.is_some() && !new.is_vertical_split_set(row + 1) {
+                            if border.right.is_some() && !new.is_vertical_present(row + 1) {
                                 new.add_vertical_split(row + 1)
                             }
 
-                            if border.top.is_some() && !new.is_horizontal_split_set(rhs_column) {
+                            if border.top.is_some() && !new.is_horizontal_present(rhs_column) {
                                 new.add_horizontal_split(rhs_column)
                             }
 
                             if border.bottom.is_some()
-                                && !new.is_horizontal_split_set(rhs_column + 1)
+                                && !new.is_horizontal_present(rhs_column + 1)
                             {
                                 new.add_horizontal_split(rhs_column + 1)
                             }
@@ -58,19 +58,19 @@ impl TableOption for Rotate {
                         {
                             let border = grid.get_border(row, column);
 
-                            if border.left.is_some() && !new.is_vertical_split_set(last_row) {
+                            if border.left.is_some() && !new.is_vertical_present(last_row) {
                                 new.add_vertical_split(last_row)
                             }
 
-                            if border.right.is_some() && !new.is_vertical_split_set(last_row + 1) {
+                            if border.right.is_some() && !new.is_vertical_present(last_row + 1) {
                                 new.add_vertical_split(last_row + 1)
                             }
 
-                            if border.top.is_some() && !new.is_horizontal_split_set(column) {
+                            if border.top.is_some() && !new.is_horizontal_present(column) {
                                 new.add_horizontal_split(column)
                             }
 
-                            if border.bottom.is_some() && !new.is_horizontal_split_set(column + 1) {
+                            if border.bottom.is_some() && !new.is_horizontal_present(column + 1) {
                                 new.add_horizontal_split(column + 1)
                             }
                         }
@@ -89,19 +89,19 @@ impl TableOption for Rotate {
                         {
                             let last_row = grid.count_rows() - 1 - row;
                             let border = grid.get_border(last_row, column);
-                            if border.left.is_some() && !new.is_vertical_split_set(column) {
+                            if border.left.is_some() && !new.is_vertical_present(column) {
                                 new.add_vertical_split(column)
                             }
 
-                            if border.right.is_some() && !new.is_vertical_split_set(column + 1) {
+                            if border.right.is_some() && !new.is_vertical_present(column + 1) {
                                 new.add_vertical_split(column + 1)
                             }
 
-                            if border.top.is_some() && !new.is_horizontal_split_set(last_row) {
+                            if border.top.is_some() && !new.is_horizontal_present(last_row) {
                                 new.add_horizontal_split(last_row)
                             }
 
-                            if border.bottom.is_some() && !new.is_horizontal_split_set(last_row + 1)
+                            if border.bottom.is_some() && !new.is_horizontal_present(last_row + 1)
                             {
                                 new.add_horizontal_split(last_row + 1)
                             }

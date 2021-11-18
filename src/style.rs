@@ -269,19 +269,19 @@ impl TableOption for Style {
                     column + 1 == count_columns,
                 );
 
-                if border.left.is_some() && !grid.is_vertical_split_set(column) {
+                if border.left.is_some() && !grid.is_vertical_present(column) {
                     grid.add_vertical_split(column)
                 }
 
-                if border.right.is_some() && !grid.is_vertical_split_set(column + 1) {
+                if border.right.is_some() && !grid.is_vertical_present(column + 1) {
                     grid.add_vertical_split(column + 1)
                 }
 
-                if border.top.is_some() && !grid.is_horizontal_split_set(row) {
+                if border.top.is_some() && !grid.is_horizontal_present(row) {
                     grid.add_horizontal_split(row)
                 }
 
-                if border.bottom.is_some() && !grid.is_horizontal_split_set(row + 1) {
+                if border.bottom.is_some() && !grid.is_horizontal_present(row + 1) {
                     grid.add_horizontal_split(row + 1)
                 }
 
@@ -301,19 +301,19 @@ impl TableOption for Style {
                     Entity::Global => (0, grid.count_columns(), 0, grid.count_rows()),
                 };
 
-                if brush.left.is_some() && !grid.is_vertical_split_set(start_column) {
+                if brush.left.is_some() && !grid.is_vertical_present(start_column) {
                     grid.add_vertical_split(start_column)
                 }
 
-                if brush.right.is_some() && !grid.is_vertical_split_set(end_column) {
+                if brush.right.is_some() && !grid.is_vertical_present(end_column) {
                     grid.add_vertical_split(end_column)
                 }
 
-                if brush.top.is_some() && !grid.is_horizontal_split_set(start_row) {
+                if brush.top.is_some() && !grid.is_horizontal_present(start_row) {
                     grid.add_horizontal_split(start_row)
                 }
 
-                if brush.bottom.is_some() && !grid.is_horizontal_split_set(end_row) {
+                if brush.bottom.is_some() && !grid.is_horizontal_present(end_row) {
                     grid.add_horizontal_split(end_row)
                 }
             }

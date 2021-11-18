@@ -22,6 +22,8 @@
 //!     assert_eq!(expected, grid.to_string());
 //! ```
 
+// todo: Create method Grid::extract(&self) Self
+
 use std::{
     cmp::max,
     collections::HashMap,
@@ -119,36 +121,48 @@ impl Grid {
     }
 
     pub fn add_horizontal_split(&mut self, row: usize) {
-        let line = vec![' '; self.count_columns()];
-        let intersections = vec![' '; self.borders.need_horizontal_intersections()];
-        self.borders
-            .set_horizontal(row, &line, &intersections)
-            .unwrap();
+        self.insert_horizontal_split(row, SplitLine::new(vec![' '; self.count_columns()], vec![' '; self.borders.need_horizontal_intersections()]));
     }
 
     pub fn add_vertical_split(&mut self, column: usize) {
-        let line = vec![' '; self.count_rows()];
-        let intersections = vec![' '; self.borders.need_vertical_intersections()];
+        self.insert_vertical_split(column, SplitLine::new(vec![' '; self.count_rows()], vec![' '; self.borders.need_vertical_intersections()]));
+    }
+
+    pub fn insert_horizontal_split(&mut self, row: usize, line: SplitLine) {
         self.borders
-            .set_vertical(column, &line, &intersections)
+            .set_horizontal(row, line.borders, &line.intersections)
             .unwrap();
     }
 
-    pub fn is_vertical_split_set(&mut self, column: usize) -> bool {
+    pub fn insert_vertical_split(&mut self, column: usize, line: SplitLine) {
+        self.borders
+            .set_vertical(column, line.borders, &line.intersections)
+            .unwrap();
+    }
+
+    pub fn get_horizontal_split(&mut self, row: usize) -> Option<SplitLine> {
+        self.borders.get_horizontal(row).unwrap()
+    }
+
+    pub fn get_vertical_split(&mut self, row: usize) -> Option<SplitLine> {
+        self.borders.get_vertical(row).unwrap()
+    }
+
+    pub fn is_vertical_present(&mut self, column: usize) -> bool {
         self.borders.is_there_vertical(column)
     }
 
-    pub fn is_horizontal_split_set(&mut self, row: usize) -> bool {
+    pub fn is_horizontal_present(&mut self, row: usize) -> bool {
         self.borders.is_there_horizontal(row)
     }
 
-    pub fn add_split_grid(&mut self) {
+    pub fn add_grid_split(&mut self) {
         for row in 0..self.count_rows() + 1 {
-            self.add_horizontal_split(row)
+            self.add_horizontal_split(row);
         }
 
         for column in 0..self.count_columns() + 1 {
-            self.add_vertical_split(column)
+            self.add_vertical_split(column);
         }
     }
 
@@ -398,7 +412,7 @@ impl Grid {
     }
 
     pub fn set_cell_borders(&mut self, border: Border) {
-        self.add_split_grid();
+        self.add_grid_split();
         for row in 0..self.count_rows() {
             for column in 0..self.count_columns() {
                 self.set(
@@ -407,6 +421,28 @@ impl Grid {
                 );
             }
         }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct SplitLine {
+    borders: Vec<char>,
+    intersections: Vec<char>,
+}
+
+impl SplitLine {
+    pub fn new(borders: Vec<char>, intersections: Vec<char>) -> Self {
+        Self { borders, intersections }
+    }
+
+    pub fn border(mut self, c: char) -> Self {
+        self.borders.push(c);
+        self
+    }
+
+    pub fn intersection(mut self, c: char) -> Self {
+        self.intersections.push(c);
+        self
     }
 }
 
@@ -1092,6 +1128,60 @@ impl Borders {
         }
     }
 
+    fn get_horizontal(&self, row: usize) -> Result<Option<SplitLine>, BorderError> {
+        if row > self.count_rows {
+            return Err(BorderError::WrongRowIndex);
+        }
+
+        if !self.horizontal.contains_key(&row) {
+            return Ok(None);
+        }
+
+        let symbols = self.horizontal.get(&row).unwrap();
+        assert_eq!(symbols.len(), self.count_columns);
+
+        let mut borders = Vec::new();
+        for &c in symbols {
+            borders.push(c);
+        }
+
+        let mut intersections = Vec::new();
+        for column in 0 .. self.count_columns  {
+            if let Some(&c) = self.intersections.get(&(row, column)) {
+                intersections.push(c)
+            }
+        }
+
+        Ok(Some(SplitLine::new(borders, intersections)))
+    }
+
+    fn get_vertical(&self, column: usize) -> Result<Option<SplitLine>, BorderError> {
+        if column > self.count_columns {
+            return Err(BorderError::WrongColumnIndex);
+        }
+
+        if !self.horizontal.contains_key(&column) {
+            return Ok(None);
+        }
+
+        let symbols = self.vertical.get(&column).unwrap();
+        assert_eq!(symbols.len(), self.count_rows);
+
+        let mut borders = Vec::new();
+        for &c in symbols {
+            borders.push(c);
+        }
+
+        let mut intersections = Vec::new();
+        for row in 0 .. self.count_rows  {
+            if let Some(&c) = self.intersections.get(&(row, column)) {
+                intersections.push(c)
+            }
+        }
+
+        Ok(Some(SplitLine::new(borders, intersections)))
+    }
+
     fn get_row(&self, row: usize) -> Result<Vec<BorderLine>, BorderError> {
         if row > self.count_rows {
             return Err(BorderError::WrongRowIndex);
@@ -1214,7 +1304,7 @@ impl Borders {
     fn set_horizontal(
         &mut self,
         row: usize,
-        line: &[char],
+        line: Vec<char>,
         intersections: &[char],
     ) -> Result<(), BorderError> {
         if row > self.count_rows {
@@ -1236,7 +1326,7 @@ impl Borders {
             });
         }
 
-        self.horizontal.insert(row, line.to_vec());
+        self.horizontal.insert(row, line);
 
         for (&vertical_line_index, &symbol) in self.vertical.keys().zip(intersections) {
             self.intersections
@@ -1271,7 +1361,7 @@ impl Borders {
     fn set_vertical(
         &mut self,
         column: usize,
-        line: &[char],
+        line: Vec<char>,
         intersections: &[char],
     ) -> Result<(), BorderError> {
         if column > self.count_columns {
@@ -1293,7 +1383,7 @@ impl Borders {
             });
         }
 
-        self.vertical.insert(column, line.to_vec());
+        self.vertical.insert(column, line);
 
         for (&row_index, &symbol) in self.horizontal.keys().zip(intersections) {
             self.intersections.insert((row_index, column), symbol);

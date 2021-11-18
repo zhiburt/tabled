@@ -1,4 +1,4 @@
-use papergrid::{AlignmentHorizontal, Border, Entity, Grid, Settings, DEFAULT_CELL_STYLE};
+use papergrid::{AlignmentHorizontal, Border, DEFAULT_CELL_STYLE, Entity, Grid, Settings};
 
 #[test]
 fn grid_2x2_custom_frame_test() {
@@ -215,7 +215,7 @@ fn grid_2x2_custom_border_test() {
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
 
     grid.set(&Entity::Global, Settings::new().text("asd"));
-    grid.add_split_grid();
+    grid.add_grid_split();
     grid.set(
         &Entity::Cell(0, 0),
         Settings::new().border(

@@ -14,7 +14,7 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
         let mut new_grid = Grid::new(grid.count_rows() + 1, grid.count_columns());
 
         for row in 0..=grid.count_rows() {
-            if grid.is_horizontal_split_set(row) {
+            if grid.is_horizontal_present(row) {
                 match row.cmp(&self.1) {
                     std::cmp::Ordering::Equal => {
                         new_grid.add_horizontal_split(row + 1);
@@ -31,7 +31,7 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
         }
 
         for column in 0..=grid.count_columns() {
-            if grid.is_vertical_split_set(column) {
+            if grid.is_vertical_present(column) {
                 new_grid.add_vertical_split(column);
             }
         }

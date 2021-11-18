@@ -33,7 +33,7 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
                 let mut new_grid = Grid::new(grid.count_rows(), new_column_size);
 
                 for row in 0..=new_grid.count_rows() {
-                    if grid.is_horizontal_split_set(row) {
+                    if grid.is_horizontal_present(row) {
                         new_grid.add_horizontal_split(row);
                     }
                 }
@@ -45,7 +45,7 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
                         continue;
                     }
 
-                    if grid.is_vertical_split_set(column) {
+                    if grid.is_vertical_present(column) {
                         new_grid.add_vertical_split(new_column_index);
                     }
 
@@ -78,7 +78,7 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
                 let mut new_grid = Grid::new(new_row_size, grid.count_columns());
 
                 for column in 0..=new_grid.count_columns() {
-                    if grid.is_vertical_split_set(column) {
+                    if grid.is_vertical_present(column) {
                         new_grid.add_vertical_split(column);
                     }
                 }
@@ -90,7 +90,7 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
                         continue;
                     }
 
-                    if grid.is_horizontal_split_set(row) {
+                    if grid.is_horizontal_present(row) {
                         new_grid.add_horizontal_split(new_row_index);
                     }
 
