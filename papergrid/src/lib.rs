@@ -116,6 +116,11 @@ impl Grid {
         }
 
         if let Some(border) = settings.border {
+            println!("settings.border_split_check={:?}", settings.border_split_check);
+            if settings.border_split_check {
+                self.add_split_lines_for_border(entity, &border);
+            }
+
             self.set_border(entity, border);
         }
     }
@@ -379,6 +384,42 @@ impl Grid {
         }
     }
 
+    pub fn set_cell_borders(&mut self, border: Border) {
+        self.add_grid_split();
+        for row in 0..self.count_rows() {
+            for column in 0..self.count_columns() {
+                self.set(
+                    &Entity::Cell(row, column),
+                    Settings::new().border(border.clone()),
+                );
+            }
+        }
+    }
+
+    fn add_split_lines_for_border(&mut self, entity: &Entity, border: &Border) {
+        let [top_left, top_right, bottom_left, _] = self.frame_from_entity(entity);
+        let left_column = top_left.1;
+        let right_column = top_right.1;
+        let top_row = top_left.0;
+        let bottom_row = bottom_left.0;
+
+        if border.left.is_some() && !self.is_vertical_present(left_column) {
+            self.add_vertical_split(left_column)
+        }
+
+        if border.right.is_some() && !self.is_vertical_present(right_column) {
+            self.add_vertical_split(right_column)
+        }
+
+        if border.top.is_some() && !self.is_horizontal_present(top_row) {
+            self.add_horizontal_split(top_row)
+        }
+
+        if border.bottom.is_some() && !self.is_horizontal_present(bottom_row) {
+            self.add_horizontal_split(bottom_row)
+        }
+    }
+
     fn collect_cells(&self, count_rows: usize, count_columns: usize) -> Vec<Vec<Vec<&str>>> {
         let mut rows = Vec::with_capacity(count_rows);
         (0..count_rows).for_each(|row_index| {
@@ -421,18 +462,6 @@ impl Grid {
 
     fn get_inner_split_line(&self, index: usize) -> Vec<BorderLine> {
         self.borders.get_inner_row(index).unwrap()
-    }
-
-    pub fn set_cell_borders(&mut self, border: Border) {
-        self.add_grid_split();
-        for row in 0..self.count_rows() {
-            for column in 0..self.count_columns() {
-                self.set(
-                    &Entity::Cell(row, column),
-                    Settings::new().border(border.clone()),
-                );
-            }
-        }
     }
 }
 
@@ -658,6 +687,7 @@ pub struct Settings {
     alignment_v: Option<AlignmentVertical>,
     span: Option<usize>,
     border: Option<Border>,
+    border_split_check: bool,
 }
 
 impl Settings {
@@ -702,10 +732,25 @@ impl Settings {
     }
 
     /// Set the settings's border.
+    /// 
+    /// The border setting is in a restrictive manner, by default.
+    /// So if there was no split line but border relies on it
+    /// a error will be issued.
+    /// 
+    /// To fix it you can construct split lines before calling this function.
+    /// Or you can pass a `false` argument into [Self::border_restriction]
+    /// so if absent lines will be created.
     pub fn border(mut self, border: Border) -> Self {
         self.border = Some(border);
         self
     }
+
+    /// Set a split lines check.
+    pub fn border_restriction(mut self, strict: bool) -> Self {
+        self.border_split_check = !strict;
+        self
+    }
+
 }
 
 impl std::fmt::Display for Grid {

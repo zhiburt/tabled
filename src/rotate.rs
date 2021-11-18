@@ -21,27 +21,7 @@ impl TableOption for Rotate {
                     for (lhs_column, rhs_column) in
                         (0..grid.count_columns()).zip((0..grid.count_columns()).rev())
                     {
-                        {
-                            let border = grid.get_border(row, lhs_column);
-                            if border.left.is_some() && !new.is_vertical_present(row) {
-                                new.add_vertical_split(row)
-                            }
-
-                            if border.right.is_some() && !new.is_vertical_present(row + 1) {
-                                new.add_vertical_split(row + 1)
-                            }
-
-                            if border.top.is_some() && !new.is_horizontal_present(rhs_column) {
-                                new.add_horizontal_split(rhs_column)
-                            }
-
-                            if border.bottom.is_some() && !new.is_horizontal_present(rhs_column + 1)
-                            {
-                                new.add_horizontal_split(rhs_column + 1)
-                            }
-                        }
-
-                        let settings = grid.get_settings(row, lhs_column).span(1);
+                        let settings = grid.get_settings(row, lhs_column).span(1).border_restriction(false);
                         new.set(&Entity::Cell(rhs_column, row), settings)
                     }
                 }
@@ -54,27 +34,7 @@ impl TableOption for Rotate {
                 for row in 0..grid.count_rows() {
                     last_row -= 1;
                     for column in 0..grid.count_columns() {
-                        {
-                            let border = grid.get_border(row, column);
-
-                            if border.left.is_some() && !new.is_vertical_present(last_row) {
-                                new.add_vertical_split(last_row)
-                            }
-
-                            if border.right.is_some() && !new.is_vertical_present(last_row + 1) {
-                                new.add_vertical_split(last_row + 1)
-                            }
-
-                            if border.top.is_some() && !new.is_horizontal_present(column) {
-                                new.add_horizontal_split(column)
-                            }
-
-                            if border.bottom.is_some() && !new.is_horizontal_present(column + 1) {
-                                new.add_horizontal_split(column + 1)
-                            }
-                        }
-
-                        let border = grid.get_settings(row, column).span(0);
+                        let border = grid.get_settings(row, column).span(0).border_restriction(false);
                         new.set(&Entity::Cell(column, last_row), border);
                     }
                 }
@@ -85,28 +45,8 @@ impl TableOption for Rotate {
                 let mut new = Grid::new(grid.count_rows(), grid.count_columns());
                 for column in 0..grid.count_columns() {
                     for row in 0..grid.count_rows() {
-                        {
-                            let last_row = grid.count_rows() - 1 - row;
-                            let border = grid.get_border(last_row, column);
-                            if border.left.is_some() && !new.is_vertical_present(column) {
-                                new.add_vertical_split(column)
-                            }
-
-                            if border.right.is_some() && !new.is_vertical_present(column + 1) {
-                                new.add_vertical_split(column + 1)
-                            }
-
-                            if border.top.is_some() && !new.is_horizontal_present(last_row) {
-                                new.add_horizontal_split(last_row)
-                            }
-
-                            if border.bottom.is_some() && !new.is_horizontal_present(last_row + 1) {
-                                new.add_horizontal_split(last_row + 1)
-                            }
-                        }
-
                         let last_row = grid.count_rows() - 1 - row;
-                        let border = grid.get_settings(row, column).span(0);
+                        let border = grid.get_settings(row, column).span(0).border_restriction(false);
                         new.set(&Entity::Cell(last_row, column), border)
                     }
                 }

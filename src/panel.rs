@@ -12,33 +12,9 @@ pub struct Panel<S: AsRef<str>>(pub S, pub usize);
 impl<S: AsRef<str>> TableOption for Panel<S> {
     fn change(&mut self, grid: &mut Grid) {
         let mut new_grid = Grid::new(grid.count_rows() + 1, grid.count_columns());
-
-        for row in 0..=grid.count_rows() {
-            if grid.is_horizontal_present(row) {
-                match row.cmp(&self.1) {
-                    std::cmp::Ordering::Equal => {
-                        new_grid.add_horizontal_split(row + 1);
-                        new_grid.add_horizontal_split(row);
-                    }
-                    std::cmp::Ordering::Greater => {
-                        new_grid.add_horizontal_split(row + 1);
-                    }
-                    std::cmp::Ordering::Less => {
-                        new_grid.add_horizontal_split(row);
-                    }
-                }
-            }
-        }
-
-        for column in 0..=grid.count_columns() {
-            if grid.is_vertical_present(column) {
-                new_grid.add_vertical_split(column);
-            }
-        }
-
         for row in 0..grid.count_rows() {
             for column in 0..grid.count_columns() {
-                let cell_settings = grid.get_settings(row, column);
+                let cell_settings = grid.get_settings(row, column).border_restriction(false);
                 if row >= self.1 {
                     new_grid.set(&Entity::Cell(row + 1, column), cell_settings);
                 } else {
