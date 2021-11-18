@@ -10,14 +10,13 @@ fn grid_2x2_custom_frame_test() {
         Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
-    let str = grid.to_string();
     assert_eq!(
-        str,
+        grid.to_string(),
         "#*******#\n\
-             |asd|asd|\n\
-             |---+---|\n\
-             |asd|asd|\n\
-             #*******#\n"
+         |asd|asd|\n\
+         |---+---|\n\
+         |asd|asd|\n\
+         #*******#\n"
     )
 }
 
@@ -31,14 +30,13 @@ fn grid_2x2_custom_column_test() {
         Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
-    let str = grid.to_string();
     assert_eq!(
-        str,
+        grid.to_string(),
         "+---#***#\n\
-             |asd|asd|\n\
-             +---|---|\n\
-             |asd|asd|\n\
-             +---#***#\n"
+         |asd|asd|\n\
+         +---|---|\n\
+         |asd|asd|\n\
+         +---#***#\n"
     );
 
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
@@ -47,14 +45,13 @@ fn grid_2x2_custom_column_test() {
         Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
-    let str = grid.to_string();
     assert_eq!(
-        str,
+        grid.to_string(),
         "#***#---+\n\
-             |asd|asd|\n\
-             |---|---+\n\
-             |asd|asd|\n\
-             #***#---+\n"
+         |asd|asd|\n\
+         |---|---+\n\
+         |asd|asd|\n\
+         #***#---+\n"
     )
 }
 
@@ -70,14 +67,13 @@ fn grid_2x2_custom_row_test() {
         Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
-    let str = grid.to_string();
     assert_eq!(
-        str,
+        grid.to_string(),
         "#*******#\n\
-             |asd|asd|\n\
-             #*******#\n\
-             |asd|asd|\n\
-             +---+---+\n"
+         |asd|asd|\n\
+         #*******#\n\
+         |asd|asd|\n\
+         +---+---+\n"
     );
 
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
@@ -90,10 +86,10 @@ fn grid_2x2_custom_row_test() {
     assert_eq!(
         str,
         "+---+---+\n\
-             |asd|asd|\n\
-             #*******#\n\
-             |asd|asd|\n\
-             #*******#\n"
+         |asd|asd|\n\
+         #*******#\n\
+         |asd|asd|\n\
+         #*******#\n"
     );
 }
 
@@ -111,10 +107,10 @@ fn grid_2x2_change_cell_border_test() {
     assert_eq!(
         str,
         "+---~***!\n\
-             |asd@asd#\n\
-             +---%^^^&\n\
-             |asd|asd|\n\
-             +---+---+\n"
+         |asd@asd#\n\
+         +---%^^^&\n\
+         |asd|asd|\n\
+         +---+---+\n"
     )
 }
 
@@ -137,10 +133,10 @@ fn grid_2x2_alignment_test() {
     assert_eq!(
         str,
         "+-------+-------+\n\
-             |asd    |    asd|\n\
-             +-------+-------+\n\
-             |asd    |    asd|\n\
-             +-------+-------+\n"
+         |asd    |    asd|\n\
+         +-------+-------+\n\
+         |asd    |    asd|\n\
+         +-------+-------+\n"
     )
 }
 
@@ -159,14 +155,14 @@ fn grid_2x2_indent_test() {
     assert_eq!(
         str,
         "+---+-----+\n\
-             |asd|     |\n\
-             |   | asd |\n\
-             |   |     |\n\
-             +---+-----+\n\
-             |asd|     |\n\
-             |   | asd |\n\
-             |   |     |\n\
-             +---+-----+\n"
+         |asd|     |\n\
+         |   | asd |\n\
+         |   |     |\n\
+         +---+-----+\n\
+         |asd|     |\n\
+         |   | asd |\n\
+         |   |     |\n\
+         +---+-----+\n"
     )
 }
 
@@ -181,10 +177,10 @@ fn grid_2x2_vertical_resize_test() {
     assert_eq!(
         str,
         "+---+--------+\n\
-             |asd|asd     |\n\
-             +---+--------+\n\
-             |asd|asd     |\n\
-             +---+--------+\n"
+         |asd|asd     |\n\
+         +---+--------+\n\
+         |asd|asd     |\n\
+         +---+--------+\n"
     )
 }
 
@@ -198,7 +194,7 @@ fn grid_2x2_without_frame_test() {
     assert_eq!(
         grid.to_string(),
         "asd asd\n\
-             asd asd\n"
+         asd asd\n"
     );
 
     grid.add_horizontal_split(1);
@@ -269,9 +265,9 @@ fn grid_2x2_custom_border_test() {
     assert_eq!(
         str,
         " *** *** \n\
-             $asd@asd%\n\
-             +---+---+\n\
-             #asd^asd!\n\
-             \u{0020}*** *** \n"
+         $asd@asd%\n\
+         +---+---+\n\
+         #asd^asd!\n\
+         \u{0020}*** *** \n"
     )
 }
