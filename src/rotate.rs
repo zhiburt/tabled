@@ -35,8 +35,7 @@ impl TableOption for Rotate {
                                 new.add_horizontal_split(rhs_column)
                             }
 
-                            if border.bottom.is_some()
-                                && !new.is_horizontal_present(rhs_column + 1)
+                            if border.bottom.is_some() && !new.is_horizontal_present(rhs_column + 1)
                             {
                                 new.add_horizontal_split(rhs_column + 1)
                             }
@@ -101,8 +100,7 @@ impl TableOption for Rotate {
                                 new.add_horizontal_split(last_row)
                             }
 
-                            if border.bottom.is_some() && !new.is_horizontal_present(last_row + 1)
-                            {
+                            if border.bottom.is_some() && !new.is_horizontal_present(last_row + 1) {
                                 new.add_horizontal_split(last_row + 1)
                             }
                         }

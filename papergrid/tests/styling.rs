@@ -1,4 +1,4 @@
-use papergrid::{AlignmentHorizontal, Border, DEFAULT_CELL_STYLE, Entity, Grid, Settings};
+use papergrid::{AlignmentHorizontal, Border, Entity, Grid, Settings, DEFAULT_CELL_STYLE};
 
 #[test]
 fn grid_2x2_custom_frame_test() {

@@ -121,11 +121,23 @@ impl Grid {
     }
 
     pub fn add_horizontal_split(&mut self, row: usize) {
-        self.insert_horizontal_split(row, SplitLine::new(vec![' '; self.count_columns()], vec![' '; self.borders.need_horizontal_intersections()]));
+        self.insert_horizontal_split(
+            row,
+            SplitLine::new(
+                vec![' '; self.count_columns()],
+                vec![' '; self.borders.need_horizontal_intersections()],
+            ),
+        );
     }
 
     pub fn add_vertical_split(&mut self, column: usize) {
-        self.insert_vertical_split(column, SplitLine::new(vec![' '; self.count_rows()], vec![' '; self.borders.need_vertical_intersections()]));
+        self.insert_vertical_split(
+            column,
+            SplitLine::new(
+                vec![' '; self.count_rows()],
+                vec![' '; self.borders.need_vertical_intersections()],
+            ),
+        );
     }
 
     pub fn insert_horizontal_split(&mut self, row: usize, line: SplitLine) {
@@ -432,7 +444,10 @@ pub struct SplitLine {
 
 impl SplitLine {
     pub fn new(borders: Vec<char>, intersections: Vec<char>) -> Self {
-        Self { borders, intersections }
+        Self {
+            borders,
+            intersections,
+        }
     }
 
     pub fn border(mut self, c: char) -> Self {
@@ -1146,7 +1161,7 @@ impl Borders {
         }
 
         let mut intersections = Vec::new();
-        for column in 0 .. self.count_columns  {
+        for column in 0..self.count_columns {
             if let Some(&c) = self.intersections.get(&(row, column)) {
                 intersections.push(c)
             }
@@ -1173,7 +1188,7 @@ impl Borders {
         }
 
         let mut intersections = Vec::new();
-        for row in 0 .. self.count_rows  {
+        for row in 0..self.count_rows {
             if let Some(&c) = self.intersections.get(&(row, column)) {
                 intersections.push(c)
             }
