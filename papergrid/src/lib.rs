@@ -24,11 +24,7 @@
 
 // todo: Create method Grid::extract(&self) Self
 
-use std::{
-    cmp::max,
-    collections::HashMap,
-    fmt::{self, Display},
-};
+use std::{cmp::max, collections::HashMap, fmt::{self, Display}, ops::{Bound, RangeBounds}};
 
 /// Grid provides a set of methods for building a text-based table
 pub struct Grid {
@@ -116,7 +112,6 @@ impl Grid {
         }
 
         if let Some(border) = settings.border {
-            println!("settings.border_split_check={:?}", settings.border_split_check);
             if settings.border_split_check {
                 self.add_split_lines_for_border(entity, &border);
             }
@@ -286,7 +281,7 @@ impl Grid {
     }
 
     /// get_cell_settings returns a settings of a cell
-    pub fn get_settings(&mut self, row: usize, column: usize) -> Settings {
+    pub fn get_settings(&self, row: usize, column: usize) -> Settings {
         let style = self.style(&Entity::Cell(row, column));
         let content = &self.cells[row][column];
         let border = self.borders.get_border(row, column).unwrap();
@@ -394,6 +389,32 @@ impl Grid {
                 );
             }
         }
+    }
+
+    pub fn extract<R, C>(
+        &self,
+        rows: R,
+        columns: C
+    ) -> Self
+    where
+        R: RangeBounds<usize>,
+        C: RangeBounds<usize>
+    {
+        let (start_row, end_row) = bounds_to_usize(rows.start_bound(), rows.end_bound(), self.count_rows());
+        let (start_column, end_column) = bounds_to_usize(columns.start_bound(), columns.end_bound(), self.count_columns());
+
+        let new_count_rows = end_row - start_row;
+        let new_count_columns = end_column - start_column;
+        let mut new_grid = Grid::new(new_count_rows, new_count_columns);
+
+        for (new_row, row) in (start_row .. end_row).enumerate() {
+            for (new_column, column) in (start_column .. end_column).enumerate() {
+                let settings = self.get_settings(row, column);
+                new_grid.set(&Entity::Cell(new_row, new_column), settings.border_restriction(false));
+            }
+        }
+
+        new_grid
     }
 
     fn add_split_lines_for_border(&mut self, entity: &Entity, border: &Border) {
@@ -1559,6 +1580,26 @@ pub const DEFAULT_CELL_STYLE: Border = Border {
     left_top_corner: Some('+'),
     right_bottom_corner: Some('+'),
 };
+
+fn bounds_to_usize(
+    left: Bound<&usize>,
+    right: Bound<&usize>,
+    length: usize,
+) -> (usize, usize) {
+    match (left, right) {
+        (Bound::Included(x), Bound::Included(y)) => (*x, y + 1),
+        (Bound::Included(x), Bound::Excluded(y)) => (*x, *y),
+        (Bound::Included(x), Bound::Unbounded) => (*x, length),
+        (Bound::Unbounded, Bound::Unbounded) => (0, length),
+        (Bound::Unbounded, Bound::Included(y)) => (0, y + 1),
+        (Bound::Unbounded, Bound::Excluded(y)) => (0, *y),
+        (Bound::Excluded(_), Bound::Unbounded)
+        | (Bound::Excluded(_), Bound::Included(_))
+        | (Bound::Excluded(_), Bound::Excluded(_)) => {
+            unreachable!("A start bound can't be excluded")
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
