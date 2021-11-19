@@ -22,11 +22,29 @@
 //!     assert_eq!(expected, grid.to_string());
 //! ```
 
+// todo: Create method Grid::extract(&self) Self
+
 use std::{
     cmp::max,
     collections::HashMap,
     fmt::{self, Display},
+    ops::{Bound, RangeBounds},
 };
+
+pub const DEFAULT_CELL_STYLE: Border = Border {
+    top: Some('-'),
+    bottom: Some('-'),
+    left: Some('|'),
+    right: Some('|'),
+    right_top_corner: Some('+'),
+    left_bottom_corner: Some('+'),
+    left_top_corner: Some('+'),
+    right_bottom_corner: Some('+'),
+};
+
+const DEFAULT_SPLIT_BORDER_CHAR: char = ' ';
+
+const DEFAULT_SPLIT_INTERSECTION_CHAR: char = ' ';
 
 /// Grid provides a set of methods for building a text-based table
 pub struct Grid {
@@ -114,41 +132,69 @@ impl Grid {
         }
 
         if let Some(border) = settings.border {
+            if settings.border_split_check {
+                self.add_split_lines_for_border(entity, &border);
+            }
+
             self.set_border(entity, border);
         }
     }
 
     pub fn add_horizontal_split(&mut self, row: usize) {
-        let line = vec![' '; self.count_columns()];
-        let intersections = vec![' '; self.borders.need_horizontal_intersections()];
-        self.borders
-            .set_horizontal(row, &line, &intersections)
-            .unwrap();
+        self.insert_horizontal_split(
+            row,
+            SplitLine::new(
+                vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_columns()],
+                vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_horizontal_intersections()],
+            ),
+        );
     }
 
     pub fn add_vertical_split(&mut self, column: usize) {
-        let line = vec![' '; self.count_rows()];
-        let intersections = vec![' '; self.borders.need_vertical_intersections()];
+        self.insert_vertical_split(
+            column,
+            SplitLine::new(
+                vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_rows()],
+                vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_vertical_intersections()],
+            ),
+        );
+    }
+
+    pub fn insert_horizontal_split(&mut self, row: usize, line: SplitLine) {
         self.borders
-            .set_vertical(column, &line, &intersections)
+            .set_horizontal(row, line.borders, &line.intersections)
             .unwrap();
     }
 
-    pub fn is_vertical_split_set(&mut self, column: usize) -> bool {
+    pub fn insert_vertical_split(&mut self, column: usize, line: SplitLine) {
+        self.borders
+            .set_vertical(column, line.borders, &line.intersections)
+            .unwrap();
+    }
+
+    pub fn get_horizontal_split(&mut self, row: usize) -> Option<SplitLine> {
+        self.borders.get_horizontal(row).unwrap()
+    }
+
+    pub fn get_vertical_split(&mut self, row: usize) -> Option<SplitLine> {
+        self.borders.get_vertical(row).unwrap()
+    }
+
+    pub fn is_vertical_present(&mut self, column: usize) -> bool {
         self.borders.is_there_vertical(column)
     }
 
-    pub fn is_horizontal_split_set(&mut self, row: usize) -> bool {
+    pub fn is_horizontal_present(&mut self, row: usize) -> bool {
         self.borders.is_there_horizontal(row)
     }
 
-    pub fn add_split_grid(&mut self) {
+    pub fn add_grid_split(&mut self) {
         for row in 0..self.count_rows() + 1 {
-            self.add_horizontal_split(row)
+            self.add_horizontal_split(row);
         }
 
         for column in 0..self.count_columns() + 1 {
-            self.add_vertical_split(column)
+            self.add_vertical_split(column);
         }
     }
 
@@ -255,7 +301,7 @@ impl Grid {
     }
 
     /// get_cell_settings returns a settings of a cell
-    pub fn get_settings(&mut self, row: usize, column: usize) -> Settings {
+    pub fn get_settings(&self, row: usize, column: usize) -> Settings {
         let style = self.style(&Entity::Cell(row, column));
         let content = &self.cells[row][column];
         let border = self.borders.get_border(row, column).unwrap();
@@ -327,78 +373,6 @@ impl Grid {
         self.size.1
     }
 
-    /// Insert row in a grid.
-    pub fn insert_row(&mut self, index: usize) {
-        self.cells
-            .insert(index, vec![String::new(); self.count_columns()]);
-        self.size.0 += 1;
-        self.borders.inc_count_rows();
-    }
-
-    /// Removes a `row` from a grid.
-    ///
-    /// The row index must be started from 0
-    pub fn remove_row(&mut self, row: usize) {
-        self.cells.remove(row);
-
-        // shift styles
-        self.styles.remove(&Entity::Row(row));
-        for row in row + 1..self.count_rows() {
-            if self.styles.contains_key(&Entity::Row(row)) {
-                let prev = self.styles.remove(&Entity::Row(row)).unwrap();
-                self.styles.insert(Entity::Row(row - 1), prev);
-            }
-        }
-
-        for column in 0..self.count_columns() {
-            self.styles.remove(&Entity::Cell(row, column));
-        }
-        for row in row + 1..self.count_rows() {
-            for column in 0..self.count_columns() {
-                if let Some(prev) = self.styles.remove(&Entity::Cell(row, column)) {
-                    self.styles.insert(Entity::Cell(row - 1, column), prev);
-                }
-            }
-        }
-
-        self.size.0 -= 1;
-
-        self.borders.remove_row(row);
-    }
-
-    /// Removes a `column` from a grid.
-    ///
-    /// The column index must be started from 0
-    pub fn remove_column(&mut self, column: usize) {
-        for row in 0..self.count_rows() {
-            self.cells[row].remove(column);
-        }
-
-        // shift styles
-        self.styles.remove(&Entity::Column(column));
-        for column in column + 1..self.count_columns() {
-            if self.styles.contains_key(&Entity::Column(column)) {
-                let prev = self.styles.remove(&Entity::Column(column)).unwrap();
-                self.styles.insert(Entity::Column(column - 1), prev);
-            }
-        }
-
-        for row in 0..self.count_rows() {
-            self.styles.remove(&Entity::Cell(row, column));
-        }
-        for column in column + 1..self.count_columns() {
-            for row in 0..self.count_rows() {
-                if let Some(prev) = self.styles.remove(&Entity::Cell(row, column)) {
-                    self.styles.insert(Entity::Cell(row, column - 1), prev);
-                }
-            }
-        }
-
-        self.size.1 -= 1;
-
-        self.borders.remove_column(column);
-    }
-
     pub fn set_text<S: Into<String>>(&mut self, entity: &Entity, text: S) {
         let text = text.into();
         match *entity {
@@ -422,6 +396,72 @@ impl Grid {
                     }
                 }
             }
+        }
+    }
+
+    pub fn set_cell_borders(&mut self, border: Border) {
+        self.add_grid_split();
+        for row in 0..self.count_rows() {
+            for column in 0..self.count_columns() {
+                self.set(
+                    &Entity::Cell(row, column),
+                    Settings::new().border(border.clone()),
+                );
+            }
+        }
+    }
+
+    pub fn extract<R, C>(&self, rows: R, columns: C) -> Self
+    where
+        R: RangeBounds<usize>,
+        C: RangeBounds<usize>,
+    {
+        let (start_row, end_row) =
+            bounds_to_usize(rows.start_bound(), rows.end_bound(), self.count_rows());
+        let (start_column, end_column) = bounds_to_usize(
+            columns.start_bound(),
+            columns.end_bound(),
+            self.count_columns(),
+        );
+
+        let new_count_rows = end_row - start_row;
+        let new_count_columns = end_column - start_column;
+        let mut new_grid = Grid::new(new_count_rows, new_count_columns);
+
+        for (new_row, row) in (start_row..end_row).enumerate() {
+            for (new_column, column) in (start_column..end_column).enumerate() {
+                let settings = self.get_settings(row, column);
+                new_grid.set(
+                    &Entity::Cell(new_row, new_column),
+                    settings.border_restriction(false),
+                );
+            }
+        }
+
+        new_grid
+    }
+
+    fn add_split_lines_for_border(&mut self, entity: &Entity, border: &Border) {
+        let [top_left, top_right, bottom_left, _] = self.frame_from_entity(entity);
+        let left_column = top_left.1;
+        let right_column = top_right.1;
+        let top_row = top_left.0;
+        let bottom_row = bottom_left.0;
+
+        if border.left.is_some() && !self.is_vertical_present(left_column) {
+            self.add_vertical_split(left_column)
+        }
+
+        if border.right.is_some() && !self.is_vertical_present(right_column) {
+            self.add_vertical_split(right_column)
+        }
+
+        if border.top.is_some() && !self.is_horizontal_present(top_row) {
+            self.add_horizontal_split(top_row)
+        }
+
+        if border.bottom.is_some() && !self.is_horizontal_present(bottom_row) {
+            self.add_horizontal_split(bottom_row)
         }
     }
 
@@ -468,17 +508,30 @@ impl Grid {
     fn get_inner_split_line(&self, index: usize) -> Vec<BorderLine> {
         self.borders.get_inner_row(index).unwrap()
     }
+}
 
-    pub fn set_cell_borders(&mut self, border: Border) {
-        self.add_split_grid();
-        for row in 0..self.count_rows() {
-            for column in 0..self.count_columns() {
-                self.set(
-                    &Entity::Cell(row, column),
-                    Settings::new().border(border.clone()),
-                );
-            }
+#[derive(Debug, Clone, Default)]
+pub struct SplitLine {
+    borders: Vec<char>,
+    intersections: Vec<char>,
+}
+
+impl SplitLine {
+    pub fn new(borders: Vec<char>, intersections: Vec<char>) -> Self {
+        Self {
+            borders,
+            intersections,
         }
+    }
+
+    pub fn border(mut self, c: char) -> Self {
+        self.borders.push(c);
+        self
+    }
+
+    pub fn intersection(mut self, c: char) -> Self {
+        self.intersections.push(c);
+        self
     }
 }
 
@@ -679,6 +732,7 @@ pub struct Settings {
     alignment_v: Option<AlignmentVertical>,
     span: Option<usize>,
     border: Option<Border>,
+    border_split_check: bool,
 }
 
 impl Settings {
@@ -723,15 +777,28 @@ impl Settings {
     }
 
     /// Set the settings's border.
+    ///
+    /// The border setting is in a restrictive manner, by default.
+    /// So if there was no split line but border relies on it
+    /// a error will be issued.
+    ///
+    /// To fix it you can construct split lines before calling this function.
+    /// Or you can pass a `false` argument into [Self::border_restriction]
+    /// so if absent lines will be created.
     pub fn border(mut self, border: Border) -> Self {
         self.border = Some(border);
+        self
+    }
+
+    /// Set a split lines check.
+    pub fn border_restriction(mut self, strict: bool) -> Self {
+        self.border_split_check = !strict;
         self
     }
 }
 
 impl std::fmt::Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        println!("{:?}", self.borders);
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
 
@@ -746,24 +813,20 @@ impl std::fmt::Display for Grid {
         let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
         let widths = __columns_width(&mut cells, &mut styles, count_rows, count_columns);
 
-        for row_index in 0..count_rows {
-            if row_index == 0 {
-                let top_borders = self.get_split_line(row_index);
-                build_split_line(f, &widths[row_index], &top_borders)?;
-            }
+        for row in 0..count_rows {
+            let top_border = self.get_split_line(row);
+            let inner_border = self.get_inner_split_line(row);
+            let bottom_border = self.get_split_line(row + 1);
 
-            let inner_borders = self.get_inner_split_line(row_index);
             build_row(
                 f,
-                &cells[row_index],
-                &styles[row_index],
-                &widths[row_index],
-                row_heights[row_index],
-                &inner_borders,
+                &cells[row],
+                &styles[row],
+                &widths[row],
+                row_heights[row],
+                row == 0,
+                (&top_border, &inner_border, &bottom_border),
             )?;
-
-            let bottom_borders = self.get_split_line(row_index + 1);
-            build_split_line(f, &widths[row_index], &bottom_borders)?;
         }
 
         Ok(())
@@ -772,42 +835,83 @@ impl std::fmt::Display for Grid {
 
 fn build_row(
     f: &mut std::fmt::Formatter<'_>,
+    cell_contents: &[Vec<&str>],
+    cell_styles: &[Style],
+    cell_widths: &[usize],
+    height: usize,
+    is_first_row: bool,
+    (top_borders, inner_borders, bottom_borders): (&[BorderLine], &[BorderLine], &[BorderLine]),
+) -> fmt::Result {
+    if is_first_row {
+        build_split_line(f, cell_widths, top_borders)?;
+    }
+
+    build_row_internals(
+        f,
+        cell_contents,
+        cell_styles,
+        cell_widths,
+        height,
+        inner_borders,
+    )?;
+
+    build_split_line(f, cell_widths, bottom_borders)?;
+    Ok(())
+}
+
+fn build_row_internals(
+    f: &mut std::fmt::Formatter<'_>,
     row: &[Vec<&str>],
     row_styles: &[Style],
     widths: &[usize],
     height: usize,
     border: &[BorderLine],
 ) -> fmt::Result {
-    for _line in 0..height {
+    for line_index in 0..height {
         build_line(f, row.len(), border, |f, column| {
-            let cell = &row[column];
-            let style = &row_styles[column];
-            let width = widths[column];
-
-            let top_indent = top_indent(cell, style, height);
-            if top_indent > _line {
-                return empty_line(f, width);
-            }
-
-            let cell_line_index = _line - top_indent;
-            let is_cell_has_this_line = cell.len() > cell_line_index;
-            if !is_cell_has_this_line {
-                return empty_line(f, width);
-            }
-
-            let line_text = cell[cell_line_index];
-            line(
+            build_row_internal_line(
                 f,
-                line_text,
-                width,
-                style.indent.left,
-                style.indent.right,
-                style.alignment_h,
+                line_index,
+                &row[column],
+                &row_styles[column],
+                widths[column],
+                height,
             )
         })?;
     }
 
     Ok(())
+}
+
+fn build_row_internal_line(
+    f: &mut std::fmt::Formatter<'_>,
+    line_index: usize,
+    cell: &[&str],
+    style: &Style,
+    width: usize,
+    height: usize,
+) -> fmt::Result {
+    let top_indent = top_indent(cell, style, height);
+    if top_indent > line_index {
+        return empty_line(f, width);
+    }
+
+    let cell_line_index = line_index - top_indent;
+    let cell_has_this_line = cell.len() > cell_line_index;
+    // happen when other cells have bigger height
+    if !cell_has_this_line {
+        return empty_line(f, width);
+    }
+
+    let line_text = cell[cell_line_index];
+    line(
+        f,
+        line_text,
+        width,
+        style.indent.left,
+        style.indent.right,
+        style.alignment_h,
+    )
 }
 
 fn top_indent(cell: &[&str], style: &Style, height: usize) -> usize {
@@ -1128,68 +1232,58 @@ impl Borders {
         }
     }
 
-    fn inc_count_rows(&mut self) {
-        self.count_rows += 1;
-    }
+    fn get_horizontal(&self, row: usize) -> Result<Option<SplitLine>, BorderError> {
+        if row > self.count_rows {
+            return Err(BorderError::WrongRowIndex);
+        }
 
-    fn remove_row(&mut self, row: usize) {
-        self.horizontal.remove(&row);
+        if !self.horizontal.contains_key(&row) {
+            return Ok(None);
+        }
 
+        let symbols = self.horizontal.get(&row).unwrap();
+        assert_eq!(symbols.len(), self.count_columns);
+
+        let mut borders = Vec::new();
+        for &c in symbols {
+            borders.push(c);
+        }
+
+        let mut intersections = Vec::new();
         for column in 0..self.count_columns {
-            self.intersections.remove(&(row, column));
-        }
-
-        for chars in self.vertical.values_mut() {
-            chars.remove(row);
-        }
-
-        for row in row + 1..=self.count_rows {
-            if self.horizontal.contains_key(&row) {
-                let chars = self.horizontal.remove(&row).unwrap();
-                self.horizontal.insert(row - 1, chars);
+            if let Some(&c) = self.intersections.get(&(row, column)) {
+                intersections.push(c)
             }
         }
 
-        for row in row + 1..=self.count_rows {
-            for column in 0..=self.count_columns {
-                if self.intersections.contains_key(&(row, column)) {
-                    let chars = self.intersections.remove(&(row, column)).unwrap();
-                    self.intersections.insert((row - 1, column), chars);
-                }
-            }
-        }
-
-        self.count_rows -= 1;
+        Ok(Some(SplitLine::new(borders, intersections)))
     }
 
-    fn remove_column(&mut self, column: usize) {
-        self.vertical.remove(&column);
+    fn get_vertical(&self, column: usize) -> Result<Option<SplitLine>, BorderError> {
+        if column > self.count_columns {
+            return Err(BorderError::WrongColumnIndex);
+        }
 
+        if !self.horizontal.contains_key(&column) {
+            return Ok(None);
+        }
+
+        let symbols = self.vertical.get(&column).unwrap();
+        assert_eq!(symbols.len(), self.count_rows);
+
+        let mut borders = Vec::new();
+        for &c in symbols {
+            borders.push(c);
+        }
+
+        let mut intersections = Vec::new();
         for row in 0..self.count_rows {
-            self.intersections.remove(&(row, column));
-        }
-
-        for chars in self.horizontal.values_mut() {
-            chars.remove(column);
-        }
-
-        for column in column + 1..=self.count_columns {
-            if self.vertical.contains_key(&column) {
-                let chars = self.vertical.remove(&column).unwrap();
-                self.vertical.insert(column - 1, chars);
+            if let Some(&c) = self.intersections.get(&(row, column)) {
+                intersections.push(c)
             }
         }
 
-        for column in column + 1..=self.count_columns {
-            for row in 0..=self.count_rows {
-                if self.intersections.contains_key(&(row, column)) {
-                    let chars = self.intersections.remove(&(row, column)).unwrap();
-                    self.intersections.insert((row, column - 1), chars);
-                }
-            }
-        }
-
-        self.count_columns -= 1;
+        Ok(Some(SplitLine::new(borders, intersections)))
     }
 
     fn get_row(&self, row: usize) -> Result<Vec<BorderLine>, BorderError> {
@@ -1314,7 +1408,7 @@ impl Borders {
     fn set_horizontal(
         &mut self,
         row: usize,
-        line: &[char],
+        line: Vec<char>,
         intersections: &[char],
     ) -> Result<(), BorderError> {
         if row > self.count_rows {
@@ -1336,7 +1430,7 @@ impl Borders {
             });
         }
 
-        self.horizontal.insert(row, line.to_vec());
+        self.horizontal.insert(row, line);
 
         for (&vertical_line_index, &symbol) in self.vertical.keys().zip(intersections) {
             self.intersections
@@ -1371,7 +1465,7 @@ impl Borders {
     fn set_vertical(
         &mut self,
         column: usize,
-        line: &[char],
+        line: Vec<char>,
         intersections: &[char],
     ) -> Result<(), BorderError> {
         if column > self.count_columns {
@@ -1393,7 +1487,7 @@ impl Borders {
             });
         }
 
-        self.vertical.insert(column, line.to_vec());
+        self.vertical.insert(column, line);
 
         for (&row_index, &symbol) in self.horizontal.keys().zip(intersections) {
             self.intersections.insert((row_index, column), symbol);
@@ -1499,448 +1593,25 @@ fn entity_corners(entity: &Entity, count_rows: usize, count_columns: usize) -> [
     }
 }
 
-pub const DEFAULT_CELL_STYLE: Border = Border {
-    top: Some('-'),
-    bottom: Some('-'),
-    left: Some('|'),
-    right: Some('|'),
-    right_top_corner: Some('+'),
-    left_bottom_corner: Some('+'),
-    left_top_corner: Some('+'),
-    right_bottom_corner: Some('+'),
-};
+fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> (usize, usize) {
+    match (left, right) {
+        (Bound::Included(x), Bound::Included(y)) => (*x, y + 1),
+        (Bound::Included(x), Bound::Excluded(y)) => (*x, *y),
+        (Bound::Included(x), Bound::Unbounded) => (*x, length),
+        (Bound::Unbounded, Bound::Unbounded) => (0, length),
+        (Bound::Unbounded, Bound::Included(y)) => (0, y + 1),
+        (Bound::Unbounded, Bound::Excluded(y)) => (0, *y),
+        (Bound::Excluded(_), Bound::Unbounded)
+        | (Bound::Excluded(_), Bound::Included(_))
+        | (Bound::Excluded(_), Bound::Excluded(_)) => {
+            unreachable!("A start bound can't be excluded")
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn grid_2x2_custom_frame_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-        grid.set(
-            &Entity::Global,
-            Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
-        );
-
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "#*******#\n\
-             |asd|asd|\n\
-             |---+---|\n\
-             |asd|asd|\n\
-             #*******#\n"
-        )
-    }
-
-    #[test]
-    fn grid_2x2_custom_column_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-        grid.set(
-            &Entity::Column(1),
-            Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
-        );
-
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "+---#***#\n\
-             |asd|asd|\n\
-             +---|---|\n\
-             |asd|asd|\n\
-             +---#***#\n"
-        );
-
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-        grid.set(
-            &Entity::Column(0),
-            Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
-        );
-
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "#***#---+\n\
-             |asd|asd|\n\
-             |---|---+\n\
-             |asd|asd|\n\
-             #***#---+\n"
-        )
-    }
-
-    #[test]
-    fn grid_2x2_custom_row_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-
-        grid.set(
-            &Entity::Row(0),
-            Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
-        );
-
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "#*******#\n\
-             |asd|asd|\n\
-             #*******#\n\
-             |asd|asd|\n\
-             +---+---+\n"
-        );
-
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-        grid.set(
-            &Entity::Row(1),
-            Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
-        );
-
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "+---+---+\n\
-             |asd|asd|\n\
-             #*******#\n\
-             |asd|asd|\n\
-             #*******#\n"
-        );
-    }
-
-    #[test]
-    fn grid_2x2_change_cell_border_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-
-        grid.set(
-            &Entity::Cell(0, 1),
-            Settings::new().border(Border::full('*', '^', '@', '#', '~', '!', '%', '&')),
-        );
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "+---~***!\n\
-             |asd@asd#\n\
-             +---%^^^&\n\
-             |asd|asd|\n\
-             +---+---+\n"
-        )
-    }
-
-    #[test]
-    fn grid_1x1_test() {
-        let mut grid = Grid::new(1, 1);
-        grid.add_split_grid();
-        grid.set(
-            &Entity::Cell(0, 0),
-            Settings::new()
-                .text("asd")
-                .border(Border::full('-', '-', '|', '|', '+', '+', '+', '+')),
-        );
-        assert_eq!(
-            grid.to_string(),
-            "+---+\n\
-             |asd|\n\
-             +---+\n"
-        )
-    }
-
-    #[test]
-    fn grid_2x2_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "+---+---+\n\
-             |asd|asd|\n\
-             +---+---+\n\
-             |asd|asd|\n\
-             +---+---+\n"
-        )
-    }
-
-    #[test]
-    fn grid_2x2_entity_settings_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-        grid.set(&Entity::Column(0), Settings::new().text("zxc"));
-        grid.set(&Entity::Row(0), Settings::new().text("qwe"));
-        grid.set(&Entity::Cell(1, 1), Settings::new().text("iop"));
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "+---+---+\n\
-             |qwe|qwe|\n\
-             +---+---+\n\
-             |zxc|iop|\n\
-             +---+---+\n"
-        )
-    }
-
-    #[test]
-    fn grid_2x2_alignment_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-        grid.set(&Entity::Global, Settings::new().text("asd    "));
-        grid.set(
-            &Entity::Column(0),
-            Settings::new().alignment(AlignmentHorizontal::Left),
-        );
-        grid.set(
-            &Entity::Column(1),
-            Settings::new().alignment(AlignmentHorizontal::Right),
-        );
-        let str = grid.to_string();
-
-        assert_eq!(
-            str,
-            "+-------+-------+\n\
-             |asd    |    asd|\n\
-             +-------+-------+\n\
-             |asd    |    asd|\n\
-             +-------+-------+\n"
-        )
-    }
-
-    #[test]
-    fn grid_2x2_indent_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-        grid.set(
-            &Entity::Global,
-            Settings::new().text("asd").indent(1, 1, 1, 1),
-        );
-        grid.set(&Entity::Column(0), Settings::new().indent(0, 0, 0, 0));
-        let str = grid.to_string();
-
-        assert_eq!(
-            str,
-            "+---+-----+\n\
-             |asd|     |\n\
-             |   | asd |\n\
-             |   |     |\n\
-             +---+-----+\n\
-             |asd|     |\n\
-             |   | asd |\n\
-             |   |     |\n\
-             +---+-----+\n"
-        )
-    }
-
-    #[test]
-    fn grid_2x2_vertical_resize_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-        grid.set(&Entity::Cell(1, 1), Settings::new().text("asd     "));
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "+---+--------+\n\
-             |asd|asd     |\n\
-             +---+--------+\n\
-             |asd|asd     |\n\
-             +---+--------+\n"
-        )
-    }
-
-    #[test]
-    fn grid_2x2_without_frame_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-
-        grid.add_vertical_split(1);
-
-        assert_eq!(
-            grid.to_string(),
-            "asd asd\n\
-             asd asd\n"
-        );
-
-        grid.add_horizontal_split(1);
-
-        assert_eq!(
-            grid.to_string(),
-            concat!("asd asd\n", "       \n", "asd asd\n",),
-        );
-    }
-
-    #[test]
-    fn grid_2x2_custom_border_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-        grid.add_split_grid();
-        grid.set(
-            &Entity::Cell(0, 0),
-            Settings::new().border(
-                Border::default()
-                    .top('*')
-                    .bottom('-')
-                    .left('$')
-                    .top_left_corner(' ')
-                    .bottom_left_corner('+'),
-            ),
-        );
-        grid.set(
-            &Entity::Cell(0, 1),
-            Settings::new().border(
-                Border::default()
-                    .top('*')
-                    .bottom('-')
-                    .left('@')
-                    .top_left_corner(' ')
-                    .bottom_left_corner('+')
-                    .right('%')
-                    .top_right_corner(' ')
-                    .bottom_right_corner('+'),
-            ),
-        );
-        grid.set(
-            &Entity::Cell(1, 0),
-            Settings::new().border(
-                Border::default()
-                    .bottom('*')
-                    .left('#')
-                    .top_left_corner('+')
-                    .bottom_left_corner('\u{0020}'),
-            ),
-        );
-        grid.set(
-            &Entity::Cell(1, 1),
-            Settings::new().border(
-                Border::default()
-                    .bottom('*')
-                    .left('^')
-                    .top_left_corner('+')
-                    .bottom_left_corner(' ')
-                    .right('!')
-                    .top_right_corner('+')
-                    .bottom_right_corner(' '),
-            ),
-        );
-
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            " *** *** \n\
-             $asd@asd%\n\
-             +---+---+\n\
-             #asd^asd!\n\
-             \u{0020}*** *** \n"
-        )
-    }
-
-    #[test]
-    fn grid_2x2_remove_row_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-        grid.remove_row(0);
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "+---+---+\n\
-             |asd|asd|\n\
-             +---+---+\n"
-        )
-    }
-
-    #[test]
-    fn grid_2x2_remove_column_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-        grid.remove_column(0);
-
-        println!("{}", grid.to_string());
-
-        assert_eq!(
-            grid.to_string(),
-            "+---+\n\
-             |asd|\n\
-             +---+\n\
-             |asd|\n\
-             +---+\n"
-        )
-    }
-
-    #[test]
-    fn grid_3x2_test() {
-        let mut grid = Grid::new(3, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "+---+---+\n\
-             |asd|asd|\n\
-             +---+---+\n\
-             |asd|asd|\n\
-             +---+---+\n\
-             |asd|asd|\n\
-             +---+---+\n"
-        )
-    }
-
-    #[test]
-    #[ignore = "I am not sure what is the right behaiviour here"]
-    fn hieroglyph_handling() {
-        let mut grid = Grid::new(1, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-        grid.set(&Entity::Cell(0, 0), Settings::new().text("哈哈"));
-        grid.set(&Entity::Cell(0, 1), Settings::new().text("哈"));
-        let s = grid.to_string();
-        assert_eq!(
-            s,
-            "+----+--+\n\
-             |哈哈  |哈 |\n\
-             +----+--+\n"
-        )
-    }
-
-    #[test]
-    #[ignore = "I am not sure what is the right behaiviour here"]
-    fn hieroglyph_multiline_handling() {
-        let mut grid = Grid::new(1, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-        grid.set(&Entity::Cell(0, 0), Settings::new().text("哈哈"));
-        grid.set(&Entity::Cell(0, 1), Settings::new().text("哈\n哈"));
-        let s = grid.to_string();
-        assert_eq!(
-            s,
-            "+----+--+\n\
-             |哈哈  |哈 |\n\
-             |    |哈 |\n\
-             +----+--+\n"
-        )
-    }
-
-    #[cfg(feature = "color")]
-    #[test]
-    fn colored_string_width_test() {
-        use colored::Colorize;
-        assert_eq!(string_width(&"hello world".red().to_string()), 11);
-        assert_eq!(string_width(&"hello\nworld".blue().to_string()), 5);
-        assert_eq!(string_width("\u{1b}[34m0\u{1b}[0m"), 1);
-        assert_eq!(string_width(&"0".red().to_string()), 1);
-    }
 
     #[test]
     fn string_width_emojie_test() {
@@ -1990,21 +1661,13 @@ mod tests {
         assert_eq!(AlignmentVertical::Center.top_ident(4, 1), 1);
     }
 
+    #[cfg(feature = "color")]
     #[test]
-    fn grid_2x2_span_test() {
-        let mut grid = Grid::new(2, 2);
-        grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-        grid.set(&Entity::Global, Settings::new().text("asd"));
-        grid.set(&Entity::Cell(0, 0), Settings::new().text("123").span(2));
-        let str = grid.to_string();
-        assert_eq!(
-            str,
-            "+-------+\n\
-             |123    |\n\
-             +-------+\n\
-             |asd|asd|\n\
-             +---+---+\n"
-        )
+    fn colored_string_width_test() {
+        use colored::Colorize;
+        assert_eq!(string_width(&"hello world".red().to_string()), 11);
+        assert_eq!(string_width(&"hello\nworld".blue().to_string()), 5);
+        assert_eq!(string_width("\u{1b}[34m0\u{1b}[0m"), 1);
+        assert_eq!(string_width(&"0".red().to_string()), 1);
     }
 }

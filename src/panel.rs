@@ -11,13 +11,26 @@ pub struct Panel<S: AsRef<str>>(pub S, pub usize);
 
 impl<S: AsRef<str>> TableOption for Panel<S> {
     fn change(&mut self, grid: &mut Grid) {
-        grid.insert_row(self.1);
-        grid.set(
+        let mut new_grid = Grid::new(grid.count_rows() + 1, grid.count_columns());
+        for row in 0..grid.count_rows() {
+            for column in 0..grid.count_columns() {
+                let cell_settings = grid.get_settings(row, column).border_restriction(false);
+                if row >= self.1 {
+                    new_grid.set(&Entity::Cell(row + 1, column), cell_settings);
+                } else {
+                    new_grid.set(&Entity::Cell(row, column), cell_settings);
+                }
+            }
+        }
+
+        new_grid.set(
             &Entity::Cell(self.1, 0),
             Settings::new()
                 .text(self.0.as_ref().to_owned())
-                .span(grid.count_columns()),
-        )
+                .span(new_grid.count_columns()),
+        );
+
+        *grid = new_grid;
     }
 }
 

@@ -269,31 +269,20 @@ impl TableOption for Style {
                     column + 1 == count_columns,
                 );
 
-                if border.left.is_some() && !grid.is_vertical_split_set(column) {
-                    grid.add_vertical_split(column)
-                }
-
-                if border.right.is_some() && !grid.is_vertical_split_set(column + 1) {
-                    grid.add_vertical_split(column + 1)
-                }
-
-                if border.top.is_some() && !grid.is_horizontal_split_set(row) {
-                    grid.add_horizontal_split(row)
-                }
-
-                if border.bottom.is_some() && !grid.is_horizontal_split_set(row + 1) {
-                    grid.add_horizontal_split(row + 1)
-                }
-
                 grid.set(
                     &Entity::Cell(row, column),
-                    Settings::default().border(border),
+                    Settings::default().border(border).border_restriction(false),
                 );
             }
         }
 
         for (entity, brush) in &self.highlight {
-            grid.set(entity, Settings::default().border(brush.clone()));
+            grid.set(
+                entity,
+                Settings::default()
+                    .border(brush.clone())
+                    .border_restriction(false),
+            );
         }
     }
 }
