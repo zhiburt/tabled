@@ -124,6 +124,10 @@ fn variant_headers(variant: &Variant, attr: &Attr) -> Vec<proc_macro2::TokenStre
         let mut calls = Vec::new();
         for (index, field) in variant.fields.iter().enumerate() {
             let field_attr = Attr::parse(&field.attrs);
+            if field_attr.is_ignored() {
+                continue;
+            }
+
             let call = field_headers(field, &field_attr, index, prefix);
             calls.push(call);
         }
@@ -303,6 +307,7 @@ fn variant_fields(v: &Variant, attr: &Attr) -> Vec<proc_macro2::TokenStream> {
     branch_idents
         .into_iter()
         .zip(v.fields.iter().map(|field| Attr::parse(&field.attrs)))
+        .filter(|(_, attr)| !attr.is_ignored())
         .map(|(ident, attr)| get_field_fields(ident.to_token_stream(), &attr))
         .collect()
 }
@@ -311,6 +316,8 @@ fn variant_idents(v: &Variant) -> Vec<Ident> {
     v.fields
         .iter()
         .enumerate()
+        // we intentionally not ignore these fields to be able to build a pattern correctly
+        // .filter(|(_, field)| !Attr::parse(&field.attrs).is_ignored())
         .map(|(index, field)| {
             if let Some(ident) = field.ident.as_ref() {
                 ident.clone()

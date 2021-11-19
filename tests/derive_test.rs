@@ -589,3 +589,127 @@ mod structure {
         assert_eq!(vec!["f1".to_owned(), "f2".to_owned()], St::headers());
     }
 }
+
+#[test]
+fn hidden_fields_may_not_implement_display() {
+    {
+        struct Something;
+
+        #[derive(Tabled)]
+        struct TupleStruct(#[header(hidden = true)] Something, &'static str);
+
+        let st = TupleStruct(Something, "nrdxp");
+
+        assert_eq!(vec!["nrdxp".to_owned()], st.fields());
+        assert_eq!(vec!["1".to_owned()], TupleStruct::headers());
+    }
+
+    {
+        struct Something;
+
+        #[derive(Tabled)]
+        struct Struct {
+            #[header(hidden = true)]
+            _gem: Something,
+            name: &'static str,
+        }
+
+        let st = Struct {
+            _gem: Something,
+            name: "nrdxp",
+        };
+
+        assert_eq!(vec!["nrdxp".to_owned()], st.fields());
+        assert_eq!(vec!["name".to_owned()], Struct::headers());
+    }
+
+    {
+        struct Something;
+
+        #[derive(Tabled)]
+        enum Enum {
+            #[field(inline("A::"))]
+            A {
+                name: &'static str,
+            },
+            #[field(inline("B::"))]
+            B {
+                issue: usize,
+                #[header(hidden = true)]
+                _gem: Something,
+                name: &'static str,
+            },
+            #[field(inline("C::"))]
+            C(usize, #[header(hidden = true)] Something, &'static str),
+            D,
+        }
+
+        assert_eq!(
+            vec![
+                "A::name".to_owned(),
+                "B::issue".to_owned(),
+                "B::name".to_owned(),
+                "C::0".to_owned(),
+                "C::2".to_owned(),
+                "D".to_owned()
+            ],
+            Enum::headers()
+        );
+
+        let st = Enum::A { name: "nrdxp" };
+        assert_eq!(
+            vec![
+                "nrdxp".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned()
+            ],
+            st.fields()
+        );
+
+        let st = Enum::B {
+            _gem: Something,
+            issue: 32,
+            name: "nrdxp",
+        };
+        assert_eq!(
+            vec![
+                "".to_owned(),
+                "32".to_owned(),
+                "nrdxp".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned()
+            ],
+            st.fields()
+        );
+
+        let st = Enum::C(32, Something, "nrdxp");
+        assert_eq!(
+            vec![
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "32".to_owned(),
+                "nrdxp".to_owned(),
+                "".to_owned()
+            ],
+            st.fields()
+        );
+
+        let st = Enum::D;
+        assert_eq!(
+            vec![
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "".to_owned(),
+                "+".to_owned()
+            ],
+            st.fields()
+        );
+    }
+}
