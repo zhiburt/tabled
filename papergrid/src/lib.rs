@@ -31,6 +31,21 @@ use std::{
     ops::{Bound, RangeBounds},
 };
 
+pub const DEFAULT_CELL_STYLE: Border = Border {
+    top: Some('-'),
+    bottom: Some('-'),
+    left: Some('|'),
+    right: Some('|'),
+    right_top_corner: Some('+'),
+    left_bottom_corner: Some('+'),
+    left_top_corner: Some('+'),
+    right_bottom_corner: Some('+'),
+};
+
+const DEFAULT_SPLIT_BORDER_CHAR: char = ' ';
+
+const DEFAULT_SPLIT_INTERSECTION_CHAR: char = ' ';
+
 /// Grid provides a set of methods for building a text-based table
 pub struct Grid {
     size: (usize, usize),
@@ -129,8 +144,8 @@ impl Grid {
         self.insert_horizontal_split(
             row,
             SplitLine::new(
-                vec![' '; self.count_columns()],
-                vec![' '; self.borders.need_horizontal_intersections()],
+                vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_columns()],
+                vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_horizontal_intersections()],
             ),
         );
     }
@@ -139,8 +154,8 @@ impl Grid {
         self.insert_vertical_split(
             column,
             SplitLine::new(
-                vec![' '; self.count_rows()],
-                vec![' '; self.borders.need_vertical_intersections()],
+                vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_rows()],
+                vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_vertical_intersections()],
             ),
         );
     }
@@ -1577,17 +1592,6 @@ fn entity_corners(entity: &Entity, count_rows: usize, count_columns: usize) -> [
         ],
     }
 }
-
-pub const DEFAULT_CELL_STYLE: Border = Border {
-    top: Some('-'),
-    bottom: Some('-'),
-    left: Some('|'),
-    right: Some('|'),
-    right_top_corner: Some('+'),
-    left_bottom_corner: Some('+'),
-    left_top_corner: Some('+'),
-    right_bottom_corner: Some('+'),
-};
 
 fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> (usize, usize) {
     match (left, right) {
