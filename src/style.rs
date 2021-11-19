@@ -269,12 +269,20 @@ impl TableOption for Style {
                     column + 1 == count_columns,
                 );
 
-                grid.set(&Entity::Cell(row, column), Settings::default().border(border).border_restriction(false));
+                grid.set(
+                    &Entity::Cell(row, column),
+                    Settings::default().border(border).border_restriction(false),
+                );
             }
         }
 
         for (entity, brush) in &self.highlight {
-            grid.set(entity, Settings::default().border(brush.clone()).border_restriction(false));
+            grid.set(
+                entity,
+                Settings::default()
+                    .border(brush.clone())
+                    .border_restriction(false),
+            );
         }
     }
 }
