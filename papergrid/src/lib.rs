@@ -24,7 +24,12 @@
 
 // todo: Create method Grid::extract(&self) Self
 
-use std::{cmp::max, collections::HashMap, fmt::{self, Display}, ops::{Bound, RangeBounds}};
+use std::{
+    cmp::max,
+    collections::HashMap,
+    fmt::{self, Display},
+    ops::{Bound, RangeBounds},
+};
 
 /// Grid provides a set of methods for building a text-based table
 pub struct Grid {
@@ -391,26 +396,30 @@ impl Grid {
         }
     }
 
-    pub fn extract<R, C>(
-        &self,
-        rows: R,
-        columns: C
-    ) -> Self
+    pub fn extract<R, C>(&self, rows: R, columns: C) -> Self
     where
         R: RangeBounds<usize>,
-        C: RangeBounds<usize>
+        C: RangeBounds<usize>,
     {
-        let (start_row, end_row) = bounds_to_usize(rows.start_bound(), rows.end_bound(), self.count_rows());
-        let (start_column, end_column) = bounds_to_usize(columns.start_bound(), columns.end_bound(), self.count_columns());
+        let (start_row, end_row) =
+            bounds_to_usize(rows.start_bound(), rows.end_bound(), self.count_rows());
+        let (start_column, end_column) = bounds_to_usize(
+            columns.start_bound(),
+            columns.end_bound(),
+            self.count_columns(),
+        );
 
         let new_count_rows = end_row - start_row;
         let new_count_columns = end_column - start_column;
         let mut new_grid = Grid::new(new_count_rows, new_count_columns);
 
-        for (new_row, row) in (start_row .. end_row).enumerate() {
-            for (new_column, column) in (start_column .. end_column).enumerate() {
+        for (new_row, row) in (start_row..end_row).enumerate() {
+            for (new_column, column) in (start_column..end_column).enumerate() {
                 let settings = self.get_settings(row, column);
-                new_grid.set(&Entity::Cell(new_row, new_column), settings.border_restriction(false));
+                new_grid.set(
+                    &Entity::Cell(new_row, new_column),
+                    settings.border_restriction(false),
+                );
             }
         }
 
@@ -753,11 +762,11 @@ impl Settings {
     }
 
     /// Set the settings's border.
-    /// 
+    ///
     /// The border setting is in a restrictive manner, by default.
     /// So if there was no split line but border relies on it
     /// a error will be issued.
-    /// 
+    ///
     /// To fix it you can construct split lines before calling this function.
     /// Or you can pass a `false` argument into [Self::border_restriction]
     /// so if absent lines will be created.
@@ -771,7 +780,6 @@ impl Settings {
         self.border_split_check = !strict;
         self
     }
-
 }
 
 impl std::fmt::Display for Grid {
@@ -1581,11 +1589,7 @@ pub const DEFAULT_CELL_STYLE: Border = Border {
     right_bottom_corner: Some('+'),
 };
 
-fn bounds_to_usize(
-    left: Bound<&usize>,
-    right: Bound<&usize>,
-    length: usize,
-) -> (usize, usize) {
+fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> (usize, usize) {
     match (left, right) {
         (Bound::Included(x), Bound::Included(y)) => (*x, y + 1),
         (Bound::Included(x), Bound::Excluded(y)) => (*x, *y),
