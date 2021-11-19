@@ -627,6 +627,38 @@ fn hidden_fields_may_not_implement_display() {
         struct Something;
 
         #[derive(Tabled)]
+        struct Struct1 {
+            #[header(hidden = true)]
+            _field1: Something,
+            field2: &'static str,
+        }
+
+        #[derive(Tabled)]
+        struct Struct2 {
+            field1: &'static str,
+            #[field(inline)]
+            field2: Struct1,
+        }
+
+        let st = Struct2 {
+            field1: "nrdxp",
+            field2: Struct1 {
+                _field1: Something,
+                field2: "...",
+            },
+        };
+
+        assert_eq!(
+            vec!["field1".to_owned(), "field2".to_owned()],
+            Struct2::headers()
+        );
+        assert_eq!(vec!["nrdxp".to_owned(), "...".to_owned()], st.fields());
+    }
+
+    {
+        struct Something;
+
+        #[derive(Tabled)]
         enum Enum {
             #[field(inline("A::"))]
             A {
