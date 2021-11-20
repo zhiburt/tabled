@@ -141,7 +141,7 @@
 //! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
 //!
 
-use papergrid::{AlignmentHorizontal, Entity, Grid, Settings};
+use papergrid::{Entity, Grid, Settings};
 use std::fmt;
 
 mod alignment;
@@ -160,8 +160,7 @@ pub use crate::{
     alignment::*, disable::*, formating::*, highlight::*, indent::*, object::*, panel::*,
     rotate::*, style::Style, width::*,
 };
-// todo: Remove this publice exposure
-pub use papergrid;
+
 pub use tabled_derive::Tabled;
 
 /// Tabled a trait responsible for providing a header fields and a row fields.

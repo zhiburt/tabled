@@ -1,6 +1,5 @@
 use crate::util::create_vector;
-use papergrid::Border;
-use tabled::{Highlight, Style, Table};
+use tabled::{Border, Highlight, Style, Table};
 
 mod util;
 

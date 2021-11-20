@@ -1,7 +1,6 @@
 use crate::util::create_vector;
 use tabled::{
-    papergrid::Border, Alignment, Footer, Full, Header, Highlight, Modify, Object, Panel, Row,
-    Style, Table,
+    Alignment, Border, Footer, Full, Header, Highlight, Modify, Object, Panel, Row, Style, Table,
 };
 
 mod util;

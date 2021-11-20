@@ -1,9 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example panel`
 
-use tabled::{
-    papergrid::AlignmentHorizontal, Alignment, Footer, Full, Header, Modify, Style, Table, Tabled,
-};
+use tabled::{Alignment, AlignmentHorizontal, Footer, Full, Header, Modify, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Release {

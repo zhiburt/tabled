@@ -1,7 +1,9 @@
 #[allow(unused)]
 use crate::Table;
 use crate::TableOption;
-use papergrid::{Border, Entity, Grid, Settings};
+use papergrid::{Entity, Grid, Settings};
+
+pub use papergrid::Border;
 
 pub struct Highlight {
     target: Target,

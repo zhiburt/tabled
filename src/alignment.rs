@@ -1,9 +1,9 @@
 use crate::CellOption;
-#[allow(unused)]
-use crate::Table;
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
+use papergrid::{Entity, Grid, Settings};
 
-/// Alignment represent a horizontal and vertical alignemt setting for any cell on a [Table].
+pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
+
+/// Alignment represent a horizontal and vertical alignemt setting for any cell on a [crate::Table].
 ///
 /// ```rust,no_run
 ///   # use tabled::{Style, Alignment, Modify, Row, Table};

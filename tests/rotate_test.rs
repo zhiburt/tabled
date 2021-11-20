@@ -1,6 +1,6 @@
 // todo: add method for SPACING between cells.
 //       add MARGIN && PADDING instead of indent?
-use tabled::{papergrid::Border, Highlight, Rotate, Style, Table};
+use tabled::{Border, Highlight, Rotate, Style, Table};
 
 #[test]
 fn test_rotate() {
