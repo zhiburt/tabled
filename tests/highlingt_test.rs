@@ -1,7 +1,6 @@
 use papergrid::Border;
 use tabled::{Highlight, Style, Table, Tabled};
 
-
 #[derive(Tabled)]
 struct Linux {
     id: u8,
@@ -43,8 +42,16 @@ fn style_highlingt_cell() {
 
     let table = Table::new(&data)
         .with(Style::pseudo())
-        .with(Highlight::cell(0, 0, Border::full('+', '+', '+', '+', '+', '+', '+', '+')))
-        .with(Highlight::cell(1, 1, Border::full('*', '*', '*', '*', '*', '*', '*', '*')))
+        .with(Highlight::cell(
+            0,
+            0,
+            Border::full('+', '+', '+', '+', '+', '+', '+', '+'),
+        ))
+        .with(Highlight::cell(
+            1,
+            1,
+            Border::full('*', '*', '*', '*', '*', '*', '*', '*'),
+        ))
         .to_string();
 
     println!("{}", table);
@@ -86,15 +93,20 @@ fn style_highlingt_row() {
 
     let table = Table::new(&data)
         .with(Style::pseudo())
-        .with(Highlight::row(0, Border::full('+', '+', '+', '+', '+', '+', '+', '+')))
-        .with(Highlight::row(3, Border::full('*', '*', '*', '*', '*', '*', '*', '*')))
+        .with(Highlight::row(
+            0,
+            Border::full('+', '+', '+', '+', '+', '+', '+', '+'),
+        ))
+        .with(Highlight::row(
+            3,
+            Border::full('*', '*', '*', '*', '*', '*', '*', '*'),
+        ))
         .to_string();
 
     println!("{}", table);
 
     assert_eq!(table, expected);
 }
-
 
 #[test]
 fn style_highlingt_column() {
@@ -128,11 +140,16 @@ fn style_highlingt_column() {
         "++++++──────────────*****************************\n",
     );
 
-
     let table = Table::new(&data)
         .with(Style::pseudo())
-        .with(Highlight::column(0, Border::full('+', '+', '+', '+', '+', '+', '+', '+')))
-        .with(Highlight::column(2, Border::full('*', '*', '*', '*', '*', '*', '*', '*')))
+        .with(Highlight::column(
+            0,
+            Border::full('+', '+', '+', '+', '+', '+', '+', '+'),
+        ))
+        .with(Highlight::column(
+            2,
+            Border::full('*', '*', '*', '*', '*', '*', '*', '*'),
+        ))
         .to_string();
 
     println!("{}", table);
@@ -174,7 +191,11 @@ fn style_highlingt_row_range() {
 
     let table = Table::new(&data)
         .with(Style::pseudo())
-        .with(Highlight::row_range(1, 3, Border::full('+', '+', '+', '+', '+', '+', '+', '+')))
+        .with(Highlight::row_range(
+            1,
+            3,
+            Border::full('+', '+', '+', '+', '+', '+', '+', '+'),
+        ))
         .to_string();
 
     println!("{}", table);
@@ -214,10 +235,13 @@ fn style_highlingt_column_range() {
         "+++++++++++++++++++++───────────────────────────┘\n",
     );
 
-
     let table = Table::new(&data)
         .with(Style::pseudo())
-        .with(Highlight::column_range(0, 2, Border::full('+', '+', '+', '+', '+', '+', '+', '+')))
+        .with(Highlight::column_range(
+            0,
+            2,
+            Border::full('+', '+', '+', '+', '+', '+', '+', '+'),
+        ))
         .to_string();
 
     println!("{}", table);

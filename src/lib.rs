@@ -148,17 +148,17 @@ mod alignment;
 mod disable;
 pub mod display;
 mod formating;
+mod highlight;
 mod indent;
 mod object;
 mod panel;
 mod rotate;
 pub mod style;
 mod width;
-mod highlight;
 
 pub use crate::{
-    alignment::*, disable::*, formating::*, indent::*, object::*, panel::*, rotate::*,
-    style::Style, width::*, highlight::*,
+    alignment::*, disable::*, formating::*, highlight::*, indent::*, object::*, panel::*,
+    rotate::*, style::Style, width::*,
 };
 // todo: Remove this publice exposure
 pub use papergrid;
