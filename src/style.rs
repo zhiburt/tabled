@@ -6,6 +6,9 @@ use papergrid::{Border, Entity, Grid, Settings};
 // todo: rename default style to ascii
 //       default must be a general default implementation to be able to use highlight without influening actual style.
 
+// todo: make highlight argument to be Object instead of Entity
+// to be able to support highliting a subset of rows e.g. 
+
 /// Style is responsible for a look of a [Table].
 ///
 /// # Example
@@ -28,7 +31,6 @@ pub struct Style {
     header_split_line: Option<Line>,
     split: Option<Line>,
     inner_split_char: char,
-    highlight: Vec<(Entity, Border)>,
 }
 
 impl Style {
@@ -200,20 +202,12 @@ impl Style {
         self
     }
 
-    /// Add highlight for a given cell.
-    pub fn highlight(mut self, entity: Entity, border: Border) -> Self {
-        // suppose to be LeftToRight algorithm
-        self.highlight.push((entity, border));
-        self
-    }
-
     fn new(frame: Frame, header: Option<Line>, split: Option<Line>, inner: char) -> Self {
         Self {
             frame,
             split,
             header_split_line: header,
             inner_split_char: inner,
-            highlight: Vec::new(),
         }
     }
 }
@@ -277,15 +271,6 @@ impl TableOption for Style {
                     Settings::default().border(border).border_restriction(false),
                 );
             }
-        }
-
-        for (entity, brush) in &self.highlight {
-            grid.set(
-                entity,
-                Settings::default()
-                    .border(brush.clone())
-                    .border_restriction(false),
-            );
         }
     }
 }

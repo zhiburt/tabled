@@ -1,9 +1,6 @@
 // todo: add method for SPACING between cells.
 //       add MARGIN && PADDING instead of indent?
-use tabled::{
-    papergrid::{Border, Entity},
-    Rotate, Style, Table,
-};
+use tabled::{papergrid::Border, Highlight, Rotate, Style, Table};
 
 #[test]
 fn test_rotate() {
@@ -158,7 +155,8 @@ fn rotate_preserve_border_styles_test() {
     let data = [(123, 456, 789), (234, 567, 891), (111, 222, 333)];
 
     let table = Table::new(&data)
-        .with(Style::default().highlight(Entity::Row(0), Border::default().top('*')))
+        .with(Style::default())
+        .with(Highlight::row(0, Border::default().top('*')))
         .with(Rotate::Left)
         .to_string();
 
@@ -175,9 +173,9 @@ fn rotate_preserve_border_styles_test() {
         ),
     );
 
-
     let table = Table::new(&data)
-        .with(Style::default().highlight(Entity::Cell(0, 2), Border::default().bottom('*')))
+        .with(Style::default())
+        .with(Highlight::cell(0, 2, Border::default().bottom('*')))
         .with(Rotate::Left)
         .to_string();
 

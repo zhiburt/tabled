@@ -1,5 +1,7 @@
-use papergrid::{Border, Entity};
-use tabled::{Alignment, Footer, Full, Header, Modify, Object, Panel, Row, Style, Table, Tabled};
+use papergrid::Border;
+use tabled::{
+    Alignment, Footer, Full, Header, Highlight, Modify, Object, Panel, Row, Style, Table, Tabled,
+};
 
 #[test]
 fn panel_has_no_style_by_default() {
@@ -28,8 +30,10 @@ fn panel_has_no_style_by_default() {
 fn highligt_panel() {
     let table = Table::new(test_data())
         .with(Panel("Linux Distributions", 0))
-        .with(Style::psql().highlight(
-            Entity::Cell(0, 0),
+        .with(Style::psql())
+        .with(Highlight::cell(
+            0,
+            0,
             Border::full('#', '#', '#', '#', '#', '#', '#', '#'),
         ))
         .to_string();

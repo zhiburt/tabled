@@ -154,11 +154,13 @@ mod panel;
 mod rotate;
 pub mod style;
 mod width;
+mod highlight;
 
 pub use crate::{
     alignment::*, disable::*, formating::*, indent::*, object::*, panel::*, rotate::*,
-    style::Style, width::*,
+    style::Style, width::*, highlight::*,
 };
+// todo: Remove this publice exposure
 pub use papergrid;
 pub use tabled_derive::Tabled;
 
