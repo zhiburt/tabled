@@ -248,7 +248,7 @@ impl Table {
         let grid = build_grid(iter);
 
         let table = Self { grid };
-        table.with(Style::default())
+        table.with(Style::ascii())
     }
 
     /// With is a generic function which applies options to the [Table].

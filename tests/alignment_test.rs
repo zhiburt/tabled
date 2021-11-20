@@ -76,7 +76,7 @@ fn head_and_data_alignment() {
     );
 
     let table = Table::new(&data)
-        .with(Style::default())
+        .with(Style::ascii())
         .with(Modify::new(Head).with(Alignment::left()))
         .with(Modify::new(Row(1..)).with(Alignment::right()))
         .to_string();

@@ -36,7 +36,7 @@ fn disable_rows() {
     );
 
     let table = Table::new(&data)
-        .with(Style::default())
+        .with(Style::ascii())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Disable::Row(1..=2))
         .to_string();

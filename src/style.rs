@@ -47,7 +47,25 @@ impl Style {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     +----+--------------+---------------------------+
     /// ```
+    #[deprecated(note = "The name is not explicit. Use ascii function instead.")]
     pub fn default() -> Self {
+        Self::ascii()
+    }
+
+    /// Ascii style looks like the following table
+    ///
+    /// ```text
+    ///     +----+--------------+---------------------------+
+    ///     | id | destribution |           link            |
+    ///     +----+--------------+---------------------------+
+    ///     | 0  |    Fedora    |  https://getfedora.org/   |
+    ///     +----+--------------+---------------------------+
+    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
+    ///     +----+--------------+---------------------------+
+    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
+    ///     +----+--------------+---------------------------+
+    /// ```
+    pub fn ascii() -> Self {
         let line = Line::bordered('-', '+', '+', '+');
 
         Self::new(

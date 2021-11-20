@@ -40,7 +40,7 @@ fn default_style() {
         "+----+--------------+---------------------------+\n",
     );
 
-    let table = Table::new(&data).with(Style::default()).to_string();
+    let table = Table::new(&data).with(Style::ascii()).to_string();
 
     assert_eq!(table, expected);
 }
