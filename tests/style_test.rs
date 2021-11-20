@@ -1,324 +1,154 @@
+use crate::util::create_vector;
 use tabled::style::Line;
-use tabled::{Style, Table, Tabled};
+use tabled::{Style, Table};
 
-#[derive(Tabled)]
-struct Linux {
-    id: u8,
-    destribution: &'static str,
-    link: &'static str,
-}
+mod util;
 
 #[test]
 fn default_style() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(Style::ascii()).to_string();
 
     let expected = concat!(
-        "+----+--------------+---------------------------+\n",
-        "| id | destribution |           link            |\n",
-        "+----+--------------+---------------------------+\n",
-        "| 0  |    Fedora    |  https://getfedora.org/   |\n",
-        "+----+--------------+---------------------------+\n",
-        "| 2  |   OpenSUSE   | https://www.opensuse.org/ |\n",
-        "+----+--------------+---------------------------+\n",
-        "| 3  | Endeavouros  | https://endeavouros.com/  |\n",
-        "+----+--------------+---------------------------+\n",
+        "+---+----------+----------+----------+\n",
+        "| N | column 0 | column 1 | column 2 |\n",
+        "+---+----------+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |   0-2    |\n",
+        "+---+----------+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |   1-2    |\n",
+        "+---+----------+----------+----------+\n",
+        "| 2 |   2-0    |   2-1    |   2-2    |\n",
+        "+---+----------+----------+----------+\n",
     );
-
-    let table = Table::new(&data).with(Style::ascii()).to_string();
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn psql_style() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(Style::psql()).to_string();
 
     let expected = concat!(
-        " id | destribution |           link            \n",
-        "----+--------------+---------------------------\n",
-        " 0  |    Fedora    |  https://getfedora.org/   \n",
-        " 2  |   OpenSUSE   | https://www.opensuse.org/ \n",
-        " 3  | Endeavouros  | https://endeavouros.com/  \n",
+        " N | column 0 | column 1 | column 2 \n",
+        "---+----------+----------+----------\n",
+        " 0 |   0-0    |   0-1    |   0-2    \n",
+        " 1 |   1-0    |   1-1    |   1-2    \n",
+        " 2 |   2-0    |   2-1    |   2-2    \n",
     );
-
-    let table = Table::new(&data).with(Style::psql()).to_string();
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn github_markdown_style() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(Style::github_markdown()).to_string();
 
     let expected = concat!(
-        "| id | destribution |           link            |\n",
-        "|----+--------------+---------------------------|\n",
-        "| 0  |    Fedora    |  https://getfedora.org/   |\n",
-        "| 2  |   OpenSUSE   | https://www.opensuse.org/ |\n",
-        "| 3  | Endeavouros  | https://endeavouros.com/  |\n",
+        "| N | column 0 | column 1 | column 2 |\n",
+        "|---+----------+----------+----------|\n",
+        "| 0 |   0-0    |   0-1    |   0-2    |\n",
+        "| 1 |   1-0    |   1-1    |   1-2    |\n",
+        "| 2 |   2-0    |   2-1    |   2-2    |\n",
     );
-
-    let table = Table::new(&data).with(Style::github_markdown()).to_string();
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn pseudo_style() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "┌────┬──────────────┬───────────────────────────┐\n",
-        "│ id │ destribution │           link            │\n",
-        "├────┼──────────────┼───────────────────────────┤\n",
-        "│ 0  │    Fedora    │  https://getfedora.org/   │\n",
-        "├────┼──────────────┼───────────────────────────┤\n",
-        "│ 2  │   OpenSUSE   │ https://www.opensuse.org/ │\n",
-        "├────┼──────────────┼───────────────────────────┤\n",
-        "│ 3  │ Endeavouros  │ https://endeavouros.com/  │\n",
-        "└────┴──────────────┴───────────────────────────┘\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(Style::pseudo()).to_string();
 
-    println!("{}", table);
+    let expected = concat!(
+        "┌───┬──────────┬──────────┬──────────┐\n",
+        "│ N │ column 0 │ column 1 │ column 2 │\n",
+        "├───┼──────────┼──────────┼──────────┤\n",
+        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+        "├───┼──────────┼──────────┼──────────┤\n",
+        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+        "├───┼──────────┼──────────┼──────────┤\n",
+        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+        "└───┴──────────┴──────────┴──────────┘\n",
+    );
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn pseudo_clean_style() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(Style::pseudo_clean()).to_string();
 
     let expected = concat!(
-        "┌────┬──────────────┬───────────────────────────┐\n",
-        "│ id │ destribution │           link            │\n",
-        "├────┼──────────────┼───────────────────────────┤\n",
-        "│ 0  │    Fedora    │  https://getfedora.org/   │\n",
-        "│ 2  │   OpenSUSE   │ https://www.opensuse.org/ │\n",
-        "│ 3  │ Endeavouros  │ https://endeavouros.com/  │\n",
-        "└────┴──────────────┴───────────────────────────┘\n",
+        "┌───┬──────────┬──────────┬──────────┐\n",
+        "│ N │ column 0 │ column 1 │ column 2 │\n",
+        "├───┼──────────┼──────────┼──────────┤\n",
+        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+        "└───┴──────────┴──────────┴──────────┘\n",
     );
-
-    let table = Table::new(&data).with(Style::pseudo_clean()).to_string();
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn noborder_style() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(Style::noborder()).to_string();
 
     let expected = concat!(
-        " id   destribution             link            \n",
-        " 0       Fedora       https://getfedora.org/   \n",
-        " 2      OpenSUSE     https://www.opensuse.org/ \n",
-        " 3    Endeavouros    https://endeavouros.com/  \n",
+        " N   column 0   column 1   column 2 \n",
+        " 0     0-0        0-1        0-2    \n",
+        " 1     1-0        1-1        1-2    \n",
+        " 2     2-0        2-1        2-2    \n",
     );
-
-    let table = Table::new(&data).with(Style::noborder()).to_string();
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn style_head_changes() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "┌────┬──────────────┬───────────────────────────┐\n",
-        "│ id │ destribution │           link            │\n",
-        "│ 0  │    Fedora    │  https://getfedora.org/   │\n",
-        "│ 2  │   OpenSUSE   │ https://www.opensuse.org/ │\n",
-        "│ 3  │ Endeavouros  │ https://endeavouros.com/  │\n",
-        "└────┴──────────────┴───────────────────────────┘\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo_clean().header(None))
         .to_string();
+
+    let expected = concat!(
+        "┌───┬──────────┬──────────┬──────────┐\n",
+        "│ N │ column 0 │ column 1 │ column 2 │\n",
+        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+        "└───┴──────────┴──────────┴──────────┘\n",
+    );
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn style_frame_changes() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "│ id │ destribution │           link            │\n",
-        "├────┼──────────────┼───────────────────────────┤\n",
-        "│ 0  │    Fedora    │  https://getfedora.org/   │\n",
-        "│ 2  │   OpenSUSE   │ https://www.opensuse.org/ │\n",
-        "│ 3  │ Endeavouros  │ https://endeavouros.com/  │\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo_clean().frame_bottom(None).frame_top(None))
         .to_string();
+
+    let expected = concat!(
+        "│ N │ column 0 │ column 1 │ column 2 │\n",
+        "├───┼──────────┼──────────┼──────────┤\n",
+        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+    );
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn custom_style() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        " id \' destribution \'           link            \n",
-        "````\'``````````````\'```````````````````````````\n",
-        " 0  \'    Fedora    \'  https://getfedora.org/   \n",
-        "````\'``````````````\'```````````````````````````\n",
-        " 2  \'   OpenSUSE   \' https://www.opensuse.org/ \n",
-        "````\'``````````````\'```````````````````````````\n",
-        " 3  \' Endeavouros  \' https://endeavouros.com/  \n",
-        "****\'**************\'***************************\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(
             Style::noborder()
@@ -328,7 +158,16 @@ fn custom_style() {
         )
         .to_string();
 
-    println!("{}", table);
+    let expected = concat!(
+        " N ' column 0 ' column 1 ' column 2 \n",
+        "```'``````````'``````````'``````````\n",
+        " 0 '   0-0    '   0-1    '   0-2    \n",
+        "```'``````````'``````````'``````````\n",
+        " 1 '   1-0    '   1-1    '   1-2    \n",
+        "```'``````````'``````````'``````````\n",
+        " 2 '   2-0    '   2-1    '   2-2    \n",
+        "***'**********'**********'**********\n",
+    );
 
     assert_eq!(table, expected);
 }

@@ -1,45 +1,12 @@
+use crate::util::create_vector;
 use papergrid::Border;
-use tabled::{Highlight, Style, Table, Tabled};
+use tabled::{Highlight, Style, Table};
 
-#[derive(Tabled)]
-struct Linux {
-    id: u8,
-    destribution: &'static str,
-    link: &'static str,
-}
+mod util;
 
 #[test]
 fn style_highlingt_cell() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "++++++──────────────┬───────────────────────────┐\n",
-        "+ id + destribution │           link            │\n",
-        "+++++****************───────────────────────────┤\n",
-        "│ 0  *    Fedora    *  https://getfedora.org/   │\n",
-        "├────****************───────────────────────────┤\n",
-        "│ 2  │   OpenSUSE   │ https://www.opensuse.org/ │\n",
-        "├────┼──────────────┼───────────────────────────┤\n",
-        "│ 3  │ Endeavouros  │ https://endeavouros.com/  │\n",
-        "└────┴──────────────┴───────────────────────────┘\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
         .with(Highlight::cell(
@@ -54,43 +21,24 @@ fn style_highlingt_cell() {
         ))
         .to_string();
 
-    println!("{}", table);
+    let expected = concat!(
+        "+++++──────────┬──────────┬──────────┐\n",
+        "+ N + column 0 │ column 1 │ column 2 │\n",
+        "++++************──────────┼──────────┤\n",
+        "│ 0 *   0-0    *   0-1    │   0-2    │\n",
+        "├───************──────────┼──────────┤\n",
+        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+        "├───┼──────────┼──────────┼──────────┤\n",
+        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+        "└───┴──────────┴──────────┴──────────┘\n",
+    );
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn style_highlingt_row() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "+++++++++++++++++++++++++++++++++++++++++++++++++\n",
-        "+ id │ destribution │           link            +\n",
-        "+++++++++++++++++++++++++++++++++++++++++++++++++\n",
-        "│ 0  │    Fedora    │  https://getfedora.org/   │\n",
-        "├────┼──────────────┼───────────────────────────┤\n",
-        "│ 2  │   OpenSUSE   │ https://www.opensuse.org/ │\n",
-        "*************************************************\n",
-        "* 3  │ Endeavouros  │ https://endeavouros.com/  *\n",
-        "*************************************************\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
         .with(Highlight::row(
@@ -103,43 +51,24 @@ fn style_highlingt_row() {
         ))
         .to_string();
 
-    println!("{}", table);
+    let expected = concat!(
+        "++++++++++++++++++++++++++++++++++++++\n",
+        "+ N │ column 0 │ column 1 │ column 2 +\n",
+        "++++++++++++++++++++++++++++++++++++++\n",
+        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+        "├───┼──────────┼──────────┼──────────┤\n",
+        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+        "**************************************\n",
+        "* 2 │   2-0    │   2-1    │   2-2    *\n",
+        "**************************************\n",
+    );
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn style_highlingt_column() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "++++++──────────────*****************************\n",
-        "+ id + destribution *           link            *\n",
-        "+────+──────────────*───────────────────────────*\n",
-        "+ 0  +    Fedora    *  https://getfedora.org/   *\n",
-        "+────+──────────────*───────────────────────────*\n",
-        "+ 2  +   OpenSUSE   * https://www.opensuse.org/ *\n",
-        "+────+──────────────*───────────────────────────*\n",
-        "+ 3  + Endeavouros  * https://endeavouros.com/  *\n",
-        "++++++──────────────*****************************\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
         .with(Highlight::column(
@@ -152,43 +81,24 @@ fn style_highlingt_column() {
         ))
         .to_string();
 
-    println!("{}", table);
+    let expected = concat!(
+        "+++++──────────************──────────┐\n",
+        "+ N + column 0 * column 1 * column 2 │\n",
+        "+───+──────────*──────────*──────────┤\n",
+        "+ 0 +   0-0    *   0-1    *   0-2    │\n",
+        "+───+──────────*──────────*──────────┤\n",
+        "+ 1 +   1-0    *   1-1    *   1-2    │\n",
+        "+───+──────────*──────────*──────────┤\n",
+        "+ 2 +   2-0    *   2-1    *   2-2    │\n",
+        "+++++──────────************──────────┘\n",
+    );
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn style_highlingt_row_range() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "┌────┬──────────────┬───────────────────────────┐\n",
-        "│ id │ destribution │           link            │\n",
-        "+++++++++++++++++++++++++++++++++++++++++++++++++\n",
-        "+ 0  │    Fedora    │  https://getfedora.org/   +\n",
-        "+────┼──────────────┼───────────────────────────+\n",
-        "+ 2  │   OpenSUSE   │ https://www.opensuse.org/ +\n",
-        "+++++++++++++++++++++++++++++++++++++++++++++++++\n",
-        "│ 3  │ Endeavouros  │ https://endeavouros.com/  │\n",
-        "└────┴──────────────┴───────────────────────────┘\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
         .with(Highlight::row_range(
@@ -198,43 +108,24 @@ fn style_highlingt_row_range() {
         ))
         .to_string();
 
-    println!("{}", table);
+    let expected = concat!(
+        "┌───┬──────────┬──────────┬──────────┐\n",
+        "│ N │ column 0 │ column 1 │ column 2 │\n",
+        "++++++++++++++++++++++++++++++++++++++\n",
+        "+ 0 │   0-0    │   0-1    │   0-2    +\n",
+        "+───┼──────────┼──────────┼──────────+\n",
+        "+ 1 │   1-0    │   1-1    │   1-2    +\n",
+        "++++++++++++++++++++++++++++++++++++++\n",
+        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+        "└───┴──────────┴──────────┴──────────┘\n",
+    );
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn style_highlingt_column_range() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "+++++++++++++++++++++───────────────────────────┐\n",
-        "+ id │ destribution +           link            │\n",
-        "+────┼──────────────+───────────────────────────┤\n",
-        "+ 0  │    Fedora    +  https://getfedora.org/   │\n",
-        "+────┼──────────────+───────────────────────────┤\n",
-        "+ 2  │   OpenSUSE   + https://www.opensuse.org/ │\n",
-        "+────┼──────────────+───────────────────────────┤\n",
-        "+ 3  │ Endeavouros  + https://endeavouros.com/  │\n",
-        "+++++++++++++++++++++───────────────────────────┘\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
         .with(Highlight::column_range(
@@ -244,7 +135,17 @@ fn style_highlingt_column_range() {
         ))
         .to_string();
 
-    println!("{}", table);
+    let expected = concat!(
+        "++++++++++++++++──────────┬──────────┐\n",
+        "+ N │ column 0 + column 1 │ column 2 │\n",
+        "+───┼──────────+──────────┼──────────┤\n",
+        "+ 0 │   0-0    +   0-1    │   0-2    │\n",
+        "+───┼──────────+──────────┼──────────┤\n",
+        "+ 1 │   1-0    +   1-1    │   1-2    │\n",
+        "+───┼──────────+──────────┼──────────┤\n",
+        "+ 2 │   2-0    +   2-1    │   2-2    │\n",
+        "++++++++++++++++──────────┴──────────┘\n",
+    );
 
     assert_eq!(table, expected);
 }

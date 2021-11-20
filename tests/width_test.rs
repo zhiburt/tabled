@@ -1,86 +1,45 @@
-use tabled::{Column, Full, MaxWidth, Modify, Object, Row, Style, Table, Tabled};
+use crate::util::create_vector;
+use tabled::{Column, Full, MaxWidth, Modify, Object, Row, Style, Table};
 
-#[derive(Tabled)]
-struct Linux {
-    id: u8,
-    destribution: &'static str,
-    link: &'static str,
-}
+mod util;
 
 #[test]
 fn max_width() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "| id | destribution |  link  |\n",
-        "|----+--------------+--------|\n",
-        "| 0  |    Fed...    | htt... |\n",
-        "| 2  |    Ope...    | htt... |\n",
-        "| 3  |    End...    | htt... |\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(3, "...")))
+        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(2, "...")))
         .to_string();
+
+    let expected = concat!(
+        "| N | column 0 | column 1 | column 2 |\n",
+        "|---+----------+----------+----------|\n",
+        "| 0 |  0-...   |  0-...   |  0-...   |\n",
+        "| 1 |  1-...   |  1-...   |  1-...   |\n",
+        "| 2 |  2-...   |  2-...   |  2-...   |\n",
+    );
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn max_width_wrapped() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "| id | destribution |    link    |\n",
-        "|----+--------------+------------|\n",
-        "| 0  |    Fedora    | https://ge |\n",
-        "|    |              | tfedora.or |\n",
-        "|    |              |     g/     |\n",
-        "| 2  |   OpenSUSE   | https://ww |\n",
-        "|    |              | w.opensuse |\n",
-        "|    |              |   .org/    |\n",
-        "| 3  |  Endeavouro  | https://en |\n",
-        "|    |      s       | deavouros. |\n",
-        "|    |              |    com/    |\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::wrapping(10)))
+        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::wrapping(2)))
         .to_string();
+
+    let expected = concat!(
+        "| N | column 0 | column 1 | column 2 |\n",
+        "|---+----------+----------+----------|\n",
+        "| 0 |    0-    |    0-    |    0-    |\n",
+        "|   |    0     |    1     |    2     |\n",
+        "| 1 |    1-    |    1-    |    1-    |\n",
+        "|   |    0     |    1     |    2     |\n",
+        "| 2 |    2-    |    2-    |    2-    |\n",
+        "|   |    0     |    1     |    2     |\n",
+    );
 
     assert_eq!(table, expected);
 }
@@ -122,36 +81,19 @@ fn max_width_wrapped_collored() {
 
 #[test]
 fn dont_change_content_if_width_is_less_then_max_width() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        "| id | destribution |           link            |\n",
-        "|----+--------------+---------------------------|\n",
-        "| 0  |    Fedora    |  https://getfedora.org/   |\n",
-        "| 2  |   OpenSUSE   | https://www.opensuse.org/ |\n",
-        "| 3  | Endeavouros  | https://endeavouros.com/  |\n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::truncating(1000, "...")))
         .to_string();
+
+    let expected = concat!(
+        "| N | column 0 | column 1 | column 2 |\n",
+        "|---+----------+----------+----------|\n",
+        "| 0 |   0-0    |   0-1    |   0-2    |\n",
+        "| 1 |   1-0    |   1-1    |   1-2    |\n",
+        "| 2 |   2-0    |   2-1    |   2-2    |\n",
+    );
 
     assert_eq!(table, expected);
 }
