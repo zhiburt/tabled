@@ -1,6 +1,9 @@
 // todo: add method for SPACING between cells.
 //       add MARGIN && PADDING instead of indent?
-use tabled::{Full, Indent, Modify, Rotate, Style, Table, Tabled};
+use tabled::{
+    papergrid::{Border, Entity},
+    Rotate, Style, Table,
+};
 
 #[test]
 fn test_rotate() {
@@ -151,44 +154,45 @@ fn test_top_rotate() {
 }
 
 #[test]
-fn rotate_left_test() {
-    #[derive(Tabled)]
-    struct Linux {
-        id: u8,
-        destribution: &'static str,
-        link: &'static str,
-    }
-
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
+fn rotate_preserve_border_styles_test() {
+    let data = [(123, 456, 789), (234, 567, 891), (111, 222, 333)];
 
     let table = Table::new(&data)
+        .with(Style::default().highlight(Entity::Row(0), Border::default().top('*')))
         .with(Rotate::Left)
-        .with(Style::noborder())
-        .with(Modify::new(Full).with(Indent::new(1, 1, 0, 0)))
         .to_string();
 
     assert_eq!(
         table,
         concat!(
-            "     link       https://getfedora.org/   https://www.opensuse.org/   https://endeavouros.com/ \n",
-            " destribution           Fedora                   OpenSUSE                  Endeavouros        \n",
-            "      id                  0                          2                          3             \n"
+            "******+-----+-----+-----+\n",
+            "| i32 | 789 | 891 | 333 |\n",
+            "+-----+-----+-----+-----+\n",
+            "| i32 | 456 | 567 | 222 |\n",
+            "+-----+-----+-----+-----+\n",
+            "| i32 | 123 | 234 | 111 |\n",
+            "+-----+-----+-----+-----+\n",
+        ),
+    );
+
+
+    let table = Table::new(&data)
+        .with(Style::default().highlight(Entity::Cell(0, 2), Border::default().bottom('*')))
+        .with(Rotate::Left)
+        .to_string();
+
+    // it's a correct behaviour because
+    // when we sen bottom border of cell(0, 2) we also set top border of cell(1, 2)
+    assert_eq!(
+        table,
+        concat!(
+            "+-----+*****+-----+-----+\n",
+            "| i32 | 789 | 891 | 333 |\n",
+            "+*****+-----+-----+-----+\n",
+            "| i32 | 456 | 567 | 222 |\n",
+            "+-----+-----+-----+-----+\n",
+            "| i32 | 123 | 234 | 111 |\n",
+            "+-----+-----+-----+-----+\n",
         ),
     );
 }
