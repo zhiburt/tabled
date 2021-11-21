@@ -154,9 +154,9 @@ fn highlingt_frame() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
-        .with(Highlight::frame(
-            Border::full('+', '+', '+', '+', '+', '+', '+', '+'),
-        ))
+        .with(Highlight::frame(Border::full(
+            '+', '+', '+', '+', '+', '+', '+', '+',
+        )))
         .to_string();
 
     let expected = concat!(

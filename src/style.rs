@@ -3,12 +3,6 @@ use crate::Table;
 use crate::TableOption;
 use papergrid::{Border, Entity, Grid, Settings};
 
-// todo: rename default style to ascii
-//       default must be a general default implementation to be able to use highlight without influening actual style.
-
-// todo: make highlight argument to be Object instead of Entity
-// to be able to support highliting a subset of rows e.g.
-
 /// Style is responsible for a look of a [Table].
 ///
 /// # Example
