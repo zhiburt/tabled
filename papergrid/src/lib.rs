@@ -159,31 +159,23 @@ impl Grid {
         );
     }
 
-    pub fn insert_horizontal_split(&mut self, row: usize, line: SplitLine) {
+    fn insert_horizontal_split(&mut self, row: usize, line: SplitLine) {
         self.borders
             .set_horizontal(row, line.borders, &line.intersections)
             .unwrap();
     }
 
-    pub fn insert_vertical_split(&mut self, column: usize, line: SplitLine) {
+    fn insert_vertical_split(&mut self, column: usize, line: SplitLine) {
         self.borders
             .set_vertical(column, line.borders, &line.intersections)
             .unwrap();
     }
 
-    pub fn get_horizontal_split(&mut self, row: usize) -> Option<SplitLine> {
-        self.borders.get_horizontal(row).unwrap()
-    }
-
-    pub fn get_vertical_split(&mut self, row: usize) -> Option<SplitLine> {
-        self.borders.get_vertical(row).unwrap()
-    }
-
-    pub fn is_vertical_present(&mut self, column: usize) -> bool {
+    fn is_vertical_present(&mut self, column: usize) -> bool {
         self.borders.is_there_vertical(column)
     }
 
-    pub fn is_horizontal_present(&mut self, row: usize) -> bool {
+    fn is_horizontal_present(&mut self, row: usize) -> bool {
         self.borders.is_there_horizontal(row)
     }
 
@@ -1248,60 +1240,6 @@ impl Borders {
         }
     }
 
-    fn get_horizontal(&self, row: usize) -> Result<Option<SplitLine>, BorderError> {
-        if row > self.count_rows {
-            return Err(BorderError::WrongRowIndex);
-        }
-
-        if !self.horizontal.contains_key(&row) {
-            return Ok(None);
-        }
-
-        let symbols = self.horizontal.get(&row).unwrap();
-        assert_eq!(symbols.len(), self.count_columns);
-
-        let mut borders = Vec::new();
-        for &c in symbols {
-            borders.push(c);
-        }
-
-        let mut intersections = Vec::new();
-        for column in 0..self.count_columns {
-            if let Some(&c) = self.intersections.get(&(row, column)) {
-                intersections.push(c)
-            }
-        }
-
-        Ok(Some(SplitLine::new(borders, intersections)))
-    }
-
-    fn get_vertical(&self, column: usize) -> Result<Option<SplitLine>, BorderError> {
-        if column > self.count_columns {
-            return Err(BorderError::WrongColumnIndex);
-        }
-
-        if !self.horizontal.contains_key(&column) {
-            return Ok(None);
-        }
-
-        let symbols = self.vertical.get(&column).unwrap();
-        assert_eq!(symbols.len(), self.count_rows);
-
-        let mut borders = Vec::new();
-        for &c in symbols {
-            borders.push(c);
-        }
-
-        let mut intersections = Vec::new();
-        for row in 0..self.count_rows {
-            if let Some(&c) = self.intersections.get(&(row, column)) {
-                intersections.push(c)
-            }
-        }
-
-        Ok(Some(SplitLine::new(borders, intersections)))
-    }
-
     fn get_row(&self, row: usize) -> Result<Vec<BorderLine>, BorderError> {
         if row > self.count_rows {
             return Err(BorderError::WrongRowIndex);
@@ -1311,14 +1249,10 @@ impl Borders {
             return Ok(Vec::new());
         }
 
-        let symbols = self.horizontal.get(&row).unwrap();
-
-        assert_eq!(symbols.len(), self.count_columns);
-
-        let mut line = Vec::new();
-        for &main in symbols {
+        let mut line = Vec::with_capacity(self.count_columns);
+        for column in 0..self.count_columns {
             let border = BorderLine {
-                main: Some(main),
+                main: Some(self.get_horizontal_char(row, column).unwrap()),
                 connector1: None,
                 connector2: None,
             };
@@ -1327,13 +1261,8 @@ impl Borders {
         }
 
         for (column, border) in line.iter_mut().enumerate() {
-            if let Some(connector) = self.intersections.get(&(row, column)).cloned() {
-                border.connector1 = Some(connector);
-            }
-
-            if let Some(connector) = self.intersections.get(&(row, column + 1)).cloned() {
-                border.connector2 = Some(connector);
-            }
+            border.connector1 = self.get_intersection_char((row, column));
+            border.connector2 = self.get_intersection_char((row, column + 1));
         }
 
         Ok(line)
@@ -1347,20 +1276,17 @@ impl Borders {
         let mut line: Vec<BorderLine> = Vec::new();
         let mut last_index = None;
         for column in 0..self.count_columns + 1 {
-            let mut border = BorderLine::default();
+            let border = BorderLine {
+                connector1: self.get_vertical_char(row, column),
+                ..Default::default()
+            };
 
-            if let Some(symbols) = self.vertical.get(&column) {
-                assert_eq!(symbols.len(), self.count_rows);
-
-                let c = symbols[row];
-                border.connector1 = Some(c);
-
+            if border.connector1.is_some() {
                 if let Some(last) = last_index {
                     let mut last: &mut BorderLine = &mut line[last];
-                    last.connector2 = Some(c);
+                    last.connector2 = border.connector1;
                 }
             }
-
             last_index = Some(line.len());
 
             line.push(border);
@@ -1383,42 +1309,36 @@ impl Borders {
             self.count_columns,
         );
 
-        let mut border = Border::default();
-
-        if let Some(top_line) = self.horizontal.get(&frame.top_row) {
-            assert_eq!(top_line.len(), self.count_columns);
-            border.top = Some(top_line[column]);
-        }
-
-        if let Some(bottom_line) = self.horizontal.get(&frame.bottom_row) {
-            assert_eq!(bottom_line.len(), self.count_columns);
-            border.bottom = Some(bottom_line[column]);
-        }
-
-        if let Some(left) = self.vertical.get(&frame.left_column) {
-            assert_eq!(left.len(), self.count_rows);
-            border.left = Some(left[row]);
-        }
-
-        if let Some(right) = self.vertical.get(&frame.right_column) {
-            assert_eq!(right.len(), self.count_rows);
-            border.right = Some(right[row]);
-        }
-
-        if let Some(&c) = self.intersections.get(&frame.top_left_corner()) {
-            border.left_top_corner = Some(c);
-        }
-        if let Some(&c) = self.intersections.get(&frame.top_right_corner()) {
-            border.right_top_corner = Some(c);
-        }
-        if let Some(&c) = self.intersections.get(&frame.bottom_left_corner()) {
-            border.left_bottom_corner = Some(c);
-        }
-        if let Some(&c) = self.intersections.get(&frame.bottom_right_corner()) {
-            border.right_bottom_corner = Some(c);
-        }
+        let border = Border {
+            top: self.get_horizontal_char(frame.top_row, column),
+            bottom: self.get_horizontal_char(frame.bottom_row, column),
+            left: self.get_vertical_char(row, frame.left_column),
+            right: self.get_vertical_char(row, frame.right_column),
+            left_top_corner: self.get_intersection_char(frame.top_left_corner()),
+            left_bottom_corner: self.get_intersection_char(frame.bottom_left_corner()),
+            right_top_corner: self.get_intersection_char(frame.top_right_corner()),
+            right_bottom_corner: self.get_intersection_char(frame.bottom_right_corner()),
+        };
 
         Some(border)
+    }
+
+    fn get_horizontal_char(&self, row: usize, column: usize) -> Option<char> {
+        self.horizontal.get(&row).map(|line| {
+            assert_eq!(line.len(), self.count_columns);
+            line[column]
+        })
+    }
+
+    fn get_vertical_char(&self, row: usize, column: usize) -> Option<char> {
+        self.vertical.get(&column).map(|line| {
+            assert_eq!(line.len(), self.count_rows);
+            line[row]
+        })
+    }
+
+    fn get_intersection_char(&self, (row, column): GridPosition) -> Option<char> {
+        self.intersections.get(&(row, column)).copied()
     }
 
     fn set_horizontal(
