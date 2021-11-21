@@ -22,8 +22,6 @@
 //!     assert_eq!(expected, grid.to_string());
 //! ```
 
-// todo: Create method Grid::extract(&self) Self
-
 use std::{
     cmp::max,
     collections::HashMap,
@@ -202,7 +200,7 @@ impl Grid {
         self.borders.clear()
     }
 
-    pub fn set_border(&mut self, entity: &Entity, border: Border) {
+    fn set_border(&mut self, entity: &Entity, border: Border) {
         let [top_left, top_right, bottom_left, bottom_right] = self.frame_from_entity(entity);
         let left_column_index = top_left.1;
         let right_column_index = top_right.1;

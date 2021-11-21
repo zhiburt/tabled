@@ -4,7 +4,7 @@ use tabled::{Border, Highlight, Style, Table};
 mod util;
 
 #[test]
-fn style_highlingt_cell() {
+fn highlingt_cell() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
@@ -36,7 +36,7 @@ fn style_highlingt_cell() {
 }
 
 #[test]
-fn style_highlingt_row() {
+fn highlingt_row() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
@@ -66,7 +66,7 @@ fn style_highlingt_row() {
 }
 
 #[test]
-fn style_highlingt_column() {
+fn highlingt_column() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
@@ -96,7 +96,7 @@ fn style_highlingt_column() {
 }
 
 #[test]
-fn style_highlingt_row_range() {
+fn highlingt_row_range() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
@@ -123,7 +123,7 @@ fn style_highlingt_row_range() {
 }
 
 #[test]
-fn style_highlingt_column_range() {
+fn highlingt_column_range() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::pseudo())
@@ -144,6 +144,31 @@ fn style_highlingt_column_range() {
         "+───┼──────────+──────────┼──────────┤\n",
         "+ 2 │   2-0    +   2-1    │   2-2    │\n",
         "++++++++++++++++──────────┴──────────┘\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn highlingt_frame() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::pseudo())
+        .with(Highlight::frame(
+            Border::full('+', '+', '+', '+', '+', '+', '+', '+'),
+        ))
+        .to_string();
+
+    let expected = concat!(
+        "++++++++++++++++++++++++++++++++++++++\n",
+        "+ N │ column 0 │ column 1 │ column 2 +\n",
+        "+───┼──────────┼──────────┼──────────+\n",
+        "+ 0 │   0-0    │   0-1    │   0-2    +\n",
+        "+───┼──────────┼──────────┼──────────+\n",
+        "+ 1 │   1-0    │   1-1    │   1-2    +\n",
+        "+───┼──────────┼──────────┼──────────+\n",
+        "+ 2 │   2-0    │   2-1    │   2-2    +\n",
+        "++++++++++++++++++++++++++++++++++++++\n",
     );
 
     assert_eq!(table, expected);
