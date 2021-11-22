@@ -163,6 +163,8 @@ pub use crate::{
 
 pub use tabled_derive::Tabled;
 
+// todo: change return type to impl Iterator<Cow<str
+
 /// Tabled a trait responsible for providing a header fields and a row fields.
 ///
 /// It's urgent that `header` len is equal to `fields` len.
