@@ -2,8 +2,7 @@
 //! `cargo run --example inline`
 
 use tabled::{
-    papergrid::AlignmentHorizontal, Alignment, Full, Head, Indent, Modify, Row, Style, Table,
-    Tabled,
+    Alignment, AlignmentHorizontal, Full, Head, Indent, Modify, Row, Style, Table, Tabled,
 };
 
 fn main() {

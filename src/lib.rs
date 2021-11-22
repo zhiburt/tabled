@@ -141,13 +141,14 @@
 //! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
 //!
 
-use papergrid::{AlignmentHorizontal, Entity, Grid, Settings};
+use papergrid::{Entity, Grid, Settings};
 use std::fmt;
 
 mod alignment;
 mod disable;
 pub mod display;
 mod formating;
+mod highlight;
 mod indent;
 mod object;
 mod panel;
@@ -156,11 +157,13 @@ pub mod style;
 mod width;
 
 pub use crate::{
-    alignment::*, disable::*, formating::*, indent::*, object::*, panel::*, rotate::*,
-    style::Style, width::*,
+    alignment::*, disable::*, formating::*, highlight::*, indent::*, object::*, panel::*,
+    rotate::*, style::Style, width::*,
 };
-pub use papergrid;
+
 pub use tabled_derive::Tabled;
+
+// todo: change return type to impl Iterator<Cow<str
 
 /// Tabled a trait responsible for providing a header fields and a row fields.
 ///
@@ -246,7 +249,7 @@ impl Table {
         let grid = build_grid(iter);
 
         let table = Self { grid };
-        table.with(Style::default())
+        table.with(Style::ascii())
     }
 
     /// With is a generic function which applies options to the [Table].

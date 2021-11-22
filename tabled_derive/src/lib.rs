@@ -1,6 +1,6 @@
 extern crate proc_macro;
 
-use proc_macro::TokenStream;
+use proc_macro2::TokenStream;
 use quote::*;
 use std::str;
 use syn::{
@@ -9,19 +9,19 @@ use syn::{
 };
 
 #[proc_macro_derive(Tabled, attributes(header, field))]
-pub fn tabled(input: TokenStream) -> TokenStream {
+pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    impl_tabled(&input)
+    let ast = impl_tabled(&input);
+    proc_macro::TokenStream::from(ast)
 }
 
 fn impl_tabled(ast: &DeriveInput) -> TokenStream {
-    let attributes = data_attributes(&ast.data);
-    let headers = get_headers(&ast.data, &attributes);
-    let fields = get_fields(&ast.data, &attributes);
+    let info = collect_info(ast).unwrap();
+    let fields = info.values;
+    let headers = info.headers;
 
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
-
     let expanded = quote! {
         impl #impl_generics Tabled for #name #ty_generics #where_clause {
             fn fields(&self) -> Vec<String> {
@@ -34,150 +34,144 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
         }
     };
 
-    TokenStream::from(expanded)
+    expanded
 }
 
-fn get_headers(d: &Data, attrs: &[Attr]) -> proc_macro2::TokenStream {
-    let headers = match d {
-        Data::Struct(st) => get_st_headers(st, attrs),
-        Data::Enum(e) => get_enum_headers(e, attrs).concat(),
-        Data::Union(_) => todo!("it's not clear how to handle union type"),
-    };
-
-    quote!({
-        let v: Vec<Vec<String>> = vec![
-            #(#headers,)*
-        ];
-
-        v.concat()
-    })
+fn collect_info(ast: &DeriveInput) -> Result<Impl, String> {
+    match &ast.data {
+        Data::Struct(data) => collect_info_struct(data),
+        Data::Enum(data) => collect_info_enum(data),
+        Data::Union(_) => Err("Union type isn't supported".to_owned()),
+    }
 }
 
-fn data_attributes(d: &Data) -> Vec<Attr> {
-    let attrs_of_fields: Vec<&[Attribute]> = match d {
-        Data::Struct(st) => st.fields.iter().map(|f| f.attrs.as_slice()).collect(),
-        Data::Enum(e) => e.variants.iter().map(|v| v.attrs.as_slice()).collect(),
-        Data::Union(_) => todo!("it's not clear how to handle union type"),
-    };
-
-    attrs_of_fields
-        .into_iter()
-        .map(|attrs| Attr::parse(attrs))
-        .collect()
+fn collect_info_struct(ast: &DataStruct) -> Result<Impl, String> {
+    info_from_fields(&ast.fields, field_var_name, "")
 }
 
-fn get_st_headers(st: &DataStruct, attrs: &[Attr]) -> Vec<proc_macro2::TokenStream> {
-    st.fields
-        .iter()
-        .enumerate()
-        .filter(|(i, _)| !attrs[*i].is_ignored())
-        .map(|(i, f)| field_headers(f, &attrs[i], i, ""))
-        .collect()
+// todo: refactoring. instead of using a lambda + prefix
+// we could just not emit `self.` `_x` inside
+// So the calle would prefix it on its own
+fn info_from_fields(
+    fields: &Fields,
+    field_name: impl Fn(usize, &Field) -> TokenStream,
+    header_prefix: &str,
+) -> Result<Impl, String> {
+    let fields = fields.into_iter().enumerate().map(|(i, field)| {
+        let attributes = Attributes::parse(&field.attrs);
+        (i, field, attributes)
+    });
+
+    let mut headers = Vec::new();
+    let mut values = Vec::new();
+
+    for (i, field, attributes) in fields {
+        if attributes.is_ignored() {
+            continue;
+        }
+
+        let header = field_headers(field, i, &attributes, header_prefix);
+
+        headers.push(header);
+
+        let field_name = field_name(i, field);
+        let value = get_field_fields(field_name, &attributes);
+
+        values.push(value);
+    }
+
+    let headers = quote!({
+        let mut out = Vec::new();
+        #(out.extend(#headers);)*
+        out
+    });
+
+    let values = quote!({
+        let mut out = Vec::new();
+        #(out.extend(#values);)*
+        out
+    });
+
+    Ok(Impl { headers, values })
 }
 
 fn field_headers(
     field: &Field,
-    attr: &Attr,
     index: usize,
+    attributes: &Attributes,
     prefix: &str,
-) -> proc_macro2::TokenStream {
-    if attr.inline {
-        inline_header(&field.ty, attr, prefix)
+) -> TokenStream {
+    if attributes.inline {
+        return get_type_headers(&field.ty, &attributes.inline_prefix, "");
+    }
+
+    let header_name = field_header_name(field, attributes, index);
+    if !prefix.is_empty() {
+        quote!(vec![format!("{}{}", #prefix, #header_name)])
     } else {
-        let header = field_header_name(field, attr, index);
-        if !prefix.is_empty() {
-            quote!(vec![format!("{}{}", #prefix, #header)])
-        } else {
-            quote!(vec![String::from(#header)])
-        }
+        quote!(vec![String::from(#header_name)])
     }
 }
 
-fn inline_header(t: &Type, attr: &Attr, prefix: &str) -> proc_macro2::TokenStream {
-    let inline_prefix = &attr.inline_prefix;
-    if inline_prefix.is_empty() && prefix.is_empty() {
-        quote! {
-            <#t as Tabled>::headers()
+fn collect_info_enum(ast: &DataEnum) -> Result<Impl, String> {
+    let mut variants = Vec::new();
+    for variant in &ast.variants {
+        let attributes = Attributes::parse(&variant.attrs);
+        if attributes.is_ignored() {
+            continue;
         }
+
+        let info = info_from_variant(variant, &attributes)?;
+        variants.push((variant, info));
+    }
+
+    let headers_list = variants.iter().map(|(_, i)| &i.headers).collect::<Vec<_>>();
+    let headers = quote! {
+        vec![
+            #(#headers_list,)*
+        ]
+        .concat()
+    };
+
+    let values = values_for_enum(variants);
+
+    Ok(Impl { headers, values })
+}
+
+fn info_from_variant(variant: &Variant, attributes: &Attributes) -> Result<Impl, String> {
+    if attributes.inline {
+        return info_from_fields(&variant.fields, variant_var_name, &attributes.inline_prefix);
+    }
+
+    let variant_name = variant_name(variant, attributes);
+    let value = "+";
+
+    // we need exactly string because of it must be inlined as string
+    let headers = quote! {vec![#variant_name.to_string()]};
+    // we need exactly string because of it must be inlined as string
+    let values = quote! {vec![#value.to_string()]};
+
+    Ok(Impl { headers, values })
+}
+
+struct Impl {
+    headers: TokenStream,
+    values: TokenStream,
+}
+
+fn get_type_headers(field_type: &Type, inline_prefix: &str, prefix: &str) -> TokenStream {
+    if prefix.is_empty() && inline_prefix.is_empty() {
+        quote! { <#field_type as Tabled>::headers() }
     } else {
         quote! {
-            <#t as Tabled>::headers().into_iter()
+            <#field_type as Tabled>::headers().into_iter()
                 .map(|header| format!("{}{}{}", #prefix, #inline_prefix, header))
                 .collect::<Vec<_>>()
         }
     }
 }
 
-fn get_enum_headers(e: &DataEnum, attrs: &[Attr]) -> Vec<Vec<proc_macro2::TokenStream>> {
-    e.variants
-        .iter()
-        .enumerate()
-        .filter(|(i, _)| !attrs[*i].is_ignored())
-        .map(|(i, v)| variant_headers(v, &attrs[i]))
-        .collect::<Vec<_>>()
-}
-
-fn variant_headers(variant: &Variant, attr: &Attr) -> Vec<proc_macro2::TokenStream> {
-    if attr.inline {
-        let prefix = &attr.inline_prefix;
-
-        let mut calls = Vec::new();
-        for (index, field) in variant.fields.iter().enumerate() {
-            let field_attr = Attr::parse(&field.attrs);
-            if field_attr.is_ignored() {
-                continue;
-            }
-
-            let call = field_headers(field, &field_attr, index, prefix);
-            calls.push(call);
-        }
-
-        calls
-    } else {
-        let header = attr
-            .name
-            .clone()
-            .unwrap_or_else(|| variant.ident.to_string());
-        vec![quote!(vec![String::from(#header)])]
-    }
-}
-
-fn get_fields(d: &Data, attrs: &[Attr]) -> proc_macro2::TokenStream {
-    match d {
-        Data::Struct(st) => {
-            let fields = get_st_fields(st, attrs);
-            quote! {
-                {
-                    let v: Vec<Vec<String>> = vec![
-                        #(#fields,)*
-                    ];
-
-                    v.concat()
-                }
-            }
-        }
-        Data::Enum(e) => get_enum_fields(e, attrs),
-        Data::Union(_) => todo!("it's not clear how to handle union type"),
-    }
-}
-
-fn get_st_fields(st: &DataStruct, attrs: &[Attr]) -> Vec<proc_macro2::TokenStream> {
-    let mut v = Vec::new();
-    for (i, field) in st.fields.iter().enumerate() {
-        if attrs[i].is_ignored() {
-            continue;
-        }
-
-        let field_var = field_var_name(field, i);
-        let fields = get_field_fields(field_var, &attrs[i]);
-
-        v.push(fields);
-    }
-
-    v
-}
-
-fn get_field_fields(field: proc_macro2::TokenStream, attr: &Attr) -> proc_macro2::TokenStream {
+fn get_field_fields(field: TokenStream, attr: &Attributes) -> TokenStream {
     if attr.inline {
         return quote! { #field.fields() };
     }
@@ -190,7 +184,7 @@ fn get_field_fields(field: proc_macro2::TokenStream, attr: &Attr) -> proc_macro2
     quote!(vec![format!("{}", #field)])
 }
 
-fn use_function_for(field: proc_macro2::TokenStream, function: &str) -> proc_macro2::TokenStream {
+fn use_function_for(field: TokenStream, function: &str) -> TokenStream {
     let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
     match path {
         Ok(path) => {
@@ -203,53 +197,44 @@ fn use_function_for(field: proc_macro2::TokenStream, function: &str) -> proc_mac
     }
 }
 
-fn field_var_name(field: &Field, index: usize) -> proc_macro2::TokenStream {
-    field.ident.as_ref().map_or_else(
-        || {
-            let mut s = quote!(self.);
-            s.extend(Index::from(index).to_token_stream());
-            s
-        },
-        |f| quote!(self.#f),
-    )
+fn field_var_name(index: usize, field: &Field) -> TokenStream {
+    let f = field.ident.as_ref().map_or_else(
+        || Index::from(index).to_token_stream(),
+        |i| i.to_token_stream(),
+    );
+    quote!(self.#f)
 }
 
-fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
-    let fields = e
-        .variants
+fn variant_var_name(index: usize, field: &Field) -> TokenStream {
+    match &field.ident {
+        Some(indent) => indent.to_token_stream(),
+        None => Ident::new(
+            format!("x_{}", index).as_str(),
+            proc_macro2::Span::call_site(),
+        )
+        .to_token_stream(),
+    }
+}
+
+fn values_for_enum(variants: Vec<(&Variant, Impl)>) -> TokenStream {
+    let branches = variants.iter().map(|(variant, _)| match_variant(variant));
+
+    let headers = variants
         .iter()
-        .enumerate()
-        .filter(|(i, _)| !attrs[*i].is_ignored())
-        .map(|(i, v)| variant_fields(v, &attrs[i]))
+        .map(|(_, info)| &info.headers)
         .collect::<Vec<_>>();
 
-    let branches = e
-        .variants
+    let fields = variants
         .iter()
-        .enumerate()
-        .filter(|(i, _)| !attrs[*i].is_ignored())
-        .map(|(i, v)| variant_match_branches(v, &attrs[i]))
+        .map(|(_, info)| &info.values)
         .collect::<Vec<_>>();
 
-    assert_eq!(branches.len(), fields.len());
-
-    let headers = get_enum_headers(e, attrs)
-        .into_iter()
-        .map(|headers| {
-            quote! {
-                vec![
-                    #(#headers,)*
-                ]
-            }
-        })
-        .collect::<Vec<proc_macro2::TokenStream>>();
-
-    let mut stream = proc_macro2::TokenStream::new();
+    let mut stream = TokenStream::new();
     for (i, (branch, fields)) in branches.into_iter().zip(fields).enumerate() {
         let branch = quote! {
             Self::#branch => {
                 let offset = offsets[#i];
-                let fields: Vec<String> = vec![#(#fields),*].concat();
+                let fields: Vec<String> = #fields;
 
                 for (i, field) in fields.into_iter().enumerate() {
                     out_vec[i+offset] = field;
@@ -268,8 +253,8 @@ fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
         //
         // It's a bit strange trick but I haven't found any better
         // how to calculate a size and offset.
-        let headers: Vec<Vec<Vec<String>>> = vec![#(#headers,)*];
-        let lengths = headers.iter().map(|values| values.iter().map(|values| values.len()).sum::<usize>()).collect::<Vec<_>>();
+        let headers: Vec<Vec<String>> = vec![#(#headers,)*];
+        let lengths = headers.iter().map(|values| values.len()).collect::<Vec<_>>();
         let size = lengths.iter().sum::<usize>();
         let offsets: Vec<usize> = lengths.iter().fold(Vec::new(), |mut acc, len| {
             // offset of 1 element is 0
@@ -294,65 +279,31 @@ fn get_enum_fields(e: &DataEnum, attrs: &[Attr]) -> proc_macro2::TokenStream {
     }
 }
 
-fn variant_fields(v: &Variant, attr: &Attr) -> Vec<proc_macro2::TokenStream> {
-    if !attr.inline {
-        return vec![quote!(vec!["+".to_string()])];
-    }
-
-    let branch_idents = variant_idents(v);
-    if branch_idents.is_empty() {
-        return vec![quote!(vec!["+".to_string()])];
-    }
-
-    branch_idents
-        .into_iter()
-        .zip(v.fields.iter().map(|field| Attr::parse(&field.attrs)))
-        .filter(|(_, attr)| !attr.is_ignored())
-        .map(|(ident, attr)| get_field_fields(ident.to_token_stream(), &attr))
-        .collect()
-}
-
-fn variant_idents(v: &Variant) -> Vec<Ident> {
+fn variant_idents(v: &Variant) -> Vec<TokenStream> {
     v.fields
         .iter()
         .enumerate()
         // we intentionally not ignore these fields to be able to build a pattern correctly
         // .filter(|(_, field)| !Attr::parse(&field.attrs).is_ignored())
-        .map(|(index, field)| {
-            if let Some(ident) = field.ident.as_ref() {
-                ident.clone()
-            } else {
-                let tmp_var = Ident::new(
-                    format!("x_{}", index).as_str(),
-                    proc_macro2::Span::call_site(),
-                );
-
-                tmp_var
-            }
-        })
+        .map(|(index, field)| variant_var_name(index, field))
         .collect::<Vec<_>>()
 }
 
-fn variant_match_branches(v: &Variant, attr: &Attr) -> proc_macro2::TokenStream {
-    let mut token = proc_macro2::TokenStream::new();
+fn match_variant(v: &Variant) -> TokenStream {
+    let mut token = TokenStream::new();
     token.append_all(v.ident.to_token_stream());
 
-    let fields = if attr.inline {
-        let fields = variant_idents(v);
-        quote! (#(#fields, )*)
-    } else {
-        quote!(..)
-    };
+    let fields = variant_idents(v);
 
     match &v.fields {
         Fields::Named(_) => {
             token::Brace::default().surround(&mut token, |s| {
-                s.append_all(fields);
+                s.append_separated(fields, quote! {,});
             });
         }
         Fields::Unnamed(_) => {
             token::Paren::default().surround(&mut token, |s| {
-                s.append_all(fields);
+                s.append_separated(fields, quote! {,});
             });
         }
         Fields::Unit => {}
@@ -361,7 +312,14 @@ fn variant_match_branches(v: &Variant, attr: &Attr) -> proc_macro2::TokenStream 
     token
 }
 
-fn field_header_name(f: &Field, attr: &Attr, index: usize) -> String {
+fn variant_name(variant: &Variant, attributes: &Attributes) -> String {
+    attributes
+        .name
+        .clone()
+        .unwrap_or_else(|| variant.ident.to_string())
+}
+
+fn field_header_name(f: &Field, attr: &Attributes, index: usize) -> String {
     match &attr.name {
         Some(name) => name.to_string(),
         None => match f.ident.as_ref() {
@@ -373,7 +331,7 @@ fn field_header_name(f: &Field, attr: &Attr, index: usize) -> String {
 
 // It would be cool to create a library for a parsing attributes
 #[derive(Debug)]
-struct Attr {
+struct Attributes {
     hidden: bool,
     inline: bool,
     inline_prefix: String,
@@ -381,7 +339,7 @@ struct Attr {
     display_with: Option<String>,
 }
 
-impl Attr {
+impl Attributes {
     fn parse(attrs: &[Attribute]) -> Self {
         let is_ignored = attrs_has_ignore_sign(attrs);
         let should_be_inlined = should_be_inlined(attrs);
@@ -389,7 +347,7 @@ impl Attr {
         let display_with = check_display_with_func(attrs);
         let override_header_name = override_header_name(attrs);
 
-        Attr {
+        Self {
             display_with,
             hidden: is_ignored,
             inline: should_be_inlined,

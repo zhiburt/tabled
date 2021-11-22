@@ -25,7 +25,6 @@ pub struct Style {
     header_split_line: Option<Line>,
     split: Option<Line>,
     inner_split_char: char,
-    highlight: Vec<(Entity, Border)>,
 }
 
 impl Style {
@@ -42,7 +41,25 @@ impl Style {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     +----+--------------+---------------------------+
     /// ```
+    #[deprecated(note = "The name is not explicit. Use ascii function instead.")]
     pub fn default() -> Self {
+        Self::ascii()
+    }
+
+    /// Ascii style looks like the following table
+    ///
+    /// ```text
+    ///     +----+--------------+---------------------------+
+    ///     | id | destribution |           link            |
+    ///     +----+--------------+---------------------------+
+    ///     | 0  |    Fedora    |  https://getfedora.org/   |
+    ///     +----+--------------+---------------------------+
+    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
+    ///     +----+--------------+---------------------------+
+    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
+    ///     +----+--------------+---------------------------+
+    /// ```
+    pub fn ascii() -> Self {
         let line = Line::bordered('-', '+', '+', '+');
 
         Self::new(
@@ -197,20 +214,12 @@ impl Style {
         self
     }
 
-    /// Add highlight for a given cell.
-    pub fn highlight(mut self, entity: Entity, border: Border) -> Self {
-        // suppose to be LeftToRight algorithm
-        self.highlight.push((entity, border));
-        self
-    }
-
     fn new(frame: Frame, header: Option<Line>, split: Option<Line>, inner: char) -> Self {
         Self {
             frame,
             split,
             header_split_line: header,
             inner_split_char: inner,
-            highlight: Vec::new(),
         }
     }
 }
@@ -274,15 +283,6 @@ impl TableOption for Style {
                     Settings::default().border(border).border_restriction(false),
                 );
             }
-        }
-
-        for (entity, brush) in &self.highlight {
-            grid.set(
-                entity,
-                Settings::default()
-                    .border(brush.clone())
-                    .border_restriction(false),
-            );
         }
     }
 }

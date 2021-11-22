@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example basic`
 
-use tabled::{papergrid::AlignmentHorizontal, Alignment, Head, Modify, Row, Style, Table, Tabled};
+use tabled::{Alignment, AlignmentHorizontal, Head, Modify, Row, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {

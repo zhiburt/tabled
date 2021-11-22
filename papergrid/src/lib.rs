@@ -22,8 +22,6 @@
 //!     assert_eq!(expected, grid.to_string());
 //! ```
 
-// todo: Create method Grid::extract(&self) Self
-
 use std::{
     cmp::max,
     collections::HashMap,
@@ -132,11 +130,12 @@ impl Grid {
         }
 
         if let Some(border) = settings.border {
+            let frame = self.frame_from_entity(entity);
             if settings.border_split_check {
-                self.add_split_lines_for_border(entity, &border);
+                self.add_split_lines_for_border(&frame, &border);
             }
 
-            self.set_border(entity, border);
+            self.set_border(&frame, border);
         }
     }
 
@@ -160,31 +159,23 @@ impl Grid {
         );
     }
 
-    pub fn insert_horizontal_split(&mut self, row: usize, line: SplitLine) {
+    fn insert_horizontal_split(&mut self, row: usize, line: SplitLine) {
         self.borders
             .set_horizontal(row, line.borders, &line.intersections)
             .unwrap();
     }
 
-    pub fn insert_vertical_split(&mut self, column: usize, line: SplitLine) {
+    fn insert_vertical_split(&mut self, column: usize, line: SplitLine) {
         self.borders
             .set_vertical(column, line.borders, &line.intersections)
             .unwrap();
     }
 
-    pub fn get_horizontal_split(&mut self, row: usize) -> Option<SplitLine> {
-        self.borders.get_horizontal(row).unwrap()
-    }
-
-    pub fn get_vertical_split(&mut self, row: usize) -> Option<SplitLine> {
-        self.borders.get_vertical(row).unwrap()
-    }
-
-    pub fn is_vertical_present(&mut self, column: usize) -> bool {
+    fn is_vertical_present(&mut self, column: usize) -> bool {
         self.borders.is_there_vertical(column)
     }
 
-    pub fn is_horizontal_present(&mut self, row: usize) -> bool {
+    fn is_horizontal_present(&mut self, row: usize) -> bool {
         self.borders.is_there_horizontal(row)
     }
 
@@ -202,100 +193,88 @@ impl Grid {
         self.borders.clear()
     }
 
-    pub fn set_border(&mut self, entity: &Entity, border: Border) {
-        let [top_left, top_right, bottom_left, bottom_right] = self.frame_from_entity(entity);
-        let left_column_index = top_left.1;
-        let right_column_index = top_right.1;
-        let top_row_index = top_left.0;
-        let bottom_row_index = bottom_left.0;
-
+    fn set_border(&mut self, frame: &EntityFrame, border: Border) {
         if let Some(top) = border.top {
-            for column in left_column_index..right_column_index {
+            for column in frame.left_column..frame.right_column {
                 self.borders
-                    .set_row_symbol((top_row_index, column), top)
+                    .set_row_symbol((frame.top_row, column), top)
                     .unwrap();
 
                 // in case it continues line we change intersection symbol
-                if right_column_index - left_column_index > 1 {
+                if frame.right_column - frame.left_column > 1 {
                     self.borders
-                        .set_intersection((top_row_index, column), top)
+                        .set_intersection((frame.top_row, column), top)
                         .unwrap();
                 }
             }
         }
 
         if let Some(bottom) = border.bottom {
-            for column in left_column_index..right_column_index {
+            for column in frame.left_column..frame.right_column {
                 self.borders
-                    .set_row_symbol((bottom_row_index, column), bottom)
+                    .set_row_symbol((frame.bottom_row, column), bottom)
                     .unwrap();
 
                 // in case it continues line we change intersection symbol
-                if right_column_index - left_column_index > 1 {
+                if frame.right_column - frame.left_column > 1 {
                     self.borders
-                        .set_intersection((bottom_row_index, column), bottom)
+                        .set_intersection((frame.bottom_row, column), bottom)
                         .unwrap();
                 }
             }
         }
 
         if let Some(left) = border.left {
-            for row in top_row_index..bottom_row_index {
+            for row in frame.top_row..frame.bottom_row {
                 self.borders
-                    .set_column_symbol((row, left_column_index), left)
+                    .set_column_symbol((row, frame.left_column), left)
                     .unwrap();
 
                 // in case it continues line we change intersection symbol
-                if bottom_row_index - top_row_index > 1 {
+                if frame.bottom_row - frame.top_row > 1 {
                     self.borders
-                        .set_intersection((row, left_column_index), left)
+                        .set_intersection((row, frame.left_column), left)
                         .unwrap();
                 }
             }
         }
 
         if let Some(right) = border.right {
-            for row in top_row_index..bottom_row_index {
+            for row in frame.top_row..frame.bottom_row {
                 self.borders
-                    .set_column_symbol((row, right_column_index), right)
+                    .set_column_symbol((row, frame.right_column), right)
                     .unwrap();
 
                 // in case it continues line we change intersection symbol
-                if bottom_row_index - top_row_index > 1 {
+                if frame.bottom_row - frame.top_row > 1 {
                     self.borders
-                        .set_intersection((row, right_column_index), right)
+                        .set_intersection((row, frame.right_column), right)
                         .unwrap();
                 }
             }
         }
 
-        if let Some(bottom_right_corner) = border.right_bottom_corner {
-            self.borders
-                .set_intersection(bottom_right, bottom_right_corner)
-                .unwrap();
-        }
-
         if let Some(top_left_corner) = border.left_top_corner {
             self.borders
-                .set_intersection(top_left, top_left_corner)
+                .set_intersection(frame.top_left_corner(), top_left_corner)
                 .unwrap();
         }
 
         if let Some(top_right_corner) = border.right_top_corner {
             self.borders
-                .set_intersection(top_right, top_right_corner)
+                .set_intersection(frame.top_right_corner(), top_right_corner)
                 .unwrap();
         }
 
         if let Some(bottom_left_corner) = border.left_bottom_corner {
             self.borders
-                .set_intersection(bottom_left, bottom_left_corner)
+                .set_intersection(frame.bottom_left_corner(), bottom_left_corner)
                 .unwrap();
         }
 
         if let Some(bottom_right_corner) = border.right_bottom_corner {
             self.borders
-                .set_intersection(bottom_right, bottom_right_corner)
+                .set_intersection(frame.bottom_right_corner(), bottom_right_corner)
                 .unwrap();
         }
     }
@@ -441,27 +420,21 @@ impl Grid {
         new_grid
     }
 
-    fn add_split_lines_for_border(&mut self, entity: &Entity, border: &Border) {
-        let [top_left, top_right, bottom_left, _] = self.frame_from_entity(entity);
-        let left_column = top_left.1;
-        let right_column = top_right.1;
-        let top_row = top_left.0;
-        let bottom_row = bottom_left.0;
-
-        if border.left.is_some() && !self.is_vertical_present(left_column) {
-            self.add_vertical_split(left_column)
+    fn add_split_lines_for_border(&mut self, frame: &EntityFrame, border: &Border) {
+        if border.left.is_some() && !self.is_vertical_present(frame.left_column) {
+            self.add_vertical_split(frame.left_column)
         }
 
-        if border.right.is_some() && !self.is_vertical_present(right_column) {
-            self.add_vertical_split(right_column)
+        if border.right.is_some() && !self.is_vertical_present(frame.right_column) {
+            self.add_vertical_split(frame.right_column)
         }
 
-        if border.top.is_some() && !self.is_horizontal_present(top_row) {
-            self.add_horizontal_split(top_row)
+        if border.top.is_some() && !self.is_horizontal_present(frame.top_row) {
+            self.add_horizontal_split(frame.top_row)
         }
 
-        if border.bottom.is_some() && !self.is_horizontal_present(bottom_row) {
-            self.add_horizontal_split(bottom_row)
+        if border.bottom.is_some() && !self.is_horizontal_present(frame.bottom_row) {
+            self.add_horizontal_split(frame.bottom_row)
         }
     }
 
@@ -497,8 +470,8 @@ impl Grid {
         rows
     }
 
-    fn frame_from_entity(&self, entity: &Entity) -> [GridPosition; 4] {
-        entity_corners(entity, self.count_rows(), self.count_columns())
+    fn frame_from_entity(&self, entity: &Entity) -> EntityFrame {
+        entity_frame(entity, self.count_rows(), self.count_columns())
     }
 
     fn get_split_line(&self, index: usize) -> Vec<BorderLine> {
@@ -631,6 +604,41 @@ pub enum Entity {
     Row(usize),
     /// A particular cell (row, column) on the grid.
     Cell(usize, usize),
+}
+
+#[derive(PartialEq, Eq, Debug, Hash, Clone)]
+struct EntityFrame {
+    left_column: usize,
+    right_column: usize,
+    top_row: usize,
+    bottom_row: usize,
+}
+
+impl EntityFrame {
+    fn new(left_column: usize, right_column: usize, top_row: usize, bottom_row: usize) -> Self {
+        Self {
+            left_column,
+            right_column,
+            top_row,
+            bottom_row,
+        }
+    }
+
+    fn top_left_corner(&self) -> GridPosition {
+        (self.top_row, self.left_column)
+    }
+
+    fn top_right_corner(&self) -> GridPosition {
+        (self.top_row, self.right_column)
+    }
+
+    fn bottom_left_corner(&self) -> GridPosition {
+        (self.bottom_row, self.left_column)
+    }
+
+    fn bottom_right_corner(&self) -> GridPosition {
+        (self.bottom_row, self.right_column)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -1232,60 +1240,6 @@ impl Borders {
         }
     }
 
-    fn get_horizontal(&self, row: usize) -> Result<Option<SplitLine>, BorderError> {
-        if row > self.count_rows {
-            return Err(BorderError::WrongRowIndex);
-        }
-
-        if !self.horizontal.contains_key(&row) {
-            return Ok(None);
-        }
-
-        let symbols = self.horizontal.get(&row).unwrap();
-        assert_eq!(symbols.len(), self.count_columns);
-
-        let mut borders = Vec::new();
-        for &c in symbols {
-            borders.push(c);
-        }
-
-        let mut intersections = Vec::new();
-        for column in 0..self.count_columns {
-            if let Some(&c) = self.intersections.get(&(row, column)) {
-                intersections.push(c)
-            }
-        }
-
-        Ok(Some(SplitLine::new(borders, intersections)))
-    }
-
-    fn get_vertical(&self, column: usize) -> Result<Option<SplitLine>, BorderError> {
-        if column > self.count_columns {
-            return Err(BorderError::WrongColumnIndex);
-        }
-
-        if !self.horizontal.contains_key(&column) {
-            return Ok(None);
-        }
-
-        let symbols = self.vertical.get(&column).unwrap();
-        assert_eq!(symbols.len(), self.count_rows);
-
-        let mut borders = Vec::new();
-        for &c in symbols {
-            borders.push(c);
-        }
-
-        let mut intersections = Vec::new();
-        for row in 0..self.count_rows {
-            if let Some(&c) = self.intersections.get(&(row, column)) {
-                intersections.push(c)
-            }
-        }
-
-        Ok(Some(SplitLine::new(borders, intersections)))
-    }
-
     fn get_row(&self, row: usize) -> Result<Vec<BorderLine>, BorderError> {
         if row > self.count_rows {
             return Err(BorderError::WrongRowIndex);
@@ -1295,14 +1249,10 @@ impl Borders {
             return Ok(Vec::new());
         }
 
-        let symbols = self.horizontal.get(&row).unwrap();
-
-        assert_eq!(symbols.len(), self.count_columns);
-
-        let mut line = Vec::new();
-        for &main in symbols {
+        let mut line = Vec::with_capacity(self.count_columns);
+        for column in 0..self.count_columns {
             let border = BorderLine {
-                main: Some(main),
+                main: Some(self.get_horizontal_char(row, column).unwrap()),
                 connector1: None,
                 connector2: None,
             };
@@ -1311,13 +1261,8 @@ impl Borders {
         }
 
         for (column, border) in line.iter_mut().enumerate() {
-            if let Some(connector) = self.intersections.get(&(row, column)).cloned() {
-                border.connector1 = Some(connector);
-            }
-
-            if let Some(connector) = self.intersections.get(&(row, column + 1)).cloned() {
-                border.connector2 = Some(connector);
-            }
+            border.connector1 = self.get_intersection_char((row, column));
+            border.connector2 = self.get_intersection_char((row, column + 1));
         }
 
         Ok(line)
@@ -1331,20 +1276,17 @@ impl Borders {
         let mut line: Vec<BorderLine> = Vec::new();
         let mut last_index = None;
         for column in 0..self.count_columns + 1 {
-            let mut border = BorderLine::default();
+            let border = BorderLine {
+                connector1: self.get_vertical_char(row, column),
+                ..Default::default()
+            };
 
-            if let Some(symbols) = self.vertical.get(&column) {
-                assert_eq!(symbols.len(), self.count_rows);
-
-                let c = symbols[row];
-                border.connector1 = Some(c);
-
+            if border.connector1.is_some() {
                 if let Some(last) = last_index {
                     let mut last: &mut BorderLine = &mut line[last];
-                    last.connector2 = Some(c);
+                    last.connector2 = border.connector1;
                 }
             }
-
             last_index = Some(line.len());
 
             line.push(border);
@@ -1361,48 +1303,42 @@ impl Borders {
             return None;
         }
 
-        let [top_left, top_right, bottom_left, bottom_right] = entity_corners(
+        let frame = entity_frame(
             &Entity::Cell(row, column),
             self.count_rows,
             self.count_columns,
         );
 
-        let mut border = Border::default();
-
-        if let Some(top_line) = self.horizontal.get(&top_left.0) {
-            assert_eq!(top_line.len(), self.count_columns);
-            border.top = Some(top_line[column]);
-        }
-
-        if let Some(bottom_line) = self.horizontal.get(&bottom_left.0) {
-            assert_eq!(bottom_line.len(), self.count_columns);
-            border.bottom = Some(bottom_line[column]);
-        }
-
-        if let Some(left) = self.vertical.get(&top_left.1) {
-            assert_eq!(left.len(), self.count_rows);
-            border.left = Some(left[row]);
-        }
-
-        if let Some(right) = self.vertical.get(&top_right.1) {
-            assert_eq!(right.len(), self.count_rows);
-            border.right = Some(right[row]);
-        }
-
-        if let Some(&c) = self.intersections.get(&top_left) {
-            border.left_top_corner = Some(c);
-        }
-        if let Some(&c) = self.intersections.get(&top_right) {
-            border.right_top_corner = Some(c);
-        }
-        if let Some(&c) = self.intersections.get(&bottom_left) {
-            border.left_bottom_corner = Some(c);
-        }
-        if let Some(&c) = self.intersections.get(&bottom_right) {
-            border.right_bottom_corner = Some(c);
-        }
+        let border = Border {
+            top: self.get_horizontal_char(frame.top_row, column),
+            bottom: self.get_horizontal_char(frame.bottom_row, column),
+            left: self.get_vertical_char(row, frame.left_column),
+            right: self.get_vertical_char(row, frame.right_column),
+            left_top_corner: self.get_intersection_char(frame.top_left_corner()),
+            left_bottom_corner: self.get_intersection_char(frame.bottom_left_corner()),
+            right_top_corner: self.get_intersection_char(frame.top_right_corner()),
+            right_bottom_corner: self.get_intersection_char(frame.bottom_right_corner()),
+        };
 
         Some(border)
+    }
+
+    fn get_horizontal_char(&self, row: usize, column: usize) -> Option<char> {
+        self.horizontal.get(&row).map(|line| {
+            assert_eq!(line.len(), self.count_columns);
+            line[column]
+        })
+    }
+
+    fn get_vertical_char(&self, row: usize, column: usize) -> Option<char> {
+        self.vertical.get(&column).map(|line| {
+            assert_eq!(line.len(), self.count_rows);
+            line[row]
+        })
+    }
+
+    fn get_intersection_char(&self, (row, column): GridPosition) -> Option<char> {
+        self.intersections.get(&(row, column)).copied()
     }
 
     fn set_horizontal(
@@ -1565,31 +1501,12 @@ enum BorderError {
     NotEnoughIntersections { expected: usize, got: usize },
 }
 
-fn entity_corners(entity: &Entity, count_rows: usize, count_columns: usize) -> [GridPosition; 4] {
-    // why we bound to self.count_columns() && self.count_rows() but not the one +1
-    // because we do this operation later
-    //
-    // todo: refactoring
+fn entity_frame(entity: &Entity, count_rows: usize, count_columns: usize) -> EntityFrame {
     match entity {
-        Entity::Global => [
-            (0, 0),
-            (0, count_columns),
-            (count_rows, 0),
-            (count_rows, count_columns),
-        ],
-        &Entity::Column(c) => [(0, c), (0, c + 1), (count_rows, c), (count_rows, c + 1)],
-        &Entity::Row(r) => [
-            (r, 0),
-            (r, count_columns),
-            (r + 1, 0),
-            (r + 1, count_columns),
-        ],
-        &Entity::Cell(row, column) => [
-            (row, column),
-            (row, column + 1),
-            (row + 1, column),
-            (row + 1, column + 1),
-        ],
+        Entity::Global => EntityFrame::new(0, count_columns, 0, count_rows),
+        &Entity::Column(c) => EntityFrame::new(c, c + 1, 0, count_rows),
+        &Entity::Row(r) => EntityFrame::new(0, count_columns, r, r + 1),
+        &Entity::Cell(r, c) => EntityFrame::new(c, c + 1, r, r + 1),
     }
 }
 

@@ -1,119 +1,62 @@
-use tabled::{Alignment, Full, Indent, Modify, Row, Style, Table, Tabled};
+use crate::util::create_vector;
+use tabled::{Alignment, Full, Indent, Modify, Row, Style, Table};
 
-#[derive(Tabled)]
-struct Linux {
-    id: u8,
-    destribution: &'static str,
-    link: &'static str,
-}
+mod util;
 
 #[test]
 fn indent() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        " id | destribution | link                      \n",
-        "----+--------------+---------------------------\n",
-        " 0  | Fedora       | https://getfedora.org/    \n",
-        "    |              |                           \n",
-        "    |              |                           \n",
-        " 2  | OpenSUSE     | https://www.opensuse.org/ \n",
-        "    |              |                           \n",
-        "    |              |                           \n",
-        " 3  | Endeavouros  | https://endeavouros.com/  \n",
-        "    |              |                           \n",
-        "    |              |                           \n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Row(1..)).with(Indent::new(1, 1, 0, 2)))
         .to_string();
 
+    let expected = concat!(
+        " N | column 0 | column 1 | column 2 \n",
+        "---+----------+----------+----------\n",
+        " 0 | 0-0      | 0-1      | 0-2      \n",
+        "   |          |          |          \n",
+        "   |          |          |          \n",
+        " 1 | 1-0      | 1-1      | 1-2      \n",
+        "   |          |          |          \n",
+        "   |          |          |          \n",
+        " 2 | 2-0      | 2-1      | 2-2      \n",
+        "   |          |          |          \n",
+        "   |          |          |          \n",
+    );
+
     assert_eq!(table, expected);
 }
 
 #[test]
 fn indent_multiline() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "Open\nSUSE",
-            link: "https://www.\nopensuse\n.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
-    let expected = concat!(
-        " id | destribution |           link           \n",
-        "----+--------------+--------------------------\n",
-        "    |              |                          \n",
-        " 0  |    Fedora    |  https://getfedora.org/  \n",
-        "    |              |                          \n",
-        "    |              |                          \n",
-        " 2  |     Open     |       https://www.       \n",
-        "    |     SUSE     |         opensuse         \n",
-        "    |              |          .org/           \n",
-        "    |              |                          \n",
-        "    |              |                          \n",
-        " 3  | Endeavouros  | https://endeavouros.com/ \n",
-        "    |              |                          \n",
-    );
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
         .with(Modify::new(Row(1..)).with(Indent::new(1, 1, 1, 1)))
         .to_string();
+
+    let expected = concat!(
+        " N | column 0 | column 1 | column 2 \n",
+        "---+----------+----------+----------\n",
+        "   |          |          |          \n",
+        " 0 |   0-0    |   0-1    |   0-2    \n",
+        "   |          |          |          \n",
+        "   |          |          |          \n",
+        " 1 |   1-0    |   1-1    |   1-2    \n",
+        "   |          |          |          \n",
+        "   |          |          |          \n",
+        " 2 |   2-0    |   2-1    |   2-2    \n",
+        "   |          |          |          \n",
+    );
 
     assert_eq!(table, expected);
 }
 
 #[test]
 fn indent_multiline_with_vertical_alignment() {
-    let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "Open\nSUSE",
-            link: "https://www.\nopensuse\n.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
-    ];
-
+    let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
         .with(
@@ -124,22 +67,18 @@ fn indent_multiline_with_vertical_alignment() {
         .with(Modify::new(Row(1..)).with(Indent::new(1, 1, 1, 1)))
         .to_string();
 
-    println!("{}", table);
-
     let expected = concat!(
-        " id | destribution |           link           \n",
-        "----+--------------+--------------------------\n",
-        "    |              |                          \n",
-        " 0  |    Fedora    |  https://getfedora.org/  \n",
-        "    |              |                          \n",
-        "    |              |                          \n",
-        "    |              |       https://www.       \n",
-        " 2  |     Open     |         opensuse         \n",
-        "    |     SUSE     |          .org/           \n",
-        "    |              |                          \n",
-        "    |              |                          \n",
-        " 3  | Endeavouros  | https://endeavouros.com/ \n",
-        "    |              |                          \n",
+        " N | column 0 | column 1 | column 2 \n",
+        "---+----------+----------+----------\n",
+        "   |          |          |          \n",
+        " 0 |   0-0    |   0-1    |   0-2    \n",
+        "   |          |          |          \n",
+        "   |          |          |          \n",
+        " 1 |   1-0    |   1-1    |   1-2    \n",
+        "   |          |          |          \n",
+        "   |          |          |          \n",
+        " 2 |   2-0    |   2-1    |   2-2    \n",
+        "   |          |          |          \n",
     );
 
     assert_eq!(table, expected);
