@@ -24,11 +24,11 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let expanded = quote! {
         impl #impl_generics Tabled for #name #ty_generics #where_clause {
-            fn fields(&self) -> Vec<String> {
+            fn fields(&self) -> Vec<std::borrow::Cow<'_, str>> {
                 #fields
             }
 
-            fn headers() -> Vec<String> {
+            fn headers() -> Vec<std::borrow::Cow<'static, str>> {
                 #headers
             }
         }
@@ -107,9 +107,9 @@ fn field_headers(
 
     let header_name = field_header_name(field, attributes, index);
     if !prefix.is_empty() {
-        quote!(vec![format!("{}{}", #prefix, #header_name)])
+        quote!(vec![format!("{}{}", #prefix, #header_name).into()])
     } else {
-        quote!(vec![String::from(#header_name)])
+        quote!(vec![String::from(#header_name).into()])
     }
 }
 
@@ -147,9 +147,9 @@ fn info_from_variant(variant: &Variant, attributes: &Attributes) -> Result<Impl,
     let value = "+";
 
     // we need exactly string because of it must be inlined as string
-    let headers = quote! {vec![#variant_name.to_string()]};
+    let headers = quote! {vec![#variant_name.into()]};
     // we need exactly string because of it must be inlined as string
-    let values = quote! {vec![#value.to_string()]};
+    let values = quote! {vec![#value.into()]};
 
     Ok(Impl { headers, values })
 }
@@ -165,7 +165,7 @@ fn get_type_headers(field_type: &Type, inline_prefix: &str, prefix: &str) -> Tok
     } else {
         quote! {
             <#field_type as Tabled>::headers().into_iter()
-                .map(|header| format!("{}{}{}", #prefix, #inline_prefix, header))
+                .map(|header| format!("{}{}{}", #prefix, #inline_prefix, header).into())
                 .collect::<Vec<_>>()
         }
     }
@@ -178,10 +178,10 @@ fn get_field_fields(field: TokenStream, attr: &Attributes) -> TokenStream {
 
     if let Some(func) = &attr.display_with {
         let func_call = use_function_for(field, func);
-        return quote!(vec![#func_call]);
+        return quote!(vec![#func_call.into()]);
     }
 
-    quote!(vec![format!("{}", #field)])
+    quote!(vec![format!("{}", #field).into()])
 }
 
 fn use_function_for(field: TokenStream, function: &str) -> TokenStream {
@@ -234,7 +234,7 @@ fn values_for_enum(variants: Vec<(&Variant, Impl)>) -> TokenStream {
         let branch = quote! {
             Self::#branch => {
                 let offset = offsets[#i];
-                let fields: Vec<String> = #fields;
+                let fields: Vec<std::borrow::Cow<str>> = #fields;
 
                 for (i, field) in fields.into_iter().enumerate() {
                     out_vec[i+offset] = field;
@@ -253,7 +253,7 @@ fn values_for_enum(variants: Vec<(&Variant, Impl)>) -> TokenStream {
         //
         // It's a bit strange trick but I haven't found any better
         // how to calculate a size and offset.
-        let headers: Vec<Vec<String>> = vec![#(#headers,)*];
+        let headers: Vec<Vec<std::borrow::Cow<_>>> = vec![#(#headers,)*];
         let lengths = headers.iter().map(|values| values.len()).collect::<Vec<_>>();
         let size = lengths.iter().sum::<usize>();
         let offsets: Vec<usize> = lengths.iter().fold(Vec::new(), |mut acc, len| {
@@ -267,7 +267,7 @@ fn values_for_enum(variants: Vec<(&Variant, Impl)>) -> TokenStream {
             acc
         });
 
-        let mut out_vec: Vec<String> = std::iter::repeat(String::new()).take(size).collect();
+        let mut out_vec: Vec<std::borrow::Cow<'_, str>> = std::iter::repeat("".into()).take(size).collect();
 
         #[allow(unused_variables)]
         match &self {

@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::util::create_vector;
 use tabled::{display::ExpandedDisplay, Tabled};
 
@@ -39,14 +41,14 @@ fn display_colored() {
     data[0][2] = "https://getfedora.org/"
         .red()
         .on_color(AnsiColors::Blue)
-        .to_string();
+        .into();
     data[1][2] = "https://www.opensuse.org/"
         .green()
         .on_color(AnsiColors::Black)
-        .to_string();
-    data[2][2] = "https://endeavouros.com/".blue().underline().to_string();
+        .into();
+    data[2][2] = "https://endeavouros.com/".blue().underline().into();
 
-    let table = ExpandedDisplay::new(&data).to_string();
+    let table = ExpandedDisplay::new(&data);
 
     let expected = concat!(
         "-[ RECORD 0 ]-----------------------\n",
@@ -74,11 +76,11 @@ fn display_empty() {
     struct Type;
 
     impl Tabled for Type {
-        fn fields(&self) -> Vec<String> {
+        fn fields(&self) -> Vec<Cow<'_, str>> {
             Vec::new()
         }
 
-        fn headers() -> Vec<String> {
+        fn headers() -> Vec<Cow<'static, str>> {
             Vec::new()
         }
     }
@@ -94,12 +96,12 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
-            fn fields(&self) -> Vec<String> {
-                vec!["He".to_string(), "123".to_string(), "asd".to_string()]
+            fn fields(&self) -> Vec<Cow<'_, str>> {
+                vec!["He".into(), "123".into(), "asd".into()]
             }
 
-            fn headers() -> Vec<String> {
-                vec!["1".to_string(), "2".to_string(), "3".to_string()]
+            fn headers() -> Vec<Cow<'static, str>> {
+                vec!["1".into(), "2".into(), "3".into()]
             }
         }
 
@@ -113,12 +115,12 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
-            fn fields(&self) -> Vec<String> {
-                vec!["He".to_string(), "123".to_string(), "asd".to_string()]
+            fn fields(&self) -> Vec<Cow<'_, str>> {
+                vec!["He".into(), "123".into(), "asd".into()]
             }
 
-            fn headers() -> Vec<String> {
-                vec!["11".to_string(), "2222222".to_string(), "3".to_string()]
+            fn headers() -> Vec<Cow<'static, str>> {
+                vec!["11".into(), "2222222".into(), "3".into()]
             }
         }
 
@@ -137,12 +139,12 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
-            fn fields(&self) -> Vec<String> {
-                vec!["HeheHehe".to_string(), "123".to_string(), "asd".to_string()]
+            fn fields(&self) -> Vec<Cow<'_, str>> {
+                vec!["HeheHehe".into(), "123".into(), "asd".into()]
             }
 
-            fn headers() -> Vec<String> {
-                vec!["11".to_string(), "2222222".to_string(), "3".to_string()]
+            fn headers() -> Vec<Cow<'static, str>> {
+                vec!["11".into(), "2222222".into(), "3".into()]
             }
         }
 
@@ -161,12 +163,12 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
-            fn fields(&self) -> Vec<String> {
-                vec!["He".to_string(), "123".to_string(), "asd".to_string()]
+            fn fields(&self) -> Vec<Cow<'_, str>> {
+                vec!["He".into(), "123".into(), "asd".into()]
             }
 
-            fn headers() -> Vec<String> {
-                vec!["11111111111".to_string(), "2".to_string(), "3".to_string()]
+            fn headers() -> Vec<Cow<'static, str>> {
+                vec!["11111111111".into(), "2".into(), "3".into()]
             }
         }
 
@@ -185,16 +187,12 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
-            fn fields(&self) -> Vec<String> {
-                vec!["He".to_string(), "123".to_string(), "asd".to_string()]
+            fn fields(&self) -> Vec<Cow<'_, str>> {
+                vec!["He".into(), "123".into(), "asd".into()]
             }
 
-            fn headers() -> Vec<String> {
-                vec![
-                    "1111111111111".to_string(),
-                    "2".to_string(),
-                    "3".to_string(),
-                ]
+            fn headers() -> Vec<Cow<'static, str>> {
+                vec!["1111111111111".into(), "2".into(), "3".into()]
             }
         }
 
@@ -213,15 +211,15 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
-            fn fields(&self) -> Vec<String> {
-                vec!["He".to_string(), "123".to_string(), "asd".to_string()]
+            fn fields(&self) -> Vec<Cow<'_, str>> {
+                vec!["He".into(), "123".into(), "asd".into()]
             }
 
-            fn headers() -> Vec<String> {
+            fn headers() -> Vec<Cow<'static, str>> {
                 vec![
-                    "11111111111111111111111111111".to_string(),
-                    "2".to_string(),
-                    "3".to_string(),
+                    "11111111111111111111111111111".into(),
+                    "2".into(),
+                    "3".into(),
                 ]
             }
         }
@@ -242,12 +240,12 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
-            fn fields(&self) -> Vec<String> {
-                vec!["22".to_string()]
+            fn fields(&self) -> Vec<Cow<'_, str>> {
+                vec!["22".into()]
             }
 
-            fn headers() -> Vec<String> {
-                vec!["11111111111".to_string()]
+            fn headers() -> Vec<Cow<'static, str>> {
+                vec!["11111111111".into()]
             }
         }
 
@@ -287,16 +285,12 @@ fn display_multiline_field() {
     struct St;
 
     impl Tabled for St {
-        fn fields(&self) -> Vec<String> {
-            vec!["1".to_string(), "2".to_string(), "3".to_string()]
+        fn fields(&self) -> Vec<Cow<'_, str>> {
+            vec!["1".into(), "2".into(), "3".into()]
         }
 
-        fn headers() -> Vec<String> {
-            vec![
-                "Hello\nWorld".to_string(),
-                "123".to_string(),
-                "asd".to_string(),
-            ]
+        fn headers() -> Vec<Cow<'static, str>> {
+            vec!["Hello\nWorld".into(), "123".into(), "asd".into()]
         }
     }
 
@@ -316,9 +310,9 @@ fn display_multiline_field() {
 #[test]
 fn display_multiline_record_value() {
     let mut data = create_vector::<2, 3>();
-    data[0][0] = "Hello\nWorld".to_string();
-    data[0][1] = "123".to_string();
-    data[0][2] = "asd".to_string();
+    data[0][0] = "Hello\nWorld".into();
+    data[0][1] = "123".into();
+    data[0][2] = "asd".into();
 
     let table = ExpandedDisplay::new(&data).to_string();
 
@@ -399,9 +393,9 @@ fn display_with_formatter() {
 #[test]
 fn display_with_one_line_formatter() {
     let mut data = create_vector::<1, 3>();
-    data[0][0] = "Hello\nWorld".to_string();
-    data[0][1] = "123".to_string();
-    data[0][2] = "asd".to_string();
+    data[0][0] = "Hello\nWorld".into();
+    data[0][1] = "123".into();
+    data[0][2] = "asd".into();
 
     let table = ExpandedDisplay::new(&data)
         .formatter(|s| s.escape_debug().to_string())
@@ -502,12 +496,12 @@ fn display_with_wrap() {
 #[test]
 fn display_with_wrap_colored() {
     let mut data = create_vector::<2, 3>();
-    data[0][2] = "https://getfedora.org/".red().to_string();
+    data[0][2] = "https://getfedora.org/".red().into();
     data[1][1] = "https://endeavouros.com/"
         .white()
         .on_color(AnsiColors::Black)
-        .to_string();
-    data[1][2] = "https://www.opensuse.org/".to_string();
+        .into();
+    data[1][2] = "https://www.opensuse.org/".into();
 
     let table = ExpandedDisplay::new(&data).wrap(2).to_string();
 

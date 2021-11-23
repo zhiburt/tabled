@@ -1,6 +1,8 @@
 use tabled::Tabled;
 
 mod tupple_structure {
+    use std::borrow::Cow;
+
     use super::*;
 
     #[test]
@@ -110,9 +112,16 @@ mod tupple_structure {
         #[derive(Tabled)]
         struct St<T: std::fmt::Display>(T);
 
-        fn infer_type<T: std::fmt::Display>(v: T) -> (Vec<String>, Vec<String>) {
+        fn infer_type<T: std::fmt::Display>(
+            v: T,
+        ) -> (Vec<Cow<'static, str>>, Vec<Cow<'static, str>>) {
             let st = St(v);
-            (<St<T> as Tabled>::headers(), st.fields())
+            let mut fields = Vec::new();
+            for field in st.fields().iter() {
+                fields.push(Cow::Owned(field.to_lowercase()));
+            }
+
+            (<St<T> as Tabled>::headers(), fields)
         }
 
         let (headers, fields) = infer_type(1);

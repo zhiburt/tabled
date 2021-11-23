@@ -1,4 +1,7 @@
-use std::ops::{Index, IndexMut};
+use std::{
+    borrow::Cow,
+    ops::{Index, IndexMut},
+};
 
 use tabled::Tabled;
 
@@ -30,13 +33,14 @@ impl<const N: usize> IndexMut<usize> for Obj<N> {
 }
 
 impl<const N: usize> Tabled for Obj<N> {
-    fn fields(&self) -> Vec<String> {
-        self.data.clone()
+    fn fields(&self) -> Vec<Cow<'_, str>> {
+        self.data.iter().map(|s| s.into()).collect()
     }
 
-    fn headers() -> Vec<String> {
+    fn headers() -> Vec<Cow<'static, str>> {
         std::iter::once("N".to_owned())
             .chain((0..N).map(|n| format!("column {}", n)))
+            .map(|s| s.into())
             .collect()
     }
 }

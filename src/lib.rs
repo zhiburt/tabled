@@ -142,7 +142,7 @@
 //!
 
 use papergrid::{Entity, Grid, Settings};
-use std::fmt;
+use std::{borrow::Cow, fmt};
 
 mod alignment;
 mod disable;
@@ -176,19 +176,19 @@ pub trait Tabled {
     /// Fields method must return a list of cells.
     ///
     /// The cells will be placed in the same row, preserving the order.
-    fn fields(&self) -> Vec<String>;
+    fn fields(&self) -> Vec<Cow<'_, str>>;
     /// Headers must return a list of column names.
-    fn headers() -> Vec<String>;
+    fn headers() -> Vec<Cow<'static, str>>;
 }
 
 impl<T> Tabled for &T
 where
     T: Tabled,
 {
-    fn fields(&self) -> Vec<String> {
+    fn fields(&self) -> Vec<Cow<'_, str>> {
         T::fields(self)
     }
-    fn headers() -> Vec<String> {
+    fn headers() -> Vec<Cow<'static, str>> {
         T::headers()
     }
 }
@@ -239,13 +239,18 @@ pub trait CellOption {
 ///                 .with(Modify::new(Full).with(Alignment::left()));
 /// println!("{}", table);
 /// ```
-pub struct Table {
-    grid: Grid,
+pub struct Table<'a> {
+    grid: Grid<'a>,
 }
 
-impl Table {
+impl<'a> Table<'a> {
     /// New creates a Table instance.
-    pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
+    pub fn new<Iter>(iter: Iter) -> Self
+    where
+        Iter: IntoIterator,
+        Iter::Item: Tabled + 'a,
+        Iter::IntoIter: std::iter::ExactSizeIterator,
+    {
         let grid = build_grid(iter);
 
         let table = Self { grid };
@@ -264,7 +269,7 @@ impl Table {
     }
 }
 
-impl fmt::Display for Table {
+impl fmt::Display for Table<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.grid)
     }
@@ -319,9 +324,14 @@ where
 
 /// Building [Grid] from a data.
 /// You must prefer [Table] over this function.
-fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
+fn build_grid<'a, Iter, T>(iter: Iter) -> Grid<'a>
+where
+    Iter: IntoIterator<Item = T>,
+    T: Tabled + 'a,
+    Iter::IntoIter: std::iter::ExactSizeIterator,
+{
     let headers = T::headers();
-    let obj: Vec<Vec<String>> = iter.into_iter().map(|t| t.fields()).collect();
+    let obj = iter.into_iter();
 
     let mut grid = Grid::new(obj.len() + 1, headers.len());
 
@@ -334,21 +344,25 @@ fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
             .alignment(AlignmentHorizontal::Center),
     );
 
-    for (i, h) in headers.iter().enumerate() {
+    for (i, h) in headers.into_iter().enumerate() {
         grid.set(&Entity::Cell(0, i), Settings::new().text(h));
     }
 
     let mut row = 1;
-    for fields in &obj {
-        for (column, field) in fields.iter().enumerate() {
-            grid.set(&Entity::Cell(row, column), Settings::new().text(field));
-        }
+    for obj in obj {
+        let fields = obj.fields();
 
         // don't show off a empty data array
         // currently it's possible when `#[header(hidden)]` attribute used for a enum
-        if !fields.is_empty() {
-            row += 1;
+        if fields.is_empty() {
+            continue;
         }
+
+        for (column, field) in fields.into_iter().enumerate() {
+            grid.set(&Entity::Cell(row, column), Settings::new().text(field));
+        }
+
+        row += 1;
     }
 
     grid
@@ -357,7 +371,7 @@ fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
 macro_rules! tuple_table {
     ( $($name:ident)+ ) => {
         impl<$($name: Tabled),+> Tabled for ($($name,)+){
-            fn fields(&self) -> Vec<String> {
+            fn fields(&self) -> Vec<Cow<'_, str>> {
                 #![allow(non_snake_case)]
                 let ($($name,)+) = self;
                 let mut fields = Vec::new();
@@ -365,7 +379,7 @@ macro_rules! tuple_table {
                 fields
             }
 
-            fn headers() -> Vec<String> {
+            fn headers() -> Vec<Cow<'static, str>> {
                 let mut fields = Vec::new();
                 $(fields.append(&mut $name::headers());)+
                 fields
@@ -384,18 +398,15 @@ tuple_table! { A B C D E F }
 macro_rules! default_table {
     ( $t:ty ) => {
         impl Tabled for $t {
-            fn fields(&self) -> Vec<String> {
-                vec![format!("{}", self)]
+            fn fields(&self) -> Vec<Cow<'_, str>> {
+                vec![format!("{}", self).into()]
             }
-            fn headers() -> Vec<String> {
-                vec![stringify!($t).to_string()]
+            fn headers() -> Vec<Cow<'static, str>> {
+                vec![stringify!($t).into()]
             }
         }
     };
 }
-
-default_table!(&str);
-default_table!(String);
 
 default_table!(char);
 
@@ -419,12 +430,28 @@ default_table!(i128);
 default_table!(f32);
 default_table!(f64);
 
+macro_rules! default_str_table {
+    ( $t:ty ) => {
+        impl Tabled for $t {
+            fn fields(&self) -> Vec<Cow<'_, str>> {
+                vec![Cow::Borrowed(&self)]
+            }
+            fn headers() -> Vec<Cow<'static, str>> {
+                vec![stringify!($t).into()]
+            }
+        }
+    };
+}
+
+default_str_table!(&str);
+default_str_table!(String);
+
 impl<T: fmt::Display, const N: usize> Tabled for [T; N] {
-    fn fields(&self) -> Vec<String> {
-        self.iter().map(|e| e.to_string()).collect()
+    fn fields(&self) -> Vec<Cow<'_, str>> {
+        self.iter().map(|e| e.to_string().into()).collect()
     }
 
-    fn headers() -> Vec<String> {
-        (0..N).map(|i| format!("{}", i)).collect()
+    fn headers() -> Vec<Cow<'static, str>> {
+        (0..N).map(|i| format!("{}", i).into()).collect()
     }
 }

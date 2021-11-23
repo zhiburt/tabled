@@ -7,22 +7,17 @@ use crate::Tabled;
 ///
 /// It escapes strings to resolve a multi-line ones.
 /// Because of that `colors` may not be rendered.
-pub struct ExpandedDisplay {
+pub struct ExpandedDisplay<T> {
     format_record_splitter: Option<fn(usize) -> String>,
     format_value: Option<Box<dyn Fn(&str) -> String>>,
-    fields: Vec<String>,
-    records: Vec<Vec<String>>,
+    records: Vec<T>,
 }
 
-impl ExpandedDisplay {
+impl<T: Tabled> ExpandedDisplay<T> {
     /// Creates a new instance of ExpandedDisplay
-    pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
-        let data = iter.into_iter().map(|i| i.fields()).collect();
-        let header = T::headers();
-
-        Self {
-            records: data,
-            fields: header,
+    pub fn new(iter: impl IntoIterator<Item = T>) -> ExpandedDisplay<T> {
+        ExpandedDisplay {
+            records: iter.into_iter().collect(),
             format_record_splitter: None,
             format_value: None,
         }
@@ -69,17 +64,18 @@ impl ExpandedDisplay {
     }
 }
 
-impl std::fmt::Display for ExpandedDisplay {
+impl<T: Tabled> std::fmt::Display for ExpandedDisplay<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let format_value = |value: &String| match &self.format_value {
+        let format_value = |value: &str| match &self.format_value {
             Some(f) => (f)(value),
             None => value.to_string(),
         };
 
+        let fields = T::headers();
+
         // It's possible that field|header can be a multiline string so
         // we escape it and trim \" chars.
-        let fields = self
-            .fields
+        let fields = fields
             .iter()
             .map(|f| {
                 let escaped = format!("{:?}", f);
@@ -101,9 +97,13 @@ impl std::fmt::Display for ExpandedDisplay {
             .records
             .iter()
             .map(|record| {
+                let record = record.fields();
                 assert_eq!(record.len(), fields.len());
 
-                record.iter().map(format_value).collect::<Vec<_>>()
+                record
+                    .iter()
+                    .map(|value| format_value(value.as_ref()))
+                    .collect::<Vec<_>>()
             })
             .collect::<Vec<_>>();
 

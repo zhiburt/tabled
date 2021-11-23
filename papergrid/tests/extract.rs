@@ -92,7 +92,7 @@ fn extract_empty_test() {
     assert_eq!(grid.to_string(), "");
 }
 
-fn new_grid<const N_ROWS: usize, const N_COLUMNS: usize>() -> Grid {
+fn new_grid<const N_ROWS: usize, const N_COLUMNS: usize>() -> Grid<'static> {
     let mut grid = Grid::new(N_ROWS, N_COLUMNS);
 
     for row in 0..N_ROWS {

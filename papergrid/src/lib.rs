@@ -23,6 +23,7 @@
 //! ```
 
 use std::{
+    borrow::Cow,
     cmp::max,
     collections::HashMap,
     fmt::{self, Display},
@@ -45,14 +46,14 @@ const DEFAULT_SPLIT_BORDER_CHAR: char = ' ';
 const DEFAULT_SPLIT_INTERSECTION_CHAR: char = ' ';
 
 /// Grid provides a set of methods for building a text-based table
-pub struct Grid {
+pub struct Grid<'a> {
     size: (usize, usize),
     styles: HashMap<Entity, Style>,
-    cells: Vec<Vec<String>>,
+    cells: Vec<Vec<Cow<'a, str>>>,
     borders: Borders,
 }
 
-impl Grid {
+impl<'a> Grid<'a> {
     /// The new method creates a grid instance with default styles.
     ///
     /// The size of the grid can not be changed after the instance is created.
@@ -79,7 +80,7 @@ impl Grid {
 
         Grid {
             size: (rows, columns),
-            cells: vec![vec![String::new(); columns]; rows],
+            cells: vec![vec![Cow::Borrowed(""); columns]; rows],
             styles,
             borders: Borders::new(rows, columns),
         }
@@ -286,7 +287,7 @@ impl Grid {
         let border = self.borders.get_border(row, column).unwrap();
 
         Settings::default()
-            .text(content)
+            .text(content.to_owned())
             .alignment(style.alignment_h)
             .vertical_alignment(style.alignment_v)
             .span(style.span)
@@ -339,7 +340,7 @@ impl Grid {
 
     /// get_cell_content returns content without any style changes
     pub fn get_cell_content(&mut self, row: usize, column: usize) -> &str {
-        self.cells[row][column].as_str()
+        self.cells[row][column].as_ref()
     }
 
     /// Count_rows returns an amount of rows on the grid
@@ -352,7 +353,7 @@ impl Grid {
         self.size.1
     }
 
-    pub fn set_text<S: Into<String>>(&mut self, entity: &Entity, text: S) {
+    pub fn set_text<S: Into<Cow<'a, str>>>(&mut self, entity: &Entity, text: S) {
         let text = text.into();
         match *entity {
             Entity::Cell(row, column) => {
@@ -805,7 +806,7 @@ impl Settings {
     }
 }
 
-impl std::fmt::Display for Grid {
+impl std::fmt::Display for Grid<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
