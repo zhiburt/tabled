@@ -7,7 +7,7 @@ mod util;
 #[test]
 fn default_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::ascii()).to_string();
+    let table = Table::new(&data).with(Style::ASCII).to_string();
 
     let expected = concat!(
         "+---+----------+----------+----------+\n",
@@ -27,7 +27,7 @@ fn default_style() {
 #[test]
 fn psql_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::psql()).to_string();
+    let table = Table::new(&data).with(Style::PSQL).to_string();
 
     let expected = concat!(
         " N | column 0 | column 1 | column 2 \n",
@@ -43,7 +43,7 @@ fn psql_style() {
 #[test]
 fn github_markdown_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::github_markdown()).to_string();
+    let table = Table::new(&data).with(Style::GITHUB_MARKDOWN).to_string();
 
     let expected = concat!(
         "| N | column 0 | column 1 | column 2 |\n",
@@ -59,7 +59,7 @@ fn github_markdown_style() {
 #[test]
 fn pseudo_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::pseudo()).to_string();
+    let table = Table::new(&data).with(Style::PSEUDO).to_string();
 
     let expected = concat!(
         "┌───┬──────────┬──────────┬──────────┐\n",
@@ -79,7 +79,7 @@ fn pseudo_style() {
 #[test]
 fn pseudo_clean_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::pseudo_clean()).to_string();
+    let table = Table::new(&data).with(Style::PSEUDO_CLEAN).to_string();
 
     let expected = concat!(
         "┌───┬──────────┬──────────┬──────────┐\n",
@@ -97,7 +97,7 @@ fn pseudo_clean_style() {
 #[test]
 fn noborder_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::noborder()).to_string();
+    let table = Table::new(&data).with(Style::NO_BORDER).to_string();
 
     let expected = concat!(
         " N   column 0   column 1   column 2 \n",
@@ -113,7 +113,7 @@ fn noborder_style() {
 fn style_head_changes() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::pseudo_clean().header(None))
+        .with(Style::PSEUDO_CLEAN.header(None))
         .to_string();
 
     let expected = concat!(
@@ -132,7 +132,7 @@ fn style_head_changes() {
 fn style_frame_changes() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::pseudo_clean().frame_bottom(None).frame_top(None))
+        .with(Style::PSEUDO_CLEAN.frame_bottom(None).frame_top(None))
         .to_string();
 
     let expected = concat!(
@@ -151,7 +151,7 @@ fn custom_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(
-            Style::noborder()
+            Style::NO_BORDER
                 .frame_bottom(Some(Line::short('*', '\'')))
                 .split(Some(Line::short('`', '\'')))
                 .inner('\''),

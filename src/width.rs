@@ -15,7 +15,7 @@ use papergrid::{Entity, Grid, Settings};
 /// ];
 ///
 /// let table = Table::new(&data)
-///     .with(Style::github_markdown())
+///     .with(Style::GITHUB_MARKDOWN)
 ///     .with(Modify::new(Full).with(MaxWidth::truncating(5, "...")));
 /// ```
 ///

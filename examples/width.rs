@@ -10,7 +10,7 @@ fn main() {
         ["Hello World", "[[[[[[[[[[[[[[[[["],
     ];
 
-    let table = Table::new(&data).with(Style::github_markdown()).with(
+    let table = Table::new(&data).with(Style::GITHUB_MARKDOWN).with(
         Modify::new(Full)
             .with(MaxWidth::truncating(10, "..."))
             .with(Alignment::left()),
