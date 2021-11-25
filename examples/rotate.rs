@@ -28,7 +28,7 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Rotate::Left)
-        .with(Style::noborder())
+        .with(Style::NO_BORDER)
         .with(Modify::new(Full).with(Indent::new(1, 1, 0, 0)));
 
     println!("{}", table);

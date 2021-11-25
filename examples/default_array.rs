@@ -5,7 +5,7 @@ use tabled::{Style, Table};
 
 fn main() {
     let data = matrix::<10>();
-    let table = Table::new(&data).with(Style::pseudo());
+    let table = Table::new(&data).with(Style::PSEUDO);
 
     println!("{}", table);
 }
