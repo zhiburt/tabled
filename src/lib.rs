@@ -262,6 +262,47 @@ impl Table {
         option.change(&mut self.grid);
         self
     }
+
+    pub fn join(self, other:Table)->Self{
+        if self.grid.count_columns() != other.grid.count_columns() {
+            panic!("inconsistency column size");
+        }
+        //let (x, y) = bounds_to_usize(range.start_bound(), range.end_bound(), grid.count_rows());
+
+        let other = other.with(Disable::Row(..1));
+        let new_row_size = self.grid.count_rows() + other.grid.count_rows() - 1;
+        let mut new_grid = Grid::new(new_row_size,self.grid.count_rows());
+
+
+        for column in 0..new_grid.count_columns() {
+            for row in 0..new_grid.count_rows() {
+                let cell_content = if row < self.grid.count_rows() {
+                    self.grid.get_cell_content(row, column)
+                } else {
+                    let row = row - self.grid.count_rows();
+                    other.grid.get_cell_content(row, column)
+                };
+                new_grid.set_text(&Entity::Cell(row,column),cell_content);
+            }
+        }
+
+        /*
+        for column in 0..new_grid.count_columns() {
+            for row in 0..new_grid.count_rows() {
+                let cell_settings = if row < self.grid.count_rows() {
+                    self.grid.get_settings(row, column)
+               } else {
+                    let row = row - self.grid.count_rows();
+                    other.grid.get_settings(row, column)
+                };
+                new_grid.set(&Entity::Cell(row,column),cell_settings.border_restriction(false));
+                //new_grid.set_text(&Entity::Cell(row,column),"hoge");
+            }
+        }
+        */
+
+        Self{ grid: new_grid }
+    }
 }
 
 impl fmt::Display for Table {
