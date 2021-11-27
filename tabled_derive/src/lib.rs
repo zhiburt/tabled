@@ -16,6 +16,7 @@ pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 fn impl_tabled(ast: &DeriveInput) -> TokenStream {
+    let length = get_tabled_length(ast).unwrap();
     let info = collect_info(ast).unwrap();
     let fields = info.values;
     let headers = info.headers;
@@ -24,6 +25,8 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let expanded = quote! {
         impl #impl_generics Tabled for #name #ty_generics #where_clause {
+            const LENGTH: usize = #length;
+
             fn fields(&self) -> Vec<String> {
                 #fields
             }
@@ -35,6 +38,64 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     };
 
     expanded
+}
+
+fn get_tabled_length(ast: &DeriveInput) -> Result<TokenStream, String> {
+    match &ast.data {
+        Data::Struct(data) => Ok(get_fields_length(&data.fields)),
+        Data::Enum(data) => Ok(get_enum_length(data)),
+        Data::Union(_) => Err("Union type isn't supported".to_owned()),
+    }
+}
+
+fn get_fields_length(fields: &Fields) -> TokenStream {
+    let size_compontents = fields
+        .iter()
+        .map(|field| {
+            let attributes = Attributes::parse(&field.attrs);
+            (field, attributes)
+        })
+        .filter(|(_, attr)| !attr.is_ignored())
+        .map(|(field, attr)| {
+            if !attr.inline {
+                quote!({ 1 })
+            } else {
+                let field_type = &field.ty;
+                quote!({<#field_type as Tabled>::LENGTH})
+            }
+        });
+
+    let size_compontents = std::iter::once(quote!(0)).chain(size_compontents);
+
+    let mut stream = TokenStream::new();
+    stream.append_separated(size_compontents, syn::token::Add::default());
+
+    stream
+}
+
+fn get_enum_length(enum_ast: &DataEnum) -> TokenStream {
+    let variant_sizes = enum_ast
+        .variants
+        .iter()
+        .map(|variant| {
+            let attributes = Attributes::parse(&variant.attrs);
+            (variant, attributes)
+        })
+        .filter(|(_, attr)| !attr.is_ignored())
+        .map(|(variant, attr)| {
+            if !attr.inline {
+                quote!(1)
+            } else {
+                get_fields_length(&variant.fields)
+            }
+        });
+
+    let variant_sizes = std::iter::once(quote!(0)).chain(variant_sizes);
+
+    let mut stream = TokenStream::new();
+    stream.append_separated(variant_sizes, syn::token::Add::default());
+
+    stream
 }
 
 fn collect_info(ast: &DeriveInput) -> Result<Impl, String> {

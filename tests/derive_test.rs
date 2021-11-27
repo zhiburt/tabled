@@ -27,6 +27,7 @@ mod tupple_structure {
 
         assert_eq!(vec!["123".to_owned()], st.fields());
         assert_eq!(vec!["2".to_owned()], St::headers());
+        assert_eq!(St::LENGTH, 1);
     }
 
     #[allow(dead_code)]
@@ -83,6 +84,7 @@ mod tupple_structure {
 
         assert_eq!(vec!["0".to_owned(), "v2".to_owned()], st.fields());
         assert_eq!(vec!["0".to_owned(), "1".to_owned()], St::headers());
+        assert_eq!(St::LENGTH, 2);
     }
 
     #[test]
@@ -93,6 +95,7 @@ mod tupple_structure {
 
         assert!(st.fields().is_empty());
         assert!(St::headers().is_empty());
+        assert_eq!(St::LENGTH, 0);
     }
 
     #[test]
@@ -103,6 +106,7 @@ mod tupple_structure {
 
         assert_eq!(vec!["0".to_owned()], St::headers());
         assert_eq!(vec!["1".to_owned()], st.fields());
+        assert_eq!(St::LENGTH, 1);
     }
 
     #[test]
@@ -119,6 +123,8 @@ mod tupple_structure {
 
         assert_eq!(vec!["0".to_owned()], headers);
         assert_eq!(vec!["1".to_owned()], fields);
+
+        assert_eq!(St::<String>::LENGTH, 1);
     }
 }
 
@@ -150,6 +156,7 @@ mod enum_ {
             vec!["+".to_owned(), "".to_owned(), "".to_owned(), "".to_owned(),],
             Domain::Security.fields()
         );
+        assert_eq!(Domain::LENGTH, 4);
     }
 
     #[test]
@@ -178,6 +185,7 @@ mod enum_ {
             vec!["".to_owned(), "+".to_owned(), "".to_owned()],
             E::B(String::new()).fields()
         );
+        assert_eq!(E::LENGTH, 3);
     }
 
     #[test]
@@ -226,6 +234,7 @@ mod enum_ {
         );
         assert_eq!(vec!["".to_owned(), "+".to_owned()], E::K.fields());
         assert!(E::B(String::new()).fields().is_empty());
+        assert_eq!(E::LENGTH, 2);
     }
 
     #[test]
@@ -306,6 +315,8 @@ mod enum_ {
             )
             .fields()
         );
+
+        assert_eq!(Vehicle::LENGTH, 6);
     }
 
     #[test]
@@ -374,6 +385,7 @@ mod unit {
 
         assert!(st.fields().is_empty());
         assert!(St::headers().is_empty());
+        assert_eq!(St::LENGTH, 0);
     }
 }
 
@@ -391,6 +403,7 @@ mod structure {
         let st = St { f1: 0, f2: "v2" };
         assert_eq!(vec!["0".to_owned(), "v2".to_owned()], st.fields());
         assert_eq!(vec!["f1".to_owned(), "f2".to_owned()], St::headers());
+        assert_eq!(St::LENGTH, 2);
     }
 
     #[test]
@@ -401,6 +414,7 @@ mod structure {
         let st = St {};
         assert!(st.fields().is_empty());
         assert!(St::headers().is_empty());
+        assert_eq!(St::LENGTH, 0);
     }
 
     #[test]
@@ -441,6 +455,7 @@ mod structure {
 
         assert_eq!(vec!["123".to_owned()], st.fields());
         assert_eq!(vec!["f3".to_owned()], St::headers());
+        assert_eq!(St::LENGTH, 1);
     }
 
     #[test]
@@ -487,6 +502,8 @@ mod structure {
             ],
             Person::headers()
         );
+
+        assert_eq!(Person::LENGTH, 4);
     }
 
     #[test]

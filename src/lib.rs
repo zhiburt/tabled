@@ -173,6 +173,10 @@ pub use tabled_derive::Tabled;
 /// Self::headers().len() == self.fields().len()
 /// ```
 pub trait Tabled {
+    /// A length of fields and headers,
+    /// which must be the same.
+    const LENGTH: usize;
+
     /// Fields method must return a list of cells.
     ///
     /// The cells will be placed in the same row, preserving the order.
@@ -185,6 +189,8 @@ impl<T> Tabled for &T
 where
     T: Tabled,
 {
+    const LENGTH: usize = T::LENGTH;
+
     fn fields(&self) -> Vec<String> {
         T::fields(self)
     }
@@ -357,6 +363,8 @@ fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
 macro_rules! tuple_table {
     ( $($name:ident)+ ) => {
         impl<$($name: Tabled),+> Tabled for ($($name,)+){
+            const LENGTH: usize = $($name::LENGTH+)+ 0;
+
             fn fields(&self) -> Vec<String> {
                 #![allow(non_snake_case)]
                 let ($($name,)+) = self;
@@ -384,6 +392,8 @@ tuple_table! { A B C D E F }
 macro_rules! default_table {
     ( $t:ty ) => {
         impl Tabled for $t {
+            const LENGTH: usize = 1;
+
             fn fields(&self) -> Vec<String> {
                 vec![format!("{}", self)]
             }
@@ -420,6 +430,8 @@ default_table!(f32);
 default_table!(f64);
 
 impl<T: fmt::Display, const N: usize> Tabled for [T; N] {
+    const LENGTH: usize = N;
+
     fn fields(&self) -> Vec<String> {
         self.iter().map(|e| e.to_string()).collect()
     }
