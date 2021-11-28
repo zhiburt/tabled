@@ -74,7 +74,17 @@ fn get_fields_length(fields: &Fields) -> TokenStream {
 }
 
 fn get_enum_length(enum_ast: &DataEnum) -> TokenStream {
-    let variant_sizes = enum_ast
+    let variant_sizes = get_enum_variant_length(enum_ast);
+    let variant_sizes = std::iter::once(quote!(0)).chain(variant_sizes);
+
+    let mut stream = TokenStream::new();
+    stream.append_separated(variant_sizes, syn::token::Add::default());
+
+    stream
+}
+
+fn get_enum_variant_length(enum_ast: &DataEnum) -> impl Iterator<Item=TokenStream> + '_ {
+    enum_ast
         .variants
         .iter()
         .map(|variant| {
@@ -88,14 +98,7 @@ fn get_enum_length(enum_ast: &DataEnum) -> TokenStream {
             } else {
                 get_fields_length(&variant.fields)
             }
-        });
-
-    let variant_sizes = std::iter::once(quote!(0)).chain(variant_sizes);
-
-    let mut stream = TokenStream::new();
-    stream.append_separated(variant_sizes, syn::token::Add::default());
-
-    stream
+        })
 }
 
 fn collect_info(ast: &DeriveInput) -> Result<Impl, String> {
@@ -194,7 +197,8 @@ fn collect_info_enum(ast: &DataEnum) -> Result<Impl, String> {
         .concat()
     };
 
-    let values = values_for_enum(variants);
+    let variant_sizes = get_enum_variant_length(ast);
+    let values = values_for_enum(variant_sizes, variants);
 
     Ok(Impl { headers, values })
 }
@@ -277,13 +281,8 @@ fn variant_var_name(index: usize, field: &Field) -> TokenStream {
     }
 }
 
-fn values_for_enum(variants: Vec<(&Variant, Impl)>) -> TokenStream {
+fn values_for_enum(variant_sizes: impl Iterator<Item=TokenStream>, variants: Vec<(&Variant, Impl)>) -> TokenStream {
     let branches = variants.iter().map(|(variant, _)| match_variant(variant));
-
-    let headers = variants
-        .iter()
-        .map(|(_, info)| &info.headers)
-        .collect::<Vec<_>>();
 
     let fields = variants
         .iter()
@@ -314,21 +313,13 @@ fn values_for_enum(variants: Vec<(&Variant, Impl)>) -> TokenStream {
         //
         // It's a bit strange trick but I haven't found any better
         // how to calculate a size and offset.
-        let headers: Vec<Vec<String>> = vec![#(#headers,)*];
-        let lengths = headers.iter().map(|values| values.len()).collect::<Vec<_>>();
-        let size = lengths.iter().sum::<usize>();
-        let offsets: Vec<usize> = lengths.iter().fold(Vec::new(), |mut acc, len| {
-            // offset of 1 element is 0
-            if acc.is_empty() {
-                acc.push(0);
-            }
+        let mut offsets: &mut [usize] = &mut [0, #(#variant_sizes,)*];
+        for i in 1 .. offsets.len() {
+            offsets[i] += offsets[i-1]
+        }
 
-            let privious_len: usize = acc.last().map(|l| *l).unwrap_or(0);
-            acc.push(privious_len + len);
-            acc
-        });
-
-        let mut out_vec: Vec<String> = std::iter::repeat(String::new()).take(size).collect();
+        let size = <Self as Tabled>::LENGTH;
+        let mut out_vec: Vec<String> = vec![String::new(); size];
 
         #[allow(unused_variables)]
         match &self {
