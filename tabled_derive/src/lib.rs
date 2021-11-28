@@ -83,7 +83,7 @@ fn get_enum_length(enum_ast: &DataEnum) -> TokenStream {
     stream
 }
 
-fn get_enum_variant_length(enum_ast: &DataEnum) -> impl Iterator<Item=TokenStream> + '_ {
+fn get_enum_variant_length(enum_ast: &DataEnum) -> impl Iterator<Item = TokenStream> + '_ {
     enum_ast
         .variants
         .iter()
@@ -178,6 +178,7 @@ fn field_headers(
 }
 
 fn collect_info_enum(ast: &DataEnum) -> Result<Impl, String> {
+    let mut headers_list = Vec::new();
     let mut variants = Vec::new();
     for variant in &ast.variants {
         let attributes = Attributes::parse(&variant.attrs);
@@ -186,19 +187,19 @@ fn collect_info_enum(ast: &DataEnum) -> Result<Impl, String> {
         }
 
         let info = info_from_variant(variant, &attributes)?;
-        variants.push((variant, info));
+        variants.push((variant, info.values));
+        headers_list.push(info.headers);
     }
 
-    let headers_list = variants.iter().map(|(_, i)| &i.headers).collect::<Vec<_>>();
+    let variant_sizes = get_enum_variant_length(ast);
+    let values = values_for_enum(variant_sizes, variants);
+
     let headers = quote! {
         vec![
             #(#headers_list,)*
         ]
         .concat()
     };
-
-    let variant_sizes = get_enum_variant_length(ast);
-    let values = values_for_enum(variant_sizes, variants);
 
     Ok(Impl { headers, values })
 }
@@ -281,12 +282,15 @@ fn variant_var_name(index: usize, field: &Field) -> TokenStream {
     }
 }
 
-fn values_for_enum(variant_sizes: impl Iterator<Item=TokenStream>, variants: Vec<(&Variant, Impl)>) -> TokenStream {
+fn values_for_enum(
+    variant_sizes: impl Iterator<Item = TokenStream>,
+    variants: Vec<(&Variant, TokenStream)>,
+) -> TokenStream {
     let branches = variants.iter().map(|(variant, _)| match_variant(variant));
 
     let fields = variants
         .iter()
-        .map(|(_, info)| &info.values)
+        .map(|(_, values)| values)
         .collect::<Vec<_>>();
 
     let mut stream = TokenStream::new();
