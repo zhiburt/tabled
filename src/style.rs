@@ -11,7 +11,7 @@ use papergrid::{Border, Entity, Grid, Settings};
 /// use tabled::{Table, Style, style::Line};
 /// let data = vec!["Hello", "2021"];
 /// let table = Table::new(&data).with(
-///                 Style::noborder()
+///                 Style::NO_BORDER
 ///                     .frame_bottom(Some(Line::short('*', ' ')))
 ///                     .split(Some(Line::short('*', ' ')))
 ///                     .inner(' ')
@@ -41,39 +41,17 @@ impl Style {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     +----+--------------+---------------------------+
     /// ```
-    #[deprecated(note = "The name is not explicit. Use ascii function instead.")]
-    pub fn default() -> Self {
-        Self::ascii()
-    }
-
-    /// Ascii style looks like the following table
-    ///
-    /// ```text
-    ///     +----+--------------+---------------------------+
-    ///     | id | destribution |           link            |
-    ///     +----+--------------+---------------------------+
-    ///     | 0  |    Fedora    |  https://getfedora.org/   |
-    ///     +----+--------------+---------------------------+
-    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
-    ///     +----+--------------+---------------------------+
-    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
-    ///     +----+--------------+---------------------------+
-    /// ```
-    pub fn ascii() -> Self {
-        let line = Line::bordered('-', '+', '+', '+');
-
-        Self::new(
-            Frame {
-                bottom: Some(line.clone()),
-                top: Some(line.clone()),
-                left: Some('|'),
-                right: Some('|'),
-            },
-            Some(line.clone()),
-            Some(line),
-            '|',
-        )
-    }
+    pub const ASCII: Self = Self::new(
+        Frame {
+            bottom: Some(Line::bordered('-', '+', '+', '+')),
+            top: Some(Line::bordered('-', '+', '+', '+')),
+            left: Some('|'),
+            right: Some('|'),
+        },
+        Some(Line::bordered('-', '+', '+', '+')),
+        Some(Line::bordered('-', '+', '+', '+')),
+        '|',
+    );
 
     /// Noborder style looks like the following table
     ///
@@ -83,9 +61,7 @@ impl Style {
     ///      2      OpenSUSE     https://www.opensuse.org/
     ///      3    Endeavouros    https://endeavouros.com/
     /// ```
-    pub fn noborder() -> Self {
-        Self::new(Frame::default(), None, None, ' ')
-    }
+    pub const NO_BORDER: Self = Self::new(Frame::empty(), None, None, ' ');
 
     /// Psql style looks like the following table
     ///
@@ -96,9 +72,7 @@ impl Style {
     ///      2  |   OpenSUSE   | https://www.opensuse.org/
     ///      3  | Endeavouros  | https://endeavouros.com/
     /// ```
-    pub fn psql() -> Self {
-        Self::new(Frame::default(), Some(Line::short('-', '+')), None, '|')
-    }
+    pub const PSQL: Self = Self::new(Frame::empty(), Some(Line::short('-', '+')), None, '|');
 
     /// Github_markdown style looks like the following table
     ///
@@ -109,18 +83,18 @@ impl Style {
     ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     /// ```
-    pub fn github_markdown() -> Self {
-        Self::new(
-            Frame {
-                left: Some('|'),
-                right: Some('|'),
-                ..Default::default()
-            },
-            Some(Line::bordered('-', '+', '|', '|')),
-            None,
-            '|',
-        )
-    }
+    pub const GITHUB_MARKDOWN: Self = Self::new(
+        Frame {
+            left: Some('|'),
+            right: Some('|'),
+            bottom: None,
+            top: None,
+        },
+        Some(Line::bordered('-', '+', '|', '|')),
+        None,
+        '|',
+    );
+
     /// Pseudo style looks like the following table
     ///
     /// ```text
@@ -134,19 +108,17 @@ impl Style {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
-    pub fn pseudo() -> Self {
-        Self::new(
-            Frame {
-                left: Some('│'),
-                right: Some('│'),
-                bottom: Some(Line::bordered('─', '┴', '└', '┘')),
-                top: Some(Line::bordered('─', '┬', '┌', '┐')),
-            },
-            Some(Line::bordered('─', '┼', '├', '┤')),
-            Some(Line::bordered('─', '┼', '├', '┤')),
-            '│',
-        )
-    }
+    pub const PSEUDO: Self = Self::new(
+        Frame {
+            left: Some('│'),
+            right: Some('│'),
+            bottom: Some(Line::bordered('─', '┴', '└', '┘')),
+            top: Some(Line::bordered('─', '┬', '┌', '┐')),
+        },
+        Some(Line::bordered('─', '┼', '├', '┤')),
+        Some(Line::bordered('─', '┼', '├', '┤')),
+        '│',
+    );
 
     /// Pseudo_clean style looks like the following table
     ///
@@ -159,10 +131,51 @@ impl Style {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
+    pub const PSEUDO_CLEAN: Self = Self::new(
+        Frame {
+            left: Some('│'),
+            right: Some('│'),
+            bottom: Some(Line::bordered('─', '┴', '└', '┘')),
+            top: Some(Line::bordered('─', '┬', '┌', '┐')),
+        },
+        Some(Line::bordered('─', '┼', '├', '┤')),
+        None,
+        '│',
+    );
+
+    #[deprecated(note = "The name is not explicit. Use ASCII constant instead.")]
+    pub fn default() -> Self {
+        Self::ASCII
+    }
+
+    #[deprecated(note = "The name is not explicit. Use ASCII constant instead.")]
+    pub fn ascii() -> Self {
+        Self::ASCII
+    }
+
+    #[deprecated(note = "The name is not explicit. Use NO_BORDER constant instead.")]
+    pub fn noborder() -> Self {
+        Self::NO_BORDER
+    }
+
+    #[deprecated(note = "The name is not explicit. Use PSQL constant instead.")]
+    pub fn psql() -> Self {
+        Self::PSQL
+    }
+
+    #[deprecated(note = "The name is not explicit. Use GITHUB_MARKDOWN constant instead.")]
+    pub fn github_markdown() -> Self {
+        Self::GITHUB_MARKDOWN
+    }
+
+    #[deprecated(note = "The name is not explicit. Use PSEUDO constant instead.")]
+    pub fn pseudo() -> Self {
+        Self::PSEUDO
+    }
+
+    #[deprecated(note = "The name is not explicit. Use PSEUDO_CLEAN constant instead.")]
     pub fn pseudo_clean() -> Self {
-        let mut pseudo = Self::pseudo();
-        pseudo.split = None;
-        pseudo
+        Self::PSEUDO_CLEAN
     }
 
     /// Left frame character.
@@ -214,7 +227,7 @@ impl Style {
         self
     }
 
-    fn new(frame: Frame, header: Option<Line>, split: Option<Line>, inner: char) -> Self {
+    const fn new(frame: Frame, header: Option<Line>, split: Option<Line>, inner: char) -> Self {
         Self {
             frame,
             split,
@@ -235,7 +248,7 @@ pub struct Line {
 
 impl Line {
     /// A line for frame styles.
-    pub fn bordered(main: char, intersection: char, left: char, right: char) -> Self {
+    pub const fn bordered(main: char, intersection: char, left: char, right: char) -> Self {
         Self {
             intersection,
             main,
@@ -245,11 +258,12 @@ impl Line {
     }
 
     /// A line for no-frame styles.
-    pub fn short(main: char, intersection: char) -> Self {
+    pub const fn short(main: char, intersection: char) -> Self {
         Self {
             main,
             intersection,
-            ..Default::default()
+            left_corner: None,
+            right_corner: None,
         }
     }
 }
@@ -260,6 +274,17 @@ struct Frame {
     bottom: Option<Line>,
     left: Option<char>,
     right: Option<char>,
+}
+
+impl Frame {
+    const fn empty() -> Self {
+        Self {
+            bottom: None,
+            top: None,
+            left: None,
+            right: None,
+        }
+    }
 }
 
 impl TableOption for Style {

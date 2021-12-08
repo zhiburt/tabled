@@ -7,7 +7,7 @@ mod util;
 fn indent() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(Style::PSQL)
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Row(1..)).with(Indent::new(1, 1, 0, 2)))
         .to_string();
@@ -33,7 +33,7 @@ fn indent() {
 fn indent_multiline() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(Style::PSQL)
         .with(Modify::new(Row(1..)).with(Indent::new(1, 1, 1, 1)))
         .to_string();
 
@@ -58,7 +58,7 @@ fn indent_multiline() {
 fn indent_multiline_with_vertical_alignment() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(Style::PSQL)
         .with(
             Modify::new(Full)
                 .with(Alignment::center_horizontal())

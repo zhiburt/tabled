@@ -32,7 +32,7 @@ fn formatting_full_test() {
 fn formatting_head_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::GITHUB_MARKDOWN)
         .with(Modify::new(Head).with(Format(|s| format!(":{}", s))))
         .to_string();
 
@@ -51,7 +51,7 @@ fn formatting_head_test() {
 fn formatting_row_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(Style::PSQL)
         .with(Modify::new(Row(1..)).with(Format(|s| format!("<{}>", s))))
         .to_string();
 
@@ -70,7 +70,7 @@ fn formatting_row_test() {
 fn formatting_column_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(Style::PSQL)
         .with(Modify::new(Column(..1)).with(Format(|s| format!("(x) {}", s))))
         .to_string();
     let expected = concat!(
@@ -91,7 +91,7 @@ fn formatting_multiline_test() {
     data[2][3] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
 
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(Style::PSQL)
         .with(Modify::new(Full).with(Format(multiline(|s| format!("(x) {}", s)))))
         .to_string();
 
@@ -118,7 +118,7 @@ fn formatting_multiline_test() {
 fn formatting_cell_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(Style::PSQL)
         .with(Modify::new(Cell(0, 0)).with(Format(|s| format!("(x) {}", s))))
         .with(Modify::new(Cell(0, 1)).with(Format(|s| format!("(x) {}", s))))
         .with(Modify::new(Cell(0, 2)).with(Format(|s| format!("(x) {}", s))))
@@ -139,7 +139,7 @@ fn formatting_cell_test() {
 fn formatting_and_combination_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(Style::PSQL)
         .with(Modify::new(Column(..1).and(Row(..1))).with(Format(|s| format!("(x) {}", s))))
         .to_string();
 
@@ -158,7 +158,7 @@ fn formatting_and_combination_test() {
 fn formatting_not_combination_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(Style::PSQL)
         .with(
             Modify::new(Column(..1).and(Row(..1)).not(Cell(0, 0)))
                 .with(Format(|s| format!("(x) {}", s))),
@@ -180,7 +180,7 @@ fn formatting_not_combination_test() {
 fn formatting_using_lambda_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::GITHUB_MARKDOWN)
         .with(Modify::new(Head).with(|s: &str| format!(":{}", s)))
         .to_string();
 
@@ -199,7 +199,7 @@ fn formatting_using_lambda_test() {
 fn formatting_using_function_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::GITHUB_MARKDOWN)
         .with(Modify::new(Head).with(str::to_uppercase))
         .to_string();
 
@@ -218,7 +218,7 @@ fn formatting_using_function_test() {
 fn format_from() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::GITHUB_MARKDOWN)
         .with(Modify::new(Head).with(FormatFrom(vec![
             "Header Name 1",
             "Header Name 2",
@@ -241,7 +241,7 @@ fn format_from() {
 fn format_with_index() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::GITHUB_MARKDOWN)
         .with(
             Modify::new(Head).with(FormatWithIndex(|a, b, c| match (b, c) {
                 (0, 0) => "(0, 0)".to_string(),
@@ -273,7 +273,7 @@ mod color {
     fn color_column_test() {
         let data = create_vector::<3, 3>();
         let table = Table::new(&data)
-            .with(Style::psql())
+            .with(Style::PSQL)
             .with(Modify::new(Column(..1).and(Column(2..))).with(Format(|s| s.red().to_string())))
             .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))
             .to_string();
@@ -297,7 +297,7 @@ mod color {
         data[2][3] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
 
         let table = Table::new(&data)
-            .with(Style::psql())
+            .with(Style::PSQL)
             .with(Modify::new(Column(..1)).with(Format(multiline(|s| s.red().to_string()))))
             .with(Modify::new(Column(1..2)).with(Format(multiline(|s| s.blue().to_string()))))
             .with(Modify::new(Column(2..)).with(Format(multiline(|s| s.green().to_string()))))

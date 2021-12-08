@@ -155,7 +155,7 @@ fn rotate_preserve_border_styles_test() {
     let data = [(123, 456, 789), (234, 567, 891), (111, 222, 333)];
 
     let table = Table::new(&data)
-        .with(Style::ascii())
+        .with(Style::ASCII)
         .with(Highlight::row(0, Border::default().top('*')))
         .with(Rotate::Left)
         .to_string();
@@ -174,7 +174,7 @@ fn rotate_preserve_border_styles_test() {
     );
 
     let table = Table::new(&data)
-        .with(Style::ascii())
+        .with(Style::ASCII)
         .with(Highlight::cell(0, 2, Border::default().bottom('*')))
         .with(Rotate::Left)
         .to_string();

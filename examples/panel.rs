@@ -36,7 +36,7 @@ fn main() {
     let table = Table::new(&data)
         .with(Header("Tabled Releases"))
         .with(Footer(format!("N - {}", data.len())))
-        .with(Style::pseudo())
+        .with(Style::PSEUDO)
         .with(Modify::new(Full).with(Alignment::Horizontal(AlignmentHorizontal::Center)));
 
     println!("{}", table);

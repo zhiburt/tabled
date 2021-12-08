@@ -120,7 +120,7 @@
 //!     (Developer("Maxim Zhiburt"), Domain::Unknown),
 //! ];
 //!     
-//! let table = Table::new(data).with(Style::psql()).to_string();
+//! let table = Table::new(data).with(Style::PSQL).to_string();
 //!
 //! assert_eq!(
 //!     table,
@@ -236,7 +236,7 @@ pub trait CellOption {
 /// use tabled::{Table, Style, Alignment, Full, Modify};
 /// let data = vec!["Hello", "2021"];
 /// let table = Table::new(&data)
-///                 .with(Style::psql())
+///                 .with(Style::PSQL)
 ///                 .with(Modify::new(Full).with(Alignment::left()));
 /// println!("{}", table);
 /// ```
@@ -250,7 +250,7 @@ impl Table {
         let grid = build_grid(iter);
 
         let table = Self { grid };
-        table.with(Style::ascii())
+        table.with(Style::ASCII)
     }
 
     /// With is a generic function which applies options to the [Table].

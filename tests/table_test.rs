@@ -721,7 +721,7 @@ fn tuple_combination() {
         (Developer("Maxim Zhiburt"), Domain::Unknown),
     ];
 
-    let table = Table::new(data).with(Style::psql()).to_string();
+    let table = Table::new(data).with(Style::PSQL).to_string();
 
     assert_eq!(
         table,
