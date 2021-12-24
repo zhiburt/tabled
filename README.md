@@ -1,7 +1,7 @@
 [![Build Status](https://github.com/zhiburt/tabled/actions/workflows/ci.yml/badge.svg?style=for-the-badge)](https://github.com/zhiburt/tabled/actions)
 [![Coverage Status](https://img.shields.io/coveralls/github/zhiburt/tabled/master)](https://coveralls.io/github/zhiburt/tabled)
 [![Crate](https://img.shields.io/crates/v/tabled)](https://crates.io/crates/tabled)
-[![docs.rs](https://img.shields.io/docsrs/tabled?color=blue)](https://docs.rs/tabled/0.1.1/tabled/)
+[![docs.rs](https://img.shields.io/docsrs/tabled?color=blue)](https://docs.rs/tabled)
 [![license](https://img.shields.io/crates/l/tabled)](./LICENSE.txt)
 [![dependency status](https://deps.rs/repo/github/zhiburt/tabled/status.svg)](https://deps.rs/repo/github/zhiburt/tabled)
 
