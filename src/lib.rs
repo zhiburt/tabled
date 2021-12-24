@@ -150,12 +150,12 @@ pub mod display;
 mod formating;
 mod highlight;
 mod indent;
+pub mod join;
 mod object;
 mod panel;
 mod rotate;
 pub mod style;
 mod width;
-pub mod join;
 
 pub use crate::{
     alignment::*, disable::*, formating::*, highlight::*, indent::*, object::*, panel::*,
