@@ -5,13 +5,27 @@ use papergrid::{Entity, Grid};
 use std::cmp;
 
 pub struct Join {
-    pub mode: JoinMode,
-    pub strict_size: bool,
+    mode: JoinMode,
+    strict_size: bool,
 }
-
-pub enum JoinMode {
+enum JoinMode {
     Vertical(Table),
     Horizontal(Table),
+}
+
+impl Join {
+  pub fn vertical(table: Table) -> Self {
+    Self { mode: JoinMode::Vertical(table), strict_size: false }
+  }
+
+  pub fn horizontal(table: Table) -> Self {
+    Self { mode: JoinMode::Horizontal(table), strict_size: false }
+  }
+
+  pub fn strict_size(mut self) -> Self {
+    self.strict_size = true; 
+    self
+  }
 }
 
 impl TableOption for Join {
