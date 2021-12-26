@@ -264,6 +264,20 @@ impl Table {
     }
 }
 
+pub trait TableIteratorExt {
+    fn table(self) -> Table;
+}
+
+impl<T, U> TableIteratorExt for U
+where
+    T: Tabled,
+    U: IntoIterator<Item = T>,
+{
+    fn table(self) -> Table {
+        Table::new(self)
+    }
+}
+
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.grid)
