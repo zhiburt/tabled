@@ -14,18 +14,24 @@ enum JoinMode {
 }
 
 impl Join {
-  pub fn vertical(table: Table) -> Self {
-    Self { mode: JoinMode::Vertical(table), strict_size: false }
-  }
+    pub fn vertical(table: Table) -> Self {
+        Self {
+            mode: JoinMode::Vertical(table),
+            strict_size: false,
+        }
+    }
 
-  pub fn horizontal(table: Table) -> Self {
-    Self { mode: JoinMode::Horizontal(table), strict_size: false }
-  }
+    pub fn horizontal(table: Table) -> Self {
+        Self {
+            mode: JoinMode::Horizontal(table),
+            strict_size: false,
+        }
+    }
 
-  pub fn strict_size(mut self) -> Self {
-    self.strict_size = true; 
-    self
-  }
+    pub fn strict_size(mut self) -> Self {
+        self.strict_size = true;
+        self
+    }
 }
 
 impl TableOption for Join {
@@ -94,7 +100,7 @@ impl TableOption for Join {
                     for row in 0..table.grid.count_rows() {
                         let settings = table.grid.get_settings(row, column);
                         new_grid.set(
-                            &Entity::Cell(other.count_rows()+row, column),
+                            &Entity::Cell(other.count_rows() + row, column),
                             settings.border_restriction(false),
                         );
                     }

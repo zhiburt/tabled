@@ -17,9 +17,7 @@ fn table_join_vertical_top() {
         .with(Style::ASCII)
         .with(Modify::new(Full).with(Alignment::left()));
 
-    let table3 = table1.with(
-    Join::vertical(table2).strict_size()
-    );
+    let table3 = table1.with(Join::vertical(table2).strict_size());
 
     let expected = concat!(
         "  N | column 0 | column 1 | column 2  \n",
@@ -54,9 +52,7 @@ fn table_join_vertical_bottom() {
         .with(Style::ASCII)
         .with(Modify::new(Full).with(Alignment::left()));
 
-    let table3 = table2.with(
-        Join::vertical(table1).strict_size()
-    );
+    let table3 = table2.with(Join::vertical(table1).strict_size());
 
     let expected = concat!(
         "+---+----------+----------+----------+\n",
@@ -91,9 +87,7 @@ fn table_join_horizontal_left() {
         .with(Style::ASCII)
         .with(Modify::new(Full).with(Alignment::left()));
 
-    let table3 = table2.with(
-    Join::horizontal(table1).strict_size()
-    );
+    let table3 = table2.with(Join::horizontal(table1).strict_size());
 
     let expected = concat!(
         "+---+----------+----------+----------+                                    \n",
@@ -123,11 +117,7 @@ fn table_join_vertical_different_size() {
         .with(Style::PSQL)
         .with(Modify::new(Full).with(Alignment::left()));
 
-    let table3 = table1.with(
-        Join::vertical(table2)
-    );
-
-    println!("{}",table3.to_string());
+    let table3 = table1.with(Join::vertical(table2));
 
     let expected = concat!(
         " N | column 0 | column 1 | column 2            \n",
@@ -145,7 +135,6 @@ fn table_join_vertical_different_size() {
     assert_eq!(table3.to_string(), expected);
 }
 
-
 #[test]
 fn table_join_horizontal_right() {
     let data1 = create_vector::<3, 3>();
@@ -159,9 +148,7 @@ fn table_join_horizontal_right() {
         .with(Style::ASCII)
         .with(Modify::new(Full).with(Alignment::left()));
 
-    let table3 = table1.with(
-        Join::horizontal(table2).strict_size()
-    );
+    let table3 = table1.with(Join::horizontal(table2).strict_size());
 
     let expected = concat!(
         "                                    +---+----------+----------+----------+\n",
@@ -191,9 +178,7 @@ fn table_join_horizontal_different_size() {
         .with(Style::PSQL)
         .with(Modify::new(Full).with(Alignment::left()));
 
-    let table3 = table1.with(
-        Join::horizontal(table2)
-    );
+    let table3 = table1.with(Join::horizontal(table2));
 
     let expected = concat!(
         " N | column 0 | column 1 | column 2  N | column 0 | column 1 | column 2 \n",
