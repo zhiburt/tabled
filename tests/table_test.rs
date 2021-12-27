@@ -1,5 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet};
-use tabled::{Style, Table, Tabled};
+use tabled::{Style, Table, TableIteratorExt, Tabled};
 
 mod default_types {
     use super::*;
@@ -722,6 +722,41 @@ fn tuple_combination() {
     ];
 
     let table = Table::new(data).with(Style::PSQL).to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "      name       | Security | Embeded | Frontend | Unknown \n",
+            "-----------------+----------+---------+----------+---------\n",
+            " Terri Kshlerin  |          |    +    |          |         \n",
+            " Catalina Dicki  |    +     |         |          |         \n",
+            " Jennie Schmeler |          |         |    +     |         \n",
+            "  Maxim Zhiburt  |          |         |          |    +    \n"
+        )
+    );
+}
+
+#[test]
+fn table_trait() {
+    #[derive(Tabled)]
+    enum Domain {
+        Security,
+        Embeded,
+        Frontend,
+        Unknown,
+    }
+
+    #[derive(Tabled)]
+    struct Developer(#[header("name")] &'static str);
+
+    let data = vec![
+        (Developer("Terri Kshlerin"), Domain::Embeded),
+        (Developer("Catalina Dicki"), Domain::Security),
+        (Developer("Jennie Schmeler"), Domain::Frontend),
+        (Developer("Maxim Zhiburt"), Domain::Unknown),
+    ];
+
+    let table = (&data).table().with(Style::PSQL).to_string();
 
     assert_eq!(
         table,

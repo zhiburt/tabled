@@ -264,6 +264,27 @@ impl Table {
     }
 }
 
+/// A trait for [IntoIterator] whose Item type is bound to [Tabled].
+/// Any type implements [IntoIterator] can call this function directly
+///
+/// ```text
+/// let people: &[Person] = ...
+/// let table = people.table().with(Style::PSQL);
+/// ```
+pub trait TableIteratorExt {
+    fn table(self) -> Table;
+}
+
+impl<T, U> TableIteratorExt for U
+where
+    T: Tabled,
+    U: IntoIterator<Item = T>,
+{
+    fn table(self) -> Table {
+        Table::new(self)
+    }
+}
+
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.grid)
