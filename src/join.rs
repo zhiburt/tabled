@@ -1,31 +1,33 @@
-#[allow(unused)]
 use crate::Table;
 use crate::TableOption;
 use papergrid::{Entity, Grid};
 use std::cmp;
 
 pub struct Join {
+    table: Table,
     mode: JoinMode,
     strict_size: bool,
 }
 enum JoinMode {
-    Vertical(Table),
-    Horizontal(Table),
+    Vertical,
+    Horizontal,
 }
 
 impl Join {
-    pub fn vertical(table: Table) -> Self {
+    fn new(table: Table, mode: JoinMode, strict_size: bool) -> Self {
         Self {
-            mode: JoinMode::Vertical(table),
-            strict_size: false,
+            table,
+            mode,
+            strict_size,
         }
     }
 
+    pub fn vertical(table: Table) -> Self {
+        Self::new(table, JoinMode::Vertical, false)
+    }
+
     pub fn horizontal(table: Table) -> Self {
-        Self {
-            mode: JoinMode::Horizontal(table),
-            strict_size: false,
-        }
+        Self::new(table, JoinMode::Horizontal, false)
     }
 
     pub fn strict_size(mut self) -> Self {
@@ -37,9 +39,9 @@ impl Join {
 impl TableOption for Join {
     fn change(&mut self, other: &mut Grid) {
         match &mut self.mode {
-            JoinMode::Vertical(table) if self.strict_size => {
-                let new_row_size = table.grid.count_rows() + other.count_rows();
-                let new_column_size = table.grid.count_columns();
+            JoinMode::Vertical if self.strict_size => {
+                let new_row_size = self.table.grid.count_rows() + other.count_rows();
+                let new_column_size = self.table.grid.count_columns();
                 let mut new_grid = Grid::new(new_row_size, new_column_size);
 
                 for column in 0..new_grid.count_columns() {
@@ -48,7 +50,7 @@ impl TableOption for Join {
                             other.get_settings(row, column)
                         } else {
                             let row = row - other.count_rows();
-                            table.grid.get_settings(row, column)
+                            self.table.grid.get_settings(row, column)
                         };
                         new_grid.set(
                             &Entity::Cell(row, column),
@@ -59,9 +61,9 @@ impl TableOption for Join {
 
                 *other = new_grid;
             }
-            JoinMode::Horizontal(table) if self.strict_size => {
-                let new_row_size = table.grid.count_rows();
-                let new_column_size = table.grid.count_columns() + other.count_columns();
+            JoinMode::Horizontal if self.strict_size => {
+                let new_row_size = self.table.grid.count_rows();
+                let new_column_size = self.table.grid.count_columns() + other.count_columns();
                 let mut new_grid = Grid::new(new_row_size, new_column_size);
 
                 for column in 0..new_grid.count_columns() {
@@ -70,7 +72,7 @@ impl TableOption for Join {
                             other.get_settings(row, column)
                         } else {
                             let column = column - other.count_columns();
-                            table.grid.get_settings(row, column)
+                            self.table.grid.get_settings(row, column)
                         };
                         new_grid.set(
                             &Entity::Cell(row, column),
@@ -81,9 +83,10 @@ impl TableOption for Join {
 
                 *other = new_grid;
             }
-            JoinMode::Vertical(table) => {
-                let new_row_size = table.grid.count_rows() + other.count_rows();
-                let new_column_size = cmp::max(table.grid.count_columns(), other.count_columns());
+            JoinMode::Vertical => {
+                let new_row_size = self.table.grid.count_rows() + other.count_rows();
+                let new_column_size =
+                    cmp::max(self.table.grid.count_columns(), other.count_columns());
                 let mut new_grid = Grid::new(new_row_size, new_column_size);
 
                 for column in 0..other.count_columns() {
@@ -96,9 +99,9 @@ impl TableOption for Join {
                     }
                 }
 
-                for column in 0..table.grid.count_columns() {
-                    for row in 0..table.grid.count_rows() {
-                        let settings = table.grid.get_settings(row, column);
+                for column in 0..self.table.grid.count_columns() {
+                    for row in 0..self.table.grid.count_rows() {
+                        let settings = self.table.grid.get_settings(row, column);
                         new_grid.set(
                             &Entity::Cell(other.count_rows() + row, column),
                             settings.border_restriction(false),
@@ -108,9 +111,9 @@ impl TableOption for Join {
 
                 *other = new_grid;
             }
-            JoinMode::Horizontal(table) => {
-                let new_row_size = cmp::max(table.grid.count_rows(), other.count_rows());
-                let new_column_size = table.grid.count_columns() + other.count_columns();
+            JoinMode::Horizontal => {
+                let new_row_size = cmp::max(self.table.grid.count_rows(), other.count_rows());
+                let new_column_size = self.table.grid.count_columns() + other.count_columns();
                 let mut new_grid = Grid::new(new_row_size, new_column_size);
 
                 for column in 0..other.count_columns() {
@@ -123,9 +126,9 @@ impl TableOption for Join {
                     }
                 }
 
-                for column in 0..table.grid.count_columns() {
-                    for row in 0..table.grid.count_rows() {
-                        let settings = table.grid.get_settings(row, column);
+                for column in 0..self.table.grid.count_columns() {
+                    for row in 0..self.table.grid.count_rows() {
+                        let settings = self.table.grid.get_settings(row, column);
                         new_grid.set(
                             &Entity::Cell(row, other.count_columns() + column),
                             settings.border_restriction(false),
