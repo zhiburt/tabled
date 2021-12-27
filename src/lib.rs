@@ -268,11 +268,14 @@ impl Table {
 /// A trait for [IntoIterator] whose Item type is bound to [Tabled].
 /// Any type implements [IntoIterator] can call this function directly
 ///
-/// ```text
-/// let people: &[Person] = ...
-/// let table = people.table().with(Style::PSQL);
+/// ```rust
+/// use tabled::{TableIteratorExt, Style};
+/// let strings: &[&str] = &["Hello", "World"];
+/// let table = strings.table().with(Style::PSQL);
+/// println!("{}", table);
 /// ```
 pub trait TableIteratorExt {
+    /// Returns a [Table] instance from a given type
     fn table(self) -> Table;
 }
 
