@@ -338,7 +338,7 @@ impl Grid {
     }
 
     /// get_cell_content returns content without any style changes
-    pub fn get_cell_content(&mut self, row: usize, column: usize) -> &str {
+    pub fn get_cell_content(&self, row: usize, column: usize) -> &str {
         self.cells[row][column].as_str()
     }
 
