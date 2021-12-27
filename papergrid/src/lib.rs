@@ -1352,18 +1352,12 @@ impl Borders {
         }
 
         if line.len() != self.count_columns {
-            return Err(BorderError::NotEnoughLineSymbols {
-                expected: self.count_columns,
-                got: line.len(),
-            });
+            return Err(BorderError::NotEnoughLineSymbols);
         }
 
         let need_intersections = self.need_horizontal_intersections();
         if intersections.len() != need_intersections {
-            return Err(BorderError::NotEnoughIntersections {
-                expected: need_intersections,
-                got: intersections.len(),
-            });
+            return Err(BorderError::NotEnoughIntersections);
         }
 
         self.horizontal.insert(row, line);
@@ -1409,18 +1403,12 @@ impl Borders {
         }
 
         if line.len() != self.count_rows {
-            return Err(BorderError::NotEnoughLineSymbols {
-                expected: self.count_rows,
-                got: line.len(),
-            });
+            return Err(BorderError::NotEnoughLineSymbols);
         }
 
         let need_intersections = self.need_vertical_intersections();
         if intersections.len() != need_intersections {
-            return Err(BorderError::NotEnoughIntersections {
-                expected: need_intersections,
-                got: intersections.len(),
-            });
+            return Err(BorderError::NotEnoughIntersections);
         }
 
         self.vertical.insert(column, line);
@@ -1497,8 +1485,8 @@ enum BorderError {
     WrongIntersectionIndex,
     WrongRowIndex,
     WrongColumnIndex,
-    NotEnoughLineSymbols { expected: usize, got: usize },
-    NotEnoughIntersections { expected: usize, got: usize },
+    NotEnoughLineSymbols,
+    NotEnoughIntersections,
 }
 
 fn entity_frame(entity: &Entity, count_rows: usize, count_columns: usize) -> EntityFrame {

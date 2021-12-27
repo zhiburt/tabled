@@ -112,7 +112,7 @@ impl std::fmt::Display for ExpandedDisplay {
             .map(|record| {
                 record
                     .iter()
-                    .map(|v| v.lines().map(|l| papergrid::string_width(l)).max())
+                    .map(|v| v.lines().map(papergrid::string_width).max())
                     .max()
             })
             .max()

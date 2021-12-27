@@ -63,8 +63,20 @@ where
 ///     .with(Modify::new(Full).with(Format(multiline(|s| format!("{}", s)))))
 ///     .to_string();
 /// ```
-pub fn multiline<F: 'static + Fn(&str) -> String>(f: F) -> Box<dyn Fn(&str) -> String> {
-    Box::new(move |s: &str| s.lines().map(|s| f(s)).collect::<Vec<_>>().join("\n"))
+pub fn multiline<F>(f: F) -> Box<dyn Fn(&str) -> String>
+where
+    F: Fn(&str) -> String + 'static,
+{
+    let closure = move |s: &str| {
+        let mut v = Vec::new();
+        for line in s.lines() {
+            v.push(f(line));
+        }
+
+        v.join("\n")
+    };
+
+    Box::new(closure)
 }
 
 /// FormatFrom repeatedly uses first possible element
