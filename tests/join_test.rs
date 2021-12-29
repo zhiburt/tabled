@@ -137,3 +137,46 @@ fn table_join_horizontal_different_size() {
 
     assert_eq!(expected, table3.to_string());
 }
+
+#[test]
+fn table_join_horizontal_with_not_default_empty_string() {
+    let data1 = create_vector::<2, 3>();
+    let data2 = create_vector::<3, 3>();
+
+    let table1 = Table::new(&data1).with(Style::PSQL);
+    let table2 = Table::new(&data2).with(Style::PSQL);
+    let table3 = table1.with(Join::horizontal(table2).default_cell("NaN"));
+
+    let expected = concat!(
+        " N | column 0 | column 1 | column 2  N | column 0 | column 1 | column 2 \n",
+        "---+----------+----------+-------------+----------+----------+----------\n",
+        " 0 |   0-0    |   0-1    |   0-2     0 |   0-0    |   0-1    |   0-2    \n",
+        " 1 |   1-0    |   1-1    |   1-2     1 |   1-0    |   1-1    |   1-2    \n",
+        "NaN NaN        NaN        NaN        2 |   2-0    |   2-1    |   2-2    \n",
+    );
+
+    assert_eq!(expected, table3.to_string());
+}
+
+#[test]
+fn table_join_vertical_with_not_default_empty_string() {
+    let data1 = create_vector::<2, 2>();
+    let data2 = create_vector::<2, 3>();
+
+    let table1 = Table::new(&data1).with(Style::PSQL);
+    let table2 = Table::new(&data2).with(Style::PSQL);
+    let table3 = table1.with(Join::vertical(table2).default_cell("NaN"));
+
+    let expected = concat!(
+        " N | column 0 | column 1  NaN       \n",
+        "---+----------+----------           \n",
+        " 0 |   0-0    |   0-1     NaN       \n",
+        " 1 |   1-0    |   1-1     NaN       \n",
+        " N | column 0 | column 1 | column 2 \n",
+        "---+----------+----------+----------\n",
+        " 0 |   0-0    |   0-1    |   0-2    \n",
+        " 1 |   1-0    |   1-1    |   1-2    \n",
+    );
+
+    assert_eq!(expected, table3.to_string());
+}
