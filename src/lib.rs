@@ -159,8 +159,8 @@ pub mod display;
 pub mod style;
 
 pub use crate::{
-    alignment::*, concat::*, disable::*, formating::*, highlight::*, indent::*, object::*, panel::*,
-    rotate::*, style::Style, width::*,
+    alignment::*, concat::*, disable::*, formating::*, highlight::*, indent::*, object::*,
+    panel::*, rotate::*, style::Style, width::*,
 };
 
 pub use tabled_derive::Tabled;
