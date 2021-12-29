@@ -145,20 +145,21 @@ use papergrid::{Entity, Grid, Settings};
 use std::fmt;
 
 mod alignment;
+mod concat;
 mod disable;
-pub mod display;
 mod formating;
 mod highlight;
 mod indent;
-pub mod concat;
 mod object;
 mod panel;
 mod rotate;
-pub mod style;
 mod width;
 
+pub mod display;
+pub mod style;
+
 pub use crate::{
-    alignment::*, disable::*, formating::*, highlight::*, indent::*, object::*, panel::*,
+    alignment::*, concat::*, disable::*, formating::*, highlight::*, indent::*, object::*, panel::*,
     rotate::*, style::Style, width::*,
 };
 

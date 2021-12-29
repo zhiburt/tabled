@@ -12,7 +12,7 @@ use std::cmp;
 /// But it behaives on tables rather than on an actuall data.
 ///
 /// ```
-/// use tabled::{TableIteratorExt, concat::Concat};
+/// use tabled::{TableIteratorExt, Concat};
 /// let table1 = [0, 1, 2, 3].table();
 /// let table2 = ["A", "B", "C", "D"].table();
 ///

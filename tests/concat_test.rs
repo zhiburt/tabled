@@ -1,4 +1,4 @@
-use tabled::{concat::Concat, Style, Table};
+use tabled::{Concat, Style, Table};
 use util::create_vector;
 
 mod util;
