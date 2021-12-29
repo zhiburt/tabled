@@ -6,7 +6,6 @@ use std::cmp;
 pub struct Join {
     table: Table,
     mode: JoinMode,
-    strict_size: bool,
     default_cell: String,
 }
 enum JoinMode {
@@ -15,26 +14,20 @@ enum JoinMode {
 }
 
 impl Join {
-    fn new(table: Table, mode: JoinMode, strict_size: bool) -> Self {
+    fn new(table: Table, mode: JoinMode) -> Self {
         Self {
             table,
             mode,
-            strict_size,
             default_cell: String::new(),
         }
     }
 
     pub fn vertical(table: Table) -> Self {
-        Self::new(table, JoinMode::Vertical, false)
+        Self::new(table, JoinMode::Vertical)
     }
 
     pub fn horizontal(table: Table) -> Self {
-        Self::new(table, JoinMode::Horizontal, false)
-    }
-
-    pub fn strict_size(mut self) -> Self {
-        self.strict_size = true;
-        self
+        Self::new(table, JoinMode::Horizontal)
     }
 
     pub fn default_cell(mut self, cell: impl Into<String>) -> Self {
