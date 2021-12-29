@@ -253,6 +253,11 @@ impl Table {
         table.with(Style::ASCII)
     }
 
+    /// Returns a table shape (count rows, count columns).
+    pub fn shape(&self) -> (usize, usize) {
+        (self.grid.count_rows(), self.grid.count_columns())
+    }
+
     /// With is a generic function which applies options to the [Table].
     ///
     /// It applies settings immediately.
