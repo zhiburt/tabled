@@ -171,3 +171,19 @@ fn custom_style() {
 
     assert_eq!(table, expected);
 }
+
+#[test]
+fn style_single_cell() {
+    let data = create_vector::<0, 0>();
+    let table = Table::new(&data).with(Style::ASCII).to_string();
+
+    let expected = concat!("+---+\n", "| N |\n", "+---+\n",);
+
+    assert_eq!(table, expected);
+
+    let table = Table::new(&data).with(Style::NO_BORDER).to_string();
+
+    let expected = " N \n";
+
+    assert_eq!(table, expected);
+}
