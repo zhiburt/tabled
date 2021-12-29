@@ -16,6 +16,7 @@ pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 fn impl_tabled(ast: &DeriveInput) -> TokenStream {
+    let length = get_tabled_length(ast).unwrap();
     let info = collect_info(ast).unwrap();
     let fields = info.values;
     let headers = info.headers;
@@ -24,6 +25,8 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let expanded = quote! {
         impl #impl_generics Tabled for #name #ty_generics #where_clause {
+            const LENGTH: usize = #length;
+
             fn fields(&self) -> Vec<String> {
                 #fields
             }
@@ -35,6 +38,67 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     };
 
     expanded
+}
+
+fn get_tabled_length(ast: &DeriveInput) -> Result<TokenStream, String> {
+    match &ast.data {
+        Data::Struct(data) => Ok(get_fields_length(&data.fields)),
+        Data::Enum(data) => Ok(get_enum_length(data)),
+        Data::Union(_) => Err("Union type isn't supported".to_owned()),
+    }
+}
+
+fn get_fields_length(fields: &Fields) -> TokenStream {
+    let size_compontents = fields
+        .iter()
+        .map(|field| {
+            let attributes = Attributes::parse(&field.attrs);
+            (field, attributes)
+        })
+        .filter(|(_, attr)| !attr.is_ignored())
+        .map(|(field, attr)| {
+            if !attr.inline {
+                quote!({ 1 })
+            } else {
+                let field_type = &field.ty;
+                quote!({<#field_type as Tabled>::LENGTH})
+            }
+        });
+
+    let size_compontents = std::iter::once(quote!(0)).chain(size_compontents);
+
+    let mut stream = TokenStream::new();
+    stream.append_separated(size_compontents, syn::token::Add::default());
+
+    stream
+}
+
+fn get_enum_length(enum_ast: &DataEnum) -> TokenStream {
+    let variant_sizes = get_enum_variant_length(enum_ast);
+    let variant_sizes = std::iter::once(quote!(0)).chain(variant_sizes);
+
+    let mut stream = TokenStream::new();
+    stream.append_separated(variant_sizes, syn::token::Add::default());
+
+    stream
+}
+
+fn get_enum_variant_length(enum_ast: &DataEnum) -> impl Iterator<Item = TokenStream> + '_ {
+    enum_ast
+        .variants
+        .iter()
+        .map(|variant| {
+            let attributes = Attributes::parse(&variant.attrs);
+            (variant, attributes)
+        })
+        .filter(|(_, attr)| !attr.is_ignored())
+        .map(|(variant, attr)| {
+            if !attr.inline {
+                quote!(1)
+            } else {
+                get_fields_length(&variant.fields)
+            }
+        })
 }
 
 fn collect_info(ast: &DeriveInput) -> Result<Impl, String> {
@@ -114,6 +178,7 @@ fn field_headers(
 }
 
 fn collect_info_enum(ast: &DataEnum) -> Result<Impl, String> {
+    let mut headers_list = Vec::new();
     let mut variants = Vec::new();
     for variant in &ast.variants {
         let attributes = Attributes::parse(&variant.attrs);
@@ -122,18 +187,19 @@ fn collect_info_enum(ast: &DataEnum) -> Result<Impl, String> {
         }
 
         let info = info_from_variant(variant, &attributes)?;
-        variants.push((variant, info));
+        variants.push((variant, info.values));
+        headers_list.push(info.headers);
     }
 
-    let headers_list = variants.iter().map(|(_, i)| &i.headers).collect::<Vec<_>>();
+    let variant_sizes = get_enum_variant_length(ast);
+    let values = values_for_enum(variant_sizes, variants);
+
     let headers = quote! {
         vec![
             #(#headers_list,)*
         ]
         .concat()
     };
-
-    let values = values_for_enum(variants);
 
     Ok(Impl { headers, values })
 }
@@ -216,17 +282,15 @@ fn variant_var_name(index: usize, field: &Field) -> TokenStream {
     }
 }
 
-fn values_for_enum(variants: Vec<(&Variant, Impl)>) -> TokenStream {
+fn values_for_enum(
+    variant_sizes: impl Iterator<Item = TokenStream>,
+    variants: Vec<(&Variant, TokenStream)>,
+) -> TokenStream {
     let branches = variants.iter().map(|(variant, _)| match_variant(variant));
-
-    let headers = variants
-        .iter()
-        .map(|(_, info)| &info.headers)
-        .collect::<Vec<_>>();
 
     let fields = variants
         .iter()
-        .map(|(_, info)| &info.values)
+        .map(|(_, values)| values)
         .collect::<Vec<_>>();
 
     let mut stream = TokenStream::new();
@@ -253,21 +317,13 @@ fn values_for_enum(variants: Vec<(&Variant, Impl)>) -> TokenStream {
         //
         // It's a bit strange trick but I haven't found any better
         // how to calculate a size and offset.
-        let headers: Vec<Vec<String>> = vec![#(#headers,)*];
-        let lengths = headers.iter().map(|values| values.len()).collect::<Vec<_>>();
-        let size = lengths.iter().sum::<usize>();
-        let offsets: Vec<usize> = lengths.iter().fold(Vec::new(), |mut acc, len| {
-            // offset of 1 element is 0
-            if acc.is_empty() {
-                acc.push(0);
-            }
+        let mut offsets: &mut [usize] = &mut [0, #(#variant_sizes,)*];
+        for i in 1 .. offsets.len() {
+            offsets[i] += offsets[i-1]
+        }
 
-            let privious_len: usize = acc.last().map(|l| *l).unwrap_or(0);
-            acc.push(privious_len + len);
-            acc
-        });
-
-        let mut out_vec: Vec<String> = std::iter::repeat(String::new()).take(size).collect();
+        let size = <Self as Tabled>::LENGTH;
+        let mut out_vec: Vec<String> = vec![String::new(); size];
 
         #[allow(unused_variables)]
         match &self {

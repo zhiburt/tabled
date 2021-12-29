@@ -74,6 +74,8 @@ fn display_empty() {
     struct Type;
 
     impl Tabled for Type {
+        const LENGTH: usize = 0;
+
         fn fields(&self) -> Vec<String> {
             Vec::new()
         }
@@ -94,6 +96,8 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
+            const LENGTH: usize = 3;
+
             fn fields(&self) -> Vec<String> {
                 vec!["He".to_string(), "123".to_string(), "asd".to_string()]
             }
@@ -113,6 +117,8 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
+            const LENGTH: usize = 3;
+
             fn fields(&self) -> Vec<String> {
                 vec!["He".to_string(), "123".to_string(), "asd".to_string()]
             }
@@ -137,6 +143,8 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
+            const LENGTH: usize = 3;
+
             fn fields(&self) -> Vec<String> {
                 vec!["HeheHehe".to_string(), "123".to_string(), "asd".to_string()]
             }
@@ -161,6 +169,8 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
+            const LENGTH: usize = 3;
+
             fn fields(&self) -> Vec<String> {
                 vec!["He".to_string(), "123".to_string(), "asd".to_string()]
             }
@@ -185,6 +195,8 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
+            const LENGTH: usize = 3;
+
             fn fields(&self) -> Vec<String> {
                 vec!["He".to_string(), "123".to_string(), "asd".to_string()]
             }
@@ -213,6 +225,8 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
+            const LENGTH: usize = 3;
+
             fn fields(&self) -> Vec<String> {
                 vec!["He".to_string(), "123".to_string(), "asd".to_string()]
             }
@@ -242,6 +256,8 @@ fn display_dynamic_header_template() {
         struct Type;
 
         impl Tabled for Type {
+            const LENGTH: usize = 1;
+
             fn fields(&self) -> Vec<String> {
                 vec!["22".to_string()]
             }
@@ -287,6 +303,8 @@ fn display_multiline_field() {
     struct St;
 
     impl Tabled for St {
+        const LENGTH: usize = 3;
+
         fn fields(&self) -> Vec<String> {
             vec!["1".to_string(), "2".to_string(), "3".to_string()]
         }
