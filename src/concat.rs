@@ -3,6 +3,21 @@ use crate::TableOption;
 use papergrid::{Entity, Grid};
 use std::cmp;
 
+/// Concat concatenate tables along a particular axis [Horizontal | Vertical].
+/// It doesn't do any key or column comparisions like SQL's join does.
+///
+/// When the tables has different sizes, empty cells will be created by default.
+///
+/// [Concat] in horizontal mode has simmilar behaiviour to tuples `(a, b)`.
+/// But it behaives on tables rather than on an actuall data.
+///
+/// ```
+/// use tabled::{TableIteratorExt, concat::Concat};
+/// let table1 = [0, 1, 2, 3].table();
+/// let table2 = ["A", "B", "C", "D"].table();
+///
+/// let table3 = table1.with(Concat::horizontal(table2));
+/// ```
 pub struct Concat {
     table: Table,
     mode: ConcatMode,
@@ -21,15 +36,17 @@ impl Concat {
             default_cell: String::new(),
         }
     }
-
+    /// Concatenate 2 tables horizontally (along axis=0)
     pub fn vertical(table: Table) -> Self {
         Self::new(table, ConcatMode::Vertical)
     }
 
+    /// Concatenate 2 tables vertically (along axis=1)
     pub fn horizontal(table: Table) -> Self {
         Self::new(table, ConcatMode::Horizontal)
     }
 
+    /// Sets a cell's content for cases where 2 tables has different sizes.
     pub fn default_cell(mut self, cell: impl Into<String>) -> Self {
         self.default_cell = cell.into();
         self
