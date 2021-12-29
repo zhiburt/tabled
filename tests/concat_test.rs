@@ -1,4 +1,4 @@
-use tabled::{join::Join, Style, Table};
+use tabled::{concat::Concat, Style, Table};
 use util::create_vector;
 
 mod util;
@@ -11,7 +11,7 @@ fn table_join_vertical() {
     {
         let table1 = Table::new(&data1).with(Style::PSQL);
         let table2 = Table::new(&data2).with(Style::ASCII);
-        let table3 = table1.with(Join::vertical(table2));
+        let table3 = table1.with(Concat::vertical(table2));
 
         let expected = concat!(
             "  N | column 0 | column 1 | column 2  \n",
@@ -33,7 +33,7 @@ fn table_join_vertical() {
     {
         let table1 = Table::new(&data1).with(Style::PSQL);
         let table2 = Table::new(&data2).with(Style::ASCII);
-        let table3 = table2.with(Join::vertical(table1));
+        let table3 = table2.with(Concat::vertical(table1));
 
         let expected = concat!(
             "+---+----------+----------+----------+\n",
@@ -61,7 +61,7 @@ fn table_join_horizontal() {
     {
         let table1 = Table::new(&data1).with(Style::PSQL);
         let table2 = Table::new(&data2).with(Style::ASCII);
-        let table3 = table2.with(Join::horizontal(table1));
+        let table3 = table2.with(Concat::horizontal(table1));
 
         let expected = concat!(
             "+---+----------+----------+----------+                                    \n",
@@ -79,7 +79,7 @@ fn table_join_horizontal() {
     {
         let table1 = Table::new(&data1).with(Style::PSQL);
         let table2 = Table::new(&data2).with(Style::ASCII);
-        let table3 = table1.with(Join::horizontal(table2));
+        let table3 = table1.with(Concat::horizontal(table2));
 
         let expected = concat!(
             "                                    +---+----------+----------+----------+\n",
@@ -102,7 +102,7 @@ fn table_join_vertical_different_size() {
 
     let table1 = Table::new(&data1).with(Style::PSQL);
     let table2 = Table::new(&data2).with(Style::PSQL);
-    let table3 = table1.with(Join::vertical(table2));
+    let table3 = table1.with(Concat::vertical(table2));
 
     let expected = concat!(
         " N | column 0 | column 1            \n",
@@ -125,7 +125,7 @@ fn table_join_horizontal_different_size() {
 
     let table1 = Table::new(&data1).with(Style::PSQL);
     let table2 = Table::new(&data2).with(Style::PSQL);
-    let table3 = table1.with(Join::horizontal(table2));
+    let table3 = table1.with(Concat::horizontal(table2));
 
     let expected = concat!(
         " N | column 0 | column 1 | column 2  N | column 0 | column 1 | column 2 \n",
@@ -145,7 +145,7 @@ fn table_join_horizontal_with_not_default_empty_string() {
 
     let table1 = Table::new(&data1).with(Style::PSQL);
     let table2 = Table::new(&data2).with(Style::PSQL);
-    let table3 = table1.with(Join::horizontal(table2).default_cell("NaN"));
+    let table3 = table1.with(Concat::horizontal(table2).default_cell("NaN"));
 
     let expected = concat!(
         " N | column 0 | column 1 | column 2  N | column 0 | column 1 | column 2 \n",
@@ -165,7 +165,7 @@ fn table_join_vertical_with_not_default_empty_string() {
 
     let table1 = Table::new(&data1).with(Style::PSQL);
     let table2 = Table::new(&data2).with(Style::PSQL);
-    let table3 = table1.with(Join::vertical(table2).default_cell("NaN"));
+    let table3 = table1.with(Concat::vertical(table2).default_cell("NaN"));
 
     let expected = concat!(
         " N | column 0 | column 1  NaN       \n",

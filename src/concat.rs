@@ -3,18 +3,18 @@ use crate::TableOption;
 use papergrid::{Entity, Grid};
 use std::cmp;
 
-pub struct Join {
+pub struct Concat {
     table: Table,
-    mode: JoinMode,
+    mode: ConcatMode,
     default_cell: String,
 }
-enum JoinMode {
+enum ConcatMode {
     Vertical,
     Horizontal,
 }
 
-impl Join {
-    fn new(table: Table, mode: JoinMode) -> Self {
+impl Concat {
+    fn new(table: Table, mode: ConcatMode) -> Self {
         Self {
             table,
             mode,
@@ -23,11 +23,11 @@ impl Join {
     }
 
     pub fn vertical(table: Table) -> Self {
-        Self::new(table, JoinMode::Vertical)
+        Self::new(table, ConcatMode::Vertical)
     }
 
     pub fn horizontal(table: Table) -> Self {
-        Self::new(table, JoinMode::Horizontal)
+        Self::new(table, ConcatMode::Horizontal)
     }
 
     pub fn default_cell(mut self, cell: impl Into<String>) -> Self {
@@ -36,10 +36,10 @@ impl Join {
     }
 }
 
-impl TableOption for Join {
+impl TableOption for Concat {
     fn change(&mut self, other: &mut Grid) {
         match &mut self.mode {
-            JoinMode::Vertical => {
+            ConcatMode::Vertical => {
                 let new_row_size = self.table.grid.count_rows() + other.count_rows();
                 let new_column_size =
                     cmp::max(self.table.grid.count_columns(), other.count_columns());
@@ -80,7 +80,7 @@ impl TableOption for Join {
 
                 *other = new_grid;
             }
-            JoinMode::Horizontal => {
+            ConcatMode::Horizontal => {
                 let new_row_size = cmp::max(self.table.grid.count_rows(), other.count_rows());
                 let new_column_size = self.table.grid.count_columns() + other.count_columns();
                 let mut new_grid = Grid::new(new_row_size, new_column_size);

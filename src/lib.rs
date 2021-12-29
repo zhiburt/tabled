@@ -150,7 +150,7 @@ pub mod display;
 mod formating;
 mod highlight;
 mod indent;
-pub mod join;
+pub mod concat;
 mod object;
 mod panel;
 mod rotate;
