@@ -12,7 +12,6 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 ## Agenda
 
 * [Usage](#Usage)
-    * [Derive information](#Derive-information)
 * [Modificators](#Modificators)
     * [Style](#Style)
         * [ASCII](#ASCII)
