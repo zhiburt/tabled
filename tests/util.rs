@@ -30,6 +30,8 @@ impl<const N: usize> IndexMut<usize> for Obj<N> {
 }
 
 impl<const N: usize> Tabled for Obj<N> {
+    const LENGTH: usize = N;
+
     fn fields(&self) -> Vec<String> {
         self.data.clone()
     }
