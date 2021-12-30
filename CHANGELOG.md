@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.4.0] - 2021-12-30
+
+### Added
+
+- `Style` constants like `Style::ASCII`, `Style::PSEUDO`,
+- `Highlight` modificator which does highlight of any combination of cells 
+- `TableIteratorExt` trait by [@24seconds](https://github.com/24seconds)
+- `Concat` modificator by [@senk8](https://github.com/senk8)
+- A `Table::shape` method which returns table's size 
+
+### Changed
+
+- `Tabled` trait now requires a `LENGTH` constant.
+- `Style` functions were deprecated. 
+- Allow border changes for any cell.
+
+### Fixed
+
+- Fix `fmt::Display` requirments on hidden fields in inline mode
+- README.md fix by [@panarch](https://github.com/panarch)
+- Refactorings
+
 ## [0.3.0] - 2021-09-10
 
 ### Added
