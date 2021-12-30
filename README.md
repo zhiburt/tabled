@@ -9,19 +9,19 @@
 
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
-# Agenda
+## Agenda
 
 * [Usage](#Usage)
     * [Derive information](#Derive-information)
-* [Style](#Style)
-    * [Styles](#Styles)
-        * [Default](#Default)
+* [Modificators](#Modificators)
+    * [Style](#Style)
+        * [ASCII](#ASCII)
         * [Psql](#Psql)
         * [GithubMarkdown](#GithubMarkdown)
         * [Pseudo](#Pseudo)
         * [PseudoClean](#PseudoClean)
         * [Noborder](#Noborder)
-    * [Custom Style](#Custom-Style)
+        * [Custom](#Custom)
     * [Alignment](#Alignment)
     * [Format](#Format)
     * [Indent](#Indent)
@@ -30,13 +30,14 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Disable](#Disable)
     * [Header and Footer](#Header-and-Footer)
     * [Concat](#Concat)
-    * [Color](#Color)
-* [Features](#Features)
+* [Derive](#Derive)
     * [Column name override](#Column-name-override)
     * [Hide a column](#Hide-a-column)
     * [Custom field formatting](#Custom-field-formatting)
     * [Inline](#Inline)
+* [Features](#Features)
     * [Tuple combination](#Tuple-combination)
+    * [Color](#Color)
     * [Object](#Object)
 * [Views](#Views)
     * [Expanded Display](#Expanded-Display)
@@ -44,7 +45,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
    * [ANSI escape codes](#ANSI-escape-codes) 
    * [Emoji](#Emoji)
 
-# Usage
+## Usage
 
 To print a list of structs or enums as a table your types should implement the the `Tabled` trait or derive with a `#[derive(Tabled)]` macro.
 
@@ -91,45 +92,35 @@ let expected = "+------+----------------+---------------+\n\
 assert_eq!(table, expected);
 ```
 
-## Derive information
-
-To be able to use a `Tabled` macro each field should implement `std::fmt::Display`
-otherwise it will not work.
-
-The following example will cause a error.
-
-```rust,compile_fail
-use tabled::Tabled;
-#[derive(Tabled)]
-struct SomeType {
-    field1: SomeOtherType,
-}
-
-struct SomeOtherType;
-```
-
-Most of the default types implements the trait out of the box.
+Most of the default types implement the trait out of the box.
 
 ```rust
-use tabled::Table;
+use tabled::TableIteratorExt;
 let some_numbers = [1, 2, 3];
-let table = Table::new(&some_numbers);
+let table = some_numbers.table();
 ```
 
-# Style
+## Modificators
 
-## Styles
+### Style
 
-A list of ready to use styles.
-Styles can be chosen by passing a `Style` argument option.
+There are a list of ready to use styles.
+But a custom style can be created as well.
+
+A style can be used by passing it to `.with` method of `Table`.
 
 ```rust
 let table = Table::new(&data).with(Style::PSQL);
 ```
 
-### Default
+Bellow rendered a list of pre configured styles.
 
-```,
+If you think that there's some valuable style to be added,
+Please open an issue.
+
+#### ASCII
+
+```
 +------+----------------+---------------+
 | name |  designed_by   | invented_year |
 +------+----------------+---------------+
@@ -141,7 +132,7 @@ let table = Table::new(&data).with(Style::PSQL);
 +------+----------------+---------------+
 ```
 
-### Psql
+#### Psql
 
 ```
  name |  designed_by   | invented_year 
@@ -151,7 +142,7 @@ let table = Table::new(&data).with(Style::PSQL);
   Go  |    Rob Pike    |     2009      
 ```
 
-### GithubMarkdown
+#### GithubMarkdown
 
 ```
 | name |  designed_by   | invented_year |
@@ -161,7 +152,7 @@ let table = Table::new(&data).with(Style::PSQL);
 |  Go  |    Rob Pike    |     2009      |
 ```
 
-### Pseudo
+#### Pseudo
 
 ```
 ┌──────┬────────────────┬───────────────┐
@@ -175,7 +166,7 @@ let table = Table::new(&data).with(Style::PSQL);
 └──────┴────────────────┴───────────────┘
 ```
 
-### PseudoClean
+#### PseudoClean
 
 ```
 ┌──────┬────────────────┬───────────────┐
@@ -187,7 +178,7 @@ let table = Table::new(&data).with(Style::PSQL);
 └──────┴────────────────┴───────────────┘
 ```
 
-### Noborder
+#### NoBorder
 
 ```
  name    designed_by     invented_year 
@@ -196,20 +187,20 @@ let table = Table::new(&data).with(Style::PSQL);
   Go       Rob Pike          2009      
 ```
 
-## Custom Style
+#### Custom
 
 You can modify existing styles to fits your needs.
 
 ```rust
 let style = tabled::Style::NO_BORDER
-                .frame_bottom(Some(Line::short('*', ' '')))
+                .frame_bottom(Some(Line::short('*', ' ')))
                 .split(Some(Line::short(' ', ' ')))
                 .inner(' ');
 
 let table = Table::new(&data).with(style);
 ```
 
-## Alignment
+### Alignment
 
 You can set a horizontal and vertical alignment for a `Header`, `Column`, `Row` or `Full` set of cells.
 
@@ -221,7 +212,7 @@ Table::new(&data)
     );
 ```
 
-## Format
+### Format
 
 The `Format` function provides an interface for a modification of cells.
 
@@ -248,7 +239,7 @@ There's 2 more Format modifiers. You can find more imformation about theire usag
 - `FormatFrom` - Uses `Vec` elements as new content.
 - `FormatWithIndex` - Like `Format` but with `row` and `column` index in lambda.
 
-## Indent
+### Indent
 
 The `Indent` type provides an interface for a left, right, top and bottom indent of cells.
 
@@ -256,7 +247,7 @@ The `Indent` type provides an interface for a left, right, top and bottom indent
 Table::new(&data).with(Modify::new(Row(1..)).with(Indent::new(1, 1, 0, 2)));
 ```
 
-## Max width
+### Max width
 
 Using `MaxWidth` type its possible to set a max width of an object.
 While tinkering content we don't forget about its color.
@@ -268,7 +259,7 @@ Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth::truncating(10, "..."
 Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth::wrapping(10, "...")));
 ```
 
-## Rotate
+### Rotate
 
 You can rotate table using `Rotate`.
 
@@ -298,7 +289,7 @@ Now we will add `table.with(Rotate::Left)` and the output will be;
 └──────────────┴────────────────────────┴───────────────────────────┴──────────────────────────┘
 ```
 
-## Disable
+### Disable
 
 You can remove certain rows or columns from the table.
 
@@ -308,7 +299,7 @@ Table::new(&data)
     .with(Disable::Column(3..4));
 ```
 
-## Header and Footer
+### Header and Footer
 
 You can add a `Header` and `Footer` to display some information.
 By the way you can even add such line by using `Panel`
@@ -332,7 +323,7 @@ But it's how it may look like.
 └────────────────────────────────────────────────────────────┘
 ```
 
-## Concat
+### Concat
 
 You can concatanate 2 tables using `Concat`.
 It will stick 2 tables together either vertically or horizontally.
@@ -344,23 +335,24 @@ let t2: Table = ...;
 let t3: Table = t1.with(Concat::vertical(t2));
 ```
 
-## Color
+## Derive
 
-The library doesn't bind you in usage of any color library but to be able to work corectly with color input you should provide a `--features color`.
+To be able to use a `Tabled` macros each field must implement `std::fmt::Display`
+otherwise it will not work.
 
-```rust
-Table::new(&data)
-    .with(Style::PSQL)
-    .with(Modify::new(Column(..1)).with(Format(|s| s.red().to_string())))
-    .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))
-    .with(Modify::new(Column(2..)).with(Format(|s| s.green().to_string())));
+The following example will cause a error.
+
+```rust,compile_fail
+use tabled::Tabled;
+#[derive(Tabled)]
+struct SomeType {
+    field1: SomeOtherType,
+}
+
+struct SomeOtherType;
 ```
 
-![carbon-2](https://user-images.githubusercontent.com/20165848/120526301-b95efc80-c3e1-11eb-8779-0ec48894463b.png)
-
-# Features
-
-## Column name override
+### Column name override
 
 You can use a `#[header("")]` attribute to override a column name.
 
@@ -374,7 +366,7 @@ struct Person {
 }
 ```
 
-## Hide a column
+### Hide a column
 
 You can mark filds as hidden in which case they fill be ignored and not be present on a sheet.
 
@@ -390,7 +382,7 @@ struct Person {
 }
 ```
 
-## Custom field formatting
+### Custom field formatting
 
 `#[derive(Tabled)]` is possible only when all fields implement a `Display` trait.
 
@@ -419,7 +411,7 @@ pub struct MyRecord {
 }
 ```
 
-## Inline
+### Inline
    
 It's possible to inline internal data if it implements `Tabled` trait.
 Use `#[header(inline)]` or `#[header(inline("prefix>>"))]`.
@@ -462,8 +454,23 @@ struct Bike {
 }
 ```
 
+## Features
+
+### Color
+
+The library doesn't bind you in usage of any color library but to be able to work corectly with color input you should provide a `--features color`.
+
+```rust
+Table::new(&data)
+    .with(Style::PSQL)
+    .with(Modify::new(Column(..1)).with(Format(|s| s.red().to_string())))
+    .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))
+    .with(Modify::new(Column(2..)).with(Format(|s| s.green().to_string())));
+```
+
+![carbon-2](https://user-images.githubusercontent.com/20165848/120526301-b95efc80-c3e1-11eb-8779-0ec48894463b.png)
    
-## Tuple combination
+### Tuple combination
 
 You also can combine objets which implements `Tabled` by means of tuples, you will get a combined columns of them.
 
@@ -503,7 +510,7 @@ assert_eq!(
 );
 ```
 
-## Object
+### Object
 
 You can peak your target for settings using `and` and `not` methods for an object.
 
@@ -587,13 +594,11 @@ By default such things as hyperlinks, blinking and others things which can be ac
 tabled = { version = "*", features = ["color"] }
 ```
 
-
-
 ### Emoji
    
 The library support emojies out of the box but be aware that some of the terminals and editors may not render them as you would expect.
    
-Let's add emojies to an example from a [Usage](#Usage) section.
+Let's add emojies to an example from a [Usage](##Usage) section.
 
 ```rust
  let languages = vec![
