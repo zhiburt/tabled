@@ -5,10 +5,12 @@
 //!
 //! [Table] can be build from vast majority of Rust's standart types.
 //!
-//! ## Examples
+//! ## Usage
 //!
-//! If you wan't to build a table for your data.
-//! Most likely a starting point is to anotate your type with `#[derive(Tabled)]`.
+//! If you want to build a table for your custom type.
+//! A starting point is to a anotate your type with `#[derive(Tabled)]`.
+//!
+//! Then you can create `Table::new` to create a table;
 //!
 //! ```rust
 //! use tabled::{Tabled, Table};
@@ -51,6 +53,14 @@
 //!                 +------+----------------+---------------+\n";
 //!
 //! assert_eq!(table, expected);
+//! ```
+//!
+//! You can also create a table by using [TableIteratorExt].
+//!
+//! ```rust,no_run
+//! # let languages = [""];
+//! use tabled::TableIteratorExt;
+//! let table = languages.table();
 //! ```
 //!
 //! Not all types can derive [Tabled] trait though.
