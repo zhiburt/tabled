@@ -29,6 +29,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Rotate](#Rotate)
     * [Disable](#Disable)
     * [Header and Footer](#Header-and-Footer)
+    * [Concat](#Concat)
     * [Color](#Color)
 * [Features](#Features)
     * [Column name override](#Column-name-override)
@@ -329,6 +330,18 @@ But it's how it may look like.
 ├───────┼──────────────┼─────────┼───────────────────────────┤
 │                        3 elements                          │
 └────────────────────────────────────────────────────────────┘
+```
+
+## Concat
+
+You can concatanate 2 tables using `Concat`.
+It will stick 2 tables together either vertically or horizontally.
+
+```rust
+let t1: Table = ...;
+let t2: Table = ...;
+
+let t3: Table = t1.with(Concat::vertical(t2));
 ```
 
 ## Color
