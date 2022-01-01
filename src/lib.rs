@@ -165,6 +165,7 @@ mod panel;
 mod rotate;
 mod width;
 
+pub mod builder;
 pub mod display;
 pub mod style;
 
