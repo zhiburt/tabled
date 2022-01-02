@@ -20,6 +20,22 @@ use crate::{Style, Table};
 ///
 /// println!("{}", table);
 /// ```
+/// 
+/// It may be usefull to use [FromIterator] for building.
+///
+/// ```rust
+/// use tabled::builder::Builder;
+/// use std::iter::FromIterator;
+/// let data = vec![
+///     ["column1", "column2"],
+///     ["data1", "data2"],
+///     ["data3", "data4"],
+/// ];
+/// 
+/// let table = Builder::from_iter(data).build();
+///
+/// println!("{}", table);
+/// ```
 #[derive(Debug, Default, Clone)]
 pub struct Builder {
     /// A header row.
