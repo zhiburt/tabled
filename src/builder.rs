@@ -9,6 +9,7 @@ pub struct Builder {
     headers: Option<Vec<String>>,
     rows: Vec<Vec<String>>,
     size: usize,
+    empty_cell_text: Option<String>,
 }
 
 impl Builder {
@@ -40,7 +41,26 @@ impl Builder {
         self
     }
 
-    pub fn build(self) -> Table {
+    pub fn set_default_text<T: Into<String>>(mut self, text: T) -> Self {
+        self.empty_cell_text = Some(text.into());
+        self
+    }
+
+    pub fn build(mut self) -> Table {
+        if let Some(empty_cell_text) = self.empty_cell_text {
+            if let Some(header) = self.headers.as_mut() {
+                if self.size > header.len() {
+                    append_vec(header, self.size - header.len(), empty_cell_text.clone());
+                }
+            }
+
+            for row in self.rows.iter_mut() {
+                if self.size > row.len() {
+                    append_vec(row, self.size - row.len(), empty_cell_text.clone());
+                }
+            }
+        }
+
         build_table(self.headers, self.rows, self.size)
     }
 
@@ -67,11 +87,7 @@ where
 }
 
 /// Building [Table] from ordinary data.
-fn build_table(
-    header: Option<Vec<String>>,
-    rows: Vec<Vec<String>>,
-    count_columns: usize,
-) -> Table {
+fn build_table(header: Option<Vec<String>>, rows: Vec<Vec<String>>, count_columns: usize) -> Table {
     let grid = build_grid(header, rows, count_columns);
     create_table_from_grid(grid)
 }
@@ -123,4 +139,8 @@ fn create_table_from_grid(mut grid: Grid) -> Table {
 
     let table = Table { grid };
     table.with(Style::ASCII)
+}
+
+fn append_vec(v: &mut Vec<String>, n: usize, value: String) {
+    v.extend((0..n).map(|_| value.clone()));
 }
