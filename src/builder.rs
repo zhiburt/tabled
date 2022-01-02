@@ -6,7 +6,7 @@ use crate::{Style, Table};
 
 #[derive(Debug, Default, Clone)]
 pub struct Builder {
-    headers: Vec<String>,
+    headers: Option<Vec<String>>,
     rows: Vec<Vec<String>>,
     size: usize,
 }
@@ -23,7 +23,7 @@ impl Builder {
     {
         let header: Vec<String> = header.into_iter().map(|t| t.to_string()).collect();
         self.update_size(header.len());
-        self.headers = header;
+        self.headers = Some(header);
 
         self
     }
@@ -42,7 +42,12 @@ impl Builder {
 
     pub fn build(self) -> Table {
         let count_columns = self.size;
-        let count_rows = self.rows.len() + 1;
+        let mut count_rows = self.rows.len();
+
+        if self.headers.is_some() {
+            count_rows += 1;
+        }
+
         let mut grid = Grid::new(count_rows, count_columns);
 
         // it's crusial to set a global setting rather than a setting for an each cell
@@ -54,11 +59,16 @@ impl Builder {
                 .alignment(AlignmentHorizontal::Center),
         );
 
-        for (i, h) in self.headers.iter().enumerate() {
-            grid.set(&Entity::Cell(0, i), Settings::new().text(h));
+        let mut row = 0;
+
+        if let Some(headers) = self.headers {
+            for (i, h) in headers.iter().enumerate() {
+                grid.set(&Entity::Cell(0, i), Settings::new().text(h));
+            }
+
+            row = 1;
         }
 
-        let mut row = 1;
         for fields in self.rows {
             // don't show off a empty data array
             if fields.is_empty() {
