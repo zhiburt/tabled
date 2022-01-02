@@ -41,49 +41,7 @@ impl Builder {
     }
 
     pub fn build(self) -> Table {
-        let count_columns = self.size;
-        let mut count_rows = self.rows.len();
-
-        if self.headers.is_some() {
-            count_rows += 1;
-        }
-
-        let mut grid = Grid::new(count_rows, count_columns);
-
-        // it's crusial to set a global setting rather than a setting for an each cell
-        // as it will be hard to override that since how Grid::style method works
-        grid.set(
-            &Entity::Global,
-            Settings::new()
-                .indent(1, 1, 0, 0)
-                .alignment(AlignmentHorizontal::Center),
-        );
-
-        let mut row = 0;
-
-        if let Some(headers) = self.headers {
-            for (i, h) in headers.iter().enumerate() {
-                grid.set(&Entity::Cell(0, i), Settings::new().text(h));
-            }
-
-            row = 1;
-        }
-
-        for fields in self.rows {
-            // don't show off a empty data array
-            if fields.is_empty() {
-                continue;
-            }
-
-            for (column, field) in fields.into_iter().enumerate() {
-                grid.set(&Entity::Cell(row, column), Settings::new().text(field));
-            }
-
-            row += 1;
-        }
-
-        let table = Table { grid };
-        table.with(Style::ASCII)
+        build_table(self.headers, self.rows, self.size)
     }
 
     fn update_size(&mut self, size: usize) {
@@ -100,16 +58,69 @@ where
 {
     fn from_iter<T: IntoIterator<Item = R>>(iter: T) -> Self {
         let mut builder = Self::default();
-
-        let mut iterator = iter.into_iter();
-        if let Some(header) = iterator.next() {
-            builder = builder.header(header);
-        }
-
-        for row in iterator {
+        for row in iter {
             builder = builder.add_row(row);
         }
 
         builder
     }
+}
+
+/// Building [Table] from ordinary data.
+fn build_table(
+    header: Option<Vec<String>>,
+    rows: Vec<Vec<String>>,
+    count_columns: usize,
+) -> Table {
+    let grid = build_grid(header, rows, count_columns);
+    create_table_from_grid(grid)
+}
+
+/// Building [Grid] from ordinary data.
+fn build_grid(header: Option<Vec<String>>, rows: Vec<Vec<String>>, count_columns: usize) -> Grid {
+    let mut count_rows = rows.len();
+
+    if header.is_some() {
+        count_rows += 1;
+    }
+
+    let mut grid = Grid::new(count_rows, count_columns);
+
+    let mut row = 0;
+    if let Some(headers) = header {
+        for (i, text) in headers.into_iter().enumerate() {
+            grid.set(&Entity::Cell(0, i), Settings::new().text(text));
+        }
+
+        row = 1;
+    }
+
+    for fields in rows.into_iter() {
+        // don't show off a empty data array
+        if fields.is_empty() {
+            continue;
+        }
+
+        for (column, field) in fields.into_iter().enumerate() {
+            grid.set(&Entity::Cell(row, column), Settings::new().text(field));
+        }
+
+        row += 1;
+    }
+
+    grid
+}
+
+fn create_table_from_grid(mut grid: Grid) -> Table {
+    // it's crusial to set a global setting rather than a setting for an each cell
+    // as it will be hard to override that since how Grid::style method works
+    grid.set(
+        &Entity::Global,
+        Settings::new()
+            .indent(1, 1, 0, 0)
+            .alignment(AlignmentHorizontal::Center),
+    );
+
+    let table = Table { grid };
+    table.with(Style::ASCII)
 }

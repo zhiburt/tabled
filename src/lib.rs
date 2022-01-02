@@ -151,8 +151,9 @@
 //! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
 //!
 
-use papergrid::{Entity, Grid, Settings};
-use std::fmt;
+use builder::Builder;
+use papergrid::Grid;
+use std::{fmt, iter::FromIterator};
 
 mod alignment;
 mod concat;
@@ -265,10 +266,8 @@ pub struct Table {
 impl Table {
     /// New creates a Table instance.
     pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
-        let grid = build_grid(iter);
-
-        let table = Self { grid };
-        table.with(Style::ASCII)
+        let rows = iter.into_iter().map(|t| t.fields());
+        Builder::from_iter(rows).header(T::headers()).build()
     }
 
     /// Returns a table shape (count rows, count columns).
@@ -363,43 +362,6 @@ where
             }
         }
     }
-}
-
-/// Building [Grid] from a data.
-/// You must prefer [Table] over this function.
-fn build_grid<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Grid {
-    let headers = T::headers();
-    let obj: Vec<Vec<String>> = iter.into_iter().map(|t| t.fields()).collect();
-
-    let mut grid = Grid::new(obj.len() + 1, headers.len());
-
-    // it's crusial to set a global setting rather than a setting for an each cell
-    // as it will be hard to override that since how Grid::style method works
-    grid.set(
-        &Entity::Global,
-        Settings::new()
-            .indent(1, 1, 0, 0)
-            .alignment(AlignmentHorizontal::Center),
-    );
-
-    for (i, h) in headers.iter().enumerate() {
-        grid.set(&Entity::Cell(0, i), Settings::new().text(h));
-    }
-
-    let mut row = 1;
-    for fields in &obj {
-        for (column, field) in fields.iter().enumerate() {
-            grid.set(&Entity::Cell(row, column), Settings::new().text(field));
-        }
-
-        // don't show off a empty data array
-        // currently it's possible when `#[header(hidden)]` attribute used for a enum
-        if !fields.is_empty() {
-            row += 1;
-        }
-    }
-
-    grid
 }
 
 macro_rules! tuple_table {
