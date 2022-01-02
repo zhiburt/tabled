@@ -20,7 +20,7 @@ use crate::{Style, Table};
 ///
 /// println!("{}", table);
 /// ```
-/// 
+///
 /// It may be usefull to use [FromIterator] for building.
 ///
 /// ```rust
@@ -31,7 +31,7 @@ use crate::{Style, Table};
 ///     ["data1", "data2"],
 ///     ["data3", "data4"],
 /// ];
-/// 
+///
 /// let table = Builder::from_iter(data).build();
 ///
 /// println!("{}", table);
