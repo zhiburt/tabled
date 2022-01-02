@@ -267,7 +267,7 @@ impl Table {
     /// New creates a Table instance.
     pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
         let rows = iter.into_iter().map(|t| t.fields());
-        Builder::from_iter(rows).header(T::headers()).build()
+        Builder::from_iter(rows).set_header(T::headers()).build()
     }
 
     /// Returns a table shape (count rows, count columns).

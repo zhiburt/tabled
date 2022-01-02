@@ -3,7 +3,7 @@
 
 fn main() {
     let table = tabled::builder::Builder::default()
-        .header(["Name", "Issue"])
+        .set_header(["Name", "Issue"])
         .add_row(["sadbuttrueasfuck", "Complex dynamic table creation"])
         .build();
 

@@ -14,7 +14,7 @@ use crate::{Style, Table};
 /// ```rust
 /// use tabled::builder::Builder;
 /// let table = Builder::default()
-///     .header(["index", "measure", "value"])
+///     .set_header(["index", "measure", "value"])
 ///     .add_row(["0", "weight", "0.443"])
 ///     .build();
 ///
@@ -61,10 +61,10 @@ impl Builder {
     /// ```rust
     /// use tabled::builder::Builder;
     /// let builder = Builder::default()
-    ///     .header(0..3)
+    ///     .set_header(0..3)
     ///     .add_row(["i", "surname", "lastname"]);
     /// ```
-    pub fn header<H, T>(mut self, header: H) -> Self
+    pub fn set_header<H, T>(mut self, header: H) -> Self
     where
         H: IntoIterator<Item = T>,
         T: Display,
@@ -105,7 +105,7 @@ impl Builder {
     /// use tabled::builder::Builder;
     /// let table = Builder::default()
     ///     .set_default_text("undefined")
-    ///     .header(0..3)
+    ///     .set_header(0..3)
     ///     .add_row(["i"])
     ///     .build();
     /// ```
@@ -119,7 +119,7 @@ impl Builder {
     /// ```rust
     /// use tabled::builder::Builder;
     /// let table = Builder::default()
-    ///     .header(["i", "column1", "column2"])
+    ///     .set_header(["i", "column1", "column2"])
     ///     .add_row(["0", "value1", "value2"])
     ///     .build();
     /// ```

@@ -43,7 +43,7 @@ fn builder_header() {
     let builder = Builder::default()
         .add_row(["a", "b", "c"])
         .add_row(["d", "e", "f"])
-        .header(["1", "2", "3"]);
+        .set_header(["1", "2", "3"]);
     let table = builder.build().to_string();
     let expected = "+---+---+---+\n\
                          | 1 | 2 | 3 |\n\
@@ -74,7 +74,7 @@ fn builder_from_iter() {
 #[test]
 fn builder_used_with_different_number_of_columns() {
     let builder = Builder::default()
-        .header(["1", "2"])
+        .set_header(["1", "2"])
         .add_row(["a", "b", "c"])
         .add_row(["d"]);
     let table = builder.build().to_string();
@@ -88,7 +88,7 @@ fn builder_used_with_different_number_of_columns() {
     assert_eq!(table, expected);
 
     let builder = Builder::default()
-        .header(["1", "2", "3"])
+        .set_header(["1", "2", "3"])
         .add_row(["a", "b"])
         .add_row(["d"]);
     let table = builder.build().to_string();
@@ -102,7 +102,7 @@ fn builder_used_with_different_number_of_columns() {
     assert_eq!(table, expected);
 
     let builder = Builder::default()
-        .header(["1"])
+        .set_header(["1"])
         .add_row(["a", "b"])
         .add_row(["d", "e", "f"]);
     let table = builder.build().to_string();
@@ -120,7 +120,7 @@ fn builder_used_with_different_number_of_columns() {
 fn builder_with_default_cell() {
     let builder = Builder::default()
         .set_default_text("NaN")
-        .header(["1", "2"])
+        .set_header(["1", "2"])
         .add_row(["a", "b", "c"])
         .add_row(["d"]);
     let table = builder.build().to_string();
@@ -135,7 +135,7 @@ fn builder_with_default_cell() {
 
     let builder = Builder::default()
         .set_default_text("NaN")
-        .header(["1", "2", "3"])
+        .set_header(["1", "2", "3"])
         .add_row(["a", "b"])
         .add_row(["d"]);
     let table = builder.build().to_string();
@@ -150,7 +150,7 @@ fn builder_with_default_cell() {
 
     let builder = Builder::default()
         .set_default_text("NaN")
-        .header(["1"])
+        .set_header(["1"])
         .add_row(["a", "b"])
         .add_row(["d", "e", "f"]);
     let table = builder.build().to_string();
