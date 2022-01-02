@@ -1,22 +1,53 @@
+//! Builder module provides a [Builder] type which helps building
+//! a [Table] dynamically.
+
 use std::{fmt::Display, iter::FromIterator};
 
 use papergrid::{AlignmentHorizontal, Entity, Grid, Settings};
 
 use crate::{Style, Table};
 
+/// Builder creates a [Table] from dynamic data set.
+///
+/// It usefull when the amount of columns or rows is not known statically.
+///
+/// ```rust
+/// use tabled::builder::Builder;
+/// let table = Builder::default()
+///     .header(["index", "measure", "value"])
+///     .add_row(["0", "weight", "0.443"])
+///     .build();
+///
+/// println!("{}", table);
+/// ```
 #[derive(Debug, Default, Clone)]
 pub struct Builder {
+    /// A header row.
     headers: Option<Vec<String>>,
+    /// A list of rows.
     rows: Vec<Vec<String>>,
+    /// A number of columns.
     size: usize,
+    /// A content of cells which are created in case rows has different length.
     empty_cell_text: Option<String>,
 }
 
 impl Builder {
+    /// Creates a [Builder] instance.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Sets a [Table] header.
+    ///
+    /// If not set a first row will be considered a header.
+    ///
+    /// ```rust
+    /// use tabled::builder::Builder;
+    /// let builder = Builder::default()
+    ///     .header(0..3)
+    ///     .add_row(["i", "surname", "lastname"]);
+    /// ```
     pub fn header<H, T>(mut self, header: H) -> Self
     where
         H: IntoIterator<Item = T>,
@@ -29,6 +60,16 @@ impl Builder {
         self
     }
 
+    /// Adds a row to a [Table].
+    ///
+    /// If [Self::header] is not set the row will be considered a header.
+    ///
+    /// ```rust
+    /// use tabled::builder::Builder;
+    /// let builder = Builder::default()
+    ///     .add_row(0..3)
+    ///     .add_row(["i", "surname", "lastname"]);
+    /// ```
     pub fn add_row<R, T>(mut self, row: R) -> Self
     where
         R: IntoIterator<Item = T>,
@@ -41,11 +82,31 @@ impl Builder {
         self
     }
 
+    /// Sets a content of cells which are created in case rows has different length.
+    ///
+    ///
+    /// ```rust
+    /// use tabled::builder::Builder;
+    /// let table = Builder::default()
+    ///     .set_default_text("undefined")
+    ///     .header(0..3)
+    ///     .add_row(["i"])
+    ///     .build();
+    /// ```
     pub fn set_default_text<T: Into<String>>(mut self, text: T) -> Self {
         self.empty_cell_text = Some(text.into());
         self
     }
 
+    /// Build creates a [Table] instance.
+    ///
+    /// ```rust
+    /// use tabled::builder::Builder;
+    /// let table = Builder::default()
+    ///     .header(["i", "column1", "column2"])
+    ///     .add_row(["0", "value1", "value2"])
+    ///     .build();
+    /// ```
     pub fn build(mut self) -> Table {
         if let Some(empty_cell_text) = self.empty_cell_text {
             if let Some(header) = self.headers.as_mut() {
