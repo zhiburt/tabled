@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, iter::FromIterator};
 
 use papergrid::{AlignmentHorizontal, Entity, Grid, Settings};
 
@@ -16,7 +16,11 @@ impl Builder {
         Self::default()
     }
 
-    pub fn header<H: IntoIterator<Item = T>, T: Display>(mut self, header: H) -> Self {
+    pub fn header<H, T>(mut self, header: H) -> Self
+    where
+        H: IntoIterator<Item = T>,
+        T: Display,
+    {
         let header: Vec<String> = header.into_iter().map(|t| t.to_string()).collect();
         self.update_size(header.len());
         self.headers = header;
@@ -24,7 +28,11 @@ impl Builder {
         self
     }
 
-    pub fn add_row<R: IntoIterator<Item = T>, T: Display>(mut self, row: R) -> Self {
+    pub fn add_row<R, T>(mut self, row: R) -> Self
+    where
+        R: IntoIterator<Item = T>,
+        T: Display,
+    {
         let row: Vec<String> = row.into_iter().map(|t| t.to_string()).collect();
         self.update_size(row.len());
         self.rows.push(row);
@@ -72,5 +80,26 @@ impl Builder {
         if size > self.size {
             self.size = size;
         }
+    }
+}
+
+impl<R, V> FromIterator<R> for Builder
+where
+    R: IntoIterator<Item = V>,
+    V: Display,
+{
+    fn from_iter<T: IntoIterator<Item = R>>(iter: T) -> Self {
+        let mut builder = Self::default();
+
+        let mut iterator = iter.into_iter();
+        if let Some(header) = iterator.next() {
+            builder = builder.header(header);
+        }
+
+        for row in iterator {
+            builder = builder.add_row(row);
+        }
+
+        builder
     }
 }
