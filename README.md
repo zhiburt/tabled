@@ -42,6 +42,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Expanded Display](#Expanded-Display)
 * [Notes](#Notes)
    * [ANSI escape codes](#ANSI-escape-codes) 
+   * [Dynamic table](#Dynamic-table)
    * [Emoji](#Emoji)
 
 ## Usage
@@ -591,6 +592,26 @@ By default such things as hyperlinks, blinking and others things which can be ac
 
 ```toml
 tabled = { version = "*", features = ["color"] }
+```
+
+### Dynamic table
+
+It might be hard to build a table using `Tabled` trait, if you have a data set which structure is determined at runtime.
+In such situation you can use a `Builder`.
+
+```rust
+use tabled::{builder::Builder, Style};
+
+fn main() {
+    let table = Builder::default()
+        .set_header(["Index", "Language"])
+        .add_row(["1", "English"])
+        .add_row(["2", "Deutsch"])
+        .build()
+        .with(Style::PSQL);
+
+    println!("{}", table);
+}
 ```
 
 ### Emoji
