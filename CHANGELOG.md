@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.4.2] - 2021-12-30
+
+### Added
+
+- `Builder` structure for dynamic creation of table
+
+### Fixed
+
+- It turns out that in version [0.4.0] `tabled_derive` was inproperly bumped version. So it broke version [0.3].
+  To fix it it was necessary to yank versions [0.4.0] and [0.4.1] and yank tabled_derive [0.1.9].
+  It was pointed out by [@Disasm](https://github.com/Disasm).
+
 ## [0.4.0] - 2021-12-30
 
 ### Added
