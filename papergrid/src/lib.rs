@@ -1044,7 +1044,6 @@ fn columns_width(
         })
     });
     spans.into_iter().filter(|&span| span > 0).for_each(|span| {
-        println!("AAAA {}", span);
         adjust_width(&mut widths, styles, count_rows, count_columns, span);
     });
 
