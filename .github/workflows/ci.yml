@@ -12,7 +12,8 @@ jobs:
       fail-fast: false
       matrix:
         rust: [nightly, stable]
-    runs-on: ubuntu-latest
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -23,18 +24,6 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-
-  windows:
-    name: Windows
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - run: cargo check
 
   test:
     name: Unit Test Suite
@@ -100,7 +89,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -- -D warnings
+          args: --all -- -D warnings
 
   coverage:
     name: Coveralls
