@@ -342,7 +342,10 @@ fn render_row_span_with_different_length() {
     );
     grid.set(&Entity::Cell(1, 0), Settings::new().text("0"));
     grid.set(&Entity::Cell(1, 1), Settings::new().text("1"));
-    grid.set(&Entity::Cell(2, 0), Settings::new().text("a longer second row").span(2));
+    grid.set(
+        &Entity::Cell(2, 0),
+        Settings::new().text("a longer second row").span(2),
+    );
 
     let expected = concat!(
         "+-------------------+\n",
