@@ -1021,7 +1021,7 @@ fn __columns_width(
     count_rows: usize,
     count_columns: usize,
 ) -> Vec<Vec<usize>> {
-    let mut widths = vec![vec! {0; count_columns}; count_rows];
+    let mut widths = vec![vec![0; count_columns]; count_rows];
     (0..count_rows).for_each(|row| {
         (0..count_columns).for_each(|column| {
             let cell = &cells[row][column];
@@ -1081,32 +1081,34 @@ fn __adjust_width(
                 let cell = &cells[row][column];
                 let style = &styles[row][column];
                 let cell_width = cell_width(cell, style);
-                // calc other's width
 
+                // calc other's width
                 let others_width = (0..count_rows)
                     .filter(|&r| r != row)
                     .filter(|&r| {
-                        styles[r][column..column + span]
-                            .iter()
-                            .map(|style| style.span)
-                            .sum::<usize>()
-                            <= span
+                        let row_spans = (column..column + span)
+                            .filter(|&column| is_cell_visible(&styles[r], column))
+                            .map(|col| styles[r][col].span)
+                            .sum::<usize>();
+
+                        row_spans <= span
                     })
                     .map(|r| row_width(&styles[r], &widths[r][column..column + span]))
                     .max()
                     .unwrap_or(0);
 
-                if cell_width > others_width {
+                if cell_width >= others_width {
                     widths[row][column] = cell_width;
 
                     (0..count_rows)
                         .filter(|&r| r != row)
                         .filter(|&r| {
-                            styles[r][column..column + span]
-                                .iter()
-                                .map(|style| style.span)
-                                .sum::<usize>()
-                                <= span
+                            let row_spans = (column..column + span)
+                                .filter(|&column| is_cell_visible(&styles[r], column))
+                                .map(|col| styles[r][col].span)
+                                .sum::<usize>();
+
+                            row_spans <= span
                         }) // not sure if it's correct
                         .for_each(|r| {
                             inc_width_to_cells(

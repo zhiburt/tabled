@@ -332,6 +332,34 @@ fn render_row_span_with_horizontal_ident() {
 }
 
 #[test]
+fn render_row_span_with_different_length() {
+    let mut grid = Grid::new(3, 2);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(
+        &Entity::Cell(0, 0),
+        Settings::new().text("first row").span(2),
+    );
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("0"));
+    grid.set(&Entity::Cell(1, 1), Settings::new().text("1"));
+    grid.set(&Entity::Cell(2, 0), Settings::new().text("a longer second row").span(2));
+
+    let expected = concat!(
+        "+-------------------+\n",
+        "|first row          |\n",
+        "+-------------------+\n",
+        "|0        |1        |\n",
+        "+---------+---------+\n",
+        "|a longer second row|\n",
+        "+-------------------+\n",
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
 fn render_row_span_with_odd_length() {
     let mut grid = Grid::new(2, 2);
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
