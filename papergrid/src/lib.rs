@@ -24,7 +24,7 @@
 
 use std::{
     cmp::max,
-    collections::HashMap,
+    collections::{BTreeSet, HashMap},
     fmt::{self, Display},
     ops::{Bound, RangeBounds},
 };
@@ -819,7 +819,7 @@ impl std::fmt::Display for Grid {
         let mut styles = self.collect_styles(count_rows, count_columns);
 
         let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
-        let widths = __columns_width(&mut cells, &mut styles, count_rows, count_columns);
+        let widths = columns_width(&mut cells, &mut styles, count_rows, count_columns);
 
         for row in 0..count_rows {
             let top_border = self.get_split_line(row);
@@ -1015,7 +1015,7 @@ fn real_string_width(text: &str) -> usize {
         .unwrap_or(0)
 }
 
-fn __columns_width(
+fn columns_width(
     cells: &mut [Vec<Vec<&str>>],
     styles: &mut [Vec<Style>],
     count_rows: usize,
@@ -1030,147 +1030,171 @@ fn __columns_width(
                 widths[row][column] = cell_width(cell, style);
             } else {
                 widths[row][column] = 0;
+                styles[row][column].span = 0;
             }
         });
     });
 
-    // check if we don't need to check all spans as it a heavy load function.
-    // it suppose to save us time and resources
-    let spans_was_used = styles
-        .iter()
-        .any(|row_styles| row_styles.iter().any(|style| style.span > 1));
-    if spans_was_used {
-        (1..count_columns + 1).for_each(|span| {
-            __adjust_width(&mut widths, cells, styles, count_rows, count_columns, span);
-        });
-    } else {
-        __adjust_width(&mut widths, cells, styles, count_rows, count_columns, 1);
-    }
+    // it's crusial to preserve order in iterations
+    // so we use BTreeSet
+    let mut spans = BTreeSet::new();
+    styles.iter().for_each(|row_styles| {
+        row_styles.iter().for_each(|style| {
+            spans.insert(style.span);
+        })
+    });
+    spans.into_iter().filter(|&span| span > 0).for_each(|span| {
+        println!("AAAA {}", span);
+        adjust_width(&mut widths, styles, count_rows, count_columns, span);
+    });
 
     // remove not visible cells to print everything correctly
     (0..count_rows).for_each(|row| {
         let mut n_removed = 0;
-        (0..count_columns)
-            .filter(|&column| !is_cell_visible(&styles[row], column))
-            .collect::<Vec<_>>() // it's here becouse of borrow rules...
-            .into_iter()
-            .for_each(|column| {
-                widths[row].remove(column - n_removed);
-                cells[row].remove(column - n_removed);
-                styles[row].remove(column - n_removed);
+        (0..count_columns).for_each(|column| {
+            let column = column - n_removed;
+            if styles[row][column].span == 0 {
+                widths[row].remove(column);
+                cells[row].remove(column);
+                styles[row].remove(column);
                 n_removed += 1;
-            });
+            }
+        });
     });
 
     widths
 }
 
-fn __adjust_width(
+fn adjust_width(
     widths: &mut [Vec<usize>],
-    cells: &[Vec<Vec<&str>>],
     styles: &[Vec<Style>],
     count_rows: usize,
     count_columns: usize,
     span: usize,
 ) {
-    (0..count_rows).for_each(|row| {
-        (0..count_columns)
-            .filter(|&column| styles[row][column].span == span)
-            .filter(|&column| is_cell_visible(&styles[row], column))
-            .for_each(|column| {
-                let cell = &cells[row][column];
-                let style = &styles[row][column];
-                let cell_width = cell_width(cell, style);
+    for column in 0..count_columns {
+        let start = column;
+        let end = column + span;
+        if end > count_columns {
+            break;
+        }
 
-                // calc other's width
-                let others_width = (0..count_rows)
-                    .filter(|&r| r != row)
-                    .filter(|&r| {
-                        let row_spans = (column..column + span)
-                            .filter(|&column| is_cell_visible(&styles[r], column))
-                            .map(|col| styles[r][col].span)
-                            .sum::<usize>();
+        adjust_range_width(widths, styles, count_rows, start, end);
+    }
+}
 
-                        row_spans <= span
-                    })
-                    .map(|r| row_width(&styles[r], &widths[r][column..column + span]))
-                    .max()
-                    .unwrap_or(0);
+fn adjust_range_width(
+    widths: &mut [Vec<usize>],
+    styles: &[Vec<Style>],
+    count_rows: usize,
+    start_column: usize,
+    end_column: usize,
+) {
+    if count_rows == 0 {
+        return;
+    }
+    let span = end_column - start_column;
 
-                if cell_width >= others_width {
-                    widths[row][column] = cell_width;
+    let (row_with_max_width, max_width) = (0..count_rows)
+        .filter(|&row| is_row_consistent(&styles[row][start_column..end_column]))
+        .filter(|&row| {
+            let row_spans = (start_column..end_column)
+                .filter(|&column| is_cell_visible(&styles[row], column))
+                .map(|col| styles[row][col].span)
+                .sum::<usize>();
 
-                    (0..count_rows)
-                        .filter(|&r| r != row)
-                        .filter(|&r| {
-                            let row_spans = (column..column + span)
-                                .filter(|&column| is_cell_visible(&styles[r], column))
-                                .map(|col| styles[r][col].span)
-                                .sum::<usize>();
+            row_spans <= span
+        })
+        .map(|row| {
+            let width = row_width(&styles[row], &widths[row], start_column, end_column);
+            (row, width)
+        })
+        .max_by_key(|&(_, width)| width)
+        .unwrap_or_default();
 
-                            row_spans <= span
-                        }) // not sure if it's correct
-                        .for_each(|r| {
-                            inc_width_to_cells(
-                                &mut widths[r],
-                                &styles[r],
-                                column,
-                                column + span,
-                                cell_width,
-                            );
-                        });
-                } else {
-                    inc_width_to_cells(
-                        &mut widths[row],
-                        &styles[row],
-                        column,
-                        column + 1,
-                        others_width,
-                    );
-                }
-            });
-    });
+    // might happen when we filtered every cell
+    if max_width == 0 {
+        return;
+    }
+
+    (0..count_rows)
+        .filter(|&row| row != row_with_max_width)
+        .filter(|&row| is_row_consistent(&styles[row][start_column..end_column]))
+        .filter(|&row| {
+            let row_spans = (start_column..end_column)
+                .filter(|&column| is_cell_visible(&styles[row], column))
+                .map(|col| styles[row][col].span)
+                .sum::<usize>();
+
+            row_spans <= span
+        })
+        .for_each(|row| {
+            inc_width_to_cells(
+                &mut widths[row],
+                &styles[row],
+                start_column,
+                end_column,
+                max_width,
+            );
+        });
+}
+
+fn is_row_consistent(styles: &[Style]) -> bool {
+    if styles.is_empty() {
+        return true;
+    }
+
+    if styles[0].span == 0 {
+        return false;
+    }
+
+    styles
+        .iter()
+        .zip(styles.len()..)
+        .all(|(style, max_span)| style.span <= max_span)
 }
 
 fn is_cell_visible(row_styles: &[Style], column: usize) -> bool {
-    !row_styles[..column]
-        .iter()
-        .zip(column..)
-        .any(|(style, span)| style.span > span)
+    row_styles[column].span != 0
+        && !row_styles[..column]
+            .iter()
+            .zip(column..)
+            .any(|(style, span)| style.span > span)
 }
 
-// relyes on fix_spans
-fn row_width(row_styles: &[Style], widths: &[usize]) -> usize {
-    let w = (0..widths.len())
-        .filter(|&i| is_cell_visible(row_styles, i))
+fn row_width(styles: &[Style], widths: &[usize], column_start: usize, column_end: usize) -> usize {
+    let width = (column_start..column_end)
+        .filter(|&i| is_cell_visible(styles, i))
         .map(|i| widths[i])
         .sum::<usize>();
 
-    if w == 0 {
+    if width == 0 {
         return 0;
     }
 
-    w + (0..widths.len())
-        .filter(|&i| is_cell_visible(row_styles, i))
+    // fixme: Is this style dependent?
+    let border_count = (column_start..column_end)
+        .filter(|&i| is_cell_visible(styles, i))
         .count()
-        - 1
+        - 1;
+
+    width + border_count
 }
 
-// relyes on fix_spans
 fn inc_width_to_cells(
     widths: &mut [usize],
-    row_styles: &[Style],
+    styles: &[Style],
     start_range: usize,
     end_range: usize,
     width: usize,
 ) {
-    let a = row_width(row_styles, &widths[start_range..end_range]);
+    let a = row_width(styles, widths, start_range, end_range);
     let diff = width - a;
 
     (0..diff)
         .zip(
             (start_range..end_range)
-                .filter(|&i| is_cell_visible(row_styles, i))
+                .filter(|&i| is_cell_visible(styles, i))
                 .cycle(),
         )
         .for_each(|(_, i)| widths[i] += 1);

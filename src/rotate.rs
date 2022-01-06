@@ -21,10 +21,7 @@ impl TableOption for Rotate {
                     for (lhs_column, rhs_column) in
                         (0..grid.count_columns()).zip((0..grid.count_columns()).rev())
                     {
-                        let settings = grid
-                            .get_settings(row, lhs_column)
-                            .span(1)
-                            .border_restriction(false);
+                        let settings = grid.get_settings(row, lhs_column).border_restriction(false);
                         new.set(&Entity::Cell(rhs_column, row), settings)
                     }
                 }
@@ -37,10 +34,7 @@ impl TableOption for Rotate {
                 for row in 0..grid.count_rows() {
                     last_row -= 1;
                     for column in 0..grid.count_columns() {
-                        let border = grid
-                            .get_settings(row, column)
-                            .span(0)
-                            .border_restriction(false);
+                        let border = grid.get_settings(row, column).border_restriction(false);
                         new.set(&Entity::Cell(column, last_row), border);
                     }
                 }
@@ -52,10 +46,7 @@ impl TableOption for Rotate {
                 for column in 0..grid.count_columns() {
                     for row in 0..grid.count_rows() {
                         let last_row = grid.count_rows() - 1 - row;
-                        let border = grid
-                            .get_settings(row, column)
-                            .span(0)
-                            .border_restriction(false);
+                        let border = grid.get_settings(row, column).border_restriction(false);
                         new.set(&Entity::Cell(last_row, column), border)
                     }
                 }
