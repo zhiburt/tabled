@@ -30,3 +30,8 @@ ansi-cut = { version = "0.1.1", optional = true }
 
 [dev-dependencies]
 owo-colors = "1"
+criterion = "0.3.5"
+
+[[bench]]
+name = "table_build"
+harness = false
