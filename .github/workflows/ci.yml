@@ -46,7 +46,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --target ${{ matrix.target }} --include-ignored qc_
+          args: --workspace --target ${{ matrix.target }} -- --include-ignored qc_
 
   test_color:
     name: Unit Test Suite for color feature
@@ -61,7 +61,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --no-fail-fast --features color --include-ignored qc_
+          args: --workspace --no-fail-fast --features color -- --include-ignored qc_
 
   fmt:
     name: Rustfmt
