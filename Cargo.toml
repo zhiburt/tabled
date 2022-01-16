@@ -30,3 +30,5 @@ ansi-cut = { version = "0.1.1", optional = true }
 
 [dev-dependencies]
 owo-colors = "1"
+quickcheck = "1.0.3"
+quickcheck_macros = "1.0.0"
