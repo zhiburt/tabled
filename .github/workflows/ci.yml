@@ -1,6 +1,10 @@
 name: Continuous integration
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 env:
   CARGO_TERM_COLOR: always
@@ -42,7 +46,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --target ${{ matrix.target }}
+          args: --workspace --target ${{ matrix.target }} --include-ignored qc_
 
   test_color:
     name: Unit Test Suite for color feature
@@ -57,7 +61,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --no-fail-fast --features color
+          args: --workspace --no-fail-fast --features color --include-ignored qc_
 
   fmt:
     name: Rustfmt
