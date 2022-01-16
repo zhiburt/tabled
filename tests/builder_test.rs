@@ -165,6 +165,7 @@ fn builder_with_default_cell() {
 }
 
 #[quickcheck_macros::quickcheck]
+#[ignore = "Quickcheck tests are a bit slow, so we don't run them all the time"]
 fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
     let mut builder = Builder::default();
     for row in data {
