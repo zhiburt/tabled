@@ -163,3 +163,20 @@ fn builder_with_default_cell() {
                          +---+-----+-----+\n";
     assert_eq!(table, expected);
 }
+
+#[quickcheck_macros::quickcheck]
+fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
+    let mut builder = Builder::default();
+    for row in data {
+        builder = builder.add_row(row);
+    }
+
+    let table = builder.build().to_string();
+
+    let lines = table.lines().collect::<Vec<_>>();
+    let lines_has_the_same_length = lines
+        .iter()
+        .map(|line| papergrid::string_width(line))
+        .all(|line_width| line_width == lines[0].len());
+    lines_has_the_same_length
+}
