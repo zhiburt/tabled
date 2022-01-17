@@ -61,7 +61,18 @@ impl Style {
     ///      2      OpenSUSE     https://www.opensuse.org/
     ///      3    Endeavouros    https://endeavouros.com/
     /// ```
+    #[deprecated(note = "Renamed to BLANK")]
     pub const NO_BORDER: Self = Self::new(Frame::empty(), None, None, ' ');
+
+    /// Noborder style looks like the following table
+    ///
+    /// ```text
+    ///      id   destribution             link
+    ///      0       Fedora       https://getfedora.org/
+    ///      2      OpenSUSE     https://www.opensuse.org/
+    ///      3    Endeavouros    https://endeavouros.com/
+    /// ```
+    pub const BLANK: Self = Self::new(Frame::empty(), None, None, ' ');
 
     /// Psql style looks like the following table
     ///
@@ -155,7 +166,7 @@ impl Style {
 
     #[deprecated(note = "The name is not explicit. Use NO_BORDER constant instead.")]
     pub fn noborder() -> Self {
-        Self::NO_BORDER
+        Self::BLANK
     }
 
     #[deprecated(note = "The name is not explicit. Use PSQL constant instead.")]

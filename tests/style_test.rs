@@ -95,9 +95,9 @@ fn pseudo_clean_style() {
 }
 
 #[test]
-fn noborder_style() {
+fn blank_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::NO_BORDER).to_string();
+    let table = Table::new(&data).with(Style::BLANK).to_string();
 
     let expected = concat!(
         " N   column 0   column 1   column 2 \n",
@@ -151,7 +151,7 @@ fn custom_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(
-            Style::NO_BORDER
+            Style::BLANK
                 .frame_bottom(Some(Line::short('*', '\'')))
                 .split(Some(Line::short('`', '\'')))
                 .inner('\''),
@@ -181,7 +181,7 @@ fn style_single_cell() {
 
     assert_eq!(table, expected);
 
-    let table = Table::new(&data).with(Style::NO_BORDER).to_string();
+    let table = Table::new(&data).with(Style::BLANK).to_string();
 
     let expected = " N \n";
 
