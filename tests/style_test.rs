@@ -130,6 +130,24 @@ fn extended_style() {
 }
 
 #[test]
+fn ascii_dots_style() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(Style::ASCII_DOTS).to_string();
+
+    let expected = concat!(
+        "......................................\n",
+        ": N : column 0 : column 1 : column 2 :\n",
+        ":...:..........:..........:..........:\n",
+        ": 0 :   0-0    :   0-1    :   0-2    :\n",
+        ": 1 :   1-0    :   1-1    :   1-2    :\n",
+        ": 2 :   2-0    :   2-1    :   2-2    :\n",
+        ":...:..........:..........:..........:\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
 fn style_head_changes() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)

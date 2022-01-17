@@ -179,6 +179,31 @@ impl Style {
         '║',
     );
 
+    /// ASCII Dots style looks like the following table
+    ///
+    /// ```text
+    ///     .................................................
+    ///     : id : destribution :           link            :
+    ///     :....:..............:...........................:
+    ///     : 0  :    Fedora    :  https://getfedora.org/   :
+    ///     :....:..............:...........................:
+    ///     : 2  :   OpenSUSE   : https://www.opensuse.org/ :
+    ///     :....:..............:...........................:
+    ///     : 3  : Endeavouros  : https://endeavouros.com/  :
+    ///     :....:..............:...........................:
+    /// ```
+    pub const ASCII_DOTS: Self = Self::new(
+        Frame {
+            bottom: Some(Line::bordered('.', ':', ':', ':')),
+            top: Some(Line::bordered('.', '.', '.', '.')),
+            left: Some(':'),
+            right: Some(':'),
+        },
+        Some(Line::bordered('.', ':', ':', ':')),
+        None,
+        ':',
+    );
+
     #[deprecated(note = "The name is not explicit. Use ASCII constant instead.")]
     pub fn default() -> Self {
         Self::ASCII
