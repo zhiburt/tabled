@@ -204,6 +204,29 @@ impl Style {
         ':',
     );
 
+    /// ReStructuredText style looks like the following table
+    ///
+    /// ```text
+    ///     ==== ============== ===========================
+    ///      id   destribution             link            
+    ///     ==== ============== ===========================
+    ///      0       Fedora       https://getfedora.org/   
+    ///      2      OpenSUSE     https://www.opensuse.org/
+    ///      3    Endeavouros    https://endeavouros.com/  
+    ///     ==== ============== ===========================
+    /// ```
+    pub const RE_STRUCTURED_TEXT: Self = Self::new(
+        Frame {
+            bottom: Some(Line::short('=', ' ')),
+            top: Some(Line::short('=', ' ')),
+            left: None,
+            right: None,
+        },
+        Some(Line::short('=', ' ')),
+        None,
+        ' ',
+    );
+
     #[deprecated(note = "The name is not explicit. Use ASCII constant instead.")]
     pub fn default() -> Self {
         Self::ASCII
