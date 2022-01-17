@@ -154,6 +154,31 @@ impl Style {
         '│',
     );
 
+    /// Extended style looks like the following table
+    ///
+    /// ```text
+    ///     ╔════╦══════════════╦═══════════════════════════╗
+    ///     ║ id ║ destribution ║           link            ║
+    ///     ╠════╬══════════════╬═══════════════════════════╣
+    ///     ║ 0  ║    Fedora    ║  https://getfedora.org/   ║
+    ///     ╠════╬══════════════╬═══════════════════════════╣
+    ///     ║ 2  ║   OpenSUSE   ║ https://www.opensuse.org/ ║
+    ///     ╠════╬══════════════╬═══════════════════════════╣
+    ///     ║ 3  ║ Endeavouros  ║ https://endeavouros.com/  ║
+    ///     ╚════╩══════════════╩═══════════════════════════╝
+    /// ```
+    pub const EXTENDED: Self = Self::new(
+        Frame {
+            left: Some('║'),
+            right: Some('║'),
+            bottom: Some(Line::bordered('═', '╩', '╚', '╝')),
+            top: Some(Line::bordered('═', '╦', '╔', '╗')),
+        },
+        Some(Line::bordered('═', '╬', '╠', '╣')),
+        Some(Line::bordered('═', '╬', '╠', '╣')),
+        '║',
+    );
+
     #[deprecated(note = "The name is not explicit. Use ASCII constant instead.")]
     pub fn default() -> Self {
         Self::ASCII
@@ -187,6 +212,11 @@ impl Style {
     #[deprecated(note = "The name is not explicit. Use PSEUDO_CLEAN constant instead.")]
     pub fn pseudo_clean() -> Self {
         Self::PSEUDO_CLEAN
+    }
+
+    #[deprecated(note = "Use EXTENDED constant instead.")]
+    pub fn extended() -> Self {
+        Self::EXTENDED
     }
 
     /// Left frame character.
