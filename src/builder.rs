@@ -163,6 +163,17 @@ where
     }
 }
 
+impl<D> Extend<D> for Builder
+where
+    D: Display,
+{
+    fn extend<T: IntoIterator<Item = D>>(&mut self, iter: T) {
+        let row: Vec<String> = iter.into_iter().map(|t| t.to_string()).collect();
+        self.update_size(row.len());
+        self.rows.push(row);
+    }
+}
+
 /// Building [Table] from ordinary data.
 fn build_table(header: Option<Vec<String>>, rows: Vec<Vec<String>>, count_columns: usize) -> Table {
     let grid = build_grid(header, rows, count_columns);

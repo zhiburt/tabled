@@ -164,6 +164,26 @@ fn builder_with_default_cell() {
     assert_eq!(table, expected);
 }
 
+#[test]
+fn builder_extend() {
+    let mut builder = Builder::default();
+    builder.extend([1, 2, 3]);
+    builder.extend(['a', 'b', 'c']);
+    builder.extend(["d", "e", "f"]);
+
+    let table = builder.build().to_string();
+
+    let expected = "+---+---+---+\n\
+                         | 1 | 2 | 3 |\n\
+                         +---+---+---+\n\
+                         | a | b | c |\n\
+                         +---+---+---+\n\
+                         | d | e | f |\n\
+                         +---+---+---+\n";
+
+    assert_eq!(table, expected);
+}
+
 #[quickcheck_macros::quickcheck]
 #[ignore = "Quickcheck tests are a bit slow, so we don't run them all the time"]
 fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
