@@ -57,8 +57,7 @@ pub struct Table {
 impl Table {
     /// New creates a Table instance.
     pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
-        let rows = iter.into_iter().map(|t| t.fields());
-        Builder::from_iter(rows).set_header(T::headers()).build()
+        Self::from_iter(iter)
     }
 
     /// Returns a table shape (count rows, count columns).
@@ -83,6 +82,20 @@ impl fmt::Display for Table {
         write!(f, "{}", self.grid)
     }
 }
+
+impl<D> FromIterator<D> for Table
+where
+    D: Tabled,
+{
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = D>,
+    {
+        let rows = iter.into_iter().map(|t| t.fields());
+        Builder::from_iter(rows).set_header(D::headers()).build()
+    }
+}
+
 /// Modify structure provide an abstraction, to be able to apply
 /// a set of [CellOption]s to the same object.
 pub struct Modify<O> {

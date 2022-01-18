@@ -1,5 +1,12 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    iter::FromIterator,
+};
 use tabled::{Style, Table, TableIteratorExt, Tabled};
+
+use crate::util::create_vector;
+
+mod util;
 
 mod default_types {
     use super::*;
@@ -769,4 +776,20 @@ fn table_trait() {
             "  Maxim Zhiburt  |          |         |          |    +    \n"
         )
     );
+}
+
+#[test]
+fn build_table_from_iterator() {
+    let data = create_vector::<3, 3>();
+    let table = Table::from_iter(data).with(Style::PSQL).to_string();
+
+    let expected = concat!(
+        " N | column 0 | column 1 | column 2 \n",
+        "---+----------+----------+----------\n",
+        " 0 |   0-0    |   0-1    |   0-2    \n",
+        " 1 |   1-0    |   1-1    |   1-2    \n",
+        " 2 |   2-0    |   2-1    |   2-2    \n",
+    );
+
+    assert_eq!(table, expected);
 }
