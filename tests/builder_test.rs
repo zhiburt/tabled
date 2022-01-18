@@ -184,6 +184,28 @@ fn builder_extend() {
     assert_eq!(table, expected);
 }
 
+#[test]
+fn builder_from_vector() {
+    let data = vec![
+        vec!["1".to_string(), "2".to_string(), "3".to_string()],
+        vec!["a".to_string(), "b".to_string(), "c".to_string()],
+        vec!["d".to_string(), "e".to_string(), "f".to_string()],
+    ];
+
+    let builder = Builder::from(data);
+    let table = builder.build().to_string();
+
+    let expected = "+---+---+---+\n\
+                         | 1 | 2 | 3 |\n\
+                         +---+---+---+\n\
+                         | a | b | c |\n\
+                         +---+---+---+\n\
+                         | d | e | f |\n\
+                         +---+---+---+\n";
+
+    assert_eq!(table, expected);
+}
+
 #[quickcheck_macros::quickcheck]
 #[ignore = "Quickcheck tests are a bit slow, so we don't run them all the time"]
 fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {

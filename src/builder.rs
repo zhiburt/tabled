@@ -174,6 +174,17 @@ where
     }
 }
 
+impl From<Vec<Vec<String>>> for Builder {
+    fn from(rows: Vec<Vec<String>>) -> Self {
+        let max_row_length = rows.iter().map(|row| row.len()).max().unwrap_or(0);
+        Self {
+            rows,
+            size: max_row_length,
+            ..Default::default()
+        }
+    }
+}
+
 /// Building [Table] from ordinary data.
 fn build_table(header: Option<Vec<String>>, rows: Vec<Vec<String>>, count_columns: usize) -> Table {
     let grid = build_grid(header, rows, count_columns);
