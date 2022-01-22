@@ -85,7 +85,13 @@ pub(crate) fn strip(s: &str, width: usize) -> String {
     }
     #[cfg(feature = "color")]
     {
-        let max_width = std::cmp::min(s.chars().count(), width);
+        let stripped = papergrid::strip_ansi_escapes(s);
+        let last_char_index = stripped
+            .chars()
+            .map(|c| c.len_utf8())
+            .take(width)
+            .sum::<usize>();
+        let max_width = std::cmp::min(s.len(), last_char_index);
         ansi_cut::AnsiCut::cut(&s, ..max_width)
     }
 }
