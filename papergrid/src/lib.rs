@@ -1015,6 +1015,12 @@ fn real_string_width(text: &str) -> usize {
         .unwrap_or(0)
 }
 
+#[cfg(feature = "color")]
+pub fn strip_ansi_escapes(text: &str) -> String {
+    let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
+    String::from_utf8_lossy(&b).to_string()
+}
+
 fn columns_width(
     cells: &mut [Vec<Vec<&str>>],
     styles: &mut [Vec<Style>],
