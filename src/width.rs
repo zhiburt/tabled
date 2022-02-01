@@ -20,60 +20,66 @@ use papergrid::{Entity, Grid, Settings};
 /// ```
 ///
 /// While working with colors you must setup `colors` feature.
-pub struct MaxWidth<S> {
+pub struct MaxWidth;
+
+impl MaxWidth {
+    // todo: move suffix to be optional in Truncate
+    pub fn truncating<S>(width: usize, suffix: S) -> Truncate<S> {
+        Truncate::new(width, suffix)
+    }
+
+    pub fn wrapping(width: usize) -> Wrap {
+        Wrap::new(width)
+    }
+}
+
+pub struct Truncate<S> {
     width: usize,
-    wrap: Wrap<S>,
+    suffix: S,
 }
 
-enum Wrap<S> {
-    Truncate(S),
-    Wrap,
+impl<S> Truncate<S> {
+    pub fn new(width: usize, suffix: S) -> Self {
+        Self { width, suffix }
+    }
 }
 
-impl<S> MaxWidth<S>
+impl<S> CellOption for Truncate<S>
 where
     S: AsRef<str>,
 {
-    pub fn truncating(width: usize, suffix: S) -> Self {
-        Self {
-            width,
-            wrap: Wrap::Truncate(suffix),
-        }
-    }
-}
-
-impl MaxWidth<&'static str> {
-    pub fn wrapping(width: usize) -> Self {
-        Self {
-            width,
-            wrap: Wrap::Wrap,
-        }
-    }
-}
-
-impl<S: AsRef<str>> CellOption for MaxWidth<S> {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let content = grid.get_cell_content(row, column);
-        match &self.wrap {
-            Wrap::Truncate(filler) => {
-                let striped_content = strip(content, self.width);
-                if striped_content.len() < content.len() {
-                    let new_content = format!("{}{}", striped_content, filler.as_ref());
-                    grid.set(
-                        &Entity::Cell(row, column),
-                        Settings::new().text(new_content),
-                    )
-                }
-            }
-            Wrap::Wrap => {
-                let wrapped_content = split(content, self.width);
-                if wrapped_content.len() != content.len() {
-                    grid.set(
-                        &Entity::Cell(row, column),
-                        Settings::new().text(wrapped_content),
-                    )
-                }
-            }
+        let striped_content = strip(content, self.width);
+        if striped_content.len() < content.len() {
+            let new_content = format!("{}{}", striped_content, self.suffix.as_ref());
+            grid.set(
+                &Entity::Cell(row, column),
+                Settings::new().text(new_content),
+            )
+        }
+    }
+}
+
+pub struct Wrap {
+    width: usize,
+}
+
+impl Wrap {
+    pub fn new(width: usize) -> Self {
+        Self { width }
+    }
+}
+
+impl CellOption for Wrap {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        let content = grid.get_cell_content(row, column);
+        let wrapped_content = split(content, self.width);
+        if wrapped_content.len() != content.len() {
+            grid.set(
+                &Entity::Cell(row, column),
+                Settings::new().text(wrapped_content),
+            )
         }
     }
 }
