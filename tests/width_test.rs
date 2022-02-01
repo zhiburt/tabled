@@ -60,13 +60,13 @@ fn max_width_wrapped_collored() {
         "| ri |\n",
         "| ng |\n",
         "|----|\n",
-        "| \u{1b}[31mas\u{1b}[0m |\n",
-        "| \u{1b}[31md\u{1b}[0m  |\n",
-        "| \u{1b}[34mzx\u{1b}[0m |\n",
-        "| \u{1b}[34mc2\u{1b}[0m |\n",
-        "| \u{1b}[32m\u{1b}[40mas\u{1b}[0m\u{1b}[0m |\n",
-        "| \u{1b}[32m\u{1b}[40mda\u{1b}[0m\u{1b}[0m |\n",
-        "| \u{1b}[32m\u{1b}[40msd\u{1b}[0m\u{1b}[0m |\n",
+        "| \u{1b}[31mas\u{1b}[39m |\n",
+        "| \u{1b}[31md\u{1b}[39m  |\n",
+        "| \u{1b}[34mzx\u{1b}[39m |\n",
+        "| \u{1b}[34mc2\u{1b}[39m |\n",
+        "| \u{1b}[32m\u{1b}[40mas\u{1b}[39m\u{1b}[49m |\n",
+        "| \u{1b}[32m\u{1b}[40mda\u{1b}[39m\u{1b}[49m |\n",
+        "| \u{1b}[32m\u{1b}[40msd\u{1b}[39m\u{1b}[49m |\n",
     );
 
     let table = Table::new(data)
@@ -134,7 +134,7 @@ fn color_chars_are_stripped() {
         "|--------|\n",
         "|  \u{1b}[31masd\u{1b}[0m   |\n",
         "|  \u{1b}[34mzxc\u{1b}[0m   |\n",
-        "| \u{1b}[32m\u{1b}[40masd\u{1b}[0m\u{1b}[0m... |\n",
+        "| \u{1b}[32m\u{1b}[40masd\u{1b}[39m\u{1b}[49m... |\n",
     );
 
     let table = Table::new(data)

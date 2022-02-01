@@ -85,8 +85,8 @@ pub(crate) fn strip(s: &str, width: usize) -> String {
     }
     #[cfg(feature = "color")]
     {
-        let max_width = std::cmp::min(s.chars().count(), width);
-        ansi_cut::AnsiCut::cut(&s, ..max_width)
+        let width = to_byte_length(s, width);
+        ansi_str::AnsiStr::ansi_cut(s, ..width)
     }
 }
 
@@ -111,7 +111,28 @@ pub(crate) fn split(s: &str, width: usize) -> String {
         if width == 0 {
             s.to_string()
         } else {
-            ansi_cut::chunks(s, width).join("\n")
+            chunks(s, width).join("\n")
         }
     }
+}
+
+#[cfg(feature = "color")]
+fn to_byte_length(s: &str, width: usize) -> usize {
+    s.chars().take(width).map(|c| c.len_utf8()).sum::<usize>()
+}
+
+#[cfg(feature = "color")]
+fn chunks(s: &str, width: usize) -> Vec<String> {
+    use ansi_str::AnsiStr;
+
+    let mut v = Vec::new();
+    let mut s = s.to_string();
+    while !s.is_empty() {
+        let width = to_byte_length(&s, width);
+        let (lhs, rhs) = s.ansi_split_at(width);
+        s = rhs;
+        v.push(lhs);
+    }
+
+    v
 }
