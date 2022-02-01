@@ -16,16 +16,15 @@ use papergrid::{Entity, Grid, Settings};
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::GITHUB_MARKDOWN)
-///     .with(Modify::new(Full).with(MaxWidth::truncating(5, "...")));
+///     .with(Modify::new(Full).with(MaxWidth::truncating(5).suffix("...")));
 /// ```
 ///
 /// While working with colors you must setup `colors` feature.
 pub struct MaxWidth;
 
 impl MaxWidth {
-    // todo: move suffix to be optional in Truncate
-    pub fn truncating<S>(width: usize, suffix: S) -> Truncate<S> {
-        Truncate::new(width, suffix)
+    pub fn truncating(width: usize) -> Truncate<&'static str> {
+        Truncate::new(width)
     }
 
     pub fn wrapping(width: usize) -> Wrap {
@@ -38,9 +37,18 @@ pub struct Truncate<S> {
     suffix: S,
 }
 
-impl<S> Truncate<S> {
-    pub fn new(width: usize, suffix: S) -> Self {
-        Self { width, suffix }
+impl Truncate<&'static str> {
+    pub fn new(width: usize) -> Self {
+        Self { width, suffix: "" }
+    }
+}
+
+impl<T> Truncate<T> {
+    pub fn suffix<S>(self, suffix: S) -> Truncate<S> {
+        Truncate {
+            width: self.width,
+            suffix,
+        }
     }
 }
 

@@ -8,7 +8,7 @@ fn max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::GITHUB_MARKDOWN)
-        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(2, "...")))
+        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(2).suffix("...")))
         .to_string();
 
     let expected = concat!(
@@ -84,7 +84,7 @@ fn dont_change_content_if_width_is_less_then_max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::GITHUB_MARKDOWN)
-        .with(Modify::new(Full).with(MaxWidth::truncating(1000, "...")))
+        .with(Modify::new(Full).with(MaxWidth::truncating(1000).suffix("...")))
         .to_string();
 
     let expected = concat!(
@@ -112,7 +112,7 @@ fn max_width_with_emoji() {
 
     let table = Table::new(data)
         .with(Style::GITHUB_MARKDOWN)
-        .with(Modify::new(Full).with(MaxWidth::truncating(3, "...")))
+        .with(Modify::new(Full).with(MaxWidth::truncating(3).suffix("...")))
         .to_string();
 
     assert_eq!(table, _expected);
