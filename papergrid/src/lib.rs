@@ -47,9 +47,10 @@ const DEFAULT_SPLIT_INTERSECTION_CHAR: char = ' ';
 /// Grid provides a set of methods for building a text-based table
 pub struct Grid {
     size: (usize, usize),
-    styles: HashMap<Entity, Style>,
     cells: Vec<Vec<String>>,
+    styles: HashMap<Entity, Style>,
     borders: Borders,
+    override_split_lines: HashMap<usize, String>,
 }
 
 impl Grid {
@@ -82,6 +83,7 @@ impl Grid {
             cells: vec![vec![String::new(); columns]; rows],
             styles,
             borders: Borders::new(rows, columns),
+            override_split_lines: HashMap::new(),
         }
     }
 
@@ -191,6 +193,10 @@ impl Grid {
 
     pub fn clear_split_grid(&mut self) {
         self.borders.clear()
+    }
+
+    pub fn clear_overide_split_lines(&mut self) {
+        self.override_split_lines.clear();
     }
 
     fn set_border(&mut self, frame: &EntityFrame, border: Border) {
@@ -418,6 +424,10 @@ impl Grid {
         }
 
         new_grid
+    }
+
+    pub fn override_split_line(&mut self, row: usize, line: impl Into<String>) {
+        self.override_split_lines.insert(row, line.into());
     }
 
     fn add_split_lines_for_border(&mut self, frame: &EntityFrame, border: &Border) {
@@ -822,9 +832,19 @@ impl std::fmt::Display for Grid {
         let widths = columns_width(&mut cells, &mut styles, count_rows, count_columns);
 
         for row in 0..count_rows {
-            let top_border = self.get_split_line(row);
             let inner_border = self.get_inner_split_line(row);
-            let bottom_border = self.get_split_line(row + 1);
+            let top_border = if row == 0 {
+                Some((
+                    self.get_split_line(row),
+                    self.override_split_lines.get(&row),
+                ))
+            } else {
+                None
+            };
+            let bottom_border = Some((
+                self.get_split_line(row + 1),
+                self.override_split_lines.get(&(row + 1)),
+            ));
 
             build_row(
                 f,
@@ -832,8 +852,9 @@ impl std::fmt::Display for Grid {
                 &styles[row],
                 &widths[row],
                 row_heights[row],
-                row == 0,
-                (&top_border, &inner_border, &bottom_border),
+                inner_border,
+                top_border,
+                bottom_border,
             )?;
         }
 
@@ -841,17 +862,19 @@ impl std::fmt::Display for Grid {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_row(
     f: &mut std::fmt::Formatter<'_>,
     cell_contents: &[Vec<&str>],
     cell_styles: &[Style],
     cell_widths: &[usize],
     height: usize,
-    is_first_row: bool,
-    (top_borders, inner_borders, bottom_borders): (&[BorderLine], &[BorderLine], &[BorderLine]),
+    inner_border: Vec<BorderLine>,
+    top_border: Option<(Vec<BorderLine>, Option<&String>)>,
+    bottom_border: Option<(Vec<BorderLine>, Option<&String>)>,
 ) -> fmt::Result {
-    if is_first_row {
-        build_split_line(f, cell_widths, top_borders)?;
+    if let Some((top_border, override_border)) = top_border {
+        build_split_line(f, cell_widths, &top_border, override_border)?;
     }
 
     build_row_internals(
@@ -860,10 +883,13 @@ fn build_row(
         cell_styles,
         cell_widths,
         height,
-        inner_borders,
+        &inner_border,
     )?;
 
-    build_split_line(f, cell_widths, bottom_borders)?;
+    if let Some((bottom_border, override_border)) = bottom_border {
+        build_split_line(f, cell_widths, &bottom_border, override_border)?;
+    }
+
     Ok(())
 }
 
@@ -955,11 +981,11 @@ fn line(
     Ok(())
 }
 
-fn build_line<F: Fn(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
+fn build_line<F: FnMut(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
     f: &mut std::fmt::Formatter<'_>,
     length: usize,
     borders: &[BorderLine],
-    writer: F,
+    mut writer: F,
 ) -> fmt::Result {
     for (i, border) in borders.iter().enumerate().take(length) {
         write_option(f, border.connector1)?;
@@ -978,15 +1004,69 @@ fn build_split_line(
     f: &mut std::fmt::Formatter<'_>,
     widths: &[usize],
     borders: &[BorderLine],
+    override_str: Option<&String>,
 ) -> fmt::Result {
     let theres_no_border = borders.iter().all(|l| l.main.is_none());
     if theres_no_border || borders.is_empty() {
         return Ok(());
     }
 
-    build_line(f, widths.len(), borders, |f, i| {
-        write_option(f, borders[i].main.map(|m| m.to_string().repeat(widths[i])))
-    })
+    let mut override_str = override_str.map(|s| s.to_owned());
+    for (i, border) in borders.iter().enumerate().take(widths.len()) {
+        if let Some(left_connector) = border.connector1 {
+            let connector = override_str
+                .as_mut()
+                .and_then(|s| {
+                    s.chars().next().map(|c| {
+                        let _ = s.drain(..c.len_utf8());
+                        c
+                    })
+                })
+                .unwrap_or(left_connector);
+            write!(f, "{}", connector)?
+        }
+
+        if let Some(main) = border.main {
+            let mut width = widths[i];
+            if let Some(s) = override_str.as_mut() {
+                while !s.is_empty() && width > 0 {
+                    match s.chars().next() {
+                        Some(c) => {
+                            write!(f, "{}", c)?;
+                            width -= 1;
+                            let _ = s.drain(..c.len_utf8());
+                        }
+                        None => break,
+                    }
+                }
+            }
+
+            while width > 0 {
+                write!(f, "{}", main)?;
+                width -= 1;
+            }
+        }
+
+        let is_last_cell = i + 1 == widths.len();
+        if is_last_cell {
+            if let Some(right_connector) = border.connector2 {
+                let connector = override_str
+                    .as_mut()
+                    .and_then(|s| {
+                        s.chars().next().map(|c| {
+                            let _ = s.drain(..c.len_utf8());
+                            c
+                        })
+                    })
+                    .unwrap_or(right_connector);
+                write!(f, "{}", connector)?
+            }
+        }
+    }
+
+    writeln!(f)?;
+
+    Ok(())
 }
 
 fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) -> fmt::Result {
