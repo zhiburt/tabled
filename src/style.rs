@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 #[allow(unused)]
 use crate::Table;
 use crate::TableOption;
@@ -379,6 +381,7 @@ impl Frame {
 impl TableOption for Style {
     fn change(&mut self, grid: &mut Grid) {
         grid.clear_split_grid();
+        grid.clear_overide_split_lines();
 
         let count_rows = grid.count_rows();
         let count_columns = grid.count_columns();
@@ -579,5 +582,41 @@ fn make_style(
             right_top_corner: style.split.as_ref().map(|l| l.intersection),
             right_bottom_corner: style.split.as_ref().map(|l| l.intersection),
         },
+    }
+}
+
+/// Style is responsible for a look of a [Table].
+///
+/// # Example
+///
+/// ```rust
+/// use tabled::{Table, style::TopBorderText};
+/// let table = Table::new(["Hello World"])
+///     .with(TopBorderText::new("+-.table"));
+/// 
+/// assert_eq!(
+///     table.to_string(),
+///     "+-.table------+\n\
+///      |    &str     |\n\
+///      +-------------+\n\
+///      | Hello World |\n\
+///      +-------------+\n"
+/// );
+/// ```
+pub struct TopBorderText<'a> {
+    // todo: offset from which we start overriding border
+    // offset: usize,
+    text: Cow<'a, str>,
+}
+
+impl<'a> TopBorderText<'a> {
+    pub fn new<S: Into<Cow<'a, str>>>(text: S) -> Self {
+        Self { text: text.into() }
+    }
+}
+
+impl<'a> TableOption for TopBorderText<'a> {
+    fn change(&mut self, grid: &mut Grid) {
+        grid.override_split_line(0, self.text.as_ref())
     }
 }

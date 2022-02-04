@@ -1,5 +1,5 @@
 use crate::util::create_vector;
-use tabled::style::Line;
+use tabled::style::{Line, TopBorderText};
 use tabled::{Style, Table};
 
 mod util;
@@ -242,6 +242,67 @@ fn style_single_cell() {
     let table = Table::new(&data).with(Style::BLANK).to_string();
 
     let expected = " N \n";
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn top_border_override_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ASCII)
+        .with(TopBorderText::new("-Table"))
+        .to_string();
+
+    let expected = concat!(
+        "-Table---------+----------+\n",
+        "| N | column 0 | column 1 |\n",
+        "+---+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |\n",
+        "+---+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |\n",
+        "+---+----------+----------+\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn top_override_doesnt_work_with_style_with_no_top_border_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::PSQL)
+        .with(TopBorderText::new("-Table"))
+        .to_string();
+
+    let expected = concat!(
+        " N | column 0 | column 1 \n",
+        "---+----------+----------\n",
+        " 0 |   0-0    |   0-1    \n",
+        " 1 |   1-0    |   1-1    \n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn top_border_override_cleared_after_restyling_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ASCII)
+        .with(TopBorderText::new("-Table"))
+        .with(Style::ASCII)
+        .to_string();
+
+    let expected = concat!(
+        "+---+----------+----------+\n",
+        "| N | column 0 | column 1 |\n",
+        "+---+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |\n",
+        "+---+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |\n",
+        "+---+----------+----------+\n",
+    );
 
     assert_eq!(table, expected);
 }
