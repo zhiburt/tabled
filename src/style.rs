@@ -593,7 +593,7 @@ fn make_style(
 /// use tabled::{Table, style::TopBorderText};
 /// let table = Table::new(["Hello World"])
 ///     .with(TopBorderText::new("+-.table"));
-/// 
+///
 /// assert_eq!(
 ///     table.to_string(),
 ///     "+-.table------+\n\
