@@ -9,18 +9,21 @@
 
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
-## Agenda
+## Table of Contents
 
 * [Usage](#Usage)
 * [Settings](#Settings)
     * [Style](#Style)
         * [ASCII](#ASCII)
         * [Psql](#Psql)
-        * [GithubMarkdown](#GithubMarkdown)
-        * [Pseudo](#Pseudo)
-        * [PseudoClean](#PseudoClean)
-        * [Noborder](#Noborder)
+        * [Github Markdown](#Github-Markdown)
+        * [Modern](#Modern)
+        * [ReStructuredText](#ReStructuredText)
+        * [Extended](#Extended)
+        * [Dots](#Dots)
+        * [Blank](#Blank)
         * [Custom](#Custom)
+    * [Text in top border](#Text-in-top-border)
     * [Alignment](#Alignment)
     * [Format](#Format)
     * [Indent](#Indent)
@@ -170,6 +173,44 @@ Please open an issue.
 └──────┴────────────────┴───────────────┘
 ```
 
+#### ReStructuredText
+
+```
+====== ================ ===============
+ name    designed_by     invented_year 
+====== ================ ===============
+  C     Dennis Ritchie       1972      
+ Rust   Graydon Hoare        2010      
+  Go       Rob Pike          2009      
+====== ================ ===============
+```
+
+#### Extended
+
+```
+╔══════╦════════════════╦═══════════════╗
+║ name ║  designed_by   ║ invented_year ║
+╠══════╬════════════════╬═══════════════╣
+║  C   ║ Dennis Ritchie ║     1972      ║
+╠══════╬════════════════╬═══════════════╣
+║ Rust ║ Graydon Hoare  ║     2010      ║
+╠══════╬════════════════╬═══════════════╣
+║  Go  ║    Rob Pike    ║     2009      ║
+╚══════╩════════════════╩═══════════════╝
+```
+
+#### Dots
+
+```
+.........................................
+: name :  designed_by   : invented_year :
+:......:................:...............:
+:  C   : Dennis Ritchie :     1972      :
+: Rust : Graydon Hoare  :     2010      :
+:  Go  :    Rob Pike    :     2009      :
+:......:................:...............:
+```
+
 #### Blank
 
 ```
@@ -198,7 +239,7 @@ The style will look like the following.
 └──────┴────────────────┴───────────────┘
 ```
 
-You can find more methods which are available in the [documentation]()
+You can find more methods which are available in the [documentation](https://docs.rs/tabled/latest/tabled/style/struct.CustomStyle.html)
 
 ### Alignment
 
