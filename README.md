@@ -12,7 +12,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 ## Agenda
 
 * [Usage](#Usage)
-* [Modificators](#Modificators)
+* [Settings](#Settings)
     * [Style](#Style)
         * [ASCII](#ASCII)
         * [Psql](#Psql)
@@ -100,12 +100,16 @@ let some_numbers = [1, 2, 3];
 let table = some_numbers.table();
 ```
 
-## Modificators
+## Settings
+
+In this section is listened a set of settings you can apply for your table.
 
 ### Style
 
 There are a list of ready to use styles.
-But a custom style can be created as well.
+Each style can be castomized.
+
+A custom style also can be created from scratch.
 
 A style can be used by passing it to `.with` method of `Table`.
 
@@ -142,7 +146,7 @@ Please open an issue.
   Go  |    Rob Pike    |     2009      
 ```
 
-#### GithubMarkdown
+#### Github Markdown
 
 ```
 | name |  designed_by   | invented_year |
@@ -152,7 +156,7 @@ Please open an issue.
 |  Go  |    Rob Pike    |     2009      |
 ```
 
-#### Pseudo
+#### Modern
 
 ```
 ┌──────┬────────────────┬───────────────┐
@@ -166,19 +170,7 @@ Please open an issue.
 └──────┴────────────────┴───────────────┘
 ```
 
-#### PseudoClean
-
-```
-┌──────┬────────────────┬───────────────┐
-│ name │  designed_by   │ invented_year │
-├──────┼────────────────┼───────────────┤
-│  C   │ Dennis Ritchie │     1972      │
-│ Rust │ Graydon Hoare  │     2010      │
-│  Go  │    Rob Pike    │     2009      │
-└──────┴────────────────┴───────────────┘
-```
-
-#### NoBorder
+#### Blank
 
 ```
  name    designed_by     invented_year 
@@ -189,16 +181,24 @@ Please open an issue.
 
 #### Custom
 
-You can modify existing styles to fits your needs.
+You can modify existing styles to fit your needs.
 
 ```rust
-let style = tabled::Style::NO_BORDER
-                .frame_bottom(Some(Line::short('*', ' ')))
-                .split(Some(Line::short(' ', ' ')))
-                .inner(' ');
-
-let table = Table::new(&data).with(style);
+let style = Style::modern().header_off().horizontal_off();
 ```
+
+The style will look like the following.
+
+```rust
+┌──────┬────────────────┬───────────────┐
+│ name │  designed_by   │ invented_year │
+│  C   │ Dennis Ritchie │     1972      │
+│ Rust │ Graydon Hoare  │     2010      │
+│  Go  │    Rob Pike    │     2009      │
+└──────┴────────────────┴───────────────┘
+```
+
+You can find more methods which are available in the [documentation]()
 
 ### Alignment
 

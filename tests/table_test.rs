@@ -793,3 +793,47 @@ fn build_table_from_iterator() {
 
     assert_eq!(table, expected);
 }
+
+#[test]
+fn table_emojie_utf8_style() {
+    #[derive(Tabled)]
+    struct Language {
+        name: &'static str,
+        designed_by: &'static str,
+        invented_year: usize,
+    }
+
+    let languages = vec![
+        Language {
+            name: "C 💕",
+            designed_by: "Dennis Ritchie",
+            invented_year: 1972,
+        },
+        Language {
+            name: "Rust 👍",
+            designed_by: "Graydon Hoare",
+            invented_year: 2010,
+        },
+        Language {
+            name: "Go 🧋",
+            designed_by: "Rob Pike",
+            invented_year: 2009,
+        },
+    ];
+
+    // Note: It doesn't look good in VS Code
+    let expected = "┌─────────┬────────────────┬───────────────┐\n\
+                         │  name   │  designed_by   │ invented_year │\n\
+                         │  C 💕   │ Dennis Ritchie │     1972      │\n\
+                         │ Rust 👍 │ Graydon Hoare  │     2010      │\n\
+                         │  Go 🧋  │    Rob Pike    │     2009      │\n\
+                         └─────────┴────────────────┴───────────────┘\n";
+
+    let table = Table::new(&languages)
+        .with(tabled::Style::modern().header_off().horizontal_off())
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(table, expected);
+}

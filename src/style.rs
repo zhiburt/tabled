@@ -14,7 +14,7 @@ use papergrid::{Border, Entity, Grid, Settings};
 /// # Example
 ///
 /// ```rust,no_run
-/// use tabled::{Table, Style, style::Line};
+/// use tabled::{Table, Style};
 ///
 /// let style = Style::ascii()
 ///                 .bottom('*')
@@ -57,8 +57,6 @@ impl Style {
 
     /// Empty style is a style with no styling options on,
     ///
-    /// It's usefull in case you want to build your own style from scratch.
-    ///
     /// ```text
     ///      id  destribution            link
     ///      0      Fedora      https://getfedora.org/
@@ -66,7 +64,20 @@ impl Style {
     ///      3   Endeavouros   https://endeavouros.com/
     /// ```
     ///
-    /// The cells in the example have 1-left and 1-right indent.
+    /// Note: The cells in the example have 1-left and 1-right indent.
+    ///
+    /// It's usefull as a scratch style to build a custom one.
+    ///
+    /// ```rust,no_run
+    /// # use tabled::Style;
+    /// let style = Style::empty()
+    ///     .top('*')
+    ///     .bottom('*')
+    ///     .header('x')
+    ///     .vertical('#')
+    ///     .bottom_intersection('^')
+    ///     .top_intersection('*');
+    /// ```
     pub const fn empty() -> CustomStyle<(), (), (), (), (), (), ()> {
         CustomStyle::new(StyleSettings::new(Frame::empty(), None, None, None))
     }
@@ -300,7 +311,7 @@ impl StyleSettings {
 
 /// Line represents a horizontal line on a [Table].
 #[derive(Debug, Clone, Default)]
-pub struct Line {
+struct Line {
     main: char,
     intersection: Option<char>,
     left_corner: Option<char>,
@@ -309,7 +320,7 @@ pub struct Line {
 
 impl Line {
     /// A line for frame styles.
-    pub const fn bordered(main: char, intersection: char, left: char, right: char) -> Self {
+    const fn bordered(main: char, intersection: char, left: char, right: char) -> Self {
         Self {
             main,
             intersection: Some(intersection),
@@ -319,7 +330,7 @@ impl Line {
     }
 
     /// A line for no-frame styles.
-    pub const fn short(main: char, intersection: char) -> Self {
+    const fn short(main: char, intersection: char) -> Self {
         Self {
             main,
             intersection: Some(intersection),
@@ -653,6 +664,10 @@ impl<'a> TableOption for TopBorderText<'a> {
     }
 }
 
+/// CustomStyle represents a style controlling a valid state of it.
+///
+/// For example.
+/// It doesn't allow to call method [CustomStyle::top_left_corner] unless [CustomStyle::left] and [CustomStyle::top] is set.
 #[derive(Debug, Clone)]
 pub struct CustomStyle<Top, Bottom, Left, Right, Horizontal, Vertical, Header> {
     inner: StyleSettings,
@@ -686,6 +701,9 @@ impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
 }
 
 impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
+    /// Sets a top border.
+    ///
+    /// Any corners and intersections which were set will be overriden.
     pub const fn top(self, c: char) -> CustomStyle<On, B, L, R, IH, IV, H> {
         let mut style = self.inner;
 
@@ -719,6 +737,9 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(style)
     }
 
+    /// Sets a bottom border.
+    ///
+    /// Any corners and intersections which were set will be overriden.
     pub const fn bottom(self, c: char) -> CustomStyle<T, On, L, R, IH, IV, H> {
         let mut style = self.inner;
         let mut bottom = match style.frame.bottom {
@@ -751,6 +772,9 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(style)
     }
 
+    /// Sets a left border.
+    ///
+    /// Any corners and intersections which were set will be overriden.
     pub const fn left(self, c: char) -> CustomStyle<T, B, On, R, IH, IV, H> {
         let mut style = self.inner;
         style.frame.left = Some(c);
@@ -778,6 +802,9 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(style)
     }
 
+    /// Sets a right border.
+    ///
+    /// Any corners and intersections which were set will be overriden.
     pub const fn right(mut self, c: char) -> CustomStyle<T, B, L, On, IH, IV, H> {
         self.inner.frame.right = Some(c);
 
@@ -804,6 +831,12 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(self.inner)
     }
 
+    /// Sets a horizontal split line.
+    ///
+    /// It doesn't include a header split line.
+    /// It must be set via its own method [Self::header].
+    ///
+    /// Any corners and intersections which were set will be overriden.
     pub const fn horizontal(self, c: char) -> CustomStyle<T, B, L, R, On, IV, H> {
         let mut style = self.inner;
         let mut split = match style.split {
@@ -835,6 +868,9 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(style)
     }
 
+    /// Sets a vertical split line.
+    ///
+    /// Any corners and intersections which were set will be overriden.
     pub const fn vertical(self, c: char) -> CustomStyle<T, B, L, R, IH, On, H> {
         let mut style = self.inner;
         style.inner_split_char = Some(c);
@@ -862,6 +898,9 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(style)
     }
 
+    /// Sets a 1st horizontal split line.
+    ///
+    /// Any corners and intersections which were set will be overriden.
     pub const fn header(self, c: char) -> CustomStyle<T, B, L, R, IH, IV, On> {
         let mut style = self.inner;
         let mut split = match style.header_split_line {
@@ -895,6 +934,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
 }
 
 impl<B, R, IH, IV, H> CustomStyle<On, B, On, R, IH, IV, H> {
+    /// Sets a top left corner.
     pub const fn top_left_corner(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.top {
@@ -910,6 +950,7 @@ impl<B, R, IH, IV, H> CustomStyle<On, B, On, R, IH, IV, H> {
 }
 
 impl<B, L, IH, IV, H> CustomStyle<On, B, L, On, IH, IV, H> {
+    /// Sets a top right corner.
     pub const fn top_right_corner(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.top {
@@ -925,6 +966,7 @@ impl<B, L, IH, IV, H> CustomStyle<On, B, L, On, IH, IV, H> {
 }
 
 impl<T, L, IH, IV, H> CustomStyle<T, On, L, On, IH, IV, H> {
+    /// Sets a bottom right corner.
     pub const fn bottom_right_corner(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.bottom {
@@ -940,6 +982,7 @@ impl<T, L, IH, IV, H> CustomStyle<T, On, L, On, IH, IV, H> {
 }
 
 impl<T, R, IH, IV, H> CustomStyle<T, On, On, R, IH, IV, H> {
+    /// Sets a bottom left corner.
     pub const fn bottom_left_corner(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.bottom {
@@ -955,6 +998,7 @@ impl<T, R, IH, IV, H> CustomStyle<T, On, On, R, IH, IV, H> {
 }
 
 impl<T, B, R, IV, H> CustomStyle<T, B, On, R, On, IV, H> {
+    /// Sets a left intersection char.
     pub const fn left_intersection(self, c: char) -> Self {
         let mut style = self.inner;
         match style.split {
@@ -978,6 +1022,7 @@ impl<T, B, R, IV, H> CustomStyle<T, B, On, R, On, IV, H> {
 }
 
 impl<T, B, L, IV, H> CustomStyle<T, B, L, On, On, IV, H> {
+    /// Sets a right intersection char.
     pub const fn right_intersection(self, c: char) -> Self {
         let mut style = self.inner;
         match style.split {
@@ -1001,6 +1046,7 @@ impl<T, B, L, IV, H> CustomStyle<T, B, L, On, On, IV, H> {
 }
 
 impl<B, L, R, IH, H> CustomStyle<On, B, L, R, IH, On, H> {
+    /// Sets a top intersection char.
     pub const fn top_intersection(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.top {
@@ -1016,6 +1062,7 @@ impl<B, L, R, IH, H> CustomStyle<On, B, L, R, IH, On, H> {
 }
 
 impl<T, L, R, IH, H> CustomStyle<T, On, L, R, IH, On, H> {
+    /// Sets a bottom intersection char.
     pub const fn bottom_intersection(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.bottom {
@@ -1031,6 +1078,8 @@ impl<T, L, R, IH, H> CustomStyle<T, On, L, R, IH, On, H> {
 }
 
 impl<T, B, L, R, H> CustomStyle<T, B, L, R, On, On, H> {
+    /// Sets an inner intersection char.
+    /// A char between horizontal and vertical split lines.
     pub const fn inner_intersection(mut self, c: char) -> Self {
         match self.inner.split {
             Some(mut split) => {
@@ -1045,6 +1094,7 @@ impl<T, B, L, R, H> CustomStyle<T, B, L, R, On, On, H> {
 }
 
 impl<T, B, L, R, IH> CustomStyle<T, B, L, R, IH, On, On> {
+    /// Sets an intersection char of a 1st horizontal split line.
     pub const fn header_intersection(mut self, c: char) -> Self {
         match self.inner.header_split_line {
             Some(mut split) => {
@@ -1059,6 +1109,7 @@ impl<T, B, L, R, IH> CustomStyle<T, B, L, R, IH, On, On> {
 }
 
 impl<T, B, R, IH, IV> CustomStyle<T, B, On, R, IH, IV, On> {
+    /// Sets an left intersection char of a 1st horizontal split line.
     pub const fn left_header_intersection(self, c: char) -> Self {
         let mut style = self.inner;
         match style.header_split_line {
@@ -1074,6 +1125,7 @@ impl<T, B, R, IH, IV> CustomStyle<T, B, On, R, IH, IV, On> {
 }
 
 impl<T, B, L, IH, IV> CustomStyle<T, B, L, On, IH, IV, On> {
+    /// Sets an right intersection char of a 1st horizontal split line.
     pub const fn right_header_intersection(self, c: char) -> Self {
         let mut style = self.inner;
         match style.header_split_line {
@@ -1089,6 +1141,7 @@ impl<T, B, L, IH, IV> CustomStyle<T, B, L, On, IH, IV, On> {
 }
 
 impl<B, L, R, IH, IV, H> CustomStyle<On, B, L, R, IH, IV, H> {
+    /// Removes top border.
     pub const fn top_off(self) -> CustomStyle<(), B, L, R, IH, IV, H> {
         let mut style = self.inner;
         style.frame.top = None;
@@ -1097,6 +1150,7 @@ impl<B, L, R, IH, IV, H> CustomStyle<On, B, L, R, IH, IV, H> {
 }
 
 impl<T, L, R, IH, IV, H> CustomStyle<T, On, L, R, IH, IV, H> {
+    /// Removes bottom border.
     pub const fn bottom_off(self) -> CustomStyle<T, (), L, R, IH, IV, H> {
         let mut style = self.inner;
         style.frame.bottom = None;
@@ -1105,6 +1159,7 @@ impl<T, L, R, IH, IV, H> CustomStyle<T, On, L, R, IH, IV, H> {
 }
 
 impl<T, B, R, IH, IV, H> CustomStyle<T, B, On, R, IH, IV, H> {
+    /// Removes left border.
     pub const fn left_off(self) -> CustomStyle<T, B, (), R, IH, IV, H> {
         let mut style = self.inner;
         style.frame.left = None;
@@ -1134,6 +1189,7 @@ impl<T, B, R, IH, IV, H> CustomStyle<T, B, On, R, IH, IV, H> {
 }
 
 impl<T, B, L, IH, IV, H> CustomStyle<T, B, L, On, IH, IV, H> {
+    /// Removes right border.
     pub const fn right_off(mut self) -> CustomStyle<T, B, L, (), IH, IV, H> {
         self.inner.frame.right = None;
 
@@ -1162,6 +1218,9 @@ impl<T, B, L, IH, IV, H> CustomStyle<T, B, L, On, IH, IV, H> {
 }
 
 impl<T, B, L, R, IV, H> CustomStyle<T, B, L, R, On, IV, H> {
+    /// Removes horizontal split lines.
+    ///
+    /// Not including 1st split line.
     pub const fn horizontal_off(mut self) -> CustomStyle<T, B, L, R, (), IV, H> {
         self.inner.split = None;
         CustomStyle::new(self.inner)
@@ -1169,6 +1228,7 @@ impl<T, B, L, R, IV, H> CustomStyle<T, B, L, R, On, IV, H> {
 }
 
 impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, On, H> {
+    /// Removes vertical split lines.
     pub const fn vertical_off(mut self) -> CustomStyle<T, B, L, R, IH, (), H> {
         self.inner.inner_split_char = None;
 
@@ -1197,6 +1257,7 @@ impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, On, H> {
 }
 
 impl<T, B, L, R, IH, IV> CustomStyle<T, B, L, R, IH, IV, On> {
+    /// Removes 1st horizontal split line.
     pub const fn header_off(mut self) -> CustomStyle<T, B, L, R, IH, IV, ()> {
         self.inner.header_split_line = None;
         CustomStyle::new(self.inner)
