@@ -9,8 +9,8 @@ fn table_join_vertical() {
     let data2 = create_vector::<2, 3>();
 
     {
-        let table1 = Table::new(&data1).with(Style::PSQL);
-        let table2 = Table::new(&data2).with(Style::ASCII);
+        let table1 = Table::new(&data1).with(Style::psql());
+        let table2 = Table::new(&data2).with(Style::ascii());
         let table3 = table1.with(Concat::vertical(table2));
 
         let expected = concat!(
@@ -31,8 +31,8 @@ fn table_join_vertical() {
     }
 
     {
-        let table1 = Table::new(&data1).with(Style::PSQL);
-        let table2 = Table::new(&data2).with(Style::ASCII);
+        let table1 = Table::new(&data1).with(Style::psql());
+        let table2 = Table::new(&data2).with(Style::ascii());
         let table3 = table2.with(Concat::vertical(table1));
 
         let expected = concat!(
@@ -59,8 +59,8 @@ fn table_join_horizontal() {
     let data2 = create_vector::<2, 3>();
 
     {
-        let table1 = Table::new(&data1).with(Style::PSQL);
-        let table2 = Table::new(&data2).with(Style::ASCII);
+        let table1 = Table::new(&data1).with(Style::psql());
+        let table2 = Table::new(&data2).with(Style::ascii());
         let table3 = table2.with(Concat::horizontal(table1));
 
         let expected = concat!(
@@ -77,8 +77,8 @@ fn table_join_horizontal() {
     }
 
     {
-        let table1 = Table::new(&data1).with(Style::PSQL);
-        let table2 = Table::new(&data2).with(Style::ASCII);
+        let table1 = Table::new(&data1).with(Style::psql());
+        let table2 = Table::new(&data2).with(Style::ascii());
         let table3 = table1.with(Concat::horizontal(table2));
 
         let expected = concat!(
@@ -100,8 +100,8 @@ fn table_join_vertical_different_size() {
     let data1 = create_vector::<2, 2>();
     let data2 = create_vector::<2, 3>();
 
-    let table1 = Table::new(&data1).with(Style::PSQL);
-    let table2 = Table::new(&data2).with(Style::PSQL);
+    let table1 = Table::new(&data1).with(Style::psql());
+    let table2 = Table::new(&data2).with(Style::psql());
     let table3 = table1.with(Concat::vertical(table2));
 
     let expected = concat!(
@@ -123,8 +123,8 @@ fn table_join_horizontal_different_size() {
     let data1 = create_vector::<2, 3>();
     let data2 = create_vector::<3, 3>();
 
-    let table1 = Table::new(&data1).with(Style::PSQL);
-    let table2 = Table::new(&data2).with(Style::PSQL);
+    let table1 = Table::new(&data1).with(Style::psql());
+    let table2 = Table::new(&data2).with(Style::psql());
     let table3 = table1.with(Concat::horizontal(table2));
 
     let expected = concat!(
@@ -143,8 +143,8 @@ fn table_join_horizontal_with_not_default_empty_string() {
     let data1 = create_vector::<2, 3>();
     let data2 = create_vector::<3, 3>();
 
-    let table1 = Table::new(&data1).with(Style::PSQL);
-    let table2 = Table::new(&data2).with(Style::PSQL);
+    let table1 = Table::new(&data1).with(Style::psql());
+    let table2 = Table::new(&data2).with(Style::psql());
     let table3 = table1.with(Concat::horizontal(table2).default_cell("NaN"));
 
     let expected = concat!(
@@ -163,8 +163,8 @@ fn table_join_vertical_with_not_default_empty_string() {
     let data1 = create_vector::<2, 2>();
     let data2 = create_vector::<2, 3>();
 
-    let table1 = Table::new(&data1).with(Style::PSQL);
-    let table2 = Table::new(&data2).with(Style::PSQL);
+    let table1 = Table::new(&data1).with(Style::psql());
+    let table2 = Table::new(&data2).with(Style::psql());
     let table3 = table1.with(Concat::vertical(table2).default_cell("NaN"));
 
     let expected = concat!(

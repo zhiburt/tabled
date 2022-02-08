@@ -46,7 +46,7 @@ pub trait CellOption {
 /// use tabled::{Table, Style, Alignment, Full, Modify};
 /// let data = vec!["Hello", "2021"];
 /// let table = Table::new(&data)
-///                 .with(Style::PSQL)
+///                 .with(Style::psql())
 ///                 .with(Modify::new(Full).with(Alignment::left()));
 /// println!("{}", table);
 /// ```
@@ -149,7 +149,7 @@ where
 /// ```rust
 /// use tabled::{TableIteratorExt, Style};
 /// let strings: &[&str] = &["Hello", "World"];
-/// let table = strings.table().with(Style::PSQL);
+/// let table = strings.table().with(Style::psql());
 /// println!("{}", table);
 /// ```
 pub trait TableIteratorExt {

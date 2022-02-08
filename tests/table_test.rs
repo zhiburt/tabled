@@ -728,7 +728,7 @@ fn tuple_combination() {
         (Developer("Maxim Zhiburt"), Domain::Unknown),
     ];
 
-    let table = Table::new(data).with(Style::PSQL).to_string();
+    let table = Table::new(data).with(Style::psql()).to_string();
 
     assert_eq!(
         table,
@@ -763,7 +763,7 @@ fn table_trait() {
         (Developer("Maxim Zhiburt"), Domain::Unknown),
     ];
 
-    let table = (&data).table().with(Style::PSQL).to_string();
+    let table = (&data).table().with(Style::psql()).to_string();
 
     assert_eq!(
         table,
@@ -781,7 +781,7 @@ fn table_trait() {
 #[test]
 fn build_table_from_iterator() {
     let data = create_vector::<3, 3>();
-    let table = Table::from_iter(data).with(Style::PSQL).to_string();
+    let table = Table::from_iter(data).with(Style::psql()).to_string();
 
     let expected = concat!(
         " N | column 0 | column 1 | column 2 \n",

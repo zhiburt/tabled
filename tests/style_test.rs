@@ -1,5 +1,5 @@
 use crate::util::create_vector;
-use tabled::style::{Line, TopBorderText};
+use tabled::style::TopBorderText;
 use tabled::{Full, Indent, Modify, Style, Table, TableIteratorExt};
 
 mod util;
@@ -7,7 +7,7 @@ mod util;
 #[test]
 fn default_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::ASCII).to_string();
+    let table = Table::new(&data).with(Style::ascii()).to_string();
 
     let expected = concat!(
         "+---+----------+----------+----------+\n",
@@ -27,7 +27,7 @@ fn default_style() {
 #[test]
 fn psql_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::PSQL).to_string();
+    let table = Table::new(&data).with(Style::psql()).to_string();
 
     let expected = concat!(
         " N | column 0 | column 1 | column 2 \n",
@@ -43,7 +43,7 @@ fn psql_style() {
 #[test]
 fn github_markdown_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::GITHUB_MARKDOWN).to_string();
+    let table = Table::new(&data).with(Style::github_markdown()).to_string();
 
     let expected = concat!(
         "| N | column 0 | column 1 | column 2 |\n",
@@ -59,7 +59,7 @@ fn github_markdown_style() {
 #[test]
 fn pseudo_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::PSEUDO).to_string();
+    let table = Table::new(&data).with(Style::modern()).to_string();
 
     let expected = concat!(
         "┌───┬──────────┬──────────┬──────────┐\n",
@@ -79,7 +79,9 @@ fn pseudo_style() {
 #[test]
 fn pseudo_clean_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::PSEUDO_CLEAN).to_string();
+    let table = Table::new(&data)
+        .with(Style::modern().horizontal_off())
+        .to_string();
 
     let expected = concat!(
         "┌───┬──────────┬──────────┬──────────┐\n",
@@ -97,7 +99,7 @@ fn pseudo_clean_style() {
 #[test]
 fn blank_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::BLANK).to_string();
+    let table = Table::new(&data).with(Style::blank()).to_string();
 
     let expected = concat!(
         " N   column 0   column 1   column 2 \n",
@@ -112,7 +114,7 @@ fn blank_style() {
 #[test]
 fn extended_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::EXTENDED).to_string();
+    let table = Table::new(&data).with(Style::extended()).to_string();
 
     let expected = concat!(
         "╔═══╦══════════╦══════════╦══════════╗\n",
@@ -132,7 +134,7 @@ fn extended_style() {
 #[test]
 fn ascii_dots_style() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::ASCII_DOTS).to_string();
+    let table = Table::new(&data).with(Style::dots()).to_string();
 
     let expected = concat!(
         "......................................\n",
@@ -151,7 +153,7 @@ fn ascii_dots_style() {
 fn re_structured_text_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::RE_STRUCTURED_TEXT)
+        .with(Style::re_structured_text())
         .to_string();
 
     let expected = concat!(
@@ -236,13 +238,13 @@ fn custom_style() {
 #[test]
 fn style_single_cell() {
     let data = create_vector::<0, 0>();
-    let table = Table::new(&data).with(Style::ASCII).to_string();
+    let table = Table::new(&data).with(Style::ascii()).to_string();
 
     let expected = concat!("+---+\n", "| N |\n", "+---+\n",);
 
     assert_eq!(table, expected);
 
-    let table = Table::new(&data).with(Style::BLANK).to_string();
+    let table = Table::new(&data).with(Style::blank()).to_string();
 
     let expected = " N \n";
 
@@ -253,7 +255,7 @@ fn style_single_cell() {
 fn top_border_override_test() {
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
-        .with(Style::ASCII)
+        .with(Style::ascii())
         .with(TopBorderText::new("-Table"))
         .to_string();
 
@@ -274,7 +276,7 @@ fn top_border_override_test() {
 fn top_override_doesnt_work_with_style_with_no_top_border_test() {
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(TopBorderText::new("-Table"))
         .to_string();
 
@@ -292,9 +294,9 @@ fn top_override_doesnt_work_with_style_with_no_top_border_test() {
 fn top_border_override_cleared_after_restyling_test() {
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
-        .with(Style::ASCII)
+        .with(Style::ascii())
         .with(TopBorderText::new("-Table"))
-        .with(Style::ASCII)
+        .with(Style::ascii())
         .to_string();
 
     let expected = concat!(

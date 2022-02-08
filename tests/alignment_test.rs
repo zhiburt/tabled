@@ -7,7 +7,7 @@ mod util;
 fn full_alignment() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Modify::new(Full).with(Alignment::left()))
         .to_string();
 
@@ -26,7 +26,7 @@ fn full_alignment() {
 fn head_and_data_alignment() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::ASCII)
+        .with(Style::ascii())
         .with(Modify::new(Head).with(Alignment::left()))
         .with(Modify::new(Row(1..)).with(Alignment::right()))
         .to_string();
@@ -65,7 +65,7 @@ fn full_alignment_multiline() {
     );
 
     let table = Table::new(&data)
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Modify::new(Full).with(Alignment::left()))
         .to_string();
 
@@ -80,7 +80,7 @@ fn vertical_alignment_test() {
     data[2][3] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
 
     let table = Table::new(&data)
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Modify::new(Column(1..)).with(Alignment::bottom()))
         .to_string();
 
@@ -116,7 +116,7 @@ fn alignment_doesnt_change_indent() {
     );
 
     let table = Table::new(&data)
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Modify::new(Full).with(Indent::new(3, 0, 0, 0)))
         .with(Modify::new(Full).with(Alignment::left()))
         .to_string();

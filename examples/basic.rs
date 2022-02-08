@@ -44,7 +44,7 @@ fn main() {
     ];
 
     let table = Table::new(&data)
-        .with(Style::PSEUDO)
+        .with(Style::modern())
         .with(Modify::new(Head).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
         .with(Modify::new(Row(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Left)));
 

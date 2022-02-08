@@ -110,7 +110,7 @@ But a custom style can be created as well.
 A style can be used by passing it to `.with` method of `Table`.
 
 ```rust
-let table = Table::new(&data).with(Style::PSQL);
+let table = Table::new(&data).with(Style::psql());
 ```
 
 Bellow rendered a list of pre configured styles.
@@ -218,7 +218,7 @@ The `Format` function provides an interface for a modification of cells.
 
 ```rust
 Table::new(&data)
-    .with(Style::PSQL),
+    .with(Style::psql()),
     .with(Modify::new(Column(..)).with(Format(|s| format!("<< {} >>", s))))
     .with(Modify::new(Row(..1)).with(Format(|s| format!("Head {}", s))));
 ```
@@ -227,7 +227,7 @@ It's also possible to use functions with signature `Fn(&str) -> String` as a for
 
 ```rust
 Table::new(&data)
-    .with(Style::PSQL),
+    .with(Style::psql()),
     .with(Modify::new(Column(..)).with(|s: &str| format!("<< {} >>", s)))
     .with(Modify::new(Row(..1)).with(str::to_lowercase));
 ```
@@ -462,7 +462,7 @@ The library doesn't bind you in usage of any color library but to be able to wor
 
 ```rust
 Table::new(&data)
-    .with(Style::PSQL)
+    .with(Style::psql())
     .with(Modify::new(Column(..1)).with(Format(|s| s.red().to_string())))
     .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))
     .with(Modify::new(Column(2..)).with(Format(|s| s.green().to_string())));
@@ -495,7 +495,7 @@ let data = vec![
     (Developer("Maxim Zhiburt"), Domain::Unknown),
 ];
 
-let table = Table::new(data).with(Style::PSQL).to_string();
+let table = Table::new(data).with(Style::psql()).to_string();
 
 assert_eq!(
     table,
@@ -608,7 +608,7 @@ fn main() {
         .add_row(["1", "English"])
         .add_row(["2", "Deutsch"])
         .build()
-        .with(Style::PSQL);
+        .with(Style::psql());
 
     println!("{}", table);
 }
