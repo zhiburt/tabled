@@ -48,7 +48,7 @@ fn main() {
     ];
 
     let table = Table::new(&data)
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Modify::new(Head).with(Alignment::center_horizontal()))
         .with(Modify::new(Row(1..)).with(Alignment::left()))
         .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))

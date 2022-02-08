@@ -237,7 +237,7 @@ fn create_table_from_grid(mut grid: Grid) -> Table {
     );
 
     let table = Table { grid };
-    table.with(Style::ASCII)
+    table.with(Style::ascii())
 }
 
 fn append_vec(v: &mut Vec<String>, n: usize, value: String) {

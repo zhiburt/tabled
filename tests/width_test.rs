@@ -7,7 +7,7 @@ mod util;
 fn max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(2, "...")))
         .to_string();
 
@@ -26,7 +26,7 @@ fn max_width() {
 fn max_width_wrapped() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::wrapping(2)))
         .to_string();
 
@@ -70,7 +70,7 @@ fn max_width_wrapped_collored() {
     );
 
     let table = Table::new(data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::wrapping(2)))
         .to_string();
 
@@ -83,7 +83,7 @@ fn max_width_wrapped_collored() {
 fn dont_change_content_if_width_is_less_then_max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::truncating(1000, "...")))
         .to_string();
 
@@ -111,7 +111,7 @@ fn max_width_with_emoji() {
     );
 
     let table = Table::new(data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::truncating(3, "...")))
         .to_string();
 
@@ -138,7 +138,7 @@ fn color_chars_are_stripped() {
     );
 
     let table = Table::new(data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::truncating(3, "...")))
         .to_string();
 

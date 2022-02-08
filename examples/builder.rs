@@ -20,7 +20,7 @@ fn main() {
         .with(Header(link))
         .with(Panel("=".repeat(link.len()), 2))
         .with(Modify::new(Row(1..2)).with(MaxWidth::wrapping(link.len())))
-        .with(Style::GITHUB_MARKDOWN);
+        .with(Style::github_markdown());
 
     println!("{}", table);
 }

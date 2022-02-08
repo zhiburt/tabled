@@ -46,7 +46,7 @@ table_bench!(small_table, {
 table_bench!(
     small_table_stylish,
     [0; 3],
-    Style::PSEUDO,
+    Style::modern(),
     Modify::new(Full)
         .with(Alignment::left())
         .with(Alignment::top())
