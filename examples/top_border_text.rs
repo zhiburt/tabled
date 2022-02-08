@@ -7,7 +7,7 @@ fn main() {
     let data = [[5, 6, 7, 8, 9], [10, 11, 12, 13, 14]];
 
     let table = Table::new(&data)
-        .with(Style::PSEUDO_CLEAN.split(None))
+        .with(Style::modern().horizontal_off())
         .with(TopBorderText::new("┌ Columns "))
         .with(Modify::new(Full).with(Alignment::left()));
 

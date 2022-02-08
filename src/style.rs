@@ -5,33 +5,165 @@ use crate::Table;
 use crate::TableOption;
 use papergrid::{Border, Entity, Grid, Settings};
 
-/// Style is responsible for a look of a [Table].
+// todo: Make header independent from horizontal
+// fixme: rename header, horizontal, vertical to ....
+
+// struct StaticStyle; -> GithubMarkdown -> Psql ...
+// struct GeneralStyle; -> Modern -> Extended -> ASCII -> ...
+// Like build from a pattern
+// .framed()
+// .vertical_split()
+// .horizontal_split()
+// .into() -> CustomStyle
+//
+// If none is chosen then it's empty
+
+/// Style is represents a theme of a [Table].
+///
+/// It can be Mofified extensively, look at [CustomStyle] methods.
 ///
 /// # Example
 ///
 /// ```rust,no_run
 /// use tabled::{Table, Style, style::Line};
+/// 
+/// let style = Style::ascii()
+///                 .bottom('*')
+///                 .inner_intersection(' ');
+/// 
 /// let data = vec!["Hello", "2021"];
-/// let table = Table::new(&data).with(
-///                 Style::NO_BORDER
-///                     .frame_bottom(Some(Line::short('*', ' ')))
-///                     .split(Some(Line::short('*', ' ')))
-///                     .inner(' ')
-///             )
-///             .to_string();
+/// let table = Table::new(&data).with(style).to_string();
 ///
 /// println!("{}", table);
 /// ```
-#[derive(Debug, Clone)]
-pub struct Style {
-    frame: Frame,
-    header_split_line: Option<Line>,
-    split: Option<Line>,
-    inner_split_char: Option<char>,
-}
+pub struct Style;
 
 impl Style {
-    pub const EMPTY: CustomStyle<(), (), (), (), (), (), ()> = CustomStyle::empty();
+    #[deprecated(note = "Use ascii() function")]
+    pub const ASCII: StyleSettings = StyleSettings::new(
+        Frame {
+            bottom: Some(Line::bordered('-', '+', '+', '+')),
+            top: Some(Line::bordered('-', '+', '+', '+')),
+            left: Some('|'),
+            right: Some('|'),
+        },
+        Some(Line::bordered('-', '+', '+', '+')),
+        Some(Line::bordered('-', '+', '+', '+')),
+        Some('|'),
+    );
+
+    #[deprecated(note = "Use blank() function")]
+    pub const BLANK: StyleSettings = StyleSettings::new(Frame::empty(), None, None, Some(' '));
+
+    #[deprecated(note = "Use psql() function")]
+    pub const PSQL: StyleSettings =
+        StyleSettings::new(Frame::empty(), Some(Line::short('-', '+')), None, Some('|'));
+
+    #[deprecated(note = "Use github_markdown() function")]
+    pub const GITHUB_MARKDOWN: StyleSettings = StyleSettings::new(
+        Frame {
+            left: Some('|'),
+            right: Some('|'),
+            bottom: None,
+            top: None,
+        },
+        Some(Line::bordered('-', '+', '|', '|')),
+        None,
+        Some('|'),
+    );
+
+    #[deprecated(note = "Use modern() function")]
+    pub const PSEUDO: StyleSettings = StyleSettings::new(
+        Frame {
+            left: Some('│'),
+            right: Some('│'),
+            bottom: Some(Line::bordered('─', '┴', '└', '┘')),
+            top: Some(Line::bordered('─', '┬', '┌', '┐')),
+        },
+        Some(Line::bordered('─', '┼', '├', '┤')),
+        Some(Line::bordered('─', '┼', '├', '┤')),
+        Some('│'),
+    );
+
+    #[deprecated(note = "Use modern().horizontal_off() function")]
+    pub const PSEUDO_CLEAN: StyleSettings = StyleSettings::new(
+        Frame {
+            left: Some('│'),
+            right: Some('│'),
+            bottom: Some(Line::bordered('─', '┴', '└', '┘')),
+            top: Some(Line::bordered('─', '┬', '┌', '┐')),
+        },
+        Some(Line::bordered('─', '┼', '├', '┤')),
+        None,
+        Some('│'),
+    );
+
+    #[deprecated(note = "Use modern_extended() function")]
+    pub const EXTENDED: StyleSettings = StyleSettings::new(
+        Frame {
+            left: Some('║'),
+            right: Some('║'),
+            bottom: Some(Line::bordered('═', '╩', '╚', '╝')),
+            top: Some(Line::bordered('═', '╦', '╔', '╗')),
+        },
+        Some(Line::bordered('═', '╬', '╠', '╣')),
+        Some(Line::bordered('═', '╬', '╠', '╣')),
+        Some('║'),
+    );
+
+    #[deprecated(note = "Use dots() function")]
+    pub const ASCII_DOTS: StyleSettings = StyleSettings::new(
+        Frame {
+            bottom: Some(Line::bordered('.', ':', ':', ':')),
+            top: Some(Line::bordered('.', '.', '.', '.')),
+            left: Some(':'),
+            right: Some(':'),
+        },
+        Some(Line::bordered('.', ':', ':', ':')),
+        None,
+        Some(':'),
+    );
+
+    #[deprecated(note = "Use re_structured_text() function")]
+    pub const RE_STRUCTURED_TEXT: StyleSettings = StyleSettings::new(
+        Frame {
+            bottom: Some(Line::short('=', ' ')),
+            top: Some(Line::short('=', ' ')),
+            left: None,
+            right: None,
+        },
+        Some(Line::short('=', ' ')),
+        None,
+        Some(' '),
+    );
+
+    /// Empty style is a style with no styling options on,
+    ///
+    /// It's usefull in case you want to build your own style from scratch.
+    ///
+    /// ```text
+    ///      id  destribution            link
+    ///      0      Fedora      https://getfedora.org/
+    ///      2     OpenSUSE    https://www.opensuse.org/
+    ///      3   Endeavouros   https://endeavouros.com/
+    /// ```
+    ///
+    /// The cells in the example have 1-left and 1-right indent.
+    pub fn empty() -> CustomStyle<(), (), (), (), (), (), ()> {
+        CustomStyle::new(StyleSettings::new(Frame::empty(), None, None, None))
+    }
+
+    /// Blank style looks like the following table
+    ///
+    /// ```text
+    ///      id   destribution             link
+    ///      0       Fedora       https://getfedora.org/
+    ///      2      OpenSUSE     https://www.opensuse.org/
+    ///      3    Endeavouros    https://endeavouros.com/
+    /// ```
+    pub fn blank() -> CustomStyle<(), (), (), (), (), On, ()> {
+        CustomStyle::new(Self::BLANK)
+    }
 
     /// Default style looks like the following table
     ///
@@ -46,153 +178,11 @@ impl Style {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     +----+--------------+---------------------------+
     /// ```
-    pub const ASCII: CustomStyle<
-        TopLine,
-        BottomLine,
-        LeftLine,
-        RightLine,
-        InnerHorizontalLine,
-        InnerVerticalLine,
-        HeaderLine,
-    > = CustomStyle::new(Self::new(
-        Frame {
-            bottom: Some(Line::bordered('-', '+', '+', '+')),
-            top: Some(Line::bordered('-', '+', '+', '+')),
-            left: Some('|'),
-            right: Some('|'),
-        },
-        Some(Line::bordered('-', '+', '+', '+')),
-        Some(Line::bordered('-', '+', '+', '+')),
-        Some('|'),
-    ));
+    pub fn ascii() -> CustomStyle<On, On, On, On, On, On, On> {
+        CustomStyle::new(Self::ASCII)
+    }
 
-    /// Noborder style looks like the following table
-    ///
-    /// ```text
-    ///      id   destribution             link
-    ///      0       Fedora       https://getfedora.org/
-    ///      2      OpenSUSE     https://www.opensuse.org/
-    ///      3    Endeavouros    https://endeavouros.com/
-    /// ```
-    #[deprecated(note = "Renamed to BLANK")]
-    pub const NO_BORDER: Self = Self::new(Frame::empty(), None, None, Some(' '));
-
-    /// Noborder style looks like the following table
-    ///
-    /// ```text
-    ///      id   destribution             link
-    ///      0       Fedora       https://getfedora.org/
-    ///      2      OpenSUSE     https://www.opensuse.org/
-    ///      3    Endeavouros    https://endeavouros.com/
-    /// ```
-    pub const BLANK: Self = Self::new(Frame::empty(), None, None, Some(' '));
-
-    /// Psql style looks like the following table
-    ///
-    /// ```text
-    ///      id | destribution |           link
-    ///     ----+--------------+---------------------------
-    ///      0  |    Fedora    |  https://getfedora.org/
-    ///      2  |   OpenSUSE   | https://www.opensuse.org/
-    ///      3  | Endeavouros  | https://endeavouros.com/
-    /// ```
-    pub const PSQL: Self = Self::new(Frame::empty(), Some(Line::short('-', '+')), None, Some('|'));
-
-    /// Github_markdown style looks like the following table
-    ///
-    /// ```text
-    ///     | id | destribution |           link            |
-    ///     |----+--------------+---------------------------|
-    ///     | 0  |    Fedora    |  https://getfedora.org/   |
-    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
-    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
-    /// ```
-    pub const GITHUB_MARKDOWN: Self = Self::new(
-        Frame {
-            left: Some('|'),
-            right: Some('|'),
-            bottom: None,
-            top: None,
-        },
-        Some(Line::bordered('-', '+', '|', '|')),
-        None,
-        Some('|'),
-    );
-
-    /// Pseudo style looks like the following table
-    ///
-    /// ```text
-    ///     ┌────┬──────────────┬───────────────────────────┐
-    ///     │ id │ destribution │           link            │
-    ///     ├────┼──────────────┼───────────────────────────┤
-    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
-    ///     ├────┼──────────────┼───────────────────────────┤
-    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
-    ///     ├────┼──────────────┼───────────────────────────┤
-    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
-    ///     └────┴──────────────┴───────────────────────────┘
-    /// ```
-    pub const PSEUDO: Self = Self::new(
-        Frame {
-            left: Some('│'),
-            right: Some('│'),
-            bottom: Some(Line::bordered('─', '┴', '└', '┘')),
-            top: Some(Line::bordered('─', '┬', '┌', '┐')),
-        },
-        Some(Line::bordered('─', '┼', '├', '┤')),
-        Some(Line::bordered('─', '┼', '├', '┤')),
-        Some('│'),
-    );
-
-    /// Pseudo_clean style looks like the following table
-    ///
-    /// ```text
-    ///     ┌────┬──────────────┬───────────────────────────┐
-    ///     │ id │ destribution │           link            │
-    ///     ├────┼──────────────┼───────────────────────────┤
-    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
-    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
-    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
-    ///     └────┴──────────────┴───────────────────────────┘
-    /// ```
-    pub const PSEUDO_CLEAN: Self = Self::new(
-        Frame {
-            left: Some('│'),
-            right: Some('│'),
-            bottom: Some(Line::bordered('─', '┴', '└', '┘')),
-            top: Some(Line::bordered('─', '┬', '┌', '┐')),
-        },
-        Some(Line::bordered('─', '┼', '├', '┤')),
-        None,
-        Some('│'),
-    );
-
-    /// Extended style looks like the following table
-    ///
-    /// ```text
-    ///     ╔════╦══════════════╦═══════════════════════════╗
-    ///     ║ id ║ destribution ║           link            ║
-    ///     ╠════╬══════════════╬═══════════════════════════╣
-    ///     ║ 0  ║    Fedora    ║  https://getfedora.org/   ║
-    ///     ╠════╬══════════════╬═══════════════════════════╣
-    ///     ║ 2  ║   OpenSUSE   ║ https://www.opensuse.org/ ║
-    ///     ╠════╬══════════════╬═══════════════════════════╣
-    ///     ║ 3  ║ Endeavouros  ║ https://endeavouros.com/  ║
-    ///     ╚════╩══════════════╩═══════════════════════════╝
-    /// ```
-    pub const EXTENDED: Self = Self::new(
-        Frame {
-            left: Some('║'),
-            right: Some('║'),
-            bottom: Some(Line::bordered('═', '╩', '╚', '╝')),
-            top: Some(Line::bordered('═', '╦', '╔', '╗')),
-        },
-        Some(Line::bordered('═', '╬', '╠', '╣')),
-        Some(Line::bordered('═', '╬', '╠', '╣')),
-        Some('║'),
-    );
-
-    /// ASCII Dots style looks like the following table
+    /// Dots style looks like the following table
     ///
     /// ```text
     ///     .................................................
@@ -205,17 +195,73 @@ impl Style {
     ///     : 3  : Endeavouros  : https://endeavouros.com/  :
     ///     :....:..............:...........................:
     /// ```
-    pub const ASCII_DOTS: Self = Self::new(
-        Frame {
-            bottom: Some(Line::bordered('.', ':', ':', ':')),
-            top: Some(Line::bordered('.', '.', '.', '.')),
-            left: Some(':'),
-            right: Some(':'),
-        },
-        Some(Line::bordered('.', ':', ':', ':')),
-        None,
-        Some(':'),
-    );
+    pub fn dots() -> CustomStyle<On, On, On, On, On, On, On> {
+        CustomStyle::new(Self::ASCII_DOTS)
+    }
+
+    /// Psql style looks like the following table
+    ///
+    /// ```text
+    ///      id | destribution |           link
+    ///     ----+--------------+---------------------------
+    ///      0  |    Fedora    |  https://getfedora.org/
+    ///      2  |   OpenSUSE   | https://www.opensuse.org/
+    ///      3  | Endeavouros  | https://endeavouros.com/
+    /// ```
+    pub fn psql() -> CustomStyle<(), (), (), (), (), On, On> {
+        CustomStyle::new(Self::PSQL)
+    }
+
+    /// Github_markdown style looks like the following table
+    ///
+    /// ```text
+    ///     | id | destribution |           link            |
+    ///     |----+--------------+---------------------------|
+    ///     | 0  |    Fedora    |  https://getfedora.org/   |
+    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
+    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
+    /// ```
+    pub fn github_markdown() -> CustomStyle<(), (), On, On, (), On, On> {
+        CustomStyle::new(Self::GITHUB_MARKDOWN)
+    }
+
+    /// Modern style looks like the following table.
+    ///
+    /// Beware: It uses UTF8 characters.
+    ///
+    /// ```text
+    ///     ┌────┬──────────────┬───────────────────────────┐
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     └────┴──────────────┴───────────────────────────┘
+    /// ```
+    pub fn modern() -> CustomStyle<On, On, On, On, On, On, On> {
+        CustomStyle::new(Self::PSEUDO)
+    }
+
+    /// Extended style looks like the following table
+    ///
+    /// Beware: It uses UTF8 characters.
+    ///
+    /// ```text
+    ///     ╔════╦══════════════╦═══════════════════════════╗
+    ///     ║ id ║ destribution ║           link            ║
+    ///     ╠════╬══════════════╬═══════════════════════════╣
+    ///     ║ 0  ║    Fedora    ║  https://getfedora.org/   ║
+    ///     ╠════╬══════════════╬═══════════════════════════╣
+    ///     ║ 2  ║   OpenSUSE   ║ https://www.opensuse.org/ ║
+    ///     ╠════╬══════════════╬═══════════════════════════╣
+    ///     ║ 3  ║ Endeavouros  ║ https://endeavouros.com/  ║
+    ///     ╚════╩══════════════╩═══════════════════════════╝
+    /// ```
+    pub fn extended() -> CustomStyle<On, On, On, On, On, On, On> {
+        CustomStyle::new(Self::EXTENDED)
+    }
 
     /// ReStructuredText style looks like the following table
     ///
@@ -228,107 +274,20 @@ impl Style {
     ///      3    Endeavouros    https://endeavouros.com/  
     ///     ==== ============== ===========================
     /// ```
-    pub const RE_STRUCTURED_TEXT: Self = Self::new(
-        Frame {
-            bottom: Some(Line::short('=', ' ')),
-            top: Some(Line::short('=', ' ')),
-            left: None,
-            right: None,
-        },
-        Some(Line::short('=', ' ')),
-        None,
-        Some(' '),
-    );
-
-    // #[deprecated(note = "The name is not explicit. Use ASCII constant instead.")]
-    // pub fn default() -> Self {
-    //     Self::ASCII
-    // }
-
-    // #[deprecated(note = "The name is not explicit. Use ASCII constant instead.")]
-    // pub fn ascii() -> Self {
-    //     Self::ASCII
-    // }
-
-    #[deprecated(note = "The name is not explicit. Use NO_BORDER constant instead.")]
-    pub fn noborder() -> Self {
-        Self::BLANK
+    pub fn re_structured_text() -> CustomStyle<On, On, (), (), (), On, On> {
+        CustomStyle::new(Self::RE_STRUCTURED_TEXT)
     }
+}
 
-    #[deprecated(note = "The name is not explicit. Use PSQL constant instead.")]
-    pub fn psql() -> Self {
-        Self::PSQL
-    }
+#[derive(Debug, Clone)]
+pub struct StyleSettings {
+    frame: Frame,
+    header_split_line: Option<Line>,
+    split: Option<Line>,
+    inner_split_char: Option<char>,
+}
 
-    #[deprecated(note = "The name is not explicit. Use GITHUB_MARKDOWN constant instead.")]
-    pub fn github_markdown() -> Self {
-        Self::GITHUB_MARKDOWN
-    }
-
-    #[deprecated(note = "The name is not explicit. Use PSEUDO constant instead.")]
-    pub fn pseudo() -> Self {
-        Self::PSEUDO
-    }
-
-    #[deprecated(note = "The name is not explicit. Use PSEUDO_CLEAN constant instead.")]
-    pub fn pseudo_clean() -> Self {
-        Self::PSEUDO_CLEAN
-    }
-
-    #[deprecated(note = "Use EXTENDED constant instead.")]
-    pub fn extended() -> Self {
-        Self::EXTENDED
-    }
-
-    /// Left frame character.
-    pub fn frame_left(mut self, frame: Option<char>) -> Self {
-        self.frame.left = frame;
-        self
-    }
-
-    /// Right frame character.
-    pub fn frame_right(mut self, frame: Option<char>) -> Self {
-        self.frame.right = frame;
-        self
-    }
-
-    /// The header's top line.
-    ///
-    /// It's suppose that [Self::frame_bottom] and [Self::split]  has the same type of [Line] short or bordered.  
-    pub fn frame_top(mut self, frame: Option<Line>) -> Self {
-        self.frame.top = frame;
-        self
-    }
-
-    /// The footer's bottom line.
-    ///
-    /// It's suppose that [Self::frame_top] and [Self::split] has the same type of [Line] short or bordered.
-    pub fn frame_bottom(mut self, frame: Option<Line>) -> Self {
-        self.frame.bottom = frame;
-        self
-    }
-
-    /// The header's bottom line.
-    pub fn header(mut self, line: Option<Line>) -> Self {
-        self.header_split_line = line;
-        self
-    }
-
-    /// Row split line.
-    ///
-    /// [Self::frame_top] and [Self::frame_bottom]
-    pub fn split(mut self, line: Option<Line>) -> Self {
-        self.header_split_line = line.clone();
-        self.split = line;
-        self
-    }
-
-    /// Inner split character.
-    pub fn inner(mut self, c: char) -> Self {
-        self.inner_split_char = Some(c);
-        self
-    }
-
+impl StyleSettings {
     const fn new(
         frame: Frame,
         header: Option<Line>,
@@ -394,7 +353,7 @@ impl Frame {
     }
 }
 
-impl TableOption for Style {
+impl TableOption for StyleSettings {
     fn change(&mut self, grid: &mut Grid) {
         grid.clear_split_grid();
         grid.clear_overide_split_lines();
@@ -415,7 +374,7 @@ impl TableOption for Style {
 }
 
 fn make_style(
-    style: &Style,
+    style: &StyleSettings,
     row: usize,
     column: usize,
     count_rows: usize,
@@ -472,16 +431,13 @@ fn make_style(
         // Single column
         (true, false, true, true) => Border {
             top: style.frame.top.as_ref().map(|l| l.main),
-            bottom: style.header_split_line.as_ref().map(|l| l.main),
+            bottom: style.split.as_ref().map(|l| l.main),
             left: style.frame.left,
             left_top_corner: style.frame.top.as_ref().and_then(|l| l.left_corner),
-            left_bottom_corner: style.header_split_line.as_ref().and_then(|l| l.left_corner),
+            left_bottom_corner: style.split.as_ref().and_then(|l| l.left_corner),
             right: style.frame.right,
             right_top_corner: style.frame.top.as_ref().and_then(|l| l.right_corner),
-            right_bottom_corner: style
-                .header_split_line
-                .as_ref()
-                .and_then(|l| l.right_corner),
+            right_bottom_corner: style.split.as_ref().and_then(|l| l.right_corner),
         },
         (false, true, true, true) => Border {
             top: style.frame.bottom.as_ref().map(|l| l.main),
@@ -506,48 +462,33 @@ fn make_style(
         // General
         (true, false, true, false) => Border {
             top: style.frame.top.as_ref().map(|l| l.main),
-            bottom: style.header_split_line.as_ref().map(|l| l.main),
+            bottom: style.split.as_ref().map(|l| l.main),
             left: style.frame.left,
             left_top_corner: style.frame.top.as_ref().and_then(|l| l.left_corner),
-            left_bottom_corner: style.header_split_line.as_ref().and_then(|l| l.left_corner),
+            left_bottom_corner: style.split.as_ref().and_then(|l| l.left_corner),
             right: style.inner_split_char,
             right_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
-            right_bottom_corner: style
-                .header_split_line
-                .as_ref()
-                .and_then(|l| l.intersection),
+            right_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
         },
         (true, false, false, true) => Border {
             top: style.frame.top.as_ref().map(|l| l.main),
-            bottom: style.header_split_line.as_ref().map(|l| l.main),
+            bottom: style.split.as_ref().map(|l| l.main),
             left: style.inner_split_char,
             left_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
-            left_bottom_corner: style
-                .header_split_line
-                .as_ref()
-                .and_then(|l| l.intersection),
+            left_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
             right: style.frame.right,
             right_top_corner: style.frame.top.as_ref().and_then(|l| l.right_corner),
-            right_bottom_corner: style
-                .header_split_line
-                .as_ref()
-                .and_then(|l| l.right_corner),
+            right_bottom_corner: style.split.as_ref().and_then(|l| l.right_corner),
         },
         (true, false, false, false) => Border {
             top: style.frame.top.as_ref().map(|l| l.main),
-            bottom: style.header_split_line.as_ref().map(|l| l.main),
+            bottom: style.split.as_ref().map(|l| l.main),
             left: style.inner_split_char,
             left_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
-            left_bottom_corner: style
-                .header_split_line
-                .as_ref()
-                .and_then(|l| l.intersection),
+            left_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
             right: style.inner_split_char,
             right_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
-            right_bottom_corner: style
-                .header_split_line
-                .as_ref()
-                .and_then(|l| l.intersection),
+            right_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
         },
         (false, true, true, false) => Border {
             top: style.split.as_ref().map(|l| l.main),
@@ -611,29 +552,70 @@ fn make_style(
         },
     };
 
-    // handle header
-    if row == 1 {
-        border.top = style.header_split_line.as_ref().map(|l| l.main);
+    // override header style
+    if style.header_split_line.is_some() {
+        if row == 1 {
+            border.top = style.header_split_line.as_ref().map(|l| l.main);
 
-        if is_last_column {
-            border.right_top_corner = style
-                .header_split_line
-                .as_ref()
-                .and_then(|l| l.right_corner);
-        } else {
-            border.right_top_corner = style
-                .header_split_line
-                .as_ref()
-                .and_then(|l| l.intersection);
+            if is_last_column {
+                border.right_top_corner = style
+                    .header_split_line
+                    .as_ref()
+                    .and_then(|l| l.right_corner);
+            } else {
+                border.right_top_corner = style
+                    .header_split_line
+                    .as_ref()
+                    .and_then(|l| l.intersection);
+            }
+
+            if is_first_column {
+                border.left_top_corner =
+                    style.header_split_line.as_ref().and_then(|l| l.left_corner);
+            } else {
+                border.left_top_corner = style
+                    .header_split_line
+                    .as_ref()
+                    .and_then(|l| l.intersection);
+            }
         }
 
-        if is_first_column {
-            border.left_top_corner = style.header_split_line.as_ref().and_then(|l| l.left_corner);
-        } else {
-            border.left_top_corner = style
-                .header_split_line
-                .as_ref()
-                .and_then(|l| l.intersection);
+        if row == 0 {
+            border.bottom = style.header_split_line.as_ref().map(|l| l.main);
+
+            if is_last_column {
+                border.right_bottom_corner = style
+                    .header_split_line
+                    .as_ref()
+                    .and_then(|l| l.right_corner);
+            } else {
+                border.right_bottom_corner = style
+                    .header_split_line
+                    .as_ref()
+                    .and_then(|l| l.intersection);
+            }
+
+            if is_first_column {
+                border.left_bottom_corner =
+                    style.header_split_line.as_ref().and_then(|l| l.left_corner);
+            } else {
+                border.left_bottom_corner = style
+                    .header_split_line
+                    .as_ref()
+                    .and_then(|l| l.intersection);
+            }
+        }
+    } else if count_columns > 1 {
+        if row == 1 {
+            border.top = None;
+            border.right_top_corner = None;
+            border.left_top_corner = None;
+        }
+
+        if row == 0 {
+            border.bottom = None;
+            border.right_bottom_corner = None;
+            border.left_bottom_corner = None;
         }
     }
 
@@ -677,34 +659,24 @@ impl<'a> TableOption for TopBorderText<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub struct CustomStyle<L, R, T, B, IH, IV, H> {
-    inner: Style,
-    _l_border: PhantomData<L>,
-    _r_border: PhantomData<R>,
-    _t_border: PhantomData<T>,
-    _b_border: PhantomData<B>,
-    _i_h_border: PhantomData<IH>,
-    _i_v_border: PhantomData<IV>,
-    _h_border: PhantomData<H>,
+pub struct CustomStyle<Top, Bottom, Left, Right, Horizontal, Vertical, Header> {
+    inner: StyleSettings,
+    _l_border: PhantomData<Left>,
+    _r_border: PhantomData<Right>,
+    _t_border: PhantomData<Top>,
+    _b_border: PhantomData<Bottom>,
+    _i_h_border: PhantomData<Horizontal>,
+    _i_v_border: PhantomData<Vertical>,
+    _h_border: PhantomData<Header>,
 }
 
 #[derive(Debug, Clone)]
-pub struct LeftLine;
-#[derive(Debug, Clone)]
-pub struct RightLine;
-#[derive(Debug, Clone)]
-pub struct TopLine;
-#[derive(Debug, Clone)]
-pub struct BottomLine;
-#[derive(Debug, Clone)]
-pub struct InnerVerticalLine;
-#[derive(Debug, Clone)]
-pub struct InnerHorizontalLine;
-#[derive(Debug, Clone)]
-pub struct HeaderLine;
+pub struct On;
 
-impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
-    const fn new(style: Style) -> Self {
+impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
+    CustomStyle<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
+{
+    const fn new(style: StyleSettings) -> Self {
         Self {
             inner: style,
             _b_border: PhantomData,
@@ -718,23 +690,8 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     }
 }
 
-impl CustomStyle<(), (), (), (), (), (), ()> {
-    const fn empty() -> Self {
-        Self {
-            inner: Style::new(Frame::empty(), None, None, None),
-            _b_border: PhantomData,
-            _l_border: PhantomData,
-            _r_border: PhantomData,
-            _t_border: PhantomData,
-            _i_h_border: PhantomData,
-            _i_v_border: PhantomData,
-            _h_border: PhantomData,
-        }
-    }
-}
-
 impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
-    pub const fn top(self, c: char) -> CustomStyle<TopLine, B, L, R, IH, IV, H> {
+    pub const fn top(self, c: char) -> CustomStyle<On, B, L, R, IH, IV, H> {
         let mut style = self.inner;
 
         let mut top_line = Line {
@@ -767,7 +724,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(style)
     }
 
-    pub const fn bottom(self, c: char) -> CustomStyle<T, BottomLine, L, R, IH, IV, H> {
+    pub const fn bottom(self, c: char) -> CustomStyle<T, On, L, R, IH, IV, H> {
         let mut style = self.inner;
         let mut bottom = match style.frame.bottom {
             Some(mut line) => {
@@ -799,7 +756,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(style)
     }
 
-    pub const fn left(self, c: char) -> CustomStyle<T, B, LeftLine, R, IH, IV, H> {
+    pub const fn left(self, c: char) -> CustomStyle<T, B, On, R, IH, IV, H> {
         let mut style = self.inner;
         style.frame.left = Some(c);
 
@@ -826,7 +783,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(style)
     }
 
-    pub const fn right(mut self, c: char) -> CustomStyle<T, B, L, RightLine, IH, IV, H> {
+    pub const fn right(mut self, c: char) -> CustomStyle<T, B, L, On, IH, IV, H> {
         self.inner.frame.right = Some(c);
 
         if let Some(mut top) = self.inner.frame.top {
@@ -852,7 +809,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(self.inner)
     }
 
-    pub const fn horizontal(self, c: char) -> CustomStyle<T, B, L, R, InnerHorizontalLine, IV, H> {
+    pub const fn horizontal(self, c: char) -> CustomStyle<T, B, L, R, On, IV, H> {
         let mut style = self.inner;
         let mut split = match style.split {
             Some(line) => line,
@@ -878,21 +835,12 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
             split.intersection = Some(c);
         }
 
-        if style.header_split_line.is_none() {
-            style.header_split_line = Some(Line {
-                intersection: split.intersection,
-                left_corner: split.left_corner,
-                right_corner: split.right_corner,
-                main: split.main,
-            });
-        }
-
         style.split = Some(split);
 
         CustomStyle::new(style)
     }
 
-    pub const fn vertical(self, c: char) -> CustomStyle<T, B, L, R, IH, InnerVerticalLine, H> {
+    pub const fn vertical(self, c: char) -> CustomStyle<T, B, L, R, IH, On, H> {
         let mut style = self.inner;
         style.inner_split_char = Some(c);
 
@@ -919,7 +867,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         CustomStyle::new(style)
     }
 
-    pub const fn header(self, c: char) -> CustomStyle<T, B, L, R, IH, IV, HeaderLine> {
+    pub const fn header(self, c: char) -> CustomStyle<T, B, L, R, IH, IV, On> {
         let mut style = self.inner;
         let mut split = match style.header_split_line {
             Some(line) => line,
@@ -951,7 +899,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     }
 }
 
-impl<B, R, IH, IV, H> CustomStyle<TopLine, B, LeftLine, R, IH, IV, H> {
+impl<B, R, IH, IV, H> CustomStyle<On, B, On, R, IH, IV, H> {
     pub const fn top_left_corner(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.top {
@@ -966,7 +914,7 @@ impl<B, R, IH, IV, H> CustomStyle<TopLine, B, LeftLine, R, IH, IV, H> {
     }
 }
 
-impl<B, L, IH, IV, H> CustomStyle<TopLine, B, L, RightLine, IH, IV, H> {
+impl<B, L, IH, IV, H> CustomStyle<On, B, L, On, IH, IV, H> {
     pub const fn top_right_corner(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.top {
@@ -981,7 +929,7 @@ impl<B, L, IH, IV, H> CustomStyle<TopLine, B, L, RightLine, IH, IV, H> {
     }
 }
 
-impl<T, L, IH, IV, H> CustomStyle<T, BottomLine, L, RightLine, IH, IV, H> {
+impl<T, L, IH, IV, H> CustomStyle<T, On, L, On, IH, IV, H> {
     pub const fn bottom_right_corner(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.bottom {
@@ -996,7 +944,7 @@ impl<T, L, IH, IV, H> CustomStyle<T, BottomLine, L, RightLine, IH, IV, H> {
     }
 }
 
-impl<T, R, IH, IV, H> CustomStyle<T, BottomLine, LeftLine, R, IH, IV, H> {
+impl<T, R, IH, IV, H> CustomStyle<T, On, On, R, IH, IV, H> {
     pub const fn bottom_left_corner(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.bottom {
@@ -1011,7 +959,7 @@ impl<T, R, IH, IV, H> CustomStyle<T, BottomLine, LeftLine, R, IH, IV, H> {
     }
 }
 
-impl<T, B, R, IV, H> CustomStyle<T, B, LeftLine, R, InnerHorizontalLine, IV, H> {
+impl<T, B, R, IV, H> CustomStyle<T, B, On, R, On, IV, H> {
     pub const fn left_intersection(self, c: char) -> Self {
         let mut style = self.inner;
         match style.split {
@@ -1034,7 +982,7 @@ impl<T, B, R, IV, H> CustomStyle<T, B, LeftLine, R, InnerHorizontalLine, IV, H> 
     }
 }
 
-impl<T, B, L, IV, H> CustomStyle<T, B, L, RightLine, InnerHorizontalLine, IV, H> {
+impl<T, B, L, IV, H> CustomStyle<T, B, L, On, On, IV, H> {
     pub const fn right_intersection(self, c: char) -> Self {
         let mut style = self.inner;
         match style.split {
@@ -1057,7 +1005,7 @@ impl<T, B, L, IV, H> CustomStyle<T, B, L, RightLine, InnerHorizontalLine, IV, H>
     }
 }
 
-impl<B, L, R, IH, H> CustomStyle<TopLine, B, L, R, IH, InnerVerticalLine, H> {
+impl<B, L, R, IH, H> CustomStyle<On, B, L, R, IH, On, H> {
     pub const fn top_intersection(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.top {
@@ -1072,7 +1020,7 @@ impl<B, L, R, IH, H> CustomStyle<TopLine, B, L, R, IH, InnerVerticalLine, H> {
     }
 }
 
-impl<T, L, R, IH, H> CustomStyle<T, BottomLine, L, R, IH, InnerVerticalLine, H> {
+impl<T, L, R, IH, H> CustomStyle<T, On, L, R, IH, On, H> {
     pub const fn bottom_intersection(self, c: char) -> Self {
         let mut style = self.inner;
         match style.frame.bottom {
@@ -1087,7 +1035,65 @@ impl<T, L, R, IH, H> CustomStyle<T, BottomLine, L, R, IH, InnerVerticalLine, H> 
     }
 }
 
-impl<B, L, R, IH, IV, H> CustomStyle<TopLine, B, L, R, IH, IV, H> {
+impl<T, B, L, R, H> CustomStyle<T, B, L, R, On, On, H> {
+    pub const fn inner_intersection(mut self, c: char) -> Self {
+        match self.inner.split {
+            Some(mut split) => {
+                split.intersection = Some(c);
+                self.inner.split = Some(split);
+            }
+            None => unreachable!(),
+        }
+
+        CustomStyle::new(self.inner)
+    }
+}
+
+impl<T, B, L, R, IH> CustomStyle<T, B, L, R, IH, On, On> {
+    pub const fn header_intersection(mut self, c: char) -> Self {
+        match self.inner.header_split_line {
+            Some(mut split) => {
+                split.intersection = Some(c);
+                self.inner.header_split_line = Some(split);
+            }
+            None => unreachable!(),
+        }
+
+        CustomStyle::new(self.inner)
+    }
+}
+
+impl<T, B, R, IH, IV> CustomStyle<T, B, On, R, IH, IV, On> {
+    pub const fn left_header_intersection(self, c: char) -> Self {
+        let mut style = self.inner;
+        match style.header_split_line {
+            Some(mut split) => {
+                split.left_corner = Some(c);
+                style.header_split_line = Some(split);
+            }
+            None => unreachable!(),
+        }
+
+        CustomStyle::new(style)
+    }
+}
+
+impl<T, B, L, IH, IV> CustomStyle<T, B, L, On, IH, IV, On> {
+    pub const fn right_header_intersection(self, c: char) -> Self {
+        let mut style = self.inner;
+        match style.header_split_line {
+            Some(mut split) => {
+                split.right_corner = Some(c);
+                style.header_split_line = Some(split);
+            }
+            None => unreachable!(),
+        }
+
+        CustomStyle::new(style)
+    }
+}
+
+impl<B, L, R, IH, IV, H> CustomStyle<On, B, L, R, IH, IV, H> {
     pub const fn top_off(self) -> CustomStyle<(), B, L, R, IH, IV, H> {
         let mut style = self.inner;
         style.frame.top = None;
@@ -1095,7 +1101,7 @@ impl<B, L, R, IH, IV, H> CustomStyle<TopLine, B, L, R, IH, IV, H> {
     }
 }
 
-impl<T, L, R, IH, IV, H> CustomStyle<T, BottomLine, L, R, IH, IV, H> {
+impl<T, L, R, IH, IV, H> CustomStyle<T, On, L, R, IH, IV, H> {
     pub const fn bottom_off(self) -> CustomStyle<T, (), L, R, IH, IV, H> {
         let mut style = self.inner;
         style.frame.bottom = None;
@@ -1103,7 +1109,7 @@ impl<T, L, R, IH, IV, H> CustomStyle<T, BottomLine, L, R, IH, IV, H> {
     }
 }
 
-impl<T, B, R, IH, IV, H> CustomStyle<T, B, LeftLine, R, IH, IV, H> {
+impl<T, B, R, IH, IV, H> CustomStyle<T, B, On, R, IH, IV, H> {
     pub const fn left_off(self) -> CustomStyle<T, B, (), R, IH, IV, H> {
         let mut style = self.inner;
         style.frame.left = None;
@@ -1132,7 +1138,7 @@ impl<T, B, R, IH, IV, H> CustomStyle<T, B, LeftLine, R, IH, IV, H> {
     }
 }
 
-impl<T, B, L, IH, IV, H> CustomStyle<T, B, L, RightLine, IH, IV, H> {
+impl<T, B, L, IH, IV, H> CustomStyle<T, B, L, On, IH, IV, H> {
     pub const fn right_off(mut self) -> CustomStyle<T, B, L, (), IH, IV, H> {
         self.inner.frame.right = None;
 
@@ -1160,15 +1166,14 @@ impl<T, B, L, IH, IV, H> CustomStyle<T, B, L, RightLine, IH, IV, H> {
     }
 }
 
-impl<T, B, L, R, IV, H> CustomStyle<T, B, L, R, InnerHorizontalLine, IV, H> {
+impl<T, B, L, R, IV, H> CustomStyle<T, B, L, R, On, IV, H> {
     pub const fn horizontal_off(mut self) -> CustomStyle<T, B, L, R, (), IV, H> {
         self.inner.split = None;
-        self.inner.header_split_line = None;
         CustomStyle::new(self.inner)
     }
 }
 
-impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, InnerVerticalLine, H> {
+impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, On, H> {
     pub const fn vertical_off(mut self) -> CustomStyle<T, B, L, R, IH, (), H> {
         self.inner.inner_split_char = None;
 
@@ -1196,7 +1201,7 @@ impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, InnerVerticalLine, H> {
     }
 }
 
-impl<T, B, L, R, IH, IV> CustomStyle<T, B, L, R, IH, IV, HeaderLine> {
+impl<T, B, L, R, IH, IV> CustomStyle<T, B, L, R, IH, IV, On> {
     pub const fn header_off(mut self) -> CustomStyle<T, B, L, R, IH, IV, ()> {
         self.inner.header_split_line = None;
         CustomStyle::new(self.inner)
