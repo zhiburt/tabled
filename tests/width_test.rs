@@ -1,5 +1,5 @@
 use crate::util::create_vector;
-use tabled::{Column, Full, MaxWidth, Modify, Object, Row, Style, Table};
+use tabled::{Alignment, Column, Full, MaxWidth, Modify, Object, Row, Style, Table};
 
 mod util;
 
@@ -8,7 +8,26 @@ fn max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(2, "...")))
+        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(1)))
+        .to_string();
+
+    let expected = concat!(
+        "| N | column 0 | column 1 | column 2 |\n",
+        "|---+----------+----------+----------|\n",
+        "| 0 |    0     |    0     |    0     |\n",
+        "| 1 |    1     |    1     |    1     |\n",
+        "| 2 |    2     |    2     |    2     |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn max_width_with_suffix() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(2).suffix("...")))
         .to_string();
 
     let expected = concat!(
@@ -17,6 +36,25 @@ fn max_width() {
         "| 0 |  0-...   |  0-...   |  0-...   |\n",
         "| 1 |  1-...   |  1-...   |  1-...   |\n",
         "| 2 |  2-...   |  2-...   |  2-...   |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn max_width_doesnt_icrease_width_if_it_is_smaller() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(50)))
+        .to_string();
+
+    let expected = concat!(
+        "| N | column 0 | column 1 | column 2 |\n",
+        "|---+----------+----------+----------|\n",
+        "| 0 |   0-0    |   0-1    |   0-2    |\n",
+        "| 1 |   1-0    |   1-1    |   1-2    |\n",
+        "| 2 |   2-0    |   2-1    |   2-2    |\n",
     );
 
     assert_eq!(table, expected);
@@ -39,6 +77,235 @@ fn max_width_wrapped() {
         "|   |    0     |    1     |    2     |\n",
         "| 2 |    2-    |    2-    |    2-    |\n",
         "|   |    0     |    1     |    2     |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn max_width_wrapped_does_nothing_if_str_is_smaller() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::wrapping(100)))
+        .to_string();
+
+    let expected = concat!(
+        "| N | column 0 | column 1 | column 2 |\n",
+        "|---+----------+----------+----------|\n",
+        "| 0 |   0-0    |   0-1    |   0-2    |\n",
+        "| 1 |   1-0    |   1-1    |   1-2    |\n",
+        "| 2 |   2-0    |   2-1    |   2-2    |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn max_width_wrapped_keep_words() {
+    let data = vec!["this is a long sentence"];
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
+        .to_string();
+
+    let expected = concat!(
+        "| &str            |\n",
+        "|-----------------|\n",
+        "| this is a long  |\n",
+        "| sentence        |\n",
+    );
+
+    assert_eq!(table, expected);
+
+    let data = vec!["this is a long  sentence"];
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
+        .to_string();
+
+    let expected = concat!(
+        "| &str             |\n",
+        "|------------------|\n",
+        "| this is a long   |\n",
+        "| sentence         |\n",
+    );
+
+    assert_eq!(table, expected);
+
+    let data = vec!["this is a long   sentence"];
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
+        .to_string();
+
+    let expected = concat!(
+        "| &str              |\n",
+        "|-------------------|\n",
+        "| this is a long    |\n",
+        "| sentence          |\n",
+    );
+
+    assert_eq!(table, expected);
+
+    let data = vec!["this is a long    sentence"];
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
+        .to_string();
+
+    // 'sentence' doesnt have a space ' sentence' because we use left alignment
+    let expected = concat!(
+        "| &str              |\n",
+        "|-------------------|\n",
+        "| this is a long    |\n",
+        "| sentence          |\n",
+    );
+
+    assert_eq!(table, expected);
+
+    let data = vec!["this"];
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(MaxWidth::wrapping(10).keep_words()))
+        .to_string();
+
+    let expected = concat!("| &str |\n", "|------|\n", "| this |\n",);
+
+    assert_eq!(table, expected);
+}
+
+#[cfg(feature = "color")]
+#[test]
+fn max_width_wrapped_keep_words_color() {
+    use owo_colors::OwoColorize;
+
+    let data = vec!["this is a long sentence".on_black().green().to_string()];
+    let table = Table::new(&data)
+        .with(Style::GITHUB_MARKDOWN)
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
+        .to_string();
+
+    let expected = concat!(
+        "| String          |\n",
+        "|-----------------|\n",
+        "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m |\n",
+        "| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntence\u{1b}[39m\u{1b}[49m        |\n",
+    );
+
+    assert_eq!(table, expected);
+
+    let data = vec!["this is a long  sentence".on_black().green().to_string()];
+    let table = Table::new(&data)
+        .with(Style::GITHUB_MARKDOWN)
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
+        .to_string();
+
+    let expected = concat!(
+        "| String           |\n",
+        "|------------------|\n",
+        "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m |\n",
+        "| \u{1b}[32m\u{1b}[40ms\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m         |\n",
+    );
+
+    println!("{}", table);
+
+    assert_eq!(table, expected);
+
+    let data = vec!["this is a long   sentence".on_black().green().to_string()];
+    let table = Table::new(&data)
+        .with(Style::GITHUB_MARKDOWN)
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
+        .to_string();
+
+    let expected = concat!(
+        "| String            |\n",
+        "|-------------------|\n",
+        "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n",
+        "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |\n",
+    );
+
+    assert_eq!(table, expected);
+
+    let data = vec!["this is a long    sentence".on_black().green().to_string()];
+    let table = Table::new(&data)
+        .with(Style::GITHUB_MARKDOWN)
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
+        .to_string();
+
+    let expected = concat!(
+        "| String            |\n",
+        "|-------------------|\n",
+        "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n",
+        "| \u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |\n",
+    );
+
+    assert_eq!(table, expected);
+
+    let data = vec!["this".on_black().green().to_string()];
+    let table = Table::new(&data)
+        .with(Style::GITHUB_MARKDOWN)
+        .with(Modify::new(Full).with(MaxWidth::wrapping(10).keep_words()))
+        .to_string();
+
+    let expected = concat!(
+        "| String |\n",
+        "|--------|\n",
+        "|  \u{1b}[32m\u{1b}[40mthis\u{1b}[39m\u{1b}[49m  |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn max_width_wrapped_keep_words_long_word() {
+    let data = vec!["this is a long sentencesentencesentence"];
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
+        .to_string();
+
+    let expected = concat!(
+        "| &str              |\n",
+        "|-------------------|\n",
+        "| this is a long    |\n",
+        "| sentencesentences |\n",
+        "| entence           |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[cfg(feature = "color")]
+#[test]
+fn max_width_wrapped_keep_words_long_word_color() {
+    use owo_colors::OwoColorize;
+
+    let data = vec!["this is a long sentencesentencesentence"
+        .on_black()
+        .green()
+        .to_string()];
+    let table = Table::new(&data)
+        .with(Style::GITHUB_MARKDOWN)
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
+        .to_string();
+
+    let expected = concat!(
+        "| String            |\n",
+        "|-------------------|\n",
+        "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |\n",
+        "| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntencesentences\u{1b}[39m\u{1b}[49m |\n",
+        "| \u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m           |\n",
     );
 
     assert_eq!(table, expected);
@@ -84,7 +351,7 @@ fn dont_change_content_if_width_is_less_then_max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Full).with(MaxWidth::truncating(1000, "...")))
+        .with(Modify::new(Full).with(MaxWidth::truncating(1000).suffix("...")))
         .to_string();
 
     let expected = concat!(
@@ -112,7 +379,7 @@ fn max_width_with_emoji() {
 
     let table = Table::new(data)
         .with(Style::github_markdown())
-        .with(Modify::new(Full).with(MaxWidth::truncating(3, "...")))
+        .with(Modify::new(Full).with(MaxWidth::truncating(3).suffix("...")))
         .to_string();
 
     assert_eq!(table, _expected);
@@ -138,8 +405,8 @@ fn color_chars_are_stripped() {
     );
 
     let table = Table::new(data)
-        .with(Style::github_markdown())
-        .with(Modify::new(Full).with(MaxWidth::truncating(3, "...")))
+        .with(Style::GITHUB_MARKDOWN)
+        .with(Modify::new(Full).with(MaxWidth::truncating(3).suffix("...")))
         .to_string();
 
     println!("{}", table);
