@@ -728,7 +728,7 @@ fn tuple_combination() {
         (Developer("Maxim Zhiburt"), Domain::Unknown),
     ];
 
-    let table = Table::new(data).with(Style::PSQL).to_string();
+    let table = Table::new(data).with(Style::psql()).to_string();
 
     assert_eq!(
         table,
@@ -763,7 +763,7 @@ fn table_trait() {
         (Developer("Maxim Zhiburt"), Domain::Unknown),
     ];
 
-    let table = (&data).table().with(Style::PSQL).to_string();
+    let table = (&data).table().with(Style::psql()).to_string();
 
     assert_eq!(
         table,
@@ -781,7 +781,7 @@ fn table_trait() {
 #[test]
 fn build_table_from_iterator() {
     let data = create_vector::<3, 3>();
-    let table = Table::from_iter(data).with(Style::PSQL).to_string();
+    let table = Table::from_iter(data).with(Style::psql()).to_string();
 
     let expected = concat!(
         " N | column 0 | column 1 | column 2 \n",
@@ -790,6 +790,50 @@ fn build_table_from_iterator() {
         " 1 |   1-0    |   1-1    |   1-2    \n",
         " 2 |   2-0    |   2-1    |   2-2    \n",
     );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn table_emojie_utf8_style() {
+    #[derive(Tabled)]
+    struct Language {
+        name: &'static str,
+        designed_by: &'static str,
+        invented_year: usize,
+    }
+
+    let languages = vec![
+        Language {
+            name: "C 💕",
+            designed_by: "Dennis Ritchie",
+            invented_year: 1972,
+        },
+        Language {
+            name: "Rust 👍",
+            designed_by: "Graydon Hoare",
+            invented_year: 2010,
+        },
+        Language {
+            name: "Go 🧋",
+            designed_by: "Rob Pike",
+            invented_year: 2009,
+        },
+    ];
+
+    // Note: It doesn't look good in VS Code
+    let expected = "┌─────────┬────────────────┬───────────────┐\n\
+                         │  name   │  designed_by   │ invented_year │\n\
+                         │  C 💕   │ Dennis Ritchie │     1972      │\n\
+                         │ Rust 👍 │ Graydon Hoare  │     2010      │\n\
+                         │  Go 🧋  │    Rob Pike    │     2009      │\n\
+                         └─────────┴────────────────┴───────────────┘\n";
+
+    let table = Table::new(&languages)
+        .with(tabled::Style::modern().header_off().horizontal_off())
+        .to_string();
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }

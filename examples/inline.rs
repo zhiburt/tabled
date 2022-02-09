@@ -40,7 +40,7 @@ fn main() {
     ];
 
     let table = Table::new(&data)
-        .with(Style::PSEUDO)
+        .with(Style::modern())
         .with(Modify::new(Full).with(Indent::new(1, 1, 0, 0)))
         .with(Modify::new(Head).with(Alignment::Horizontal(AlignmentHorizontal::Left)))
         .with(Modify::new(Row(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Center)));

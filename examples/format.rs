@@ -34,7 +34,7 @@ fn main() {
     ];
 
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Row(..1)).with(FormatWithIndex(|_, _, column| column.to_string())))
         .with(Modify::new(Row(1..2).not(Column(..1))).with(FormatFrom(vec!["qwe", "asd"])))
         .with(Modify::new(Column(..1).not(Row(..1))).with(Format(|s| format!("{}...", s))));

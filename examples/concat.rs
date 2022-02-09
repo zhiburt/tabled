@@ -51,7 +51,7 @@ fn main() {
 
     let data_table = weather_table
         .with(Concat::horizontal(location_table))
-        .with(Style::PSEUDO_CLEAN);
+        .with(Style::modern().horizontal_off());
 
     println!("data");
     println!("{}", data_table);

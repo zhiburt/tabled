@@ -7,7 +7,7 @@ mod util;
 fn max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(1)))
         .to_string();
 
@@ -26,7 +26,7 @@ fn max_width() {
 fn max_width_with_suffix() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(2).suffix("...")))
         .to_string();
 
@@ -45,7 +45,7 @@ fn max_width_with_suffix() {
 fn max_width_doesnt_icrease_width_if_it_is_smaller() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(50)))
         .to_string();
 
@@ -64,7 +64,7 @@ fn max_width_doesnt_icrease_width_if_it_is_smaller() {
 fn max_width_wrapped() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::wrapping(2)))
         .to_string();
 
@@ -86,7 +86,7 @@ fn max_width_wrapped() {
 fn max_width_wrapped_does_nothing_if_str_is_smaller() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::wrapping(100)))
         .to_string();
 
@@ -105,7 +105,7 @@ fn max_width_wrapped_does_nothing_if_str_is_smaller() {
 fn max_width_wrapped_keep_words() {
     let data = vec!["this is a long sentence"];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
@@ -121,7 +121,7 @@ fn max_width_wrapped_keep_words() {
 
     let data = vec!["this is a long  sentence"];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
@@ -137,7 +137,7 @@ fn max_width_wrapped_keep_words() {
 
     let data = vec!["this is a long   sentence"];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
@@ -153,7 +153,7 @@ fn max_width_wrapped_keep_words() {
 
     let data = vec!["this is a long    sentence"];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
@@ -170,7 +170,7 @@ fn max_width_wrapped_keep_words() {
 
     let data = vec!["this"];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::wrapping(10).keep_words()))
         .to_string();
 
@@ -269,7 +269,7 @@ fn max_width_wrapped_keep_words_color() {
 fn max_width_wrapped_keep_words_long_word() {
     let data = vec!["this is a long sentencesentencesentence"];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
@@ -337,7 +337,7 @@ fn max_width_wrapped_collored() {
     );
 
     let table = Table::new(data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::wrapping(2)))
         .to_string();
 
@@ -350,7 +350,7 @@ fn max_width_wrapped_collored() {
 fn dont_change_content_if_width_is_less_then_max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::truncating(1000).suffix("...")))
         .to_string();
 
@@ -378,7 +378,7 @@ fn max_width_with_emoji() {
     );
 
     let table = Table::new(data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::truncating(3).suffix("...")))
         .to_string();
 

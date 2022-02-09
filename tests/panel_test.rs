@@ -8,7 +8,7 @@ mod util;
 #[test]
 fn panel_has_no_style_by_default() {
     let table = Table::new(create_vector::<3, 3>())
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Panel("Linux Distributions", 0))
         .to_string();
 
@@ -30,7 +30,7 @@ fn panel_has_no_style_by_default() {
 fn highligt_panel() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 0))
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Highlight::cell(
             0,
             0,
@@ -58,7 +58,7 @@ fn top_panel() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 0))
         .with(Modify::new(Full).with(Alignment::center_horizontal()))
-        .with(Style::PSQL)
+        .with(Style::psql())
         .to_string();
 
     let expected = concat!(
@@ -79,7 +79,7 @@ fn bottom_panel() {
     let table = Table::new(&data)
         .with(Panel("Linux Distributions", data.len() + 1))
         .with(Modify::new(Row(data.len() + 1..)).with(Alignment::center_horizontal()))
-        .with(Style::PSQL)
+        .with(Style::psql())
         .to_string();
 
     let expected = concat!(
@@ -99,7 +99,7 @@ fn inner_panel() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 2))
         .with(Modify::new(Row(2..)).with(Alignment::center_horizontal()))
-        .with(Style::PSQL)
+        .with(Style::psql())
         .to_string();
 
     let expected = concat!(
@@ -118,7 +118,7 @@ fn inner_panel() {
 fn header() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Header("Linux Distributions"))
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Modify::new(Row(0..1)).with(Alignment::center_horizontal()))
         .to_string();
 
@@ -140,7 +140,7 @@ fn footer() {
     let table = Table::new(&data)
         .with(Header("Linux Distributions"))
         .with(Footer("The end"))
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Modify::new(Row(0..1).and(Row(data.len()..))).with(Alignment::center_horizontal()))
         .to_string();
 

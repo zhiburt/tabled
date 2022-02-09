@@ -7,7 +7,7 @@ mod util;
 fn disable_rows() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::ASCII)
+        .with(Style::ascii())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Disable::Row(1..=2))
         .to_string();
@@ -27,7 +27,7 @@ fn disable_rows() {
 fn disable_header() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Disable::Row(..1))
         .to_string();
@@ -46,7 +46,7 @@ fn disable_header() {
 fn disable_all_table_via_rows() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Disable::Row(..))
         .to_string();
@@ -60,7 +60,7 @@ fn disable_header_with_new_styling() {
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Disable::Row(..1))
-        .with(Style::PSEUDO_CLEAN)
+        .with(Style::modern().horizontal_off())
         .to_string();
 
     let expected = concat!(
@@ -79,7 +79,7 @@ fn disable_header_with_new_styling() {
 fn disable_columns() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Disable::Column(..1))
         .to_string();
 
@@ -98,7 +98,7 @@ fn disable_columns() {
 fn disable_all_table_via_columns() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::PSQL)
+        .with(Style::psql())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Disable::Column(..))
         .to_string();
