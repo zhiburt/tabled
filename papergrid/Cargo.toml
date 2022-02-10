@@ -1,9 +1,9 @@
 [package]
 name = "papergrid"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
-description = "Papergrid is a library which provide an paper like table printing"
+description = "Papergrid is a core library to print a table"
 repository = "https://github.com/zhiburt/tabled"
 license = "MIT"
 
