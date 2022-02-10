@@ -1,49 +1,69 @@
+//! This module contains object which can be used to limit a cell to a given width:
+//!
+//! - [Truncate] cuts a cell content to limit width.
+//! - [Wrap] split the content via new lines in order to fit max width.
+
 use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
 
-/// Using MaxWidth you can set a max width of an object on a [Grid].
+/// MaxWidth allows you to set a max width of an object on a [Grid],
+/// using different strategies.
+///
+/// It is an abstract factory.
 ///
 /// ## Example
 ///
 /// ```
 /// use tabled::{Full, MaxWidth, Modify, Style, Table};
 ///
-/// let data = [
-///     "123456789",
-///     "qwertyuiop[]",
-///     "[[[[[[[[[[[[[[[[[",
-/// ];
+/// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::github_markdown())
-///     .with(Modify::new(Full).with(MaxWidth::truncating(5).suffix("...")));
+///     .with(Modify::new(Full).with(MaxWidth::truncating(3).suffix("...")));
 /// ```
-///
-/// While working with colors you must setup `colors` feature.
 pub struct MaxWidth;
 
 impl MaxWidth {
+    /// Returns a [Truncate] object.
     pub fn truncating(width: usize) -> Truncate<&'static str> {
         Truncate::new(width)
     }
 
+    /// Returns a [Wrap] object.
     pub fn wrapping(width: usize) -> Wrap {
         Wrap::new(width)
     }
 }
 
+/// Truncate cut the string to a given width if its length exeeds it.
+/// Otherwise keeps the content of a cell untouched.
+///
+/// The function is color aware if a `color` feature is on.
+///    
+/// ## Example
+///
+/// ```
+/// use tabled::{Full, Truncate, Modify, Table};
+///
+/// let table = Table::new(&["Hello World!"])
+///     .with(Modify::new(Full).with(Truncate::new(3)));
+/// ```
 pub struct Truncate<S> {
     width: usize,
     suffix: S,
 }
 
 impl Truncate<&'static str> {
+    /// Creates a [Truncate] object
     pub fn new(width: usize) -> Self {
         Self { width, suffix: "" }
     }
 }
 
 impl<T> Truncate<T> {
+    /// Sets a suffix which will be appended to a resultant string
+    /// in case a truncate is applied.
     pub fn suffix<S>(self, suffix: S) -> Truncate<S> {
         Truncate {
             width: self.width,
@@ -69,12 +89,26 @@ where
     }
 }
 
+/// Wrap wraps a string to a new line in case it exeeds the provided max boundry.
+/// Otherwise keeps the content of a cell untouched.
+///
+/// The function is color aware if a `color` feature is on.
+///
+/// ## Example
+///
+/// ```
+/// use tabled::{Full, Wrap, Modify, Table};
+///
+/// let table = Table::new(&["Hello World!"])
+///     .with(Modify::new(Full).with(Wrap::new(3)));
+/// ```
 pub struct Wrap {
     width: usize,
     keep_words: bool,
 }
 
 impl Wrap {
+    /// Creates a [Wrap] object
     pub fn new(width: usize) -> Self {
         Self {
             width,
@@ -82,7 +116,10 @@ impl Wrap {
         }
     }
 
-    /// Set the wrap's keep words.
+    /// Set the keep words option.
+    ///
+    /// If a wrapping poing will be in a word, [Wrap] will
+    /// preserve a word (if possible) and wrap the string before it.
     pub fn keep_words(mut self) -> Self {
         self.keep_words = true;
         self
