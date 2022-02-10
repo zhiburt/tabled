@@ -294,10 +294,11 @@ Using `MaxWidth` type its possible to set a max width of an object.
 While tinkering content we don't forget about its color.
 
 ```rust
-// You can truncate it everything after 10 chars.
+// Truncating content to 10 chars in all rows except a header.
 Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth::truncating(10, "...")));
-// And you can wrap it content reaching 10 chars.
-Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth::wrapping(10, "...")));
+
+// Wrapping content by new lines after 10 chars in a header row.
+Table::new(&data).with(Modify::new(Row(..1)).with(MaxWidth::wrapping(10)));
 ```
 
 ### Rotate
