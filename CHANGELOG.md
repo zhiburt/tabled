@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.5.0] - 2022-02-10
+
+### Added
+
+- `CustomStyle` type which now handles modifications of styles.
+- `TopBorderText` type which can be used to write a text on a bottom border. 
+- `Wrap::keep_words` oprtion in order to not split words in a middle while doing a wrap.
+- Add more default styles `Style::dots()`, `Style::re_structured_text()`, `Style::extended()`
+
+### Changed
+
+- `MaxWidth` interface.
+- Constants in `style` module now marked deprecated in regard of const functions as more ergonomic choise.
+
+### Fixed
+
+- Fix rendering of single column table with full style (with horizontal split lines)
+
 ## [0.4.2] - 2021-12-30
 
 ### Added
