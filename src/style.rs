@@ -449,10 +449,10 @@ fn make_style(
             top: style.frame.bottom.as_ref().map(|l| l.main),
             bottom: style.frame.bottom.as_ref().map(|l| l.main),
             left: style.frame.left,
-            left_top_corner: style.frame.bottom.as_ref().and_then(|l| l.left_corner),
+            left_top_corner: style.split.as_ref().and_then(|l| l.left_corner),
             left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.left_corner),
             right: style.frame.right,
-            right_top_corner: style.frame.bottom.as_ref().and_then(|l| l.right_corner),
+            right_top_corner: style.split.as_ref().and_then(|l| l.right_corner),
             right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.right_corner),
         },
         (false, false, true, true) => Border {

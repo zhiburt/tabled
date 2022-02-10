@@ -331,6 +331,30 @@ fn empty_style() {
 }
 
 #[test]
+fn single_column_style() {
+    let data = create_vector::<2, 0>();
+    let table = Table::new(&data).with(Style::modern()).to_string();
+
+    let expected = concat!(
+        "┌───┐\n",
+        "│ N │\n",
+        "├───┤\n",
+        "│ 0 │\n",
+        "├───┤\n",
+        "│ 1 │\n",
+        "└───┘\n",
+    );
+
+    assert_eq!(table, expected);
+
+    let table = Table::new(&data).with(Style::blank()).to_string();
+
+    let expected = concat!(" N \n", " 0 \n", " 1 \n",);
+
+    assert_eq!(table, expected);
+}
+
+#[test]
 fn custom_style_test() {
     macro_rules! test_style {
         ($style:expr, $expected:expr $(,)*) => {
