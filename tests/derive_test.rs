@@ -4,9 +4,9 @@ mod tupple_structure {
     use super::*;
 
     #[test]
-    fn rename_field() {
+    fn rename_tabled() {
         #[derive(Tabled)]
-        struct St(u8, #[header("field 2")] &'static str);
+        struct St(u8, #[tabled(rename = "field 2")] &'static str);
 
         let st = St(0, "123");
 
@@ -15,11 +15,11 @@ mod tupple_structure {
     }
 
     #[test]
-    fn hide_field() {
+    fn skip_tabled() {
         #[derive(Tabled)]
         struct St(
-            #[header(hidden = true)] u8,
-            #[header("field 2", hidden)] &'static str,
+            #[tabled(skip)] u8,
+            #[tabled(rename = "field 2", skip)] &'static str,
             &'static str,
         );
 
@@ -43,7 +43,7 @@ mod tupple_structure {
         #[derive(Tabled)]
         struct St(
             u8,
-            #[field(display_with = "display_option")] Option<&'static str>,
+            #[tabled(display_with = "display_option")] Option<&'static str>,
         );
 
         let st = St(0, Some("v2"));
@@ -58,7 +58,7 @@ mod tupple_structure {
         #[derive(Tabled)]
         struct St(
             u8,
-            #[field(display_with = "Self::display_option")] Option<&'static str>,
+            #[tabled(display_with = "Self::display_option")] Option<&'static str>,
         );
 
         impl St {
@@ -193,12 +193,12 @@ mod enum_ {
         #[allow(dead_code)]
         #[derive(Tabled)]
         enum E {
-            #[header("Variant 1")]
+            #[tabled(rename = "Variant 1")]
             A {
                 a: u8,
                 b: i32,
             },
-            #[header(name = "Variant 2")]
+            #[tabled(rename = "Variant 2")]
             B(String),
             K,
         }
@@ -214,7 +214,7 @@ mod enum_ {
     }
 
     #[test]
-    fn hide_variant() {
+    fn skip_variant() {
         #[allow(dead_code)]
         #[derive(Tabled)]
         enum E {
@@ -222,7 +222,7 @@ mod enum_ {
                 a: u8,
                 b: i32,
             },
-            #[header(hidden = true)]
+            #[tabled(skip)]
             B(String),
             K,
         }
@@ -241,14 +241,17 @@ mod enum_ {
     fn inline_variant() {
         #[derive(Tabled)]
         enum Vehicle {
-            #[header(inline("Auto::"))]
+            #[tabled(inline("Auto::"))]
             Auto {
-                #[header("mod")]
+                #[tabled(rename = "mod")]
                 model: &'static str,
                 engine: &'static str,
             },
-            #[header(inline)]
-            Bikecycle(#[header("name")] &'static str, #[header(inline)] Bike),
+            #[tabled(inline)]
+            Bikecycle(
+                #[tabled(rename = "name")] &'static str,
+                #[tabled(inline)] Bike,
+            ),
             Skateboard,
         }
 
@@ -323,10 +326,10 @@ mod enum_ {
     fn inline_field_with_display_function() {
         #[derive(Tabled)]
         enum Developer {
-            #[header(inline("backend::"))]
+            #[tabled(inline("backend::"))]
             Backend {
-                #[header("name")]
-                #[field(display_with = "display")]
+                #[tabled(rename = "name")]
+                #[tabled(display_with = "display")]
                 specific: &'static str,
             },
             Frontend,
@@ -354,8 +357,8 @@ mod enum_ {
         #[allow(dead_code)]
         #[derive(Tabled)]
         enum Fact {
-            #[field(inline)]
-            Known(#[field(display_with = "Self::format::<4>")] &'static str),
+            #[tabled(inline)]
+            Known(#[tabled(display_with = "Self::format::<4>")] &'static str),
             Unknown,
         }
 
@@ -418,12 +421,12 @@ mod structure {
     }
 
     #[test]
-    fn rename_field() {
+    fn rename_tabled() {
         #[derive(Tabled)]
         struct St {
-            #[header(name = "field 1")]
+            #[tabled(rename = "field 1")]
             f1: u8,
-            #[header("field 2")]
+            #[tabled(rename = "field 2")]
             f2: &'static str,
         }
 
@@ -437,12 +440,35 @@ mod structure {
 
     #[allow(dead_code)]
     #[test]
-    fn hide_field() {
+    fn skip_tabled() {
         #[derive(Tabled)]
         struct St {
-            #[header(hidden = true)]
+            #[tabled(skip)]
             f1: u8,
-            #[header("field 2", hidden)]
+            #[tabled(rename = "field 2", skip)]
+            f2: &'static str,
+            f3: &'static str,
+        }
+
+        let st = St {
+            f1: 0,
+            f2: "v2",
+            f3: "123",
+        };
+
+        assert_eq!(vec!["123".to_owned()], st.fields());
+        assert_eq!(vec!["f3".to_owned()], St::headers());
+        assert_eq!(St::LENGTH, 1);
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn skip_true_tabled() {
+        #[derive(Tabled)]
+        struct St {
+            #[tabled(skip = true)]
+            f1: u8,
+            #[tabled(rename = "field 2", skip = true)]
             f2: &'static str,
             f3: &'static str,
         }
@@ -462,10 +488,10 @@ mod structure {
     fn inline() {
         #[derive(Tabled)]
         struct Person {
-            #[header(inline = true)]
+            #[tabled(inline = true)]
             id: u8,
             name: &'static str,
-            #[header(inline)]
+            #[tabled(inline)]
             ed: Education,
         }
 
@@ -510,10 +536,10 @@ mod structure {
     fn inline_with_rename_prefix() {
         #[derive(Tabled)]
         struct Person {
-            #[header("it's an ignored option", inline)] // does nothing
+            #[tabled(rename = "it's an ignored option", inline)] // does nothing
             id: u8,
             name: &'static str,
-            #[header(inline("education::"))]
+            #[tabled(inline("education::"))]
             ed: Education,
         }
 
@@ -565,7 +591,7 @@ mod structure {
         #[derive(Tabled)]
         struct St {
             f1: u8,
-            #[field(display_with = "display_option")]
+            #[tabled(display_with = "display_option")]
             f2: Option<&'static str>,
         }
 
@@ -584,7 +610,7 @@ mod structure {
         #[derive(Tabled)]
         struct St {
             f1: u8,
-            #[field(display_with = "Self::display_option")]
+            #[tabled(display_with = "Self::display_option")]
             f2: Option<&'static str>,
         }
 
@@ -608,12 +634,12 @@ mod structure {
 }
 
 #[test]
-fn hidden_fields_may_not_implement_display() {
+fn skipped_fields_may_not_implement_display() {
     {
         struct Something;
 
         #[derive(Tabled)]
-        struct TupleStruct(#[header(hidden = true)] Something, &'static str);
+        struct TupleStruct(#[tabled(skip)] Something, &'static str);
 
         let st = TupleStruct(Something, "nrdxp");
 
@@ -626,7 +652,7 @@ fn hidden_fields_may_not_implement_display() {
 
         #[derive(Tabled)]
         struct Struct {
-            #[header(hidden = true)]
+            #[tabled(skip)]
             _gem: Something,
             name: &'static str,
         }
@@ -645,7 +671,7 @@ fn hidden_fields_may_not_implement_display() {
 
         #[derive(Tabled)]
         struct Struct1 {
-            #[header(hidden = true)]
+            #[tabled(skip = true)]
             _field1: Something,
             field2: &'static str,
         }
@@ -653,7 +679,7 @@ fn hidden_fields_may_not_implement_display() {
         #[derive(Tabled)]
         struct Struct2 {
             field1: &'static str,
-            #[field(inline)]
+            #[tabled(inline)]
             field2: Struct1,
         }
 
@@ -677,19 +703,19 @@ fn hidden_fields_may_not_implement_display() {
 
         #[derive(Tabled)]
         enum Enum {
-            #[field(inline("A::"))]
+            #[tabled(inline("A::"))]
             A {
                 name: &'static str,
             },
-            #[field(inline("B::"))]
+            #[tabled(inline("B::"))]
             B {
                 issue: usize,
-                #[header(hidden = true)]
+                #[tabled(skip)]
                 _gem: Something,
                 name: &'static str,
             },
-            #[field(inline("C::"))]
-            C(usize, #[header(hidden = true)] Something, &'static str),
+            #[tabled(inline("C::"))]
+            C(usize, #[tabled(skip)] Something, &'static str),
             D,
         }
 

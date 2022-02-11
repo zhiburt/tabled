@@ -8,7 +8,7 @@ use syn::{
     Ident, Index, Lit, Meta, NestedMeta, Type, Variant,
 };
 
-#[proc_macro_derive(Tabled, attributes(header, field))]
+#[proc_macro_derive(Tabled, attributes(tabled))]
 pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let ast = impl_tabled(&input);
@@ -166,7 +166,11 @@ fn field_headers(
     prefix: &str,
 ) -> TokenStream {
     if attributes.inline {
-        return get_type_headers(&field.ty, &attributes.inline_prefix, "");
+        let prefix = attributes
+            .inline_prefix
+            .as_ref()
+            .map_or_else(|| "", |s| s.as_str());
+        return get_type_headers(&field.ty, prefix, "");
     }
 
     let header_name = field_header_name(field, attributes, index);
@@ -206,7 +210,11 @@ fn collect_info_enum(ast: &DataEnum) -> Result<Impl, String> {
 
 fn info_from_variant(variant: &Variant, attributes: &Attributes) -> Result<Impl, String> {
     if attributes.inline {
-        return info_from_fields(&variant.fields, variant_var_name, &attributes.inline_prefix);
+        let prefix = attributes
+            .inline_prefix
+            .as_ref()
+            .map_or_else(|| "", |s| s.as_str());
+        return info_from_fields(&variant.fields, variant_var_name, prefix);
     }
 
     let variant_name = variant_name(variant, attributes);
@@ -385,12 +393,12 @@ fn field_header_name(f: &Field, attr: &Attributes, index: usize) -> String {
     }
 }
 
-// It would be cool to create a library for a parsing attributes
+// todo: make String a &static str
 #[derive(Debug)]
 struct Attributes {
-    hidden: bool,
+    is_ignored: bool,
     inline: bool,
-    inline_prefix: String,
+    inline_prefix: Option<String>,
     name: Option<String>,
     display_with: Option<String>,
 }
@@ -405,7 +413,7 @@ impl Attributes {
 
         Self {
             display_with,
-            hidden: is_ignored,
+            is_ignored,
             inline: should_be_inlined,
             inline_prefix,
             name: override_header_name,
@@ -413,41 +421,33 @@ impl Attributes {
     }
 
     fn is_ignored(&self) -> bool {
-        self.hidden
+        self.is_ignored
     }
 }
 
 fn override_header_name(attrs: &[Attribute]) -> Option<String> {
-    find_name_attribute(attrs, "header", "name", look_up_nested_meta_str)
-        .or_else(|| find_name_attribute(attrs, "header", "name", look_up_nested_meta_flag_str))
+    find_name_attribute(attrs, "tabled", "rename", look_up_nested_meta_str)
 }
 
 fn check_display_with_func(attrs: &[Attribute]) -> Option<String> {
-    find_name_attribute(attrs, "field", "display_with", look_up_nested_meta_str)
+    find_name_attribute(attrs, "tabled", "display_with", look_up_nested_meta_str)
 }
 
 fn should_be_inlined(attrs: &[Attribute]) -> bool {
-    let inline_attr = find_name_attribute(attrs, "header", "inline", look_up_nested_meta_bool)
-        .or_else(|| find_name_attribute(attrs, "field", "inline", look_up_nested_meta_bool))
+    let inline_attr = find_name_attribute(attrs, "tabled", "inline", look_up_nested_meta_bool)
         .or_else(|| {
-            find_name_attribute(attrs, "header", "inline", look_up_nested_flag_str_in_attr)
-                .map(|_| true)
-        })
-        .or_else(|| {
-            find_name_attribute(attrs, "field", "inline", look_up_nested_flag_str_in_attr)
+            find_name_attribute(attrs, "tabled", "inline", look_up_nested_flag_str_in_attr)
                 .map(|_| true)
         });
     inline_attr == Some(true)
 }
 
-fn look_for_inline_prefix(attrs: &[Attribute]) -> String {
-    find_name_attribute(attrs, "header", "inline", look_up_nested_flag_str_in_attr)
-        .or_else(|| find_name_attribute(attrs, "field", "inline", look_up_nested_flag_str_in_attr))
-        .unwrap_or_else(|| "".to_owned())
+fn look_for_inline_prefix(attrs: &[Attribute]) -> Option<String> {
+    find_name_attribute(attrs, "tabled", "inline", look_up_nested_flag_str_in_attr)
 }
 
 fn attrs_has_ignore_sign(attrs: &[Attribute]) -> bool {
-    let is_ignored = find_name_attribute(attrs, "header", "hidden", look_up_nested_meta_bool);
+    let is_ignored = find_name_attribute(attrs, "tabled", "skip", look_up_nested_meta_bool);
     is_ignored == Some(true)
 }
 
