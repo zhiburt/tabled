@@ -355,6 +355,18 @@ fn single_column_style() {
 }
 
 #[test]
+fn single_column_last_row_style() {
+    let data = create_vector::<3, 0>();
+    let table = Table::new(&data)
+        .with(Style::re_structured_text())
+        .to_string();
+
+    let expected = concat!("===\n", " N \n", "===\n", " 0 \n", " 1 \n", " 2 \n", "===\n",);
+
+    assert_eq!(table, expected);
+}
+
+#[test]
 fn custom_style_test() {
     macro_rules! test_style {
         ($style:expr, $expected:expr $(,)*) => {
