@@ -368,12 +368,22 @@ impl TableOption for StyleSettings {
         let count_columns = grid.count_columns();
         for row in 0..count_rows {
             for column in 0..count_columns {
-                let border = make_style(self, row, column, count_rows, count_columns);
+                let mut border = make_style(self, row, column, count_rows, count_columns);
+                make_style_header(&mut border, self, row, column, count_rows, count_columns);
 
                 grid.set(
                     &Entity::Cell(row, column),
                     Settings::default().border(border).border_restriction(false),
                 );
+            }
+        }
+
+        if count_columns > 0 {
+            for row in 0..count_rows {
+                let cell = grid.style(&Entity::Cell(row, 0));
+                if cell.span == count_columns {
+                    fix_full_span_row(grid, row, count_columns);
+                }
             }
         }
     }
@@ -391,7 +401,7 @@ fn make_style(
     let is_first_column = column == 0;
     let is_last_column = column + 1 == count_columns;
 
-    let mut border = match (is_first_row, is_last_row, is_first_column, is_last_column) {
+    match (is_first_row, is_last_row, is_first_column, is_last_column) {
         // A table with a single cell
         (true, true, true, true) => Border {
             top: style.frame.top.as_ref().map(|l| l.main),
@@ -556,9 +566,20 @@ fn make_style(
             right_top_corner: style.split.as_ref().and_then(|l| l.intersection),
             right_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
         },
-    };
+    }
+}
 
-    // override header style
+fn make_style_header(
+    border: &mut Border,
+    style: &StyleSettings,
+    row: usize,
+    column: usize,
+    _count_rows: usize,
+    count_columns: usize,
+) {
+    let is_first_column = column == 0;
+    let is_last_column = column + 1 == count_columns;
+
     if style.header_split_line.is_some() {
         if row == 1 {
             border.top = style.header_split_line.as_ref().map(|l| l.main);
@@ -624,8 +645,22 @@ fn make_style(
             border.left_bottom_corner = None;
         }
     }
+}
 
-    border
+fn fix_full_span_row(grid: &mut Grid, row: usize, count_columns: usize) {
+    let mut first_cell_border = grid.get_border(row, 0);
+    let last_cell_border = grid.get_border(row, count_columns - 1);
+
+    first_cell_border.right = last_cell_border.right;
+    first_cell_border.right_top_corner = last_cell_border.right_top_corner;
+    first_cell_border.right_bottom_corner = last_cell_border.right_bottom_corner;
+
+    grid.set(
+        &Entity::Cell(row, 0),
+        Settings::default()
+            .border(first_cell_border)
+            .border_restriction(false),
+    );
 }
 
 /// Style is responsible for a look of a [Table].
