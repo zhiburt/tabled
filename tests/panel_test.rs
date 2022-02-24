@@ -156,3 +156,23 @@ fn footer() {
 
     assert_eq!(table, expected);
 }
+
+#[test]
+fn panel_style_uses_most_left_and_right_cell_styles() {
+    let table = Table::new(&[(0, 1)])
+        .with(tabled::Panel("Numbers", 0))
+        .with(Style::modern())
+        .to_string();
+
+    let expected = concat!(
+        "┌───────────┐\n",
+        "│Numbers    │\n",
+        "├───────────┤\n",
+        "│ i32 │ i32 │\n",
+        "├─────┼─────┤\n",
+        "│  0  │  1  │\n",
+        "└─────┴─────┘\n",
+    );
+
+    assert_eq!(table, expected);
+}

@@ -518,7 +518,7 @@ impl SplitLine {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Border {
     pub top: Option<char>,
     pub bottom: Option<char>,
@@ -653,10 +653,10 @@ impl EntityFrame {
 
 #[derive(Debug, Clone)]
 pub struct Style {
-    indent: Indent,
-    alignment_h: AlignmentHorizontal,
-    alignment_v: AlignmentVertical,
-    span: usize,
+    pub indent: Indent,
+    pub alignment_h: AlignmentHorizontal,
+    pub alignment_v: AlignmentVertical,
+    pub span: usize,
 }
 
 impl Default for Style {
