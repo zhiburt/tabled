@@ -1,6 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
-    Alignment, Border, Footer, Full, Header, Highlight, Modify, Object, Panel, Row, Style, Table,
+    Alignment, Border, Cell, Footer, Full, Header, Highlight, Modify, Object, Panel, Row, Style,
+    Table,
 };
 
 mod util;
@@ -198,6 +199,51 @@ fn panel_style_uses_most_left_and_right_cell_styles() {
         "├─────┼─────┤\n",
         "│  0  │  1  │\n",
         "└─────┴─────┘\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn panel_style_change() {
+    let table = Table::new(&[(0, 1)])
+        .with(tabled::Panel("Numbers", 0))
+        .with(
+            Style::modern()
+                .top_intersection('─')
+                .header_intersection('┬'),
+        )
+        .with(Modify::new(Cell(0, 0)).with(Alignment::center_horizontal()))
+        .to_string();
+
+    let expected = concat!(
+        "┌───────────┐\n",
+        "│  Numbers  │\n",
+        "├─────┬─────┤\n",
+        "│ i32 │ i32 │\n",
+        "├─────┼─────┤\n",
+        "│  0  │  1  │\n",
+        "└─────┴─────┘\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn panel_in_single_column() {
+    let table = Table::new(&[(0)])
+        .with(tabled::Panel("Numbers", 0))
+        .with(Style::modern())
+        .to_string();
+
+    let expected = concat!(
+        "┌───────┐\n",
+        "│Numbers│\n",
+        "├───────┤\n",
+        "│  i32  │\n",
+        "├───────┤\n",
+        "│   0   │\n",
+        "└───────┘\n",
     );
 
     assert_eq!(table, expected);

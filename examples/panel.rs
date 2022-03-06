@@ -11,33 +11,38 @@ struct Release {
     major_feature: &'static str,
 }
 
-fn main() {
-    let data = [
-        Release {
-            version: "0.2.1",
-            published_date: "2021-06-23",
-            is_active: true,
-            major_feature: "#[header(inline)] attribute",
-        },
-        Release {
-            version: "0.2.0",
-            published_date: "2021-06-19",
-            is_active: false,
-            major_feature: "API changes",
-        },
-        Release {
-            version: "0.1.4",
-            published_date: "2021-06-07",
-            is_active: false,
-            major_feature: "display_with attribute",
-        },
-    ];
+const DATA: [Release; 3] = [
+    Release {
+        version: "0.2.1",
+        published_date: "2021-06-23",
+        is_active: true,
+        major_feature: "#[header(inline)] attribute",
+    },
+    Release {
+        version: "0.2.0",
+        published_date: "2021-06-19",
+        is_active: false,
+        major_feature: "API changes",
+    },
+    Release {
+        version: "0.1.4",
+        published_date: "2021-06-07",
+        is_active: false,
+        major_feature: "display_with attribute",
+    },
+];
 
-    let table = Table::new(&data)
+fn main() {
+    let table = Table::new(DATA)
         .with(Header("Tabled Releases"))
-        .with(Footer(format!("N - {}", data.len())))
-        .with(Style::modern())
-        .with(Modify::new(Full).with(Alignment::Horizontal(AlignmentHorizontal::Center)));
+        .with(Footer(format!("N - {}", DATA.len())))
+        .with(Modify::new(Full).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
+        .with(
+            Style::modern()
+                .top_intersection('─')
+                .bottom_intersection('─')
+                .header_intersection('┬'),
+        );
 
     println!("{}", table);
 }

@@ -832,8 +832,6 @@ impl std::fmt::Display for Grid {
             .map(|row| self.get_inner_split_line(row))
             .collect::<Vec<_>>();
 
-        println!("styles={:?}", self.get_split_line(0));
-
         let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
         let widths = columns_width(
             &mut cells,
@@ -843,11 +841,7 @@ impl std::fmt::Display for Grid {
             count_columns,
         );
 
-        println!("widths={:?}", widths);
-
         let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
-
-        println!("normal_widths={:?}", normal_widths);
 
         for row in 0..count_rows {
             let inner_border = self.get_inner_split_line(row);
@@ -921,7 +915,6 @@ fn build_row_internals(
     height: usize,
     border: &[BorderLine],
 ) -> fmt::Result {
-    println!("row_styles={} border={}", row_styles.len(), border.len());
     for line_index in 0..height {
         build_line(f, border, row_styles, row.len(), |f, column| {
             build_row_internal_line(
