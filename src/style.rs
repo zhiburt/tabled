@@ -377,15 +377,6 @@ impl TableOption for StyleSettings {
                 );
             }
         }
-
-        // if count_columns > 0 {
-        //     for row in 0..count_rows {
-        //         let cell = grid.style(&Entity::Cell(row, 0));
-        //         if cell.span == count_columns {
-        //             fix_full_span_row(grid, row, count_columns);
-        //         }
-        //     }
-        // }
     }
 }
 
@@ -645,22 +636,6 @@ fn make_style_header(
             border.left_bottom_corner = None;
         }
     }
-}
-
-fn fix_full_span_row(grid: &mut Grid, row: usize, count_columns: usize) {
-    let mut first_cell_border = grid.get_border(row, 0);
-    let last_cell_border = grid.get_border(row, count_columns - 1);
-
-    first_cell_border.right = last_cell_border.right;
-    first_cell_border.right_top_corner = last_cell_border.right_top_corner;
-    first_cell_border.right_bottom_corner = last_cell_border.right_bottom_corner;
-
-    grid.set(
-        &Entity::Cell(row, 0),
-        Settings::default()
-            .border(first_cell_border)
-            .border_restriction(false),
-    );
 }
 
 /// Style is responsible for a look of a [Table].
