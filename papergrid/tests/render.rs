@@ -224,9 +224,9 @@ fn render_row_span() {
     grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
 
     let expected = concat!(
-        "+-------+\n",
+        "+---+---+\n",
         "|  0-0  |\n",
-        "+-------+\n",
+        "+---+---+\n",
         "|1-0|1-1|\n",
         "+---+---+\n"
     );
@@ -251,10 +251,10 @@ fn render_miltiline_span() {
     grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
 
     let expected = concat!(
-        "+-------+\n",
+        "+---+---+\n",
         "|  0-0  |\n",
         "|  0-1  |\n",
-        "+-------+\n",
+        "+---+---+\n",
         "|1-0|1-1|\n",
         "+---+---+\n"
     );
@@ -284,15 +284,15 @@ fn render_row_span_multilane() {
     );
 
     let expected = concat!(
-        "+----------+----+\n",
+        "+-----+----+----+\n",
         "|first line|e.g.|\n",
-        "+----------+----+\n",
+        "+-----+----+----+\n",
         "|0    |1   |2   |\n",
         "+-----+----+----+\n",
         "|0    |1   |2   |\n",
         "+-----+----+----+\n",
         "|full last line |\n",
-        "+---------------+\n",
+        "+-----+----+----+\n",
     );
 
     println!("{}", grid);
@@ -317,13 +317,41 @@ fn render_row_span_with_horizontal_ident() {
     let grid = grid.to_string();
 
     let expected = concat!(
-        "+---------------+\n",
+        "+-----------+---+\n",
         "|0-0            |\n",
-        "+---------------+\n",
+        "+-----------+---+\n",
         "|    1-0    |1-1|\n",
         "+-----------+---+\n",
         "|2-0        |2-1|\n",
         "+-----------+---+\n",
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(grid, expected);
+}
+
+#[test]
+fn render_row_span_3x3_with_horizontal_ident() {
+    let mut grid = Grid::new(3, 3);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(3));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0").span(2));
+    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0").span(2));
+    grid.set(&Entity::Cell(1, 2), Settings::new().text("1-1"));
+    grid.set(&Entity::Cell(2, 2), Settings::new().text("2-1"));
+
+    let grid = grid.to_string();
+
+    let expected = concat!(
+        "+-+-+---+\n",
+        "|0-0    |\n",
+        "+-+-+---+\n",
+        "|1-0|1-1|\n",
+        "+-+-+---+\n",
+        "|2-0|2-1|\n",
+        "+-+-+---+\n",
     );
 
     println!("{}", grid);
@@ -348,13 +376,13 @@ fn render_row_span_with_different_length() {
     );
 
     let expected = concat!(
-        "+-------------------+\n",
+        "+---------+---------+\n",
         "|first row          |\n",
-        "+-------------------+\n",
+        "+---------+---------+\n",
         "|0        |1        |\n",
         "+---------+---------+\n",
         "|a longer second row|\n",
-        "+-------------------+\n",
+        "+---------+---------+\n",
     );
 
     println!("{}", grid);
@@ -371,7 +399,7 @@ fn render_row_span_with_odd_length() {
     grid.set(&Entity::Cell(1, 0), Settings::new().text("2"));
     grid.set(&Entity::Cell(1, 1), Settings::new().text("4"));
 
-    let expected = concat!("+----+\n", "|3   |\n", "+----+\n", "|2 |4|\n", "+--+-+\n",);
+    let expected = concat!("+--+-+\n", "|3   |\n", "+--+-+\n", "|2 |4|\n", "+--+-+\n",);
 
     assert_eq!(expected, grid.to_string());
 }
@@ -385,13 +413,13 @@ fn render_only_row_spaned() {
     grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0").span(2));
     grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0").span(2));
 
-    let expected = "+---+\n\
+    let expected = "+-+-+\n\
                          |0-0|\n\
-                         +---+\n\
+                         +-+-+\n\
                          |1-0|\n\
-                         +---+\n\
+                         +-+-+\n\
                          |2-0|\n\
-                         +---+\n";
+                         +-+-+\n";
 
     assert_eq!(grid.to_string(), expected);
 }
@@ -426,12 +454,81 @@ fn grid_2x2_span_test() {
     let str = grid.to_string();
     assert_eq!(
         str,
-        "+-------+\n\
+        "+---+---+\n\
          |123    |\n\
-         +-------+\n\
+         +---+---+\n\
          |asd|asd|\n\
          +---+---+\n"
     )
+}
+
+#[test]
+fn grid_2x2_2_span_test() {
+    let mut grid = Grid::new(2, 2);
+    grid.set(&Entity::Global, Settings::new().text("asd"));
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    // grid.set(&Entity::Cell(0, 0), Settings::new().text("123").span(2));
+    // grid.set(&Entity::Cell(1, 0), Settings::new().text("asd").span(2));
+
+    // let str = grid.to_string();
+    // assert_eq!(
+    //     str,
+    //     "+-+-+\n\
+    //      |123|\n\
+    //      +-+-+\n\
+    //      |asd|\n\
+    //      +-+-+\n"
+    // );
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("1234").span(2));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("asdw").span(2));
+
+    let str = grid.to_string();
+    assert_eq!(
+        str,
+        "+--+-+\n\
+         |1234|\n\
+         +--+-+\n\
+         |asdw|\n\
+         +--+-+\n"
+    );
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("1").span(2));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("a").span(2));
+
+    let str = grid.to_string();
+    assert_eq!(
+        str,
+        "+++\n\
+         |1|\n\
+         +++\n\
+         |a|\n\
+         +++\n"
+    );
+}
+
+#[test]
+fn render_row_span_with_no_split_style() {
+    let mut grid = Grid::new(2, 2);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(
+        &Entity::Cell(0, 0),
+        Settings::new()
+            .text("0-0")
+            .span(2)
+            .alignment(AlignmentHorizontal::Center),
+    );
+    grid.set(&Entity::Cell(0, 1), Settings::new().text(""));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
+    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
+
+    grid.clear_split_grid();
+
+    let expected = concat!(" 0-0  \n", "1-01-1\n");
+
+    assert_eq!(expected, grid.to_string());
 }
 
 #[test]

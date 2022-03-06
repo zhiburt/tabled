@@ -378,14 +378,14 @@ impl TableOption for StyleSettings {
             }
         }
 
-        if count_columns > 0 {
-            for row in 0..count_rows {
-                let cell = grid.style(&Entity::Cell(row, 0));
-                if cell.span == count_columns {
-                    fix_full_span_row(grid, row, count_columns);
-                }
-            }
-        }
+        // if count_columns > 0 {
+        //     for row in 0..count_rows {
+        //         let cell = grid.style(&Entity::Cell(row, 0));
+        //         if cell.span == count_columns {
+        //             fix_full_span_row(grid, row, count_columns);
+        //         }
+        //     }
+        // }
     }
 }
 

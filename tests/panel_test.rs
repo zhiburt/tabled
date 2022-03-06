@@ -15,7 +15,7 @@ fn panel_has_no_style_by_default() {
     // todo: it would be better if vertical split was not set in panel line
     // it is because it has right border printed
     let expected = concat!(
-        "Linux Distributions                  \n",
+        "Linux Distributions                 \n",
         " N | column 0 | column 1 | column 2 \n",
         "---+----------+----------+----------\n",
         " 0 |   0-0    |   0-1    |   0-2    \n",
@@ -23,19 +23,41 @@ fn panel_has_no_style_by_default() {
         " 2 |   2-0    |   2-1    |   2-2    \n",
     );
 
+    println!("{}", table);
+
     assert_eq!(table, expected);
 }
 
 #[test]
 fn highligt_panel() {
+    let border = Border::full('#', '#', '#', '#', '#', '#', '#', '#');
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 0))
         .with(Style::psql())
-        .with(Highlight::cell(
-            0,
-            0,
-            Border::full('#', '#', '#', '#', '#', '#', '#', '#'),
-        ))
+        .with(Highlight::cell(0, 0, border.clone()))
+        .to_string();
+
+    // todo: it would be better if vertical split was not set in panel line
+    // it is because it has right border printed
+    let expected = concat!(
+        "#####                                \n",
+        "#Linux Distributions                 \n",
+        "#####----------+----------+----------\n",
+        "  N | column 0 | column 1 | column 2 \n",
+        "  0 |   0-0    |   0-1    |   0-2    \n",
+        "  1 |   1-0    |   1-1    |   1-2    \n",
+        "  2 |   2-0    |   2-1    |   2-2    \n",
+    );
+
+    assert_eq!(table, expected);
+
+    let table = Table::new(create_vector::<3, 3>())
+        .with(Panel("Linux Distributions", 0))
+        .with(Style::psql())
+        .with(Highlight::cell(0, 0, border.clone()))
+        .with(Highlight::cell(0, 1, border.clone()))
+        .with(Highlight::cell(0, 2, border.clone()))
+        .with(Highlight::cell(0, 3, border))
         .to_string();
 
     // todo: it would be better if vertical split was not set in panel line
@@ -44,10 +66,10 @@ fn highligt_panel() {
         "######################################\n",
         "#Linux Distributions                 #\n",
         "######################################\n",
-        "  N | column 0 | column 1 | column 2 \n",
-        "  0 |   0-0    |   0-1    |   0-2    \n",
-        "  1 |   1-0    |   1-1    |   1-2    \n",
-        "  2 |   2-0    |   2-1    |   2-2    \n",
+        "  N | column 0 | column 1 | column 2  \n",
+        "  0 |   0-0    |   0-1    |   0-2     \n",
+        "  1 |   1-0    |   1-1    |   1-2     \n",
+        "  2 |   2-0    |   2-1    |   2-2     \n",
     );
 
     assert_eq!(table, expected);
@@ -62,13 +84,15 @@ fn top_panel() {
         .to_string();
 
     let expected = concat!(
-        "        Linux Distributions         |\n",
-        "------------------------------------+\n",
+        "        Linux Distributions         \n",
+        "---+----------+----------+----------\n",
         " N | column 0 | column 1 | column 2 \n",
         " 0 |   0-0    |   0-1    |   0-2    \n",
         " 1 |   1-0    |   1-1    |   1-2    \n",
         " 2 |   2-0    |   2-1    |   2-2    \n",
     );
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }
@@ -88,8 +112,10 @@ fn bottom_panel() {
         " 0 |   0-0    |   0-1    |   0-2    \n",
         " 1 |   1-0    |   1-1    |   1-2    \n",
         " 2 |   2-0    |   2-1    |   2-2    \n",
-        "        Linux Distributions         |\n",
+        "        Linux Distributions         \n",
     );
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }
@@ -106,7 +132,7 @@ fn inner_panel() {
         " N | column 0 | column 1 | column 2 \n",
         "---+----------+----------+----------\n",
         " 0 |   0-0    |   0-1    |   0-2    \n",
-        "        Linux Distributions         |\n",
+        "        Linux Distributions         \n",
         " 1 |   1-0    |   1-1    |   1-2    \n",
         " 2 |   2-0    |   2-1    |   2-2    \n",
     );
@@ -123,8 +149,8 @@ fn header() {
         .to_string();
 
     let expected = concat!(
-        "        Linux Distributions         |\n",
-        "------------------------------------+\n",
+        "        Linux Distributions         \n",
+        "---+----------+----------+----------\n",
         " N | column 0 | column 1 | column 2 \n",
         " 0 |   0-0    |   0-1    |   0-2    \n",
         " 1 |   1-0    |   1-1    |   1-2    \n",
@@ -145,13 +171,13 @@ fn footer() {
         .to_string();
 
     let expected = concat!(
-        "        Linux Distributions         |\n",
-        "------------------------------------+\n",
+        "        Linux Distributions         \n",
+        "---+----------+----------+----------\n",
         " N | column 0 | column 1 | column 2 \n",
         " 0 |   0-0    |   0-1    |   0-2    \n",
         " 1 |   1-0    |   1-1    |   1-2    \n",
         " 2 |   2-0    |   2-1    |   2-2    \n",
-        "              The end               |\n",
+        "              The end               \n",
     );
 
     assert_eq!(table, expected);
@@ -165,9 +191,9 @@ fn panel_style_uses_most_left_and_right_cell_styles() {
         .to_string();
 
     let expected = concat!(
-        "┌───────────┐\n",
+        "┌─────┬─────┐\n",
         "│Numbers    │\n",
-        "├───────────┤\n",
+        "├─────┼─────┤\n",
         "│ i32 │ i32 │\n",
         "├─────┼─────┤\n",
         "│  0  │  1  │\n",

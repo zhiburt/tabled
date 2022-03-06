@@ -596,7 +596,7 @@ impl Border {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct BorderLine {
     main: Option<char>,
     connector1: Option<char>,
@@ -828,8 +828,26 @@ impl std::fmt::Display for Grid {
         let mut cells = self.collect_cells(count_rows, count_columns);
         let mut styles = self.collect_styles(count_rows, count_columns);
 
+        let split_borders = (0..count_rows)
+            .map(|row| self.get_inner_split_line(row))
+            .collect::<Vec<_>>();
+
+        println!("styles={:?}", self.get_split_line(0));
+
         let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
-        let widths = columns_width(&mut cells, &mut styles, count_rows, count_columns);
+        let widths = columns_width(
+            &mut cells,
+            &mut styles,
+            &split_borders,
+            count_rows,
+            count_columns,
+        );
+
+        println!("widths={:?}", widths);
+
+        let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
+
+        println!("normal_widths={:?}", normal_widths);
 
         for row in 0..count_rows {
             let inner_border = self.get_inner_split_line(row);
@@ -851,6 +869,7 @@ impl std::fmt::Display for Grid {
                 &cells[row],
                 &styles[row],
                 &widths[row],
+                &normal_widths,
                 row_heights[row],
                 inner_border,
                 top_border,
@@ -868,13 +887,14 @@ fn build_row(
     cell_contents: &[Vec<&str>],
     cell_styles: &[Style],
     cell_widths: &[usize],
+    normal_widths: &[usize],
     height: usize,
     inner_border: Vec<BorderLine>,
     top_border: Option<(Vec<BorderLine>, Option<&String>)>,
     bottom_border: Option<(Vec<BorderLine>, Option<&String>)>,
 ) -> fmt::Result {
     if let Some((top_border, override_border)) = top_border {
-        build_split_line(f, cell_widths, &top_border, override_border)?;
+        build_split_line(f, normal_widths, &top_border, override_border)?;
     }
 
     build_row_internals(
@@ -887,7 +907,7 @@ fn build_row(
     )?;
 
     if let Some((bottom_border, override_border)) = bottom_border {
-        build_split_line(f, cell_widths, &bottom_border, override_border)?;
+        build_split_line(f, normal_widths, &bottom_border, override_border)?;
     }
 
     Ok(())
@@ -901,8 +921,9 @@ fn build_row_internals(
     height: usize,
     border: &[BorderLine],
 ) -> fmt::Result {
+    println!("row_styles={} border={}", row_styles.len(), border.len());
     for line_index in 0..height {
-        build_line(f, row.len(), border, |f, column| {
+        build_line(f, border, row_styles, row.len(), |f, column| {
             build_row_internal_line(
                 f,
                 line_index,
@@ -983,14 +1004,19 @@ fn line(
 
 fn build_line<F: FnMut(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
     f: &mut std::fmt::Formatter<'_>,
-    length: usize,
     borders: &[BorderLine],
+    row_styles: &[Style],
+    length: usize,
     mut writer: F,
 ) -> fmt::Result {
-    for (i, border) in borders.iter().enumerate().take(length) {
-        write_option(f, border.connector1)?;
-        writer(f, i)?;
-        if i + 1 == length {
+    for (i, border) in borders.iter().enumerate() {
+        if is_cell_visible(row_styles, i) {
+            write_option(f, border.connector1)?;
+            writer(f, i)?;
+        }
+
+        let is_last_cell = i + 1 == length;
+        if is_last_cell {
             write_option(f, border.connector2)?;
         }
     }
@@ -1098,6 +1124,7 @@ fn real_string_width(text: &str) -> usize {
 fn columns_width(
     cells: &mut [Vec<Vec<&str>>],
     styles: &mut [Vec<Style>],
+    borders: &[Vec<BorderLine>],
     count_rows: usize,
     count_columns: usize,
 ) -> Vec<Vec<usize>> {
@@ -1123,22 +1150,15 @@ fn columns_width(
             spans.insert(style.span);
         })
     });
-    spans.into_iter().filter(|&span| span > 0).for_each(|span| {
-        adjust_width(&mut widths, styles, count_rows, count_columns, span);
-    });
-
-    // remove not visible cells to print everything correctly
-    (0..count_rows).for_each(|row| {
-        let mut n_removed = 0;
-        (0..count_columns).for_each(|column| {
-            let column = column - n_removed;
-            if styles[row][column].span == 0 {
-                widths[row].remove(column);
-                cells[row].remove(column);
-                styles[row].remove(column);
-                n_removed += 1;
-            }
-        });
+    spans.into_iter().for_each(|span| {
+        adjust_width(
+            &mut widths,
+            styles,
+            borders,
+            count_rows,
+            count_columns,
+            span,
+        );
     });
 
     widths
@@ -1147,6 +1167,7 @@ fn columns_width(
 fn adjust_width(
     widths: &mut [Vec<usize>],
     styles: &[Vec<Style>],
+    borders: &[Vec<BorderLine>],
     count_rows: usize,
     count_columns: usize,
     span: usize,
@@ -1158,13 +1179,14 @@ fn adjust_width(
             break;
         }
 
-        adjust_range_width(widths, styles, count_rows, start, end);
+        adjust_range_width(widths, styles, borders, count_rows, start, end);
     }
 }
 
 fn adjust_range_width(
     widths: &mut [Vec<usize>],
     styles: &[Vec<Style>],
+    borders: &[Vec<BorderLine>],
     count_rows: usize,
     start_column: usize,
     end_column: usize,
@@ -1185,7 +1207,14 @@ fn adjust_range_width(
             row_spans <= span
         })
         .map(|row| {
-            let width = row_width(&styles[row], &widths[row], start_column, end_column);
+            let width = row_width(
+                &styles[row],
+                &widths[row],
+                &borders[row],
+                start_column,
+                end_column,
+                true,
+            );
             (row, width)
         })
         .max_by_key(|&(_, width)| width)
@@ -1211,6 +1240,7 @@ fn adjust_range_width(
             inc_width_to_cells(
                 &mut widths[row],
                 &styles[row],
+                &borders[row],
                 start_column,
                 end_column,
                 max_width,
@@ -1241,7 +1271,14 @@ fn is_cell_visible(row_styles: &[Style], column: usize) -> bool {
             .any(|(style, span)| style.span > span)
 }
 
-fn row_width(styles: &[Style], widths: &[usize], column_start: usize, column_end: usize) -> usize {
+fn row_width(
+    styles: &[Style],
+    widths: &[usize],
+    borders: &[BorderLine],
+    column_start: usize,
+    column_end: usize,
+    consider_borders: bool,
+) -> usize {
     let width = (column_start..column_end)
         .filter(|&i| is_cell_visible(styles, i))
         .map(|i| widths[i])
@@ -1251,11 +1288,24 @@ fn row_width(styles: &[Style], widths: &[usize], column_start: usize, column_end
         return 0;
     }
 
-    // fixme: Is this style dependent?
-    let border_count = (column_start..column_end)
-        .filter(|&i| is_cell_visible(styles, i))
-        .count()
-        - 1;
+    let border_count = if consider_borders {
+        if column_end - column_start == 0 {
+            0
+        } else {
+            (column_start..column_end)
+                .filter(|&i| is_cell_visible(styles, i))
+                .filter(|&i| {
+                    if i == column_start {
+                        false
+                    } else {
+                        borders[i].connector1.is_some()
+                    }
+                })
+                .count()
+        }
+    } else {
+        0
+    };
 
     width + border_count
 }
@@ -1263,11 +1313,12 @@ fn row_width(styles: &[Style], widths: &[usize], column_start: usize, column_end
 fn inc_width_to_cells(
     widths: &mut [usize],
     styles: &[Style],
+    borders: &[BorderLine],
     start_range: usize,
     end_range: usize,
     width: usize,
 ) {
-    let a = row_width(styles, widths, start_range, end_range);
+    let a = row_width(styles, widths, borders, start_range, end_range, true);
     let diff = width - a;
 
     (0..diff)
@@ -1318,6 +1369,44 @@ fn cell_height(cell: &[&str], style: &Style) -> usize {
     content_height + style.indent.top + style.indent.bottom
 }
 
+fn normalized_width(
+    widths: &[Vec<usize>],
+    styles: &[Vec<Style>],
+    count_rows: usize,
+    count_columns: usize,
+) -> Vec<usize> {
+    let mut v = vec![0; count_columns];
+    let mut skip = 0;
+    for col in 0..count_columns {
+        if skip > 0 {
+            skip -= 1;
+            continue;
+        }
+
+        let min_spanned_row = (0..count_rows)
+            .filter(|&row| styles[row][col].span > 0)
+            .min_by(|&x, &y| styles[x][col].span.cmp(&styles[y][col].span));
+
+        if let Some(row) = min_spanned_row {
+            let span = styles[row][col].span;
+            let mut width = widths[row][col] - (span - 1);
+
+            for col in (col..col + span).cycle() {
+                if width == 0 {
+                    break;
+                }
+
+                v[col] += 1;
+                width -= 1;
+            }
+
+            skip += span - 1;
+        }
+    }
+
+    v
+}
+
 #[derive(Debug)]
 struct Borders {
     vertical: HashMap<CellIndex, Line>,
@@ -1351,7 +1440,7 @@ impl Borders {
         }
 
         if !self.horizontal.contains_key(&row) {
-            return Ok(Vec::new());
+            return Ok(vec![BorderLine::default(); self.count_columns]);
         }
 
         let mut line = Vec::with_capacity(self.count_columns);
@@ -1380,7 +1469,7 @@ impl Borders {
 
         let mut line: Vec<BorderLine> = Vec::new();
         let mut last_index = None;
-        for column in 0..self.count_columns + 1 {
+        for column in 0..self.count_columns {
             let border = BorderLine {
                 connector1: self.get_vertical_char(row, column),
                 ..Default::default()
@@ -1396,6 +1485,8 @@ impl Borders {
 
             line.push(border);
         }
+
+        line[self.count_columns - 1].connector2 = self.get_vertical_char(row, self.count_columns);
 
         Ok(line)
     }
