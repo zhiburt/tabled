@@ -380,7 +380,7 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
                 if length < width {
                     let remain = width - length;
                     let mut new_line = String::with_capacity(width);
-                    new_line.extend(line.chars());
+                    new_line.push_str(line);
                     new_line.extend(std::iter::repeat(fill_with).take(remain));
                     std::borrow::Cow::Owned(new_line)
                 } else {
