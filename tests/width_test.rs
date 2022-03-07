@@ -1,5 +1,7 @@
 use crate::util::create_vector;
-use tabled::{Alignment, Column, Full, MaxWidth, Modify, Object, Row, Style, Table};
+use tabled::{
+    Alignment, Cell, Column, Full, MaxWidth, MinWidth, Modify, Object, Row, Style, Table,
+};
 
 mod util;
 
@@ -186,7 +188,7 @@ fn max_width_wrapped_keep_words_color() {
 
     let data = vec!["this is a long sentence".on_black().green().to_string()];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
@@ -202,7 +204,7 @@ fn max_width_wrapped_keep_words_color() {
 
     let data = vec!["this is a long  sentence".on_black().green().to_string()];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
@@ -220,7 +222,7 @@ fn max_width_wrapped_keep_words_color() {
 
     let data = vec!["this is a long   sentence".on_black().green().to_string()];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
@@ -236,7 +238,7 @@ fn max_width_wrapped_keep_words_color() {
 
     let data = vec!["this is a long    sentence".on_black().green().to_string()];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
@@ -252,7 +254,7 @@ fn max_width_wrapped_keep_words_color() {
 
     let data = vec!["this".on_black().green().to_string()];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::wrapping(10).keep_words()))
         .to_string();
 
@@ -295,7 +297,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
         .green()
         .to_string()];
     let table = Table::new(&data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
@@ -405,11 +407,169 @@ fn color_chars_are_stripped() {
     );
 
     let table = Table::new(data)
-        .with(Style::GITHUB_MARKDOWN)
+        .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::truncating(3).suffix("...")))
         .to_string();
 
     println!("{}", table);
 
     assert_eq!(expected, table);
+}
+
+#[test]
+fn min_width() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Row(..1)).with(MinWidth::new(12)))
+        .to_string();
+
+    let expected = concat!(
+        "|      N       |   column 0   |   column 1   |   column 2   |\n",
+        "|--------------+--------------+--------------+--------------|\n",
+        "|      0       |     0-0      |     0-1      |     0-2      |\n",
+        "|      1       |     1-0      |     1-1      |     1-2      |\n",
+        "|      2       |     2-0      |     2-1      |     2-2      |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn min_width_with_filler() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Row(..1)).with(MinWidth::new(12).fill_with('.')))
+        .to_string();
+
+    let expected = concat!(
+        "| N........... | column 0.... | column 1.... | column 2.... |\n",
+        "|--------------+--------------+--------------+--------------|\n",
+        "|      0       |     0-0      |     0-1      |     0-2      |\n",
+        "|      1       |     1-0      |     1-1      |     1-2      |\n",
+        "|      2       |     2-0      |     2-1      |     2-2      |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn min_width_one_column() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(0, 0)).with(MinWidth::new(5)))
+        .to_string();
+
+    let expected = concat!(
+        "|   N   | column 0 | column 1 | column 2 |\n",
+        "|-------+----------+----------+----------|\n",
+        "|   0   |   0-0    |   0-1    |   0-2    |\n",
+        "|   1   |   1-0    |   1-1    |   1-2    |\n",
+        "|   2   |   2-0    |   2-1    |   2-2    |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn min_width_on_smaller_content() {
+    let data = create_vector::<3, 3>();
+
+    assert_eq!(
+        Table::new(&data)
+            .with(Style::github_markdown())
+            .with(Modify::new(Row(..1)).with(MinWidth::new(1)))
+            .to_string(),
+        Table::new(&data).with(Style::github_markdown()).to_string()
+    );
+}
+
+#[test]
+fn min_with_max_width() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Row(..1)).with(MinWidth::new(3)))
+        .with(Modify::new(Row(..1)).with(MaxWidth::truncating(3)))
+        .to_string();
+
+    let expected = concat!(
+        "|  N  | col | col | col |\n",
+        "|-----+-----+-----+-----|\n",
+        "|  0  | 0-0 | 0-1 | 0-2 |\n",
+        "|  1  | 1-0 | 1-1 | 1-2 |\n",
+        "|  2  | 2-0 | 2-1 | 2-2 |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn min_with_max_width_truncate_suffix() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Row(..1)).with(MinWidth::new(3)))
+        .with(Modify::new(Row(..1)).with(MaxWidth::truncating(3).suffix("...")))
+        .to_string();
+
+    let expected = concat!(
+        "|  N  | col... | col... | col... |\n",
+        "|-----+--------+--------+--------|\n",
+        "|  0  |  0-0   |  0-1   |  0-2   |\n",
+        "|  1  |  1-0   |  1-1   |  1-2   |\n",
+        "|  2  |  2-0   |  2-1   |  2-2   |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[cfg(feature = "color")]
+#[test]
+fn min_width_color() {
+    use owo_colors::OwoColorize;
+
+    let data = &[
+        "asd".red().to_string(),
+        "zxc".blue().to_string(),
+        "asdasd".on_black().green().to_string(),
+    ];
+
+    let expected = concat!(
+        "|   String   |\n",
+        "|------------|\n",
+        "|    \u{1b}[31masd\u{1b}[0m     |\n",
+        "|    \u{1b}[34mzxc\u{1b}[0m     |\n",
+        "|   \u{1b}[32m\u{1b}[40masdasd\u{1b}[0m\u{1b}[0m   |\n",
+    );
+
+    let table = Table::new(data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(MinWidth::new(10)))
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(expected, table);
+}
+
+#[cfg(feature = "color")]
+#[test]
+fn min_width_color_with_smaller_then_width() {
+    use owo_colors::OwoColorize;
+
+    let data = &[
+        "asd".red().to_string(),
+        "zxc".blue().to_string(),
+        "asdasd".on_black().green().to_string(),
+    ];
+
+    assert_eq!(
+        Table::new(data)
+            .with(Modify::new(Full).with(MinWidth::new(1)))
+            .to_string(),
+        Table::new(data).to_string()
+    );
 }
