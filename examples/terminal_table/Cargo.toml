@@ -1,0 +1,9 @@
+[package]
+name = "terminal_table"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+terminal_size = "0.1.17"
+tabled = {path = "../.."}
