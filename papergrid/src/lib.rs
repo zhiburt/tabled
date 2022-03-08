@@ -426,6 +426,48 @@ impl Grid {
         new_grid
     }
 
+    /// Returns a total width of table, including split lines.
+    pub fn total_width(&mut self) -> usize {
+        // can be simplified? by just getting a split line chars().count()
+
+        let count_rows = self.count_rows();
+        let count_columns = self.count_columns();
+        let mut cells = self.collect_cells(count_rows, count_columns);
+        let mut styles = self.collect_styles(count_rows, count_columns);
+        let split_borders = (0..count_rows)
+            .map(|row| self.get_inner_split_line(row))
+            .collect::<Vec<_>>();
+
+        let widths = columns_width(
+            &mut cells,
+            &mut styles,
+            &split_borders,
+            count_rows,
+            count_columns,
+        );
+
+        let content_width = widths
+            .into_iter()
+            .next()
+            .map(|row| row.into_iter().sum::<usize>())
+            .unwrap_or(0);
+
+        let count_borders = split_borders
+            .into_iter()
+            .next()
+            .map(|row| {
+                let left_border = row
+                    .get(0)
+                    .map_or(0, |b| if b.connector1.is_some() { 1 } else { 0 });
+                let other_borders = row.into_iter().filter(|b| b.connector2.is_some()).count();
+
+                left_border + other_borders
+            })
+            .unwrap_or(0);
+
+        content_width + count_borders
+    }
+
     pub fn override_split_line(&mut self, row: usize, line: impl Into<String>) {
         self.override_split_lines.insert(row, line.into());
     }
