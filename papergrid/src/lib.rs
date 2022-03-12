@@ -1153,7 +1153,7 @@ fn columns_width(
             count_rows,
             count_columns,
             span,
-        )
+        );
     });
 
     widths
@@ -1221,7 +1221,6 @@ fn adjust_range_width(
     // increase the widths
     (0..count_rows)
         .filter(|&row| row != max_row)
-        .filter(|&row| !is_row_bigger_than_span(&styles[row], span))
         .filter(|&row| !is_there_out_of_scope_cell(&styles[row], start_column, end_column)) // ignore the cell we do handle this case later on
         .for_each(|row| {
             let row_width = row_width(
@@ -1250,7 +1249,6 @@ fn adjust_range_width(
     // a width of cells with the same span and on the same column.
     (0..count_rows)
         .filter(|&row| row != max_row)
-        .filter(|&row| !is_row_bigger_than_span(&styles[row], span))
         .filter(|&row| is_there_out_of_scope_cell(&styles[row], start_column, end_column))
         .for_each(|row| {
             (start_column..end_column)

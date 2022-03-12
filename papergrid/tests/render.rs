@@ -506,6 +506,39 @@ fn render_2_colided_row_span_3x3() {
 }
 
 #[test]
+fn render_spaned_column_in_first_cell_3x3() {
+    let mut grid = Grid::new(3, 3);
+    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+
+    grid.set(
+        &Entity::Cell(0, 0),
+        Settings::new().text("0-0xxxxxxx").span(2),
+    );
+    grid.set(&Entity::Cell(0, 1), Settings::new().text("0-1"));
+    grid.set(&Entity::Cell(0, 2), Settings::new().text("0-2"));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
+    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
+    grid.set(&Entity::Cell(1, 2), Settings::new().text("1-2"));
+    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0"));
+    grid.set(&Entity::Cell(2, 1), Settings::new().text("2-1"));
+    grid.set(&Entity::Cell(2, 2), Settings::new().text("2-2"));
+
+    let grid = grid.to_string();
+
+    let expected = concat!(
+        "+-----+----+---+\n",
+        "|0-0xxxxxxx|0-2|\n",
+        "+-----+----+---+\n",
+        "|1-0  |1-1 |1-2|\n",
+        "+-----+----+---+\n",
+        "|2-0  |2-1 |2-2|\n",
+        "+-----+----+---+\n",
+    );
+
+    assert_eq!(grid, expected);
+}
+
+#[test]
 fn render_row_span_with_different_length() {
     let mut grid = Grid::new(3, 2);
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
