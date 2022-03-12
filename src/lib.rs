@@ -162,6 +162,7 @@ mod indent;
 mod object;
 mod panel;
 mod rotate;
+mod span;
 mod table;
 mod width;
 
@@ -171,7 +172,7 @@ pub mod style;
 
 pub use crate::{
     alignment::*, concat::*, disable::*, formating::*, highlight::*, indent::*, object::*,
-    panel::*, rotate::*, style::Style, table::*, width::*,
+    panel::*, rotate::*, span::*, style::Style, table::*, width::*,
 };
 
 pub use tabled_derive::Tabled;
