@@ -336,7 +336,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::github_markdown())
-///     .with(Modify::new(Full).with(MinWidth(10)));
+///     .with(Modify::new(Full).with(MinWidth::new(10)));
 /// ```
 pub struct MinWidth {
     size: usize,
