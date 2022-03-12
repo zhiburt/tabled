@@ -1175,6 +1175,8 @@ fn adjust_width(
         adjust_range_width(widths, styles, borders, count_rows, start, end);
     }
 
+    // sometimes the adjustment of later stages affect the adjastement of privious stages.
+    // therefore we check if this is the case and re run the adjustement one more time.
     for (start, end) in ranges {
         let is_range_complete = is_range_complete(styles, widths, borders, count_rows, start, end);
         if !is_range_complete {
@@ -1196,6 +1198,7 @@ fn adjust_range_width(
     }
     let span = end_column - start_column;
 
+    // find max width of a column range
     let (max_row, max_width) = (0..count_rows)
         .map(|row| {
             let width = row_width(
@@ -1215,6 +1218,7 @@ fn adjust_range_width(
         return;
     }
 
+    // increase the widths
     (0..count_rows)
         .filter(|&row| row != max_row)
         .filter(|&row| !is_row_bigger_than_span(&styles[row], span))
@@ -1240,6 +1244,10 @@ fn adjust_range_width(
         });
 
     // fixing the rows with out_of_scope cells
+    //
+    // these cells may not have correct width, therefore
+    // we replace these cells's width with
+    // a width of cells with the same span and on the same column.
     (0..count_rows)
         .filter(|&row| row != max_row)
         .filter(|&row| !is_row_bigger_than_span(&styles[row], span))
