@@ -1143,6 +1143,8 @@ fn columns_width(
             spans.insert(style.span);
         })
     });
+    spans.remove(&0);
+
     spans.into_iter().for_each(|span| {
         adjust_width(
             &mut widths,
@@ -1151,7 +1153,7 @@ fn columns_width(
             count_rows,
             count_columns,
             span,
-        );
+        )
     });
 
     widths
@@ -1165,14 +1167,19 @@ fn adjust_width(
     count_columns: usize,
     span: usize,
 ) {
-    for column in 0..count_columns {
-        let start = column;
-        let end = column + span;
-        if end > count_columns {
-            break;
-        }
+    let ranges = (0..count_columns)
+        .map(|col| (col, col + span))
+        .take_while(|&(_, end)| end <= count_columns);
 
+    for (start, end) in ranges.clone() {
         adjust_range_width(widths, styles, borders, count_rows, start, end);
+    }
+
+    for (start, end) in ranges {
+        let is_range_complete = is_range_complete(styles, widths, borders, count_rows, start, end);
+        if !is_range_complete {
+            adjust_range_width(widths, styles, borders, count_rows, start, end);
+        }
     }
 }
 
@@ -1189,16 +1196,7 @@ fn adjust_range_width(
     }
     let span = end_column - start_column;
 
-    let (row_with_max_width, max_width) = (0..count_rows)
-        .filter(|&row| is_row_consistent(&styles[row][start_column..end_column]))
-        .filter(|&row| {
-            let row_spans = (start_column..end_column)
-                .filter(|&column| is_cell_visible(&styles[row], column))
-                .map(|col| styles[row][col].span)
-                .sum::<usize>();
-
-            row_spans <= span
-        })
+    let (max_row, max_width) = (0..count_rows)
         .map(|row| {
             let width = row_width(
                 &styles[row],
@@ -1206,7 +1204,6 @@ fn adjust_range_width(
                 &borders[row],
                 start_column,
                 end_column,
-                true,
             );
             (row, width)
         })
@@ -1219,49 +1216,115 @@ fn adjust_range_width(
     }
 
     (0..count_rows)
-        .filter(|&row| row != row_with_max_width)
-        .filter(|&row| is_row_consistent(&styles[row][start_column..end_column]))
-        .filter(|&row| {
-            let row_spans = (start_column..end_column)
-                .filter(|&column| is_cell_visible(&styles[row], column))
-                .map(|col| styles[row][col].span)
-                .sum::<usize>();
-
-            row_spans <= span
-        })
+        .filter(|&row| row != max_row)
+        .filter(|&row| !is_row_bigger_than_span(&styles[row], span))
+        .filter(|&row| !is_there_out_of_scope_cell(&styles[row], start_column, end_column)) // ignore the cell we do handle this case later on
         .for_each(|row| {
-            inc_width_to_cells(
-                &mut widths[row],
+            let row_width = row_width(
                 &styles[row],
+                &widths[row],
                 &borders[row],
                 start_column,
                 end_column,
-                max_width,
             );
+
+            let diff = max_width - row_width;
+
+            inc_cells_width(
+                &mut widths[row],
+                &styles[row],
+                start_column,
+                end_column,
+                diff,
+            );
+        });
+
+    // fixing the rows with out_of_scope cells
+    (0..count_rows)
+        .filter(|&row| row != max_row)
+        .filter(|&row| !is_row_bigger_than_span(&styles[row], span))
+        .filter(|&row| is_there_out_of_scope_cell(&styles[row], start_column, end_column))
+        .for_each(|row| {
+            (start_column..end_column)
+                .filter(|&col| is_cell_visible(&styles[row], col))
+                .for_each(|col| {
+                    let cell_with_the_same_cell = (0..count_rows)
+                        .filter(|&r| r != max_row)
+                        .filter(|&r| r != row)
+                        .filter(|&r| !is_row_bigger_than_span(&styles[r], span))
+                        .filter(|&r| {
+                            !is_there_out_of_scope_cell(&styles[r], start_column, end_column)
+                        })
+                        .find(|&r| styles[r][col].span == styles[row][col].span);
+
+                    if let Some(r) = cell_with_the_same_cell {
+                        widths[row][col] = widths[r][col];
+                    }
+                })
         });
 }
 
-fn is_row_consistent(styles: &[Style]) -> bool {
-    if styles.is_empty() {
-        return true;
-    }
+fn is_there_out_of_scope_cell(styles: &[Style], start_column: usize, end_column: usize) -> bool {
+    let first_cell_is_invisible = !is_cell_visible(styles, start_column);
+    let any_cell_out_of_scope = (start_column..end_column)
+        .filter(|&col| is_cell_visible(styles, col))
+        .any(|col| !is_cell_in_scope(styles, col, end_column));
 
-    if styles[0].span == 0 {
-        return false;
-    }
+    first_cell_is_invisible || any_cell_out_of_scope
+}
 
-    styles
-        .iter()
-        .zip(styles.len()..)
-        .all(|(style, max_span)| style.span <= max_span)
+fn is_cell_in_scope(styles: &[Style], col: usize, end_col: usize) -> bool {
+    styles[col].span + col <= end_col
+}
+
+fn is_row_bigger_than_span(styles: &[Style], span: usize) -> bool {
+    styles[0].span > span
 }
 
 fn is_cell_visible(row_styles: &[Style], column: usize) -> bool {
-    row_styles[column].span != 0
-        && !row_styles[..column]
-            .iter()
-            .zip(column..)
-            .any(|(style, span)| style.span > span)
+    let is_span_zero = row_styles[column].span == 0;
+    let is_cell_overriden = row_styles[..column]
+        .iter()
+        .enumerate()
+        .any(|(col, style)| style.span > column - col);
+
+    !is_span_zero && !is_cell_overriden
+}
+
+fn is_range_complete(
+    styles: &[Vec<Style>],
+    widths: &[Vec<usize>],
+    borders: &[Vec<BorderLine>],
+    count_rows: usize,
+    start_column: usize,
+    end_column: usize,
+) -> bool {
+    let is_not_complete = (0..count_rows)
+        .filter(|&row| !is_there_out_of_scope_cell(&styles[row], start_column, end_column))
+        .map(|row| {
+            row_width(
+                &styles[row],
+                &widths[row],
+                &borders[row],
+                start_column,
+                end_column,
+            )
+        })
+        .fold(None, |mut acc, width| {
+            match acc {
+                Some((w, true)) if w != width => {
+                    acc = Some((0, false));
+                }
+                None => {
+                    acc = Some((width, true));
+                }
+                _ => {}
+            };
+
+            acc
+        });
+
+    matches!(is_not_complete, Some((_, true)))
 }
 
 fn row_width(
@@ -1270,51 +1333,40 @@ fn row_width(
     borders: &[BorderLine],
     column_start: usize,
     column_end: usize,
-    consider_borders: bool,
 ) -> usize {
     let width = (column_start..column_end)
         .filter(|&i| is_cell_visible(styles, i))
+        .filter(|&i| is_cell_in_scope(styles, i, column_end))
         .map(|i| widths[i])
         .sum::<usize>();
 
-    if width == 0 {
-        return 0;
-    }
-
-    let border_count = if consider_borders {
-        if column_end - column_start == 0 {
-            0
-        } else {
-            (column_start..column_end)
-                .filter(|&i| is_cell_visible(styles, i))
-                .filter(|&i| {
-                    if i == column_start {
-                        false
-                    } else {
-                        borders[i].connector1.is_some()
-                    }
-                })
-                .count()
-        }
-    } else {
+    let border_count = if column_end - column_start == 0 {
         0
+    } else {
+        (column_start..column_end)
+            .filter(|&i| is_cell_visible(styles, i))
+            .filter(|&i| is_cell_in_scope(styles, i, column_end))
+            .filter(|&i| {
+                if i == column_start {
+                    false
+                } else {
+                    borders[i].connector1.is_some()
+                }
+            })
+            .count()
     };
 
     width + border_count
 }
 
-fn inc_width_to_cells(
+fn inc_cells_width(
     widths: &mut [usize],
     styles: &[Style],
-    borders: &[BorderLine],
     start_range: usize,
     end_range: usize,
-    width: usize,
+    inc: usize,
 ) {
-    let a = row_width(styles, widths, borders, start_range, end_range, true);
-    let diff = width - a;
-
-    (0..diff)
+    (0..inc)
         .zip(
             (start_range..end_range)
                 .filter(|&i| is_cell_visible(styles, i))
