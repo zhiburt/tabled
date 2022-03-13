@@ -472,6 +472,23 @@ impl Grid {
         self.override_split_lines.insert(row, line.into());
     }
 
+    pub fn row_width(&self, row: usize, start: usize, end: usize) -> usize {
+        let row_widths = (0..self.count_columns())
+            .map(|col| {
+                let content = self.get_cell_content(row, col);
+                string_width(content)
+            })
+            .collect::<Vec<_>>();
+
+        let row_styles = (0..self.count_columns())
+            .map(|col| self.style(&Entity::Cell(row, col)).clone())
+            .collect::<Vec<_>>();
+
+        let row_borders = self.get_inner_split_line(row);
+
+        row_width(&row_styles, &row_widths, &row_borders, start, end)
+    }
+
     fn add_split_lines_for_border(&mut self, frame: &EntityFrame, border: &Border) {
         if border.left.is_some() && !self.is_vertical_present(frame.left_column) {
             self.add_vertical_split(frame.left_column)

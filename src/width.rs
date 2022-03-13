@@ -420,134 +420,83 @@ impl TotalWidth {
 
 impl TableOption for TotalWidth {
     fn change(&mut self, grid: &mut Grid) {
+        if grid.count_columns() == 0 || grid.count_rows() == 0 {
+            return;
+        }
+
         let total_width = grid.total_width();
-        let mut size = self.size;
-        if size == total_width {
+        if total_width == self.size {
             return;
         }
 
-        if size > total_width {
-            // inc each column 1 by 1
-
-            let mut increase_list = HashMap::new();
-
-            for col in (0..grid.count_columns()).cycle() {
-                if size == total_width {
-                    break;
-                }
-
-                let mut increased = false;
-                for row in 0..grid.count_rows() {
-                    let style = grid.style(&Entity::Cell(row, col));
-                    if style.span == 0 {
-                        continue;
-                    }
-
-                    increase_list
-                        .entry((row, col))
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
-
-                    increased = true;
-                }
-
-                if increased {
-                    size -= 1;
-                }
-            }
-
-            for ((row, col), inc) in increase_list {
-                let content = grid.get_cell_content(row, col);
-                let content_width = string_width(content);
-                MinWidth::new(content_width + inc).change_cell(grid, row, col);
-            }
-
-            return;
-        }
-
-        // dec the biggest cells 1 by 1
-        let mut biggest = Vec::new();
-        while size != total_width {
-            println!("size={} total_width={}", size, total_width);
-
-            match find_the_biggest_cell_by_width(grid, &mut biggest) {
-                Some(width) => {
-                    if width == 0 {
-                        break;
-                    }
-
-                    println!("+++++ width={} {:?}", width, biggest);
-
-                    for &(row, col) in &biggest {
-                        Truncate::new(width - 1).change_cell(grid, row, col)
-                    }
-
-                    biggest.clear();
-                }
-                None => break,
-            }
-
-            size += 1;
+        if self.size > total_width {
+            increase_total_width(grid, self.size);
+        } else {
+            decrease_total_width(grid, self.size);
         }
     }
 }
 
-fn find_the_biggest_cell_by_width(grid: &Grid, cells: &mut Vec<(usize, usize)>) -> Option<usize> {
-    let mut max_row = 0;
-    let mut max_col = 0;
-    let mut max_width = 0;
-    let mut max_span = 0;
+fn increase_total_width(grid: &mut Grid, expected_width: usize) {
+    let mut increase_list = HashMap::new();
+    let total_width = grid.total_width();
+    let mut size = expected_width;
+    for col in (0..grid.count_columns()).cycle() {
+        if size == total_width {
+            break;
+        }
 
-    for col in 0..grid.count_columns() {
+        let mut increased = false;
         for row in 0..grid.count_rows() {
             let style = grid.style(&Entity::Cell(row, col));
             if style.span == 0 {
                 continue;
             }
 
-            let content = grid.get_cell_content(row, col);
-            let content_width = string_width(content);
+            increase_list
+                .entry((row, col))
+                .and_modify(|e| *e += 1)
+                .or_insert(1);
 
-            // let this_col_width =
-            //     (col..col + max_span)
-            //         .filter(|&c| c < grid.count_columns())
-            //         .map(|column| {
-            //             let content = grid.get_cell_content(max_row, column);
-            //             let content_width = string_width(content);
-            //             content_width
-            //         })
-            //         .sum::<usize>();
+            increased = true;
+        }
 
-            // // need to compare with different spans
-            // let max_overall_width = if max_is_set {
-            //     (max_col..max_col + style.span)
-            //         .filter(|&c| c < grid.count_columns())
-            //         .map(|column| {
-            //             let content = grid.get_cell_content(max_row, column);
-            //             let content_width = string_width(content);
-            //             content_width
-            //         })
-            //         .sum::<usize>()
-            // } else {
-            //     0
-            // };
-
-            if content_width > max_width {
-                cells.clear();
-                cells.push((row, col));
-
-                max_col = col;
-                max_row = row;
-                max_width = content_width;
-            } else if content_width == max_width && max_col == col {
-                cells.push((row, col));
-            }
+        if increased {
+            size -= 1;
         }
     }
 
-    if grid.count_columns() == 0 || grid.count_rows() == 0 {
-        return None;
+    for ((row, col), inc) in increase_list {
+        let content = grid.get_cell_content(row, col);
+        let content_width = string_width(content);
+        MinWidth::new(content_width + inc).change_cell(grid, row, col);
+    }
+}
+
+fn decrease_total_width(grid: &mut Grid, expected_width: usize) -> bool {
+    while expected_width != grid.total_width() {
+        let row =
+            find_biggest_row(grid).expect("must never happen because we checked the length before");
+        let col = find_biggest_cell(grid, row)
+            .expect("must never happen because we checked the length before");
+        let width = grid.row_width(row, col, col + 1);
+
+        if width == 0 {
+            // we checkend each cell and the biggest is 0
+            // so we can't do anything more in case of decrease
+            return false;
+        }
+
+        Truncate::new(width - 1).change_cell(grid, row, col)
     }
 
-    Some(max_width)
+    true
+}
+
+fn find_biggest_row(grid: &Grid) -> Option<usize> {
+    (0..grid.count_rows()).max_by_key(|&row| grid.row_width(row, 0, grid.count_columns()))
+}
+
+fn find_biggest_cell(grid: &Grid, row: usize) -> Option<usize> {
+    (0..grid.count_columns()).max_by_key(|&col| grid.row_width(row, col, col + 1))
 }

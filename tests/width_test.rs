@@ -625,11 +625,11 @@ fn total_width_small() {
         .to_string();
 
     let expected = concat!(
-        "|  |  |  | c |\n",
-        "|--+--+--+---|\n",
-        "|  |  |  | 0 |\n",
-        "|  |  |  | 1 |\n",
-        "|  |  |  | 2 |\n",
+        "| N |  |  |  |\n",
+        "|---+--+--+--|\n",
+        "| 0 |  |  |  |\n",
+        "| 1 |  |  |  |\n",
+        "| 2 |  |  |  |\n",
     );
 
     assert_eq!(table, expected);
@@ -665,12 +665,12 @@ fn total_width_small_with_panel() {
         .to_string();
 
     let expected = concat!(
-        "|      Hello World      |\n",
-        "|---+-----+------+------|\n",
-        "| N | col | colu | colu |\n",
-        "| 0 | 0-0 | 0-1  | 0-2  |\n",
-        "| 1 | 1-0 | 1-1  | 1-2  |\n",
-        "| 2 | 2-0 | 2-1  | 2-2  |\n",
+        "|   Hello World    |\n",
+        "|---+----+----+----|\n",
+        "| N | co | co | co |\n",
+        "| 0 | 0- | 0- | 0- |\n",
+        "| 1 | 1- | 1- | 1- |\n",
+        "| 2 | 2- | 2- | 2- |\n",
     );
 
     assert_eq!(table, expected);
