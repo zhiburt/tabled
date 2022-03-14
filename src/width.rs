@@ -2,6 +2,7 @@
 //!
 //! - [Truncate] cuts a cell content to limit width.
 //! - [Wrap] split the content via new lines in order to fit max width.
+//! - [TotalWidth] tries to set an whole table width to the limit width.
 
 use std::collections::{HashMap, HashSet};
 
@@ -411,6 +412,22 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
     }
 }
 
+/// TotalWidth decrease or increase an total table width according to the limit.
+///
+/// Beware that borders are not removed when you set a size value to very small.
+/// For example if you set size to 0 the table still be rendered but with all content removed.
+///
+/// Also be aware that it doesn't changes [crate::Indent] settings.
+///
+/// The function is color aware if a `color` feature is on.
+///
+/// ## Example
+///
+/// ```
+/// use tabled::{TotalWidth, Table};
+///
+/// let table = Table::new(&["Hello World!"]).with(TotalWidth::new(5));
+/// ```
 pub struct TotalWidth {
     size: usize,
     wrap: bool,
@@ -418,6 +435,9 @@ pub struct TotalWidth {
 }
 
 impl TotalWidth {
+    /// Creates a new instance of TotalWidth.
+    ///
+    /// Default truncate method is [Truncate].
     pub fn new(size: usize) -> Self {
         Self {
             size,
@@ -426,6 +446,7 @@ impl TotalWidth {
         }
     }
 
+    /// Set's a truncate logic to [Wrap].
     pub fn wrap(mut self, keep_words: bool) -> Self {
         self.wrap = true;
         self.wrap_keeping_words = keep_words;
