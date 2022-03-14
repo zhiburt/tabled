@@ -427,7 +427,7 @@ impl Grid {
     }
 
     /// Returns a total width of table, including split lines.
-    pub fn total_width(&mut self) -> usize {
+    pub fn total_width(&self) -> usize {
         // can be simplified? by just getting a split line chars().count()
 
         let count_rows = self.count_rows();
@@ -459,7 +459,12 @@ impl Grid {
                 let left_border = row
                     .get(0)
                     .map_or(0, |b| if b.connector1.is_some() { 1 } else { 0 });
-                let other_borders = row.into_iter().filter(|b| b.connector2.is_some()).count();
+                let other_borders = row
+                    .into_iter()
+                    .enumerate()
+                    .filter(|&(col, _)| is_cell_visible(&styles[0], col))
+                    .filter(|(_, b)| b.connector2.is_some())
+                    .count();
 
                 left_border + other_borders
             })
@@ -472,11 +477,12 @@ impl Grid {
         self.override_split_lines.insert(row, line.into());
     }
 
-    pub fn row_width(&self, row: usize, start: usize, end: usize) -> usize {
+    pub fn row_width(&self, row: usize) -> usize {
         let row_widths = (0..self.count_columns())
             .map(|col| {
+                let style = self.style(&Entity::Cell(row, col));
                 let content = self.get_cell_content(row, col);
-                string_width(content)
+                string_width(content) + style.indent.left + style.indent.right
             })
             .collect::<Vec<_>>();
 
@@ -486,7 +492,13 @@ impl Grid {
 
         let row_borders = self.get_inner_split_line(row);
 
-        row_width(&row_styles, &row_widths, &row_borders, start, end)
+        row_width(
+            &row_styles,
+            &row_widths,
+            &row_borders,
+            0,
+            self.count_columns(),
+        )
     }
 
     fn add_split_lines_for_border(&mut self, frame: &EntityFrame, border: &Border) {

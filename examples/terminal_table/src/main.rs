@@ -39,7 +39,7 @@ fn main() {
         .table()
         .with(Style::extended())
         .with(Modify::new(Full).with(Alignment::center_horizontal()))
-        .with(TotalWidth::new(width as usize));
+        .with(TotalWidth::new(width as usize).wrap(true));
 
     println!("{}", table);
 }

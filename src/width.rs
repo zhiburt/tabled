@@ -3,7 +3,7 @@
 //! - [Truncate] cuts a cell content to limit width.
 //! - [Wrap] split the content via new lines in order to fit max width.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::{CellOption, TableOption};
 use papergrid::{string_width, Entity, Grid, Settings};
@@ -131,11 +131,14 @@ impl Wrap {
 impl CellOption for Wrap {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let content = grid.get_cell_content(row, column);
-        let wrapped_content = if !self.keep_words {
+        let wrapped_content = if self.width == 0 {
+            String::new()
+        } else if !self.keep_words {
             split(content, self.width)
         } else {
             split_keeping_words(content, self.width)
         };
+
         grid.set(
             &Entity::Cell(row, column),
             Settings::new().text(wrapped_content),
@@ -410,11 +413,23 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
 
 pub struct TotalWidth {
     size: usize,
+    wrap: bool,
+    wrap_keeping_words: bool,
 }
 
 impl TotalWidth {
     pub fn new(size: usize) -> Self {
-        Self { size }
+        Self {
+            size,
+            wrap: false,
+            wrap_keeping_words: false,
+        }
+    }
+
+    pub fn wrap(mut self, keep_words: bool) -> Self {
+        self.wrap = true;
+        self.wrap_keeping_words = keep_words;
+        self
     }
 }
 
@@ -432,7 +447,7 @@ impl TableOption for TotalWidth {
         if self.size > total_width {
             increase_total_width(grid, self.size);
         } else {
-            decrease_total_width(grid, self.size);
+            decrease_total_width(grid, self.size, self.wrap, self.wrap_keeping_words);
         }
     }
 }
@@ -473,13 +488,22 @@ fn increase_total_width(grid: &mut Grid, expected_width: usize) {
     }
 }
 
-fn decrease_total_width(grid: &mut Grid, expected_width: usize) -> bool {
+fn decrease_total_width(
+    grid: &mut Grid,
+    expected_width: usize,
+    wrap: bool,
+    wrap_keeping_words: bool,
+) -> bool {
+    let contents = build_contents(grid);
+    let mut widths = build_widths(grid);
+    let mut changes = HashSet::new();
+
     while expected_width != grid.total_width() {
         let row =
             find_biggest_row(grid).expect("must never happen because we checked the length before");
-        let col = find_biggest_cell(grid, row)
+        let col = find_biggest_cell(&widths[row])
             .expect("must never happen because we checked the length before");
-        let width = grid.row_width(row, col, col + 1);
+        let width = widths[row][col];
 
         if width == 0 {
             // we checkend each cell and the biggest is 0
@@ -487,16 +511,70 @@ fn decrease_total_width(grid: &mut Grid, expected_width: usize) -> bool {
             return false;
         }
 
-        Truncate::new(width - 1).change_cell(grid, row, col)
+        Truncate::new(width - 1).change_cell(grid, row, col);
+
+        widths[row][col] -= 1;
+        changes.insert((row, col));
+    }
+
+    if !wrap {
+        return true;
+    }
+
+    set_contents(grid, contents);
+
+    for (row, col) in changes {
+        let width = widths[row][col];
+
+        let mut wrap = Wrap::new(width);
+        if wrap_keeping_words {
+            wrap = wrap.keep_words();
+        }
+
+        wrap.change_cell(grid, row, col)
     }
 
     true
 }
 
-fn find_biggest_row(grid: &Grid) -> Option<usize> {
-    (0..grid.count_rows()).max_by_key(|&row| grid.row_width(row, 0, grid.count_columns()))
+fn build_contents(grid: &Grid) -> Vec<Vec<String>> {
+    (0..grid.count_rows())
+        .map(|row| {
+            (0..grid.count_columns())
+                .map(|col| {
+                    let content = grid.get_cell_content(row, col);
+                    content.to_string()
+                })
+                .collect()
+        })
+        .collect()
 }
 
-fn find_biggest_cell(grid: &Grid, row: usize) -> Option<usize> {
-    (0..grid.count_columns()).max_by_key(|&col| grid.row_width(row, col, col + 1))
+fn set_contents(grid: &mut Grid, contents: Vec<Vec<String>>) {
+    contents.into_iter().enumerate().for_each(|(row, rows)| {
+        rows.into_iter().enumerate().for_each(|(col, content)| {
+            grid.set(&Entity::Cell(row, col), Settings::default().text(content));
+        })
+    })
+}
+
+fn build_widths(grid: &Grid) -> Vec<Vec<usize>> {
+    (0..grid.count_rows())
+        .map(|row| {
+            (0..grid.count_columns())
+                .map(|col| {
+                    let content = grid.get_cell_content(row, col);
+                    string_width(content)
+                })
+                .collect()
+        })
+        .collect()
+}
+
+fn find_biggest_row(grid: &Grid) -> Option<usize> {
+    (0..grid.count_rows()).max_by_key(|&row| grid.row_width(row))
+}
+
+fn find_biggest_cell(widths: &[usize]) -> Option<usize> {
+    (0..widths.len()).max_by_key(|&col| widths[col])
 }

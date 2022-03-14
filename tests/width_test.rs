@@ -605,15 +605,35 @@ fn total_width_big_with_panel() {
         .to_string();
 
     let expected = concat!(
-        "|                                Hello World                                |\n",
-        "|-------------+--------------------+--------------------+-------------------|\n",
-        "|      N      |      column 0      |      column 1      |     column 2      |\n",
-        "|      0      |        0-0         |        0-1         |        0-2        |\n",
-        "|      1      |        1-0         |        1-1         |        1-2        |\n",
-        "|      2      |        2-0         |        2-1         |        2-2        |\n",
+        "|                                 Hello World                                  |\n",
+        "|--------------+---------------------+--------------------+--------------------|\n",
+        "|      N       |      column 0       |      column 1      |      column 2      |\n",
+        "|      0       |         0-0         |        0-1         |        0-2         |\n",
+        "|      1       |         1-0         |        1-1         |        1-2         |\n",
+        "|      2       |         2-0         |        2-1         |        2-2         |\n",
     );
 
     assert_eq!(table, expected);
+}
+
+#[test]
+fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
+    let data = create_vector::<3, 3>();
+    let table1 = Table::new(&data)
+        .with(Panel("Hello World", 0))
+        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Style::github_markdown())
+        .with(TotalWidth::new(80).wrap(false))
+        .to_string();
+
+    let table2 = Table::new(&data)
+        .with(Panel("Hello World", 0))
+        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Style::github_markdown())
+        .with(TotalWidth::new(80))
+        .to_string();
+
+    assert_eq!(table1, table2);
 }
 
 #[test]
@@ -661,6 +681,7 @@ fn total_width_small_with_panel() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Full).with(Alignment::center_horizontal()))
         .with(Style::github_markdown())
+        // .with(Modify::new(Full).with(Indent::new(0, 0, 0, 0)))
         .with(TotalWidth::new(20))
         .to_string();
 
@@ -671,6 +692,34 @@ fn total_width_small_with_panel() {
         "| 0 | 0- | 0- | 0- |\n",
         "| 1 | 1- | 1- | 1- |\n",
         "| 2 | 2- | 2- | 2- |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn total_width_small_with_panel_using_wrapping() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Panel("Hello World", 0))
+        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Style::github_markdown())
+        .with(TotalWidth::new(20).wrap(false))
+        .to_string();
+
+    let expected = concat!(
+        "|   Hello World    |\n",
+        "|---+----+----+----|\n",
+        "| N | co | co | co |\n",
+        "|   | lu | lu | lu |\n",
+        "|   | mn | mn | mn |\n",
+        "|   | 0  | 1  | 2  |\n",
+        "| 0 | 0- | 0- | 0- |\n",
+        "|   | 0  | 1  | 2  |\n",
+        "| 1 | 1- | 1- | 1- |\n",
+        "|   | 0  | 1  | 2  |\n",
+        "| 2 | 2- | 2- | 2- |\n",
+        "|   | 0  | 1  | 2  |\n",
     );
 
     assert_eq!(table, expected);
