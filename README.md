@@ -30,6 +30,8 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Max width](#Max-width)
     * [Rotate](#Rotate)
     * [Disable](#Disable)
+    * [Extract](#Extract)
+        * [Refinish](#Refinishing)
     * [Header and Footer](#Header-and-Footer)
     * [Concat](#Concat)
 * [Derive](#Derive)
@@ -340,6 +342,56 @@ Table::new(&data)
     .with(Disable::Row(..1))
     .with(Disable::Column(3..4));
 ```
+
+### Extract
+
+You can `Extract` segments of a table to focus on a reduced number of rows and columns.
+
+```rust
+Table::new(&data)
+    .with(Extract::new(rows: 1..3, columns: 1..));
+```
+
+```text
++-------+-------------+-----------+
+|  i32  |    &str     |   bool    |
++-------+-------------+-----------+         +-------------+-----------+
+| : 0 : | : Grodno :  | : true :  |         | : Grodno :  | : true :  |
++-------+-------------+-----------+    =    +-------------+-----------+
+| : 1 : |  : Minsk :  | : true :  |         |  : Minsk :  | : true :  |
++-------+-------------+-----------+         +-------------+-----------+
+| : 2 : | : Hamburg : | : false : |
++-------+-------------+-----------+
+| : 3 : |  : Brest :  | : true :  |
++-------+-------------+-----------+
+```
+
+#### Refinishing
+
+For styles with unique corner and edge textures it is possible to reapply a table style once a `Table` extract has been created.
+
+```rust
+Table::new(&data)
+    .with(Extract::new(rows: 1..3, columns: 1..))
+    .with(Style::modern());
+```
+
+```text
+Raw extract
+┼───────────────────────────┼──────────────────┼──────────────┤
+│ The Dark Side of the Moon │ 01 March 1973    │ Unparalleled │
+┼───────────────────────────┼──────────────────┼──────────────┤
+│ Rumours                   │ 04 February 1977 │ Outstanding  │
+┼───────────────────────────┼──────────────────┼──────────────┤
+
+Refinished extract
+┌───────────────────────────┬──────────────────┬───────────────┐
+│ The Dark Side of the Moon │ 01 March 1973    │ Unparalleled  │
+├───────────────────────────┼──────────────────┼───────────────┤
+│ Rumours                   │ 04 February 1977 │  Outstanding  │
+└───────────────────────────┴──────────────────┴───────────────┘
+```
+
 
 ### Header and Footer
 
