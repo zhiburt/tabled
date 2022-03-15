@@ -4,7 +4,7 @@ use tabled::{Alignment, Extract, Format, Full, Indent, Modify, Table};
 mod util;
 
 #[test]
-fn preview_full_test() {
+fn extract_full_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
@@ -29,7 +29,7 @@ fn preview_full_test() {
 }
 
 #[test]
-fn preview_skip_top_row_test() {
+fn extract_skip_top_row_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
@@ -52,7 +52,7 @@ fn preview_skip_top_row_test() {
 }
 
 #[test]
-fn preview_skip_left_col_test() {
+fn extract_skip_left_col_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
@@ -77,7 +77,7 @@ fn preview_skip_left_col_test() {
 }
 
 #[test]
-fn preview_bottom_right_square_test() {
+fn extract_bottom_right_square_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
@@ -98,7 +98,7 @@ fn preview_bottom_right_square_test() {
 }
 
 #[test]
-fn preview_middle_section_test() {
+fn extract_middle_section_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
@@ -119,7 +119,7 @@ fn preview_middle_section_test() {
 }
 
 #[test]
-fn preview_empty_test() {
+fn extract_empty_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
