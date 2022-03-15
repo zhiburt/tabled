@@ -6,6 +6,10 @@ use crate::TableOption;
 ///
 /// The segment is defined by [RangeBounds<usize>] for Rows and Columns
 ///
+/// ```rust,no_run
+/// Extract::new(rows: 1..=2, columns: 1..)
+/// ```
+/// 
 /// # Example
 ///
 /// ```
