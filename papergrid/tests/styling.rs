@@ -1,4 +1,7 @@
-use papergrid::{AlignmentHorizontal, Border, Entity, Grid, Settings, DEFAULT_CELL_STYLE};
+use papergrid::{
+    AlignmentHorizontal, Border, Entity, Grid, Indent, Settings, DEFAULT_CELL_STYLE,
+    DEFAULT_INDENT_FILL_CHAR,
+};
 
 #[test]
 fn grid_2x2_custom_frame_test() {
@@ -147,9 +150,22 @@ fn grid_2x2_indent_test() {
 
     grid.set(
         &Entity::Global,
-        Settings::new().text("asd").indent(1, 1, 1, 1),
+        Settings::new().text("asd").padding(
+            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+        ),
     );
-    grid.set(&Entity::Column(0), Settings::new().indent(0, 0, 0, 0));
+    grid.set(
+        &Entity::Column(0),
+        Settings::new().padding(
+            Indent::default(),
+            Indent::default(),
+            Indent::default(),
+            Indent::default(),
+        ),
+    );
     let str = grid.to_string();
 
     assert_eq!(

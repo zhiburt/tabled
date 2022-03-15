@@ -11,7 +11,8 @@
 // copies or substantial portions of the Software.
 
 use papergrid::{
-    AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings, DEFAULT_CELL_STYLE,
+    AlignmentHorizontal, AlignmentVertical, Entity, Grid, Indent, Settings, DEFAULT_CELL_STYLE,
+    DEFAULT_INDENT_FILL_CHAR,
 };
 
 #[test]
@@ -308,7 +309,12 @@ fn render_row_span_with_horizontal_ident() {
     grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
     grid.set(
         &Entity::Cell(1, 0),
-        Settings::new().text("1-0").indent(4, 4, 0, 0),
+        Settings::new().text("1-0").padding(
+            Indent::new(4, DEFAULT_INDENT_FILL_CHAR),
+            Indent::new(4, DEFAULT_INDENT_FILL_CHAR),
+            Indent::default(),
+            Indent::default(),
+        ),
     );
     grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
     grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0"));

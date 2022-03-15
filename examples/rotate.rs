@@ -1,4 +1,4 @@
-use tabled::{Full, Indent, Modify, Rotate, Style, Table, Tabled};
+use tabled::{Full, Modify, Padding, Rotate, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -29,7 +29,7 @@ fn main() {
     let table = Table::new(&data)
         .with(Rotate::Left)
         .with(Style::blank())
-        .with(Modify::new(Full).with(Indent::new(1, 1, 0, 0)));
+        .with(Modify::new(Full).with(Padding::new(1, 1, 0, 0)));
 
     println!("{}", table);
 }
