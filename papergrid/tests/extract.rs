@@ -4,7 +4,7 @@ use papergrid::{Entity, Grid, Settings, DEFAULT_CELL_STYLE};
 fn extract_inside_test() {
     let grid = new_grid::<3, 3>();
 
-    let grid = grid.extract(1..2, 1..2);
+    let grid = grid.extract(&(1..2), &(1..2));
 
     assert_eq!(
         grid.to_string(),
@@ -18,7 +18,7 @@ fn extract_inside_test() {
 fn extract_left_test() {
     let grid = new_grid::<3, 3>();
 
-    let grid = grid.extract(.., ..1);
+    let grid = grid.extract(&(..), &(..1));
 
     assert_eq!(
         grid.to_string(),
@@ -36,7 +36,7 @@ fn extract_left_test() {
 fn extract_right_test() {
     let grid = new_grid::<3, 3>();
 
-    let grid = grid.extract(.., 2..);
+    let grid = grid.extract(&(..), &(2..));
 
     assert_eq!(
         grid.to_string(),
@@ -54,7 +54,7 @@ fn extract_right_test() {
 fn extract_top_test() {
     let grid = new_grid::<3, 3>();
 
-    let grid = grid.extract(..1, ..);
+    let grid = grid.extract(&(..1), &(..));
 
     assert_eq!(
         grid.to_string(),
@@ -68,7 +68,7 @@ fn extract_top_test() {
 fn extract_bottom_test() {
     let grid = new_grid::<3, 3>();
 
-    let grid = grid.extract(2.., ..);
+    let grid = grid.extract(&(2..), &(..));
 
     assert_eq!(
         grid.to_string(),
@@ -81,14 +81,14 @@ fn extract_bottom_test() {
 #[test]
 fn extract_all_test() {
     let grid = new_grid::<3, 3>();
-    let grid = grid.extract(3.., 3..);
+    let grid = grid.extract(&(3..), &(3..));
     assert_eq!(grid.to_string(), "");
 }
 
 #[test]
 fn extract_empty_test() {
     let grid = new_grid::<0, 0>();
-    let grid = grid.extract(.., ..);
+    let grid = grid.extract(&(..), &(..));
     assert_eq!(grid.to_string(), "");
 }
 

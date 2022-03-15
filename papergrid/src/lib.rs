@@ -396,7 +396,31 @@ impl Grid {
         }
     }
 
-    pub fn extract<R, C>(&self, rows: R, columns: C) -> Self
+    /// Returns a new [Grid] that reflects a segment of the referenced [Grid]
+    ///
+    /// The segment is defined by [RangeBounds<usize>] for Rows and Columns
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// grid
+    /// +---+---+---+
+    /// |0-0|0-1|0-2|
+    /// +---+---+---+
+    /// |1-0|1-1|1-2|
+    /// +---+---+---+
+    /// |2-0|2-1|2-2|
+    /// +---+---+---+
+    /// grid.extract(.., ..1)
+    /// +---+
+    /// |0-0|
+    /// +---+
+    /// |1-0|
+    /// +---+
+    /// |2-0|
+    /// +---+
+    /// ```
+    pub fn extract<R, C>(&self, rows: &R, columns: &C) -> Self
     where
         R: RangeBounds<usize>,
         C: RangeBounds<usize>,
