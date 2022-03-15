@@ -1,8 +1,8 @@
-use papergrid::{Entity, Grid, Settings, DEFAULT_CELL_STYLE};
+mod util;
 
 #[test]
 fn extract_inside_test() {
-    let grid = new_grid::<3, 3>();
+    let grid = util::new_grid::<3, 3>();
 
     let grid = grid.extract(1..2, 1..2);
 
@@ -16,7 +16,7 @@ fn extract_inside_test() {
 
 #[test]
 fn extract_left_test() {
-    let grid = new_grid::<3, 3>();
+    let grid = util::new_grid::<3, 3>();
 
     let grid = grid.extract(.., ..1);
 
@@ -34,7 +34,7 @@ fn extract_left_test() {
 
 #[test]
 fn extract_right_test() {
-    let grid = new_grid::<3, 3>();
+    let grid = util::new_grid::<3, 3>();
 
     let grid = grid.extract(.., 2..);
 
@@ -52,7 +52,7 @@ fn extract_right_test() {
 
 #[test]
 fn extract_top_test() {
-    let grid = new_grid::<3, 3>();
+    let grid = util::new_grid::<3, 3>();
 
     let grid = grid.extract(..1, ..);
 
@@ -66,7 +66,7 @@ fn extract_top_test() {
 
 #[test]
 fn extract_bottom_test() {
-    let grid = new_grid::<3, 3>();
+    let grid = util::new_grid::<3, 3>();
 
     let grid = grid.extract(2.., ..);
 
@@ -80,29 +80,14 @@ fn extract_bottom_test() {
 
 #[test]
 fn extract_all_test() {
-    let grid = new_grid::<3, 3>();
+    let grid = util::new_grid::<3, 3>();
     let grid = grid.extract(3.., 3..);
     assert_eq!(grid.to_string(), "");
 }
 
 #[test]
 fn extract_empty_test() {
-    let grid = new_grid::<0, 0>();
+    let grid = util::new_grid::<0, 0>();
     let grid = grid.extract(.., ..);
     assert_eq!(grid.to_string(), "");
-}
-
-fn new_grid<const N_ROWS: usize, const N_COLUMNS: usize>() -> Grid {
-    let mut grid = Grid::new(N_ROWS, N_COLUMNS);
-
-    for row in 0..N_ROWS {
-        for column in 0..N_COLUMNS {
-            let text = format!("{}-{}", row, column);
-            grid.set(&Entity::Cell(row, column), Settings::new().text(text));
-        }
-    }
-
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    grid
 }

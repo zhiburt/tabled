@@ -10,19 +10,13 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::{
-    AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings, DEFAULT_CELL_STYLE,
-};
+use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
+
+mod util;
 
 #[test]
-fn render_2x2() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
-    grid.set(&Entity::Cell(0, 1), Settings::new().text("0-1"));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
+fn render_2x2_test() {
+    let grid = util::new_grid::<2, 2>();
 
     let expected = concat!(
         "+---+---+\n",
@@ -36,9 +30,8 @@ fn render_2x2() {
 }
 
 #[test]
-fn render_1x1() {
-    let mut grid = Grid::new(1, 1);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+fn render_1x1_test() {
+    let mut grid = util::new_grid::<1, 1>();
     grid.set(&Entity::Cell(0, 0), Settings::new().text("one line"));
 
     let expected = concat!("+--------+\n", "|one line|\n", "+--------+\n",);
@@ -47,9 +40,26 @@ fn render_1x1() {
 }
 
 #[test]
+fn render_3x2_test() {
+    let mut grid = util::new_grid::<3, 2>();
+    grid.set(&Entity::Global, Settings::new().text("asd"));
+
+    let str = grid.to_string();
+    assert_eq!(
+        str,
+        "+---+---+\n\
+         |asd|asd|\n\
+         +---+---+\n\
+         |asd|asd|\n\
+         +---+---+\n\
+         |asd|asd|\n\
+         +---+---+\n"
+    )
+}
+
+#[test]
 fn render_not_quadratic() {
-    let mut grid = Grid::new(1, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<1, 2>();
 
     grid.set(&Entity::Cell(0, 0), Settings::new().text("hello"));
     grid.set(&Entity::Cell(0, 1), Settings::new().text("world"));
@@ -62,16 +72,12 @@ fn render_not_quadratic() {
 #[test]
 fn render_empty() {
     let grid = Grid::new(0, 0);
-
-    let expected = "";
-
-    assert_eq!(expected, grid.to_string());
+    assert_eq!("", grid.to_string());
 }
 
 #[test]
 fn render_multilane() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<2, 2>();
 
     grid.set(&Entity::Cell(0, 0), Settings::new().text("left\ncell"));
     grid.set(&Entity::Cell(0, 1), Settings::new().text("right one"));
@@ -98,14 +104,14 @@ fn render_multilane() {
         "+----------------------------------------+---------+\n"
     );
 
-    let g = grid.to_string();
-    assert_eq!(expected, g);
+    let actual = grid.to_string();
+
+    assert_eq!(expected, actual);
 }
 
 #[test]
 fn render_multilane_alignment() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<2, 2>();
 
     grid.set(
         &Entity::Cell(0, 0),
@@ -139,14 +145,13 @@ fn render_multilane_alignment() {
          +----------------------------------------+---------+\n"
     );
 
-    let g = grid.to_string();
-    assert_eq!(expected, g);
+    let actual = grid.to_string();
+    assert_eq!(expected, actual);
 }
 
 #[test]
 fn render_multilane_vertical_alignment() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<2, 2>();
 
     grid.set(
         &Entity::Cell(0, 0),
@@ -182,19 +187,15 @@ fn render_multilane_vertical_alignment() {
          +----------------------------------------+---------+\n"
     );
 
-    let g = grid.to_string();
-    assert_eq!(expected, g);
+    let actual = grid.to_string();
+    assert_eq!(expected, actual);
 }
 
 #[test]
 fn render_empty_cell() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<2, 2>();
 
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
     grid.set(&Entity::Cell(0, 1), Settings::new().text(""));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
 
     let expected = concat!(
         "+---+---+\n",
@@ -209,19 +210,14 @@ fn render_empty_cell() {
 
 #[test]
 fn render_row_span() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<2, 2>();
 
     grid.set(
         &Entity::Cell(0, 0),
         Settings::new()
-            .text("0-0")
             .span(2)
             .alignment(AlignmentHorizontal::Center),
     );
-    grid.set(&Entity::Cell(0, 1), Settings::new().text(""));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
 
     let expected = concat!(
         "+---+---+\n",
@@ -236,8 +232,7 @@ fn render_row_span() {
 
 #[test]
 fn render_miltiline_span() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<2, 2>();
 
     grid.set(
         &Entity::Cell(0, 0),
@@ -246,9 +241,6 @@ fn render_miltiline_span() {
             .span(2)
             .alignment(AlignmentHorizontal::Center),
     );
-    grid.set(&Entity::Cell(0, 1), Settings::new().text(""));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
 
     let expected = concat!(
         "+---+---+\n",
@@ -264,8 +256,7 @@ fn render_miltiline_span() {
 
 #[test]
 fn render_row_span_multilane() {
-    let mut grid = Grid::new(4, 3);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<4, 3>();
 
     grid.set(
         &Entity::Cell(0, 0),
@@ -295,26 +286,15 @@ fn render_row_span_multilane() {
         "+-----+----+----+\n",
     );
 
-    println!("{}", grid);
-
     assert_eq!(expected, grid.to_string());
 }
 
 #[test]
 fn render_row_span_with_horizontal_ident() {
-    let mut grid = Grid::new(3, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<3, 2>();
 
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
-    grid.set(
-        &Entity::Cell(1, 0),
-        Settings::new().text("1-0").indent(4, 4, 0, 0),
-    );
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
-    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0"));
-    grid.set(&Entity::Cell(2, 1), Settings::new().text("2-1"));
-
-    let grid = grid.to_string();
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(2));
+    grid.set(&Entity::Cell(1, 0), Settings::new().indent(4, 4, 0, 0));
 
     let expected = concat!(
         "+-----------+---+\n",
@@ -326,21 +306,18 @@ fn render_row_span_with_horizontal_ident() {
         "+-----------+---+\n",
     );
 
-    println!("{}", grid);
+    let actual = grid.to_string();
 
-    assert_eq!(grid, expected);
+    assert_eq!(actual, expected);
 }
 
 #[test]
 fn render_row_span_3x3_with_horizontal_ident() {
-    let mut grid = Grid::new(3, 3);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<3, 3>();
 
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(3));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0").span(2));
-    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0").span(2));
-    grid.set(&Entity::Cell(1, 2), Settings::new().text("1-1"));
-    grid.set(&Entity::Cell(2, 2), Settings::new().text("2-1"));
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(3));
+    grid.set(&Entity::Cell(1, 0), Settings::new().span(2));
+    grid.set(&Entity::Cell(2, 0), Settings::new().span(2));
 
     let grid = grid.to_string();
 
@@ -348,34 +325,23 @@ fn render_row_span_3x3_with_horizontal_ident() {
         "+-+-+---+\n",
         "|0-0    |\n",
         "+-+-+---+\n",
-        "|1-0|1-1|\n",
+        "|1-0|1-2|\n",
         "+-+-+---+\n",
-        "|2-0|2-1|\n",
+        "|2-0|2-2|\n",
         "+-+-+---+\n",
     );
-
-    println!("{}", grid);
 
     assert_eq!(grid, expected);
 }
 
 #[test]
 fn render_2_colided_row_span_3x3() {
-    let mut grid = Grid::new(3, 3);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
+    let mut grid = util::new_grid::<3, 3>();
     grid.set(
         &Entity::Cell(0, 0),
         Settings::new().text("0-0xxxxxxx").span(2),
     );
-    grid.set(&Entity::Cell(0, 2), Settings::new().text("0-2"));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1").span(2));
-    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0"));
-    grid.set(&Entity::Cell(2, 1), Settings::new().text("2-1"));
-    grid.set(&Entity::Cell(2, 2), Settings::new().text("2-2"));
-
-    let grid = grid.to_string();
+    grid.set(&Entity::Cell(1, 1), Settings::new().span(2));
 
     let expected = concat!(
         "+-----+----+---+\n",
@@ -387,23 +353,14 @@ fn render_2_colided_row_span_3x3() {
         "+-----+----+---+\n",
     );
 
-    assert_eq!(grid, expected);
+    assert_eq!(grid.to_string(), expected);
 
-    let mut grid = Grid::new(3, 3);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
-    grid.set(&Entity::Cell(0, 2), Settings::new().text("0-2"));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
+    let mut grid = util::new_grid::<3, 3>();
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(2));
     grid.set(
         &Entity::Cell(1, 1),
         Settings::new().text("1-1xxxxxxx").span(2),
     );
-    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0"));
-    grid.set(&Entity::Cell(2, 1), Settings::new().text("2-1"));
-    grid.set(&Entity::Cell(2, 2), Settings::new().text("2-2"));
-
-    let grid = grid.to_string();
 
     let expected = concat!(
         "+---+-----+----+\n",
@@ -415,14 +372,10 @@ fn render_2_colided_row_span_3x3() {
         "+---+-----+----+\n",
     );
 
-    assert_eq!(grid, expected);
+    assert_eq!(grid.to_string(), expected);
 
-    let mut grid = Grid::new(3, 3);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
-    grid.set(&Entity::Cell(0, 2), Settings::new().text("0-2"));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
+    let mut grid = util::new_grid::<3, 3>();
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(2));
     grid.set(
         &Entity::Cell(1, 1),
         Settings::new().text("1-1xxxxxxx").span(2),
@@ -431,10 +384,6 @@ fn render_2_colided_row_span_3x3() {
         &Entity::Cell(2, 0),
         Settings::new().text("2-0xxxxxxxxxxxxx"),
     );
-    grid.set(&Entity::Cell(2, 1), Settings::new().text("2-1"));
-    grid.set(&Entity::Cell(2, 2), Settings::new().text("2-2"));
-
-    let grid = grid.to_string();
 
     let expected = concat!(
         "+----------------+-----+----+\n",
@@ -446,23 +395,15 @@ fn render_2_colided_row_span_3x3() {
         "+----------------+-----+----+\n",
     );
 
-    assert_eq!(grid, expected);
+    assert_eq!(grid.to_string(), expected);
 
-    let mut grid = Grid::new(3, 3);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
-    grid.set(&Entity::Cell(0, 2), Settings::new().text("0-2"));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1").span(2));
-    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0"));
+    let mut grid = util::new_grid::<3, 3>();
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(2));
+    grid.set(&Entity::Cell(1, 1), Settings::new().span(2));
     grid.set(
         &Entity::Cell(2, 1),
         Settings::new().text("2-1xxxxxxxxxxxxx"),
     );
-    grid.set(&Entity::Cell(2, 2), Settings::new().text("2-2"));
-
-    let grid = grid.to_string();
 
     let expected = concat!(
         "+---+----------------+---+\n",
@@ -474,23 +415,15 @@ fn render_2_colided_row_span_3x3() {
         "+---+----------------+---+\n",
     );
 
-    assert_eq!(grid, expected);
+    assert_eq!(grid.to_string(), expected);
 
-    let mut grid = Grid::new(3, 3);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
+    let mut grid = util::new_grid::<3, 3>();
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(2));
     grid.set(
         &Entity::Cell(0, 2),
         Settings::new().text("0-2xxxxxxxxxxxxx"),
     );
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1").span(2));
-    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0"));
-    grid.set(&Entity::Cell(2, 1), Settings::new().text("2-1"));
-    grid.set(&Entity::Cell(2, 2), Settings::new().text("2-2"));
-
-    let grid = grid.to_string();
+    grid.set(&Entity::Cell(1, 1), Settings::new().span(2));
 
     let expected = concat!(
         "+---+---+----------------+\n",
@@ -502,28 +435,17 @@ fn render_2_colided_row_span_3x3() {
         "+---+---+----------------+\n",
     );
 
-    assert_eq!(grid, expected);
+    assert_eq!(grid.to_string(), expected);
 }
 
 #[test]
 fn render_spaned_column_in_first_cell_3x3() {
-    let mut grid = Grid::new(3, 3);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<3, 3>();
 
     grid.set(
         &Entity::Cell(0, 0),
         Settings::new().text("0-0xxxxxxx").span(2),
     );
-    grid.set(&Entity::Cell(0, 1), Settings::new().text("0-1"));
-    grid.set(&Entity::Cell(0, 2), Settings::new().text("0-2"));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
-    grid.set(&Entity::Cell(1, 2), Settings::new().text("1-2"));
-    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0"));
-    grid.set(&Entity::Cell(2, 1), Settings::new().text("2-1"));
-    grid.set(&Entity::Cell(2, 2), Settings::new().text("2-2"));
-
-    let grid = grid.to_string();
 
     let expected = concat!(
         "+-----+----+---+\n",
@@ -535,13 +457,12 @@ fn render_spaned_column_in_first_cell_3x3() {
         "+-----+----+---+\n",
     );
 
-    assert_eq!(grid, expected);
+    assert_eq!(grid.to_string(), expected);
 }
 
 #[test]
 fn render_row_span_with_different_length() {
-    let mut grid = Grid::new(3, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<3, 2>();
 
     grid.set(
         &Entity::Cell(0, 0),
@@ -564,15 +485,12 @@ fn render_row_span_with_different_length() {
         "+---------+---------+\n",
     );
 
-    println!("{}", grid);
-
     assert_eq!(expected, grid.to_string());
 }
 
 #[test]
 fn render_row_span_with_odd_length() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<2, 2>();
 
     grid.set(&Entity::Cell(0, 0), Settings::new().text("3   ").span(2));
     grid.set(&Entity::Cell(1, 0), Settings::new().text("2"));
@@ -585,54 +503,31 @@ fn render_row_span_with_odd_length() {
 
 #[test]
 fn render_only_row_spaned() {
-    let mut grid = Grid::new(3, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<3, 2>();
 
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0").span(2));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0").span(2));
-    grid.set(&Entity::Cell(2, 0), Settings::new().text("2-0").span(2));
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(2));
+    grid.set(&Entity::Cell(1, 0), Settings::new().span(2));
+    grid.set(&Entity::Cell(2, 0), Settings::new().span(2));
 
     let expected = "+-+-+\n\
-                         |0-0|\n\
-                         +-+-+\n\
-                         |1-0|\n\
-                         +-+-+\n\
-                         |2-0|\n\
-                         +-+-+\n";
+                          |0-0|\n\
+                          +-+-+\n\
+                          |1-0|\n\
+                          +-+-+\n\
+                          |2-0|\n\
+                          +-+-+\n";
 
     assert_eq!(grid.to_string(), expected);
 }
 
 #[test]
-fn grid_3x2_test() {
-    let mut grid = Grid::new(3, 2);
-    grid.set(&Entity::Global, Settings::new().text("asd"));
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    let str = grid.to_string();
-    assert_eq!(
-        str,
-        "+---+---+\n\
-         |asd|asd|\n\
-         +---+---+\n\
-         |asd|asd|\n\
-         +---+---+\n\
-         |asd|asd|\n\
-         +---+---+\n"
-    )
-}
-
-#[test]
 fn grid_2x2_span_test() {
-    let mut grid = Grid::new(2, 2);
+    let mut grid = util::new_grid::<2, 2>();
     grid.set(&Entity::Global, Settings::new().text("asd"));
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
     grid.set(&Entity::Cell(0, 0), Settings::new().text("123").span(2));
 
-    let str = grid.to_string();
     assert_eq!(
-        str,
+        grid.to_string(),
         "+---+---+\n\
          |123    |\n\
          +---+---+\n\
@@ -642,30 +537,14 @@ fn grid_2x2_span_test() {
 }
 
 #[test]
-fn grid_2x2_2_span_test() {
-    let mut grid = Grid::new(2, 2);
+fn grid_2x2_span_2_test() {
+    let mut grid = util::new_grid::<2, 2>();
     grid.set(&Entity::Global, Settings::new().text("asd"));
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
-    // grid.set(&Entity::Cell(0, 0), Settings::new().text("123").span(2));
-    // grid.set(&Entity::Cell(1, 0), Settings::new().text("asd").span(2));
-
-    // let str = grid.to_string();
-    // assert_eq!(
-    //     str,
-    //     "+-+-+\n\
-    //      |123|\n\
-    //      +-+-+\n\
-    //      |asd|\n\
-    //      +-+-+\n"
-    // );
-
     grid.set(&Entity::Cell(0, 0), Settings::new().text("1234").span(2));
     grid.set(&Entity::Cell(1, 0), Settings::new().text("asdw").span(2));
 
-    let str = grid.to_string();
     assert_eq!(
-        str,
+        grid.to_string(),
         "+--+-+\n\
          |1234|\n\
          +--+-+\n\
@@ -673,8 +552,8 @@ fn grid_2x2_2_span_test() {
          +--+-+\n"
     );
 
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("1").span(2));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("a").span(2));
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("1"));
+    grid.set(&Entity::Cell(1, 0), Settings::new().text("a"));
 
     let str = grid.to_string();
     assert_eq!(
@@ -689,21 +568,16 @@ fn grid_2x2_2_span_test() {
 
 #[test]
 fn render_row_span_with_no_split_style() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    let mut grid = util::new_grid::<2, 2>();
+    grid.clear_split_grid();
 
     grid.set(
         &Entity::Cell(0, 0),
         Settings::new()
-            .text("0-0")
             .span(2)
             .alignment(AlignmentHorizontal::Center),
     );
     grid.set(&Entity::Cell(0, 1), Settings::new().text(""));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
-
-    grid.clear_split_grid();
 
     let expected = concat!(" 0-0  \n", "1-01-1\n");
 
@@ -713,14 +587,12 @@ fn render_row_span_with_no_split_style() {
 #[test]
 #[ignore = "I am not sure what is the right behaiviour here"]
 fn hieroglyph_handling() {
-    let mut grid = Grid::new(1, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
+    let mut grid = util::new_grid::<1, 2>();
     grid.set(&Entity::Cell(0, 0), Settings::new().text("哈哈"));
     grid.set(&Entity::Cell(0, 1), Settings::new().text("哈"));
-    let s = grid.to_string();
+
     assert_eq!(
-        s,
+        grid.to_string(),
         "+----+--+\n\
          |哈哈  |哈 |\n\
          +----+--+\n"
@@ -730,14 +602,12 @@ fn hieroglyph_handling() {
 #[test]
 #[ignore = "I am not sure what is the right behaiviour here"]
 fn hieroglyph_multiline_handling() {
-    let mut grid = Grid::new(1, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-
+    let mut grid = util::new_grid::<1, 2>();
     grid.set(&Entity::Cell(0, 0), Settings::new().text("哈哈"));
     grid.set(&Entity::Cell(0, 1), Settings::new().text("哈\n哈"));
-    let s = grid.to_string();
+
     assert_eq!(
-        s,
+        grid.to_string(),
         "+----+--+\n\
          |哈哈  |哈 |\n\
          |    |哈 |\n\
