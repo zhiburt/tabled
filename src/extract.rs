@@ -7,9 +7,24 @@ use crate::TableOption;
 /// The segment is defined by [RangeBounds<usize>] for Rows and Columns
 ///
 /// ```rust,no_run
-/// //           rows, columns
-/// Extract::new(..  , ..)
+/// let rows = 1..3;
+/// let columns = 1..;
+/// Extract::new(rows, columns);
 /// ```
+/// 
+/// # Range
+/// 
+/// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
+/// 
+/// ```
+/// // Empty                     Full                  Out of bounds
+///    Extract::new(0..0, 0..0)  Extract::new(.., ..)  Extract::new(0..1, ..4)
+///    [].   .   .               [O   O   O            [O   O   O  X] //ERROR            
+///      .   .   .                O   O   O             .   .   .             
+///      .   .   .                O   O   O]            .   .   .          
+/// ```
+/// 
+/// If a [RangeBounds] argument is malformed or too large the thread will panic
 ///
 /// # Example
 ///

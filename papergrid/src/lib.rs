@@ -411,7 +411,9 @@ impl Grid {
     /// +---+---+---+
     /// |2-0|2-1|2-2|
     /// +---+---+---+
-    /// grid.extract(.., ..1)
+    /// let rows = ..;
+    /// let columns = ..1;
+    /// grid.extract(rows, columns)
     /// +---+
     /// |0-0|
     /// +---+

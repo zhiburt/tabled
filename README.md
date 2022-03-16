@@ -348,9 +348,10 @@ Table::new(&data)
 You can `Extract` segments of a table to focus on a reduced number of rows and columns.
 
 ```rust
+let rows = 1..3;
+let columns = 1..;
 Table::new(&data)
-    //                 rows, columns
-    .with(Extract::new(1..3, 1..));
+    .with(Extract::new(rows, columns));
 ```
 
 ```text
@@ -372,9 +373,10 @@ Table::new(&data)
 For styles with unique corner and edge textures it is possible to reapply a table style once a `Table` extract has been created.
 
 ```rust
+let rows = 1..3;
+let columns = 1..;
 Table::new(&data)
-    //                 rows, columns
-    .with(Extract::new(1..3, 1..))
+    .with(Extract::new(rows, columns))
     .with(Style::modern());
 ```
 
