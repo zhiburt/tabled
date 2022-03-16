@@ -10,7 +10,7 @@ fn extract_full_test() {
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
-        .with(Extract::new(.., ..))
+        .with(Extract::segment(.., ..))
         .to_string();
 
     let expected = concat!(
@@ -35,7 +35,7 @@ fn extract_skip_top_row_test() {
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
-        .with(Extract::new(1.., ..))
+        .with(Extract::segment(1.., ..))
         .to_string();
 
     let expected = concat!(
@@ -58,7 +58,7 @@ fn extract_skip_left_col_test() {
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
-        .with(Extract::new(.., 1..))
+        .with(Extract::segment(.., 1..))
         .to_string();
 
     let expected = concat!(
@@ -83,7 +83,7 @@ fn extract_bottom_right_square_test() {
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
-        .with(Extract::new(2.., 2..))
+        .with(Extract::segment(2.., 2..))
         .to_string();
 
     let expected = concat!(
@@ -104,7 +104,7 @@ fn extract_middle_section_test() {
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
-        .with(Extract::new(1..3, 1..))
+        .with(Extract::segment(1..3, 1..))
         .to_string();
 
     let expected = concat!(
@@ -125,7 +125,7 @@ fn extract_empty_test() {
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
-        .with(Extract::new(1..1, 1..1))
+        .with(Extract::segment(1..1, 1..1))
         .to_string();
 
     assert_eq!(table, "");

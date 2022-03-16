@@ -1,4 +1,4 @@
-use std::ops::RangeBounds;
+use std::ops::{RangeBounds, RangeFull};
 
 use crate::TableOption;
 
@@ -11,13 +11,13 @@ use crate::TableOption;
 /// let columns = 1..;
 /// Extract::new(rows, columns);
 /// ```
-/// 
+///
 /// # Range
-/// 
+///
 /// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
-/// 
+///
 /// If a [RangeBounds] argument is malformed or too large the thread will panic
-/// 
+///
 /// ```
 /// // Empty                     Full                  Out of bounds
 ///    Extract::new(0..0, 0..0)  Extract::new(.., ..)  Extract::new(0..1, ..4)
@@ -67,8 +67,21 @@ pub struct Extract<R, C> {
     columns: C,
 }
 
-impl<R, C> Extract<R, C> {
-    pub fn new(rows: R, columns: C) -> Extract<R, C> {
+impl<R, C> Extract<R, C>
+where
+    R: RangeBounds<usize>,
+    C: RangeBounds<usize>,
+{
+    pub fn rows(rows: R) -> Extract<R, RangeFull> {
+        Extract {
+            rows: rows,
+            columns: ..,
+        }
+    }
+    pub fn columns(columns: C) -> Extract<RangeFull, C> {
+        Extract { rows: .., columns }
+    }
+    pub fn segment(rows: R, columns: C) -> Extract<R, C> {
         Extract { rows, columns }
     }
 }

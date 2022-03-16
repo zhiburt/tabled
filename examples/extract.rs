@@ -62,7 +62,7 @@ fn main() {
     println!("{}", table);
 
     println!("Segment   row: (1..=2)   column: (1..)");
-    let table = table.with(Extract::new(1..=2, 1..));
+    let table = table.with(Extract::segment(1..=2, 1..));
     println!("{}", table);
 
     println!("Refinished segment");
