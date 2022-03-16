@@ -44,7 +44,7 @@ const DEFAULT_SPLIT_BORDER_CHAR: char = ' ';
 
 const DEFAULT_SPLIT_INTERSECTION_CHAR: char = ' ';
 
-pub const DEFAULT_INDENT_FILL_CHAR: char = ' ';
+const DEFAULT_INDENT_FILL_CHAR: char = ' ';
 
 /// Grid provides a set of methods for building a text-based table
 pub struct Grid {
@@ -698,6 +698,13 @@ impl Default for Indent {
 impl Indent {
     pub fn new(size: usize, fill: char) -> Self {
         Self { size, fill }
+    }
+
+    pub fn spaced(size: usize) -> Self {
+        Self {
+            size,
+            fill: DEFAULT_INDENT_FILL_CHAR,
+        }
     }
 }
 

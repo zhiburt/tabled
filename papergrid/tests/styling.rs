@@ -1,7 +1,4 @@
-use papergrid::{
-    AlignmentHorizontal, Border, Entity, Indent, Settings, DEFAULT_CELL_STYLE,
-    DEFAULT_INDENT_FILL_CHAR,
-};
+use papergrid::{AlignmentHorizontal, Border, Entity, Indent, Settings, DEFAULT_CELL_STYLE};
 
 mod util;
 
@@ -140,19 +137,19 @@ fn grid_2x2_indent_test() {
     grid.set(
         &Entity::Global,
         Settings::new().padding(
-            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
-            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
-            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
-            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+            Indent::spaced(1),
+            Indent::spaced(1),
+            Indent::spaced(1),
+            Indent::spaced(1),
         ),
     );
     grid.set(
         &Entity::Column(0),
         Settings::new().padding(
-            Indent::new(0, DEFAULT_INDENT_FILL_CHAR),
-            Indent::new(0, DEFAULT_INDENT_FILL_CHAR),
-            Indent::new(0, DEFAULT_INDENT_FILL_CHAR),
-            Indent::new(0, DEFAULT_INDENT_FILL_CHAR),
+            Indent::default(),
+            Indent::default(),
+            Indent::default(),
+            Indent::default(),
         ),
     );
 
