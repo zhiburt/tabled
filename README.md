@@ -26,7 +26,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Text in top border](#Text-in-top-border)
     * [Alignment](#Alignment)
     * [Format](#Format)
-    * [Indent](#Indent)
+    * [Padding](#Padding)
     * [Max width](#Max-width)
     * [Rotate](#Rotate)
     * [Disable](#Disable)
@@ -280,12 +280,15 @@ There's 2 more Format modifiers. You can find more imformation about theire usag
 - `FormatFrom` - Uses `Vec` elements as new content.
 - `FormatWithIndex` - Like `Format` but with `row` and `column` index in lambda.
 
-### Indent
+### Padding
 
-The `Indent` type provides an interface for a left, right, top and bottom indent of cells.
+The `Padding` structure provides an interface for a left, right, top and bottom padding of cells.
 
 ```rust
-Table::new(&data).with(Modify::new(Row(1..)).with(Indent::new(1, 1, 0, 2)));
+use tabled::{Table, Modify, Row, Padding};
+
+Table::new(&data)
+    .with(Modify::new(Row(1..)).with(Padding::new(1, 1, 0, 2)));
 ```
 
 ### Max width
