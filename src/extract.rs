@@ -9,7 +9,7 @@ use crate::TableOption;
 /// ```rust,no_run
 /// Extract::new(rows: .., columns: ..)
 /// ```
-/// 
+///
 /// # Example
 ///
 /// ```
@@ -46,20 +46,12 @@ use crate::TableOption;
 ///                    +-------+-------------+-----------+\n");
 /// ```
 ///
-pub struct Extract<R, C>
-where
-    R: RangeBounds<usize>,
-    C: RangeBounds<usize>,
-{
+pub struct Extract<R, C> {
     rows: R,
     columns: C,
 }
 
-impl<R, C> Extract<R, C>
-where
-    R: RangeBounds<usize>,
-    C: RangeBounds<usize>,
-{
+impl<R, C> Extract<R, C> {
     pub fn new(rows: R, columns: C) -> Extract<R, C> {
         Extract { rows, columns }
     }
