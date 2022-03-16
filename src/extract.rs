@@ -16,6 +16,8 @@ use crate::TableOption;
 /// 
 /// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
 /// 
+/// If a [RangeBounds] argument is malformed or too large the thread will panic
+/// 
 /// ```
 /// // Empty                     Full                  Out of bounds
 ///    Extract::new(0..0, 0..0)  Extract::new(.., ..)  Extract::new(0..1, ..4)
@@ -23,8 +25,6 @@ use crate::TableOption;
 ///      .   .   .                O   O   O             .   .   .             
 ///      .   .   .                O   O   O]            .   .   .          
 /// ```
-/// 
-/// If a [RangeBounds] argument is malformed or too large the thread will panic
 ///
 /// # Example
 ///
