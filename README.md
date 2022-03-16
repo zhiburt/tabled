@@ -349,7 +349,8 @@ You can `Extract` segments of a table to focus on a reduced number of rows and c
 
 ```rust
 Table::new(&data)
-    .with(Extract::new(rows: 1..3, columns: 1..));
+    //                 rows, columns
+    .with(Extract::new(1..3, 1..));
 ```
 
 ```text
@@ -372,7 +373,8 @@ For styles with unique corner and edge textures it is possible to reapply a tabl
 
 ```rust
 Table::new(&data)
-    .with(Extract::new(rows: 1..3, columns: 1..))
+    //                 rows, columns
+    .with(Extract::new(1..3, 1..))
     .with(Style::modern());
 ```
 
