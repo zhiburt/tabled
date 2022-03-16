@@ -24,8 +24,6 @@ fn panel_has_no_style_by_default() {
         " 2 |   2-0    |   2-1    |   2-2    \n",
     );
 
-    println!("{}", table);
-
     assert_eq!(table, expected);
 }
 
@@ -93,8 +91,6 @@ fn top_panel() {
         " 2 |   2-0    |   2-1    |   2-2    \n",
     );
 
-    println!("{}", table);
-
     assert_eq!(table, expected);
 }
 
@@ -115,8 +111,6 @@ fn bottom_panel() {
         " 2 |   2-0    |   2-1    |   2-2    \n",
         "        Linux Distributions         \n",
     );
-
-    println!("{}", table);
 
     assert_eq!(table, expected);
 }

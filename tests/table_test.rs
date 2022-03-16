@@ -559,8 +559,6 @@ fn table_enum_with_hidden_variant() {
 
     let table = Table::new(&data).to_string();
 
-    println!("{}", table);
-
     assert_eq!(table, expected);
 }
 
@@ -659,8 +657,6 @@ fn table_emojie() {
 
     let table = Table::new(&languages).to_string();
 
-    println!("{}", table);
-
     assert_eq!(table, expected);
 }
 
@@ -702,8 +698,6 @@ fn table_emojie_multiline() {
          +------------------------------------+-----------------+-------------------------------+--------+\n";
 
     let table = Table::new(&languages).to_string();
-
-    println!("{}", table);
 
     assert_eq!(table, expected);
 }
@@ -832,8 +826,6 @@ fn table_emojie_utf8_style() {
     let table = Table::new(&languages)
         .with(tabled::Style::modern().header_off().horizontal_off())
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(table, expected);
 }

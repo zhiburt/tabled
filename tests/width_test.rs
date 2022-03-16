@@ -216,8 +216,6 @@ fn max_width_wrapped_keep_words_color() {
         "| \u{1b}[32m\u{1b}[40ms\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m         |\n",
     );
 
-    println!("{}", table);
-
     assert_eq!(table, expected);
 
     let data = vec!["this is a long   sentence".on_black().green().to_string()];
@@ -343,8 +341,6 @@ fn max_width_wrapped_collored() {
         .with(Modify::new(Full).with(MaxWidth::wrapping(2)))
         .to_string();
 
-    println!("{}", table);
-
     assert_eq!(expected, table);
 }
 
@@ -410,8 +406,6 @@ fn color_chars_are_stripped() {
         .with(Style::github_markdown())
         .with(Modify::new(Full).with(MaxWidth::truncating(3).suffix("...")))
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(expected, table);
 }
@@ -549,8 +543,6 @@ fn min_width_color() {
         .with(Style::github_markdown())
         .with(Modify::new(Full).with(MinWidth::new(10)))
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(expected, table);
 }

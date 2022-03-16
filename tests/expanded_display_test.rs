@@ -6,6 +6,32 @@ use owo_colors::{AnsiColors, OwoColorize};
 
 mod util;
 
+macro_rules! assert_expanded_display {
+    ( $data:expr, $expected:expr ) => {
+        let table = ExpandedDisplay::new($data).to_string();
+        assert_eq!(table, $expected);
+    };
+}
+
+macro_rules! build_tabled_type {
+    ( $name:ident, $length:expr, $fields:expr, $headers:expr ) => {
+        #[derive(Debug, Clone, Copy)]
+        struct $name;
+
+        impl Tabled for $name {
+            const LENGTH: usize = $length;
+
+            fn fields(&self) -> Vec<String> {
+                $fields.iter().map(|s| s.to_string()).collect()
+            }
+
+            fn headers() -> Vec<String> {
+                $headers.iter().map(|s| s.to_string()).collect()
+            }
+        }
+    };
+}
+
 #[test]
 fn display() {
     let data = create_vector::<3, 3>();
@@ -71,264 +97,138 @@ fn display_colored() {
 
 #[test]
 fn display_empty() {
-    struct Type;
-
-    impl Tabled for Type {
-        const LENGTH: usize = 0;
-
-        fn fields(&self) -> Vec<String> {
-            Vec::new()
-        }
-
-        fn headers() -> Vec<String> {
-            Vec::new()
-        }
-    }
-
-    let table = ExpandedDisplay::new(&[Type]).to_string();
-
-    assert_eq!(table, "-[ RECORD 0 ]-\n");
+    build_tabled_type!(EmptyType, 0, [""; 0], [""; 0]);
+    assert_expanded_display!(&[EmptyType], "-[ RECORD 0 ]-\n");
 }
 
 #[test]
 fn display_dynamic_header_template() {
     {
-        struct Type;
-
-        impl Tabled for Type {
-            const LENGTH: usize = 3;
-
-            fn fields(&self) -> Vec<String> {
-                vec!["He".to_string(), "123".to_string(), "asd".to_string()]
-            }
-
-            fn headers() -> Vec<String> {
-                vec!["1".to_string(), "2".to_string(), "3".to_string()]
-            }
-        }
-
-        let expected = concat!("-[ RECORD 0 ]-\n", "1 | He\n", "2 | 123\n", "3 | asd\n",);
-
-        let table = ExpandedDisplay::new(&[Type]).to_string();
-
-        assert_eq!(table, expected);
+        build_tabled_type!(TestType, 3, ["He", "123", "asd"], ["1", "2", "3"]);
+        assert_expanded_display!(
+            &[TestType],
+            concat!("-[ RECORD 0 ]-\n", "1 | He\n", "2 | 123\n", "3 | asd\n",)
+        );
     }
     {
-        struct Type;
-
-        impl Tabled for Type {
-            const LENGTH: usize = 3;
-
-            fn fields(&self) -> Vec<String> {
-                vec!["He".to_string(), "123".to_string(), "asd".to_string()]
-            }
-
-            fn headers() -> Vec<String> {
-                vec!["11".to_string(), "2222222".to_string(), "3".to_string()]
-            }
-        }
-
-        let expected = concat!(
-            "-[ RECORD 0 ]-\n",
-            "11      | He\n",
-            "2222222 | 123\n",
-            "3       | asd\n",
+        build_tabled_type!(TestType, 3, ["He", "123", "asd"], ["11", "2222222", "3"]);
+        assert_expanded_display!(
+            &[TestType],
+            concat!(
+                "-[ RECORD 0 ]-\n",
+                "11      | He\n",
+                "2222222 | 123\n",
+                "3       | asd\n",
+            )
         );
-
-        let table = ExpandedDisplay::new(&[Type]).to_string();
-
-        assert_eq!(table, expected);
     }
     {
-        struct Type;
-
-        impl Tabled for Type {
-            const LENGTH: usize = 3;
-
-            fn fields(&self) -> Vec<String> {
-                vec!["HeheHehe".to_string(), "123".to_string(), "asd".to_string()]
-            }
-
-            fn headers() -> Vec<String> {
-                vec!["11".to_string(), "2222222".to_string(), "3".to_string()]
-            }
-        }
-
-        let expected = concat!(
-            "-[ RECORD 0 ]-----\n",
-            "11      | HeheHehe\n",
-            "2222222 | 123\n",
-            "3       | asd\n",
+        build_tabled_type!(
+            TestType,
+            3,
+            ["HeheHehe", "123", "asd"],
+            ["11", "2222222", "3"]
         );
-
-        let table = ExpandedDisplay::new(&[Type]).to_string();
-
-        assert_eq!(table, expected);
+        assert_expanded_display!(
+            &[TestType],
+            concat!(
+                "-[ RECORD 0 ]-----\n",
+                "11      | HeheHehe\n",
+                "2222222 | 123\n",
+                "3       | asd\n",
+            )
+        );
     }
     {
-        struct Type;
-
-        impl Tabled for Type {
-            const LENGTH: usize = 3;
-
-            fn fields(&self) -> Vec<String> {
-                vec!["He".to_string(), "123".to_string(), "asd".to_string()]
-            }
-
-            fn headers() -> Vec<String> {
-                vec!["11111111111".to_string(), "2".to_string(), "3".to_string()]
-            }
-        }
-
-        let expected = concat!(
-            "-[ RECORD 0 ]----\n",
-            "11111111111 | He\n",
-            "2           | 123\n",
-            "3           | asd\n",
+        build_tabled_type!(TestType, 3, ["He", "123", "asd"], ["11111111111", "2", "3"]);
+        assert_expanded_display!(
+            &[TestType],
+            concat!(
+                "-[ RECORD 0 ]----\n",
+                "11111111111 | He\n",
+                "2           | 123\n",
+                "3           | asd\n",
+            )
         );
-
-        let table = ExpandedDisplay::new(&[Type]).to_string();
-
-        assert_eq!(table, expected);
     }
     {
-        struct Type;
-
-        impl Tabled for Type {
-            const LENGTH: usize = 3;
-
-            fn fields(&self) -> Vec<String> {
-                vec!["He".to_string(), "123".to_string(), "asd".to_string()]
-            }
-
-            fn headers() -> Vec<String> {
-                vec![
-                    "1111111111111".to_string(),
-                    "2".to_string(),
-                    "3".to_string(),
-                ]
-            }
-        }
-
-        let expected = concat!(
-            "-[ RECORD 0 ]-+----\n",
-            "1111111111111 | He\n",
-            "2             | 123\n",
-            "3             | asd\n",
+        build_tabled_type!(
+            TestType,
+            3,
+            ["He", "123", "asd"],
+            ["1111111111111", "2", "3"]
         );
-
-        let table = ExpandedDisplay::new(&[Type]).to_string();
-
-        assert_eq!(table, expected);
+        assert_expanded_display!(
+            &[TestType],
+            concat!(
+                "-[ RECORD 0 ]-+----\n",
+                "1111111111111 | He\n",
+                "2             | 123\n",
+                "3             | asd\n",
+            )
+        );
     }
     {
-        struct Type;
-
-        impl Tabled for Type {
-            const LENGTH: usize = 3;
-
-            fn fields(&self) -> Vec<String> {
-                vec!["He".to_string(), "123".to_string(), "asd".to_string()]
-            }
-
-            fn headers() -> Vec<String> {
-                vec![
-                    "11111111111111111111111111111".to_string(),
-                    "2".to_string(),
-                    "3".to_string(),
-                ]
-            }
-        }
-
-        let expected = concat!(
-            "-[ RECORD 0 ]-----------------+----\n",
-            "11111111111111111111111111111 | He\n",
-            "2                             | 123\n",
-            "3                             | asd\n",
+        build_tabled_type!(
+            TestType,
+            3,
+            ["He", "123", "asd"],
+            ["11111111111111111111111111111", "2", "3"]
         );
-
-        let table = ExpandedDisplay::new(&[Type]).to_string();
-
-        assert_eq!(table, expected);
+        assert_expanded_display!(
+            &[TestType],
+            concat!(
+                "-[ RECORD 0 ]-----------------+----\n",
+                "11111111111111111111111111111 | He\n",
+                "2                             | 123\n",
+                "3                             | asd\n",
+            )
+        );
     }
     {
-        #[derive(Clone)]
-        struct Type;
-
-        impl Tabled for Type {
-            const LENGTH: usize = 1;
-
-            fn fields(&self) -> Vec<String> {
-                vec!["22".to_string()]
-            }
-
-            fn headers() -> Vec<String> {
-                vec!["11111111111".to_string()]
-            }
-        }
-
-        let expected = concat!(
-            "-[ RECORD 0 ]---\n",
-            "11111111111 | 22\n",
-            "-[ RECORD 1 ]---\n",
-            "11111111111 | 22\n",
-            "-[ RECORD 2 ]---\n",
-            "11111111111 | 22\n",
-            "-[ RECORD 3 ]---\n",
-            "11111111111 | 22\n",
-            "-[ RECORD 4 ]---\n",
-            "11111111111 | 22\n",
-            "-[ RECORD 5 ]---\n",
-            "11111111111 | 22\n",
-            "-[ RECORD 6 ]---\n",
-            "11111111111 | 22\n",
-            "-[ RECORD 7 ]---\n",
-            "11111111111 | 22\n",
-            "-[ RECORD 8 ]---\n",
-            "11111111111 | 22\n",
-            "-[ RECORD 9 ]---\n",
-            "11111111111 | 22\n",
-            "-[ RECORD 10 ]--\n",
-            "11111111111 | 22\n",
+        build_tabled_type!(TestType, 3, ["22"], ["11111111111"]);
+        assert_expanded_display!(
+            std::iter::repeat(TestType).take(11),
+            concat!(
+                "-[ RECORD 0 ]---\n",
+                "11111111111 | 22\n",
+                "-[ RECORD 1 ]---\n",
+                "11111111111 | 22\n",
+                "-[ RECORD 2 ]---\n",
+                "11111111111 | 22\n",
+                "-[ RECORD 3 ]---\n",
+                "11111111111 | 22\n",
+                "-[ RECORD 4 ]---\n",
+                "11111111111 | 22\n",
+                "-[ RECORD 5 ]---\n",
+                "11111111111 | 22\n",
+                "-[ RECORD 6 ]---\n",
+                "11111111111 | 22\n",
+                "-[ RECORD 7 ]---\n",
+                "11111111111 | 22\n",
+                "-[ RECORD 8 ]---\n",
+                "11111111111 | 22\n",
+                "-[ RECORD 9 ]---\n",
+                "11111111111 | 22\n",
+                "-[ RECORD 10 ]--\n",
+                "11111111111 | 22\n",
+            )
         );
-
-        let table = ExpandedDisplay::new(std::iter::repeat(Type).take(11)).to_string();
-
-        assert_eq!(table, expected);
     }
 }
 
 #[test]
 fn display_multiline_field() {
-    struct St;
-
-    impl Tabled for St {
-        const LENGTH: usize = 3;
-
-        fn fields(&self) -> Vec<String> {
-            vec!["1".to_string(), "2".to_string(), "3".to_string()]
-        }
-
-        fn headers() -> Vec<String> {
-            vec![
-                "Hello\nWorld".to_string(),
-                "123".to_string(),
-                "asd".to_string(),
-            ]
-        }
-    }
-
-    let data = vec![St];
-    let table = ExpandedDisplay::new(&data).to_string();
-
-    let expected = concat!(
-        "-[ RECORD 0 ]---\n",
-        "Hello\\nWorld | 1\n",
-        "123          | 2\n",
-        "asd          | 3\n",
+    build_tabled_type!(TestType, 3, ["1", "2", "3"], ["Hello\nWorld", "123", "asd"]);
+    assert_expanded_display!(
+        [TestType],
+        concat!(
+            "-[ RECORD 0 ]---\n",
+            "Hello\\nWorld | 1\n",
+            "123          | 2\n",
+            "asd          | 3\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]

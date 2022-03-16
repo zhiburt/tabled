@@ -1,7 +1,7 @@
 use crate::CellOption;
-use papergrid::{Entity, Grid, Settings, DEFAULT_INDENT_FILL_CHAR};
+use papergrid::{Entity, Grid, Indent, Settings};
 
-/// Padding is responsible for a left/right/top/bottom indent of particular and fill one set characters.
+/// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///
 /// ```rust,no_run
 ///   # use tabled::{Style, Padding, Row, Table, Modify};
@@ -12,15 +12,19 @@ pub struct Padding(papergrid::Padding);
 
 impl Padding {
     /// Construct's an Padding object.
+    ///
+    /// It uses space(' ') as a default fill character.
+    /// To set a custom character you can use [Self::set_fill] function.
     pub fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
         Self(papergrid::Padding {
-            top: papergrid::Indent::new(top, DEFAULT_INDENT_FILL_CHAR),
-            bottom: papergrid::Indent::new(bottom, DEFAULT_INDENT_FILL_CHAR),
-            left: papergrid::Indent::new(left, DEFAULT_INDENT_FILL_CHAR),
-            right: papergrid::Indent::new(right, DEFAULT_INDENT_FILL_CHAR),
+            top: Indent::spaced(top),
+            bottom: Indent::spaced(bottom),
+            left: Indent::spaced(left),
+            right: Indent::spaced(right),
         })
     }
 
+    /// The function, sets a characters for the padding on an each side.
     pub fn set_fill(mut self, left: char, right: char, top: char, bottom: char) -> Self {
         self.0.left.fill = left;
         self.0.right.fill = right;
