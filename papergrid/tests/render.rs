@@ -10,9 +10,13 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Settings};
+use papergrid::{
+    AlignmentHorizontal, AlignmentVertical, Entity, Grid, Indent, Settings,
+    DEFAULT_INDENT_FILL_CHAR,
+};
 
 mod util;
+
 
 #[test]
 fn render_2x2_test() {
@@ -292,9 +296,13 @@ fn render_row_span_multilane() {
 #[test]
 fn render_row_span_with_horizontal_ident() {
     let mut grid = util::new_grid::<3, 2>();
-
     grid.set(&Entity::Cell(0, 0), Settings::new().span(2));
-    grid.set(&Entity::Cell(1, 0), Settings::new().indent(4, 4, 0, 0));
+    grid.set(&Entity::Cell(1, 0), Settings::new().padding(
+        Indent::new(4, DEFAULT_INDENT_FILL_CHAR),
+        Indent::new(4, DEFAULT_INDENT_FILL_CHAR),
+        Indent::default(),
+        Indent::default(),
+    ));
 
     let expected = concat!(
         "+-----------+---+\n",

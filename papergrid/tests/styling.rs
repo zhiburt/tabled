@@ -1,4 +1,7 @@
-use papergrid::{AlignmentHorizontal, Border, Entity, Settings, DEFAULT_CELL_STYLE};
+use papergrid::{
+    AlignmentHorizontal, Border, Entity, Indent, Settings, DEFAULT_CELL_STYLE,
+    DEFAULT_INDENT_FILL_CHAR,
+};
 
 mod util;
 
@@ -134,9 +137,25 @@ fn grid_2x2_alignment_test() {
 #[test]
 fn grid_2x2_indent_test() {
     let mut grid = util::new_grid::<2, 2>();
+    grid.set(
+        &Entity::Global,
+        Settings::new().padding(
+            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+            Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+        ),
+    );
+    grid.set(
+        &Entity::Column(0),
+        Settings::new().padding(
+            Indent::new(0, DEFAULT_INDENT_FILL_CHAR),
+            Indent::new(0, DEFAULT_INDENT_FILL_CHAR),
+            Indent::new(0, DEFAULT_INDENT_FILL_CHAR),
+            Indent::new(0, DEFAULT_INDENT_FILL_CHAR),
+        ),
+    );
 
-    grid.set(&Entity::Global, Settings::new().indent(1, 1, 1, 1));
-    grid.set(&Entity::Column(0), Settings::new().indent(0, 0, 0, 0));
     let str = grid.to_string();
 
     assert_eq!(

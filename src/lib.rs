@@ -158,8 +158,8 @@ mod concat;
 mod disable;
 mod formating;
 mod highlight;
-mod indent;
 mod object;
+mod padding;
 mod panel;
 mod rotate;
 mod span;
@@ -171,7 +171,7 @@ pub mod display;
 pub mod style;
 
 pub use crate::{
-    alignment::*, concat::*, disable::*, formating::*, highlight::*, indent::*, object::*,
+    alignment::*, concat::*, disable::*, formating::*, highlight::*, object::*, padding::*,
     panel::*, rotate::*, span::*, style::Style, table::*, width::*,
 };
 

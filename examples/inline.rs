@@ -2,7 +2,7 @@
 //! `cargo run --example inline`
 
 use tabled::{
-    Alignment, AlignmentHorizontal, Full, Head, Indent, Modify, Row, Style, Table, Tabled,
+    Alignment, AlignmentHorizontal, Full, Head, Modify, Padding, Row, Style, Table, Tabled,
 };
 
 fn main() {
@@ -41,7 +41,7 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Modify::new(Full).with(Indent::new(1, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(1, 1, 0, 0)))
         .with(Modify::new(Head).with(Alignment::Horizontal(AlignmentHorizontal::Left)))
         .with(Modify::new(Row(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Center)));
 

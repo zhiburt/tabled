@@ -3,7 +3,7 @@
 
 use std::{fmt::Display, iter::FromIterator};
 
-use papergrid::{AlignmentHorizontal, Entity, Grid, Settings};
+use papergrid::{AlignmentHorizontal, Entity, Grid, Indent, Settings, DEFAULT_INDENT_FILL_CHAR};
 
 use crate::{Style, Table};
 
@@ -232,7 +232,12 @@ fn create_table_from_grid(mut grid: Grid) -> Table {
     grid.set(
         &Entity::Global,
         Settings::new()
-            .indent(1, 1, 0, 0)
+            .padding(
+                Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+                Indent::new(1, DEFAULT_INDENT_FILL_CHAR),
+                Indent::new(0, DEFAULT_INDENT_FILL_CHAR),
+                Indent::new(0, DEFAULT_INDENT_FILL_CHAR),
+            )
             .alignment(AlignmentHorizontal::Center),
     );
 
