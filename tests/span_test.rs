@@ -1,5 +1,5 @@
 use crate::util::create_vector;
-use tabled::{Alignment, Cell, Column, Full, Indent, Modify, Span, Style, Table};
+use tabled::{Alignment, Cell, Column, Full, Modify, Padding, Span, Style, Table};
 
 mod util;
 
@@ -353,7 +353,7 @@ fn indent_works_in_spaned_columns() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Indent::new(3, 0, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 0, 0, 0)))
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Cell(1, 1)).with(Span::column(3)))
         .with(Modify::new(Cell(3, 1)).with(Span::column(3)))

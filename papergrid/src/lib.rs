@@ -44,6 +44,8 @@ const DEFAULT_SPLIT_BORDER_CHAR: char = ' ';
 
 const DEFAULT_SPLIT_INTERSECTION_CHAR: char = ' ';
 
+const DEFAULT_INDENT_FILL_CHAR: char = ' ';
+
 /// Grid provides a set of methods for building a text-based table
 pub struct Grid {
     size: (usize, usize),
@@ -115,8 +117,8 @@ impl Grid {
             self.set_text(entity, text);
         }
 
-        if let Some(indent) = settings.indent {
-            self.style_mut(entity).indent = indent;
+        if let Some(padding) = settings.padding {
+            self.style_mut(entity).padding = padding;
         }
 
         if let Some(alignment_h) = settings.alignment_h {
@@ -296,11 +298,11 @@ impl Grid {
             .alignment(style.alignment_h)
             .vertical_alignment(style.alignment_v)
             .span(style.span)
-            .indent(
-                style.indent.left,
-                style.indent.right,
-                style.indent.top,
-                style.indent.bottom,
+            .padding(
+                style.padding.left,
+                style.padding.right,
+                style.padding.top,
+                style.padding.bottom,
             )
             .border(border)
     }
@@ -679,7 +681,7 @@ impl EntityFrame {
 
 #[derive(Debug, Clone)]
 pub struct Style {
-    pub indent: Indent,
+    pub padding: Padding,
     pub alignment_h: AlignmentHorizontal,
     pub alignment_v: AlignmentVertical,
     pub span: usize,
@@ -690,23 +692,46 @@ impl Default for Style {
         Self {
             alignment_h: AlignmentHorizontal::Left,
             alignment_v: AlignmentVertical::Top,
-            indent: Indent {
-                bottom: 0,
-                left: 0,
-                right: 0,
-                top: 0,
-            },
+            padding: Padding::default(),
             span: 1,
         }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone, Copy)]
+pub struct Padding {
+    pub top: Indent,
+    pub bottom: Indent,
+    pub left: Indent,
+    pub right: Indent,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct Indent {
-    pub top: usize,
-    pub bottom: usize,
-    pub left: usize,
-    pub right: usize,
+    pub fill: char,
+    pub size: usize,
+}
+
+impl Default for Indent {
+    fn default() -> Self {
+        Self {
+            fill: DEFAULT_INDENT_FILL_CHAR,
+            size: 0,
+        }
+    }
+}
+
+impl Indent {
+    pub fn new(size: usize, fill: char) -> Self {
+        Self { size, fill }
+    }
+
+    pub fn spaced(size: usize) -> Self {
+        Self {
+            size,
+            fill: DEFAULT_INDENT_FILL_CHAR,
+        }
+    }
 }
 
 /// AlignmentHorizontal represents an horizontal aligment of a cell content.
@@ -771,7 +796,7 @@ impl AlignmentVertical {
 #[derive(Debug, Clone, Default)]
 pub struct Settings {
     text: Option<String>,
-    indent: Option<Indent>,
+    padding: Option<Padding>,
     alignment_h: Option<AlignmentHorizontal>,
     alignment_v: Option<AlignmentVertical>,
     span: Option<usize>,
@@ -791,9 +816,9 @@ impl Settings {
         self
     }
 
-    /// Indent method sets indent for a cell
-    pub fn indent(mut self, left: usize, right: usize, top: usize, bottom: usize) -> Self {
-        self.indent = Some(Indent {
+    /// padding method sets padding for a cell
+    pub fn padding(mut self, left: Indent, right: Indent, top: Indent, bottom: Indent) -> Self {
+        self.padding = Some(Padding {
             top,
             bottom,
             left,
@@ -967,14 +992,14 @@ fn build_row_internal_line(
 ) -> fmt::Result {
     let top_indent = top_indent(cell, style, height);
     if top_indent > line_index {
-        return empty_line(f, width);
+        return repeat_char(f, style.padding.top.fill, width);
     }
 
     let cell_line_index = line_index - top_indent;
     let cell_has_this_line = cell.len() > cell_line_index;
     // happen when other cells have bigger height
     if !cell_has_this_line {
-        return empty_line(f, width);
+        return repeat_char(f, style.padding.bottom.fill, width);
     }
 
     let line_text = cell[cell_line_index];
@@ -982,42 +1007,40 @@ fn build_row_internal_line(
         f,
         line_text,
         width,
-        style.indent.left,
-        style.indent.right,
+        style.padding.left,
+        style.padding.right,
         style.alignment_h,
     )
 }
 
 fn top_indent(cell: &[&str], style: &Style, height: usize) -> usize {
-    let height = height - style.indent.top;
-    let content_height = cell_height(cell, style) - style.indent.top - style.indent.bottom;
+    let height = height - style.padding.top.size;
+    let content_height =
+        cell_height(cell, style) - style.padding.top.size - style.padding.bottom.size;
     let indent = style.alignment_v.top_ident(height, content_height);
-    indent + style.indent.top
-}
-
-fn empty_line(f: &mut std::fmt::Formatter<'_>, n: usize) -> fmt::Result {
-    write!(f, "{:1$}", "", n)
+    indent + style.padding.top.size
 }
 
 fn repeat_char(f: &mut std::fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     if n > 0 {
-        write!(f, "{:1$}", c, n)
-    } else {
-        Ok(())
+        for _ in 0..n {
+            write!(f, "{}", c)?;
+        }
     }
+    Ok(())
 }
 
 fn line(
     f: &mut std::fmt::Formatter<'_>,
     text: &str,
     width: usize,
-    left_indent: usize,
-    right_indent: usize,
+    left_indent: Indent,
+    right_indent: Indent,
     alignment: AlignmentHorizontal,
 ) -> fmt::Result {
-    repeat_char(f, ' ', left_indent)?;
-    alignment.align(f, text, width - left_indent - right_indent)?;
-    repeat_char(f, ' ', right_indent)?;
+    repeat_char(f, left_indent.fill, left_indent.size)?;
+    alignment.align(f, text, width - left_indent.size - right_indent.size)?;
+    repeat_char(f, right_indent.fill, right_indent.size)?;
     Ok(())
 }
 
@@ -1409,7 +1432,7 @@ fn inc_cells_width(
 
 fn cell_width(cell: &[&str], style: &Style) -> usize {
     let content_width = cell.iter().map(|l| string_width(l)).max().unwrap_or(0);
-    content_width + style.indent.left + style.indent.right
+    content_width + style.padding.left.size + style.padding.right.size
 }
 
 fn rows_height(
@@ -1443,7 +1466,7 @@ fn rows_height(
 
 fn cell_height(cell: &[&str], style: &Style) -> usize {
     let content_height = cell.len();
-    content_height + style.indent.top + style.indent.bottom
+    content_height + style.padding.top.size + style.padding.bottom.size
 }
 
 fn normalized_width(

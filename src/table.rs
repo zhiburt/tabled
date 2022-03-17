@@ -31,6 +31,9 @@ pub trait CellOption {
 /// To build a string representation of a table you must use a [std::fmt::Display].
 /// Or simply call `.to_string()` method.
 ///
+/// The default table [crate::Style] is [crate::Style::ascii],
+/// with a 1 left and right padding.
+///
 /// ## Example
 ///
 /// ### Basic usage

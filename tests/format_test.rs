@@ -1,7 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
-    multiline, Alignment, Cell, Column, Format, FormatFrom, FormatWithIndex, Full, Head, Indent,
-    Modify, Object, Row, Style, Table,
+    multiline, Alignment, Cell, Column, Format, FormatFrom, FormatWithIndex, Full, Head, Modify,
+    Object, Padding, Row, Style, Table,
 };
 
 mod util;
@@ -324,11 +324,11 @@ mod color {
 }
 
 #[test]
-fn format_doesnt_change_indent() {
+fn format_doesnt_change_padding() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .to_string();
 

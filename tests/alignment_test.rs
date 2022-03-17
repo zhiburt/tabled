@@ -1,5 +1,5 @@
 use crate::util::create_vector;
-use tabled::{Alignment, Column, Full, Head, Indent, Modify, Row, Style, Table};
+use tabled::{Alignment, Column, Full, Head, Modify, Padding, Row, Style, Table};
 
 mod util;
 
@@ -104,7 +104,7 @@ fn vertical_alignment_test() {
 }
 
 #[test]
-fn alignment_doesnt_change_indent() {
+fn alignment_doesnt_change_padding() {
     let data = create_vector::<3, 3>();
 
     let expected = concat!(
@@ -117,7 +117,7 @@ fn alignment_doesnt_change_indent() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Indent::new(3, 0, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 0, 0, 0)))
         .with(Modify::new(Full).with(Alignment::left()))
         .to_string();
 
