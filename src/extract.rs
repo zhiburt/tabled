@@ -2,11 +2,6 @@ use std::ops::{RangeBounds, RangeFull};
 
 use crate::TableOption;
 
-// remove this in time
-// https://doc.rust-lang.org/rustdoc/linking-to-items-by-name.html#valid-links
-// cargo run --example extract
-// cargo test --test extract_test
-
 /// Returns a new [Table] that reflects a segment of the referenced [Table]
 ///
 /// The segment is defined by [RangeBounds<usize>] for Rows and Columns
