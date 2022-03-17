@@ -1,5 +1,5 @@
 use crate::util::create_vector;
-use tabled::{Alignment, Extract, Format, Full, Indent, Modify, Table};
+use tabled::{Alignment, Extract, Format, Full, Modify, Padding, Table};
 
 mod util;
 
@@ -8,7 +8,7 @@ fn extract_segment_full_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::segment(.., ..))
         .to_string();
@@ -33,7 +33,7 @@ fn extract_segment_skip_top_row_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::segment(1.., ..))
         .to_string();
@@ -56,7 +56,7 @@ fn extract_segment_skip_left_col_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::segment(.., 1..))
         .to_string();
@@ -81,7 +81,7 @@ fn extract_segment_bottom_right_square_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::segment(2.., 2..))
         .to_string();
@@ -102,7 +102,7 @@ fn extract_segment_middle_section_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::segment(1..3, 1..))
         .to_string();
@@ -123,7 +123,7 @@ fn extract_segment_empty_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::segment(1..1, 1..1))
         .to_string();
@@ -136,7 +136,7 @@ fn extract_rows_full_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::rows(..))
         .to_string();
@@ -161,7 +161,7 @@ fn extract_rows_empty_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::rows(0..0))
         .to_string();
@@ -174,7 +174,7 @@ fn extract_rows_partial_view_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::rows(0..=2))
         .to_string();
@@ -197,7 +197,7 @@ fn extract_columns_full_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::columns(..))
         .to_string();
@@ -222,7 +222,7 @@ fn extract_columns_empty_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::columns(0..0))
         .to_string();
@@ -235,7 +235,7 @@ fn extract_columns_partial_view_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Indent::new(3, 1, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
         .with(Extract::columns(0..2))
         .to_string();

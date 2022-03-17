@@ -169,10 +169,10 @@ where
 
 impl<R, C> TableOption for Extract<R, C>
 where
-    R: RangeBounds<usize>,
-    C: RangeBounds<usize>,
+    R: RangeBounds<usize> + Clone,
+    C: RangeBounds<usize> + Clone,
 {
     fn change(&mut self, grid: &mut papergrid::Grid) {
-        *grid = grid.extract(&self.rows, &self.columns);
+        *grid = grid.extract(self.rows.clone(), self.columns.clone());
     }
 }

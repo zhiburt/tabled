@@ -72,7 +72,7 @@ fn main() {
             if s == "Outstanding" {
                 format!("+{}+", s)
             } else {
-                format!("{}", s)
+                s.to_string()
             }
         })));
     println!("{}", table);

@@ -424,7 +424,7 @@ impl Grid {
     /// |2-0|
     /// +---+
     /// ```
-    pub fn extract<R, C>(&self, rows: &R, columns: &C) -> Self
+    pub fn extract<R, C>(&self, rows: R, columns: C) -> Self
     where
         R: RangeBounds<usize>,
         C: RangeBounds<usize>,
