@@ -16,6 +16,11 @@ use crate::TableOption;
 ///
 /// # Range
 ///
+/// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
+///
+/// If a [RangeBounds] argument is malformed or too large the thread will panic
+///
+///
 /// ```
 /// // Empty                         Full                      Out of bounds
 ///    Extract::segment(0..0, 0..0)  Extract::segment(.., ..)  Extract::segment(0..1, ..4)
