@@ -373,31 +373,6 @@ Table::new(&data)
 +-------+-------------+-----------+
 ```
 
-#### Interface
-
-```rust
-// rows from 0 to max
-pub fn columns(columns: C) -> Extract<RangeFull, C>;
-// columns from 0 to max
-pub fn rows(rows: R) -> Extract<R, RangeFull>;
-
-pub fn segment(rows: R, columns: C) -> Extract<, C>;
-```
-
-#### Range
-
-A `RangeBounds` argument can be less than or equal to the shape of a `Table`
-
-If a `RangeBounds` argument is malformed or too large the thread will panic
-
-```rust
-// Empty                         Full                      Out of bounds
-   Extract::segment(0..0, 0..0)  Extract::segment(.., ..)  Extract::segment(0..1, ..4)
-   [].   .   .                   [O   O   O                [O   O   O  X] //ERROR      
-     .   .   .                    O   O   O                 .   .   .             
-     .   .   .                    O   O   O]                .   .   .          
-```
-
 #### Refinishing
 
 For styles with unique corner and edge textures it is possible to reapply a table style once a `Table` extract has been created.

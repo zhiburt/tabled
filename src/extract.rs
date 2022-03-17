@@ -6,14 +6,6 @@ use crate::TableOption;
 ///
 /// The segment is defined by [RangeBounds<usize>] for Rows and Columns
 ///
-/// # API
-///
-/// ### [`Extract::segment()`](tabled::extract::Extract::segment)
-///
-/// ### [`Extract::rows()`](tabled::extract::Extract::rows)
-///
-/// ### [`Extract::columns()`](tabled::extract::Extract::columns)
-///
 /// # Range
 ///
 /// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
@@ -51,18 +43,6 @@ use crate::TableOption;
 ///                    +-------------+-----------+\n\
 ///                    |  : Minsk :  | : true :  |\n\
 ///                    +-------------+-----------+\n");
-///
-/// assert_ne!(table, "+-------+-------------+-----------+\n\
-///                    |  i32  |    &str     |   bool    |\n\
-///                    +-------+-------------+-----------+\n\
-///                    | : 0 : | : Grodno :  | : true :  |\n\
-///                    +-------+-------------+-----------+\n\
-///                    | : 1 : |  : Minsk :  | : true :  |\n\
-///                    +-------+-------------+-----------+\n\
-///                    | : 2 : | : Hamburg : | : false : |\n\
-///                    +-------+-------------+-----------+\n\
-///                    | : 3 : |  : Brest :  | : true :  |\n\
-///                    +-------+-------------+-----------+\n");
 /// ```
 ///
 pub struct Extract<R, C> {
