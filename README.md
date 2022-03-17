@@ -30,6 +30,10 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Max width](#Max-width)
     * [Rotate](#Rotate)
     * [Disable](#Disable)
+    * [Extract](#Extract)
+        * [Interface](#Interface)
+        * [Range](#Range)
+        * [Refinish](#Refinishing)
     * [Header and Footer](#Header-and-Footer)
     * [Concat](#Concat)
 * [Derive](#Derive)
@@ -343,6 +347,85 @@ Table::new(&data)
     .with(Disable::Row(..1))
     .with(Disable::Column(3..4));
 ```
+
+### Extract
+
+You can `Extract` segments of a table to focus on a reduced number of rows and columns.
+
+```rust
+let rows = 1..3;
+let columns = 1..;
+Table::new(&data)
+    .with(Extract::segment(rows, columns));
+```
+
+```text
++-------+-------------+-----------+
+|  i32  |    &str     |   bool    |
++-------+-------------+-----------+         +-------------+-----------+
+| : 0 : | : Grodno :  | : true :  |         | : Grodno :  | : true :  |
++-------+-------------+-----------+    =    +-------------+-----------+
+| : 1 : |  : Minsk :  | : true :  |         |  : Minsk :  | : true :  |
++-------+-------------+-----------+         +-------------+-----------+
+| : 2 : | : Hamburg : | : false : |
++-------+-------------+-----------+
+| : 3 : |  : Brest :  | : true :  |
++-------+-------------+-----------+
+```
+
+#### Interface
+
+```rust
+// rows from 0 to max
+pub fn columns(columns: C) -> Extract<RangeFull, C>;
+// columns from 0 to max
+pub fn rows(rows: R) -> Extract<R, RangeFull>;
+
+pub fn segment(rows: R, columns: C) -> Extract<, C>;
+```
+
+#### Range
+
+A `RangeBounds` argument can be less than or equal to the shape of a `Table`
+
+If a `RangeBounds` argument is malformed or too large the thread will panic
+
+```rust
+// Empty                         Full                      Out of bounds
+   Extract::segment(0..0, 0..0)  Extract::segment(.., ..)  Extract::segment(0..1, ..4)
+   [].   .   .                   [O   O   O                [O   O   O  X] //ERROR      
+     .   .   .                    O   O   O                 .   .   .             
+     .   .   .                    O   O   O]                .   .   .          
+```
+
+#### Refinishing
+
+For styles with unique corner and edge textures it is possible to reapply a table style once a `Table` extract has been created.
+
+```rust
+let rows = 1..3;
+let columns = 1..;
+Table::new(&data)
+    .with(Extract::segment(rows, columns))
+    .with(Style::modern());
+```
+
+```text
+Raw extract
+┼───────────────────────────┼──────────────────┼──────────────┤
+│ The Dark Side of the Moon │ 01 March 1973    │ Unparalleled │
+┼───────────────────────────┼──────────────────┼──────────────┤
+│ Rumours                   │ 04 February 1977 │ Outstanding  │
+┼───────────────────────────┼──────────────────┼──────────────┤
+
+Refinished extract
+┌───────────────────────────┬──────────────────┬───────────────┐
+│ The Dark Side of the Moon │ 01 March 1973    │ Unparalleled  │
+├───────────────────────────┼──────────────────┼───────────────┤
+│ Rumours                   │ 04 February 1977 │  Outstanding  │
+└───────────────────────────┴──────────────────┴───────────────┘
+```
+
 
 ### Header and Footer
 

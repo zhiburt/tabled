@@ -156,6 +156,7 @@ use std::fmt;
 mod alignment;
 mod concat;
 mod disable;
+mod extract;
 mod formating;
 mod highlight;
 mod object;
@@ -171,8 +172,8 @@ pub mod display;
 pub mod style;
 
 pub use crate::{
-    alignment::*, concat::*, disable::*, formating::*, highlight::*, object::*, padding::*,
-    panel::*, rotate::*, span::*, style::Style, table::*, width::*,
+    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::*, object::*,
+    padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::*,
 };
 
 pub use tabled_derive::Tabled;
