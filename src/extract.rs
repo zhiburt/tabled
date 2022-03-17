@@ -2,28 +2,31 @@ use std::ops::{RangeBounds, RangeFull};
 
 use crate::TableOption;
 
+// remove this in time
+// https://doc.rust-lang.org/rustdoc/linking-to-items-by-name.html#valid-links
+// cargo run --example extract
+// cargo test --test extract_test
+
 /// Returns a new [Table] that reflects a segment of the referenced [Table]
 ///
 /// The segment is defined by [RangeBounds<usize>] for Rows and Columns
 ///
-/// ```rust,no_run
-/// let rows = 1..3;
-/// let columns = 1..;
-/// Extract::new(rows, columns);
-/// ```
+/// # API
+///
+/// ### [`Extract::segment()`](tabled::extract::Extract::segment)
+///
+/// ### [`Extract::rows()`](tabled::extract::Extract::rows)
+///
+/// ### [`Extract::columns()`](tabled::extract::Extract::columns)
 ///
 /// # Range
 ///
-/// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
-///
-/// If a [RangeBounds] argument is malformed or too large the thread will panic
-///
 /// ```
-/// // Empty                     Full                  Out of bounds
-///    Extract::new(0..0, 0..0)  Extract::new(.., ..)  Extract::new(0..1, ..4)
-///    [].   .   .               [O   O   O            [O   O   O  X] //ERROR            
-///      .   .   .                O   O   O             .   .   .             
-///      .   .   .                O   O   O]            .   .   .          
+/// // Empty                         Full                      Out of bounds
+///    Extract::segment(0..0, 0..0)  Extract::segment(.., ..)  Extract::segment(0..1, ..4)
+///    [].   .   .                   [O   O   O                [O   O   O  X] //ERROR            
+///      .   .   .                    O   O   O                 .   .   .             
+///      .   .   .                    O   O   O]                .   .   .          
 /// ```
 ///
 /// # Example
@@ -40,7 +43,7 @@ use crate::TableOption;
 ///
 /// let table = Table::new(&data)
 ///                .with(Modify::new(Row(1..)).with(Format(|s| format!(": {} :", s))))
-///                .with(Extract::new(1..=2, 1..))
+///                .with(Extract::segment(1..=2, 1..))
 ///                .to_string();
 ///
 /// assert_eq!(table, "+-------------+-----------+\n\
@@ -72,17 +75,95 @@ where
     R: RangeBounds<usize>,
     C: RangeBounds<usize>,
 {
-    pub fn rows(rows: R) -> Extract<R, RangeFull> {
-        Extract {
-            rows: rows,
-            columns: ..,
-        }
-    }
-    pub fn columns(columns: C) -> Extract<RangeFull, C> {
-        Extract { rows: .., columns }
-    }
-    pub fn segment(rows: R, columns: C) -> Extract<R, C> {
+    /// Returns a new [Table] that reflects a segment of the referenced [Table]
+    ///
+    /// The segment is defined by [RangeBounds<usize>] for Rows and Columns
+    ///
+    /// ```rust,no_run
+    /// let rows = 1..3;
+    /// let columns = 1..;
+    /// Extract::segment(rows, columns);
+    /// ```
+    ///
+    /// # Range
+    ///
+    /// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
+    ///
+    /// If a [RangeBounds] argument is malformed or too large the thread will panic
+    ///
+    /// ```
+    /// // Empty                         Full                      Out of bounds
+    ///    Extract::segment(0..0, 0..0)  Extract::segment(.., ..)  Extract::segment(0..1, ..4)
+    ///    [].   .   .                   [O   O   O                [O   O   O  X] //ERROR            
+    ///      .   .   .                    O   O   O                 .   .   .             
+    ///      .   .   .                    O   O   O]                .   .   .          
+    /// ```
+    ///
+    pub fn segment(rows: R, columns: C) -> Self {
         Extract { rows, columns }
+    }
+}
+
+impl<R> Extract<R, RangeFull>
+where
+    R: RangeBounds<usize>,
+{
+    /// Returns a new [Table] that reflects a segment of the referenced [Table]
+    ///
+    /// The segment is defined by [RangeBounds<usize>] for Rows
+    ///
+    /// ```rust,no_run
+    /// Extract::rows(1..3);
+    /// ```
+    ///
+    /// # Range
+    ///
+    /// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
+    ///
+    /// If a [RangeBounds] argument is malformed or too large the thread will panic
+    ///
+    /// ```
+    /// // Empty                Full               Out of bounds
+    ///    Extract::rows(0..0)  Extract::rows(..)  Extract::rows(0..4)
+    ///    [].   .   .          [O   O   O         [O   O   O             
+    ///      .   .   .           O   O   O          O   O   O              
+    ///      .   .   .           O   O   O]         O   O   O
+    ///                                             X   X   X] // ERROR          
+    /// ```
+    ///
+    pub fn rows(rows: R) -> Self {
+        Extract { rows, columns: .. }
+    }
+}
+
+impl<C> Extract<RangeFull, C>
+where
+    C: RangeBounds<usize>,
+{
+    /// Returns a new [Table] that reflects a segment of the referenced [Table]
+    ///
+    /// The segment is defined by [RangeBounds<usize>] for Columns
+    ///
+    /// ```rust,no_run
+    /// Extract::columns(1..3);
+    /// ```
+    ///
+    /// # Range
+    ///
+    /// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
+    ///
+    /// If a [RangeBounds] argument is malformed or too large the thread will panic
+    ///
+    /// ```
+    /// // Empty                   Full                  Out of bounds
+    ///    Extract::columns(0..0)  Extract::columns(..)  Extract::columns(0..4)
+    ///    [].   .   .             [O   O   O            [O   O   O   X          
+    ///      .   .   .              O   O   O             O   O   O   X          
+    ///      .   .   .              O   O   O]            O   O   O   X] // ERROR
+    /// ```
+    ///
+    pub fn columns(columns: C) -> Self {
+        Extract { rows: .., columns }
     }
 }
 
