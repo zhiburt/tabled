@@ -68,7 +68,7 @@ fn extract_top_test() {
 fn extract_bottom_test() {
     let grid = util::new_grid::<3, 3>();
 
-    let grid = grid.extract(.., ..);
+    let grid = grid.extract(2.., ..);
 
     assert_eq!(
         grid.to_string(),
