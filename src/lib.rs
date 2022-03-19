@@ -159,6 +159,7 @@ mod disable;
 mod extract;
 mod formating;
 mod highlight;
+mod margin;
 mod object;
 mod padding;
 mod panel;
@@ -172,8 +173,8 @@ pub mod display;
 pub mod style;
 
 pub use crate::{
-    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::*, object::*,
-    padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::*,
+    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::*, margin::*,
+    object::*, padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::*,
 };
 
 pub use tabled_derive::Tabled;

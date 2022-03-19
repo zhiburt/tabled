@@ -51,6 +51,7 @@ pub struct Grid {
     size: (usize, usize),
     cells: Vec<Vec<String>>,
     styles: HashMap<Entity, Style>,
+    margin: Margin,
     borders: Borders,
     override_split_lines: HashMap<usize, String>,
 }
@@ -84,6 +85,7 @@ impl Grid {
             size: (rows, columns),
             cells: vec![vec![String::new(); columns]; rows],
             styles,
+            margin: Margin::default(),
             borders: Borders::new(rows, columns),
             override_split_lines: HashMap::new(),
         }
@@ -141,6 +143,10 @@ impl Grid {
 
             self.set_border(&frame, border);
         }
+    }
+
+    pub fn margin(&mut self, margin: Margin) {
+        self.margin = margin
     }
 
     pub fn add_horizontal_split(&mut self, row: usize) {
@@ -699,6 +705,14 @@ impl Default for Style {
 }
 
 #[derive(Default, Debug, Clone, Copy)]
+pub struct Margin {
+    pub top: Indent,
+    pub bottom: Indent,
+    pub left: Indent,
+    pub right: Indent,
+}
+
+#[derive(Default, Debug, Clone, Copy)]
 pub struct Padding {
     pub top: Indent,
     pub bottom: Indent,
@@ -893,6 +907,13 @@ impl std::fmt::Display for Grid {
         );
 
         let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
+        let margin_row_widths =
+            margin_line_widths(&normal_widths, count_columns, self.margin, &self.borders);
+        for _ in 0..self.margin.top.size {
+            writeln(f, |f| {
+                repeat_char(f, self.margin.top.fill, margin_row_widths)
+            })?
+        }
 
         for row in 0..count_rows {
             let inner_border = self.get_inner_split_line(row);
@@ -919,11 +940,54 @@ impl std::fmt::Display for Grid {
                 inner_border,
                 top_border,
                 bottom_border,
+                self.margin,
             )?;
+        }
+
+        for _ in 0..self.margin.bottom.size {
+            writeln(f, |f| {
+                repeat_char(f, self.margin.bottom.fill, margin_row_widths)
+            })?
         }
 
         Ok(())
     }
+}
+
+fn margin_line_widths(
+    normal_widths: &[usize],
+    count_columns: usize,
+    margin: Margin,
+    borders: &Borders,
+) -> usize {
+    let left_border_widths = borders
+        .vertical
+        .get(&(0_usize))
+        .map(|_| 1)
+        .unwrap_or_else(|| 0);
+    let right_border_widths = borders
+        .vertical
+        .get(&(count_columns - 1_usize))
+        .map(|_| 1)
+        .unwrap_or_else(|| 0);
+    let widths = normal_widths.iter().sum::<usize>();
+    widths
+        + margin.left.size
+        + margin.right.size
+        + count_columns
+        + left_border_widths
+        + right_border_widths
+        - 1
+}
+
+fn build_row_with_margin<F: FnMut(&mut std::fmt::Formatter<'_>) -> fmt::Result>(
+    f: &mut std::fmt::Formatter<'_>,
+    margin: Margin,
+    mut writer: F,
+) -> fmt::Result {
+    repeat_char(f, margin.left.fill, margin.left.size)?;
+    writer(f)?;
+    repeat_char(f, margin.right.fill, margin.right.size)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -937,9 +1001,10 @@ fn build_row(
     inner_border: Vec<BorderLine>,
     top_border: Option<(Vec<BorderLine>, Option<&String>)>,
     bottom_border: Option<(Vec<BorderLine>, Option<&String>)>,
+    margin: Margin,
 ) -> fmt::Result {
     if let Some((top_border, override_border)) = top_border {
-        build_split_line(f, normal_widths, &top_border, override_border)?;
+        build_split_line(f, normal_widths, &top_border, override_border, margin)?;
     }
 
     build_row_internals(
@@ -949,10 +1014,11 @@ fn build_row(
         cell_widths,
         height,
         &inner_border,
+        margin,
     )?;
 
     if let Some((bottom_border, override_border)) = bottom_border {
-        build_split_line(f, normal_widths, &bottom_border, override_border)?;
+        build_split_line(f, normal_widths, &bottom_border, override_border, margin)?;
     }
 
     Ok(())
@@ -965,17 +1031,22 @@ fn build_row_internals(
     widths: &[usize],
     height: usize,
     border: &[BorderLine],
+    margin: Margin,
 ) -> fmt::Result {
     for line_index in 0..height {
-        build_line(f, border, row_styles, row.len(), |f, column| {
-            build_row_internal_line(
-                f,
-                line_index,
-                &row[column],
-                &row_styles[column],
-                widths[column],
-                height,
-            )
+        writeln(f, |f| {
+            build_row_with_margin(f, margin, |f| {
+                build_line(f, border, row_styles, row.len(), |f, column| {
+                    build_row_internal_line(
+                        f,
+                        line_index,
+                        &row[column],
+                        &row_styles[column],
+                        widths[column],
+                        height,
+                    )
+                })
+            })
         })?;
     }
 
@@ -1063,8 +1134,6 @@ fn build_line<F: FnMut(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
         }
     }
 
-    writeln!(f)?;
-
     Ok(())
 }
 
@@ -1073,68 +1142,71 @@ fn build_split_line(
     widths: &[usize],
     borders: &[BorderLine],
     override_str: Option<&String>,
+    margin: Margin,
 ) -> fmt::Result {
     let theres_no_border = borders.iter().all(|l| l.main.is_none());
     if theres_no_border || borders.is_empty() {
         return Ok(());
     }
 
-    let mut override_str = override_str.map(|s| s.to_owned());
-    for (i, border) in borders.iter().enumerate().take(widths.len()) {
-        if let Some(left_connector) = border.connector1 {
-            let connector = override_str
-                .as_mut()
-                .and_then(|s| {
-                    s.chars().next().map(|c| {
-                        let _ = s.drain(..c.len_utf8());
-                        c
-                    })
-                })
-                .unwrap_or(left_connector);
-            write!(f, "{}", connector)?
-        }
+    writeln(f, |f| {
+        build_row_with_margin(f, margin, |f| {
+            let mut override_str = override_str.map(|s| s.to_owned());
+            for (i, border) in borders.iter().enumerate().take(widths.len()) {
+                if let Some(left_connector) = border.connector1 {
+                    let connector = override_str
+                        .as_mut()
+                        .and_then(|s| {
+                            s.chars().next().map(|c| {
+                                let _ = s.drain(..c.len_utf8());
+                                c
+                            })
+                        })
+                        .unwrap_or(left_connector);
+                    write!(f, "{}", connector)?
+                }
 
-        if let Some(main) = border.main {
-            let mut width = widths[i];
-            if let Some(s) = override_str.as_mut() {
-                while !s.is_empty() && width > 0 {
-                    match s.chars().next() {
-                        Some(c) => {
-                            write!(f, "{}", c)?;
-                            width -= 1;
-                            let _ = s.drain(..c.len_utf8());
+                if let Some(main) = border.main {
+                    let mut width = widths[i];
+                    if let Some(s) = override_str.as_mut() {
+                        while !s.is_empty() && width > 0 {
+                            match s.chars().next() {
+                                Some(c) => {
+                                    write!(f, "{}", c)?;
+                                    width -= 1;
+                                    let _ = s.drain(..c.len_utf8());
+                                }
+                                None => break,
+                            }
                         }
-                        None => break,
+                    }
+
+                    while width > 0 {
+                        write!(f, "{}", main)?;
+                        width -= 1;
+                    }
+                }
+
+                let is_last_cell = i + 1 == widths.len();
+                if is_last_cell {
+                    if let Some(right_connector) = border.connector2 {
+                        let connector = override_str
+                            .as_mut()
+                            .and_then(|s| {
+                                s.chars().next().map(|c| {
+                                    let _ = s.drain(..c.len_utf8());
+                                    c
+                                })
+                            })
+                            .unwrap_or(right_connector);
+                        write!(f, "{}", connector)?
                     }
                 }
             }
 
-            while width > 0 {
-                write!(f, "{}", main)?;
-                width -= 1;
-            }
-        }
-
-        let is_last_cell = i + 1 == widths.len();
-        if is_last_cell {
-            if let Some(right_connector) = border.connector2 {
-                let connector = override_str
-                    .as_mut()
-                    .and_then(|s| {
-                        s.chars().next().map(|c| {
-                            let _ = s.drain(..c.len_utf8());
-                            c
-                        })
-                    })
-                    .unwrap_or(right_connector);
-                write!(f, "{}", connector)?
-            }
-        }
-    }
-
-    writeln!(f)?;
-
-    Ok(())
+            Ok(())
+        })
+    })
 }
 
 fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) -> fmt::Result {
@@ -1142,6 +1214,14 @@ fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) ->
         Some(text) => write!(f, "{}", text),
         None => Ok(()),
     }
+}
+
+fn writeln<F: FnMut(&mut std::fmt::Formatter<'_>) -> fmt::Result>(
+    f: &mut std::fmt::Formatter<'_>,
+    mut writer: F,
+) -> fmt::Result {
+    writer(f)?;
+    writeln!(f)
 }
 
 #[cfg(not(feature = "color"))]
