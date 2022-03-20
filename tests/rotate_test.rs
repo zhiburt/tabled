@@ -1,6 +1,9 @@
 // todo: add method for SPACING between cells.
 //       add MARGIN && PADDING instead of indent?
-use tabled::{Border, Highlight, Rotate, Style, Table};
+use tabled::{
+    style::{Border, Style},
+    Highlight, Rotate, Table,
+};
 
 #[test]
 fn test_rotate() {
@@ -181,6 +184,8 @@ fn rotate_preserve_border_styles_test() {
 
     // it's a correct behaviour because
     // when we sen bottom border of cell(0, 2) we also set top border of cell(1, 2)
+    //
+    // todo: determine if it's correct
     assert_eq!(
         table,
         concat!(

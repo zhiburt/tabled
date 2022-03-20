@@ -4,8 +4,8 @@ use std::{borrow::Cow, marker::PhantomData};
 
 #[allow(unused)]
 use crate::Table;
-use crate::TableOption;
-use papergrid::{Border, Entity, Grid, Settings};
+use crate::{CellOption, Highlight, TableOption};
+use papergrid::{Entity, Grid, Settings};
 
 /// Style is represents a theme of a [Table].
 ///
@@ -1252,5 +1252,22 @@ impl<T, B, L, R, IH, IV> CustomStyle<T, B, L, R, IH, IV, On> {
 impl<T, B, L, R, IH, IV, H> TableOption for CustomStyle<T, B, L, R, IH, IV, H> {
     fn change(&mut self, grid: &mut Grid) {
         self.inner.change(grid);
+    }
+}
+
+/// Border represents a style of a CellBorder.
+///
+/// ```rust,no_run
+///   # use tabled::{style::{Style, Border}, Row, Table, Modify};
+///   # let data: Vec<&'static str> = Vec::new();
+///     let table = Table::new(&data)
+///         .with(Style::ascii())
+///         .with(Modify::new(Row(..1)).with(Border::default().top('x')));
+/// ```
+pub use papergrid::Border;
+
+impl CellOption for Border {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        Highlight::cell(row, column, self.clone()).change(grid);
     }
 }

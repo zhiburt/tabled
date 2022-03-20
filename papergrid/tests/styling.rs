@@ -12,11 +12,11 @@ fn grid_2x2_custom_frame_test() {
 
     assert_eq!(
         grid.to_string(),
-        "#*******#\n\
+        "#***#***#\n\
          |0-0|0-1|\n\
-         |---+---|\n\
+         #***#***#\n\
          |1-0|1-1|\n\
-         #*******#\n"
+         #***#***#\n"
     )
 }
 
@@ -32,9 +32,9 @@ fn grid_2x2_custom_column_test() {
         grid.to_string(),
         "+---#***#\n\
          |0-0|0-1|\n\
-         +---|---|\n\
+         +---#***#\n\
          |1-0|1-1|\n\
-         +---#***#\n"
+         +---#***#\n",
     );
 
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
@@ -47,9 +47,9 @@ fn grid_2x2_custom_column_test() {
         grid.to_string(),
         "#***#---+\n\
          |0-0|0-1|\n\
-         |---|---+\n\
+         #***#---+\n\
          |1-0|1-1|\n\
-         #***#---+\n"
+         #***#---+\n",
     )
 }
 
@@ -64,11 +64,13 @@ fn grid_2x2_custom_row_test() {
 
     assert_eq!(
         grid.to_string(),
-        "#*******#\n\
-         |0-0|0-1|\n\
-         #*******#\n\
-         |1-0|1-1|\n\
-         +---+---+\n"
+        concat!(
+            "#***#***#\n",
+            "|0-0|0-1|\n",
+            "#***#***#\n",
+            "|1-0|1-1|\n",
+            "+---+---+\n",
+        )
     );
 
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
@@ -82,9 +84,9 @@ fn grid_2x2_custom_row_test() {
         str,
         "+---+---+\n\
          |0-0|0-1|\n\
-         #*******#\n\
+         #***#***#\n\
          |1-0|1-1|\n\
-         #*******#\n"
+         #***#***#\n"
     );
 }
 
