@@ -1,5 +1,5 @@
 use crate::util::create_vector;
-use tabled::{Alignment, Full, Modify, Padding, Row, Style, Table};
+use tabled::{Alignment, Full, Modify, Padding, Rows, Style, Table};
 
 mod util;
 
@@ -9,7 +9,7 @@ fn padding() {
     let table = Table::new(&data)
         .with(Style::psql())
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Row(1..)).with(Padding::new(1, 1, 0, 2)))
+        .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 0, 2)))
         .to_string();
 
     let expected = concat!(
@@ -80,7 +80,7 @@ fn padding_multiline() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Row(1..)).with(Padding::new(1, 1, 1, 1)))
+        .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 1, 1)))
         .to_string();
 
     let expected = concat!(
@@ -110,7 +110,7 @@ fn padding_multiline_with_vertical_alignment() {
                 .with(Alignment::center_horizontal())
                 .with(Alignment::center_vertical()),
         )
-        .with(Modify::new(Row(1..)).with(Padding::new(1, 1, 1, 1)))
+        .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 1, 1)))
         .to_string();
 
     let expected = concat!(

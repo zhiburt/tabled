@@ -1,7 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
-    multiline, Alignment, Cell, Column, Format, FormatFrom, FormatWithIndex, Full, Head, Modify,
-    Object, Padding, Row, Style, Table,
+    multiline, Alignment, Cell, Columns, Format, FormatFrom, FormatWithIndex, Full, Head, Modify,
+    Object, Padding, Rows, Style, Table,
 };
 
 mod util;
@@ -52,7 +52,7 @@ fn formatting_row_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Row(1..)).with(Format(|s| format!("<{}>", s))))
+        .with(Modify::new(Rows::new(1..)).with(Format(|s| format!("<{}>", s))))
         .to_string();
 
     let expected = concat!(
@@ -71,7 +71,7 @@ fn formatting_column_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Column(..1)).with(Format(|s| format!("(x) {}", s))))
+        .with(Modify::new(Columns::single(0)).with(Format(|s| format!("(x) {}", s))))
         .to_string();
     let expected = concat!(
         " (x) N | column 0 | column 1 | column 2 \n",
@@ -140,7 +140,10 @@ fn formatting_and_combination_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Column(..1).and(Row(..1))).with(Format(|s| format!("(x) {}", s))))
+        .with(
+            Modify::new(Columns::single(0).and(Rows::single(0)))
+                .with(Format(|s| format!("(x) {}", s))),
+        )
         .to_string();
 
     let expected = concat!(
@@ -160,7 +163,7 @@ fn formatting_not_combination_test() {
     let table = Table::new(&data)
         .with(Style::psql())
         .with(
-            Modify::new(Column(..1).and(Row(..1)).not(Cell(0, 0)))
+            Modify::new(Columns::single(0).and(Rows::single(0)).not(Cell(0, 0)))
                 .with(Format(|s| format!("(x) {}", s))),
         )
         .to_string();

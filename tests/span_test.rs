@@ -1,5 +1,5 @@
 use crate::util::create_vector;
-use tabled::{Alignment, Cell, Column, Full, Modify, Padding, Span, Style, Table};
+use tabled::{Alignment, Cell, Columns, Full, Modify, Padding, Span, Style, Table};
 
 mod util;
 
@@ -10,7 +10,7 @@ fn span_column_test() {
         let table = Table::new(&data)
             .with(Style::psql())
             .with(Modify::new(Full).with(Alignment::left()))
-            .with(Modify::new(Column(..1)).with(Span::column(2)))
+            .with(Modify::new(Columns::single(0)).with(Span::column(2)))
             .to_string();
 
         let expected = concat!(
@@ -27,7 +27,7 @@ fn span_column_test() {
         let table = Table::new(&data)
             .with(Style::psql())
             .with(Modify::new(Full).with(Alignment::left()))
-            .with(Modify::new(Column(1..2)).with(Span::column(2)))
+            .with(Modify::new(Columns::new(1..2)).with(Span::column(2)))
             .to_string();
 
         let expected = concat!(
@@ -44,7 +44,7 @@ fn span_column_test() {
         let table = Table::new(&data)
             .with(Style::psql())
             .with(Modify::new(Full).with(Alignment::left()))
-            .with(Modify::new(Column(..1)).with(Span::column(data.len() + 1)))
+            .with(Modify::new(Columns::single(0)).with(Span::column(data.len() + 1)))
             .to_string();
 
         let expected = concat!(" N \n", "+++\n", " 0 \n", " 1 \n", " 2 \n");
@@ -277,7 +277,7 @@ fn span_column_exceeds_boundries_test() {
 
     let data = create_vector::<3, 3>();
     Table::new(&data)
-        .with(Modify::new(Column(..1)).with(Span::column(100)))
+        .with(Modify::new(Columns::single(0)).with(Span::column(100)))
         .to_string();
 }
 

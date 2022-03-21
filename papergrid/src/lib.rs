@@ -595,6 +595,7 @@ impl Border {
         }
     }
 
+    // todo: rename to filled.
     pub fn single(c: char) -> Self {
         Self::full(c, c, c, c, c, c, c, c)
     }

@@ -171,6 +171,7 @@ pub mod builder;
 pub mod display;
 pub mod style;
 
+// todo: Remove 'object' from public use;
 pub use crate::{
     alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::*, object::*,
     padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::*,

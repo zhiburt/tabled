@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example builder`
 
-use tabled::{Header, MaxWidth, Modify, Panel, Row, Style};
+use tabled::{Header, MaxWidth, Modify, Panel, Rows, Style};
 
 fn main() {
     let message = r#"The terms "the ocean" or "the sea" used without specification refer to the interconnected body of salt water covering the majority of the Earth's surface"#;
@@ -19,7 +19,7 @@ fn main() {
         .with(Header(message))
         .with(Header(link))
         .with(Panel("=".repeat(link.len()), 2))
-        .with(Modify::new(Row(1..2)).with(MaxWidth::wrapping(link.len())))
+        .with(Modify::new(Rows::single(1)).with(MaxWidth::wrapping(link.len())))
         .with(Style::github_markdown());
 
     println!("{}", table);

@@ -4,7 +4,7 @@ use std::{borrow::Cow, marker::PhantomData};
 
 #[allow(unused)]
 use crate::Table;
-use crate::{CellOption, Highlight, TableOption};
+use crate::{Cell, CellOption, Highlight, TableOption};
 use papergrid::{Entity, Grid, Settings};
 
 /// Style is represents a theme of a [Table].
@@ -1268,6 +1268,6 @@ pub use papergrid::Border;
 
 impl CellOption for Border {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        Highlight::cell(row, column, self.clone()).change(grid);
+        Highlight::new(Cell(row, column), self.clone()).change(grid);
     }
 }

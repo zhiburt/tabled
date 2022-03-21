@@ -3,17 +3,16 @@
 
 use tabled::{
     style::{Border, Style},
-    Highlight, TableIteratorExt,
+    Cell, Highlight, TableIteratorExt,
 };
 
 fn main() {
     let data = vec![["A", "B", "C"], ["D", "E", "F"], ["G", "H", "I"]];
 
-    let table = data.table().with(Style::modern()).with(Highlight::cell(
-        2,
-        1,
-        Border::full('*', '*', '*', '*', '*', '*', '*', '*'),
-    ));
+    let table = data
+        .table()
+        .with(Style::modern())
+        .with(Highlight::new(Cell(2, 1), Border::single('*')));
 
     println!("{}", table);
 }
