@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 #[allow(unused)]
 use crate::Table;
@@ -199,63 +199,18 @@ fn set_border(grid: &mut Grid, sector: HashSet<(usize, usize)>, border: Border) 
         return;
     }
 
-    let columns = sector.iter().map(|&(_, col)| col).collect::<HashSet<_>>();
-    let rows = sector.iter().map(|&(row, _)| row).collect::<HashSet<_>>();
-
-    let mut row_constaints = HashMap::new();
-    let mut column_constaints = HashMap::new();
-
-    for col in columns {
-        let max_row_in_column = sector
-            .iter()
-            .filter(|c| c.1 == col)
-            .map(|&(row, _)| row)
-            .max()
-            .unwrap();
-        let min_row_in_column = sector
-            .iter()
-            .filter(|c| c.1 == col)
-            .map(|&(row, _)| row)
-            .min()
-            .unwrap();
-
-        column_constaints.insert(col, (max_row_in_column, min_row_in_column));
-    }
-
-    for row in rows {
-        let max_column_in_row = sector
-            .iter()
-            .filter(|c| c.0 == row)
-            .map(|&(_, col)| col)
-            .max()
-            .unwrap();
-        let min_column_in_row = sector
-            .iter()
-            .filter(|c| c.0 == row)
-            .map(|&(_, col)| col)
-            .min()
-            .unwrap();
-
-        row_constaints.insert(row, (max_column_in_row, min_column_in_row));
-    }
-
     for &(row, col) in &sector {
         let mut cell_border = Border::default();
 
-        let cell_has_top_neighbor = row > 0 && sector.contains(&(row - 1, col));
-        let cell_has_bottom_neighbor = sector.contains(&(row + 1, col));
-        let cell_has_left_neighbor = col > 0 && sector.contains(&(row, col - 1));
-        let cell_has_right_neighbor = sector.contains(&(row, col + 1));
+        let cell_has_top_neighbor = cell_has_top_neighbor(&sector, row, col);
+        let cell_has_bottom_neighbor = cell_has_bottom_neighbor(&sector, row, col);
+        let cell_has_left_neighbor = cell_has_left_neighbor(&sector, row, col);
+        let cell_has_right_neighbor = cell_has_right_neighbor(&sector, row, col);
 
-        let this_has_left_top_neighbor = row > 0 && col > 0 && sector.contains(&(row - 1, col - 1));
-        let this_has_right_top_neighbor = row > 0 && sector.contains(&(row - 1, col + 1));
-        let this_has_left_bottom_neighbor = col > 0 && sector.contains(&(row + 1, col - 1));
-        let this_has_right_bottom_neighbor = sector.contains(&(row + 1, col + 1));
-
-        // let is_first_cell_in_column = column_constaints[&col].1 == row;
-        // let is_last_cell_in_column = column_constaints[&col].0 == row;
-        // let is_first_cell_in_row = row_constaints[&row].1 == col;
-        // let is_last_cell_in_row = row_constaints[&row].0 == col;
+        let this_has_left_top_neighbor = is_there_left_top_cell(&sector, row, col);
+        let this_has_right_top_neighbor = is_there_right_top_cell(&sector, row, col);
+        let this_has_left_bottom_neighbor = is_there_left_bottom_cell(&sector, row, col);
+        let this_has_right_bottom_neighbor = is_there_right_bottom_cell(&sector, row, col);
 
         if let Some(c) = border.top {
             if !cell_has_top_neighbor {
@@ -382,6 +337,38 @@ fn set_border(grid: &mut Grid, sector: HashSet<(usize, usize)>, border: Border) 
                 .border_restriction(false),
         );
     }
+}
+
+fn cell_has_top_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    row > 0 && sector.contains(&(row - 1, col))
+}
+
+fn cell_has_bottom_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    sector.contains(&(row + 1, col))
+}
+
+fn cell_has_left_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    col > 0 && sector.contains(&(row, col - 1))
+}
+
+fn cell_has_right_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    sector.contains(&(row, col + 1))
+}
+
+fn is_there_left_top_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    row > 0 && col > 0 && sector.contains(&(row - 1, col - 1))
+}
+
+fn is_there_right_top_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    row > 0 && sector.contains(&(row - 1, col + 1))
+}
+
+fn is_there_left_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    col > 0 && sector.contains(&(row + 1, col - 1))
+}
+
+fn is_there_right_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    sector.contains(&(row + 1, col + 1))
 }
 
 #[cfg(test)]
