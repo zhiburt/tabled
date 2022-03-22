@@ -436,8 +436,79 @@ impl Grid {
         new_grid
     }
 
+    /// Returns a total width of table, including split lines.
+    pub fn total_width(&self) -> usize {
+        // can be simplified? by just getting a split line chars().count()
+
+        let count_rows = self.count_rows();
+        let count_columns = self.count_columns();
+        let mut cells = self.collect_cells(count_rows, count_columns);
+        let mut styles = self.collect_styles(count_rows, count_columns);
+        let split_borders = (0..count_rows)
+            .map(|row| self.get_inner_split_line(row))
+            .collect::<Vec<_>>();
+
+        let widths = columns_width(
+            &mut cells,
+            &mut styles,
+            &split_borders,
+            count_rows,
+            count_columns,
+        );
+
+        let content_width = widths
+            .into_iter()
+            .next()
+            .map(|row| row.into_iter().sum::<usize>())
+            .unwrap_or(0);
+
+        let count_borders = split_borders
+            .into_iter()
+            .next()
+            .map(|row| {
+                let left_border = row
+                    .get(0)
+                    .map_or(0, |b| if b.connector1.is_some() { 1 } else { 0 });
+                let other_borders = row
+                    .into_iter()
+                    .enumerate()
+                    .filter(|&(col, _)| is_cell_visible(&styles[0], col))
+                    .filter(|(_, b)| b.connector2.is_some())
+                    .count();
+
+                left_border + other_borders
+            })
+            .unwrap_or(0);
+
+        content_width + count_borders
+    }
+
     pub fn override_split_line(&mut self, row: usize, line: impl Into<String>) {
         self.override_split_lines.insert(row, line.into());
+    }
+
+    pub fn row_width(&self, row: usize) -> usize {
+        let row_widths = (0..self.count_columns())
+            .map(|col| {
+                let style = self.style(&Entity::Cell(row, col));
+                let content = self.get_cell_content(row, col);
+                string_width(content) + style.padding.left.size + style.padding.right.size
+            })
+            .collect::<Vec<_>>();
+
+        let row_styles = (0..self.count_columns())
+            .map(|col| self.style(&Entity::Cell(row, col)).clone())
+            .collect::<Vec<_>>();
+
+        let row_borders = self.get_inner_split_line(row);
+
+        row_width(
+            &row_styles,
+            &row_widths,
+            &row_borders,
+            0,
+            self.count_columns(),
+        )
     }
 
     fn add_split_lines(&mut self, entity: Entity, border: &Border) {
