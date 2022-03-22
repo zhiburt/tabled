@@ -512,29 +512,29 @@ impl Grid {
     }
 
     fn add_split_lines(&mut self, entity: Entity, border: &Border) {
-                match entity {
-                    Entity::Global => {
-                        for column in 0..self.count_columns() {
-                            for row in 0..self.count_rows() {
-                                self.add_split_lines_for_cell(row, column, border);
-                            }
-                        }
-                    }
-                    Entity::Column(column) => {
-                        for row in 0..self.count_rows() {
-                            self.add_split_lines_for_cell(row, column, border);
-                        }
-                    }
-                    Entity::Row(row) => {
-                        for column in 0..self.count_columns() {
-                            self.add_split_lines_for_cell(row, column, border);
-                        }
-                    }
-                    Entity::Cell(row, column) => {
+        match entity {
+            Entity::Global => {
+                for column in 0..self.count_columns() {
+                    for row in 0..self.count_rows() {
                         self.add_split_lines_for_cell(row, column, border);
                     }
                 }
             }
+            Entity::Column(column) => {
+                for row in 0..self.count_rows() {
+                    self.add_split_lines_for_cell(row, column, border);
+                }
+            }
+            Entity::Row(row) => {
+                for column in 0..self.count_columns() {
+                    self.add_split_lines_for_cell(row, column, border);
+                }
+            }
+            Entity::Cell(row, column) => {
+                self.add_split_lines_for_cell(row, column, border);
+            }
+        }
+    }
 
     fn add_split_lines_for_cell(&mut self, row: usize, column: usize, border: &Border) {
         let left_affected = border.left.is_some()
