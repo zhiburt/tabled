@@ -54,88 +54,73 @@ impl Concat {
 }
 
 impl TableOption for Concat {
-    fn change(&mut self, other: &mut Grid) {
+    fn change(&mut self, lhs: &mut Grid) {
+        let rhs = &self.table.grid;
+
         match &mut self.mode {
             ConcatMode::Vertical => {
-                let new_row_size = self.table.grid.count_rows() + other.count_rows();
-                let new_column_size =
-                    cmp::max(self.table.grid.count_columns(), other.count_columns());
+                let new_row_size = lhs.count_rows() + rhs.count_rows();
+                let new_column_size = cmp::max(lhs.count_columns(), rhs.count_columns());
                 let mut new_grid = Grid::new(new_row_size, new_column_size);
-
-                for row in 0..other.count_rows() {
-                    for column in 0..other.count_columns() {
-                        let settings = other.get_settings(row, column);
-                        new_grid.set(
-                            &Entity::Cell(row, column),
-                            settings.border_restriction(false),
-                        );
-                    }
-                }
-
-                for row in 0..self.table.grid.count_rows() {
-                    for column in 0..self.table.grid.count_columns() {
-                        let settings = self.table.grid.get_settings(row, column);
-                        new_grid.set(
-                            &Entity::Cell(other.count_rows() + row, column),
-                            settings.border_restriction(false),
-                        );
-                    }
-                }
 
                 for row in 0..new_grid.count_rows() {
                     for column in 0..new_grid.count_columns() {
-                        if (column >= other.count_columns() && row < other.count_rows())
-                            || (column >= self.table.grid.count_columns()
-                                && row > other.count_rows())
-                        {
-                            let settings =
-                                new_grid.get_settings(row, column).text(&self.default_cell);
-                            new_grid.set(&Entity::Cell(row, column), settings);
-                        }
+                        let is_lhs_side = row < lhs.count_rows();
+                        let is_rhs_side = row >= lhs.count_rows();
+
+                        let is_new_to_lhs = column >= rhs.count_columns() && is_rhs_side;
+                        let is_new_to_rhs = column >= lhs.count_columns() && is_lhs_side;
+                        let is_new_cell = is_new_to_lhs || is_new_to_rhs;
+
+                        let settings = if is_new_cell {
+                            new_grid
+                                .get_settings(row, column)
+                                .text(&self.default_cell)
+                                .border_restriction(false)
+                        } else if is_lhs_side {
+                            lhs.get_settings(row, column).border_restriction(false)
+                        } else {
+                            rhs.get_settings(row - lhs.count_rows(), column)
+                                .border_restriction(false)
+                        };
+
+                        new_grid.set(&Entity::Cell(row, column), settings);
                     }
                 }
 
-                *other = new_grid;
+                *lhs = new_grid;
             }
             ConcatMode::Horizontal => {
-                let new_row_size = cmp::max(self.table.grid.count_rows(), other.count_rows());
-                let new_column_size = self.table.grid.count_columns() + other.count_columns();
+                let new_row_size = cmp::max(lhs.count_rows(), rhs.count_rows());
+                let new_column_size = lhs.count_columns() + rhs.count_columns();
                 let mut new_grid = Grid::new(new_row_size, new_column_size);
-
-                for column in 0..other.count_columns() {
-                    for row in 0..other.count_rows() {
-                        let settings = other.get_settings(row, column);
-                        new_grid.set(
-                            &Entity::Cell(row, column),
-                            settings.border_restriction(false),
-                        );
-                    }
-                }
-
-                for column in 0..self.table.grid.count_columns() {
-                    for row in 0..self.table.grid.count_rows() {
-                        let settings = self.table.grid.get_settings(row, column);
-                        new_grid.set(
-                            &Entity::Cell(row, column + other.count_columns()),
-                            settings.border_restriction(false),
-                        );
-                    }
-                }
 
                 for row in 0..new_grid.count_rows() {
                     for column in 0..new_grid.count_columns() {
-                        if (row >= other.count_rows() && column < other.count_columns())
-                            || (row >= self.table.grid.count_rows()
-                                && column > other.count_columns())
-                        {
-                            let settings =
-                                new_grid.get_settings(row, column).text(&self.default_cell);
-                            new_grid.set(&Entity::Cell(row, column), settings);
-                        }
+                        let is_lhs_side = column < lhs.count_columns();
+                        let is_rhs_side = column >= lhs.count_columns();
+
+                        let is_new_to_lhs = row >= rhs.count_rows() && is_rhs_side;
+                        let is_new_to_rhs = row >= lhs.count_rows() && is_lhs_side;
+                        let is_new_cell = is_new_to_lhs || is_new_to_rhs;
+
+                        let settings = if is_new_cell {
+                            new_grid
+                                .get_settings(row, column)
+                                .text(&self.default_cell)
+                                .border_restriction(false)
+                        } else if is_lhs_side {
+                            lhs.get_settings(row, column).border_restriction(false)
+                        } else {
+                            rhs.get_settings(row, column - lhs.count_columns())
+                                .border_restriction(false)
+                        };
+
+                        new_grid.set(&Entity::Cell(row, column), settings);
                     }
                 }
 
-                *other = new_grid;
+                *lhs = new_grid;
             }
         }
     }

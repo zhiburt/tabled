@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example width`
 
-use tabled::{style::TopBorderText, Alignment, Full, Modify, Style, Table};
+use tabled::{object::Full, style::TopBorderText, Alignment, Modify, Style, Table};
 
 fn main() {
     let data = [[5, 6, 7, 8, 9], [10, 11, 12, 13, 14]];

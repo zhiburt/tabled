@@ -1,6 +1,6 @@
 use crate::util::create_vector;
 use tabled::style::TopBorderText;
-use tabled::{Full, Indent, Modify, Style, Table, TableIteratorExt};
+use tabled::{object::Full, Modify, Padding, Style, Table, TableIteratorExt};
 
 mod util;
 
@@ -317,7 +317,7 @@ fn empty_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::empty())
-        .with(Modify::new(Full).with(Indent::new(0, 0, 0, 0)))
+        .with(Modify::new(Full).with(Padding::new(0, 0, 0, 0)))
         .to_string();
 
     let expected = concat!(

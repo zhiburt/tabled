@@ -1,7 +1,8 @@
 use crate::util::create_vector;
 use tabled::{
-    Alignment, Border, Cell, Footer, Full, Header, Highlight, Modify, Object, Panel, Row, Style,
-    Table,
+    object::{Cell, Full, Object, Rows},
+    style::{Border, Style},
+    Alignment, Footer, Header, Highlight, Modify, Panel, Table,
 };
 
 mod util;
@@ -24,18 +25,16 @@ fn panel_has_no_style_by_default() {
         " 2 |   2-0    |   2-1    |   2-2    \n",
     );
 
-    println!("{}", table);
-
     assert_eq!(table, expected);
 }
 
 #[test]
 fn highligt_panel() {
-    let border = Border::full('#', '#', '#', '#', '#', '#', '#', '#');
+    let border = Border::new('#', '#', '#', '#', '#', '#', '#', '#');
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 0))
         .with(Style::psql())
-        .with(Highlight::cell(0, 0, border.clone()))
+        .with(Highlight::new(Cell(0, 0), border.clone()))
         .to_string();
 
     // todo: it would be better if vertical split was not set in panel line
@@ -55,10 +54,10 @@ fn highligt_panel() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 0))
         .with(Style::psql())
-        .with(Highlight::cell(0, 0, border.clone()))
-        .with(Highlight::cell(0, 1, border.clone()))
-        .with(Highlight::cell(0, 2, border.clone()))
-        .with(Highlight::cell(0, 3, border))
+        .with(Highlight::new(Cell(0, 0), border.clone()))
+        .with(Highlight::new(Cell(0, 1), border.clone()))
+        .with(Highlight::new(Cell(0, 2), border.clone()))
+        .with(Highlight::new(Cell(0, 3), border))
         .to_string();
 
     // todo: it would be better if vertical split was not set in panel line
@@ -93,8 +92,6 @@ fn top_panel() {
         " 2 |   2-0    |   2-1    |   2-2    \n",
     );
 
-    println!("{}", table);
-
     assert_eq!(table, expected);
 }
 
@@ -103,7 +100,7 @@ fn bottom_panel() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Panel("Linux Distributions", data.len() + 1))
-        .with(Modify::new(Row(data.len() + 1..)).with(Alignment::center_horizontal()))
+        .with(Modify::new(Rows::new(data.len() + 1..)).with(Alignment::center_horizontal()))
         .with(Style::psql())
         .to_string();
 
@@ -116,8 +113,6 @@ fn bottom_panel() {
         "        Linux Distributions         \n",
     );
 
-    println!("{}", table);
-
     assert_eq!(table, expected);
 }
 
@@ -125,7 +120,7 @@ fn bottom_panel() {
 fn inner_panel() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 2))
-        .with(Modify::new(Row(2..)).with(Alignment::center_horizontal()))
+        .with(Modify::new(Rows::new(2..)).with(Alignment::center_horizontal()))
         .with(Style::psql())
         .to_string();
 
@@ -146,7 +141,7 @@ fn header() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Header("Linux Distributions"))
         .with(Style::psql())
-        .with(Modify::new(Row(0..1)).with(Alignment::center_horizontal()))
+        .with(Modify::new(Rows::new(0..1)).with(Alignment::center_horizontal()))
         .to_string();
 
     let expected = concat!(
@@ -168,7 +163,10 @@ fn footer() {
         .with(Header("Linux Distributions"))
         .with(Footer("The end"))
         .with(Style::psql())
-        .with(Modify::new(Row(0..1).and(Row(data.len()..))).with(Alignment::center_horizontal()))
+        .with(
+            Modify::new(Rows::single(0).and(Rows::new(data.len()..)))
+                .with(Alignment::center_horizontal()),
+        )
         .to_string();
 
     let expected = concat!(

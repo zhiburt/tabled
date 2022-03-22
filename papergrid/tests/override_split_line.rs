@@ -1,13 +1,8 @@
-use papergrid::{Entity, Grid, Settings, DEFAULT_CELL_STYLE};
+mod util;
 
 #[test]
 fn override_top_test() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
-    grid.set(&Entity::Cell(0, 1), Settings::new().text("0-1"));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
+    let mut grid = util::new_grid::<2, 2>();
 
     grid.override_split_line(0, "T");
 
@@ -84,12 +79,7 @@ fn override_top_test() {
 
 #[test]
 fn override_bottom_test() {
-    let mut grid = Grid::new(2, 2);
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
-    grid.set(&Entity::Cell(0, 1), Settings::new().text("0-1"));
-    grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
+    let mut grid = util::new_grid::<2, 2>();
 
     grid.override_split_line(2, "T");
 

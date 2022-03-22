@@ -26,10 +26,14 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Text in top border](#Text-in-top-border)
     * [Alignment](#Alignment)
     * [Format](#Format)
-    * [Indent](#Indent)
+    * [Padding](#Padding)
     * [Max width](#Max-width)
     * [Rotate](#Rotate)
     * [Disable](#Disable)
+    * [Extract](#Extract)
+        * [Interface](#Interface)
+        * [Range](#Range)
+        * [Refinish](#Refinishing)
     * [Header and Footer](#Header-and-Footer)
     * [Concat](#Concat)
 * [Derive](#Derive)
@@ -280,12 +284,15 @@ There's 2 more Format modifiers. You can find more imformation about theire usag
 - `FormatFrom` - Uses `Vec` elements as new content.
 - `FormatWithIndex` - Like `Format` but with `row` and `column` index in lambda.
 
-### Indent
+### Padding
 
-The `Indent` type provides an interface for a left, right, top and bottom indent of cells.
+The `Padding` structure provides an interface for a left, right, top and bottom padding of cells.
 
 ```rust
-Table::new(&data).with(Modify::new(Row(1..)).with(Indent::new(1, 1, 0, 2)));
+use tabled::{Table, Modify, Row, Padding};
+
+Table::new(&data)
+    .with(Modify::new(Row(1..)).with(Padding::new(1, 1, 0, 2)));
 ```
 
 ### Max width
@@ -340,6 +347,60 @@ Table::new(&data)
     .with(Disable::Row(..1))
     .with(Disable::Column(3..4));
 ```
+
+### Extract
+
+You can `Extract` segments of a table to focus on a reduced number of rows and columns.
+
+```rust
+let rows = 1..3;
+let columns = 1..;
+Table::new(&data)
+    .with(Extract::segment(rows, columns));
+```
+
+```text
++-------+-------------+-----------+
+|  i32  |    &str     |   bool    |
++-------+-------------+-----------+         +-------------+-----------+
+| : 0 : | : Grodno :  | : true :  |         | : Grodno :  | : true :  |
++-------+-------------+-----------+    =    +-------------+-----------+
+| : 1 : |  : Minsk :  | : true :  |         |  : Minsk :  | : true :  |
++-------+-------------+-----------+         +-------------+-----------+
+| : 2 : | : Hamburg : | : false : |
++-------+-------------+-----------+
+| : 3 : |  : Brest :  | : true :  |
++-------+-------------+-----------+
+```
+
+#### Refinishing
+
+For styles with unique corner and edge textures it is possible to reapply a table style once a `Table` extract has been created.
+
+```rust
+let rows = 1..3;
+let columns = 1..;
+Table::new(&data)
+    .with(Extract::segment(rows, columns))
+    .with(Style::modern());
+```
+
+```text
+Raw extract
+┼───────────────────────────┼──────────────────┼──────────────┤
+│ The Dark Side of the Moon │ 01 March 1973    │ Unparalleled │
+┼───────────────────────────┼──────────────────┼──────────────┤
+│ Rumours                   │ 04 February 1977 │ Outstanding  │
+┼───────────────────────────┼──────────────────┼──────────────┤
+
+Refinished extract
+┌───────────────────────────┬──────────────────┬───────────────┐
+│ The Dark Side of the Moon │ 01 March 1973    │ Unparalleled  │
+├───────────────────────────┼──────────────────┼───────────────┤
+│ Rumours                   │ 04 February 1977 │  Outstanding  │
+└───────────────────────────┴──────────────────┴───────────────┘
+```
+
 
 ### Header and Footer
 

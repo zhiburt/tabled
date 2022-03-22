@@ -1,6 +1,10 @@
 // todo: add method for SPACING between cells.
 //       add MARGIN && PADDING instead of indent?
-use tabled::{Border, Highlight, Rotate, Style, Table};
+use tabled::{
+    object::{Cell, Rows},
+    style::{Border, Style},
+    Highlight, Rotate, Table,
+};
 
 #[test]
 fn test_rotate() {
@@ -156,7 +160,7 @@ fn rotate_preserve_border_styles_test() {
 
     let table = Table::new(&data)
         .with(Style::ascii())
-        .with(Highlight::row(0, Border::default().top('*')))
+        .with(Highlight::new(Rows::single(0), Border::default().top('*')))
         .with(Rotate::Left)
         .to_string();
 
@@ -175,12 +179,14 @@ fn rotate_preserve_border_styles_test() {
 
     let table = Table::new(&data)
         .with(Style::ascii())
-        .with(Highlight::cell(0, 2, Border::default().bottom('*')))
+        .with(Highlight::new(Cell(0, 2), Border::default().bottom('*')))
         .with(Rotate::Left)
         .to_string();
 
     // it's a correct behaviour because
     // when we sen bottom border of cell(0, 2) we also set top border of cell(1, 2)
+    //
+    // todo: determine if it's correct
     assert_eq!(
         table,
         concat!(

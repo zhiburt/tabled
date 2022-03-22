@@ -1,7 +1,9 @@
 //! The example can be run by this command
 //! `cargo run --example panel`
 
-use tabled::{Alignment, AlignmentHorizontal, Footer, Full, Header, Modify, Style, Table, Tabled};
+use tabled::{
+    object::Full, Alignment, AlignmentHorizontal, Footer, Header, Modify, Style, Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct Release {

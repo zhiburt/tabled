@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example terminal_table`
 
-use tabled::{Alignment, Full, Modify, Style, TableIteratorExt, Tabled, TotalWidth};
+use tabled::{object::Full, Alignment, Modify, Style, TableIteratorExt, Tabled, TotalWidth};
 
 #[derive(Tabled)]
 struct Release {

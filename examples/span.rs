@@ -3,7 +3,7 @@
 //!
 //! The table from the example originaly inspired https://github.com/vdmeer/asciitable#column-span
 
-use tabled::{Cell, Modify, Span, Style, TableIteratorExt};
+use tabled::{object::Cell, Modify, Span, Style, TableIteratorExt};
 
 fn main() {
     let data = [["just 1 column"; 5]; 5];

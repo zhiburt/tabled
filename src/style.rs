@@ -2,10 +2,8 @@
 
 use std::{borrow::Cow, marker::PhantomData};
 
-#[allow(unused)]
-use crate::Table;
-use crate::TableOption;
-use papergrid::{Border, Entity, Grid, Settings};
+use crate::{object::Cell, CellOption, Highlight, TableOption};
+use papergrid::{Entity, Grid, Settings};
 
 /// Style is represents a theme of a [Table].
 ///
@@ -28,33 +26,6 @@ use papergrid::{Border, Entity, Grid, Settings};
 pub struct Style;
 
 impl Style {
-    #[deprecated(note = "Use ascii() function")]
-    pub const ASCII: StyleSettings = Self::_ASCII;
-
-    #[deprecated(note = "Use blank() function")]
-    pub const BLANK: StyleSettings = Self::_BLANK;
-
-    #[deprecated(note = "Use psql() function")]
-    pub const PSQL: StyleSettings = Self::_PSQL;
-
-    #[deprecated(note = "Use github_markdown() function")]
-    pub const GITHUB_MARKDOWN: StyleSettings = Self::_GITHUB_MARKDOWN;
-
-    #[deprecated(note = "Use modern() function")]
-    pub const PSEUDO: StyleSettings = Self::_MODERN;
-
-    #[deprecated(note = "Use modern().horizontal_off() function")]
-    pub const PSEUDO_CLEAN: StyleSettings = Self::modern().horizontal_off().inner;
-
-    #[deprecated(note = "Use modern_extended() function")]
-    pub const EXTENDED: StyleSettings = Self::_EXTENDED;
-
-    #[deprecated(note = "Use dots() function")]
-    pub const ASCII_DOTS: StyleSettings = Self::_DOTS;
-
-    #[deprecated(note = "Use re_structured_text() function")]
-    pub const RE_STRUCTURED_TEXT: StyleSettings = Self::_RE_STRUCTURED_TEXT;
-
     /// Empty style is a style with no styling options on,
     ///
     /// ```text
@@ -79,7 +50,7 @@ impl Style {
     ///     .top_intersection('*');
     /// ```
     pub const fn empty() -> CustomStyle<(), (), (), (), (), (), ()> {
-        CustomStyle::new(StyleSettings::new(Frame::empty(), None, None, None))
+        CustomStyle::new(Self::EMPTY)
     }
 
     /// Blank style looks like the following table
@@ -91,7 +62,7 @@ impl Style {
     ///      3    Endeavouros    https://endeavouros.com/
     /// ```
     pub const fn blank() -> CustomStyle<(), (), (), (), (), On, ()> {
-        CustomStyle::new(Self::_BLANK)
+        CustomStyle::new(Self::BLANK)
     }
 
     /// Default style looks like the following table
@@ -108,7 +79,7 @@ impl Style {
     ///     +----+--------------+---------------------------+
     /// ```
     pub const fn ascii() -> CustomStyle<On, On, On, On, On, On, On> {
-        CustomStyle::new(Self::_ASCII)
+        CustomStyle::new(Self::ASCII)
     }
 
     /// Dots style looks like the following table
@@ -125,7 +96,7 @@ impl Style {
     ///     :....:..............:...........................:
     /// ```
     pub const fn dots() -> CustomStyle<On, On, On, On, On, On, On> {
-        CustomStyle::new(Self::_DOTS)
+        CustomStyle::new(Self::DOTS)
     }
 
     /// Psql style looks like the following table
@@ -138,7 +109,7 @@ impl Style {
     ///      3  | Endeavouros  | https://endeavouros.com/
     /// ```
     pub const fn psql() -> CustomStyle<(), (), (), (), (), On, On> {
-        CustomStyle::new(Self::_PSQL)
+        CustomStyle::new(Self::PSQL)
     }
 
     /// Github_markdown style looks like the following table
@@ -151,7 +122,7 @@ impl Style {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     /// ```
     pub const fn github_markdown() -> CustomStyle<(), (), On, On, (), On, On> {
-        CustomStyle::new(Self::_GITHUB_MARKDOWN)
+        CustomStyle::new(Self::GITHUB_MARKDOWN)
     }
 
     /// Modern style looks like the following table.
@@ -170,7 +141,7 @@ impl Style {
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
     pub const fn modern() -> CustomStyle<On, On, On, On, On, On, On> {
-        CustomStyle::new(Self::_MODERN)
+        CustomStyle::new(Self::MODERN)
     }
 
     /// Extended style looks like the following table
@@ -189,7 +160,7 @@ impl Style {
     ///     ╚════╩══════════════╩═══════════════════════════╝
     /// ```
     pub const fn extended() -> CustomStyle<On, On, On, On, On, On, On> {
-        CustomStyle::new(Self::_EXTENDED)
+        CustomStyle::new(Self::EXTENDED)
     }
 
     /// ReStructuredText style looks like the following table
@@ -204,10 +175,12 @@ impl Style {
     ///     ==== ============== ===========================
     /// ```
     pub const fn re_structured_text() -> CustomStyle<On, On, (), (), (), On, On> {
-        CustomStyle::new(Self::_RE_STRUCTURED_TEXT)
+        CustomStyle::new(Self::RE_STRUCTURED_TEXT)
     }
 
-    const _ASCII: StyleSettings = StyleSettings::new(
+    const EMPTY: StyleSettings = StyleSettings::new(Frame::empty(), None, None, None);
+
+    const ASCII: StyleSettings = StyleSettings::new(
         Frame {
             bottom: Some(Line::bordered('-', '+', '+', '+')),
             top: Some(Line::bordered('-', '+', '+', '+')),
@@ -219,12 +192,12 @@ impl Style {
         Some('|'),
     );
 
-    const _BLANK: StyleSettings = StyleSettings::new(Frame::empty(), None, None, Some(' '));
+    const BLANK: StyleSettings = StyleSettings::new(Frame::empty(), None, None, Some(' '));
 
-    const _PSQL: StyleSettings =
+    const PSQL: StyleSettings =
         StyleSettings::new(Frame::empty(), Some(Line::short('-', '+')), None, Some('|'));
 
-    const _GITHUB_MARKDOWN: StyleSettings = StyleSettings::new(
+    const GITHUB_MARKDOWN: StyleSettings = StyleSettings::new(
         Frame {
             left: Some('|'),
             right: Some('|'),
@@ -236,7 +209,7 @@ impl Style {
         Some('|'),
     );
 
-    const _MODERN: StyleSettings = StyleSettings::new(
+    const MODERN: StyleSettings = StyleSettings::new(
         Frame {
             left: Some('│'),
             right: Some('│'),
@@ -248,7 +221,7 @@ impl Style {
         Some('│'),
     );
 
-    const _EXTENDED: StyleSettings = StyleSettings::new(
+    const EXTENDED: StyleSettings = StyleSettings::new(
         Frame {
             left: Some('║'),
             right: Some('║'),
@@ -260,7 +233,7 @@ impl Style {
         Some('║'),
     );
 
-    const _DOTS: StyleSettings = StyleSettings::new(
+    const DOTS: StyleSettings = StyleSettings::new(
         Frame {
             bottom: Some(Line::bordered('.', ':', ':', ':')),
             top: Some(Line::bordered('.', '.', '.', '.')),
@@ -272,7 +245,7 @@ impl Style {
         Some(':'),
     );
 
-    const _RE_STRUCTURED_TEXT: StyleSettings = StyleSettings::new(
+    const RE_STRUCTURED_TEXT: StyleSettings = StyleSettings::new(
         Frame {
             bottom: Some(Line::short('=', ' ')),
             top: Some(Line::short('=', ' ')),
@@ -1277,5 +1250,22 @@ impl<T, B, L, R, IH, IV> CustomStyle<T, B, L, R, IH, IV, On> {
 impl<T, B, L, R, IH, IV, H> TableOption for CustomStyle<T, B, L, R, IH, IV, H> {
     fn change(&mut self, grid: &mut Grid) {
         self.inner.change(grid);
+    }
+}
+
+/// Border represents a border of a Cell.
+///
+/// ```rust,no_run
+///   # use tabled::{style::{Style, Border}, object::Rows, Table, Modify};
+///   # let data: Vec<&'static str> = Vec::new();
+///     let table = Table::new(&data)
+///         .with(Style::ascii())
+///         .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
+/// ```
+pub use papergrid::Border;
+
+impl CellOption for Border {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        Highlight::new(Cell(row, column), self.clone()).change(grid);
     }
 }
