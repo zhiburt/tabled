@@ -2,7 +2,7 @@ use std::{fmt, iter::FromIterator};
 
 use papergrid::Grid;
 
-use crate::{builder::Builder, Object, Tabled};
+use crate::{builder::Builder, object::Object, Tabled};
 
 /// A trait which is responsilbe for configuration of a [Grid].
 pub trait TableOption {
@@ -46,7 +46,7 @@ pub trait CellOption {
 /// ### With settings
 ///
 /// ```rust,no_run
-/// use tabled::{Table, Style, Alignment, Full, Modify};
+/// use tabled::{Table, Style, Alignment, object::Full, Modify};
 /// let data = vec!["Hello", "2021"];
 /// let table = Table::new(&data)
 ///                 .with(Style::psql())

@@ -1,7 +1,8 @@
 use crate::util::create_vector;
 use tabled::{
-    multiline, Alignment, Cell, Columns, Format, FormatFrom, FormatWithIndex, Full, Head, Modify,
-    Object, Padding, Rows, Style, Table,
+    multiline,
+    object::{Cell, Columns, Full, Head, Object, Rows},
+    Alignment, Format, FormatFrom, FormatWithIndex, Modify, Padding, Style, Table,
 };
 
 mod util;

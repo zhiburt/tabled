@@ -2,7 +2,11 @@ use std::collections::{HashMap, HashSet};
 
 #[allow(unused)]
 use crate::Table;
-use crate::{object::Frame, style::Border, Object, TableOption};
+use crate::{
+    object::{Frame, Object},
+    style::Border,
+    TableOption,
+};
 use papergrid::{Entity, Grid, Settings};
 
 /// Highlight modifies a table style by changing a border of a target [Table] segment.
@@ -10,7 +14,7 @@ use papergrid::{Entity, Grid, Settings};
 /// # Example
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}};
+/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::Full};
 ///
 /// let data = [
 ///     ("ELF", "Extensible Linking Format", true),
@@ -22,7 +26,7 @@ use papergrid::{Entity, Grid, Settings};
 ///                .enumerate()
 ///                .table()
 ///                .with(Style::github_markdown())
-///                .with(Highlight::frame(Border::default().top('^').bottom('v')))
+///                .with(Highlight::new(Full, Border::default().top('^').bottom('v')))
 ///                .to_string();
 ///
 /// assert_eq!(

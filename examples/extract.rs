@@ -4,8 +4,8 @@
 use std::fmt::{Display, Formatter};
 
 use tabled::{
-    Alignment, AlignmentHorizontal, Columns, Extract, Format, Head, Modify, Rows, Style, Table,
-    Tabled,
+    object::{Columns, Head, Rows},
+    Alignment, AlignmentHorizontal, Extract, Format, Modify, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]

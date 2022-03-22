@@ -1,5 +1,8 @@
 use crate::util::create_vector;
-use tabled::{Alignment, Full, Modify, Padding, Rows, Style, Table};
+use tabled::{
+    object::{Full, Rows},
+    Alignment, Modify, Padding, Style, Table,
+};
 
 mod util;
 

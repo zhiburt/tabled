@@ -1,6 +1,6 @@
 use crate::util::create_vector;
 use tabled::style::TopBorderText;
-use tabled::{Full, Modify, Padding, Style, Table, TableIteratorExt};
+use tabled::{object::Full, Modify, Padding, Style, Table, TableIteratorExt};
 
 mod util;
 

@@ -14,7 +14,7 @@ use papergrid::{string_width, Entity, Grid, Settings};
 /// ## Example
 ///
 /// ```
-/// use tabled::{Full, MaxWidth, Modify, Style, Table};
+/// use tabled::{object::Full, MaxWidth, Modify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -44,7 +44,7 @@ impl MaxWidth {
 /// ## Example
 ///
 /// ```
-/// use tabled::{Full, Truncate, Modify, Table};
+/// use tabled::{object::Full, Truncate, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Full).with(Truncate::new(3)));
@@ -97,7 +97,7 @@ where
 /// ## Example
 ///
 /// ```
-/// use tabled::{Full, Wrap, Modify, Table};
+/// use tabled::{object::Full, Wrap, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Full).with(Wrap::new(3)));
@@ -328,7 +328,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 /// ## Example
 ///
 /// ```
-/// use tabled::{Full, MinWidth, Modify, Style, Table};
+/// use tabled::{object::Full, MinWidth, Modify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///

@@ -1,7 +1,10 @@
 //! The example can be run by this command
 //! `cargo run --example basic`
 
-use tabled::{Alignment, AlignmentHorizontal, Head, Modify, Rows, Style, Table, Tabled};
+use tabled::{
+    object::{Head, Rows},
+    Alignment, AlignmentHorizontal, Modify, Style, Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct Distribution {

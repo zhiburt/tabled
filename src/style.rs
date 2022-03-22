@@ -2,9 +2,7 @@
 
 use std::{borrow::Cow, marker::PhantomData};
 
-#[allow(unused)]
-use crate::Table;
-use crate::{Cell, CellOption, Highlight, TableOption};
+use crate::{object::Cell, CellOption, Highlight, TableOption};
 use papergrid::{Entity, Grid, Settings};
 
 /// Style is represents a theme of a [Table].
@@ -1258,11 +1256,11 @@ impl<T, B, L, R, IH, IV, H> TableOption for CustomStyle<T, B, L, R, IH, IV, H> {
 /// Border represents a style of a CellBorder.
 ///
 /// ```rust,no_run
-///   # use tabled::{style::{Style, Border}, Row, Table, Modify};
+///   # use tabled::{style::{Style, Border}, object::Rows, Table, Modify};
 ///   # let data: Vec<&'static str> = Vec::new();
 ///     let table = Table::new(&data)
 ///         .with(Style::ascii())
-///         .with(Modify::new(Row(..1)).with(Border::default().top('x')));
+///         .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
 /// ```
 pub use papergrid::Border;
 

@@ -1,6 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
-    Alignment, Cell, Columns, Full, MaxWidth, MinWidth, Modify, Object, Rows, Style, Table,
+    object::{Cell, Columns, Full, Object, Rows},
+    Alignment, MaxWidth, MinWidth, Modify, Style, Table,
 };
 
 mod util;

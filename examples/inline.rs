@@ -2,7 +2,8 @@
 //! `cargo run --example inline`
 
 use tabled::{
-    Alignment, AlignmentHorizontal, Full, Head, Modify, Padding, Rows, Style, Table, Tabled,
+    object::{Full, Head, Rows},
+    Alignment, AlignmentHorizontal, Modify, Padding, Style, Table, Tabled,
 };
 
 fn main() {

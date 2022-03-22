@@ -1,8 +1,9 @@
 // todo: add method for SPACING between cells.
 //       add MARGIN && PADDING instead of indent?
 use tabled::{
+    object::{Cell, Rows},
     style::{Border, Style},
-    Cell, Highlight, Rotate, Rows, Table,
+    Highlight, Rotate, Table,
 };
 
 #[test]

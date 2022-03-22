@@ -1,4 +1,4 @@
-use tabled::{Full, Modify, Padding, Rotate, Style, Table, Tabled};
+use tabled::{object::Full, Modify, Padding, Rotate, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
