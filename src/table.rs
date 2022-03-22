@@ -19,10 +19,12 @@ where
     }
 }
 
-/// A trait for configuring a [Cell] a single cell.
+/// A trait for configuring a single cell.
 /// Where cell represented by 'row' and 'column' indexes.
+///
+/// A cell can be targeted by [crate::object::Cell].
 pub trait CellOption {
-    /// Modification function of a [Cell]
+    /// Modification function of a single cell.
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize);
 }
 

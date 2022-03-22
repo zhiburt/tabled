@@ -30,7 +30,7 @@ pub trait Object: Sized {
     }
 }
 
-/// Segment represents a sub table of [Table].
+/// Segment represents a sub table of [crate::Table].
 pub struct Segment<C, R> {
     columns: C,
     rows: R,
@@ -111,7 +111,7 @@ impl Object for Frame {
     }
 }
 
-/// FirstRow represents the first row of a [Table].
+/// FirstRow represents the first row of a [crate::Table].
 /// It's often contains headers data.
 pub struct FirstRow;
 
@@ -121,7 +121,7 @@ impl Object for FirstRow {
     }
 }
 
-/// LastRow represents the last row of a [Table].
+/// LastRow represents the last row of a [crate::Table].
 pub struct LastRow;
 
 impl Object for LastRow {
@@ -131,7 +131,7 @@ impl Object for LastRow {
     }
 }
 
-/// Full represents all cells on a [Grid]
+/// Full represents all cells on a [crate::Table]
 pub struct Full;
 
 impl Object for Full {
@@ -140,7 +140,7 @@ impl Object for Full {
     }
 }
 
-/// Row denotes a set of cells on given rows on a [Grid].
+/// Row denotes a set of cells on given rows on a [crate::Table].
 pub struct Rows<R> {
     range: R,
 }
@@ -198,7 +198,7 @@ where
     }
 }
 
-/// Column denotes a set of cells on given columns on a [Grid].
+/// Column denotes a set of cells on given columns on a [crate::Table].
 pub struct Columns<R> {
     range: R,
 }
@@ -244,7 +244,7 @@ where
     }
 }
 
-/// Cell denotes a particular cell on a [Grid].
+/// Cell denotes a particular cell on a [crate::Table].
 pub struct Cell(pub usize, pub usize);
 
 impl Object for Cell {

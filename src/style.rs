@@ -1,11 +1,11 @@
-//! This module contains a list of Styles which can be applied to change [Table] styles.
+//! This module contains a list of Styles which can be applied to change [crate::Table] styles.
 
 use std::{borrow::Cow, marker::PhantomData};
 
 use crate::{object::Cell, CellOption, Highlight, TableOption};
 use papergrid::{Entity, Grid, Settings};
 
-/// Style is represents a theme of a [Table].
+/// Style is represents a theme of a [crate::Table].
 ///
 /// It can be Mofified extensively, look at [CustomStyle] methods.
 ///
@@ -611,7 +611,7 @@ fn make_style_header(
     }
 }
 
-/// Style is responsible for a look of a [Table].
+/// TopBorderText writes a custom text on a top border.
 ///
 /// # Example
 ///

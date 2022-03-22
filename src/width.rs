@@ -329,7 +329,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 /// MinWidth changes a content in case if it's length is lower then the boundry.
 ///
 /// It does anything in case if the content's length is bigger then the boundry.
-/// It doesn't include a [crate::Indent] settings.
+/// It doesn't include a [crate::Padding] settings.
 ///
 /// ## Example
 ///
@@ -417,7 +417,7 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
 /// Beware that borders are not removed when you set a size value to very small.
 /// For example if you set size to 0 the table still be rendered but with all content removed.
 ///
-/// Also be aware that it doesn't changes [crate::Indent] settings.
+/// Also be aware that it doesn't changes [crate::Padding] settings.
 ///
 /// The function is color aware if a `color` feature is on.
 ///

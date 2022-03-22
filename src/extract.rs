@@ -30,6 +30,7 @@ use crate::TableOption;
 ///                    +------------+----------+\n");
 /// ```
 ///
+/// [Table]: crate::Table
 pub struct Extract<R, C> {
     rows: R,
     columns: C,
@@ -65,6 +66,7 @@ where
     ///      .   .   .                    O   O   O]                .   .   .          
     /// ```
     ///
+    /// [Table]: crate::Table
     pub fn segment(rows: R, columns: C) -> Self {
         Extract { rows, columns }
     }
@@ -98,6 +100,7 @@ where
     ///                                             X   X   X] // ERROR          
     /// ```
     ///
+    /// [Table]: crate::Table
     pub fn rows(rows: R) -> Self {
         Extract { rows, columns: .. }
     }
@@ -130,6 +133,7 @@ where
     ///      .   .   .              O   O   O]            O   O   O   X] // ERROR
     /// ```
     ///
+    /// [Table]: crate::Table
     pub fn columns(columns: C) -> Self {
         Extract { rows: .., columns }
     }
