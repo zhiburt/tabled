@@ -1,6 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
-    style::Border, Cell, Columns, Frame, Full, Highlight, Object, Rows, Segment, Style, Table, Tabled,
+    style::Border, Cell, Columns, Frame, Full, Highlight, Object, Rows, Segment, Style, Table,
+    Tabled,
 };
 
 mod util;
@@ -20,12 +21,12 @@ fn highlingt_empty_table() {
     #[derive(Tabled)]
     struct EmptyStruct;
 
-    let data:[EmptyStruct; 0] = [];
+    let data: [EmptyStruct; 0] = [];
     let table = Table::new(&data)
         .with(Style::modern())
         .with(Highlight::new(Full, Border::single('+')))
         .to_string();
-    
+
     assert_eq!(table, "");
 }
 
