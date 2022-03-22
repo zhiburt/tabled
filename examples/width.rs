@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example width`
 
-use tabled::{Alignment, Full, MaxWidth, Modify, Style, Table};
+use tabled::{object::Full, Alignment, MaxWidth, Modify, Style, Table};
 
 fn main() {
     let data = [

@@ -6,9 +6,9 @@ pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 /// Alignment represent a horizontal and vertical alignemt setting for any cell on a [crate::Table].
 ///
 /// ```rust,no_run
-///   # use tabled::{Style, Alignment, Modify, Row, Table};
+///   # use tabled::{Alignment, Modify, object::Rows, Table};
 ///   # let data: Vec<&'static str> = Vec::new();
-///     let table = Table::new(&data).with(Modify::new(Row(..1)).with(Alignment::center_horizontal()));
+///     let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Alignment::center_horizontal()));
 /// ```
 #[derive(Debug)]
 pub enum Alignment {

@@ -4,7 +4,7 @@
 //! - [Wrap] split the content via new lines in order to fit max width.
 
 use crate::CellOption;
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{string_width, Entity, Grid, Settings};
 
 /// MaxWidth allows you to set a max width of an object on a [Grid],
 /// using different strategies.
@@ -14,7 +14,7 @@ use papergrid::{Entity, Grid, Settings};
 /// ## Example
 ///
 /// ```
-/// use tabled::{Full, MaxWidth, Modify, Style, Table};
+/// use tabled::{object::Full, MaxWidth, Modify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -44,7 +44,7 @@ impl MaxWidth {
 /// ## Example
 ///
 /// ```
-/// use tabled::{Full, Truncate, Modify, Table};
+/// use tabled::{object::Full, Truncate, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Full).with(Truncate::new(3)));
@@ -97,7 +97,7 @@ where
 /// ## Example
 ///
 /// ```
-/// use tabled::{Full, Wrap, Modify, Table};
+/// use tabled::{object::Full, Wrap, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Full).with(Wrap::new(3)));
@@ -318,4 +318,90 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
     }
 
     v
+}
+
+/// MinWidth changes a content in case if it's length is lower then the boundry.
+///
+/// It does anything in case if the content's length is bigger then the boundry.
+/// It doesn't include a [crate::Indent] settings.
+///
+/// ## Example
+///
+/// ```
+/// use tabled::{object::Full, MinWidth, Modify, Style, Table};
+///
+/// let data = ["Hello", "World", "!"];
+///
+/// let table = Table::new(&data)
+///     .with(Style::github_markdown())
+///     .with(Modify::new(Full).with(MinWidth::new(10)));
+/// ```
+pub struct MinWidth {
+    size: usize,
+    fill: char,
+}
+
+impl MinWidth {
+    /// Creates a new instance of MinWidth.
+    pub fn new(size: usize) -> Self {
+        Self { size, fill: ' ' }
+    }
+
+    /// Set's a fill character which will be used to fill the space
+    /// when increasing the length of the string to the set boundry.
+    pub fn fill_with(mut self, c: char) -> Self {
+        self.fill = c;
+        self
+    }
+}
+
+impl CellOption for MinWidth {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        let content = grid.get_cell_content(row, column);
+        let new_content = increase_width(content, self.size, self.fill);
+        grid.set(
+            &Entity::Cell(row, column),
+            Settings::new().text(new_content),
+        )
+    }
+}
+
+fn increase_width(s: &str, width: usize, fill_with: char) -> String {
+    let has_big_lines = s.lines().any(|line| string_width(line) < width);
+    if !has_big_lines {
+        return s.to_owned();
+    }
+
+    #[cfg(not(feature = "color"))]
+    {
+        s.lines()
+            .map(|line| {
+                let length = string_width(line);
+                if length < width {
+                    let remain = width - length;
+                    let mut new_line = String::with_capacity(width);
+                    new_line.push_str(line);
+                    new_line.extend(std::iter::repeat(fill_with).take(remain));
+                    std::borrow::Cow::Owned(new_line)
+                } else {
+                    std::borrow::Cow::Borrowed(line)
+                }
+            })
+            .collect::<String>()
+    }
+    #[cfg(feature = "color")]
+    {
+        ansi_str::AnsiStr::ansi_split(s, "\n")
+            .map(|mut line| {
+                let length = string_width(&line);
+                if length < width {
+                    let remain = width - length;
+                    line.extend(std::iter::repeat(fill_with).take(remain));
+                    line
+                } else {
+                    line
+                }
+            })
+            .collect::<String>()
+    }
 }

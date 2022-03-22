@@ -156,27 +156,29 @@ use std::fmt;
 mod alignment;
 mod concat;
 mod disable;
+mod extract;
 mod formating;
 mod highlight;
-mod indent;
-mod object;
+mod padding;
 mod panel;
 mod rotate;
+mod span;
 mod table;
 mod width;
 
 pub mod builder;
 pub mod display;
+pub mod object;
 pub mod style;
 
 pub use crate::{
-    alignment::*, concat::*, disable::*, formating::*, highlight::*, indent::*, object::*,
-    panel::*, rotate::*, style::Style, table::*, width::*,
+    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::*, padding::*,
+    panel::*, rotate::*, span::*, style::Style, table::*, width::*,
 };
 
 pub use tabled_derive::Tabled;
 
-// todo: change return type to impl Iterator<Cow<str
+// todo: change return type to impl Iterator<Cow<str>>?
 
 /// Tabled a trait responsible for providing a header fields and a row fields.
 ///
