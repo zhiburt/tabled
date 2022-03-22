@@ -278,8 +278,11 @@ mod color {
         let data = create_vector::<3, 3>();
         let table = Table::new(&data)
             .with(Style::psql())
-            .with(Modify::new(Column(..1).and(Column(2..))).with(Format(|s| s.red().to_string())))
-            .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))
+            .with(
+                Modify::new(Columns::new(..1).and(Columns::new(2..)))
+                    .with(Format(|s| s.red().to_string())),
+            )
+            .with(Modify::new(Columns::new(1..2)).with(Format(|s| s.blue().to_string())))
             .to_string();
 
         let expected = concat!(
@@ -302,9 +305,9 @@ mod color {
 
         let table = Table::new(&data)
             .with(Style::psql())
-            .with(Modify::new(Column(..1)).with(Format(multiline(|s| s.red().to_string()))))
-            .with(Modify::new(Column(1..2)).with(Format(multiline(|s| s.blue().to_string()))))
-            .with(Modify::new(Column(2..)).with(Format(multiline(|s| s.green().to_string()))))
+            .with(Modify::new(Columns::new(..1)).with(Format(multiline(|s| s.red().to_string()))))
+            .with(Modify::new(Columns::new(1..2)).with(Format(multiline(|s| s.blue().to_string()))))
+            .with(Modify::new(Columns::new(2..)).with(Format(multiline(|s| s.green().to_string()))))
             .to_string();
 
         let expected = concat!(
