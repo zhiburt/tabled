@@ -4,7 +4,7 @@
 use std::fmt::{Display, Formatter};
 
 use tabled::{
-    object::{Columns, Head, Rows},
+    object::{Columns, Rows},
     Alignment, AlignmentHorizontal, Extract, Format, Modify, Style, Table, Tabled,
 };
 
@@ -57,7 +57,7 @@ fn main() {
     println!("Full");
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Modify::new(Head).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
+        .with(Modify::new(Rows::first()).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
         .with(Modify::new(Rows::new(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Left)));
     println!("{}", table);
 

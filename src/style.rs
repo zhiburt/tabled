@@ -1253,7 +1253,7 @@ impl<T, B, L, R, IH, IV, H> TableOption for CustomStyle<T, B, L, R, IH, IV, H> {
     }
 }
 
-/// Border represents a style of a CellBorder.
+/// Border represents a border of a Cell.
 ///
 /// ```rust,no_run
 ///   # use tabled::{style::{Style, Border}, object::Rows, Table, Modify};

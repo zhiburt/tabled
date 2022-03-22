@@ -2,7 +2,7 @@
 //! `cargo run --example inline`
 
 use tabled::{
-    object::{Full, Head, Rows},
+    object::{Full, Rows},
     Alignment, AlignmentHorizontal, Modify, Padding, Style, Table, Tabled,
 };
 
@@ -43,7 +43,7 @@ fn main() {
     let table = Table::new(&data)
         .with(Style::modern())
         .with(Modify::new(Full).with(Padding::new(1, 1, 0, 0)))
-        .with(Modify::new(Head).with(Alignment::Horizontal(AlignmentHorizontal::Left)))
+        .with(Modify::new(Rows::first()).with(Alignment::Horizontal(AlignmentHorizontal::Left)))
         .with(Modify::new(Rows::new(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Center)));
 
     println!("{}", table);

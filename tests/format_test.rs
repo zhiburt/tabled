@@ -1,7 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
     multiline,
-    object::{Cell, Columns, Full, Head, Object, Rows},
+    object::{Cell, Columns, Full, Object, Rows},
     Alignment, Format, FormatFrom, FormatWithIndex, Modify, Padding, Style, Table,
 };
 
@@ -34,7 +34,7 @@ fn formatting_head_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Head).with(Format(|s| format!(":{}", s))))
+        .with(Modify::new(Rows::first()).with(Format(|s| format!(":{}", s))))
         .to_string();
 
     let expected = concat!(
@@ -185,7 +185,7 @@ fn formatting_using_lambda_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Head).with(|s: &str| format!(":{}", s)))
+        .with(Modify::new(Rows::first()).with(|s: &str| format!(":{}", s)))
         .to_string();
 
     let expected = concat!(
@@ -204,7 +204,7 @@ fn formatting_using_function_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Head).with(str::to_uppercase))
+        .with(Modify::new(Rows::first()).with(str::to_uppercase))
         .to_string();
 
     let expected = concat!(
@@ -223,7 +223,7 @@ fn format_from() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Head).with(FormatFrom(vec![
+        .with(Modify::new(Rows::first()).with(FormatFrom(vec![
             "Header Name 1",
             "Header Name 2",
             "Header Name 3",
@@ -247,7 +247,7 @@ fn format_with_index() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(
-            Modify::new(Head).with(FormatWithIndex(|a, b, c| match (b, c) {
+            Modify::new(Rows::first()).with(FormatWithIndex(|a, b, c| match (b, c) {
                 (0, 0) => "(0, 0)".to_string(),
                 (0, 1) => "(0, 1)".to_string(),
                 (0, 2) => "(0, 2)".to_string(),

@@ -11,6 +11,8 @@ use papergrid::{Entity, Grid, Settings};
 
 /// Highlight modifies a table style by changing a border of a target [Table] segment.
 ///
+/// [Default] implementation runs Highlight for a [Frame].
+///
 /// # Example
 ///
 /// ```
@@ -43,6 +45,41 @@ use papergrid::{Entity, Grid, Settings};
 /// );
 /// ```
 ///
+/// It's possible to use [Highlight] for many kinds of figures.
+///
+///
+/// ```
+/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::{Full, Cell, Object}};
+///
+/// let data = [
+///     ("ELF", "Extensible Linking Format", true),
+///     ("DWARF", "", true),
+///     ("PE", "Portable Executable", false),
+/// ];
+///
+/// let table = data.iter()
+///                .enumerate()
+///                .table()
+///                .with(Style::github_markdown())
+///                .with(Highlight::new(Full.not(Cell(0,0).and(Cell(1, 0).and(Cell(0, 1)).and(Cell(0, 3)))), Border::filled('*')))
+///                .to_string();
+///
+/// assert_eq!(
+///     table,
+///     concat!(
+///         "                *****************************        \n",
+///         "| usize | &str  *           &str            * bool  |\n",
+///         "|-------*********---------------------------*********\n",
+///         "|   0   *  ELF  | Extensible Linking Format | true  *\n",
+///         "*********                                           *\n",
+///         "*   1   | DWARF |                           | true  *\n",
+///         "*                                                   *\n",
+///         "*   2   |  PE   |    Portable Executable    | false *\n",
+///         "*****************************************************\n",
+///     ),
+/// );
+/// ```
+///
 pub struct Highlight<O> {
     target: O,
     border: Border,
@@ -61,6 +98,9 @@ impl<O> Highlight<O>
 where
     O: Object,
 {
+    /// Build a new instance of [Highlight]
+    ///
+    /// BE AWARE: if target exeeds boundries it may panic.
     pub fn new(target: O, border: Border) -> Self {
         Self { target, border }
     }

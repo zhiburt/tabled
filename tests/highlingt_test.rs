@@ -397,4 +397,63 @@ fn highlingt_complex_figures() {
             "└───┴──────────┴──────────┴──────────┘\n",
         ),
     );
+
+    test_highlight!(
+        Full.not(Segment::new(2.., 0..3)).not(Cell(1, 0)),
+        concat!(
+            "*++++++++++++++++++++++++++++++++++++#\n",
+            "+ N │ column 0 │ column 1 │ column 2 +\n",
+            "@+++#──────────┼──────────┼──────────+\n",
+            "│ 0 +   0-0    │   0-1    │   0-2    +\n",
+            "├───@+++++++++++++++++++++#──────────+\n",
+            "│ 1 │   1-0    │   1-1    +   1-2    +\n",
+            "├───┼──────────┼──────────+──────────+\n",
+            "│ 2 │   2-0    │   2-1    +   2-2    +\n",
+            "└───┴──────────┴──────────@++++++++++.\n",
+        ),
+    );
+
+    test_highlight!(
+        Full.not(Segment::new(..1, 1..))
+            .not(Segment::new(1..2, 2..))
+            .not(Cell(2, 3)),
+        concat!(
+            "*+++#──────────┬──────────┬──────────┐\n",
+            "+ N + column 0 │ column 1 │ column 2 │\n",
+            "+───@++++++++++#──────────┼──────────┤\n",
+            "+ 0 │   0-0    +   0-1    │   0-2    │\n",
+            "+───┼──────────@++++++++++#──────────┤\n",
+            "+ 1 │   1-0    │   1-1    +   1-2    │\n",
+            "+───┼──────────┼──────────@++++++++++#\n",
+            "+ 2 │   2-0    │   2-1    │   2-2    +\n",
+            "@++++++++++++++++++++++++++++++++++++.\n",
+        ),
+    );
+}
+
+#[test]
+fn highlingt_several_time() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::modern())
+        .with(Highlight::new(Frame, Border::filled('*')))
+        .with(Highlight::new(Cell(1, 1), Border::filled('#')))
+        .with(Highlight::new(Columns::single(3), Border::filled('x')))
+        .to_string();
+
+    let expected = concat!(
+        "**************************xxxxxxxxxxxx\n",
+        "* N │ column 0 │ column 1 x column 2 x\n",
+        "*───############**********x──────────x\n",
+        "* 0 #   0-0    #   0-1    x   0-2    x\n",
+        "*───############──────────x──────────x\n",
+        "* 1 *   1-0    │   1-1    x   1-2    x\n",
+        "*───**********************x──────────x\n",
+        "* 2 │   2-0    │   2-1    x   2-2    x\n",
+        "**************************xxxxxxxxxxxx\n",
+    );
+
+    println!("{}", table);
+
+    assert_eq!(table, expected);
 }

@@ -1,6 +1,6 @@
 use crate::util::create_vector;
 use tabled::{
-    object::{Columns, Full, Head, Rows},
+    object::{Columns, Full, Rows},
     Alignment, Modify, Padding, Style, Table,
 };
 
@@ -30,7 +30,7 @@ fn head_and_data_alignment() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::ascii())
-        .with(Modify::new(Head).with(Alignment::left()))
+        .with(Modify::new(Rows::first()).with(Alignment::left()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::right()))
         .to_string();
 

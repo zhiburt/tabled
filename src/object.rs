@@ -37,6 +37,9 @@ pub struct Segment<C, R> {
 }
 
 impl Segment<RangeFull, RangeFull> {
+    /// Returns a full table segment.
+    ///
+    /// The same as [Full].
     pub fn all() -> Self {
         Self::new(.., ..)
     }
@@ -47,6 +50,7 @@ where
     C: RangeBounds<usize>,
     R: RangeBounds<usize>,
 {
+    /// This function builds a [Segment].
     pub fn new(rows: R, columns: C) -> Self {
         Self { columns, rows }
     }
@@ -75,6 +79,8 @@ where
     }
 }
 
+/// Frame includes cells which are on the edges of each side.
+/// Therefore it's [Object] implementation returns a subset of cells which are present in frame.
 pub struct Frame;
 
 impl Object for Frame {
@@ -105,13 +111,23 @@ impl Object for Frame {
     }
 }
 
-/// Head represents the first row of a [Table].
+/// FirstRow represents the first row of a [Table].
 /// It's often contains headers data.
-pub struct Head;
+pub struct FirstRow;
 
-impl Object for Head {
+impl Object for FirstRow {
     fn cells(&self, _: usize, count_columns: usize) -> Vec<(usize, usize)> {
         (0..count_columns).map(|column| (0, column)).collect()
+    }
+}
+
+/// LastRow represents the last row of a [Table].
+pub struct LastRow;
+
+impl Object for LastRow {
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
+        let row = if count_rows == 0 { 0 } else { count_rows - 1 };
+        (0..count_columns).map(|column| (row, column)).collect()
     }
 }
 
@@ -133,18 +149,38 @@ impl<R> Rows<R>
 where
     R: RangeBounds<usize>,
 {
+    /// Returns a new instance of [Rows] for a range of rows.
+    ///
+    /// If the boundries are exeeded it may panic.
     pub fn new(range: R) -> Self {
         Self { range }
     }
 }
 
-// todo: Add a last first function
-
 impl Rows<Range<usize>> {
+    /// Returns a new instance of [Rows] with a single row.
+    ///
+    /// If the boundries are exeeded it may panic.
     pub fn single(index: usize) -> Self {
         Self {
             range: index..index + 1,
         }
+    }
+}
+
+impl Rows<()> {
+    /// Returns a first row [Object].
+    ///
+    /// If the table has 0 rows returns an empty set of cells.
+    pub fn first() -> FirstRow {
+        FirstRow
+    }
+
+    /// Returns a last row [Object].
+    ///
+    /// If the table has 0 rows returns an empty set of cells.
+    pub fn last() -> LastRow {
+        LastRow
     }
 }
 
@@ -171,12 +207,18 @@ impl<R> Columns<R>
 where
     R: RangeBounds<usize>,
 {
+    /// Returns a new instance of [Columns] for a range of columns.
+    ///
+    /// If the boundries are exeeded it may panic.
     pub fn new(range: R) -> Self {
         Self { range }
     }
 }
 
 impl Columns<Range<usize>> {
+    /// Returns a new instance of [Columns] for a single column.
+    ///
+    /// If the boundries are exeeded it may panic.
     pub fn single(index: usize) -> Self {
         Self {
             range: index..index + 1,
