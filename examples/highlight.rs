@@ -12,7 +12,7 @@ fn main() {
     let table = data
         .table()
         .with(Style::modern())
-        .with(Highlight::new(Cell(2, 1), Border::single('*')));
+        .with(Highlight::new(Cell(2, 1), Border::filled('*')));
 
     println!("{}", table);
 }

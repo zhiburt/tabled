@@ -573,7 +573,7 @@ pub struct Border {
 impl Border {
     /// full returns a border all walls
     #[allow(clippy::too_many_arguments)]
-    pub fn full(
+    pub fn new(
         top: char,
         bottom: char,
         left: char,
@@ -595,9 +595,8 @@ impl Border {
         }
     }
 
-    // todo: rename to filled.
-    pub fn single(c: char) -> Self {
-        Self::full(c, c, c, c, c, c, c, c)
+    pub fn filled(c: char) -> Self {
+        Self::new(c, c, c, c, c, c, c, c)
     }
 
     pub fn top(mut self, c: char) -> Self {

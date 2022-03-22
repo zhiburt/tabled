@@ -29,7 +29,7 @@ fn panel_has_no_style_by_default() {
 
 #[test]
 fn highligt_panel() {
-    let border = Border::full('#', '#', '#', '#', '#', '#', '#', '#');
+    let border = Border::new('#', '#', '#', '#', '#', '#', '#', '#');
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 0))
         .with(Style::psql())

@@ -12,7 +12,7 @@ fn highlingt_object_exceeds_bounderies() {
     let data = create_vector::<3, 3>();
     let _table = Table::new(&data)
         .with(Style::modern())
-        .with(Highlight::new(Cell(1000, 0), Border::single('+')))
+        .with(Highlight::new(Cell(1000, 0), Border::filled('+')))
         .to_string();
 }
 
@@ -24,7 +24,7 @@ fn highlingt_empty_table() {
     let data: [EmptyStruct; 0] = [];
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Highlight::new(Full, Border::single('+')))
+        .with(Highlight::new(Full, Border::filled('+')))
         .to_string();
 
     assert_eq!(table, "");
@@ -35,8 +35,8 @@ fn highlingt_cell() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Highlight::new(Cell(0, 0), Border::single('+')))
-        .with(Highlight::new(Cell(1, 1), Border::single('*')))
+        .with(Highlight::new(Cell(0, 0), Border::filled('+')))
+        .with(Highlight::new(Cell(1, 1), Border::filled('*')))
         .to_string();
 
     let expected = concat!(
@@ -59,8 +59,8 @@ fn highlingt_row() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Highlight::new(Rows::single(0), Border::single('+')))
-        .with(Highlight::new(Rows::single(3), Border::single('*')))
+        .with(Highlight::new(Rows::single(0), Border::filled('+')))
+        .with(Highlight::new(Rows::single(3), Border::filled('*')))
         .to_string();
 
     let expected = concat!(
@@ -83,8 +83,8 @@ fn highlingt_column() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Highlight::new(Columns::single(0), Border::single('+')))
-        .with(Highlight::new(Columns::single(2), Border::single('*')))
+        .with(Highlight::new(Columns::single(0), Border::filled('+')))
+        .with(Highlight::new(Columns::single(2), Border::filled('*')))
         .to_string();
 
     let expected = concat!(
@@ -107,7 +107,7 @@ fn highlingt_row_range() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Highlight::new(Rows::new(1..3), Border::single('+')))
+        .with(Highlight::new(Rows::new(1..3), Border::filled('+')))
         .to_string();
 
     let expected = concat!(
@@ -130,7 +130,7 @@ fn highlingt_column_range() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Highlight::new(Columns::new(..2), Border::single('+')))
+        .with(Highlight::new(Columns::new(..2), Border::filled('+')))
         .to_string();
 
     let expected = concat!(
@@ -155,7 +155,7 @@ fn highlingt_frame() {
         .with(Style::modern())
         .with(Highlight::new(
             Frame,
-            Border::single('+')
+            Border::filled('+')
                 .top_left_corner('*')
                 .top_right_corner('#')
                 .bottom_left_corner('@')
@@ -188,7 +188,7 @@ fn highlingt_full() {
         .with(Style::modern())
         .with(Highlight::new(
             Full,
-            Border::single('+')
+            Border::filled('+')
                 .top_left_corner('*')
                 .top_right_corner('#')
                 .bottom_left_corner('@')
@@ -243,7 +243,7 @@ fn highlingt_complex_figures() {
     macro_rules! test_highlight {
         ($object:expr, $expected:expr,) => {
             let data = create_vector::<3, 3>();
-            let border = Border::single('+')
+            let border = Border::filled('+')
                 .top_left_corner('*')
                 .top_right_corner('#')
                 .bottom_left_corner('@')
