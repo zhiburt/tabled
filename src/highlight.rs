@@ -1,14 +1,22 @@
+use std::collections::HashSet;
+
 #[allow(unused)]
 use crate::Table;
-use crate::{style::Border, TableOption};
+use crate::{
+    object::{Frame, Object},
+    style::Border,
+    TableOption,
+};
 use papergrid::{Entity, Grid, Settings};
 
 /// Highlight modifies a table style by changing a border of a target [Table] segment.
 ///
+/// [Default] implementation runs Highlight for a [Frame].
+///
 /// # Example
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}};
+/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::Full};
 ///
 /// let data = [
 ///     ("ELF", "Extensible Linking Format", true),
@@ -20,7 +28,7 @@ use papergrid::{Entity, Grid, Settings};
 ///                .enumerate()
 ///                .table()
 ///                .with(Style::github_markdown())
-///                .with(Highlight::frame(Border::default().top('^').bottom('v')))
+///                .with(Highlight::new(Full, Border::default().top('^').bottom('v')))
 ///                .to_string();
 ///
 /// assert_eq!(
@@ -37,227 +45,350 @@ use papergrid::{Entity, Grid, Settings};
 /// );
 /// ```
 ///
-pub struct Highlight {
-    target: Target,
+/// It's possible to use [Highlight] for many kinds of figures.
+///
+///
+/// ```
+/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::{Full, Cell, Object}};
+///
+/// let data = [
+///     ("ELF", "Extensible Linking Format", true),
+///     ("DWARF", "", true),
+///     ("PE", "Portable Executable", false),
+/// ];
+///
+/// let table = data.iter()
+///                .enumerate()
+///                .table()
+///                .with(Style::github_markdown())
+///                .with(Highlight::new(Full.not(Cell(0,0).and(Cell(1, 0).and(Cell(0, 1)).and(Cell(0, 3)))), Border::filled('*')))
+///                .to_string();
+///
+/// assert_eq!(
+///     table,
+///     concat!(
+///         "                *****************************        \n",
+///         "| usize | &str  *           &str            * bool  |\n",
+///         "|-------*********---------------------------*********\n",
+///         "|   0   *  ELF  | Extensible Linking Format | true  *\n",
+///         "*********                                           *\n",
+///         "*   1   | DWARF |                           | true  *\n",
+///         "*                                                   *\n",
+///         "*   2   |  PE   |    Portable Executable    | false *\n",
+///         "*****************************************************\n",
+///     ),
+/// );
+/// ```
+///
+pub struct Highlight<O> {
+    target: O,
     border: Border,
 }
 
-impl Highlight {
-    pub fn frame(border: Border) -> Self {
-        Self::new(Target::Frame, border)
+impl Default for Highlight<Frame> {
+    fn default() -> Self {
+        Self {
+            target: Frame,
+            border: Default::default(),
+        }
     }
+}
 
-    pub fn cell(row: usize, column: usize, border: Border) -> Self {
-        Self::new(Target::Cell { row, column }, border)
-    }
-
-    pub fn row(row: usize, border: Border) -> Self {
-        Self::row_range(row, row + 1, border)
-    }
-
-    pub fn row_range(start: usize, end: usize, border: Border) -> Self {
-        assert!(end > start);
-        Self::new(
-            Target::Row {
-                from: start,
-                to: end,
-            },
-            border,
-        )
-    }
-
-    pub fn column(column: usize, border: Border) -> Self {
-        Self::column_range(column, column + 1, border)
-    }
-
-    pub fn column_range(start: usize, end: usize, border: Border) -> Self {
-        assert!(end > start);
-        Self::new(
-            Target::Column {
-                from: start,
-                to: end,
-            },
-            border,
-        )
-    }
-
-    fn new(target: Target, border: Border) -> Self {
+impl<O> Highlight<O>
+where
+    O: Object,
+{
+    /// Build a new instance of [Highlight]
+    ///
+    /// BE AWARE: if target exeeds boundries it may panic.
+    pub fn new(target: O, border: Border) -> Self {
         Self { target, border }
     }
 }
 
-pub enum Target {
-    Cell { row: usize, column: usize },
-    Row { from: usize, to: usize },
-    Column { from: usize, to: usize },
-    Frame,
-}
-
-impl TableOption for Highlight {
+impl<O> TableOption for Highlight<O>
+where
+    O: Object,
+{
     fn change(&mut self, grid: &mut Grid) {
-        let sector = match self.target {
-            Target::Frame => GridSector::new(0, grid.count_columns(), 0, grid.count_rows()),
-            Target::Cell { row, column } => GridSector::new(column, column + 1, row, row + 1),
-            Target::Row { from, to } => GridSector::new(0, grid.count_columns(), from, to),
-            Target::Column { from, to } => GridSector::new(from, to, 0, grid.count_rows()),
-        };
+        let cells = self.target.cells(grid.count_rows(), grid.count_columns());
+        let segments = split_segments(cells);
 
-        set_border(grid, sector, self.border.clone());
-    }
-}
-
-#[derive(PartialEq, Eq, Debug, Hash, Clone)]
-struct GridSector {
-    left: usize,
-    right: usize,
-    top: usize,
-    bottom: usize,
-}
-
-impl GridSector {
-    fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
-        Self {
-            left,
-            right,
-            top,
-            bottom,
+        for sector in segments {
+            set_border(grid, sector, self.border.clone());
         }
     }
 }
 
-fn set_border(grid: &mut Grid, sector: GridSector, border: Border) {
-    let first_row = sector.top;
-    let first_col = sector.left;
+fn split_segments(cells: Vec<(usize, usize)>) -> Vec<HashSet<(usize, usize)>> {
+    let mut segments: Vec<HashSet<(usize, usize)>> = Vec::new();
+    for cell in cells {
+        let found_segment = segments
+            .iter_mut()
+            .find(|s| s.iter().any(|&c| is_cell_connected(cell, c)));
 
-    let last_row = if sector.bottom > 0 {
-        sector.bottom - 1
-    } else {
-        sector.bottom
-    };
-
-    let last_col = if sector.right > 0 {
-        sector.right - 1
-    } else {
-        sector.right
-    };
-
-    if let Some(c) = border.top {
-        let border = Border::default().top(c);
-        for column in sector.left..sector.right {
-            grid.set(
-                &Entity::Cell(first_row, column),
-                Settings::default()
-                    .border_restriction(false)
-                    .border(border.clone()),
-            );
-        }
-
-        let border = Border::default().top_left_corner(c);
-        for column in sector.left + 1..sector.right {
-            grid.set(
-                &Entity::Cell(first_row, column),
-                Settings::default()
-                    .border_restriction(false)
-                    .border(border.clone()),
-            );
+        match found_segment {
+            Some(segment) => {
+                segment.insert(cell);
+            }
+            None => {
+                let mut segment = HashSet::new();
+                segment.insert(cell);
+                segments.push(segment);
+            }
         }
     }
 
-    if let Some(c) = border.bottom {
-        let border = Border::default().bottom(c);
-        for column in sector.left..sector.right {
-            grid.set(
-                &Entity::Cell(last_row, column),
-                Settings::default()
-                    .border_restriction(false)
-                    .border(border.clone()),
-            );
+    let mut squashed_segments: Vec<HashSet<(usize, usize)>> = Vec::new();
+    while !segments.is_empty() {
+        let mut segment = segments.remove(0);
+
+        let mut i = 0;
+        while i < segments.len() {
+            if is_segment_connected(&segment, &segments[i]) {
+                segment.extend(&segments[i]);
+                segments.remove(i);
+            } else {
+                i += 1;
+            }
         }
 
-        let border = Border::default().bottom_left_corner(c);
-        for column in sector.left + 1..sector.right {
-            grid.set(
-                &Entity::Cell(last_row, column),
-                Settings::default()
-                    .border_restriction(false)
-                    .border(border.clone()),
-            );
+        squashed_segments.push(segment);
+    }
+
+    squashed_segments
+}
+
+fn is_cell_connected((row1, col1): (usize, usize), (row2, col2): (usize, usize)) -> bool {
+    if col1 == col2 && row1 == row2 + 1 {
+        return true;
+    }
+
+    if col1 == col2 && (row2 > 0 && row1 == row2 - 1) {
+        return true;
+    }
+
+    if row1 == row2 && col1 == col2 + 1 {
+        return true;
+    }
+
+    if row1 == row2 && (col2 > 0 && col1 == col2 - 1) {
+        return true;
+    }
+
+    false
+}
+
+fn is_segment_connected(
+    segment1: &HashSet<(usize, usize)>,
+    segment2: &HashSet<(usize, usize)>,
+) -> bool {
+    for &cell1 in segment1.iter() {
+        for &cell2 in segment2.iter() {
+            if is_cell_connected(cell1, cell2) {
+                return true;
+            }
         }
     }
 
-    if let Some(c) = border.left {
-        let border = Border::default().left(c);
-        for row in sector.top..sector.bottom {
-            grid.set(
-                &Entity::Cell(row, first_col),
-                Settings::default()
-                    .border_restriction(false)
-                    .border(border.clone()),
-            );
-        }
+    false
+}
 
-        let border = Border::default().top_left_corner(c);
-        for row in sector.top + 1..sector.bottom {
-            grid.set(
-                &Entity::Cell(row, first_col),
-                Settings::default()
-                    .border_restriction(false)
-                    .border(border.clone()),
-            );
-        }
+fn set_border(grid: &mut Grid, sector: HashSet<(usize, usize)>, border: Border) {
+    if sector.is_empty() {
+        return;
     }
 
-    if let Some(c) = border.right {
-        let border = Border::default().right(c);
-        for row in sector.top..sector.bottom {
-            grid.set(
-                &Entity::Cell(row, last_col),
-                Settings::default()
-                    .border_restriction(false)
-                    .border(border.clone()),
-            );
+    for &(row, col) in &sector {
+        let mut cell_border = Border::default();
+
+        let cell_has_top_neighbor = cell_has_top_neighbor(&sector, row, col);
+        let cell_has_bottom_neighbor = cell_has_bottom_neighbor(&sector, row, col);
+        let cell_has_left_neighbor = cell_has_left_neighbor(&sector, row, col);
+        let cell_has_right_neighbor = cell_has_right_neighbor(&sector, row, col);
+
+        let this_has_left_top_neighbor = is_there_left_top_cell(&sector, row, col);
+        let this_has_right_top_neighbor = is_there_right_top_cell(&sector, row, col);
+        let this_has_left_bottom_neighbor = is_there_left_bottom_cell(&sector, row, col);
+        let this_has_right_bottom_neighbor = is_there_right_bottom_cell(&sector, row, col);
+
+        if let Some(c) = border.top {
+            if !cell_has_top_neighbor {
+                cell_border = cell_border.top(c);
+
+                if cell_has_right_neighbor && !this_has_right_top_neighbor {
+                    cell_border = cell_border.top_right_corner(c);
+                }
+            }
         }
 
-        let border = Border::default().top_right_corner(c);
-        for row in sector.top + 1..sector.bottom {
-            grid.set(
-                &Entity::Cell(row, last_col),
-                Settings::default()
-                    .border_restriction(false)
-                    .border(border.clone()),
-            );
-        }
-    }
+        if let Some(c) = border.bottom {
+            if !cell_has_bottom_neighbor {
+                cell_border = cell_border.bottom(c);
 
-    if let Some(c) = border.left_top_corner {
-        let border = Border::default().top_left_corner(c);
+                if cell_has_right_neighbor && !this_has_right_bottom_neighbor {
+                    cell_border = cell_border.bottom_right_corner(c);
+                }
+            }
+        }
+
+        if let Some(c) = border.left {
+            if !cell_has_left_neighbor {
+                cell_border = cell_border.left(c);
+
+                if cell_has_bottom_neighbor && !this_has_left_bottom_neighbor {
+                    cell_border = cell_border.bottom_left_corner(c);
+                }
+            }
+        }
+
+        if let Some(c) = border.right {
+            if !cell_has_right_neighbor {
+                cell_border = cell_border.right(c);
+
+                if cell_has_bottom_neighbor && !this_has_right_bottom_neighbor {
+                    cell_border = cell_border.bottom_right_corner(c);
+                }
+            }
+        }
+
+        if let Some(c) = border.left_top_corner {
+            if !cell_has_left_neighbor && !cell_has_top_neighbor {
+                cell_border = cell_border.top_left_corner(c);
+            }
+        }
+
+        if let Some(c) = border.left_bottom_corner {
+            if !cell_has_left_neighbor && !cell_has_bottom_neighbor {
+                cell_border = cell_border.bottom_left_corner(c);
+            }
+        }
+
+        if let Some(c) = border.right_top_corner {
+            if !cell_has_right_neighbor && !cell_has_top_neighbor {
+                cell_border = cell_border.top_right_corner(c);
+            }
+        }
+
+        if let Some(c) = border.right_bottom_corner {
+            if !cell_has_right_neighbor && !cell_has_bottom_neighbor {
+                cell_border = cell_border.bottom_right_corner(c);
+            }
+        }
+
+        {
+            if !cell_has_bottom_neighbor {
+                if !cell_has_left_neighbor && this_has_left_top_neighbor {
+                    if let Some(c) = border.right_top_corner {
+                        cell_border = cell_border.top_left_corner(c);
+                    }
+                }
+
+                if cell_has_left_neighbor && this_has_left_bottom_neighbor {
+                    if let Some(c) = border.left_top_corner {
+                        cell_border = cell_border.bottom_left_corner(c);
+                    }
+                }
+
+                if !cell_has_right_neighbor && this_has_right_top_neighbor {
+                    if let Some(c) = border.left_top_corner {
+                        cell_border = cell_border.top_right_corner(c);
+                    }
+                }
+
+                if cell_has_right_neighbor && this_has_right_bottom_neighbor {
+                    if let Some(c) = border.right_top_corner {
+                        cell_border = cell_border.bottom_right_corner(c);
+                    }
+                }
+            }
+
+            if !cell_has_top_neighbor {
+                if !cell_has_left_neighbor && this_has_left_bottom_neighbor {
+                    if let Some(c) = border.right_bottom_corner {
+                        cell_border = cell_border.bottom_left_corner(c);
+                    }
+                }
+
+                if cell_has_left_neighbor && this_has_left_top_neighbor {
+                    if let Some(c) = border.left_bottom_corner {
+                        cell_border = cell_border.top_left_corner(c);
+                    }
+                }
+
+                if !cell_has_right_neighbor && this_has_right_bottom_neighbor {
+                    if let Some(c) = border.left_bottom_corner {
+                        cell_border = cell_border.bottom_right_corner(c);
+                    }
+                }
+
+                if cell_has_right_neighbor && this_has_right_top_neighbor {
+                    if let Some(c) = border.right_bottom_corner {
+                        cell_border = cell_border.top_right_corner(c);
+                    }
+                }
+            }
+        }
+
         grid.set(
-            &Entity::Cell(first_row, first_col),
-            Settings::default().border_restriction(false).border(border),
+            &Entity::Cell(row, col),
+            Settings::default()
+                .border(cell_border)
+                .border_restriction(false),
         );
     }
+}
 
-    if let Some(c) = border.left_bottom_corner {
-        let border = Border::default().bottom_left_corner(c);
-        grid.set(
-            &Entity::Cell(last_row, first_col),
-            Settings::default().border_restriction(false).border(border),
-        );
-    }
+fn cell_has_top_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    row > 0 && sector.contains(&(row - 1, col))
+}
 
-    if let Some(c) = border.right_top_corner {
-        let border = Border::default().top_right_corner(c);
-        grid.set(
-            &Entity::Cell(first_row, last_col),
-            Settings::default().border_restriction(false).border(border),
-        );
-    }
+fn cell_has_bottom_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    sector.contains(&(row + 1, col))
+}
 
-    if let Some(c) = border.right_bottom_corner {
-        let border = Border::default().bottom_right_corner(c);
-        grid.set(
-            &Entity::Cell(last_row, last_col),
-            Settings::default().border_restriction(false).border(border),
-        );
+fn cell_has_left_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    col > 0 && sector.contains(&(row, col - 1))
+}
+
+fn cell_has_right_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    sector.contains(&(row, col + 1))
+}
+
+fn is_there_left_top_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    row > 0 && col > 0 && sector.contains(&(row - 1, col - 1))
+}
+
+fn is_there_right_top_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    row > 0 && sector.contains(&(row - 1, col + 1))
+}
+
+fn is_there_left_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    col > 0 && sector.contains(&(row + 1, col - 1))
+}
+
+fn is_there_right_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    sector.contains(&(row + 1, col + 1))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_connected() {
+        assert!(is_cell_connected((0, 0), (0, 1)));
+        assert!(is_cell_connected((0, 0), (1, 0)));
+        assert!(!is_cell_connected((0, 0), (1, 1)));
+
+        assert!(is_cell_connected((0, 1), (0, 0)));
+        assert!(is_cell_connected((1, 0), (0, 0)));
+        assert!(!is_cell_connected((1, 1), (0, 0)));
+
+        assert!(is_cell_connected((1, 1), (0, 1)));
+        assert!(is_cell_connected((1, 1), (1, 0)));
+        assert!(is_cell_connected((1, 1), (2, 1)));
+        assert!(is_cell_connected((1, 1), (1, 2)));
+        assert!(!is_cell_connected((1, 1), (1, 1)));
     }
 }

@@ -571,9 +571,9 @@ pub struct Border {
 }
 
 impl Border {
-    /// full returns a border all walls
+    /// This function constructs a cell borders with all sides set.
     #[allow(clippy::too_many_arguments)]
-    pub fn full(
+    pub fn new(
         top: char,
         bottom: char,
         left: char,
@@ -595,45 +595,55 @@ impl Border {
         }
     }
 
-    pub fn single(c: char) -> Self {
-        Self::full(c, c, c, c, c, c, c, c)
+    /// This function constructs a cell borders with all sides's char set to a given character.
+    /// It behaives like [Border::new] with the same character set to each side.
+    pub fn filled(c: char) -> Self {
+        Self::new(c, c, c, c, c, c, c, c)
     }
 
+    /// Set a top border character.
     pub fn top(mut self, c: char) -> Self {
         self.top = Some(c);
         self
     }
 
+    /// Set a bottom border character.
     pub fn bottom(mut self, c: char) -> Self {
         self.bottom = Some(c);
         self
     }
 
+    /// Set a left border character.
     pub fn left(mut self, c: char) -> Self {
         self.left = Some(c);
         self
     }
 
+    /// Set a right border character.
     pub fn right(mut self, c: char) -> Self {
         self.right = Some(c);
         self
     }
 
+    /// Set a top left intersection character.
     pub fn top_left_corner(mut self, c: char) -> Self {
         self.left_top_corner = Some(c);
         self
     }
 
+    /// Set a top right intersection character.
     pub fn top_right_corner(mut self, c: char) -> Self {
         self.right_top_corner = Some(c);
         self
     }
 
+    /// Set a bottom left intersection character.
     pub fn bottom_left_corner(mut self, c: char) -> Self {
         self.left_bottom_corner = Some(c);
         self
     }
 
+    /// Set a bottom right intersection character.
     pub fn bottom_right_corner(mut self, c: char) -> Self {
         self.right_bottom_corner = Some(c);
         self

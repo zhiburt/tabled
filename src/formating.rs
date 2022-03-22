@@ -6,7 +6,7 @@ use papergrid::{Entity, Grid, Settings};
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, Format, Row, Modify};
+/// use tabled::{Table, Format, object::Rows, Modify};
 ///
 /// let data = vec![
 ///     (0, "Grodno", true),
@@ -16,7 +16,7 @@ use papergrid::{Entity, Grid, Settings};
 /// ];
 ///
 /// let table = Table::new(&data)
-///                .with(Modify::new(Row(1..)).with(Format(|s| format!(": {} :", s))))
+///                .with(Modify::new(Rows::new(1..)).with(Format(|s| format!(": {} :", s))))
 ///                .to_string();
 ///
 /// assert_eq!(table, "+-------+-------------+-----------+\n\
@@ -57,7 +57,7 @@ where
 /// Using this formatting applied for all rows not to a string as a whole.
 ///
 /// ```rust,no_run
-/// use tabled::{Table, Format, multiline, Full, Modify};
+/// use tabled::{Table, Format, multiline, object::Full, Modify};
 /// let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Modify::new(Full).with(Format(multiline(|s| format!("{}", s)))))
@@ -85,7 +85,7 @@ where
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, FormatFrom, Row, Modify};
+/// use tabled::{Table, FormatFrom, object::Rows, Modify};
 ///
 /// let data = vec![
 ///     (0, "Grodno", true),
@@ -95,7 +95,7 @@ where
 /// ];
 ///
 /// let table = Table::new(&data)
-///                .with(Modify::new(Row(..1)).with(FormatFrom(vec!["N", "City", "is in Belarus"])))
+///                .with(Modify::new(Rows::single(0)).with(FormatFrom(vec!["N", "City", "is in Belarus"])))
 ///                .to_string();
 ///
 /// assert_eq!(table, "+---+---------+---------------+\n\
@@ -135,7 +135,7 @@ where
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, FormatWithIndex, Row, Modify};
+/// use tabled::{Table, FormatWithIndex, object::Rows, Modify};
 ///
 /// let data = vec![
 ///     (0, "Grodno", true),
@@ -145,7 +145,7 @@ where
 /// ];
 ///
 /// let table = Table::new(&data)
-///                .with(Modify::new(Row(..1))
+///                .with(Modify::new(Rows::single(0))
 ///                     .with(FormatWithIndex(|_, _, column| column.to_string())))
 ///                .to_string();
 ///

@@ -7,7 +7,7 @@ fn grid_2x2_custom_frame_test() {
     let mut grid = util::new_grid::<2, 2>();
     grid.set(
         &Entity::Global,
-        Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
     assert_eq!(
@@ -25,7 +25,7 @@ fn grid_2x2_custom_column_test() {
     let mut grid = util::new_grid::<2, 2>();
     grid.set(
         &Entity::Column(1),
-        Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
     assert_eq!(
@@ -40,7 +40,7 @@ fn grid_2x2_custom_column_test() {
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
     grid.set(
         &Entity::Column(0),
-        Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
     assert_eq!(
@@ -59,7 +59,7 @@ fn grid_2x2_custom_row_test() {
 
     grid.set(
         &Entity::Row(0),
-        Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
     assert_eq!(
@@ -76,7 +76,7 @@ fn grid_2x2_custom_row_test() {
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
     grid.set(
         &Entity::Row(1),
-        Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
     let str = grid.to_string();
@@ -96,7 +96,7 @@ fn grid_2x2_change_cell_border_test() {
 
     grid.set(
         &Entity::Cell(0, 1),
-        Settings::new().border(Border::full('*', '^', '@', '#', '~', '!', '%', '&')),
+        Settings::new().border(Border::new('*', '^', '@', '#', '~', '!', '%', '&')),
     );
     let str = grid.to_string();
     assert_eq!(

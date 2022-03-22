@@ -4,8 +4,8 @@
 use std::fmt::{Display, Formatter};
 
 use tabled::{
-    Alignment, AlignmentHorizontal, Column, Extract, Format, Head, Modify, Row, Style, Table,
-    Tabled,
+    object::{Columns, Rows},
+    Alignment, AlignmentHorizontal, Extract, Format, Modify, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -57,8 +57,8 @@ fn main() {
     println!("Full");
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Modify::new(Head).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
-        .with(Modify::new(Row(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Left)));
+        .with(Modify::new(Rows::first()).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
+        .with(Modify::new(Rows::new(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Left)));
     println!("{}", table);
 
     println!("Segment   row: (1..=2)   column: (1..)");
@@ -68,7 +68,7 @@ fn main() {
     println!("Refinished segment");
     let table = table
         .with(Style::modern())
-        .with(Modify::new(Column(1..)).with(Format(|s| {
+        .with(Modify::new(Columns::new(1..)).with(Format(|s| {
             if s == "Outstanding" {
                 format!("+{}+", s)
             } else {

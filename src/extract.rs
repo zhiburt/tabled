@@ -9,7 +9,7 @@ use crate::TableOption;
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, Format, Row, Modify, Extract};
+/// use tabled::{Table, Format, object::Rows, Modify, Extract};
 ///
 /// let data = vec![
 ///     (0, "Grodno", true),
@@ -19,7 +19,7 @@ use crate::TableOption;
 /// ];
 ///
 /// let table = Table::new(&data)
-///                .with(Modify::new(Row(1..)).with(Format(|s| format!(": {} :", s))))
+///                .with(Modify::new(Rows::new(1..)).with(Format(|s| format!(": {} :", s))))
 ///                .with(Extract::segment(1..=2, 1..))
 ///                .to_string();
 ///
