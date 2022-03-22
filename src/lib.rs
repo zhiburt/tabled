@@ -121,7 +121,7 @@
 //! }
 //!
 //! #[derive(Tabled)]
-//! struct Developer(#[header("name")] &'static str);
+//! struct Developer(#[tabled(rename = "name")] &'static str);
 //!     
 //! let data = vec![
 //!     (Developer("Terri Kshlerin"), Domain::Embeded),

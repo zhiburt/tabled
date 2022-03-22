@@ -52,9 +52,9 @@ fn main() {
 #[derive(Tabled)]
 struct User {
     id: usize,
-    #[header(inline)]
+    #[tabled(inline)]
     personal_information: Person,
-    #[header(inline)]
+    #[tabled(inline)]
     contact: Contact,
 }
 
@@ -62,7 +62,7 @@ struct User {
 struct Person {
     name: &'static str,
     surname: &'static str,
-    #[field(display_with = "display_age")]
+    #[tabled(display_with = "display_age")]
     age: Option<usize>,
 }
 
@@ -75,13 +75,13 @@ fn display_age(age: &Option<usize>) -> String {
 
 #[derive(Tabled)]
 enum Contact {
-    #[field(inline("telegram::"))]
+    #[tabled(inline("telegram::"))]
     Telegram {
         username: &'static str,
         number: &'static str,
     },
-    #[header(hidden)]
+    #[tabled(hidden)]
     No,
-    #[header(inline)]
-    Number(#[header("number")] &'static str),
+    #[tabled(inline)]
+    Number(#[tabled("number")] &'static str),
 }
