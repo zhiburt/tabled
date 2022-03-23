@@ -40,7 +40,7 @@ fn main() {
     let table = DATA
         .table()
         .with(Style::extended())
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::left()))
         .with(MaxWidth::wrapping(width as usize).keep_words())
         .with(MinWidth::new(width as usize));
 
