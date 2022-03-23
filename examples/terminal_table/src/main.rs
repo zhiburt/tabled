@@ -1,7 +1,9 @@
 //! The example can be run by this command
 //! `cargo run --example terminal_table`
 
-use tabled::{object::Full, Alignment, Modify, Style, TableIteratorExt, Tabled, TotalWidth};
+use tabled::{
+    object::Full, Alignment, MaxWidth, MinWidth, Modify, Style, TableIteratorExt, Tabled,
+};
 
 #[derive(Tabled)]
 struct Release {
@@ -39,7 +41,8 @@ fn main() {
         .table()
         .with(Style::extended())
         .with(Modify::new(Full).with(Alignment::center_horizontal()))
-        .with(TotalWidth::new(width as usize).wrap(true));
+        .with(MaxWidth::wrapping(width as usize).keep_words())
+        .with(MinWidth::new(width as usize));
 
     println!("{}", table);
 }
