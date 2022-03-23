@@ -338,7 +338,7 @@ Table::new(&data)
 
 - `FormatFrom` - Uses `Vec` elements as new content.
 - `FormatWithIndex` - Like `Format` but with `row` and `column` index in lambda.
-- `Trim` - Removes leading and trailing whitespace from range of cells 
+- `Trim` - Removes leading and trailing whitespace from content over specified range of cells
 
 ### Padding
 
