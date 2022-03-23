@@ -1,7 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
     object::{Cell, Columns, Full, Object, Rows},
-    Alignment, MaxWidth, MinWidth, Modify, Panel, Style, Table, TotalWidth,
+    Alignment, MaxWidth, MinWidth, Modify, Panel, Style, Table,
 };
 
 mod util;
@@ -575,7 +575,8 @@ fn total_width_big() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(TotalWidth::new(80))
+        .with(MaxWidth::truncating(80))
+        .with(MinWidth::new(80))
         .to_string();
 
     let expected = concat!(
@@ -596,7 +597,8 @@ fn total_width_big_with_panel() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Full).with(Alignment::center_horizontal()))
         .with(Style::github_markdown())
-        .with(TotalWidth::new(80))
+        .with(MaxWidth::truncating(80))
+        .with(MinWidth::new(80))
         .to_string();
 
     let expected = concat!(
@@ -618,14 +620,16 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Full).with(Alignment::center_horizontal()))
         .with(Style::github_markdown())
-        .with(TotalWidth::new(80).wrap(false))
+        .with(MaxWidth::wrapping(80))
+        .with(MinWidth::new(80))
         .to_string();
 
     let table2 = Table::new(&data)
         .with(Panel("Hello World", 0))
         .with(Modify::new(Full).with(Alignment::center_horizontal()))
         .with(Style::github_markdown())
-        .with(TotalWidth::new(80))
+        .with(MaxWidth::truncating(80))
+        .with(MinWidth::new(80))
         .to_string();
 
     assert_eq!(table1, table2);
@@ -636,7 +640,8 @@ fn total_width_small() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(TotalWidth::new(14))
+        .with(MaxWidth::truncating(14))
+        .with(MinWidth::new(14))
         .to_string();
 
     let expected = concat!(
@@ -655,7 +660,8 @@ fn total_width_smaller_then_content() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(TotalWidth::new(8))
+        .with(MaxWidth::truncating(8))
+        .with(MinWidth::new(8))
         .to_string();
 
     let expected = concat!(
@@ -676,8 +682,8 @@ fn total_width_small_with_panel() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Full).with(Alignment::center_horizontal()))
         .with(Style::github_markdown())
-        // .with(Modify::new(Full).with(Indent::new(0, 0, 0, 0)))
-        .with(TotalWidth::new(20))
+        .with(MaxWidth::truncating(20))
+        .with(MinWidth::new(20))
         .to_string();
 
     let expected = concat!(
@@ -699,7 +705,8 @@ fn total_width_small_with_panel_using_wrapping() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Full).with(Alignment::center_horizontal()))
         .with(Style::github_markdown())
-        .with(TotalWidth::new(20).wrap(false))
+        .with(MaxWidth::wrapping(20))
+        .with(MinWidth::new(20))
         .to_string();
 
     let expected = concat!(

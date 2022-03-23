@@ -2,7 +2,19 @@
 //!
 //! - [Truncate] cuts a cell content to limit width.
 //! - [Wrap] split the content via new lines in order to fit max width.
-//! - [TotalWidth] tries to set an whole table width to the limit width.
+//!
+//! To set a a table width a combination of [MaxWidth] and [MinWidth] can be set.
+//!
+//! ## Example
+//!
+//! ```
+//! use tabled::{MaxWidth, MinWidth, Table};
+//!
+//! let table = Table::new(&["Hello World!"])
+//!     .with(MaxWidth::wrapping(5))
+//!     .with(MinWidth::new(5));
+//! ```
+//!
 
 use std::collections::{HashMap, HashSet};
 
@@ -11,10 +23,20 @@ use papergrid::{string_width, Entity, Grid, Settings};
 
 /// MaxWidth allows you to set a max width of an object on a [Grid],
 /// using different strategies.
+/// It also allows you to set a MaxWidth for a whole table.
 ///
 /// It is an abstract factory.
 ///
-/// ## Example
+/// Beware that borders are not removed when you set a size value to very small.
+/// For example if you set size to 0 the table still be rendered but with all content removed.
+///
+/// Also be aware that it doesn't changes [crate::Padding] settings.
+///
+/// The function is color aware if a `color` feature is on.
+///
+/// ## Examples
+///
+/// Cell change
 ///
 /// ```
 /// use tabled::{object::Full, MaxWidth, Modify, Style, Table};
@@ -25,6 +47,15 @@ use papergrid::{string_width, Entity, Grid, Settings};
 ///     .with(Style::github_markdown())
 ///     .with(Modify::new(Full).with(MaxWidth::truncating(3).suffix("...")));
 /// ```
+///
+/// Table change
+///
+/// ```
+/// use tabled::{MaxWidth, Table};
+///
+/// let table = Table::new(&["Hello World!"]).with(MaxWidth::wrapping(5));
+/// ```
+///
 pub struct MaxWidth;
 
 impl MaxWidth {
@@ -328,10 +359,14 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 
 /// MinWidth changes a content in case if it's length is lower then the boundry.
 ///
+/// It can be applied to a whole table.
+///
 /// It does anything in case if the content's length is bigger then the boundry.
 /// It doesn't include a [crate::Padding] settings.
 ///
-/// ## Example
+/// ## Examples
+///
+/// Cell change
 ///
 /// ```
 /// use tabled::{object::Full, MinWidth, Modify, Style, Table};
@@ -342,6 +377,14 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 ///     .with(Style::github_markdown())
 ///     .with(Modify::new(Full).with(MinWidth::new(10)));
 /// ```
+/// Table change
+///
+/// ```
+/// use tabled::{MinWidth, Table};
+///
+/// let table = Table::new(&["Hello World!"]).with(MinWidth::new(5));
+/// ```
+///
 pub struct MinWidth {
     size: usize,
     fill: char,
@@ -412,49 +455,44 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
     }
 }
 
-/// TotalWidth decrease or increase an total table width according to the limit.
-///
-/// Beware that borders are not removed when you set a size value to very small.
-/// For example if you set size to 0 the table still be rendered but with all content removed.
-///
-/// Also be aware that it doesn't changes [crate::Padding] settings.
-///
-/// The function is color aware if a `color` feature is on.
-///
-/// ## Example
-///
-/// ```
-/// use tabled::{TotalWidth, Table};
-///
-/// let table = Table::new(&["Hello World!"]).with(TotalWidth::new(5));
-/// ```
-pub struct TotalWidth {
-    size: usize,
-    wrap: bool,
-    wrap_keeping_words: bool,
-}
+impl<S> TableOption for Truncate<S>
+where
+    S: AsRef<str>,
+{
+    fn change(&mut self, grid: &mut Grid) {
+        if grid.count_columns() == 0 || grid.count_rows() == 0 {
+            return;
+        }
 
-impl TotalWidth {
-    /// Creates a new instance of TotalWidth.
-    ///
-    /// Default truncate method is [Truncate].
-    pub fn new(size: usize) -> Self {
-        Self {
-            size,
-            wrap: false,
-            wrap_keeping_words: false,
+        let total_width = grid.total_width();
+        if total_width == self.width {
+            return;
+        }
+
+        if self.width < total_width {
+            decrease_total_width(grid, self.width, false, false);
         }
     }
+}
 
-    /// Set's a truncate logic to [Wrap].
-    pub fn wrap(mut self, keep_words: bool) -> Self {
-        self.wrap = true;
-        self.wrap_keeping_words = keep_words;
-        self
+impl TableOption for Wrap {
+    fn change(&mut self, grid: &mut Grid) {
+        if grid.count_columns() == 0 || grid.count_rows() == 0 {
+            return;
+        }
+
+        let total_width = grid.total_width();
+        if total_width == self.width {
+            return;
+        }
+
+        if self.width < total_width {
+            decrease_total_width(grid, self.width, true, self.keep_words);
+        }
     }
 }
 
-impl TableOption for TotalWidth {
+impl TableOption for MinWidth {
     fn change(&mut self, grid: &mut Grid) {
         if grid.count_columns() == 0 || grid.count_rows() == 0 {
             return;
@@ -467,8 +505,6 @@ impl TableOption for TotalWidth {
 
         if self.size > total_width {
             increase_total_width(grid, self.size);
-        } else {
-            decrease_total_width(grid, self.size, self.wrap, self.wrap_keeping_words);
         }
     }
 }
