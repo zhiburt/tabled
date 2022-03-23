@@ -5,7 +5,7 @@
 
 use tabled::{
     object::{Columns, Object, Rows},
-    Format, FormatFrom, FormatWithIndex, Modify, Style, Table, Tabled,
+    Format, FormatFrom, FormatWithIndex, Modify, Style, Table, Tabled, Trim,
 };
 
 #[derive(Tabled)]
@@ -32,6 +32,11 @@ fn main() {
             message: "reboot mobile capacitor",
             id: "6ffc2a2796229fc7bf59471ad907f58b897005d0",
         },
+        Commit {
+            header: " \n\n   XML\n\n\n",
+            message: "referred to second reading",
+            id: "G99c5b4568978fc7bf97531ad907f58d45300gh0",
+        },
     ];
 
     let table = Table::new(&data)
@@ -44,7 +49,8 @@ fn main() {
         .with(
             Modify::new(Columns::new(..1).not(Rows::new(..1)))
                 .with(Format(|s| format!("{}...", s))),
-        );
+        )
+        .with(Modify::new(Columns::single(1).not(Rows::new(..4))).with(Trim));
 
     println!("{}", table);
 }

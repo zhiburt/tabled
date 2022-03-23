@@ -170,3 +170,14 @@ impl<F: FnMut(&str, usize, usize) -> String> CellOption for FormatWithIndex<F> {
         grid.set(&Entity::Cell(row, column), Settings::new().text(content))
     }
 }
+
+
+pub struct Trim;
+
+impl CellOption for Trim {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        let content = grid.get_cell_content(row, column);
+        let content = content.trim().to_string();
+        grid.set(&Entity::Cell(row, column), Settings::new().text(content))
+    }
+}
