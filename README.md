@@ -332,10 +332,9 @@ Table::new(&data)
     .with(Modify::new(Rows::first()).with(str::to_lowercase));
 ```
 
-> <span style="color: red">IMPORTANT</span>: you may need to specify type in your lambda
+> IMPORTANT: you may need to specify type in your lambda
 
 #### Modifiers
-You can find more imformation about their usage in the documentation.
 
 - `FormatFrom` - Uses `Vec` elements as new content.
 - `FormatWithIndex` - Like `Format` but with `row` and `column` index in lambda.
