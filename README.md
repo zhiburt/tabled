@@ -28,6 +28,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
         * [Text in a top border](#Text-in-a-top-border)
     * [Alignment](#Alignment)
     * [Format](#Format)
+        * [Modifiers](#Modifiers)
     * [Padding](#Padding)
     * [Max width](#Max-width)
     * [Rotate](#Rotate)
@@ -331,12 +332,14 @@ Table::new(&data)
     .with(Modify::new(Rows::first()).with(str::to_lowercase));
 ```
 
-IMPORTANT: you may need to specify type in your lambda otherwise compiler may be disagreed to work :)
+> <span style="color: red">IMPORTANT</span>: you may need to specify type in your lambda
 
-There's 2 more Format modifiers. You can find more imformation about theire usage in the documentation.
+#### Modifiers
+You can find more imformation about their usage in the documentation.
 
 - `FormatFrom` - Uses `Vec` elements as new content.
 - `FormatWithIndex` - Like `Format` but with `row` and `column` index in lambda.
+- `Trim` - Removes leading and trailing whitespace from range of cells 
 
 ### Padding
 
