@@ -171,7 +171,37 @@ impl<F: FnMut(&str, usize, usize) -> String> CellOption for FormatWithIndex<F> {
     }
 }
 
-
+/// Removes leading and trailing whitespace from content of particular cells
+///
+/// # Example
+///
+/// ```
+/// use tabled::{Table, Trim, object::Rows, Modify};
+///
+/// let data = vec![
+///     (0, "  \n\n   Grodno\n\n\n", true),
+///     (1, "Minsk", true),
+///     (2, "Hamburg", false),
+///     (3, "Brest", true),
+/// ];
+///
+/// let table = Table::new(&data)
+///                .with(Modify::new(Rows::new(1..)).with(Trim))
+///                .to_string();
+///
+/// assert_eq!(table, "+-----+---------+-------+\n\
+///                    | i32 |  &str   | bool  |\n\
+///                    +-----+---------+-------+\n\
+///                    |  0  | Grodno  | true  |\n\
+///                    +-----+---------+-------+\n\
+///                    |  1  |  Minsk  | true  |\n\
+///                    +-----+---------+-------+\n\
+///                    |  2  | Hamburg | false |\n\
+///                    +-----+---------+-------+\n\
+///                    |  3  |  Brest  | true  |\n\
+///                    +-----+---------+-------+\n");
+/// ```
+///
 pub struct Trim;
 
 impl CellOption for Trim {
