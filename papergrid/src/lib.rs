@@ -806,10 +806,6 @@ pub enum AlignmentHorizontal {
 
 impl AlignmentHorizontal {
     fn align(&self, f: &mut std::fmt::Formatter<'_>, text: &str, width: usize) -> fmt::Result {
-        // it's important step
-        // we are ignoring trailing spaces which allows us to do alignment with more space
-        // example: tests::grid_2x2_alignment_test
-        let text = text.trim();
         let text_width = string_width(text);
         let diff = width - text_width;
         match self {

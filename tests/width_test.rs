@@ -169,7 +169,7 @@ fn max_width_wrapped_keep_words() {
         "| &str              |\n",
         "|-------------------|\n",
         "| this is a long    |\n",
-        "| sentence          |\n",
+        "|  sentence         |\n",
     );
 
     assert_eq!(table, expected);
@@ -423,7 +423,7 @@ fn min_width() {
         .to_string();
 
     let expected = concat!(
-        "|      N       |   column 0   |   column 1   |   column 2   |\n",
+        "| N            | column 0     | column 1     | column 2     |\n",
         "|--------------+--------------+--------------+--------------|\n",
         "|      0       |     0-0      |     0-1      |     0-2      |\n",
         "|      1       |     1-0      |     1-1      |     1-2      |\n",
@@ -461,7 +461,7 @@ fn min_width_one_column() {
         .to_string();
 
     let expected = concat!(
-        "|   N   | column 0 | column 1 | column 2 |\n",
+        "| N     | column 0 | column 1 | column 2 |\n",
         "|-------+----------+----------+----------|\n",
         "|   0   |   0-0    |   0-1    |   0-2    |\n",
         "|   1   |   1-0    |   1-1    |   1-2    |\n",
@@ -494,7 +494,7 @@ fn min_with_max_width() {
         .to_string();
 
     let expected = concat!(
-        "|  N  | col | col | col |\n",
+        "| N   | col | col | col |\n",
         "|-----+-----+-----+-----|\n",
         "|  0  | 0-0 | 0-1 | 0-2 |\n",
         "|  1  | 1-0 | 1-1 | 1-2 |\n",
@@ -514,7 +514,7 @@ fn min_with_max_width_truncate_suffix() {
         .to_string();
 
     let expected = concat!(
-        "|  N  | col... | col... | col... |\n",
+        "| N   | col... | col... | col... |\n",
         "|-----+--------+--------+--------|\n",
         "|  0  |  0-0   |  0-1   |  0-2   |\n",
         "|  1  |  1-0   |  1-1   |  1-2   |\n",
@@ -536,11 +536,11 @@ fn min_width_color() {
     ];
 
     let expected = concat!(
-        "|   String   |\n",
+        "| String     |\n",
         "|------------|\n",
-        "|    \u{1b}[31masd\u{1b}[0m     |\n",
-        "|    \u{1b}[34mzxc\u{1b}[0m     |\n",
-        "|   \u{1b}[32m\u{1b}[40masdasd\u{1b}[0m\u{1b}[0m   |\n",
+        "| \u{1b}[31masd\u{1b}[0m        |\n",
+        "| \u{1b}[34mzxc\u{1b}[0m        |\n",
+        "| \u{1b}[32m\u{1b}[40masdasd\u{1b}[0m\u{1b}[0m     |\n",
     );
 
     let table = Table::new(data)
@@ -580,11 +580,11 @@ fn total_width_big() {
         .to_string();
 
     let expected = concat!(
-        "|      N       |      column 0       |      column 1      |      column 2      |\n",
+        "| N            | column 0            | column 1           | column 2           |\n",
         "|--------------+---------------------+--------------------+--------------------|\n",
-        "|      0       |         0-0         |        0-1         |        0-2         |\n",
-        "|      1       |         1-0         |        1-1         |        1-2         |\n",
-        "|      2       |         2-0         |        2-1         |        2-2         |\n",
+        "| 0            |   0-0               |   0-1              |   0-2              |\n",
+        "| 1            |   1-0               |   1-1              |   1-2              |\n",
+        "| 2            |   2-0               |   2-1              |   2-2              |\n",
     );
 
     assert_eq!(table, expected);
@@ -602,12 +602,12 @@ fn total_width_big_with_panel() {
         .to_string();
 
     let expected = concat!(
-        "|                                 Hello World                                  |\n",
+        "|                            Hello World                                       |\n",
         "|--------------+---------------------+--------------------+--------------------|\n",
-        "|      N       |      column 0       |      column 1      |      column 2      |\n",
-        "|      0       |         0-0         |        0-1         |        0-2         |\n",
-        "|      1       |         1-0         |        1-1         |        1-2         |\n",
-        "|      2       |         2-0         |        2-1         |        2-2         |\n",
+        "| N            | column 0            | column 1           | column 2           |\n",
+        "| 0            |   0-0               |   0-1              |   0-2              |\n",
+        "| 1            |   1-0               |   1-1              |   1-2              |\n",
+        "| 2            |   2-0               |   2-1              |   2-2              |\n",
     );
 
     assert_eq!(table, expected);
@@ -715,7 +715,7 @@ fn total_width_small_with_panel_using_wrapping() {
         "| N | co | co | co |\n",
         "|   | lu | lu | lu |\n",
         "|   | mn | mn | mn |\n",
-        "|   | 0  | 1  | 2  |\n",
+        "|   |  0 |  1 |  2 |\n",
         "| 0 | 0- | 0- | 0- |\n",
         "|   | 0  | 1  | 2  |\n",
         "| 1 | 1- | 1- | 1- |\n",
