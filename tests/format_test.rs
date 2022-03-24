@@ -2,7 +2,7 @@ use crate::util::create_vector;
 use tabled::{
     multiline,
     object::{Cell, Columns, Full, Object, Rows},
-    Alignment, Format, FormatFrom, FormatWithIndex, Modify, Padding, Style, Table,
+    Alignment, Format, FormatFrom, FormatWithIndex, Modify, Padding, Style, Table, Trim,
 };
 
 mod util;
@@ -349,6 +349,75 @@ fn format_doesnt_change_padding() {
         "+-------+--------------+--------------+--------------+\n",
         "|   [2] |   [2-0]      |   [2-1]      |   [2-2]      |\n",
         "+-------+--------------+--------------+--------------+\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn format_trim_removes_leading_spaces() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Modify::new(Rows::first()).with(Format(|s| format!("      {}", s))))
+        .with(Modify::new(Full).with(Trim))
+        .to_string();
+
+    let expected = concat!(
+        "+---+----------+----------+----------+\n",
+        "| N | column 0 | column 1 | column 2 |\n",
+        "+---+----------+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |   0-2    |\n",
+        "+---+----------+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |   1-2    |\n",
+        "+---+----------+----------+----------+\n",
+        "| 2 |   2-0    |   2-1    |   2-2    |\n",
+        "+---+----------+----------+----------+\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn format_trim_removes_trailing_spaces() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Modify::new(Rows::first()).with(Format(|s| format!("{}              ", s))))
+        .with(Modify::new(Full).with(Trim))
+        .to_string();
+
+    let expected = concat!(
+        "+---+----------+----------+----------+\n",
+        "| N | column 0 | column 1 | column 2 |\n",
+        "+---+----------+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |   0-2    |\n",
+        "+---+----------+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |   1-2    |\n",
+        "+---+----------+----------+----------+\n",
+        "| 2 |   2-0    |   2-1    |   2-2    |\n",
+        "+---+----------+----------+----------+\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn format_trim_handles_escape_characters_correctly() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Modify::new(Rows::first()).with(Format(|s| format!("   \n \t \r      {}        \n\n\t\t\r\r      ", s))))
+        .with(Modify::new(Full).with(Trim))
+        .to_string();
+
+    let expected = concat!(
+        "+---+----------+----------+----------+\n",
+        "| N | column 0 | column 1 | column 2 |\n",
+        "+---+----------+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |   0-2    |\n",
+        "+---+----------+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |   1-2    |\n",
+        "+---+----------+----------+----------+\n",
+        "| 2 |   2-0    |   2-1    |   2-2    |\n",
+        "+---+----------+----------+----------+\n",
     );
 
     assert_eq!(table, expected);
