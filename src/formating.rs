@@ -171,7 +171,7 @@ impl<F: FnMut(&str, usize, usize) -> String> CellOption for FormatWithIndex<F> {
     }
 }
 
-/// Removes leading and trailing whitespace from content of particular cells
+/// Removes leading and trailing `White_Space` from content of particular cells
 ///
 /// # Example
 ///
