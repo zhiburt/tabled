@@ -11,6 +11,7 @@ use crate::CellOption;
 pub struct RenderSettings {
     alignment_policy: Option<AlignmentStrategy>,
     trim_policy: Option<TrimStrategy>,
+    tab_size: Option<usize>,
 }
 
 impl RenderSettings {
@@ -23,6 +24,19 @@ impl RenderSettings {
     /// Set a trim strategy.
     pub fn trim(mut self, policy: TrimStrategy) -> Self {
         self.trim_policy = Some(policy);
+        self
+    }
+
+    /// Set a tab size.
+    ///
+    /// The size is used in order to calculate width correctly.
+    ///
+    /// Default value is 4 (basically 1 '\t' equals 4 spaces).
+    ///
+    /// IMPORTANT: The tab character might be not present in output,
+    /// it might be replaced by spaces.
+    pub fn set_tab_size(mut self, n: usize) -> Self {
+        self.tab_size = Some(n);
         self
     }
 }
@@ -220,6 +234,10 @@ impl CellOption for RenderSettings {
                     formatting.horizontal_trim = false;
                 }
             }
+        }
+
+        if let &Some(n) = &self.tab_size {
+            formatting.tab_width = n;
         }
 
         grid.set(
