@@ -19,7 +19,7 @@ use crate::TableOption;
 /// ];
 ///
 /// let table = Table::new(&data)
-///                .with(Modify::new(Rows::new(1..)).with(Format(|s| format!(": {} :", s))))
+///                .with(Modify::new(Rows::new(1..)).with(Format::new(|s| format!(": {} :", s))))
 ///                .with(Extract::segment(1..=2, 1..))
 ///                .to_string();
 ///

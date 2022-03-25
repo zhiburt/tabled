@@ -54,10 +54,10 @@ fn main() {
         .with(Style::psql())
         .with(Modify::new(Rows::first()).with(Alignment::center_horizontal()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
-        .with(Modify::new(Columns::single(1)).with(Format(|s| s.blue().to_string())))
+        .with(Modify::new(Columns::single(1)).with(Format::new(|s| s.blue().to_string())))
         .with(
             Modify::new(Columns::single(0).and(Columns::new(2..)))
-                .with(Format(|s| s.red().to_string())),
+                .with(Format::new(|s| s.red().to_string())),
         );
 
     println!("{}", table);
