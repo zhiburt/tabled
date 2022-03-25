@@ -446,14 +446,14 @@ impl Grid {
 
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
-        let mut cells = self.collect_cells(count_rows, count_columns);
+        let cells = self.collect_cells(count_rows, count_columns);
         let mut styles = self.collect_styles(count_rows, count_columns);
         let split_borders = (0..count_rows)
             .map(|row| self.get_inner_split_line(row))
             .collect::<Vec<_>>();
 
         let widths = columns_width(
-            &mut cells,
+            &cells,
             &mut styles,
             &split_borders,
             count_rows,
@@ -567,18 +567,22 @@ impl Grid {
         }
     }
 
-    fn collect_cells(&self, count_rows: usize, count_columns: usize) -> Vec<Vec<Vec<&str>>> {
+    fn collect_cells(&self, count_rows: usize, count_columns: usize) -> Vec<Vec<Vec<String>>> {
         let mut rows = Vec::with_capacity(count_rows);
-        (0..count_rows).for_each(|row_index| {
-            let mut row = Vec::with_capacity(count_columns);
-            (0..count_columns).for_each(|column_index| {
-                let content = &self.cells[row_index][column_index];
+        (0..count_rows).for_each(|row| {
+            let mut cells = Vec::with_capacity(row);
+            (0..count_columns).for_each(|col| {
+                let mut content = self.cells[row][col].clone();
+
+                let style = self.style(&Entity::Cell(row, col));
+                replace_tab(&mut content, style.formatting.tab_width);
+
                 // fixme: I guess it can be done in a different place?
-                let cell: Vec<_> = content.lines().collect();
-                row.push(cell);
+                let lines: Vec<_> = content.lines().map(|l| l.to_owned()).collect();
+                cells.push(lines);
             });
 
-            rows.push(row);
+            rows.push(cells);
         });
 
         rows
@@ -765,6 +769,7 @@ impl Default for Style {
                 horizontal_trim: false,
                 vertical_trim: false,
                 allow_lines_alignement: false,
+                tab_width: 4,
             },
         }
     }
@@ -775,6 +780,7 @@ pub struct Formatting {
     pub horizontal_trim: bool,
     pub vertical_trim: bool,
     pub allow_lines_alignement: bool,
+    pub tab_width: usize,
 }
 
 #[derive(Default, Debug, Clone, Copy)]
@@ -1002,7 +1008,7 @@ impl std::fmt::Display for Grid {
             return Ok(());
         }
 
-        let mut cells = self.collect_cells(count_rows, count_columns);
+        let cells = self.collect_cells(count_rows, count_columns);
         let mut styles = self.collect_styles(count_rows, count_columns);
 
         let split_borders = (0..count_rows)
@@ -1011,7 +1017,7 @@ impl std::fmt::Display for Grid {
 
         let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
         let widths = columns_width(
-            &mut cells,
+            &cells,
             &mut styles,
             &split_borders,
             count_rows,
@@ -1055,7 +1061,7 @@ impl std::fmt::Display for Grid {
 #[allow(clippy::too_many_arguments)]
 fn build_row(
     f: &mut std::fmt::Formatter<'_>,
-    cell_contents: &[Vec<&str>],
+    cell_contents: &[Vec<String>],
     cell_styles: &[Style],
     cell_widths: &[usize],
     normal_widths: &[usize],
@@ -1086,7 +1092,7 @@ fn build_row(
 
 fn build_row_internals(
     f: &mut std::fmt::Formatter<'_>,
-    row: &[Vec<&str>],
+    row: &[Vec<String>],
     row_styles: &[Style],
     widths: &[usize],
     height: usize,
@@ -1111,7 +1117,7 @@ fn build_row_internals(
 fn build_row_internal_line(
     f: &mut std::fmt::Formatter<'_>,
     line_index: usize,
-    mut cell: &[&str],
+    mut cell: &[String],
     style: &Style,
     width: usize,
     height: usize,
@@ -1132,7 +1138,7 @@ fn build_row_internal_line(
         return repeat_char(f, style.padding.bottom.fill, width);
     }
 
-    let mut text = cell[cell_line_index];
+    let mut text = cell[cell_line_index].as_str();
 
     if style.formatting.horizontal_trim {
         text = text.trim();
@@ -1158,7 +1164,7 @@ fn build_row_internal_line(
     }
 }
 
-fn skip_empty_lines<'a, 'b>(cell: &'a [&'b str]) -> &'a [&'b str] {
+fn skip_empty_lines(cell: &[String]) -> &[String] {
     let count_lines = cell.len();
 
     let count_empty_lines_before_text = cell
@@ -1181,7 +1187,7 @@ fn skip_empty_lines<'a, 'b>(cell: &'a [&'b str]) -> &'a [&'b str] {
     &cell[text_start_pos..text_end_pos]
 }
 
-fn top_indent(cell: &[&str], style: &Style, height: usize) -> usize {
+fn top_indent(cell: &[String], style: &Style, height: usize) -> usize {
     let height = height - style.padding.top.size;
     let content_height = cell.len();
     let indent = style.alignment_v.top_ident(height, content_height);
@@ -1353,7 +1359,7 @@ fn real_string_width(text: &str) -> usize {
 }
 
 fn columns_width(
-    cells: &mut [Vec<Vec<&str>>],
+    cells: &[Vec<Vec<String>>],
     styles: &mut [Vec<Style>],
     borders: &[Vec<BorderLine>],
     count_rows: usize,
@@ -1619,13 +1625,13 @@ fn inc_cells_width(
         .for_each(|(_, i)| widths[i] += 1);
 }
 
-fn cell_width(cell: &[&str], style: &Style) -> usize {
+fn cell_width(cell: &[String], style: &Style) -> usize {
     let content_width = cell.iter().map(|l| string_width(l)).max().unwrap_or(0);
     content_width + style.padding.left.size + style.padding.right.size
 }
 
 fn rows_height(
-    cells: &[Vec<Vec<&str>>],
+    cells: &[Vec<Vec<String>>],
     styles: &[Vec<Style>],
     count_rows: usize,
     count_columns: usize,
@@ -1653,7 +1659,7 @@ fn rows_height(
     row_heights
 }
 
-fn cell_height(cell: &[&str], style: &Style) -> usize {
+fn cell_height(cell: &[String], style: &Style) -> usize {
     let content_height = cell.len();
     content_height + style.padding.top.size + style.padding.bottom.size
 }
@@ -1694,6 +1700,32 @@ fn normalized_width(
     }
 
     v
+}
+
+fn replace_tab(cell: &mut String, n: usize) -> &str {
+    let mut skip = 0;
+    while let &Some(pos) = &cell[skip..].find('\t') {
+        let pos = skip + pos;
+
+        let is_escaped = pos > 0 && cell.get(pos - 1..pos) == Some("\\");
+        if is_escaped {
+            skip = pos + 1;
+        } else if n == 0 {
+            cell.remove(pos);
+            skip = pos;
+        } else {
+            // I'am not sure which version is faster a loop of 'replace'
+            // or allacation of a string for replacement;
+            cell.replace_range(pos..pos + 1, &" ".repeat(n));
+            skip = pos + 1;
+        }
+
+        if cell.is_empty() || skip >= cell.len() {
+            break;
+        }
+    }
+
+    cell
 }
 
 #[derive(Debug)]
@@ -2033,6 +2065,24 @@ fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn replace_tab_test() {
+        assert_eq!(
+            replace_tab(&mut "123\t\tabc\t".to_owned(), 3),
+            "123      abc   "
+        );
+
+        assert_eq!(replace_tab(&mut "\t".to_owned(), 0), "");
+        assert_eq!(replace_tab(&mut "\t".to_owned(), 3), "   ");
+        assert_eq!(replace_tab(&mut "123\tabc".to_owned(), 3), "123   abc");
+        assert_eq!(replace_tab(&mut "123\tabc\tzxc".to_owned(), 0), "123abczxc");
+
+        assert_eq!(replace_tab(&mut "\\t".to_owned(), 0), "\\t");
+        assert_eq!(replace_tab(&mut "\\t".to_owned(), 4), "\\t");
+        assert_eq!(replace_tab(&mut "123\\tabc".to_owned(), 0), "123\\tabc");
+        assert_eq!(replace_tab(&mut "123\\tabc".to_owned(), 4), "123\\tabc");
+    }
 
     #[test]
     fn string_width_emojie_test() {
