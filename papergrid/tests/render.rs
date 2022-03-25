@@ -137,16 +137,15 @@ fn render_multilane_alignment() {
          |                  cell                  |         |\n\
          +----------------------------------------+---------+\n\
          |the second column got the beginning here| and here|\n\
-         |                                        |       we|\n\
-         |                                        |      see|\n\
-         |                                        |        a|\n\
-         |                                        |     long|\n\
-         |                                        |   string|\n\
+         |                                        | we      |\n\
+         |                                        | see     |\n\
+         |                                        | a       |\n\
+         |                                        | long    |\n\
+         |                                        | string  |\n\
          +----------------------------------------+---------+\n"
     );
 
-    let actual = grid.to_string();
-    assert_eq!(expected, actual);
+    assert_eq!(grid.to_string(), expected);
 }
 
 #[test]
@@ -179,16 +178,15 @@ fn render_multilane_vertical_alignment() {
          |                  cell                  |         |\n\
          +----------------------------------------+---------+\n\
          |                                        | and here|\n\
-         |                                        |       we|\n\
-         |the second column got the beginning here|      see|\n\
-         |                                        |        a|\n\
-         |                                        |     long|\n\
-         |                                        |   string|\n\
+         |                                        | we      |\n\
+         |the second column got the beginning here| see     |\n\
+         |                                        | a       |\n\
+         |                                        | long    |\n\
+         |                                        | string  |\n\
          +----------------------------------------+---------+\n"
     );
 
-    let actual = grid.to_string();
-    assert_eq!(expected, actual);
+    assert_eq!(grid.to_string(), expected);
 }
 
 #[test]

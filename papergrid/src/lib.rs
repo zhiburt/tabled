@@ -770,7 +770,7 @@ impl Default for Style {
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct Formatting {
     pub horizontal_trim: bool,
     pub vertical_trim: bool,
@@ -984,8 +984,8 @@ impl Settings {
     }
 
     /// Set a formatting settings.
-    /// 
-    /// It overades them even if any were not set. 
+    ///
+    /// It overades them even if any were not set.
     pub fn formatting(mut self, formatting: Formatting) -> Self {
         self.formatting = Some(formatting);
         self
@@ -1117,12 +1117,7 @@ fn build_row_internal_line(
     height: usize,
 ) -> fmt::Result {
     if style.formatting.vertical_trim {
-        let prev_empty_lines = cell
-            .iter()
-            .take_while(|line| line.trim().is_empty())
-            .count();
-
-        cell = &cell[prev_empty_lines..];
+        cell = skip_empty_lines(cell);
     }
 
     let top_indent = top_indent(cell, style, height);
@@ -1161,6 +1156,29 @@ fn build_row_internal_line(
 
         line_with_width(f, text, width, max_line_width, style)
     }
+}
+
+fn skip_empty_lines<'a, 'b>(cell: &'a [&'b str]) -> &'a [&'b str] {
+    let count_lines = cell.len();
+
+    let count_empty_lines_before_text = cell
+        .iter()
+        .take_while(|line| line.trim().is_empty())
+        .count();
+    if count_empty_lines_before_text == count_lines {
+        return &[];
+    }
+
+    let empty_lines_at_end = cell
+        .iter()
+        .rev()
+        .take_while(|line| line.trim().is_empty())
+        .count();
+
+    let text_start_pos = count_empty_lines_before_text;
+    let text_end_pos = cell.len() - empty_lines_at_end;
+
+    &cell[text_start_pos..text_end_pos]
 }
 
 fn top_indent(cell: &[&str], style: &Style, height: usize) -> usize {

@@ -36,7 +36,7 @@ pub enum TrimStrategy {
 
 impl CellOption for RenderSettings {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut formatting = grid.style(&Entity::Cell(row, column)).formatting.clone();
+        let mut formatting = grid.style(&Entity::Cell(row, column)).formatting;
 
         if let Some(policy) = &self.alignment_policy {
             match policy {
