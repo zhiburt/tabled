@@ -1,8 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
-    multiline,
     object::{Cell, Columns, Full, Object, Rows},
-    Alignment, Format, FormatFrom, FormatWithIndex, Modify, Padding, Style, Table,
+    Alignment, Format, Modify, Padding, Style, Table,
 };
 
 mod util;
@@ -11,7 +10,7 @@ mod util;
 fn formatting_full_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
+        .with(Modify::new(Full).with(Format::new(|s| format!("[{}]", s))))
         .to_string();
 
     let expected = concat!(
@@ -34,7 +33,7 @@ fn formatting_head_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Rows::first()).with(Format(|s| format!(":{}", s))))
+        .with(Modify::new(Rows::first()).with(Format::new(|s| format!(":{}", s))))
         .to_string();
 
     let expected = concat!(
@@ -53,7 +52,7 @@ fn formatting_row_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Rows::new(1..)).with(Format(|s| format!("<{}>", s))))
+        .with(Modify::new(Rows::new(1..)).with(Format::new(|s| format!("<{}>", s))))
         .to_string();
 
     let expected = concat!(
@@ -72,7 +71,7 @@ fn formatting_column_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Columns::single(0)).with(Format(|s| format!("(x) {}", s))))
+        .with(Modify::new(Columns::single(0)).with(Format::new(|s| format!("(x) {}", s))))
         .to_string();
     let expected = concat!(
         " (x) N | column 0 | column 1 | column 2 \n",
@@ -93,7 +92,7 @@ fn formatting_multiline_test() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Format(multiline(|s| format!("(x) {}", s)))))
+        .with(Modify::new(Full).with(Format::multiline(|s| format!("(x) {}", s))))
         .to_string();
 
     let expected = concat!(
@@ -120,9 +119,9 @@ fn formatting_cell_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Cell(0, 0)).with(Format(|s| format!("(x) {}", s))))
-        .with(Modify::new(Cell(0, 1)).with(Format(|s| format!("(x) {}", s))))
-        .with(Modify::new(Cell(0, 2)).with(Format(|s| format!("(x) {}", s))))
+        .with(Modify::new(Cell(0, 0)).with(Format::new(|s| format!("(x) {}", s))))
+        .with(Modify::new(Cell(0, 1)).with(Format::new(|s| format!("(x) {}", s))))
+        .with(Modify::new(Cell(0, 2)).with(Format::new(|s| format!("(x) {}", s))))
         .to_string();
 
     let expected = concat!(
@@ -143,7 +142,7 @@ fn formatting_and_combination_test() {
         .with(Style::psql())
         .with(
             Modify::new(Columns::single(0).and(Rows::single(0)))
-                .with(Format(|s| format!("(x) {}", s))),
+                .with(Format::new(|s| format!("(x) {}", s))),
         )
         .to_string();
 
@@ -165,7 +164,7 @@ fn formatting_not_combination_test() {
         .with(Style::psql())
         .with(
             Modify::new(Columns::single(0).and(Rows::single(0)).not(Cell(0, 0)))
-                .with(Format(|s| format!("(x) {}", s))),
+                .with(Format::new(|s| format!("(x) {}", s))),
         )
         .to_string();
 
@@ -219,35 +218,12 @@ fn formatting_using_function_test() {
 }
 
 #[test]
-fn format_from() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(Modify::new(Rows::first()).with(FormatFrom(vec![
-            "Header Name 1",
-            "Header Name 2",
-            "Header Name 3",
-        ])))
-        .to_string();
-
-    let expected = concat!(
-        "| Header Name 1 | Header Name 2 | Header Name 3 | column 2 |\n",
-        "|---------------+---------------+---------------+----------|\n",
-        "|       0       |      0-0      |      0-1      |   0-2    |\n",
-        "|       1       |      1-0      |      1-1      |   1-2    |\n",
-        "|       2       |      2-0      |      2-1      |   2-2    |\n",
-    );
-
-    assert_eq!(table, expected);
-}
-
-#[test]
 fn format_with_index() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(
-            Modify::new(Rows::first()).with(FormatWithIndex(|a, b, c| match (b, c) {
+            Modify::new(Rows::first()).with(Format::with_index(|a, (b, c)| match (b, c) {
                 (0, 0) => "(0, 0)".to_string(),
                 (0, 1) => "(0, 1)".to_string(),
                 (0, 2) => "(0, 2)".to_string(),
@@ -280,9 +256,9 @@ mod color {
             .with(Style::psql())
             .with(
                 Modify::new(Columns::new(..1).and(Columns::new(2..)))
-                    .with(Format(|s| s.red().to_string())),
+                    .with(Format::new(|s| s.red().to_string())),
             )
-            .with(Modify::new(Columns::new(1..2)).with(Format(|s| s.blue().to_string())))
+            .with(Modify::new(Columns::new(1..2)).with(Format::new(|s| s.blue().to_string())))
             .to_string();
 
         let expected = concat!(
@@ -305,9 +281,9 @@ mod color {
 
         let table = Table::new(&data)
             .with(Style::psql())
-            .with(Modify::new(Columns::new(..1)).with(Format(multiline(|s| s.red().to_string()))))
-            .with(Modify::new(Columns::new(1..2)).with(Format(multiline(|s| s.blue().to_string()))))
-            .with(Modify::new(Columns::new(2..)).with(Format(multiline(|s| s.green().to_string()))))
+            .with(Modify::new(Columns::new(..1)).with(Format::multiline(|s| s.red().to_string())))
+            .with(Modify::new(Columns::new(1..2)).with(Format::multiline(|s| s.blue().to_string())))
+            .with(Modify::new(Columns::new(2..)).with(Format::multiline(|s| s.green().to_string())))
             .to_string();
 
         let expected = concat!(
@@ -336,7 +312,7 @@ fn format_doesnt_change_padding() {
     let table = Table::new(&data)
         .with(Modify::new(Full).with(Alignment::left()))
         .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Full).with(Format(|s| format!("[{}]", s))))
+        .with(Modify::new(Full).with(Format::new(|s| format!("[{}]", s))))
         .to_string();
 
     let expected = concat!(

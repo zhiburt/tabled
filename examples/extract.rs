@@ -68,7 +68,7 @@ fn main() {
     println!("Refinished segment");
     let table = table
         .with(Style::modern())
-        .with(Modify::new(Columns::new(1..)).with(Format(|s| {
+        .with(Modify::new(Columns::new(1..)).with(Format::new(|s| {
             if s == "Outstanding" {
                 format!("+{}+", s)
             } else {

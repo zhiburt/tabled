@@ -317,8 +317,8 @@ The `Format` function provides an interface for a modification of cells.
 use tabled::{Table, Modify, Format, object::{Rows, Columns}};
 
 Table::new(&data)
-    .with(Modify::new(Rows::first()).with(Format(|s| format!("Head {}", s))));
-    .with(Modify::new(Columns::new(1..=2)).with(Format(|s| format!("<< {} >>", s))))
+    .with(Modify::new(Rows::first()).with(Format::new(|s| format!("Head {}", s))));
+    .with(Modify::new(Columns::new(1..=2)).with(Format::new(|s| format!("<< {} >>", s))))
 ```
 
 It's also possible to use functions with signature `Fn(&str) -> String` as a formatter.
@@ -332,11 +332,6 @@ Table::new(&data)
 ```
 
 IMPORTANT: you may need to specify type in your lambda otherwise compiler may be disagreed to work :)
-
-There's 2 more Format modifiers. You can find more imformation about theire usage in the documentation.
-
-- `FormatFrom` - Uses `Vec` elements as new content.
-- `FormatWithIndex` - Like `Format` but with `row` and `column` index in lambda.
 
 ### Padding
 
@@ -723,9 +718,9 @@ use tabled::{Table, Modify, Style, Format, object::Columns};
 
 Table::new(&data)
     .with(Style::psql())
-    .with(Modify::new(Columns::single(0)).with(Format(|s| s.red().to_string())))
-    .with(Modify::new(Columns::single(1)).with(Format(|s| s.blue().to_string())))
-    .with(Modify::new(Columns::new(2..)).with(Format(|s| s.green().to_string())));
+    .with(Modify::new(Columns::single(0)).with(Format::new(|s| s.red().to_string())))
+    .with(Modify::new(Columns::single(1)).with(Format::new(|s| s.blue().to_string())))
+    .with(Modify::new(Columns::new(2..)).with(Format::new(|s| s.green().to_string())));
 ```
 
 ![carbon-2](https://user-images.githubusercontent.com/20165848/120526301-b95efc80-c3e1-11eb-8779-0ec48894463b.png)
