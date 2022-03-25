@@ -170,6 +170,7 @@ pub mod builder;
 pub mod display;
 pub mod object;
 pub mod style;
+pub mod render_settings;
 
 pub use crate::{
     alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::*, padding::*,
