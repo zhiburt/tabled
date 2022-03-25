@@ -340,11 +340,11 @@ fn span_multiline() {
         " 0 |   0-0    |   0-1    |   0-2    \n",
         " 1 |   1-0    |   1-1    |   1-2    \n",
         " 2 |   2-0    |      https://       \n",
-        "   |          |         www         \n",
-        "   |          |          .          \n",
-        "   |          |       redhat        \n",
-        "   |          |        .com         \n",
-        "   |          |         /en         \n",
+        "   |          |      www            \n",
+        "   |          |      .              \n",
+        "   |          |      redhat         \n",
+        "   |          |      .com           \n",
+        "   |          |      /en            \n",
     );
 
     assert_eq!(table, expected);

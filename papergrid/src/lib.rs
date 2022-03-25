@@ -133,6 +133,10 @@ impl Grid {
             self.style_mut(entity).span = span;
         }
 
+        if let Some(formatting) = settings.formatting {
+            self.style_mut(entity).formatting = formatting;
+        }
+
         if let Some(border) = settings.border {
             if settings.border_split_check {
                 self.add_split_lines(entity.clone(), &border);
@@ -743,21 +747,34 @@ pub enum Entity {
 
 #[derive(Debug, Clone)]
 pub struct Style {
+    pub span: usize,
     pub padding: Padding,
     pub alignment_h: AlignmentHorizontal,
     pub alignment_v: AlignmentVertical,
-    pub span: usize,
+    pub formatting: Formatting,
 }
 
 impl Default for Style {
     fn default() -> Self {
         Self {
+            span: 1,
+            padding: Padding::default(),
             alignment_h: AlignmentHorizontal::Left,
             alignment_v: AlignmentVertical::Top,
-            padding: Padding::default(),
-            span: 1,
+            formatting: Formatting {
+                horizontal_trim: false,
+                vertical_trim: false,
+                allow_lines_alignement: false,
+            },
         }
     }
+}
+
+#[derive(Debug, Default, Clone, Copy)]
+pub struct Formatting {
+    pub horizontal_trim: bool,
+    pub vertical_trim: bool,
+    pub allow_lines_alignement: bool,
 }
 
 #[derive(Default, Debug, Clone, Copy)]
@@ -830,6 +847,48 @@ impl AlignmentHorizontal {
             }
         }
     }
+
+    fn align_with_max_width(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        text: &str,
+        width: usize,
+        max_text_width: usize,
+    ) -> fmt::Result {
+        let max_diff = width - max_text_width;
+        let text_width = string_width(text);
+        let diff = width - text_width;
+        match self {
+            AlignmentHorizontal::Left => {
+                write!(f, "{text}{: <1$}", "", diff, text = text)
+            }
+            AlignmentHorizontal::Right => {
+                let rest = diff - max_diff;
+                write!(
+                    f,
+                    "{: <left$}{text}{: <right$}",
+                    "",
+                    "",
+                    left = max_diff,
+                    right = rest,
+                    text = text
+                )
+            }
+            AlignmentHorizontal::Center => {
+                let left = max_diff / 2;
+                let rest = diff - left;
+                write!(
+                    f,
+                    "{: <left$}{text}{: <right$}",
+                    "",
+                    "",
+                    left = left,
+                    right = rest,
+                    text = text
+                )
+            }
+        }
+    }
 }
 
 /// AlignmentVertical represents an vertical aligment of a cell content.
@@ -855,11 +914,12 @@ impl AlignmentVertical {
 pub struct Settings {
     text: Option<String>,
     padding: Option<Padding>,
-    alignment_h: Option<AlignmentHorizontal>,
-    alignment_v: Option<AlignmentVertical>,
-    span: Option<usize>,
     border: Option<Border>,
     border_split_check: bool,
+    span: Option<usize>,
+    alignment_h: Option<AlignmentHorizontal>,
+    alignment_v: Option<AlignmentVertical>,
+    formatting: Option<Formatting>,
 }
 
 impl Settings {
@@ -920,6 +980,14 @@ impl Settings {
     /// Set a split lines check.
     pub fn border_restriction(mut self, strict: bool) -> Self {
         self.border_split_check = !strict;
+        self
+    }
+
+    /// Set a formatting settings.
+    ///
+    /// It overades them even if any were not set.
+    pub fn formatting(mut self, formatting: Formatting) -> Self {
+        self.formatting = Some(formatting);
         self
     }
 }
@@ -1043,11 +1111,15 @@ fn build_row_internals(
 fn build_row_internal_line(
     f: &mut std::fmt::Formatter<'_>,
     line_index: usize,
-    cell: &[&str],
+    mut cell: &[&str],
     style: &Style,
     width: usize,
     height: usize,
 ) -> fmt::Result {
+    if style.formatting.vertical_trim {
+        cell = skip_empty_lines(cell);
+    }
+
     let top_indent = top_indent(cell, style, height);
     if top_indent > line_index {
         return repeat_char(f, style.padding.top.fill, width);
@@ -1060,22 +1132,60 @@ fn build_row_internal_line(
         return repeat_char(f, style.padding.bottom.fill, width);
     }
 
-    let line_text = cell[cell_line_index];
-    line(
-        f,
-        line_text,
-        width,
-        style.padding.left,
-        style.padding.right,
-        style.alignment_h,
-    )
+    let mut text = cell[cell_line_index];
+
+    if style.formatting.horizontal_trim {
+        text = text.trim();
+    }
+
+    if style.formatting.allow_lines_alignement {
+        line(f, text, width, style)
+    } else {
+        let max_line_width = cell
+            .iter()
+            .map(|line| {
+                if style.formatting.horizontal_trim {
+                    line.trim()
+                } else {
+                    line
+                }
+            })
+            .map(string_width)
+            .max()
+            .unwrap_or(0);
+
+        line_with_width(f, text, width, max_line_width, style)
+    }
+}
+
+fn skip_empty_lines<'a, 'b>(cell: &'a [&'b str]) -> &'a [&'b str] {
+    let count_lines = cell.len();
+
+    let count_empty_lines_before_text = cell
+        .iter()
+        .take_while(|line| line.trim().is_empty())
+        .count();
+    if count_empty_lines_before_text == count_lines {
+        return &[];
+    }
+
+    let empty_lines_at_end = cell
+        .iter()
+        .rev()
+        .take_while(|line| line.trim().is_empty())
+        .count();
+
+    let text_start_pos = count_empty_lines_before_text;
+    let text_end_pos = cell.len() - empty_lines_at_end;
+
+    &cell[text_start_pos..text_end_pos]
 }
 
 fn top_indent(cell: &[&str], style: &Style, height: usize) -> usize {
     let height = height - style.padding.top.size;
-    let content_height =
-        cell_height(cell, style) - style.padding.top.size - style.padding.bottom.size;
+    let content_height = cell.len();
     let indent = style.alignment_v.top_ident(height, content_height);
+
     indent + style.padding.top.size
 }
 
@@ -1088,17 +1198,38 @@ fn repeat_char(f: &mut std::fmt::Formatter<'_>, c: char, n: usize) -> fmt::Resul
     Ok(())
 }
 
-fn line(
-    f: &mut std::fmt::Formatter<'_>,
-    text: &str,
-    width: usize,
-    left_indent: Indent,
-    right_indent: Indent,
-    alignment: AlignmentHorizontal,
-) -> fmt::Result {
+fn line(f: &mut std::fmt::Formatter<'_>, text: &str, width: usize, style: &Style) -> fmt::Result {
+    let left_indent = style.padding.left;
+    let right_indent = style.padding.right;
+    let alignment = style.alignment_h;
+
     repeat_char(f, left_indent.fill, left_indent.size)?;
     alignment.align(f, text, width - left_indent.size - right_indent.size)?;
     repeat_char(f, right_indent.fill, right_indent.size)?;
+
+    Ok(())
+}
+
+fn line_with_width(
+    f: &mut std::fmt::Formatter<'_>,
+    text: &str,
+    width: usize,
+    width_text: usize,
+    style: &Style,
+) -> fmt::Result {
+    let left_indent = style.padding.left;
+    let right_indent = style.padding.right;
+    let alignment = style.alignment_h;
+
+    repeat_char(f, left_indent.fill, left_indent.size)?;
+    alignment.align_with_max_width(
+        f,
+        text,
+        width - left_indent.size - right_indent.size,
+        width_text,
+    )?;
+    repeat_char(f, right_indent.fill, right_indent.size)?;
+
     Ok(())
 }
 

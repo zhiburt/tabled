@@ -91,16 +91,16 @@ fn vertical_alignment_test() {
         " N | column 0 | column 1 | column 2 \n",
         "---+----------+----------+----------\n",
         " 0 |   0-0    |   0-1    |   0-2    \n",
-        " 1 |          |    E     |          \n",
+        " 1 |          |   E      |          \n",
         "   |          |   nde    |          \n",
         "   |          |   avou   |          \n",
         "   |   1-0    |   ros    |   1-2    \n",
         " 2 |          |          | https:// \n",
-        "   |          |          |   www    \n",
-        "   |          |          |    .     \n",
-        "   |          |          |  redhat  \n",
-        "   |          |   Red    |   .com   \n",
-        "   |   2-0    |   Hat    |   /en    \n",
+        "   |          |          | www      \n",
+        "   |          |          | .        \n",
+        "   |          |          | redhat   \n",
+        "   |          |   Red    | .com     \n",
+        "   |   2-0    |   Hat    | /en      \n",
     );
 
     assert_eq!(table, expected);

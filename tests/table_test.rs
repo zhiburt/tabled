@@ -690,8 +690,8 @@ fn table_emojie_multiline() {
     "+------------------------------------+-----------------+-------------------------------+--------+\n\
      |                name                |     author      |             text              | rating |\n\
      +------------------------------------+-----------------+-------------------------------+--------+\n\
-     | Rebase vs Merge commit in depth 👋 | Rose Kuphal DVM |          A multiline          |   43   |\n\
-     |                                    |                 |     text with 🤯 😳 🥵 🥶     |        |\n\
+     | Rebase vs Merge commit in depth 👋 | Rose Kuphal DVM | A multiline                   |   43   |\n\
+     |                                    |                 |  text with 🤯 😳 🥵 🥶        |        |\n\
      |                                    |                 |  a bunch of emojies ☄\u{fe0f} 💥 🔥 🌪 |        |\n\
      +------------------------------------+-----------------+-------------------------------+--------+\n\
      |           Keep it simple           |     Unknown     |              🍳               |  100   |\n\
