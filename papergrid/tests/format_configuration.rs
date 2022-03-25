@@ -903,3 +903,147 @@ fn formatting_empty_test() {
 
     assert_eq!(grid.to_string(), "");
 }
+
+#[test]
+fn formatting_1x1_test() {
+    let json = r#"
+{
+    "id": "0001",
+    "batters": {
+        "batter": [
+            { "id": "1002", "type": "Chocolate" },
+        ]
+    },
+    "topping": [
+        { "id": "5003", "type": "Chocolate" },
+        { "id": "5004", "type": "Maple" }
+    ]
+}"#;
+
+    let mut grid = util::new_grid::<1, 1>();
+    grid.set(
+        &Entity::Cell(0, 0),
+        Settings::new()
+            .text(json)
+            .alignment(AlignmentHorizontal::Left),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        vec![
+            r#"+--------------------------------------------------+"#,
+            r#"|                                                  |"#,
+            r#"|{                                                 |"#,
+            r#"|    "id": "0001",                                 |"#,
+            r#"|    "batters": {                                  |"#,
+            r#"|        "batter": [                               |"#,
+            r#"|            { "id": "1002", "type": "Chocolate" },|"#,
+            r#"|        ]                                         |"#,
+            r#"|    },                                            |"#,
+            r#"|    "topping": [                                  |"#,
+            r#"|        { "id": "5003", "type": "Chocolate" },    |"#,
+            r#"|        { "id": "5004", "type": "Maple" }         |"#,
+            r#"|    ]                                             |"#,
+            r#"|}                                                 |"#,
+            r#"+--------------------------------------------------+"#,
+        ]
+        .join("\n")
+            + "\n"
+    );
+
+    grid.set(
+        &Entity::Cell(0, 0),
+        Settings::new().formatting(Formatting {
+            allow_lines_alignement: true,
+            horizontal_trim: false,
+            vertical_trim: false,
+        }),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        vec![
+            r#"+--------------------------------------------------+"#,
+            r#"|                                                  |"#,
+            r#"|{                                                 |"#,
+            r#"|    "id": "0001",                                 |"#,
+            r#"|    "batters": {                                  |"#,
+            r#"|        "batter": [                               |"#,
+            r#"|            { "id": "1002", "type": "Chocolate" },|"#,
+            r#"|        ]                                         |"#,
+            r#"|    },                                            |"#,
+            r#"|    "topping": [                                  |"#,
+            r#"|        { "id": "5003", "type": "Chocolate" },    |"#,
+            r#"|        { "id": "5004", "type": "Maple" }         |"#,
+            r#"|    ]                                             |"#,
+            r#"|}                                                 |"#,
+            r#"+--------------------------------------------------+"#,
+        ]
+        .join("\n")
+            + "\n"
+    );
+
+    grid.set(
+        &Entity::Cell(0, 0),
+        Settings::new().formatting(Formatting {
+            allow_lines_alignement: true,
+            horizontal_trim: true,
+            vertical_trim: false,
+        }),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        vec![
+            r#"+--------------------------------------------------+"#,
+            r#"|                                                  |"#,
+            r#"|{                                                 |"#,
+            r#"|"id": "0001",                                     |"#,
+            r#"|"batters": {                                      |"#,
+            r#"|"batter": [                                       |"#,
+            r#"|{ "id": "1002", "type": "Chocolate" },            |"#,
+            r#"|]                                                 |"#,
+            r#"|},                                                |"#,
+            r#"|"topping": [                                      |"#,
+            r#"|{ "id": "5003", "type": "Chocolate" },            |"#,
+            r#"|{ "id": "5004", "type": "Maple" }                 |"#,
+            r#"|]                                                 |"#,
+            r#"|}                                                 |"#,
+            r#"+--------------------------------------------------+"#,
+        ]
+        .join("\n")
+            + "\n"
+    );
+
+    grid.set(
+        &Entity::Cell(0, 0),
+        Settings::new().formatting(Formatting {
+            allow_lines_alignement: true,
+            horizontal_trim: true,
+            vertical_trim: true,
+        }),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        vec![
+            r#"+--------------------------------------------------+"#,
+            r#"|{                                                 |"#,
+            r#"|"id": "0001",                                     |"#,
+            r#"|"batters": {                                      |"#,
+            r#"|"batter": [                                       |"#,
+            r#"|{ "id": "1002", "type": "Chocolate" },            |"#,
+            r#"|]                                                 |"#,
+            r#"|},                                                |"#,
+            r#"|"topping": [                                      |"#,
+            r#"|{ "id": "5003", "type": "Chocolate" },            |"#,
+            r#"|{ "id": "5004", "type": "Maple" }                 |"#,
+            r#"|]                                                 |"#,
+            r#"|}                                                 |"#,
+            r#"|                                                  |"#,
+            r#"+--------------------------------------------------+"#,
+        ]
+        .join("\n")
+            + "\n"
+    );
+}
