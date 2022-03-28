@@ -442,23 +442,19 @@ impl Grid {
 
     /// Returns a total width of table, including split lines.
     pub fn total_width(&self) -> usize {
-        // can be simplified? by just getting a split line chars().count()
-
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
+        if count_rows == 0 || count_columns == 0 {
+            return 0;
+        }
+
         let cells = self.collect_cells(count_rows, count_columns);
-        let mut styles = self.collect_styles(count_rows, count_columns);
+        let styles = self.collect_styles(count_rows, count_columns);
         let split_borders = (0..count_rows)
             .map(|row| self.get_inner_split_line(row))
             .collect::<Vec<_>>();
 
-        let widths = columns_width(
-            &cells,
-            &mut styles,
-            &split_borders,
-            count_rows,
-            count_columns,
-        );
+        let widths = columns_width(&cells, &styles, &split_borders, count_rows, count_columns);
 
         let content_width = widths
             .into_iter()
@@ -469,19 +465,7 @@ impl Grid {
         let count_borders = split_borders
             .into_iter()
             .next()
-            .map(|row| {
-                let left_border = row
-                    .get(0)
-                    .map_or(0, |b| if b.connector1.is_some() { 1 } else { 0 });
-                let other_borders = row
-                    .into_iter()
-                    .enumerate()
-                    .filter(|&(col, _)| is_cell_visible(&styles[0], col))
-                    .filter(|(_, b)| b.connector2.is_some())
-                    .count();
-
-                left_border + other_borders
-            })
+            .map(|row| count_borders(&row, &styles[0]))
             .unwrap_or(0);
 
         content_width + count_borders
@@ -600,6 +584,8 @@ impl Grid {
             rows.push(row);
         });
 
+        fix_styles(&mut rows);
+
         rows
     }
 
@@ -610,6 +596,18 @@ impl Grid {
     fn get_inner_split_line(&self, index: usize) -> Vec<BorderLine> {
         self.borders.get_inner_row(index).unwrap()
     }
+}
+
+fn count_borders(row: &[BorderLine], styles: &[Style]) -> usize {
+    let left_border = row.get(0).map_or(0, |b| b.connector1.iter().count());
+    let other_borders = row
+        .into_iter()
+        .enumerate()
+        .filter(|&(col, _)| is_cell_visible(&styles, col))
+        .filter(|(_, b)| b.connector2.is_some())
+        .count();
+
+    left_border + other_borders
 }
 
 #[derive(Debug, Clone, Default)]
@@ -1003,62 +1001,63 @@ impl std::fmt::Display for Grid {
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
 
-        // It may happen when all cells removed via `remove_row`, `remove_column` methods
         if count_rows == 0 || count_columns == 0 {
             return Ok(());
         }
 
         let cells = self.collect_cells(count_rows, count_columns);
-        let mut styles = self.collect_styles(count_rows, count_columns);
+        let styles = self.collect_styles(count_rows, count_columns);
 
         let split_borders = (0..count_rows)
             .map(|row| self.get_inner_split_line(row))
             .collect::<Vec<_>>();
 
         let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
-        let widths = columns_width(
-            &cells,
-            &mut styles,
-            &split_borders,
-            count_rows,
-            count_columns,
-        );
+        let widths = columns_width(&cells, &styles, &split_borders, count_rows, count_columns);
 
         let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
 
-        for row in 0..count_rows {
-            let inner_border = self.get_inner_split_line(row);
-            let top_border = if row == 0 {
-                Some((
-                    self.get_split_line(row),
-                    self.override_split_lines.get(&row),
-                ))
-            } else {
-                None
-            };
-            let bottom_border = Some((
-                self.get_split_line(row + 1),
-                self.override_split_lines.get(&(row + 1)),
-            ));
-
-            build_row(
-                f,
-                &cells[row],
-                &styles[row],
-                &widths[row],
-                &normal_widths,
-                row_heights[row],
-                inner_border,
-                top_border,
-                bottom_border,
-            )?;
-        }
+        print_grid(
+            f,
+            count_rows,
+            cells,
+            styles,
+            widths,
+            normal_widths,
+            row_heights,
+            &self,
+        )?;
 
         Ok(())
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+fn print_grid(
+    f: &mut fmt::Formatter,
+    count_rows: usize,
+    cells: Vec<Vec<Vec<String>>>,
+    styles: Vec<Vec<Style>>,
+    widths: Vec<Vec<usize>>,
+    normal_widths: Vec<usize>,
+    row_heights: Vec<usize>,
+    grid: &Grid,
+) -> Result<(), fmt::Error> {
+    for row in 0..count_rows {
+        build_row(
+            f,
+            &cells[row],
+            &styles[row],
+            &widths[row],
+            &normal_widths,
+            row_heights[row],
+            grid,
+            row,
+        )?;
+    }
+
+    Ok(())
+}
+
 fn build_row(
     f: &mut std::fmt::Formatter<'_>,
     cell_contents: &[Vec<String>],
@@ -1066,15 +1065,17 @@ fn build_row(
     cell_widths: &[usize],
     normal_widths: &[usize],
     height: usize,
-    inner_border: Vec<BorderLine>,
-    top_border: Option<(Vec<BorderLine>, Option<&String>)>,
-    bottom_border: Option<(Vec<BorderLine>, Option<&String>)>,
+    grid: &Grid,
+    row: usize,
 ) -> fmt::Result {
-    if let Some((top_border, override_border)) = top_border {
-        build_split_line(f, normal_widths, &top_border, override_border)?;
+    if row == 0 {
+        let borders = grid.get_split_line(row);
+        let override_str = grid.override_split_lines.get(&row);
+        build_split_line(f, normal_widths, &borders, override_str)?;
     }
 
-    build_row_internals(
+    let inner_border = grid.get_inner_split_line(row);
+    build_row_cells(
         f,
         cell_contents,
         cell_styles,
@@ -1083,38 +1084,31 @@ fn build_row(
         &inner_border,
     )?;
 
-    if let Some((bottom_border, override_border)) = bottom_border {
-        build_split_line(f, normal_widths, &bottom_border, override_border)?;
+    {
+        let borders = grid.get_split_line(row + 1);
+        let override_str = grid.override_split_lines.get(&(row + 1));
+        build_split_line(f, normal_widths, &borders, override_str)?;
     }
 
     Ok(())
 }
 
-fn build_row_internals(
+fn build_row_cells(
     f: &mut std::fmt::Formatter<'_>,
     row: &[Vec<String>],
     row_styles: &[Style],
     widths: &[usize],
     height: usize,
-    border: &[BorderLine],
+    borders: &[BorderLine],
 ) -> fmt::Result {
-    for line_index in 0..height {
-        build_line(f, border, row_styles, row.len(), |f, column| {
-            build_row_internal_line(
-                f,
-                line_index,
-                &row[column],
-                &row_styles[column],
-                widths[column],
-                height,
-            )
-        })?;
+    for line in 0..height {
+        build_line(f, borders, row_styles, row, widths, height, row.len(), line)?;
     }
 
     Ok(())
 }
 
-fn build_row_internal_line(
+fn build_line_cell(
     f: &mut std::fmt::Formatter<'_>,
     line_index: usize,
     mut cell: &[String],
@@ -1239,22 +1233,26 @@ fn line_with_width(
     Ok(())
 }
 
-fn build_line<F: FnMut(&mut std::fmt::Formatter<'_>, usize) -> fmt::Result>(
+fn build_line(
     f: &mut std::fmt::Formatter<'_>,
     borders: &[BorderLine],
     row_styles: &[Style],
-    length: usize,
-    mut writer: F,
+    row: &[Vec<String>],
+    widths: &[usize],
+    height: usize,
+    count_columns: usize,
+    line: usize,
 ) -> fmt::Result {
-    for (i, border) in borders.iter().enumerate() {
-        if is_cell_visible(row_styles, i) {
-            write_option(f, border.connector1)?;
-            writer(f, i)?;
+    for col in 0..count_columns {
+        if is_cell_visible(row_styles, col) {
+            write_option(f, borders[col].connector1)?;
+
+            build_line_cell(f, line, &row[col], &row_styles[col], widths[col], height)?;
         }
 
-        let is_last_cell = i + 1 == length;
+        let is_last_cell = col + 1 == count_columns;
         if is_last_cell {
-            write_option(f, border.connector2)?;
+            write_option(f, borders[col].connector2)?;
         }
     }
 
@@ -1358,9 +1356,19 @@ fn real_string_width(text: &str) -> usize {
         .unwrap_or(0)
 }
 
+fn fix_styles(styles: &mut [Vec<Style>]) {
+    styles.iter_mut().for_each(|row| {
+        (0..row.len()).for_each(|col| {
+            if !is_cell_visible(row, col) {
+                row[col].span = 0;
+            }
+        });
+    });
+}
+
 fn columns_width(
     cells: &[Vec<Vec<String>>],
-    styles: &mut [Vec<Style>],
+    styles: &[Vec<Style>],
     borders: &[Vec<BorderLine>],
     count_rows: usize,
     count_columns: usize,
@@ -1372,9 +1380,6 @@ fn columns_width(
             let style = &styles[row][column];
             if is_cell_visible(&styles[row], column) {
                 widths[row][column] = cell_width(cell, style);
-            } else {
-                widths[row][column] = 0;
-                styles[row][column].span = 0;
             }
         });
     });
@@ -1440,7 +1445,6 @@ fn adjust_range_width(
     if count_rows == 0 {
         return;
     }
-    let span = end_column - start_column;
 
     // find max width of a column range
     let (max_row, max_width) = (0..count_rows)
@@ -1501,7 +1505,6 @@ fn adjust_range_width(
                     let cell_with_the_same_cell = (0..count_rows)
                         .filter(|&r| r != max_row)
                         .filter(|&r| r != row)
-                        .filter(|&r| !is_row_bigger_than_span(&styles[r], span))
                         .filter(|&r| {
                             !is_there_out_of_scope_cell(&styles[r], start_column, end_column)
                         })
@@ -1524,21 +1527,22 @@ fn is_there_out_of_scope_cell(styles: &[Style], start_column: usize, end_column:
 }
 
 fn is_cell_in_scope(styles: &[Style], col: usize, end_col: usize) -> bool {
-    styles[col].span + col <= end_col
-}
-
-fn is_row_bigger_than_span(styles: &[Style], span: usize) -> bool {
-    styles[0].span > span
+    let next_col = col + styles[col].span;
+    next_col <= end_col
 }
 
 fn is_cell_visible(row_styles: &[Style], column: usize) -> bool {
     let is_span_zero = row_styles[column].span == 0;
+    if is_span_zero {
+        return false;
+    }
+
     let is_cell_overriden = row_styles[..column]
         .iter()
         .enumerate()
         .any(|(col, style)| style.span > column - col);
 
-    !is_span_zero && !is_cell_overriden
+    !is_cell_overriden
 }
 
 fn is_range_complete(
