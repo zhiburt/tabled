@@ -1005,8 +1005,10 @@ impl std::fmt::Display for Grid {
             return Ok(());
         }
 
-        let cells = self.collect_cells(count_rows, count_columns);
-        let styles = self.collect_styles(count_rows, count_columns);
+        let mut cells = self.collect_cells(count_rows, count_columns);
+        let mut styles = self.collect_styles(count_rows, count_columns);
+
+        fix_spans(&mut styles, &mut cells);
 
         let split_borders = (0..count_rows)
             .map(|row| self.get_inner_split_line(row))
@@ -1014,7 +1016,6 @@ impl std::fmt::Display for Grid {
 
         let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
         let widths = columns_width(&cells, &styles, &split_borders, count_rows, count_columns);
-
         let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
 
         print_grid(
@@ -1261,7 +1262,6 @@ fn build_line(
             write_option(f, borders[col].connector2)?;
         }
     }
-
     writeln!(f)?;
 
     Ok(())
@@ -1394,13 +1394,71 @@ fn real_string_width(text: &str) -> usize {
 }
 
 fn fix_styles(styles: &mut [Vec<Style>]) {
-    styles.iter_mut().for_each(|row| {
-        (0..row.len()).for_each(|col| {
-            if !is_cell_visible(row, col) {
-                row[col].span = 0;
-            }
-        });
+    styles.iter_mut().for_each(|row_styles| {
+        fix_invisible_cell(row_styles);
     });
+}
+
+fn fix_invisible_cell(styles: &mut [Style]) {
+    (0..styles.len()).for_each(|col| {
+        if !is_cell_visible(styles, col) {
+            styles[col].span = 0;
+        }
+    });
+}
+
+// Sometimes user may not increase some span while decreasing another cell
+// Which may cause an incorrect rendering.
+//
+// So we are fixing the spans to accordingly.
+fn fix_spans(styles: &mut [Vec<Style>], cells: &mut [Vec<Vec<String>>]) {
+    (0..styles.len()).for_each(|row| {
+        fix_zero_spans(&mut styles[row], &mut cells[row]);
+    });
+}
+
+fn fix_zero_spans(styles: &mut [Style], widths: &mut [Vec<String>]) {
+    if styles.is_empty() {
+        return;
+    }
+
+    // fix first column
+    fix_first_column_span(styles, widths);
+    // fix an inner space
+    fix_zero_column_span(styles);
+}
+
+fn fix_zero_column_span(styles: &mut [Style]) {
+    for i in 0..styles.len() {
+        if styles[i].span > 0 {
+            continue;
+        }
+
+        if is_cell_overriden(&styles[..i]) {
+            continue;
+        }
+
+        println!("{:?}", styles.iter().map(|s| s.span).collect::<Vec<_>>());
+
+        let prev_visible_cell = (0..i).rev().find(|&i| styles[i].span > 0);
+        if let Some(pos) = prev_visible_cell {
+            let need_at_least_span = i - pos;
+            styles[pos].span = need_at_least_span + 1;
+        }
+
+        println!("{:?}", styles.iter().map(|s| s.span).collect::<Vec<_>>());
+    }
+}
+
+fn fix_first_column_span(styles: &mut [Style], widths: &mut [Vec<String>]) {
+    if styles[0].span == 0 {
+        let next_visible_cell = (1..styles.len()).find(|&i| styles[i].span > 0);
+        if let Some(i) = next_visible_cell {
+            styles[i].span += i;
+            styles.swap(0, i);
+            widths.swap(0, i);
+        }
+    }
 }
 
 fn columns_width(
@@ -1574,12 +1632,16 @@ fn is_cell_visible(row_styles: &[Style], column: usize) -> bool {
         return false;
     }
 
-    let is_cell_overriden = row_styles[..column]
-        .iter()
-        .enumerate()
-        .any(|(col, style)| style.span > column - col);
+    let is_cell_overriden = is_cell_overriden(&row_styles[..column]);
 
     !is_cell_overriden
+}
+
+fn is_cell_overriden(styles: &[Style]) -> bool {
+    styles
+        .iter()
+        .enumerate()
+        .any(|(i, style)| style.span > styles.len() - i)
 }
 
 fn is_range_complete(

@@ -590,6 +590,96 @@ fn render_row_span_with_no_split_style() {
 }
 
 #[test]
+fn render_zero_span_of_first_cell() {
+    let mut grid = util::new_grid::<2, 2>();
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(0));
+
+    let expected = concat!(
+        "+---+---+\n",
+        "|0-1    |\n",
+        "+---+---+\n",
+        "|1-0|1-1|\n",
+        "+---+---+\n",
+    );
+
+    assert_eq!(expected, grid.to_string());
+
+    grid.set(&Entity::Cell(1, 0), Settings::new().span(0));
+
+    let expected = concat!("+-+-+\n", "|0-1|\n", "+-+-+\n", "|1-1|\n", "+-+-+\n",);
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_zero_span_between_cells() {
+    let mut grid = util::new_grid::<2, 3>();
+
+    grid.set(&Entity::Cell(0, 1), Settings::new().span(0));
+
+    let expected = concat!(
+        "+---+---+---+\n",
+        "|0-0    |0-2|\n",
+        "+---+---+---+\n",
+        "|1-0|1-1|1-2|\n",
+        "+---+---+---+\n",
+    );
+
+    assert_eq!(expected, grid.to_string());
+
+    grid.set(&Entity::Cell(1, 1), Settings::new().span(0));
+
+    let expected = concat!(
+        "+-+-+---+\n",
+        "|0-0|0-2|\n",
+        "+-+-+---+\n",
+        "|1-0|1-2|\n",
+        "+-+-+---+\n",
+    );
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_zero_span_at_the_end() {
+    let mut grid = util::new_grid::<2, 3>();
+
+    grid.set(&Entity::Cell(0, 1), Settings::new().span(0));
+    grid.set(&Entity::Cell(0, 2), Settings::new().span(0));
+
+    let expected = concat!(
+        "+---+---+---+\n",
+        "|0-0        |\n",
+        "+---+---+---+\n",
+        "|1-0|1-1|1-2|\n",
+        "+---+---+---+\n",
+    );
+
+    assert_eq!(expected, grid.to_string());
+
+    grid.set(&Entity::Cell(1, 1), Settings::new().span(0));
+    grid.set(&Entity::Cell(1, 2), Settings::new().span(0));
+
+    let expected = concat!("+-+++\n", "|0-0|\n", "+-+++\n", "|1-0|\n", "+-+++\n",);
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_zero_span_grid() {
+    let mut grid = util::new_grid::<2, 2>();
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(0));
+    grid.set(&Entity::Cell(0, 1), Settings::new().span(0));
+    grid.set(&Entity::Cell(1, 0), Settings::new().span(0));
+    grid.set(&Entity::Cell(1, 1), Settings::new().span(0));
+
+    // todo: determine if it's correct behaviour?
+    assert_eq!("+++\n|\n+++\n|\n+++\n", grid.to_string());
+}
+
+#[test]
 #[ignore = "I am not sure what is the right behaiviour here"]
 fn hieroglyph_handling() {
     let mut grid = util::new_grid::<1, 2>();

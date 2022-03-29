@@ -434,3 +434,121 @@ fn spaned_columns_with_colision() {
 
     assert_eq!(table, expected);
 }
+
+#[test]
+fn span_zero_test() {
+    let data = create_vector::<3, 3>();
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            " column 0 | column 1 | column 2 \n",
+            "----+-----+----------+----------\n",
+            " 0  | 0-0 |   0-1    |   0-2    \n",
+            " 1  | 1-0 |   1-1    |   1-2    \n",
+            " 2  | 2-0 |   2-1    |   2-2    \n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Cell(0, 1)).with(Span::column(0)))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "    N    | column 1 | column 2 \n",
+            "---+-----+----------+----------\n",
+            " 0 | 0-0 |   0-1    |   0-2    \n",
+            " 1 | 1-0 |   1-1    |   1-2    \n",
+            " 2 | 2-0 |   2-1    |   2-2    \n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Cell(0, 2)).with(Span::column(0)))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0  | column 2 \n",
+            "---+-----+-----+----------\n",
+            " 0 | 0-0 | 0-1 |   0-2    \n",
+            " 1 | 1-0 | 1-1 |   1-2    \n",
+            " 2 | 2-0 | 2-1 |   2-2    \n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Cell(0, 3)).with(Span::column(0)))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1  \n",
+            "---+----------+-----+-----\n",
+            " 0 |   0-0    | 0-1 | 0-2 \n",
+            " 1 |   1-0    | 1-1 | 1-2 \n",
+            " 2 |   2-0    | 2-1 | 2-2 \n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Cell(0, 4)).with(Span::column(0)))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            " 0 |   0-0    |   0-1    |   0-2    \n",
+            " 1 |   1-0    |   1-1    |   1-2    \n",
+            " 2 |   2-0    |   2-1    |   2-2    \n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
+        .with(Modify::new(Cell(1, 1)).with(Span::column(0)))
+        .with(Modify::new(Cell(2, 2)).with(Span::column(0)))
+        .with(Modify::new(Cell(3, 2)).with(Span::column(0)))
+        .with(Modify::new(Cell(3, 1)).with(Span::column(0)))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            " column 0 | column 1 | column 2 \n",
+            "------+-------+------+----------\n",
+            "    0     |   0-1    |   0-2    \n",
+            "  1   |     1-0      |   1-2    \n",
+            "          2          |   2-2    \n",
+        )
+    );
+}
+
+#[test]
+fn span_all_table_to_zero_test() {
+    let data = create_vector::<2, 2>();
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Full).with(Span::column(0)))
+        .to_string();
+
+    // todo: determine whether it's correct
+    assert_eq!(table, concat!("\n++\n\n\n"));
+}
