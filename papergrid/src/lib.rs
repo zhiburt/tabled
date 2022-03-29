@@ -1888,15 +1888,15 @@ fn total_width(
     margin: &Margin,
 ) -> usize {
     let content_width = widths
-        .into_iter()
+        .iter()
         .next()
-        .map(|row| row.into_iter().sum::<usize>())
+        .map(|row| row.iter().sum::<usize>())
         .unwrap_or(0);
 
     let count_borders = borders
-        .into_iter()
+        .iter()
         .next()
-        .map(|row| count_borders(&row, &styles[0]))
+        .map(|row| count_borders(row, &styles[0]))
         .unwrap_or(0);
 
     content_width + count_borders + margin.left.size + margin.right.size
