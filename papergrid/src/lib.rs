@@ -1438,15 +1438,11 @@ fn fix_zero_column_span(styles: &mut [Style]) {
             continue;
         }
 
-        println!("{:?}", styles.iter().map(|s| s.span).collect::<Vec<_>>());
-
         let prev_visible_cell = (0..i).rev().find(|&i| styles[i].span > 0);
         if let Some(pos) = prev_visible_cell {
             let need_at_least_span = i - pos;
             styles[pos].span = need_at_least_span + 1;
         }
-
-        println!("{:?}", styles.iter().map(|s| s.span).collect::<Vec<_>>());
     }
 }
 
