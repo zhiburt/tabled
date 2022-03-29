@@ -51,6 +51,7 @@ pub struct Grid {
     size: (usize, usize),
     cells: Vec<Vec<String>>,
     styles: HashMap<Entity, Style>,
+    margin: Margin,
     borders: Borders,
     override_split_lines: HashMap<usize, String>,
 }
@@ -84,6 +85,7 @@ impl Grid {
             size: (rows, columns),
             cells: vec![vec![String::new(); columns]; rows],
             styles,
+            margin: Margin::default(),
             borders: Borders::new(rows, columns),
             override_split_lines: HashMap::new(),
         }
@@ -144,6 +146,10 @@ impl Grid {
 
             self.set_border(entity.clone(), &border);
         }
+    }
+
+    pub fn margin(&mut self, margin: Margin) {
+        self.margin = margin
     }
 
     pub fn add_horizontal_split(&mut self, row: usize) {
@@ -448,27 +454,18 @@ impl Grid {
             return 0;
         }
 
-        let cells = self.collect_cells(count_rows, count_columns);
-        let styles = self.collect_styles(count_rows, count_columns);
-        let split_borders = (0..count_rows)
+        let mut cells = self.collect_cells(count_rows, count_columns);
+        let mut styles = self.collect_styles(count_rows, count_columns);
+
+        fix_spans(&mut styles, &mut cells);
+
+        let borders = (0..count_rows)
             .map(|row| self.get_inner_split_line(row))
             .collect::<Vec<_>>();
 
-        let widths = columns_width(&cells, &styles, &split_borders, count_rows, count_columns);
+        let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
 
-        let content_width = widths
-            .into_iter()
-            .next()
-            .map(|row| row.into_iter().sum::<usize>())
-            .unwrap_or(0);
-
-        let count_borders = split_borders
-            .into_iter()
-            .next()
-            .map(|row| count_borders(&row, &styles[0]))
-            .unwrap_or(0);
-
-        content_width + count_borders
+        total_width(&widths, &styles, &borders, &self.margin)
     }
 
     pub fn override_split_line(&mut self, row: usize, line: impl Into<String>) {
@@ -782,6 +779,14 @@ pub struct Formatting {
 }
 
 #[derive(Default, Debug, Clone, Copy)]
+pub struct Margin {
+    pub top: Indent,
+    pub bottom: Indent,
+    pub left: Indent,
+    pub right: Indent,
+}
+
+#[derive(Default, Debug, Clone, Copy)]
 pub struct Padding {
     pub top: Indent,
     pub bottom: Indent,
@@ -1010,13 +1015,15 @@ impl std::fmt::Display for Grid {
 
         fix_spans(&mut styles, &mut cells);
 
-        let split_borders = (0..count_rows)
+        let borders = (0..count_rows)
             .map(|row| self.get_inner_split_line(row))
             .collect::<Vec<_>>();
 
         let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
-        let widths = columns_width(&cells, &styles, &split_borders, count_rows, count_columns);
+        let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
         let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
+
+        let total_width = total_width(&widths, &styles, &borders, &self.margin);
 
         print_grid(
             f,
@@ -1027,6 +1034,7 @@ impl std::fmt::Display for Grid {
             normal_widths,
             row_heights,
             self,
+            total_width,
         )
     }
 }
@@ -1041,7 +1049,13 @@ fn print_grid(
     normal_widths: Vec<usize>,
     row_heights: Vec<usize>,
     grid: &Grid,
+    total_width: usize,
 ) -> Result<(), fmt::Error> {
+    for _ in 0..grid.margin.top.size {
+        repeat_char(f, grid.margin.top.fill, total_width)?;
+        writeln!(f)?;
+    }
+
     for row in 0..count_rows {
         build_row(
             f,
@@ -1053,6 +1067,11 @@ fn print_grid(
             grid,
             row,
         )?;
+    }
+
+    for _ in 0..grid.margin.bottom.size {
+        repeat_char(f, grid.margin.bottom.fill, total_width)?;
+        writeln!(f)?;
     }
 
     Ok(())
@@ -1081,6 +1100,7 @@ fn build_row(
         cell_widths,
         height,
         &inner_border,
+        &grid.margin,
     )?;
 
     build_split_line_(f, normal_widths, grid, row + 1)?;
@@ -1090,16 +1110,34 @@ fn build_row(
 
 fn build_split_line_(
     f: &mut fmt::Formatter,
-    normal_widths: &[usize],
+    widths: &[usize],
     grid: &Grid,
     row: usize,
 ) -> Result<(), fmt::Error> {
     let borders = grid.get_split_line(row);
     let override_str = grid.override_split_lines.get(&row);
-    build_split_line_with_override(f, normal_widths, &borders, override_str)?;
+
+    let theres_no_border = borders.iter().all(|l| l.main.is_none());
+    if theres_no_border || widths.is_empty() {
+        return Ok(());
+    }
+
+    if grid.margin.left.size > 0 {
+        repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
+    }
+
+    build_split_line_with_override(f, widths, &borders, override_str)?;
+
+    if grid.margin.right.size > 0 {
+        repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
+    }
+
+    writeln!(f)?;
+
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_row_cells(
     f: &mut std::fmt::Formatter<'_>,
     row: &[Vec<String>],
@@ -1107,9 +1145,20 @@ fn build_row_cells(
     widths: &[usize],
     height: usize,
     borders: &[BorderLine],
+    margin: &Margin,
 ) -> fmt::Result {
     for line in 0..height {
-        build_line(f, borders, row_styles, row, widths, height, row.len(), line)?;
+        build_line(
+            f,
+            borders,
+            row_styles,
+            row,
+            widths,
+            height,
+            row.len(),
+            line,
+            margin,
+        )?;
     }
 
     Ok(())
@@ -1249,7 +1298,12 @@ fn build_line(
     height: usize,
     count_columns: usize,
     line: usize,
+    margin: &Margin,
 ) -> fmt::Result {
+    if margin.left.size > 0 {
+        repeat_char(f, margin.left.fill, margin.left.size)?;
+    }
+
     for col in 0..count_columns {
         if is_cell_visible(row_styles, col) {
             write_option(f, borders[col].connector1)?;
@@ -1262,6 +1316,11 @@ fn build_line(
             write_option(f, borders[col].connector2)?;
         }
     }
+
+    if margin.right.size > 0 {
+        repeat_char(f, margin.right.fill, margin.right.size)?;
+    }
+
     writeln!(f)?;
 
     Ok(())
@@ -1273,11 +1332,6 @@ fn build_split_line_with_override(
     borders: &[BorderLine],
     override_str: Option<&String>,
 ) -> fmt::Result {
-    let theres_no_border = borders.iter().all(|l| l.main.is_none());
-    if theres_no_border || widths.is_empty() {
-        return Ok(());
-    }
-
     let mut skip_chars = 0;
     if let Some(s) = override_str {
         let width = split_line_width(widths, borders);
@@ -1285,7 +1339,7 @@ fn build_split_line_with_override(
     }
 
     build_split_line(f, widths, borders, skip_chars)?;
-    writeln!(f)
+    Ok(())
 }
 
 fn build_split_line(
@@ -1825,6 +1879,27 @@ fn replace_tab(cell: &mut String, n: usize) -> &str {
     }
 
     cell
+}
+
+fn total_width(
+    widths: &[Vec<usize>],
+    styles: &[Vec<Style>],
+    borders: &[Vec<BorderLine>],
+    margin: &Margin,
+) -> usize {
+    let content_width = widths
+        .iter()
+        .next()
+        .map(|row| row.iter().sum::<usize>())
+        .unwrap_or(0);
+
+    let count_borders = borders
+        .iter()
+        .next()
+        .map(|row| count_borders(row, &styles[0]))
+        .unwrap_or(0);
+
+    content_width + count_borders + margin.left.size + margin.right.size
 }
 
 #[derive(Debug)]

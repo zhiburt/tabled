@@ -68,15 +68,11 @@ fn extract_top_test() {
 fn extract_bottom_test() {
     let grid = util::new_grid::<3, 3>();
 
-    let grid = grid.extract(.., ..);
+    let grid = grid.extract(2.., ..);
 
     assert_eq!(
         grid.to_string(),
         "+---+---+---+\n\
-         |0-0|0-1|0-2|\n\
-         +---+---+---+\n\
-         |1-0|1-1|1-2|\n\
-         +---+---+---+\n\
          |2-0|2-1|2-2|\n\
          +---+---+---+\n",
     )
