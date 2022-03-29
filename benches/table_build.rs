@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use tabled::{Alignment, Full, Modify, Padding, Style, TableIteratorExt, Tabled};
+use tabled::{object::Full, Alignment, Modify, Padding, Style, TableIteratorExt, Tabled};
 
 macro_rules! table_bench {
     ($name:ident, $table:expr, $( $modificator:expr ),*) => {

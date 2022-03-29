@@ -4,27 +4,12 @@ use crate::TableOption;
 
 /// Returns a new [Table] that reflects a segment of the referenced [Table]
 ///
-/// The segment is defined by [RangeBounds<usize>] for Rows and Columns
-///
-/// # Range
-///
-/// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
-///
-/// If a [RangeBounds] argument is malformed or too large the thread will panic
-///
-///
-/// ```
-/// // Empty                         Full                      Out of bounds
-///    Extract::segment(0..0, 0..0)  Extract::segment(.., ..)  Extract::segment(0..1, ..4)
-///    [].   .   .                   [O   O   O                [O   O   O  X] //ERROR            
-///      .   .   .                    O   O   O                 .   .   .             
-///      .   .   .                    O   O   O]                .   .   .          
-/// ```
+/// The segment is defined by [RangeBounds<usize>] for Rows and Columns.
 ///
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, Format, Row, Modify};
+/// use tabled::{Table, Format, object::Rows, Modify, Extract};
 ///
 /// let data = vec![
 ///     (0, "Grodno", true),
@@ -34,17 +19,18 @@ use crate::TableOption;
 /// ];
 ///
 /// let table = Table::new(&data)
-///                .with(Modify::new(Row(1..)).with(Format(|s| format!(": {} :", s))))
+///                .with(Modify::new(Rows::new(1..)).with(Format::new(|s| format!(": {} :", s))))
 ///                .with(Extract::segment(1..=2, 1..))
 ///                .to_string();
 ///
-/// assert_eq!(table, "+-------------+-----------+\n\
-///                    | : Grodno :  | : true :  |\n\
-///                    +-------------+-----------+\n\
-///                    |  : Minsk :  | : true :  |\n\
-///                    +-------------+-----------+\n");
+/// assert_eq!(table, "+------------+----------+\n\
+///                    | : Grodno : | : true : |\n\
+///                    +------------+----------+\n\
+///                    | : Minsk :  | : true : |\n\
+///                    +------------+----------+\n");
 /// ```
 ///
+/// [Table]: crate::Table
 pub struct Extract<R, C> {
     rows: R,
     columns: C,
@@ -60,6 +46,7 @@ where
     /// The segment is defined by [RangeBounds<usize>] for Rows and Columns
     ///
     /// ```rust,no_run
+    /// # use tabled::Extract;
     /// let rows = 1..3;
     /// let columns = 1..;
     /// Extract::segment(rows, columns);
@@ -71,7 +58,7 @@ where
     ///
     /// If a [RangeBounds] argument is malformed or too large the thread will panic
     ///
-    /// ```
+    /// ```text
     /// // Empty                         Full                      Out of bounds
     ///    Extract::segment(0..0, 0..0)  Extract::segment(.., ..)  Extract::segment(0..1, ..4)
     ///    [].   .   .                   [O   O   O                [O   O   O  X] //ERROR            
@@ -79,6 +66,7 @@ where
     ///      .   .   .                    O   O   O]                .   .   .          
     /// ```
     ///
+    /// [Table]: crate::Table
     pub fn segment(rows: R, columns: C) -> Self {
         Extract { rows, columns }
     }
@@ -93,6 +81,7 @@ where
     /// The segment is defined by [RangeBounds<usize>] for Rows
     ///
     /// ```rust,no_run
+    /// # use tabled::Extract;
     /// Extract::rows(1..3);
     /// ```
     ///
@@ -102,7 +91,7 @@ where
     ///
     /// If a [RangeBounds] argument is malformed or too large the thread will panic
     ///
-    /// ```
+    /// ```text
     /// // Empty                Full               Out of bounds
     ///    Extract::rows(0..0)  Extract::rows(..)  Extract::rows(0..4)
     ///    [].   .   .          [O   O   O         [O   O   O             
@@ -111,6 +100,7 @@ where
     ///                                             X   X   X] // ERROR          
     /// ```
     ///
+    /// [Table]: crate::Table
     pub fn rows(rows: R) -> Self {
         Extract { rows, columns: .. }
     }
@@ -125,6 +115,7 @@ where
     /// The segment is defined by [RangeBounds<usize>] for Columns
     ///
     /// ```rust,no_run
+    /// # use tabled::Extract;
     /// Extract::columns(1..3);
     /// ```
     ///
@@ -134,7 +125,7 @@ where
     ///
     /// If a [RangeBounds] argument is malformed or too large the thread will panic
     ///
-    /// ```
+    /// ```text
     /// // Empty                   Full                  Out of bounds
     ///    Extract::columns(0..0)  Extract::columns(..)  Extract::columns(0..4)
     ///    [].   .   .             [O   O   O            [O   O   O   X          
@@ -142,6 +133,7 @@ where
     ///      .   .   .              O   O   O]            O   O   O   X] // ERROR
     /// ```
     ///
+    /// [Table]: crate::Table
     pub fn columns(columns: C) -> Self {
         Extract { rows: .., columns }
     }

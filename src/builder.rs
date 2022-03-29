@@ -78,7 +78,7 @@ impl Builder {
 
     /// Adds a row to a [Table].
     ///
-    /// If [Self::header] is not set the row will be considered a header.
+    /// If [Self::set_header] is not set the first row will be considered a header.
     ///
     /// ```rust
     /// use tabled::builder::Builder;

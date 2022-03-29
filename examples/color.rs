@@ -9,7 +9,10 @@ fn main() {
 #[cfg(feature = "color")]
 fn main() {
     use owo_colors::OwoColorize;
-    use tabled::{Alignment, Column, Format, Head, Modify, Object, Row, Style, Table, Tabled};
+    use tabled::{
+        object::{Columns, Object, Rows},
+        Alignment, Format, Modify, Style, Table, Tabled,
+    };
 
     #[allow(clippy::upper_case_acronyms)]
     #[derive(Tabled)]
@@ -49,10 +52,13 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Head).with(Alignment::center_horizontal()))
-        .with(Modify::new(Row(1..)).with(Alignment::left()))
-        .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))
-        .with(Modify::new(Column(..1).and(Column(2..))).with(Format(|s| s.red().to_string())));
+        .with(Modify::new(Rows::first()).with(Alignment::center_horizontal()))
+        .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
+        .with(Modify::new(Columns::single(1)).with(Format::new(|s| s.blue().to_string())))
+        .with(
+            Modify::new(Columns::single(0).and(Columns::new(2..)))
+                .with(Format::new(|s| s.red().to_string())),
+        );
 
     println!("{}", table);
 }

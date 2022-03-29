@@ -1,10 +1,11 @@
 //! The example can be run by this command
 //! `cargo run --example format`
 //!
-//! The example shows a usage of Format/FormatWithIndex/FormatFrom.
+//! The example shows a usage of [tabled::Format]/[tabled::FormatWithIndex].
 
 use tabled::{
-    Column, Format, FormatFrom, FormatWithIndex, Modify, Object, Row, Style, Table, Tabled,
+    object::{Columns, Object, Rows},
+    Format, Modify, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -35,9 +36,13 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Row(..1)).with(FormatWithIndex(|_, _, column| column.to_string())))
-        .with(Modify::new(Row(1..2).not(Column(..1))).with(FormatFrom(vec!["qwe", "asd"])))
-        .with(Modify::new(Column(..1).not(Row(..1))).with(Format(|s| format!("{}...", s))));
+        .with(
+            Modify::new(Rows::new(..1))
+                .with(Format::with_index(|_, (_, column)| column.to_string())),
+        )
+        .with(
+            Modify::new(Columns::new(..1).not(Rows::new(..1))).with(|s: &str| format!("{}...", s)),
+        );
 
     println!("{}", table);
 }

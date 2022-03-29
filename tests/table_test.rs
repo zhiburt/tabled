@@ -444,10 +444,10 @@ fn table_tuple_with_structure_vec() {
 
 #[allow(dead_code)]
 #[test]
-fn table_vector_structures_with_hidden_field() {
+fn table_vector_structures_with_hidden_tabled() {
     #[derive(Tabled)]
     struct St {
-        #[header(hidden = true)]
+        #[tabled(skip)]
         f1: u8,
         f2: &'static str,
     }
@@ -522,7 +522,7 @@ fn table_enum_with_hidden_variant() {
             lang: u8,
         },
         Consonant(char),
-        #[header(hidden)]
+        #[tabled(skip)]
         Digit,
     }
 
@@ -687,15 +687,15 @@ fn table_emojie_multiline() {
 
     // Note: it looks OK in a terminal
     let expected =
-        "+------------------------------------+-----------------+-------------------------------+--------+\n\
-         |                name                |     author      |             text              | rating |\n\
-         +------------------------------------+-----------------+-------------------------------+--------+\n\
-         | Rebase vs Merge commit in depth 👋 | Rose Kuphal DVM |          A multiline          |   43   |\n\
-         |                                    |                 |     text with 🤯 😳 🥵 🥶     |        |\n\
-         |                                    |                 | a bunch of emojies ☄️ 💥 🔥 🌪  |        |\n\
-         +------------------------------------+-----------------+-------------------------------+--------+\n\
-         |           Keep it simple           |     Unknown     |              🍳               |  100   |\n\
-         +------------------------------------+-----------------+-------------------------------+--------+\n";
+    "+------------------------------------+-----------------+-------------------------------+--------+\n\
+     |                name                |     author      |             text              | rating |\n\
+     +------------------------------------+-----------------+-------------------------------+--------+\n\
+     | Rebase vs Merge commit in depth 👋 | Rose Kuphal DVM | A multiline                   |   43   |\n\
+     |                                    |                 |  text with 🤯 😳 🥵 🥶        |        |\n\
+     |                                    |                 |  a bunch of emojies ☄\u{fe0f} 💥 🔥 🌪 |        |\n\
+     +------------------------------------+-----------------+-------------------------------+--------+\n\
+     |           Keep it simple           |     Unknown     |              🍳               |  100   |\n\
+     +------------------------------------+-----------------+-------------------------------+--------+\n";
 
     let table = Table::new(&languages).to_string();
 
@@ -713,7 +713,7 @@ fn tuple_combination() {
     }
 
     #[derive(Tabled)]
-    struct Developer(#[header("name")] &'static str);
+    struct Developer(#[tabled(rename = "name")] &'static str);
 
     let data = vec![
         (Developer("Terri Kshlerin"), Domain::Embeded),
@@ -748,7 +748,7 @@ fn table_trait() {
     }
 
     #[derive(Tabled)]
-    struct Developer(#[header("name")] &'static str);
+    struct Developer(#[tabled(rename = "name")] &'static str);
 
     let data = vec![
         (Developer("Terri Kshlerin"), Domain::Embeded),

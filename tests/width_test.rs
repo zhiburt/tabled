@@ -1,6 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
-    Alignment, Cell, Column, Full, MaxWidth, MinWidth, Modify, Object, Row, Style, Table,
+    object::{Cell, Columns, Full, Object, Rows},
+    Alignment, MaxWidth, MinWidth, Modify, Panel, Style, Table,
 };
 
 mod util;
@@ -10,7 +11,7 @@ fn max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(1)))
+        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::truncating(1)))
         .to_string();
 
     let expected = concat!(
@@ -29,7 +30,10 @@ fn max_width_with_suffix() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(2).suffix("...")))
+        .with(
+            Modify::new(Columns::new(1..).not(Rows::single(0)))
+                .with(MaxWidth::truncating(2).suffix("...")),
+        )
         .to_string();
 
     let expected = concat!(
@@ -48,7 +52,7 @@ fn max_width_doesnt_icrease_width_if_it_is_smaller() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::truncating(50)))
+        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::truncating(50)))
         .to_string();
 
     let expected = concat!(
@@ -67,7 +71,7 @@ fn max_width_wrapped() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::wrapping(2)))
+        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::wrapping(2)))
         .to_string();
 
     let expected = concat!(
@@ -89,7 +93,7 @@ fn max_width_wrapped_does_nothing_if_str_is_smaller() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Column(1..).not(Row(..1))).with(MaxWidth::wrapping(100)))
+        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::wrapping(100)))
         .to_string();
 
     let expected = concat!(
@@ -165,7 +169,7 @@ fn max_width_wrapped_keep_words() {
         "| &str              |\n",
         "|-------------------|\n",
         "| this is a long    |\n",
-        "| sentence          |\n",
+        "|  sentence         |\n",
     );
 
     assert_eq!(table, expected);
@@ -415,11 +419,11 @@ fn min_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Row(..1)).with(MinWidth::new(12)))
+        .with(Modify::new(Rows::single(0)).with(MinWidth::new(12)))
         .to_string();
 
     let expected = concat!(
-        "|      N       |   column 0   |   column 1   |   column 2   |\n",
+        "| N            | column 0     | column 1     | column 2     |\n",
         "|--------------+--------------+--------------+--------------|\n",
         "|      0       |     0-0      |     0-1      |     0-2      |\n",
         "|      1       |     1-0      |     1-1      |     1-2      |\n",
@@ -434,7 +438,7 @@ fn min_width_with_filler() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Row(..1)).with(MinWidth::new(12).fill_with('.')))
+        .with(Modify::new(Rows::single(0)).with(MinWidth::new(12).fill_with('.')))
         .to_string();
 
     let expected = concat!(
@@ -457,7 +461,7 @@ fn min_width_one_column() {
         .to_string();
 
     let expected = concat!(
-        "|   N   | column 0 | column 1 | column 2 |\n",
+        "| N     | column 0 | column 1 | column 2 |\n",
         "|-------+----------+----------+----------|\n",
         "|   0   |   0-0    |   0-1    |   0-2    |\n",
         "|   1   |   1-0    |   1-1    |   1-2    |\n",
@@ -474,7 +478,7 @@ fn min_width_on_smaller_content() {
     assert_eq!(
         Table::new(&data)
             .with(Style::github_markdown())
-            .with(Modify::new(Row(..1)).with(MinWidth::new(1)))
+            .with(Modify::new(Rows::single(0)).with(MinWidth::new(1)))
             .to_string(),
         Table::new(&data).with(Style::github_markdown()).to_string()
     );
@@ -485,12 +489,12 @@ fn min_with_max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Row(..1)).with(MinWidth::new(3)))
-        .with(Modify::new(Row(..1)).with(MaxWidth::truncating(3)))
+        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::single(0)).with(MaxWidth::truncating(3)))
         .to_string();
 
     let expected = concat!(
-        "|  N  | col | col | col |\n",
+        "| N   | col | col | col |\n",
         "|-----+-----+-----+-----|\n",
         "|  0  | 0-0 | 0-1 | 0-2 |\n",
         "|  1  | 1-0 | 1-1 | 1-2 |\n",
@@ -505,12 +509,12 @@ fn min_with_max_width_truncate_suffix() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Row(..1)).with(MinWidth::new(3)))
-        .with(Modify::new(Row(..1)).with(MaxWidth::truncating(3).suffix("...")))
+        .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
+        .with(Modify::new(Rows::single(0)).with(MaxWidth::truncating(3).suffix("...")))
         .to_string();
 
     let expected = concat!(
-        "|  N  | col... | col... | col... |\n",
+        "| N   | col... | col... | col... |\n",
         "|-----+--------+--------+--------|\n",
         "|  0  |  0-0   |  0-1   |  0-2   |\n",
         "|  1  |  1-0   |  1-1   |  1-2   |\n",
@@ -532,11 +536,11 @@ fn min_width_color() {
     ];
 
     let expected = concat!(
-        "|   String   |\n",
+        "| String     |\n",
         "|------------|\n",
-        "|    \u{1b}[31masd\u{1b}[0m     |\n",
-        "|    \u{1b}[34mzxc\u{1b}[0m     |\n",
-        "|   \u{1b}[32m\u{1b}[40masdasd\u{1b}[0m\u{1b}[0m   |\n",
+        "| \u{1b}[31masd\u{1b}[0m        |\n",
+        "| \u{1b}[34mzxc\u{1b}[0m        |\n",
+        "| \u{1b}[32m\u{1b}[40masdasd\u{1b}[0m\u{1b}[0m     |\n",
     );
 
     let table = Table::new(data)
@@ -564,4 +568,161 @@ fn min_width_color_with_smaller_then_width() {
             .to_string(),
         Table::new(data).to_string()
     );
+}
+
+#[test]
+fn total_width_big() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(80))
+        .with(MinWidth::new(80))
+        .to_string();
+
+    let expected = concat!(
+        "| N            | column 0            | column 1           | column 2           |\n",
+        "|--------------+---------------------+--------------------+--------------------|\n",
+        "| 0            |   0-0               |   0-1              |   0-2              |\n",
+        "| 1            |   1-0               |   1-1              |   1-2              |\n",
+        "| 2            |   2-0               |   2-1              |   2-2              |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn total_width_big_with_panel() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Panel("Hello World", 0))
+        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(80))
+        .with(MinWidth::new(80))
+        .to_string();
+
+    let expected = concat!(
+        "|                            Hello World                                       |\n",
+        "|--------------+---------------------+--------------------+--------------------|\n",
+        "| N            | column 0            | column 1           | column 2           |\n",
+        "| 0            |   0-0               |   0-1              |   0-2              |\n",
+        "| 1            |   1-0               |   1-1              |   1-2              |\n",
+        "| 2            |   2-0               |   2-1              |   2-2              |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
+    let data = create_vector::<3, 3>();
+    let table1 = Table::new(&data)
+        .with(Panel("Hello World", 0))
+        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(80))
+        .with(MinWidth::new(80))
+        .to_string();
+
+    let table2 = Table::new(&data)
+        .with(Panel("Hello World", 0))
+        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(80))
+        .with(MinWidth::new(80))
+        .to_string();
+
+    assert_eq!(table1, table2);
+}
+
+#[test]
+fn total_width_small() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(14))
+        .with(MinWidth::new(14))
+        .to_string();
+
+    let expected = concat!(
+        "| N |  |  |  |\n",
+        "|---+--+--+--|\n",
+        "| 0 |  |  |  |\n",
+        "| 1 |  |  |  |\n",
+        "| 2 |  |  |  |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn total_width_smaller_then_content() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(8))
+        .with(MinWidth::new(8))
+        .to_string();
+
+    let expected = concat!(
+        "|  |  |  |  |\n",
+        "|--+--+--+--|\n",
+        "|  |  |  |  |\n",
+        "|  |  |  |  |\n",
+        "|  |  |  |  |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn total_width_small_with_panel() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Panel("Hello World", 0))
+        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(20))
+        .with(MinWidth::new(20))
+        .to_string();
+
+    let expected = concat!(
+        "|   Hello World    |\n",
+        "|---+----+----+----|\n",
+        "| N | co | co | co |\n",
+        "| 0 | 0- | 0- | 0- |\n",
+        "| 1 | 1- | 1- | 1- |\n",
+        "| 2 | 2- | 2- | 2- |\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn total_width_small_with_panel_using_wrapping() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Panel("Hello World", 0))
+        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(20))
+        .with(MinWidth::new(20))
+        .to_string();
+
+    let expected = concat!(
+        "|   Hello World    |\n",
+        "|---+----+----+----|\n",
+        "| N | co | co | co |\n",
+        "|   | lu | lu | lu |\n",
+        "|   | mn | mn | mn |\n",
+        "|   |  0 |  1 |  2 |\n",
+        "| 0 | 0- | 0- | 0- |\n",
+        "|   | 0  | 1  | 2  |\n",
+        "| 1 | 1- | 1- | 1- |\n",
+        "|   | 0  | 1  | 2  |\n",
+        "| 2 | 2- | 2- | 2- |\n",
+        "|   | 0  | 1  | 2  |\n",
+    );
+
+    assert_eq!(table, expected);
 }

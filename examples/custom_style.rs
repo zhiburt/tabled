@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example custom_style`
 
-use tabled::{Alignment, Full, Modify, Style, Table, Tabled};
+use tabled::{object::Full, Alignment, Modify, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct CodeEditor {

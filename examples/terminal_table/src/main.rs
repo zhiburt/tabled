@@ -1,8 +1,8 @@
 //! The example can be run by this command
-//! `cargo run --example panel`
+//! `cargo run --example terminal_table`
 
 use tabled::{
-    object::Full, Alignment, AlignmentHorizontal, Footer, Header, Modify, Style, Table, Tabled,
+    object::Full, Alignment, MaxWidth, MinWidth, Modify, Style, TableIteratorExt, Tabled,
 };
 
 #[derive(Tabled)]
@@ -35,16 +35,14 @@ const DATA: [Release; 3] = [
 ];
 
 fn main() {
-    let table = Table::new(DATA)
-        .with(Header("Tabled Releases"))
-        .with(Footer(format!("N - {}", DATA.len())))
-        .with(Modify::new(Full).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
-        .with(
-            Style::modern()
-                .top_intersection('─')
-                .bottom_intersection('─')
-                .header_intersection('┬'),
-        );
+    let (terminal_size::Width(width), _) = terminal_size::terminal_size().unwrap();
+
+    let table = DATA
+        .table()
+        .with(Style::extended())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(MaxWidth::wrapping(width as usize).keep_words())
+        .with(MinWidth::new(width as usize));
 
     println!("{}", table);
 }

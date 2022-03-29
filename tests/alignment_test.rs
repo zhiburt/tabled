@@ -1,5 +1,8 @@
 use crate::util::create_vector;
-use tabled::{Alignment, Column, Full, Head, Modify, Padding, Row, Style, Table};
+use tabled::{
+    object::{Columns, Full, Rows},
+    Alignment, Modify, Padding, Style, Table,
+};
 
 mod util;
 
@@ -27,8 +30,8 @@ fn head_and_data_alignment() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::ascii())
-        .with(Modify::new(Head).with(Alignment::left()))
-        .with(Modify::new(Row(1..)).with(Alignment::right()))
+        .with(Modify::new(Rows::first()).with(Alignment::left()))
+        .with(Modify::new(Rows::new(1..)).with(Alignment::right()))
         .to_string();
 
     let expected = concat!(
@@ -81,23 +84,23 @@ fn vertical_alignment_test() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Column(1..)).with(Alignment::bottom()))
+        .with(Modify::new(Columns::new(1..)).with(Alignment::bottom()))
         .to_string();
 
     let expected = concat!(
         " N | column 0 | column 1 | column 2 \n",
         "---+----------+----------+----------\n",
         " 0 |   0-0    |   0-1    |   0-2    \n",
-        " 1 |          |    E     |          \n",
+        " 1 |          |   E      |          \n",
         "   |          |   nde    |          \n",
         "   |          |   avou   |          \n",
         "   |   1-0    |   ros    |   1-2    \n",
         " 2 |          |          | https:// \n",
-        "   |          |          |   www    \n",
-        "   |          |          |    .     \n",
-        "   |          |          |  redhat  \n",
-        "   |          |   Red    |   .com   \n",
-        "   |   2-0    |   Hat    |   /en    \n",
+        "   |          |          | www      \n",
+        "   |          |          | .        \n",
+        "   |          |          | redhat   \n",
+        "   |          |   Red    | .com     \n",
+        "   |   2-0    |   Hat    | /en      \n",
     );
 
     assert_eq!(table, expected);

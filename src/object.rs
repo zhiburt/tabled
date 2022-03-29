@@ -2,7 +2,7 @@
 use papergrid::Grid;
 use std::{
     collections::BTreeSet,
-    ops::{Bound, RangeBounds},
+    ops::{Bound, Range, RangeBounds, RangeFull},
 };
 
 /// Object helps to locate a nessesary part of a [Grid].
@@ -30,37 +30,166 @@ pub trait Object: Sized {
     }
 }
 
-/// Head represents the row at the top of a [Table].
-pub struct Head;
+/// Segment represents a sub table of [crate::Table].
+pub struct Segment<C, R> {
+    columns: C,
+    rows: R,
+}
 
-impl Object for Head {
+impl Segment<RangeFull, RangeFull> {
+    /// Returns a full table segment.
+    ///
+    /// The same as [Full].
+    pub fn all() -> Self {
+        Self::new(.., ..)
+    }
+}
+
+impl<C, R> Segment<C, R>
+where
+    C: RangeBounds<usize>,
+    R: RangeBounds<usize>,
+{
+    /// This function builds a [Segment].
+    pub fn new(rows: R, columns: C) -> Self {
+        Self { columns, rows }
+    }
+}
+
+impl<C, R> Object for Segment<C, R>
+where
+    C: RangeBounds<usize>,
+    R: RangeBounds<usize>,
+{
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
+        let (rows_start, rows_end) =
+            bounds_to_usize(self.rows.start_bound(), self.rows.end_bound(), count_rows);
+
+        let (columns_start, columns_end) = bounds_to_usize(
+            self.columns.start_bound(),
+            self.columns.end_bound(),
+            count_columns,
+        );
+
+        let mut cells = Vec::new();
+        (rows_start..rows_end)
+            .for_each(|row| (columns_start..columns_end).for_each(|col| cells.push((row, col))));
+
+        cells
+    }
+}
+
+/// Frame includes cells which are on the edges of each side.
+/// Therefore it's [Object] implementation returns a subset of cells which are present in frame.
+pub struct Frame;
+
+impl Object for Frame {
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
+        let mut cells = Vec::new();
+
+        if count_rows > 0 {
+            (0..count_columns).for_each(|col| {
+                cells.push((0, col));
+            });
+
+            (0..count_columns).for_each(|col| {
+                cells.push((count_rows - 1, col));
+            });
+        }
+
+        if count_columns > 0 {
+            (0..count_rows).for_each(|row| {
+                cells.push((row, 0));
+            });
+
+            (0..count_rows).for_each(|row| {
+                cells.push((row, count_columns - 1));
+            });
+        }
+
+        cells
+    }
+}
+
+/// FirstRow represents the first row of a [crate::Table].
+/// It's often contains headers data.
+pub struct FirstRow;
+
+impl Object for FirstRow {
     fn cells(&self, _: usize, count_columns: usize) -> Vec<(usize, usize)> {
         (0..count_columns).map(|column| (0, column)).collect()
     }
 }
 
-/// Full represents all cells on a [Grid]
+/// LastRow represents the last row of a [crate::Table].
+pub struct LastRow;
+
+impl Object for LastRow {
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
+        let row = if count_rows == 0 { 0 } else { count_rows - 1 };
+        (0..count_columns).map(|column| (row, column)).collect()
+    }
+}
+
+/// Full represents all cells on a [crate::Table]
 pub struct Full;
 
 impl Object for Full {
     fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
-        (0..count_rows)
-            .map(|row| {
-                (0..count_columns)
-                    .map(|column| (row, column))
-                    .collect::<Vec<_>>()
-            })
-            .collect::<Vec<_>>()
-            .concat()
+        Segment::new(.., ..).cells(count_rows, count_columns)
     }
 }
 
-/// Row denotes a set of cells on given rows on a [Grid].
-pub struct Row<R: RangeBounds<usize>>(pub R);
+/// Row denotes a set of cells on given rows on a [crate::Table].
+pub struct Rows<R> {
+    range: R,
+}
 
-impl<R: RangeBounds<usize>> Object for Row<R> {
+impl<R> Rows<R>
+where
+    R: RangeBounds<usize>,
+{
+    /// Returns a new instance of [Rows] for a range of rows.
+    ///
+    /// If the boundries are exeeded it may panic.
+    pub fn new(range: R) -> Self {
+        Self { range }
+    }
+}
+
+impl Rows<Range<usize>> {
+    /// Returns a new instance of [Rows] with a single row.
+    ///
+    /// If the boundries are exeeded it may panic.
+    pub fn single(index: usize) -> Self {
+        Self {
+            range: index..index + 1,
+        }
+    }
+}
+
+impl Rows<()> {
+    /// Returns a first row [Object].
+    ///
+    /// If the table has 0 rows returns an empty set of cells.
+    pub fn first() -> FirstRow {
+        FirstRow
+    }
+
+    /// Returns a last row [Object].
+    ///
+    /// If the table has 0 rows returns an empty set of cells.
+    pub fn last() -> LastRow {
+        LastRow
+    }
+}
+
+impl<R> Object for Rows<R>
+where
+    R: RangeBounds<usize>,
+{
     fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
-        let (x, y) = bounds_to_usize(self.0.start_bound(), self.0.end_bound(), count_rows);
+        let (x, y) = bounds_to_usize(self.range.start_bound(), self.range.end_bound(), count_rows);
 
         (x..y)
             .map(|row| (0..count_columns).map(|column| (row, column)).collect())
@@ -69,12 +198,44 @@ impl<R: RangeBounds<usize>> Object for Row<R> {
     }
 }
 
-/// Column denotes a set of cells on given columns on a [Grid].
-pub struct Column<R: RangeBounds<usize>>(pub R);
+/// Column denotes a set of cells on given columns on a [crate::Table].
+pub struct Columns<R> {
+    range: R,
+}
 
-impl<R: RangeBounds<usize>> Object for Column<R> {
+impl<R> Columns<R>
+where
+    R: RangeBounds<usize>,
+{
+    /// Returns a new instance of [Columns] for a range of columns.
+    ///
+    /// If the boundries are exeeded it may panic.
+    pub fn new(range: R) -> Self {
+        Self { range }
+    }
+}
+
+impl Columns<Range<usize>> {
+    /// Returns a new instance of [Columns] for a single column.
+    ///
+    /// If the boundries are exeeded it may panic.
+    pub fn single(index: usize) -> Self {
+        Self {
+            range: index..index + 1,
+        }
+    }
+}
+
+impl<R> Object for Columns<R>
+where
+    R: RangeBounds<usize>,
+{
     fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
-        let (x, y) = bounds_to_usize(self.0.start_bound(), self.0.end_bound(), count_columns);
+        let (x, y) = bounds_to_usize(
+            self.range.start_bound(),
+            self.range.end_bound(),
+            count_columns,
+        );
 
         (x..y)
             .map(|column| (0..count_rows).map(|row| (row, column)).collect())
@@ -83,7 +244,7 @@ impl<R: RangeBounds<usize>> Object for Column<R> {
     }
 }
 
-/// Cell denotes a particular cell on a [Grid].
+/// Cell denotes a particular cell on a [crate::Table].
 pub struct Cell(pub usize, pub usize);
 
 impl Object for Cell {

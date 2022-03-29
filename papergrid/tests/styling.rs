@@ -7,16 +7,16 @@ fn grid_2x2_custom_frame_test() {
     let mut grid = util::new_grid::<2, 2>();
     grid.set(
         &Entity::Global,
-        Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
     assert_eq!(
         grid.to_string(),
-        "#*******#\n\
+        "#***#***#\n\
          |0-0|0-1|\n\
-         |---+---|\n\
+         #***#***#\n\
          |1-0|1-1|\n\
-         #*******#\n"
+         #***#***#\n"
     )
 }
 
@@ -25,31 +25,31 @@ fn grid_2x2_custom_column_test() {
     let mut grid = util::new_grid::<2, 2>();
     grid.set(
         &Entity::Column(1),
-        Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
     assert_eq!(
         grid.to_string(),
         "+---#***#\n\
          |0-0|0-1|\n\
-         +---|---|\n\
+         +---#***#\n\
          |1-0|1-1|\n\
-         +---#***#\n"
+         +---#***#\n",
     );
 
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
     grid.set(
         &Entity::Column(0),
-        Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
     assert_eq!(
         grid.to_string(),
         "#***#---+\n\
          |0-0|0-1|\n\
-         |---|---+\n\
+         #***#---+\n\
          |1-0|1-1|\n\
-         #***#---+\n"
+         #***#---+\n",
     )
 }
 
@@ -59,22 +59,24 @@ fn grid_2x2_custom_row_test() {
 
     grid.set(
         &Entity::Row(0),
-        Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
     assert_eq!(
         grid.to_string(),
-        "#*******#\n\
-         |0-0|0-1|\n\
-         #*******#\n\
-         |1-0|1-1|\n\
-         +---+---+\n"
+        concat!(
+            "#***#***#\n",
+            "|0-0|0-1|\n",
+            "#***#***#\n",
+            "|1-0|1-1|\n",
+            "+---+---+\n",
+        )
     );
 
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
     grid.set(
         &Entity::Row(1),
-        Settings::new().border(Border::full('*', '*', '|', '|', '#', '#', '#', '#')),
+        Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
     let str = grid.to_string();
@@ -82,9 +84,9 @@ fn grid_2x2_custom_row_test() {
         str,
         "+---+---+\n\
          |0-0|0-1|\n\
-         #*******#\n\
+         #***#***#\n\
          |1-0|1-1|\n\
-         #*******#\n"
+         #***#***#\n"
     );
 }
 
@@ -94,7 +96,7 @@ fn grid_2x2_change_cell_border_test() {
 
     grid.set(
         &Entity::Cell(0, 1),
-        Settings::new().border(Border::full('*', '^', '@', '#', '~', '!', '%', '&')),
+        Settings::new().border(Border::new('*', '^', '@', '#', '~', '!', '%', '&')),
     );
     let str = grid.to_string();
     assert_eq!(
@@ -110,7 +112,6 @@ fn grid_2x2_change_cell_border_test() {
 #[test]
 fn grid_2x2_alignment_test() {
     let mut grid = util::new_grid::<2, 2>();
-    grid.set(&Entity::Global, Settings::new().text("asd    "));
     grid.set(
         &Entity::Column(0),
         Settings::new().alignment(AlignmentHorizontal::Left),
@@ -119,16 +120,29 @@ fn grid_2x2_alignment_test() {
         &Entity::Column(1),
         Settings::new().alignment(AlignmentHorizontal::Right),
     );
-    let str = grid.to_string();
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().text("asd    "));
+    grid.set(&Entity::Cell(0, 1), Settings::new().text("asd    "));
 
     assert_eq!(
-        str,
+        grid.to_string(),
         "+-------+-------+\n\
-         |asd    |    asd|\n\
+         |asd    |asd    |\n\
          +-------+-------+\n\
-         |asd    |    asd|\n\
+         |1-0    |    1-1|\n\
          +-------+-------+\n"
-    )
+    );
+
+    grid.set(&Entity::Global, Settings::new().text("asd    "));
+
+    assert_eq!(
+        grid.to_string(),
+        "+-------+-------+\n\
+         |asd    |asd    |\n\
+         +-------+-------+\n\
+         |asd    |asd    |\n\
+         +-------+-------+\n"
+    );
 }
 
 #[test]

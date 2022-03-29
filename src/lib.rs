@@ -121,7 +121,7 @@
 //! }
 //!
 //! #[derive(Tabled)]
-//! struct Developer(#[header("name")] &'static str);
+//! struct Developer(#[tabled(rename = "name")] &'static str);
 //!     
 //! let data = vec![
 //!     (Developer("Terri Kshlerin"), Domain::Embeded),
@@ -160,7 +160,6 @@ mod extract;
 mod formating;
 mod highlight;
 mod margin;
-mod object;
 mod padding;
 mod panel;
 mod rotate;
@@ -170,16 +169,20 @@ mod width;
 
 pub mod builder;
 pub mod display;
+pub mod object;
+pub mod render_settings;
 pub mod style;
 
 pub use crate::{
-    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::*, margin::*,
-    object::*, padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::*,
+    alignment::*, alignment::*, concat::*, concat::*, disable::*, disable::*, extract::*,
+    extract::*, formating::*, formating::*, highlight::*, highlight::*, margin::*, margin::*,
+    object::*, padding::*, padding::*, panel::*, panel::*, rotate::*, rotate::*, span::*, span::*,
+    style::Style, table::*, table::*, width::*, width::*,
 };
 
 pub use tabled_derive::Tabled;
 
-// todo: change return type to impl Iterator<Cow<str
+// todo: change return type to impl Iterator<Cow<str>>?
 
 /// Tabled a trait responsible for providing a header fields and a row fields.
 ///

@@ -6,7 +6,7 @@ use tabled::{display::ExpandedDisplay, Tabled};
 #[derive(Tabled)]
 struct Distribution {
     name: &'static str,
-    #[field(display_with = "Self::display_based_on")]
+    #[tabled(display_with = "Self::display_based_on")]
     based_on: Option<&'static str>,
     is_active: bool,
     is_cool: bool,

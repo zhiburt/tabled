@@ -2,7 +2,8 @@
 //! `cargo run --example inline`
 
 use tabled::{
-    Alignment, AlignmentHorizontal, Full, Head, Modify, Padding, Row, Style, Table, Tabled,
+    object::{Full, Rows},
+    Alignment, AlignmentHorizontal, Modify, Padding, Style, Table, Tabled,
 };
 
 fn main() {
@@ -42,8 +43,8 @@ fn main() {
     let table = Table::new(&data)
         .with(Style::modern())
         .with(Modify::new(Full).with(Padding::new(1, 1, 0, 0)))
-        .with(Modify::new(Head).with(Alignment::Horizontal(AlignmentHorizontal::Left)))
-        .with(Modify::new(Row(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Center)));
+        .with(Modify::new(Rows::first()).with(Alignment::Horizontal(AlignmentHorizontal::Left)))
+        .with(Modify::new(Rows::new(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Center)));
 
     println!("{}", table);
 }
@@ -51,9 +52,9 @@ fn main() {
 #[derive(Tabled)]
 struct User {
     id: usize,
-    #[header(inline)]
+    #[tabled(inline)]
     personal_information: Person,
-    #[header(inline)]
+    #[tabled(inline)]
     contact: Contact,
 }
 
@@ -61,7 +62,7 @@ struct User {
 struct Person {
     name: &'static str,
     surname: &'static str,
-    #[field(display_with = "display_age")]
+    #[tabled(display_with = "display_age")]
     age: Option<usize>,
 }
 
@@ -74,13 +75,13 @@ fn display_age(age: &Option<usize>) -> String {
 
 #[derive(Tabled)]
 enum Contact {
-    #[field(inline("telegram::"))]
+    #[tabled(inline("telegram::"))]
     Telegram {
         username: &'static str,
         number: &'static str,
     },
-    #[header(hidden)]
+    #[tabled(hidden)]
     No,
-    #[header(inline)]
-    Number(#[header("number")] &'static str),
+    #[tabled(inline)]
+    Number(#[tabled("number")] &'static str),
 }

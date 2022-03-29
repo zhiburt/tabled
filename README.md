@@ -14,16 +14,18 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 * [Usage](#Usage)
 * [Settings](#Settings)
     * [Style](#Style)
-        * [ASCII](#ASCII)
-        * [Psql](#Psql)
-        * [Github Markdown](#Github-Markdown)
-        * [Modern](#Modern)
-        * [ReStructuredText](#ReStructuredText)
-        * [Extended](#Extended)
-        * [Dots](#Dots)
-        * [Blank](#Blank)
-        * [Custom](#Custom)
-    * [Text in top border](#Text-in-top-border)
+        * [Themes](#Themes)
+            * [ASCII](#ASCII)
+            * [Psql](#Psql)
+            * [Github Markdown](#Github-Markdown)
+            * [Modern](#Modern)
+            * [ReStructuredText](#ReStructuredText)
+            * [Extended](#Extended)
+            * [Dots](#Dots)
+            * [Blank](#Blank)
+            * [Custom](#Custom)
+        * [Cell Border](#Cell-Border)
+        * [Text in a top border](#Text-in-a-top-border)
     * [Alignment](#Alignment)
     * [Format](#Format)
     * [Padding](#Padding)
@@ -31,11 +33,11 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     * [Rotate](#Rotate)
     * [Disable](#Disable)
     * [Extract](#Extract)
-        * [Interface](#Interface)
-        * [Range](#Range)
         * [Refinish](#Refinishing)
     * [Header and Footer](#Header-and-Footer)
     * [Concat](#Concat)
+    * [Highlight](#Highlight)
+    * [Column span](#Column-span)
 * [Derive](#Derive)
     * [Column name override](#Column-name-override)
     * [Hide a column](#Hide-a-column)
@@ -113,6 +115,8 @@ In this section is listened a set of settings you can apply for your table.
 
 ### Style
 
+#### Themes
+
 There are a list of ready to use styles.
 Each style can be castomized.
 
@@ -121,6 +125,8 @@ A custom style also can be created from scratch.
 A style can be used by passing it to `.with` method of `Table`.
 
 ```rust
+use tabled::{Table, Style};
+
 let table = Table::new(&data).with(Style::psql());
 ```
 
@@ -129,7 +135,7 @@ Bellow rendered a list of pre configured styles.
 If you think that there's some valuable style to be added,
 Please open an issue.
 
-#### ASCII
+##### ASCII
 
 ```
 +------+----------------+---------------+
@@ -143,7 +149,7 @@ Please open an issue.
 +------+----------------+---------------+
 ```
 
-#### Psql
+##### Psql
 
 ```
  name |  designed_by   | invented_year 
@@ -153,7 +159,7 @@ Please open an issue.
   Go  |    Rob Pike    |     2009      
 ```
 
-#### Github Markdown
+##### Github Markdown
 
 ```
 | name |  designed_by   | invented_year |
@@ -163,7 +169,7 @@ Please open an issue.
 |  Go  |    Rob Pike    |     2009      |
 ```
 
-#### Modern
+##### Modern
 
 ```
 ┌──────┬────────────────┬───────────────┐
@@ -177,7 +183,7 @@ Please open an issue.
 └──────┴────────────────┴───────────────┘
 ```
 
-#### ReStructuredText
+##### ReStructuredText
 
 ```
 ====== ================ ===============
@@ -189,7 +195,7 @@ Please open an issue.
 ====== ================ ===============
 ```
 
-#### Extended
+##### Extended
 
 ```
 ╔══════╦════════════════╦═══════════════╗
@@ -203,7 +209,7 @@ Please open an issue.
 ╚══════╩════════════════╩═══════════════╝
 ```
 
-#### Dots
+##### Dots
 
 ```
 .........................................
@@ -215,7 +221,7 @@ Please open an issue.
 :......:................:...............:
 ```
 
-#### Blank
+##### Blank
 
 ```
  name    designed_by     invented_year 
@@ -224,12 +230,12 @@ Please open an issue.
   Go       Rob Pike          2009      
 ```
 
-#### Custom
+##### Custom
 
 You can modify existing styles to fit your needs.
 
 ```rust
-let style = Style::modern().header_off().horizontal_off();
+let style = tabled::Style::modern().header_off().horizontal_off();
 ```
 
 The style will look like the following.
@@ -245,16 +251,62 @@ The style will look like the following.
 
 You can find more methods which are available in the [documentation](https://docs.rs/tabled/latest/tabled/style/struct.CustomStyle.html)
 
+#### Cell Border
+
+Sometimes `tabled::Style` settings are not enough.
+Sometimes it's nesessary to change a border of a particular cell.
+
+For this porpouse you can use `Border`.
+
+```rust
+use tabled::{TableIteratorExt, Modify, Border, object::Rows};
+
+let data = [["123", "456"], ["789", "000"]];
+
+let table = data.table()
+    .with(Style::ascii())
+    .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
+
+let expected = "+xxxxx+xxxxx+\n\
+                |  0  |  1  |\n\
+                +-----+-----+\n\
+                | 123 | 456 |\n\
+                +-----+-----+\n\
+                | 789 | 000 |\n\
+                +-----+-----+\n";
+
+assert_eq!(table.to_string(), expected);
+```
+
+#### Text in a top border
+
+You can write a custom text at the top border if it's present in a style.
+
+```rust
+use tabled::{Table, style::TopBorderText};
+
+let table = Table::new(["Hello World"])
+    .with(TopBorderText::new("+-.table"));
+
+assert_eq!(
+    table.to_string(),
+    "+-.table------+\n\
+     |    &str     |\n\
+     +-------------+\n\
+     | Hello World |\n\
+     +-------------+\n"
+);
+```
+
 ### Alignment
 
 You can set a horizontal and vertical alignment for a `Header`, `Column`, `Row` or `Full` set of cells.
 
 ```rust
-Table::new(&data)
-    .with(Modify::new(Full)
-        .with(Alignment::left())
-        .with(Alignment::top())
-    );
+use tabled::{TableIteratorExt, Modify, Alignment, object::Full};
+
+data.table()
+    .with(Modify::new(Full).with(Alignment::left()).with(Alignment::top()));
 ```
 
 ### Format
@@ -262,37 +314,38 @@ Table::new(&data)
 The `Format` function provides an interface for a modification of cells.
 
 ```rust
+use tabled::{Table, Modify, Format, object::{Rows, Columns}};
+
 Table::new(&data)
-    .with(Style::psql()),
-    .with(Modify::new(Column(..)).with(Format(|s| format!("<< {} >>", s))))
-    .with(Modify::new(Row(..1)).with(Format(|s| format!("Head {}", s))));
+    .with(Modify::new(Rows::first()).with(Format::new(|s| format!("Head {}", s))));
+    .with(Modify::new(Columns::new(1..=2)).with(Format::new(|s| format!("<< {} >>", s))))
 ```
 
 It's also possible to use functions with signature `Fn(&str) -> String` as a formatter.
 
 ```rust
+use tabled::{Table, Modify, object::{Rows, Columns}};
+
 Table::new(&data)
-    .with(Style::psql()),
-    .with(Modify::new(Column(..)).with(|s: &str| format!("<< {} >>", s)))
-    .with(Modify::new(Row(..1)).with(str::to_lowercase));
+    .with(Modify::new(Columns::single(3)).with(|s: &str| format!("<< {} >>", s)))
+    .with(Modify::new(Rows::first()).with(str::to_lowercase));
 ```
 
 IMPORTANT: you may need to specify type in your lambda otherwise compiler may be disagreed to work :)
-
-There's 2 more Format modifiers. You can find more imformation about theire usage in the documentation.
-
-- `FormatFrom` - Uses `Vec` elements as new content.
-- `FormatWithIndex` - Like `Format` but with `row` and `column` index in lambda.
 
 ### Padding
 
 The `Padding` structure provides an interface for a left, right, top and bottom padding of cells.
 
 ```rust
-use tabled::{Table, Modify, Row, Padding};
+use tabled::{Table, Modify, Padding, object::Cell};
 
 Table::new(&data)
-    .with(Modify::new(Row(1..)).with(Padding::new(1, 1, 0, 2)));
+    .with(Modify::new(Cell(0, 3)).with(Padding::new(1, 1, 0, 2)));
+
+// It's possible to set a fill char for padding.
+Table::new(&data)
+    .with(Modify::new(Cell(0, 3)).with(Padding::new(1, 1, 0, 2).set_fill('>', '<', '^', 'V')));
 ```
 
 ### Max width
@@ -301,16 +354,20 @@ Using `MaxWidth` type its possible to set a max width of an object.
 While tinkering content we don't forget about its color.
 
 ```rust
-// Truncating content to 10 chars in all rows except a header.
-Table::new(&data).with(Modify::new(Row(1..)).with(MaxWidth::truncating(10, "...")));
+use tabled::{TableIteratorExt, Modify, MaxWidth, object::Rows};
 
-// Wrapping content by new lines after 10 chars in a header row.
-Table::new(&data).with(Modify::new(Row(..1)).with(MaxWidth::wrapping(10)));
+// Truncating content to 10 chars in all rows except a header.
+data.table()
+    .with(Modify::new(Rows::new(1..)).with(MaxWidth::truncating(10, "...")));
+
+// Wrapping content by new lines after 10 chars in a last row.
+data.table()
+    .with(Modify::new(Rows::last()).with(MaxWidth::wrapping(10)));
 ```
 
 ### Rotate
 
-You can rotate table using `Rotate`.
+You can rotate table using `tabled::Rotate`.
 
 Imagine you have a table already. And the output may look like this.
 
@@ -326,7 +383,11 @@ Imagine you have a table already. And the output may look like this.
 └────┴──────────────┴───────────────────────────┘
 ```
 
-Now we will add `table.with(Rotate::Left)` and the output will be;
+Now we will add the following modificator and the output will be;
+
+```rust
+table.with(Rotate::Left)
+```
 
 ```text
 ┌──────────────┬────────────────────────┬───────────────────────────┬──────────────────────────┐
@@ -343,7 +404,9 @@ Now we will add `table.with(Rotate::Left)` and the output will be;
 You can remove certain rows or columns from the table.
 
 ```rust
-Table::new(&data)
+use tabled::{TableIteratorExt, Disable};
+
+data.table()
     .with(Disable::Row(..1))
     .with(Disable::Column(3..4));
 ```
@@ -353,6 +416,8 @@ Table::new(&data)
 You can `Extract` segments of a table to focus on a reduced number of rows and columns.
 
 ```rust
+use tabled::{Table, Extract};
+
 let rows = 1..3;
 let columns = 1..;
 Table::new(&data)
@@ -378,6 +443,8 @@ Table::new(&data)
 For styles with unique corner and edge textures it is possible to reapply a table style once a `Table` extract has been created.
 
 ```rust
+use tabled::{Table, Extract, Style};
+
 let rows = 1..3;
 let columns = 1..;
 Table::new(&data)
@@ -405,9 +472,10 @@ Refinished extract
 ### Header and Footer
 
 You can add a `Header` and `Footer` to display some information.
-By the way you can even add such line by using `Panel`
 
 ```rust
+use tabled::{Table, Header, Footer};
+
 Table::new(&data)
     .with(Header("Tabled Name"))
     .with(Footer(format!("{} elements", data.len())))
@@ -426,6 +494,8 @@ But it's how it may look like.
 └────────────────────────────────────────────────────────────┘
 ```
 
+You can also add a full row on any line using `tabled::Panel`.
+
 ### Concat
 
 You can concatanate 2 tables using `Concat`.
@@ -436,6 +506,76 @@ let t1: Table = ...;
 let t2: Table = ...;
 
 let t3: Table = t1.with(Concat::vertical(t2));
+```
+
+#### Highlight
+
+`Highlight` can be used to change a borders of target sector.
+Here's an example.
+
+```rust
+use tabled::{
+    object::{Columns, Object, Rows},
+    style::{Border, Style},
+    Highlight, TableIteratorExt,
+};
+
+let data = vec![
+    ["A", "B", "C"],
+    ["D", "E", "F"]
+];
+
+let table = data.table()
+    .with(Style::modern())
+    .with(Highlight::new(
+        Rows::first().and(Columns::single(2).and(Cell(1, 1))),
+        Border::filled('*'),
+    ));
+```
+
+The printed table would be like the following.
+
+```text
+*************
+* 0 │ 1 │ 2 *
+*****───┼───*
+│ A * B │ C *
+├───*****───*
+│ D │ E * F *
+└───┴───*****
+```
+
+#### Column span
+
+It's possible to have a horizontal (column) span of a cell.
+
+The code example and the resulting table.
+
+```rust
+use tabled::{object::Cell, Modify, Span, TableIteratorExt};
+
+fn main() {
+    let data = vec![
+        ["A", "B", "C"],
+        ["D", "E", "F"],
+    ];
+
+    let table = data
+        .table()
+        .with(Modify::new(Cell(0, 0)).with(Span::column(3)))
+        .with(Modify::new(Cell(1, 0)).with(Span::column(2)));
+
+    println!("{}", table);
+```
+
+```text
++---+---+---+
+|     0     |
++---+---+---+
+|   A   | C |
++---+---+---+
+| D | E | F |
++---+---+---+
 ```
 
 ## Derive
@@ -457,14 +597,16 @@ struct SomeOtherType;
 
 ### Column name override
 
-You can use a `#[header("")]` attribute to override a column name.
+You can use a `#[tabled(rename = "")]` attribute to override a column name.
 
 ```rust
+use tabled::Tabled;
+
 #[derive(Tabled)]
 struct Person {
-    #[header("Name")]
+    #[tabled(rename = "Name")]
     first_name: &'static str,
-    #[header("Surname")]
+    #[tabled(rename = "Surname")]
     last_name: &'static str,
 }
 ```
@@ -476,10 +618,12 @@ You can mark filds as hidden in which case they fill be ignored and not be prese
 A similar affect could be achived by the means of a `Disable` setting.
 
 ```rust
+use tabled::Tabled;
+
+#[derive(Tabled)]
 struct Person {
-   #[header(hidden = true)]
    id: u8,
-   #[header("field 2", hidden)]
+   #[tabled(skip)]
    number: &'static str,
    name: &'static str,
 }
@@ -496,38 +640,42 @@ There's 2 common ways how to solve this:
 * Implement `Tabled` trait manually for a type.
 * Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and implement a Display trait for it.
 
-Or to use an attribute `#[field(display_with = "func")]` for the field. To use it you must provide a function name in a `display_with` parameter.
+Or to use an attribute `#[tabled(display_with = "func")]` for the field. To use it you must provide a function name in a `display_with` parameter.
    
 ```rust
+use tabled::Tabled;
+
+#[derive(Tabled)]
+pub struct MyRecord {
+    pub id: i64,
+    #[tabled(display_with = "display_option")]
+    pub valid: Option<bool>
+}
+
 fn display_option(o: &Option<bool>) -> String {
     match o {
         Some(s) => format!("is valid thing = {}", s), 
         None => format!("is not valid"),
     }
 }
-
-#[derive(Tabled)]
-pub struct MyRecord {
-    pub id: i64,
-    #[field(display_with="display_option")]
-    pub valid: Option<bool>
-}
 ```
 
 ### Inline
    
 It's possible to inline internal data if it implements `Tabled` trait.
-Use `#[header(inline)]` or `#[header(inline("prefix>>"))]`.
-The string argument is a prefix which will be used for all inlined elements.
+Use `#[tabled(inline)]` for it.
+Also you can set a prefix which will be used for all inlined elements use `#[tabled(inline("prefix>>"))]` for it.
 
 ```rust
- #[derive(Tabled)]
- struct Person {
-     id: u8,
-     name: &'static str,
-     #[header(inline)]
-     ed: Education,
- }
+use tabled::Tabled;
+
+#[derive(Tabled)]
+struct Person {
+    id: u8,
+    name: &'static str,
+    #[tabled(inline)]
+    ed: Education,
+}
  
 #[derive(Tabled)]
 struct Education {
@@ -539,15 +687,17 @@ struct Education {
 And it works for enums as well.
 
 ```rust
+use tabled::Tabled;
+
 #[derive(Tabled)]
 enum Vehicle {
-    #[header(inline("Auto::"))]
+    #[tabled(inline("Auto::"))]
     Auto {
         model: &'static str,
         engine: &'static str,
     },
-    #[header(inline)]
-    Bikecycle(#[header("name")] &'static str, #[header(inline)] Bike),
+    #[tabled(inline)]
+    Bikecycle(#[tabled(rename = "name")] &'static str, #[tabled(inline)] Bike),
 }
         
 #[derive(Tabled)]
@@ -564,11 +714,13 @@ struct Bike {
 The library doesn't bind you in usage of any color library but to be able to work corectly with color input you should provide a `--features color`.
 
 ```rust
+use tabled::{Table, Modify, Style, Format, object::Columns};
+
 Table::new(&data)
     .with(Style::psql())
-    .with(Modify::new(Column(..1)).with(Format(|s| s.red().to_string())))
-    .with(Modify::new(Column(1..2)).with(Format(|s| s.blue().to_string())))
-    .with(Modify::new(Column(2..)).with(Format(|s| s.green().to_string())));
+    .with(Modify::new(Columns::single(0)).with(Format::new(|s| s.red().to_string())))
+    .with(Modify::new(Columns::single(1)).with(Format::new(|s| s.blue().to_string())))
+    .with(Modify::new(Columns::new(2..)).with(Format::new(|s| s.green().to_string())));
 ```
 
 ![carbon-2](https://user-images.githubusercontent.com/20165848/120526301-b95efc80-c3e1-11eb-8779-0ec48894463b.png)
@@ -589,7 +741,7 @@ enum Domain {
 }
 
 #[derive(Tabled)]
-struct Developer(#[header("name")] &'static str);
+struct Developer(#[tabled("name")] &'static str);
 
 let data = vec![
     (Developer("Terri Kshlerin"), Domain::Embeded),
@@ -618,8 +770,10 @@ assert_eq!(
 You can peak your target for settings using `and` and `not` methods for an object.
 
 ```rust
-Full.not(Row(..1)) // peak all cells except header
-Head.and(Column(..1)).not(Cell(0, 0)) // peak a header and first column except a (0, 0) cell
+use tabled::object::{Full, Cell, Rows, Columns};
+
+Full.not(Rows::first()) // peak all cells except header
+Rows::first().and(Columns::single(0)).not(Cell(0, 0)) // peak a header and first column except a (0, 0) cell
 ```
 
 ## Views

@@ -137,16 +137,15 @@ fn render_multilane_alignment() {
          |                  cell                  |         |\n\
          +----------------------------------------+---------+\n\
          |the second column got the beginning here| and here|\n\
-         |                                        |       we|\n\
-         |                                        |      see|\n\
-         |                                        |        a|\n\
-         |                                        |     long|\n\
-         |                                        |   string|\n\
+         |                                        | we      |\n\
+         |                                        | see     |\n\
+         |                                        | a       |\n\
+         |                                        | long    |\n\
+         |                                        | string  |\n\
          +----------------------------------------+---------+\n"
     );
 
-    let actual = grid.to_string();
-    assert_eq!(expected, actual);
+    assert_eq!(grid.to_string(), expected);
 }
 
 #[test]
@@ -179,16 +178,15 @@ fn render_multilane_vertical_alignment() {
          |                  cell                  |         |\n\
          +----------------------------------------+---------+\n\
          |                                        | and here|\n\
-         |                                        |       we|\n\
-         |the second column got the beginning here|      see|\n\
-         |                                        |        a|\n\
-         |                                        |     long|\n\
-         |                                        |   string|\n\
+         |                                        | we      |\n\
+         |the second column got the beginning here| see     |\n\
+         |                                        | a       |\n\
+         |                                        | long    |\n\
+         |                                        | string  |\n\
          +----------------------------------------+---------+\n"
     );
 
-    let actual = grid.to_string();
-    assert_eq!(expected, actual);
+    assert_eq!(grid.to_string(), expected);
 }
 
 #[test]
@@ -589,6 +587,96 @@ fn render_row_span_with_no_split_style() {
     let expected = concat!(" 0-0  \n", "1-01-1\n");
 
     assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_zero_span_of_first_cell() {
+    let mut grid = util::new_grid::<2, 2>();
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(0));
+
+    let expected = concat!(
+        "+---+---+\n",
+        "|0-1    |\n",
+        "+---+---+\n",
+        "|1-0|1-1|\n",
+        "+---+---+\n",
+    );
+
+    assert_eq!(expected, grid.to_string());
+
+    grid.set(&Entity::Cell(1, 0), Settings::new().span(0));
+
+    let expected = concat!("+-+-+\n", "|0-1|\n", "+-+-+\n", "|1-1|\n", "+-+-+\n",);
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_zero_span_between_cells() {
+    let mut grid = util::new_grid::<2, 3>();
+
+    grid.set(&Entity::Cell(0, 1), Settings::new().span(0));
+
+    let expected = concat!(
+        "+---+---+---+\n",
+        "|0-0    |0-2|\n",
+        "+---+---+---+\n",
+        "|1-0|1-1|1-2|\n",
+        "+---+---+---+\n",
+    );
+
+    assert_eq!(expected, grid.to_string());
+
+    grid.set(&Entity::Cell(1, 1), Settings::new().span(0));
+
+    let expected = concat!(
+        "+-+-+---+\n",
+        "|0-0|0-2|\n",
+        "+-+-+---+\n",
+        "|1-0|1-2|\n",
+        "+-+-+---+\n",
+    );
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_zero_span_at_the_end() {
+    let mut grid = util::new_grid::<2, 3>();
+
+    grid.set(&Entity::Cell(0, 1), Settings::new().span(0));
+    grid.set(&Entity::Cell(0, 2), Settings::new().span(0));
+
+    let expected = concat!(
+        "+---+---+---+\n",
+        "|0-0        |\n",
+        "+---+---+---+\n",
+        "|1-0|1-1|1-2|\n",
+        "+---+---+---+\n",
+    );
+
+    assert_eq!(expected, grid.to_string());
+
+    grid.set(&Entity::Cell(1, 1), Settings::new().span(0));
+    grid.set(&Entity::Cell(1, 2), Settings::new().span(0));
+
+    let expected = concat!("+-+++\n", "|0-0|\n", "+-+++\n", "|1-0|\n", "+-+++\n",);
+
+    assert_eq!(expected, grid.to_string());
+}
+
+#[test]
+fn render_zero_span_grid() {
+    let mut grid = util::new_grid::<2, 2>();
+
+    grid.set(&Entity::Cell(0, 0), Settings::new().span(0));
+    grid.set(&Entity::Cell(0, 1), Settings::new().span(0));
+    grid.set(&Entity::Cell(1, 0), Settings::new().span(0));
+    grid.set(&Entity::Cell(1, 1), Settings::new().span(0));
+
+    // todo: determine if it's correct behaviour?
+    assert_eq!("+++\n|\n+++\n|\n+++\n", grid.to_string());
 }
 
 #[test]
