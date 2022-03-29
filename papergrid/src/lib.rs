@@ -601,9 +601,9 @@ impl Grid {
 fn count_borders(row: &[BorderLine], styles: &[Style]) -> usize {
     let left_border = row.get(0).map_or(0, |b| b.connector1.iter().count());
     let other_borders = row
-        .into_iter()
+        .iter()
         .enumerate()
-        .filter(|&(col, _)| is_cell_visible(&styles, col))
+        .filter(|&(col, _)| is_cell_visible(styles, col))
         .filter(|(_, b)| b.connector2.is_some())
         .count();
 
@@ -1025,13 +1025,12 @@ impl std::fmt::Display for Grid {
             widths,
             normal_widths,
             row_heights,
-            &self,
-        )?;
-
-        Ok(())
+            self,
+        )
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn print_grid(
     f: &mut fmt::Formatter,
     count_rows: usize,
@@ -1058,6 +1057,7 @@ fn print_grid(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_row(
     f: &mut std::fmt::Formatter<'_>,
     cell_contents: &[Vec<String>],
@@ -1069,9 +1069,7 @@ fn build_row(
     row: usize,
 ) -> fmt::Result {
     if row == 0 {
-        let borders = grid.get_split_line(row);
-        let override_str = grid.override_split_lines.get(&row);
-        build_split_line(f, normal_widths, &borders, override_str)?;
+        build_split_line_(f, normal_widths, grid, row)?;
     }
 
     let inner_border = grid.get_inner_split_line(row);
@@ -1084,12 +1082,20 @@ fn build_row(
         &inner_border,
     )?;
 
-    {
-        let borders = grid.get_split_line(row + 1);
-        let override_str = grid.override_split_lines.get(&(row + 1));
-        build_split_line(f, normal_widths, &borders, override_str)?;
-    }
+    build_split_line_(f, normal_widths, grid, row + 1)?;
 
+    Ok(())
+}
+
+fn build_split_line_(
+    f: &mut fmt::Formatter,
+    normal_widths: &[usize],
+    grid: &Grid,
+    row: usize,
+) -> Result<(), fmt::Error> {
+    let borders = grid.get_split_line(row);
+    let override_str = grid.override_split_lines.get(&row);
+    build_split_line_with_override(f, normal_widths, &borders, override_str)?;
     Ok(())
 }
 
@@ -1127,13 +1133,12 @@ fn build_line_cell(
 
     let cell_line_index = line_index - top_indent;
     let cell_has_this_line = cell.len() > cell_line_index;
-    // happen when other cells have bigger height
+    // happens when other cells have bigger height
     if !cell_has_this_line {
         return repeat_char(f, style.padding.bottom.fill, width);
     }
 
     let mut text = cell[cell_line_index].as_str();
-
     if style.formatting.horizontal_trim {
         text = text.trim();
     }
@@ -1233,6 +1238,7 @@ fn line_with_width(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_line(
     f: &mut std::fmt::Formatter<'_>,
     borders: &[BorderLine],
@@ -1261,73 +1267,104 @@ fn build_line(
     Ok(())
 }
 
-fn build_split_line(
+fn build_split_line_with_override(
     f: &mut std::fmt::Formatter<'_>,
     widths: &[usize],
     borders: &[BorderLine],
     override_str: Option<&String>,
 ) -> fmt::Result {
     let theres_no_border = borders.iter().all(|l| l.main.is_none());
-    if theres_no_border || borders.is_empty() {
+    if theres_no_border || widths.is_empty() {
         return Ok(());
     }
 
-    let mut override_str = override_str.map(|s| s.to_owned());
-    for (i, border) in borders.iter().enumerate().take(widths.len()) {
-        if let Some(left_connector) = border.connector1 {
-            let connector = override_str
-                .as_mut()
-                .and_then(|s| {
-                    s.chars().next().map(|c| {
-                        let _ = s.drain(..c.len_utf8());
-                        c
-                    })
-                })
-                .unwrap_or(left_connector);
-            write!(f, "{}", connector)?
+    let mut skip_chars = 0;
+    if let Some(s) = override_str {
+        let width = split_line_width(widths, borders);
+        skip_chars = write_with_limit(f, s, width)?;
+    }
+
+    build_split_line(f, widths, borders, skip_chars)?;
+    writeln!(f)
+}
+
+fn build_split_line(
+    f: &mut std::fmt::Formatter<'_>,
+    widths: &[usize],
+    borders: &[BorderLine],
+    mut skip_chars: usize,
+) -> fmt::Result {
+    let theres_no_border = borders.iter().all(|l| l.main.is_none());
+    if theres_no_border || widths.is_empty() {
+        return Ok(());
+    }
+
+    if let Some(left_border) = borders[0].connector1 {
+        write_or_skip(f, left_border, 1, &mut skip_chars)?;
+    }
+
+    for i in 0..widths.len() {
+        if let Some(main) = borders[i].main {
+            write_or_skip(f, main, widths[i], &mut skip_chars)?;
         }
 
-        if let Some(main) = border.main {
-            let mut width = widths[i];
-            if let Some(s) = override_str.as_mut() {
-                while !s.is_empty() && width > 0 {
-                    match s.chars().next() {
-                        Some(c) => {
-                            write!(f, "{}", c)?;
-                            width -= 1;
-                            let _ = s.drain(..c.len_utf8());
-                        }
-                        None => break,
-                    }
-                }
-            }
-
-            while width > 0 {
-                write!(f, "{}", main)?;
-                width -= 1;
-            }
-        }
-
-        let is_last_cell = i + 1 == widths.len();
-        if is_last_cell {
-            if let Some(right_connector) = border.connector2 {
-                let connector = override_str
-                    .as_mut()
-                    .and_then(|s| {
-                        s.chars().next().map(|c| {
-                            let _ = s.drain(..c.len_utf8());
-                            c
-                        })
-                    })
-                    .unwrap_or(right_connector);
-                write!(f, "{}", connector)?
-            }
+        if let Some(right_border) = borders[i].connector2 {
+            write_or_skip(f, right_border, 1, &mut skip_chars)?;
         }
     }
 
-    writeln!(f)?;
-
     Ok(())
+}
+
+fn split_line_width(widths: &[usize], borders: &[BorderLine]) -> usize {
+    let content_width = widths.iter().sum::<usize>();
+    let count_borders = {
+        let left_border = borders.get(0).map_or(0, |b| b.connector1.iter().count());
+        let other_borders = borders
+            .iter()
+            .enumerate()
+            .filter(|(_, b)| b.connector2.is_some())
+            .count();
+
+        left_border + other_borders
+    };
+
+    content_width + count_borders
+}
+
+fn write_or_skip(
+    f: &mut std::fmt::Formatter<'_>,
+    c: char,
+    width: usize,
+    limit: &mut usize,
+) -> fmt::Result {
+    if *limit >= width {
+        *limit -= width;
+        return Ok(());
+    }
+
+    let n = width - *limit;
+
+    if *limit > 0 {
+        *limit = 0;
+    }
+
+    repeat_char(f, c, n)
+}
+
+fn write_with_limit(
+    f: &mut std::fmt::Formatter<'_>,
+    s: &str,
+    limit: usize,
+) -> Result<usize, fmt::Error> {
+    let mut i = 0;
+    let chars = s.chars().take(limit);
+    for c in chars {
+        write!(f, "{}", c)?;
+        i += 1;
+    }
+
+    Ok(i)
 }
 
 fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) -> fmt::Result {
