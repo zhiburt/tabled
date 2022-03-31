@@ -47,6 +47,7 @@ const DEFAULT_SPLIT_INTERSECTION_CHAR: char = ' ';
 const DEFAULT_INDENT_FILL_CHAR: char = ' ';
 
 /// Grid provides a set of methods for building a text-based table
+#[derive(Debug, Clone)]
 pub struct Grid {
     size: (usize, usize),
     cells: Vec<Vec<String>>,
@@ -472,28 +473,24 @@ impl Grid {
         self.override_split_lines.insert(row, line.into());
     }
 
-    pub fn row_width(&self, row: usize) -> usize {
-        let row_widths = (0..self.count_columns())
-            .map(|col| {
-                let style = self.style(&Entity::Cell(row, col));
-                let content = self.get_cell_content(row, col);
-                string_width(content) + style.padding.left.size + style.padding.right.size
-            })
+    // hide it by feature?
+    // 'private'
+    pub fn build_widths(&self) -> (Vec<Vec<usize>>, Vec<Vec<Style>>) {
+        let count_rows = self.count_rows();
+        let count_columns = self.count_columns();
+
+        let mut cells = self.collect_cells(count_rows, count_columns);
+        let mut styles = self.collect_styles(count_rows, count_columns);
+
+        fix_spans(&mut styles, &mut cells);
+
+        let borders = (0..count_rows)
+            .map(|row| self.get_inner_split_line(row))
             .collect::<Vec<_>>();
 
-        let row_styles = (0..self.count_columns())
-            .map(|col| self.style(&Entity::Cell(row, col)).clone())
-            .collect::<Vec<_>>();
+        let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
 
-        let row_borders = self.get_inner_split_line(row);
-
-        row_width(
-            &row_styles,
-            &row_widths,
-            &row_borders,
-            0,
-            self.count_columns(),
-        )
+        (widths, styles)
     }
 
     fn add_split_lines(&mut self, entity: Entity, border: &Border) {
@@ -1902,7 +1899,7 @@ fn total_width(
     content_width + count_borders + margin.left.size + margin.right.size
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Borders {
     vertical: HashMap<CellIndex, Line>,
     horizontal: HashMap<CellIndex, Line>,

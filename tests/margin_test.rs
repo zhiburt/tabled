@@ -107,14 +107,13 @@ fn table_with_margin_and_min_width() {
         .with(MaxWidth::truncating(20))
         .to_string();
 
-    // todo: Seens like incorrect a bit
     let expected = concat!(
         "VVVVVVVVVVVVVVVVVVVV\n",
-        "> N | co | c |  c  <\n",
-        ">---+----+---+-----<\n",
-        "> 0 |  0-0   | 0-2 <\n",
-        "> 1 | 1- | 1 |  1  <\n",
-        "> 2 | 2- | 2 |  2  <\n",
+        ">  | co | co | col <\n",
+        ">--+----+----+-----<\n",
+        ">  |   0-0   | 0-2 <\n",
+        ">  | 1- | 1- | 1-2 <\n",
+        ">  | 2- | 2- | 2-2 <\n",
         "^^^^^^^^^^^^^^^^^^^^\n",
     );
 

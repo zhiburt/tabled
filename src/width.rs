@@ -19,7 +19,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{CellOption, TableOption};
-use papergrid::{string_width, Entity, Grid, Settings};
+use papergrid::{string_width, Entity, Grid, Settings, Style};
 
 /// MaxWidth allows you to set a max width of an object on a [Grid],
 /// using different strategies.
@@ -470,7 +470,7 @@ where
         }
 
         if self.width < total_width {
-            decrease_total_width(grid, self.width, false, false);
+            truncate_total_width(grid, self.width);
         }
     }
 }
@@ -487,7 +487,7 @@ impl TableOption for Wrap {
         }
 
         if self.width < total_width {
-            decrease_total_width(grid, self.width, true, self.keep_words);
+            wrap_total_width(grid, self.width, self.keep_words);
         }
     }
 }
@@ -545,77 +545,176 @@ fn increase_total_width(grid: &mut Grid, expected_width: usize) {
     }
 }
 
-fn decrease_total_width(
-    grid: &mut Grid,
-    expected_width: usize,
-    wrap: bool,
-    wrap_keeping_words: bool,
-) -> bool {
-    let contents = build_contents(grid);
-    let mut widths = build_widths(grid);
-    let mut changes = HashSet::new();
+fn truncate_total_width(grid: &mut Grid, width: usize) {
+    let points = decrease_total_width(grid, width);
 
-    while expected_width != grid.total_width() {
-        let row =
-            find_biggest_row(grid).expect("must never happen because we checked the length before");
-        let col = find_biggest_cell(&widths[row])
-            .expect("must never happen because we checked the length before");
-        let width = widths[row][col];
+    for ((row, col), width) in points {
+        Truncate::new(width).change_cell(grid, row, col);
+    }
 
-        if width == 0 {
-            // we checkend each cell and the biggest is 0
-            // so we can't do anything more in case of decrease
-            return false;
+    // fixme: it happens that we don't build correct width on 1st call so just in case make a second
+    let points = decrease_total_width(grid, width);
+
+    for ((row, col), width) in points {
+        Truncate::new(width).change_cell(grid, row, col);
+    }
+}
+
+fn wrap_total_width(grid: &mut Grid, width: usize, keep_words: bool) {
+    // fixme: because currently we have to have a 2 set of calls we need;
+    // but we can't do it like in truncate because of how wrapping works.
+
+    let mut wrap = Wrap::new(0);
+    wrap.keep_words = keep_words;
+
+    let points = decrease_total_width(grid, width);
+
+    for ((row, col), width) in points {
+        wrap.width = width;
+        wrap.change_cell(grid, row, col);
+    }
+}
+
+fn decrease_total_width(grid: &Grid, width: usize) -> HashMap<(usize, usize), usize> {
+    let mut points = HashMap::new();
+
+    let count_columns = grid.count_columns();
+    let count_rows = grid.count_rows();
+
+    if count_columns == 0 || count_rows == 0 {
+        return points;
+    }
+
+    let orig_widths = build_orig_widths(grid);
+
+    let mut min_widths = build_min_widths(grid);
+
+    let mut total_width = grid.total_width();
+    let (mut widths, styles) = grid.build_widths();
+
+    correct_widths(&mut widths, &styles, count_rows, count_columns);
+    correct_widths(&mut min_widths, &styles, count_rows, count_columns);
+
+    let mut empty_columns = HashSet::new();
+    let mut columns = (0..count_columns).cycle();
+    while total_width != width {
+        let is_zeroed_table = empty_columns.len() == count_columns;
+        if is_zeroed_table {
+            break;
         }
 
-        Truncate::new(width - 1).change_cell(grid, row, col);
+        let col = columns.next().unwrap();
+
+        if empty_columns.contains(&col) {
+            continue;
+        }
+        let is_empty_column = (0..count_rows).all(|row| widths[row][col] == 0);
+        if is_empty_column {
+            empty_columns.insert(col);
+            continue;
+        }
+
+        let was_changed = update_widths_column(
+            &mut widths,
+            &orig_widths,
+            &min_widths,
+            &styles,
+            count_rows,
+            col,
+        );
+        if was_changed {
+            total_width -= 1;
+        }
+    }
+
+    for col in 0..count_columns {
+        for row in 0..count_rows {
+            let width = std::cmp::max(widths[row][col], min_widths[row][col]);
+            let orig_width = orig_widths[row][col];
+
+            if width < orig_width {
+                points.insert((row, col), width);
+            }
+        }
+    }
+
+    points
+}
+
+fn correct_widths(
+    widths: &mut [Vec<usize>],
+    styles: &[Vec<Style>],
+    count_rows: usize,
+    count_columns: usize,
+) {
+    (0..count_rows).for_each(|row| {
+        (0..count_columns)
+            .for_each(|col| widths[row][col] = correct_width(&styles[row][col], widths[row][col]))
+    });
+}
+
+fn build_min_widths(grid: &Grid) -> Vec<Vec<usize>> {
+    let mut grid = grid.clone();
+    grid.set(&Entity::Global, Settings::default().text(""));
+
+    grid.build_widths().0
+}
+
+fn update_widths_column(
+    widths: &mut [Vec<usize>],
+    orig_widths: &[Vec<usize>],
+    min_widths: &[Vec<usize>],
+    styles: &[Vec<Style>],
+    count_rows: usize,
+    col: usize,
+) -> bool {
+    let mut some_content_was_changed = false;
+    for row in 0..count_rows {
+        let mut col = col;
+
+        while styles[row][col].span == 0 {
+            // todo:
+            // well it may happen, in a grid with all cells being with span 0.
+            // not sure how to handle it in a good way.
+            if col == 0 {
+                break;
+            }
+
+            col -= 1;
+        }
+
+        if widths[row][col] == 0 {
+            continue;
+        }
+
+        let orig_content_was_changed = widths[row][col] <= orig_widths[row][col];
+        let change_will_be_affective = widths[row][col] >= min_widths[row][col];
+
+        if orig_content_was_changed && change_will_be_affective {
+            some_content_was_changed = true;
+        }
 
         widths[row][col] -= 1;
-        changes.insert((row, col));
     }
 
-    if !wrap {
-        return true;
-    }
+    some_content_was_changed
+}
 
-    set_contents(grid, contents);
-
-    for (row, col) in changes {
-        let width = widths[row][col];
-
-        let mut wrap = Wrap::new(width);
-        if wrap_keeping_words {
-            wrap = wrap.keep_words();
+fn correct_width(style: &Style, mut width: usize) -> usize {
+    let mut padding = style.padding.left.size + style.padding.right.size;
+    while padding != 0 {
+        if width == 0 {
+            break;
         }
 
-        wrap.change_cell(grid, row, col)
+        width -= 1;
+        padding -= 1;
     }
 
-    true
+    width
 }
 
-fn build_contents(grid: &Grid) -> Vec<Vec<String>> {
-    (0..grid.count_rows())
-        .map(|row| {
-            (0..grid.count_columns())
-                .map(|col| {
-                    let content = grid.get_cell_content(row, col);
-                    content.to_string()
-                })
-                .collect()
-        })
-        .collect()
-}
-
-fn set_contents(grid: &mut Grid, contents: Vec<Vec<String>>) {
-    contents.into_iter().enumerate().for_each(|(row, rows)| {
-        rows.into_iter().enumerate().for_each(|(col, content)| {
-            grid.set(&Entity::Cell(row, col), Settings::default().text(content));
-        })
-    })
-}
-
-fn build_widths(grid: &Grid) -> Vec<Vec<usize>> {
+fn build_orig_widths(grid: &Grid) -> Vec<Vec<usize>> {
     (0..grid.count_rows())
         .map(|row| {
             (0..grid.count_columns())
@@ -626,12 +725,4 @@ fn build_widths(grid: &Grid) -> Vec<Vec<usize>> {
                 .collect()
         })
         .collect()
-}
-
-fn find_biggest_row(grid: &Grid) -> Option<usize> {
-    (0..grid.count_rows()).max_by_key(|&row| grid.row_width(row))
-}
-
-fn find_biggest_cell(widths: &[usize]) -> Option<usize> {
-    (0..widths.len()).max_by_key(|&col| widths[col])
 }
