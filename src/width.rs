@@ -568,19 +568,13 @@ fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usi
 fn truncate_total_width(grid: &mut Grid, width: usize) {
     let points = decrease_total_width(grid, width);
 
-    println!("points={:?}", points);
-
     for ((row, col), width) in points {
         Truncate::new(width).change_cell(grid, row, col);
     }
-
-    println!("total_width={:?}", grid.total_width());
 }
 
 fn wrap_total_width(grid: &mut Grid, width: usize, keep_words: bool) {
     let points = decrease_total_width(grid, width);
-
-    println!("points={:?}", points);
 
     let mut wrap = Wrap::new(0);
     wrap.keep_words = keep_words;
@@ -588,8 +582,6 @@ fn wrap_total_width(grid: &mut Grid, width: usize, keep_words: bool) {
         wrap.width = width;
         wrap.change_cell(grid, row, col);
     }
-
-    println!("total_width={:?}", grid.total_width());
 }
 
 fn decrease_total_width(grid: &Grid, width: usize) -> HashMap<(usize, usize), usize> {
