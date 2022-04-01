@@ -41,7 +41,7 @@ fn main() {
         .table()
         .with(Style::extended())
         .with(Modify::new(Full).with(Alignment::left()))
-        .with(MaxWidth::wrapping(width as usize).keep_words())
+        .with(MaxWidth::wrapping(width as usize))
         .with(MinWidth::new(width as usize));
 
     println!("{}", table);

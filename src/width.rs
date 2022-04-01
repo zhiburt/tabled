@@ -551,19 +551,9 @@ fn truncate_total_width(grid: &mut Grid, width: usize) {
     for ((row, col), width) in points {
         Truncate::new(width).change_cell(grid, row, col);
     }
-
-    // fixme: it happens that we don't build correct width on 1st call so just in case make a second
-    let points = decrease_total_width(grid, width);
-
-    for ((row, col), width) in points {
-        Truncate::new(width).change_cell(grid, row, col);
-    }
 }
 
 fn wrap_total_width(grid: &mut Grid, width: usize, keep_words: bool) {
-    // fixme: because currently we have to have a 2 set of calls we need;
-    // but we can't do it like in truncate because of how wrapping works.
-
     let mut wrap = Wrap::new(0);
     wrap.keep_words = keep_words;
 
@@ -589,11 +579,16 @@ fn decrease_total_width(grid: &Grid, width: usize) -> HashMap<(usize, usize), us
 
     let mut min_widths = build_min_widths(grid);
 
-    let mut total_width = grid.total_width();
     let (mut widths, styles) = grid.build_widths();
 
     correct_widths(&mut widths, &styles, count_rows, count_columns);
     correct_widths(&mut min_widths, &styles, count_rows, count_columns);
+
+    let mut borders = build_borders_list(grid, &styles, count_rows, count_columns);
+    add_margin_width(grid, &mut borders);
+
+    let mut total_width =
+        new_total_width(&widths, &styles, &borders, count_rows, count_columns).unwrap_or(0);
 
     let mut empty_columns = HashSet::new();
     let mut columns = (0..count_columns).cycle();
@@ -608,23 +603,17 @@ fn decrease_total_width(grid: &Grid, width: usize) -> HashMap<(usize, usize), us
         if empty_columns.contains(&col) {
             continue;
         }
+
         let is_empty_column = (0..count_rows).all(|row| widths[row][col] == 0);
         if is_empty_column {
             empty_columns.insert(col);
             continue;
         }
 
-        let was_changed = update_widths_column(
-            &mut widths,
-            &orig_widths,
-            &min_widths,
-            &styles,
-            count_rows,
-            col,
-        );
-        if was_changed {
-            total_width -= 1;
-        }
+        update_widths_column(&mut widths, &orig_widths, &styles, count_rows, col);
+
+        total_width =
+            new_total_width(&widths, &styles, &borders, count_rows, count_columns).unwrap_or(0);
     }
 
     for col in 0..count_columns {
@@ -639,6 +628,67 @@ fn decrease_total_width(grid: &Grid, width: usize) -> HashMap<(usize, usize), us
     }
 
     points
+}
+
+fn new_total_width(
+    widths: &[Vec<usize>],
+    styles: &[Vec<Style>],
+    count_borders: &[usize],
+    count_rows: usize,
+    count_columns: usize,
+) -> Option<usize> {
+    (0..count_rows)
+        .map(|row| {
+            (0..count_columns)
+                .filter(|&col| styles[row][col].span > 0)
+                .map(|col| {
+                    widths[row][col]
+                        + styles[row][col].padding.left.size
+                        + styles[row][col].padding.right.size
+                })
+                .sum::<usize>()
+                + count_borders[row]
+        })
+        .max()
+}
+
+fn build_borders_list(
+    grid: &Grid,
+    styles: &[Vec<Style>],
+    count_rows: usize,
+    count_columns: usize,
+) -> Vec<usize> {
+    let mut borders_count = Vec::with_capacity(count_rows);
+
+    for row in 0..count_rows {
+        let mut count = 0;
+        for col in 0..count_columns {
+            if styles[row][col].span == 0 {
+                continue;
+            }
+
+            let border = grid.get_border(row, col);
+            if border.left.is_some() {
+                count += 1;
+            }
+
+            if col + 1 == count_columns && border.right.is_some() {
+                count += 1;
+            }
+        }
+
+        borders_count.push(count);
+    }
+
+    borders_count
+}
+
+fn add_margin_width(grid: &Grid, widths: &mut [usize]) {
+    let margin = grid.get_margin();
+
+    for w in widths {
+        *w += margin.left.size + margin.right.size;
+    }
 }
 
 fn correct_widths(
@@ -663,7 +713,6 @@ fn build_min_widths(grid: &Grid) -> Vec<Vec<usize>> {
 fn update_widths_column(
     widths: &mut [Vec<usize>],
     orig_widths: &[Vec<usize>],
-    min_widths: &[Vec<usize>],
     styles: &[Vec<Style>],
     count_rows: usize,
     col: usize,
@@ -671,7 +720,6 @@ fn update_widths_column(
     let mut some_content_was_changed = false;
     for row in 0..count_rows {
         let mut col = col;
-
         while styles[row][col].span == 0 {
             // todo:
             // well it may happen, in a grid with all cells being with span 0.
@@ -687,14 +735,12 @@ fn update_widths_column(
             continue;
         }
 
-        let orig_content_was_changed = widths[row][col] <= orig_widths[row][col];
-        let change_will_be_affective = widths[row][col] >= min_widths[row][col];
+        widths[row][col] -= 1;
 
-        if orig_content_was_changed && change_will_be_affective {
+        let orig_content_was_changed = orig_widths[row][col] > widths[row][col];
+        if orig_content_was_changed {
             some_content_was_changed = true;
         }
-
-        widths[row][col] -= 1;
     }
 
     some_content_was_changed

@@ -832,7 +832,6 @@ fn total_width_wrapping() {
         "|  | 0  | 1  |     |\n",
     );
 
-
     assert_eq!(table, expected);
     assert_eq!(lines_widths(&table)[0], 20);
 

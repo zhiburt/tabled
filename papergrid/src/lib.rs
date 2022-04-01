@@ -153,6 +153,10 @@ impl Grid {
         self.margin = margin
     }
 
+    pub fn get_margin(&self) -> &Margin {
+        &self.margin
+    }
+
     pub fn add_horizontal_split(&mut self, row: usize) {
         self.insert_horizontal_split(
             row,
@@ -300,7 +304,7 @@ impl Grid {
             .border(border)
     }
 
-    pub fn get_border(&mut self, row: usize, column: usize) -> Border {
+    pub fn get_border(&self, row: usize, column: usize) -> Border {
         self.borders.get_border(row, column).unwrap()
     }
 
