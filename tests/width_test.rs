@@ -202,10 +202,10 @@ fn max_width_wrapped_keep_words_color() {
         .to_string();
 
     let expected = concat!(
-        "| String          |\n",
-        "|-----------------|\n",
-        "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m |\n",
-        "| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntence\u{1b}[39m\u{1b}[49m        |\n",
+        "| String            |\n",
+        "|-------------------|\n",
+        "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |\n",
+        "| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntence\u{1b}[39m\u{1b}[49m          |\n",
     );
 
     assert_eq!(table, expected);
@@ -218,10 +218,10 @@ fn max_width_wrapped_keep_words_color() {
         .to_string();
 
     let expected = concat!(
-        "| String           |\n",
-        "|------------------|\n",
-        "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m |\n",
-        "| \u{1b}[32m\u{1b}[40ms\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m         |\n",
+        "| String            |\n",
+        "|-------------------|\n",
+        "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m  |\n",
+        "| \u{1b}[32m\u{1b}[40ms\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m          |\n",
     );
 
     assert_eq!(table, expected);
@@ -233,14 +233,15 @@ fn max_width_wrapped_keep_words_color() {
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
 
-    let expected = concat!(
-        "| String            |\n",
-        "|-------------------|\n",
-        "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n",
-        "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| String            |\n",
+            "|-------------------|\n",
+            "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n",
+            "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 
     let data = vec!["this is a long    sentence".on_black().green().to_string()];
     let table = Table::new(&data)
@@ -249,14 +250,15 @@ fn max_width_wrapped_keep_words_color() {
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
 
-    let expected = concat!(
-        "| String            |\n",
-        "|-------------------|\n",
-        "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n",
-        "| \u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| String            |\n",
+            "|-------------------|\n",
+            "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n",
+            "| \u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 
     let data = vec!["this".on_black().green().to_string()];
     let table = Table::new(&data)
@@ -264,13 +266,14 @@ fn max_width_wrapped_keep_words_color() {
         .with(Modify::new(Full).with(MaxWidth::wrapping(10).keep_words()))
         .to_string();
 
-    let expected = concat!(
-        "| String |\n",
-        "|--------|\n",
-        "|  \u{1b}[32m\u{1b}[40mthis\u{1b}[39m\u{1b}[49m  |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| String |\n",
+            "|--------|\n",
+            "|  \u{1b}[32m\u{1b}[40mthis\u{1b}[39m\u{1b}[49m  |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -1081,6 +1084,168 @@ fn wrapping_as_total_multiline() {
     assert_eq!(lines_widths(&table)[0], 57);
 }
 
+#[test]
+fn wrapping_as_total_multiline_color() {
+    use owo_colors::{AnsiColors, OwoColorize};
+
+    #[derive(Tabled)]
+    struct D(
+        #[tabled(rename = "version")] String,
+        #[tabled(rename = "published_date")] String,
+        #[tabled(rename = "is_active")] String,
+        #[tabled(rename = "major_feature")] String,
+    );
+
+    let data = vec![
+        D(
+            "0.2.1".red().to_string(),
+            "2021-06-23".red().on_truecolor(8, 10, 30).to_string(),
+            "true".to_string(),
+            "#[header(inline)] attribute"
+                .blue()
+                .on_color(AnsiColors::Green)
+                .to_string(),
+        ),
+        D(
+            "0.2.0".red().to_string(),
+            "2021-06-19".green().on_truecolor(8, 100, 30).to_string(),
+            "false".to_string(),
+            "API changes".yellow().to_string(),
+        ),
+        D(
+            "0.1.4".white().to_string(),
+            "2021-06-07".red().on_truecolor(8, 10, 30).to_string(),
+            "false".to_string(),
+            "display_with attribute"
+                .red()
+                .on_color(AnsiColors::Black)
+                .to_string(),
+        ),
+    ];
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(MaxWidth::wrapping(57))
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "| ver | published_d | is_act | major_feature            |\n",
+            "| sio | ate         | ive    |                          |\n",
+            "| n   |             |        |                          |\n",
+            "|-----+-------------+--------+--------------------------|\n",
+            "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[0m\u{1b}[0m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n",
+            "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                      |\n",
+            "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[0m\u{1b}[0m  | false  | \u{1b}[33mAPI changes\u{1b}[0m              |\n",
+            "| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n",
+            "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[0m\u{1b}[0m  | false  | \u{1b}[40m\u{1b}[31mdisplay_with attribute\u{1b}[0m\u{1b}[0m   |\n",
+            "| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |\n",
+        )
+    );
+    assert_eq!(lines_widths(&table)[0], 57);
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(MaxWidth::wrapping(57).keep_words())
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "| ver | published_d | is_act | major_feature            |\n",
+            "| sio | ate         | ive    |                          |\n",
+            "| n   |             |        |                          |\n",
+            "|-----+-------------+--------+--------------------------|\n",
+            "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[0m\u{1b}[0m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |\n",
+            "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattrib\u{1b}[39m\u{1b}[49m\u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                |\n",
+            "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[0m\u{1b}[0m  | false  | \u{1b}[33mAPI changes\u{1b}[0m              |\n",
+            "| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n",
+            "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[0m\u{1b}[0m  | false  | \u{1b}[40m\u{1b}[31mdisplay_with attribute\u{1b}[0m\u{1b}[0m   |\n",
+            "| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |\n",
+        )
+    );
+    assert_eq!(lines_widths(&table)[0], 57);
+}
+
+#[test]
+fn truncating_as_total_multiline_color() {
+    use owo_colors::{AnsiColors, OwoColorize};
+
+    #[derive(Tabled)]
+    struct D(
+        #[tabled(rename = "version")] String,
+        #[tabled(rename = "published_date")] String,
+        #[tabled(rename = "is_active")] String,
+        #[tabled(rename = "major_feature")] String,
+    );
+
+    let data = vec![
+        D(
+            "0.2.1".red().to_string(),
+            "2021-06-23".red().on_truecolor(8, 10, 30).to_string(),
+            "true".to_string(),
+            "#[header(inline)] attribute"
+                .blue()
+                .on_color(AnsiColors::Green)
+                .to_string(),
+        ),
+        D(
+            "0.2.0".red().to_string(),
+            "2021-06-19".green().on_truecolor(8, 100, 30).to_string(),
+            "false".to_string(),
+            "API changes".yellow().to_string(),
+        ),
+        D(
+            "0.1.4".white().to_string(),
+            "2021-06-07".red().on_truecolor(8, 10, 30).to_string(),
+            "false".to_string(),
+            "display_with attribute"
+                .red()
+                .on_color(AnsiColors::Black)
+                .to_string(),
+        ),
+    ];
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(MaxWidth::truncating(57))
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "| ver | published_d | is_act | major_feature            |\n",
+            "|-----+-------------+--------+--------------------------|\n",
+            "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[0m\u{1b}[0m  | true   | \u{1b}[42m\u{1b}[34m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n",
+            "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[0m\u{1b}[0m  | false  | \u{1b}[33mAPI changes\u{1b}[0m              |\n",
+            "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[0m\u{1b}[0m  | false  | \u{1b}[40m\u{1b}[31mdisplay_with attribute\u{1b}[0m\u{1b}[0m   |\n",
+        )
+    );
+    assert_eq!(lines_widths(&table)[0], 57);
+}
+
 fn lines_widths(s: &str) -> Vec<usize> {
-    s.lines().map(|l| l.chars().count()).collect()
+    #[cfg(not(feature = "color"))]
+    {
+        s.lines().map(|l| l.chars().count()).collect()
+    }
+
+    #[cfg(feature = "color")]
+    {
+        use ansi_str::AnsiStr;
+        s.lines()
+            .map(|s| s.ansi_strip())
+            .map(|l| l.chars().count())
+            .collect()
+    }
 }

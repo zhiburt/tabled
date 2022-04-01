@@ -303,46 +303,52 @@ fn split_keeping_words(s: &str, width: usize) -> String {
             .chars()
             .next()
             .map_or(false, |c| !c.is_whitespace());
+
         let is_splitting_word = left_ends_with_letter && right_starts_with_letter;
-        if is_splitting_word {
-            let pos = lhs_stripped.chars().rev().position(|c| c.is_whitespace());
-            match pos {
-                Some(pos) => {
-                    if pos < width {
-                        // it's a part of a word which we is ok to move to the next line;
-                        // we know that there will be enough space for this part + next character.
-                        //
-                        // todo: test about this next char space
-                        let range_len = lhs_stripped
-                            .chars()
-                            .rev()
-                            .take(pos)
-                            .map(|c| c.len_utf8())
-                            .sum::<usize>();
+        if !is_splitting_word {
+            buf.push_str(&lhs);
+            buf.push('\n');
+            s = rhs;
+            continue;
+        }
 
-                        let move_part = lhs.ansi_get(lhs_stripped.len() - range_len..).unwrap();
-                        lhs = lhs.ansi_get(..lhs_stripped.len() - range_len).unwrap();
-                        rhs = move_part + &rhs;
+        let pos = lhs_stripped.chars().rev().position(|c| c.is_whitespace());
+        match pos {
+            Some(pos) => {
+                if pos < width {
+                    // it's a part of a word which we is ok to move to the next line;
+                    // we know that there will be enough space for this part + next character.
+                    //
+                    // todo: test about this next char space
+                    let range_len = lhs_stripped
+                        .chars()
+                        .rev()
+                        .take(pos)
+                        .map(|c| c.len_utf8())
+                        .sum::<usize>();
 
-                        buf.push_str(&lhs);
-                        buf.push('\n');
-                    } else {
-                        // The words is too long to be moved,
-                        // we can't move it any way so just leave everything as it is
-                        buf.push_str(&lhs);
-                        buf.push('\n');
-                    }
-                }
-                None => {
-                    // We don't find a whitespace
-                    // so its a long word so we can do nothing about it
+                    let move_part = lhs.ansi_get(lhs_stripped.len() - range_len..).unwrap();
+                    lhs = lhs.ansi_get(..lhs_stripped.len() - range_len).unwrap();
+                    rhs = move_part + &rhs;
+
+                    // put an spaces in order to not limit widths and keep it correct.
+                    lhs.extend(std::iter::repeat(' ').take(range_len));
+
+                    buf.push_str(&lhs);
+                    buf.push('\n');
+                } else {
+                    // The words is too long to be moved,
+                    // we can't move it any way so just leave everything as it is
                     buf.push_str(&lhs);
                     buf.push('\n');
                 }
             }
-        } else {
-            buf.push_str(&lhs);
-            buf.push('\n');
+            None => {
+                // We don't find a whitespace
+                // so its a long word so we can do nothing about it
+                buf.push_str(&lhs);
+                buf.push('\n');
+            }
         }
 
         s = rhs;
