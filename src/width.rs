@@ -531,6 +531,7 @@ fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usi
         }
 
         let mut increased = false;
+        #[allow(clippy::needless_range_loop)]
         for row in 0..grid.count_rows() {
             let style = &styles[row][col];
             if style.span == 0 {
@@ -672,6 +673,7 @@ fn build_borders_list(
 ) -> Vec<usize> {
     let mut borders_count = Vec::with_capacity(count_rows);
 
+    #[allow(clippy::needless_range_loop)]
     for row in 0..count_rows {
         let mut count = 0;
         for col in 0..count_columns {
