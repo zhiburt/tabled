@@ -221,48 +221,57 @@ fn split_keeping_words(s: &str, width: usize) -> String {
     let mut buf = String::new();
     let mut i = 0;
     for c in s.chars() {
-        if i != 0 && i % width == 0 {
-            let prev_c = buf.chars().last().unwrap();
-            let is_splitting_word = !prev_c.is_whitespace() && !c.is_whitespace();
-            if is_splitting_word {
-                let pos = buf.chars().rev().position(|c| c.is_whitespace());
-                match pos {
-                    Some(pos) => {
-                        if pos < width {
-                            // it's a part of a word which we is ok to move to the next line;
-                            // we know that there will be enough space for this part + next character.
-                            //
-                            // todo: test about this next char space
-                            let range_len = buf
-                                .chars()
-                                .rev()
-                                .take(pos)
-                                .map(|c| c.len_utf8())
-                                .sum::<usize>();
-                            buf.insert(buf.len() - range_len, '\n');
-                            i = range_len;
-                        } else {
-                            // The words is too long to be moved,
-                            // we can't move it any way so just leave everything as it is
-                            buf.push('\n');
-                        }
-                    }
-                    None => {
-                        // We don't find a whitespace
-                        // so its a long word so we can do nothing about it
-                        buf.push('\n');
-                    }
-                }
-            } else {
-                // This place doesn't separate a word
-                // So we just do a general split.
-                buf.push('\n');
-            }
+        let is_splitting_pos = i == width;
+        if !is_splitting_pos {
+            i += 1;
+            buf.push(c);
+            continue;
         }
 
-        buf.push(c);
+        i = 1;
 
-        i += 1;
+        let prev_c = buf.chars().last().unwrap();
+        let is_splitting_word = !prev_c.is_whitespace() && !c.is_whitespace();
+        if !is_splitting_word {
+            // This place doesn't separate a word
+            // So we just do a general split.
+            buf.push('\n');
+            buf.push(c);
+            continue;
+        }
+
+        let pos = buf.chars().rev().position(|c| c.is_whitespace());
+        match pos {
+            Some(pos) => {
+                if pos < width {
+                    // it's a part of a word which we is ok to move to the next line;
+                    // we know that there will be enough space for this part + next character.
+                    //
+                    // todo: test about this next char space
+                    let range_len = buf
+                        .chars()
+                        .rev()
+                        .take(pos)
+                        .map(|c| c.len_utf8())
+                        .sum::<usize>();
+                    buf.insert(buf.len() - range_len, '\n');
+
+                    i = range_len + 1;
+                } else {
+                    // The words is too long to be moved,
+                    // we can't move it any way so just leave everything as it is
+                    buf.push('\n');
+                }
+
+                buf.push(c);
+            }
+            None => {
+                // We don't find a whitespace
+                // so its a long word so we can do nothing about it
+                buf.push('\n');
+                buf.push(c);
+            }
+        }
     }
 
     buf
@@ -426,7 +435,7 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
         s.lines()
             .map(|line| {
                 let length = string_width(line);
-                if length < width {
+                if width > length {
                     let remain = width - length;
                     let mut new_line = String::with_capacity(width);
                     new_line.push_str(line);
@@ -436,7 +445,8 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
                     std::borrow::Cow::Borrowed(line)
                 }
             })
-            .collect::<String>()
+            .collect::<Vec<_>>()
+            .join("\n")
     }
     #[cfg(feature = "color")]
     {
@@ -451,7 +461,8 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
                     line
                 }
             })
-            .collect::<String>()
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }
 
@@ -504,14 +515,15 @@ impl TableOption for MinWidth {
         }
 
         if self.size > total_width {
-            increase_total_width(grid, self.size);
+            increase_total_width(grid, total_width, self.size);
         }
     }
 }
 
-fn increase_total_width(grid: &mut Grid, expected_width: usize) {
+fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usize) {
+    let (_, styles) = grid.build_widths();
+
     let mut increase_list = HashMap::new();
-    let total_width = grid.total_width();
     let mut size = expected_width;
     for col in (0..grid.count_columns()).cycle() {
         if size == total_width {
@@ -520,7 +532,7 @@ fn increase_total_width(grid: &mut Grid, expected_width: usize) {
 
         let mut increased = false;
         for row in 0..grid.count_rows() {
-            let style = grid.style(&Entity::Cell(row, col));
+            let style = &styles[row][col];
             if style.span == 0 {
                 continue;
             }
@@ -541,6 +553,7 @@ fn increase_total_width(grid: &mut Grid, expected_width: usize) {
     for ((row, col), inc) in increase_list {
         let content = grid.get_cell_content(row, col);
         let content_width = string_width(content);
+
         MinWidth::new(content_width + inc).change_cell(grid, row, col);
     }
 }
@@ -554,11 +567,10 @@ fn truncate_total_width(grid: &mut Grid, width: usize) {
 }
 
 fn wrap_total_width(grid: &mut Grid, width: usize, keep_words: bool) {
-    let mut wrap = Wrap::new(0);
-    wrap.keep_words = keep_words;
-
     let points = decrease_total_width(grid, width);
 
+    let mut wrap = Wrap::new(0);
+    wrap.keep_words = keep_words;
     for ((row, col), width) in points {
         wrap.width = width;
         wrap.change_cell(grid, row, col);
