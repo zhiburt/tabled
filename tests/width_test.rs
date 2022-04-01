@@ -1084,6 +1084,7 @@ fn wrapping_as_total_multiline() {
     assert_eq!(lines_widths(&table)[0], 57);
 }
 
+#[cfg(feature = "color")]
 #[test]
 fn wrapping_as_total_multiline_color() {
     use owo_colors::{AnsiColors, OwoColorize};
@@ -1174,6 +1175,7 @@ fn wrapping_as_total_multiline_color() {
     assert_eq!(lines_widths(&table)[0], 57);
 }
 
+#[cfg(feature = "color")]
 #[test]
 fn truncating_as_total_multiline_color() {
     use owo_colors::{AnsiColors, OwoColorize};
