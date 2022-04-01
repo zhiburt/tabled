@@ -19,7 +19,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{CellOption, TableOption};
-use papergrid::{string_width, Entity, Grid, Settings};
+use papergrid::{string_width, Entity, Grid, Settings, Style};
 
 /// MaxWidth allows you to set a max width of an object on a [Grid],
 /// using different strategies.
@@ -221,48 +221,63 @@ fn split_keeping_words(s: &str, width: usize) -> String {
     let mut buf = String::new();
     let mut i = 0;
     for c in s.chars() {
-        if i != 0 && i % width == 0 {
-            let prev_c = buf.chars().last().unwrap();
-            let is_splitting_word = !prev_c.is_whitespace() && !c.is_whitespace();
-            if is_splitting_word {
-                let pos = buf.chars().rev().position(|c| c.is_whitespace());
-                match pos {
-                    Some(pos) => {
-                        if pos < width {
-                            // it's a part of a word which we is ok to move to the next line;
-                            // we know that there will be enough space for this part + next character.
-                            //
-                            // todo: test about this next char space
-                            let range_len = buf
-                                .chars()
-                                .rev()
-                                .take(pos)
-                                .map(|c| c.len_utf8())
-                                .sum::<usize>();
-                            buf.insert(buf.len() - range_len, '\n');
-                            i = range_len;
-                        } else {
-                            // The words is too long to be moved,
-                            // we can't move it any way so just leave everything as it is
-                            buf.push('\n');
-                        }
-                    }
-                    None => {
-                        // We don't find a whitespace
-                        // so its a long word so we can do nothing about it
-                        buf.push('\n');
-                    }
-                }
-            } else {
-                // This place doesn't separate a word
-                // So we just do a general split.
-                buf.push('\n');
-            }
+        let is_splitting_pos = i == width;
+        if !is_splitting_pos {
+            i += 1;
+            buf.push(c);
+            continue;
         }
 
-        buf.push(c);
+        i = 1;
 
-        i += 1;
+        let prev_c = buf.chars().last().unwrap();
+        let is_splitting_word = !prev_c.is_whitespace() && !c.is_whitespace();
+        if !is_splitting_word {
+            // This place doesn't separate a word
+            // So we just do a general split.
+            buf.push('\n');
+            buf.push(c);
+            continue;
+        }
+
+        let pos = buf.chars().rev().position(|c| c.is_whitespace());
+        match pos {
+            Some(pos) => {
+                if pos < width {
+                    // it's a part of a word which we is ok to move to the next line;
+                    // we know that there will be enough space for this part + next character.
+                    //
+                    // todo: test about this next char space
+                    let range_len = buf
+                        .chars()
+                        .rev()
+                        .take(pos)
+                        .map(|c| c.len_utf8())
+                        .sum::<usize>();
+
+                    // put an spaces in order to not limit widths and keep it correct.
+                    for i in 0..range_len {
+                        buf.insert(buf.len() - range_len - i, ' ');
+                    }
+
+                    buf.insert(buf.len() - range_len, '\n');
+
+                    i = range_len + 1;
+                } else {
+                    // The words is too long to be moved,
+                    // we can't move it any way so just leave everything as it is
+                    buf.push('\n');
+                }
+
+                buf.push(c);
+            }
+            None => {
+                // We don't find a whitespace
+                // so its a long word so we can do nothing about it
+                buf.push('\n');
+                buf.push(c);
+            }
+        }
     }
 
     buf
@@ -426,7 +441,7 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
         s.lines()
             .map(|line| {
                 let length = string_width(line);
-                if length < width {
+                if width > length {
                     let remain = width - length;
                     let mut new_line = String::with_capacity(width);
                     new_line.push_str(line);
@@ -436,7 +451,8 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
                     std::borrow::Cow::Borrowed(line)
                 }
             })
-            .collect::<String>()
+            .collect::<Vec<_>>()
+            .join("\n")
     }
     #[cfg(feature = "color")]
     {
@@ -451,7 +467,8 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
                     line
                 }
             })
-            .collect::<String>()
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }
 
@@ -470,7 +487,7 @@ where
         }
 
         if self.width < total_width {
-            decrease_total_width(grid, self.width, false, false);
+            truncate_total_width(grid, self.width);
         }
     }
 }
@@ -487,7 +504,7 @@ impl TableOption for Wrap {
         }
 
         if self.width < total_width {
-            decrease_total_width(grid, self.width, true, self.keep_words);
+            wrap_total_width(grid, self.width, self.keep_words);
         }
     }
 }
@@ -504,14 +521,15 @@ impl TableOption for MinWidth {
         }
 
         if self.size > total_width {
-            increase_total_width(grid, self.size);
+            increase_total_width(grid, total_width, self.size);
         }
     }
 }
 
-fn increase_total_width(grid: &mut Grid, expected_width: usize) {
+fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usize) {
+    let (_, styles) = grid.build_widths();
+
     let mut increase_list = HashMap::new();
-    let total_width = grid.total_width();
     let mut size = expected_width;
     for col in (0..grid.count_columns()).cycle() {
         if size == total_width {
@@ -519,8 +537,9 @@ fn increase_total_width(grid: &mut Grid, expected_width: usize) {
         }
 
         let mut increased = false;
+        #[allow(clippy::needless_range_loop)]
         for row in 0..grid.count_rows() {
-            let style = grid.style(&Entity::Cell(row, col));
+            let style = &styles[row][col];
             if style.span == 0 {
                 continue;
             }
@@ -541,81 +560,227 @@ fn increase_total_width(grid: &mut Grid, expected_width: usize) {
     for ((row, col), inc) in increase_list {
         let content = grid.get_cell_content(row, col);
         let content_width = string_width(content);
+
         MinWidth::new(content_width + inc).change_cell(grid, row, col);
     }
 }
 
-fn decrease_total_width(
-    grid: &mut Grid,
-    expected_width: usize,
-    wrap: bool,
-    wrap_keeping_words: bool,
-) -> bool {
-    let contents = build_contents(grid);
-    let mut widths = build_widths(grid);
-    let mut changes = HashSet::new();
+fn truncate_total_width(grid: &mut Grid, width: usize) {
+    let points = decrease_total_width(grid, width);
 
-    while expected_width != grid.total_width() {
-        let row =
-            find_biggest_row(grid).expect("must never happen because we checked the length before");
-        let col = find_biggest_cell(&widths[row])
-            .expect("must never happen because we checked the length before");
-        let width = widths[row][col];
+    for ((row, col), width) in points {
+        Truncate::new(width).change_cell(grid, row, col);
+    }
+}
 
-        if width == 0 {
-            // we checkend each cell and the biggest is 0
-            // so we can't do anything more in case of decrease
-            return false;
+fn wrap_total_width(grid: &mut Grid, width: usize, keep_words: bool) {
+    let points = decrease_total_width(grid, width);
+
+    let mut wrap = Wrap::new(0);
+    wrap.keep_words = keep_words;
+    for ((row, col), width) in points {
+        wrap.width = width;
+        wrap.change_cell(grid, row, col);
+    }
+}
+
+fn decrease_total_width(grid: &Grid, width: usize) -> HashMap<(usize, usize), usize> {
+    let mut points = HashMap::new();
+
+    let count_columns = grid.count_columns();
+    let count_rows = grid.count_rows();
+
+    if count_columns == 0 || count_rows == 0 {
+        return points;
+    }
+
+    let orig_widths = build_orig_widths(grid);
+
+    let mut min_widths = build_min_widths(grid);
+
+    let (mut widths, styles) = grid.build_widths();
+
+    correct_widths(&mut widths, &styles, count_rows, count_columns);
+    correct_widths(&mut min_widths, &styles, count_rows, count_columns);
+
+    let mut borders = build_borders_list(grid, &styles, count_rows, count_columns);
+    add_margin_width(grid, &mut borders);
+
+    let mut total_width =
+        new_total_width(&widths, &styles, &borders, count_rows, count_columns).unwrap_or(0);
+
+    let mut empty_columns = HashSet::new();
+    let mut columns = (0..count_columns).cycle();
+    while total_width != width {
+        let is_zeroed_table = empty_columns.len() == count_columns;
+        if is_zeroed_table {
+            break;
         }
 
-        Truncate::new(width - 1).change_cell(grid, row, col);
+        let col = columns.next().unwrap();
+
+        if empty_columns.contains(&col) {
+            continue;
+        }
+
+        let is_empty_column = (0..count_rows).all(|row| widths[row][col] == 0);
+        if is_empty_column {
+            empty_columns.insert(col);
+            continue;
+        }
+
+        update_widths_column(&mut widths, &orig_widths, &styles, count_rows, col);
+
+        total_width =
+            new_total_width(&widths, &styles, &borders, count_rows, count_columns).unwrap_or(0);
+    }
+
+    for col in 0..count_columns {
+        for row in 0..count_rows {
+            let width = std::cmp::max(widths[row][col], min_widths[row][col]);
+            let orig_width = orig_widths[row][col];
+
+            if width < orig_width {
+                points.insert((row, col), width);
+            }
+        }
+    }
+
+    points
+}
+
+fn new_total_width(
+    widths: &[Vec<usize>],
+    styles: &[Vec<Style>],
+    count_borders: &[usize],
+    count_rows: usize,
+    count_columns: usize,
+) -> Option<usize> {
+    (0..count_rows)
+        .map(|row| {
+            (0..count_columns)
+                .filter(|&col| styles[row][col].span > 0)
+                .map(|col| {
+                    widths[row][col]
+                        + styles[row][col].padding.left.size
+                        + styles[row][col].padding.right.size
+                })
+                .sum::<usize>()
+                + count_borders[row]
+        })
+        .max()
+}
+
+fn build_borders_list(
+    grid: &Grid,
+    styles: &[Vec<Style>],
+    count_rows: usize,
+    count_columns: usize,
+) -> Vec<usize> {
+    let mut borders_count = Vec::with_capacity(count_rows);
+
+    #[allow(clippy::needless_range_loop)]
+    for row in 0..count_rows {
+        let mut count = 0;
+        for col in 0..count_columns {
+            if styles[row][col].span == 0 {
+                continue;
+            }
+
+            let border = grid.get_border(row, col);
+            if border.left.is_some() {
+                count += 1;
+            }
+
+            if col + 1 == count_columns && border.right.is_some() {
+                count += 1;
+            }
+        }
+
+        borders_count.push(count);
+    }
+
+    borders_count
+}
+
+fn add_margin_width(grid: &Grid, widths: &mut [usize]) {
+    let margin = grid.get_margin();
+
+    for w in widths {
+        *w += margin.left.size + margin.right.size;
+    }
+}
+
+fn correct_widths(
+    widths: &mut [Vec<usize>],
+    styles: &[Vec<Style>],
+    count_rows: usize,
+    count_columns: usize,
+) {
+    (0..count_rows).for_each(|row| {
+        (0..count_columns)
+            .for_each(|col| widths[row][col] = correct_width(&styles[row][col], widths[row][col]))
+    });
+}
+
+fn build_min_widths(grid: &Grid) -> Vec<Vec<usize>> {
+    let mut grid = grid.clone();
+    grid.set(&Entity::Global, Settings::default().text(""));
+
+    grid.build_widths().0
+}
+
+fn update_widths_column(
+    widths: &mut [Vec<usize>],
+    orig_widths: &[Vec<usize>],
+    styles: &[Vec<Style>],
+    count_rows: usize,
+    col: usize,
+) -> bool {
+    let mut some_content_was_changed = false;
+    for row in 0..count_rows {
+        let mut col = col;
+        while styles[row][col].span == 0 {
+            // todo:
+            // well it may happen, in a grid with all cells being with span 0.
+            // not sure how to handle it in a good way.
+            if col == 0 {
+                break;
+            }
+
+            col -= 1;
+        }
+
+        if widths[row][col] == 0 {
+            continue;
+        }
 
         widths[row][col] -= 1;
-        changes.insert((row, col));
+
+        let orig_content_was_changed = orig_widths[row][col] > widths[row][col];
+        if orig_content_was_changed {
+            some_content_was_changed = true;
+        }
     }
 
-    if !wrap {
-        return true;
-    }
+    some_content_was_changed
+}
 
-    set_contents(grid, contents);
-
-    for (row, col) in changes {
-        let width = widths[row][col];
-
-        let mut wrap = Wrap::new(width);
-        if wrap_keeping_words {
-            wrap = wrap.keep_words();
+fn correct_width(style: &Style, mut width: usize) -> usize {
+    let mut padding = style.padding.left.size + style.padding.right.size;
+    while padding != 0 {
+        if width == 0 {
+            break;
         }
 
-        wrap.change_cell(grid, row, col)
+        width -= 1;
+        padding -= 1;
     }
 
-    true
+    width
 }
 
-fn build_contents(grid: &Grid) -> Vec<Vec<String>> {
-    (0..grid.count_rows())
-        .map(|row| {
-            (0..grid.count_columns())
-                .map(|col| {
-                    let content = grid.get_cell_content(row, col);
-                    content.to_string()
-                })
-                .collect()
-        })
-        .collect()
-}
-
-fn set_contents(grid: &mut Grid, contents: Vec<Vec<String>>) {
-    contents.into_iter().enumerate().for_each(|(row, rows)| {
-        rows.into_iter().enumerate().for_each(|(col, content)| {
-            grid.set(&Entity::Cell(row, col), Settings::default().text(content));
-        })
-    })
-}
-
-fn build_widths(grid: &Grid) -> Vec<Vec<usize>> {
+fn build_orig_widths(grid: &Grid) -> Vec<Vec<usize>> {
     (0..grid.count_rows())
         .map(|row| {
             (0..grid.count_columns())
@@ -626,12 +791,4 @@ fn build_widths(grid: &Grid) -> Vec<Vec<usize>> {
                 .collect()
         })
         .collect()
-}
-
-fn find_biggest_row(grid: &Grid) -> Option<usize> {
-    (0..grid.count_rows()).max_by_key(|&row| grid.row_width(row))
-}
-
-fn find_biggest_cell(widths: &[usize]) -> Option<usize> {
-    (0..widths.len()).max_by_key(|&col| widths[col])
 }
