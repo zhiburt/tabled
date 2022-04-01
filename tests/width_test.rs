@@ -602,7 +602,7 @@ fn total_width_big_with_panel() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::truncating(80))
         .with(MinWidth::new(80))
@@ -625,7 +625,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
     let data = create_vector::<3, 3>();
     let table1 = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::wrapping(80))
         .with(MinWidth::new(80))
@@ -633,7 +633,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
 
     let table2 = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::truncating(80))
         .with(MinWidth::new(80))
@@ -688,7 +688,7 @@ fn total_width_small_with_panel() {
     let data = create_vector::<3, 3>();
 
     let table = Table::new(&data)
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::truncating(20))
         .with(MinWidth::new(20))
@@ -718,7 +718,7 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&create_vector::<1, 2>())
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::truncating(20))
         .with(MinWidth::new(20))
@@ -736,7 +736,7 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::truncating(20))
         .with(MinWidth::new(20))
@@ -756,7 +756,7 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::truncating(6))
         .with(MinWidth::new(6))
@@ -776,7 +776,7 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::truncating(14))
         .with(MinWidth::new(14))
@@ -796,7 +796,7 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World 123", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::truncating(14))
         .with(MinWidth::new(14))
@@ -819,7 +819,7 @@ fn total_width_small_with_panel() {
 fn total_width_wrapping() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::wrapping(20))
         .with(MinWidth::new(20))
@@ -845,7 +845,7 @@ fn total_width_wrapping() {
     let mut data = create_vector::<3, 3>();
     data[2][2] = "some loong string".to_owned();
     let table = Table::new(&data)
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::wrapping(20).keep_words())
         .with(MinWidth::new(20))
@@ -871,7 +871,7 @@ fn total_width_small_with_panel_using_wrapping() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::wrapping(20))
         .with(MinWidth::new(20))
@@ -897,7 +897,7 @@ fn total_width_small_with_panel_using_wrapping() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::wrapping(14))
         .with(MinWidth::new(14))
@@ -931,7 +931,7 @@ fn total_width_small_with_panel_using_wrapping() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World 123", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(MaxWidth::wrapping(14))
         .with(MinWidth::new(14))

@@ -8,7 +8,7 @@ pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 /// ```rust,no_run
 ///   # use tabled::{Alignment, Modify, object::Rows, Table};
 ///   # let data: Vec<&'static str> = Vec::new();
-///     let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Alignment::center_horizontal()));
+///     let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Alignment::center()));
 /// ```
 #[derive(Debug)]
 pub enum Alignment {
@@ -17,6 +17,31 @@ pub enum Alignment {
 }
 
 impl Alignment {
+    /// Left constructs a horizontal alignment to [AlignmentHorizontal::Left]
+    pub fn left() -> Self {
+        Self::horizontal(AlignmentHorizontal::Left)
+    }
+
+    /// Right constructs a horizontal alignment to [AlignmentHorizontal::Right]
+    ///
+    /// ## Notice
+    ///
+    /// When you use [crate::MinWidth] the alignment might not work as you expected.
+    /// You could try to apply [crate::render_settings::TrimStrategy] which may help.
+    pub fn right() -> Self {
+        Self::horizontal(AlignmentHorizontal::Right)
+    }
+
+    /// Center constructs a horizontal alignment to [AlignmentHorizontal::Center]
+    ///
+    /// ## Notice
+    ///
+    /// When you use [crate::MinWidth] the alignment might not work as you expected.
+    /// You could try to apply [crate::render_settings::TrimStrategy] which may help.
+    pub fn center() -> Self {
+        Self::horizontal(AlignmentHorizontal::Center)
+    }
+
     /// Top constructs a vertical alignment to [AlignmentVertical::Top]
     pub fn top() -> Self {
         Self::vertical(AlignmentVertical::Top)
@@ -30,21 +55,6 @@ impl Alignment {
     /// Center_vertical constructs a vertical alignment to [AlignmentVertical::Center]
     pub fn center_vertical() -> Self {
         Self::vertical(AlignmentVertical::Center)
-    }
-
-    /// Left constructs a horizontal alignment to [AlignmentHorizontal::Left]
-    pub fn left() -> Self {
-        Self::horizontal(AlignmentHorizontal::Left)
-    }
-
-    /// Right constructs a horizontal alignment to [AlignmentHorizontal::Right]
-    pub fn right() -> Self {
-        Self::horizontal(AlignmentHorizontal::Right)
-    }
-
-    /// Center_horizontal constructs a horizontal alignment to [AlignmentHorizontal::Center]
-    pub fn center_horizontal() -> Self {
-        Self::horizontal(AlignmentHorizontal::Center)
     }
 
     /// Returns an alignment with the given horizontal alignment.

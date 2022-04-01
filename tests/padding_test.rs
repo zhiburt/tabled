@@ -110,7 +110,7 @@ fn padding_multiline_with_vertical_alignment() {
         .with(Style::psql())
         .with(
             Modify::new(Full)
-                .with(Alignment::center_horizontal())
+                .with(Alignment::center())
                 .with(Alignment::center_vertical()),
         )
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 1, 1)))

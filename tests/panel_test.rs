@@ -79,7 +79,7 @@ fn highligt_panel() {
 fn top_panel() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 0))
-        .with(Modify::new(Full).with(Alignment::center_horizontal()))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(Style::psql())
         .to_string();
 
@@ -100,7 +100,7 @@ fn bottom_panel() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Panel("Linux Distributions", data.len() + 1))
-        .with(Modify::new(Rows::new(data.len() + 1..)).with(Alignment::center_horizontal()))
+        .with(Modify::new(Rows::new(data.len() + 1..)).with(Alignment::center()))
         .with(Style::psql())
         .to_string();
 
@@ -120,7 +120,7 @@ fn bottom_panel() {
 fn inner_panel() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 2))
-        .with(Modify::new(Rows::new(2..)).with(Alignment::center_horizontal()))
+        .with(Modify::new(Rows::new(2..)).with(Alignment::center()))
         .with(Style::psql())
         .to_string();
 
@@ -141,7 +141,7 @@ fn header() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Header("Linux Distributions"))
         .with(Style::psql())
-        .with(Modify::new(Rows::new(0..1)).with(Alignment::center_horizontal()))
+        .with(Modify::new(Rows::new(0..1)).with(Alignment::center()))
         .to_string();
 
     let expected = concat!(
@@ -163,10 +163,7 @@ fn footer() {
         .with(Header("Linux Distributions"))
         .with(Footer("The end"))
         .with(Style::psql())
-        .with(
-            Modify::new(Rows::single(0).and(Rows::new(data.len()..)))
-                .with(Alignment::center_horizontal()),
-        )
+        .with(Modify::new(Rows::single(0).and(Rows::new(data.len()..))).with(Alignment::center()))
         .to_string();
 
     let expected = concat!(
@@ -211,7 +208,7 @@ fn panel_style_change() {
                 .top_intersection('─')
                 .header_intersection('┬'),
         )
-        .with(Modify::new(Cell(0, 0)).with(Alignment::center_horizontal()))
+        .with(Modify::new(Cell(0, 0)).with(Alignment::center()))
         .to_string();
 
     let expected = concat!(

@@ -52,7 +52,7 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Rows::first()).with(Alignment::center_horizontal()))
+        .with(Modify::new(Rows::first()).with(Alignment::center()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
         .with(Modify::new(Columns::single(1)).with(Format::new(|s| s.blue().to_string())))
         .with(
