@@ -1,7 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
     object::{Cell, Columns, Full, Object, Rows},
-    Alignment, MaxWidth, MinWidth, Modify, Panel, Span, Style, Table,
+    Alignment, MaxWidth, MinWidth, Modify, Panel, Span, Style, Table, Tabled,
 };
 
 mod util;
@@ -116,14 +116,16 @@ fn max_width_wrapped_keep_words() {
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
 
-    let expected = concat!(
-        "| &str            |\n",
-        "|-----------------|\n",
-        "| this is a long  |\n",
-        "| sentence        |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| &str              |\n",
+            "|-------------------|\n",
+            "| this is a long    |\n",
+            "| sentence          |\n",
+        )
     );
-
-    assert_eq!(table, expected);
+    assert_eq!(lines_widths(&table)[0], 17 + 2 + 2);
 
     let data = vec!["this is a long  sentence"];
     let table = Table::new(&data)
@@ -132,14 +134,16 @@ fn max_width_wrapped_keep_words() {
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
 
-    let expected = concat!(
-        "| &str             |\n",
-        "|------------------|\n",
-        "| this is a long   |\n",
-        "| sentence         |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| &str              |\n",
+            "|-------------------|\n",
+            "| this is a long    |\n",
+            "| sentence          |\n",
+        )
     );
-
-    assert_eq!(table, expected);
+    assert_eq!(lines_widths(&table)[0], 17 + 2 + 2);
 
     let data = vec!["this is a long   sentence"];
     let table = Table::new(&data)
@@ -1012,6 +1016,69 @@ fn max_width_with_span() {
             "  |  |  |  \n",
         )
     );
+}
+
+#[test]
+fn wrapping_as_total_multiline() {
+    #[derive(Tabled)]
+    struct D<'a>(
+        #[tabled(rename = "version")] &'a str,
+        #[tabled(rename = "published_date")] &'a str,
+        #[tabled(rename = "is_active")] &'a str,
+        #[tabled(rename = "major_feature")] &'a str,
+    );
+
+    let data = vec![
+        D("0.2.1", "2021-06-23", "true", "#[header(inline)] attribute"),
+        D("0.2.0", "2021-06-19", "false", "API changes"),
+        D("0.1.4", "2021-06-07", "false", "display_with attribute"),
+    ];
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(MaxWidth::wrapping(57))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "| ver | published_d | is_act | major_feature            |\n",
+            "| sio | ate         | ive    |                          |\n",
+            "| n   |             |        |                          |\n",
+            "|-----+-------------+--------+--------------------------|\n",
+            "| 0.2 | 2021-06-23  | true   | #[header(inline)] attrib |\n",
+            "| .1  |             |        | ute                      |\n",
+            "| 0.2 | 2021-06-19  | false  | API changes              |\n",
+            "| .0  |             |        |                          |\n",
+            "| 0.1 | 2021-06-07  | false  | display_with attribute   |\n",
+            "| .4  |             |        |                          |\n",
+        )
+    );
+    assert_eq!(lines_widths(&table)[0], 57);
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Full).with(Alignment::left()))
+        .with(MaxWidth::wrapping(57).keep_words())
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "| ver | published_d | is_act | major_feature            |\n",
+            "| sio | ate         | ive    |                          |\n",
+            "| n   |             |        |                          |\n",
+            "|-----+-------------+--------+--------------------------|\n",
+            "| 0.2 | 2021-06-23  | true   | #[header(inline)]        |\n",
+            "| .1  |             |        | attribute                |\n",
+            "| 0.2 | 2021-06-19  | false  | API changes              |\n",
+            "| .0  |             |        |                          |\n",
+            "| 0.1 | 2021-06-07  | false  | display_with attribute   |\n",
+            "| .4  |             |        |                          |\n",
+        )
+    );
+    assert_eq!(lines_widths(&table)[0], 57);
 }
 
 fn lines_widths(s: &str) -> Vec<usize> {
