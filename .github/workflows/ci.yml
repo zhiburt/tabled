@@ -79,7 +79,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --target ${{ matrix.target }} -- --include-ignored qc_
+          args: --workspace --target ${{ matrix.target }}
 
   test_color:
     name: Unit Test Suite for color feature
@@ -95,7 +95,23 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --no-fail-fast --features color -- --include-ignored qc_
+          args: --workspace --no-fail-fast --features color
+
+  test_quickcheck:
+    name: Unit Test Suite for color feature
+    needs: [check, fmt, clippy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --workspace --no-fail-fast -- --include-ignored qc_
 
   coverage:
     name: Coveralls
