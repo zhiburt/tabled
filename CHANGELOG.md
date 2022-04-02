@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.6.0] - 2022-04-02
+
+### Added
+
+- Added `MinWidth` type, which changes cell widths in case it's necessary.
+- `MinWidth` and `MaxWidth` can be used in combination in order to set a table width.
+- Added `Span` support. It cab be used to set a column span.
+- Added `Extract` type by @[IsaacCloos](https://github.com/IsaacCloos). It can be used to extract a segment from a table.
+- Added an option to set padding character by @[kozmod](https://github.com/kozmod).
+- `Margin` by @[kozmod](https://github.com/kozmod). Can be used to set a indent of the whole table.
+- Added a support for custom target in `Highlight`.
+- `Border` can be used directly to set a cell border.
+- A list of format settings: `TrimStrategy`, `AlignmentStrategy`. 
+- `\t` processing.
+- Added a list of examples.
+
+### Changed
+
+- `#[field]` `#[header]` in `Tabled` macro was renamed to `#[tabled]`.
+- A default behaviour of alignment was changed.
+- `Indent` renamed to `Padding` by @[kozmod](https://github.com/kozmod).
+- A deprecated style constants were removed.
+- `object` module was removed from module prelude.
+- `Format` functions were refactored. So the interface was changed.
+- `Alignment::center_horizontal` was renamed to `Alignment::center`.
+
+### Fixed
+
+- Fix `Style` rendering issues.
+- Fix `Panel` rendering issues.
+- Fix `Span` rendering issues.
+
 ## [0.5.0] - 2022-02-10
 
 ### Added
