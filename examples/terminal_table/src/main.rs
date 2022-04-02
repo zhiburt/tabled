@@ -1,5 +1,4 @@
-//! The example can be run by this command
-//! `cargo run --example terminal_table`
+//! The example shows how we could spread a table to the size of a terminal.
 
 use tabled::{
     object::Full, Alignment, MaxWidth, MinWidth, Modify, Style, TableIteratorExt, Tabled,
