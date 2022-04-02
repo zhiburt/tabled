@@ -27,7 +27,7 @@ impl Alignment {
     /// ## Notice
     ///
     /// When you use [crate::MinWidth] the alignment might not work as you expected.
-    /// You could try to apply [crate::render_settings::TrimStrategy] which may help.
+    /// You could try to apply [crate::formatting_settings::TrimStrategy] which may help.
     pub fn right() -> Self {
         Self::horizontal(AlignmentHorizontal::Right)
     }
@@ -37,7 +37,7 @@ impl Alignment {
     /// ## Notice
     ///
     /// When you use [crate::MinWidth] the alignment might not work as you expected.
-    /// You could try to apply [crate::render_settings::TrimStrategy] which may help.
+    /// You could try to apply [crate::formatting_settings::TrimStrategy] which may help.
     pub fn center() -> Self {
         Self::horizontal(AlignmentHorizontal::Center)
     }

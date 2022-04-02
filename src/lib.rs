@@ -170,7 +170,7 @@ mod width;
 pub mod builder;
 pub mod display;
 pub mod object;
-pub mod render_settings;
+pub mod formatting_settings;
 pub mod style;
 
 pub use crate::{

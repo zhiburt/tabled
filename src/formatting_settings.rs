@@ -1,4 +1,4 @@
-//! This moduler contains settings for render strategy of papergrid.
+//! This module contains settings for render strategy of papergrid.
 
 use papergrid::{Entity, Grid, Settings};
 
@@ -49,7 +49,7 @@ impl RenderSettings {
 /// ```
 /// use tabled::{
 ///     Table, Style, Modify, Alignment, object::Full,
-///     render_settings::{RenderSettings, AlignmentStrategy}
+///     formatting_settings::{RenderSettings, AlignmentStrategy}
 /// };
 ///
 /// // sample_from: https://opensource.adobe.com/Spry/samples/data_region/JSONDataSetSample.html
@@ -154,7 +154,7 @@ pub enum AlignmentStrategy {
 /// ```
 /// use tabled::{
 ///     Table, Style, Modify, Alignment, object::Full,
-///     render_settings::{RenderSettings, TrimStrategy, AlignmentStrategy}
+///     formatting_settings::{RenderSettings, TrimStrategy, AlignmentStrategy}
 /// };
 ///
 /// let table = Table::new(&["   Hello World"])

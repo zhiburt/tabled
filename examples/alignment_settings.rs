@@ -3,7 +3,7 @@
 
 use tabled::{
     object::Full,
-    render_settings::{AlignmentStrategy, RenderSettings, TrimStrategy},
+    formatting_settings::{AlignmentStrategy, RenderSettings, TrimStrategy},
     Alignment, AlignmentHorizontal, Modify, Style, Table,
 };
 

@@ -1,7 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
     object::{Cell, Full},
-    render_settings::{AlignmentStrategy, RenderSettings, TrimStrategy},
+    formatting_settings::{AlignmentStrategy, RenderSettings, TrimStrategy},
     Alignment, Modify, Span, Style, Table,
 };
 
