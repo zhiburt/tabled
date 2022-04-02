@@ -1190,8 +1190,10 @@ fn build_line_cell(
     }
 
     let mut text = cell[cell_line_index].as_str();
-    if style.formatting.horizontal_trim {
+    if style.formatting.horizontal_trim && style.formatting.allow_lines_alignement {
         text = text.trim();
+    } else if style.formatting.horizontal_trim {
+        text = text.trim_end();
     }
 
     if style.formatting.allow_lines_alignement {
@@ -1201,7 +1203,7 @@ fn build_line_cell(
             .iter()
             .map(|line| {
                 if style.formatting.horizontal_trim {
-                    line.trim()
+                    line.trim_end()
                 } else {
                     line
                 }

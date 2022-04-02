@@ -154,7 +154,7 @@ pub enum AlignmentStrategy {
 /// ```
 /// use tabled::{
 ///     Table, Style, Modify, Alignment, object::Full,
-///     render_settings::{RenderSettings, TrimStrategy}
+///     render_settings::{RenderSettings, TrimStrategy, AlignmentStrategy}
 /// };
 ///
 /// let table = Table::new(&["   Hello World"])
@@ -164,6 +164,20 @@ pub enum AlignmentStrategy {
 ///             .with(Alignment::left())
 ///             .with(RenderSettings::default().trim(TrimStrategy::Horizontal))
 ///     );
+///
+/// // Note that nothing was changed exactly.
+///
+/// assert_eq!(
+///     table.to_string(),
+///     "┌────────────────┐\n\
+///      │ &str           │\n\
+///      ├────────────────┤\n\
+///      │    Hello World │\n\
+///      └────────────────┘\n"
+/// );
+///
+/// // To trim lines you would need also set [AlignmentStrategy]
+/// let table = table.with(Modify::new(Full).with(RenderSettings::default().alignement(AlignmentStrategy::PerLine)));
 ///
 /// assert_eq!(
 ///     table.to_string(),

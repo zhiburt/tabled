@@ -1,6 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
     object::{Cell, Columns, Full, Object, Rows},
+    render_settings::{RenderSettings, TrimStrategy},
     Alignment, MaxWidth, MinWidth, Modify, Panel, Span, Style, Table, Tabled,
 };
 
@@ -1234,6 +1235,114 @@ fn truncating_as_total_multiline_color() {
         )
     );
     assert_eq!(lines_widths(&table)[0], 57);
+}
+
+#[test]
+fn min_width_works_with_right_alignment() {
+    let json = r#"
+    {
+        "some": "random",
+        "json": [
+            { "1": "2" },
+            { "1": "2" },
+            { "1": "2" }
+        ]
+    }
+    "#;
+
+    let table = Table::new([json])
+        .with(Style::github_markdown())
+        .with(MinWidth::new(50))
+        .with(Modify::new(Full).with(Alignment::right()));
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|                      &str                      |\n",
+            "|------------------------------------------------|\n",
+            "|                                                |\n",
+            "|     {                                          |\n",
+            "|         \"some\": \"random\",                      |\n",
+            "|         \"json\": [                              |\n",
+            "|             { \"1\": \"2\" },                      |\n",
+            "|             { \"1\": \"2\" },                      |\n",
+            "|             { \"1\": \"2\" }                       |\n",
+            "|         ]                                      |\n",
+            "|     }                                          |\n",
+            "|                                                |\n",
+        )
+    );
+
+    let table =
+        table.with(Modify::new(Full).with(RenderSettings::default().trim(TrimStrategy::Both)));
+
+    println!("{}", table);
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|                                           &str |\n",
+            "|------------------------------------------------|\n",
+            "|                          {                     |\n",
+            "|                              \"some\": \"random\", |\n",
+            "|                              \"json\": [         |\n",
+            "|                                  { \"1\": \"2\" }, |\n",
+            "|                                  { \"1\": \"2\" }, |\n",
+            "|                                  { \"1\": \"2\" }  |\n",
+            "|                              ]                 |\n",
+            "|                          }                     |\n",
+            "|                                                |\n",
+            "|                                                |\n",
+        )
+    );
+
+    let table = Table::new([json])
+        .with(Style::github_markdown())
+        .with(MinWidth::new(50))
+        .with(Modify::new(Full).with(Alignment::center()));
+
+    println!("{}", table);
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|           &str                                 |\n",
+            "|------------------------------------------------|\n",
+            "|                                                |\n",
+            "|     {                                          |\n",
+            "|         \"some\": \"random\",                      |\n",
+            "|         \"json\": [                              |\n",
+            "|             { \"1\": \"2\" },                      |\n",
+            "|             { \"1\": \"2\" },                      |\n",
+            "|             { \"1\": \"2\" }                       |\n",
+            "|         ]                                      |\n",
+            "|     }                                          |\n",
+            "|                                                |\n",
+        )
+    );
+
+    let table =
+        table.with(Modify::new(Full).with(RenderSettings::default().trim(TrimStrategy::Both)));
+
+    println!("{}", table);
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|                      &str                      |\n",
+            "|------------------------------------------------|\n",
+            "|               {                                |\n",
+            "|                   \"some\": \"random\",            |\n",
+            "|                   \"json\": [                    |\n",
+            "|                       { \"1\": \"2\" },            |\n",
+            "|                       { \"1\": \"2\" },            |\n",
+            "|                       { \"1\": \"2\" }             |\n",
+            "|                   ]                            |\n",
+            "|               }                                |\n",
+            "|                                                |\n",
+            "|                                                |\n",
+        )
+    );
 }
 
 fn lines_widths(s: &str) -> Vec<usize> {
