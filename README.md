@@ -40,8 +40,8 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
       - [Refinishing](#refinishing)
     - [Header and Footer](#header-and-footer)
     - [Concat](#concat)
-      - [Highlight](#highlight)
-      - [Column span](#column-span)
+    - [Highlight](#highlight)
+    - [Column span](#column-span)
   - [Derive](#derive)
     - [Column name override](#column-name-override)
     - [Hide a column](#hide-a-column)
@@ -568,7 +568,7 @@ let t2: Table = ...;
 let t3: Table = t1.with(Concat::vertical(t2));
 ```
 
-#### Highlight
+### Highlight
 
 `Highlight` can be used to change a borders of target sector.
 Here's an example.
@@ -605,7 +605,7 @@ The printed table would be like the following.
 └───┴───*****
 ```
 
-#### Column span
+### Column span
 
 It's possible to have a horizontal (column) span of a cell.
 
