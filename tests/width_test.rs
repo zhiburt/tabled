@@ -595,20 +595,21 @@ fn min_width_color() {
         "asdasd".on_black().green().to_string(),
     ];
 
-    let expected = concat!(
-        "| String     |\n",
-        "|------------|\n",
-        "| \u{1b}[31masd\u{1b}[0m        |\n",
-        "| \u{1b}[34mzxc\u{1b}[0m        |\n",
-        "| \u{1b}[32m\u{1b}[40masdasd\u{1b}[0m\u{1b}[0m     |\n",
-    );
-
     let table = Table::new(data)
         .with(Style::github_markdown())
         .with(Modify::new(Full).with(MinWidth::new(10)))
         .to_string();
 
-    assert_eq!(expected, table);
+    assert_eq!(
+        table,
+        concat!(
+            "|   String   |\n",
+            "|------------|\n",
+            "|    \u{1b}[31masd\u{1b}[0m     |\n",
+            "|    \u{1b}[34mzxc\u{1b}[0m     |\n",
+            "|   \u{1b}[32m\u{1b}[40masdasd\u{1b}[0m\u{1b}[0m   |\n",
+        )
+    );
 }
 
 #[cfg(feature = "color")]
