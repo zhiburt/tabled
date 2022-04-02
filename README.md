@@ -11,48 +11,52 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
 ## Table of Contents
 
-* [Usage](#Usage)
-* [Settings](#Settings)
-    * [Style](#Style)
-        * [Themes](#Themes)
-            * [ASCII](#ASCII)
-            * [Psql](#Psql)
-            * [Github Markdown](#Github-Markdown)
-            * [Modern](#Modern)
-            * [ReStructuredText](#ReStructuredText)
-            * [Extended](#Extended)
-            * [Dots](#Dots)
-            * [Blank](#Blank)
-            * [Custom](#Custom)
-        * [Cell Border](#Cell-Border)
-        * [Text in a top border](#Text-in-a-top-border)
-    * [Alignment](#Alignment)
-    * [Format](#Format)
-    * [Padding](#Padding)
-    * [Max width](#Max-width)
-    * [Rotate](#Rotate)
-    * [Disable](#Disable)
-    * [Extract](#Extract)
-        * [Refinish](#Refinishing)
-    * [Header and Footer](#Header-and-Footer)
-    * [Concat](#Concat)
-    * [Highlight](#Highlight)
-    * [Column span](#Column-span)
-* [Derive](#Derive)
-    * [Column name override](#Column-name-override)
-    * [Hide a column](#Hide-a-column)
-    * [Custom field formatting](#Custom-field-formatting)
-    * [Inline](#Inline)
-* [Features](#Features)
-    * [Tuple combination](#Tuple-combination)
-    * [Color](#Color)
-    * [Object](#Object)
-* [Views](#Views)
-    * [Expanded Display](#Expanded-Display)
-* [Notes](#Notes)
-   * [ANSI escape codes](#ANSI-escape-codes) 
-   * [Dynamic table](#Dynamic-table)
-   * [Emoji](#Emoji)
+- [tabled](#tabled)
+  - [Table of Contents](#table-of-contents)
+  - [Usage](#usage)
+  - [Settings](#settings)
+    - [Style](#style)
+      - [Themes](#themes)
+        - [ASCII](#ascii)
+        - [Psql](#psql)
+        - [Github Markdown](#github-markdown)
+        - [Modern](#modern)
+        - [ReStructuredText](#restructuredtext)
+        - [Extended](#extended)
+        - [Dots](#dots)
+        - [Blank](#blank)
+        - [Custom](#custom)
+      - [Cell Border](#cell-border)
+      - [Text in a top border](#text-in-a-top-border)
+    - [Alignment](#alignment)
+    - [Format](#format)
+    - [Padding](#padding)
+    - [Margin](#margin)
+    - [Max width](#max-width)
+    - [Min width](#min-width)
+    - [Rotate](#rotate)
+    - [Disable](#disable)
+    - [Extract](#extract)
+      - [Refinishing](#refinishing)
+    - [Header and Footer](#header-and-footer)
+    - [Concat](#concat)
+      - [Highlight](#highlight)
+      - [Column span](#column-span)
+  - [Derive](#derive)
+    - [Column name override](#column-name-override)
+    - [Hide a column](#hide-a-column)
+    - [Custom field formatting](#custom-field-formatting)
+    - [Inline](#inline)
+  - [Features](#features)
+    - [Color](#color)
+    - [Tuple combination](#tuple-combination)
+    - [Object](#object)
+  - [Views](#views)
+    - [Expanded display](#expanded-display)
+  - [Notes](#notes)
+    - [ANSI escape codes](#ansi-escape-codes)
+    - [Dynamic table](#dynamic-table)
+    - [Emoji](#emoji)
 
 ## Usage
 
@@ -348,9 +352,33 @@ Table::new(&data)
     .with(Modify::new(Cell(0, 3)).with(Padding::new(1, 1, 0, 2).set_fill('>', '<', '^', 'V')));
 ```
 
+### Margin
+
+
+`Margin` sets an outside of the grid ident (top, bottom, left, right).
+
+```rust
+use tabled::{Table, Modify, Padding, object::Cell};
+
+Table::new(&data)
+    .with(Margin::new(3, 4, 1, 2).set_fill('>', '<', 'v', '^'));
+```
+
+An output would depend on the `data`. But it could look like the following.
+
+```
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+>>>┌───────────┬───────────┐<<<<
+>>>│  feature  │  released │<<<<
+>>>│  margin   │   0.6.0   │<<<<
+>>>└───────────┴───────────┘<<<<
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+```
+
 ### Max width
 
-Using `MaxWidth` type its possible to set a max width of an object.
+`MaxWidth` sets a maximum width of an object.
 While tinkering content we don't forget about its color.
 
 ```rust
@@ -364,6 +392,38 @@ data.table()
 data.table()
     .with(Modify::new(Rows::last()).with(MaxWidth::wrapping(10)));
 ```
+
+`MaxWidth` also can be used to set a maximum width of a whole table.
+
+```rust
+use tabled::{TableIteratorExt, MaxWidth};
+
+data.table().with(MaxWidth::wrapping(10));
+```
+
+It can be used in combination with `MinWidth`.
+
+### Min width
+
+`MinWidth` sets a minimal width of an object.
+While tinkering content we don't forget about its color.
+
+```rust
+use tabled::{TableIteratorExt, Modify, MinWidth, object::Rows};
+
+data.table()
+    .with(Modify::new(Rows::new(1..)).with(MinWidth::new(10)));
+```
+
+`MinWidth` also can be used to set a minimum width of a whole table.
+
+```rust
+use tabled::{TableIteratorExt, MinWidth};
+
+data.table().with(MinWidth::new(10));
+```
+
+It can be used in combination with `MaxWidth`.
 
 ### Rotate
 
