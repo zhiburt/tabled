@@ -1,43 +1,33 @@
 //! This module contains settings for render strategy of papergrid.
+//!
+//! [TrimStrategy] and [AlignmentStrategy] allows to set [crate::Alignment] settings.
+//!
+//! [TabSize] sets a default tab size.
 
 use papergrid::{Entity, Grid, Settings};
 
 use crate::CellOption;
 
-/// RenderSettings responsible for strategy of how we view cells.
+/// Set a tab size.
 ///
-/// It allows to set [crate::Alignment] settings via [Self::alignement] and [Self::trim].
+/// The size is used in order to calculate width correctly.
+///
+/// Default value is 4 (basically 1 '\t' equals 4 spaces).
+///
+/// IMPORTANT: The tab character might be not present in output,
+/// it might be replaced by spaces.
 #[derive(Debug, Default, Clone)]
-pub struct RenderSettings {
-    alignment_policy: Option<AlignmentStrategy>,
-    trim_policy: Option<TrimStrategy>,
-    tab_size: Option<usize>,
-}
+pub struct TabSize(pub usize);
 
-impl RenderSettings {
-    /// Set an alignement strategy.
-    pub fn alignement(mut self, policy: AlignmentStrategy) -> Self {
-        self.alignment_policy = Some(policy);
-        self
-    }
+impl CellOption for TabSize {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        let mut formatting = grid.style(&Entity::Cell(row, column)).formatting;
+        formatting.tab_width = self.0;
 
-    /// Set a trim strategy.
-    pub fn trim(mut self, policy: TrimStrategy) -> Self {
-        self.trim_policy = Some(policy);
-        self
-    }
-
-    /// Set a tab size.
-    ///
-    /// The size is used in order to calculate width correctly.
-    ///
-    /// Default value is 4 (basically 1 '\t' equals 4 spaces).
-    ///
-    /// IMPORTANT: The tab character might be not present in output,
-    /// it might be replaced by spaces.
-    pub fn set_tab_size(mut self, n: usize) -> Self {
-        self.tab_size = Some(n);
-        self
+        grid.set(
+            &Entity::Cell(row, column),
+            Settings::new().formatting(formatting),
+        )
     }
 }
 
@@ -49,7 +39,7 @@ impl RenderSettings {
 /// ```
 /// use tabled::{
 ///     Table, Style, Modify, Alignment, object::Full,
-///     formatting_settings::{RenderSettings, AlignmentStrategy}
+///     formatting_settings::AlignmentStrategy
 /// };
 ///
 /// // sample_from: https://opensource.adobe.com/Spry/samples/data_region/JSONDataSetSample.html
@@ -78,7 +68,7 @@ impl RenderSettings {
 ///     .with(
 ///         Modify::new(Full)
 ///             .with(Alignment::right())
-///             .with(RenderSettings::default().alignement(AlignmentStrategy::PerCell))
+///             .with(AlignmentStrategy::PerCell)
 ///     );
 ///
 /// assert_eq!(
@@ -109,7 +99,7 @@ impl RenderSettings {
 /// └───────────────────────────────────────────────────────────────┘
 /// "#);
 ///
-/// let table = table.with(Modify::new(Full).with(RenderSettings::default().alignement(AlignmentStrategy::PerLine)));
+/// let table = table.with(Modify::new(Full).with(AlignmentStrategy::PerLine));
 ///
 /// assert_eq!(
 ///     format!("\n{}", table),
@@ -147,6 +137,21 @@ pub enum AlignmentStrategy {
     PerLine,
 }
 
+impl CellOption for AlignmentStrategy {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        let mut formatting = grid.style(&Entity::Cell(row, column)).formatting;
+        match &self {
+            AlignmentStrategy::PerCell => formatting.allow_lines_alignement = false,
+            AlignmentStrategy::PerLine => formatting.allow_lines_alignement = true,
+        }
+
+        grid.set(
+            &Entity::Cell(row, column),
+            Settings::new().formatting(formatting),
+        )
+    }
+}
+
 /// TrimStrategy determins if it's alowed to use empty space while doing [crate::Alignment].
 ///
 /// # Examples
@@ -154,7 +159,7 @@ pub enum AlignmentStrategy {
 /// ```
 /// use tabled::{
 ///     Table, Style, Modify, Alignment, object::Full,
-///     formatting_settings::{RenderSettings, TrimStrategy, AlignmentStrategy}
+///     formatting_settings::{TrimStrategy, AlignmentStrategy}
 /// };
 ///
 /// let table = Table::new(&["   Hello World"])
@@ -162,7 +167,7 @@ pub enum AlignmentStrategy {
 ///     .with(
 ///         Modify::new(Full)
 ///             .with(Alignment::left())
-///             .with(RenderSettings::default().trim(TrimStrategy::Horizontal))
+///             .with(TrimStrategy::Horizontal)
 ///     );
 ///
 /// // Note that nothing was changed exactly.
@@ -177,7 +182,7 @@ pub enum AlignmentStrategy {
 /// );
 ///
 /// // To trim lines you would need also set [AlignmentStrategy]
-/// let table = table.with(Modify::new(Full).with(RenderSettings::default().alignement(AlignmentStrategy::PerLine)));
+/// let table = table.with(Modify::new(Full).with(AlignmentStrategy::PerLine));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -193,7 +198,7 @@ pub enum AlignmentStrategy {
 ///     .with(
 ///         Modify::new(Full)
 ///             .with(Alignment::top())
-///             .with(RenderSettings::default().trim(TrimStrategy::Vertical))
+///             .with(TrimStrategy::Vertical)
 ///     );
 ///
 /// assert_eq!(
@@ -220,38 +225,25 @@ pub enum TrimStrategy {
     None,
 }
 
-impl CellOption for RenderSettings {
+impl CellOption for TrimStrategy {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let mut formatting = grid.style(&Entity::Cell(row, column)).formatting;
 
-        if let Some(policy) = &self.alignment_policy {
-            match policy {
-                AlignmentStrategy::PerCell => formatting.allow_lines_alignement = false,
-                AlignmentStrategy::PerLine => formatting.allow_lines_alignement = true,
+        match self {
+            TrimStrategy::Vertical => {
+                formatting.vertical_trim = true;
             }
-        }
-
-        if let Some(policy) = &self.trim_policy {
-            match policy {
-                TrimStrategy::Vertical => {
-                    formatting.vertical_trim = true;
-                }
-                TrimStrategy::Horizontal => {
-                    formatting.horizontal_trim = true;
-                }
-                TrimStrategy::Both => {
-                    formatting.vertical_trim = true;
-                    formatting.horizontal_trim = true;
-                }
-                TrimStrategy::None => {
-                    formatting.vertical_trim = false;
-                    formatting.horizontal_trim = false;
-                }
+            TrimStrategy::Horizontal => {
+                formatting.horizontal_trim = true;
             }
-        }
-
-        if let &Some(n) = &self.tab_size {
-            formatting.tab_width = n;
+            TrimStrategy::Both => {
+                formatting.vertical_trim = true;
+                formatting.horizontal_trim = true;
+            }
+            TrimStrategy::None => {
+                formatting.vertical_trim = false;
+                formatting.horizontal_trim = false;
+            }
         }
 
         grid.set(

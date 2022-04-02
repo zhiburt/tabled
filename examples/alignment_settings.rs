@@ -2,8 +2,8 @@
 //! `cargo run --example basic`
 
 use tabled::{
+    formatting_settings::{AlignmentStrategy, TrimStrategy},
     object::Full,
-    formatting_settings::{AlignmentStrategy, RenderSettings, TrimStrategy},
     Alignment, AlignmentHorizontal, Modify, Style, Table,
 };
 
@@ -30,11 +30,8 @@ fn main() {
         Modify::new(Full)
             .with(Alignment::Horizontal(AlignmentHorizontal::Right))
             .with(Alignment::center_vertical())
-            .with(
-                RenderSettings::default()
-                    .alignement(AlignmentStrategy::PerCell)
-                    .trim(TrimStrategy::None),
-            ),
+            .with(AlignmentStrategy::PerCell)
+            .with(TrimStrategy::None),
     );
 
     println!("{}", table);

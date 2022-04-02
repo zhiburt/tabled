@@ -1,7 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
+    formatting_settings::TrimStrategy,
     object::{Cell, Columns, Full, Object, Rows},
-    formatting_settings::{RenderSettings, TrimStrategy},
     Alignment, MaxWidth, MinWidth, Modify, Panel, Span, Style, Table, Tabled,
 };
 
@@ -1273,8 +1273,7 @@ fn min_width_works_with_right_alignment() {
         )
     );
 
-    let table =
-        table.with(Modify::new(Full).with(RenderSettings::default().trim(TrimStrategy::Both)));
+    let table = table.with(Modify::new(Full).with(TrimStrategy::Both));
 
     println!("{}", table);
 
@@ -1321,8 +1320,7 @@ fn min_width_works_with_right_alignment() {
         )
     );
 
-    let table =
-        table.with(Modify::new(Full).with(RenderSettings::default().trim(TrimStrategy::Both)));
+    let table = table.with(Modify::new(Full).with(TrimStrategy::Both));
 
     println!("{}", table);
 

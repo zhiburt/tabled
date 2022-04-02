@@ -1,7 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
+    formatting_settings::{AlignmentStrategy, TabSize, TrimStrategy},
     object::{Cell, Full},
-    formatting_settings::{AlignmentStrategy, RenderSettings, TrimStrategy},
     Alignment, Modify, Span, Style, Table,
 };
 
@@ -18,7 +18,7 @@ fn alignment_per_line() {
         .with(
             Modify::new(Full)
                 .with(Alignment::right())
-                .with(RenderSettings::default().alignement(AlignmentStrategy::PerLine)),
+                .with(AlignmentStrategy::PerLine),
         )
         .to_string();
 
@@ -51,11 +51,10 @@ fn alignment_per_line_with_trim() {
     let table = Table::new(&data)
         .with(Style::psql())
         .with(
-            Modify::new(Full).with(Alignment::right()).with(
-                RenderSettings::default()
-                    .alignement(AlignmentStrategy::PerLine)
-                    .trim(TrimStrategy::Horizontal),
-            ),
+            Modify::new(Full)
+                .with(Alignment::right())
+                .with(AlignmentStrategy::PerLine)
+                .with(TrimStrategy::Horizontal),
         )
         .to_string();
 
@@ -88,11 +87,8 @@ fn alignment_per_line_with_trim() {
             Modify::new(Full)
                 .with(Alignment::center_vertical())
                 .with(Alignment::left())
-                .with(
-                    RenderSettings::default()
-                        .alignement(AlignmentStrategy::PerLine)
-                        .trim(TrimStrategy::Both),
-                ),
+                .with(AlignmentStrategy::PerLine)
+                .with(TrimStrategy::Both),
         )
         .to_string();
 
@@ -141,11 +137,7 @@ fn tab_size_test() {
 
     assert_eq!(table.to_string(), expected);
 
-    table = table.with(
-        Modify::new(Full)
-            .with(Alignment::right())
-            .with(RenderSettings::default().set_tab_size(2)),
-    );
+    table = table.with(Modify::new(Full).with(Alignment::right()).with(TabSize(2)));
 
     let expected = concat!(
         "                N | column 0 |   column 1 | column 2 \n",
@@ -162,11 +154,7 @@ fn tab_size_test() {
 
     assert_eq!(table.to_string(), expected);
 
-    table = table.with(
-        Modify::new(Full)
-            .with(Alignment::right())
-            .with(RenderSettings::default().set_tab_size(0)),
-    );
+    table = table.with(Modify::new(Full).with(Alignment::right()).with(TabSize(0)));
 
     let expected = concat!(
         "            N | column 0 | column 1 | column 2 \n",
