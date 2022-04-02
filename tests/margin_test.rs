@@ -133,18 +133,18 @@ fn table_with_margin_and_max_width() {
         .with(MinWidth::new(50))
         .to_string();
 
-    // todo: Seens like incorrect a bit
-    let expected = concat!(
-        "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n",
-        "> N    | column 0    | column 1    | column 2    <\n",
-        ">------+-------------+-------------+-------------<\n",
-        "> 0    |          0-0              |   0-2       <\n",
-        "> 1    |   1-0       |   1-1       |   1-2       <\n",
-        "> 2    |   2-0       |   2-1       |   2-2       <\n",
-        "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-    );
-
     println!("{}", table);
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        concat!(
+            "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n",
+            ">  N   |  column 0   |  column 1   |  column 2   <\n",
+            ">------+-------------+-------------+-------------<\n",
+            ">  0   |            0-0            |     0-2     <\n",
+            ">  1   |     1-0     |     1-1     |     1-2     <\n",
+            ">  2   |     2-0     |     2-1     |     2-2     <\n",
+            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+        )
+    );
 }

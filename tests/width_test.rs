@@ -427,18 +427,31 @@ fn min_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Rows::single(0)).with(MinWidth::new(12)))
-        .to_string();
+        .with(Modify::new(Rows::single(0)).with(MinWidth::new(12)));
 
-    let expected = concat!(
-        "| N            | column 0     | column 1     | column 2     |\n",
-        "|--------------+--------------+--------------+--------------|\n",
-        "|      0       |     0-0      |     0-1      |     0-2      |\n",
-        "|      1       |     1-0      |     1-1      |     1-2      |\n",
-        "|      2       |     2-0      |     2-1      |     2-2      |\n",
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|      N       |   column 0   |   column 1   |   column 2   |\n",
+            "|--------------+--------------+--------------+--------------|\n",
+            "|      0       |     0-0      |     0-1      |     0-2      |\n",
+            "|      1       |     1-0      |     1-1      |     1-2      |\n",
+            "|      2       |     2-0      |     2-1      |     2-2      |\n",
+        ),
     );
 
-    assert_eq!(table, expected);
+    let table = table.with(Modify::new(Full).with(TrimStrategy::None));
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "| N            | column 0     | column 1     | column 2     |\n",
+            "|--------------+--------------+--------------+--------------|\n",
+            "|      0       |     0-0      |     0-1      |     0-2      |\n",
+            "|      1       |     1-0      |     1-1      |     1-2      |\n",
+            "|      2       |     2-0      |     2-1      |     2-2      |\n",
+        ),
+    );
 }
 
 #[test]
@@ -465,18 +478,31 @@ fn min_width_one_column() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Cell(0, 0)).with(MinWidth::new(5)))
-        .to_string();
+        .with(Modify::new(Cell(0, 0)).with(MinWidth::new(5)));
 
-    let expected = concat!(
-        "| N     | column 0 | column 1 | column 2 |\n",
-        "|-------+----------+----------+----------|\n",
-        "|   0   |   0-0    |   0-1    |   0-2    |\n",
-        "|   1   |   1-0    |   1-1    |   1-2    |\n",
-        "|   2   |   2-0    |   2-1    |   2-2    |\n",
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|   N   | column 0 | column 1 | column 2 |\n",
+            "|-------+----------+----------+----------|\n",
+            "|   0   |   0-0    |   0-1    |   0-2    |\n",
+            "|   1   |   1-0    |   1-1    |   1-2    |\n",
+            "|   2   |   2-0    |   2-1    |   2-2    |\n",
+        )
     );
 
-    assert_eq!(table, expected);
+    let table = table.with(Modify::new(Full).with(TrimStrategy::None));
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "| N     | column 0 | column 1 | column 2 |\n",
+            "|-------+----------+----------+----------|\n",
+            "|   0   |   0-0    |   0-1    |   0-2    |\n",
+            "|   1   |   1-0    |   1-1    |   1-2    |\n",
+            "|   2   |   2-0    |   2-1    |   2-2    |\n",
+        )
+    );
 }
 
 #[test]
@@ -498,18 +524,31 @@ fn min_with_max_width() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(MaxWidth::truncating(3)))
-        .to_string();
+        .with(Modify::new(Rows::single(0)).with(MaxWidth::truncating(3)));
 
-    let expected = concat!(
-        "| N   | col | col | col |\n",
-        "|-----+-----+-----+-----|\n",
-        "|  0  | 0-0 | 0-1 | 0-2 |\n",
-        "|  1  | 1-0 | 1-1 | 1-2 |\n",
-        "|  2  | 2-0 | 2-1 | 2-2 |\n",
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|  N  | col | col | col |\n",
+            "|-----+-----+-----+-----|\n",
+            "|  0  | 0-0 | 0-1 | 0-2 |\n",
+            "|  1  | 1-0 | 1-1 | 1-2 |\n",
+            "|  2  | 2-0 | 2-1 | 2-2 |\n",
+        )
     );
 
-    assert_eq!(table, expected);
+    let table = table.with(Modify::new(Full).with(TrimStrategy::None));
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "| N   | col | col | col |\n",
+            "|-----+-----+-----+-----|\n",
+            "|  0  | 0-0 | 0-1 | 0-2 |\n",
+            "|  1  | 1-0 | 1-1 | 1-2 |\n",
+            "|  2  | 2-0 | 2-1 | 2-2 |\n",
+        )
+    );
 }
 
 #[test]
@@ -518,18 +557,31 @@ fn min_with_max_width_truncate_suffix() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(MaxWidth::truncating(3).suffix("...")))
-        .to_string();
+        .with(Modify::new(Rows::single(0)).with(MaxWidth::truncating(3).suffix("...")));
 
-    let expected = concat!(
-        "| N   | col... | col... | col... |\n",
-        "|-----+--------+--------+--------|\n",
-        "|  0  |  0-0   |  0-1   |  0-2   |\n",
-        "|  1  |  1-0   |  1-1   |  1-2   |\n",
-        "|  2  |  2-0   |  2-1   |  2-2   |\n",
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|  N  | col... | col... | col... |\n",
+            "|-----+--------+--------+--------|\n",
+            "|  0  |  0-0   |  0-1   |  0-2   |\n",
+            "|  1  |  1-0   |  1-1   |  1-2   |\n",
+            "|  2  |  2-0   |  2-1   |  2-2   |\n",
+        )
     );
 
-    assert_eq!(table, expected);
+    let table = table.with(Modify::new(Full).with(TrimStrategy::None));
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "| N   | col... | col... | col... |\n",
+            "|-----+--------+--------+--------|\n",
+            "|  0  |  0-0   |  0-1   |  0-2   |\n",
+            "|  1  |  1-0   |  1-1   |  1-2   |\n",
+            "|  2  |  2-0   |  2-1   |  2-2   |\n",
+        )
+    );
 }
 
 #[cfg(feature = "color")]
@@ -584,18 +636,33 @@ fn total_width_big() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(MaxWidth::truncating(80))
-        .with(MinWidth::new(80))
-        .to_string();
+        .with(MinWidth::new(80));
 
-    let expected = concat!(
-        "| N            | column 0            | column 1           | column 2           |\n",
-        "|--------------+---------------------+--------------------+--------------------|\n",
-        "| 0            |   0-0               |   0-1              |   0-2              |\n",
-        "| 1            |   1-0               |   1-1              |   1-2              |\n",
-        "| 2            |   2-0               |   2-1              |   2-2              |\n",
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|      N       |      column 0       |      column 1      |      column 2      |\n",
+            "|--------------+---------------------+--------------------+--------------------|\n",
+            "|      0       |         0-0         |        0-1         |        0-2         |\n",
+            "|      1       |         1-0         |        1-1         |        1-2         |\n",
+            "|      2       |         2-0         |        2-1         |        2-2         |\n",
+        )
     );
+    assert_eq!(lines_widths(&table.to_string())[0], 80);
 
-    assert_eq!(table, expected);
+    let table = table.with(Modify::new(Full).with(TrimStrategy::None));
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "| N            | column 0            | column 1           | column 2           |\n",
+            "|--------------+---------------------+--------------------+--------------------|\n",
+            "| 0            |   0-0               |   0-1              |   0-2              |\n",
+            "| 1            |   1-0               |   1-1              |   1-2              |\n",
+            "| 2            |   2-0               |   2-1              |   2-2              |\n",
+        )
+    );
+    assert_eq!(lines_widths(&table.to_string())[0], 80);
 }
 
 #[test]
@@ -1253,7 +1320,11 @@ fn min_width_works_with_right_alignment() {
     let table = Table::new([json])
         .with(Style::github_markdown())
         .with(MinWidth::new(50))
-        .with(Modify::new(Full).with(Alignment::right()));
+        .with(
+            Modify::new(Full)
+                .with(Alignment::right())
+                .with(TrimStrategy::None),
+        );
 
     assert_eq!(
         table.to_string(),
@@ -1269,6 +1340,26 @@ fn min_width_works_with_right_alignment() {
             "|             { \"1\": \"2\" }                       |\n",
             "|         ]                                      |\n",
             "|     }                                          |\n",
+            "|                                                |\n",
+        )
+    );
+
+    let table = table.with(Modify::new(Full).with(TrimStrategy::Horizontal));
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|                                           &str |\n",
+            "|------------------------------------------------|\n",
+            "|                                                |\n",
+            "|                          {                     |\n",
+            "|                              \"some\": \"random\", |\n",
+            "|                              \"json\": [         |\n",
+            "|                                  { \"1\": \"2\" }, |\n",
+            "|                                  { \"1\": \"2\" }, |\n",
+            "|                                  { \"1\": \"2\" }  |\n",
+            "|                              ]                 |\n",
+            "|                          }                     |\n",
             "|                                                |\n",
         )
     );
@@ -1298,7 +1389,11 @@ fn min_width_works_with_right_alignment() {
     let table = Table::new([json])
         .with(Style::github_markdown())
         .with(MinWidth::new(50))
-        .with(Modify::new(Full).with(Alignment::center()));
+        .with(
+            Modify::new(Full)
+                .with(Alignment::center())
+                .with(TrimStrategy::None),
+        );
 
     println!("{}", table);
 
@@ -1316,6 +1411,26 @@ fn min_width_works_with_right_alignment() {
             "|             { \"1\": \"2\" }                       |\n",
             "|         ]                                      |\n",
             "|     }                                          |\n",
+            "|                                                |\n",
+        )
+    );
+
+    let table = table.with(Modify::new(Full).with(TrimStrategy::Horizontal));
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|                      &str                      |\n",
+            "|------------------------------------------------|\n",
+            "|                                                |\n",
+            "|               {                                |\n",
+            "|                   \"some\": \"random\",            |\n",
+            "|                   \"json\": [                    |\n",
+            "|                       { \"1\": \"2\" },            |\n",
+            "|                       { \"1\": \"2\" },            |\n",
+            "|                       { \"1\": \"2\" }             |\n",
+            "|                   ]                            |\n",
+            "|               }                                |\n",
             "|                                                |\n",
         )
     );

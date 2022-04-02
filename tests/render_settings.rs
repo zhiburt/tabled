@@ -185,18 +185,19 @@ fn tab_size_span_test() {
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)));
 
-    let expected = concat!(
-        "                     N                     | column 2 \n",
-        "----------------------+-----+--------------+----------\n",
-        "     H        ello    World |     0-1      |   0-2    \n",
-        " 123    123    asdasd |        1-0         |   1-2    \n",
-        "          2           | 2-0 | htt    ps:// |   2-2    \n",
-        "                      |     | www          |          \n",
-        "                      |     | .            |          \n",
-        "                      |     | red    hat   |          \n",
-        "                      |     | .c    om     |          \n",
-        "                      |     | /en          |          \n",
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "                     N                     | column 2 \n",
+            "----------------------+-----+--------------+----------\n",
+            "     H        ello    World |     0-1      |   0-2    \n",
+            " 123    123    asdasd |        1-0         |   1-2    \n",
+            "          2           | 2-0 | htt    ps:// |   2-2    \n",
+            "                      |     | www          |          \n",
+            "                      |     | .            |          \n",
+            "                      |     | red    hat   |          \n",
+            "                      |     | .c    om     |          \n",
+            "                      |     | /en          |          \n",
+        )
     );
-
-    assert_eq!(table.to_string(), expected);
 }

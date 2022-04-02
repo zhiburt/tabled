@@ -3,7 +3,7 @@
 
 use std::{fmt::Display, iter::FromIterator};
 
-use papergrid::{AlignmentHorizontal, Entity, Grid, Indent, Settings};
+use papergrid::{AlignmentHorizontal, Entity, Formatting, Grid, Indent, Settings};
 
 use crate::{Style, Table};
 
@@ -238,7 +238,13 @@ fn create_table_from_grid(mut grid: Grid) -> Table {
                 Indent::spaced(0),
                 Indent::spaced(0),
             )
-            .alignment(AlignmentHorizontal::Center),
+            .alignment(AlignmentHorizontal::Center)
+            .formatting(Formatting {
+                tab_width: 4,
+                horizontal_trim: true,
+                allow_lines_alignement: false,
+                vertical_trim: false,
+            }),
     );
 
     let table = Table { grid };
