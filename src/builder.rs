@@ -124,26 +124,29 @@ impl Builder {
     ///     .build();
     /// ```
     pub fn build(mut self) -> Table {
-        if let Some(empty_cell_text) = self.empty_cell_text {
-            if let Some(header) = self.headers.as_mut() {
-                if self.size > header.len() {
-                    append_vec(header, self.size - header.len(), empty_cell_text.clone());
-                }
-            }
-
-            for row in self.rows.iter_mut() {
-                if self.size > row.len() {
-                    append_vec(row, self.size - row.len(), empty_cell_text.clone());
-                }
-            }
-        }
-
+        self.fix_rows();
         build_table(self.headers, self.rows, self.size)
     }
 
     fn update_size(&mut self, size: usize) {
         if size > self.size {
             self.size = size;
+        }
+    }
+
+    fn fix_rows(&mut self) {
+        let empty_cell_text = self.empty_cell_text.clone().unwrap_or_default();
+
+        if let Some(header) = self.headers.as_mut() {
+            if self.size > header.len() {
+                append_vec(header, self.size - header.len(), empty_cell_text.clone());
+            }
+        }
+
+        for row in self.rows.iter_mut() {
+            if self.size > row.len() {
+                append_vec(row, self.size - row.len(), empty_cell_text.clone());
+            }
         }
     }
 }

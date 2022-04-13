@@ -206,6 +206,92 @@ fn builder_from_vector() {
     assert_eq!(table, expected);
 }
 
+#[test]
+fn builder_from_with_empty_lines() {
+    let data = vec![
+        vec!["1".to_string(), "2".to_string(), "3".to_string()],
+        vec![],
+        vec![],
+        vec!["d".to_string(), "e".to_string(), "f".to_string()],
+    ];
+
+    let builder = Builder::from(data);
+    let table = builder.build().to_string();
+
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 | 2 | 3 |\n\
+         +---+---+---+\n\
+         |   |   |   |\n\
+         +---+---+---+\n\
+         |   |   |   |\n\
+         +---+---+---+\n\
+         | d | e | f |\n\
+         +---+---+---+\n"
+    );
+
+    let data = vec![
+        vec!["1".to_string(), "2".to_string(), "3".to_string()],
+        vec![],
+        vec!["d".to_string(), "e".to_string(), "f".to_string()],
+    ];
+
+    let builder = Builder::from(data);
+    let table = builder.build().to_string();
+
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 | 2 | 3 |\n\
+         +---+---+---+\n\
+         |   |   |   |\n\
+         +---+---+---+\n\
+         | d | e | f |\n\
+         +---+---+---+\n"
+    );
+
+    let data = vec![
+        vec![],
+        vec!["1".to_string(), "2".to_string(), "3".to_string()],
+        vec!["d".to_string(), "e".to_string(), "f".to_string()],
+    ];
+
+    let builder = Builder::from(data);
+    let table = builder.build().to_string();
+
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         |   |   |   |\n\
+         +---+---+---+\n\
+         | 1 | 2 | 3 |\n\
+         +---+---+---+\n\
+         | d | e | f |\n\
+         +---+---+---+\n"
+    );
+
+    let data = vec![
+        vec!["1".to_string(), "2".to_string(), "3".to_string()],
+        vec!["d".to_string(), "e".to_string(), "f".to_string()],
+        vec![],
+    ];
+
+    let builder = Builder::from(data);
+    let table = builder.build().to_string();
+
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 | 2 | 3 |\n\
+         +---+---+---+\n\
+         | d | e | f |\n\
+         +---+---+---+\n\
+         |   |   |   |\n\
+         +---+---+---+\n"
+    );
+}
+
 #[quickcheck_macros::quickcheck]
 #[ignore = "Quickcheck tests are a bit slow, so we don't run them all the time"]
 fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
