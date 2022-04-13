@@ -521,12 +521,15 @@ impl TableOption for MinWidth {
             return;
         }
 
-        let total_width = grid.total_width();
-        if total_width == self.size {
-            return;
-        }
+        // loop is neccessary because increase_total_width may not work properly in 1 call.
+        //
+        // todo: Try to fix it.
+        loop {
+            let total_width = grid.total_width();
+            if total_width >= self.size {
+                break;
+            }
 
-        if self.size > total_width {
             increase_total_width(grid, total_width, self.size);
         }
     }

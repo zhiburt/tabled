@@ -1459,6 +1459,60 @@ fn min_width_works_with_right_alignment() {
     );
 }
 
+#[test]
+fn min_width_with_span_1() {
+    let data = [
+        ["0", "1"],
+        ["a long string which will affect min width logic", ""],
+        ["2", "3"],
+    ];
+
+    let table = Table::new(data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
+        .with(MinWidth::new(100))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|                                   0                                    |            1            |\n",
+            "|------------------------------------------------------------------------+-------------------------|\n",
+            "|                                                0                                                 |\n",
+            "|            a long string which will affect min width logic             |                         |\n",
+            "|                                   2                                    |            3            |\n",
+        )
+    );
+    assert_eq!(lines_widths(&table)[0], 100);
+}
+
+#[test]
+fn min_width_with_span_2() {
+    let data = [
+        ["0", "1"],
+        ["a long string which will affect min width logic", ""],
+        ["2", "3"],
+    ];
+
+    let table = Table::new(data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(MinWidth::new(100))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|                        0                        |                       1                        |\n",
+            "|-------------------------------------------------+------------------------------------------------|\n",
+            "|                        0                        |                       1                        |\n",
+            "|                         a long string which will affect min width logic                          |\n",
+            "|                        2                        |                       3                        |\n",
+        )
+    );
+    assert_eq!(lines_widths(&table)[0], 100);
+}
+
 fn lines_widths(s: &str) -> Vec<usize> {
     #[cfg(not(feature = "color"))]
     {
