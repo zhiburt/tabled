@@ -98,7 +98,7 @@ jobs:
           args: --workspace --no-fail-fast --features color
 
   test_quickcheck:
-    name: Unit Test Suite for color feature
+    name: A quickcheck test suite
     needs: [check, fmt, clippy]
     runs-on: ubuntu-latest
     steps:
