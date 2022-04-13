@@ -189,11 +189,11 @@ impl Grid {
             .unwrap();
     }
 
-    fn is_vertical_present(&mut self, column: usize) -> bool {
+    fn is_vertical_present(&self, column: usize) -> bool {
         self.borders.is_there_vertical(column)
     }
 
-    fn is_horizontal_present(&mut self, row: usize) -> bool {
+    fn is_horizontal_present(&self, row: usize) -> bool {
         self.borders.is_there_horizontal(row)
     }
 
