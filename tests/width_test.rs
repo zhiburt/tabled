@@ -1,4 +1,4 @@
-use crate::util::create_vector;
+use crate::util::{create_vector, is_lines_equal};
 use tabled::{
     formatting_settings::TrimStrategy,
     object::{Cell, Columns, Full, Object, Rows},
@@ -15,15 +15,16 @@ fn max_width() {
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::truncating(1)))
         .to_string();
 
-    let expected = concat!(
-        "| N | column 0 | column 1 | column 2 |\n",
-        "|---+----------+----------+----------|\n",
-        "| 0 |    0     |    0     |    0     |\n",
-        "| 1 |    1     |    1     |    1     |\n",
-        "| 2 |    2     |    2     |    2     |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column 0 | column 1 | column 2 |\n",
+            "|---+----------+----------+----------|\n",
+            "| 0 |    0     |    0     |    0     |\n",
+            "| 1 |    1     |    1     |    1     |\n",
+            "| 2 |    2     |    2     |    2     |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -37,15 +38,16 @@ fn max_width_with_suffix() {
         )
         .to_string();
 
-    let expected = concat!(
-        "| N | column 0 | column 1 | column 2 |\n",
-        "|---+----------+----------+----------|\n",
-        "| 0 |  0-...   |  0-...   |  0-...   |\n",
-        "| 1 |  1-...   |  1-...   |  1-...   |\n",
-        "| 2 |  2-...   |  2-...   |  2-...   |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column 0 | column 1 | column 2 |\n",
+            "|---+----------+----------+----------|\n",
+            "| 0 |  0-...   |  0-...   |  0-...   |\n",
+            "| 1 |  1-...   |  1-...   |  1-...   |\n",
+            "| 2 |  2-...   |  2-...   |  2-...   |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -56,15 +58,16 @@ fn max_width_doesnt_icrease_width_if_it_is_smaller() {
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::truncating(50)))
         .to_string();
 
-    let expected = concat!(
-        "| N | column 0 | column 1 | column 2 |\n",
-        "|---+----------+----------+----------|\n",
-        "| 0 |   0-0    |   0-1    |   0-2    |\n",
-        "| 1 |   1-0    |   1-1    |   1-2    |\n",
-        "| 2 |   2-0    |   2-1    |   2-2    |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column 0 | column 1 | column 2 |\n",
+            "|---+----------+----------+----------|\n",
+            "| 0 |   0-0    |   0-1    |   0-2    |\n",
+            "| 1 |   1-0    |   1-1    |   1-2    |\n",
+            "| 2 |   2-0    |   2-1    |   2-2    |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -75,18 +78,19 @@ fn max_width_wrapped() {
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::wrapping(2)))
         .to_string();
 
-    let expected = concat!(
-        "| N | column 0 | column 1 | column 2 |\n",
-        "|---+----------+----------+----------|\n",
-        "| 0 |    0-    |    0-    |    0-    |\n",
-        "|   |    0     |    1     |    2     |\n",
-        "| 1 |    1-    |    1-    |    1-    |\n",
-        "|   |    0     |    1     |    2     |\n",
-        "| 2 |    2-    |    2-    |    2-    |\n",
-        "|   |    0     |    1     |    2     |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column 0 | column 1 | column 2 |\n",
+            "|---+----------+----------+----------|\n",
+            "| 0 |    0-    |    0-    |    0-    |\n",
+            "|   |    0     |    1     |    2     |\n",
+            "| 1 |    1-    |    1-    |    1-    |\n",
+            "|   |    0     |    1     |    2     |\n",
+            "| 2 |    2-    |    2-    |    2-    |\n",
+            "|   |    0     |    1     |    2     |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -97,15 +101,16 @@ fn max_width_wrapped_does_nothing_if_str_is_smaller() {
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::wrapping(100)))
         .to_string();
 
-    let expected = concat!(
-        "| N | column 0 | column 1 | column 2 |\n",
-        "|---+----------+----------+----------|\n",
-        "| 0 |   0-0    |   0-1    |   0-2    |\n",
-        "| 1 |   1-0    |   1-1    |   1-2    |\n",
-        "| 2 |   2-0    |   2-1    |   2-2    |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column 0 | column 1 | column 2 |\n",
+            "|---+----------+----------+----------|\n",
+            "| 0 |   0-0    |   0-1    |   0-2    |\n",
+            "| 1 |   1-0    |   1-1    |   1-2    |\n",
+            "| 2 |   2-0    |   2-1    |   2-2    |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -126,7 +131,7 @@ fn max_width_wrapped_keep_words() {
             "| sentence          |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 17 + 2 + 2);
+    assert!(is_lines_equal(&table, 17 + 2 + 2));
 
     let data = vec!["this is a long  sentence"];
     let table = Table::new(&data)
@@ -144,7 +149,7 @@ fn max_width_wrapped_keep_words() {
             "| sentence          |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 17 + 2 + 2);
+    assert!(is_lines_equal(&table, 17 + 2 + 2));
 
     let data = vec!["this is a long   sentence"];
     let table = Table::new(&data)
@@ -153,14 +158,15 @@ fn max_width_wrapped_keep_words() {
         .with(Modify::new(Full).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
 
-    let expected = concat!(
-        "| &str              |\n",
-        "|-------------------|\n",
-        "| this is a long    |\n",
-        "| sentence          |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| &str              |\n",
+            "|-------------------|\n",
+            "| this is a long    |\n",
+            "| sentence          |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 
     let data = vec!["this is a long    sentence"];
     let table = Table::new(&data)
@@ -170,14 +176,16 @@ fn max_width_wrapped_keep_words() {
         .to_string();
 
     // 'sentence' doesnt have a space ' sentence' because we use left alignment
-    let expected = concat!(
-        "| &str              |\n",
-        "|-------------------|\n",
-        "| this is a long    |\n",
-        "|  sentence         |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| &str              |\n",
+            "|-------------------|\n",
+            "| this is a long    |\n",
+            "|  sentence         |\n",
+        )
     );
-
-    assert_eq!(table, expected);
+    assert!(is_lines_equal(&table, 17 + 2 + 2));
 
     let data = vec!["this"];
     let table = Table::new(&data)
@@ -188,6 +196,7 @@ fn max_width_wrapped_keep_words() {
     let expected = concat!("| &str |\n", "|------|\n", "| this |\n",);
 
     assert_eq!(table, expected);
+    assert!(is_lines_equal(&table, 8));
 }
 
 #[cfg(feature = "color")]
@@ -637,10 +646,11 @@ fn total_width_big() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(MaxWidth::truncating(80))
-        .with(MinWidth::new(80));
+        .with(MinWidth::new(80))
+        .to_string();
 
     assert_eq!(
-        table.to_string(),
+        table,
         concat!(
             "|      N       |      column 0       |      column 1      |      column 2      |\n",
             "|--------------+---------------------+--------------------+--------------------|\n",
@@ -649,12 +659,17 @@ fn total_width_big() {
             "|      2       |         2-0         |        2-1         |        2-2         |\n",
         )
     );
-    assert_eq!(lines_widths(&table.to_string())[0], 80);
+    assert!(is_lines_equal(&table, 80));
 
-    let table = table.with(Modify::new(Full).with(TrimStrategy::None));
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(80))
+        .with(MinWidth::new(80))
+        .with(Modify::new(Full).with(TrimStrategy::None))
+        .to_string();
 
     assert_eq!(
-        table.to_string(),
+        table,
         concat!(
             "| N            | column 0            | column 1           | column 2           |\n",
             "|--------------+---------------------+--------------------+--------------------|\n",
@@ -663,7 +678,7 @@ fn total_width_big() {
             "| 2            |   2-0               |   2-1              |   2-2              |\n",
         )
     );
-    assert_eq!(lines_widths(&table.to_string())[0], 80);
+    assert!(is_lines_equal(&table, 80));
 }
 
 #[test]
@@ -729,7 +744,7 @@ fn total_width_small() {
     );
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 14);
+    assert!(is_lines_equal(&table, 14));
 }
 
 #[test]
@@ -772,7 +787,7 @@ fn total_width_small_with_panel() {
     );
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 20);
+    assert!(is_lines_equal(&table, 20));
 
     let table = Table::new(Vec::<usize>::new())
         .with(Panel("Hello World", 0))
@@ -783,7 +798,7 @@ fn total_width_small_with_panel() {
     let expected = concat!(" Hel \n", "+---+\n", "| u |\n", "+---+\n",);
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 5);
+    assert!(is_lines_equal(&table, 5));
 
     let table = Table::new(&create_vector::<1, 2>())
         .with(Panel("Hello World", 0))
@@ -801,7 +816,7 @@ fn total_width_small_with_panel() {
     );
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 20);
+    assert!(is_lines_equal(&table, 20));
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
@@ -821,7 +836,7 @@ fn total_width_small_with_panel() {
     );
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 20);
+    assert!(is_lines_equal(&table, 20));
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
@@ -841,7 +856,7 @@ fn total_width_small_with_panel() {
     );
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 13);
+    assert!(is_lines_equal(&table, 13));
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
@@ -861,7 +876,7 @@ fn total_width_small_with_panel() {
     );
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 14);
+    assert!(is_lines_equal(&table, 14));
 
     let table = Table::new(&data)
         .with(Panel("Hello World 123", 0))
@@ -881,7 +896,7 @@ fn total_width_small_with_panel() {
     );
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 14);
+    assert!(is_lines_equal(&table, 14));
 }
 
 #[test]
@@ -909,7 +924,7 @@ fn total_width_wrapping() {
     );
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 20);
+    assert!(is_lines_equal(&table, 20));
 
     let mut data = create_vector::<3, 3>();
     data[2][2] = "some loong string".to_owned();
@@ -932,7 +947,7 @@ fn total_width_wrapping() {
     );
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 20);
+    assert!(is_lines_equal(&table, 20));
 }
 
 #[test]
@@ -962,7 +977,7 @@ fn total_width_small_with_panel_using_wrapping() {
     );
 
     assert_eq!(table, expected);
-    assert_eq!(lines_widths(&table)[0], 20);
+    assert!(is_lines_equal(&table, 20));
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
@@ -996,7 +1011,7 @@ fn total_width_small_with_panel_using_wrapping() {
             "|  |  |  | 2 |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 14);
+    assert!(is_lines_equal(&table, 14));
 
     let table = Table::new(&data)
         .with(Panel("Hello World 123", 0))
@@ -1031,7 +1046,7 @@ fn total_width_small_with_panel_using_wrapping() {
             "|  |  |  | 2 |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 14);
+    assert!(is_lines_equal(&table, 14));
 }
 
 #[test]
@@ -1058,6 +1073,7 @@ fn max_width_with_span() {
             " 2 |   2-0    |   2-1    |   2-2    \n",
         )
     );
+    assert!(is_lines_equal(&table.to_string(), 36));
 
     let table = table.with(MaxWidth::truncating(20));
 
@@ -1073,6 +1089,7 @@ fn max_width_with_span() {
             "  | 2-0 | 2-1 | 2-2 \n",
         )
     );
+    assert!(is_lines_equal(&table.to_string(), 20));
 
     let table = table.with(MaxWidth::truncating(10));
 
@@ -1088,6 +1105,7 @@ fn max_width_with_span() {
             "  |  |  |  \n",
         )
     );
+    assert!(is_lines_equal(&table.to_string(), 11));
 }
 
 #[test]
@@ -1127,7 +1145,7 @@ fn wrapping_as_total_multiline() {
             "| .4  |             |        |                          |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 57);
+    assert!(is_lines_equal(&table, 57));
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
@@ -1150,7 +1168,7 @@ fn wrapping_as_total_multiline() {
             "| .4  |             |        |                          |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 57);
+    assert!(is_lines_equal(&table, 57));
 }
 
 #[cfg(feature = "color")]
@@ -1216,7 +1234,7 @@ fn wrapping_as_total_multiline_color() {
             "| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 57);
+    assert!(is_lines_equal(&table, 57));
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
@@ -1241,7 +1259,7 @@ fn wrapping_as_total_multiline_color() {
             "| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 57);
+    assert!(is_lines_equal(&table, 57));
 }
 
 #[cfg(feature = "color")]
@@ -1302,7 +1320,7 @@ fn truncating_as_total_multiline_color() {
             "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[0m\u{1b}[0m  | false  | \u{1b}[40m\u{1b}[31mdisplay_with attribute\u{1b}[0m\u{1b}[0m   |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 57);
+    assert!(is_lines_equal(&table, 57));
 }
 
 #[test]
@@ -1344,6 +1362,7 @@ fn min_width_works_with_right_alignment() {
             "|                                                |\n",
         )
     );
+    assert!(is_lines_equal(&table.to_string(), 50));
 
     let table = table.with(Modify::new(Full).with(TrimStrategy::Horizontal));
 
@@ -1364,6 +1383,7 @@ fn min_width_works_with_right_alignment() {
             "|                                                |\n",
         )
     );
+    assert!(is_lines_equal(&table.to_string(), 50));
 
     let table = table.with(Modify::new(Full).with(TrimStrategy::Both));
 
@@ -1386,6 +1406,7 @@ fn min_width_works_with_right_alignment() {
             "|                                                |\n",
         )
     );
+    assert!(is_lines_equal(&table.to_string(), 50));
 
     let table = Table::new([json])
         .with(Style::github_markdown())
@@ -1415,6 +1436,7 @@ fn min_width_works_with_right_alignment() {
             "|                                                |\n",
         )
     );
+    assert!(is_lines_equal(&table.to_string(), 50));
 
     let table = table.with(Modify::new(Full).with(TrimStrategy::Horizontal));
 
@@ -1435,6 +1457,7 @@ fn min_width_works_with_right_alignment() {
             "|                                                |\n",
         )
     );
+    assert!(is_lines_equal(&table.to_string(), 50));
 
     let table = table.with(Modify::new(Full).with(TrimStrategy::Both));
 
@@ -1457,6 +1480,7 @@ fn min_width_works_with_right_alignment() {
             "|                                                |\n",
         )
     );
+    assert!(is_lines_equal(&table.to_string(), 50));
 }
 
 #[test]
@@ -1483,7 +1507,7 @@ fn min_width_with_span_1() {
             "|                                   2                                    |            3            |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 100);
+    assert!(is_lines_equal(&table, 100));
 }
 
 #[test]
@@ -1510,21 +1534,5 @@ fn min_width_with_span_2() {
             "|                        2                        |                       3                        |\n",
         )
     );
-    assert_eq!(lines_widths(&table)[0], 100);
-}
-
-fn lines_widths(s: &str) -> Vec<usize> {
-    #[cfg(not(feature = "color"))]
-    {
-        s.lines().map(|l| l.chars().count()).collect()
-    }
-
-    #[cfg(feature = "color")]
-    {
-        use ansi_str::AnsiStr;
-        s.lines()
-            .map(|s| s.ansi_strip())
-            .map(|l| l.chars().count())
-            .collect()
-    }
+    assert!(is_lines_equal(&table, 100));
 }

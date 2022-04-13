@@ -1,4 +1,4 @@
-use crate::util::create_vector;
+use crate::util::{create_vector, is_lines_equal};
 use tabled::{
     style::{Border, Style},
     Cell, Highlight, Margin, MaxWidth, MinWidth, Modify, Span, Table,
@@ -120,6 +120,7 @@ fn table_with_margin_and_min_width() {
     println!("{}", table);
 
     assert_eq!(table, expected);
+    assert!(is_lines_equal(&table, 20))
 }
 
 #[test]
@@ -147,4 +148,24 @@ fn table_with_margin_and_max_width() {
             "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
         )
     );
+    assert!(is_lines_equal(&table, 50))
+}
+
+#[test]
+fn table_0_spanned_with_width() {
+    let data = create_vector::<0, 0>();
+
+    let table = Table::new(&data)
+        .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
+        .with(MinWidth::new(50))
+        .to_string();
+
+    assert_eq!(table, "++\n|\n++\n");
+
+    let table = Table::new(&data)
+        .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
+        .with(MaxWidth::truncating(50))
+        .to_string();
+
+    assert_eq!(table, "++\n|\n++\n");
 }

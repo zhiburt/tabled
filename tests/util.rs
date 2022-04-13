@@ -57,3 +57,8 @@ pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUM
 
     arr
 }
+
+#[allow(dead_code)]
+pub fn is_lines_equal(s: &str, width: usize) -> bool {
+    s.lines().map(papergrid::string_width).all(|w| w == width)
+}

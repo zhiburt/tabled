@@ -1884,6 +1884,7 @@ fn replace_tab(cell: &mut String, n: usize) -> &str {
     cell
 }
 
+// only valid to call for stabilized widths.
 fn total_width(
     widths: &[Vec<usize>],
     styles: &[Vec<Style>],

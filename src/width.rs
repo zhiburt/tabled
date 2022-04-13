@@ -19,7 +19,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{CellOption, TableOption};
-use papergrid::{string_width, Entity, Grid, Settings, Style};
+use papergrid::{string_width, Entity, Grid, Margin, Settings, Style};
 
 /// MaxWidth allows you to set a max width of an object on a [Grid],
 /// using different strategies.
@@ -487,6 +487,10 @@ where
             return;
         }
 
+        if is_zero_spanned_grid(grid) {
+            return;
+        }
+
         let total_width = grid.total_width();
         if total_width == self.width {
             return;
@@ -501,6 +505,10 @@ where
 impl TableOption for Wrap {
     fn change(&mut self, grid: &mut Grid) {
         if grid.count_columns() == 0 || grid.count_rows() == 0 {
+            return;
+        }
+
+        if is_zero_spanned_grid(grid) {
             return;
         }
 
@@ -521,9 +529,13 @@ impl TableOption for MinWidth {
             return;
         }
 
+        if is_zero_spanned_grid(grid) {
+            return;
+        }
+
         // loop is neccessary because increase_total_width may not work properly in 1 call.
         //
-        // todo: Try to fix it.
+        // todo: Try to fix it in other way?
         loop {
             let total_width = grid.total_width();
             if total_width >= self.size {
@@ -612,11 +624,16 @@ fn decrease_total_width(grid: &Grid, width: usize) -> HashMap<(usize, usize), us
     correct_widths(&mut widths, &styles, count_rows, count_columns);
     correct_widths(&mut min_widths, &styles, count_rows, count_columns);
 
-    let mut borders = build_borders_list(grid, &styles, count_rows, count_columns);
-    add_margin_width(grid, &mut borders);
+    let borders = build_borders_list(grid, &styles, count_rows, count_columns);
 
-    let mut total_width =
-        new_total_width(&widths, &styles, &borders, count_rows, count_columns).unwrap_or(0);
+    let mut total_width = new_total_width(
+        &widths,
+        &styles,
+        &borders,
+        grid.get_margin(),
+        count_rows,
+        count_columns,
+    );
 
     let mut empty_columns = HashSet::new();
     let mut columns = (0..count_columns).cycle();
@@ -640,8 +657,14 @@ fn decrease_total_width(grid: &Grid, width: usize) -> HashMap<(usize, usize), us
 
         update_widths_column(&mut widths, &orig_widths, &styles, count_rows, col);
 
-        total_width =
-            new_total_width(&widths, &styles, &borders, count_rows, count_columns).unwrap_or(0);
+        total_width = new_total_width(
+            &widths,
+            &styles,
+            &borders,
+            grid.get_margin(),
+            count_rows,
+            count_columns,
+        );
     }
 
     for col in 0..count_columns {
@@ -662,22 +685,25 @@ fn new_total_width(
     widths: &[Vec<usize>],
     styles: &[Vec<Style>],
     count_borders: &[usize],
+    margin: &Margin,
     count_rows: usize,
     count_columns: usize,
-) -> Option<usize> {
+) -> usize {
     (0..count_rows)
         .map(|row| {
             (0..count_columns)
                 .filter(|&col| styles[row][col].span > 0)
                 .map(|col| {
-                    widths[row][col]
-                        + styles[row][col].padding.left.size
-                        + styles[row][col].padding.right.size
+                    let padding = &styles[row][col].padding;
+                    widths[row][col] + padding.left.size + padding.right.size
                 })
                 .sum::<usize>()
                 + count_borders[row]
         })
         .max()
+        .unwrap_or(0)
+        + margin.left.size
+        + margin.right.size
 }
 
 fn build_borders_list(
@@ -710,14 +736,6 @@ fn build_borders_list(
     }
 
     borders_count
-}
-
-fn add_margin_width(grid: &Grid, widths: &mut [usize]) {
-    let margin = grid.get_margin();
-
-    for w in widths {
-        *w += margin.left.size + margin.right.size;
-    }
 }
 
 fn correct_widths(
@@ -800,4 +818,12 @@ fn build_orig_widths(grid: &Grid) -> Vec<Vec<usize>> {
                 .collect()
         })
         .collect()
+}
+
+fn is_zero_spanned_grid(grid: &Grid) -> bool {
+    (0..grid.count_rows())
+        .map(|row| {
+            (0..grid.count_columns()).all(|col| grid.style(&Entity::Cell(row, col)).span == 0)
+        })
+        .all(|b| b)
 }
