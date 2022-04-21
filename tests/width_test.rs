@@ -1558,6 +1558,29 @@ fn justify_width_constant_test() {
 }
 
 #[test]
+fn justify_width_constant_different_sizes_test() {
+    let mut data = create_vector::<3, 3>();
+    data[0][1] = "Hello World".to_owned();
+    data[2][2] = "multi\nline string\n".to_owned();
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Justify::new(3))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|  N  | col | col | col |\n",
+            "|-----+-----+-----+-----|\n",
+            "|  0  | Hel | 0-1 | 0-2 |\n",
+            "|  1  | 1-0 | 1-1 | 1-2 |\n",
+            "|  2  | 2-0 | mul | 2-2 |\n",
+        )
+    );
+}
+
+#[test]
 fn justify_width_constant_0_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
