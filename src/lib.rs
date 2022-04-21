@@ -151,7 +151,7 @@
 //! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
 //!
 
-use std::fmt;
+#![doc(html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg")]
 
 mod alignment;
 mod concat;
@@ -173,14 +173,16 @@ pub mod formatting_settings;
 pub mod object;
 pub mod style;
 
+use std::fmt;
+
+pub use tabled_derive::Tabled;
+
 pub use crate::{
     alignment::*, alignment::*, concat::*, concat::*, disable::*, disable::*, extract::*,
     extract::*, formating::*, formating::*, highlight::*, highlight::*, margin::*, margin::*,
     object::*, padding::*, padding::*, panel::*, panel::*, rotate::*, rotate::*, span::*, span::*,
     style::Style, table::*, table::*, width::*, width::*,
 };
-
-pub use tabled_derive::Tabled;
 
 // todo: change return type to impl Iterator<Cow<str>>?
 
