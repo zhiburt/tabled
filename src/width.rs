@@ -833,7 +833,7 @@ fn is_zero_spanned_grid(grid: &Grid) -> bool {
 /// Be aware that it doesn't consider padding.
 /// So if you want to set a exact width you might need to use [crate::Padding] to set it to 0.
 ///
-/// ## Example
+/// ## Examples
 ///
 /// ```
 /// use tabled::{Justify, Style, Modify, Full, Padding, Table};
@@ -845,11 +845,23 @@ fn is_zero_spanned_grid(grid: &Grid) -> bool {
 ///     .with(Modify::new(Full).with(Padding::zero()))
 ///     .with(Justify::new(3));
 /// ```
-pub struct Justify {
-    width: usize,
+///
+/// [Max] usage to justify by a max column width.
+///
+/// ```
+/// use tabled::{Justify, Style, Modify, Full, Padding, Table, width};
+///
+/// let data = ["Hello", "World", "!"];
+///
+/// let table = Table::new(&data)
+///     .with(Style::github_markdown())
+///     .with(Justify::max());
+/// ```
+pub struct Justify<W> {
+    width: W,
 }
 
-impl Justify {
+impl Justify<usize> {
     /// Creates a new Justify instance.
     ///
     /// Be aware that [crate::Padding] is not considered when comparing the width.
@@ -858,9 +870,26 @@ impl Justify {
     }
 }
 
-impl TableOption for Justify {
+impl Justify<Max> {
+    /// Creates a new Justify instance with a Max width used as a value.
+    pub fn max() -> Self {
+        Self { width: Max }
+    }
+}
+
+impl Justify<Min> {
+    /// Creates a new Justify instance with a Min width used as a value.
+    pub fn min() -> Self {
+        Self { width: Min }
+    }
+}
+
+impl<W> TableOption for Justify<W>
+where
+    W: Width,
+{
     fn change(&mut self, grid: &mut Grid) {
-        let width = self.width;
+        let width = self.width.width(grid);
 
         for row in 0..grid.count_rows() {
             for col in 0..grid.count_columns() {
@@ -868,5 +897,43 @@ impl TableOption for Justify {
                 MaxWidth::truncating(width).change_cell(grid, row, col);
             }
         }
+    }
+}
+
+/// A width value which can be obtained on behaif of [Grid].
+trait Width {
+    /// Returns a width value.
+    fn width(&self, grid: &Grid) -> usize;
+}
+
+impl Width for usize {
+    fn width(&self, _: &Grid) -> usize {
+        *self
+    }
+}
+
+/// Max width value.
+pub struct Max;
+
+impl Width for Max {
+    fn width(&self, grid: &Grid) -> usize {
+        grid_widths(grid)
+            .into_iter()
+            .map(|r| r.into_iter().max().unwrap_or(0))
+            .max()
+            .unwrap_or(0)
+    }
+}
+
+/// Min width value.
+pub struct Min;
+
+impl Width for Min {
+    fn width(&self, grid: &Grid) -> usize {
+        grid_widths(grid)
+            .into_iter()
+            .map(|r| r.into_iter().min().unwrap_or(0))
+            .min()
+            .unwrap_or(0)
     }
 }

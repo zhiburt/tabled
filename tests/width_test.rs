@@ -1599,3 +1599,44 @@ fn justify_width_constant_0_test() {
         )
     );
 }
+
+#[test]
+fn justify_width_min_test() {
+    let data = create_vector::<3, 3>();
+    let m = Justify::min();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(m)
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "| N | c | c | c |\n",
+            "|---+---+---+---|\n",
+            "| 0 | 0 | 0 | 0 |\n",
+            "| 1 | 1 | 1 | 1 |\n",
+            "| 2 | 2 | 2 | 2 |\n",
+        )
+    );
+}
+
+#[test]
+fn justify_width_max_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Justify::max())
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|    N     | column 0 | column 1 | column 2 |\n",
+            "|----------+----------+----------+----------|\n",
+            "|    0     |   0-0    |   0-1    |   0-2    |\n",
+            "|    1     |   1-0    |   1-1    |   1-2    |\n",
+            "|    2     |   2-0    |   2-1    |   2-2    |\n",
+        )
+    );
+}
