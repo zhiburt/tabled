@@ -317,7 +317,7 @@ fn empty_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::empty())
-        .with(Modify::new(Full).with(Padding::new(0, 0, 0, 0)))
+        .with(Modify::new(Full).with(Padding::zero()))
         .to_string();
 
     let expected = concat!(

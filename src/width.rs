@@ -2,6 +2,7 @@
 //!
 //! - [Truncate] cuts a cell content to limit width.
 //! - [Wrap] split the content via new lines in order to fit max width.
+//! - [Justify] sets columns width to the same value.
 //!
 //! To set a a table width a combination of [MaxWidth] and [MinWidth] can be set.
 //!
@@ -841,7 +842,7 @@ fn is_zero_spanned_grid(grid: &Grid) -> bool {
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::github_markdown())
-///     .with(Modify::new(Full).with(Padding::new(0, 0, 0, 0)))
+///     .with(Modify::new(Full).with(Padding::zero()))
 ///     .with(Justify::new(3));
 /// ```
 pub struct Justify {

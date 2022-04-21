@@ -24,6 +24,20 @@ impl Padding {
         })
     }
 
+    /// Construct's an Padding object with all sides set to 0.
+    ///
+    /// It uses space(' ') as a default fill character.
+    /// To set a custom character you can use [Self::set_fill] function.
+    pub fn zero() -> Self {
+        let indent = Indent::spaced(0);
+        Self(papergrid::Padding {
+            top: indent,
+            bottom: indent,
+            left: indent,
+            right: indent,
+        })
+    }
+
     /// The function, sets a characters for the padding on an each side.
     pub fn set_fill(mut self, left: char, right: char, top: char, bottom: char) -> Self {
         self.0.left.fill = left;
