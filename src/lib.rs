@@ -151,7 +151,9 @@
 //! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
 //!
 
-#![doc(html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
+)]
 
 mod alignment;
 mod concat;
