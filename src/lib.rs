@@ -151,7 +151,9 @@
 //! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
 //!
 
-#![doc(html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
+)]
 
 mod alignment;
 mod concat;
@@ -165,23 +167,34 @@ mod panel;
 mod rotate;
 mod span;
 mod table;
-mod width;
 
 pub mod builder;
 pub mod display;
 pub mod formatting_settings;
 pub mod object;
 pub mod style;
+pub mod width;
 
 use std::fmt;
 
 pub use tabled_derive::Tabled;
 
 pub use crate::{
-    alignment::*, alignment::*, concat::*, concat::*, disable::*, disable::*, extract::*,
-    extract::*, formating::*, formating::*, highlight::*, highlight::*, margin::*, margin::*,
-    object::*, padding::*, padding::*, panel::*, panel::*, rotate::*, rotate::*, span::*, span::*,
-    style::Style, table::*, table::*, width::*, width::*,
+    alignment::*,
+    concat::*,
+    disable::*,
+    extract::*,
+    formating::*,
+    highlight::*,
+    margin::*,
+    object::*,
+    padding::*,
+    panel::*,
+    rotate::*,
+    span::*,
+    style::Style,
+    table::*,
+    width::{Justify, MaxWidth, MinWidth, Truncate, Wrap},
 };
 
 // todo: change return type to impl Iterator<Cow<str>>?

@@ -2,6 +2,7 @@
 //!
 //! - [Truncate] cuts a cell content to limit width.
 //! - [Wrap] split the content via new lines in order to fit max width.
+//! - [Justify] sets columns width to the same value.
 //!
 //! To set a a table width a combination of [MaxWidth] and [MinWidth] can be set.
 //!
@@ -405,7 +406,6 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 ///
 /// let table = Table::new(&["Hello World!"]).with(MinWidth::new(5));
 /// ```
-///
 pub struct MinWidth {
     size: usize,
     fill: char,
@@ -615,7 +615,7 @@ fn decrease_total_width(grid: &Grid, width: usize) -> HashMap<(usize, usize), us
         return points;
     }
 
-    let orig_widths = build_orig_widths(grid);
+    let orig_widths = grid_widths(grid);
 
     let mut min_widths = build_min_widths(grid);
 
@@ -807,7 +807,7 @@ fn correct_width(style: &Style, mut width: usize) -> usize {
     width
 }
 
-fn build_orig_widths(grid: &Grid) -> Vec<Vec<usize>> {
+fn grid_widths(grid: &Grid) -> Vec<Vec<usize>> {
     (0..grid.count_rows())
         .map(|row| {
             (0..grid.count_columns())
@@ -826,4 +826,114 @@ fn is_zero_spanned_grid(grid: &Grid) -> bool {
             (0..grid.count_columns()).all(|col| grid.style(&Entity::Cell(row, col)).span == 0)
         })
         .all(|b| b)
+}
+
+/// Justify sets all columns widths to the set value.
+///
+/// Be aware that it doesn't consider padding.
+/// So if you want to set a exact width you might need to use [crate::Padding] to set it to 0.
+///
+/// ## Examples
+///
+/// ```
+/// use tabled::{Justify, Style, Modify, Full, Padding, Table};
+///
+/// let data = ["Hello", "World", "!"];
+///
+/// let table = Table::new(&data)
+///     .with(Style::github_markdown())
+///     .with(Modify::new(Full).with(Padding::zero()))
+///     .with(Justify::new(3));
+/// ```
+///
+/// [Max] usage to justify by a max column width.
+///
+/// ```
+/// use tabled::{Justify, Style, Modify, Full, Padding, Table, width};
+///
+/// let data = ["Hello", "World", "!"];
+///
+/// let table = Table::new(&data)
+///     .with(Style::github_markdown())
+///     .with(Justify::max());
+/// ```
+pub struct Justify<W> {
+    width: W,
+}
+
+impl Justify<usize> {
+    /// Creates a new Justify instance.
+    ///
+    /// Be aware that [crate::Padding] is not considered when comparing the width.
+    pub fn new(width: usize) -> Self {
+        Self { width }
+    }
+}
+
+impl Justify<Max> {
+    /// Creates a new Justify instance with a Max width used as a value.
+    pub fn max() -> Self {
+        Self { width: Max }
+    }
+}
+
+impl Justify<Min> {
+    /// Creates a new Justify instance with a Min width used as a value.
+    pub fn min() -> Self {
+        Self { width: Min }
+    }
+}
+
+impl<W> TableOption for Justify<W>
+where
+    W: Width,
+{
+    fn change(&mut self, grid: &mut Grid) {
+        let width = self.width.width(grid);
+
+        for row in 0..grid.count_rows() {
+            for col in 0..grid.count_columns() {
+                MinWidth::new(width).change_cell(grid, row, col);
+                MaxWidth::truncating(width).change_cell(grid, row, col);
+            }
+        }
+    }
+}
+
+/// A width value which can be obtained on behaif of [Grid].
+trait Width {
+    /// Returns a width value.
+    fn width(&self, grid: &Grid) -> usize;
+}
+
+impl Width for usize {
+    fn width(&self, _: &Grid) -> usize {
+        *self
+    }
+}
+
+/// Max width value.
+pub struct Max;
+
+impl Width for Max {
+    fn width(&self, grid: &Grid) -> usize {
+        grid_widths(grid)
+            .into_iter()
+            .map(|r| r.into_iter().max().unwrap_or(0))
+            .max()
+            .unwrap_or(0)
+    }
+}
+
+/// Min width value.
+pub struct Min;
+
+impl Width for Min {
+    fn width(&self, grid: &Grid) -> usize {
+        grid_widths(grid)
+            .into_iter()
+            .map(|r| r.into_iter().min().unwrap_or(0))
+            .min()
+            .unwrap_or(0)
+    }
 }

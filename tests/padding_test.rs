@@ -64,7 +64,7 @@ fn padding_with_set_characters_and_zero_ident() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Padding::new(0, 0, 0, 0).set_fill('>', '<', '^', 'V')))
+        .with(Modify::new(Full).with(Padding::zero().set_fill('>', '<', '^', 'V')))
         .to_string();
 
     let expected = concat!(

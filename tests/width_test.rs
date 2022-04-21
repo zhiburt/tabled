@@ -2,7 +2,7 @@ use crate::util::{create_vector, is_lines_equal};
 use tabled::{
     formatting_settings::TrimStrategy,
     object::{Cell, Columns, Full, Object, Rows},
-    Alignment, MaxWidth, MinWidth, Modify, Panel, Span, Style, Table, Tabled,
+    Alignment, Justify, MaxWidth, MinWidth, Modify, Panel, Span, Style, Table, Tabled,
 };
 
 mod util;
@@ -1535,4 +1535,108 @@ fn min_width_with_span_2() {
         )
     );
     assert!(is_lines_equal(&table, 100));
+}
+
+#[test]
+fn justify_width_constant_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Justify::new(3))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|  N  | col | col | col |\n",
+            "|-----+-----+-----+-----|\n",
+            "|  0  | 0-0 | 0-1 | 0-2 |\n",
+            "|  1  | 1-0 | 1-1 | 1-2 |\n",
+            "|  2  | 2-0 | 2-1 | 2-2 |\n",
+        )
+    );
+}
+
+#[test]
+fn justify_width_constant_different_sizes_test() {
+    let mut data = create_vector::<3, 3>();
+    data[0][1] = "Hello World".to_owned();
+    data[2][2] = "multi\nline string\n".to_owned();
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Justify::new(3))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|  N  | col | col | col |\n",
+            "|-----+-----+-----+-----|\n",
+            "|  0  | Hel | 0-1 | 0-2 |\n",
+            "|  1  | 1-0 | 1-1 | 1-2 |\n",
+            "|  2  | 2-0 | mul | 2-2 |\n",
+        )
+    );
+}
+
+#[test]
+fn justify_width_constant_0_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Justify::new(0))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  |  |  |\n",
+            "|--+--+--+--|\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn justify_width_min_test() {
+    let data = create_vector::<3, 3>();
+    let m = Justify::min();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(m)
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "| N | c | c | c |\n",
+            "|---+---+---+---|\n",
+            "| 0 | 0 | 0 | 0 |\n",
+            "| 1 | 1 | 1 | 1 |\n",
+            "| 2 | 2 | 2 | 2 |\n",
+        )
+    );
+}
+
+#[test]
+fn justify_width_max_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Justify::max())
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|    N     | column 0 | column 1 | column 2 |\n",
+            "|----------+----------+----------+----------|\n",
+            "|    0     |   0-0    |   0-1    |   0-2    |\n",
+            "|    1     |   1-0    |   1-1    |   1-2    |\n",
+            "|    2     |   2-0    |   2-1    |   2-2    |\n",
+        )
+    );
 }
