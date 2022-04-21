@@ -2,7 +2,7 @@ use crate::util::{create_vector, is_lines_equal};
 use tabled::{
     formatting_settings::TrimStrategy,
     object::{Cell, Columns, Full, Object, Rows},
-    Alignment, MaxWidth, MinWidth, Modify, Panel, Span, Style, Table, Tabled,
+    Alignment, Justify, MaxWidth, MinWidth, Modify, Panel, Span, Style, Table, Tabled,
 };
 
 mod util;
@@ -1535,4 +1535,44 @@ fn min_width_with_span_2() {
         )
     );
     assert!(is_lines_equal(&table, 100));
+}
+
+#[test]
+fn justify_width_constant_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Justify::new(3))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|  N  | col | col | col |\n",
+            "|-----+-----+-----+-----|\n",
+            "|  0  | 0-0 | 0-1 | 0-2 |\n",
+            "|  1  | 1-0 | 1-1 | 1-2 |\n",
+            "|  2  | 2-0 | 2-1 | 2-2 |\n",
+        )
+    );
+}
+
+#[test]
+fn justify_width_constant_0_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Justify::new(0))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  |  |  |\n",
+            "|--+--+--+--|\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+        )
+    );
 }
