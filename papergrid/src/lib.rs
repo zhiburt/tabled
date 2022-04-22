@@ -72,9 +72,7 @@ impl Grid {
     ///     assert_eq!(
     ///          str,
     ///          "+++\n\
-    ///           |||\n\
     ///           +++\n\
-    ///           |||\n\
     ///           +++\n"
     ///     )
     /// ```
@@ -1792,18 +1790,7 @@ fn rows_height(
     count_rows: usize,
     count_columns: usize,
 ) -> Vec<usize> {
-    // default height is 1 as we consider empty string has height 1
-    //
-    // it's crusial since if the default height will be equal to 0
-    // cell line will be not present on the grid like this
-    //
-    //  default 0      default 1
-    //    +++            +++
-    //    +++            |||
-    //    +++            +++
-    //                   |||
-    //                   +++
-    let mut row_heights = vec![1; count_rows];
+    let mut row_heights = vec![0; count_rows];
     (0..count_rows).for_each(|row_index| {
         (0..count_columns).for_each(|column_index| {
             let cell = &cells[row_index][column_index];
@@ -2232,9 +2219,7 @@ fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> 
         (Bound::Unbounded, Bound::Unbounded) => (0, length),
         (Bound::Unbounded, Bound::Included(y)) => (0, y + 1),
         (Bound::Unbounded, Bound::Excluded(y)) => (0, *y),
-        (Bound::Excluded(_), Bound::Unbounded)
-        | (Bound::Excluded(_), Bound::Included(_))
-        | (Bound::Excluded(_), Bound::Excluded(_)) => {
+        (Bound::Excluded(_), _) => {
             unreachable!("A start bound can't be excluded")
         }
     }
