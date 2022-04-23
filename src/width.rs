@@ -937,3 +937,23 @@ impl Width for Min {
             .unwrap_or(0)
     }
 }
+
+#[cfg(feature = "color")]
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use owo_colors::{colors::Yellow, OwoColorize};
+
+    #[test]
+    fn test_color_strip() {
+        let s = "Collored string"
+            .fg::<Yellow>()
+            .on_truecolor(12, 200, 100)
+            .blink()
+            .to_string();
+        assert_eq!(
+            strip(&s, 1),
+            "\u{1b}[5m\u{1b}[48;2;12;200;100m\u{1b}[33mC\u{1b}[25m\u{1b}[39m\u{1b}[49m"
+        )
+    }
+}

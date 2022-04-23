@@ -284,6 +284,8 @@ fn render_row_span_multilane() {
         "+-----+----+----+\n",
     );
 
+    println!("{}", grid);
+
     assert_eq!(expected, grid.to_string());
 }
 

@@ -23,9 +23,9 @@
 //! ```
 
 use std::{
-    cmp::max,
+    cmp::{self, max},
     collections::{BTreeSet, HashMap},
-    fmt::{self, Display},
+    fmt,
     ops::{Bound, RangeBounds},
 };
 
@@ -1018,149 +1018,12 @@ impl std::fmt::Display for Grid {
             .map(|row| self.get_inner_split_line(row))
             .collect::<Vec<_>>();
 
-        let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
+        let heights = rows_height(&cells, &styles, count_rows, count_columns);
         let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
         let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
 
-        let total_width = total_width(&widths, &styles, &borders, &self.margin);
-
-        print_grid(
-            f,
-            count_rows,
-            cells,
-            styles,
-            widths,
-            normal_widths,
-            row_heights,
-            self,
-            total_width,
-        )
+        build_grid(self, cells, styles, widths, normal_widths, heights).fmt(f)
     }
-}
-
-#[allow(clippy::too_many_arguments)]
-fn print_grid(
-    f: &mut fmt::Formatter,
-    count_rows: usize,
-    cells: Vec<Vec<Vec<String>>>,
-    styles: Vec<Vec<Style>>,
-    widths: Vec<Vec<usize>>,
-    normal_widths: Vec<usize>,
-    row_heights: Vec<usize>,
-    grid: &Grid,
-    total_width: usize,
-) -> Result<(), fmt::Error> {
-    for _ in 0..grid.margin.top.size {
-        repeat_char(f, grid.margin.top.fill, total_width)?;
-        writeln!(f)?;
-    }
-
-    for row in 0..count_rows {
-        build_row(
-            f,
-            &cells[row],
-            &styles[row],
-            &widths[row],
-            &normal_widths,
-            row_heights[row],
-            grid,
-            row,
-        )?;
-    }
-
-    for _ in 0..grid.margin.bottom.size {
-        repeat_char(f, grid.margin.bottom.fill, total_width)?;
-        writeln!(f)?;
-    }
-
-    Ok(())
-}
-
-#[allow(clippy::too_many_arguments)]
-fn build_row(
-    f: &mut std::fmt::Formatter<'_>,
-    cell_contents: &[Vec<String>],
-    cell_styles: &[Style],
-    cell_widths: &[usize],
-    normal_widths: &[usize],
-    height: usize,
-    grid: &Grid,
-    row: usize,
-) -> fmt::Result {
-    if row == 0 {
-        build_split_line_(f, normal_widths, grid, row)?;
-    }
-
-    let inner_border = grid.get_inner_split_line(row);
-    build_row_cells(
-        f,
-        cell_contents,
-        cell_styles,
-        cell_widths,
-        height,
-        &inner_border,
-        &grid.margin,
-    )?;
-
-    build_split_line_(f, normal_widths, grid, row + 1)?;
-
-    Ok(())
-}
-
-fn build_split_line_(
-    f: &mut fmt::Formatter,
-    widths: &[usize],
-    grid: &Grid,
-    row: usize,
-) -> Result<(), fmt::Error> {
-    let borders = grid.get_split_line(row);
-    let override_str = grid.override_split_lines.get(&row);
-
-    let theres_no_border = borders.iter().all(|l| l.main.is_none());
-    if theres_no_border || widths.is_empty() {
-        return Ok(());
-    }
-
-    if grid.margin.left.size > 0 {
-        repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
-    }
-
-    build_split_line_with_override(f, widths, &borders, override_str)?;
-
-    if grid.margin.right.size > 0 {
-        repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
-    }
-
-    writeln!(f)?;
-
-    Ok(())
-}
-
-#[allow(clippy::too_many_arguments)]
-fn build_row_cells(
-    f: &mut std::fmt::Formatter<'_>,
-    row: &[Vec<String>],
-    row_styles: &[Style],
-    widths: &[usize],
-    height: usize,
-    borders: &[BorderLine],
-    margin: &Margin,
-) -> fmt::Result {
-    for line in 0..height {
-        build_line(
-            f,
-            borders,
-            row_styles,
-            row,
-            widths,
-            height,
-            row.len(),
-            line,
-            margin,
-        )?;
-    }
-
-    Ok(())
 }
 
 fn build_line_cell(
@@ -1289,144 +1152,21 @@ fn line_with_width(
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
-fn build_line(
-    f: &mut std::fmt::Formatter<'_>,
-    borders: &[BorderLine],
-    row_styles: &[Style],
-    row: &[Vec<String>],
-    widths: &[usize],
-    height: usize,
-    count_columns: usize,
-    line: usize,
-    margin: &Margin,
-) -> fmt::Result {
-    if margin.left.size > 0 {
-        repeat_char(f, margin.left.fill, margin.left.size)?;
+pub fn strip(s: &str, width: usize) -> String {
+    #[cfg(not(feature = "color"))]
+    {
+        s.chars().take(width).collect::<String>()
     }
-
-    for col in 0..count_columns {
-        if is_cell_visible(row_styles, col) {
-            write_option(f, borders[col].connector1)?;
-
-            build_line_cell(f, line, &row[col], &row_styles[col], widths[col], height)?;
-        }
-
-        let is_last_cell = col + 1 == count_columns;
-        if is_last_cell {
-            write_option(f, borders[col].connector2)?;
-        }
+    #[cfg(feature = "color")]
+    {
+        let width = to_byte_length(s, width);
+        ansi_str::AnsiStr::ansi_cut(s, ..width)
     }
-
-    if margin.right.size > 0 {
-        repeat_char(f, margin.right.fill, margin.right.size)?;
-    }
-
-    writeln!(f)?;
-
-    Ok(())
 }
 
-fn build_split_line_with_override(
-    f: &mut std::fmt::Formatter<'_>,
-    widths: &[usize],
-    borders: &[BorderLine],
-    override_str: Option<&String>,
-) -> fmt::Result {
-    let mut skip_chars = 0;
-    if let Some(s) = override_str {
-        let width = split_line_width(widths, borders);
-        skip_chars = write_with_limit(f, s, width)?;
-    }
-
-    build_split_line(f, widths, borders, skip_chars)?;
-    Ok(())
-}
-
-fn build_split_line(
-    f: &mut std::fmt::Formatter<'_>,
-    widths: &[usize],
-    borders: &[BorderLine],
-    mut skip_chars: usize,
-) -> fmt::Result {
-    let theres_no_border = borders.iter().all(|l| l.main.is_none());
-    if theres_no_border || widths.is_empty() {
-        return Ok(());
-    }
-
-    if let Some(left_border) = borders[0].connector1 {
-        write_or_skip(f, left_border, 1, &mut skip_chars)?;
-    }
-
-    for i in 0..widths.len() {
-        if let Some(main) = borders[i].main {
-            write_or_skip(f, main, widths[i], &mut skip_chars)?;
-        }
-
-        if let Some(right_border) = borders[i].connector2 {
-            write_or_skip(f, right_border, 1, &mut skip_chars)?;
-        }
-    }
-
-    Ok(())
-}
-
-fn split_line_width(widths: &[usize], borders: &[BorderLine]) -> usize {
-    let content_width = widths.iter().sum::<usize>();
-    let count_borders = {
-        let left_border = borders.get(0).map_or(0, |b| b.connector1.iter().count());
-        let other_borders = borders
-            .iter()
-            .enumerate()
-            .filter(|(_, b)| b.connector2.is_some())
-            .count();
-
-        left_border + other_borders
-    };
-
-    content_width + count_borders
-}
-
-fn write_or_skip(
-    f: &mut std::fmt::Formatter<'_>,
-    c: char,
-    width: usize,
-    limit: &mut usize,
-) -> fmt::Result {
-    if *limit >= width {
-        *limit -= width;
-        return Ok(());
-    }
-
-    let n = width - *limit;
-
-    if *limit > 0 {
-        *limit = 0;
-    }
-
-    repeat_char(f, c, n)
-}
-
-fn write_with_limit(
-    f: &mut std::fmt::Formatter<'_>,
-    s: &str,
-    limit: usize,
-) -> Result<usize, fmt::Error> {
-    let mut i = 0;
-    let chars = s.chars().take(limit);
-    for c in chars {
-        write!(f, "{}", c)?;
-        i += 1;
-    }
-
-    Ok(i)
-}
-
-fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) -> fmt::Result {
-    match text {
-        Some(text) => write!(f, "{}", text),
-        None => Ok(()),
-    }
+#[cfg(feature = "color")]
+fn to_byte_length(s: &str, width: usize) -> usize {
+    s.chars().take(width).map(|c| c.len_utf8()).sum::<usize>()
 }
 
 #[cfg(not(feature = "color"))]
@@ -1803,7 +1543,12 @@ fn rows_height(
 }
 
 fn cell_height(cell: &[String], style: &Style) -> usize {
-    let content_height = cell.len();
+    let is_there_padding = style.padding.left.size > 0 || style.padding.right.size > 0;
+    let mut content_height = cell.len();
+    if content_height == 0 && is_there_padding {
+        content_height = 1;
+    }
+
     content_height + style.padding.top.size + style.padding.bottom.size
 }
 
@@ -2070,6 +1815,14 @@ impl Borders {
         self.horizontal.contains_key(&row)
     }
 
+    fn count_horizontal_borders(&self) -> usize {
+        self.horizontal.len()
+    }
+
+    fn count_vertical_borders(&self) -> usize {
+        self.vertical.len()
+    }
+
     fn set_vertical(
         &mut self,
         column: usize,
@@ -2225,9 +1978,344 @@ fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> 
     }
 }
 
+#[derive(Debug, Clone)]
+struct Container {
+    width: usize,
+    height: usize,
+    kind: ContainerKind,
+}
+
+#[derive(Debug, Clone)]
+enum ContainerKind {
+    Content { lines: Vec<String>, style: Style },
+    Split { c: char },
+    Rows(Vec<Container>),
+    Columns(Vec<Container>),
+}
+
+impl Container {
+    fn new(width: usize, height: usize, kind: ContainerKind) -> Self {
+        Self {
+            width,
+            height,
+            kind,
+        }
+    }
+
+    fn print(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for i in 0..self.height {
+            self.print_line(f, i)?;
+            writeln!(f)?;
+        }
+
+        Ok(())
+    }
+
+    fn print_line(&self, f: &mut fmt::Formatter, i: usize) -> fmt::Result {
+        // if i >= self.height {
+        //     return self.print_empty_line(f);
+        // }
+
+        match &self.kind {
+            ContainerKind::Content { lines, style } => {
+                build_line_cell(f, i, lines, style, self.width, self.height)?;
+            }
+            ContainerKind::Split { c } => {
+                repeat_char(f, *c, self.width)?;
+            }
+            ContainerKind::Rows(list) => {
+                let mut real_i = i;
+                let mut j = 0;
+                for c in list {
+                    j += c.height;
+                    if i < j {
+                        return c.print_line(f, real_i);
+                    }
+
+                    real_i -= c.height;
+                }
+            }
+            ContainerKind::Columns(list) => {
+                for c in list {
+                    c.print_line(f, i)?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    // fn print_empty_line(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    //     repeat_char(f, ' ', self.width)
+    // }
+}
+
+impl fmt::Display for Container {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.print(f)
+    }
+}
+
+fn build_grid(
+    grid: &Grid,
+    contents: Vec<Vec<Vec<String>>>,
+    styles: Vec<Vec<Style>>,
+    widths: Vec<Vec<usize>>,
+    normal_widths: Vec<usize>,
+    heights: Vec<usize>,
+) -> Container {
+    let row_width = widths.get(0).map(|l| l.iter().sum::<usize>()).unwrap_or(0)
+        + grid.borders.count_vertical_borders();
+
+    let mut containers = Vec::new();
+    for row in 0..grid.count_rows() {
+        let line_border = grid.get_inner_split_line(row);
+        let height = heights[row];
+
+        let mut columns = Vec::with_capacity(grid.borders.count_vertical_borders());
+
+        #[allow(clippy::needless_range_loop)]
+        for col in 0..grid.count_columns() {
+            let width = widths[row][col];
+            let lines = contents[row][col].clone();
+            let style = styles[row][col].clone();
+
+            if is_cell_visible(&styles[row], col) {
+                if let Some(c) = line_border[col].connector1 {
+                    columns.push(Container::new(1, height, ContainerKind::Split { c }));
+                }
+
+                columns.push(Container::new(
+                    width,
+                    height,
+                    ContainerKind::Content { lines, style },
+                ));
+            }
+
+            if col + 1 == grid.count_columns() {
+                if let Some(c) = line_border[col].connector2 {
+                    let split = Container::new(1, height, ContainerKind::Split { c });
+                    columns.push(split);
+                }
+            }
+        }
+
+        if let Some(split) = build_split_line_container(grid, &normal_widths, row_width, row) {
+            containers.push(split);
+        }
+
+        containers.push(Container::new(
+            row_width,
+            height,
+            ContainerKind::Columns(columns),
+        ));
+
+        let is_last_iteration = row + 1 == grid.count_rows();
+        if is_last_iteration {
+            if let Some(split) =
+                build_split_line_container(grid, &normal_widths, row_width, row + 1)
+            {
+                containers.push(split);
+            }
+        }
+    }
+
+    let height = heights.iter().sum::<usize>() + grid.borders.count_horizontal_borders();
+
+    let container = Container::new(row_width, height, ContainerKind::Rows(containers));
+    add_margin(grid, container)
+}
+
+fn add_margin(grid: &Grid, mut container: Container) -> Container {
+    if grid.margin.left.size > 0 {
+        let height = container.height;
+        container = Container::new(
+            container.width + grid.margin.left.size,
+            height,
+            ContainerKind::Columns(vec![
+                Container::new(
+                    grid.margin.left.size,
+                    height,
+                    ContainerKind::Split {
+                        c: grid.margin.left.fill,
+                    },
+                ),
+                container,
+            ]),
+        );
+    }
+    if grid.margin.right.size > 0 {
+        let height = container.height;
+        container = Container::new(
+            container.width + grid.margin.right.size,
+            height,
+            ContainerKind::Columns(vec![
+                container,
+                Container::new(
+                    grid.margin.right.size,
+                    height,
+                    ContainerKind::Split {
+                        c: grid.margin.right.fill,
+                    },
+                ),
+            ]),
+        );
+    }
+    if grid.margin.top.size > 0 {
+        let w = container.width;
+        container = Container::new(
+            w,
+            container.height + grid.margin.top.size,
+            ContainerKind::Rows(vec![
+                Container::new(
+                    w,
+                    grid.margin.top.size,
+                    ContainerKind::Split {
+                        c: grid.margin.top.fill,
+                    },
+                ),
+                container,
+            ]),
+        );
+    }
+    if grid.margin.bottom.size > 0 {
+        let w = container.width;
+        container = Container::new(
+            w,
+            container.height + grid.margin.bottom.size,
+            ContainerKind::Rows(vec![
+                container,
+                Container::new(
+                    w,
+                    grid.margin.bottom.size,
+                    ContainerKind::Split {
+                        c: grid.margin.bottom.fill,
+                    },
+                ),
+            ]),
+        );
+    }
+
+    container
+}
+
+fn build_split_line_container(
+    grid: &Grid,
+    widths: &[usize],
+    width: usize,
+    row: usize,
+) -> Option<Container> {
+    let mut v = Vec::new();
+
+    let line = grid.get_split_line(row);
+    for (col, b) in line.into_iter().enumerate() {
+        if col == 0 {
+            if let Some(c) = b.connector1 {
+                v.push(Container::new(1, 1, ContainerKind::Split { c }));
+            }
+        }
+
+        if let Some(c) = b.main {
+            let width = widths[col];
+            v.push(Container::new(width, 1, ContainerKind::Split { c }));
+        }
+
+        if let Some(c) = b.connector2 {
+            v.push(Container::new(1, 1, ContainerKind::Split { c }));
+        }
+    }
+
+    if v.is_empty() {
+        return None;
+    }
+
+    let override_text = grid.override_split_lines.get(&row);
+    if let Some(text) = override_text {
+        let text = strip(text, width).lines().next().unwrap().to_string();
+        override_split_line(&mut v, text);
+    }
+
+    Some(Container::new(width, 1, ContainerKind::Columns(v)))
+}
+
+fn override_split_line(v: &mut Vec<Container>, text: String) {
+    let width = string_width(&text);
+
+    let mut i = width;
+    while !v.is_empty() {
+        if i == 0 {
+            break;
+        }
+
+        let mut c = v.remove(0);
+        let w = c.width;
+        if i < w {
+            c.width -= i;
+            v.insert(0, c);
+        }
+
+        i -= cmp::min(w, i);
+    }
+
+    v.insert(
+        0,
+        Container::new(
+            width,
+            1,
+            ContainerKind::Content {
+                lines: vec![text],
+                style: Style::default(),
+            },
+        ),
+    );
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn container_print_test() {
+        let c = Container::new(
+            12,
+            4,
+            ContainerKind::Columns(vec![
+                Container::new(1, 4, ContainerKind::Split { c: '+' }),
+                Container::new(
+                    10,
+                    4,
+                    ContainerKind::Rows(vec![
+                        Container::new(
+                            10,
+                            2,
+                            ContainerKind::Content {
+                                lines: vec!["Hello".to_owned(), "World".to_owned()],
+                                style: Style::default(),
+                            },
+                        ),
+                        Container::new(10, 1, ContainerKind::Split { c: '-' }),
+                        Container::new(
+                            10,
+                            1,
+                            ContainerKind::Content {
+                                lines: vec!["123".to_owned()],
+                                style: Style::default(),
+                            },
+                        ),
+                    ]),
+                ),
+                Container::new(1, 3, ContainerKind::Split { c: '#' }),
+            ]),
+        );
+
+        assert_eq!(
+            c.to_string(),
+            "+Hello     #\n\
+             +World     #\n\
+             +----------#\n\
+             +123       #\n",
+        )
+    }
 
     #[test]
     fn replace_tab_test() {
