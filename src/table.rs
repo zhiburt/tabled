@@ -65,6 +65,15 @@ impl Table {
         Self::from_iter(iter)
     }
 
+    pub fn builder<I, T>(iter: I) -> Builder
+    where
+        T: Tabled,
+        I: IntoIterator<Item = T>,
+    {
+        let rows = iter.into_iter().map(|t| t.fields());
+        Builder::from_iter(rows).set_columns(T::headers())
+    }
+
     /// Returns a table shape (count rows, count columns).
     pub fn shape(&self) -> (usize, usize) {
         (self.grid.count_rows(), self.grid.count_columns())
@@ -96,8 +105,7 @@ where
     where
         T: IntoIterator<Item = D>,
     {
-        let rows = iter.into_iter().map(|t| t.fields());
-        Builder::from_iter(rows).set_header(D::headers()).build()
+        Self::builder(iter).build()
     }
 }
 
