@@ -9,9 +9,9 @@ fn main() {
 
     let oceans = ["Atlantic", "Pacific", "Indian", "Southern", "Arctic"];
 
-    let mut builder = tabled::builder::Builder::default().set_header(["#", "Ocean"]);
+    let mut builder = tabled::builder::Builder::default().set_columns(["#", "Ocean"]);
     for (i, ocean) in oceans.iter().enumerate() {
-        builder = builder.add_row([i.to_string(), ocean.to_string()]);
+        builder = builder.add_record([i.to_string(), ocean.to_string()]);
     }
 
     let table = builder
