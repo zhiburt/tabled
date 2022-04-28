@@ -6,7 +6,7 @@ mod util;
 fn grid_2x2_custom_frame_test() {
     let mut grid = util::new_grid::<2, 2>();
     grid.set(
-        &Entity::Global,
+        Entity::Global,
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
@@ -24,7 +24,7 @@ fn grid_2x2_custom_frame_test() {
 fn grid_2x2_custom_column_test() {
     let mut grid = util::new_grid::<2, 2>();
     grid.set(
-        &Entity::Column(1),
+        Entity::Column(1),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
@@ -39,7 +39,7 @@ fn grid_2x2_custom_column_test() {
 
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
     grid.set(
-        &Entity::Column(0),
+        Entity::Column(0),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
@@ -58,7 +58,7 @@ fn grid_2x2_custom_row_test() {
     let mut grid = util::new_grid::<2, 2>();
 
     grid.set(
-        &Entity::Row(0),
+        Entity::Row(0),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
@@ -75,7 +75,7 @@ fn grid_2x2_custom_row_test() {
 
     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
     grid.set(
-        &Entity::Row(1),
+        Entity::Row(1),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
@@ -95,7 +95,7 @@ fn grid_2x2_change_cell_border_test() {
     let mut grid = util::new_grid::<2, 2>();
 
     grid.set(
-        &Entity::Cell(0, 1),
+        Entity::Cell(0, 1),
         Settings::new().border(Border::new('*', '^', '@', '#', '~', '!', '%', '&')),
     );
     let str = grid.to_string();
@@ -113,16 +113,16 @@ fn grid_2x2_change_cell_border_test() {
 fn grid_2x2_alignment_test() {
     let mut grid = util::new_grid::<2, 2>();
     grid.set(
-        &Entity::Column(0),
+        Entity::Column(0),
         Settings::new().alignment(AlignmentHorizontal::Left),
     );
     grid.set(
-        &Entity::Column(1),
+        Entity::Column(1),
         Settings::new().alignment(AlignmentHorizontal::Right),
     );
 
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("asd    "));
-    grid.set(&Entity::Cell(0, 1), Settings::new().text("asd    "));
+    grid.set(Entity::Cell(0, 0), Settings::new().text("asd    "));
+    grid.set(Entity::Cell(0, 1), Settings::new().text("asd    "));
 
     assert_eq!(
         grid.to_string(),
@@ -133,7 +133,7 @@ fn grid_2x2_alignment_test() {
          +-------+-------+\n"
     );
 
-    grid.set(&Entity::Global, Settings::new().text("asd    "));
+    grid.set(Entity::Global, Settings::new().text("asd    "));
 
     assert_eq!(
         grid.to_string(),
@@ -149,7 +149,7 @@ fn grid_2x2_alignment_test() {
 fn grid_2x2_indent_test() {
     let mut grid = util::new_grid::<2, 2>();
     grid.set(
-        &Entity::Global,
+        Entity::Global,
         Settings::new().padding(
             Indent::spaced(1),
             Indent::spaced(1),
@@ -158,7 +158,7 @@ fn grid_2x2_indent_test() {
         ),
     );
     grid.set(
-        &Entity::Column(0),
+        Entity::Column(0),
         Settings::new().padding(
             Indent::default(),
             Indent::default(),
@@ -187,7 +187,7 @@ fn grid_2x2_indent_test() {
 fn grid_2x2_vertical_resize_test() {
     let mut grid = util::new_grid::<2, 2>();
 
-    grid.set(&Entity::Cell(1, 1), Settings::new().text("asd     "));
+    grid.set(Entity::Cell(1, 1), Settings::new().text("asd     "));
 
     let str = grid.to_string();
     assert_eq!(
@@ -228,7 +228,7 @@ fn grid_2x2_custom_border_test() {
 
     grid.add_grid_split();
     grid.set(
-        &Entity::Cell(0, 0),
+        Entity::Cell(0, 0),
         Settings::new().border(
             Border::default()
                 .top('*')
@@ -239,7 +239,7 @@ fn grid_2x2_custom_border_test() {
         ),
     );
     grid.set(
-        &Entity::Cell(0, 1),
+        Entity::Cell(0, 1),
         Settings::new().border(
             Border::default()
                 .top('*')
@@ -253,7 +253,7 @@ fn grid_2x2_custom_border_test() {
         ),
     );
     grid.set(
-        &Entity::Cell(1, 0),
+        Entity::Cell(1, 0),
         Settings::new().border(
             Border::default()
                 .bottom('*')
@@ -263,7 +263,7 @@ fn grid_2x2_custom_border_test() {
         ),
     );
     grid.set(
-        &Entity::Cell(1, 1),
+        Entity::Cell(1, 1),
         Settings::new().border(
             Border::default()
                 .bottom('*')

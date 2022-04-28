@@ -84,7 +84,7 @@ impl TableOption for Concat {
                                 .border_restriction(false)
                         };
 
-                        new_grid.set(&Entity::Cell(row, column), settings);
+                        new_grid.set(Entity::Cell(row, column), settings);
                     }
                 }
 
@@ -116,7 +116,7 @@ impl TableOption for Concat {
                                 .border_restriction(false)
                         };
 
-                        new_grid.set(&Entity::Cell(row, column), settings);
+                        new_grid.set(Entity::Cell(row, column), settings);
                     }
                 }
 

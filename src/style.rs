@@ -345,7 +345,7 @@ impl TableOption for StyleSettings {
                 make_style_header(&mut border, self, row, column, count_rows, count_columns);
 
                 grid.set(
-                    &Entity::Cell(row, column),
+                    Entity::Cell(row, column),
                     Settings::default().border(border).border_restriction(false),
                 );
             }

@@ -331,7 +331,7 @@ fn set_border(grid: &mut Grid, sector: HashSet<(usize, usize)>, border: Border) 
         }
 
         grid.set(
-            &Entity::Cell(row, col),
+            Entity::Cell(row, col),
             Settings::default()
                 .border(cell_border)
                 .border_restriction(false),

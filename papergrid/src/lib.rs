@@ -6,10 +6,10 @@
 //!     let mut grid = Grid::new(2, 2);
 //!     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
 //!
-//!     grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
-//!     grid.set(&Entity::Cell(0, 1), Settings::new().text("0-1"));
-//!     grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-//!     grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
+//!     grid.set(Entity::Cell(0, 0), Settings::new().text("0-0"));
+//!     grid.set(Entity::Cell(0, 1), Settings::new().text("0-1"));
+//!     grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
+//!     grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
 //!
 //!     let expected = concat!(
 //!         "+---+---+\n",
@@ -100,8 +100,8 @@ impl Grid {
     ///     use papergrid::{Grid, Entity, Settings, DEFAULT_CELL_STYLE};
     ///     let mut grid = Grid::new(2, 2);
     ///     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-    ///     grid.set(&Entity::Row(0), Settings::new().text("row 1"));
-    ///     grid.set(&Entity::Row(1), Settings::new().text("row 2"));
+    ///     grid.set(Entity::Row(0), Settings::new().text("row 1"));
+    ///     grid.set(Entity::Row(1), Settings::new().text("row 2"));
     ///     let str = grid.to_string();
     ///     assert_eq!(
     ///          str,
@@ -112,8 +112,7 @@ impl Grid {
     ///           +-----+-----+\n"
     ///     )
     /// ```
-    ///
-    pub fn set(&mut self, entity: &Entity, settings: Settings) {
+    pub fn set(&mut self, entity: Entity, settings: Settings) {
         if let Some(text) = settings.text {
             self.set_text(entity, text);
         }
@@ -140,10 +139,10 @@ impl Grid {
 
         if let Some(border) = settings.border {
             if settings.border_split_check {
-                self.add_split_lines(entity.clone(), &border);
+                self.add_split_lines(entity, &border);
             }
 
-            self.set_border(entity.clone(), &border);
+            self.set_border(entity, &border);
         }
     }
 
@@ -284,7 +283,7 @@ impl Grid {
 
     /// get_cell_settings returns a settings of a cell
     pub fn get_settings(&self, row: usize, column: usize) -> Settings {
-        let style = self.style(&Entity::Cell(row, column));
+        let style = self.style(Entity::Cell(row, column));
         let content = &self.cells[row][column];
         let border = self.borders.get_border(row, column).unwrap();
 
@@ -306,15 +305,15 @@ impl Grid {
         self.borders.get_border(row, column).unwrap()
     }
 
-    pub fn style(&self, entity: &Entity) -> &Style {
+    pub fn style(&self, entity: Entity) -> &Style {
         let lookup_table = match entity {
             Entity::Global => vec![Entity::Global],
-            Entity::Column(column) => vec![Entity::Column(*column), Entity::Global],
-            Entity::Row(row) => vec![Entity::Row(*row), Entity::Global],
+            Entity::Column(column) => vec![Entity::Column(column), Entity::Global],
+            Entity::Row(row) => vec![Entity::Row(row), Entity::Global],
             Entity::Cell(row, column) => vec![
-                Entity::Cell(*row, *column),
-                Entity::Column(*column),
-                Entity::Row(*row),
+                Entity::Cell(row, column),
+                Entity::Column(column),
+                Entity::Row(row),
                 Entity::Global,
             ],
         };
@@ -328,16 +327,14 @@ impl Grid {
         unreachable!("there's a Entity::Global setting guaranted in the map")
     }
 
-    fn style_mut(&mut self, entity: &Entity) -> &mut Style {
-        if self.styles.contains_key(entity) {
-            return self.styles.get_mut(entity).unwrap();
+    #[allow(clippy::map_entry)]
+    fn style_mut(&mut self, entity: Entity) -> &mut Style {
+        if !self.styles.contains_key(&entity) {
+            let style = self.style(entity).clone();
+            self.styles.insert(entity, style);
         }
 
-        let style = self.style(entity).clone();
-        self.styles.insert(entity.clone(), style);
-
-        let style = self.styles.get_mut(entity).unwrap();
-        style
+        self.styles.get_mut(&entity).unwrap()
     }
 
     /// get_cell_content returns content without any style changes
@@ -355,9 +352,9 @@ impl Grid {
         self.size.1
     }
 
-    pub fn set_text<S: Into<String>>(&mut self, entity: &Entity, text: S) {
+    pub fn set_text<S: Into<String>>(&mut self, entity: Entity, text: S) {
         let text = text.into();
-        match *entity {
+        match entity {
             Entity::Cell(row, column) => {
                 self.cells[row][column] = text;
             }
@@ -386,7 +383,7 @@ impl Grid {
         for row in 0..self.count_rows() {
             for column in 0..self.count_columns() {
                 self.set(
-                    &Entity::Cell(row, column),
+                    Entity::Cell(row, column),
                     Settings::new().border(border.clone()),
                 );
             }
@@ -440,7 +437,7 @@ impl Grid {
             for (new_column, column) in (start_column..end_column).enumerate() {
                 let settings = self.get_settings(row, column);
                 new_grid.set(
-                    &Entity::Cell(new_row, new_column),
+                    Entity::Cell(new_row, new_column),
                     settings.border_restriction(false),
                 );
             }
@@ -554,7 +551,7 @@ impl Grid {
             (0..count_columns).for_each(|col| {
                 let mut content = self.cells[row][col].clone();
 
-                let style = self.style(&Entity::Cell(row, col));
+                let style = self.style(Entity::Cell(row, col));
                 replace_tab(&mut content, style.formatting.tab_width);
 
                 // fixme: I guess it can be done in a different place?
@@ -573,7 +570,7 @@ impl Grid {
         (0..count_rows).for_each(|row_index| {
             let mut row = Vec::with_capacity(count_columns);
             (0..count_columns).for_each(|column_index| {
-                let style = self.style(&Entity::Cell(row_index, column_index));
+                let style = self.style(Entity::Cell(row_index, column_index));
                 row.push(style.clone());
             });
 
@@ -731,7 +728,7 @@ struct BorderLine {
 }
 
 /// Entity a structure which represent a set of cells.
-#[derive(PartialEq, Eq, Debug, Hash, Clone)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
 pub enum Entity {
     /// All cells on the grid.
     Global,

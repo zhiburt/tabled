@@ -116,10 +116,7 @@ where
         let striped_content = strip(content, self.width);
         if striped_content.len() < content.len() {
             let new_content = format!("{}{}", striped_content, self.suffix.as_ref());
-            grid.set(
-                &Entity::Cell(row, column),
-                Settings::new().text(new_content),
-            )
+            grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
         }
     }
 }
@@ -173,7 +170,7 @@ impl CellOption for Wrap {
         };
 
         grid.set(
-            &Entity::Cell(row, column),
+            Entity::Cell(row, column),
             Settings::new().text(wrapped_content),
         )
     }
@@ -429,10 +426,7 @@ impl CellOption for MinWidth {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let content = grid.get_cell_content(row, column);
         let new_content = increase_width(content, self.size, self.fill);
-        grid.set(
-            &Entity::Cell(row, column),
-            Settings::new().text(new_content),
-        )
+        grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
     }
 }
 
@@ -752,7 +746,7 @@ fn correct_widths(
 
 fn build_min_widths(grid: &Grid) -> Vec<Vec<usize>> {
     let mut grid = grid.clone();
-    grid.set(&Entity::Global, Settings::default().text(""));
+    grid.set(Entity::Global, Settings::default().text(""));
 
     grid.build_widths().0
 }
@@ -823,7 +817,7 @@ fn grid_widths(grid: &Grid) -> Vec<Vec<usize>> {
 fn is_zero_spanned_grid(grid: &Grid) -> bool {
     (0..grid.count_rows())
         .map(|row| {
-            (0..grid.count_columns()).all(|col| grid.style(&Entity::Cell(row, col)).span == 0)
+            (0..grid.count_columns()).all(|col| grid.style(Entity::Cell(row, col)).span == 0)
         })
         .all(|b| b)
 }

@@ -51,7 +51,7 @@ impl Padding {
 impl CellOption for Padding {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         grid.set(
-            &Entity::Cell(row, column),
+            Entity::Cell(row, column),
             Settings::new().padding(self.0.left, self.0.right, self.0.top, self.0.bottom),
         )
     }
