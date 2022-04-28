@@ -155,34 +155,28 @@ impl Grid {
     }
 
     pub fn add_horizontal_split(&mut self, row: usize) {
-        self.insert_horizontal_split(
-            row,
-            SplitLine::new(
-                vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_columns()],
-                vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_horizontal_intersections()],
-            ),
-        );
+        self.insert_horizontal_split(row);
     }
 
     pub fn add_vertical_split(&mut self, column: usize) {
-        self.insert_vertical_split(
-            column,
-            SplitLine::new(
-                vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_rows()],
-                vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_vertical_intersections()],
-            ),
-        );
+        self.insert_vertical_split(column);
     }
 
-    fn insert_horizontal_split(&mut self, row: usize, line: SplitLine) {
+    fn insert_horizontal_split(&mut self, row: usize) {
+        let line = vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_columns()];
+        let intersections =
+            vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_horizontal_intersections()];
         self.borders
-            .set_horizontal(row, line.borders, &line.intersections)
+            .set_horizontal(row, line, &intersections)
             .unwrap();
     }
 
-    fn insert_vertical_split(&mut self, column: usize, line: SplitLine) {
+    fn insert_vertical_split(&mut self, column: usize) {
+        let line = vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_rows()];
+        let intersections =
+            vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_vertical_intersections()];
         self.borders
-            .set_vertical(column, line.borders, &line.intersections)
+            .set_vertical(column, line, &intersections)
             .unwrap();
     }
 
@@ -601,31 +595,6 @@ fn count_borders(row: &[BorderLine], styles: &[Style]) -> usize {
         .count();
 
     left_border + other_borders
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct SplitLine {
-    borders: Vec<char>,
-    intersections: Vec<char>,
-}
-
-impl SplitLine {
-    pub fn new(borders: Vec<char>, intersections: Vec<char>) -> Self {
-        Self {
-            borders,
-            intersections,
-        }
-    }
-
-    pub fn border(mut self, c: char) -> Self {
-        self.borders.push(c);
-        self
-    }
-
-    pub fn intersection(mut self, c: char) -> Self {
-        self.intersections.push(c);
-        self
-    }
 }
 
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
