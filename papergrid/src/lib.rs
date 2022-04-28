@@ -167,7 +167,7 @@ impl Grid {
         let intersections =
             vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_horizontal_intersections()];
         self.borders
-            .set_horizontal(row, line, &intersections)
+            .set_horizontal(row, line, intersections)
             .unwrap();
     }
 
@@ -176,7 +176,7 @@ impl Grid {
         let intersections =
             vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_vertical_intersections()];
         self.borders
-            .set_vertical(column, line, &intersections)
+            .set_vertical(column, line, intersections)
             .unwrap();
     }
 
@@ -453,9 +453,7 @@ impl Grid {
 
         fix_spans(&mut styles, &mut cells);
 
-        let borders = (0..count_rows)
-            .map(|row| self.get_inner_split_line(row))
-            .collect::<Vec<_>>();
+        let borders = self.borders.get_rows();
 
         let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
 
@@ -477,9 +475,7 @@ impl Grid {
 
         fix_spans(&mut styles, &mut cells);
 
-        let borders = (0..count_rows)
-            .map(|row| self.get_inner_split_line(row))
-            .collect::<Vec<_>>();
+        let borders = self.borders.get_rows();
 
         let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
 
@@ -576,22 +572,22 @@ impl Grid {
         rows
     }
 
-    fn get_split_line(&self, index: usize) -> Vec<BorderLine> {
-        self.borders.get_row(index).unwrap()
-    }
+    // fn get_split_line(&self, index: usize) -> Vec<BorderLine> {
+    //     self.borders.get_row(index).unwrap()
+    // }
 
-    fn get_inner_split_line(&self, index: usize) -> Vec<BorderLine> {
-        self.borders.get_inner_row(index).unwrap()
-    }
+    // fn get_inner_split_line(&self, index: usize) -> Vec<BorderLine> {
+    //     self.borders.get_inner_row(index).unwrap()
+    // }
 }
 
-fn count_borders(row: &[BorderLine], styles: &[Style]) -> usize {
-    let left_border = row.get(0).map_or(0, |b| b.connector1.iter().count());
+fn count_borders(row: &[Border], styles: &[Style]) -> usize {
+    let left_border = row.get(0).map_or(0, |b| b.left.iter().count());
     let other_borders = row
         .iter()
         .enumerate()
         .filter(|&(col, _)| is_cell_visible(styles, col))
-        .filter(|(_, b)| b.connector2.is_some())
+        .filter(|(_, b)| b.right.is_some())
         .count();
 
     left_border + other_borders
@@ -687,13 +683,6 @@ impl Border {
         self.right_bottom_corner = Some(c);
         self
     }
-}
-
-#[derive(Debug, Default, Clone)]
-struct BorderLine {
-    main: Option<char>,
-    connector1: Option<char>,
-    connector2: Option<char>,
 }
 
 /// Entity a structure which represent a set of cells.
@@ -980,9 +969,7 @@ impl std::fmt::Display for Grid {
 
         fix_spans(&mut styles, &mut cells);
 
-        let borders = (0..count_rows)
-            .map(|row| self.get_inner_split_line(row))
-            .collect::<Vec<_>>();
+        let borders = self.borders.get_rows();
 
         let heights = rows_height(&cells, &styles, count_rows, count_columns);
         let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
@@ -1221,7 +1208,7 @@ fn fix_first_column_span(styles: &mut [Style], widths: &mut [Vec<String>]) {
 fn columns_width(
     cells: &[Vec<Vec<String>>],
     styles: &[Vec<Style>],
-    borders: &[Vec<BorderLine>],
+    borders: &[Vec<Border>],
     count_rows: usize,
     count_columns: usize,
 ) -> Vec<Vec<usize>> {
@@ -1263,7 +1250,7 @@ fn columns_width(
 fn adjust_width(
     widths: &mut [Vec<usize>],
     styles: &[Vec<Style>],
-    borders: &[Vec<BorderLine>],
+    borders: &[Vec<Border>],
     count_rows: usize,
     count_columns: usize,
     span: usize,
@@ -1289,7 +1276,7 @@ fn adjust_width(
 fn adjust_range_width(
     widths: &mut [Vec<usize>],
     styles: &[Vec<Style>],
-    borders: &[Vec<BorderLine>],
+    borders: &[Vec<Border>],
     count_rows: usize,
     start_column: usize,
     end_column: usize,
@@ -1404,7 +1391,7 @@ fn is_cell_overriden(styles: &[Style]) -> bool {
 fn is_range_complete(
     styles: &[Vec<Style>],
     widths: &[Vec<usize>],
-    borders: &[Vec<BorderLine>],
+    borders: &[Vec<Border>],
     count_rows: usize,
     start_column: usize,
     end_column: usize,
@@ -1440,7 +1427,7 @@ fn is_range_complete(
 fn row_width(
     styles: &[Style],
     widths: &[usize],
-    borders: &[BorderLine],
+    borders: &[Border],
     column_start: usize,
     column_end: usize,
 ) -> usize {
@@ -1460,7 +1447,7 @@ fn row_width(
                 if i == column_start {
                     false
                 } else {
-                    borders[i].connector1.is_some()
+                    borders[i].left.is_some()
                 }
             })
             .count()
@@ -1586,7 +1573,7 @@ fn replace_tab(cell: &mut String, n: usize) -> &str {
 fn total_width(
     widths: &[Vec<usize>],
     styles: &[Vec<Style>],
-    borders: &[Vec<BorderLine>],
+    borders: &[Vec<Border>],
     margin: &Margin,
 ) -> usize {
     let content_width = widths
@@ -1631,67 +1618,36 @@ impl Borders {
         }
     }
 
-    fn get_row(&self, row: usize) -> Result<Vec<BorderLine>, BorderError> {
-        if row > self.count_rows {
-            return Err(BorderError::WrongRowIndex);
+    fn get_rows(&self) -> Vec<Vec<Border>> {
+        let mut rows = Vec::with_capacity(self.count_rows);
+
+        for row in 0..self.count_rows {
+            let r = self.get_row(row).unwrap();
+            rows.push(r)
         }
 
-        if !self.horizontal.contains_key(&row) {
-            return Ok(vec![BorderLine::default(); self.count_columns]);
-        }
-
-        let mut line = Vec::with_capacity(self.count_columns);
-        for column in 0..self.count_columns {
-            let border = BorderLine {
-                main: Some(self.get_horizontal_char(row, column).unwrap()),
-                connector1: None,
-                connector2: None,
-            };
-
-            line.push(border);
-        }
-
-        for (column, border) in line.iter_mut().enumerate() {
-            border.connector1 = self.get_intersection_char((row, column));
-            border.connector2 = self.get_intersection_char((row, column + 1));
-        }
-
-        Ok(line)
+        rows
     }
 
-    fn get_inner_row(&self, row: usize) -> Result<Vec<BorderLine>, BorderError> {
-        if row > self.count_rows {
+    fn get_row(&self, row: usize) -> Result<Vec<Border>, BorderError> {
+        if row >= self.count_rows {
             return Err(BorderError::WrongRowIndex);
         }
 
-        let mut line: Vec<BorderLine> = Vec::new();
-        let mut last_index = None;
-        for column in 0..self.count_columns {
-            let border = BorderLine {
-                connector1: self.get_vertical_char(row, column),
-                ..Default::default()
-            };
-
-            if border.connector1.is_some() {
-                if let Some(last) = last_index {
-                    let mut last: &mut BorderLine = &mut line[last];
-                    last.connector2 = border.connector1;
-                }
-            }
-            last_index = Some(line.len());
-
-            line.push(border);
+        let mut out = Vec::with_capacity(self.count_rows);
+        for col in 0..self.count_columns {
+            let r = self.get_border(row, col).unwrap();
+            out.push(r)
         }
 
-        line[self.count_columns - 1].connector2 = self.get_vertical_char(row, self.count_columns);
-
-        Ok(line)
+        Ok(out)
     }
 
     // we can take only a border of a cell
     // which is a pitty,
     // would be cool if we could take a border of any Entity
     fn get_border(&self, row: usize, column: usize) -> Option<Border> {
+        // fixme: ???
         if row > self.count_rows || column > self.count_columns {
             return None;
         }
@@ -1734,7 +1690,7 @@ impl Borders {
         &mut self,
         row: usize,
         line: Vec<char>,
-        intersections: &[char],
+        intersections: Vec<char>,
     ) -> Result<(), BorderError> {
         if row > self.count_rows {
             return Err(BorderError::WrongRowIndex);
@@ -1751,7 +1707,7 @@ impl Borders {
 
         self.horizontal.insert(row, line);
 
-        for (&vertical_line_index, &symbol) in self.vertical.keys().zip(intersections) {
+        for (&vertical_line_index, symbol) in self.vertical.keys().zip(intersections) {
             self.intersections
                 .insert((row, vertical_line_index), symbol);
         }
@@ -1793,7 +1749,7 @@ impl Borders {
         &mut self,
         column: usize,
         line: Vec<char>,
-        intersections: &[char],
+        intersections: Vec<char>,
     ) -> Result<(), BorderError> {
         if column > self.count_columns {
             return Err(BorderError::WrongRowIndex);
@@ -1810,7 +1766,7 @@ impl Borders {
 
         self.vertical.insert(column, line);
 
-        for (&row_index, &symbol) in self.horizontal.keys().zip(intersections) {
+        for (&row_index, symbol) in self.horizontal.keys().zip(intersections) {
             self.intersections.insert((row_index, column), symbol);
         }
 
@@ -2035,7 +1991,6 @@ fn build_grid(
 
     let mut containers = Vec::new();
     for row in 0..grid.count_rows() {
-        let line_border = grid.get_inner_split_line(row);
         let height = heights[row];
 
         let mut columns = Vec::with_capacity(grid.borders.count_vertical_borders());
@@ -2045,9 +2000,10 @@ fn build_grid(
             let width = widths[row][col];
             let lines = contents[row][col].clone();
             let style = styles[row][col].clone();
+            let border = grid.get_border(row, col);
 
             if is_cell_visible(&styles[row], col) {
-                if let Some(c) = line_border[col].connector1 {
+                if let Some(c) = border.left {
                     columns.push(Container::new(1, height, ContainerKind::Split { c }));
                 }
 
@@ -2059,14 +2015,15 @@ fn build_grid(
             }
 
             if col + 1 == grid.count_columns() {
-                if let Some(c) = line_border[col].connector2 {
+                if let Some(c) = border.right {
                     let split = Container::new(1, height, ContainerKind::Split { c });
                     columns.push(split);
                 }
             }
         }
 
-        if let Some(split) = build_split_line_container(grid, &normal_widths, row_width, row) {
+        if let Some(split) = build_split_line_container(grid, &normal_widths, row_width, row, false)
+        {
             containers.push(split);
         }
 
@@ -2079,7 +2036,7 @@ fn build_grid(
         let is_last_iteration = row + 1 == grid.count_rows();
         if is_last_iteration {
             if let Some(split) =
-                build_split_line_container(grid, &normal_widths, row_width, row + 1)
+                build_split_line_container(grid, &normal_widths, row_width, row, true)
             {
                 containers.push(split);
             }
@@ -2170,23 +2127,29 @@ fn build_split_line_container(
     widths: &[usize],
     width: usize,
     row: usize,
+    bottom: bool,
 ) -> Option<Container> {
     let mut v = Vec::new();
+    for (col, &width) in widths.iter().enumerate() {
+        let b = grid.get_border(row, col);
 
-    let line = grid.get_split_line(row);
-    for (col, b) in line.into_iter().enumerate() {
+        let (left, main, right) = if bottom {
+            (b.left_bottom_corner, b.bottom, b.right_bottom_corner)
+        } else {
+            (b.left_top_corner, b.top, b.right_top_corner)
+        };
+
         if col == 0 {
-            if let Some(c) = b.connector1 {
+            if let Some(c) = left {
                 v.push(Container::new(1, 1, ContainerKind::Split { c }));
             }
         }
 
-        if let Some(c) = b.main {
-            let width = widths[col];
+        if let Some(c) = main {
             v.push(Container::new(width, 1, ContainerKind::Split { c }));
         }
 
-        if let Some(c) = b.connector2 {
+        if let Some(c) = right {
             v.push(Container::new(1, 1, ContainerKind::Split { c }));
         }
     }
