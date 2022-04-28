@@ -29,6 +29,8 @@ use std::{
     ops::{Bound, RangeBounds},
 };
 
+// todo: unify border count functions
+
 pub const DEFAULT_CELL_STYLE: Border = Border {
     top: Some('-'),
     bottom: Some('-'),
@@ -1428,32 +1430,35 @@ fn row_width(
     styles: &[Style],
     widths: &[usize],
     borders: &[Border],
-    column_start: usize,
-    column_end: usize,
+    start: usize,
+    end: usize,
 ) -> usize {
-    let width = (column_start..column_end)
-        .filter(|&i| is_cell_visible(styles, i))
-        .filter(|&i| is_cell_in_scope(styles, i, column_end))
-        .map(|i| widths[i])
-        .sum::<usize>();
-
-    let border_count = if column_end - column_start == 0 {
-        0
-    } else {
-        (column_start..column_end)
-            .filter(|&i| is_cell_visible(styles, i))
-            .filter(|&i| is_cell_in_scope(styles, i, column_end))
-            .filter(|&i| {
-                if i == column_start {
-                    false
-                } else {
-                    borders[i].left.is_some()
-                }
-            })
-            .count()
-    };
+    let width = width_of_range(&styles[start..end], &widths[start..end]);
+    let border_count = count_borders_in_range(&styles[start..end], &borders[start..end]);
 
     width + border_count
+}
+
+fn width_of_range(styles: &[Style], widths: &[usize]) -> usize {
+    (0..styles.len())
+        .filter(|&i| is_cell_visible(styles, i))
+        .filter(|&i| is_cell_in_scope(styles, i, styles.len()))
+        .map(|i| widths[i])
+        .sum::<usize>()
+}
+
+fn count_borders_in_range(styles: &[Style], borders: &[Border]) -> usize {
+    (0..styles.len())
+        .filter(|&i| is_cell_visible(styles, i))
+        .filter(|&i| is_cell_in_scope(styles, i, styles.len()))
+        .filter(|&i| {
+            if i == 0 {
+                false
+            } else {
+                borders[i].left.is_some()
+            }
+        })
+        .count()
 }
 
 fn inc_cells_width(
