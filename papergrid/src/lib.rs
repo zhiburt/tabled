@@ -450,8 +450,8 @@ impl Grid {
             return 0;
         }
 
-        let mut cells = self.collect_cells(count_rows, count_columns);
-        let mut styles = self.collect_styles(count_rows, count_columns);
+        let mut cells = self.collect_cells();
+        let mut styles = self.collect_styles();
 
         fix_spans(&mut styles, &mut cells);
 
@@ -469,15 +469,15 @@ impl Grid {
     // hide it by feature?
     // 'private'
     pub fn build_widths(&self) -> (Vec<Vec<usize>>, Vec<Vec<Style>>) {
-        let count_rows = self.count_rows();
-        let count_columns = self.count_columns();
-
-        let mut cells = self.collect_cells(count_rows, count_columns);
-        let mut styles = self.collect_styles(count_rows, count_columns);
+        let mut cells = self.collect_cells();
+        let mut styles = self.collect_styles();
 
         fix_spans(&mut styles, &mut cells);
 
         let borders = self.borders.get_rows();
+
+        let count_rows = self.count_rows();
+        let count_columns = self.count_columns();
 
         let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
 
@@ -536,10 +536,12 @@ impl Grid {
         }
     }
 
-    fn collect_cells(&self, count_rows: usize, count_columns: usize) -> Vec<Vec<Vec<String>>> {
-        let mut rows = Vec::with_capacity(count_rows);
+    fn collect_cells(&self) -> Vec<Vec<Vec<String>>> {
+        let count_rows = self.count_rows();
+        let count_columns = self.count_columns();
+
+        let mut rows = vec![Vec::with_capacity(self.count_columns()); self.count_rows()];
         (0..count_rows).for_each(|row| {
-            let mut cells = Vec::with_capacity(row);
             (0..count_columns).for_each(|col| {
                 let mut content = self.cells[row][col].clone();
 
@@ -548,51 +550,43 @@ impl Grid {
 
                 // fixme: I guess it can be done in a different place?
                 let lines: Vec<_> = content.lines().map(|l| l.to_owned()).collect();
-                cells.push(lines);
+                rows[row].push(lines);
             });
-
-            rows.push(cells);
         });
 
         rows
     }
 
-    fn collect_styles(&self, count_rows: usize, count_columns: usize) -> Vec<Vec<Style>> {
-        let mut rows = Vec::with_capacity(count_rows);
-        (0..count_rows).for_each(|row_index| {
-            let mut row = Vec::with_capacity(count_columns);
-            (0..count_columns).for_each(|column_index| {
-                let style = self.style(Entity::Cell(row_index, column_index));
-                row.push(style.clone());
+    fn collect_styles(&self) -> Vec<Vec<Style>> {
+        let mut rows = vec![Vec::with_capacity(self.count_columns()); self.count_rows()];
+        (0..self.count_rows()).for_each(|row| {
+            (0..self.count_columns()).for_each(|col| {
+                let style = self.style(Entity::Cell(row, col));
+                rows[row].push(style.clone());
             });
-
-            rows.push(row);
         });
 
         fix_styles(&mut rows);
 
         rows
     }
-
-    // fn get_split_line(&self, index: usize) -> Vec<BorderLine> {
-    //     self.borders.get_row(index).unwrap()
-    // }
-
-    // fn get_inner_split_line(&self, index: usize) -> Vec<BorderLine> {
-    //     self.borders.get_inner_row(index).unwrap()
-    // }
 }
 
 fn count_borders(row: &[Border], styles: &[Style]) -> usize {
-    let left_border = row.get(0).map_or(0, |b| b.left.iter().count());
-    let other_borders = row
-        .iter()
+    row.iter()
         .enumerate()
         .filter(|&(col, _)| is_cell_visible(styles, col))
-        .filter(|(_, b)| b.right.is_some())
-        .count();
+        .fold(0, |mut acc, (col, b)| {
+            if col == 0 && b.left.is_some() {
+                acc += 1;
+            }
 
-    left_border + other_borders
+            if b.right.is_some() {
+                acc += 1;
+            }
+
+            acc
+        })
 }
 
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
@@ -787,72 +781,42 @@ pub enum AlignmentHorizontal {
 }
 
 impl AlignmentHorizontal {
-    fn align(&self, f: &mut std::fmt::Formatter<'_>, text: &str, width: usize) -> fmt::Result {
-        let text_width = string_width(text);
+    fn align_with_max_width(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        text: &str,
+        width: usize,
+        text_width: usize,
+        max_text_width: usize,
+    ) -> fmt::Result {
         let diff = width - text_width;
+
         match self {
-            AlignmentHorizontal::Left => {
-                write!(f, "{text}{: <1$}", "", diff, text = text)
-            }
+            AlignmentHorizontal::Left => Self::align(f, text, 0, diff),
             AlignmentHorizontal::Right => {
-                write!(f, "{: <1$}{text}", "", diff, text = text)
+                let max_diff = width - max_text_width;
+                let rest = diff - max_diff;
+                Self::align(f, text, max_diff, rest)
             }
             AlignmentHorizontal::Center => {
-                let left = diff / 2;
-                let right = diff - left;
-                write!(
-                    f,
-                    "{: <left$}{text}{: <right$}",
-                    "",
-                    "",
-                    left = left,
-                    right = right,
-                    text = text
-                )
+                let max_diff = width - max_text_width;
+                let left = max_diff / 2;
+                let rest = diff - left;
+                Self::align(f, text, left, rest)
             }
         }
     }
 
-    fn align_with_max_width(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        text: &str,
-        width: usize,
-        max_text_width: usize,
-    ) -> fmt::Result {
-        let max_diff = width - max_text_width;
-        let text_width = string_width(text);
-        let diff = width - text_width;
-        match self {
-            AlignmentHorizontal::Left => {
-                write!(f, "{text}{: <1$}", "", diff, text = text)
-            }
-            AlignmentHorizontal::Right => {
-                let rest = diff - max_diff;
-                write!(
-                    f,
-                    "{: <left$}{text}{: <right$}",
-                    "",
-                    "",
-                    left = max_diff,
-                    right = rest,
-                    text = text
-                )
-            }
-            AlignmentHorizontal::Center => {
-                let left = max_diff / 2;
-                let rest = diff - left;
-                write!(
-                    f,
-                    "{: <left$}{text}{: <right$}",
-                    "",
-                    "",
-                    left = left,
-                    right = rest,
-                    text = text
-                )
-            }
-        }
+    fn align(f: &mut fmt::Formatter<'_>, text: &str, left: usize, right: usize) -> fmt::Result {
+        write!(
+            f,
+            "{: <left$}{text}{: <right$}",
+            "",
+            "",
+            left = left,
+            right = right,
+            text = text
+        )
     }
 }
 
@@ -957,8 +921,8 @@ impl Settings {
     }
 }
 
-impl std::fmt::Display for Grid {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Grid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
 
@@ -966,8 +930,8 @@ impl std::fmt::Display for Grid {
             return Ok(());
         }
 
-        let mut cells = self.collect_cells(count_rows, count_columns);
-        let mut styles = self.collect_styles(count_rows, count_columns);
+        let mut cells = self.collect_cells();
+        let mut styles = self.collect_styles();
 
         fix_spans(&mut styles, &mut cells);
 
@@ -982,7 +946,7 @@ impl std::fmt::Display for Grid {
 }
 
 fn build_line_cell(
-    f: &mut std::fmt::Formatter<'_>,
+    f: &mut fmt::Formatter<'_>,
     line_index: usize,
     mut cell: &[String],
     style: &Style,
@@ -1012,8 +976,10 @@ fn build_line_cell(
         text = text.trim_end();
     }
 
+    let line_width = string_width(text);
+
     if style.formatting.allow_lines_alignement {
-        line(f, text, width, style)
+        line_with_width(f, text, width, line_width, line_width, style)
     } else {
         let max_line_width = cell
             .iter()
@@ -1028,7 +994,7 @@ fn build_line_cell(
             .max()
             .unwrap_or(0);
 
-        line_with_width(f, text, width, max_line_width, style)
+        line_with_width(f, text, width, line_width, max_line_width, style)
     }
 }
 
@@ -1063,7 +1029,7 @@ fn top_indent(cell: &[String], style: &Style, height: usize) -> usize {
     indent + style.padding.top.size
 }
 
-fn repeat_char(f: &mut std::fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
+fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     if n > 0 {
         for _ in 0..n {
             write!(f, "{}", c)?;
@@ -1072,23 +1038,12 @@ fn repeat_char(f: &mut std::fmt::Formatter<'_>, c: char, n: usize) -> fmt::Resul
     Ok(())
 }
 
-fn line(f: &mut std::fmt::Formatter<'_>, text: &str, width: usize, style: &Style) -> fmt::Result {
-    let left_indent = style.padding.left;
-    let right_indent = style.padding.right;
-    let alignment = style.alignment_h;
-
-    repeat_char(f, left_indent.fill, left_indent.size)?;
-    alignment.align(f, text, width - left_indent.size - right_indent.size)?;
-    repeat_char(f, right_indent.fill, right_indent.size)?;
-
-    Ok(())
-}
-
 fn line_with_width(
-    f: &mut std::fmt::Formatter<'_>,
+    f: &mut fmt::Formatter<'_>,
     text: &str,
     width: usize,
     width_text: usize,
+    width_text_max: usize,
     style: &Style,
 ) -> fmt::Result {
     let left_indent = style.padding.left;
@@ -1096,12 +1051,8 @@ fn line_with_width(
     let alignment = style.alignment_h;
 
     repeat_char(f, left_indent.fill, left_indent.size)?;
-    alignment.align_with_max_width(
-        f,
-        text,
-        width - left_indent.size - right_indent.size,
-        width_text,
-    )?;
+    let width = width - left_indent.size - right_indent.size;
+    alignment.align_with_max_width(f, text, width, width_text, width_text_max)?;
     repeat_char(f, right_indent.fill, right_indent.size)?;
 
     Ok(())
@@ -1652,8 +1603,7 @@ impl Borders {
     // which is a pitty,
     // would be cool if we could take a border of any Entity
     fn get_border(&self, row: usize, column: usize) -> Option<Border> {
-        // fixme: ???
-        if row > self.count_rows || column > self.count_columns {
+        if row >= self.count_rows || column >= self.count_columns {
             return None;
         }
 
@@ -2286,7 +2236,8 @@ mod tests {
 
         impl fmt::Display for F<'_> {
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                self.1.align(f, self.0, self.2)
+                let w = string_width(self.0);
+                self.1.align_with_max_width(f, self.0, self.2, w, w)
             }
         }
 
