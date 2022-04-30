@@ -6,7 +6,7 @@ pub fn new_grid<const N_ROWS: usize, const N_COLUMNS: usize>() -> Grid {
     for row in 0..N_ROWS {
         for column in 0..N_COLUMNS {
             let text = format!("{}-{}", row, column);
-            grid.set(&Entity::Cell(row, column), Settings::new().text(text));
+            grid.set(Entity::Cell(row, column), Settings::new().text(text));
         }
     }
 

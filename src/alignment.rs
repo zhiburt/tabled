@@ -75,6 +75,6 @@ impl CellOption for Alignment {
             Self::Vertical(a) => Settings::new().vertical_alignment(*a),
         };
 
-        grid.set(&Entity::Cell(row, column), settings);
+        grid.set(Entity::Cell(row, column), settings);
     }
 }

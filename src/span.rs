@@ -25,6 +25,6 @@ impl Span {
 
 impl CellOption for Span {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        grid.set(&Entity::Cell(row, column), Settings::new().span(self.size));
+        grid.set(Entity::Cell(row, column), Settings::new().span(self.size));
     }
 }

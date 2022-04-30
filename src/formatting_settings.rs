@@ -21,11 +21,11 @@ pub struct TabSize(pub usize);
 
 impl CellOption for TabSize {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut formatting = grid.style(&Entity::Cell(row, column)).formatting;
+        let mut formatting = grid.style(Entity::Cell(row, column)).formatting;
         formatting.tab_width = self.0;
 
         grid.set(
-            &Entity::Cell(row, column),
+            Entity::Cell(row, column),
             Settings::new().formatting(formatting),
         )
     }
@@ -139,14 +139,14 @@ pub enum AlignmentStrategy {
 
 impl CellOption for AlignmentStrategy {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut formatting = grid.style(&Entity::Cell(row, column)).formatting;
+        let mut formatting = grid.style(Entity::Cell(row, column)).formatting;
         match &self {
             AlignmentStrategy::PerCell => formatting.allow_lines_alignement = false,
             AlignmentStrategy::PerLine => formatting.allow_lines_alignement = true,
         }
 
         grid.set(
-            &Entity::Cell(row, column),
+            Entity::Cell(row, column),
             Settings::new().formatting(formatting),
         )
     }
@@ -227,7 +227,7 @@ pub enum TrimStrategy {
 
 impl CellOption for TrimStrategy {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut formatting = grid.style(&Entity::Cell(row, column)).formatting;
+        let mut formatting = grid.style(Entity::Cell(row, column)).formatting;
 
         match self {
             TrimStrategy::Vertical => {
@@ -247,7 +247,7 @@ impl CellOption for TrimStrategy {
         }
 
         grid.set(
-            &Entity::Cell(row, column),
+            Entity::Cell(row, column),
             Settings::new().formatting(formatting),
         )
     }

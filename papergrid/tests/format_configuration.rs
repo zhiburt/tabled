@@ -855,16 +855,16 @@ fn formatting_test() {
     ];
 
     let mut grid = util::new_grid::<3, 2>();
-    grid.set(&Entity::Cell(0, 0), Settings::new().text("A long string"));
+    grid.set(Entity::Cell(0, 0), Settings::new().text("A long string"));
     grid.set(
-        &Entity::Cell(0, 1),
+        Entity::Cell(0, 1),
         Settings::new().text("\n\n\nA\n    string\nwith\n new\nline\n\n\n\n"),
     );
     grid.set(
-        &Entity::Cell(2, 0),
+        Entity::Cell(2, 0),
         Settings::new().text("A one more\n    string\nwith\n new\nline"),
     );
-    grid.set(&Entity::Cell(2, 1), Settings::new().text("..."));
+    grid.set(Entity::Cell(2, 1), Settings::new().text("..."));
 
     for (i, test) in tests.iter().enumerate() {
         let halignemnt = test.0;
@@ -873,7 +873,7 @@ fn formatting_test() {
         let expected = test.3;
 
         grid.set(
-            &Entity::Global,
+            Entity::Global,
             Settings::new()
                 .alignment(halignemnt)
                 .vertical_alignment(valignemnt)
@@ -896,7 +896,7 @@ fn formatting_test() {
 fn formatting_empty_test() {
     let mut grid = util::new_grid::<0, 0>();
     grid.set(
-        &Entity::Global,
+        Entity::Global,
         Settings::new().formatting(Formatting {
             allow_lines_alignement: true,
             horizontal_trim: true,
@@ -909,7 +909,7 @@ fn formatting_empty_test() {
 
     let mut grid = util::new_grid::<4, 0>();
     grid.set(
-        &Entity::Global,
+        Entity::Global,
         Settings::new().formatting(Formatting {
             allow_lines_alignement: true,
             horizontal_trim: true,
@@ -922,7 +922,7 @@ fn formatting_empty_test() {
 
     let mut grid = util::new_grid::<0, 4>();
     grid.set(
-        &Entity::Global,
+        Entity::Global,
         Settings::new().formatting(Formatting {
             allow_lines_alignement: true,
             horizontal_trim: true,
@@ -952,7 +952,7 @@ fn formatting_1x1_test() {
 
     let mut grid = util::new_grid::<1, 1>();
     grid.set(
-        &Entity::Cell(0, 0),
+        Entity::Cell(0, 0),
         Settings::new()
             .text(json)
             .alignment(AlignmentHorizontal::Left),
@@ -982,7 +982,7 @@ fn formatting_1x1_test() {
     );
 
     grid.set(
-        &Entity::Cell(0, 0),
+        Entity::Cell(0, 0),
         Settings::new().formatting(Formatting {
             allow_lines_alignement: true,
             horizontal_trim: false,
@@ -1015,7 +1015,7 @@ fn formatting_1x1_test() {
     );
 
     grid.set(
-        &Entity::Cell(0, 0),
+        Entity::Cell(0, 0),
         Settings::new().formatting(Formatting {
             allow_lines_alignement: true,
             horizontal_trim: true,
@@ -1048,7 +1048,7 @@ fn formatting_1x1_test() {
     );
 
     grid.set(
-        &Entity::Cell(0, 0),
+        Entity::Cell(0, 0),
         Settings::new().formatting(Formatting {
             allow_lines_alignement: true,
             horizontal_trim: true,
@@ -1093,7 +1093,7 @@ fn tab_size_test() {
 }";
 
     let mut grid = util::new_grid::<1, 1>();
-    grid.set(&Entity::Cell(0, 0), Settings::new().text(json));
+    grid.set(Entity::Cell(0, 0), Settings::new().text(json));
 
     println!("{}", grid);
 
@@ -1112,7 +1112,7 @@ fn tab_size_test() {
     );
 
     grid.set(
-        &Entity::Cell(0, 0),
+        Entity::Cell(0, 0),
         Settings::new().formatting(Formatting {
             tab_width: 1,
             ..Default::default()
@@ -1136,7 +1136,7 @@ fn tab_size_test() {
     );
 
     grid.set(
-        &Entity::Cell(0, 0),
+        Entity::Cell(0, 0),
         Settings::new().formatting(Formatting {
             tab_width: 0,
             ..Default::default()

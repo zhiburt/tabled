@@ -72,6 +72,8 @@ fn full_alignment_multiline() {
         .with(Modify::new(Full).with(Alignment::left()))
         .to_string();
 
+    println!("{}", table);
+
     assert_eq!(table, expected);
 }
 

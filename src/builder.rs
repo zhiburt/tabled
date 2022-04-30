@@ -301,7 +301,7 @@ fn build_grid(
     let mut row = 0;
     if let Some(headers) = columns {
         for (i, text) in headers.into_iter().enumerate() {
-            grid.set(&Entity::Cell(0, i), Settings::new().text(text));
+            grid.set(Entity::Cell(0, i), Settings::new().text(text));
         }
 
         row = 1;
@@ -314,7 +314,7 @@ fn build_grid(
         }
 
         for (column, field) in fields.into_iter().enumerate() {
-            grid.set(&Entity::Cell(row, column), Settings::new().text(field));
+            grid.set(Entity::Cell(row, column), Settings::new().text(field));
         }
 
         row += 1;
@@ -328,7 +328,7 @@ fn create_table_from_grid(grid: Grid) -> Table {
 
     // it's crusial to set a global setting rather than a setting for an each cell
     // as it will be hard to override that since how Grid::style method works
-    table.grid.set(&Entity::Global, default_cell_style());
+    table.grid.set(Entity::Global, default_cell_style());
 
     table.with(Style::ascii())
 }
