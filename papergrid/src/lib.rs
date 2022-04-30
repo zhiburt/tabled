@@ -29,8 +29,6 @@ use std::{
     ops::{Bound, RangeBounds},
 };
 
-// todo: unify border count functions
-
 pub const DEFAULT_CELL_STYLE: Border = Border {
     top: Some('-'),
     bottom: Some('-'),
@@ -1913,10 +1911,6 @@ impl Container {
     }
 
     fn print_line(&self, f: &mut fmt::Formatter, i: usize) -> fmt::Result {
-        // if i >= self.height {
-        //     return self.print_empty_line(f);
-        // }
-
         match &self.kind {
             ContainerKind::Content { lines, style } => {
                 build_line_cell(f, i, lines, style, self.width, self.height)?;
@@ -1945,10 +1939,6 @@ impl Container {
 
         Ok(())
     }
-
-    // fn print_empty_line(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    //     repeat_char(f, ' ', self.width)
-    // }
 }
 
 impl fmt::Display for Container {
