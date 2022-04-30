@@ -285,3 +285,23 @@ fn builder_index_transpose_empty() {
 
     assert_eq!(table.to_string(), "");
 }
+
+#[test]
+fn builder_index_invalid_dosnt_panic() {
+    let table = tabled::builder::Builder::default()
+        .index()
+        .set_index(100)
+        .build();
+
+    assert_eq!(table.to_string(), "");
+}
+
+#[test]
+fn builder_index_name_doesnt_shown_when_empty() {
+    let table = tabled::builder::Builder::default()
+        .index()
+        .set_name(Some("Hello World".to_owned()))
+        .build();
+
+    assert_eq!(table.to_string(), "");
+}
