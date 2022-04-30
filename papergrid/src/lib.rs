@@ -119,24 +119,35 @@ impl Grid {
             self.set_text(entity, text);
         }
 
-        if let Some(padding) = settings.padding {
-            self.style_mut(entity).padding = padding;
-        }
+        let is_style_changes = settings.padding.is_some()
+            || settings.alignment_h.is_some()
+            || settings.alignment_v.is_some()
+            || settings.span.is_some()
+            || settings.formatting.is_some();
 
-        if let Some(alignment_h) = settings.alignment_h {
-            self.style_mut(entity).alignment_h = alignment_h;
-        }
+        if is_style_changes {
+            self.remove_inherited_styles(entity);
+            let style = self.style_mut(entity);
 
-        if let Some(alignment_v) = settings.alignment_v {
-            self.style_mut(entity).alignment_v = alignment_v;
-        }
+            if let Some(padding) = settings.padding {
+                style.padding = padding;
+            }
 
-        if let Some(span) = settings.span {
-            self.style_mut(entity).span = span;
-        }
+            if let Some(alignment_h) = settings.alignment_h {
+                style.alignment_h = alignment_h;
+            }
 
-        if let Some(formatting) = settings.formatting {
-            self.style_mut(entity).formatting = formatting;
+            if let Some(alignment_v) = settings.alignment_v {
+                style.alignment_v = alignment_v;
+            }
+
+            if let Some(span) = settings.span {
+                style.span = span;
+            }
+
+            if let Some(formatting) = settings.formatting {
+                style.formatting = formatting;
+            }
         }
 
         if let Some(border) = settings.border {
@@ -323,14 +334,27 @@ impl Grid {
         unreachable!("there's a Entity::Global setting guaranted in the map")
     }
 
-    #[allow(clippy::map_entry)]
     fn style_mut(&mut self, entity: Entity) -> &mut Style {
-        if !self.styles.contains_key(&entity) {
-            let style = self.style(entity).clone();
-            self.styles.insert(entity, style);
+        if self.styles.contains_key(&entity) {
+            return self.styles.get_mut(&entity).unwrap();
         }
 
+        let style = self.style(entity).clone();
+        self.styles.insert(entity, style);
         self.styles.get_mut(&entity).unwrap()
+    }
+
+    fn remove_inherited_styles(&mut self, entity: Entity) {
+        match entity {
+            Entity::Global => self.styles.retain(|k, _| matches!(k, Entity::Global)),
+            Entity::Column(col) => self
+                .styles
+                .retain(move |k, _| !matches!(k, Entity::Cell(_, c) if *c == col)),
+            Entity::Row(row) => self
+                .styles
+                .retain(move |k, _| !matches!(k, Entity::Cell(r, _) if *r == row)),
+            Entity::Cell(_, _) => {}
+        }
     }
 
     /// get_cell_content returns content without any style changes
@@ -694,7 +718,7 @@ pub enum Entity {
     Cell(usize, usize),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Style {
     pub span: usize,
     pub padding: Padding,
@@ -720,7 +744,7 @@ impl Default for Style {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Formatting {
     pub horizontal_trim: bool,
     pub vertical_trim: bool,
@@ -736,7 +760,7 @@ pub struct Margin {
     pub right: Indent,
 }
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Padding {
     pub top: Indent,
     pub bottom: Indent,
@@ -744,7 +768,7 @@ pub struct Padding {
     pub right: Indent,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Indent {
     pub fill: char,
     pub size: usize,
@@ -773,7 +797,7 @@ impl Indent {
 }
 
 /// AlignmentHorizontal represents an horizontal aligment of a cell content.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentHorizontal {
     Center,
     Left,
@@ -821,7 +845,7 @@ impl AlignmentHorizontal {
 }
 
 /// AlignmentVertical represents an vertical aligment of a cell content.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentVertical {
     Center,
     Top,
