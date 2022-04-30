@@ -2,6 +2,61 @@
 //! a [Table] dynamically.
 //!
 //! It also contains [IndexBuilder] which can help to build a table with index.
+//!
+//! # Example
+//!
+//! Here's an example of [IndexBuilder] usage
+//!
+//! ```
+//! use tabled::{Table, Tabled, Style};
+//!
+//! #[derive(Tabled)]
+//! struct Mission {
+//!     name: &'static str,
+//!     #[tabled(inline)]
+//!     status: Status,
+//! }
+//!
+//! #[derive(Tabled)]
+//! enum Status {
+//!     Complete,
+//!     Started,
+//!     Ready,
+//!     Unknown,
+//! }
+//!
+//! let data = [
+//!     Mission { name: "Algebra", status: Status::Unknown },
+//!     Mission { name: "Apolo", status: Status::Complete },
+//! ];
+//!
+//! let table = Table::builder(&data)
+//!     .index()
+//!     .set_index(0)
+//!     .set_name(None)
+//!     .transpose()
+//!     .build()
+//!     .with(Style::modern());
+//!
+//! println!("{}", table);
+//!
+//! assert_eq!(
+//!     table.to_string(),
+//!     concat!(
+//!         "┌──────────┬─────────┬───────┐\n",
+//!         "│          │ Algebra │ Apolo │\n",
+//!         "├──────────┼─────────┼───────┤\n",
+//!         "│ Complete │         │   +   │\n",
+//!         "├──────────┼─────────┼───────┤\n",
+//!         "│ Started  │         │       │\n",
+//!         "├──────────┼─────────┼───────┤\n",
+//!         "│  Ready   │         │       │\n",
+//!         "├──────────┼─────────┼───────┤\n",
+//!         "│ Unknown  │    +    │       │\n",
+//!         "└──────────┴─────────┴───────┘\n",
+//!    ),
+//! )
+//! ```
 
 use std::{fmt::Display, iter::FromIterator};
 
@@ -559,45 +614,3 @@ fn remove_or_default<T: Default>(v: &mut Vec<T>, i: usize) -> T {
 fn build_range_index(n: usize) -> Vec<String> {
     (0..n).map(|i| i.to_string()).collect()
 }
-
-// ┌──────────┬─────────────┬───────────┬─────────┐
-// │          │   based_on  │ is_active │ is_cool │
-// ├──────────┼─────────────┼───────────┼─────────┤
-// │ Manjaro  │     Arch    │    true   │   true  │
-// ├──────────┼─────────────┼───────────┼─────────┤
-// │  Debian  │ Independent │    true   │   true  │
-// ├──────────┼─────────────┼───────────┼─────────┤
-// │  Debian  │ Independent │    true   │   true  │
-// └──────────┴─────────────┴───────────┴─────────┘
-
-// ┌──────────┬─────────────┬───────────┬─────────┐
-// │          │   based_on  │ is_active │ is_cool │
-// ├──────────┼─────────────┼───────────┼─────────┤
-// │   name   │             │           │         │
-// ├──────────┼─────────────┼───────────┼─────────┤
-// │ Manjaro  │     Arch    │    true   │   true  │
-// ├──────────┼─────────────┼───────────┼─────────┤
-// │  Debian  │ Independent │    true   │   true  │
-// ├──────────┼─────────────┼───────────┼─────────┤
-// │  Debian  │ Independent │    true   │   true  │
-// └──────────┴─────────────┴───────────┴─────────┘
-
-// ┌───────────┬─────────┬─────────────┬─────────────┐
-// │           │ Manjaro │    Debian   │    Debian   │
-// ├───────────┼─────────┼─────────────┼─────────────┤
-// │ based_on  │  Arch   │ Independent │ Independent │
-// ├───────────┼─────────┼─────────────┼─────────────┤
-// │ is_active │  true   │     true    │     true    │
-// ├───────────┼─────────┼─────────────┼─────────────┤
-// │  is_cool  │  true   │     true    │     true    │
-// └───────────┴─────────┴─────────────┴─────────────┘
-
-// ┌───────────┬─────────┬─────────────┬─────────────┐
-// │   name    │ Manjaro │    Debian   │    Debian   │
-// ├───────────┼─────────┼─────────────┼─────────────┤
-// │ based_on  │  Arch   │ Independent │ Independent │
-// ├───────────┼─────────┼─────────────┼─────────────┤
-// │ is_active │  true   │     true    │     true    │
-// ├───────────┼─────────┼─────────────┼─────────────┤
-// │  is_cool  │  true   │     true    │     true    │
-// └───────────┴─────────┴─────────────┴─────────────┘
