@@ -1977,8 +1977,7 @@ fn build_grid(
             }
         }
 
-        if let Some(split) = build_split_line_container(grid, &normal_widths, row_width, row, false)
-        {
+        if let Some(split) = build_split_line_container(grid, &normal_widths, row_width, row) {
             containers.push(split);
         }
 
@@ -1991,7 +1990,7 @@ fn build_grid(
         let is_last_iteration = row + 1 == grid.count_rows();
         if is_last_iteration {
             if let Some(split) =
-                build_split_line_container(grid, &normal_widths, row_width, row, true)
+                build_split_line_container(grid, &normal_widths, row_width, row + 1)
             {
                 containers.push(split);
             }
@@ -2082,17 +2081,12 @@ fn build_split_line_container(
     widths: &[usize],
     width: usize,
     row: usize,
-    bottom: bool,
 ) -> Option<Container> {
     let mut v = Vec::new();
     for (col, &width) in widths.iter().enumerate() {
-        let b = grid.get_border(row, col);
-
-        let (left, main, right) = if bottom {
-            (b.left_bottom_corner, b.bottom, b.right_bottom_corner)
-        } else {
-            (b.left_top_corner, b.top, b.right_top_corner)
-        };
+        let left = grid.borders.get_intersection_char((row, col));
+        let right = grid.borders.get_intersection_char((row, col + 1));
+        let main = grid.borders.get_horizontal_char(row, col);
 
         if col == 0 {
             if let Some(c) = left {
