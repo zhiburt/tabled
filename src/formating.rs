@@ -120,7 +120,7 @@ where
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let content = grid.get_cell_content(row, column);
         let content = (self.f)(content);
-        grid.set(&Entity::Cell(row, column), Settings::new().text(content))
+        grid.set(Entity::Cell(row, column), Settings::new().text(content))
     }
 }
 
@@ -147,7 +147,7 @@ where
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let content = grid.get_cell_content(row, column);
         let content = (self.f)(content, (row, column));
-        grid.set(&Entity::Cell(row, column), Settings::new().text(content))
+        grid.set(Entity::Cell(row, column), Settings::new().text(content))
     }
 }
 
@@ -158,6 +158,6 @@ where
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let content = grid.get_cell_content(row, column);
         let content = (self)(content);
-        grid.set(&Entity::Cell(row, column), Settings::new().text(content))
+        grid.set(Entity::Cell(row, column), Settings::new().text(content))
     }
 }

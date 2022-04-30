@@ -6,10 +6,10 @@
 //!     let mut grid = Grid::new(2, 2);
 //!     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
 //!
-//!     grid.set(&Entity::Cell(0, 0), Settings::new().text("0-0"));
-//!     grid.set(&Entity::Cell(0, 1), Settings::new().text("0-1"));
-//!     grid.set(&Entity::Cell(1, 0), Settings::new().text("1-0"));
-//!     grid.set(&Entity::Cell(1, 1), Settings::new().text("1-1"));
+//!     grid.set(Entity::Cell(0, 0), Settings::new().text("0-0"));
+//!     grid.set(Entity::Cell(0, 1), Settings::new().text("0-1"));
+//!     grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
+//!     grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
 //!
 //!     let expected = concat!(
 //!         "+---+---+\n",
@@ -23,9 +23,9 @@
 //! ```
 
 use std::{
-    cmp::max,
+    cmp::{self, max},
     collections::{BTreeSet, HashMap},
-    fmt::{self, Display},
+    fmt,
     ops::{Bound, RangeBounds},
 };
 
@@ -72,9 +72,7 @@ impl Grid {
     ///     assert_eq!(
     ///          str,
     ///          "+++\n\
-    ///           |||\n\
     ///           +++\n\
-    ///           |||\n\
     ///           +++\n"
     ///     )
     /// ```
@@ -102,8 +100,8 @@ impl Grid {
     ///     use papergrid::{Grid, Entity, Settings, DEFAULT_CELL_STYLE};
     ///     let mut grid = Grid::new(2, 2);
     ///     grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
-    ///     grid.set(&Entity::Row(0), Settings::new().text("row 1"));
-    ///     grid.set(&Entity::Row(1), Settings::new().text("row 2"));
+    ///     grid.set(Entity::Row(0), Settings::new().text("row 1"));
+    ///     grid.set(Entity::Row(1), Settings::new().text("row 2"));
     ///     let str = grid.to_string();
     ///     assert_eq!(
     ///          str,
@@ -114,38 +112,48 @@ impl Grid {
     ///           +-----+-----+\n"
     ///     )
     /// ```
-    ///
-    pub fn set(&mut self, entity: &Entity, settings: Settings) {
+    pub fn set(&mut self, entity: Entity, settings: Settings) {
         if let Some(text) = settings.text {
             self.set_text(entity, text);
         }
 
-        if let Some(padding) = settings.padding {
-            self.style_mut(entity).padding = padding;
-        }
+        let is_style_changes = settings.padding.is_some()
+            || settings.alignment_h.is_some()
+            || settings.alignment_v.is_some()
+            || settings.span.is_some()
+            || settings.formatting.is_some();
 
-        if let Some(alignment_h) = settings.alignment_h {
-            self.style_mut(entity).alignment_h = alignment_h;
-        }
+        if is_style_changes {
+            self.remove_inherited_styles(entity);
+            let style = self.style_mut(entity);
 
-        if let Some(alignment_v) = settings.alignment_v {
-            self.style_mut(entity).alignment_v = alignment_v;
-        }
+            if let Some(padding) = settings.padding {
+                style.padding = padding;
+            }
 
-        if let Some(span) = settings.span {
-            self.style_mut(entity).span = span;
-        }
+            if let Some(alignment_h) = settings.alignment_h {
+                style.alignment_h = alignment_h;
+            }
 
-        if let Some(formatting) = settings.formatting {
-            self.style_mut(entity).formatting = formatting;
+            if let Some(alignment_v) = settings.alignment_v {
+                style.alignment_v = alignment_v;
+            }
+
+            if let Some(span) = settings.span {
+                style.span = span;
+            }
+
+            if let Some(formatting) = settings.formatting {
+                style.formatting = formatting;
+            }
         }
 
         if let Some(border) = settings.border {
             if settings.border_split_check {
-                self.add_split_lines(entity.clone(), &border);
+                self.add_split_lines(entity, &border);
             }
 
-            self.set_border(entity.clone(), &border);
+            self.set_border(entity, &border);
         }
     }
 
@@ -158,34 +166,28 @@ impl Grid {
     }
 
     pub fn add_horizontal_split(&mut self, row: usize) {
-        self.insert_horizontal_split(
-            row,
-            SplitLine::new(
-                vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_columns()],
-                vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_horizontal_intersections()],
-            ),
-        );
+        self.insert_horizontal_split(row);
     }
 
     pub fn add_vertical_split(&mut self, column: usize) {
-        self.insert_vertical_split(
-            column,
-            SplitLine::new(
-                vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_rows()],
-                vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_vertical_intersections()],
-            ),
-        );
+        self.insert_vertical_split(column);
     }
 
-    fn insert_horizontal_split(&mut self, row: usize, line: SplitLine) {
+    fn insert_horizontal_split(&mut self, row: usize) {
+        let line = vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_columns()];
+        let intersections =
+            vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_horizontal_intersections()];
         self.borders
-            .set_horizontal(row, line.borders, &line.intersections)
+            .set_horizontal(row, line, intersections)
             .unwrap();
     }
 
-    fn insert_vertical_split(&mut self, column: usize, line: SplitLine) {
+    fn insert_vertical_split(&mut self, column: usize) {
+        let line = vec![DEFAULT_SPLIT_BORDER_CHAR; self.count_rows()];
+        let intersections =
+            vec![DEFAULT_SPLIT_INTERSECTION_CHAR; self.borders.need_vertical_intersections()];
         self.borders
-            .set_vertical(column, line.borders, &line.intersections)
+            .set_vertical(column, line, intersections)
             .unwrap();
     }
 
@@ -286,7 +288,7 @@ impl Grid {
 
     /// get_cell_settings returns a settings of a cell
     pub fn get_settings(&self, row: usize, column: usize) -> Settings {
-        let style = self.style(&Entity::Cell(row, column));
+        let style = self.style(Entity::Cell(row, column));
         let content = &self.cells[row][column];
         let border = self.borders.get_border(row, column).unwrap();
 
@@ -308,15 +310,15 @@ impl Grid {
         self.borders.get_border(row, column).unwrap()
     }
 
-    pub fn style(&self, entity: &Entity) -> &Style {
+    pub fn style(&self, entity: Entity) -> &Style {
         let lookup_table = match entity {
             Entity::Global => vec![Entity::Global],
-            Entity::Column(column) => vec![Entity::Column(*column), Entity::Global],
-            Entity::Row(row) => vec![Entity::Row(*row), Entity::Global],
+            Entity::Column(column) => vec![Entity::Column(column), Entity::Global],
+            Entity::Row(row) => vec![Entity::Row(row), Entity::Global],
             Entity::Cell(row, column) => vec![
-                Entity::Cell(*row, *column),
-                Entity::Column(*column),
-                Entity::Row(*row),
+                Entity::Cell(row, column),
+                Entity::Column(column),
+                Entity::Row(row),
                 Entity::Global,
             ],
         };
@@ -330,16 +332,27 @@ impl Grid {
         unreachable!("there's a Entity::Global setting guaranted in the map")
     }
 
-    fn style_mut(&mut self, entity: &Entity) -> &mut Style {
-        if self.styles.contains_key(entity) {
-            return self.styles.get_mut(entity).unwrap();
+    fn style_mut(&mut self, entity: Entity) -> &mut Style {
+        if self.styles.contains_key(&entity) {
+            return self.styles.get_mut(&entity).unwrap();
         }
 
         let style = self.style(entity).clone();
-        self.styles.insert(entity.clone(), style);
+        self.styles.insert(entity, style);
+        self.styles.get_mut(&entity).unwrap()
+    }
 
-        let style = self.styles.get_mut(entity).unwrap();
-        style
+    fn remove_inherited_styles(&mut self, entity: Entity) {
+        match entity {
+            Entity::Global => self.styles.retain(|k, _| matches!(k, Entity::Global)),
+            Entity::Column(col) => self
+                .styles
+                .retain(move |k, _| !matches!(k, Entity::Cell(_, c) if *c == col)),
+            Entity::Row(row) => self
+                .styles
+                .retain(move |k, _| !matches!(k, Entity::Cell(r, _) if *r == row)),
+            Entity::Cell(_, _) => {}
+        }
     }
 
     /// get_cell_content returns content without any style changes
@@ -357,9 +370,9 @@ impl Grid {
         self.size.1
     }
 
-    pub fn set_text<S: Into<String>>(&mut self, entity: &Entity, text: S) {
+    pub fn set_text<S: Into<String>>(&mut self, entity: Entity, text: S) {
         let text = text.into();
-        match *entity {
+        match entity {
             Entity::Cell(row, column) => {
                 self.cells[row][column] = text;
             }
@@ -388,7 +401,7 @@ impl Grid {
         for row in 0..self.count_rows() {
             for column in 0..self.count_columns() {
                 self.set(
-                    &Entity::Cell(row, column),
+                    Entity::Cell(row, column),
                     Settings::new().border(border.clone()),
                 );
             }
@@ -442,7 +455,7 @@ impl Grid {
             for (new_column, column) in (start_column..end_column).enumerate() {
                 let settings = self.get_settings(row, column);
                 new_grid.set(
-                    &Entity::Cell(new_row, new_column),
+                    Entity::Cell(new_row, new_column),
                     settings.border_restriction(false),
                 );
             }
@@ -459,14 +472,12 @@ impl Grid {
             return 0;
         }
 
-        let mut cells = self.collect_cells(count_rows, count_columns);
-        let mut styles = self.collect_styles(count_rows, count_columns);
+        let mut cells = self.collect_cells();
+        let mut styles = self.collect_styles();
 
         fix_spans(&mut styles, &mut cells);
 
-        let borders = (0..count_rows)
-            .map(|row| self.get_inner_split_line(row))
-            .collect::<Vec<_>>();
+        let borders = self.borders.get_rows();
 
         let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
 
@@ -480,17 +491,15 @@ impl Grid {
     // hide it by feature?
     // 'private'
     pub fn build_widths(&self) -> (Vec<Vec<usize>>, Vec<Vec<Style>>) {
-        let count_rows = self.count_rows();
-        let count_columns = self.count_columns();
-
-        let mut cells = self.collect_cells(count_rows, count_columns);
-        let mut styles = self.collect_styles(count_rows, count_columns);
+        let mut cells = self.collect_cells();
+        let mut styles = self.collect_styles();
 
         fix_spans(&mut styles, &mut cells);
 
-        let borders = (0..count_rows)
-            .map(|row| self.get_inner_split_line(row))
-            .collect::<Vec<_>>();
+        let borders = self.borders.get_rows();
+
+        let count_rows = self.count_rows();
+        let count_columns = self.count_columns();
 
         let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
 
@@ -549,88 +558,57 @@ impl Grid {
         }
     }
 
-    fn collect_cells(&self, count_rows: usize, count_columns: usize) -> Vec<Vec<Vec<String>>> {
-        let mut rows = Vec::with_capacity(count_rows);
+    fn collect_cells(&self) -> Vec<Vec<Vec<String>>> {
+        let count_rows = self.count_rows();
+        let count_columns = self.count_columns();
+
+        let mut rows = vec![Vec::with_capacity(self.count_columns()); self.count_rows()];
         (0..count_rows).for_each(|row| {
-            let mut cells = Vec::with_capacity(row);
             (0..count_columns).for_each(|col| {
                 let mut content = self.cells[row][col].clone();
 
-                let style = self.style(&Entity::Cell(row, col));
+                let style = self.style(Entity::Cell(row, col));
                 replace_tab(&mut content, style.formatting.tab_width);
 
                 // fixme: I guess it can be done in a different place?
                 let lines: Vec<_> = content.lines().map(|l| l.to_owned()).collect();
-                cells.push(lines);
+                rows[row].push(lines);
             });
-
-            rows.push(cells);
         });
 
         rows
     }
 
-    fn collect_styles(&self, count_rows: usize, count_columns: usize) -> Vec<Vec<Style>> {
-        let mut rows = Vec::with_capacity(count_rows);
-        (0..count_rows).for_each(|row_index| {
-            let mut row = Vec::with_capacity(count_columns);
-            (0..count_columns).for_each(|column_index| {
-                let style = self.style(&Entity::Cell(row_index, column_index));
-                row.push(style.clone());
+    fn collect_styles(&self) -> Vec<Vec<Style>> {
+        let mut rows = vec![Vec::with_capacity(self.count_columns()); self.count_rows()];
+        (0..self.count_rows()).for_each(|row| {
+            (0..self.count_columns()).for_each(|col| {
+                let style = self.style(Entity::Cell(row, col));
+                rows[row].push(style.clone());
             });
-
-            rows.push(row);
         });
 
         fix_styles(&mut rows);
 
         rows
     }
-
-    fn get_split_line(&self, index: usize) -> Vec<BorderLine> {
-        self.borders.get_row(index).unwrap()
-    }
-
-    fn get_inner_split_line(&self, index: usize) -> Vec<BorderLine> {
-        self.borders.get_inner_row(index).unwrap()
-    }
 }
 
-fn count_borders(row: &[BorderLine], styles: &[Style]) -> usize {
-    let left_border = row.get(0).map_or(0, |b| b.connector1.iter().count());
-    let other_borders = row
-        .iter()
+fn count_borders(row: &[Border], styles: &[Style]) -> usize {
+    row.iter()
         .enumerate()
         .filter(|&(col, _)| is_cell_visible(styles, col))
-        .filter(|(_, b)| b.connector2.is_some())
-        .count();
+        .fold(0, |mut acc, (col, b)| {
+            if col == 0 && b.left.is_some() {
+                acc += 1;
+            }
 
-    left_border + other_borders
-}
+            if b.right.is_some() {
+                acc += 1;
+            }
 
-#[derive(Debug, Clone, Default)]
-pub struct SplitLine {
-    borders: Vec<char>,
-    intersections: Vec<char>,
-}
-
-impl SplitLine {
-    pub fn new(borders: Vec<char>, intersections: Vec<char>) -> Self {
-        Self {
-            borders,
-            intersections,
-        }
-    }
-
-    pub fn border(mut self, c: char) -> Self {
-        self.borders.push(c);
-        self
-    }
-
-    pub fn intersection(mut self, c: char) -> Self {
-        self.intersections.push(c);
-        self
-    }
+            acc
+        })
 }
 
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
@@ -725,15 +703,8 @@ impl Border {
     }
 }
 
-#[derive(Debug, Default, Clone)]
-struct BorderLine {
-    main: Option<char>,
-    connector1: Option<char>,
-    connector2: Option<char>,
-}
-
 /// Entity a structure which represent a set of cells.
-#[derive(PartialEq, Eq, Debug, Hash, Clone)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
 pub enum Entity {
     /// All cells on the grid.
     Global,
@@ -745,7 +716,7 @@ pub enum Entity {
     Cell(usize, usize),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Style {
     pub span: usize,
     pub padding: Padding,
@@ -771,7 +742,7 @@ impl Default for Style {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Formatting {
     pub horizontal_trim: bool,
     pub vertical_trim: bool,
@@ -787,7 +758,7 @@ pub struct Margin {
     pub right: Indent,
 }
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Padding {
     pub top: Indent,
     pub bottom: Indent,
@@ -795,7 +766,7 @@ pub struct Padding {
     pub right: Indent,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Indent {
     pub fill: char,
     pub size: usize,
@@ -824,7 +795,7 @@ impl Indent {
 }
 
 /// AlignmentHorizontal represents an horizontal aligment of a cell content.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentHorizontal {
     Center,
     Left,
@@ -832,77 +803,47 @@ pub enum AlignmentHorizontal {
 }
 
 impl AlignmentHorizontal {
-    fn align(&self, f: &mut std::fmt::Formatter<'_>, text: &str, width: usize) -> fmt::Result {
-        let text_width = string_width(text);
+    fn align_with_max_width(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        text: &str,
+        width: usize,
+        text_width: usize,
+        max_text_width: usize,
+    ) -> fmt::Result {
         let diff = width - text_width;
+
         match self {
-            AlignmentHorizontal::Left => {
-                write!(f, "{text}{: <1$}", "", diff, text = text)
-            }
+            AlignmentHorizontal::Left => Self::align(f, text, 0, diff),
             AlignmentHorizontal::Right => {
-                write!(f, "{: <1$}{text}", "", diff, text = text)
+                let max_diff = width - max_text_width;
+                let rest = diff - max_diff;
+                Self::align(f, text, max_diff, rest)
             }
             AlignmentHorizontal::Center => {
-                let left = diff / 2;
-                let right = diff - left;
-                write!(
-                    f,
-                    "{: <left$}{text}{: <right$}",
-                    "",
-                    "",
-                    left = left,
-                    right = right,
-                    text = text
-                )
+                let max_diff = width - max_text_width;
+                let left = max_diff / 2;
+                let rest = diff - left;
+                Self::align(f, text, left, rest)
             }
         }
     }
 
-    fn align_with_max_width(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        text: &str,
-        width: usize,
-        max_text_width: usize,
-    ) -> fmt::Result {
-        let max_diff = width - max_text_width;
-        let text_width = string_width(text);
-        let diff = width - text_width;
-        match self {
-            AlignmentHorizontal::Left => {
-                write!(f, "{text}{: <1$}", "", diff, text = text)
-            }
-            AlignmentHorizontal::Right => {
-                let rest = diff - max_diff;
-                write!(
-                    f,
-                    "{: <left$}{text}{: <right$}",
-                    "",
-                    "",
-                    left = max_diff,
-                    right = rest,
-                    text = text
-                )
-            }
-            AlignmentHorizontal::Center => {
-                let left = max_diff / 2;
-                let rest = diff - left;
-                write!(
-                    f,
-                    "{: <left$}{text}{: <right$}",
-                    "",
-                    "",
-                    left = left,
-                    right = rest,
-                    text = text
-                )
-            }
-        }
+    fn align(f: &mut fmt::Formatter<'_>, text: &str, left: usize, right: usize) -> fmt::Result {
+        write!(
+            f,
+            "{: <left$}{text}{: <right$}",
+            "",
+            "",
+            left = left,
+            right = right,
+            text = text
+        )
     }
 }
 
 /// AlignmentVertical represents an vertical aligment of a cell content.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentVertical {
     Center,
     Top,
@@ -1002,8 +943,8 @@ impl Settings {
     }
 }
 
-impl std::fmt::Display for Grid {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Grid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
 
@@ -1011,162 +952,23 @@ impl std::fmt::Display for Grid {
             return Ok(());
         }
 
-        let mut cells = self.collect_cells(count_rows, count_columns);
-        let mut styles = self.collect_styles(count_rows, count_columns);
+        let mut cells = self.collect_cells();
+        let mut styles = self.collect_styles();
 
         fix_spans(&mut styles, &mut cells);
 
-        let borders = (0..count_rows)
-            .map(|row| self.get_inner_split_line(row))
-            .collect::<Vec<_>>();
+        let borders = self.borders.get_rows();
 
-        let row_heights = rows_height(&cells, &styles, count_rows, count_columns);
+        let heights = rows_height(&cells, &styles, count_rows, count_columns);
         let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
         let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
 
-        let total_width = total_width(&widths, &styles, &borders, &self.margin);
-
-        print_grid(
-            f,
-            count_rows,
-            cells,
-            styles,
-            widths,
-            normal_widths,
-            row_heights,
-            self,
-            total_width,
-        )
+        build_grid(self, cells, styles, widths, normal_widths, heights).fmt(f)
     }
-}
-
-#[allow(clippy::too_many_arguments)]
-fn print_grid(
-    f: &mut fmt::Formatter,
-    count_rows: usize,
-    cells: Vec<Vec<Vec<String>>>,
-    styles: Vec<Vec<Style>>,
-    widths: Vec<Vec<usize>>,
-    normal_widths: Vec<usize>,
-    row_heights: Vec<usize>,
-    grid: &Grid,
-    total_width: usize,
-) -> Result<(), fmt::Error> {
-    for _ in 0..grid.margin.top.size {
-        repeat_char(f, grid.margin.top.fill, total_width)?;
-        writeln!(f)?;
-    }
-
-    for row in 0..count_rows {
-        build_row(
-            f,
-            &cells[row],
-            &styles[row],
-            &widths[row],
-            &normal_widths,
-            row_heights[row],
-            grid,
-            row,
-        )?;
-    }
-
-    for _ in 0..grid.margin.bottom.size {
-        repeat_char(f, grid.margin.bottom.fill, total_width)?;
-        writeln!(f)?;
-    }
-
-    Ok(())
-}
-
-#[allow(clippy::too_many_arguments)]
-fn build_row(
-    f: &mut std::fmt::Formatter<'_>,
-    cell_contents: &[Vec<String>],
-    cell_styles: &[Style],
-    cell_widths: &[usize],
-    normal_widths: &[usize],
-    height: usize,
-    grid: &Grid,
-    row: usize,
-) -> fmt::Result {
-    if row == 0 {
-        build_split_line_(f, normal_widths, grid, row)?;
-    }
-
-    let inner_border = grid.get_inner_split_line(row);
-    build_row_cells(
-        f,
-        cell_contents,
-        cell_styles,
-        cell_widths,
-        height,
-        &inner_border,
-        &grid.margin,
-    )?;
-
-    build_split_line_(f, normal_widths, grid, row + 1)?;
-
-    Ok(())
-}
-
-fn build_split_line_(
-    f: &mut fmt::Formatter,
-    widths: &[usize],
-    grid: &Grid,
-    row: usize,
-) -> Result<(), fmt::Error> {
-    let borders = grid.get_split_line(row);
-    let override_str = grid.override_split_lines.get(&row);
-
-    let theres_no_border = borders.iter().all(|l| l.main.is_none());
-    if theres_no_border || widths.is_empty() {
-        return Ok(());
-    }
-
-    if grid.margin.left.size > 0 {
-        repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
-    }
-
-    build_split_line_with_override(f, widths, &borders, override_str)?;
-
-    if grid.margin.right.size > 0 {
-        repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
-    }
-
-    writeln!(f)?;
-
-    Ok(())
-}
-
-#[allow(clippy::too_many_arguments)]
-fn build_row_cells(
-    f: &mut std::fmt::Formatter<'_>,
-    row: &[Vec<String>],
-    row_styles: &[Style],
-    widths: &[usize],
-    height: usize,
-    borders: &[BorderLine],
-    margin: &Margin,
-) -> fmt::Result {
-    for line in 0..height {
-        build_line(
-            f,
-            borders,
-            row_styles,
-            row,
-            widths,
-            height,
-            row.len(),
-            line,
-            margin,
-        )?;
-    }
-
-    Ok(())
 }
 
 fn build_line_cell(
-    f: &mut std::fmt::Formatter<'_>,
+    f: &mut fmt::Formatter<'_>,
     line_index: usize,
     mut cell: &[String],
     style: &Style,
@@ -1196,8 +998,10 @@ fn build_line_cell(
         text = text.trim_end();
     }
 
+    let line_width = string_width(text);
+
     if style.formatting.allow_lines_alignement {
-        line(f, text, width, style)
+        line_with_width(f, text, width, line_width, line_width, style)
     } else {
         let max_line_width = cell
             .iter()
@@ -1212,7 +1016,7 @@ fn build_line_cell(
             .max()
             .unwrap_or(0);
 
-        line_with_width(f, text, width, max_line_width, style)
+        line_with_width(f, text, width, line_width, max_line_width, style)
     }
 }
 
@@ -1247,7 +1051,7 @@ fn top_indent(cell: &[String], style: &Style, height: usize) -> usize {
     indent + style.padding.top.size
 }
 
-fn repeat_char(f: &mut std::fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
+fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     if n > 0 {
         for _ in 0..n {
             write!(f, "{}", c)?;
@@ -1256,23 +1060,12 @@ fn repeat_char(f: &mut std::fmt::Formatter<'_>, c: char, n: usize) -> fmt::Resul
     Ok(())
 }
 
-fn line(f: &mut std::fmt::Formatter<'_>, text: &str, width: usize, style: &Style) -> fmt::Result {
-    let left_indent = style.padding.left;
-    let right_indent = style.padding.right;
-    let alignment = style.alignment_h;
-
-    repeat_char(f, left_indent.fill, left_indent.size)?;
-    alignment.align(f, text, width - left_indent.size - right_indent.size)?;
-    repeat_char(f, right_indent.fill, right_indent.size)?;
-
-    Ok(())
-}
-
 fn line_with_width(
-    f: &mut std::fmt::Formatter<'_>,
+    f: &mut fmt::Formatter<'_>,
     text: &str,
     width: usize,
     width_text: usize,
+    width_text_max: usize,
     style: &Style,
 ) -> fmt::Result {
     let left_indent = style.padding.left;
@@ -1280,155 +1073,28 @@ fn line_with_width(
     let alignment = style.alignment_h;
 
     repeat_char(f, left_indent.fill, left_indent.size)?;
-    alignment.align_with_max_width(
-        f,
-        text,
-        width - left_indent.size - right_indent.size,
-        width_text,
-    )?;
+    let width = width - left_indent.size - right_indent.size;
+    alignment.align_with_max_width(f, text, width, width_text, width_text_max)?;
     repeat_char(f, right_indent.fill, right_indent.size)?;
 
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
-fn build_line(
-    f: &mut std::fmt::Formatter<'_>,
-    borders: &[BorderLine],
-    row_styles: &[Style],
-    row: &[Vec<String>],
-    widths: &[usize],
-    height: usize,
-    count_columns: usize,
-    line: usize,
-    margin: &Margin,
-) -> fmt::Result {
-    if margin.left.size > 0 {
-        repeat_char(f, margin.left.fill, margin.left.size)?;
+pub fn strip(s: &str, width: usize) -> String {
+    #[cfg(not(feature = "color"))]
+    {
+        s.chars().take(width).collect::<String>()
     }
-
-    for col in 0..count_columns {
-        if is_cell_visible(row_styles, col) {
-            write_option(f, borders[col].connector1)?;
-
-            build_line_cell(f, line, &row[col], &row_styles[col], widths[col], height)?;
-        }
-
-        let is_last_cell = col + 1 == count_columns;
-        if is_last_cell {
-            write_option(f, borders[col].connector2)?;
-        }
+    #[cfg(feature = "color")]
+    {
+        let width = to_byte_length(s, width);
+        ansi_str::AnsiStr::ansi_cut(s, ..width)
     }
-
-    if margin.right.size > 0 {
-        repeat_char(f, margin.right.fill, margin.right.size)?;
-    }
-
-    writeln!(f)?;
-
-    Ok(())
 }
 
-fn build_split_line_with_override(
-    f: &mut std::fmt::Formatter<'_>,
-    widths: &[usize],
-    borders: &[BorderLine],
-    override_str: Option<&String>,
-) -> fmt::Result {
-    let mut skip_chars = 0;
-    if let Some(s) = override_str {
-        let width = split_line_width(widths, borders);
-        skip_chars = write_with_limit(f, s, width)?;
-    }
-
-    build_split_line(f, widths, borders, skip_chars)?;
-    Ok(())
-}
-
-fn build_split_line(
-    f: &mut std::fmt::Formatter<'_>,
-    widths: &[usize],
-    borders: &[BorderLine],
-    mut skip_chars: usize,
-) -> fmt::Result {
-    let theres_no_border = borders.iter().all(|l| l.main.is_none());
-    if theres_no_border || widths.is_empty() {
-        return Ok(());
-    }
-
-    if let Some(left_border) = borders[0].connector1 {
-        write_or_skip(f, left_border, 1, &mut skip_chars)?;
-    }
-
-    for i in 0..widths.len() {
-        if let Some(main) = borders[i].main {
-            write_or_skip(f, main, widths[i], &mut skip_chars)?;
-        }
-
-        if let Some(right_border) = borders[i].connector2 {
-            write_or_skip(f, right_border, 1, &mut skip_chars)?;
-        }
-    }
-
-    Ok(())
-}
-
-fn split_line_width(widths: &[usize], borders: &[BorderLine]) -> usize {
-    let content_width = widths.iter().sum::<usize>();
-    let count_borders = {
-        let left_border = borders.get(0).map_or(0, |b| b.connector1.iter().count());
-        let other_borders = borders
-            .iter()
-            .enumerate()
-            .filter(|(_, b)| b.connector2.is_some())
-            .count();
-
-        left_border + other_borders
-    };
-
-    content_width + count_borders
-}
-
-fn write_or_skip(
-    f: &mut std::fmt::Formatter<'_>,
-    c: char,
-    width: usize,
-    limit: &mut usize,
-) -> fmt::Result {
-    if *limit >= width {
-        *limit -= width;
-        return Ok(());
-    }
-
-    let n = width - *limit;
-
-    if *limit > 0 {
-        *limit = 0;
-    }
-
-    repeat_char(f, c, n)
-}
-
-fn write_with_limit(
-    f: &mut std::fmt::Formatter<'_>,
-    s: &str,
-    limit: usize,
-) -> Result<usize, fmt::Error> {
-    let mut i = 0;
-    let chars = s.chars().take(limit);
-    for c in chars {
-        write!(f, "{}", c)?;
-        i += 1;
-    }
-
-    Ok(i)
-}
-
-fn write_option<D: Display>(f: &mut std::fmt::Formatter<'_>, text: Option<D>) -> fmt::Result {
-    match text {
-        Some(text) => write!(f, "{}", text),
-        None => Ok(()),
-    }
+#[cfg(feature = "color")]
+fn to_byte_length(s: &str, width: usize) -> usize {
+    s.chars().take(width).map(|c| c.len_utf8()).sum::<usize>()
 }
 
 #[cfg(not(feature = "color"))]
@@ -1517,7 +1183,7 @@ fn fix_first_column_span(styles: &mut [Style], widths: &mut [Vec<String>]) {
 fn columns_width(
     cells: &[Vec<Vec<String>>],
     styles: &[Vec<Style>],
-    borders: &[Vec<BorderLine>],
+    borders: &[Vec<Border>],
     count_rows: usize,
     count_columns: usize,
 ) -> Vec<Vec<usize>> {
@@ -1559,7 +1225,7 @@ fn columns_width(
 fn adjust_width(
     widths: &mut [Vec<usize>],
     styles: &[Vec<Style>],
-    borders: &[Vec<BorderLine>],
+    borders: &[Vec<Border>],
     count_rows: usize,
     count_columns: usize,
     span: usize,
@@ -1585,7 +1251,7 @@ fn adjust_width(
 fn adjust_range_width(
     widths: &mut [Vec<usize>],
     styles: &[Vec<Style>],
-    borders: &[Vec<BorderLine>],
+    borders: &[Vec<Border>],
     count_rows: usize,
     start_column: usize,
     end_column: usize,
@@ -1700,7 +1366,7 @@ fn is_cell_overriden(styles: &[Style]) -> bool {
 fn is_range_complete(
     styles: &[Vec<Style>],
     widths: &[Vec<usize>],
-    borders: &[Vec<BorderLine>],
+    borders: &[Vec<Border>],
     count_rows: usize,
     start_column: usize,
     end_column: usize,
@@ -1736,33 +1402,36 @@ fn is_range_complete(
 fn row_width(
     styles: &[Style],
     widths: &[usize],
-    borders: &[BorderLine],
-    column_start: usize,
-    column_end: usize,
+    borders: &[Border],
+    start: usize,
+    end: usize,
 ) -> usize {
-    let width = (column_start..column_end)
-        .filter(|&i| is_cell_visible(styles, i))
-        .filter(|&i| is_cell_in_scope(styles, i, column_end))
-        .map(|i| widths[i])
-        .sum::<usize>();
-
-    let border_count = if column_end - column_start == 0 {
-        0
-    } else {
-        (column_start..column_end)
-            .filter(|&i| is_cell_visible(styles, i))
-            .filter(|&i| is_cell_in_scope(styles, i, column_end))
-            .filter(|&i| {
-                if i == column_start {
-                    false
-                } else {
-                    borders[i].connector1.is_some()
-                }
-            })
-            .count()
-    };
+    let width = width_of_range(&styles[start..end], &widths[start..end]);
+    let border_count = count_borders_in_range(&styles[start..end], &borders[start..end]);
 
     width + border_count
+}
+
+fn width_of_range(styles: &[Style], widths: &[usize]) -> usize {
+    (0..styles.len())
+        .filter(|&i| is_cell_visible(styles, i))
+        .filter(|&i| is_cell_in_scope(styles, i, styles.len()))
+        .map(|i| widths[i])
+        .sum::<usize>()
+}
+
+fn count_borders_in_range(styles: &[Style], borders: &[Border]) -> usize {
+    (0..styles.len())
+        .filter(|&i| is_cell_visible(styles, i))
+        .filter(|&i| is_cell_in_scope(styles, i, styles.len()))
+        .filter(|&i| {
+            if i == 0 {
+                false
+            } else {
+                borders[i].left.is_some()
+            }
+        })
+        .count()
 }
 
 fn inc_cells_width(
@@ -1792,18 +1461,7 @@ fn rows_height(
     count_rows: usize,
     count_columns: usize,
 ) -> Vec<usize> {
-    // default height is 1 as we consider empty string has height 1
-    //
-    // it's crusial since if the default height will be equal to 0
-    // cell line will be not present on the grid like this
-    //
-    //  default 0      default 1
-    //    +++            +++
-    //    +++            |||
-    //    +++            +++
-    //                   |||
-    //                   +++
-    let mut row_heights = vec![1; count_rows];
+    let mut row_heights = vec![0; count_rows];
     (0..count_rows).for_each(|row_index| {
         (0..count_columns).for_each(|column_index| {
             let cell = &cells[row_index][column_index];
@@ -1816,7 +1474,12 @@ fn rows_height(
 }
 
 fn cell_height(cell: &[String], style: &Style) -> usize {
-    let content_height = cell.len();
+    let is_there_padding = style.padding.left.size > 0 || style.padding.right.size > 0;
+    let mut content_height = cell.len();
+    if content_height == 0 && is_there_padding {
+        content_height = 1;
+    }
+
     content_height + style.padding.top.size + style.padding.bottom.size
 }
 
@@ -1888,7 +1551,7 @@ fn replace_tab(cell: &mut String, n: usize) -> &str {
 fn total_width(
     widths: &[Vec<usize>],
     styles: &[Vec<Style>],
-    borders: &[Vec<BorderLine>],
+    borders: &[Vec<Border>],
     margin: &Margin,
 ) -> usize {
     let content_width = widths
@@ -1933,68 +1596,36 @@ impl Borders {
         }
     }
 
-    fn get_row(&self, row: usize) -> Result<Vec<BorderLine>, BorderError> {
-        if row > self.count_rows {
-            return Err(BorderError::WrongRowIndex);
+    fn get_rows(&self) -> Vec<Vec<Border>> {
+        let mut rows = Vec::with_capacity(self.count_rows);
+
+        for row in 0..self.count_rows {
+            let r = self.get_row(row).unwrap();
+            rows.push(r)
         }
 
-        if !self.horizontal.contains_key(&row) {
-            return Ok(vec![BorderLine::default(); self.count_columns]);
-        }
-
-        let mut line = Vec::with_capacity(self.count_columns);
-        for column in 0..self.count_columns {
-            let border = BorderLine {
-                main: Some(self.get_horizontal_char(row, column).unwrap()),
-                connector1: None,
-                connector2: None,
-            };
-
-            line.push(border);
-        }
-
-        for (column, border) in line.iter_mut().enumerate() {
-            border.connector1 = self.get_intersection_char((row, column));
-            border.connector2 = self.get_intersection_char((row, column + 1));
-        }
-
-        Ok(line)
+        rows
     }
 
-    fn get_inner_row(&self, row: usize) -> Result<Vec<BorderLine>, BorderError> {
-        if row > self.count_rows {
+    fn get_row(&self, row: usize) -> Result<Vec<Border>, BorderError> {
+        if row >= self.count_rows {
             return Err(BorderError::WrongRowIndex);
         }
 
-        let mut line: Vec<BorderLine> = Vec::new();
-        let mut last_index = None;
-        for column in 0..self.count_columns {
-            let border = BorderLine {
-                connector1: self.get_vertical_char(row, column),
-                ..Default::default()
-            };
-
-            if border.connector1.is_some() {
-                if let Some(last) = last_index {
-                    let mut last: &mut BorderLine = &mut line[last];
-                    last.connector2 = border.connector1;
-                }
-            }
-            last_index = Some(line.len());
-
-            line.push(border);
+        let mut out = Vec::with_capacity(self.count_rows);
+        for col in 0..self.count_columns {
+            let r = self.get_border(row, col).unwrap();
+            out.push(r)
         }
 
-        line[self.count_columns - 1].connector2 = self.get_vertical_char(row, self.count_columns);
-
-        Ok(line)
+        Ok(out)
     }
 
     // we can take only a border of a cell
     // which is a pitty,
     // would be cool if we could take a border of any Entity
     fn get_border(&self, row: usize, column: usize) -> Option<Border> {
-        if row > self.count_rows || column > self.count_columns {
+        if row >= self.count_rows || column >= self.count_columns {
             return None;
         }
 
@@ -2036,7 +1667,7 @@ impl Borders {
         &mut self,
         row: usize,
         line: Vec<char>,
-        intersections: &[char],
+        intersections: Vec<char>,
     ) -> Result<(), BorderError> {
         if row > self.count_rows {
             return Err(BorderError::WrongRowIndex);
@@ -2053,7 +1684,7 @@ impl Borders {
 
         self.horizontal.insert(row, line);
 
-        for (&vertical_line_index, &symbol) in self.vertical.keys().zip(intersections) {
+        for (&vertical_line_index, symbol) in self.vertical.keys().zip(intersections) {
             self.intersections
                 .insert((row, vertical_line_index), symbol);
         }
@@ -2083,11 +1714,19 @@ impl Borders {
         self.horizontal.contains_key(&row)
     }
 
+    fn count_horizontal_borders(&self) -> usize {
+        self.horizontal.len()
+    }
+
+    fn count_vertical_borders(&self) -> usize {
+        self.vertical.len()
+    }
+
     fn set_vertical(
         &mut self,
         column: usize,
         line: Vec<char>,
-        intersections: &[char],
+        intersections: Vec<char>,
     ) -> Result<(), BorderError> {
         if column > self.count_columns {
             return Err(BorderError::WrongRowIndex);
@@ -2104,7 +1743,7 @@ impl Borders {
 
         self.vertical.insert(column, line);
 
-        for (&row_index, &symbol) in self.horizontal.keys().zip(intersections) {
+        for (&row_index, symbol) in self.horizontal.keys().zip(intersections) {
             self.intersections.insert((row_index, column), symbol);
         }
 
@@ -2232,17 +1871,343 @@ fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> 
         (Bound::Unbounded, Bound::Unbounded) => (0, length),
         (Bound::Unbounded, Bound::Included(y)) => (0, y + 1),
         (Bound::Unbounded, Bound::Excluded(y)) => (0, *y),
-        (Bound::Excluded(_), Bound::Unbounded)
-        | (Bound::Excluded(_), Bound::Included(_))
-        | (Bound::Excluded(_), Bound::Excluded(_)) => {
+        (Bound::Excluded(_), _) => {
             unreachable!("A start bound can't be excluded")
         }
     }
 }
 
+#[derive(Debug, Clone)]
+struct Container {
+    width: usize,
+    height: usize,
+    kind: ContainerKind,
+}
+
+#[derive(Debug, Clone)]
+enum ContainerKind {
+    Content { lines: Vec<String>, style: Style },
+    Split { c: char },
+    Rows(Vec<Container>),
+    Columns(Vec<Container>),
+}
+
+impl Container {
+    fn new(width: usize, height: usize, kind: ContainerKind) -> Self {
+        Self {
+            width,
+            height,
+            kind,
+        }
+    }
+
+    fn print(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for i in 0..self.height {
+            self.print_line(f, i)?;
+            writeln!(f)?;
+        }
+
+        Ok(())
+    }
+
+    fn print_line(&self, f: &mut fmt::Formatter, i: usize) -> fmt::Result {
+        match &self.kind {
+            ContainerKind::Content { lines, style } => {
+                build_line_cell(f, i, lines, style, self.width, self.height)?;
+            }
+            ContainerKind::Split { c } => {
+                repeat_char(f, *c, self.width)?;
+            }
+            ContainerKind::Rows(list) => {
+                let mut real_i = i;
+                let mut j = 0;
+                for c in list {
+                    j += c.height;
+                    if i < j {
+                        return c.print_line(f, real_i);
+                    }
+
+                    real_i -= c.height;
+                }
+            }
+            ContainerKind::Columns(list) => {
+                for c in list {
+                    c.print_line(f, i)?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl fmt::Display for Container {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.print(f)
+    }
+}
+
+fn build_grid(
+    grid: &Grid,
+    contents: Vec<Vec<Vec<String>>>,
+    styles: Vec<Vec<Style>>,
+    widths: Vec<Vec<usize>>,
+    normal_widths: Vec<usize>,
+    heights: Vec<usize>,
+) -> Container {
+    let row_width = widths.get(0).map(|l| l.iter().sum::<usize>()).unwrap_or(0)
+        + grid.borders.count_vertical_borders();
+
+    let mut containers = Vec::new();
+    for row in 0..grid.count_rows() {
+        let height = heights[row];
+
+        let mut columns = Vec::with_capacity(grid.borders.count_vertical_borders());
+
+        #[allow(clippy::needless_range_loop)]
+        for col in 0..grid.count_columns() {
+            let width = widths[row][col];
+            let lines = contents[row][col].clone();
+            let style = styles[row][col].clone();
+            let border = grid.get_border(row, col);
+
+            if is_cell_visible(&styles[row], col) {
+                if let Some(c) = border.left {
+                    columns.push(Container::new(1, height, ContainerKind::Split { c }));
+                }
+
+                columns.push(Container::new(
+                    width,
+                    height,
+                    ContainerKind::Content { lines, style },
+                ));
+            }
+
+            if col + 1 == grid.count_columns() {
+                if let Some(c) = border.right {
+                    let split = Container::new(1, height, ContainerKind::Split { c });
+                    columns.push(split);
+                }
+            }
+        }
+
+        if let Some(split) = build_split_line_container(grid, &normal_widths, row_width, row) {
+            containers.push(split);
+        }
+
+        containers.push(Container::new(
+            row_width,
+            height,
+            ContainerKind::Columns(columns),
+        ));
+
+        let is_last_iteration = row + 1 == grid.count_rows();
+        if is_last_iteration {
+            if let Some(split) =
+                build_split_line_container(grid, &normal_widths, row_width, row + 1)
+            {
+                containers.push(split);
+            }
+        }
+    }
+
+    let height = heights.iter().sum::<usize>() + grid.borders.count_horizontal_borders();
+
+    let container = Container::new(row_width, height, ContainerKind::Rows(containers));
+    add_margin(grid, container)
+}
+
+fn add_margin(grid: &Grid, mut container: Container) -> Container {
+    if grid.margin.left.size > 0 {
+        let height = container.height;
+        container = Container::new(
+            container.width + grid.margin.left.size,
+            height,
+            ContainerKind::Columns(vec![
+                Container::new(
+                    grid.margin.left.size,
+                    height,
+                    ContainerKind::Split {
+                        c: grid.margin.left.fill,
+                    },
+                ),
+                container,
+            ]),
+        );
+    }
+    if grid.margin.right.size > 0 {
+        let height = container.height;
+        container = Container::new(
+            container.width + grid.margin.right.size,
+            height,
+            ContainerKind::Columns(vec![
+                container,
+                Container::new(
+                    grid.margin.right.size,
+                    height,
+                    ContainerKind::Split {
+                        c: grid.margin.right.fill,
+                    },
+                ),
+            ]),
+        );
+    }
+    if grid.margin.top.size > 0 {
+        let w = container.width;
+        container = Container::new(
+            w,
+            container.height + grid.margin.top.size,
+            ContainerKind::Rows(vec![
+                Container::new(
+                    w,
+                    grid.margin.top.size,
+                    ContainerKind::Split {
+                        c: grid.margin.top.fill,
+                    },
+                ),
+                container,
+            ]),
+        );
+    }
+    if grid.margin.bottom.size > 0 {
+        let w = container.width;
+        container = Container::new(
+            w,
+            container.height + grid.margin.bottom.size,
+            ContainerKind::Rows(vec![
+                container,
+                Container::new(
+                    w,
+                    grid.margin.bottom.size,
+                    ContainerKind::Split {
+                        c: grid.margin.bottom.fill,
+                    },
+                ),
+            ]),
+        );
+    }
+
+    container
+}
+
+fn build_split_line_container(
+    grid: &Grid,
+    widths: &[usize],
+    width: usize,
+    row: usize,
+) -> Option<Container> {
+    let mut v = Vec::new();
+    for (col, &width) in widths.iter().enumerate() {
+        let left = grid.borders.get_intersection_char((row, col));
+        let right = grid.borders.get_intersection_char((row, col + 1));
+        let main = grid.borders.get_horizontal_char(row, col);
+
+        if col == 0 {
+            if let Some(c) = left {
+                v.push(Container::new(1, 1, ContainerKind::Split { c }));
+            }
+        }
+
+        if let Some(c) = main {
+            v.push(Container::new(width, 1, ContainerKind::Split { c }));
+        }
+
+        if let Some(c) = right {
+            v.push(Container::new(1, 1, ContainerKind::Split { c }));
+        }
+    }
+
+    if v.is_empty() {
+        return None;
+    }
+
+    let override_text = grid.override_split_lines.get(&row);
+    if let Some(text) = override_text {
+        let text = strip(text, width).lines().next().unwrap().to_string();
+        override_split_line(&mut v, text);
+    }
+
+    Some(Container::new(width, 1, ContainerKind::Columns(v)))
+}
+
+fn override_split_line(v: &mut Vec<Container>, text: String) {
+    let width = string_width(&text);
+
+    let mut i = width;
+    while !v.is_empty() {
+        if i == 0 {
+            break;
+        }
+
+        let mut c = v.remove(0);
+        let w = c.width;
+        if i < w {
+            c.width -= i;
+            v.insert(0, c);
+        }
+
+        i -= cmp::min(w, i);
+    }
+
+    v.insert(
+        0,
+        Container::new(
+            width,
+            1,
+            ContainerKind::Content {
+                lines: vec![text],
+                style: Style::default(),
+            },
+        ),
+    );
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn container_print_test() {
+        let c = Container::new(
+            12,
+            4,
+            ContainerKind::Columns(vec![
+                Container::new(1, 4, ContainerKind::Split { c: '+' }),
+                Container::new(
+                    10,
+                    4,
+                    ContainerKind::Rows(vec![
+                        Container::new(
+                            10,
+                            2,
+                            ContainerKind::Content {
+                                lines: vec!["Hello".to_owned(), "World".to_owned()],
+                                style: Style::default(),
+                            },
+                        ),
+                        Container::new(10, 1, ContainerKind::Split { c: '-' }),
+                        Container::new(
+                            10,
+                            1,
+                            ContainerKind::Content {
+                                lines: vec!["123".to_owned()],
+                                style: Style::default(),
+                            },
+                        ),
+                    ]),
+                ),
+                Container::new(1, 3, ContainerKind::Split { c: '#' }),
+            ]),
+        );
+
+        assert_eq!(
+            c.to_string(),
+            "+Hello     #\n\
+             +World     #\n\
+             +----------#\n\
+             +123       #\n",
+        )
+    }
 
     #[test]
     fn replace_tab_test() {
@@ -2279,7 +2244,8 @@ mod tests {
 
         impl fmt::Display for F<'_> {
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                self.1.align(f, self.0, self.2)
+                let w = string_width(self.0);
+                self.1.align_with_max_width(f, self.0, self.2, w, w)
             }
         }
 

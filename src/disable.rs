@@ -42,7 +42,7 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
 
                         let cell_settings =
                             grid.get_settings(row, column).border_restriction(false);
-                        new_grid.set(&Entity::Cell(row, new_column_index), cell_settings);
+                        new_grid.set(Entity::Cell(row, new_column_index), cell_settings);
                         new_column_index += 1;
                     }
                 }
@@ -67,7 +67,7 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
 
                         let cell_settings =
                             grid.get_settings(row, column).border_restriction(false);
-                        new_grid.set(&Entity::Cell(new_row_index, column), cell_settings);
+                        new_grid.set(Entity::Cell(new_row_index, column), cell_settings);
                         new_row_index += 1;
                     }
                 }

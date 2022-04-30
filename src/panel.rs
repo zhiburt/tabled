@@ -16,15 +16,15 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
             for column in 0..grid.count_columns() {
                 let cell_settings = grid.get_settings(row, column).border_restriction(false);
                 if row >= self.1 {
-                    new_grid.set(&Entity::Cell(row + 1, column), cell_settings);
+                    new_grid.set(Entity::Cell(row + 1, column), cell_settings);
                 } else {
-                    new_grid.set(&Entity::Cell(row, column), cell_settings);
+                    new_grid.set(Entity::Cell(row, column), cell_settings);
                 }
             }
         }
 
         new_grid.set(
-            &Entity::Cell(self.1, 0),
+            Entity::Cell(self.1, 0),
             Settings::new()
                 .text(self.0.as_ref().to_owned())
                 .span(new_grid.count_columns()),
