@@ -65,6 +65,59 @@ impl Table {
         Self::from_iter(iter)
     }
 
+    /// Creates a builder from a data set given.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{Table, Tabled};
+    ///
+    /// #[derive(Tabled)]
+    /// struct User {
+    ///     name: &'static str,
+    ///     #[tabled(inline("device::"))]
+    ///     device: Device,
+    /// }
+    ///
+    /// #[derive(Tabled)]
+    /// enum Device {
+    ///     PC,
+    ///     Mobile
+    /// }
+    ///
+    /// let data = vec![
+    ///     User { name: "Vlad", device: Device::Mobile },
+    ///     User { name: "Dimitry", device: Device::PC },
+    ///     User { name: "John", device: Device::PC },
+    /// ];
+    ///
+    /// let table = Table::builder(data)
+    ///     .index()
+    ///     .set_index(0)
+    ///     .transpose()
+    ///     .build()
+    ///     .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     "+----------------+------+---------+------+\n\
+    ///      |      name      | Vlad | Dimitry | John |\n\
+    ///      +----------------+------+---------+------+\n\
+    ///      |   device::PC   |      |    +    |  +   |\n\
+    ///      +----------------+------+---------+------+\n\
+    ///      | device::Mobile |  +   |         |      |\n\
+    ///      +----------------+------+---------+------+\n"
+    /// )
+    /// ```
+    pub fn builder<I, T>(iter: I) -> Builder
+    where
+        T: Tabled,
+        I: IntoIterator<Item = T>,
+    {
+        let rows = iter.into_iter().map(|t| t.fields());
+        Builder::from_iter(rows).set_columns(T::headers())
+    }
+
     /// Returns a table shape (count rows, count columns).
     pub fn shape(&self) -> (usize, usize) {
         (self.grid.count_rows(), self.grid.count_columns())
@@ -96,8 +149,7 @@ where
     where
         T: IntoIterator<Item = D>,
     {
-        let rows = iter.into_iter().map(|t| t.fields());
-        Builder::from_iter(rows).set_header(D::headers()).build()
+        Self::builder(iter).build()
     }
 }
 

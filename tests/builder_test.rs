@@ -3,11 +3,11 @@ use std::iter::FromIterator;
 use tabled::builder::Builder;
 
 #[test]
-fn builder_add_row() {
+fn builder_add_record() {
     let builder = Builder::default()
-        .add_row(["1", "2", "3"])
-        .add_row(["a", "b", "c"])
-        .add_row(["d", "e", "f"]);
+        .add_record(["1", "2", "3"])
+        .add_record(["a", "b", "c"])
+        .add_record(["d", "e", "f"]);
     let table = builder.build().to_string();
     let expected = "+---+---+---+\n\
                          | 1 | 2 | 3 |\n\
@@ -21,11 +21,11 @@ fn builder_add_row() {
 }
 
 #[test]
-fn builder_add_row_can_has_different_types() {
+fn builder_add_record_can_has_different_types() {
     let builder = Builder::default()
-        .add_row([1, 2, 3])
-        .add_row(["a", "b", "c"])
-        .add_row(['d', 'e', 'f']);
+        .add_record([1, 2, 3])
+        .add_record(["a", "b", "c"])
+        .add_record(['d', 'e', 'f']);
     let table = builder.build().to_string();
     let expected = "+---+---+---+\n\
                          | 1 | 2 | 3 |\n\
@@ -41,9 +41,9 @@ fn builder_add_row_can_has_different_types() {
 #[test]
 fn builder_header() {
     let builder = Builder::default()
-        .add_row(["a", "b", "c"])
-        .add_row(["d", "e", "f"])
-        .set_header(["1", "2", "3"]);
+        .add_record(["a", "b", "c"])
+        .add_record(["d", "e", "f"])
+        .set_columns(["1", "2", "3"]);
     let table = builder.build().to_string();
     let expected = "+---+---+---+\n\
                          | 1 | 2 | 3 |\n\
@@ -74,9 +74,9 @@ fn builder_from_iter() {
 #[test]
 fn builder_used_with_different_number_of_columns() {
     let builder = Builder::default()
-        .set_header(["1", "2"])
-        .add_row(["a", "b", "c"])
-        .add_row(["d"]);
+        .set_columns(["1", "2"])
+        .add_record(["a", "b", "c"])
+        .add_record(["d"]);
     let table = builder.build().to_string();
     let expected = "+---+---+---+\n\
                          | 1 | 2 |   |\n\
@@ -88,9 +88,9 @@ fn builder_used_with_different_number_of_columns() {
     assert_eq!(table, expected);
 
     let builder = Builder::default()
-        .set_header(["1", "2", "3"])
-        .add_row(["a", "b"])
-        .add_row(["d"]);
+        .set_columns(["1", "2", "3"])
+        .add_record(["a", "b"])
+        .add_record(["d"]);
     let table = builder.build().to_string();
     let expected = "+---+---+---+\n\
                          | 1 | 2 | 3 |\n\
@@ -102,9 +102,9 @@ fn builder_used_with_different_number_of_columns() {
     assert_eq!(table, expected);
 
     let builder = Builder::default()
-        .set_header(["1"])
-        .add_row(["a", "b"])
-        .add_row(["d", "e", "f"]);
+        .set_columns(["1"])
+        .add_record(["a", "b"])
+        .add_record(["d", "e", "f"]);
     let table = builder.build().to_string();
     let expected = "+---+---+---+\n\
                          | 1 |   |   |\n\
@@ -120,9 +120,9 @@ fn builder_used_with_different_number_of_columns() {
 fn builder_with_default_cell() {
     let builder = Builder::default()
         .set_default_text("NaN")
-        .set_header(["1", "2"])
-        .add_row(["a", "b", "c"])
-        .add_row(["d"]);
+        .set_columns(["1", "2"])
+        .add_record(["a", "b", "c"])
+        .add_record(["d"]);
     let table = builder.build().to_string();
     let expected = "+---+-----+-----+\n\
                          | 1 |  2  | NaN |\n\
@@ -135,9 +135,9 @@ fn builder_with_default_cell() {
 
     let builder = Builder::default()
         .set_default_text("NaN")
-        .set_header(["1", "2", "3"])
-        .add_row(["a", "b"])
-        .add_row(["d"]);
+        .set_columns(["1", "2", "3"])
+        .add_record(["a", "b"])
+        .add_record(["d"]);
     let table = builder.build().to_string();
     let expected = "+---+-----+-----+\n\
                          | 1 |  2  |  3  |\n\
@@ -150,9 +150,9 @@ fn builder_with_default_cell() {
 
     let builder = Builder::default()
         .set_default_text("NaN")
-        .set_header(["1"])
-        .add_row(["a", "b"])
-        .add_row(["d", "e", "f"]);
+        .set_columns(["1"])
+        .add_record(["a", "b"])
+        .add_record(["d", "e", "f"]);
     let table = builder.build().to_string();
     let expected = "+---+-----+-----+\n\
                          | 1 | NaN | NaN |\n\
@@ -297,7 +297,7 @@ fn builder_from_with_empty_lines() {
 fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
     let mut builder = Builder::default();
     for row in data {
-        builder = builder.add_row(row);
+        builder = builder.add_record(row);
     }
 
     let table = builder.build().to_string();
