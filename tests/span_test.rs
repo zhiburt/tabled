@@ -1,7 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
     object::{Cell, Columns, Full},
-    Alignment, Modify, Padding, Span, Style, Table,
+    Alignment, Modify, Padding, Panel, Span, Style, Table,
 };
 
 mod util;
@@ -297,9 +297,16 @@ fn span_cell_exceeds_boundries_test() {
         .with(Modify::new(Cell(0, 0)).with(Span::column(20)))
         .to_string();
 
-    let expected = " N \n---+-----+-----+-----\n 0 | 0-0 | 0-1 | 0-2 \n 1 | 1-0 | 1-1 | 1-2 \n 2 | 2-0 | 2-1 | 2-2 \n";
-
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        concat!(
+            " N \n",
+            "---+-----+-----+-----\n",
+            " 0 | 0-0 | 0-1 | 0-2 \n",
+            " 1 | 1-0 | 1-1 | 1-2 \n",
+            " 2 | 2-0 | 2-1 | 2-2 \n",
+        )
+    );
 
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
@@ -308,9 +315,16 @@ fn span_cell_exceeds_boundries_test() {
         .with(Modify::new(Cell(1, 1)).with(Span::column(20)))
         .to_string();
 
-    let expected = " N | column 0 | column 1 | column 2 \n---+----------+----------+----------\n 0 | 0-0 \n 1 | 1-0      | 1-1      | 1-2      \n 2 | 2-0      | 2-1      | 2-2      \n";
-
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            " 0 | 0-0 \n",
+            " 1 | 1-0      | 1-1      | 1-2      \n",
+            " 2 | 2-0      | 2-1      | 2-2      \n",
+        )
+    );
 
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
@@ -319,9 +333,16 @@ fn span_cell_exceeds_boundries_test() {
         .with(Modify::new(Cell(1, 0)).with(Span::column(20)))
         .to_string();
 
-    let expected = " N | column 0 | column 1 | column 2 \n---+----------+----------+----------\n 0 \n 1 | 1-0      | 1-1      | 1-2      \n 2 | 2-0      | 2-1      | 2-2      \n";
-
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            " 0 \n",
+            " 1 | 1-0      | 1-1      | 1-2      \n",
+            " 2 | 2-0      | 2-1      | 2-2      \n",
+        )
+    );
 }
 
 #[test]
@@ -532,9 +553,9 @@ fn span_zero_test() {
         table,
         concat!(
             " column 0 | column 1 | column 2 \n",
-            "------+-------+------+----------\n",
+            "-----+-------+-------+----------\n",
             "    0     |   0-1    |   0-2    \n",
-            "  1   |     1-0      |   1-2    \n",
+            "  1  |      1-0      |   1-2    \n",
             "          2          |   2-2    \n",
         )
     );
@@ -551,4 +572,72 @@ fn span_all_table_to_zero_test() {
 
     // todo: determine whether it's correct
     assert_eq!(table, concat!("\n++\n\n\n"));
+}
+
+#[test]
+fn span_with_panel_test() {
+    let data = [[1, 2, 3]];
+    let table = Table::new(data)
+        .with(Panel("Tabled Releases", 0))
+        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
+        .with(Style::ascii())
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "+-----+----+----+\n",
+            "|Tabled Releases|\n",
+            "+-----+----+----+\n",
+            "|    0     | 2  |\n",
+            "+-----+----+----+\n",
+            "|  1  | 2  | 3  |\n",
+            "+-----+----+----+\n",
+        )
+    );
+
+    let data = [[1, 2, 3], [4, 5, 6]];
+    let table = Table::new(data)
+        .with(Panel("Tabled Releases", 0))
+        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Style::ascii())
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "+-----+----+----+\n",
+            "|Tabled Releases|\n",
+            "+-----+----+----+\n",
+            "|  0  | 1  | 2  |\n",
+            "+-----+----+----+\n",
+            "|    1     | 3  |\n",
+            "+-----+----+----+\n",
+            "|  4  | 5  | 6  |\n",
+            "+-----+----+----+\n",
+        )
+    );
+
+    let data = [[1, 2, 3], [4, 5, 6]];
+    let table = Table::new(data)
+        .with(Panel("Tabled Releases", 0))
+        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
+        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Style::ascii())
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "+-----+----+----+\n",
+            "|Tabled Releases|\n",
+            "+-----+----+----+\n",
+            "|    0     | 2  |\n",
+            "+-----+----+----+\n",
+            "|    1     | 3  |\n",
+            "+-----+----+----+\n",
+            "|  4  | 5  | 6  |\n",
+            "+-----+----+----+\n",
+        )
+    );
 }

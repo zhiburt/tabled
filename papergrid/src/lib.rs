@@ -1441,13 +1441,31 @@ fn inc_cells_width(
     end_range: usize,
     inc: usize,
 ) {
-    (0..inc)
-        .zip(
-            (start_range..end_range)
-                .filter(|&i| is_cell_visible(styles, i))
-                .cycle(),
-        )
-        .for_each(|(_, i)| widths[i] += 1);
+    for (i, col) in (start_range..end_range).cycle().enumerate() {
+        if i == inc {
+            break;
+        }
+
+        let col = get_closest_visible_pos(styles, col);
+        match col {
+            Some(col) => widths[col] += 1,
+            None => unreachable!("Never suppose to happen"),
+        }
+    }
+}
+
+fn get_closest_visible_pos(styles: &[Style], mut col: usize) -> Option<usize> {
+    loop {
+        if is_cell_visible(styles, col) {
+            return Some(col);
+        }
+
+        if col == 0 {
+            return None;
+        }
+
+        col -= 1;
+    }
 }
 
 fn cell_width(cell: &[String], style: &Style) -> usize {
@@ -1499,11 +1517,11 @@ fn normalized_width(
 
         let min_spanned_row = (0..count_rows)
             .filter(|&row| styles[row][col].span > 0)
-            .min_by(|&x, &y| styles[x][col].span.cmp(&styles[y][col].span));
+            .min_by_key(|&x| styles[x][col].span);
 
         if let Some(row) = min_spanned_row {
             let span = styles[row][col].span;
-            let mut width = widths[row][col] - (span - 1);
+            let mut width = widths[row][col] - (span - 1); // todo: explain this span-1 ?
 
             for col in (col..col + span).cycle() {
                 if width == 0 {
@@ -1955,8 +1973,7 @@ fn build_grid(
     normal_widths: Vec<usize>,
     heights: Vec<usize>,
 ) -> Container {
-    let row_width = widths.get(0).map(|l| l.iter().sum::<usize>()).unwrap_or(0)
-        + grid.borders.count_vertical_borders();
+    let row_width = row_width_grid(grid, &widths, 0);
 
     let mut containers = Vec::new();
     for row in 0..grid.count_rows() {
@@ -2160,6 +2177,22 @@ fn override_split_line(v: &mut Vec<Container>, text: String) {
             },
         ),
     );
+}
+
+fn row_width_grid(grid: &Grid, widths: &[Vec<usize>], row: usize) -> usize {
+    let row_width = widths
+        .get(row)
+        .map(|l| l.iter().sum::<usize>())
+        .unwrap_or(0);
+    let count_borders = (0..grid.count_columns())
+        .filter(|&col| grid.borders.get_vertical_char(row, col).is_some())
+        .count()
+        + grid
+            .borders
+            .get_vertical_char(row, grid.count_columns())
+            .map_or(0, |_| 1);
+
+    row_width + count_borders
 }
 
 #[cfg(test)]
