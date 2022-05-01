@@ -420,7 +420,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 ///
 /// let table = Table::new(&["Hello World!"]).with(MinWidth::new(5));
 /// ```
-/// 
+///
 /// [Padding]: crate::Padding
 pub struct MinWidth {
     size: usize,
@@ -870,7 +870,7 @@ fn is_zero_spanned_grid(grid: &Grid) -> bool {
 ///     .with(Style::github_markdown())
 ///     .with(Justify::max());
 /// ```
-/// 
+///
 /// [Padding]: crate::Padding
 pub struct Justify<W> {
     width: W,
@@ -880,7 +880,7 @@ impl Justify<usize> {
     /// Creates a new Justify instance.
     ///
     /// Be aware that [Padding] is not considered when comparing the width.
-    /// 
+    ///
     /// [Padding]: crate::Padding
     pub fn new(width: usize) -> Self {
         Self { width }
@@ -918,7 +918,7 @@ where
 }
 
 /// A width value which can be obtained on behalf of [Table].
-/// 
+///
 /// [Table]: crate::Table
 trait Width {
     /// Returns a width value.

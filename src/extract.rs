@@ -1,8 +1,8 @@
 //! This module contains an [Extract] structure which is used to
 //! obtain an ordinary segment from the [Table].
-//! 
+//!
 //! There's a simmilar structure [Highlight] which does a highlighting a of segments.
-//! 
+//!
 //! [Table]: crate::Table
 //! [Highlight]: crate::Highlight
 

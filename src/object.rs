@@ -1,6 +1,6 @@
 //! This module contains a list of primitives that implement a [Object] trait.
 //! They help to locate a nessesary segment on a [Table].
-//! 
+//!
 //! [Table]: crate::Table
 
 use std::{
@@ -9,7 +9,7 @@ use std::{
 };
 
 /// Object helps to locate a nessesary part of a [Table].
-/// 
+///
 /// [Table]: crate::Table
 pub trait Object: Sized {
     /// Cells returns a set of cordinates of cells
@@ -36,7 +36,7 @@ pub trait Object: Sized {
 }
 
 /// Segment represents a sub table of [Table].
-/// 
+///
 /// [Table]: crate::Table
 pub struct Segment<C, R> {
     columns: C,
@@ -120,7 +120,7 @@ impl Object for Frame {
 
 /// FirstRow represents the first row of a [Table].
 /// It's often contains headers data.
-/// 
+///
 /// [Table]: crate::Table
 pub struct FirstRow;
 
@@ -131,7 +131,7 @@ impl Object for FirstRow {
 }
 
 /// LastRow represents the last row of a [Table].
-/// 
+///
 /// [Table]: crate::Table
 pub struct LastRow;
 
@@ -143,7 +143,7 @@ impl Object for LastRow {
 }
 
 /// Full represents all cells on a [Table].
-/// 
+///
 /// [Table]: crate::Table
 pub struct Full;
 
@@ -154,7 +154,7 @@ impl Object for Full {
 }
 
 /// Row denotes a set of cells on given rows on a [Table].
-/// 
+///
 /// [Table]: crate::Table
 pub struct Rows<R> {
     range: R,
@@ -214,7 +214,7 @@ where
 }
 
 /// Column denotes a set of cells on given columns on a [Table].
-/// 
+///
 /// [Table]: crate::Table
 pub struct Columns<R> {
     range: R,
@@ -262,7 +262,7 @@ where
 }
 
 /// Cell denotes a particular cell on a [Table].
-/// 
+///
 /// [Table]: crate::Table
 pub struct Cell(pub usize, pub usize);
 

@@ -1,7 +1,7 @@
 //! This module contains a main table representation of this crate [Table].
-//! 
+//!
 //! There's 1 more table representation which is [ExpandedDisplay].
-//! 
+//!
 //! [ExpandedDisplay]: crate::display::ExpandedDisplay
 
 use std::{fmt, iter::FromIterator};
@@ -29,7 +29,7 @@ where
 /// Where cell represented by 'row' and 'column' indexes.
 ///
 /// A cell can be targeted by [Cell].
-/// 
+///
 /// [Cell]: crate::object::Cell
 pub trait CellOption {
     /// Modification function of a single cell.
@@ -63,7 +63,7 @@ pub trait CellOption {
 ///                 .with(Modify::new(Full).with(Alignment::left()));
 /// println!("{}", table);
 /// ```
-/// 
+///
 /// [Padding]: crate::Padding
 /// [Style]: crate::Style
 /// [Style::ascii]: crate::Style::ascii

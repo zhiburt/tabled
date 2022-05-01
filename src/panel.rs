@@ -1,26 +1,26 @@
 //! This module contains primitivies to create a spread row.
 //! Ultimately it is a cell with a span set to a number of columns on the [Table].
-//! 
+//!
 //! You can use a [Span] to set a custom span.
-//! 
+//!
 //! # Example
-//! 
+//!
 //! ```
 //! use tabled::{object::Cell, Panel, Modify, TableIteratorExt, Span};
-//! 
+//!
 //! let data = [[1, 2, 3], [4, 5, 6]];
-//! 
+//!
 //! let table = data.table()
 //!     .with(Panel("Tabled Releases", 0))
 //!     .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
 //!     .to_string();
 //!
 //! println!("{}", table);
-//! 
+//!
 //! assert_eq!(
 //!     table,
 //!     concat!(
-//!         " Tabled Releases \n", 
+//!         " Tabled Releases \n",
 //!         "+-----+----+----+\n",
 //!         "|  0  | 1  | 2  |\n",
 //!         "+-----+----+----+\n",
@@ -31,7 +31,7 @@
 //!     )
 //! )
 //! ```
-//! 
+//!
 //! [Table]: crate::Table
 //! [Span]: crate::Span
 
@@ -41,7 +41,7 @@ use papergrid::{Entity, Grid, Settings};
 /// Panel allows to add a Row which has 1 continues Cell to a [Table].
 ///
 /// See `examples/panel.rs`.
-/// 
+///
 /// [Table]: crate::Table
 #[derive(Debug)]
 pub struct Panel<S: AsRef<str>>(pub S, pub usize);

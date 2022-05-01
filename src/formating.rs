@@ -1,12 +1,12 @@
 //! This module contains a list of primitives to help to modify a [Table].
-//! 
+//!
 //! [Table]: crate::Table
 
 use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
 
 /// Formatting function of particular cells on a [Table].
-/// 
+///
 /// [Table]: crate::Table
 pub struct Format<F> {
     f: F,

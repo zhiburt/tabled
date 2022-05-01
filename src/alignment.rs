@@ -44,7 +44,7 @@
 //!     ),
 //! )
 //! ```
-//! 
+//!
 //! [Table]: crate::Table
 //! [AlignmentStrategy]: crate::formatting_settings::AlignmentStrategy
 
@@ -60,7 +60,7 @@ pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 ///   # let data: Vec<&'static str> = Vec::new();
 ///     let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Alignment::center()));
 /// ```
-/// 
+///
 /// [Table]: crate::Table
 #[derive(Debug)]
 pub enum Alignment {
@@ -80,7 +80,7 @@ impl Alignment {
     ///
     /// When you use [MinWidth] the alignment might not work as you expected.
     /// You could try to apply [TrimStrategy] which may help.
-    /// 
+    ///
     /// [MinWidth]: crate::MinWidth
     /// [TrimStrategy]: crate::formatting_settings::TrimStrategy
     pub fn right() -> Self {
@@ -93,7 +93,7 @@ impl Alignment {
     ///
     /// When you use [MinWidth] the alignment might not work as you expected.
     /// You could try to apply [TrimStrategy] which may help.
-    /// 
+    ///
     /// [MinWidth]: crate::MinWidth
     /// [TrimStrategy]: crate::formatting_settings::TrimStrategy
     pub fn center() -> Self {

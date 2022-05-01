@@ -1,5 +1,5 @@
 //! This module contains a list of primitives which can be applied to change [Table] style.
-//! 
+//!
 //! [Table]: crate::Table
 
 use std::{borrow::Cow, marker::PhantomData};
@@ -25,7 +25,7 @@ use papergrid::{Entity, Grid, Settings};
 ///
 /// println!("{}", table);
 /// ```
-/// 
+///
 /// [Table]: crate::Table
 pub struct Style;
 

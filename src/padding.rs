@@ -33,7 +33,7 @@
 //!     ),
 //! );
 //! ```
-//! 
+//!
 //! [Table]: crate::Table
 
 use crate::CellOption;

@@ -25,7 +25,7 @@
 //!     )
 //! );
 //! ```
-//! 
+//!
 //! [Table]: crate::Table
 //! [Builder::index]: crate::builder::Builder::index
 

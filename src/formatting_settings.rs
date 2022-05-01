@@ -3,7 +3,7 @@
 //! [TrimStrategy] and [AlignmentStrategy] allows to set [Alignment] settings.
 //!
 //! [TabSize] sets a default tab size.
-//! 
+//!
 //! [Alignment]: crate::Alignment
 
 use papergrid::{Entity, Grid, Settings};
@@ -215,7 +215,7 @@ impl CellOption for AlignmentStrategy {
 ///      └─────────────────┘\n"
 /// );
 /// ```
-/// 
+///
 /// [Alignment]: crate::Alignment
 #[derive(Debug, Clone)]
 pub enum TrimStrategy {
