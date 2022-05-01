@@ -1,8 +1,10 @@
 //! This module contains settings for render strategy of papergrid.
 //!
-//! [TrimStrategy] and [AlignmentStrategy] allows to set [crate::Alignment] settings.
+//! [TrimStrategy] and [AlignmentStrategy] allows to set [Alignment] settings.
 //!
 //! [TabSize] sets a default tab size.
+//! 
+//! [Alignment]: crate::Alignment
 
 use papergrid::{Entity, Grid, Settings};
 
@@ -152,7 +154,7 @@ impl CellOption for AlignmentStrategy {
     }
 }
 
-/// TrimStrategy determins if it's alowed to use empty space while doing [crate::Alignment].
+/// TrimStrategy determins if it's alowed to use empty space while doing [Alignment].
 ///
 /// # Examples
 ///
@@ -213,6 +215,8 @@ impl CellOption for AlignmentStrategy {
 ///      └─────────────────┘\n"
 /// );
 /// ```
+/// 
+/// [Alignment]: crate::Alignment
 #[derive(Debug, Clone)]
 pub enum TrimStrategy {
     /// Allow vertical trim.

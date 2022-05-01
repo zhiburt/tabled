@@ -1,3 +1,6 @@
+//! This module contains an [ExpandedDisplay] structure which is usefull in cases where
+//! a structure has a lot of fields.
+
 use crate::Tabled;
 
 /// ExpandedDisplay display data in a 'expanded display mode' from postgress.

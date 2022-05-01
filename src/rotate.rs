@@ -1,5 +1,34 @@
-#[allow(unused)]
-use crate::Table;
+//! This module contains a [Rotate] primitive which can be used in order to rotate [Table].
+//!
+//! It's also possible to transpose the table at the point of construction.
+//! See [Builder::index].
+//!
+//! # Example
+//!
+//! ```
+//! use tabled::{Rotate, TableIteratorExt};
+//!
+//! let data = [[1, 2, 3], [4, 5, 6]];
+//!
+//! let table = data.table().with(Rotate::Left).to_string();
+//!
+//! assert_eq!(
+//!     table,
+//!     concat!(
+//!         "+---+---+---+\n",
+//!         "| 2 | 3 | 6 |\n",
+//!         "+---+---+---+\n",
+//!         "| 1 | 2 | 5 |\n",
+//!         "+---+---+---+\n",
+//!         "| 0 | 1 | 4 |\n",
+//!         "+---+---+---+\n",
+//!     )
+//! );
+//! ```
+//! 
+//! [Table]: crate::Table
+//! [Builder::index]: crate::builder::Builder::index
+
 use crate::TableOption;
 use papergrid::{Entity, Grid};
 

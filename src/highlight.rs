@@ -1,3 +1,6 @@
+//! This module contains a [Highlight] primitive, which helps
+//! changing a [Border] style of any segment on a [Table].
+
 use std::collections::HashSet;
 
 #[allow(unused)]

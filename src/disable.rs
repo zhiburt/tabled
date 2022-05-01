@@ -1,3 +1,29 @@
+//! This module contains a [Disable] structure which helps to
+//! remove an etheir column or row from a [Table].
+//! 
+//! Essentially it is better to provide a correct data initially and not use disable.
+//! 
+//! # Example
+//! 
+//! ```
+//! use tabled::{Disable, TableIteratorExt};
+//!
+//! let data = vec!["Hello", "World", "!!!"];
+//! 
+//! let table = data.table().with(Disable::Row(1..2)).to_string();
+//!
+//! assert_eq!(
+//!     table,
+//!     "+-------+\n\
+//!      | &str  |\n\
+//!      +-------+\n\
+//!      | World |\n\
+//!      +-------+\n\
+//!      |  !!!  |\n\
+//!      +-------+\n"
+//! );
+//! ```
+
 #[allow(unused)]
 use crate::Table;
 use crate::{object::bounds_to_usize, TableOption};
@@ -6,6 +32,11 @@ use std::ops::RangeBounds;
 
 /// Disable removes particular rows/columns from a [Table].
 ///
+/// It tries to keeps track of style changes which may occure.
+/// But it's not guaranted will be the way you would expect it to be.
+/// 
+/// # Example
+/// 
 /// ```rust,no_run
 ///   # use tabled::{Disable, Table};
 ///   # let data: Vec<&'static str> = Vec::new();

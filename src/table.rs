@@ -1,10 +1,16 @@
+//! This module contains a main table representation of this crate [Table].
+//! 
+//! There's 1 more table representation which is [ExpandedDisplay].
+//! 
+//! [ExpandedDisplay]: crate::display::ExpandedDisplay
+
 use std::{fmt, iter::FromIterator};
 
 use papergrid::Grid;
 
 use crate::{builder::Builder, object::Object, Tabled};
 
-/// A trait which is responsilbe for configuration of a [Grid].
+/// A trait which is responsilbe for configuration of a [Table].
 pub trait TableOption {
     /// The function modifies a [Grid] object.
     fn change(&mut self, grid: &mut Grid);
@@ -22,7 +28,9 @@ where
 /// A trait for configuring a single cell.
 /// Where cell represented by 'row' and 'column' indexes.
 ///
-/// A cell can be targeted by [crate::object::Cell].
+/// A cell can be targeted by [Cell].
+/// 
+/// [Cell]: crate::object::Cell
 pub trait CellOption {
     /// Modification function of a single cell.
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize);
@@ -33,8 +41,8 @@ pub trait CellOption {
 /// To build a string representation of a table you must use a [std::fmt::Display].
 /// Or simply call `.to_string()` method.
 ///
-/// The default table [crate::Style] is [crate::Style::ascii],
-/// with a 1 left and right padding.
+/// The default table [Style] is [Style::ascii],
+/// with a 1 left and right [Padding].
 ///
 /// ## Example
 ///
@@ -55,6 +63,10 @@ pub trait CellOption {
 ///                 .with(Modify::new(Full).with(Alignment::left()));
 /// println!("{}", table);
 /// ```
+/// 
+/// [Padding]: crate::Padding
+/// [Style]: crate::Style
+/// [Style::ascii]: crate::Style::ascii
 pub struct Table {
     pub(crate) grid: Grid,
 }
@@ -174,8 +186,9 @@ where
 
     /// With a generic function which stores a [CellOption].
     ///
-    /// The function *doesn't* changes a [Grid]. [Grid] will be changed
-    /// only after passing [Modify] object to [Table::with].
+    /// IMPORTANT:
+    ///     The function *doesn't* changes a [Table].
+    ///     [Table] will be changed only after passing [Modify] object to [Table::with].
     pub fn with<F>(mut self, f: F) -> Self
     where
         F: CellOption + 'static,

@@ -1,3 +1,50 @@
+//! This module contains a [Concat] primitive which can be in order to combine 2 [Table]s into 1.
+//!
+//! # Example
+//!
+//! ```
+//! use tabled::{Table, Tabled, Style, Concat};
+//!
+//! #[derive(Tabled)]
+//! struct Message {
+//!     id: &'static str,
+//!     text: &'static str,
+//! }
+//!
+//! #[derive(Tabled)]
+//! struct Department(#[tabled(rename = "department")] &'static str);
+//!
+//! let messages = [
+//!     Message { id: "0", text: "Hello World" },
+//!     Message { id: "1", text: "Do do do something", },
+//! ];
+//!
+//! let departments = [
+//!     Department("Admins"),
+//!     Department("DevOps"),
+//!     Department("R&D"),
+//! ];
+//!
+//! let table = Table::new(messages)
+//!     .with(Concat::horizontal(Table::new(departments)))
+//!     .with(Style::extended());
+//!
+//! assert_eq!(
+//!     table.to_string(),
+//!     concat!(
+//!         "╔════╦════════════════════╦════════════╗\n",
+//!         "║ id ║        text        ║ department ║\n",
+//!         "╠════╬════════════════════╬════════════╣\n",
+//!         "║ 0  ║    Hello World     ║   Admins   ║\n",
+//!         "╠════╬════════════════════╬════════════╣\n",
+//!         "║ 1  ║ Do do do something ║   DevOps   ║\n",
+//!         "╠════╬════════════════════╬════════════╣\n",
+//!         "║    ║                    ║    R&D     ║\n",
+//!         "╚════╩════════════════════╩════════════╝\n",
+//!     )
+//! )
+//! ```
+
 use crate::Table;
 use crate::TableOption;
 use papergrid::{Entity, Grid};
@@ -36,6 +83,7 @@ impl Concat {
             default_cell: String::new(),
         }
     }
+
     /// Concatenate 2 tables horizontally (along axis=0)
     pub fn vertical(table: Table) -> Self {
         Self::new(table, ConcatMode::Vertical)

@@ -1,3 +1,32 @@
+//! This module contains a Margin settings of a [Table].
+//! 
+//! # Example
+//! 
+//! ```
+//! use tabled::{Margin, Style, TableIteratorExt};
+//! 
+//! let data = vec!["Hello", "World", "!"];
+//! 
+//! let table = data
+//!     .table()
+//!     .with(Style::github_markdown())
+//!     .with(Margin::new(3, 3, 1, 0));
+//! 
+//! assert_eq!(
+//!     table.to_string(),
+//!     concat!(
+//!         "               \n",
+//!         "   | &str  |   \n",
+//!         "   |-------|   \n",
+//!         "   | Hello |   \n",
+//!         "   | World |   \n",
+//!         "   |   !   |   \n",
+//!     )
+//! );
+//! ```
+//! 
+//! [Table]: crate::Table
+
 use crate::TableOption;
 use papergrid::{Grid, Indent};
 

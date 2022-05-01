@@ -12,17 +12,32 @@
 //! use tabled::{MaxWidth, MinWidth, Table};
 //!
 //! let table = Table::new(&["Hello World!"])
-//!     .with(MaxWidth::wrapping(5))
-//!     .with(MinWidth::new(5));
-//! ```
+//!     .with(MaxWidth::wrapping(7))
+//!     .with(MinWidth::new(7))
+//!     .to_string();
 //!
+//! assert_eq!(
+//!     table,
+//!     concat!(
+//!         "+-----+\n",
+//!         "| &st |\n",
+//!         "| r   |\n",
+//!         "+-----+\n",
+//!         "| Hel |\n",
+//!         "| lo  |\n",
+//!         "| Wor |\n",
+//!         "| ld! |\n",
+//!         "+-----+\n",
+//!     )
+//! );
+//! ```
 
 use std::collections::{HashMap, HashSet};
 
 use crate::{CellOption, TableOption};
 use papergrid::{string_width, Entity, Grid, Margin, Settings, Style};
 
-/// MaxWidth allows you to set a max width of an object on a [Grid],
+/// MaxWidth allows you to set a max width of an object on a [Table],
 /// using different strategies.
 /// It also allows you to set a MaxWidth for a whole table.
 ///
@@ -31,7 +46,7 @@ use papergrid::{string_width, Entity, Grid, Margin, Settings, Style};
 /// Beware that borders are not removed when you set a size value to very small.
 /// For example if you set size to 0 the table still be rendered but with all content removed.
 ///
-/// Also be aware that it doesn't changes [crate::Padding] settings.
+/// Also be aware that it doesn't changes [Padding] settings.
 ///
 /// The function is color aware if a `color` feature is on.
 ///
@@ -57,6 +72,8 @@ use papergrid::{string_width, Entity, Grid, Margin, Settings, Style};
 /// let table = Table::new(&["Hello World!"]).with(MaxWidth::wrapping(5));
 /// ```
 ///
+/// [Padding]: crate::Padding
+/// [Table]: crate::Table
 pub struct MaxWidth;
 
 impl MaxWidth {
@@ -381,7 +398,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 /// It can be applied to a whole table.
 ///
 /// It does anything in case if the content's length is bigger then the boundry.
-/// It doesn't include a [crate::Padding] settings.
+/// It doesn't include a [Padding] settings.
 ///
 /// ## Examples
 ///
@@ -403,6 +420,8 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 ///
 /// let table = Table::new(&["Hello World!"]).with(MinWidth::new(5));
 /// ```
+/// 
+/// [Padding]: crate::Padding
 pub struct MinWidth {
     size: usize,
     fill: char,
@@ -825,7 +844,7 @@ fn is_zero_spanned_grid(grid: &Grid) -> bool {
 /// Justify sets all columns widths to the set value.
 ///
 /// Be aware that it doesn't consider padding.
-/// So if you want to set a exact width you might need to use [crate::Padding] to set it to 0.
+/// So if you want to set a exact width you might need to use [Padding] to set it to 0.
 ///
 /// ## Examples
 ///
@@ -851,6 +870,8 @@ fn is_zero_spanned_grid(grid: &Grid) -> bool {
 ///     .with(Style::github_markdown())
 ///     .with(Justify::max());
 /// ```
+/// 
+/// [Padding]: crate::Padding
 pub struct Justify<W> {
     width: W,
 }
@@ -858,7 +879,9 @@ pub struct Justify<W> {
 impl Justify<usize> {
     /// Creates a new Justify instance.
     ///
-    /// Be aware that [crate::Padding] is not considered when comparing the width.
+    /// Be aware that [Padding] is not considered when comparing the width.
+    /// 
+    /// [Padding]: crate::Padding
     pub fn new(width: usize) -> Self {
         Self { width }
     }
@@ -894,7 +917,9 @@ where
     }
 }
 
-/// A width value which can be obtained on behaif of [Grid].
+/// A width value which can be obtained on behalf of [Table].
+/// 
+/// [Table]: crate::Table
 trait Width {
     /// Returns a width value.
     fn width(&self, grid: &Grid) -> usize;

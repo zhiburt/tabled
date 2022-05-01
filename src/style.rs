@@ -1,11 +1,13 @@
-//! This module contains a list of Styles which can be applied to change [crate::Table] styles.
+//! This module contains a list of primitives which can be applied to change [Table] style.
+//! 
+//! [Table]: crate::Table
 
 use std::{borrow::Cow, marker::PhantomData};
 
 use crate::{object::Cell, CellOption, Highlight, TableOption};
 use papergrid::{Entity, Grid, Settings};
 
-/// Style is represents a theme of a [crate::Table].
+/// Style is represents a theme of a [Table].
 ///
 /// It can be Mofified extensively, look at [CustomStyle] methods.
 ///
@@ -23,6 +25,8 @@ use papergrid::{Entity, Grid, Settings};
 ///
 /// println!("{}", table);
 /// ```
+/// 
+/// [Table]: crate::Table
 pub struct Style;
 
 impl Style {
