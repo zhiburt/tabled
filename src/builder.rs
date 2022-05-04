@@ -3,7 +3,7 @@
 //!
 //! It also contains [IndexBuilder] which can help to build a table with index.
 //!
-//! # Example
+//! # Examples
 //!
 //! Here's an example of [IndexBuilder] usage
 //!
@@ -54,6 +54,53 @@
 //!         "├──────────┼─────────┼───────┤\n",
 //!         "│ Unknown  │    +    │       │\n",
 //!         "└──────────┴─────────┴───────┘\n",
+//!    ),
+//! )
+//! ```
+//!
+//! Example when we don't want to show empty data of enum where not all variants are used.
+//!
+//! ```
+//! use tabled::{Table, Tabled, Style};
+//!
+//! #[derive(Tabled)]
+//! enum Status {
+//!     #[tabled(inline)]
+//!     Complete {
+//!         started_timestamp: usize,
+//!         finihsed_timestamp: usize,
+//!     },
+//!     #[tabled(inline)]
+//!     Started {
+//!         timestamp: usize,
+//!     },
+//!     Ready,
+//!     Unknown,
+//! }
+//!
+//! let data = [
+//!     Status::Unknown,
+//!     Status::Complete { started_timestamp: 123, finihsed_timestamp: 234 },
+//! ];
+//!
+//! let table = Table::builder(&data)
+//!     .clean()
+//!     .build()
+//!     .with(Style::modern())
+//!     .to_string();
+//!
+//! println!("{}", table);
+//!
+//! assert_eq!(
+//!     table,
+//!     concat!(
+//!         "┌───────────────────┬────────────────────┬─────────┐\n",
+//!         "│ started_timestamp │ finihsed_timestamp │ Unknown │\n",
+//!         "├───────────────────┼────────────────────┼─────────┤\n",
+//!         "│                   │                    │    +    │\n",
+//!         "├───────────────────┼────────────────────┼─────────┤\n",
+//!         "│        123        │        234         │         │\n",
+//!         "└───────────────────┴────────────────────┴─────────┘\n",
 //!    ),
 //! )
 //! ```
@@ -212,6 +259,82 @@ impl Builder {
     /// ```
     pub fn index(self) -> IndexBuilder {
         IndexBuilder::new(self)
+    }
+
+    /// Clean removes empty columns and rows.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::Table;
+    /// let table = Table::builder(&["Hello", "World", ""]).clean().build();
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "+-------+\n\
+    ///      | &str  |\n\
+    ///      +-------+\n\
+    ///      | Hello |\n\
+    ///      +-------+\n\
+    ///      | World |\n\
+    ///      +-------+\n"
+    /// )
+    /// ```
+    pub fn clean(mut self) -> Self {
+        self.clean_columns();
+        self.clean_rows();
+        self
+    }
+
+    fn clean_columns(&mut self) {
+        let mut i = 0;
+        for col in 0..self.size {
+            let col = col - i;
+
+            let mut is_empty = true;
+            for row in 0..self.records.len() {
+                if !self.records[row][col].is_empty() {
+                    is_empty = false;
+                    break;
+                }
+            }
+
+            if is_empty {
+                for row in 0..self.records.len() {
+                    self.records[row].remove(col);
+                }
+
+                if let Some(columns) = self.columns.as_mut() {
+                    if columns.len() > col {
+                        columns.remove(col);
+                    }
+                }
+
+                i += 1;
+            }
+        }
+
+        self.size -= i;
+    }
+
+    fn clean_rows(&mut self) {
+        for row in (0..self.records.len()).rev() {
+            let mut is_empty = true;
+            for col in 0..self.size {
+                if !self.records[row][col].is_empty() {
+                    is_empty = false;
+                    break;
+                }
+            }
+
+            if is_empty {
+                self.records.remove(row);
+            }
+
+            if row == 0 {
+                break;
+            }
+        }
     }
 
     fn update_size(&mut self, size: usize) {
