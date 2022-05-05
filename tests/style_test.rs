@@ -1,4 +1,7 @@
+use std::iter::FromIterator;
+
 use crate::util::create_vector;
+use tabled::builder::Builder;
 use tabled::style::TopBorderText;
 use tabled::{object::Full, Modify, Padding, Style, Table, TableIteratorExt};
 
@@ -1162,5 +1165,20 @@ fn custom_style_test() {
             "| 2 #   2-0    #   2-1    #   2-2    *\n",
             "?+++@++++++++++@++++++++++@++++++++++%\n",
         )
+    );
+}
+
+#[test]
+fn single_cell_style() {
+    let table = Builder::from_iter(&[[""]])
+        .build()
+        .with(Style::modern())
+        .to_string();
+
+    assert_eq!(
+        table,
+        "┌──┐\n\
+         │  │\n\
+         └──┘\n"
     );
 }

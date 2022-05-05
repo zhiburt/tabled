@@ -542,11 +542,16 @@ fn make_style_header(
     style: &StyleSettings,
     row: usize,
     column: usize,
-    _count_rows: usize,
+    count_rows: usize,
     count_columns: usize,
 ) {
     let is_first_column = column == 0;
     let is_last_column = column + 1 == count_columns;
+
+    let is_single_cell = row + 1 == count_rows && column + 1 == count_columns;
+    if is_single_cell {
+        return;
+    }
 
     if style.header_split_line.is_some() {
         if row == 1 {
