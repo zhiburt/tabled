@@ -1,8 +1,10 @@
 use std::iter::FromIterator;
 
 use crate::util::create_vector;
+use papergrid::Border;
 use tabled::builder::Builder;
 use tabled::style::TopBorderText;
+use tabled::Rows;
 use tabled::{object::Full, Modify, Padding, Style, Table, TableIteratorExt};
 
 mod util;
@@ -1180,5 +1182,95 @@ fn single_cell_style() {
         "┌──┐\n\
          │  │\n\
          └──┘\n"
+    );
+}
+
+#[test]
+fn border_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "+---+----------+----------+\n",
+            "| N | column 0 | column 1 |\n",
+            "*###*##########*##########*\n",
+            "* 0 *   0-0    *   0-1    *\n",
+            "***************************\n",
+            "| 1 |   1-0    |   1-1    |\n",
+            "+---+----------+----------+\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::empty())
+        .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "  N   column 0   column 1  \n",
+            "*###*##########*##########*\n",
+            "* 0 *   0-0    *   0-1    *\n",
+            "***************************\n",
+            "  1     1-0        1-1     \n",
+        )
+    );
+}
+
+#[cfg(feature = "color")]
+#[test]
+fn border_colored_test() {
+    use owo_colors::OwoColorize;
+    use tabled::style::Symbol;
+
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(
+            Modify::new(Rows::single(1)).with(
+                Border::filled(Symbol::ansi('*'.blue().to_string()).unwrap())
+                    .top(Symbol::ansi('#'.truecolor(12, 220, 100).to_string()).unwrap()),
+            ),
+        )
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "+---+----------+----------+\n",
+            "| N | column 0 | column 1 |\n",
+            "\u{1b}[34m*\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[34m*\u{1b}[0m\n",
+            "\u{1b}[34m*\u{1b}[0m 0 \u{1b}[34m*\u{1b}[0m   0-0    \u{1b}[34m*\u{1b}[0m   0-1    \u{1b}[34m*\u{1b}[0m\n",
+            "\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\n",
+            "| 1 |   1-0    |   1-1    |\n",
+            "+---+----------+----------+\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::empty())
+        .with(
+            Modify::new(Rows::single(1)).with(
+                Border::filled(Symbol::ansi('*'.blue().to_string()).unwrap())
+                    .top(Symbol::ansi('#'.truecolor(12, 220, 100).to_string()).unwrap()),
+            ),
+        )
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "  N   column 0   column 1  \n",
+            "\u{1b}[34m*\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[38;2;12;220;100m#\u{1b}[0m\u{1b}[34m*\u{1b}[0m\n",
+            "\u{1b}[34m*\u{1b}[0m 0 \u{1b}[34m*\u{1b}[0m   0-0    \u{1b}[34m*\u{1b}[0m   0-1    \u{1b}[34m*\u{1b}[0m\n",
+            "\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\n",
+            "  1     1-0        1-1     \n",
+        )
     );
 }

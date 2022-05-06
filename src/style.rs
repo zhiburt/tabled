@@ -265,9 +265,9 @@ impl Style {
 #[derive(Debug, Clone)]
 pub struct StyleSettings {
     frame: Frame,
-    header_split_line: Option<Line>,
     split: Option<Line>,
-    inner_split_char: Option<char>,
+    header_split: Option<Line>,
+    inner_split: Option<char>,
 }
 
 impl StyleSettings {
@@ -280,8 +280,8 @@ impl StyleSettings {
         Self {
             frame,
             split,
-            header_split_line: header,
-            inner_split_char: inner,
+            header_split: header,
+            inner_split: inner,
         }
     }
 }
@@ -291,8 +291,8 @@ impl StyleSettings {
 struct Line {
     main: char,
     intersection: Option<char>,
-    left_corner: Option<char>,
-    right_corner: Option<char>,
+    l_corner: Option<char>,
+    r_corner: Option<char>,
 }
 
 impl Line {
@@ -301,8 +301,8 @@ impl Line {
         Self {
             main,
             intersection: Some(intersection),
-            left_corner: Some(left),
-            right_corner: Some(right),
+            l_corner: Some(left),
+            r_corner: Some(right),
         }
     }
 
@@ -311,8 +311,8 @@ impl Line {
         Self {
             main,
             intersection: Some(intersection),
-            left_corner: None,
-            right_corner: None,
+            l_corner: None,
+            r_corner: None,
         }
     }
 }
@@ -364,176 +364,198 @@ fn make_style(
     count_rows: usize,
     count_columns: usize,
 ) -> Border {
+    struct CharBorder {
+        pub top: Option<char>,
+        pub bottom: Option<char>,
+        pub left: Option<char>,
+        pub right: Option<char>,
+        pub left_top_corner: Option<char>,
+        pub right_top_corner: Option<char>,
+        pub left_bottom_corner: Option<char>,
+        pub right_bottom_corner: Option<char>,
+    }
+
     let is_first_row = row == 0;
     let is_last_row = row + 1 == count_rows;
     let is_first_column = column == 0;
     let is_last_column = column + 1 == count_columns;
 
-    match (is_first_row, is_last_row, is_first_column, is_last_column) {
+    let b = match (is_first_row, is_last_row, is_first_column, is_last_column) {
         // A table with a single cell
-        (true, true, true, true) => Border {
+        (true, true, true, true) => CharBorder {
             top: style.frame.top.as_ref().map(|l| l.main),
             bottom: style.frame.bottom.as_ref().map(|l| l.main),
             right: style.frame.right,
-            right_top_corner: style.frame.top.as_ref().and_then(|l| l.right_corner),
-            right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.right_corner),
+            right_top_corner: style.frame.top.as_ref().and_then(|l| l.r_corner),
+            right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.r_corner),
             left: style.frame.left,
-            left_top_corner: style.frame.top.as_ref().and_then(|l| l.left_corner),
-            left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.left_corner),
+            left_top_corner: style.frame.top.as_ref().and_then(|l| l.l_corner),
+            left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.l_corner),
         },
         // Single row
-        (true, true, true, false) => Border {
+        (true, true, true, false) => CharBorder {
             top: style.frame.top.as_ref().map(|l| l.main),
             bottom: style.frame.bottom.as_ref().map(|l| l.main),
             left: style.frame.left,
-            left_top_corner: style.frame.top.as_ref().and_then(|l| l.left_corner),
-            left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.left_corner),
-            right: style.inner_split_char,
+            left_top_corner: style.frame.top.as_ref().and_then(|l| l.l_corner),
+            left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.l_corner),
+            right: style.inner_split,
             right_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
             right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.intersection),
         },
-        (true, true, false, true) => Border {
+        (true, true, false, true) => CharBorder {
             top: style.frame.top.as_ref().map(|l| l.main),
             bottom: style.frame.bottom.as_ref().map(|l| l.main),
             left: style.frame.left,
             left_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
             left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.intersection),
-            right: style.inner_split_char,
-            right_top_corner: style.frame.top.as_ref().and_then(|l| l.right_corner),
-            right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.right_corner),
+            right: style.inner_split,
+            right_top_corner: style.frame.top.as_ref().and_then(|l| l.r_corner),
+            right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.r_corner),
         },
-        (true, true, false, false) => Border {
+        (true, true, false, false) => CharBorder {
             top: style.frame.top.as_ref().map(|l| l.main),
             bottom: style.frame.bottom.as_ref().map(|l| l.main),
-            left: style.inner_split_char,
-            left_top_corner: style.frame.top.as_ref().and_then(|l| l.left_corner),
+            left: style.inner_split,
+            left_top_corner: style.frame.top.as_ref().and_then(|l| l.l_corner),
             left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.intersection),
-            right: style.inner_split_char,
+            right: style.inner_split,
             right_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
             right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.intersection),
         },
         // Single column
-        (true, false, true, true) => Border {
+        (true, false, true, true) => CharBorder {
             top: style.frame.top.as_ref().map(|l| l.main),
             bottom: style.split.as_ref().map(|l| l.main),
             left: style.frame.left,
-            left_top_corner: style.frame.top.as_ref().and_then(|l| l.left_corner),
-            left_bottom_corner: style.split.as_ref().and_then(|l| l.left_corner),
+            left_top_corner: style.frame.top.as_ref().and_then(|l| l.l_corner),
+            left_bottom_corner: style.split.as_ref().and_then(|l| l.l_corner),
             right: style.frame.right,
-            right_top_corner: style.frame.top.as_ref().and_then(|l| l.right_corner),
-            right_bottom_corner: style.split.as_ref().and_then(|l| l.right_corner),
+            right_top_corner: style.frame.top.as_ref().and_then(|l| l.r_corner),
+            right_bottom_corner: style.split.as_ref().and_then(|l| l.r_corner),
         },
-        (false, true, true, true) => Border {
+        (false, true, true, true) => CharBorder {
             top: style.split.as_ref().map(|l| l.main),
             bottom: style.frame.bottom.as_ref().map(|l| l.main),
             left: style.frame.left,
-            left_top_corner: style.split.as_ref().and_then(|l| l.left_corner),
-            left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.left_corner),
+            left_top_corner: style.split.as_ref().and_then(|l| l.l_corner),
+            left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.l_corner),
             right: style.frame.right,
-            right_top_corner: style.split.as_ref().and_then(|l| l.right_corner),
-            right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.right_corner),
+            right_top_corner: style.split.as_ref().and_then(|l| l.r_corner),
+            right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.r_corner),
         },
-        (false, false, true, true) => Border {
+        (false, false, true, true) => CharBorder {
             top: style.split.as_ref().map(|l| l.main),
             bottom: style.split.as_ref().map(|l| l.main),
             left: style.frame.left,
-            left_top_corner: style.split.as_ref().and_then(|l| l.left_corner),
-            left_bottom_corner: style.split.as_ref().and_then(|l| l.left_corner),
+            left_top_corner: style.split.as_ref().and_then(|l| l.l_corner),
+            left_bottom_corner: style.split.as_ref().and_then(|l| l.l_corner),
             right: style.frame.right,
-            right_top_corner: style.split.as_ref().and_then(|l| l.right_corner),
-            right_bottom_corner: style.split.as_ref().and_then(|l| l.right_corner),
+            right_top_corner: style.split.as_ref().and_then(|l| l.r_corner),
+            right_bottom_corner: style.split.as_ref().and_then(|l| l.r_corner),
         },
         // General
-        (true, false, true, false) => Border {
+        (true, false, true, false) => CharBorder {
             top: style.frame.top.as_ref().map(|l| l.main),
             bottom: style.split.as_ref().map(|l| l.main),
             left: style.frame.left,
-            left_top_corner: style.frame.top.as_ref().and_then(|l| l.left_corner),
-            left_bottom_corner: style.split.as_ref().and_then(|l| l.left_corner),
-            right: style.inner_split_char,
+            left_top_corner: style.frame.top.as_ref().and_then(|l| l.l_corner),
+            left_bottom_corner: style.split.as_ref().and_then(|l| l.l_corner),
+            right: style.inner_split,
             right_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
             right_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
         },
-        (true, false, false, true) => Border {
+        (true, false, false, true) => CharBorder {
             top: style.frame.top.as_ref().map(|l| l.main),
             bottom: style.split.as_ref().map(|l| l.main),
-            left: style.inner_split_char,
+            left: style.inner_split,
             left_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
             left_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
             right: style.frame.right,
-            right_top_corner: style.frame.top.as_ref().and_then(|l| l.right_corner),
-            right_bottom_corner: style.split.as_ref().and_then(|l| l.right_corner),
+            right_top_corner: style.frame.top.as_ref().and_then(|l| l.r_corner),
+            right_bottom_corner: style.split.as_ref().and_then(|l| l.r_corner),
         },
-        (true, false, false, false) => Border {
+        (true, false, false, false) => CharBorder {
             top: style.frame.top.as_ref().map(|l| l.main),
             bottom: style.split.as_ref().map(|l| l.main),
-            left: style.inner_split_char,
+            left: style.inner_split,
             left_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
             left_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
-            right: style.inner_split_char,
+            right: style.inner_split,
             right_top_corner: style.frame.top.as_ref().and_then(|l| l.intersection),
             right_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
         },
-        (false, true, true, false) => Border {
+        (false, true, true, false) => CharBorder {
             top: style.split.as_ref().map(|l| l.main),
             bottom: style.frame.bottom.as_ref().map(|l| l.main),
             left: style.frame.left,
-            left_top_corner: style.split.as_ref().and_then(|l| l.left_corner),
-            left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.left_corner),
-            right: style.inner_split_char,
+            left_top_corner: style.split.as_ref().and_then(|l| l.l_corner),
+            left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.l_corner),
+            right: style.inner_split,
             right_top_corner: style.split.as_ref().and_then(|l| l.intersection),
             right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.intersection),
         },
-        (false, true, false, true) => Border {
+        (false, true, false, true) => CharBorder {
             top: style.split.as_ref().map(|l| l.main),
             bottom: style.frame.bottom.as_ref().map(|l| l.main),
-            left: style.inner_split_char,
+            left: style.inner_split,
             left_top_corner: style.split.as_ref().and_then(|l| l.intersection),
             left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.intersection),
             right: style.frame.right,
-            right_top_corner: style.split.as_ref().and_then(|l| l.right_corner),
-            right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.right_corner),
+            right_top_corner: style.split.as_ref().and_then(|l| l.r_corner),
+            right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.r_corner),
         },
-        (false, true, false, false) => Border {
+        (false, true, false, false) => CharBorder {
             top: style.split.as_ref().map(|l| l.main),
             bottom: style.frame.bottom.as_ref().map(|l| l.main),
-            left: style.inner_split_char,
+            left: style.inner_split,
             left_top_corner: style.split.as_ref().and_then(|l| l.intersection),
             left_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.intersection),
-            right: style.inner_split_char,
+            right: style.inner_split,
             right_top_corner: style.split.as_ref().and_then(|l| l.intersection),
             right_bottom_corner: style.frame.bottom.as_ref().and_then(|l| l.intersection),
         },
-        (false, false, true, false) => Border {
+        (false, false, true, false) => CharBorder {
             top: style.split.as_ref().map(|l| l.main),
             bottom: style.split.as_ref().map(|l| l.main),
             left: style.frame.left,
-            left_top_corner: style.split.as_ref().and_then(|l| l.left_corner),
-            left_bottom_corner: style.split.as_ref().and_then(|l| l.left_corner),
-            right: style.inner_split_char,
+            left_top_corner: style.split.as_ref().and_then(|l| l.l_corner),
+            left_bottom_corner: style.split.as_ref().and_then(|l| l.l_corner),
+            right: style.inner_split,
             right_top_corner: style.split.as_ref().and_then(|l| l.intersection),
             right_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
         },
-        (false, false, false, true) => Border {
+        (false, false, false, true) => CharBorder {
             top: style.split.as_ref().map(|l| l.main),
             bottom: style.split.as_ref().map(|l| l.main),
-            left: style.inner_split_char,
+            left: style.inner_split,
             left_top_corner: style.split.as_ref().and_then(|l| l.intersection),
             left_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
             right: style.frame.right,
-            right_top_corner: style.split.as_ref().and_then(|l| l.right_corner),
-            right_bottom_corner: style.split.as_ref().and_then(|l| l.right_corner),
+            right_top_corner: style.split.as_ref().and_then(|l| l.r_corner),
+            right_bottom_corner: style.split.as_ref().and_then(|l| l.r_corner),
         },
-        (false, false, false, false) => Border {
+        (false, false, false, false) => CharBorder {
             top: style.split.as_ref().map(|l| l.main),
             bottom: style.split.as_ref().map(|l| l.main),
-            left: style.inner_split_char,
+            left: style.inner_split,
             left_top_corner: style.split.as_ref().and_then(|l| l.intersection),
             left_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
-            right: style.inner_split_char,
+            right: style.inner_split,
             right_top_corner: style.split.as_ref().and_then(|l| l.intersection),
             right_bottom_corner: style.split.as_ref().and_then(|l| l.intersection),
         },
+    };
+
+    Border {
+        top: b.top.map(Symbol::from),
+        bottom: b.bottom.map(Symbol::from),
+        left: b.left.map(Symbol::from),
+        left_top_corner: b.left_top_corner.map(Symbol::from),
+        left_bottom_corner: b.left_bottom_corner.map(Symbol::from),
+        right: b.right.map(Symbol::from),
+        right_top_corner: b.right_top_corner.map(Symbol::from),
+        right_bottom_corner: b.right_bottom_corner.map(Symbol::from),
     }
 }
 
@@ -553,56 +575,76 @@ fn make_style_header(
         return;
     }
 
-    if style.header_split_line.is_some() {
+    if style.header_split.is_some() {
         if row == 1 {
-            border.top = style.header_split_line.as_ref().map(|l| l.main);
+            border.top = style
+                .header_split
+                .as_ref()
+                .map(|l| l.main)
+                .map(Symbol::from);
 
             if is_last_column {
                 border.right_top_corner = style
-                    .header_split_line
+                    .header_split
                     .as_ref()
-                    .and_then(|l| l.right_corner);
+                    .and_then(|l| l.r_corner)
+                    .map(Symbol::from);
             } else {
                 border.right_top_corner = style
-                    .header_split_line
+                    .header_split
                     .as_ref()
-                    .and_then(|l| l.intersection);
+                    .and_then(|l| l.intersection)
+                    .map(Symbol::from);
             }
 
             if is_first_column {
-                border.left_top_corner =
-                    style.header_split_line.as_ref().and_then(|l| l.left_corner);
+                border.left_top_corner = style
+                    .header_split
+                    .as_ref()
+                    .and_then(|l| l.l_corner)
+                    .map(Symbol::from);
             } else {
                 border.left_top_corner = style
-                    .header_split_line
+                    .header_split
                     .as_ref()
-                    .and_then(|l| l.intersection);
+                    .and_then(|l| l.intersection)
+                    .map(Symbol::from);
             }
         }
 
         if row == 0 {
-            border.bottom = style.header_split_line.as_ref().map(|l| l.main);
+            border.bottom = style
+                .header_split
+                .as_ref()
+                .map(|l| l.main)
+                .map(Symbol::from);
 
             if is_last_column {
                 border.right_bottom_corner = style
-                    .header_split_line
+                    .header_split
                     .as_ref()
-                    .and_then(|l| l.right_corner);
+                    .and_then(|l| l.r_corner)
+                    .map(Symbol::from);
             } else {
                 border.right_bottom_corner = style
-                    .header_split_line
+                    .header_split
                     .as_ref()
-                    .and_then(|l| l.intersection);
+                    .and_then(|l| l.intersection)
+                    .map(Symbol::from);
             }
 
             if is_first_column {
-                border.left_bottom_corner =
-                    style.header_split_line.as_ref().and_then(|l| l.left_corner);
+                border.left_bottom_corner = style
+                    .header_split
+                    .as_ref()
+                    .and_then(|l| l.l_corner)
+                    .map(Symbol::from);
             } else {
                 border.left_bottom_corner = style
-                    .header_split_line
+                    .header_split
                     .as_ref()
-                    .and_then(|l| l.intersection);
+                    .and_then(|l| l.intersection)
+                    .map(Symbol::from);
             }
         }
     } else if count_columns > 1 {
@@ -702,25 +744,25 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         let mut top_line = Line {
             main: c,
             intersection: None,
-            left_corner: None,
-            right_corner: None,
+            l_corner: None,
+            r_corner: None,
         };
 
         if let Some(top) = style.frame.top {
             top_line.intersection = top.intersection;
-            top_line.left_corner = top.left_corner;
-            top_line.left_corner = top.left_corner;
+            top_line.l_corner = top.l_corner;
+            top_line.l_corner = top.l_corner;
         }
 
         if style.frame.left.is_some() {
-            top_line.left_corner = Some(c);
+            top_line.l_corner = Some(c);
         }
 
         if style.frame.right.is_some() {
-            top_line.right_corner = Some(c);
+            top_line.r_corner = Some(c);
         }
 
-        if style.inner_split_char.is_some() {
+        if style.inner_split.is_some() {
             top_line.intersection = Some(c);
         }
 
@@ -742,20 +784,20 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
             None => Line {
                 main: c,
                 intersection: None,
-                left_corner: None,
-                right_corner: None,
+                l_corner: None,
+                r_corner: None,
             },
         };
 
         if style.frame.left.is_some() {
-            bottom.left_corner = Some(c);
+            bottom.l_corner = Some(c);
         }
 
         if style.frame.right.is_some() {
-            bottom.right_corner = Some(c);
+            bottom.r_corner = Some(c);
         }
 
-        if style.inner_split_char.is_some() {
+        if style.inner_split.is_some() {
             bottom.intersection = Some(c);
         }
 
@@ -772,23 +814,23 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         style.frame.left = Some(c);
 
         if let Some(mut top) = style.frame.top {
-            top.left_corner = Some(c);
+            top.l_corner = Some(c);
             style.frame.top = Some(top);
         }
 
         if let Some(mut bottom) = style.frame.bottom {
-            bottom.left_corner = Some(c);
+            bottom.l_corner = Some(c);
             style.frame.bottom = Some(bottom);
         }
 
         if let Some(mut split) = style.split {
-            split.left_corner = Some(c);
+            split.l_corner = Some(c);
             style.split = Some(split);
         }
 
-        if let Some(mut split) = style.header_split_line {
-            split.left_corner = Some(c);
-            style.header_split_line = Some(split);
+        if let Some(mut split) = style.header_split {
+            split.l_corner = Some(c);
+            style.header_split = Some(split);
         }
 
         CustomStyle::new(style)
@@ -801,23 +843,23 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         self.inner.frame.right = Some(c);
 
         if let Some(mut top) = self.inner.frame.top {
-            top.right_corner = Some(c);
+            top.r_corner = Some(c);
             self.inner.frame.top = Some(top);
         }
 
         if let Some(mut bottom) = self.inner.frame.bottom {
-            bottom.right_corner = Some(c);
+            bottom.r_corner = Some(c);
             self.inner.frame.bottom = Some(bottom);
         }
 
         if let Some(mut split) = self.inner.split {
-            split.right_corner = Some(c);
+            split.r_corner = Some(c);
             self.inner.split = Some(split);
         }
 
-        if let Some(mut split) = self.inner.header_split_line {
-            split.right_corner = Some(c);
-            self.inner.header_split_line = Some(split);
+        if let Some(mut split) = self.inner.header_split {
+            split.r_corner = Some(c);
+            self.inner.header_split = Some(split);
         }
 
         CustomStyle::new(self.inner)
@@ -836,22 +878,22 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
             None => Line {
                 main: '\0',
                 intersection: None,
-                left_corner: None,
-                right_corner: None,
+                l_corner: None,
+                r_corner: None,
             },
         };
 
         split.main = c;
 
         if style.frame.left.is_some() {
-            split.left_corner = Some(c);
+            split.l_corner = Some(c);
         }
 
         if style.frame.right.is_some() {
-            split.right_corner = Some(c);
+            split.r_corner = Some(c);
         }
 
-        if style.inner_split_char.is_some() {
+        if style.inner_split.is_some() {
             split.intersection = Some(c);
         }
 
@@ -865,7 +907,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// Any corners and intersections which were set will be overriden.
     pub const fn vertical(self, c: char) -> CustomStyle<T, B, L, R, IH, On, H> {
         let mut style = self.inner;
-        style.inner_split_char = Some(c);
+        style.inner_split = Some(c);
 
         if let Some(mut split) = style.split {
             split.intersection = Some(c);
@@ -882,9 +924,9 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
             style.frame.bottom = Some(bottom);
         }
 
-        if let Some(mut split) = style.header_split_line {
+        if let Some(mut split) = style.header_split {
             split.intersection = Some(c);
-            style.header_split_line = Some(split);
+            style.header_split = Some(split);
         }
 
         CustomStyle::new(style)
@@ -895,31 +937,31 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// Any corners and intersections which were set will be overriden.
     pub const fn header(self, c: char) -> CustomStyle<T, B, L, R, IH, IV, On> {
         let mut style = self.inner;
-        let mut split = match style.header_split_line {
+        let mut split = match style.header_split {
             Some(line) => line,
             None => Line {
                 main: '\0',
                 intersection: None,
-                left_corner: None,
-                right_corner: None,
+                l_corner: None,
+                r_corner: None,
             },
         };
 
         split.main = c;
 
         if style.frame.left.is_some() {
-            split.left_corner = Some(c);
+            split.l_corner = Some(c);
         }
 
         if style.frame.right.is_some() {
-            split.right_corner = Some(c);
+            split.r_corner = Some(c);
         }
 
-        if style.inner_split_char.is_some() {
+        if style.inner_split.is_some() {
             split.intersection = Some(c);
         }
 
-        style.header_split_line = Some(split);
+        style.header_split = Some(split);
 
         CustomStyle::new(style)
     }
@@ -931,7 +973,7 @@ impl<B, R, IH, IV, H> CustomStyle<On, B, On, R, IH, IV, H> {
         let mut style = self.inner;
         match style.frame.top {
             Some(mut top) => {
-                top.left_corner = Some(c);
+                top.l_corner = Some(c);
                 style.frame.top = Some(top);
             }
             None => unreachable!(),
@@ -947,7 +989,7 @@ impl<B, L, IH, IV, H> CustomStyle<On, B, L, On, IH, IV, H> {
         let mut style = self.inner;
         match style.frame.top {
             Some(mut top) => {
-                top.right_corner = Some(c);
+                top.r_corner = Some(c);
                 style.frame.top = Some(top);
             }
             None => unreachable!(),
@@ -963,7 +1005,7 @@ impl<T, L, IH, IV, H> CustomStyle<T, On, L, On, IH, IV, H> {
         let mut style = self.inner;
         match style.frame.bottom {
             Some(mut bottom) => {
-                bottom.right_corner = Some(c);
+                bottom.r_corner = Some(c);
                 style.frame.bottom = Some(bottom);
             }
             None => unreachable!(),
@@ -979,7 +1021,7 @@ impl<T, R, IH, IV, H> CustomStyle<T, On, On, R, IH, IV, H> {
         let mut style = self.inner;
         match style.frame.bottom {
             Some(mut bottom) => {
-                bottom.left_corner = Some(c);
+                bottom.l_corner = Some(c);
                 style.frame.bottom = Some(bottom);
             }
             None => unreachable!(),
@@ -995,16 +1037,16 @@ impl<T, B, R, IV, H> CustomStyle<T, B, On, R, On, IV, H> {
         let mut style = self.inner;
         match style.split {
             Some(mut split) => {
-                split.left_corner = Some(c);
+                split.l_corner = Some(c);
                 style.split = Some(split);
             }
             None => unreachable!(),
         }
 
-        match style.header_split_line {
+        match style.header_split {
             Some(mut split) => {
-                split.left_corner = Some(c);
-                style.header_split_line = Some(split);
+                split.l_corner = Some(c);
+                style.header_split = Some(split);
             }
             None => unreachable!(),
         }
@@ -1019,16 +1061,16 @@ impl<T, B, L, IV, H> CustomStyle<T, B, L, On, On, IV, H> {
         let mut style = self.inner;
         match style.split {
             Some(mut split) => {
-                split.right_corner = Some(c);
+                split.r_corner = Some(c);
                 style.split = Some(split);
             }
             None => unreachable!(),
         }
 
-        match style.header_split_line {
+        match style.header_split {
             Some(mut split) => {
-                split.right_corner = Some(c);
-                style.header_split_line = Some(split);
+                split.r_corner = Some(c);
+                style.header_split = Some(split);
             }
             None => unreachable!(),
         }
@@ -1088,10 +1130,10 @@ impl<T, B, L, R, H> CustomStyle<T, B, L, R, On, On, H> {
 impl<T, B, L, R, IH> CustomStyle<T, B, L, R, IH, On, On> {
     /// Sets an intersection char of a 1st horizontal split line.
     pub const fn header_intersection(mut self, c: char) -> Self {
-        match self.inner.header_split_line {
+        match self.inner.header_split {
             Some(mut split) => {
                 split.intersection = Some(c);
-                self.inner.header_split_line = Some(split);
+                self.inner.header_split = Some(split);
             }
             None => unreachable!(),
         }
@@ -1104,10 +1146,10 @@ impl<T, B, R, IH, IV> CustomStyle<T, B, On, R, IH, IV, On> {
     /// Sets an left intersection char of a 1st horizontal split line.
     pub const fn left_header_intersection(self, c: char) -> Self {
         let mut style = self.inner;
-        match style.header_split_line {
+        match style.header_split {
             Some(mut split) => {
-                split.left_corner = Some(c);
-                style.header_split_line = Some(split);
+                split.l_corner = Some(c);
+                style.header_split = Some(split);
             }
             None => unreachable!(),
         }
@@ -1120,10 +1162,10 @@ impl<T, B, L, IH, IV> CustomStyle<T, B, L, On, IH, IV, On> {
     /// Sets an right intersection char of a 1st horizontal split line.
     pub const fn right_header_intersection(self, c: char) -> Self {
         let mut style = self.inner;
-        match style.header_split_line {
+        match style.header_split {
             Some(mut split) => {
-                split.right_corner = Some(c);
-                style.header_split_line = Some(split);
+                split.r_corner = Some(c);
+                style.header_split = Some(split);
             }
             None => unreachable!(),
         }
@@ -1157,23 +1199,23 @@ impl<T, B, R, IH, IV, H> CustomStyle<T, B, On, R, IH, IV, H> {
         style.frame.left = None;
 
         if let Some(mut top) = style.frame.top {
-            top.left_corner = None;
+            top.l_corner = None;
             style.frame.top = Some(top);
         }
 
         if let Some(mut bottom) = style.frame.bottom {
-            bottom.left_corner = None;
+            bottom.l_corner = None;
             style.frame.bottom = Some(bottom);
         }
 
         if let Some(mut split) = style.split {
-            split.left_corner = None;
+            split.l_corner = None;
             style.split = Some(split);
         }
 
-        if let Some(mut split) = style.header_split_line {
-            split.left_corner = None;
-            style.header_split_line = Some(split);
+        if let Some(mut split) = style.header_split {
+            split.l_corner = None;
+            style.header_split = Some(split);
         }
 
         CustomStyle::new(style)
@@ -1186,23 +1228,23 @@ impl<T, B, L, IH, IV, H> CustomStyle<T, B, L, On, IH, IV, H> {
         self.inner.frame.right = None;
 
         if let Some(mut top) = self.inner.frame.top {
-            top.right_corner = None;
+            top.r_corner = None;
             self.inner.frame.top = Some(top);
         }
 
         if let Some(mut bottom) = self.inner.frame.bottom {
-            bottom.right_corner = None;
+            bottom.r_corner = None;
             self.inner.frame.bottom = Some(bottom);
         }
 
         if let Some(mut split) = self.inner.split {
-            split.right_corner = None;
+            split.r_corner = None;
             self.inner.split = Some(split);
         }
 
-        if let Some(mut split) = self.inner.header_split_line {
-            split.right_corner = None;
-            self.inner.header_split_line = Some(split);
+        if let Some(mut split) = self.inner.header_split {
+            split.r_corner = None;
+            self.inner.header_split = Some(split);
         }
 
         CustomStyle::new(self.inner)
@@ -1222,7 +1264,7 @@ impl<T, B, L, R, IV, H> CustomStyle<T, B, L, R, On, IV, H> {
 impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, On, H> {
     /// Removes vertical split lines.
     pub const fn vertical_off(mut self) -> CustomStyle<T, B, L, R, IH, (), H> {
-        self.inner.inner_split_char = None;
+        self.inner.inner_split = None;
 
         if let Some(mut split) = self.inner.split {
             split.intersection = None;
@@ -1239,9 +1281,9 @@ impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, On, H> {
             self.inner.frame.bottom = Some(bottom);
         }
 
-        if let Some(mut split) = self.inner.header_split_line {
+        if let Some(mut split) = self.inner.header_split {
             split.intersection = None;
-            self.inner.header_split_line = Some(split);
+            self.inner.header_split = Some(split);
         }
 
         CustomStyle::new(self.inner)
@@ -1251,7 +1293,7 @@ impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, On, H> {
 impl<T, B, L, R, IH, IV> CustomStyle<T, B, L, R, IH, IV, On> {
     /// Removes 1st horizontal split line.
     pub const fn header_off(mut self) -> CustomStyle<T, B, L, R, IH, IV, ()> {
-        self.inner.header_split_line = None;
+        self.inner.header_split = None;
         CustomStyle::new(self.inner)
     }
 }
@@ -1278,3 +1320,19 @@ impl CellOption for Border {
         Highlight::new(Cell(row, column), self.clone()).change(grid);
     }
 }
+
+/// Symbol represents a character of a border.
+///
+/// It's only needed when used with `color` feature flag.
+///
+/// ```rust,no_run
+///   # use owo_colors::OwoColorize;
+///   # use tabled::{style::{Border, Symbol}, object::Rows, TableIteratorExt, Modify};
+///   #
+///   # let data: Vec<&'static str> = Vec::new();
+///     let colored_char = "#".red().to_string();
+///     let table = data.table()
+///         .with(Modify::new(Rows::single(0)).with(Border::filled(Symbol::ansi(colored_char).unwrap())));
+/// ```
+#[cfg(feature = "color")]
+pub use papergrid::Symbol;

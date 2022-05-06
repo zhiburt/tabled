@@ -203,143 +203,143 @@ fn set_border(grid: &mut Grid, sector: HashSet<(usize, usize)>, border: Border) 
     }
 
     for &(row, col) in &sector {
-        let mut cell_border = Border::default();
+        let border = build_cell_border(&sector, row, col, &border);
 
-        let cell_has_top_neighbor = cell_has_top_neighbor(&sector, row, col);
-        let cell_has_bottom_neighbor = cell_has_bottom_neighbor(&sector, row, col);
-        let cell_has_left_neighbor = cell_has_left_neighbor(&sector, row, col);
-        let cell_has_right_neighbor = cell_has_right_neighbor(&sector, row, col);
+        grid.set(
+            Entity::Cell(row, col),
+            Settings::default().border(border).border_restriction(false),
+        );
+    }
+}
 
-        let this_has_left_top_neighbor = is_there_left_top_cell(&sector, row, col);
-        let this_has_right_top_neighbor = is_there_right_top_cell(&sector, row, col);
-        let this_has_left_bottom_neighbor = is_there_left_bottom_cell(&sector, row, col);
-        let this_has_right_bottom_neighbor = is_there_right_bottom_cell(&sector, row, col);
+fn build_cell_border(
+    sector: &HashSet<(usize, usize)>,
+    row: usize,
+    col: usize,
+    border: &Border,
+) -> Border {
+    let cell_has_top_neighbor = cell_has_top_neighbor(sector, row, col);
+    let cell_has_bottom_neighbor = cell_has_bottom_neighbor(sector, row, col);
+    let cell_has_left_neighbor = cell_has_left_neighbor(sector, row, col);
+    let cell_has_right_neighbor = cell_has_right_neighbor(sector, row, col);
 
-        if let Some(c) = border.top {
-            if !cell_has_top_neighbor {
-                cell_border = cell_border.top(c);
+    let this_has_left_top_neighbor = is_there_left_top_cell(sector, row, col);
+    let this_has_right_top_neighbor = is_there_right_top_cell(sector, row, col);
+    let this_has_left_bottom_neighbor = is_there_left_bottom_cell(sector, row, col);
+    let this_has_right_bottom_neighbor = is_there_right_bottom_cell(sector, row, col);
 
-                if cell_has_right_neighbor && !this_has_right_top_neighbor {
+    let mut cell_border = Border::default();
+    if let Some(c) = border.top.clone() {
+        if !cell_has_top_neighbor {
+            cell_border = cell_border.top(c.clone());
+
+            if cell_has_right_neighbor && !this_has_right_top_neighbor {
+                cell_border = cell_border.top_right_corner(c);
+            }
+        }
+    }
+    if let Some(c) = border.bottom.clone() {
+        if !cell_has_bottom_neighbor {
+            cell_border = cell_border.bottom(c.clone());
+
+            if cell_has_right_neighbor && !this_has_right_bottom_neighbor {
+                cell_border = cell_border.bottom_right_corner(c);
+            }
+        }
+    }
+    if let Some(c) = border.left.clone() {
+        if !cell_has_left_neighbor {
+            cell_border = cell_border.left(c.clone());
+
+            if cell_has_bottom_neighbor && !this_has_left_bottom_neighbor {
+                cell_border = cell_border.bottom_left_corner(c);
+            }
+        }
+    }
+    if let Some(c) = border.right.clone() {
+        if !cell_has_right_neighbor {
+            cell_border = cell_border.right(c.clone());
+
+            if cell_has_bottom_neighbor && !this_has_right_bottom_neighbor {
+                cell_border = cell_border.bottom_right_corner(c);
+            }
+        }
+    }
+    if let Some(c) = border.left_top_corner.clone() {
+        if !cell_has_left_neighbor && !cell_has_top_neighbor {
+            cell_border = cell_border.top_left_corner(c);
+        }
+    }
+    if let Some(c) = border.left_bottom_corner.clone() {
+        if !cell_has_left_neighbor && !cell_has_bottom_neighbor {
+            cell_border = cell_border.bottom_left_corner(c);
+        }
+    }
+    if let Some(c) = border.right_top_corner.clone() {
+        if !cell_has_right_neighbor && !cell_has_top_neighbor {
+            cell_border = cell_border.top_right_corner(c);
+        }
+    }
+    if let Some(c) = border.right_bottom_corner.clone() {
+        if !cell_has_right_neighbor && !cell_has_bottom_neighbor {
+            cell_border = cell_border.bottom_right_corner(c);
+        }
+    }
+    {
+        if !cell_has_bottom_neighbor {
+            if !cell_has_left_neighbor && this_has_left_top_neighbor {
+                if let Some(c) = border.right_top_corner.clone() {
+                    cell_border = cell_border.top_left_corner(c);
+                }
+            }
+
+            if cell_has_left_neighbor && this_has_left_bottom_neighbor {
+                if let Some(c) = border.left_top_corner.clone() {
+                    cell_border = cell_border.bottom_left_corner(c);
+                }
+            }
+
+            if !cell_has_right_neighbor && this_has_right_top_neighbor {
+                if let Some(c) = border.left_top_corner.clone() {
+                    cell_border = cell_border.top_right_corner(c);
+                }
+            }
+
+            if cell_has_right_neighbor && this_has_right_bottom_neighbor {
+                if let Some(c) = border.right_top_corner.clone() {
+                    cell_border = cell_border.bottom_right_corner(c);
+                }
+            }
+        }
+
+        if !cell_has_top_neighbor {
+            if !cell_has_left_neighbor && this_has_left_bottom_neighbor {
+                if let Some(c) = border.right_bottom_corner.clone() {
+                    cell_border = cell_border.bottom_left_corner(c);
+                }
+            }
+
+            if cell_has_left_neighbor && this_has_left_top_neighbor {
+                if let Some(c) = border.left_bottom_corner.clone() {
+                    cell_border = cell_border.top_left_corner(c);
+                }
+            }
+
+            if !cell_has_right_neighbor && this_has_right_bottom_neighbor {
+                if let Some(c) = border.left_bottom_corner.clone() {
+                    cell_border = cell_border.bottom_right_corner(c);
+                }
+            }
+
+            if cell_has_right_neighbor && this_has_right_top_neighbor {
+                if let Some(c) = border.right_bottom_corner.clone() {
                     cell_border = cell_border.top_right_corner(c);
                 }
             }
         }
-
-        if let Some(c) = border.bottom {
-            if !cell_has_bottom_neighbor {
-                cell_border = cell_border.bottom(c);
-
-                if cell_has_right_neighbor && !this_has_right_bottom_neighbor {
-                    cell_border = cell_border.bottom_right_corner(c);
-                }
-            }
-        }
-
-        if let Some(c) = border.left {
-            if !cell_has_left_neighbor {
-                cell_border = cell_border.left(c);
-
-                if cell_has_bottom_neighbor && !this_has_left_bottom_neighbor {
-                    cell_border = cell_border.bottom_left_corner(c);
-                }
-            }
-        }
-
-        if let Some(c) = border.right {
-            if !cell_has_right_neighbor {
-                cell_border = cell_border.right(c);
-
-                if cell_has_bottom_neighbor && !this_has_right_bottom_neighbor {
-                    cell_border = cell_border.bottom_right_corner(c);
-                }
-            }
-        }
-
-        if let Some(c) = border.left_top_corner {
-            if !cell_has_left_neighbor && !cell_has_top_neighbor {
-                cell_border = cell_border.top_left_corner(c);
-            }
-        }
-
-        if let Some(c) = border.left_bottom_corner {
-            if !cell_has_left_neighbor && !cell_has_bottom_neighbor {
-                cell_border = cell_border.bottom_left_corner(c);
-            }
-        }
-
-        if let Some(c) = border.right_top_corner {
-            if !cell_has_right_neighbor && !cell_has_top_neighbor {
-                cell_border = cell_border.top_right_corner(c);
-            }
-        }
-
-        if let Some(c) = border.right_bottom_corner {
-            if !cell_has_right_neighbor && !cell_has_bottom_neighbor {
-                cell_border = cell_border.bottom_right_corner(c);
-            }
-        }
-
-        {
-            if !cell_has_bottom_neighbor {
-                if !cell_has_left_neighbor && this_has_left_top_neighbor {
-                    if let Some(c) = border.right_top_corner {
-                        cell_border = cell_border.top_left_corner(c);
-                    }
-                }
-
-                if cell_has_left_neighbor && this_has_left_bottom_neighbor {
-                    if let Some(c) = border.left_top_corner {
-                        cell_border = cell_border.bottom_left_corner(c);
-                    }
-                }
-
-                if !cell_has_right_neighbor && this_has_right_top_neighbor {
-                    if let Some(c) = border.left_top_corner {
-                        cell_border = cell_border.top_right_corner(c);
-                    }
-                }
-
-                if cell_has_right_neighbor && this_has_right_bottom_neighbor {
-                    if let Some(c) = border.right_top_corner {
-                        cell_border = cell_border.bottom_right_corner(c);
-                    }
-                }
-            }
-
-            if !cell_has_top_neighbor {
-                if !cell_has_left_neighbor && this_has_left_bottom_neighbor {
-                    if let Some(c) = border.right_bottom_corner {
-                        cell_border = cell_border.bottom_left_corner(c);
-                    }
-                }
-
-                if cell_has_left_neighbor && this_has_left_top_neighbor {
-                    if let Some(c) = border.left_bottom_corner {
-                        cell_border = cell_border.top_left_corner(c);
-                    }
-                }
-
-                if !cell_has_right_neighbor && this_has_right_bottom_neighbor {
-                    if let Some(c) = border.left_bottom_corner {
-                        cell_border = cell_border.bottom_right_corner(c);
-                    }
-                }
-
-                if cell_has_right_neighbor && this_has_right_top_neighbor {
-                    if let Some(c) = border.right_bottom_corner {
-                        cell_border = cell_border.top_right_corner(c);
-                    }
-                }
-            }
-        }
-
-        grid.set(
-            Entity::Cell(row, col),
-            Settings::default()
-                .border(cell_border)
-                .border_restriction(false),
-        );
     }
+
+    cell_border
 }
 
 fn cell_has_top_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {

@@ -1,4 +1,6 @@
-use papergrid::{AlignmentHorizontal, Border, Entity, Indent, Settings, DEFAULT_CELL_STYLE};
+use papergrid::{
+    AlignmentHorizontal, Border, Entity, Indent, Settings, Symbol, DEFAULT_CELL_STYLE,
+};
 
 mod util;
 
@@ -37,7 +39,7 @@ fn grid_2x2_custom_column_test() {
          +---#***#\n",
     );
 
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    grid.set_cell_borders(DEFAULT_CELL_STYLE);
     grid.set(
         Entity::Column(0),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
@@ -73,7 +75,7 @@ fn grid_2x2_custom_row_test() {
         )
     );
 
-    grid.set_cell_borders(DEFAULT_CELL_STYLE.clone());
+    grid.set_cell_borders(DEFAULT_CELL_STYLE);
     grid.set(
         Entity::Row(1),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
@@ -285,4 +287,63 @@ fn grid_2x2_custom_border_test() {
          #1-0^1-1!\n\
          \u{0020}*** *** \n"
     )
+}
+
+#[cfg(feature = "color")]
+#[test]
+fn grid_2x2_ansi_border_test() {
+    use colored::Colorize;
+
+    let mut grid = util::new_grid::<2, 2>();
+
+    let top = Symbol::ansi("*".on_red().green().to_string()).unwrap();
+    let bottom = Symbol::ansi("#".on_green().blue().to_string()).unwrap();
+    let left = Symbol::ansi("~".on_red().white().to_string()).unwrap();
+    let right = Symbol::ansi("!".on_red().green().to_string()).unwrap();
+    let top_left = Symbol::ansi("@".magenta().to_string()).unwrap();
+    let top_right = Symbol::ansi("$".on_blue().to_string()).unwrap();
+    let bottom_left = Symbol::ansi("%".yellow().to_string()).unwrap();
+    let bottom_right = Symbol::ansi("^".on_yellow().to_string()).unwrap();
+
+    grid.set(
+        Entity::Global,
+        Settings::new().border(Border::new(
+            top,
+            bottom,
+            left,
+            right,
+            top_left,
+            top_right,
+            bottom_left,
+            bottom_right,
+        )),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "\u{1b}[35m@\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[35m@\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[44m$\u{1b}[0m\n",
+            "\u{1b}[41;37m~\u{1b}[0m0-0\u{1b}[41;37m~\u{1b}[0m0-1\u{1b}[41;32m!\u{1b}[0m\n",
+            "\u{1b}[35m@\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[35m@\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[44m$\u{1b}[0m\n",
+            "\u{1b}[41;37m~\u{1b}[0m1-0\u{1b}[41;37m~\u{1b}[0m1-1\u{1b}[41;32m!\u{1b}[0m\n",
+            "\u{1b}[33m%\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[33m%\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[43m^\u{1b}[0m\n",
+        )
+    )
+}
+
+#[cfg(feature = "color")]
+#[test]
+fn grid_2x2_ansi_border_none_if_string_is_not_1_char_test() {
+    use colored::Colorize;
+
+    assert!(Symbol::ansi("12".to_string()).is_none());
+    assert!(Symbol::ansi("123".to_string()).is_none());
+    assert!(Symbol::ansi("".to_string()).is_none());
+
+    assert!(Symbol::ansi("1".to_string()).is_some());
+    assert!(Symbol::ansi("1".on_red().to_string()).is_some());
+    assert!(Symbol::ansi("1".on_red().blue().to_string()).is_some());
+    assert!(Symbol::ansi("1".truecolor(0, 1, 3).on_truecolor(1, 2, 3).to_string()).is_some());
 }

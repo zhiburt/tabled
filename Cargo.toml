@@ -21,6 +21,7 @@ coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master
 maintenance = { status = "actively-developed" }
 
 [features]
+default = ["color"]
 color = ["papergrid/color", "ansi-str"]
 
 [dependencies]
