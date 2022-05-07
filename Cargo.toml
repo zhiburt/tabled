@@ -41,3 +41,7 @@ harness = false
 [[example]]
 name = "colored_borders"
 required-features = ["color"]
+
+[[example]]
+name = "color"
+required-features = ["color"]
