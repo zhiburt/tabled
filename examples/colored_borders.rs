@@ -1,5 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example colored_borders`
+//!
+//! This example requires a `color` feature.
 
 use papergrid::Border;
 use tabled::{object::Full, Alignment, Highlight, Modify, Segment, Style, Table, Tabled};
@@ -21,7 +23,6 @@ impl CodeEditor {
     }
 }
 
-#[cfg(feature = "color")]
 fn main() {
     use owo_colors::OwoColorize;
     use papergrid::Symbol;
@@ -51,9 +52,4 @@ fn main() {
         ));
 
     println!("{}", table);
-}
-
-#[cfg(not(feature = "color"))]
-fn main() {
-    unimplemented!("This example must be run only with `color` feature");
 }

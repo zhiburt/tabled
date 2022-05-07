@@ -21,7 +21,6 @@ coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master
 maintenance = { status = "actively-developed" }
 
 [features]
-default = ["color"]
 color = ["papergrid/color", "ansi-str"]
 
 [dependencies]
@@ -38,3 +37,7 @@ quickcheck_macros = "1.0.0"
 [[bench]]
 name = "table_build"
 harness = false
+
+[[example]]
+name = "colored_borders"
+required-features = ["color"]

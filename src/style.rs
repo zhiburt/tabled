@@ -1336,3 +1336,6 @@ impl CellOption for Border {
 /// ```
 #[cfg(feature = "color")]
 pub use papergrid::Symbol;
+
+#[cfg(not(feature = "color"))]
+use papergrid::Symbol;
