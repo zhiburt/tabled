@@ -2374,9 +2374,10 @@ mod tests {
         assert_eq!(F("AAA", AlignmentHorizontal::Center, 4).to_string(), "AAA ");
         assert_eq!(F("🎩", AlignmentHorizontal::Center, 4).to_string(), " 🎩 ");
         assert_eq!(F("🎩", AlignmentHorizontal::Center, 3).to_string(), "🎩 ");
+
         #[cfg(feature = "color")]
         {
-            use colored::Colorize;
+            use owo_colors::OwoColorize;
             let text = "Colored Text".red().to_string();
             assert_eq!(
                 F(&text, AlignmentHorizontal::Center, 15).to_string(),
@@ -2399,7 +2400,7 @@ mod tests {
     #[cfg(feature = "color")]
     #[test]
     fn colored_string_width_test() {
-        use colored::Colorize;
+        use owo_colors::OwoColorize;
         assert_eq!(string_width(&"hello world".red().to_string()), 11);
         assert_eq!(string_width(&"hello\nworld".blue().to_string()), 5);
         assert_eq!(string_width("\u{1b}[34m0\u{1b}[0m"), 1);

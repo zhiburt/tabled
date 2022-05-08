@@ -1240,11 +1240,6 @@ fn border_colored_test() {
         )
         .to_string();
 
-    eprintln!("{:?}", "*".green().on_red().to_string());
-    eprintln!("{:?}", '*'.green().on_red().to_string());
-    eprintln!("{:?}", '*'.blue().to_string());
-    assert!(false);
-
     assert_eq!(
         table,
         concat!(

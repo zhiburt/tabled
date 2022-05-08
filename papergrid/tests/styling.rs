@@ -290,7 +290,7 @@ fn grid_2x2_custom_border_test() {
 #[cfg(feature = "color")]
 #[test]
 fn grid_2x2_ansi_border_test() {
-    use colored::Colorize;
+    use owo_colors::OwoColorize;
     use papergrid::Symbol;
 
     let mut grid = util::new_grid::<2, 2>();
@@ -303,10 +303,6 @@ fn grid_2x2_ansi_border_test() {
     let top_right = Symbol::ansi("$".on_blue().to_string()).unwrap();
     let bottom_left = Symbol::ansi("%".yellow().to_string()).unwrap();
     let bottom_right = Symbol::ansi("^".on_yellow().to_string()).unwrap();
-
-    eprintln!("{:?}", "*".green().on_red().to_string());
-    eprintln!("{:?}", "*".on_red().to_string());
-    eprintln!("{:?}", "*".green().to_string());
 
     grid.set(
         Entity::Global,
@@ -325,11 +321,11 @@ fn grid_2x2_ansi_border_test() {
     assert_eq!(
             grid.to_string(),
             concat!(
-                "\u{1b}[35m@\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[35m@\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[44m$\u{1b}[0m\n",
-                "\u{1b}[41;37m~\u{1b}[0m0-0\u{1b}[41;37m~\u{1b}[0m0-1\u{1b}[41;32m!\u{1b}[0m\n",
-                "\u{1b}[35m@\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[35m@\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[41;32m*\u{1b}[0m\u{1b}[44m$\u{1b}[0m\n",
-                "\u{1b}[41;37m~\u{1b}[0m1-0\u{1b}[41;37m~\u{1b}[0m1-1\u{1b}[41;32m!\u{1b}[0m\n",
-                "\u{1b}[33m%\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[33m%\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[42;34m#\u{1b}[0m\u{1b}[43m^\u{1b}[0m\n",
+                "\u{1b}[35m@\u{1b}[39m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[35m@\u{1b}[39m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[44m$\u{1b}[49m\n",
+                "\u{1b}[37;41m~\u{1b}[0m0-0\u{1b}[37;41m~\u{1b}[0m0-1\u{1b}[32;41m!\u{1b}[0m\n",
+                "\u{1b}[35m@\u{1b}[39m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[35m@\u{1b}[39m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[44m$\u{1b}[49m\n",
+                "\u{1b}[37;41m~\u{1b}[0m1-0\u{1b}[37;41m~\u{1b}[0m1-1\u{1b}[32;41m!\u{1b}[0m\n",
+                "\u{1b}[33m%\u{1b}[39m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[33m%\u{1b}[39m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[43m^\u{1b}[49m\n",
             )
         )
 }
@@ -337,7 +333,7 @@ fn grid_2x2_ansi_border_test() {
 #[cfg(feature = "color")]
 #[test]
 fn grid_2x2_ansi_border_none_if_string_is_not_1_char_test() {
-    use colored::Colorize;
+    use owo_colors::OwoColorize;
     use papergrid::Symbol;
 
     assert!(Symbol::ansi("12".to_string()).is_none());
