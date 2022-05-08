@@ -37,3 +37,11 @@ quickcheck_macros = "1.0.0"
 [[bench]]
 name = "table_build"
 harness = false
+
+[[example]]
+name = "colored_borders"
+required-features = ["color"]
+
+[[example]]
+name = "color"
+required-features = ["color"]
