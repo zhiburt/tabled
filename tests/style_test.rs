@@ -146,7 +146,9 @@ fn ascii_dots_style() {
         ": N : column 0 : column 1 : column 2 :\n",
         ":...:..........:..........:..........:\n",
         ": 0 :   0-0    :   0-1    :   0-2    :\n",
+        ":...:..........:..........:..........:\n",
         ": 1 :   1-0    :   1-1    :   1-2    :\n",
+        ":...:..........:..........:..........:\n",
         ": 2 :   2-0    :   2-1    :   2-2    :\n",
         ":...:..........:..........:..........:\n",
     );
@@ -637,7 +639,7 @@ fn custom_style_test() {
         Style::empty().left('-').header('+'),
         concat!(
             "- N  column 0  column 1  column 2 \n",
-            "++++++++++++++++++++++++++++++++++\n",
+            " +++++++++++++++++++++++++++++++++\n",
             "- 0    0-0       0-1       0-2    \n",
             "- 1    1-0       1-1       1-2    \n",
             "- 2    2-0       2-1       2-2    \n",
@@ -697,7 +699,7 @@ fn custom_style_test() {
         Style::empty().right('-').header('+'),
         concat!(
             " N  column 0  column 1  column 2 -\n",
-            "++++++++++++++++++++++++++++++++++\n",
+            "+++++++++++++++++++++++++++++++++ \n",
             " 0    0-0       0-1       0-2    -\n",
             " 1    1-0       1-1       1-2    -\n",
             " 2    2-0       2-1       2-2    -\n",
@@ -860,7 +862,7 @@ fn custom_style_test() {
         Style::empty().header('-').left('+'),
         concat!(
             "+ N  column 0  column 1  column 2 \n",
-            "+---------------------------------\n",
+            " ---------------------------------\n",
             "+ 0    0-0       0-1       0-2    \n",
             "+ 1    1-0       1-1       1-2    \n",
             "+ 2    2-0       2-1       2-2    \n",
@@ -870,7 +872,7 @@ fn custom_style_test() {
         Style::empty().header('-').right('+'),
         concat!(
             " N  column 0  column 1  column 2 +\n",
-            "---------------------------------+\n",
+            "--------------------------------- \n",
             " 0    0-0       0-1       0-2    +\n",
             " 1    1-0       1-1       1-2    +\n",
             " 2    2-0       2-1       2-2    +\n",
@@ -940,15 +942,13 @@ fn custom_style_test() {
         .top_right_corner('.')
         .bottom_right_corner('%')
         .inner_intersection('+')
-        .left_header_intersection('o')
-        .right_header_intersection('w')
         .header_intersection('m');
     test_style!(
         full_style.clone(),
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -965,7 +965,7 @@ fn custom_style_test() {
         concat!(
             "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -979,7 +979,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -993,7 +993,7 @@ fn custom_style_test() {
         concat!(
             "w---!----------!----------!----------.\n",
             "w N # column 0 # column 1 # column 2 *\n",
-            "w,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "w,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "w 0 #   0-0    #   0-1    #   0-2    *\n",
             "wxxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "w 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1007,7 +1007,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------i\n",
             "| N # column 0 # column 1 # column 2 i\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,i\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,i\n",
             "| 0 #   0-0    #   0-1    #   0-2    i\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxxi\n",
             "| 1 #   1-0    #   1-1    #   1-2    i\n",
@@ -1021,7 +1021,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "q,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,q\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1035,7 +1035,7 @@ fn custom_style_test() {
         concat!(
             ";---q----------q----------q----------.\n",
             "| N q column 0 q column 1 q column 2 *\n",
-            "o,,,q,,,,,,,,,,q,,,,,,,,,,q,,,,,,,,,,w\n",
+            "=,,,q,,,,,,,,,,q,,,,,,,,,,q,,,,,,,,,,$\n",
             "| 0 q   0-0    q   0-1    q   0-2    *\n",
             "=xxxqxxxxxxxxxxqxxxxxxxxxxqxxxxxxxxxx$\n",
             "| 1 q   1-0    q   1-1    q   1-2    *\n",
@@ -1049,7 +1049,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq\n",
+            "=qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1079,7 +1079,7 @@ fn custom_style_test() {
         full_style.clone().top_off(),
         concat!(
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1093,7 +1093,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1106,7 +1106,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------\n",
             "| N # column 0 # column 1 # column 2 \n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,\n",
             "| 0 #   0-0    #   0-1    #   0-2    \n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx\n",
             "| 1 #   1-0    #   1-1    #   1-2    \n",
@@ -1120,7 +1120,7 @@ fn custom_style_test() {
         concat!(
             "---!----------!----------!----------.\n",
             " N # column 0 # column 1 # column 2 *\n",
-            ",,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            ",,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             " 0 #   0-0    #   0-1    #   0-2    *\n",
             "xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             " 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1134,7 +1134,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
             "| 2 #   2-0    #   2-1    #   2-2    *\n",
@@ -1146,7 +1146,7 @@ fn custom_style_test() {
         concat!(
             ";---------------------------------.\n",
             "| N  column 0  column 1  column 2 *\n",
-            "o,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,w\n",
+            "=,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,$\n",
             "| 0    0-0       0-1       0-2    *\n",
             "=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx$\n",
             "| 1    1-0       1-1       1-2    *\n",
