@@ -674,9 +674,9 @@ fn make_style_header(
 /// # Example
 ///
 /// ```rust
-/// use tabled::{Table, style::TopBorderText};
+/// use tabled::{Table, style::BorderText};
 /// let table = Table::new(["Hello World"])
-///     .with(TopBorderText::new("+-.table"));
+///     .with(BorderText::first("+-.table"));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -687,21 +687,57 @@ fn make_style_header(
 ///      +-------------+\n"
 /// );
 /// ```
-pub struct TopBorderText<'a> {
+pub struct BorderText<'a> {
     // todo: offset from which we start overriding border
     // offset: usize,
     text: Cow<'a, str>,
+    row: SplitLineIndex,
 }
 
-impl<'a> TopBorderText<'a> {
-    pub fn new<S: Into<Cow<'a, str>>>(text: S) -> Self {
-        Self { text: text.into() }
+enum SplitLineIndex {
+    First,
+    Last,
+    Line(usize),
+}
+
+impl<'a> BorderText<'a> {
+    pub fn new<S: Into<Cow<'a, str>>>(line: usize, text: S) -> Self {
+        Self {
+            text: text.into(),
+            row: SplitLineIndex::Line(line),
+        }
+    }
+
+    pub fn first<S: Into<Cow<'a, str>>>(text: S) -> Self {
+        Self {
+            text: text.into(),
+            row: SplitLineIndex::First,
+        }
+    }
+
+    pub fn last<S: Into<Cow<'a, str>>>(text: S) -> Self {
+        Self {
+            text: text.into(),
+            row: SplitLineIndex::Last,
+        }
     }
 }
 
-impl<'a> TableOption for TopBorderText<'a> {
+impl<'a> TableOption for BorderText<'a> {
     fn change(&mut self, grid: &mut Grid) {
-        grid.override_split_line(0, self.text.as_ref())
+        let row = match self.row {
+            SplitLineIndex::First => 0,
+            SplitLineIndex::Last => grid.count_rows(),
+            SplitLineIndex::Line(row) => {
+                if row > grid.count_rows() {
+                    return;
+                }
+
+                row
+            }
+        };
+
+        grid.override_split_line(row, self.text.as_ref())
     }
 }
 

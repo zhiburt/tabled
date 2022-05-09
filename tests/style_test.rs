@@ -1,11 +1,13 @@
 use std::iter::FromIterator;
 
 use crate::util::create_vector;
-use papergrid::Border;
-use tabled::builder::Builder;
-use tabled::style::TopBorderText;
-use tabled::Rows;
-use tabled::{object::Full, Modify, Padding, Style, Table, TableIteratorExt};
+
+use tabled::{
+    builder::Builder,
+    object::{Full, Rows},
+    style::{Border, BorderText},
+    Modify, Padding, Style, Table, TableIteratorExt,
+};
 
 mod util;
 
@@ -259,11 +261,11 @@ fn style_single_cell() {
 }
 
 #[test]
-fn top_border_override_test() {
+fn top_border_override_first_test() {
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
         .with(Style::ascii())
-        .with(TopBorderText::new("-Table"))
+        .with(BorderText::first("-Table"))
         .to_string();
 
     let expected = concat!(
@@ -280,11 +282,75 @@ fn top_border_override_test() {
 }
 
 #[test]
+fn top_border_override_last_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(BorderText::last("-Table"))
+        .to_string();
+
+    let expected = concat!(
+        "+---+----------+----------+\n",
+        "| N | column 0 | column 1 |\n",
+        "+---+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |\n",
+        "+---+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |\n",
+        "-Table---------+----------+\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn top_border_override_new_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(BorderText::new(1, "-Table"))
+        .with(BorderText::new(2, "-Table"))
+        .to_string();
+
+    let expected = concat!(
+        "+---+----------+----------+\n",
+        "| N | column 0 | column 1 |\n",
+        "-Table---------+----------+\n",
+        "| 0 |   0-0    |   0-1    |\n",
+        "-Table---------+----------+\n",
+        "| 1 |   1-0    |   1-1    |\n",
+        "+---+----------+----------+\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn top_border_override_new_doesnt_panic_when_index_is_invalid() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(BorderText::new(100, "-Table"))
+        .to_string();
+
+    let expected = concat!(
+        "+---+----------+----------+\n",
+        "| N | column 0 | column 1 |\n",
+        "+---+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |\n",
+        "+---+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |\n",
+        "+---+----------+----------+\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
 fn top_override_doesnt_work_with_style_with_no_top_border_test() {
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(TopBorderText::new("-Table"))
+        .with(BorderText::first("-Table"))
         .to_string();
 
     let expected = concat!(
@@ -302,7 +368,7 @@ fn top_border_override_cleared_after_restyling_test() {
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
         .with(Style::ascii())
-        .with(TopBorderText::new("-Table"))
+        .with(BorderText::first("-Table"))
         .with(Style::ascii())
         .to_string();
 
