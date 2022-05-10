@@ -3,7 +3,8 @@
 
 use papergrid::Border;
 use tabled::{
-    Alignment, Cell, Extract, Full, Header, Highlight, Modify, Style, TableIteratorExt, Tabled,
+    object::{Cell, Full},
+    Alignment, Extract, Header, Highlight, Modify, Style, TableIteratorExt, Tabled,
 };
 
 #[derive(Tabled)]

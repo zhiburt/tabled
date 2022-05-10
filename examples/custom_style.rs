@@ -30,14 +30,7 @@ fn main() {
     ];
 
     let table = Table::new(&data)
-        .with(
-            Style::modern()
-                .horizontal_off()
-                .vertical_off()
-                .header(' ')
-                .left_header_intersection('│')
-                .right_header_intersection('│'),
-        )
+        .with(Style::modern().horizontal_off().vertical_off().header(' '))
         .with(Modify::new(Full).with(Alignment::left()));
 
     println!("{}", table);

@@ -1,8 +1,10 @@
-use crate::util::{create_vector, is_lines_equal};
 use tabled::{
+    object::Cell,
     style::{Border, Style},
-    Cell, Highlight, Margin, MaxWidth, MinWidth, Modify, Span, Table,
+    Highlight, Margin, MaxWidth, MinWidth, Modify, Span, Table,
 };
+
+use crate::util::{create_vector, is_lines_equal};
 
 mod util;
 

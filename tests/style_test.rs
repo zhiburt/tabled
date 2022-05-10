@@ -1,11 +1,13 @@
 use std::iter::FromIterator;
 
 use crate::util::create_vector;
-use papergrid::Border;
-use tabled::builder::Builder;
-use tabled::style::TopBorderText;
-use tabled::Rows;
-use tabled::{object::Full, Modify, Padding, Style, Table, TableIteratorExt};
+
+use tabled::{
+    builder::Builder,
+    object::{Full, Rows},
+    style::{Border, BorderText},
+    Highlight, Modify, Padding, Style, Table, TableIteratorExt,
+};
 
 mod util;
 
@@ -146,7 +148,9 @@ fn ascii_dots_style() {
         ": N : column 0 : column 1 : column 2 :\n",
         ":...:..........:..........:..........:\n",
         ": 0 :   0-0    :   0-1    :   0-2    :\n",
+        ":...:..........:..........:..........:\n",
         ": 1 :   1-0    :   1-1    :   1-2    :\n",
+        ":...:..........:..........:..........:\n",
         ": 2 :   2-0    :   2-1    :   2-2    :\n",
         ":...:..........:..........:..........:\n",
     );
@@ -257,11 +261,11 @@ fn style_single_cell() {
 }
 
 #[test]
-fn top_border_override_test() {
+fn top_border_override_first_test() {
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
         .with(Style::ascii())
-        .with(TopBorderText::new("-Table"))
+        .with(BorderText::first("-Table"))
         .to_string();
 
     let expected = concat!(
@@ -278,11 +282,75 @@ fn top_border_override_test() {
 }
 
 #[test]
+fn top_border_override_last_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(BorderText::last("-Table"))
+        .to_string();
+
+    let expected = concat!(
+        "+---+----------+----------+\n",
+        "| N | column 0 | column 1 |\n",
+        "+---+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |\n",
+        "+---+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |\n",
+        "-Table---------+----------+\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn top_border_override_new_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(BorderText::new(1, "-Table"))
+        .with(BorderText::new(2, "-Table"))
+        .to_string();
+
+    let expected = concat!(
+        "+---+----------+----------+\n",
+        "| N | column 0 | column 1 |\n",
+        "-Table---------+----------+\n",
+        "| 0 |   0-0    |   0-1    |\n",
+        "-Table---------+----------+\n",
+        "| 1 |   1-0    |   1-1    |\n",
+        "+---+----------+----------+\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn top_border_override_new_doesnt_panic_when_index_is_invalid() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(BorderText::new(100, "-Table"))
+        .to_string();
+
+    let expected = concat!(
+        "+---+----------+----------+\n",
+        "| N | column 0 | column 1 |\n",
+        "+---+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |\n",
+        "+---+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |\n",
+        "+---+----------+----------+\n",
+    );
+
+    assert_eq!(table, expected);
+}
+
+#[test]
 fn top_override_doesnt_work_with_style_with_no_top_border_test() {
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(TopBorderText::new("-Table"))
+        .with(BorderText::first("-Table"))
         .to_string();
 
     let expected = concat!(
@@ -300,7 +368,7 @@ fn top_border_override_cleared_after_restyling_test() {
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
         .with(Style::ascii())
-        .with(TopBorderText::new("-Table"))
+        .with(BorderText::first("-Table"))
         .with(Style::ascii())
         .to_string();
 
@@ -637,7 +705,7 @@ fn custom_style_test() {
         Style::empty().left('-').header('+'),
         concat!(
             "- N  column 0  column 1  column 2 \n",
-            "++++++++++++++++++++++++++++++++++\n",
+            " +++++++++++++++++++++++++++++++++\n",
             "- 0    0-0       0-1       0-2    \n",
             "- 1    1-0       1-1       1-2    \n",
             "- 2    2-0       2-1       2-2    \n",
@@ -697,7 +765,7 @@ fn custom_style_test() {
         Style::empty().right('-').header('+'),
         concat!(
             " N  column 0  column 1  column 2 -\n",
-            "++++++++++++++++++++++++++++++++++\n",
+            "+++++++++++++++++++++++++++++++++ \n",
             " 0    0-0       0-1       0-2    -\n",
             " 1    1-0       1-1       1-2    -\n",
             " 2    2-0       2-1       2-2    -\n",
@@ -860,7 +928,7 @@ fn custom_style_test() {
         Style::empty().header('-').left('+'),
         concat!(
             "+ N  column 0  column 1  column 2 \n",
-            "+---------------------------------\n",
+            " ---------------------------------\n",
             "+ 0    0-0       0-1       0-2    \n",
             "+ 1    1-0       1-1       1-2    \n",
             "+ 2    2-0       2-1       2-2    \n",
@@ -870,7 +938,7 @@ fn custom_style_test() {
         Style::empty().header('-').right('+'),
         concat!(
             " N  column 0  column 1  column 2 +\n",
-            "---------------------------------+\n",
+            "--------------------------------- \n",
             " 0    0-0       0-1       0-2    +\n",
             " 1    1-0       1-1       1-2    +\n",
             " 2    2-0       2-1       2-2    +\n",
@@ -940,15 +1008,13 @@ fn custom_style_test() {
         .top_right_corner('.')
         .bottom_right_corner('%')
         .inner_intersection('+')
-        .left_header_intersection('o')
-        .right_header_intersection('w')
         .header_intersection('m');
     test_style!(
         full_style.clone(),
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -965,7 +1031,7 @@ fn custom_style_test() {
         concat!(
             "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -979,7 +1045,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -993,7 +1059,7 @@ fn custom_style_test() {
         concat!(
             "w---!----------!----------!----------.\n",
             "w N # column 0 # column 1 # column 2 *\n",
-            "w,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "w,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "w 0 #   0-0    #   0-1    #   0-2    *\n",
             "wxxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "w 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1007,7 +1073,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------i\n",
             "| N # column 0 # column 1 # column 2 i\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,i\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,i\n",
             "| 0 #   0-0    #   0-1    #   0-2    i\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxxi\n",
             "| 1 #   1-0    #   1-1    #   1-2    i\n",
@@ -1021,7 +1087,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "q,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,q\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1035,7 +1101,7 @@ fn custom_style_test() {
         concat!(
             ";---q----------q----------q----------.\n",
             "| N q column 0 q column 1 q column 2 *\n",
-            "o,,,q,,,,,,,,,,q,,,,,,,,,,q,,,,,,,,,,w\n",
+            "=,,,q,,,,,,,,,,q,,,,,,,,,,q,,,,,,,,,,$\n",
             "| 0 q   0-0    q   0-1    q   0-2    *\n",
             "=xxxqxxxxxxxxxxqxxxxxxxxxxqxxxxxxxxxx$\n",
             "| 1 q   1-0    q   1-1    q   1-2    *\n",
@@ -1049,7 +1115,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq\n",
+            "=qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1079,7 +1145,7 @@ fn custom_style_test() {
         full_style.clone().top_off(),
         concat!(
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1093,7 +1159,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1106,7 +1172,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------\n",
             "| N # column 0 # column 1 # column 2 \n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,\n",
             "| 0 #   0-0    #   0-1    #   0-2    \n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx\n",
             "| 1 #   1-0    #   1-1    #   1-2    \n",
@@ -1120,7 +1186,7 @@ fn custom_style_test() {
         concat!(
             "---!----------!----------!----------.\n",
             " N # column 0 # column 1 # column 2 *\n",
-            ",,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            ",,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             " 0 #   0-0    #   0-1    #   0-2    *\n",
             "xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             " 1 #   1-0    #   1-1    #   1-2    *\n",
@@ -1134,7 +1200,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
-            "o,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,w\n",
+            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",
             "| 2 #   2-0    #   2-1    #   2-2    *\n",
@@ -1146,7 +1212,7 @@ fn custom_style_test() {
         concat!(
             ";---------------------------------.\n",
             "| N  column 0  column 1  column 2 *\n",
-            "o,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,w\n",
+            "=,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,$\n",
             "| 0    0-0       0-1       0-2    *\n",
             "=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx$\n",
             "| 1    1-0       1-1       1-2    *\n",
@@ -1271,6 +1337,47 @@ fn border_colored_test() {
             "\u{1b}[34m*\u{1b}[0m 0 \u{1b}[34m*\u{1b}[0m   0-0    \u{1b}[34m*\u{1b}[0m   0-1    \u{1b}[34m*\u{1b}[0m\n",
             "\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\n",
             "  1     1-0        1-1     \n",
+        )
+    );
+}
+
+#[test]
+fn style_frame_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(Highlight::new(Rows::single(1), Style::modern().frame()))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "+---+----------+----------+\n",
+            "| N | column 0 | column 1 |\n",
+            "┌─────────────────────────┐\n",
+            "│ 0 |   0-0    |   0-1    │\n",
+            "└─────────────────────────┘\n",
+            "| 1 |   1-0    |   1-1    |\n",
+            "+---+----------+----------+\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::blank())
+        .with(Highlight::new(Rows::single(0), Style::extended().frame()))
+        .with(Highlight::new(Rows::single(2), Style::extended().frame()))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "╔═════════════════════════╗\n",
+            "║ N   column 0   column 1 ║\n",
+            "╚═════════════════════════╝\n",
+            "  0     0-0        0-1     \n",
+            "╔═════════════════════════╗\n",
+            "║ 1     1-0        1-1    ║\n",
+            "╚═════════════════════════╝\n",
         )
     );
 }

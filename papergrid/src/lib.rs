@@ -1651,7 +1651,7 @@ impl Symbol {
         Some(Self(InnerSymbol::Ansi(s)))
     }
 
-    pub(crate) const fn from_char(c: char) -> Self {
+    pub const fn from_char(c: char) -> Self {
         #[cfg(feature = "color")]
         {
             Self(InnerSymbol::Char(c))
