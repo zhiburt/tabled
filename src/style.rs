@@ -861,7 +861,7 @@ impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, Style, Highlight, Rows};
+    /// use tabled::{Table, Style, Highlight, object::Rows};
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
     /// let table = Table::new(data)
     ///     .with(Highlight::new(Rows::first(), Style::modern().frame()));

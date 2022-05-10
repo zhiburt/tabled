@@ -187,7 +187,6 @@ pub use crate::{
     formating::*,
     highlight::*,
     margin::*,
-    object::*,
     padding::*,
     panel::*,
     rotate::*,

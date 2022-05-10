@@ -4,7 +4,10 @@
 //! This example requires a `color` feature.
 
 use papergrid::Border;
-use tabled::{object::Full, Alignment, Highlight, Modify, Segment, Style, Table, Tabled};
+use tabled::{
+    object::{Full, Segment},
+    Alignment, Highlight, Modify, Style, Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct CodeEditor {

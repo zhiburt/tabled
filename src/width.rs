@@ -849,20 +849,20 @@ fn is_zero_spanned_grid(grid: &Grid) -> bool {
 /// ## Examples
 ///
 /// ```
-/// use tabled::{Justify, Style, Modify, Full, Padding, Table};
+/// use tabled::{Justify, Style, Modify, object::Segment, Padding, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::github_markdown())
-///     .with(Modify::new(Full).with(Padding::zero()))
+///     .with(Modify::new(Segment::all()).with(Padding::zero()))
 ///     .with(Justify::new(3));
 /// ```
 ///
 /// [Max] usage to justify by a max column width.
 ///
 /// ```
-/// use tabled::{Justify, Style, Modify, Full, Padding, Table, width};
+/// use tabled::{Justify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
