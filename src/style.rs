@@ -277,7 +277,7 @@ impl Style {
 }
 
 #[derive(Debug, Clone)]
-pub struct StyleSettings {
+struct StyleSettings {
     frame: Frame,
     horizontal: Line,
     header: Line,
@@ -774,6 +774,49 @@ impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
             _i_v_border: PhantomData,
             _h_border: PhantomData,
         }
+    }
+
+    /// Frame function returns a frame as a border.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{Table, Style, Highlight, Rows};
+    /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
+    /// let table = Table::new(data)
+    ///     .with(Highlight::new(Rows::first(), Style::modern().frame()));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     concat!(
+    ///         "┌──────────────────┐\n",
+    ///         "│    0     |   1   │\n",
+    ///         "└──────────────────┘\n",
+    ///         "| 10:52:19 | Hello |\n",
+    ///         "+----------+-------+\n",
+    ///         "| 10:52:20 | World |\n",
+    ///         "+----------+-------+\n",
+    ///     )
+    /// );
+    /// ```
+    pub const fn frame(&self) -> Border {
+        Border {
+            top: char_to_symbol(self.inner.frame.top.main),
+            bottom: char_to_symbol(self.inner.frame.bottom.main),
+            left: char_to_symbol(self.inner.frame.left.main),
+            right: char_to_symbol(self.inner.frame.right.main),
+            left_top_corner: char_to_symbol(self.inner.frame.corner_top_left),
+            left_bottom_corner: char_to_symbol(self.inner.frame.corner_bottom_left),
+            right_top_corner: char_to_symbol(self.inner.frame.corner_top_right),
+            right_bottom_corner: char_to_symbol(self.inner.frame.corner_bottom_right),
+        }
+    }
+}
+
+const fn char_to_symbol(c: Option<char>) -> Option<Symbol> {
+    match c {
+        Some(c) => Some(Symbol::from_char(c)),
+        None => None,
     }
 }
 

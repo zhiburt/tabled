@@ -6,7 +6,7 @@ use tabled::{
     builder::Builder,
     object::{Full, Rows},
     style::{Border, BorderText},
-    Modify, Padding, Style, Table, TableIteratorExt,
+    Highlight, Modify, Padding, Style, Table, TableIteratorExt,
 };
 
 mod util;
@@ -1337,6 +1337,47 @@ fn border_colored_test() {
             "\u{1b}[34m*\u{1b}[0m 0 \u{1b}[34m*\u{1b}[0m   0-0    \u{1b}[34m*\u{1b}[0m   0-1    \u{1b}[34m*\u{1b}[0m\n",
             "\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\u{1b}[34m*\u{1b}[0m\n",
             "  1     1-0        1-1     \n",
+        )
+    );
+}
+
+#[test]
+fn style_frame_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(Highlight::new(Rows::single(1), Style::modern().frame()))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "+---+----------+----------+\n",
+            "| N | column 0 | column 1 |\n",
+            "┌─────────────────────────┐\n",
+            "│ 0 |   0-0    |   0-1    │\n",
+            "└─────────────────────────┘\n",
+            "| 1 |   1-0    |   1-1    |\n",
+            "+---+----------+----------+\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::blank())
+        .with(Highlight::new(Rows::single(0), Style::extended().frame()))
+        .with(Highlight::new(Rows::single(2), Style::extended().frame()))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "╔═════════════════════════╗\n",
+            "║ N   column 0   column 1 ║\n",
+            "╚═════════════════════════╝\n",
+            "  0     0-0        0-1     \n",
+            "╔═════════════════════════╗\n",
+            "║ 1     1-0        1-1    ║\n",
+            "╚═════════════════════════╝\n",
         )
     );
 }
