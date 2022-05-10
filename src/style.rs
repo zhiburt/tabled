@@ -1,5 +1,85 @@
 //! This module contains a list of primitives which can be applied to change [Table] style.
 //!
+//! ## [Style]
+//!
+//! It is responsible for a table border style.
+//! An individual cell border can be set by [Border].
+//!  
+//! ### Example
+//!
+//! ```
+//! use tabled::{Table, Style};
+//!
+//! let data = vec!["Hello", "2022"];
+//! let table = Table::new(&data).with(Style::psql()).to_string();
+//!
+//! assert_eq!(
+//!     table,
+//!     concat!(
+//!         " &str  \n",
+//!         "-------\n",
+//!         " Hello \n",
+//!         " 2022  \n",
+//!     )
+//! )
+//! ```
+//!
+//! ## [BorderText]
+//!
+//! It's used to override a border with a custom text.
+//!
+//! ### Example
+//!
+//! ```
+//! use tabled::{Table, style::{BorderText, Style}};
+//!
+//! let data = vec!["Hello", "2022"];
+//! let table = Table::new(&data)
+//!     .with(Style::psql())
+//!     .with(BorderText::new(1, "Santa"))
+//!     .to_string();
+//!
+//! assert_eq!(
+//!     table,
+//!     concat!(
+//!         " &str  \n",
+//!         "Santa--\n",
+//!         " Hello \n",
+//!         " 2022  \n",
+//!     )
+//! )
+//! ```
+//!
+//! ## [Border]
+//!
+//! [Border] can be used to modify cell's borders.
+//!
+//! It's possible to set a collored border when `color` feature is on.
+//! See [Symbol].
+//!
+//! ### Example
+//!
+//! ```
+//! use tabled::{Table, Style, Modify, object::Cell};
+//!
+//! let data = vec!["Hello", "2022"];
+//! let table = Table::new(&data)
+//!     .with(Style::psql())
+//!     .with(Modify::new(Cell(0, 0)).with(Style::modern().frame()))
+//!     .to_string();
+//!
+//! assert_eq!(
+//!     table,
+//!     concat!(
+//!         "┌───────┐\n",
+//!         "│ &str  │\n",
+//!         "└───────┘\n",
+//!         "  Hello  \n",
+//!         "  2022   \n",
+//!     )
+//! )
+//! ```
+//!
 //! [Table]: crate::Table
 
 use std::{borrow::Cow, marker::PhantomData};
