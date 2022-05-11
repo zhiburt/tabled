@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example basic`
 
-use tabled::{object::Rows, Alignment, AlignmentHorizontal, Modify, Style, Table, Tabled};
+use tabled::{object::Rows, Alignment, Modify, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {
@@ -45,8 +45,8 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Modify::new(Rows::first()).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
-        .with(Modify::new(Rows::new(1..)).with(Alignment::Horizontal(AlignmentHorizontal::Left)));
+        .with(Modify::new(Rows::first()).with(Alignment::center()))
+        .with(Modify::new(Rows::new(1..)).with(Alignment::left()));
 
     println!("{}", table);
 }
