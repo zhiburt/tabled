@@ -5,7 +5,7 @@
 
 use std::{
     collections::BTreeSet,
-    ops::{Bound, Range, RangeBounds, RangeFull, Sub},
+    ops::{Bound, Range, RangeBounds, RangeFull, Sub, Add},
 };
 
 /// Object helps to locate a nessesary part of a [Table].
@@ -130,6 +130,14 @@ impl Object for FirstRow {
     }
 }
 
+impl Add<usize> for FirstRow {
+    type Output = Row;
+
+    fn add(self, rhs: usize) -> Self::Output {
+        Row { index: rhs }
+    }
+}
+
 /// LastRow represents the last row of a [Table].
 ///
 /// [Table]: crate::Table
@@ -147,6 +155,23 @@ impl Sub<usize> for LastRow {
 
     fn sub(self, rhs: usize) -> Self::Output {
         LastRowOffset { offset: rhs }
+    }
+}
+
+/// A row which is located by an offset from the first row.
+pub struct Row {
+    index: usize,
+}
+
+impl Object for Row {
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
+        if self.index >= count_rows {
+            return Vec::new();
+        }
+
+        (0..count_columns)
+            .map(|column| (self.index, column))
+            .collect()
     }
 }
 
@@ -197,14 +222,12 @@ where
     }
 }
 
-impl Rows<Range<usize>> {
+impl Rows<()> {
     /// Returns a new instance of [Rows] with a single row.
     ///
     /// If the boundries are exeeded it may panic.
-    pub fn single(index: usize) -> Self {
-        Self {
-            range: index..index + 1,
-        }
+    pub fn single(index: usize) -> Row {
+        Row { index }
     }
 }
 
@@ -370,5 +393,17 @@ mod tests {
         assert_eq!((Rows::last() - 4).cells(5, 2), vec![(0, 0), (0, 1)]);
         assert_eq!((Rows::last() - 5).cells(5, 2), vec![]);
         assert_eq!((Rows::last() - 100).cells(5, 2), vec![]);
+    }
+
+    #[test]
+    fn first_row_sub_test() {
+        assert_eq!((Rows::first()).cells(5, 2), vec![(0, 0), (0, 1)]);
+        assert_eq!((Rows::first() + 0).cells(5, 2), vec![(0, 0), (0, 1)]);
+        assert_eq!((Rows::first() + 1).cells(5, 2), vec![(1, 0), (1, 1)]);
+        assert_eq!((Rows::first() + 2).cells(5, 2), vec![(2, 0), (2, 1)]);
+        assert_eq!((Rows::first() + 3).cells(5, 2), vec![(3, 0), (3, 1)]);
+        assert_eq!((Rows::first() + 4).cells(5, 2), vec![(4, 0), (4, 1)]);
+        assert_eq!((Rows::first() + 5).cells(5, 2), vec![]);
+        assert_eq!((Rows::first() + 100).cells(5, 2), vec![]);
     }
 }
