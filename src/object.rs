@@ -5,7 +5,7 @@
 
 use std::{
     collections::BTreeSet,
-    ops::{Bound, Range, RangeBounds, RangeFull, Sub, Add},
+    ops::{Add, Bound, RangeBounds, RangeFull, Sub},
 };
 
 /// Object helps to locate a nessesary part of a [Table].
@@ -229,9 +229,7 @@ impl Rows<()> {
     pub fn single(index: usize) -> Row {
         Row { index }
     }
-}
 
-impl Rows<()> {
     /// Returns a first row [Object].
     ///
     /// If the table has 0 rows returns an empty set of cells.
@@ -280,14 +278,26 @@ where
     }
 }
 
-impl Columns<Range<usize>> {
+impl Columns<()> {
     /// Returns a new instance of [Columns] for a single column.
     ///
     /// If the boundries are exeeded it may panic.
-    pub fn single(index: usize) -> Self {
-        Self {
-            range: index..index + 1,
-        }
+    pub fn single(index: usize) -> Column {
+        Column(index)
+    }
+
+    /// Returns a new instance of [Columns] for a first column.
+    ///
+    /// If the boundries are exeeded the object will produce no cells.
+    pub fn first() -> FirstColumn {
+        FirstColumn
+    }
+
+    /// Returns a new instance of [Columns] for a last column.
+    ///
+    /// If the boundries are exeeded the object will produce no cells.
+    pub fn last() -> LastColumn {
+        LastColumn
     }
 }
 
@@ -306,6 +316,72 @@ where
             .map(|column| (0..count_rows).map(|row| (row, column)).collect())
             .collect::<Vec<Vec<_>>>()
             .concat()
+    }
+}
+
+/// FirstColumn represents the first column on a grid.
+pub struct FirstColumn;
+
+impl Object for FirstColumn {
+    fn cells(&self, count_rows: usize, _: usize) -> Vec<(usize, usize)> {
+        (0..count_rows).map(|row| (row, 0)).collect()
+    }
+}
+
+impl Add<usize> for FirstColumn {
+    type Output = Column;
+
+    fn add(self, rhs: usize) -> Self::Output {
+        Column(rhs)
+    }
+}
+
+/// LastColumn represents the last column on a grid.
+pub struct LastColumn;
+
+impl Object for LastColumn {
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
+        let col = count_columns.saturating_sub(1);
+        (0..count_rows).map(|row| (row, col)).collect()
+    }
+}
+
+impl Sub<usize> for LastColumn {
+    type Output = LastColumnOffset;
+
+    fn sub(self, rhs: usize) -> Self::Output {
+        LastColumnOffset { offset: rhs }
+    }
+}
+
+/// Column represents a single column on a grid.
+pub struct Column(usize);
+
+impl Object for Column {
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
+        let col = self.0;
+        if col >= count_columns {
+            return Vec::new();
+        }
+
+        (0..count_rows).map(|row| (row, col)).collect()
+    }
+}
+
+/// LastColumnOffset represents a single column on a grid indexed via offset from the last column.
+pub struct LastColumnOffset {
+    offset: usize,
+}
+
+impl Object for LastColumnOffset {
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
+        let col = count_columns.saturating_sub(1);
+        if self.offset > col {
+            return Vec::new();
+        }
+
+        let col = col - self.offset;
+        (0..count_rows).map(|row| (row, col)).collect()
     }
 }
 
@@ -382,6 +458,94 @@ pub(crate) fn bounds_to_usize(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn first_column_test() {
+        assert_eq!((Columns::first()).cells(0, 0), vec![]);
+        // is this correct?
+        assert_eq!(
+            (Columns::first()).cells(10, 0),
+            vec![
+                (0, 0),
+                (1, 0),
+                (2, 0),
+                (3, 0),
+                (4, 0),
+                (5, 0),
+                (6, 0),
+                (7, 0),
+                (8, 0),
+                (9, 0)
+            ]
+        );
+        assert_eq!((Columns::first()).cells(0, 10), vec![]);
+        assert_eq!(
+            (Columns::first()).cells(5, 2),
+            vec![(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
+        );
+    }
+
+    #[test]
+    fn last_column_test() {
+        assert_eq!((Columns::last()).cells(0, 0), vec![]);
+        // is this correct?
+        assert_eq!(
+            (Columns::last()).cells(10, 0),
+            vec![
+                (0, 0),
+                (1, 0),
+                (2, 0),
+                (3, 0),
+                (4, 0),
+                (5, 0),
+                (6, 0),
+                (7, 0),
+                (8, 0),
+                (9, 0)
+            ]
+        );
+        assert_eq!((Columns::last()).cells(0, 10), vec![]);
+        assert_eq!(
+            (Columns::last()).cells(5, 2),
+            vec![(0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]
+        );
+    }
+
+    #[test]
+    fn last_column_sub_test() {
+        assert_eq!(
+            (Columns::last()).cells(5, 2),
+            vec![(0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]
+        );
+        assert_eq!(
+            (Columns::last() - 0).cells(5, 2),
+            vec![(0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]
+        );
+        assert_eq!(
+            (Columns::last() - 1).cells(5, 2),
+            vec![(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
+        );
+        assert_eq!((Columns::last() - 2).cells(5, 2), vec![]);
+        assert_eq!((Columns::last() - 100).cells(5, 2), vec![]);
+    }
+
+    #[test]
+    fn first_column_sub_test() {
+        assert_eq!(
+            (Columns::first()).cells(5, 2),
+            [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
+        );
+        assert_eq!(
+            (Columns::first() + 0).cells(5, 2),
+            [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
+        );
+        assert_eq!(
+            (Columns::first() + 1).cells(5, 2),
+            [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]
+        );
+        assert_eq!((Columns::first() + 2).cells(5, 2), []);
+        assert_eq!((Columns::first() + 100).cells(5, 2), []);
+    }
 
     #[test]
     fn last_row_sub_test() {
