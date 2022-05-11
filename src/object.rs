@@ -5,7 +5,7 @@
 
 use std::{
     collections::BTreeSet,
-    ops::{Bound, Range, RangeBounds, RangeFull},
+    ops::{Bound, Range, RangeBounds, RangeFull, Sub},
 };
 
 /// Object helps to locate a nessesary part of a [Table].
@@ -138,6 +138,31 @@ pub struct LastRow;
 impl Object for LastRow {
     fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
         let row = if count_rows == 0 { 0 } else { count_rows - 1 };
+        (0..count_columns).map(|column| (row, column)).collect()
+    }
+}
+
+impl Sub<usize> for LastRow {
+    type Output = LastRowOffset;
+
+    fn sub(self, rhs: usize) -> Self::Output {
+        LastRowOffset { offset: rhs }
+    }
+}
+
+/// A row which is located by an offset from the last row.
+pub struct LastRowOffset {
+    offset: usize,
+}
+
+impl Object for LastRowOffset {
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
+        let row = if count_rows == 0 { 0 } else { count_rows - 1 };
+        if self.offset > row {
+            return Vec::new();
+        }
+
+        let row = row - self.offset;
         (0..count_columns).map(|column| (row, column)).collect()
     }
 }
@@ -328,5 +353,22 @@ pub(crate) fn bounds_to_usize(
         | (Bound::Excluded(_), Bound::Excluded(_)) => {
             unreachable!("A start bound can't be excluded")
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn last_row_sub_test() {
+        assert_eq!((Rows::last()).cells(5, 2), vec![(4, 0), (4, 1)]);
+        assert_eq!((Rows::last() - 0).cells(5, 2), vec![(4, 0), (4, 1)]);
+        assert_eq!((Rows::last() - 1).cells(5, 2), vec![(3, 0), (3, 1)]);
+        assert_eq!((Rows::last() - 2).cells(5, 2), vec![(2, 0), (2, 1)]);
+        assert_eq!((Rows::last() - 3).cells(5, 2), vec![(1, 0), (1, 1)]);
+        assert_eq!((Rows::last() - 4).cells(5, 2), vec![(0, 0), (0, 1)]);
+        assert_eq!((Rows::last() - 5).cells(5, 2), vec![]);
+        assert_eq!((Rows::last() - 100).cells(5, 2), vec![]);
     }
 }
