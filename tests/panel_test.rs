@@ -100,7 +100,7 @@ fn bottom_panel() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Panel("Linux Distributions", data.len() + 1))
-        .with(Modify::new(Rows::new(data.len() + 1..)).with(Alignment::center()))
+        .with(Modify::new(Rows::last()).with(Alignment::center()))
         .with(Style::psql())
         .to_string();
 
@@ -163,7 +163,7 @@ fn footer() {
         .with(Header("Linux Distributions"))
         .with(Footer("The end"))
         .with(Style::psql())
-        .with(Modify::new(Rows::single(0).and(Rows::new(data.len()..))).with(Alignment::center()))
+        .with(Modify::new(Rows::first().and(Rows::last())).with(Alignment::center()))
         .to_string();
 
     let expected = concat!(
