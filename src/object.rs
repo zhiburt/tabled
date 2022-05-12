@@ -570,4 +570,72 @@ mod tests {
         assert_eq!((Rows::first() + 5).cells(5, 2), vec![]);
         assert_eq!((Rows::first() + 100).cells(5, 2), vec![]);
     }
+
+    #[test]
+    fn rows_test() {
+        assert_eq!(
+            (Rows::new(..)).cells(2, 3),
+            vec![(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+        );
+        assert_eq!((Rows::new(1..)).cells(2, 3), vec![(1, 0), (1, 1), (1, 2)]);
+        assert_eq!((Rows::new(2..)).cells(2, 3), vec![]);
+        assert_eq!((Rows::new(1..2)).cells(2, 3), vec![(1, 0), (1, 1), (1, 2)]);
+    }
+
+    #[test]
+    fn columns_test() {
+        assert_eq!(
+            (Columns::new(..)).cells(2, 3),
+            vec![(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)]
+        );
+        assert_eq!(
+            (Columns::new(1..)).cells(2, 3),
+            vec![(0, 1), (1, 1), (0, 2), (1, 2)]
+        );
+        assert_eq!((Columns::new(2..)).cells(2, 3), vec![(0, 2), (1, 2)]);
+        assert_eq!((Columns::new(3..)).cells(2, 3), vec![]);
+        assert_eq!((Columns::new(1..2)).cells(2, 3), vec![(0, 1), (1, 1)]);
+    }
+
+    #[test]
+    fn segment_test() {
+        assert_eq!(
+            (Segment::new(.., ..)).cells(2, 3),
+            vec![(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+        );
+        assert_eq!(
+            (Segment::new(1.., ..)).cells(2, 3),
+            vec![(1, 0), (1, 1), (1, 2)]
+        );
+        assert_eq!((Segment::new(2.., ..)).cells(2, 3), vec![]);
+
+        assert_eq!(
+            (Segment::new(.., 1..)).cells(2, 3),
+            vec![(0, 1), (0, 2), (1, 1), (1, 2)]
+        );
+        assert_eq!((Segment::new(.., 2..)).cells(2, 3), vec![(0, 2), (1, 2)]);
+        assert_eq!((Segment::new(.., 3..)).cells(2, 3), vec![]);
+
+        assert_eq!((Segment::new(1.., 1..)).cells(2, 3), vec![(1, 1), (1, 2)]);
+        assert_eq!((Segment::new(1..2, 1..2)).cells(2, 3), vec![(1, 1)]);
+
+        assert_eq!((Segment::new(5.., 5..)).cells(2, 3), vec![]);
+    }
+
+    #[test]
+    fn object_and_test() {
+        assert_eq!(Cell(0, 0).and(Cell(0, 0)).cells(2, 3), vec![(0, 0)]);
+        assert_eq!(Cell(0, 0).and(Cell(1, 2)).cells(2, 3), vec![(0, 0), (1, 2)]);
+        assert_eq!(Cell(0, 0).and(Cell(1, 2)).cells(0, 0), vec![(0, 0), (1, 2)]);
+    }
+
+    #[test]
+    fn object_not_test() {
+        assert_eq!(Cell(0, 0).not(Cell(0, 0)).cells(2, 3), vec![]);
+        assert_eq!(
+            Rows::first().not(Cell(0, 0)).cells(2, 3),
+            vec![(0, 1), (0, 2)]
+        );
+        assert_eq!(Rows::first().not(Cell(0, 0)).cells(0, 0), vec![]);
+    }
 }
