@@ -1,3 +1,6 @@
+//! The example can be run by this command
+//! `cargo run --example rotate`
+
 use tabled::{object::Full, Modify, Padding, Rotate, Style, Table, Tabled};
 
 #[derive(Tabled)]
