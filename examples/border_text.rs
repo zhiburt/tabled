@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example width`
+//! `cargo run --example border_text`
 
 use tabled::{object::Full, style::BorderText, Alignment, Modify, Style, Table};
 
