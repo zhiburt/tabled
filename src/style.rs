@@ -228,6 +228,23 @@ impl Style {
         CustomStyle::new(Self::MODERN)
     }
 
+    /// Rounded style looks like the following table.
+    ///
+    /// Beware: It uses UTF8 characters.
+    ///
+    /// ```text
+    ///     ╭────┬──────────────┬───────────────────────────╮
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     ╰────┴──────────────┴───────────────────────────╯
+    /// ```
+    pub const fn rounded() -> CustomStyle<On, On, On, On, (), On, On> {
+        CustomStyle::new(Self::MODERN_ROUNDED)
+    }
+
     /// Extended style looks like the following table
     ///
     /// Beware: It uses UTF8 characters.
@@ -313,6 +330,19 @@ impl Style {
             ('┌', '┐', '└', '┘'),
         ),
         Line::new('─', '┼'),
+        Line::new('─', '┼'),
+        Line::new('│', '┼'),
+    );
+
+    const MODERN_ROUNDED: StyleSettings = StyleSettings::new(
+        Frame::full(
+            Line::new('─', '┬'),
+            Line::new('─', '┴'),
+            Line::new('│', '├'),
+            Line::new('│', '┤'),
+            ('╭', '╮', '╰', '╯'),
+        ),
+        Line::empty(),
         Line::new('─', '┼'),
         Line::new('│', '┼'),
     );

@@ -84,6 +84,26 @@ fn pseudo_style() {
 }
 
 #[test]
+fn rounded_style() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(Style::rounded()).to_string();
+
+    let expected = concat!(
+        "╭───┬──────────┬──────────┬──────────╮\n",
+        "│ N │ column 0 │ column 1 │ column 2 │\n",
+        "├───┼──────────┼──────────┼──────────┤\n",
+        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+        "╰───┴──────────┴──────────┴──────────╯\n",
+    );
+
+    println!("{}", table);
+
+    assert_eq!(table, expected);
+}
+
+#[test]
 fn pseudo_clean_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
