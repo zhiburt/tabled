@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example rotate`
 
-use tabled::{object::Full, Modify, Padding, Rotate, Style, Table, Tabled};
+use tabled::{object::Segment, Modify, Padding, Rotate, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -32,7 +32,7 @@ fn main() {
     let table = Table::new(&data)
         .with(Rotate::Left)
         .with(Style::blank())
-        .with(Modify::new(Full).with(Padding::new(1, 1, 0, 0)));
+        .with(Modify::new(Segment::all()).with(Padding::new(1, 1, 0, 0)));
 
     println!("{}", table);
 }

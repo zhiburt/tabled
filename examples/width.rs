@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example width`
 
-use tabled::{object::Full, Alignment, MaxWidth, Modify, Style, Table};
+use tabled::{object::Segment, Alignment, MaxWidth, Modify, Style, Table};
 
 fn main() {
     let data = [
@@ -11,14 +11,14 @@ fn main() {
     ];
 
     let table = Table::new(&data).with(Style::github_markdown()).with(
-        Modify::new(Full)
+        Modify::new(Segment::all())
             .with(MaxWidth::truncating(10).suffix("..."))
             .with(Alignment::left()),
     );
 
     println!("{}", table);
 
-    let table = table.with(Modify::new(Full).with(MaxWidth::wrapping(5)));
+    let table = table.with(Modify::new(Segment::all()).with(MaxWidth::wrapping(5)));
 
     println!("{}", table);
 }

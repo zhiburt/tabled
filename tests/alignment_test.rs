@@ -1,6 +1,6 @@
 use crate::util::create_vector;
 use tabled::{
-    object::{Columns, Full, Rows},
+    object::{Columns, Rows, Segment},
     Alignment, Modify, Padding, Style, Table,
 };
 
@@ -11,7 +11,7 @@ fn full_alignment() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
         .to_string();
 
     let expected = concat!(
@@ -69,7 +69,7 @@ fn full_alignment_multiline() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
         .to_string();
 
     println!("{}", table);
@@ -122,8 +122,8 @@ fn alignment_doesnt_change_padding() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Padding::new(3, 0, 0, 0)))
-        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Padding::new(3, 0, 0, 0)))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
         .to_string();
 
     assert_eq!(table, expected);

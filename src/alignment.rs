@@ -7,7 +7,7 @@
 //! ```
 //! use tabled::{
 //!     formatting_settings::AlignmentStrategy,
-//!     object::Full,
+//!     object::Segment,
 //!     Alignment, AlignmentHorizontal, Modify, Style, Table,
 //! };
 //!
@@ -20,7 +20,7 @@
 //! let table = Table::new(&data)
 //!     .with(Style::modern())
 //!     .with(
-//!         Modify::new(Full)
+//!         Modify::new(Segment::all())
 //!             .with(Alignment::right())
 //!             .with(Alignment::center())
 //!             .with(AlignmentStrategy::PerCell)

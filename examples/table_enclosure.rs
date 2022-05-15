@@ -3,7 +3,7 @@
 
 use papergrid::Border;
 use tabled::{
-    object::{Cell, Full},
+    object::{Cell, Segment},
     Alignment, Extract, Header, Highlight, Modify, Style, TableIteratorExt, Tabled,
 };
 
@@ -33,12 +33,12 @@ fn main() {
     let commiters_table = commiters
         .table()
         .with(Header("Contributors"))
-        .with(Modify::new(Full).with(Alignment::center()));
+        .with(Modify::new(Segment::all()).with(Alignment::center()));
 
     let issues_table = issuers
         .table()
         .with(Header("Issuers"))
-        .with(Modify::new(Full).with(Alignment::center()));
+        .with(Modify::new(Segment::all()).with(Alignment::center()));
 
     let a_welcome_table = [
         "Thank You".to_owned(),

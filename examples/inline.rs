@@ -1,10 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example inline`
 
-use tabled::{
-    object::{Full, Rows},
-    Alignment, Modify, Padding, Style, Table, Tabled,
-};
+use tabled::{object::Rows, Alignment, Modify, Padding, Style, Table, Tabled};
 
 fn main() {
     let data = [
@@ -42,7 +39,7 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Modify::new(Full).with(Padding::new(1, 1, 0, 0)))
+        .with(Modify::new(Rows::new(..)).with(Padding::new(1, 1, 0, 0)))
         .with(Modify::new(Rows::first()).with(Alignment::left()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::center()));
 

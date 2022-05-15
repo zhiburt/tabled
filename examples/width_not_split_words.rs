@@ -1,14 +1,14 @@
 //! The example can be run by this command
 //! `cargo run --example width_not_split_words`
 
-use tabled::{object::Full, Alignment, MaxWidth, Modify, Style, TableIteratorExt};
+use tabled::{object::Segment, Alignment, MaxWidth, Modify, Style, TableIteratorExt};
 
 fn main() {
     let readme_text = include_str!("../CHANGELOG.md");
     let lines = readme_text.lines().filter(|s| !s.is_empty()).enumerate();
 
     let table = lines.table().with(Style::modern().horizontal_off()).with(
-        Modify::new(Full)
+        Modify::new(Segment::all())
             .with(MaxWidth::wrapping(30).keep_words())
             .with(Alignment::left()),
     );

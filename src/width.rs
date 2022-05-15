@@ -55,13 +55,13 @@ use papergrid::{string_width, Entity, Grid, Margin, Settings, Style};
 /// Cell change
 ///
 /// ```
-/// use tabled::{object::Full, MaxWidth, Modify, Style, Table};
+/// use tabled::{object::Segment, MaxWidth, Modify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::github_markdown())
-///     .with(Modify::new(Full).with(MaxWidth::truncating(3).suffix("...")));
+///     .with(Modify::new(Segment::all()).with(MaxWidth::truncating(3).suffix("...")));
 /// ```
 ///
 /// Table change
@@ -96,10 +96,10 @@ impl MaxWidth {
 /// ## Example
 ///
 /// ```
-/// use tabled::{object::Full, Truncate, Modify, Table};
+/// use tabled::{object::Segment, Truncate, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
-///     .with(Modify::new(Full).with(Truncate::new(3)));
+///     .with(Modify::new(Segment::all()).with(Truncate::new(3)));
 /// ```
 pub struct Truncate<S> {
     width: usize,
@@ -146,10 +146,10 @@ where
 /// ## Example
 ///
 /// ```
-/// use tabled::{object::Full, Wrap, Modify, Table};
+/// use tabled::{object::Segment, Wrap, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
-///     .with(Modify::new(Full).with(Wrap::new(3)));
+///     .with(Modify::new(Segment::all()).with(Wrap::new(3)));
 /// ```
 pub struct Wrap {
     width: usize,
@@ -405,13 +405,13 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 /// Cell change
 ///
 /// ```
-/// use tabled::{object::Full, MinWidth, Modify, Style, Table};
+/// use tabled::{object::Segment, MinWidth, Modify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::github_markdown())
-///     .with(Modify::new(Full).with(MinWidth::new(10)));
+///     .with(Modify::new(Segment::all()).with(MinWidth::new(10)));
 /// ```
 /// Table change
 ///

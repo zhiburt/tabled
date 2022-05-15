@@ -56,11 +56,11 @@ pub trait CellOption {
 /// ### With settings
 ///
 /// ```rust,no_run
-/// use tabled::{Table, Style, Alignment, object::Full, Modify};
+/// use tabled::{Table, Style, Alignment, object::Segment, Modify};
 /// let data = vec!["Hello", "2021"];
 /// let table = Table::new(&data)
 ///                 .with(Style::psql())
-///                 .with(Modify::new(Full).with(Alignment::left()));
+///                 .with(Modify::new(Segment::all()).with(Alignment::left()));
 /// println!("{}", table);
 /// ```
 ///

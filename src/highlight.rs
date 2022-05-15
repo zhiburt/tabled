@@ -19,7 +19,7 @@ use papergrid::{Entity, Grid, Settings};
 /// # Example
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::Full};
+/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::Segment};
 ///
 /// let data = [
 ///     ("ELF", "Extensible Linking Format", true),
@@ -31,7 +31,7 @@ use papergrid::{Entity, Grid, Settings};
 ///                .enumerate()
 ///                .table()
 ///                .with(Style::github_markdown())
-///                .with(Highlight::new(Full, Border::default().top('^').bottom('v')))
+///                .with(Highlight::new(Segment::all(), Border::default().top('^').bottom('v')))
 ///                .to_string();
 ///
 /// assert_eq!(
@@ -52,7 +52,7 @@ use papergrid::{Entity, Grid, Settings};
 ///
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::{Full, Cell, Object}};
+/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::{Segment, Cell, Object}};
 ///
 /// let data = [
 ///     ("ELF", "Extensible Linking Format", true),
@@ -64,7 +64,7 @@ use papergrid::{Entity, Grid, Settings};
 ///                .enumerate()
 ///                .table()
 ///                .with(Style::github_markdown())
-///                .with(Highlight::new(Full.not(Cell(0,0).and(Cell(1, 0).and(Cell(0, 1)).and(Cell(0, 3)))), Border::filled('*')))
+///                .with(Highlight::new(Segment::all().not(Cell(0,0).and(Cell(1, 0).and(Cell(0, 1)).and(Cell(0, 3)))), Border::filled('*')))
 ///                .to_string();
 ///
 /// assert_eq!(

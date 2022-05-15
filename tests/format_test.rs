@@ -1,6 +1,6 @@
 use crate::util::create_vector;
 use tabled::{
-    object::{Cell, Columns, Full, Object, Rows},
+    object::{Cell, Columns, Object, Rows, Segment},
     Alignment, Format, Modify, Padding, Style, Table,
 };
 
@@ -10,7 +10,7 @@ mod util;
 fn formatting_full_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Modify::new(Full).with(Format::new(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
         .to_string();
 
     let expected = concat!(
@@ -92,7 +92,7 @@ fn formatting_multiline_test() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Format::multiline(|s| format!("(x) {}", s))))
+        .with(Modify::new(Segment::all()).with(Format::multiline(|s| format!("(x) {}", s))))
         .to_string();
 
     let expected = concat!(
@@ -310,9 +310,9 @@ mod color {
 fn format_doesnt_change_padding() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Modify::new(Full).with(Alignment::left()))
-        .with(Modify::new(Full).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Full).with(Format::new(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
+        .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
         .to_string();
 
     let expected = concat!(

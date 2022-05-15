@@ -1,6 +1,6 @@
 use crate::util::create_vector;
 use tabled::{
-    object::{Cell, Columns, Frame, Full, Object, Rows, Segment},
+    object::{Cell, Columns, Frame, Object, Rows, Segment},
     style::Border,
     Highlight, Style, Table, Tabled,
 };
@@ -25,7 +25,7 @@ fn highlingt_empty_table() {
     let data: [EmptyStruct; 0] = [];
     let table = Table::new(&data)
         .with(Style::modern())
-        .with(Highlight::new(Full, Border::filled('+')))
+        .with(Highlight::new(Segment::all(), Border::filled('+')))
         .to_string();
 
     assert_eq!(table, "");
@@ -188,7 +188,7 @@ fn highlingt_full() {
     let table = Table::new(&data)
         .with(Style::modern())
         .with(Highlight::new(
-            Full,
+            Segment::all(),
             Border::filled('+')
                 .top_left_corner('*')
                 .top_right_corner('#')
@@ -262,7 +262,7 @@ fn highlingt_complex_figures() {
     }
 
     test_highlight!(
-        Full.not(Segment::new(2.., 1..3)),
+        Segment::all().not(Segment::new(2.., 1..3)),
         concat!(
             "*++++++++++++++++++++++++++++++++++++#\n",
             "+ N │ column 0 │ column 1 │ column 2 +\n",
@@ -277,7 +277,9 @@ fn highlingt_complex_figures() {
     );
 
     test_highlight!(
-        Full.not(Segment::new(0..1, 1..3)).not(Columns::single(0)),
+        Segment::all()
+            .not(Segment::new(0..1, 1..3))
+            .not(Columns::single(0)),
         concat!(
             "┌───┬──────────┬──────────*++++++++++#\n",
             "│ N │ column 0 │ column 1 + column 2 +\n",
@@ -292,7 +294,7 @@ fn highlingt_complex_figures() {
     );
 
     test_highlight!(
-        Full.not(Segment::new(0..1, 1..3)),
+        Segment::all().not(Segment::new(0..1, 1..3)),
         concat!(
             "*+++#──────────┬──────────*++++++++++#\n",
             "+ N + column 0 │ column 1 + column 2 +\n",
@@ -307,7 +309,7 @@ fn highlingt_complex_figures() {
     );
 
     test_highlight!(
-        Full.not(Segment::new(1..2, 1..3)),
+        Segment::all().not(Segment::new(1..2, 1..3)),
         concat!(
             "*++++++++++++++++++++++++++++++++++++#\n",
             "+ N │ column 0 │ column 1 │ column 2 +\n",
@@ -367,7 +369,7 @@ fn highlingt_complex_figures() {
     );
 
     test_highlight!(
-        Full.not(Cell(3, 1).and(Cell(3, 2))),
+        Segment::all().not(Cell(3, 1).and(Cell(3, 2))),
         concat!(
             "*++++++++++++++++++++++++++++++++++++#\n",
             "+ N │ column 0 │ column 1 │ column 2 +\n",
@@ -399,7 +401,7 @@ fn highlingt_complex_figures() {
     );
 
     test_highlight!(
-        Full.not(Segment::new(2.., 0..3)).not(Cell(1, 0)),
+        Segment::all().not(Segment::new(2.., 0..3)).not(Cell(1, 0)),
         concat!(
             "*++++++++++++++++++++++++++++++++++++#\n",
             "+ N │ column 0 │ column 1 │ column 2 +\n",
@@ -414,7 +416,8 @@ fn highlingt_complex_figures() {
     );
 
     test_highlight!(
-        Full.not(Segment::new(..1, 1..))
+        Segment::all()
+            .not(Segment::new(..1, 1..))
             .not(Segment::new(1..2, 2..))
             .not(Cell(2, 3)),
         concat!(

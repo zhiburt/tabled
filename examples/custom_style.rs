@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example custom_style`
 
-use tabled::{object::Full, Alignment, Modify, Style, Table, Tabled};
+use tabled::{object::Segment, Alignment, Modify, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct CodeEditor {
@@ -31,7 +31,7 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::modern().horizontal_off().vertical_off().header(' '))
-        .with(Modify::new(Full).with(Alignment::left()));
+        .with(Modify::new(Segment::all()).with(Alignment::left()));
 
     println!("{}", table);
 }

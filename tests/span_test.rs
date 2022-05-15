@@ -1,6 +1,6 @@
 use crate::util::create_vector;
 use tabled::{
-    object::{Cell, Columns, Full},
+    object::{Cell, Columns, Segment},
     Alignment, Modify, Padding, Panel, Span, Style, Table,
 };
 
@@ -12,7 +12,7 @@ fn span_column_test() {
     {
         let table = Table::new(&data)
             .with(Style::psql())
-            .with(Modify::new(Full).with(Alignment::left()))
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Modify::new(Columns::single(0)).with(Span::column(2)))
             .to_string();
 
@@ -29,7 +29,7 @@ fn span_column_test() {
     {
         let table = Table::new(&data)
             .with(Style::psql())
-            .with(Modify::new(Full).with(Alignment::left()))
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Modify::new(Columns::new(1..2)).with(Span::column(2)))
             .to_string();
 
@@ -46,7 +46,7 @@ fn span_column_test() {
     {
         let table = Table::new(&data)
             .with(Style::psql())
-            .with(Modify::new(Full).with(Alignment::left()))
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Modify::new(Columns::single(0)).with(Span::column(data.len() + 1)))
             .to_string();
 
@@ -65,7 +65,7 @@ fn cell_span_test() {
         {
             let table = Table::new(&data)
                 .with(Style::psql())
-                .with(Modify::new(Full).with(Alignment::left()))
+                .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Cell(0, 0)).with(Span::column(2)))
                 .to_string();
 
@@ -82,7 +82,7 @@ fn cell_span_test() {
         {
             let table = Table::new(&data)
                 .with(Style::psql())
-                .with(Modify::new(Full).with(Alignment::left()))
+                .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
                 .to_string();
 
@@ -115,7 +115,7 @@ fn cell_span_test() {
         {
             let table = Table::new(&data)
                 .with(Style::psql())
-                .with(Modify::new(Full).with(Alignment::left()))
+                .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Cell(3, 0)).with(Span::column(2)))
                 .to_string();
 
@@ -136,7 +136,7 @@ fn cell_span_test() {
         {
             let table = Table::new(&data)
                 .with(Style::psql())
-                .with(Modify::new(Full).with(Alignment::left()))
+                .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Cell(0, 1)).with(Span::column(2)))
                 .to_string();
 
@@ -153,7 +153,7 @@ fn cell_span_test() {
         {
             let table = Table::new(&data)
                 .with(Style::psql())
-                .with(Modify::new(Full).with(Alignment::left()))
+                .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
                 .to_string();
 
@@ -170,7 +170,7 @@ fn cell_span_test() {
         {
             let table = Table::new(&data)
                 .with(Style::psql())
-                .with(Modify::new(Full).with(Alignment::left()))
+                .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
                 .to_string();
 
@@ -187,7 +187,7 @@ fn cell_span_test() {
         {
             let table = Table::new(&data)
                 .with(Style::psql())
-                .with(Modify::new(Full).with(Alignment::left()))
+                .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Cell(3, 1)).with(Span::column(2)))
                 .to_string();
 
@@ -293,7 +293,7 @@ fn span_cell_exceeds_boundries_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Cell(0, 0)).with(Span::column(20)))
         .to_string();
 
@@ -311,7 +311,7 @@ fn span_cell_exceeds_boundries_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Cell(1, 1)).with(Span::column(20)))
         .to_string();
 
@@ -329,7 +329,7 @@ fn span_cell_exceeds_boundries_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Cell(1, 0)).with(Span::column(20)))
         .to_string();
 
@@ -377,8 +377,8 @@ fn indent_works_in_spaned_columns() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Padding::new(3, 0, 0, 0)))
-        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Padding::new(3, 0, 0, 0)))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Cell(1, 1)).with(Span::column(3)))
         .with(Modify::new(Cell(3, 1)).with(Span::column(3)))
         .to_string();
@@ -567,7 +567,7 @@ fn span_all_table_to_zero_test() {
 
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Span::column(0)))
+        .with(Modify::new(Segment::all()).with(Span::column(0)))
         .to_string();
 
     // todo: determine whether it's correct

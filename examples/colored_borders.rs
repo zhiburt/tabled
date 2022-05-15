@@ -4,10 +4,7 @@
 //! This example requires a `color` feature.
 
 use papergrid::Border;
-use tabled::{
-    object::{Full, Segment},
-    Alignment, Highlight, Modify, Style, Table, Tabled,
-};
+use tabled::{object::Segment, Alignment, Highlight, Modify, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct CodeEditor {
@@ -40,7 +37,7 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::extended())
-        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Highlight::new(
             Segment::all(),
             Border::default()

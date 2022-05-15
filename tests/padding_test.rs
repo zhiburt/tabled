@@ -1,6 +1,6 @@
 use crate::util::create_vector;
 use tabled::{
-    object::{Full, Rows},
+    object::{Rows, Segment},
     Alignment, Modify, Padding, Style, Table,
 };
 
@@ -11,7 +11,7 @@ fn padding() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 0, 2)))
         .to_string();
 
@@ -37,7 +37,9 @@ fn padding_with_set_characters() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Padding::new(1, 2, 1, 1).set_fill('>', '<', 'V', '^')))
+        .with(
+            Modify::new(Segment::all()).with(Padding::new(1, 2, 1, 1).set_fill('>', '<', 'V', '^')),
+        )
         .to_string();
 
     let expected = concat!(
@@ -64,7 +66,7 @@ fn padding_with_set_characters_and_zero_ident() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
-        .with(Modify::new(Full).with(Padding::zero().set_fill('>', '<', '^', 'V')))
+        .with(Modify::new(Segment::all()).with(Padding::zero().set_fill('>', '<', '^', 'V')))
         .to_string();
 
     let expected = concat!(
@@ -109,7 +111,7 @@ fn padding_multiline_with_vertical_alignment() {
     let table = Table::new(&data)
         .with(Style::psql())
         .with(
-            Modify::new(Full)
+            Modify::new(Segment::all())
                 .with(Alignment::center())
                 .with(Alignment::center_vertical()),
         )

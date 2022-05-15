@@ -4,7 +4,7 @@ use crate::util::create_vector;
 
 use tabled::{
     builder::Builder,
-    object::{Full, Rows},
+    object::{Rows, Segment},
     style::{Border, BorderText},
     Highlight, Modify, Padding, Style, Table, TableIteratorExt,
 };
@@ -410,7 +410,7 @@ fn empty_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::empty())
-        .with(Modify::new(Full).with(Padding::zero()))
+        .with(Modify::new(Segment::all()).with(Padding::zero()))
         .to_string();
 
     let expected = concat!(

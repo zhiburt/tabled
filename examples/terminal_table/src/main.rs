@@ -1,7 +1,7 @@
 //! The example shows how we could spread a table to the size of a terminal.
 
 use tabled::{
-    object::Full, Alignment, MaxWidth, MinWidth, Modify, Style, TableIteratorExt, Tabled,
+    object::Segment, Alignment, MaxWidth, MinWidth, Modify, Style, TableIteratorExt, Tabled,
 };
 
 #[derive(Tabled)]
@@ -39,7 +39,7 @@ fn main() {
     let table = DATA
         .table()
         .with(Style::extended())
-        .with(Modify::new(Full).with(Alignment::left()))
+        .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(MaxWidth::wrapping(width as usize).keep_words())
         .with(MinWidth::new(width as usize));
 

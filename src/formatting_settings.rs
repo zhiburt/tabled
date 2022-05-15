@@ -40,7 +40,7 @@ impl CellOption for TabSize {
 ///
 /// ```
 /// use tabled::{
-///     Table, Style, Modify, Alignment, object::Full,
+///     Table, Style, Modify, Alignment, object::Segment,
 ///     formatting_settings::AlignmentStrategy
 /// };
 ///
@@ -68,7 +68,7 @@ impl CellOption for TabSize {
 /// let table = Table::new(&[json])
 ///     .with(Style::modern())
 ///     .with(
-///         Modify::new(Full)
+///         Modify::new(Segment::all())
 ///             .with(Alignment::right())
 ///             .with(AlignmentStrategy::PerCell)
 ///     );
@@ -101,7 +101,7 @@ impl CellOption for TabSize {
 /// └───────────────────────────────────────────────────────────────┘
 /// "#);
 ///
-/// let table = table.with(Modify::new(Full).with(AlignmentStrategy::PerLine));
+/// let table = table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
 ///
 /// assert_eq!(
 ///     format!("\n{}", table),
@@ -160,14 +160,14 @@ impl CellOption for AlignmentStrategy {
 ///
 /// ```
 /// use tabled::{
-///     Table, Style, Modify, Alignment, object::Full,
+///     Table, Style, Modify, Alignment, object::Segment,
 ///     formatting_settings::{TrimStrategy, AlignmentStrategy}
 /// };
 ///
 /// let table = Table::new(&["   Hello World"])
 ///     .with(Style::modern())
 ///     .with(
-///         Modify::new(Full)
+///         Modify::new(Segment::all())
 ///             .with(Alignment::left())
 ///             .with(TrimStrategy::Horizontal)
 ///     );
@@ -184,7 +184,7 @@ impl CellOption for AlignmentStrategy {
 /// );
 ///
 /// // To trim lines you would need also set [AlignmentStrategy]
-/// let table = table.with(Modify::new(Full).with(AlignmentStrategy::PerLine));
+/// let table = table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -198,7 +198,7 @@ impl CellOption for AlignmentStrategy {
 /// let table = Table::new(&["   \n\n\n    Hello World"])
 ///     .with(Style::modern())
 ///     .with(
-///         Modify::new(Full)
+///         Modify::new(Segment::all())
 ///             .with(Alignment::top())
 ///             .with(TrimStrategy::Vertical)
 ///     );

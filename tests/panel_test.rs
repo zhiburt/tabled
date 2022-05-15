@@ -1,6 +1,6 @@
 use crate::util::create_vector;
 use tabled::{
-    object::{Cell, Full, Object, Rows},
+    object::{Cell, Object, Rows, Segment},
     style::{Border, Style},
     Alignment, Footer, Header, Highlight, Modify, Panel, Table,
 };
@@ -79,7 +79,7 @@ fn highligt_panel() {
 fn top_panel() {
     let table = Table::new(create_vector::<3, 3>())
         .with(Panel("Linux Distributions", 0))
-        .with(Modify::new(Full).with(Alignment::center()))
+        .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::psql())
         .to_string();
 

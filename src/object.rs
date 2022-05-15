@@ -195,8 +195,12 @@ impl Object for LastRowOffset {
 /// Full represents all cells on a [Table].
 ///
 /// [Table]: crate::Table
+#[deprecated(
+    note = "It was replaced because the name is not descriptive. Use Segment::all() instead."
+)]
 pub struct Full;
 
+#[allow(deprecated)]
 impl Object for Full {
     fn cells(&self, count_rows: usize, count_columns: usize) -> Vec<(usize, usize)> {
         Segment::new(.., ..).cells(count_rows, count_columns)

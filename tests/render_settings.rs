@@ -1,7 +1,7 @@
 use crate::util::create_vector;
 use tabled::{
     formatting_settings::{AlignmentStrategy, TabSize, TrimStrategy},
-    object::{Cell, Full},
+    object::{Cell, Segment},
     Alignment, Modify, Span, Style, Table,
 };
 
@@ -16,7 +16,7 @@ fn alignment_per_line() {
     let table = Table::new(&data)
         .with(Style::psql())
         .with(
-            Modify::new(Full)
+            Modify::new(Segment::all())
                 .with(Alignment::right())
                 .with(AlignmentStrategy::PerLine),
         )
@@ -51,7 +51,7 @@ fn alignment_per_line_with_trim() {
     let table = Table::new(&data)
         .with(Style::psql())
         .with(
-            Modify::new(Full)
+            Modify::new(Segment::all())
                 .with(Alignment::right())
                 .with(AlignmentStrategy::PerLine)
                 .with(TrimStrategy::Horizontal),
@@ -84,7 +84,7 @@ fn alignment_per_line_with_trim() {
     let table = Table::new(&data)
         .with(Style::psql())
         .with(
-            Modify::new(Full)
+            Modify::new(Segment::all())
                 .with(Alignment::center_vertical())
                 .with(Alignment::left())
                 .with(AlignmentStrategy::PerLine)
@@ -137,7 +137,11 @@ fn tab_size_test() {
 
     assert_eq!(table.to_string(), expected);
 
-    table = table.with(Modify::new(Full).with(Alignment::right()).with(TabSize(2)));
+    table = table.with(
+        Modify::new(Segment::all())
+            .with(Alignment::right())
+            .with(TabSize(2)),
+    );
 
     let expected = concat!(
         "                N | column 0 |   column 1 | column 2 \n",
@@ -154,7 +158,11 @@ fn tab_size_test() {
 
     assert_eq!(table.to_string(), expected);
 
-    table = table.with(Modify::new(Full).with(Alignment::right()).with(TabSize(0)));
+    table = table.with(
+        Modify::new(Segment::all())
+            .with(Alignment::right())
+            .with(TabSize(0)),
+    );
 
     let expected = concat!(
         "            N | column 0 | column 1 | column 2 \n",

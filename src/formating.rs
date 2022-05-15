@@ -96,10 +96,10 @@ impl Format<()> {
     /// Using this formatting applied for all rows not to a string as a whole.
     ///
     /// ```rust,no_run
-    /// use tabled::{Table, Format, object::Full, Modify};
+    /// use tabled::{Table, Format, object::Segment, Modify};
     /// let data: Vec<&'static str> = Vec::new();
     /// let table = Table::new(&data)
-    ///     .with(Modify::new(Full).with(Format::multiline(|s| format!("{}", s))))
+    ///     .with(Modify::new(Segment::all()).with(Format::multiline(|s| format!("{}", s))))
     ///     .to_string();
     /// ```
     pub fn multiline<F>(f: F) -> Format<impl Fn(&str) -> String>
