@@ -1401,3 +1401,16 @@ fn style_frame_test() {
         )
     );
 }
+
+#[test]
+fn single_column_horizontal_off_test() {
+    let data = create_vector::<3, 0>();
+    let table = Table::new(&data)
+        .with(Style::ascii().header_off().horizontal_off().vertical_off())
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!("+---+\n", "| N |\n", "| 0 |\n", "| 1 |\n", "| 2 |\n", "+---+\n",)
+    );
+}

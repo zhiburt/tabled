@@ -597,7 +597,7 @@ fn make_style(
             bottom: style.horizontal.main.map(From::from),
             left: style.frame.left.main.map(From::from),
             left_top_corner: style.frame.corner_top_left.map(From::from),
-            left_bottom_corner: style.frame.left.main.map(From::from),
+            left_bottom_corner: frame_left_intersection.map(From::from),
             right: style.frame.right.main.map(From::from),
             right_top_corner: style.frame.corner_top_right.map(From::from),
             right_bottom_corner: frame_right_intersection.map(From::from),
