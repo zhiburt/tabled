@@ -585,7 +585,7 @@ fn make_style(
             top: style.frame.top.main.map(From::from),
             bottom: style.frame.bottom.main.map(From::from),
             left: style.vertical.main.map(From::from),
-            left_top_corner: style.frame.corner_top_left.map(From::from),
+            left_top_corner: style.frame.top.intersection.map(From::from),
             left_bottom_corner: style.frame.bottom.intersection.map(From::from),
             right: style.vertical.main.map(From::from),
             right_top_corner: style.frame.top.intersection.map(From::from),
@@ -727,8 +727,8 @@ fn make_style_header(
     let is_first_column = column == 0;
     let is_last_column = column + 1 == count_columns;
 
-    let is_single_cell = row + 1 == count_rows && column + 1 == count_columns;
-    if is_single_cell {
+    let is_single_row = row + 1 == count_rows;
+    if is_single_row {
         return;
     }
 

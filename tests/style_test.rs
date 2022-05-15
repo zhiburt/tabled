@@ -1414,3 +1414,18 @@ fn single_column_horizontal_off_test() {
         concat!("+---+\n", "| N |\n", "| 0 |\n", "| 1 |\n", "| 2 |\n", "+---+\n",)
     );
 }
+
+#[test]
+fn single_row_test() {
+    let data = create_vector::<0, 3>();
+    let table = Table::new(&data).with(Style::modern()).to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌───┬──────────┬──────────┬──────────┐\n",
+            "│ N │ column 0 │ column 1 │ column 2 │\n",
+            "└───┴──────────┴──────────┴──────────┘\n",
+        )
+    );
+}
