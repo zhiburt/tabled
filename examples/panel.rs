@@ -1,9 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example panel`
 
-use tabled::{
-    object::Full, Alignment, AlignmentHorizontal, Footer, Header, Modify, Style, Table, Tabled,
-};
+use tabled::{object::Full, Alignment, Footer, Header, Modify, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Release {
@@ -38,7 +36,7 @@ fn main() {
     let table = Table::new(DATA)
         .with(Header("Tabled Releases"))
         .with(Footer(format!("N - {}", DATA.len())))
-        .with(Modify::new(Full).with(Alignment::Horizontal(AlignmentHorizontal::Center)))
+        .with(Modify::new(Full).with(Alignment::center()))
         .with(
             Style::modern()
                 .top_intersection('─')
