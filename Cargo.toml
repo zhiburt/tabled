@@ -1,6 +1,6 @@
 [package]
 name = "tabled"
-version = "0.6.1"
+version = "0.7.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."
@@ -8,7 +8,7 @@ repository = "https://github.com/zhiburt/tabled"
 homepage = "https://github.com/zhiburt/tabled"
 documentation = "https://docs.rs/tabled"
 license = "MIT"
-keywords = ["sheet", "table", "graphics", "terminal"]
+keywords = ["table", "print", "pretty-table", "format", "terminal"]
 categories = ["text-processing", "visualization"]
 readme = "README.md"
 
@@ -30,7 +30,7 @@ color = ["papergrid/color", "ansi-str"]
 
 [dependencies]
 tabled_derive = "0.3.0"
-papergrid = { path = "./papergrid" }
+papergrid = "0.4.0"
 ansi-str = { version = "0.1.1", optional = true }
 
 [dev-dependencies]
