@@ -395,8 +395,8 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 ### Max width
 
-`MaxWidth` sets a maximum width of an object.
-While tinkering content we don't forget about its color.
+`MaxWidth` sets a maximum width of an object. This preserves the text color
+correctly.
 
 ```rust
 use tabled::{TableIteratorExt, Modify, MaxWidth, object::Rows};
@@ -422,8 +422,8 @@ It can be used in combination with `MinWidth`.
 
 ### Min width
 
-`MinWidth` sets a minimal width of an object.
-While tinkering content we don't forget about its color.
+`MinWidth` sets a minimal width of an object. This preserves the text color
+correctly.
 
 ```rust
 use tabled::{TableIteratorExt, Modify, MinWidth, object::Rows};
