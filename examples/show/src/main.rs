@@ -9,13 +9,15 @@
 //!
 //! A convertation to gif is done via https://dstein64.github.io/gifcast/
 
-use std::{io::stdout, time::Duration};
+use std::{
+    io::{stdout, StdoutLock, Write},
+    time::Duration,
+};
 
 use crossterm::{
-    cursor::{self, Hide, MoveTo},
-    execute,
+    cursor, queue,
     style::Stylize,
-    terminal::{Clear, ClearType},
+    terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use tabled::{
     object::{Columns, Object, Rows},
@@ -434,36 +436,39 @@ fn run(movies: &[Movie]) {
         Box::new(|m| full_table(m).with(MinWidth::new(150))),
     ];
 
-    run_actions(movies, create_titles_actions, 450);
-    run_actions(movies, add_movies_actions, 200);
-    run_actions(movies, add_summary_actions, 450);
-    run_actions(movies, formatting_actions, 350);
-    run_actions(movies, style_actions, 650);
-    run_actions(movies, border_colors_actions, 500);
-    run_actions(movies, panel_actions, 600);
-    run_actions(movies, resize_actions, 190);
+    let stdout = stdout();
+    let mut stdout = stdout.lock();
+    queue!(stdout, EnterAlternateScreen, cursor::Hide).unwrap();
+    stdout.flush().unwrap();
+
+    run_actions(&mut stdout, movies, create_titles_actions, 450);
+    run_actions(&mut stdout, movies, add_movies_actions, 200);
+    run_actions(&mut stdout, movies, add_summary_actions, 450);
+    run_actions(&mut stdout, movies, formatting_actions, 350);
+    run_actions(&mut stdout, movies, style_actions, 650);
+    run_actions(&mut stdout, movies, border_colors_actions, 500);
+    run_actions(&mut stdout, movies, panel_actions, 600);
+    run_actions(&mut stdout, movies, resize_actions, 190);
+
+    queue!(stdout, LeaveAlternateScreen, cursor::Show).unwrap();
+    stdout.flush().unwrap();
 }
 
-fn run_actions(movies: &[Movie], actions: Vec<Box<dyn Fn(&[Movie]) -> Table>>, timeout_ms: u64) {
-    let cursor_pos_init = cursor::position().unwrap();
-
-    println!("{:?}", cursor_pos_init);
-
-    let mut stdout = stdout();
-
-    execute!(stdout, Hide).unwrap();
-
+fn run_actions(
+    stdout: &mut StdoutLock,
+    movies: &[Movie],
+    actions: Vec<Box<dyn Fn(&[Movie]) -> Table>>,
+    timeout_ms: u64,
+) {
     for action in actions {
-        execute!(stdout, Clear(ClearType::All)).unwrap();
-
-        execute!(stdout, MoveTo(0, 3)).unwrap();
+        queue!(stdout, Clear(ClearType::All), cursor::MoveTo(0, 3)).unwrap();
 
         let table = (action)(movies);
         let table = table.with(Margin::new(20, 0, 0, 0));
-        println!("{}", table);
+        stdout.write_all(table.to_string().as_bytes()).unwrap();
 
-        execute!(stdout, MoveTo(0, 3)).unwrap();
-        // execute!(stdout, MoveToRow(cursor_pos_init.0)).unwrap();
+        queue!(stdout, cursor::MoveTo(0, 3)).unwrap();
+        stdout.flush().unwrap();
 
         std::thread::sleep(Duration::from_millis(timeout_ms));
     }
