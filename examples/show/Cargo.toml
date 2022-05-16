@@ -1,0 +1,11 @@
+[package]
+name = "show"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tabled = { path = "../..", features = ["color"] }
+crossterm = "0.23.2"
+owo-colors = "1"

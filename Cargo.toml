@@ -13,7 +13,12 @@ categories = ["text-processing", "visualization"]
 readme = "README.md"
 
 [workspace]
-members = ["papergrid", "tabled_derive", "examples/terminal_table"]
+members = [
+    "papergrid",
+    "tabled_derive",
+    "examples/terminal_table",
+    "examples/show",
+]
 
 [badges]
 travis-ci = { repository = "https://github.com/zhiburt/tabled", branch = "master" }
