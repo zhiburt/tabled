@@ -9,6 +9,8 @@
 
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
+![Preview](https://github.com/zhiburt/tabled/blob/assets/assets/preview-show.gif)
+
 ## Table of Contents
 
   - [Usage](#usage)
