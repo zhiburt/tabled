@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.7.0] - 2022-05-16
+
+### Added
+
+- Created a tabled logo which is used on docs.rs. 
+- Added a `Justify` type which sets all columns to the same width.
+- `Table::builder` method which can be used to modify the default layout of table built from `Tabled`.
+- Added `IndexBuilder` which can be used to transpose the table.
+- Added support for `Border` coloring.
+- Added `Style::frame` function which returns border.
+- Added `Columns::first`, `Columns::last` functions.
+- `Sub`, `Add` implementations for `FirstRow` and `LastRow`.
+- Added `Style::rounded` style.
+
+### Changed
+
+- Default height set to 0.
+- Renamed `TopBorderText` to `BorderText`.
+- Removed `object` module from public export.
+- Deprecate `object::Full` in regard of `object::Segment::all()`.
+- Improved documentation.
+- Refactorings.
+
+### Fixed
+
+- Fix `Style` rendering issues.
+- Fix rendering when `Panel` and `Span`s are used.
+- Fix `Style` rendering of single row and single column tables.
+
 ## [0.6.1] - 2022-04-14
 
 ### Fixed
