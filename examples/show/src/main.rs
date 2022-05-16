@@ -1,6 +1,5 @@
-//! The example can be run by this command
-//! `cargo run --example show`
-//!
+//! A example mimics to a degree https://spectreconsole.net/
+//! 
 //! A recording is done via https://asciinema.org/
 //!
 //! ```bash
