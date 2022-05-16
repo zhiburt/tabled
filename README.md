@@ -13,50 +13,53 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
 ## Table of Contents
 
-  - [Usage](#usage)
-  - [Settings](#settings)
-    - [Style](#style)
-      - [Themes](#themes)
-        - [ASCII](#ascii)
-        - [Psql](#psql)
-        - [Github Markdown](#github-markdown)
-        - [Modern](#modern)
-        - [ReStructuredText](#restructuredtext)
-        - [Extended](#extended)
-        - [Dots](#dots)
-        - [Blank](#blank)
-        - [Custom](#custom)
-      - [Cell Border](#cell-border)
-      - [Text in a top border](#text-in-a-top-border)
-    - [Alignment](#alignment)
-    - [Format](#format)
-    - [Padding](#padding)
-    - [Margin](#margin)
-    - [Max width](#max-width)
-    - [Min width](#min-width)
-    - [Rotate](#rotate)
-    - [Disable](#disable)
-    - [Extract](#extract)
-      - [Refinishing](#refinishing)
-    - [Header and Footer](#header-and-footer)
-    - [Concat](#concat)
-    - [Highlight](#highlight)
-    - [Column span](#column-span)
-  - [Derive](#derive)
-    - [Column name override](#column-name-override)
-    - [Hide a column](#hide-a-column)
-    - [Custom field formatting](#custom-field-formatting)
-    - [Inline](#inline)
-  - [Features](#features)
-    - [Color](#color)
-    - [Tuple combination](#tuple-combination)
-    - [Object](#object)
-  - [Views](#views)
-    - [Expanded display](#expanded-display)
-  - [Notes](#notes)
-    - [ANSI escape codes](#ansi-escape-codes)
-    - [Dynamic table](#dynamic-table)
-    - [Emoji](#emoji)
+- [Usage](#usage)
+- [Settings](#settings)
+  - [Style](#style)
+    - [Themes](#themes)
+      - [ASCII](#ascii)
+      - [Psql](#psql)
+      - [Github Markdown](#github-markdown)
+      - [Modern](#modern)
+      - [Rounded](#rounded)
+      - [ReStructuredText](#restructuredtext)
+      - [Extended](#extended)
+      - [Dots](#dots)
+      - [Blank](#blank)
+      - [Custom](#custom)
+    - [Cell Border](#cell-border)
+    - [Text in a top border](#text-in-a-top-border)
+  - [Alignment](#alignment)
+  - [Format](#format)
+  - [Padding](#padding)
+  - [Margin](#margin)
+  - [Max width](#max-width)
+  - [Min width](#min-width)
+  - [Justify](#justify)
+  - [Rotate](#rotate)
+  - [Disable](#disable)
+  - [Extract](#extract)
+    - [Refinishing](#refinishing)
+  - [Header and Footer](#header-and-footer)
+  - [Concat](#concat)
+  - [Highlight](#highlight)
+  - [Column span](#column-span)
+- [Derive](#derive)
+  - [Column name override](#column-name-override)
+  - [Hide a column](#hide-a-column)
+  - [Custom field formatting](#custom-field-formatting)
+  - [Inline](#inline)
+- [Features](#features)
+  - [Color](#color)
+  - [Tuple combination](#tuple-combination)
+  - [Object](#object)
+- [Views](#views)
+  - [Expanded display](#expanded-display)
+- [Notes](#notes)
+  - [ANSI escape codes](#ansi-escape-codes)
+  - [Dynamic table](#dynamic-table)
+  - [Index](#index)
+  - [Emoji](#emoji)
 
 ## Usage
 
@@ -187,6 +190,19 @@ Please open an issue.
 └──────┴────────────────┴───────────────┘
 ```
 
+##### Rounded
+
+```
+╭──────┬────────────────┬───────────────╮
+│ name │  designed_by   │ invented_year │
+├──────┼────────────────┼───────────────┤
+│  C   │ Dennis Ritchie │     1972      │
+├──────┼────────────────┼───────────────┤
+│ Rust │ Graydon Hoare  │     2010      │
+│  Go  │    Rob Pike    │     2009      │
+╰──────┴────────────────┴───────────────╯
+```
+
 ##### ReStructuredText
 
 ```
@@ -287,10 +303,10 @@ assert_eq!(table.to_string(), expected);
 You can write a custom text at the top border if it's present in a style.
 
 ```rust
-use tabled::{Table, style::TopBorderText};
+use tabled::{Table, style::BorderText};
 
 let table = Table::new(["Hello World"])
-    .with(TopBorderText::new("+-.table"));
+    .with(BorderText::new(0, "+-.table"));
 
 assert_eq!(
     table.to_string(),
@@ -304,7 +320,7 @@ assert_eq!(
 
 ### Alignment
 
-You can set a horizontal and vertical alignment for a `Header`, `Column`, `Row` or `Full` set of cells.
+You can set a horizontal and vertical alignment for any `Object` (e.g `Columns`, `Rows`).
 
 ```rust
 use tabled::{TableIteratorExt, Modify, Alignment, object::Segment};
@@ -424,6 +440,17 @@ data.table().with(MinWidth::new(10));
 ```
 
 It can be used in combination with `MaxWidth`.
+
+### Justify
+
+You can set a constant width for all columns using `Justify`.
+But be aware that it doesn't consider `Padding`.
+
+```rust
+use tabled::{TableIteratorExt, Justify};
+
+data.table().with(Justify::new(10);
+```
 
 ### Rotate
 
@@ -830,10 +857,11 @@ assert_eq!(
 You can peak your target for settings using `and` and `not` methods for an object.
 
 ```rust
-use tabled::object::{Full, Cell, Rows, Columns};
+use tabled::object::{Segment, Cell, Rows, Columns};
 
-Full.not(Rows::first()) // peak all cells except header
-Rows::first().and(Columns::single(0)).not(Cell(0, 0)) // peak a header and first column except a (0, 0) cell
+Segment::all().not(Rows::first()) // peak all cells except header.
+Columns::first().and(Columns::last()) // peak cells from first and last column. 
+Rows::first().and(Columns::single(0)).not(Cell(0, 0)) // peak a header and first column except a (0, 0) cell.
 ```
 
 ## Views
@@ -921,14 +949,45 @@ use tabled::{builder::Builder, Style};
 
 fn main() {
     let table = Builder::default()
-        .set_header(["Index", "Language"])
-        .add_row(["1", "English"])
-        .add_row(["2", "Deutsch"])
+        .set_columns(["Index", "Language"])
+        .add_record(["1", "English"])
+        .add_record(["2", "Deutsch"])
         .build()
         .with(Style::psql());
 
     println!("{}", table);
+}**
+```
+
+### Index
+
+You can use `Builder::index` to make a partical column an index, which will stay on the left.
+
+```rust
+use tabled::{builder::Builder, Style};
+
+fn main() {
+    let table = Builder::default()
+        .set_columns(["Index", "Language", "Status"])
+        .add_record(["1", "English", "In progress"])
+        .add_record(["2", "Deutsch", "Not ready"])
+        .index()
+        .set_index(1)
+        .set_name(None)
+        .build()
+        .with(Style::rounded());
+
+    println!("{}", table);
 }
+```
+
+```
+╭─────────┬───────┬─────────────╮
+│         │ Index │   Status    │
+├─────────┼───────┼─────────────┤
+│ English │   1   │ In progress │
+│ Deutsch │   2   │  Not ready  │
+╰─────────┴───────┴─────────────╯
 ```
 
 ### Emoji
