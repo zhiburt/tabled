@@ -1,5 +1,5 @@
 //! A example mimics to a degree https://spectreconsole.net/
-//! 
+//!
 //! A recording is done via https://asciinema.org/
 //!
 //! ```bash
