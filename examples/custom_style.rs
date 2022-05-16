@@ -30,7 +30,14 @@ fn main() {
     ];
 
     let table = Table::new(&data)
-        .with(Style::modern().horizontal_off().vertical_off().header(' '))
+        .with(
+            Style::modern()
+                .left_intersection('│')
+                .right_intersection('│')
+                .horizontal_off()
+                .vertical_off()
+                .header(' '),
+        )
         .with(Modify::new(Segment::all()).with(Alignment::left()));
 
     println!("{}", table);
