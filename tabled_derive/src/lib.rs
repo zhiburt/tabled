@@ -139,7 +139,7 @@ fn info_from_fields(
         headers.push(header);
 
         let field_name = field_name(i, field);
-        let value = get_field_fields(field_name, &attributes);
+        let value = get_field_fields(&field_name, &attributes);
 
         values.push(value);
     }
@@ -196,7 +196,7 @@ fn collect_info_enum(ast: &DataEnum) -> Result<Impl, String> {
     }
 
     let variant_sizes = get_enum_variant_length(ast);
-    let values = values_for_enum(variant_sizes, variants);
+    let values = values_for_enum(variant_sizes, &variants);
 
     let headers = quote! {
         vec![
@@ -245,7 +245,7 @@ fn get_type_headers(field_type: &Type, inline_prefix: &str, prefix: &str) -> Tok
     }
 }
 
-fn get_field_fields(field: TokenStream, attr: &Attributes) -> TokenStream {
+fn get_field_fields(field: &TokenStream, attr: &Attributes) -> TokenStream {
     if attr.inline {
         return quote! { #field.fields() };
     }
@@ -258,7 +258,7 @@ fn get_field_fields(field: TokenStream, attr: &Attributes) -> TokenStream {
     quote!(vec![format!("{}", #field)])
 }
 
-fn use_function_for(field: TokenStream, function: &str) -> TokenStream {
+fn use_function_for(field: &TokenStream, function: &str) -> TokenStream {
     let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
     match path {
         Ok(path) => {
@@ -292,7 +292,7 @@ fn variant_var_name(index: usize, field: &Field) -> TokenStream {
 
 fn values_for_enum(
     variant_sizes: impl Iterator<Item = TokenStream>,
-    variants: Vec<(&Variant, TokenStream)>,
+    variants: &[(&Variant, TokenStream)],
 ) -> TokenStream {
     let branches = variants.iter().map(|(variant, _)| match_variant(variant));
 

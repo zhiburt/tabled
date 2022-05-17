@@ -153,7 +153,7 @@ impl Grid {
                 self.add_split_lines(entity, &border);
             }
 
-            self.set_border(entity, border);
+            self.set_border(entity, &border);
         }
     }
 
@@ -217,27 +217,27 @@ impl Grid {
         self.override_split_lines.clear();
     }
 
-    fn set_border(&mut self, entity: Entity, border: Border) {
+    fn set_border(&mut self, entity: Entity, border: &Border) {
         match entity {
             Entity::Global => {
                 for column in 0..self.count_columns() {
                     for row in 0..self.count_rows() {
-                        self.set_border_for_cell(row, column, &border);
+                        self.set_border_for_cell(row, column, border);
                     }
                 }
             }
             Entity::Column(column) => {
                 for row in 0..self.count_rows() {
-                    self.set_border_for_cell(row, column, &border);
+                    self.set_border_for_cell(row, column, border);
                 }
             }
             Entity::Row(row) => {
                 for column in 0..self.count_columns() {
-                    self.set_border_for_cell(row, column, &border);
+                    self.set_border_for_cell(row, column, border);
                 }
             }
             Entity::Cell(row, column) => {
-                self.set_border_for_cell(row, column, &border);
+                self.set_border_for_cell(row, column, border);
             }
         }
     }
@@ -396,7 +396,7 @@ impl Grid {
         }
     }
 
-    pub fn set_cell_borders(&mut self, border: Border) {
+    pub fn set_cell_borders(&mut self, border: &Border) {
         self.add_grid_split();
         for row in 0..self.count_rows() {
             for column in 0..self.count_columns() {
@@ -973,7 +973,7 @@ impl fmt::Display for Grid {
         let widths = columns_width(&cells, &styles, &borders, count_rows, count_columns);
         let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
 
-        build_grid(self, cells, styles, widths, normal_widths, heights).fmt(f)
+        build_grid(self, &cells, &styles, &widths, &normal_widths, &heights).fmt(f)
     }
 }
 
@@ -2062,13 +2062,13 @@ impl fmt::Display for Container {
 
 fn build_grid(
     grid: &Grid,
-    contents: Vec<Vec<Vec<String>>>,
-    styles: Vec<Vec<Style>>,
-    widths: Vec<Vec<usize>>,
-    normal_widths: Vec<usize>,
-    heights: Vec<usize>,
+    contents: &[Vec<Vec<String>>],
+    styles: &[Vec<Style>],
+    widths: &[Vec<usize>],
+    normal_widths: &[usize],
+    heights: &[usize],
 ) -> Container {
-    let row_width = row_width_grid(grid, &widths, 0);
+    let row_width = row_width_grid(grid, widths, 0);
 
     let mut containers = Vec::new();
     for row in 0..grid.count_rows() {
@@ -2103,7 +2103,7 @@ fn build_grid(
             }
         }
 
-        if let Some(split) = build_split_line_container(grid, &normal_widths, row_width, row) {
+        if let Some(split) = build_split_line_container(grid, normal_widths, row_width, row) {
             containers.push(split);
         }
 
@@ -2115,8 +2115,7 @@ fn build_grid(
 
         let is_last_iteration = row + 1 == grid.count_rows();
         if is_last_iteration {
-            if let Some(split) =
-                build_split_line_container(grid, &normal_widths, row_width, row + 1)
+            if let Some(split) = build_split_line_container(grid, normal_widths, row_width, row + 1)
             {
                 containers.push(split);
             }

@@ -348,13 +348,13 @@ impl Builder {
 
         if let Some(header) = self.columns.as_mut() {
             if self.size > header.len() {
-                append_vec(header, self.size - header.len(), empty_cell_text.clone());
+                append_vec(header, self.size - header.len(), &empty_cell_text);
             }
         }
 
         for row in self.records.iter_mut() {
             if self.size > row.len() {
-                append_vec(row, self.size - row.len(), empty_cell_text.clone());
+                append_vec(row, self.size - row.len(), &empty_cell_text);
             }
         }
     }
@@ -473,8 +473,8 @@ fn default_cell_style() -> Settings {
         })
 }
 
-fn append_vec(v: &mut Vec<String>, n: usize, value: String) {
-    v.extend((0..n).map(|_| value.clone()));
+fn append_vec(v: &mut Vec<String>, n: usize, value: &str) {
+    v.extend((0..n).map(|_| value.to_string()));
 }
 
 /// [IndexBuilder] helps to add an index to the table.
