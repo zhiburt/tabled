@@ -63,7 +63,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
 ## Usage
 
-To print a list of structs or enums as a table your types should implement the the `Tabled` trait or derive with a `#[derive(Tabled)]` macro.
+To print a list of structs or enums as a table your types should implement the the `Tabled` trait or derive it with a `#[derive(Tabled)]` macro.
 
 ```rust
 use tabled::{Tabled, Table};
@@ -118,18 +118,18 @@ let table = some_numbers.table();
 
 ## Settings
 
-In this section is listened a set of settings you can apply for your table.
+This section lists the set of settings you can apply to your table.
 
 ### Style
 
 #### Themes
 
 There are a list of ready to use styles.
-Each style can be castomized.
+Each style can be customized.
 
 A custom style also can be created from scratch.
 
-A style can be used by passing it to `.with` method of `Table`.
+A style can be used by passing it to the `.with` method of `Table`.
 
 ```rust
 use tabled::{Table, Style};
@@ -137,10 +137,10 @@ use tabled::{Table, Style};
 let table = Table::new(&data).with(Style::psql());
 ```
 
-Bellow rendered a list of pre configured styles.
+Below is a rendered list of the preconfigured styles.
 
 If you think that there's some valuable style to be added,
-Please open an issue.
+please open an issue.
 
 ##### ASCII
 
@@ -269,14 +269,15 @@ The style will look like the following.
 └──────┴────────────────┴───────────────┘
 ```
 
-You can find more methods which are available in the [documentation](https://docs.rs/tabled/latest/tabled/style/struct.CustomStyle.html)
+Check the [documentation](https://docs.rs/tabled/latest/tabled/style/struct.CustomStyle.html) for
+more customization options.
 
 #### Cell Border
 
 Sometimes `tabled::Style` settings are not enough.
 Sometimes it's nesessary to change a border of a particular cell.
 
-For this porpouse you can use `Border`.
+For this purpose you can use `Border`.
 
 ```rust
 use tabled::{TableIteratorExt, Modify, Border, object::Rows};
@@ -300,7 +301,7 @@ assert_eq!(table.to_string(), expected);
 
 #### Text in a top border
 
-You can write a custom text at the top border if it's present in a style.
+You can also have custom text as part of the top border of the table.
 
 ```rust
 use tabled::{Table, style::BorderText};
@@ -337,8 +338,8 @@ The `Format` function provides an interface for a modification of cells.
 use tabled::{Table, Modify, Format, object::{Rows, Columns}};
 
 Table::new(&data)
-    .with(Modify::new(Rows::first()).with(Format::new(|s| format!("Head {}", s))));
-    .with(Modify::new(Columns::new(1..=2)).with(Format::new(|s| format!("<< {} >>", s))))
+    .with(Modify::new(Rows::first()).with(Format::new(|s| format!("Head {}", s))))
+    .with(Modify::new(Columns::new(1..=2)).with(Format::new(|s| format!("<< {} >>", s))));
 ```
 
 It's also possible to use functions with signature `Fn(&str) -> String` as a formatter.
@@ -351,7 +352,7 @@ Table::new(&data)
     .with(Modify::new(Rows::first()).with(str::to_lowercase));
 ```
 
-IMPORTANT: you may need to specify type in your lambda otherwise compiler may be disagreed to work :)
+IMPORTANT: you may need to specify the type in your lambda otherwise the compiler may be disagreed to work :)
 
 ### Padding
 
@@ -371,7 +372,7 @@ Table::new(&data)
 ### Margin
 
 
-`Margin` sets an outside of the grid ident (top, bottom, left, right).
+`Margin` sets extra space around the border (top, bottom, left, right).
 
 ```rust
 use tabled::{Table, Modify, Padding, object::Cell};
@@ -394,15 +395,15 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 ### Max width
 
-`MaxWidth` sets a maximum width of an object.
-While tinkering content we don't forget about its color.
+`MaxWidth` sets a maximum width of an object. This preserves the text color
+correctly.
 
 ```rust
 use tabled::{TableIteratorExt, Modify, MaxWidth, object::Rows};
 
 // Truncating content to 10 chars in all rows except a header.
 data.table()
-    .with(Modify::new(Rows::new(1..)).with(MaxWidth::truncating(10, "...")));
+    .with(Modify::new(Rows::new(1..)).with(MaxWidth::truncating(10).suffix("...")));
 
 // Wrapping content by new lines after 10 chars in a last row.
 data.table()
@@ -421,8 +422,8 @@ It can be used in combination with `MinWidth`.
 
 ### Min width
 
-`MinWidth` sets a minimal width of an object.
-While tinkering content we don't forget about its color.
+`MinWidth` sets a minimal width of an object. This preserves the text color
+correctly.
 
 ```rust
 use tabled::{TableIteratorExt, Modify, MinWidth, object::Rows};
@@ -568,8 +569,8 @@ Table::new(&data)
     .with(Footer(format!("{} elements", data.len())))
 ```
 
-A look will differ from a style you choose.
-But it's how it may look like.
+The look will depend on the style you choose
+but it may look something like this:
 
 ```text
 ┌────────────────────────────────────────────────────────────┐
@@ -597,7 +598,7 @@ let t3: Table = t1.with(Concat::vertical(t2));
 
 ### Highlight
 
-`Highlight` can be used to change a borders of target sector.
+`Highlight` can be used to change the borders of target region.
 Here's an example.
 
 ```rust
@@ -620,7 +621,7 @@ let table = data.table()
     ));
 ```
 
-The printed table would be like the following.
+The resulting table would be the following.
 
 ```text
 *************
@@ -725,10 +726,12 @@ However, this may be often not the case for example when a field uses the `Optio
 There's 2 common ways how to solve this:
 
 * Implement `Tabled` trait manually for a type.
-* Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and implement a Display trait for it.
+* Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and implement a Display trait for
+it.
 
-Or to use an attribute `#[tabled(display_with = "func")]` for the field. To use it you must provide a function name in a `display_with` parameter.
-   
+Alternatively, use the `#[tabled(display_with = "func")]` attribute for the field to specify a
+custom display function.
+
 ```rust
 use tabled::Tabled;
 
@@ -741,17 +744,17 @@ pub struct MyRecord {
 
 fn display_option(o: &Option<bool>) -> String {
     match o {
-        Some(s) => format!("is valid thing = {}", s), 
+        Some(s) => format!("is valid thing = {}", s),
         None => format!("is not valid"),
     }
 }
 ```
 
 ### Inline
-   
-It's possible to inline internal data if it implements `Tabled` trait.
+
+It's possible to inline internal data if it implements the `Tabled` trait.
 Use `#[tabled(inline)]` for it.
-Also you can set a prefix which will be used for all inlined elements use `#[tabled(inline("prefix>>"))]` for it.
+You can also set a prefix which will be used for all inlined elements by using `#[tabled(inline("prefix>>"))]`.
 
 ```rust
 use tabled::Tabled;
@@ -763,7 +766,7 @@ struct Person {
     #[tabled(inline)]
     ed: Education,
 }
- 
+
 #[derive(Tabled)]
 struct Education {
     uni: &'static str,
@@ -786,7 +789,7 @@ enum Vehicle {
     #[tabled(inline)]
     Bikecycle(#[tabled(rename = "name")] &'static str, #[tabled(inline)] Bike),
 }
-        
+
 #[derive(Tabled)]
 struct Bike {
     brand: &'static str,
@@ -798,7 +801,8 @@ struct Bike {
 
 ### Color
 
-The library doesn't bind you in usage of any color library but to be able to work corectly with color input you should provide a `--features color`.
+The library doesn't bind you in usage of any color library but to be able to work corectly with color input you should
+add the `color` feature of `tabled` to your `Cargo.toml`
 
 ```rust
 use tabled::{Table, Modify, Style, Format, object::Columns};
@@ -811,7 +815,7 @@ Table::new(&data)
 ```
 
 ![carbon-2](https://user-images.githubusercontent.com/20165848/120526301-b95efc80-c3e1-11eb-8779-0ec48894463b.png)
-   
+
 ### Tuple combination
 
 You also can combine objets which implements `Tabled` by means of tuples, you will get a combined columns of them.
@@ -854,14 +858,14 @@ assert_eq!(
 
 ### Object
 
-You can peak your target for settings using `and` and `not` methods for an object.
+You can apply settings to subgroup of cells using `and` and `not` methods for an object.
 
 ```rust
 use tabled::object::{Segment, Cell, Rows, Columns};
 
-Segment::all().not(Rows::first()) // peak all cells except header.
-Columns::first().and(Columns::last()) // peak cells from first and last column. 
-Rows::first().and(Columns::single(0)).not(Cell(0, 0)) // peak a header and first column except a (0, 0) cell.
+Segment::all().not(Rows::first()) // select all cells except header.
+Columns::first().and(Columns::last()) // select cells from first and last columns.
+Rows::first().and(Columns::single(0)).not(Cell(0, 0)) // select the header and first column except the (0, 0) cell.
 ```
 
 ## Views
@@ -933,7 +937,7 @@ is_cool   | true
 By default `tabled` doesn't handle [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code).
 By default such things as hyperlinks, blinking and others things which can be achived via ANSI codes might not work correctly.
 
-`tabled` support it by setting a `color` feature.
+To enable this support, add the `color` feature to your `Cargo.toml`
 
 ```toml
 tabled = { version = "*", features = ["color"] }
@@ -941,7 +945,7 @@ tabled = { version = "*", features = ["color"] }
 
 ### Dynamic table
 
-It might be hard to build a table using `Tabled` trait, if you have a data set which structure is determined at runtime.
+It might be hard to build a table using `Tabled` trait if you have a data set which structure is determined at runtime.
 In such situation you can use a `Builder`.
 
 ```rust
@@ -991,9 +995,9 @@ fn main() {
 ```
 
 ### Emoji
-   
+
 The library support emojies out of the box but be aware that some of the terminals and editors may not render them as you would expect.
-   
+
 Let's add emojies to an example from a [Usage](##Usage) section.
 
 ```rust
@@ -1017,9 +1021,9 @@ Let's add emojies to an example from a [Usage](##Usage) section.
  ```
 
  The resultant table will look like the following.
- 
+
  As you can see Github triks a bit a return table, but `GNOME terminal` and `Alacritty` terminal handles it correctly.
-   
+
  ```rust
 +---------+----------------+---------------+
 |  name   |  designed_by   | invented_year |
