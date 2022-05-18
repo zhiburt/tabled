@@ -67,6 +67,7 @@ pub trait CellOption {
 /// [Padding]: crate::Padding
 /// [Style]: crate::Style
 /// [Style::ascii]: crate::Style::ascii
+#[derive(Clone)]
 pub struct Table {
     pub(crate) grid: Grid,
 }
