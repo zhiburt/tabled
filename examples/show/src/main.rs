@@ -9,8 +9,10 @@
 //!
 //! A convertation to gif is done via https://dstein64.github.io/gifcast/
 
+// todo: add --frames argument
+
 use std::{
-    io::{stdout, StdoutLock, Write},
+    io::{stdout, Stdout, StdoutLock, Write},
     time::Duration,
 };
 
@@ -127,349 +129,236 @@ fn main() {
 
 fn run(movies: &[Movie]) {
     #[rustfmt::skip]
-    let create_titles_actions: Vec<Box<dyn Fn(&[Movie]) -> Table>> = vec![
-        Box::new(|m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(1..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(2..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(3..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(4..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(5..)).with(Style::modern())),
+    let create_titles_actions: Vec<Action> = vec![
+        detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(1..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(2..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(3..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(4..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(5..)).with(Style::modern())),
     ];
 
     #[rustfmt::skip]
-    let add_movies_actions: Vec<Box<dyn Fn(&[Movie]) -> Table>> = vec![
-        Box::new(|m| Table::new(m).with(Disable::Row(2..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(3..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(4..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(5..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(6..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(7..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(8..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(9..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(10..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(11..)).with(Style::modern())),
-        Box::new(|m| Table::new(m).with(Disable::Row(12..)).with(Style::modern())),
+    let add_movies_actions: Vec<Action> = vec![
+        detached_action(|_, m| Table::new(m).with(Disable::Row(2..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(3..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(4..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(5..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(6..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(7..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(8..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(9..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(10..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(11..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::Row(12..)).with(Style::modern())),
     ];
 
     #[rustfmt::skip]
-    let add_summary_actions: Vec<Box<dyn Fn(&[Movie]) -> Table>> = vec![
-        Box::new(|m| Table::builder(m).add_record(["", "", "", "", ""]).build().with(Style::modern())),
-        Box::new(|m| Table::builder(m).add_record(["", "", "$1,716,500,000", "", ""]).build().with(Style::modern())),
-        Box::new(|m| Table::builder(m).add_record(["", "", "$1,716,500,000", "$1,190,650,976", ""]).build().with(Style::modern())),
-        Box::new(|m| Table::builder(m).add_record(["", "", "$1,716,500,000", "$1,190,650,976", "$10,263,484,824"]).build().with(Style::modern())),
+    let add_summary_actions: Vec<Action> = vec![
+        full_action(|_, m, _| Table::builder(m).add_record(["", "", "", "", ""]).build().with(Style::modern())),
+        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..2)).not(Columns::new(3..))).with(|_: &str| String::from("$1,716,500,000")))),
+        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..3)).not(Columns::new(4..))).with(|_: &str| String::from("$1,190,650,976")))),
+        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..4)).not(Columns::new(5..))).with(|_: &str| String::from("$10,263,484,824")))),
     ];
 
-    let full_table: &'static dyn Fn(&[Movie]) -> Table = &|m: &[Movie]| {
-        Table::builder(m)
-            .add_record([
-                "",
-                "",
-                "$1,716,500,000",
-                "$1,190,650,976",
-                "$10,263,484,824",
-            ])
-            .build()
-            .with(Style::modern())
-    };
-
     #[rustfmt::skip]
-    let formatting_actions: Vec<Box<dyn Fn(&[Movie]) -> Table>> = vec![
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..1)).with(Alignment::right()))),
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..2)).with(Alignment::right()))),
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..3)).with(Alignment::right()))),
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..4)).with(Alignment::right()))),
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..5)).with(Alignment::right()))),
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..6)).with(Alignment::right()))),
+    let formatting_actions: Vec<Action> = vec![
+        action(|t| t.with(Modify::new(Columns::single(0)).with(Alignment::right()))),
+        action(|t| t.with(Modify::new(Columns::single(1)).with(Alignment::right()))),
+        action(|t| t.with(Modify::new(Columns::single(2)).with(Alignment::right()))),
+        action(|t| t.with(Modify::new(Columns::single(3)).with(Alignment::right()))),
+        action(|t| t.with(Modify::new(Columns::single(4)).with(Alignment::right()))),
+        action(|t| t.with(Modify::new(Columns::single(5)).with(Alignment::right()))),
         //
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..6)).with(Alignment::right())).with(Modify::new(Columns::new(..1)).with(Alignment::left()))),
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..6)).with(Alignment::right())).with(Modify::new(Columns::new(..2)).with(Alignment::left()))),
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..6)).with(Alignment::right())).with(Modify::new(Columns::new(..3)).with(Alignment::left()))),
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..6)).with(Alignment::right())).with(Modify::new(Columns::new(..4)).with(Alignment::left()))),
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..6)).with(Alignment::right())).with(Modify::new(Columns::new(..5)).with(Alignment::left()))),
-        Box::new(|m| full_table(m).with(Modify::new(Columns::new(..6)).with(Alignment::right())).with(Modify::new(Columns::new(..6)).with(Alignment::left()))),
-
+        action(|t| t.with(Modify::new(Columns::single(0)).with(Alignment::left()))),
+        action(|t| t.with(Modify::new(Columns::single(1)).with(Alignment::left()))),
+        action(|t| t.with(Modify::new(Columns::single(2)).with(Alignment::left()))),
+        action(|t| t.with(Modify::new(Columns::single(3)).with(Alignment::left()))),
+        action(|t| t.with(Modify::new(Columns::single(4)).with(Alignment::left()))),
+        action(|t| t.with(Modify::new(Columns::single(5)).with(Alignment::left()))),
     ];
 
-    let full_table: &'static dyn Fn(&[Movie]) -> Table = &|m: &[Movie]| {
-        Table::builder(m)
-            .add_record([
-                "",
-                "",
-                "$1,716,500,000",
-                "$1,190,650,976",
-                "$10,263,484,824",
-            ])
-            .build()
-            .with(Style::modern())
-            .with(Modify::new(Columns::new(..6)).with(Alignment::right()))
-            .with(Modify::new(Columns::new(..6)).with(Alignment::left()))
-    };
-
     #[rustfmt::skip]
-    let style_actions: Vec<Box<dyn Fn(&[Movie]) -> Table>> = vec![
-        Box::new(|m| full_table(m).with(Style::extended())),
-        Box::new(|m| full_table(m).with(Style::ascii())),
-        Box::new(|m| full_table(m).with(Style::rounded())),
-        Box::new(|m| full_table(m).with(Style::psql())),
-        Box::new(|m| full_table(m).with(Style::github_markdown())),
-        Box::new(|m| full_table(m).with(Style::blank())),
+    let style_actions: Vec<Action> = vec![
+        action(|t| t.with(Style::extended())),
+        action(|t| t.with(Style::ascii())),
+        action(|t| t.with(Style::rounded())),
+        action(|t| t.with(Style::psql())),
+        action(|t| t.with(Style::github_markdown())),
+        action(|t| t.with(Style::blank())),
     ];
 
-    let full_table: &'static dyn Fn(&[Movie]) -> Table = &|m: &[Movie]| {
-        Table::builder(m)
-            .add_record([
-                "",
-                "",
-                "$1,716,500,000",
-                "$1,190,650,976",
-                "$10,263,484,824",
-            ])
-            .build()
-            .with(Style::blank())
-            .with(Modify::new(Columns::new(..6)).with(Alignment::right()))
-            .with(Modify::new(Columns::new(..6)).with(Alignment::left()))
-    };
-
-    let line_s: &'static dyn Fn() -> Symbol = &|| Symbol::ansi("━".yellow().to_string()).unwrap();
-
     #[rustfmt::skip]
-    let border_colors_actions: Vec<Box<dyn Fn(&[Movie]) -> Table>> = vec![
-        Box::new(|m| full_table(m).with(Highlight::new(Rows::single(0), Border::default().bottom(line_s())))),
-        Box::new(|m| full_table(m).with(Highlight::new(Rows::single(0), Border::default().bottom(line_s())))
-                                    .with(Highlight::new(Rows::last(), Border::default().top(line_s())))),
+    let border_colors_actions: Vec<Action> = vec![
+        action(|t| t.with(Highlight::new(Rows::first(), Border::default().bottom(Symbol::ansi("━".yellow().to_string()).unwrap())))),
+        action(|t| t.with(Highlight::new(Rows::last(), Border::default().top(Symbol::ansi("━".yellow().to_string()).unwrap())))),
     ];
 
-    let full_table: &'static dyn Fn(&[Movie]) -> Table = &|m: &[Movie]| {
-        let line_s: &'static dyn Fn() -> Symbol =
-            &|| Symbol::ansi("━".yellow().to_string()).unwrap();
-        Table::builder(m)
-            .add_record([
-                "",
-                "",
-                "$1,716,500,000",
-                "$1,190,650,976",
-                "$10,263,484,824",
-            ])
-            .build()
-            .with(Style::blank())
-            .with(Modify::new(Columns::new(..6)).with(Alignment::right()))
-            .with(Modify::new(Columns::new(..6)).with(Alignment::left()))
-            .with(Highlight::new(
-                Rows::single(0),
-                Border::default().bottom(line_s()),
-            ))
-            .with(Highlight::new(
-                Rows::last(),
-                Border::default().top(line_s()),
-            ))
-    };
-
     #[rustfmt::skip]
-    let panel_actions: Vec<Box<dyn Fn(&[Movie]) -> Table>> = vec![
-        Box::new(|m| full_table(m).with(Header("Star Wars Movies")).with(Modify::new(Rows::single(0)).with(Alignment::center()))),
-        Box::new(|m| {
+    let panel_actions: Vec<Action> = vec![
+        action(|t| t.with(Header("Star Wars Movies")).with(Modify::new(Rows::first()).with(Alignment::center()))),
+        full_action(|t, m, _| {
             let c = "━".yellow();
             let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
-            full_table(m)
-                .with(Header("Star Wars Movies"))
-                .with(Modify::new(Rows::single(0)).with(Alignment::center()))
-                .with(BorderText::new(m.len()+2, statistics_text))
+            t.with(BorderText::new(m.len()+2, statistics_text))
         }),
-        Box::new(|m| {
-            let c = "━".yellow();
-            let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
-            full_table(m)
-                .with(Header("Star Wars Movies"))
-                .with(Modify::new(Rows::single(0)).with(Alignment::center()))
-                .with(BorderText::new(m.len()+2, statistics_text))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(|s: &str| s.white().bold().to_string()))
-        }),
-        Box::new(|m| {
-            let c = "━".yellow();
-            let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
-            full_table(m)
-                .with(Header("Star Wars Movies"))
-                .with(Modify::new(Rows::single(0)).with(Alignment::center()))
-                .with(BorderText::new(m.len()+2, statistics_text))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(|s: &str| s.white().bold().to_string()))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..1)).not(Columns::new(2..))).with(|s: &str| s.white().bold().to_string()))
-        }),
-        Box::new(|m| {
-            let c = "━".yellow();
-            let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
-            full_table(m)
-                .with(Header("Star Wars Movies"))
-                .with(Modify::new(Rows::single(0)).with(Alignment::center()))
-                .with(BorderText::new(m.len()+2, statistics_text))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(|s: &str| s.white().bold().to_string()))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..1)).not(Columns::new(2..))).with(|s: &str| s.white().bold().to_string()))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..2)).not(Columns::new(3..))).with(|s: &str| s.red().bold().to_string()))
-        }),
-        Box::new(|m| {
-            let c = "━".yellow();
-            let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
-            full_table(m)
-                .with(Header("Star Wars Movies"))
-                .with(Modify::new(Rows::single(0)).with(Alignment::center()))
-                .with(BorderText::new(m.len()+2, statistics_text))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(|s: &str| s.white().bold().to_string()))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..1)).not(Columns::new(2..))).with(|s: &str| s.white().bold().to_string()))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..2)).not(Columns::new(3..))).with(|s: &str| s.red().bold().to_string()))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..3)).not(Columns::new(4..))).with(|s: &str| s.green().bold().to_string()))
-        }),
-        Box::new(|m| {
-            let c = "━".yellow();
-            let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
-            full_table(m)
-                .with(Header("Star Wars Movies"))
-                .with(Modify::new(Rows::single(0)).with(Alignment::center()))
-                .with(BorderText::new(m.len()+2, statistics_text))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(|s: &str| s.white().bold().to_string()))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..1)).not(Columns::new(2..))).with(|s: &str| s.white().bold().to_string()))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..2)).not(Columns::new(3..))).with(|s: &str| s.red().bold().to_string()))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..3)).not(Columns::new(4..))).with(|s: &str| s.green().bold().to_string()))
-                .with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..4)).not(Columns::new(5..))).with(|s: &str| s.blue().bold().to_string()))
-        }),
+        action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(|s: &str| s.white().bold().to_string()))),
+        action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..1)).not(Columns::new(2..))).with(|s: &str| s.white().bold().to_string()))),
+        action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..2)).not(Columns::new(3..))).with(|s: &str| s.red().bold().to_string()))),
+        action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..3)).not(Columns::new(4..))).with(|s: &str| s.green().bold().to_string()))),
+        action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..4)).not(Columns::new(5..))).with(|s: &str| s.blue().bold().to_string()))),
     ];
 
-    let full_table: &'static dyn Fn(&[Movie]) -> Table = &|m: &[Movie]| {
-        let line_s: &'static dyn Fn() -> Symbol =
-            &|| Symbol::ansi("━".yellow().to_string()).unwrap();
-
-        let c = "━".yellow();
-        let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
-
-        Table::builder(m)
-            .add_record([
-                "",
-                "",
-                "$1,716,500,000",
-                "$1,190,650,976",
-                "$10,263,484,824",
-            ])
-            .build()
-            .with(Style::blank())
-            .with(Modify::new(Columns::new(..6)).with(Alignment::right()))
-            .with(Modify::new(Columns::new(..6)).with(Alignment::left()))
-            .with(Highlight::new(
-                Rows::single(0),
-                Border::default().bottom(line_s()),
-            ))
-            .with(Highlight::new(
-                Rows::last(),
-                Border::default().top(line_s()),
-            ))
-            .with(Header("Star Wars Movies"))
-            .with(Modify::new(Rows::single(0)).with(Alignment::center()))
-            .with(BorderText::new(m.len() + 2, statistics_text))
-            .with(
-                Modify::new(
-                    Rows::single(1)
-                        .and(Rows::last())
-                        .not(Columns::new(..0))
-                        .not(Columns::new(1..)),
-                )
-                .with(|s: &str| s.white().bold().to_string()),
-            )
-            .with(
-                Modify::new(
-                    Rows::single(1)
-                        .and(Rows::last())
-                        .not(Columns::new(..1))
-                        .not(Columns::new(2..)),
-                )
-                .with(|s: &str| s.white().bold().to_string()),
-            )
-            .with(
-                Modify::new(
-                    Rows::single(1)
-                        .and(Rows::last())
-                        .not(Columns::new(..2))
-                        .not(Columns::new(3..)),
-                )
-                .with(|s: &str| s.red().bold().to_string()),
-            )
-            .with(
-                Modify::new(
-                    Rows::single(1)
-                        .and(Rows::last())
-                        .not(Columns::new(..3))
-                        .not(Columns::new(4..)),
-                )
-                .with(|s: &str| s.green().bold().to_string()),
-            )
-            .with(
-                Modify::new(
-                    Rows::single(1)
-                        .and(Rows::last())
-                        .not(Columns::new(..4))
-                        .not(Columns::new(5..)),
-                )
-                .with(|s: &str| s.blue().bold().to_string()),
-            )
-    };
-
     #[rustfmt::skip]
-    let resize_actions: Vec<Box<dyn Fn(&[Movie]) -> Table>> = vec![
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(120).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(115).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(110).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(105).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(100).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(95).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(90).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(80).keep_words())),
+    let resize_actions: Vec<Action> = vec![
+        detached_action(|t, _| t.with(MaxWidth::wrapping(115).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(110).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(105).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(100).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(95).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(90).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(80).keep_words())),
         //
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(80).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(90).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(95).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(100).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(105).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(110).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(115).keep_words())),
-        Box::new(|m| full_table(m).with(MaxWidth::wrapping(120).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(80).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(90).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(95).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(100).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(105).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(110).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(115).keep_words())),
+        detached_action(|t, _| t.with(MaxWidth::wrapping(120).keep_words())),
         //
-        Box::new(|m| full_table(m).with(MinWidth::new(125))),
-        Box::new(|m| full_table(m).with(MinWidth::new(130))),
-        Box::new(|m| full_table(m).with(MinWidth::new(135))),
-        Box::new(|m| full_table(m).with(MinWidth::new(140))),
-        Box::new(|m| full_table(m).with(MinWidth::new(145))),
-        Box::new(|m| full_table(m).with(MinWidth::new(150))),
+        detached_action(|t, _| t.with(MinWidth::new(125))),
+        detached_action(|t, _| t.with(MinWidth::new(130))),
+        detached_action(|t, _| t.with(MinWidth::new(135))),
+        detached_action(|t, _| t.with(MinWidth::new(140))),
+        detached_action(|t, _| t.with(MinWidth::new(145))),
+        detached_action(|t, _| t.with(MinWidth::new(150))),
     ];
 
-    let stdout = stdout();
-    let mut stdout = stdout.lock();
-    queue!(stdout, EnterAlternateScreen, cursor::Hide).unwrap();
-    stdout.flush().unwrap();
+    let printer = PrinterCtrl::new();
+    let mut printer = printer.start();
+    let mut runner = Runner::new(movies);
 
-    run_actions(&mut stdout, movies, create_titles_actions, 450);
-    run_actions(&mut stdout, movies, add_movies_actions, 200);
-    run_actions(&mut stdout, movies, add_summary_actions, 450);
-    run_actions(&mut stdout, movies, formatting_actions, 350);
-    run_actions(&mut stdout, movies, style_actions, 650);
-    run_actions(&mut stdout, movies, border_colors_actions, 500);
-    run_actions(&mut stdout, movies, panel_actions, 600);
-    run_actions(&mut stdout, movies, resize_actions, 190);
+    printer.print(450, runner.build_frames(create_titles_actions).into_iter());
+    printer.print(200, runner.build_frames(add_movies_actions).into_iter());
+    printer.print(450, runner.build_frames(add_summary_actions).into_iter());
+    printer.print(350, runner.build_frames(formatting_actions).into_iter());
+    printer.print(650, runner.build_frames(style_actions).into_iter());
+    printer.print(500, runner.build_frames(border_colors_actions).into_iter());
+    printer.print(600, runner.build_frames(panel_actions).into_iter());
+    printer.print(190, runner.build_frames(resize_actions).into_iter());
 
-    queue!(stdout, LeaveAlternateScreen, cursor::Show).unwrap();
-    stdout.flush().unwrap();
+    printer.stop();
 }
 
-fn run_actions(
-    stdout: &mut StdoutLock,
-    movies: &[Movie],
-    actions: Vec<Box<dyn Fn(&[Movie]) -> Table>>,
-    timeout_ms: u64,
-) {
-    for action in actions {
-        queue!(stdout, Clear(ClearType::All), cursor::MoveTo(0, 3)).unwrap();
+struct Runner<'a> {
+    last_table: Table,
+    movies: &'a [Movie],
+}
 
-        let table = (action)(movies);
-        let table = table.with(Margin::new(20, 0, 0, 0));
-        stdout.write_all(table.to_string().as_bytes()).unwrap();
+type Action = Box<dyn Fn(Table, &[Movie], &mut Context) -> Table>;
 
-        queue!(stdout, cursor::MoveTo(0, 3)).unwrap();
+struct Context {
+    ignore_table: bool,
+}
+
+fn detached_action<F: Fn(Table, &[Movie]) -> Table + 'static>(f: F) -> Action {
+    Box::new(move |table, m, ctx| {
+        ctx.ignore_table = true;
+        f(table, m)
+    })
+}
+
+fn full_action<F: Fn(Table, &[Movie], &mut Context) -> Table + 'static>(f: F) -> Action {
+    Box::new(move |t, m, ctx| f(t, m, ctx))
+}
+
+fn action<F: Fn(Table) -> Table + 'static>(f: F) -> Action {
+    Box::new(move |t, _, _| f(t))
+}
+
+impl<'a> Runner<'a> {
+    fn new(movies: &'a [Movie]) -> Self {
+        Self {
+            movies,
+            last_table: Table::new(movies),
+        }
+    }
+
+    fn build_frames(&mut self, actions: Vec<Action>) -> Vec<Table> {
+        let mut frames = Vec::new();
+        for action in actions {
+            let table = self.build_frame(action);
+            frames.push(table);
+        }
+
+        frames
+    }
+
+    fn build_frame(&mut self, action: Action) -> Table {
+        let movies = &self.movies;
+        let last_table = self.last_table.clone();
+
+        let mut ctx = Context {
+            ignore_table: false,
+        };
+
+        let table = (action)(last_table, movies, &mut ctx);
+
+        if !ctx.ignore_table {
+            self.last_table = table.clone();
+        }
+
+        table
+    }
+}
+
+struct Printer<'a> {
+    stdout: StdoutLock<'a>,
+}
+
+struct PrinterCtrl {
+    stdout: Stdout,
+}
+
+impl PrinterCtrl {
+    fn new() -> Self {
+        PrinterCtrl { stdout: stdout() }
+    }
+
+    fn start(&self) -> Printer<'_> {
+        Printer::start(self)
+    }
+}
+
+impl<'a> Printer<'a> {
+    fn start(ctrl: &'a PrinterCtrl) -> Self {
+        let mut stdout = ctrl.stdout.lock();
+
+        queue!(stdout, EnterAlternateScreen, cursor::Hide).unwrap();
         stdout.flush().unwrap();
 
-        std::thread::sleep(Duration::from_millis(timeout_ms));
+        Self { stdout }
+    }
+
+    fn stop(mut self) {
+        let stdout = &mut self.stdout;
+        queue!(stdout, LeaveAlternateScreen, cursor::Show).unwrap();
+        stdout.flush().unwrap();
+    }
+
+    fn print(&mut self, timeout_ms: u64, frames: impl Iterator<Item = Table>) {
+        let left_padding = |t: Table| t.with(Margin::new(20, 0, 0, 0));
+
+        for frame in frames {
+            let frame = left_padding(frame);
+
+            queue!(self.stdout, Clear(ClearType::All), cursor::MoveTo(0, 3)).unwrap();
+
+            self.stdout.write_all(frame.to_string().as_bytes()).unwrap();
+            self.stdout.flush().unwrap();
+
+            std::thread::sleep(Duration::from_millis(timeout_ms));
+        }
     }
 }
