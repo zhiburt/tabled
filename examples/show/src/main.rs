@@ -28,6 +28,8 @@ use tabled::{
     Tabled,
 };
 
+mod config;
+
 #[derive(Tabled)]
 struct Movie {
     #[tabled(rename = "Release Date")]
@@ -43,6 +45,8 @@ struct Movie {
 }
 
 fn main() {
+    let cfg = config::parse();
+
     // Credit for data: https://www.boxofficemojo.com/
     let movies = [
         Movie {
@@ -124,10 +128,10 @@ fn main() {
         },
     ];
 
-    run(&movies);
+    run(&movies, cfg.debug);
 }
 
-fn run(movies: &[Movie]) {
+fn run(movies: &[Movie], debug: bool) {
     #[rustfmt::skip]
     let create_titles_actions: Vec<Action> = vec![
         detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(1..)).with(Style::modern())),
@@ -235,20 +239,38 @@ fn run(movies: &[Movie]) {
         detached_action(|t, _| t.with(MinWidth::new(150))),
     ];
 
-    let printer = PrinterCtrl::new();
-    let mut printer = printer.start();
     let mut runner = Runner::new(movies);
 
-    printer.print(450, runner.build_frames(create_titles_actions).into_iter());
-    printer.print(200, runner.build_frames(add_movies_actions).into_iter());
-    printer.print(450, runner.build_frames(add_summary_actions).into_iter());
-    printer.print(350, runner.build_frames(formatting_actions).into_iter());
-    printer.print(650, runner.build_frames(style_actions).into_iter());
-    printer.print(500, runner.build_frames(border_colors_actions).into_iter());
-    printer.print(600, runner.build_frames(panel_actions).into_iter());
-    printer.print(190, runner.build_frames(resize_actions).into_iter());
+    let printer = PrinterCtrl::new();
 
-    printer.stop();
+    // fixme: I didn't figured out how to make it work with Box<dyn Printer>.
+    if debug {
+        let mut p = printer.start_debug();
+
+        p.print(450, runner.build_frames(create_titles_actions));
+        p.print(200, runner.build_frames(add_movies_actions));
+        p.print(450, runner.build_frames(add_summary_actions));
+        p.print(350, runner.build_frames(formatting_actions));
+        p.print(650, runner.build_frames(style_actions));
+        p.print(500, runner.build_frames(border_colors_actions));
+        p.print(600, runner.build_frames(panel_actions));
+        p.print(190, runner.build_frames(resize_actions));
+
+        p.stop();
+    } else {
+        let mut p = printer.start();
+
+        p.print(450, runner.build_frames(create_titles_actions));
+        p.print(200, runner.build_frames(add_movies_actions));
+        p.print(450, runner.build_frames(add_summary_actions));
+        p.print(350, runner.build_frames(formatting_actions));
+        p.print(650, runner.build_frames(style_actions));
+        p.print(500, runner.build_frames(border_colors_actions));
+        p.print(600, runner.build_frames(panel_actions));
+        p.print(190, runner.build_frames(resize_actions));
+
+        p.stop();
+    };
 }
 
 struct Runner<'a> {
@@ -313,10 +335,6 @@ impl<'a> Runner<'a> {
     }
 }
 
-struct Printer<'a> {
-    stdout: StdoutLock<'a>,
-}
-
 struct PrinterCtrl {
     stdout: Stdout,
 }
@@ -326,12 +344,20 @@ impl PrinterCtrl {
         PrinterCtrl { stdout: stdout() }
     }
 
-    fn start(&self) -> Printer<'_> {
-        Printer::start(self)
+    fn start(&self) -> BasicPrinter<'_> {
+        BasicPrinter::start(self)
+    }
+
+    fn start_debug(&self) -> DebugPrinter<'_> {
+        DebugPrinter::start(self)
     }
 }
 
-impl<'a> Printer<'a> {
+struct BasicPrinter<'a> {
+    stdout: StdoutLock<'a>,
+}
+
+impl<'a> BasicPrinter<'a> {
     fn start(ctrl: &'a PrinterCtrl) -> Self {
         let mut stdout = ctrl.stdout.lock();
 
@@ -340,14 +366,13 @@ impl<'a> Printer<'a> {
 
         Self { stdout }
     }
+}
 
-    fn stop(mut self) {
-        let stdout = &mut self.stdout;
-        queue!(stdout, LeaveAlternateScreen, cursor::Show).unwrap();
-        stdout.flush().unwrap();
-    }
-
-    fn print(&mut self, timeout_ms: u64, frames: impl Iterator<Item = Table>) {
+impl Printer for BasicPrinter<'_> {
+    fn print<I>(&mut self, timeout_ms: u64, frames: I)
+    where
+        I: IntoIterator<Item = Table>,
+    {
         let left_padding = |t: Table| t.with(Margin::new(20, 0, 0, 0));
 
         for frame in frames {
@@ -361,4 +386,50 @@ impl<'a> Printer<'a> {
             std::thread::sleep(Duration::from_millis(timeout_ms));
         }
     }
+
+    fn stop(&mut self) {
+        let stdout = &mut self.stdout;
+        queue!(stdout, LeaveAlternateScreen, cursor::Show).unwrap();
+        stdout.flush().unwrap();
+    }
+}
+
+struct DebugPrinter<'a> {
+    i: usize,
+    stdout: StdoutLock<'a>,
+}
+
+impl<'a> DebugPrinter<'a> {
+    fn start(ctrl: &'a PrinterCtrl) -> Self {
+        let mut stdout = ctrl.stdout.lock();
+        stdout.flush().unwrap();
+
+        Self { stdout, i: 1 }
+    }
+}
+
+impl Printer for DebugPrinter<'_> {
+    fn print<I>(&mut self, _: u64, frames: I)
+    where
+        I: IntoIterator<Item = Table>,
+    {
+        for frame in frames {
+            writeln!(self.stdout, "FRAME={}", self.i).unwrap();
+            writeln!(self.stdout, "{}", frame).unwrap();
+            self.stdout.flush().unwrap();
+            self.i += 1;
+        }
+    }
+
+    fn stop(&mut self) {
+        let stdout = &mut self.stdout;
+        stdout.flush().unwrap();
+    }
+}
+
+trait Printer {
+    fn print<I>(&mut self, _: u64, frames: I)
+    where
+        I: IntoIterator<Item = Table>;
+    fn stop(&mut self) {}
 }

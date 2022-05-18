@@ -9,3 +9,4 @@ edition = "2021"
 tabled = { path = "../..", features = ["color"] }
 crossterm = "0.23.2"
 owo-colors = "1"
+clap = { version = "3.1.18", features = ["cargo"] }
