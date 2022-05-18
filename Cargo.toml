@@ -50,3 +50,9 @@ required-features = ["color"]
 [[example]]
 name = "color"
 required-features = ["color"]
+
+# experement thing to check how it will work on docs.rs
+[package.metadata.docs.rs]
+features = ["unstable-doc"]
+rustdoc-args = ["--cfg", "docsrs"]
+cargo-args = ["-Zunstable-options"]
