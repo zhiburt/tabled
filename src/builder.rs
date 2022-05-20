@@ -173,9 +173,13 @@ impl Builder {
         H: IntoIterator<Item = T>,
         T: Display,
     {
-        let columns: Vec<String> = columns.into_iter().map(|t| t.to_string()).collect();
-        self.update_size(columns.len());
-        self.columns = Some(columns);
+        let mut strings = Vec::with_capacity(self.size);
+        columns
+            .into_iter()
+            .for_each(|t| strings.push(t.to_string()));
+
+        self.update_size(strings.len());
+        self.columns = Some(strings);
 
         self
     }
@@ -195,9 +199,11 @@ impl Builder {
         R: IntoIterator<Item = T>,
         T: Display,
     {
-        let row: Vec<String> = record.into_iter().map(|t| t.to_string()).collect();
-        self.update_size(row.len());
-        self.records.push(row);
+        let mut strings = Vec::with_capacity(self.size);
+        record.into_iter().for_each(|t| strings.push(t.to_string()));
+
+        self.update_size(strings.len());
+        self.records.push(strings);
 
         self
     }

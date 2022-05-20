@@ -308,7 +308,7 @@ impl<'a> Runner<'a> {
     }
 
     fn build_frames(&mut self, actions: Vec<Action>) -> Vec<Table> {
-        let mut frames = Vec::new();
+        let mut frames = Vec::with_capacity(actions.len());
         for action in actions {
             let table = self.build_frame(action);
             frames.push(table);

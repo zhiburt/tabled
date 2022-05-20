@@ -77,7 +77,7 @@ impl Grid {
     ///     )
     /// ```
     pub fn new(rows: usize, columns: usize) -> Self {
-        let mut styles = HashMap::new();
+        let mut styles = HashMap::with_capacity(1);
         styles.insert(Entity::Global, Style::default());
 
         Grid {
@@ -1248,12 +1248,15 @@ fn adjust_width(
         adjust_range_width(widths, styles, borders, count_rows, start, end);
     }
 
-    // sometimes the adjustment of later stages affect the adjastement of privious stages.
-    // therefore we check if this is the case and re run the adjustement one more time.
-    for (start, end) in ranges {
-        let is_range_complete = is_range_complete(styles, widths, borders, count_rows, start, end);
-        if !is_range_complete {
-            adjust_range_width(widths, styles, borders, count_rows, start, end);
+    if span > 1 {
+        // sometimes the adjustment of later stages affect the adjastement of privious stages.
+        // therefore we check if this is the case and re run the adjustement one more time.
+        for (start, end) in ranges {
+            let is_range_complete =
+                is_range_complete(styles, widths, borders, count_rows, start, end);
+            if !is_range_complete {
+                adjust_range_width(widths, styles, borders, count_rows, start, end);
+            }
         }
     }
 }
@@ -1314,31 +1317,34 @@ fn adjust_range_width(
             );
         });
 
-    // fixing the rows with out_of_scope cells
-    //
-    // these cells may not have correct width, therefore
-    // we replace these cells's width with
-    // a width of cells with the same span and on the same column.
-    (0..count_rows)
-        .filter(|&row| row != max_row)
-        .filter(|&row| is_there_out_of_scope_cell(&styles[row], start_column, end_column))
-        .for_each(|row| {
-            (start_column..end_column)
-                .filter(|&col| is_cell_visible(&styles[row], col))
-                .for_each(|col| {
-                    let cell_with_the_same_cell = (0..count_rows)
-                        .filter(|&r| r != max_row)
-                        .filter(|&r| r != row)
-                        .filter(|&r| {
-                            !is_there_out_of_scope_cell(&styles[r], start_column, end_column)
-                        })
-                        .find(|&r| styles[r][col].span == styles[row][col].span);
+    let span = end_column - start_column;
+    if span > 1 {
+        // fixing the rows with out_of_scope cells
+        //
+        // these cells may not have correct width, therefore
+        // we replace these cells's width with
+        // a width of cells with the same span and on the same column.
+        (0..count_rows)
+            .filter(|&row| row != max_row)
+            .filter(|&row| is_there_out_of_scope_cell(&styles[row], start_column, end_column))
+            .for_each(|row| {
+                (start_column..end_column)
+                    .filter(|&col| is_cell_visible(&styles[row], col))
+                    .for_each(|col| {
+                        let cell_with_the_same_cell = (0..count_rows)
+                            .filter(|&r| r != max_row)
+                            .filter(|&r| r != row)
+                            .filter(|&r| {
+                                !is_there_out_of_scope_cell(&styles[r], start_column, end_column)
+                            })
+                            .find(|&r| styles[r][col].span == styles[row][col].span);
 
-                    if let Some(r) = cell_with_the_same_cell {
-                        widths[row][col] = widths[r][col];
-                    }
-                })
-        });
+                        if let Some(r) = cell_with_the_same_cell {
+                            widths[row][col] = widths[r][col];
+                        }
+                    })
+            });
+    }
 }
 
 fn is_there_out_of_scope_cell(styles: &[Style], start_column: usize, end_column: usize) -> bool {
@@ -1697,9 +1703,9 @@ impl fmt::Display for Symbol {
 impl Borders {
     fn new(count_rows: usize, count_columns: usize) -> Self {
         Self {
-            vertical: HashMap::new(),
-            horizontal: HashMap::new(),
-            intersections: HashMap::new(),
+            vertical: HashMap::with_capacity(count_columns),
+            horizontal: HashMap::with_capacity(count_rows),
+            intersections: HashMap::with_capacity(count_columns * count_rows),
             count_columns,
             count_rows,
         }
@@ -2070,7 +2076,7 @@ fn build_grid(
 ) -> Container {
     let row_width = row_width_grid(grid, &widths, 0);
 
-    let mut containers = Vec::new();
+    let mut containers = Vec::with_capacity(grid.count_rows());
     for row in 0..grid.count_rows() {
         let height = heights[row];
 
@@ -2200,7 +2206,7 @@ fn build_split_line_container(
     width: usize,
     row: usize,
 ) -> Option<Container> {
-    let mut v = Vec::new();
+    let mut v = Vec::with_capacity(widths.len());
     for (col, &width) in widths.iter().enumerate() {
         let left = grid.borders.get_intersection_char((row, col));
         let right = grid.borders.get_intersection_char((row, col + 1));
