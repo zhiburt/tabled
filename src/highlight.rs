@@ -123,7 +123,7 @@ where
     }
 }
 
-fn split_segments(cells: Vec<(usize, usize)>) -> Vec<HashSet<(usize, usize)>> {
+fn split_segments(cells: impl Iterator<Item = (usize, usize)>) -> Vec<HashSet<(usize, usize)>> {
     let mut segments: Vec<HashSet<(usize, usize)>> = Vec::new();
     for cell in cells {
         let found_segment = segments

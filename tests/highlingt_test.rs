@@ -167,11 +167,11 @@ fn highlingt_frame() {
     let expected = concat!(
         "*++++++++++++++++++++++++++++++++++++#\n",
         "+ N │ column 0 │ column 1 │ column 2 +\n",
-        "+───*+++++++++++++++++++++#──────────+\n",
-        "+ 0 +   0-0    │   0-1    +   0-2    +\n",
-        "+───+──────────┼──────────+──────────+\n",
-        "+ 1 +   1-0    │   1-1    +   1-2    +\n",
-        "+───@+++++++++++++++++++++.──────────+\n",
+        "+───┼──────────┼──────────┼──────────+\n",
+        "+ 0 │   0-0    │   0-1    │   0-2    +\n",
+        "+───┼──────────┼──────────┼──────────+\n",
+        "+ 1 │   1-0    │   1-1    │   1-2    +\n",
+        "+───┼──────────┼──────────┼──────────+\n",
         "+ 2 │   2-0    │   2-1    │   2-2    +\n",
         "@++++++++++++++++++++++++++++++++++++.\n",
     );
@@ -435,7 +435,7 @@ fn highlingt_complex_figures() {
 }
 
 #[test]
-fn highlingt_several_time() {
+fn highlingt_several_times() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::modern())
@@ -447,11 +447,11 @@ fn highlingt_several_time() {
     let expected = concat!(
         "**************************xxxxxxxxxxxx\n",
         "* N │ column 0 │ column 1 x column 2 x\n",
-        "*───############**********x──────────x\n",
+        "*───############──────────x──────────x\n",
         "* 0 #   0-0    #   0-1    x   0-2    x\n",
         "*───############──────────x──────────x\n",
-        "* 1 *   1-0    │   1-1    x   1-2    x\n",
-        "*───**********************x──────────x\n",
+        "* 1 │   1-0    │   1-1    x   1-2    x\n",
+        "*───┼──────────┼──────────x──────────x\n",
         "* 2 │   2-0    │   2-1    x   2-2    x\n",
         "**************************xxxxxxxxxxxx\n",
     );
@@ -460,3 +460,26 @@ fn highlingt_several_time() {
 
     assert_eq!(table, expected);
 }
+
+// #[test]
+// fn highlingt_empty_border() {
+//     let data = create_vector::<3, 3>();
+//     let table = Table::new(&data)
+//         .with(Style::modern())
+//         .with(Highlight::new(Frame, Border::empty()))
+//         .to_string();
+
+//     let expected = concat!(
+//         " N │ column 0 │ column 1 │ column 2 \n",
+//         "───                       ──────────\n",
+//         " 0     0-0    │   0-1        0-2    \n",
+//         "─── ──────────┼────────── ──────────\n",
+//         " 1     1-0    │   1-1        1-2    \n",
+//         "───                       ──────────\n",
+//         " 2 │   2-0    │   2-1    │   2-2    \n",
+//     );
+
+//     println!("{}", table);
+
+//     assert_eq!(table, expected);
+// }

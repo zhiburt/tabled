@@ -205,7 +205,10 @@ where
     O: Object,
 {
     fn change(&mut self, grid: &mut Grid) {
-        let cells = self.obj.cells(grid.count_rows(), grid.count_columns());
+        let cells = self
+            .obj
+            .cells(grid.count_rows(), grid.count_columns())
+            .collect::<Vec<_>>();
         for func in &mut self.modifiers {
             for &(row, column) in &cells {
                 func.change_cell(grid, row, column)
