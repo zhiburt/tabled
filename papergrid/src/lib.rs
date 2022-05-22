@@ -24,7 +24,7 @@
 use std::{
     cmp::{self, max},
     collections::{BTreeSet, HashMap},
-    fmt::{self, Write},
+    fmt::{self, Display, Write},
     hash::Hash,
     ops::{Bound, RangeBounds},
 };
@@ -85,7 +85,7 @@ impl Grid {
     ///     )
     /// ```
     pub fn new(rows: usize, columns: usize) -> Self {
-        let mut styles = HashMap::new();
+        let mut styles = HashMap::with_capacity(1);
         styles.insert(Entity::Global, Style::default());
 
         Grid {
@@ -845,7 +845,7 @@ impl fmt::Display for Grid {
         let widths = columns_width(self, &cells, &styles);
         let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
 
-        build_grid(self, cells, styles, widths, normal_widths, heights).fmt(f)
+        print_grid(f, self, cells, styles, widths, normal_widths, heights)
     }
 }
 
@@ -936,7 +936,7 @@ fn top_indent(cell: &[String], style: &Style, height: usize) -> usize {
 fn repeat_char(f: &mut fmt::Formatter<'_>, c: &Symbol, n: usize) -> fmt::Result {
     if n > 0 {
         for _ in 0..n {
-            write!(f, "{}", c)?;
+            c.fmt(f)?;
         }
     }
     Ok(())
@@ -1104,12 +1104,14 @@ fn adjust_width(widths: &mut [Vec<usize>], styles: &[Vec<Style>], span: usize, g
         adjust_range_width(widths, styles, start, end, grid);
     }
 
-    // sometimes the adjustment of later stages affect the adjastement of privious stages.
-    // therefore we check if this is the case and re run the adjustement one more time.
-    for (start, end) in ranges {
-        let is_range_complete = is_range_complete(styles, widths, start, end, grid);
-        if !is_range_complete {
-            adjust_range_width(widths, styles, start, end, grid);
+    if span > 1 {
+        // sometimes the adjustment of later stages affect the adjastement of privious stages.
+        // therefore we check if this is the case and re run the adjustement one more time.
+        for (start, end) in ranges {
+            let is_range_complete = is_range_complete(styles, widths, start, end, grid);
+            if !is_range_complete {
+                adjust_range_width(widths, styles, start, end, grid);
+            }
         }
     }
 }
@@ -1157,31 +1159,34 @@ fn adjust_range_width(
             );
         });
 
-    // fixing the rows with out_of_scope cells
-    //
-    // these cells may not have correct width, therefore
-    // we replace these cells's width with
-    // a width of cells with the same span and on the same column.
-    (0..grid.count_rows())
-        .filter(|&row| row != max_row)
-        .filter(|&row| is_there_out_of_scope_cell(&styles[row], start_column, end_column))
-        .for_each(|row| {
-            (start_column..end_column)
-                .filter(|&col| is_cell_visible(&styles[row], col))
-                .for_each(|col| {
-                    let cell_with_the_same_cell = (0..grid.count_rows())
-                        .filter(|&r| r != max_row)
-                        .filter(|&r| r != row)
-                        .filter(|&r| {
-                            !is_there_out_of_scope_cell(&styles[r], start_column, end_column)
-                        })
-                        .find(|&r| styles[r][col].span == styles[row][col].span);
+    let span = end_column - start_column;
+    if span > 1 {
+        // fixing the rows with out_of_scope cells
+        //
+        // these cells may not have correct width, therefore
+        // we replace these cells's width with
+        // a width of cells with the same span and on the same column.
+        (0..grid.count_rows())
+            .filter(|&row| row != max_row)
+            .filter(|&row| is_there_out_of_scope_cell(&styles[row], start_column, end_column))
+            .for_each(|row| {
+                (start_column..end_column)
+                    .filter(|&col| is_cell_visible(&styles[row], col))
+                    .for_each(|col| {
+                        let cell_with_the_same_cell = (0..grid.count_rows())
+                            .filter(|&r| r != max_row)
+                            .filter(|&r| r != row)
+                            .filter(|&r| {
+                                !is_there_out_of_scope_cell(&styles[r], start_column, end_column)
+                            })
+                            .find(|&r| styles[r][col].span == styles[row][col].span);
 
-                    if let Some(r) = cell_with_the_same_cell {
-                        widths[row][col] = widths[r][col];
-                    }
-                })
-        });
+                        if let Some(r) = cell_with_the_same_cell {
+                            widths[row][col] = widths[r][col];
+                        }
+                    })
+            });
+    }
 }
 
 fn is_there_out_of_scope_cell(styles: &[Style], start_column: usize, end_column: usize) -> bool {
@@ -1886,224 +1891,117 @@ fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> 
     }
 }
 
-#[derive(Debug, Clone)]
-struct Container {
-    width: usize,
-    height: usize,
-    kind: ContainerKind,
-}
-
-#[derive(Debug, Clone)]
-enum ContainerKind {
-    Content { lines: Vec<String>, style: Style },
-    Split(Symbol),
-    Rows(Vec<Container>),
-    Columns(Vec<Container>),
-}
-
-impl Container {
-    fn new(width: usize, height: usize, kind: ContainerKind) -> Self {
-        Self {
-            width,
-            height,
-            kind,
-        }
-    }
-
-    fn print(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for i in 0..self.height {
-            self.print_line(f, i)?;
-            writeln!(f)?;
-        }
-
-        Ok(())
-    }
-
-    fn print_line(&self, f: &mut fmt::Formatter, i: usize) -> fmt::Result {
-        match &self.kind {
-            ContainerKind::Content { lines, style } => {
-                build_line_cell(f, i, lines, style, self.width, self.height)?;
-            }
-            ContainerKind::Split(c) => {
-                repeat_char(f, c, self.width)?;
-            }
-            ContainerKind::Rows(list) => {
-                let mut real_i = i;
-                let mut j = 0;
-                for c in list {
-                    j += c.height;
-                    if i < j {
-                        return c.print_line(f, real_i);
-                    }
-
-                    real_i -= c.height;
-                }
-            }
-            ContainerKind::Columns(list) => {
-                for c in list {
-                    c.print_line(f, i)?;
-                }
-            }
-        }
-
-        Ok(())
-    }
-}
-
-impl fmt::Display for Container {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.print(f)
-    }
-}
-
-fn build_grid(
+fn print_grid(
+    f: &mut fmt::Formatter,
     grid: &Grid,
     contents: Vec<Vec<Vec<String>>>,
     styles: Vec<Vec<Style>>,
     widths: Vec<Vec<usize>>,
     normal_widths: Vec<usize>,
     heights: Vec<usize>,
-) -> Container {
-    let row_width = row_width_grid(grid, &widths, 0);
+) -> fmt::Result {
+    let table_width = row_width_grid(grid, &widths, 0);
+    print_margin_top(f, &grid.margin, table_width)?;
 
-    let mut count_split_lines = 0;
-    let mut containers = Vec::new();
     for row in 0..grid.count_rows() {
+        print_split_line(f, grid, &normal_widths, table_width, row)?;
+
         let height = heights[row];
-        let mut columns = Vec::with_capacity(grid.count_columns());
 
-        #[allow(clippy::needless_range_loop)]
-        for col in 0..grid.count_columns() {
-            let width = widths[row][col];
-            let lines = contents[row][col].clone();
-            let style = styles[row][col].clone();
-            let border = grid.get_border(row, col);
+        for i in 0..height {
+            print_margin_left(f, &grid.margin)?;
 
-            if is_cell_visible(&styles[row], col) {
-                if let Some(c) = border.left {
-                    columns.push(Container::new(1, height, ContainerKind::Split(c)));
+            for col in 0..grid.count_columns() {
+                let width = widths[row][col];
+                let lines = contents[row][col].clone();
+                let style = styles[row][col].clone();
+                let border = grid.get_border(row, col);
+
+                if is_cell_visible(&styles[row], col) {
+                    if let Some(c) = border.left {
+                        c.fmt(f)?;
+                    }
+
+                    build_line_cell(f, i, &lines, &style, width, height)?;
                 }
 
-                columns.push(Container::new(
-                    width,
-                    height,
-                    ContainerKind::Content { lines, style },
-                ));
-            }
-
-            if col + 1 == grid.count_columns() {
-                if let Some(c) = border.right {
-                    let split = Container::new(1, height, ContainerKind::Split(c));
-                    columns.push(split);
+                let is_last_column = col + 1 == grid.count_columns();
+                if is_last_column {
+                    if let Some(c) = border.right {
+                        c.fmt(f)?;
+                    }
                 }
             }
-        }
 
-        if let Some(split) = build_split_line_container(grid, &normal_widths, row_width, row) {
-            count_split_lines += 1;
-            containers.push(split);
-        }
+            print_margin_right(f, &grid.margin)?;
 
-        containers.push(Container::new(
-            row_width,
-            height,
-            ContainerKind::Columns(columns),
-        ));
+            f.write_char('\n')?;
+        }
 
         let is_last_row = row + 1 == grid.count_rows();
         if is_last_row {
-            if let Some(split) =
-                build_split_line_container(grid, &normal_widths, row_width, row + 1)
-            {
-                count_split_lines += 1;
-                containers.push(split);
-            }
+            print_split_line(f, grid, &normal_widths, table_width, row + 1)?;
         }
     }
 
-    let height = heights.iter().sum::<usize>() + count_split_lines;
+    print_margin_bottom(f, &grid.margin, table_width)?;
 
-    let container = Container::new(row_width, height, ContainerKind::Rows(containers));
-    add_margin(grid, container)
+    Ok(())
 }
 
-fn add_margin(grid: &Grid, mut container: Container) -> Container {
-    if grid.margin.left.size > 0 {
-        let height = container.height;
-        container = Container::new(
-            container.width + grid.margin.left.size,
-            height,
-            ContainerKind::Columns(vec![
-                Container::new(
-                    grid.margin.left.size,
-                    height,
-                    ContainerKind::Split(Symbol::from(grid.margin.left.fill)),
-                ),
-                container,
-            ]),
-        );
-    }
-    if grid.margin.right.size > 0 {
-        let height = container.height;
-        container = Container::new(
-            container.width + grid.margin.right.size,
-            height,
-            ContainerKind::Columns(vec![
-                container,
-                Container::new(
-                    grid.margin.right.size,
-                    height,
-                    ContainerKind::Split(Symbol::from(grid.margin.right.fill)),
-                ),
-            ]),
-        );
-    }
-    if grid.margin.top.size > 0 {
-        let w = container.width;
-        container = Container::new(
-            w,
-            container.height + grid.margin.top.size,
-            ContainerKind::Rows(vec![
-                Container::new(
-                    w,
-                    grid.margin.top.size,
-                    ContainerKind::Split(Symbol::from(grid.margin.top.fill)),
-                ),
-                container,
-            ]),
-        );
-    }
-    if grid.margin.bottom.size > 0 {
-        let w = container.width;
-        container = Container::new(
-            w,
-            container.height + grid.margin.bottom.size,
-            ContainerKind::Rows(vec![
-                container,
-                Container::new(
-                    w,
-                    grid.margin.bottom.size,
-                    ContainerKind::Split(Symbol::from(grid.margin.bottom.fill)),
-                ),
-            ]),
-        );
+fn print_margin_top(f: &mut fmt::Formatter, margin: &Margin, table_width: usize) -> fmt::Result {
+    let size = table_width + margin.left.size + margin.right.size;
+    let fill = Symbol::from_char(margin.top.fill);
+    for _ in 0..margin.top.size {
+        repeat_char(f, &fill, size)?;
+        f.write_char('\n')?
     }
 
-    container
+    Ok(())
 }
 
-fn build_split_line_container(
+fn print_margin_bottom(f: &mut fmt::Formatter, margin: &Margin, table_width: usize) -> fmt::Result {
+    let size = table_width + margin.left.size + margin.right.size;
+    let fill = Symbol::from_char(margin.bottom.fill);
+    for _ in 0..margin.bottom.size {
+        repeat_char(f, &fill, size)?;
+        f.write_char('\n')?
+    }
+
+    Ok(())
+}
+
+fn print_margin_left(f: &mut fmt::Formatter, margin: &Margin) -> fmt::Result {
+    repeat_char(f, &Symbol::from_char(margin.left.fill), margin.left.size)
+}
+
+fn print_margin_right(f: &mut fmt::Formatter, margin: &Margin) -> fmt::Result {
+    repeat_char(f, &Symbol::from_char(margin.right.fill), margin.right.size)
+}
+
+fn print_split_line(
+    f: &mut fmt::Formatter,
     grid: &Grid,
     widths: &[usize],
-    width: usize,
+    max_width: usize,
     row: usize,
-) -> Option<Container> {
+) -> fmt::Result {
     if !has_horizontal(grid, row) {
-        return None;
+        return Ok(());
     }
 
-    let mut v = Vec::new();
-    for (col, &width) in widths.iter().enumerate() {
+    print_margin_left(f, &grid.margin)?;
+
+    let mut char_skip = 0;
+    let override_text = grid.override_split_lines.get(&row);
+    if let Some(text) = override_text {
+        let text = strip(text, max_width);
+        let text = text.lines().next().unwrap();
+        char_skip = string_width(text);
+        f.write_str(text)?;
+    }
+
+    for (col, width) in widths.iter().enumerate() {
         if col == 0 {
             let left = if let Some(c) =
                 grid.theme
@@ -2117,7 +2015,11 @@ fn build_split_line_container(
             };
 
             if let Some(c) = left {
-                v.push(Container::new(1, 1, ContainerKind::Split(c)));
+                if char_skip == 0 {
+                    c.fmt(f)?;
+                } else {
+                    char_skip -= 1;
+                }
             }
         }
 
@@ -2128,7 +2030,14 @@ fn build_split_line_container(
             .or(Some(DEFAULT_BORDER_HORIZONTAL_CHAR));
 
         if let Some(c) = main {
-            v.push(Container::new(width, 1, ContainerKind::Split(c)));
+            let mut width = *width;
+            if char_skip > 0 {
+                let sub = cmp::min(width, char_skip);
+                width -= sub;
+                char_skip -= sub;
+            }
+
+            repeat_char(f, &c, width)?;
         }
 
         let right = grid
@@ -2144,54 +2053,52 @@ fn build_split_line_container(
             });
 
         if let Some(c) = right {
-            v.push(Container::new(1, 1, ContainerKind::Split(c)));
+            if char_skip == 0 {
+                c.fmt(f)?;
+            } else {
+                char_skip -= 1;
+            }
         }
     }
 
-    if v.is_empty() {
-        return None;
-    }
+    print_margin_right(f, &grid.margin)?;
 
-    let override_text = grid.override_split_lines.get(&row);
-    if let Some(text) = override_text {
-        let text = strip(text, width).lines().next().unwrap().to_string();
-        override_split_line(&mut v, text);
-    }
+    f.write_char('\n')?;
 
-    Some(Container::new(width, 1, ContainerKind::Columns(v)))
+    Ok(())
 }
 
-fn override_split_line(v: &mut Vec<Container>, text: String) {
-    let width = string_width(&text);
+// fn override_split_line(v: &mut Vec<Container>, text: String) {
+//     let width = string_width(&text);
 
-    let mut i = width;
-    while !v.is_empty() {
-        if i == 0 {
-            break;
-        }
+//     let mut i = width;
+//     while !v.is_empty() {
+//         if i == 0 {
+//             break;
+//         }
 
-        let mut c = v.remove(0);
-        let w = c.width;
-        if i < w {
-            c.width -= i;
-            v.insert(0, c);
-        }
+//         let mut c = v.remove(0);
+//         let w = c.width;
+//         if i < w {
+//             c.width -= i;
+//             v.insert(0, c);
+//         }
 
-        i -= cmp::min(w, i);
-    }
+//         i -= cmp::min(w, i);
+//     }
 
-    v.insert(
-        0,
-        Container::new(
-            width,
-            1,
-            ContainerKind::Content {
-                lines: vec![text],
-                style: Style::default(),
-            },
-        ),
-    );
-}
+//     v.insert(
+//         0,
+//         Container::new(
+//             width,
+//             1,
+//             ContainerKind::Content {
+//                 lines: vec![text],
+//                 style: Style::default(),
+//             },
+//         ),
+//     );
+// }
 
 fn row_width_grid(grid: &Grid, widths: &[Vec<usize>], row: usize) -> usize {
     let row_width = widths
@@ -2222,48 +2129,48 @@ fn has_horizontal(grid: &Grid, row: usize) -> bool {
 mod tests {
     use super::*;
 
-    #[test]
-    fn container_print_test() {
-        let c = Container::new(
-            12,
-            4,
-            ContainerKind::Columns(vec![
-                Container::new(1, 4, ContainerKind::Split('+'.into())),
-                Container::new(
-                    10,
-                    4,
-                    ContainerKind::Rows(vec![
-                        Container::new(
-                            10,
-                            2,
-                            ContainerKind::Content {
-                                lines: vec!["Hello".to_owned(), "World".to_owned()],
-                                style: Style::default(),
-                            },
-                        ),
-                        Container::new(10, 1, ContainerKind::Split('-'.into())),
-                        Container::new(
-                            10,
-                            1,
-                            ContainerKind::Content {
-                                lines: vec!["123".to_owned()],
-                                style: Style::default(),
-                            },
-                        ),
-                    ]),
-                ),
-                Container::new(1, 3, ContainerKind::Split('#'.into())),
-            ]),
-        );
+    // #[test]
+    // fn container_print_test() {
+    //     let c = Container::new(
+    //         12,
+    //         4,
+    //         ContainerKind::Columns(vec![
+    //             Container::new(1, 4, ContainerKind::Split('+'.into())),
+    //             Container::new(
+    //                 10,
+    //                 4,
+    //                 ContainerKind::Rows(vec![
+    //                     Container::new(
+    //                         10,
+    //                         2,
+    //                         ContainerKind::Content {
+    //                             lines: vec!["Hello".to_owned(), "World".to_owned()],
+    //                             style: Style::default(),
+    //                         },
+    //                     ),
+    //                     Container::new(10, 1, ContainerKind::Split('-'.into())),
+    //                     Container::new(
+    //                         10,
+    //                         1,
+    //                         ContainerKind::Content {
+    //                             lines: vec!["123".to_owned()],
+    //                             style: Style::default(),
+    //                         },
+    //                     ),
+    //                 ]),
+    //             ),
+    //             Container::new(1, 3, ContainerKind::Split('#'.into())),
+    //         ]),
+    //     );
 
-        assert_eq!(
-            c.to_string(),
-            "+Hello     #\n\
-             +World     #\n\
-             +----------#\n\
-             +123       #\n",
-        )
-    }
+    //     assert_eq!(
+    //         c.to_string(),
+    //         "+Hello     #\n\
+    //          +World     #\n\
+    //          +----------#\n\
+    //          +123       #\n",
+    //     )
+    // }
 
     #[test]
     fn replace_tab_test() {
