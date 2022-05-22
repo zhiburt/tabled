@@ -120,6 +120,8 @@ fn pseudo_clean_style() {
         "└───┴──────────┴──────────┴──────────┘\n",
     );
 
+    println!("{table}");
+
     assert_eq!(table, expected);
 }
 
@@ -260,6 +262,8 @@ fn custom_style() {
         " 2 '   2-0    '   2-1    '   2-2    \n",
         "***'**********'**********'**********\n",
     );
+
+    println!("{}", table);
 
     assert_eq!(table, expected);
 }
@@ -402,6 +406,8 @@ fn top_border_override_cleared_after_restyling_test() {
         "+---+----------+----------+\n",
     );
 
+    println!("{table}");
+
     assert_eq!(table, expected);
 }
 
@@ -513,6 +519,7 @@ fn custom_style_test() {
         Style::empty().horizontal('-'),
         concat!(
             " N  column 0  column 1  column 2 \n",
+            "---------------------------------\n",
             " 0    0-0       0-1       0-2    \n",
             "---------------------------------\n",
             " 1    1-0       1-1       1-2    \n",
@@ -578,6 +585,7 @@ fn custom_style_test() {
         concat!(
             "---------------------------------\n",
             " N  column 0  column 1  column 2 \n",
+            "+++++++++++++++++++++++++++++++++\n",
             " 0    0-0       0-1       0-2    \n",
             "+++++++++++++++++++++++++++++++++\n",
             " 1    1-0       1-1       1-2    \n",
@@ -652,6 +660,7 @@ fn custom_style_test() {
         Style::empty().bottom('-').horizontal('+'),
         concat!(
             " N  column 0  column 1  column 2 \n",
+            "+++++++++++++++++++++++++++++++++\n",
             " 0    0-0       0-1       0-2    \n",
             "+++++++++++++++++++++++++++++++++\n",
             " 1    1-0       1-1       1-2    \n",
@@ -714,6 +723,7 @@ fn custom_style_test() {
         Style::empty().left('-').horizontal('+'),
         concat!(
             "- N  column 0  column 1  column 2 \n",
+            "++++++++++++++++++++++++++++++++++\n",
             "- 0    0-0       0-1       0-2    \n",
             "++++++++++++++++++++++++++++++++++\n",
             "- 1    1-0       1-1       1-2    \n",
@@ -774,6 +784,7 @@ fn custom_style_test() {
         Style::empty().right('-').horizontal('+'),
         concat!(
             " N  column 0  column 1  column 2 -\n",
+            "++++++++++++++++++++++++++++++++++\n",
             " 0    0-0       0-1       0-2    -\n",
             "++++++++++++++++++++++++++++++++++\n",
             " 1    1-0       1-1       1-2    -\n",
@@ -834,6 +845,7 @@ fn custom_style_test() {
         Style::empty().vertical('-').horizontal('+'),
         concat!(
             " N - column 0 - column 1 - column 2 \n",
+            "++++++++++++++++++++++++++++++++++++\n",
             " 0 -   0-0    -   0-1    -   0-2    \n",
             "++++++++++++++++++++++++++++++++++++\n",
             " 1 -   1-0    -   1-1    -   1-2    \n",
@@ -857,6 +869,7 @@ fn custom_style_test() {
         concat!(
             "+++++++++++++++++++++++++++++++++\n",
             " N  column 0  column 1  column 2 \n",
+            "---------------------------------\n",
             " 0    0-0       0-1       0-2    \n",
             "---------------------------------\n",
             " 1    1-0       1-1       1-2    \n",
@@ -868,6 +881,7 @@ fn custom_style_test() {
         Style::empty().horizontal('-').bottom('+'),
         concat!(
             " N  column 0  column 1  column 2 \n",
+            "---------------------------------\n",
             " 0    0-0       0-1       0-2    \n",
             "---------------------------------\n",
             " 1    1-0       1-1       1-2    \n",
@@ -880,6 +894,7 @@ fn custom_style_test() {
         Style::empty().horizontal('-').left('+'),
         concat!(
             "+ N  column 0  column 1  column 2 \n",
+            "+---------------------------------\n",
             "+ 0    0-0       0-1       0-2    \n",
             "+---------------------------------\n",
             "+ 1    1-0       1-1       1-2    \n",
@@ -891,6 +906,7 @@ fn custom_style_test() {
         Style::empty().horizontal('-').right('+'),
         concat!(
             " N  column 0  column 1  column 2 +\n",
+            "---------------------------------+\n",
             " 0    0-0       0-1       0-2    +\n",
             "---------------------------------+\n",
             " 1    1-0       1-1       1-2    +\n",
@@ -902,6 +918,7 @@ fn custom_style_test() {
         Style::empty().horizontal('-').vertical('+'),
         concat!(
             " N + column 0 + column 1 + column 2 \n",
+            "---+----------+----------+----------\n",
             " 0 +   0-0    +   0-1    +   0-2    \n",
             "---+----------+----------+----------\n",
             " 1 +   1-0    +   1-1    +   1-2    \n",
@@ -1246,6 +1263,7 @@ fn custom_style_test() {
         concat!(
             ";---!----------!----------!----------.\n",
             "| N # column 0 # column 1 # column 2 *\n",
+            "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 0 #   0-0    #   0-1    #   0-2    *\n",
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$\n",
             "| 1 #   1-0    #   1-1    #   1-2    *\n",

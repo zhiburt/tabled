@@ -110,6 +110,7 @@ impl TableOption for Concat {
                 let new_row_size = lhs.count_rows() + rhs.count_rows();
                 let new_column_size = cmp::max(lhs.count_columns(), rhs.count_columns());
                 let mut new_grid = Grid::new(new_row_size, new_column_size);
+                new_grid.set_borders(lhs.get_borders().clone());
 
                 for row in 0..new_grid.count_rows() {
                     for column in 0..new_grid.count_columns() {
@@ -121,15 +122,12 @@ impl TableOption for Concat {
                         let is_new_cell = is_new_to_lhs || is_new_to_rhs;
 
                         let settings = if is_new_cell {
-                            new_grid
-                                .get_settings(row, column)
-                                .text(&self.default_cell)
-                                .border_restriction(false)
+                            new_grid.get_settings(row, column).text(&self.default_cell)
                         } else if is_lhs_side {
-                            lhs.get_settings(row, column).border_restriction(false)
+                            lhs.get_settings(row, column)
                         } else {
                             rhs.get_settings(row - lhs.count_rows(), column)
-                                .border_restriction(false)
+                                .border(Default::default())
                         };
 
                         new_grid.set(Entity::Cell(row, column), settings);
@@ -142,6 +140,7 @@ impl TableOption for Concat {
                 let new_row_size = cmp::max(lhs.count_rows(), rhs.count_rows());
                 let new_column_size = lhs.count_columns() + rhs.count_columns();
                 let mut new_grid = Grid::new(new_row_size, new_column_size);
+                new_grid.set_borders(lhs.get_borders().clone());
 
                 for row in 0..new_grid.count_rows() {
                     for column in 0..new_grid.count_columns() {
@@ -153,15 +152,12 @@ impl TableOption for Concat {
                         let is_new_cell = is_new_to_lhs || is_new_to_rhs;
 
                         let settings = if is_new_cell {
-                            new_grid
-                                .get_settings(row, column)
-                                .text(&self.default_cell)
-                                .border_restriction(false)
+                            new_grid.get_settings(row, column).text(&self.default_cell)
                         } else if is_lhs_side {
-                            lhs.get_settings(row, column).border_restriction(false)
+                            lhs.get_settings(row, column)
                         } else {
                             rhs.get_settings(row, column - lhs.count_columns())
-                                .border_restriction(false)
+                                .border(Default::default())
                         };
 
                         new_grid.set(Entity::Cell(row, column), settings);

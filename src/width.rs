@@ -551,6 +551,7 @@ impl TableOption for MinWidth {
         // todo: Try to fix it in other way?
         loop {
             let total_width = grid.total_width();
+            println!("total_width={}", total_width);
             if total_width >= self.size {
                 break;
             }

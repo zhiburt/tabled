@@ -10,7 +10,7 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Grid, Indent, Settings};
+use papergrid::{AlignmentHorizontal, AlignmentVertical, Borders, Entity, Grid, Indent, Settings};
 
 mod util;
 
@@ -567,7 +567,7 @@ fn grid_2x2_span_2_test() {
 #[test]
 fn render_row_span_with_no_split_style() {
     let mut grid = util::new_grid::<2, 2>();
-    grid.clear_split_grid();
+    grid.set_borders(Borders::default());
 
     grid.set(
         Entity::Cell(0, 0),

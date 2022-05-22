@@ -1,4 +1,4 @@
-use papergrid::{AlignmentHorizontal, Border, Entity, Indent, Settings, DEFAULT_CELL_STYLE};
+use papergrid::{AlignmentHorizontal, Border, Borders, Entity, Indent, Settings};
 
 mod util;
 
@@ -37,11 +37,13 @@ fn grid_2x2_custom_column_test() {
          +---#***#\n",
     );
 
-    grid.set_cell_borders(DEFAULT_CELL_STYLE);
+    grid.clear_theme();
     grid.set(
         Entity::Column(0),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
+
+    println!("{}", grid);
 
     assert_eq!(
         grid.to_string(),
@@ -73,7 +75,7 @@ fn grid_2x2_custom_row_test() {
         )
     );
 
-    grid.set_cell_borders(DEFAULT_CELL_STYLE);
+    grid.clear_theme();
     grid.set(
         Entity::Row(1),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
@@ -98,9 +100,11 @@ fn grid_2x2_change_cell_border_test() {
         Entity::Cell(0, 1),
         Settings::new().border(Border::new('*', '^', '@', '#', '~', '!', '%', '&')),
     );
-    let str = grid.to_string();
+
+    println!("{}", grid);
+
     assert_eq!(
-        str,
+        grid.to_string(),
         "+---~***!\n\
          |0-0@0-1#\n\
          +---%^^^&\n\
@@ -203,10 +207,10 @@ fn grid_2x2_vertical_resize_test() {
 #[test]
 fn grid_2x2_without_frame_test() {
     let mut grid = util::new_grid::<2, 2>();
-    grid.set_cell_borders(Border::default());
-    grid.clear_split_grid();
-
-    grid.add_vertical_split(1);
+    grid.set_borders(Borders {
+        vertical_intersection: Some(' '.into()),
+        ..Default::default()
+    });
 
     assert_eq!(
         grid.to_string(),
@@ -214,7 +218,12 @@ fn grid_2x2_without_frame_test() {
          1-0 1-1\n"
     );
 
-    grid.add_horizontal_split(1);
+    grid.set_borders(Borders {
+        vertical_intersection: Some(' '.into()),
+        horizontal: Some(' '.into()),
+        intersection: Some(' '.into()),
+        ..Default::default()
+    });
 
     assert_eq!(
         grid.to_string(),
@@ -226,7 +235,6 @@ fn grid_2x2_without_frame_test() {
 fn grid_2x2_custom_border_test() {
     let mut grid = util::new_grid::<2, 2>();
 
-    grid.add_grid_split();
     grid.set(
         Entity::Cell(0, 0),
         Settings::new().border(
@@ -344,4 +352,38 @@ fn grid_2x2_ansi_border_none_if_string_is_not_1_char_test() {
     assert!(Symbol::ansi("1".on_red().to_string()).is_some());
     assert!(Symbol::ansi("1".on_red().blue().to_string()).is_some());
     assert!(Symbol::ansi("1".truecolor(0, 1, 3).on_truecolor(1, 2, 3).to_string()).is_some());
+}
+
+#[test]
+fn when_border_is_not_complet_default_char_is_used_test() {
+    let mut grid = util::new_grid::<2, 2>();
+    grid.set_borders(Borders {
+        vertical_intersection: Some(' '.into()),
+        ..Default::default()
+    });
+    grid.set(
+        Entity::Cell(1, 1),
+        Settings::default().border(Border::default().top('*')),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!("0-0 0-1\n", "    ***\n", "1-0 1-1\n",),
+    );
+}
+
+#[test]
+fn when_1_vertical_is_set_second_must_use_default_test() {
+    let mut grid = util::new_grid::<2, 2>();
+    grid.set_borders(Borders::default());
+    grid.set(
+        Entity::Cell(1, 0),
+        Settings::default().border(Border::default().right('*')),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        "0-0 0-1\n\
+         1-0*1-1\n"
+    );
 }

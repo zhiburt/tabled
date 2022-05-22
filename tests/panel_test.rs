@@ -153,6 +153,8 @@ fn header() {
         " 2 |   2-0    |   2-1    |   2-2    \n",
     );
 
+    println!("{table}");
+
     assert_eq!(table, expected);
 }
 

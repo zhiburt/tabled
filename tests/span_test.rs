@@ -549,13 +549,15 @@ fn span_zero_test() {
         .with(Modify::new(Cell(3, 1)).with(Span::column(0)))
         .to_string();
 
+    println!("{}", table);
+
     assert_eq!(
         table,
         concat!(
             " column 0 | column 1 | column 2 \n",
-            "-----+-------+-------+----------\n",
+            "------+-------+------+----------\n",
             "    0     |   0-1    |   0-2    \n",
-            "  1  |      1-0      |   1-2    \n",
+            "  1   |     1-0      |   1-2    \n",
             "          2          |   2-2    \n",
         )
     );

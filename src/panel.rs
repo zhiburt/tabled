@@ -20,7 +20,8 @@
 //! assert_eq!(
 //!     table,
 //!     concat!(
-//!         " Tabled Releases \n",
+//!         "+-----+----+----+\n",
+//!         "|Tabled Releases|\n",
 //!         "+-----+----+----+\n",
 //!         "|  0  | 1  | 2  |\n",
 //!         "+-----+----+----+\n",
@@ -49,9 +50,10 @@ pub struct Panel<S: AsRef<str>>(pub S, pub usize);
 impl<S: AsRef<str>> TableOption for Panel<S> {
     fn change(&mut self, grid: &mut Grid) {
         let mut new_grid = Grid::new(grid.count_rows() + 1, grid.count_columns());
+        new_grid.set_borders(grid.get_borders().clone());
         for row in 0..grid.count_rows() {
             for column in 0..grid.count_columns() {
-                let cell_settings = grid.get_settings(row, column).border_restriction(false);
+                let cell_settings = grid.get_settings(row, column);
                 if row >= self.1 {
                     new_grid.set(Entity::Cell(row + 1, column), cell_settings);
                 } else {

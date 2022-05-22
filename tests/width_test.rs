@@ -795,7 +795,7 @@ fn total_width_small_with_panel() {
         .with(MinWidth::new(5))
         .to_string();
 
-    let expected = concat!(" Hel \n", "+---+\n", "| u |\n", "+---+\n",);
+    let expected = concat!("+---+\n", "|Hel|\n", "+---+\n", "| u |\n", "+---+\n",);
 
     assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 5));
