@@ -178,6 +178,8 @@ fn footer() {
         "              The end               \n",
     );
 
+    println!("{table}");
+
     assert_eq!(table, expected);
 }
 

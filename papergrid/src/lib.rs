@@ -23,7 +23,7 @@
 
 use std::{
     cmp::{self, max},
-    collections::{BTreeSet, HashMap},
+    collections::{BTreeMap, HashMap, HashSet},
     fmt::{self, Display, Write},
     hash::Hash,
     ops::{Bound, RangeBounds},
@@ -65,6 +65,7 @@ pub struct Grid {
     margin: Margin,
     theme: Theme,
     override_split_lines: HashMap<usize, String>,
+    spans: BTreeMap<(usize, usize), HashSet<usize>>,
 }
 
 impl Grid {
@@ -95,6 +96,7 @@ impl Grid {
             margin: Margin::default(),
             theme: Theme::new(),
             override_split_lines: HashMap::new(),
+            spans: BTreeMap::new(),
         }
     }
 
@@ -145,10 +147,6 @@ impl Grid {
                 style.alignment_v = alignment_v;
             }
 
-            if let Some(span) = settings.span {
-                style.span = span;
-            }
-
             if let Some(formatting) = settings.formatting {
                 style.formatting = formatting;
             }
@@ -156,6 +154,66 @@ impl Grid {
 
         if let Some(border) = settings.border {
             self.set_border(entity, border);
+        }
+
+        if let Some(span) = settings.span {
+            match entity {
+                Entity::Global => (),
+                Entity::Column(_) => (),
+                Entity::Row(_) => (),
+                Entity::Cell(row, col) => self.set_span(span, row, col),
+            }
+        }
+    }
+
+    fn set_span(&mut self, mut span: usize, row: usize, mut col: usize) {
+        if row >= self.count_rows() {
+            return;
+        }
+
+        if col == 0 && span == 0 {
+            return;
+        }
+
+        if col + span > self.count_columns() {
+            span = self.count_columns() - col;
+        }
+
+        if span == 0 && col > 0 {
+            match closest_visible(self, row, col - 1) {
+                Some(c) => {
+                    span += 1 + col - c;
+                    col = c;
+                }
+                None => return,
+            }
+        }
+
+        self.spans
+            .entry((col, col + span))
+            .and_modify(|rows| {
+                rows.insert(row);
+            })
+            .or_insert_with(|| {
+                let mut m = HashSet::with_capacity(1);
+                m.insert(row);
+                m
+            });
+
+        // it may happen that a colided span will be left so we checks if there's one
+        // like we insert (0, 3) but (0, 2) was in a set.
+        // such span makes no sense so we delete it.
+
+        for span in 0..span {
+            let mut do_remove = false;
+            if let Some(rows) = self.spans.get_mut(&(col, col + span)) {
+                rows.remove(&row);
+                do_remove = rows.is_empty();
+            }
+
+            if do_remove {
+                self.spans.remove(&(col, col + span));
+            }
         }
     }
 
@@ -214,19 +272,26 @@ impl Grid {
         let style = self.style(Entity::Cell(row, col));
         let content = &self.cells[row][col];
         let border = self.get_border(row, col);
+        let span = self
+            .spans
+            .iter()
+            .find(|((c, _), rows)| rows.contains(&row) && *c == col)
+            .map(|((start, end), _)| end - start);
 
-        Settings::default()
-            .text(content)
-            .alignment(style.alignment_h)
-            .vertical_alignment(style.alignment_v)
-            .span(style.span)
-            .padding(
-                style.padding.left,
-                style.padding.right,
-                style.padding.top,
-                style.padding.bottom,
-            )
-            .border(border)
+        Settings {
+            text: Some(content.clone()),
+            padding: Some(Padding {
+                left: style.padding.left,
+                right: style.padding.right,
+                top: style.padding.top,
+                bottom: style.padding.bottom,
+            }),
+            border: Some(border),
+            alignment_h: Some(style.alignment_h),
+            alignment_v: Some(style.alignment_v),
+            formatting: None,
+            span,
+        }
     }
 
     pub fn get_border(&self, row: usize, col: usize) -> Border {
@@ -429,14 +494,11 @@ impl Grid {
             return 0;
         }
 
-        let mut cells = self.collect_cells();
-        let mut styles = self.collect_styles();
+        let cells = self.collect_cells();
 
-        fix_spans(&mut styles, &mut cells);
+        let widths = columns_width(self, &cells);
 
-        let widths = columns_width(self, &cells, &styles);
-
-        total_width(self, &widths, &styles, &self.margin)
+        total_width(self, &widths, &self.margin)
     }
 
     pub fn override_split_line(&mut self, row: usize, line: impl Into<String>) {
@@ -445,18 +507,35 @@ impl Grid {
 
     // hide it by feature?
     // 'private'
-    pub fn build_widths(&self) -> (Vec<Vec<usize>>, Vec<Vec<Style>>) {
-        let mut cells = self.collect_cells();
-        let mut styles = self.collect_styles();
-
-        fix_spans(&mut styles, &mut cells);
-
-        let widths = columns_width(self, &cells, &styles);
-
-        (widths, styles)
+    pub fn build_widths(&self) -> Vec<usize> {
+        let cells = self.collect_cells();
+        columns_width(self, &cells)
     }
 
-    fn collect_cells(&self) -> Vec<Vec<Vec<String>>> {
+    pub fn build_cells_widths(&self) -> Vec<Vec<usize>> {
+        let cells = self.collect_cells();
+        let widths = columns_width(self, &cells);
+
+        let mut cells_widths = Vec::with_capacity(self.count_rows());
+        for row in 0..self.count_rows() {
+            let mut row_widths = Vec::with_capacity(self.count_columns());
+            for col in 0..self.count_columns() {
+                let width = if is_cell_visible(self, (row, col)) {
+                    grid_cell_width(self, &widths, (row, col))
+                } else {
+                    0
+                };
+
+                row_widths.push(width);
+            }
+
+            cells_widths.push(row_widths);
+        }
+
+        cells_widths
+    }
+
+    pub fn collect_cells(&self) -> Vec<Vec<Vec<String>>> {
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
 
@@ -477,18 +556,9 @@ impl Grid {
         rows
     }
 
-    fn collect_styles(&self) -> Vec<Vec<Style>> {
-        let mut rows = vec![Vec::with_capacity(self.count_columns()); self.count_rows()];
-        (0..self.count_rows()).for_each(|row| {
-            (0..self.count_columns()).for_each(|col| {
-                let style = self.style(Entity::Cell(row, col));
-                rows[row].push(style.clone());
-            });
-        });
-
-        fix_styles(&mut rows);
-
-        rows
+    pub fn is_cell_visible(&self, pos: Position) -> bool {
+        let is_cell_overriden = is_cell_overriden(self, pos);
+        !is_cell_overriden
     }
 }
 
@@ -607,9 +677,14 @@ pub enum Entity {
     Cell(usize, usize),
 }
 
+// impl Entity {
+//     // fn cells<'a>(&self, grid: &'a Grid) -> impl Iterator<Item=(usize, usize)> + 'a {
+
+//     // }
+// }
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Style {
-    pub span: usize,
     pub padding: Padding,
     pub alignment_h: AlignmentHorizontal,
     pub alignment_v: AlignmentVertical,
@@ -619,7 +694,6 @@ pub struct Style {
 impl Default for Style {
     fn default() -> Self {
         Self {
-            span: 1,
             padding: Padding::default(),
             alignment_h: AlignmentHorizontal::Left,
             alignment_v: AlignmentVertical::Top,
@@ -836,16 +910,14 @@ impl fmt::Display for Grid {
             return Ok(());
         }
 
-        let mut cells = self.collect_cells();
-        let mut styles = self.collect_styles();
+        let cells = self.collect_cells();
 
-        fix_spans(&mut styles, &mut cells);
+        // fix_spans(&mut styles, &mut cells);
 
-        let heights = rows_height(&cells, &styles, count_rows, count_columns);
-        let widths = columns_width(self, &cells, &styles);
-        let normal_widths = normalized_width(&widths, &styles, count_rows, count_columns);
+        let heights = rows_height(self, &cells, count_rows, count_columns);
+        let widths = columns_width(self, &cells);
 
-        print_grid(f, self, cells, styles, widths, normal_widths, heights)
+        print_grid(f, self, cells, widths, heights)
     }
 }
 
@@ -998,303 +1070,253 @@ fn real_string_width(text: &str) -> usize {
         .unwrap_or(0)
 }
 
-fn fix_styles(styles: &mut [Vec<Style>]) {
-    styles.iter_mut().for_each(|row_styles| {
-        fix_invisible_cell(row_styles);
-    });
-}
+// fn fix_styles(styles: &mut [Vec<Style>]) {
+//     styles.iter_mut().for_each(|row_styles| {
+//         fix_invisible_cell(row_styles);
+//     });
+// }
 
-fn fix_invisible_cell(styles: &mut [Style]) {
-    (0..styles.len()).for_each(|col| {
-        if !is_cell_visible(styles, col) {
-            styles[col].span = 0;
-        }
-    });
-}
+// fn fix_invisible_cell(styles: &mut [Style]) {
+//     (0..styles.len()).for_each(|col| {
+//         if !is_cell_visible(styles, col) {
+//             styles[col].span = 0;
+//         }
+//     });
+// }
 
 // Sometimes user may not increase some span while decreasing another cell
 // Which may cause an incorrect rendering.
 //
 // So we are fixing the spans to accordingly.
-fn fix_spans(styles: &mut [Vec<Style>], cells: &mut [Vec<Vec<String>>]) {
-    (0..styles.len()).for_each(|row| {
-        fix_zero_spans(&mut styles[row], &mut cells[row]);
-    });
-}
+// fn fix_spans(styles: &mut [Vec<Style>], cells: &mut [Vec<Vec<String>>]) {
+//     (0..styles.len()).for_each(|row| {
+//         fix_zero_spans(&mut styles[row], &mut cells[row]);
+//     });
+// }
 
-fn fix_zero_spans(styles: &mut [Style], widths: &mut [Vec<String>]) {
-    if styles.is_empty() {
-        return;
-    }
+// fn fix_zero_spans(styles: &mut [Style], widths: &mut [Vec<String>]) {
+//     if styles.is_empty() {
+//         return;
+//     }
 
-    // fix first column
-    fix_first_column_span(styles, widths);
-    // fix an inner space
-    fix_zero_column_span(styles);
-}
+//     // fix first column
+//     fix_first_column_span(styles, widths);
+//     // fix an inner space
+//     fix_zero_column_span(styles);
+// }
 
-fn fix_zero_column_span(styles: &mut [Style]) {
-    for i in 0..styles.len() {
-        if styles[i].span > 0 {
-            continue;
-        }
+// fn fix_zero_column_span(styles: &mut [Style]) {
+//     for i in 0..styles.len() {
+//         if styles[i].span > 0 {
+//             continue;
+//         }
 
-        if is_cell_overriden(&styles[..i]) {
-            continue;
-        }
+//         if is_cell_overriden(&styles[..i]) {
+//             continue;
+//         }
 
-        let prev_visible_cell = (0..i).rev().find(|&i| styles[i].span > 0);
-        if let Some(pos) = prev_visible_cell {
-            let need_at_least_span = i - pos;
-            styles[pos].span = need_at_least_span + 1;
-        }
-    }
-}
+//         let prev_visible_cell = (0..i).rev().find(|&i| styles[i].span > 0);
+//         if let Some(pos) = prev_visible_cell {
+//             let need_at_least_span = i - pos;
+//             styles[pos].span = need_at_least_span + 1;
+//         }
+//     }
+// }
 
-fn fix_first_column_span(styles: &mut [Style], widths: &mut [Vec<String>]) {
-    if styles[0].span == 0 {
-        let next_visible_cell = (1..styles.len()).find(|&i| styles[i].span > 0);
-        if let Some(i) = next_visible_cell {
-            styles[i].span += i;
-            styles.swap(0, i);
-            widths.swap(0, i);
-        }
-    }
-}
+// fn fix_first_column_span(styles: &mut [Style], widths: &mut [Vec<String>]) {
+//     if styles[0].span == 0 {
+//         let next_visible_cell = (1..styles.len()).find(|&i| styles[i].span > 0);
+//         if let Some(i) = next_visible_cell {
+//             styles[i].span += i;
+//             styles.swap(0, i);
+//             widths.swap(0, i);
+//         }
+//     }
+// }
 
-fn columns_width(
-    grid: &Grid,
-    cells: &[Vec<Vec<String>>],
-    styles: &[Vec<Style>],
-) -> Vec<Vec<usize>> {
-    let mut widths = vec![vec![0; grid.count_columns()]; grid.count_rows()];
-    (0..grid.count_rows()).for_each(|row| {
-        (0..grid.count_columns()).for_each(|column| {
-            let cell = &cells[row][column];
-            let style = &styles[row][column];
-            if is_cell_visible(&styles[row], column) {
-                widths[row][column] = cell_width(cell, style);
+fn columns_width(grid: &Grid, cells: &[Vec<Vec<String>>]) -> Vec<usize> {
+    let mut widths = Vec::with_capacity(grid.count_columns());
+    for col in 0..grid.count_columns() {
+        let mut max = 0;
+
+        #[allow(clippy::needless_range_loop)]
+        for row in 0..grid.count_rows() {
+            if !is_simple_cell(grid, (row, col)) {
+                continue;
             }
-        });
-    });
 
-    // it's crusial to preserve order in iterations
-    // so we use BTreeSet
-    let mut spans = BTreeSet::new();
-    styles.iter().for_each(|row_styles| {
-        row_styles.iter().for_each(|style| {
-            spans.insert(style.span);
-        })
-    });
-    spans.remove(&0);
+            let width = cell_width(&cells[row][col], grid.style(Entity::Cell(row, col)));
+            max = cmp::max(width, max);
+        }
 
-    spans.into_iter().for_each(|span| {
-        adjust_width(&mut widths, styles, span, grid);
-    });
+        widths.push(max);
+    }
+
+    adjust_spans(grid, cells, &mut widths);
 
     widths
 }
 
-fn adjust_width(widths: &mut [Vec<usize>], styles: &[Vec<Style>], span: usize, grid: &Grid) {
-    let ranges = (0..grid.count_columns())
-        .map(|col| (col, col + span))
-        .take_while(|&(_, end)| end <= grid.count_columns());
-
-    for (start, end) in ranges.clone() {
-        adjust_range_width(widths, styles, start, end, grid);
+fn adjust_spans(grid: &Grid, cells: &[Vec<Vec<String>>], widths: &mut [usize]) {
+    if grid.spans.is_empty() {
+        return;
     }
 
-    if span > 1 {
-        // sometimes the adjustment of later stages affect the adjastement of privious stages.
-        // therefore we check if this is the case and re run the adjustement one more time.
-        for (start, end) in ranges {
-            let is_range_complete = is_range_complete(styles, widths, start, end, grid);
-            if !is_range_complete {
-                adjust_range_width(widths, styles, start, end, grid);
-            }
-        }
+    for (&(start, end), rows) in &grid.spans {
+        adjust_range(grid, cells, rows.iter().cloned(), widths, start, end);
     }
 }
 
-fn adjust_range_width(
-    widths: &mut [Vec<usize>],
-    styles: &[Vec<Style>],
-    start_column: usize,
-    end_column: usize,
+fn adjust_range(
     grid: &Grid,
+    cells: &[Vec<Vec<String>>],
+    rows: impl ExactSizeIterator<Item = usize>,
+    widths: &mut [usize],
+    start: usize,
+    end: usize,
 ) {
-    if grid.count_rows() == 0 {
+    if rows.len() == 0 {
         return;
     }
 
-    // find max width of a column range
-    let (max_row, max_width) = (0..grid.count_rows())
-        .map(|row| {
-            let width = row_width(&styles[row], &widths[row], start_column, end_column, grid);
-            (row, width)
-        })
-        .max_by_key(|&(_, width)| width)
-        .unwrap_or_default();
+    let max_span_width = rows
+        .map(|row| cell_width(&cells[row][start], grid.style(Entity::Cell(row, start))))
+        .max()
+        .unwrap_or(0);
+    let range_width = range_width(grid, start, end, widths);
 
-    // might happen when we filtered every cell
-    if max_width == 0 {
+    if range_width >= max_span_width {
         return;
     }
 
-    // increase the widths
-    (0..grid.count_rows())
-        .filter(|&row| row != max_row)
-        .filter(|&row| !is_there_out_of_scope_cell(&styles[row], start_column, end_column)) // ignore the cell we do handle this case later on
-        .for_each(|row| {
-            let row_width = row_width(&styles[row], &widths[row], start_column, end_column, grid);
+    inc_range_width(&mut widths[start..end], max_span_width - range_width);
 
-            let diff = max_width - row_width;
+    // let span = end - start;
+    // if span > 1 {
+    // fixing the rows with out_of_scope cells
+    //
+    // these cells may not have correct width, therefore
+    // we replace these cells's width with
+    // a width of cells with the same span and on the same column.
+    // (0..grid.count_rows())
+    //     .filter(|&row| row != max_row)
+    //     .filter(|&row| is_there_out_of_scope_cell(&styles[row], start_column, end_column))
+    //     .for_each(|row| {
+    //         (start_column..end_column)
+    //             .filter(|&col| is_cell_visible(&styles[row], col))
+    //             .for_each(|col| {
+    //                 let cell_with_the_same_cell = (0..grid.count_rows())
+    //                     .filter(|&r| r != max_row)
+    //                     .filter(|&r| r != row)
+    //                     .filter(|&r| {
+    //                         !is_there_out_of_scope_cell(&styles[r], start_column, end_column)
+    //                     })
+    //                     .find(|&r| styles[r][col].span == styles[row][col].span);
 
-            inc_cells_width(
-                &mut widths[row],
-                &styles[row],
-                start_column,
-                end_column,
-                diff,
-            );
-        });
-
-    let span = end_column - start_column;
-    if span > 1 {
-        // fixing the rows with out_of_scope cells
-        //
-        // these cells may not have correct width, therefore
-        // we replace these cells's width with
-        // a width of cells with the same span and on the same column.
-        (0..grid.count_rows())
-            .filter(|&row| row != max_row)
-            .filter(|&row| is_there_out_of_scope_cell(&styles[row], start_column, end_column))
-            .for_each(|row| {
-                (start_column..end_column)
-                    .filter(|&col| is_cell_visible(&styles[row], col))
-                    .for_each(|col| {
-                        let cell_with_the_same_cell = (0..grid.count_rows())
-                            .filter(|&r| r != max_row)
-                            .filter(|&r| r != row)
-                            .filter(|&r| {
-                                !is_there_out_of_scope_cell(&styles[r], start_column, end_column)
-                            })
-                            .find(|&r| styles[r][col].span == styles[row][col].span);
-
-                        if let Some(r) = cell_with_the_same_cell {
-                            widths[row][col] = widths[r][col];
-                        }
-                    })
-            });
-    }
+    //                 if let Some(r) = cell_with_the_same_cell {
+    //                     widths[col] = widths[col];
+    //                 }
+    //             })
+    //     });
+    // }
 }
 
-fn is_there_out_of_scope_cell(styles: &[Style], start_column: usize, end_column: usize) -> bool {
-    let first_cell_is_invisible = !is_cell_visible(styles, start_column);
-    let any_cell_out_of_scope = (start_column..end_column)
-        .filter(|&col| is_cell_visible(styles, col))
-        .any(|col| !is_cell_in_scope(styles, col, end_column));
-
-    first_cell_is_invisible || any_cell_out_of_scope
+fn range_width(grid: &Grid, start: usize, end: usize, widths: &[usize]) -> usize {
+    let count_borders = count_borders_in_range(grid, start, end);
+    let range_width = widths[start..end].iter().sum::<usize>();
+    count_borders + range_width
 }
 
-fn is_cell_in_scope(styles: &[Style], col: usize, end_col: usize) -> bool {
-    let next_col = col + styles[col].span;
-    next_col <= end_col
-}
+// fn is_there_out_of_scope_cell(styles: &[Style], start_column: usize, end_column: usize) -> bool {
+//     let first_cell_is_invisible = !is_cell_visible(styles, start_column);
+//     let any_cell_out_of_scope = (start_column..end_column)
+//         .filter(|&col| is_cell_visible(styles, col))
+//         .any(|col| !is_cell_in_scope(styles, col, end_column));
 
-fn is_cell_visible(row_styles: &[Style], column: usize) -> bool {
-    let is_span_zero = row_styles[column].span == 0;
-    if is_span_zero {
-        return false;
-    }
+//     first_cell_is_invisible || any_cell_out_of_scope
+// }
 
-    let is_cell_overriden = is_cell_overriden(&row_styles[..column]);
+// fn is_cell_in_scope(styles: &[Style], col: usize, end_col: usize) -> bool {
+//     let next_col = col + styles[col].span;
+//     next_col <= end_col
+// }
 
+fn is_cell_visible(grid: &Grid, pos: Position) -> bool {
+    let is_cell_overriden = is_cell_overriden(grid, pos);
     !is_cell_overriden
 }
 
-fn is_cell_overriden(styles: &[Style]) -> bool {
-    styles
+fn is_cell_overriden(grid: &Grid, pos: Position) -> bool {
+    grid.spans
         .iter()
-        .enumerate()
-        .any(|(i, style)| style.span > styles.len() - i)
+        .any(|(&(start, end), rows)| pos.1 > start && pos.1 < end && rows.contains(&pos.0))
 }
 
-fn is_range_complete(
-    styles: &[Vec<Style>],
-    widths: &[Vec<usize>],
-    start_column: usize,
-    end_column: usize,
-    grid: &Grid,
-) -> bool {
-    let is_not_complete = (0..grid.count_rows())
-        .filter(|&row| !is_there_out_of_scope_cell(&styles[row], start_column, end_column))
-        .map(|row| row_width(&styles[row], &widths[row], start_column, end_column, grid))
-        .fold(None, |mut acc, width| {
-            match acc {
-                Some((w, true)) if w != width => {
-                    acc = Some((0, false));
-                }
-                None => {
-                    acc = Some((width, true));
-                }
-                _ => {}
-            };
+fn is_simple_cell(grid: &Grid, pos: Position) -> bool {
+    let is_spanned = grid
+        .spans
+        .iter()
+        .any(|(&(start, end), rows)| pos.1 >= start && pos.1 < end && rows.contains(&pos.0));
 
-            acc
-        });
-
-    matches!(is_not_complete, Some((_, true)))
+    !is_spanned
 }
 
-fn row_width(styles: &[Style], widths: &[usize], start: usize, end: usize, grid: &Grid) -> usize {
-    let width = width_of_range(&styles[start..end], &widths[start..end]);
-    let border_count = count_borders_in_range(styles, start, end, grid);
+// fn is_range_complete(
+//     styles: &[Vec<Style>],
+//     widths: &[usize],
+//     start_column: usize,
+//     end_column: usize,
+//     grid: &Grid,
+// ) -> bool {
+//     let is_not_complete = (0..grid.count_rows())
+//         .filter(|&row| !is_there_out_of_scope_cell(&styles[row], start_column, end_column))
+//         .map(|row| row_width(&styles[row], &widths, start_column, end_column, grid))
+//         .fold(None, |mut acc, width| {
+//             match acc {
+//                 Some((w, true)) if w != width => {
+//                     acc = Some((0, false));
+//                 }
+//                 None => {
+//                     acc = Some((width, true));
+//                 }
+//                 _ => {}
+//             };
 
-    width + border_count
-}
+//             acc
+//         });
 
-fn width_of_range(styles: &[Style], widths: &[usize]) -> usize {
-    (0..styles.len())
-        .filter(|&i| is_cell_visible(styles, i))
-        .filter(|&i| is_cell_in_scope(styles, i, styles.len()))
-        .map(|i| widths[i])
-        .sum::<usize>()
-}
+//     matches!(is_not_complete, Some((_, true)))
+// }
 
-fn count_borders_in_range(styles: &[Style], start: usize, end: usize, grid: &Grid) -> usize {
+// fn range_width(grid: &Grid, widths: &[usize], start: usize, end: usize) -> usize {
+//     let width = widths[start..end].iter().sum::<usize>();
+// }
+
+fn count_borders_in_range(grid: &Grid, start: usize, end: usize) -> usize {
     (start..end)
-        .filter(|&i| is_cell_visible(styles, i))
-        .filter(|&i| is_cell_in_scope(styles, i, styles.len()))
         .skip(1)
         .filter(|&i| has_vertical(grid, i))
         .count()
 }
 
-fn inc_cells_width(
-    widths: &mut [usize],
-    styles: &[Style],
-    start_range: usize,
-    end_range: usize,
-    inc: usize,
-) {
-    for (i, col) in (start_range..end_range).cycle().enumerate() {
-        if i == inc {
-            break;
+fn inc_range_width(widths: &mut [usize], mut size: usize) {
+    if widths.is_empty() {
+        return;
+    }
+
+    for i in (0..widths.len()).cycle() {
+        if size == 0 {
+            return;
         }
 
-        let col = get_closest_visible_pos(styles, col);
-        match col {
-            Some(col) => widths[col] += 1,
-            None => unreachable!("Never suppose to happen"),
-        }
+        widths[i] += 1;
+        size -= 1
     }
 }
 
-fn get_closest_visible_pos(styles: &[Style], mut col: usize) -> Option<usize> {
+fn closest_visible(grid: &Grid, row: usize, mut col: usize) -> Option<usize> {
     loop {
-        if is_cell_visible(styles, col) {
+        if is_cell_visible(grid, (row, col)) {
             return Some(col);
         }
 
@@ -1312,17 +1334,18 @@ fn cell_width(cell: &[String], style: &Style) -> usize {
 }
 
 fn rows_height(
+    grid: &Grid,
     cells: &[Vec<Vec<String>>],
-    styles: &[Vec<Style>],
     count_rows: usize,
     count_columns: usize,
 ) -> Vec<usize> {
     let mut row_heights = vec![0; count_rows];
-    (0..count_rows).for_each(|row_index| {
-        (0..count_columns).for_each(|column_index| {
-            let cell = &cells[row_index][column_index];
-            let style = &styles[row_index][column_index];
-            row_heights[row_index] = max(row_heights[row_index], cell_height(cell, style));
+    (0..count_rows).for_each(|row| {
+        (0..count_columns).for_each(|col| {
+            let cell = &cells[row][col];
+            let style = grid.style(Entity::Cell(row, col));
+            let cell_height = cell_height(cell, style);
+            row_heights[row] = max(row_heights[row], cell_height);
         });
     });
 
@@ -1337,44 +1360,6 @@ fn cell_height(cell: &[String], style: &Style) -> usize {
     }
 
     content_height + style.padding.top.size + style.padding.bottom.size
-}
-
-fn normalized_width(
-    widths: &[Vec<usize>],
-    styles: &[Vec<Style>],
-    count_rows: usize,
-    count_columns: usize,
-) -> Vec<usize> {
-    let mut v = vec![0; count_columns];
-    let mut skip = 0;
-    for col in 0..count_columns {
-        if skip > 0 {
-            skip -= 1;
-            continue;
-        }
-
-        let min_spanned_row = (0..count_rows)
-            .filter(|&row| styles[row][col].span > 0)
-            .min_by_key(|&x| styles[x][col].span);
-
-        if let Some(row) = min_spanned_row {
-            let span = styles[row][col].span;
-            let mut width = widths[row][col] - (span - 1); // todo: explain this span-1 ?
-
-            for col in (col..col + span).cycle() {
-                if width == 0 {
-                    break;
-                }
-
-                v[col] += 1;
-                width -= 1;
-            }
-
-            skip += span - 1;
-        }
-    }
-
-    v
 }
 
 fn replace_tab(cell: &mut String, n: usize) -> &str {
@@ -1404,23 +1389,21 @@ fn replace_tab(cell: &mut String, n: usize) -> &str {
 }
 
 // only valid to call for stabilized widths.
-fn total_width(
-    grid: &Grid,
-    widths: &[Vec<usize>],
-    styles: &[Vec<Style>],
-    margin: &Margin,
-) -> usize {
-    let content_width = widths
-        .iter()
-        .next()
-        .map(|row| row.iter().sum::<usize>())
-        .unwrap_or(0);
+fn total_width(grid: &Grid, widths: &[usize], margin: &Margin) -> usize {
+    if grid.count_rows() == 0 {
+        return 0;
+    }
+
+    let content_width = (0..grid.count_columns())
+        .filter(|&col| is_cell_visible(grid, (0, col)))
+        .map(|col| grid_cell_width(grid, widths, (0, col)))
+        .sum::<usize>();
 
     let count_borders = if grid.count_columns() == 0 {
         0
     } else {
         let rest_borders = (0..grid.count_columns())
-            .filter(|&col| is_cell_visible(&styles[0], col))
+            .filter(|&col| is_cell_visible(grid, (0, col)))
             .map(|col| has_vertical(grid, col))
             .filter(|b| *b)
             .count();
@@ -1477,7 +1460,7 @@ pub struct Line {
     pub right: Option<Symbol>,
 }
 
-type Position = (usize, usize);
+pub type Position = (usize, usize);
 
 impl Theme {
     fn new() -> Self {
@@ -1895,16 +1878,14 @@ fn print_grid(
     f: &mut fmt::Formatter,
     grid: &Grid,
     contents: Vec<Vec<Vec<String>>>,
-    styles: Vec<Vec<Style>>,
-    widths: Vec<Vec<usize>>,
-    normal_widths: Vec<usize>,
+    widths: Vec<usize>,
     heights: Vec<usize>,
 ) -> fmt::Result {
-    let table_width = row_width_grid(grid, &widths, 0);
+    let table_width = row_width_grid(grid, &widths);
     print_margin_top(f, &grid.margin, table_width)?;
 
     for row in 0..grid.count_rows() {
-        print_split_line(f, grid, &normal_widths, table_width, row)?;
+        print_split_line(f, grid, &widths, table_width, row)?;
 
         let height = heights[row];
 
@@ -1912,17 +1893,18 @@ fn print_grid(
             print_margin_left(f, &grid.margin)?;
 
             for col in 0..grid.count_columns() {
-                let width = widths[row][col];
-                let lines = contents[row][col].clone();
-                let style = styles[row][col].clone();
                 let border = grid.get_border(row, col);
 
-                if is_cell_visible(&styles[row], col) {
+                if is_cell_visible(grid, (row, col)) {
+                    let width = grid_cell_width(grid, &widths, (row, col));
+                    let lines = contents[row][col].clone();
+                    let style = grid.style(Entity::Cell(row, col));
+
                     if let Some(c) = border.left {
                         c.fmt(f)?;
                     }
 
-                    build_line_cell(f, i, &lines, &style, width, height)?;
+                    build_line_cell(f, i, &lines, style, width, height)?;
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();
@@ -1940,13 +1922,25 @@ fn print_grid(
 
         let is_last_row = row + 1 == grid.count_rows();
         if is_last_row {
-            print_split_line(f, grid, &normal_widths, table_width, row + 1)?;
+            print_split_line(f, grid, &widths, table_width, row + 1)?;
         }
     }
 
     print_margin_bottom(f, &grid.margin, table_width)?;
 
     Ok(())
+}
+
+fn grid_cell_width(grid: &Grid, widths: &[usize], pos: Position) -> usize {
+    let span = grid
+        .spans
+        .iter()
+        .find(|((col, _), rows)| *col == pos.1 && rows.contains(&pos.0))
+        .map(|(span, _)| span);
+    match span {
+        Some(&(start, end)) => range_width(grid, start, end, widths),
+        None => widths[pos.1],
+    }
 }
 
 fn print_margin_top(f: &mut fmt::Formatter, margin: &Margin, table_width: usize) -> fmt::Result {
@@ -2100,11 +2094,8 @@ fn print_split_line(
 //     );
 // }
 
-fn row_width_grid(grid: &Grid, widths: &[Vec<usize>], row: usize) -> usize {
-    let row_width = widths
-        .get(row)
-        .map(|l| l.iter().sum::<usize>())
-        .unwrap_or(0);
+fn row_width_grid(grid: &Grid, widths: &[usize]) -> usize {
+    let row_width = widths.iter().sum::<usize>();
     let count_borders = (0..grid.count_columns())
         .filter(|&col| has_vertical(grid, col))
         .count()
@@ -2113,7 +2104,7 @@ fn row_width_grid(grid: &Grid, widths: &[Vec<usize>], row: usize) -> usize {
     row_width + count_borders
 }
 
-fn has_vertical(grid: &Grid, col: usize) -> bool {
+pub fn has_vertical(grid: &Grid, col: usize) -> bool {
     (0..grid.count_rows())
         .map(|row| grid.theme.get_vertical((row, col), grid.count_columns()))
         .any(|c| c.is_some())

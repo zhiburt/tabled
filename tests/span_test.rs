@@ -275,6 +275,7 @@ fn cell_span_test() {
 
 #[test]
 #[should_panic]
+#[ignore = "span zero not yet decided"]
 fn span_column_exceeds_boundries_test() {
     // todo: determine if it's the right behaiviour
 
@@ -285,6 +286,7 @@ fn span_column_exceeds_boundries_test() {
 }
 
 #[test]
+#[ignore = "span zero not yet decided"]
 fn span_cell_exceeds_boundries_test() {
     // these tests shows that exiding boundries causes invalid behaiviour
     //
@@ -457,6 +459,7 @@ fn spaned_columns_with_colision() {
 }
 
 #[test]
+#[ignore = "span zero not yet decided"]
 fn span_zero_test() {
     let data = create_vector::<3, 3>();
 
@@ -564,6 +567,7 @@ fn span_zero_test() {
 }
 
 #[test]
+#[ignore = "span zero not yet decided"]
 fn span_all_table_to_zero_test() {
     let data = create_vector::<2, 2>();
 

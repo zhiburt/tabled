@@ -701,6 +701,7 @@ fn total_width_big_with_panel() {
         "| 2            |   2-0               |   2-1              |   2-2              |\n",
     );
 
+    assert!(is_lines_equal(&table, 80));
     assert_eq!(table, expected);
 }
 
