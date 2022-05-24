@@ -171,6 +171,11 @@ impl Grid {
             return;
         }
 
+        // It's a default span so we can do nothing.
+        if span == 1 {
+            return;
+        }
+
         if col == 0 && span == 0 {
             return;
         }
@@ -1227,7 +1232,7 @@ fn adjust_range(
         return;
     }
 
-    inc_range_width(&mut widths[start..end], max_span_width - range_width);
+    inc_range_width(widths, max_span_width - range_width, start, end);
 
     // let span = end - start;
     // if span > 1 {
@@ -1337,18 +1342,24 @@ fn count_borders_in_range(grid: &Grid, start: usize, end: usize) -> usize {
         .count()
 }
 
-fn inc_range_width(widths: &mut [usize], mut size: usize) {
+fn inc_range_width(widths: &mut [usize], size: usize, start: usize, end: usize) {
     if widths.is_empty() {
         return;
     }
 
-    for i in (0..widths.len()).cycle() {
-        if size == 0 {
-            return;
+    let span = end - start;
+    let one = size / span;
+    let rest = size - span * one;
+
+    let mut i = start;
+    while i < end {
+        if i == start {
+            widths[i] += one + rest;
+        } else {
+            widths[i] += one;
         }
 
-        widths[i] += 1;
-        size -= 1
+        i += 1;
     }
 }
 
