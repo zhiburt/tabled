@@ -113,7 +113,7 @@ use crate::{Style, Table};
 
 /// Builder creates a [Table] from dynamic data set.
 ///
-/// It usefull when the amount of columns or rows is not known statically.
+/// It useful when the amount of columns or rows is not known statically.
 ///
 /// ```rust
 /// use tabled::builder::Builder;
@@ -125,7 +125,7 @@ use crate::{Style, Table};
 /// println!("{}", table);
 /// ```
 ///
-/// It may be usefull to use [FromIterator] for building.
+/// It may be useful to use [FromIterator] for building.
 ///
 /// ```rust
 /// use tabled::builder::Builder;
@@ -498,9 +498,9 @@ pub struct IndexBuilder {
     index: Vec<String>,
     /// Name of an index
     name: Option<String>,
-    /// A flag which checks if we need to actualy use index.
+    /// A flag which checks if we need to actually use index.
     ///
-    /// It might happen when it's only nessary to [Self::transpose] table.
+    /// It might happen when it's only necessary to [Self::transpose] table.
     print_index: bool,
     /// A flag which checks if table was transposed.
     transposed: bool,
@@ -551,7 +551,7 @@ impl IndexBuilder {
 
     /// No flag makes builder to not use an index.
     ///
-    /// It may be usefull when only [Self::transpose] need to be used.
+    /// It may be useful when only [Self::transpose] need to be used.
     pub fn no_index(mut self) -> Self {
         self.print_index = false;
         self

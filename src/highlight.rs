@@ -103,7 +103,7 @@ where
 {
     /// Build a new instance of [Highlight]
     ///
-    /// BE AWARE: if target exeeds boundries it may panic.
+    /// BE AWARE: if target exceeds boundaries it may panic.
     pub fn new(target: O, border: Border) -> Self {
         Self { target, border }
     }

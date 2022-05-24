@@ -32,8 +32,8 @@ use std::ops::RangeBounds;
 
 /// Disable removes particular rows/columns from a [Table].
 ///
-/// It tries to keeps track of style changes which may occure.
-/// But it's not guaranted will be the way you would expect it to be.
+/// It tries to keeps track of style changes which may occur.
+/// But it's not guaranteed will be the way you would expect it to be.
 ///
 /// # Example
 ///

@@ -286,7 +286,7 @@ fn span_column_exceeds_boundries_test() {
 
 #[test]
 fn span_cell_exceeds_boundries_test() {
-    // these tests shows that exiding boundries causes invalid behaiviour
+    // these tests shows that exiding boundaries causes invalid behaiviour
     //
     // todo: determine if it's the right behaiviour
 

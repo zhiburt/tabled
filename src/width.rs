@@ -88,7 +88,7 @@ impl MaxWidth {
     }
 }
 
-/// Truncate cut the string to a given width if its length exeeds it.
+/// Truncate cut the string to a given width if its length exceeds it.
 /// Otherwise keeps the content of a cell untouched.
 ///
 /// The function is color aware if a `color` feature is on.
@@ -138,7 +138,7 @@ where
     }
 }
 
-/// Wrap wraps a string to a new line in case it exeeds the provided max boundry.
+/// Wrap wraps a string to a new line in case it exceeds the provided max boundary.
 /// Otherwise keeps the content of a cell untouched.
 ///
 /// The function is color aware if a `color` feature is on.
@@ -167,7 +167,7 @@ impl Wrap {
 
     /// Set the keep words option.
     ///
-    /// If a wrapping poing will be in a word, [Wrap] will
+    /// If a wrapping point will be in a word, [Wrap] will
     /// preserve a word (if possible) and wrap the string before it.
     pub fn keep_words(mut self) -> Self {
         self.keep_words = true;
@@ -393,11 +393,11 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
     v
 }
 
-/// MinWidth changes a content in case if it's length is lower then the boundry.
+/// MinWidth changes a content in case if it's length is lower then the boundary.
 ///
 /// It can be applied to a whole table.
 ///
-/// It does anything in case if the content's length is bigger then the boundry.
+/// It does anything in case if the content's length is bigger then the boundary.
 /// It doesn't include a [Padding] settings.
 ///
 /// ## Examples
@@ -434,7 +434,7 @@ impl MinWidth {
     }
 
     /// Set's a fill character which will be used to fill the space
-    /// when increasing the length of the string to the set boundry.
+    /// when increasing the length of the string to the set boundary.
     pub fn fill_with(mut self, c: char) -> Self {
         self.fill = c;
         self
@@ -546,7 +546,7 @@ impl TableOption for MinWidth {
             return;
         }
 
-        // loop is neccessary because increase_total_width may not work properly in 1 call.
+        // loop is necessary because increase_total_width may not work properly in 1 call.
         //
         // todo: Try to fix it in other way?
         loop {

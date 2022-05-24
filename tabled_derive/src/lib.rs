@@ -115,7 +115,7 @@ fn collect_info_struct(ast: &DataStruct) -> Result<Impl, String> {
 
 // todo: refactoring. instead of using a lambda + prefix
 // we could just not emit `self.` `_x` inside
-// So the calle would prefix it on its own
+// So the called would prefix it on its own
 fn info_from_fields(
     fields: &Fields,
     field_name: impl Fn(usize, &Field) -> TokenStream,

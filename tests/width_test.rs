@@ -175,7 +175,7 @@ fn max_width_wrapped_keep_words() {
         .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
 
-    // 'sentence' doesnt have a space ' sentence' because we use left alignment
+    // 'sentence' doesn't have a space ' sentence' because we use left alignment
     assert_eq!(
         table,
         concat!(

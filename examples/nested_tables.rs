@@ -56,7 +56,7 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
             .build()
             .with(clean_ascii_style);
 
-    // We wan't to make a fields table and methods table have the same width.
+    // We want to make a fields table and methods table have the same width.
     // To not set it to constant, we check a width of each of them and correct the other.
     //
     // it's safe to do .len() because we use ascii theme.

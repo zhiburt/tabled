@@ -130,7 +130,7 @@ where
     }
 }
 
-/// FormatWithIndex is like a [Format] an abstraction over a function you can use agains a cell.
+/// FormatWithIndex is like a [Format] an abstraction over a function you can use against a cell.
 ///
 /// It differerent from Format that it provides a row and column index.
 pub struct FormatWithIndex<F> {

@@ -33,7 +33,7 @@ impl CellOption for TabSize {
     }
 }
 
-/// AlignmentStrategy is a responsible for a flow how we apply an aligment.
+/// AlignmentStrategy is a responsible for a flow how we apply an alignment.
 /// It mostly matters for multiline strings.
 ///
 /// # Examples
@@ -133,9 +133,9 @@ impl CellOption for TabSize {
 /// ```
 #[derive(Debug, Clone)]
 pub enum AlignmentStrategy {
-    /// Apply aligment for cell content as a whole.
+    /// Apply alignment for cell content as a whole.
     PerCell,
-    /// Apply aligment for each line of a cell content as a whole.
+    /// Apply alignment for each line of a cell content as a whole.
     PerLine,
 }
 
@@ -154,7 +154,7 @@ impl CellOption for AlignmentStrategy {
     }
 }
 
-/// TrimStrategy determins if it's alowed to use empty space while doing [Alignment].
+/// TrimStrategy determines if it's allowed to use empty space while doing [Alignment].
 ///
 /// # Examples
 ///
