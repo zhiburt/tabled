@@ -854,23 +854,13 @@ fn formatting_test() {
         ),
     ];
 
-    let mut grid = util::new_grid::<3, 2>();
-    grid.set(Entity::Cell(0, 0), Settings::new().text("A long string"));
-    grid.set(
-        Entity::Cell(0, 1),
-        Settings::new().text("\n\n\nA\n    string\nwith\n new\nline\n\n\n\n"),
-    );
-    grid.set(
-        Entity::Cell(2, 0),
-        Settings::new().text("A one more\n    string\nwith\n new\nline"),
-    );
-    grid.set(Entity::Cell(2, 1), Settings::new().text("..."));
-
     for (i, test) in tests.iter().enumerate() {
         let halignemnt = test.0;
         let valignemnt = test.1;
         let formatting = test.2;
         let expected = test.3;
+
+        let mut grid = util::new_grid::<3, 2>();
 
         grid.set(
             Entity::Global,
@@ -879,6 +869,17 @@ fn formatting_test() {
                 .vertical_alignment(valignemnt)
                 .formatting(formatting),
         );
+
+        grid.set(Entity::Cell(0, 0), Settings::new().text("A long string"));
+        grid.set(
+            Entity::Cell(0, 1),
+            Settings::new().text("\n\n\nA\n    string\nwith\n new\nline\n\n\n\n"),
+        );
+        grid.set(
+            Entity::Cell(2, 0),
+            Settings::new().text("A one more\n    string\nwith\n new\nline"),
+        );
+        grid.set(Entity::Cell(2, 1), Settings::new().text("..."));
 
         assert_eq!(
             grid.to_string(),
@@ -1113,10 +1114,12 @@ fn tab_size_test() {
 
     grid.set(
         Entity::Cell(0, 0),
-        Settings::new().formatting(Formatting {
-            tab_width: 1,
-            ..Default::default()
-        }),
+        Settings::new()
+            .formatting(Formatting {
+                tab_width: 1,
+                ..Default::default()
+            })
+            .text(json),
     );
 
     println!("{}", grid);
@@ -1137,10 +1140,12 @@ fn tab_size_test() {
 
     grid.set(
         Entity::Cell(0, 0),
-        Settings::new().formatting(Formatting {
-            tab_width: 0,
-            ..Default::default()
-        }),
+        Settings::new()
+            .formatting(Formatting {
+                tab_width: 0,
+                ..Default::default()
+            })
+            .text(json),
     );
 
     println!("{}", grid);

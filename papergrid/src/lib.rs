@@ -121,10 +121,6 @@ impl Grid {
     ///     )
     /// ```
     pub fn set(&mut self, entity: Entity, settings: Settings) {
-        if let Some(text) = settings.text {
-            self.set_text(entity, text);
-        }
-
         let is_style_changes = settings.padding.is_some()
             || settings.alignment_h.is_some()
             || settings.alignment_v.is_some()
@@ -150,6 +146,10 @@ impl Grid {
             if let Some(formatting) = settings.formatting {
                 style.formatting = formatting;
             }
+        }
+
+        if let Some(text) = settings.text {
+            self.set_text(entity, text);
         }
 
         if let Some(border) = settings.border {
@@ -347,25 +347,35 @@ impl Grid {
     }
 
     pub fn style(&self, entity: Entity) -> &Style {
-        let lookup_table = match entity {
-            Entity::Global => vec![Entity::Global],
-            Entity::Column(column) => vec![Entity::Column(column), Entity::Global],
-            Entity::Row(row) => vec![Entity::Row(row), Entity::Global],
-            Entity::Cell(row, column) => vec![
-                Entity::Cell(row, column),
-                Entity::Column(column),
-                Entity::Row(row),
-                Entity::Global,
-            ],
-        };
-
-        for entity in lookup_table {
-            if let Some(style) = self.styles.get(&entity) {
-                return style;
+        match entity {
+            Entity::Column(column) => {
+                if let Some(style) = self.styles.get(&Entity::Column(column)) {
+                    return style;
+                }
             }
+            Entity::Row(row) => {
+                if let Some(style) = self.styles.get(&Entity::Row(row)) {
+                    return style;
+                }
+            }
+            Entity::Cell(row, col) => {
+                if let Some(style) = self.styles.get(&Entity::Cell(row, col)) {
+                    return style;
+                }
+
+                if let Some(style) = self.styles.get(&Entity::Column(col)) {
+                    return style;
+                }
+
+                if let Some(style) = self.styles.get(&Entity::Row(row)) {
+                    return style;
+                }
+            }
+            Entity::Global => (),
         }
 
-        unreachable!("there's a Entity::Global setting guaranted in the map")
+        // unreachable!("there's a Entity::Global setting guaranted in the map")
+        self.styles.get(&Entity::Global).unwrap()
     }
 
     fn style_mut(&mut self, entity: Entity) -> &mut Style {
@@ -928,83 +938,103 @@ impl fmt::Display for Grid {
 fn build_line_cell<'a>(
     f: &mut fmt::Formatter<'_>,
     line_index: usize,
-    mut cell: &'a [&'a str],
+    cell: impl Iterator<Item = &'a str> + DoubleEndedIterator + Clone,
     style: &Style,
     width: usize,
     height: usize,
 ) -> fmt::Result {
     if style.formatting.vertical_trim {
-        cell = skip_empty_lines(cell);
+        let cell_height = cell.clone().count();
+        let cell = skip_empty_lines(cell, cell_height);
+        let cell_height = cell.clone().count();
+        build_format_line(f, line_index, cell, style, width, height, cell_height)
+    } else {
+        let cell_height = cell.clone().count();
+        build_format_line(f, line_index, cell, style, width, height, cell_height)
     }
+}
 
-    let top_indent = top_indent(cell, style, height);
+fn build_format_line<'a>(
+    f: &mut fmt::Formatter<'_>,
+    line_index: usize,
+    mut cell: impl Iterator<Item = &'a str>,
+    style: &Style,
+    width: usize,
+    height: usize,
+    cell_height: usize,
+) -> Result<(), fmt::Error> {
+    let top_indent = top_indent(cell_height, style, height);
     if top_indent > line_index {
         return repeat_char(f, &Symbol::from(style.padding.top.fill), width);
     }
 
     let cell_line_index = line_index - top_indent;
-    let cell_has_this_line = cell.len() > cell_line_index;
+    let cell_has_this_line = cell_height > cell_line_index;
     // happens when other cells have bigger height
     if !cell_has_this_line {
         return repeat_char(f, &Symbol::from(style.padding.bottom.fill), width);
     }
 
-    let mut text = cell[cell_line_index];
-    if style.formatting.horizontal_trim && style.formatting.allow_lines_alignement {
-        text = text.trim();
-    } else if style.formatting.horizontal_trim {
-        text = text.trim_end();
-    }
-
-    let line_width = string_width(text);
-
     if style.formatting.allow_lines_alignement {
+        let mut text = cell.nth(cell_line_index).unwrap();
+        if style.formatting.horizontal_trim && style.formatting.allow_lines_alignement {
+            text = text.trim();
+        } else if style.formatting.horizontal_trim {
+            text = text.trim_end();
+        };
+
+        let line_width = string_width(text);
+
         line_with_width(f, text, width, line_width, line_width, style)
     } else {
-        let max_line_width = cell
-            .iter()
-            .map(|line| {
-                if style.formatting.horizontal_trim {
+        let (max_line_width, (text, line_width)) =
+            cell.enumerate().fold((0, ("", 0)), |mut acc, (i, line)| {
+                if i == cell_line_index {
+                    let line = if style.formatting.horizontal_trim
+                        && style.formatting.allow_lines_alignement
+                    {
+                        line.trim()
+                    } else if style.formatting.horizontal_trim {
+                        line.trim_end()
+                    } else {
+                        line
+                    };
+
+                    acc.1 = (line, string_width(line));
+                }
+
+                let line = if style.formatting.horizontal_trim {
                     line.trim_end()
                 } else {
                     line
+                };
+
+                let len = string_width(line);
+
+                if acc.0 < len {
+                    acc.0 = len;
                 }
-            })
-            .map(string_width)
-            .max()
-            .unwrap_or(0);
+
+                acc
+            });
 
         line_with_width(f, text, width, line_width, max_line_width, style)
     }
 }
 
-fn skip_empty_lines<'a>(cell: &'a [&'a str]) -> &'a [&'a str] {
-    let count_lines = cell.len();
-
-    let count_empty_lines_before_text = cell
-        .iter()
-        .take_while(|line| line.trim().is_empty())
-        .count();
-    if count_empty_lines_before_text == count_lines {
-        return &[];
-    }
-
-    let empty_lines_at_end = cell
-        .iter()
-        .rev()
-        .take_while(|line| line.trim().is_empty())
-        .count();
-
-    let text_start_pos = count_empty_lines_before_text;
-    let text_end_pos = cell.len() - empty_lines_at_end;
-
-    &cell[text_start_pos..text_end_pos]
+fn skip_empty_lines<'a>(
+    lines: impl Iterator<Item = &'a str> + DoubleEndedIterator + Clone,
+    length: usize,
+) -> impl Iterator<Item = &'a str> + Clone {
+    let is_empty = |s: &&str| s.trim().is_empty();
+    let end_lines = lines.clone().rev().take_while(is_empty).count();
+    let n = length - end_lines;
+    lines.take(n).skip_while(is_empty)
 }
 
-fn top_indent(cell: &[&str], style: &Style, height: usize) -> usize {
+fn top_indent(cell_height: usize, style: &Style, height: usize) -> usize {
     let height = height - style.padding.top.size;
-    let content_height = cell.len();
-    let indent = style.alignment_v.top_ident(height, content_height);
+    let indent = style.alignment_v.top_ident(height, cell_height);
 
     indent + style.padding.top.size
 }
@@ -1030,10 +1060,10 @@ fn line_with_width(
     let right_indent = style.padding.right;
     let alignment = style.alignment_h;
 
-    repeat_char(f, &Symbol::from(left_indent.fill), left_indent.size)?;
+    repeat_char(f, &Symbol::from_char(left_indent.fill), left_indent.size)?;
     let width = width - left_indent.size - right_indent.size;
     alignment.align_with_max_width(f, text, width, width_text, width_text_max)?;
-    repeat_char(f, &Symbol::from(right_indent.fill), right_indent.size)?;
+    repeat_char(f, &Symbol::from_char(right_indent.fill), right_indent.size)?;
 
     Ok(())
 }
@@ -1899,15 +1929,15 @@ fn print_grid(
                 let border = grid.get_border(row, col);
 
                 if is_cell_visible(grid, (row, col)) {
-                    let width = grid_cell_width(grid, &widths, (row, col));
-                    let lines = grid.cells[row][col].lines().collect::<Vec<_>>();
-                    let style = grid.style(Entity::Cell(row, col));
-
                     if let Some(c) = border.left {
                         c.fmt(f)?;
                     }
 
-                    build_line_cell(f, i, &lines, style, width, height)?;
+                    let width = grid_cell_width(grid, &widths, (row, col));
+                    let lines = grid.cells[row][col].lines();
+                    let style = grid.style(Entity::Cell(row, col));
+
+                    build_line_cell(f, i, lines, style, width, height)?;
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();
