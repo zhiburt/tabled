@@ -2,7 +2,7 @@ use crate::util::create_vector;
 use tabled::{
     formatting_settings::{AlignmentStrategy, TabSize, TrimStrategy},
     object::{Cell, Segment},
-    Alignment, Modify, Span, Style, Table,
+    Alignment, Format, Modify, Span, Style, Table,
 };
 
 mod util;
@@ -137,11 +137,16 @@ fn tab_size_test() {
 
     assert_eq!(table.to_string(), expected);
 
-    table = table.with(
-        Modify::new(Segment::all())
-            .with(Alignment::right())
-            .with(TabSize(2)),
-    );
+    table = table
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::right())
+                .with(TabSize(2)),
+        )
+        .with(Modify::new(Cell(2, 0)).with(Format::new(|_| String::from("123\t123\tasdasd"))))
+        .with(Modify::new(Cell(3, 2)).with(Format::new(|_| {
+            String::from("htt\tps://\nwww\n.\nred\that\n.c\tom\n/en")
+        })));
 
     let expected = concat!(
         "                N | column 0 |   column 1 | column 2 \n",
@@ -158,11 +163,16 @@ fn tab_size_test() {
 
     assert_eq!(table.to_string(), expected);
 
-    table = table.with(
-        Modify::new(Segment::all())
-            .with(Alignment::right())
-            .with(TabSize(0)),
-    );
+    table = table
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::right())
+                .with(TabSize(0)),
+        )
+        .with(Modify::new(Cell(2, 0)).with(Format::new(|_| String::from("123\t123\tasdasd"))))
+        .with(Modify::new(Cell(3, 2)).with(Format::new(|_| {
+            String::from("htt\tps://\nwww\n.\nred\that\n.c\tom\n/en")
+        })));
 
     let expected = concat!(
         "            N | column 0 | column 1 | column 2 \n",
