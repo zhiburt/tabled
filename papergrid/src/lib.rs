@@ -931,22 +931,29 @@ impl fmt::Display for Grid {
     }
 }
 
-fn build_line_cell<'a>(
+fn build_line_cell(
     f: &mut fmt::Formatter<'_>,
     line_index: usize,
-    cell: impl Iterator<Item = &'a str> + DoubleEndedIterator + Clone,
+    cell: &str,
     style: &Style,
     width: usize,
     height: usize,
 ) -> fmt::Result {
+    let cell_height = count_lines(cell);
     if style.formatting.vertical_trim {
-        let cell_height = cell.clone().count();
-        let cell = skip_empty_lines(cell, cell_height);
+        let cell = skip_empty_lines(cell.lines(), cell_height);
         let cell_height = cell.clone().count();
         build_format_line(f, line_index, cell, style, width, height, cell_height)
     } else {
-        let cell_height = cell.clone().count();
-        build_format_line(f, line_index, cell, style, width, height, cell_height)
+        build_format_line(
+            f,
+            line_index,
+            cell.lines(),
+            style,
+            width,
+            height,
+            cell_height,
+        )
     }
 }
 
@@ -1252,7 +1259,7 @@ fn rows_height(grid: &Grid) -> impl Iterator<Item = usize> + '_ {
 
 fn cell_height(cell: &str, style: &Style) -> usize {
     let is_there_padding = style.padding.left.size > 0 || style.padding.right.size > 0;
-    let mut content_height = cell.lines().count();
+    let mut content_height = count_lines(cell);
     if content_height == 0 && is_there_padding {
         content_height = 1;
     }
@@ -1806,9 +1813,8 @@ fn print_grid(
                     let style = grid.style(Entity::Cell(row, col));
                     let width = grid_cell_width(grid, &widths, (row, col));
                     let text = replace_tab(&grid.cells[row][col], style.formatting.tab_width);
-                    let lines = text.lines();
 
-                    build_line_cell(f, i, lines, style, width, height)?;
+                    build_line_cell(f, i, &text, style, width, height)?;
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();
@@ -1986,6 +1992,28 @@ fn has_horizontal(grid: &Grid, row: usize) -> bool {
     (0..grid.count_columns())
         .map(|col| grid.theme.get_horizontal((row, col), grid.count_rows()))
         .any(|c| c.is_some())
+}
+
+fn count_lines(s: &str) -> usize {
+    let mut count = bytecount::count(s.as_bytes(), b'\n');
+
+    // we need to identify if the last char is '\n' for this matter we need to strip the string
+    #[cfg(feature = "color")]
+    {
+        let ends_with_new_line = ansi_str::AnsiStr::ansi_ends_with(s, "\n");
+        if !ends_with_new_line {
+            count += 1;
+        }
+    }
+    #[cfg(not(feature = "color"))]
+    {
+        let ends_with_new_line = s.ends_with('\n');
+        if !ends_with_new_line {
+            count += 1;
+        }
+    }
+    
+    count
 }
 
 #[cfg(test)]
