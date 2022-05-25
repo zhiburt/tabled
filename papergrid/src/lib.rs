@@ -2012,7 +2012,7 @@ fn count_lines(s: &str) -> usize {
             count += 1;
         }
     }
-    
+
     count
 }
 
