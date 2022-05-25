@@ -1,0 +1,29 @@
+[package]
+name = "table-libs-bench"
+version = "0.0.0"
+authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
+edition = "2018"
+description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."
+repository = "https://github.com/zhiburt/tabled"
+homepage = "https://github.com/zhiburt/tabled"
+license = "MIT"
+
+[dev-dependencies]
+criterion = "0.3.5"
+tabled = { git = "https://github.com/zhiburt/tabled/", branch = "papergrid-work" }
+
+nu-table = "0.63.0"
+nu-protocol = "0.63.0"
+nu-ansi-term = "0.45.1"
+
+cli-table = "0.4.7"
+
+comfy-table = "5.0.1"
+
+term-table = "1.3.2"
+
+prettytable-rs = "0.8.0"
+
+[[bench]]
+name = "benchmark"
+harness = false
