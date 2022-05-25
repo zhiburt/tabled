@@ -329,7 +329,7 @@ impl Grid {
             }
         }
 
-        unreachable!("there's a Entity::Global setting guaranted in the map")
+        unreachable!("there's a Entity::Global setting guaranteed in the map")
     }
 
     fn style_mut(&mut self, entity: Entity) -> &mut Style {
@@ -804,7 +804,7 @@ impl Indent {
     }
 }
 
-/// AlignmentHorizontal represents an horizontal aligment of a cell content.
+/// AlignmentHorizontal represents an horizontal alignment of a cell content.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentHorizontal {
     Center,
@@ -852,7 +852,7 @@ impl AlignmentHorizontal {
     }
 }
 
-/// AlignmentVertical represents an vertical aligment of a cell content.
+/// AlignmentVertical represents an vertical alignment of a cell content.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentVertical {
     Center,
@@ -1248,8 +1248,8 @@ fn adjust_width(
         adjust_range_width(widths, styles, borders, count_rows, start, end);
     }
 
-    // sometimes the adjustment of later stages affect the adjastement of privious stages.
-    // therefore we check if this is the case and re run the adjustement one more time.
+    // sometimes the adjustment of later stages affect the adjastement of previous stages.
+    // therefore we check if this is the case and re run the adjustment one more time.
     for (start, end) in ranges {
         let is_range_complete = is_range_complete(styles, widths, borders, count_rows, start, end);
         if !is_range_complete {
@@ -1731,7 +1731,7 @@ impl Borders {
     }
 
     // we can take only a border of a cell
-    // which is a pitty,
+    // which is a pity,
     // would be cool if we could take a border of any Entity
     fn get_border(&self, row: usize, column: usize) -> Option<Border> {
         if row >= self.count_rows || column >= self.count_columns {

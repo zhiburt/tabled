@@ -87,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `MaxWidth` interface.
-- Constants in `style` module now marked deprecated in regard of const functions as more ergonomic choise.
+- Constants in `style` module now marked deprecated in regard of const functions as more ergonomic choice.
 
 ### Fixed
 
@@ -101,7 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- It turns out that in version [0.4.0] `tabled_derive` was inproperly bumped version. So it broke version [0.3].
+- It turns out that in version [0.4.0] `tabled_derive` was improperly bumped version. So it broke version [0.3].
   To fix it it was necessary to yank versions [0.4.0] and [0.4.1] and yank tabled_derive [0.1.9].
   It was pointed out by [@Disasm](https://github.com/Disasm).
 
@@ -123,7 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix `fmt::Display` requirments on hidden fields in inline mode
+- Fix `fmt::Display` requirements on hidden fields in inline mode
 - README.md fix by [@panarch](https://github.com/panarch)
 - Refactorings
 
@@ -173,7 +173,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `MaxWidth` option for cells
 - Add `#[header(inline)]` attribute to inline internal data structures which implement `Tabled` trait
-- Add blank `Tabled` implementaton for String
+- Add blank `Tabled` implementation for String
 - Add `#[header(inline)]` example
 
 ### Changed
@@ -199,7 +199,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Improved performance in papergrid; Now it makes 100 allocs on basic example where priviously 400!
+- Improved performance in papergrid; Now it makes 100 allocs on basic example where previously 400!
 
 ## [0.1.4] - 2021-06-07
 

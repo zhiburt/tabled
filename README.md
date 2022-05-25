@@ -703,7 +703,7 @@ struct Person {
 
 You can mark filds as hidden in which case they fill be ignored and not be present on a sheet.
 
-A similar affect could be achived by the means of a `Disable` setting.
+A similar affect could be achieved by the means of a `Disable` setting.
 
 ```rust
 use tabled::Tabled;
@@ -801,7 +801,7 @@ struct Bike {
 
 ### Color
 
-The library doesn't bind you in usage of any color library but to be able to work corectly with color input you should
+The library doesn't bind you in usage of any color library but to be able to work correctly with color input you should
 add the `color` feature of `tabled` to your `Cargo.toml`
 
 ```rust
@@ -818,7 +818,7 @@ Table::new(&data)
 
 ### Tuple combination
 
-You also can combine objets which implements `Tabled` by means of tuples, you will get a combined columns of them.
+You also can combine objects which implements `Tabled` by means of tuples, you will get a combined columns of them.
 
 ```rust
 use tabled::{Tabled, Table, Style};
@@ -935,7 +935,7 @@ is_cool   | true
 ### ANSI escape codes
 
 By default `tabled` doesn't handle [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code).
-By default such things as hyperlinks, blinking and others things which can be achived via ANSI codes might not work correctly.
+By default such things as hyperlinks, blinking and others things which can be achieved via ANSI codes might not work correctly.
 
 To enable this support, add the `color` feature to your `Cargo.toml`
 
@@ -965,7 +965,7 @@ fn main() {
 
 ### Index
 
-You can use `Builder::index` to make a partical column an index, which will stay on the left.
+You can use `Builder::index` to make a particular column an index, which will stay on the left.
 
 ```rust
 use tabled::{builder::Builder, Style};
@@ -1022,7 +1022,7 @@ Let's add emojies to an example from a [Usage](##Usage) section.
 
  The resultant table will look like the following.
 
- As you can see Github triks a bit a return table, but `GNOME terminal` and `Alacritty` terminal handles it correctly.
+ As you can see Github tricks a bit a return table, but `GNOME terminal` and `Alacritty` terminal handles it correctly.
 
  ```rust
 +---------+----------------+---------------+

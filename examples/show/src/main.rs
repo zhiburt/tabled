@@ -7,7 +7,7 @@
 //! asciinema rec -c ../../target/release/show
 //! ```
 //!
-//! A convertation to gif is done via https://dstein64.github.io/gifcast/
+//! A conversion to gif is done via https://dstein64.github.io/gifcast/
 
 // todo: add --frames argument
 

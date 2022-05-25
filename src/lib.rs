@@ -3,7 +3,7 @@
 //! The library is based on a [Tabled] trait which is used to actually build tables.
 //! It also provides an variate of dynamic settings for customization of a [Table].
 //!
-//! [Table] can be build from vast majority of Rust's standart types.
+//! [Table] can be build from vast majority of Rust's standard types.
 //!
 //! ## Usage
 //!

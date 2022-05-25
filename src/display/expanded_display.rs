@@ -1,10 +1,10 @@
-//! This module contains an [ExpandedDisplay] structure which is usefull in cases where
+//! This module contains an [ExpandedDisplay] structure which is useful in cases where
 //! a structure has a lot of fields.
 
 use crate::Tabled;
 
-/// ExpandedDisplay display data in a 'expanded display mode' from postgress.
-/// It may be usefull for a large data sets with a lot of fields.
+/// ExpandedDisplay display data in a 'expanded display mode' from postgresql.
+/// It may be useful for a large data sets with a lot of fields.
 ///
 /// See 'Examples' in <https://www.postgresql.org/docs/current/app-psql.html.>.
 ///
@@ -33,7 +33,7 @@ impl ExpandedDisplay {
 
     /// Sets a line format which will be used to split records.
     ///
-    /// Default formating is "-[ RECORD {} ]-".
+    /// Default formatting is "-[ RECORD {} ]-".
     ///
     /// At least one '\n' char will be printed at the end regardless if you set it or not.
     pub fn header_template(&mut self, f: fn(usize) -> String) -> &mut Self {
