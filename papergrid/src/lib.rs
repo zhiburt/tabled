@@ -421,16 +421,9 @@ impl Grid {
         self.size.1
     }
 
-    pub fn set_text(&mut self, entity: Entity, mut text: String) {
-        let style = self.style(entity);
-
-        // it's a general case which probably must be faster?
-        if style.formatting.tab_width == 4 {
-            text = text.replace('\t', "    ");
-        } else {
-            replace_tab(&mut text, style.formatting.tab_width);
-        }
-
+    pub fn set_text(&mut self, entity: Entity, text: String) {
+        // let style = self.style(entity);
+        // replace_tab(&mut text, style.formatting.tab_width);
         self._set_text(entity, text);
     }
 
@@ -565,10 +558,8 @@ impl Grid {
         let mut rows = vec![Vec::with_capacity(self.count_columns()); self.count_rows()];
         (0..count_rows).for_each(|row| {
             (0..count_columns).for_each(|col| {
-                let mut content = self.cells[row][col].clone();
-
                 let style = self.style(Entity::Cell(row, col));
-                replace_tab(&mut content, style.formatting.tab_width);
+                let content = replace_tab(&self.cells[row][col], style.formatting.tab_width);
 
                 // fixme: I guess it can be done in a different place?
                 let lines: Vec<_> = content.lines().map(|l| l.to_owned()).collect();
@@ -1120,7 +1111,9 @@ fn columns_width(grid: &Grid) -> Vec<usize> {
                 continue;
             }
 
-            let width = cell_width(&grid.cells[row][col], grid.style(Entity::Cell(row, col)));
+            let style = grid.style(Entity::Cell(row, col));
+            let text = replace_tab(&grid.cells[row][col], style.formatting.tab_width);
+            let width = cell_width(&text, style);
             max = cmp::max(width, max);
         }
 
@@ -1155,10 +1148,9 @@ fn adjust_range(
 
     let max_span_width = rows
         .map(|row| {
-            cell_width(
-                &grid.cells[row][start],
-                grid.style(Entity::Cell(row, start)),
-            )
+            let style = grid.style(Entity::Cell(row, start));
+            let text = replace_tab(&grid.cells[row][start], style.formatting.tab_width);
+            cell_width(&text, grid.style(Entity::Cell(row, start)))
         })
         .max()
         .unwrap_or(0);
@@ -1268,7 +1260,18 @@ fn cell_height(cell: &str, style: &Style) -> usize {
     content_height + style.padding.top.size + style.padding.bottom.size
 }
 
-fn replace_tab(cell: &mut String, n: usize) -> &str {
+fn replace_tab(text: &str, n: usize) -> String {
+    // it's a general case which probably must be faster?
+    if n == 4 {
+        text.replace('\t', "    ")
+    } else {
+        let mut text = text.to_owned();
+        replace_tab_range(&mut text, n);
+        text
+    }
+}
+
+fn replace_tab_range(cell: &mut String, n: usize) -> &str {
     let mut skip = 0;
     while let &Some(pos) = &cell[skip..].find('\t') {
         let pos = skip + pos;
@@ -1290,7 +1293,6 @@ fn replace_tab(cell: &mut String, n: usize) -> &str {
             break;
         }
     }
-
     cell
 }
 
@@ -1801,9 +1803,10 @@ fn print_grid(
                         c.fmt(f)?;
                     }
 
-                    let width = grid_cell_width(grid, &widths, (row, col));
-                    let lines = grid.cells[row][col].lines();
                     let style = grid.style(Entity::Cell(row, col));
+                    let width = grid_cell_width(grid, &widths, (row, col));
+                    let text = replace_tab(&grid.cells[row][col], style.formatting.tab_width);
+                    let lines = text.lines();
 
                     build_line_cell(f, i, lines, style, width, height)?;
                 }
@@ -1991,20 +1994,17 @@ mod tests {
 
     #[test]
     fn replace_tab_test() {
-        assert_eq!(
-            replace_tab(&mut "123\t\tabc\t".to_owned(), 3),
-            "123      abc   "
-        );
+        assert_eq!(replace_tab("123\t\tabc\t", 3), "123      abc   ");
 
-        assert_eq!(replace_tab(&mut "\t".to_owned(), 0), "");
-        assert_eq!(replace_tab(&mut "\t".to_owned(), 3), "   ");
-        assert_eq!(replace_tab(&mut "123\tabc".to_owned(), 3), "123   abc");
-        assert_eq!(replace_tab(&mut "123\tabc\tzxc".to_owned(), 0), "123abczxc");
+        assert_eq!(replace_tab("\t", 0), "");
+        assert_eq!(replace_tab("\t", 3), "   ");
+        assert_eq!(replace_tab("123\tabc", 3), "123   abc");
+        assert_eq!(replace_tab("123\tabc\tzxc", 0), "123abczxc");
 
-        assert_eq!(replace_tab(&mut "\\t".to_owned(), 0), "\\t");
-        assert_eq!(replace_tab(&mut "\\t".to_owned(), 4), "\\t");
-        assert_eq!(replace_tab(&mut "123\\tabc".to_owned(), 0), "123\\tabc");
-        assert_eq!(replace_tab(&mut "123\\tabc".to_owned(), 4), "123\\tabc");
+        assert_eq!(replace_tab("\\t", 0), "\\t");
+        assert_eq!(replace_tab("\\t", 4), "\\t");
+        assert_eq!(replace_tab("123\\tabc", 0), "123\\tabc");
+        assert_eq!(replace_tab("123\\tabc", 4), "123\\tabc");
     }
 
     #[test]
