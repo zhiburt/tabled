@@ -383,7 +383,7 @@ impl Grid {
             Entity::Global => (),
         }
 
-        // unreachable!("there's a Entity::Global setting guaranted in the map")
+        // unreachable!("there's a Entity::Global setting guaranteed in the map")
         self.styles.get(&Entity::Global).unwrap()
     }
 
@@ -777,7 +777,7 @@ impl Indent {
     }
 }
 
-/// AlignmentHorizontal represents an horizontal aligment of a cell content.
+/// AlignmentHorizontal represents an horizontal alignment of a cell content.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentHorizontal {
     Center,
@@ -820,7 +820,7 @@ impl AlignmentHorizontal {
     }
 }
 
-/// AlignmentVertical represents an vertical aligment of a cell content.
+/// AlignmentVertical represents an vertical alignment of a cell content.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentVertical {
     Center,

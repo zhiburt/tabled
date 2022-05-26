@@ -51,7 +51,7 @@ required-features = ["color"]
 name = "color"
 required-features = ["color"]
 
-# experement thing to check how it will work on docs.rs
+# experiment thing to check how it will work on docs.rs
 [package.metadata.docs.rs]
 features = ["unstable-doc"]
 rustdoc-args = ["--cfg", "docsrs"]

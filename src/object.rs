@@ -1,5 +1,5 @@
 //! This module contains a list of primitives that implement a [Object] trait.
-//! They help to locate a nessesary segment on a [Table].
+//! They help to locate a necessary segment on a [Table].
 //!
 //! [Table]: crate::Table
 
@@ -8,13 +8,13 @@ use std::{
     ops::{Add, Bound, RangeBounds, RangeFull, Sub},
 };
 
-/// Object helps to locate a nessesary part of a [Table].
+/// Object helps to locate a necessary part of a [Table].
 ///
 /// [Table]: crate::Table
 pub trait Object: Sized {
     type Iter: Iterator<Item = (usize, usize)>;
 
-    /// Cells returns a set of cordinates of cells
+    /// Cells returns a set of coordinates of cells
     fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter;
 
     /// Combines cells.
@@ -183,7 +183,7 @@ where
 {
     /// Returns a new instance of [Rows] for a range of rows.
     ///
-    /// If the boundries are exeeded it may panic.
+    /// If the boundaries are exeeded it may panic.
     pub fn new(range: R) -> Self {
         Self { range }
     }
@@ -192,7 +192,7 @@ where
 impl Rows<()> {
     /// Returns a new instance of [Rows] with a single row.
     ///
-    /// If the boundries are exeeded it may panic.
+    /// If the boundaries are exeeded it may panic.
     pub fn single(index: usize) -> Row {
         Row { index }
     }
@@ -238,7 +238,7 @@ where
 {
     /// Returns a new instance of [Columns] for a range of columns.
     ///
-    /// If the boundries are exeeded it may panic.
+    /// If the boundaries are exeeded it may panic.
     pub fn new(range: R) -> Self {
         Self { range }
     }
@@ -247,21 +247,21 @@ where
 impl Columns<()> {
     /// Returns a new instance of [Columns] for a single column.
     ///
-    /// If the boundries are exeeded it may panic.
+    /// If the boundaries are exeeded it may panic.
     pub fn single(index: usize) -> Column {
         Column(index)
     }
 
     /// Returns a new instance of [Columns] for a first column.
     ///
-    /// If the boundries are exeeded the object will produce no cells.
+    /// If the boundaries are exeeded the object will produce no cells.
     pub fn first() -> FirstColumn {
         FirstColumn
     }
 
     /// Returns a new instance of [Columns] for a last column.
     ///
-    /// If the boundries are exeeded the object will produce no cells.
+    /// If the boundaries are exeeded the object will produce no cells.
     pub fn last() -> LastColumn {
         LastColumn
     }
@@ -371,11 +371,11 @@ impl Object for Cell {
     }
 }
 
-/// Combination struct used for chaning [Object]'s.
+/// Combination struct used for chaining [Object]'s.
 ///
 /// Combines 2 sets of cells into one.
 ///
-/// Dublicates are removed from the output set.
+/// Duplicates are removed from the output set.
 pub struct UntionCombination<L, R> {
     lhs: L,
     rhs: R,
@@ -396,9 +396,9 @@ where
     }
 }
 
-/// Difference struct used for chaning [Object]'s.
+/// Difference struct used for chaining [Object]'s.
 ///
-/// Retuns cells from 1st set with removed ones from the 2nd set.
+/// Returns cells from 1st set with removed ones from the 2nd set.
 pub struct DiffCombination<L, R> {
     lhs: L,
     rhs: R,

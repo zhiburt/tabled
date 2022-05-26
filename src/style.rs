@@ -89,7 +89,7 @@ use papergrid::{Borders, Entity, Grid, Settings};
 
 /// Style is represents a theme of a [Table].
 ///
-/// It can be Mofified extensively, look at [CustomStyle] methods.
+/// It can be Modified extensively, look at [CustomStyle] methods.
 ///
 /// # Example
 ///
@@ -121,7 +121,7 @@ impl Style {
     ///
     /// Note: The cells in the example have 1-left and 1-right indent.
     ///
-    /// It's usefull as a scratch style to build a custom one.
+    /// It's useful as a scratch style to build a custom one.
     ///
     /// ```rust,no_run
     /// # use tabled::Style;
@@ -687,7 +687,7 @@ const fn char_to_symbol(c: Option<char>) -> Option<Symbol> {
 impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// Sets a top border.
     ///
-    /// Any corners and intersections which were set will be overriden.
+    /// Any corners and intersections which were set will be overridden.
     pub const fn top(self, c: char) -> CustomStyle<On, B, L, R, IH, IV, H> {
         let mut style = self.inner;
 
@@ -710,7 +710,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
 
     /// Sets a bottom border.
     ///
-    /// Any corners and intersections which were set will be overriden.
+    /// Any corners and intersections which were set will be overridden.
     pub const fn bottom(self, c: char) -> CustomStyle<T, On, L, R, IH, IV, H> {
         let mut style = self.inner;
         style.frame.bottom.main = Some(c);
@@ -732,7 +732,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
 
     /// Sets a left border.
     ///
-    /// Any corners and intersections which were set will be overriden.
+    /// Any corners and intersections which were set will be overridden.
     pub const fn left(self, c: char) -> CustomStyle<T, B, On, R, IH, IV, H> {
         let mut style = self.inner;
         style.frame.left.main = Some(c);
@@ -754,7 +754,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
 
     /// Sets a right border.
     ///
-    /// Any corners and intersections which were set will be overriden.
+    /// Any corners and intersections which were set will be overridden.
     pub const fn right(self, c: char) -> CustomStyle<T, B, L, On, IH, IV, H> {
         let mut style = self.inner;
         style.frame.right.main = Some(c);
@@ -779,7 +779,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// It doesn't include a header split line.
     /// It must be set via its own method [Self::header].
     ///
-    /// Any corners and intersections which were set will be overriden.
+    /// Any corners and intersections which were set will be overridden.
     pub const fn horizontal(self, c: char) -> CustomStyle<T, B, L, R, On, IV, H> {
         let mut style = self.inner;
         style.horizontal.main = Some(c);
@@ -805,7 +805,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
 
     /// Sets a vertical split line.
     ///
-    /// Any corners and intersections which were set will be overriden.
+    /// Any corners and intersections which were set will be overridden.
     pub const fn vertical(self, c: char) -> CustomStyle<T, B, L, R, IH, On, H> {
         let mut style = self.inner;
         style.vertical = Some(c);
@@ -831,7 +831,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
 
     /// Sets a 1st horizontal split line.
     ///
-    /// Any corners and intersections which were set will be overriden.
+    /// Any corners and intersections which were set will be overridden.
     pub const fn header(self, c: char) -> CustomStyle<T, B, L, R, IH, IV, On> {
         let mut style = self.inner;
         style.header.main = Some(c);

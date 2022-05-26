@@ -1,6 +1,6 @@
 //! This module contains an [Alignment] setting for cells on the [Table].
 //!
-//! An alignemnt strategy can be set by [AlignmentStrategy].
+//! An alignment strategy can be set by [AlignmentStrategy].
 //!
 //! # Example
 //!
@@ -53,7 +53,7 @@ use papergrid::{Entity, Grid, Settings};
 
 pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 
-/// Alignment represent a horizontal and vertical alignemt setting for any cell on a [Table].
+/// Alignment represent a horizontal and vertical alignment setting for any cell on a [Table].
 ///
 /// ```rust,no_run
 ///   # use tabled::{Alignment, Modify, object::Rows, Table};
