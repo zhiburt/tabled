@@ -793,28 +793,45 @@ impl AlignmentHorizontal {
         width: usize,
         text_width: usize,
         max_text_width: usize,
+        tab_width: usize,
     ) -> fmt::Result {
         let diff = width - text_width;
 
         match self {
-            AlignmentHorizontal::Left => Self::align(f, text, 0, diff),
+            AlignmentHorizontal::Left => Self::align(f, text, 0, diff, tab_width),
             AlignmentHorizontal::Right => {
                 let max_diff = width - max_text_width;
                 let rest = diff - max_diff;
-                Self::align(f, text, max_diff, rest)
+                Self::align(f, text, max_diff, rest, tab_width)
             }
             AlignmentHorizontal::Center => {
                 let max_diff = width - max_text_width;
                 let left = max_diff / 2;
                 let rest = diff - left;
-                Self::align(f, text, left, rest)
+                Self::align(f, text, left, rest, tab_width)
             }
         }
     }
 
-    fn align(f: &mut fmt::Formatter<'_>, text: &str, left: usize, right: usize) -> fmt::Result {
+    fn align(
+        f: &mut fmt::Formatter<'_>,
+        text: &str,
+        left: usize,
+        right: usize,
+        tab_width: usize,
+    ) -> fmt::Result {
         repeat_char(f, ' ', left)?;
-        f.write_str(text)?;
+
+        // So to not use replace_tab we are printing by char;
+        // Hopefully it's more affective as it reduceses a number of allocations.
+        for c in text.chars() {
+            if c == '\t' {
+                repeat_char(f, ' ', tab_width)?;
+            } else {
+                f.write_char(c)?;
+            }
+        }
+
         repeat_char(f, ' ', right)?;
         Ok(())
     }
@@ -1070,7 +1087,14 @@ fn line_with_width(
 
     repeat_char(f, left_indent.fill, left_indent.size)?;
     let width = width - left_indent.size - right_indent.size;
-    alignment.align_with_max_width(f, text, width, width_text, width_text_max)?;
+    alignment.align_with_max_width(
+        f,
+        text,
+        width,
+        width_text,
+        width_text_max,
+        style.formatting.tab_width,
+    )?;
     repeat_char(f, right_indent.fill, right_indent.size)?;
 
     Ok(())
@@ -1851,9 +1875,9 @@ fn print_grid(
 
                     let style = grid.style(Entity::Cell(row, col));
                     let width = grid_cell_width(grid, &widths, (row, col));
-                    let text = replace_tab(&grid.cells[row][col], style.formatting.tab_width);
+                    let text = &grid.cells[row][col];
 
-                    build_line_cell(f, i, &text, style, width, height)?;
+                    build_line_cell(f, i, text, style, width, height)?;
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();
@@ -2089,7 +2113,7 @@ mod tests {
         impl fmt::Display for F<'_> {
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
                 let w = string_width(self.0);
-                self.1.align_with_max_width(f, self.0, self.2, w, w)
+                self.1.align_with_max_width(f, self.0, self.2, w, w, 0)
             }
         }
 
