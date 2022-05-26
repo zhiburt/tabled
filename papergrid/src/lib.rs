@@ -1124,20 +1124,44 @@ pub fn string_width_multiline(text: &str) -> usize {
         .unwrap_or(0)
 }
 
+fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
+    #[cfg(feature = "color")]
+    {
+        let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
+        let s = std::str::from_utf8(&b).unwrap();
+
+        s.lines()
+            .map(|line| width_with_tab(line, tab_width))
+            .max()
+            .unwrap_or(0)
+    }
+    #[cfg(not(feature = "color"))]
+    {
+        text.lines()
+            .map(|line| width_with_tab(line, tab_width))
+            .max()
+            .unwrap_or(0)
+    }
+}
+
+fn width_with_tab(text: &str, tab_width: usize) -> usize {
+    let width = unicode_width::UnicodeWidthStr::width(text);
+    let count_tabs = count_tabs(text);
+
+    width + count_tabs * tab_width
+}
+
 fn columns_width(grid: &Grid) -> Vec<usize> {
     let mut widths = Vec::with_capacity(grid.count_columns());
     for col in 0..grid.count_columns() {
         let mut max = 0;
 
-        #[allow(clippy::needless_range_loop)]
         for row in 0..grid.count_rows() {
             if !is_simple_cell(grid, (row, col)) {
                 continue;
             }
 
-            let style = grid.style(Entity::Cell(row, col));
-            let text = replace_tab(&grid.cells[row][col], style.formatting.tab_width);
-            let width = cell_width(&text, style);
+            let width = get_cell_width(grid, (row, col));
             max = cmp::max(width, max);
         }
 
@@ -1171,11 +1195,7 @@ fn adjust_range(
     }
 
     let max_span_width = rows
-        .map(|row| {
-            let style = grid.style(Entity::Cell(row, start));
-            let text = replace_tab(&grid.cells[row][start], style.formatting.tab_width);
-            cell_width(&text, grid.style(Entity::Cell(row, start)))
-        })
+        .map(|row| get_cell_width(grid, (row, start)))
         .max()
         .unwrap_or(0);
     let range_width = range_width(grid, start, end, widths);
@@ -1185,6 +1205,13 @@ fn adjust_range(
     }
 
     inc_range_width(widths, max_span_width - range_width, start, end);
+}
+
+fn get_cell_width(grid: &Grid, (row, col): Position) -> usize {
+    let style = grid.style(Entity::Cell(row, col));
+    let text = &grid.cells[row][col];
+    let width = string_width_multiline_tab(text, style.formatting.tab_width);
+    width + style.padding.left.size + style.padding.right.size
 }
 
 fn range_width(grid: &Grid, start: usize, end: usize, widths: &[usize]) -> usize {
@@ -1253,11 +1280,6 @@ fn closest_visible(grid: &Grid, row: usize, mut col: usize) -> Option<usize> {
 
         col -= 1;
     }
-}
-
-fn cell_width(cell: &str, style: &Style) -> usize {
-    let content_width = string_width_multiline(cell);
-    content_width + style.padding.left.size + style.padding.right.size
 }
 
 fn rows_height(grid: &Grid) -> impl Iterator<Item = usize> + '_ {
@@ -2004,6 +2026,10 @@ fn has_horizontal(grid: &Grid, row: usize) -> bool {
         .any(|c| c.is_some())
 }
 
+fn count_tabs(s: &str) -> usize {
+    bytecount::count(s.as_bytes(), b'\t')
+}
+
 fn count_lines(s: &str) -> usize {
     let mut count = bytecount::count(s.as_bytes(), b'\n');
 
@@ -2051,7 +2077,7 @@ mod tests {
         // https://github.com/mgeisler/textwrap/pull/276
         assert_eq!(string_width("🎩"), 2);
         assert_eq!(string_width("Rust 💕"), 7);
-        assert_eq!(string_width("Go 👍\nC 😎"), 5);
+        assert_eq!(string_width_multiline("Go 👍\nC 😎"), 5);
     }
 
     #[test]
