@@ -85,7 +85,9 @@ impl Grid {
     ///     assert_eq!(
     ///          grid.to_string(),
     ///          "+++\n\
+    ///           |||\n\
     ///           +++\n\
+    ///           |||\n\
     ///           +++\n"
     ///     )
     /// ```
@@ -1002,7 +1004,7 @@ fn build_format_line<'a>(
             line = line.trim_end();
         };
 
-        let line_width = string_width(line);
+        let line_width = string_width_tab(line, style.formatting.tab_width);
 
         line_with_width(f, line, width, line_width, line_width, style)
     } else {
@@ -1019,7 +1021,7 @@ fn build_format_line<'a>(
                         line
                     };
 
-                    acc.1 = (line, string_width(line));
+                    acc.1 = (line, string_width_tab(line, style.formatting.tab_width));
                 }
 
                 let line = if style.formatting.horizontal_trim {
@@ -1028,7 +1030,7 @@ fn build_format_line<'a>(
                     line
                 };
 
-                let len = string_width(line);
+                let len = string_width_tab(line, style.formatting.tab_width);
 
                 if acc.0 < len {
                     acc.0 = len;
@@ -1148,31 +1150,18 @@ pub fn string_width_multiline(text: &str) -> usize {
         .unwrap_or(0)
 }
 
-fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
-    #[cfg(feature = "color")]
-    {
-        let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
-        let s = std::str::from_utf8(&b).unwrap();
-
-        s.lines()
-            .map(|line| width_with_tab(line, tab_width))
-            .max()
-            .unwrap_or(0)
-    }
-    #[cfg(not(feature = "color"))]
-    {
-        text.lines()
-            .map(|line| width_with_tab(line, tab_width))
-            .max()
-            .unwrap_or(0)
-    }
-}
-
-fn width_with_tab(text: &str, tab_width: usize) -> usize {
-    let width = unicode_width::UnicodeWidthStr::width(text);
+fn string_width_tab(text: &str, tab_width: usize) -> usize {
+    let width = string_width(text);
     let count_tabs = count_tabs(text);
 
     width + count_tabs * tab_width
+}
+
+fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
+    text.lines()
+        .map(|line| string_width_tab(line, tab_width))
+        .max()
+        .unwrap_or(0)
 }
 
 fn columns_width(grid: &Grid) -> Vec<usize> {
@@ -1235,6 +1224,7 @@ fn get_cell_width(grid: &Grid, (row, col): Position) -> usize {
     let style = grid.style(Entity::Cell(row, col));
     let text = &grid.cells[row][col];
     let width = string_width_multiline_tab(text, style.formatting.tab_width);
+
     width + style.padding.left.size + style.padding.right.size
 }
 
@@ -1321,11 +1311,11 @@ fn rows_height(grid: &Grid) -> impl Iterator<Item = usize> + '_ {
 }
 
 fn cell_height(cell: &str, style: &Style) -> usize {
-    let is_there_padding = style.padding.left.size > 0 || style.padding.right.size > 0;
-    let mut content_height = count_lines(cell);
-    if content_height == 0 && is_there_padding {
-        content_height = 1;
-    }
+    let content_height = if cell.is_empty() {
+        1
+    } else {
+        count_lines(cell)
+    };
 
     content_height + style.padding.top.size + style.padding.bottom.size
 }
@@ -2150,7 +2140,10 @@ mod tests {
     fn colored_string_width_test() {
         use owo_colors::OwoColorize;
         assert_eq!(string_width(&"hello world".red().to_string()), 11);
-        assert_eq!(string_width(&"hello\nworld".blue().to_string()), 5);
+        assert_eq!(
+            string_width_multiline(&"hello\nworld".blue().to_string()),
+            5
+        );
         assert_eq!(string_width("\u{1b}[34m0\u{1b}[0m"), 1);
         assert_eq!(string_width(&"0".red().to_string()), 1);
     }
