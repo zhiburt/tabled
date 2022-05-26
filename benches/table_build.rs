@@ -7,15 +7,15 @@ macro_rules! table_bench {
             let mut group = c.benchmark_group(stringify!($name));
             for size in [1, 4, 8, 64, 512, 1024] {
                 group.bench_with_input(BenchmarkId::from_parameter(size), &size, |b, &size| {
+                    let entry = $table;
+                    let data = vec![entry; size];
+
+                    #[allow(unused_mut)]
+                    let mut table = data.table();
+
+                    $(table = table.with($modificator);)*
+
                     b.iter(|| {
-                        let entry = $table;
-                        let data = vec![entry; size];
-
-                        #[allow(unused_mut)]
-                        let mut table = black_box(data.table());
-
-                        $(table = table.with($modificator);)*
-
                         let _ = black_box(table.to_string());
                     });
                 });

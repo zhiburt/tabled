@@ -809,15 +809,10 @@ impl AlignmentHorizontal {
     }
 
     fn align(f: &mut fmt::Formatter<'_>, text: &str, left: usize, right: usize) -> fmt::Result {
-        write!(
-            f,
-            "{: <left$}{text}{: <right$}",
-            "",
-            "",
-            left = left,
-            right = right,
-            text = text
-        )
+        repeat_char(f, ' ', left)?;
+        f.write_str(text)?;
+        repeat_char(f, ' ', right)?;
+        Ok(())
     }
 }
 
@@ -968,14 +963,14 @@ fn build_format_line<'a>(
 ) -> Result<(), fmt::Error> {
     let top_indent = top_indent(cell_height, style, height);
     if top_indent > line_index {
-        return repeat_char(f, &Symbol::from(style.padding.top.fill), width);
+        return repeat_char(f, style.padding.top.fill, width);
     }
 
     let cell_line_index = line_index - top_indent;
     let cell_has_this_line = cell_height > cell_line_index;
     // happens when other cells have bigger height
     if !cell_has_this_line {
-        return repeat_char(f, &Symbol::from(style.padding.bottom.fill), width);
+        return repeat_char(f, style.padding.bottom.fill, width);
     }
 
     if style.formatting.allow_lines_alignement {
@@ -1039,10 +1034,19 @@ fn top_indent(cell_height: usize, style: &Style, height: usize) -> usize {
     indent + style.padding.top.size
 }
 
-fn repeat_char(f: &mut fmt::Formatter<'_>, c: &Symbol, n: usize) -> fmt::Result {
+fn repeat_symbol(f: &mut fmt::Formatter<'_>, c: &Symbol, n: usize) -> fmt::Result {
     if n > 0 {
         for _ in 0..n {
             c.fmt(f)?;
+        }
+    }
+    Ok(())
+}
+
+fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
+    if n > 0 {
+        for _ in 0..n {
+            f.write_char(c)?;
         }
     }
     Ok(())
@@ -1060,10 +1064,10 @@ fn line_with_width(
     let right_indent = style.padding.right;
     let alignment = style.alignment_h;
 
-    repeat_char(f, &Symbol::from_char(left_indent.fill), left_indent.size)?;
+    repeat_char(f, left_indent.fill, left_indent.size)?;
     let width = width - left_indent.size - right_indent.size;
     alignment.align_with_max_width(f, text, width, width_text, width_text_max)?;
-    repeat_char(f, &Symbol::from_char(right_indent.fill), right_indent.size)?;
+    repeat_char(f, right_indent.fill, right_indent.size)?;
 
     Ok(())
 }
@@ -1864,9 +1868,8 @@ fn grid_cell_width(grid: &Grid, widths: &[usize], pos: Position) -> usize {
 
 fn print_margin_top(f: &mut fmt::Formatter, margin: &Margin, table_width: usize) -> fmt::Result {
     let size = table_width + margin.left.size + margin.right.size;
-    let fill = Symbol::from_char(margin.top.fill);
     for _ in 0..margin.top.size {
-        repeat_char(f, &fill, size)?;
+        repeat_char(f, margin.top.fill, size)?;
         f.write_char('\n')?
     }
 
@@ -1875,9 +1878,8 @@ fn print_margin_top(f: &mut fmt::Formatter, margin: &Margin, table_width: usize)
 
 fn print_margin_bottom(f: &mut fmt::Formatter, margin: &Margin, table_width: usize) -> fmt::Result {
     let size = table_width + margin.left.size + margin.right.size;
-    let fill = Symbol::from_char(margin.bottom.fill);
     for _ in 0..margin.bottom.size {
-        repeat_char(f, &fill, size)?;
+        repeat_char(f, margin.bottom.fill, size)?;
         f.write_char('\n')?
     }
 
@@ -1885,11 +1887,11 @@ fn print_margin_bottom(f: &mut fmt::Formatter, margin: &Margin, table_width: usi
 }
 
 fn print_margin_left(f: &mut fmt::Formatter, margin: &Margin) -> fmt::Result {
-    repeat_char(f, &Symbol::from_char(margin.left.fill), margin.left.size)
+    repeat_char(f, margin.left.fill, margin.left.size)
 }
 
 fn print_margin_right(f: &mut fmt::Formatter, margin: &Margin) -> fmt::Result {
-    repeat_char(f, &Symbol::from_char(margin.right.fill), margin.right.size)
+    repeat_char(f, margin.right.fill, margin.right.size)
 }
 
 fn print_split_line(
@@ -1950,7 +1952,7 @@ fn print_split_line(
                 char_skip -= sub;
             }
 
-            repeat_char(f, &c, width)?;
+            repeat_symbol(f, &c, width)?;
         }
 
         let right = grid
