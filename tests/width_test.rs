@@ -1346,6 +1346,8 @@ fn min_width_works_with_right_alignment() {
                 .with(TrimStrategy::None),
         );
 
+    println!("{table}");
+
     assert_eq!(
         table.to_string(),
         concat!(

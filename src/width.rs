@@ -35,7 +35,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{CellOption, TableOption};
-use papergrid::{string_width, Entity, Grid, Settings, Style};
+use papergrid::{string_width, string_width_multiline, Entity, Grid, Settings, Style};
 
 /// MaxWidth allows you to set a max width of an object on a [Table],
 /// using different strategies.
@@ -590,7 +590,7 @@ fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usi
 
     for ((row, col), inc) in increase_list {
         let content = grid.get_cell_content(row, col);
-        let content_width = string_width(content);
+        let content_width = string_width_multiline(content);
 
         MinWidth::new(content_width + inc).change_cell(grid, row, col);
     }
@@ -780,7 +780,7 @@ fn grid_widths(grid: &Grid) -> Vec<Vec<usize>> {
             (0..grid.count_columns())
                 .map(|col| {
                     let content = grid.get_cell_content(row, col);
-                    string_width(content)
+                    string_width_multiline(content)
                 })
                 .collect()
         })

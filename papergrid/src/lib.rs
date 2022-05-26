@@ -941,7 +941,7 @@ fn build_line_cell(
 ) -> fmt::Result {
     let cell_height = count_lines(cell);
     if style.formatting.vertical_trim {
-        let cell = skip_empty_lines(cell.lines(), cell_height);
+        let cell = skip_empty_lines(cell, cell_height);
         let cell_height = cell.clone().count();
         build_format_line(f, line_index, cell, style, width, height, cell_height)
     } else {
@@ -979,16 +979,16 @@ fn build_format_line<'a>(
     }
 
     if style.formatting.allow_lines_alignement {
-        let mut text = cell.nth(cell_line_index).unwrap();
+        let mut line = cell.nth(cell_line_index).unwrap();
         if style.formatting.horizontal_trim && style.formatting.allow_lines_alignement {
-            text = text.trim();
+            line = line.trim();
         } else if style.formatting.horizontal_trim {
-            text = text.trim_end();
+            line = line.trim_end();
         };
 
-        let line_width = string_width(text);
+        let line_width = string_width(line);
 
-        line_with_width(f, text, width, line_width, line_width, style)
+        line_with_width(f, line, width, line_width, line_width, style)
     } else {
         let (max_line_width, (text, line_width)) =
             cell.enumerate().fold((0, ("", 0)), |mut acc, (i, line)| {
@@ -1025,14 +1025,11 @@ fn build_format_line<'a>(
     }
 }
 
-fn skip_empty_lines<'a>(
-    lines: impl Iterator<Item = &'a str> + DoubleEndedIterator + Clone,
-    length: usize,
-) -> impl Iterator<Item = &'a str> + Clone {
+fn skip_empty_lines(s: &str, length: usize) -> impl Iterator<Item = &'_ str> + Clone {
     let is_empty = |s: &&str| s.trim().is_empty();
-    let end_lines = lines.clone().rev().take_while(is_empty).count();
+    let end_lines = s.lines().rev().take_while(is_empty).count();
     let n = length - end_lines;
-    lines.take(n).skip_while(is_empty)
+    s.lines().take(n).skip_while(is_empty)
 }
 
 fn top_indent(cell_height: usize, style: &Style, height: usize) -> usize {
@@ -1090,18 +1087,30 @@ fn to_byte_length(s: &str, width: usize) -> usize {
 
 #[cfg(not(feature = "color"))]
 pub fn string_width(text: &str) -> usize {
-    real_string_width(text)
+    unicode_width::UnicodeWidthStr::width(text)
 }
 
 #[cfg(feature = "color")]
 pub fn string_width(text: &str) -> usize {
     let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
     let s = std::str::from_utf8(&b).unwrap();
-    real_string_width(s)
+    unicode_width::UnicodeWidthStr::width(s)
 }
 
-fn real_string_width(text: &str) -> usize {
+#[cfg(not(feature = "color"))]
+pub fn string_width_multiline(text: &str) -> usize {
     text.lines()
+        .map(unicode_width::UnicodeWidthStr::width)
+        .max()
+        .unwrap_or(0)
+}
+
+#[cfg(feature = "color")]
+pub fn string_width_multiline(text: &str) -> usize {
+    let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
+    let s = std::str::from_utf8(&b).unwrap();
+
+    s.lines()
         .map(unicode_width::UnicodeWidthStr::width)
         .max()
         .unwrap_or(0)
@@ -1239,7 +1248,7 @@ fn closest_visible(grid: &Grid, row: usize, mut col: usize) -> Option<usize> {
 }
 
 fn cell_width(cell: &str, style: &Style) -> usize {
-    let content_width = string_width(cell);
+    let content_width = string_width_multiline(cell);
     content_width + style.padding.left.size + style.padding.right.size
 }
 
@@ -1900,9 +1909,9 @@ fn print_split_line(
     let override_text = grid.override_split_lines.get(&row);
     if let Some(text) = override_text {
         let text = strip(text, max_width);
-        let text = text.lines().next().unwrap();
-        char_skip = string_width(text);
-        f.write_str(text)?;
+        let line = text.lines().next().unwrap();
+        char_skip = string_width(line);
+        f.write_str(line)?;
     }
 
     for (col, width) in widths.iter().enumerate() {
