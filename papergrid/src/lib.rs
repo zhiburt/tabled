@@ -51,8 +51,12 @@ pub const DEFAULT_BORDERS: Borders = Borders {
     intersection: Some(Symbol::from_char('+')),
 };
 
-const DEFAULT_BORDER_HORIZONTAL_CHAR: Symbol = Symbol::from_char(' ');
-const DEFAULT_BORDER_VERTICAL_CHAR: Symbol = Symbol::from_char(' ');
+const DEFAULT_BORDER_HORIZONTAL_CHAR: char = ' ';
+
+const DEFAULT_BORDER_HORIZONTAL_SYMBOL: Symbol = Symbol::from_char(' ');
+const DEFAULT_BORDER_VERTICAL_SYMBOL: Symbol = Symbol::from_char(' ');
+
+const DEFAULT_BORDER_VERTICAL_SYMBOL_REF: &Symbol = &DEFAULT_BORDER_VERTICAL_SYMBOL;
 
 const DEFAULT_INDENT_FILL_CHAR: char = ' ';
 
@@ -313,39 +317,39 @@ impl Grid {
         let mut right_set = border.right.is_some();
 
         if border.top.is_none() && has_horizontal(self, row) {
-            border.top = Some(DEFAULT_BORDER_HORIZONTAL_CHAR);
+            border.top = Some(DEFAULT_BORDER_HORIZONTAL_SYMBOL);
             top_set = true;
         }
 
         if border.bottom.is_none() && has_horizontal(self, row + 1) {
-            border.bottom = Some(DEFAULT_BORDER_HORIZONTAL_CHAR);
+            border.bottom = Some(DEFAULT_BORDER_HORIZONTAL_SYMBOL);
             bottom_set = true;
         }
 
         if border.left.is_none() && has_vertical(self, col) {
-            border.left = Some(DEFAULT_BORDER_VERTICAL_CHAR);
+            border.left = Some(DEFAULT_BORDER_VERTICAL_SYMBOL);
             left_set = true;
         }
 
         if border.right.is_none() && has_vertical(self, col + 1) {
-            border.right = Some(DEFAULT_BORDER_VERTICAL_CHAR);
+            border.right = Some(DEFAULT_BORDER_VERTICAL_SYMBOL);
             right_set = true;
         }
 
         if border.left_top_corner.is_none() && top_set && left_set {
-            border.left_top_corner = Some(DEFAULT_BORDER_VERTICAL_CHAR);
+            border.left_top_corner = Some(DEFAULT_BORDER_VERTICAL_SYMBOL);
         }
 
         if border.left_bottom_corner.is_none() && bottom_set && left_set {
-            border.left_bottom_corner = Some(DEFAULT_BORDER_VERTICAL_CHAR);
+            border.left_bottom_corner = Some(DEFAULT_BORDER_VERTICAL_SYMBOL);
         }
 
         if border.right_top_corner.is_none() && top_set && right_set {
-            border.right_top_corner = Some(DEFAULT_BORDER_VERTICAL_CHAR);
+            border.right_top_corner = Some(DEFAULT_BORDER_VERTICAL_SYMBOL);
         }
 
         if border.right_bottom_corner.is_none() && bottom_set && right_set {
-            border.right_bottom_corner = Some(DEFAULT_BORDER_VERTICAL_CHAR);
+            border.right_bottom_corner = Some(DEFAULT_BORDER_VERTICAL_SYMBOL);
         }
 
         border
@@ -1918,16 +1922,16 @@ fn print_split_line(
 
     for (col, width) in widths.iter().enumerate() {
         if col == 0 {
-            let left = if let Some(c) =
-                grid.theme
-                    .get_intersection((row, col), grid.count_rows(), grid.count_columns())
-            {
-                Some(c.clone())
-            } else if has_vertical(grid, col) {
-                Some(DEFAULT_BORDER_VERTICAL_CHAR)
-            } else {
-                None
-            };
+            let left = grid
+                .theme
+                .get_intersection((row, col), grid.count_rows(), grid.count_columns())
+                .or_else(|| {
+                    if has_vertical(grid, col) {
+                        Some(DEFAULT_BORDER_VERTICAL_SYMBOL_REF)
+                    } else {
+                        None
+                    }
+                });
 
             if let Some(c) = left {
                 if char_skip == 0 {
@@ -1938,30 +1942,25 @@ fn print_split_line(
             }
         }
 
-        let main = grid
-            .theme
-            .get_horizontal((row, col), grid.count_rows())
-            .cloned()
-            .or(Some(DEFAULT_BORDER_HORIZONTAL_CHAR));
+        let mut width = *width;
+        if char_skip > 0 {
+            let sub = cmp::min(width, char_skip);
+            width -= sub;
+            char_skip -= sub;
+        }
 
-        if let Some(c) = main {
-            let mut width = *width;
-            if char_skip > 0 {
-                let sub = cmp::min(width, char_skip);
-                width -= sub;
-                char_skip -= sub;
-            }
-
-            repeat_symbol(f, &c, width)?;
+        let main = grid.theme.get_horizontal((row, col), grid.count_rows());
+        match main {
+            Some(c) => repeat_symbol(f, c, width)?,
+            None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
         }
 
         let right = grid
             .theme
             .get_intersection((row, col + 1), grid.count_rows(), grid.count_columns())
-            .cloned()
             .or_else(|| {
                 if has_vertical(grid, col + 1) {
-                    Some(DEFAULT_BORDER_VERTICAL_CHAR)
+                    Some(DEFAULT_BORDER_VERTICAL_SYMBOL_REF)
                 } else {
                     None
                 }
