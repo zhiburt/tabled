@@ -522,7 +522,7 @@ where
         }
 
         if self.width < total_width {
-            truncate_total_width(grid, total_width, self.width);
+            truncate_total_width(grid, total_width, self.width, self.suffix.as_ref());
         }
     }
 }
@@ -608,11 +608,13 @@ fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usi
     }
 }
 
-fn truncate_total_width(grid: &mut Grid, total_width: usize, width: usize) {
-    let points = decrease_total_width_from_max(grid, total_width, width);
+fn truncate_total_width(grid: &mut Grid, total_width: usize, width: usize, suffix: &str) {
+    let points = decrease_total_width(grid, width);
 
     for ((row, col), width) in points {
-        Truncate::new(width).change_cell(grid, row, col);
+        Truncate::new(width)
+            .suffix(suffix)
+            .change_cell(grid, row, col);
     }
 }
 
