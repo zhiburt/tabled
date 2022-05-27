@@ -1346,8 +1346,6 @@ fn min_width_works_with_right_alignment() {
                 .with(TrimStrategy::None),
         );
 
-    println!("{table}");
-
     assert_eq!(
         table.to_string(),
         concat!(
@@ -1684,6 +1682,206 @@ fn max_width_table_when_cell_has_tabs() {
             "|  | 0- |  |  |\n",
             "|  |    |  |  |\n",
             "|  | 2- |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_truncate_priority_max() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(35).prioritize_max())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 35));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column  | column  | column  |\n",
+            "|---+---------+---------+---------|\n",
+            "| 0 |   0-0   |   0-1   |   0-2   |\n",
+            "| 1 | Hello W |   1-1   |   1-2   |\n",
+            "| 2 |   2-0   |   2-1   |   2-2   |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(20).prioritize_max())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 20));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | co | co | co |\n",
+            "|---+----+----+----|\n",
+            "| 0 | 0- | 0- | 0- |\n",
+            "| 1 | He | 1- | 1- |\n",
+            "| 2 | 2- | 2- | 2- |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(0).prioritize_max())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 13));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  |  |  |\n",
+            "|--+--+--+--|\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_truncate_priority_max_with_span() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(MaxWidth::truncating(15).prioritize_max())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 15));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | c |  |  |\n",
+            "|---+---+--+--|\n",
+            "| 0 | 0 |  |  |\n",
+            "| 1 | Hell |  |\n",
+            "| 2 | 2 |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_wrap_priority_max() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(35).prioritize_max())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 35));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column  | column  | column  |\n",
+            "|   | 0       | 1       | 2       |\n",
+            "|---+---------+---------+---------|\n",
+            "| 0 |   0-0   |   0-1   |   0-2   |\n",
+            "| 1 | Hello W |   1-1   |   1-2   |\n",
+            "|   | orld Wi |         |         |\n",
+            "|   | th Big  |         |         |\n",
+            "|   | Line    |         |         |\n",
+            "| 2 |   2-0   |   2-1   |   2-2   |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(20).prioritize_max())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 20));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | co | co | co |\n",
+            "|   | lu | lu | lu |\n",
+            "|   | mn | mn | mn |\n",
+            "|   |  0 |  1 |  2 |\n",
+            "|---+----+----+----|\n",
+            "| 0 | 0- | 0- | 0- |\n",
+            "|   | 0  | 1  | 2  |\n",
+            "| 1 | He | 1- | 1- |\n",
+            "|   | ll | 1  | 2  |\n",
+            "|   | o  |    |    |\n",
+            "|   | Wo |    |    |\n",
+            "|   | rl |    |    |\n",
+            "|   | d  |    |    |\n",
+            "|   | Wi |    |    |\n",
+            "|   | th |    |    |\n",
+            "|   |  B |    |    |\n",
+            "|   | ig |    |    |\n",
+            "|   |  L |    |    |\n",
+            "|   | in |    |    |\n",
+            "|   | e  |    |    |\n",
+            "| 2 | 2- | 2- | 2- |\n",
+            "|   | 0  | 1  | 2  |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(0).prioritize_max())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 13));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  |  |  |\n",
+            "|--+--+--+--|\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_wrap_priority_max_with_span() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(MaxWidth::wrapping(15).prioritize_max())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 15));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | c |  |  |\n",
+            "|   | o |  |  |\n",
+            "|   | l |  |  |\n",
+            "|   | u |  |  |\n",
+            "|   | m |  |  |\n",
+            "|   | n |  |  |\n",
+            "|   |   |  |  |\n",
+            "|   | 0 |  |  |\n",
+            "|---+---+--+--|\n",
+            "| 0 | 0 |  |  |\n",
+            "|   | - |  |  |\n",
+            "|   | 0 |  |  |\n",
+            "| 1 | Hell |  |\n",
+            "|   | o Wo |  |\n",
+            "|   | rld  |  |\n",
+            "|   | With |  |\n",
+            "|   |  Big |  |\n",
+            "|   |  Lin |  |\n",
+            "|   | e    |  |\n",
+            "| 2 | 2 |  |  |\n",
+            "|   | - |  |  |\n",
+            "|   | 0 |  |  |\n",
         )
     );
 }

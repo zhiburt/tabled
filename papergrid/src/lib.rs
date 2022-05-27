@@ -238,11 +238,7 @@ impl Grid {
         let style = self.style(Entity::Cell(row, col));
         let content = &self.cells[row][col];
         let border = self.get_border(row, col);
-        let span = self
-            .spans
-            .iter()
-            .find(|((c, _), rows)| rows.contains(&row) && *c == col)
-            .map(|((start, end), _)| end - start);
+        let span = self.get_column_span((row, col));
 
         Settings {
             text: Some(content.clone()),
@@ -605,6 +601,19 @@ impl Grid {
                 .retain(move |k, _| !matches!(k, Entity::Cell(r, _) if *r == row)),
             Entity::Cell(_, _) => {}
         }
+    }
+
+    /// Get a span value of the cell, if any is set.
+    pub fn get_column_span(&self, (row, col): Position) -> Option<usize> {
+        self.spans
+            .iter()
+            .find(|((c, _), rows)| rows.contains(&row) && *c == col)
+            .map(|((start, end), _)| end - start)
+    }
+
+    /// Verifies if there's any spans set.
+    pub fn has_column_spans(&self) -> bool {
+        !self.spans.is_empty()
     }
 }
 

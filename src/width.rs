@@ -32,10 +32,13 @@
 //! );
 //! ```
 
-use std::collections::{HashMap, HashSet};
+use std::{
+    cmp::Ordering,
+    collections::{HashMap, HashSet},
+};
 
 use crate::{CellOption, TableOption};
-use papergrid::{string_width, string_width_multiline, Entity, Grid, Settings, Style};
+use papergrid::{string_width, string_width_multiline, Entity, Grid, Position, Settings, Style};
 
 /// MaxWidth allows you to set a max width of an object on a [Table],
 /// using different strategies.
@@ -122,6 +125,10 @@ impl<T> Truncate<T> {
             suffix,
         }
     }
+
+    pub fn prioritize_max(self) -> PriorityMaxTruncate<T> {
+        PriorityMaxTruncate { control: self }
+    }
 }
 
 impl<S> CellOption for Truncate<S>
@@ -151,6 +158,7 @@ where
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Wrap::new(3)));
 /// ```
+#[derive(Debug, Clone)]
 pub struct Wrap {
     width: usize,
     keep_words: bool,
@@ -172,6 +180,10 @@ impl Wrap {
     pub fn keep_words(mut self) -> Self {
         self.keep_words = true;
         self
+    }
+
+    pub fn prioritize_max(self) -> PriorityMaxWrap {
+        PriorityMaxWrap { control: self }
     }
 }
 
@@ -510,7 +522,7 @@ where
         }
 
         if self.width < total_width {
-            truncate_total_width(grid, self.width);
+            truncate_total_width(grid, total_width, self.width);
         }
     }
 }
@@ -596,8 +608,8 @@ fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usi
     }
 }
 
-fn truncate_total_width(grid: &mut Grid, width: usize) {
-    let points = decrease_total_width(grid, width);
+fn truncate_total_width(grid: &mut Grid, total_width: usize, width: usize) {
+    let points = decrease_total_width_from_max(grid, total_width, width);
 
     for ((row, col), width) in points {
         Truncate::new(width).change_cell(grid, row, col);
@@ -905,6 +917,152 @@ impl Width for Min {
             .min()
             .unwrap_or(0)
     }
+}
+
+pub struct PriorityMaxWrap {
+    control: Wrap,
+}
+
+impl TableOption for PriorityMaxWrap {
+    fn change(&mut self, grid: &mut Grid) {
+        if grid.count_columns() == 0 || grid.count_rows() == 0 {
+            return;
+        }
+
+        if is_zero_spanned_grid(grid) {
+            return;
+        }
+
+        let total_width = grid.total_width();
+        if total_width <= self.control.width {
+            return;
+        }
+
+        let points = decrease_total_width_from_max(grid, total_width, self.control.width);
+        let mut wrap = self.control.clone();
+        for ((row, col), width) in points {
+            wrap.width = width;
+            wrap.change_cell(grid, row, col);
+        }
+    }
+}
+
+pub struct PriorityMaxTruncate<S> {
+    control: Truncate<S>,
+}
+
+impl<S> TableOption for PriorityMaxTruncate<S>
+where
+    S: AsRef<str>,
+{
+    fn change(&mut self, grid: &mut Grid) {
+        if grid.count_columns() == 0 || grid.count_rows() == 0 {
+            return;
+        }
+
+        if is_zero_spanned_grid(grid) {
+            return;
+        }
+
+        let total_width = grid.total_width();
+        if total_width <= self.control.width {
+            return;
+        }
+
+        let points = decrease_total_width_from_max(grid, total_width, self.control.width);
+
+        let orig_width = self.control.width;
+
+        for ((row, col), width) in points {
+            self.control.width = width;
+            self.control.change_cell(grid, row, col);
+        }
+
+        self.control.width = orig_width;
+    }
+}
+
+fn decrease_total_width_from_max(
+    grid: &Grid,
+    total_width: usize,
+    mut width: usize,
+) -> HashMap<(usize, usize), usize> {
+    let min_widths = build_min_widths_(grid);
+    let mut widths = grid.build_widths();
+
+    while width != total_width {
+        let max_width = widths.iter_mut().max_by_key(|w| **w).unwrap();
+        if *max_width == 0 {
+            break;
+        }
+
+        *max_width -= 1;
+        width += 1;
+    }
+
+    let mut spans = HashMap::new();
+    let mut points = HashMap::new();
+    #[allow(clippy::needless_range_loop)]
+    for col in 0..widths.len() {
+        let new = widths[col];
+
+        for row in 0..grid.count_rows() {
+            let min_cell_width = min_widths[row][col];
+
+            match new.cmp(&min_cell_width) {
+                Ordering::Less | Ordering::Equal => {
+                    let width = fix_width_by_padding(grid, (row, col), min_cell_width);
+                    points.insert((row, col), width);
+                }
+                Ordering::Greater => {
+                    let width = fix_width_by_padding(grid, (row, col), new);
+                    points.insert((row, col), width);
+                }
+            }
+
+            if let Some(span) = grid.get_column_span((row, col)) {
+                spans.insert((row, col), span);
+            }
+        }
+    }
+
+    // check if we can add any space in the spans
+    //
+    // it may happen that more then min width be used in the corresponding columns,
+    // so we can use this additional space.
+    if !spans.is_empty() {
+        for (pos, span) in spans {
+            let mut additional_space = 0;
+            for col in pos.1..pos.1 + span {
+                let space = points
+                    .iter()
+                    .filter(|(&(row, col), _)| !(row == pos.0 && col == pos.1))
+                    .filter(|(&(_, c), _)| c == col)
+                    .map(|(_, &width)| width)
+                    .max()
+                    .unwrap_or(0);
+
+                additional_space += space;
+            }
+
+            let width = points.get_mut(&pos).expect("must never happen?");
+            *width += additional_space;
+        }
+    }
+
+    points
+}
+
+fn fix_width_by_padding(grid: &Grid, pos: Position, width: usize) -> usize {
+    let style = grid.style(Entity::Cell(pos.0, pos.1));
+    width.saturating_sub(style.padding.left.size + style.padding.right.size)
+}
+
+fn build_min_widths_(grid: &Grid) -> Vec<Vec<usize>> {
+    let mut grid = grid.clone();
+    grid.set(Entity::Global, Settings::default().text(""));
+
+    grid.build_cells_widths()
 }
 
 #[cfg(feature = "color")]
