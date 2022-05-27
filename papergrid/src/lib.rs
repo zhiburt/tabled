@@ -608,6 +608,112 @@ impl Grid {
     }
 }
 
+impl fmt::Display for Grid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let count_rows = self.count_rows();
+        let count_columns = self.count_columns();
+
+        if count_rows == 0 || count_columns == 0 {
+            return Ok(());
+        }
+
+        let heights = rows_height(self);
+        let widths = columns_width(self);
+
+        print_grid(f, self, widths, heights)
+    }
+}
+
+/// Entity a structure which represent a set of cells.
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
+pub enum Entity {
+    /// All cells on the grid.
+    Global,
+    /// All cells in a column on the grid.
+    Column(usize),
+    /// All cells in a row on the grid.
+    Row(usize),
+    /// A particular cell (row, column) on the grid.
+    Cell(usize, usize),
+}
+
+/// Settings represent setting of a particular cell
+#[derive(Debug, Clone, Default)]
+pub struct Settings {
+    text: Option<String>,
+    padding: Option<Padding>,
+    border: Option<Border>,
+    span: Option<usize>,
+    alignment_h: Option<AlignmentHorizontal>,
+    alignment_v: Option<AlignmentVertical>,
+    formatting: Option<Formatting>,
+}
+
+impl Settings {
+    /// New method constructs an instance of settings
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Text method sets content for a cell
+    pub fn text<S: Into<String>>(mut self, text: S) -> Self {
+        self.text = Some(text.into());
+        self
+    }
+
+    /// padding method sets padding for a cell
+    pub fn padding(mut self, left: Indent, right: Indent, top: Indent, bottom: Indent) -> Self {
+        self.padding = Some(Padding {
+            top,
+            bottom,
+            left,
+            right,
+        });
+        self
+    }
+
+    /// Alignment method sets horizontal alignment for a cell
+    pub fn alignment(mut self, alignment: AlignmentHorizontal) -> Self {
+        self.alignment_h = Some(alignment);
+        self
+    }
+
+    /// Alignment method sets horizontal alignment for a cell
+    pub fn vertical_alignment(mut self, alignment: AlignmentVertical) -> Self {
+        self.alignment_v = Some(alignment);
+        self
+    }
+
+    /// Set the settings's span.
+    pub fn span(mut self, span: usize) -> Self {
+        self.span = Some(span);
+        self
+    }
+
+    /// Set the settings's border.
+    ///
+    /// The border setting is in a restrictive manner, by default.
+    /// So if there was no split line but border relies on it
+    /// a error will be issued.
+    ///
+    /// To fix it you can construct split lines before calling this function.
+    /// Or you can pass a `false` argument into [Self::border_restriction]
+    /// so if absent lines will be created.
+    pub fn border(mut self, border: Border) -> Self {
+        self.border = Some(border);
+        self
+    }
+
+    /// Set a formatting settings.
+    ///
+    /// It overades them even if any were not set.
+    pub fn formatting(mut self, formatting: Formatting) -> Self {
+        self.formatting = Some(formatting);
+        self
+    }
+}
+
+/// Border is a representation of a cells's borders (left, right, top, bottom, and the corners)
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Border {
     pub top: Option<Symbol>,
@@ -710,25 +816,7 @@ impl Border {
     }
 }
 
-/// Entity a structure which represent a set of cells.
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
-pub enum Entity {
-    /// All cells on the grid.
-    Global,
-    /// All cells in a column on the grid.
-    Column(usize),
-    /// All cells in a row on the grid.
-    Row(usize),
-    /// A particular cell (row, column) on the grid.
-    Cell(usize, usize),
-}
-
-// impl Entity {
-//     // fn cells<'a>(&self, grid: &'a Grid) -> impl Iterator<Item=(usize, usize)> + 'a {
-
-//     // }
-// }
-
+/// Style represent a style of a cell on a grid.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Style {
     pub padding: Padding,
@@ -753,6 +841,7 @@ impl Default for Style {
     }
 }
 
+/// Formatting represent a logic of formatting of a cell.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Formatting {
     pub horizontal_trim: bool,
@@ -761,6 +850,7 @@ pub struct Formatting {
     pub tab_width: usize,
 }
 
+/// Margin represent a 4 indents of table as a whole.
 #[derive(Default, Debug, Clone, Copy)]
 pub struct Margin {
     pub top: Indent,
@@ -769,6 +859,7 @@ pub struct Margin {
     pub right: Indent,
 }
 
+/// Padding represent a 4 indents of cell.
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Padding {
     pub top: Indent,
@@ -777,19 +868,11 @@ pub struct Padding {
     pub right: Indent,
 }
 
+/// Indent represent a filled space.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Indent {
     pub fill: char,
     pub size: usize,
-}
-
-impl Default for Indent {
-    fn default() -> Self {
-        Self {
-            fill: DEFAULT_INDENT_FILL_CHAR,
-            size: 0,
-        }
-    }
 }
 
 impl Indent {
@@ -803,6 +886,15 @@ impl Indent {
         Self {
             size,
             fill: DEFAULT_INDENT_FILL_CHAR,
+        }
+    }
+}
+
+impl Default for Indent {
+    fn default() -> Self {
+        Self {
+            fill: DEFAULT_INDENT_FILL_CHAR,
+            size: 0,
         }
     }
 }
@@ -882,98 +974,6 @@ impl AlignmentVertical {
             AlignmentVertical::Bottom => height - real_height,
             AlignmentVertical::Center => (height - real_height) / 2,
         }
-    }
-}
-
-/// Settings represent setting of a particular cell
-#[derive(Debug, Clone, Default)]
-pub struct Settings {
-    text: Option<String>,
-    padding: Option<Padding>,
-    border: Option<Border>,
-    span: Option<usize>,
-    alignment_h: Option<AlignmentHorizontal>,
-    alignment_v: Option<AlignmentVertical>,
-    formatting: Option<Formatting>,
-}
-
-impl Settings {
-    /// New method constructs an instance of settings
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Text method sets content for a cell
-    pub fn text<S: Into<String>>(mut self, text: S) -> Self {
-        self.text = Some(text.into());
-        self
-    }
-
-    /// padding method sets padding for a cell
-    pub fn padding(mut self, left: Indent, right: Indent, top: Indent, bottom: Indent) -> Self {
-        self.padding = Some(Padding {
-            top,
-            bottom,
-            left,
-            right,
-        });
-        self
-    }
-
-    /// Alignment method sets horizontal alignment for a cell
-    pub fn alignment(mut self, alignment: AlignmentHorizontal) -> Self {
-        self.alignment_h = Some(alignment);
-        self
-    }
-
-    /// Alignment method sets horizontal alignment for a cell
-    pub fn vertical_alignment(mut self, alignment: AlignmentVertical) -> Self {
-        self.alignment_v = Some(alignment);
-        self
-    }
-
-    /// Set the settings's span.
-    pub fn span(mut self, span: usize) -> Self {
-        self.span = Some(span);
-        self
-    }
-
-    /// Set the settings's border.
-    ///
-    /// The border setting is in a restrictive manner, by default.
-    /// So if there was no split line but border relies on it
-    /// a error will be issued.
-    ///
-    /// To fix it you can construct split lines before calling this function.
-    /// Or you can pass a `false` argument into [Self::border_restriction]
-    /// so if absent lines will be created.
-    pub fn border(mut self, border: Border) -> Self {
-        self.border = Some(border);
-        self
-    }
-
-    /// Set a formatting settings.
-    ///
-    /// It overades them even if any were not set.
-    pub fn formatting(mut self, formatting: Formatting) -> Self {
-        self.formatting = Some(formatting);
-        self
-    }
-}
-
-impl fmt::Display for Grid {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let count_rows = self.count_rows();
-        let count_columns = self.count_columns();
-
-        if count_rows == 0 || count_columns == 0 {
-            return Ok(());
-        }
-
-        let heights = rows_height(self);
-        let widths = columns_width(self);
-
-        print_grid(f, self, widths, heights)
     }
 }
 
@@ -1129,74 +1129,6 @@ fn line_with_width(
 
     Ok(())
 }
-/// strip cuts the string to a specific width.
-///
-/// Width is expected to be in bytes.
-pub fn strip(s: &str, width: usize) -> String {
-    #[cfg(not(feature = "color"))]
-    {
-        s.chars().take(width).collect::<String>()
-    }
-    #[cfg(feature = "color")]
-    {
-        let width = to_byte_length(s, width);
-        ansi_str::AnsiStr::ansi_cut(s, ..width)
-    }
-}
-
-#[cfg(feature = "color")]
-fn to_byte_length(s: &str, width: usize) -> usize {
-    s.chars().take(width).map(|c| c.len_utf8()).sum::<usize>()
-}
-
-/// Returns a string width.
-#[cfg(not(feature = "color"))]
-pub fn string_width(text: &str) -> usize {
-    unicode_width::UnicodeWidthStr::width(text)
-}
-
-/// Returns a string width.
-#[cfg(feature = "color")]
-pub fn string_width(text: &str) -> usize {
-    let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
-    let s = std::str::from_utf8(&b).unwrap();
-    unicode_width::UnicodeWidthStr::width(s)
-}
-
-/// Returns a max string width of a line.
-#[cfg(not(feature = "color"))]
-pub fn string_width_multiline(text: &str) -> usize {
-    text.lines()
-        .map(unicode_width::UnicodeWidthStr::width)
-        .max()
-        .unwrap_or(0)
-}
-
-/// Returns a max string width of a line.
-#[cfg(feature = "color")]
-pub fn string_width_multiline(text: &str) -> usize {
-    let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
-    let s = std::str::from_utf8(&b).unwrap();
-
-    s.lines()
-        .map(unicode_width::UnicodeWidthStr::width)
-        .max()
-        .unwrap_or(0)
-}
-
-fn string_width_tab(text: &str, tab_width: usize) -> usize {
-    let width = string_width(text);
-    let count_tabs = count_tabs(text);
-
-    width + count_tabs * tab_width
-}
-
-fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
-    text.lines()
-        .map(|line| string_width_tab(line, tab_width))
-        .max()
-        .unwrap_or(0)
-}
 
 fn columns_width(grid: &Grid) -> Vec<usize> {
     let mut widths = Vec::with_capacity(grid.count_columns());
@@ -1226,7 +1158,7 @@ fn adjust_spans(grid: &Grid, widths: &mut [usize]) {
     }
 
     for (&(start, end), rows) in &grid.spans {
-        adjust_range(grid, rows.iter().cloned(), widths, start, end);
+        adjust_range(grid, rows.iter().copied(), widths, start, end);
     }
 }
 
@@ -1417,6 +1349,75 @@ fn total_width(grid: &Grid, widths: &[usize], margin: &Margin) -> usize {
     content_width + count_borders + margin.left.size + margin.right.size
 }
 
+/// strip cuts the string to a specific width.
+///
+/// Width is expected to be in bytes.
+pub fn strip(s: &str, width: usize) -> String {
+    #[cfg(not(feature = "color"))]
+    {
+        s.chars().take(width).collect::<String>()
+    }
+    #[cfg(feature = "color")]
+    {
+        let width = to_byte_length(s, width);
+        ansi_str::AnsiStr::ansi_cut(s, ..width)
+    }
+}
+
+#[cfg(feature = "color")]
+fn to_byte_length(s: &str, width: usize) -> usize {
+    s.chars().take(width).map(|c| c.len_utf8()).sum::<usize>()
+}
+
+/// Returns a string width.
+#[cfg(not(feature = "color"))]
+pub fn string_width(text: &str) -> usize {
+    unicode_width::UnicodeWidthStr::width(text)
+}
+
+/// Returns a string width.
+#[cfg(feature = "color")]
+pub fn string_width(text: &str) -> usize {
+    let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
+    let s = std::str::from_utf8(&b).unwrap();
+    unicode_width::UnicodeWidthStr::width(s)
+}
+
+/// Returns a max string width of a line.
+#[cfg(not(feature = "color"))]
+pub fn string_width_multiline(text: &str) -> usize {
+    text.lines()
+        .map(unicode_width::UnicodeWidthStr::width)
+        .max()
+        .unwrap_or(0)
+}
+
+/// Returns a max string width of a line.
+#[cfg(feature = "color")]
+pub fn string_width_multiline(text: &str) -> usize {
+    let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
+    let s = std::str::from_utf8(&b).unwrap();
+
+    s.lines()
+        .map(unicode_width::UnicodeWidthStr::width)
+        .max()
+        .unwrap_or(0)
+}
+
+fn string_width_tab(text: &str, tab_width: usize) -> usize {
+    let width = string_width(text);
+    let count_tabs = count_tabs(text);
+
+    width + count_tabs * tab_width
+}
+
+fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
+    text.lines()
+        .map(|line| string_width_tab(line, tab_width))
+        .max()
+        .unwrap_or(0)
+}
+
 #[derive(Debug, Clone)]
 struct Theme {
     borders: Borders,
@@ -1460,6 +1461,94 @@ pub struct Line {
     pub intersection: Option<Symbol>,
     pub left: Option<Symbol>,
     pub right: Option<Symbol>,
+}
+
+/// A single character representation.
+///
+/// It uses String to support ANSI colors.
+#[cfg(feature = "color")]
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Symbol(InnerSymbol);
+
+#[cfg(feature = "color")]
+#[derive(Debug, Clone, Eq, PartialEq)]
+enum InnerSymbol {
+    Ansi(String),
+    Char(char),
+}
+
+/// A single character representation.
+///
+/// It uses String to support ANSI colors.
+#[cfg(not(feature = "color"))]
+#[derive(Debug, Clone, Default, Eq, PartialEq)]
+pub struct Symbol(char);
+
+impl Symbol {
+    /// Creates a new [Symbol] from the String.
+    /// The string must contain 1 UTF-8 character and any list of Ansi sequences.
+    ///
+    /// If it contains more then 1 character `None` will be returned.
+    #[cfg(feature = "color")]
+    pub fn ansi(s: String) -> Option<Self> {
+        let mut chars = s.chars();
+        let c = chars.next();
+        let no_other_chars = chars.next().is_none();
+        drop(chars);
+        match c {
+            Some(c) if no_other_chars => return Some(Self(InnerSymbol::Char(c))),
+            _ => (),
+        }
+
+        if string_width(&s) != 1 {
+            return None;
+        }
+
+        Some(Self(InnerSymbol::Ansi(s)))
+    }
+
+    /// A function which create a [Symbol] from [char].
+    pub const fn from_char(c: char) -> Self {
+        #[cfg(feature = "color")]
+        {
+            Self(InnerSymbol::Char(c))
+        }
+
+        #[cfg(not(feature = "color"))]
+        {
+            Self(c)
+        }
+    }
+}
+
+#[cfg(feature = "color")]
+impl Default for Symbol {
+    fn default() -> Self {
+        Self(InnerSymbol::Char(char::default()))
+    }
+}
+
+impl From<char> for Symbol {
+    fn from(c: char) -> Self {
+        Self::from_char(c)
+    }
+}
+
+impl fmt::Display for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        #[cfg(feature = "color")]
+        {
+            match &self.0 {
+                InnerSymbol::Ansi(s) => f.write_str(s),
+                InnerSymbol::Char(c) => f.write_char(*c),
+            }
+        }
+
+        #[cfg(not(feature = "color"))]
+        {
+            f.write_char(self.0)
+        }
+    }
 }
 
 pub type Position = (usize, usize);
@@ -1775,108 +1864,6 @@ impl Theme {
     }
 }
 
-/// A single character representation.
-///
-/// It uses String to support ANSI colors.
-#[cfg(feature = "color")]
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Symbol(InnerSymbol);
-
-#[cfg(feature = "color")]
-#[derive(Debug, Clone, Eq, PartialEq)]
-enum InnerSymbol {
-    Ansi(String),
-    Char(char),
-}
-
-/// A single character representation.
-///
-/// It uses String to support ANSI colors.
-#[cfg(not(feature = "color"))]
-#[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct Symbol(char);
-
-impl Symbol {
-    /// Creates a new [Symbol] from the String.
-    /// The string must contain 1 UTF-8 character and any list of Ansi sequences.
-    ///
-    /// If it contains more then 1 character `None` will be returned.
-    #[cfg(feature = "color")]
-    pub fn ansi(s: String) -> Option<Self> {
-        let mut chars = s.chars();
-        let c = chars.next();
-        let no_other_chars = chars.next().is_none();
-        drop(chars);
-        match c {
-            Some(c) if no_other_chars => return Some(Self(InnerSymbol::Char(c))),
-            _ => (),
-        }
-
-        if string_width(&s) != 1 {
-            return None;
-        }
-
-        Some(Self(InnerSymbol::Ansi(s)))
-    }
-
-    /// A function which create a [Symbol] from [char].
-    pub const fn from_char(c: char) -> Self {
-        #[cfg(feature = "color")]
-        {
-            Self(InnerSymbol::Char(c))
-        }
-
-        #[cfg(not(feature = "color"))]
-        {
-            Self(c)
-        }
-    }
-}
-
-#[cfg(feature = "color")]
-impl Default for Symbol {
-    fn default() -> Self {
-        Self(InnerSymbol::Char(char::default()))
-    }
-}
-
-impl From<char> for Symbol {
-    fn from(c: char) -> Self {
-        Self::from_char(c)
-    }
-}
-
-impl fmt::Display for Symbol {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        #[cfg(feature = "color")]
-        {
-            match &self.0 {
-                InnerSymbol::Ansi(s) => f.write_str(s),
-                InnerSymbol::Char(c) => f.write_char(*c),
-            }
-        }
-
-        #[cfg(not(feature = "color"))]
-        {
-            f.write_char(self.0)
-        }
-    }
-}
-
-fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> (usize, usize) {
-    match (left, right) {
-        (Bound::Included(x), Bound::Included(y)) => (*x, y + 1),
-        (Bound::Included(x), Bound::Excluded(y)) => (*x, *y),
-        (Bound::Included(x), Bound::Unbounded) => (*x, length),
-        (Bound::Unbounded, Bound::Unbounded) => (0, length),
-        (Bound::Unbounded, Bound::Included(y)) => (0, y + 1),
-        (Bound::Unbounded, Bound::Excluded(y)) => (0, *y),
-        (Bound::Excluded(_), _) => {
-            unreachable!("A start bound can't be excluded")
-        }
-    }
-}
-
 fn print_grid(
     f: &mut fmt::Formatter,
     grid: &Grid,
@@ -2103,6 +2090,20 @@ fn count_lines(s: &str) -> usize {
     }
 
     count
+}
+
+fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> (usize, usize) {
+    match (left, right) {
+        (Bound::Included(x), Bound::Included(y)) => (*x, y + 1),
+        (Bound::Included(x), Bound::Excluded(y)) => (*x, *y),
+        (Bound::Included(x), Bound::Unbounded) => (*x, length),
+        (Bound::Unbounded, Bound::Unbounded) => (0, length),
+        (Bound::Unbounded, Bound::Included(y)) => (0, y + 1),
+        (Bound::Unbounded, Bound::Excluded(y)) => (0, *y),
+        (Bound::Excluded(_), _) => {
+            unreachable!("A start bound can't be excluded")
+        }
+    }
 }
 
 #[cfg(test)]

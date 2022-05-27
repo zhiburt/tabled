@@ -411,12 +411,13 @@ fn top_border_override_cleared_after_restyling_test() {
     assert_eq!(table, expected);
 }
 
-
 #[test]
 fn top_border_override_with_big_string_test() {
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
-        .with(BorderText::first("-Tableeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1231"))
+        .with(BorderText::first(
+            "-Tableeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1231",
+        ))
         .to_string();
 
     let expected = concat!(
