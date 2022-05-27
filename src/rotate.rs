@@ -46,11 +46,12 @@ impl TableOption for Rotate {
         match self {
             Self::Left => {
                 let mut new = Grid::new(grid.count_columns(), grid.count_rows());
+                new.set_borders(grid.get_borders().clone());
                 for row in 0..grid.count_rows() {
                     for (lhs_column, rhs_column) in
                         (0..grid.count_columns()).zip((0..grid.count_columns()).rev())
                     {
-                        let settings = grid.get_settings(row, lhs_column).border_restriction(false);
+                        let settings = grid.get_settings(row, lhs_column);
                         new.set(Entity::Cell(rhs_column, row), settings)
                     }
                 }
@@ -59,11 +60,12 @@ impl TableOption for Rotate {
             }
             Self::Right => {
                 let mut new = Grid::new(grid.count_columns(), grid.count_rows());
+                new.set_borders(grid.get_borders().clone());
                 let mut last_row = grid.count_rows();
                 for row in 0..grid.count_rows() {
                     last_row -= 1;
                     for column in 0..grid.count_columns() {
-                        let border = grid.get_settings(row, column).border_restriction(false);
+                        let border = grid.get_settings(row, column);
                         new.set(Entity::Cell(column, last_row), border);
                     }
                 }
@@ -72,10 +74,11 @@ impl TableOption for Rotate {
             }
             Self::Bottom => {
                 let mut new = Grid::new(grid.count_rows(), grid.count_columns());
+                new.set_borders(grid.get_borders().clone());
                 for column in 0..grid.count_columns() {
                     for row in 0..grid.count_rows() {
                         let last_row = grid.count_rows() - 1 - row;
-                        let border = grid.get_settings(row, column).border_restriction(false);
+                        let border = grid.get_settings(row, column);
                         new.set(Entity::Cell(last_row, column), border)
                     }
                 }

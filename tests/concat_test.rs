@@ -15,21 +15,18 @@ fn table_join_vertical() {
         let table2 = Table::new(&data2).with(Style::ascii());
         let table3 = table1.with(Concat::vertical(table2));
 
-        let expected = concat!(
-            "   N  | column 0 | column 1 | column 2  \n",
-            " -----+----------+----------+---------- \n",
-            "  123 |   0-0    |   0-1    |   0-2     \n",
-            "   1  |   1-0    |   1-1    |   1-2     \n",
-            "+-----+----------+----------+----------+\n",
-            "|  N  | column 0 | column 1 | column 2 |\n",
-            "+-----+----------+----------+----------+\n",
-            "|  0  |   0-0    |   0-1    |   0-2    |\n",
-            "+-----+----------+----------+----------+\n",
-            "|  1  |   1-0    |   1-1    |   1-2    |\n",
-            "+-----+----------+----------+----------+\n",
+        assert_eq!(
+            table3.to_string(),
+            concat!(
+                "  N  | column 0 | column 1 | column 2 \n",
+                "-----+----------+----------+----------\n",
+                " 123 |   0-0    |   0-1    |   0-2    \n",
+                "  1  |   1-0    |   1-1    |   1-2    \n",
+                "  N  | column 0 | column 1 | column 2 \n",
+                "  0  |   0-0    |   0-1    |   0-2    \n",
+                "  1  |   1-0    |   1-1    |   1-2    \n",
+            )
         );
-
-        assert_eq!(expected, table3.to_string());
     }
 
     {
@@ -37,21 +34,24 @@ fn table_join_vertical() {
         let table2 = Table::new(&data2).with(Style::ascii());
         let table3 = table2.with(Concat::vertical(table1));
 
-        let expected = concat!(
-            "+-----+----------+----------+----------+\n",
-            "|  N  | column 0 | column 1 | column 2 |\n",
-            "+-----+----------+----------+----------+\n",
-            "|  0  |   0-0    |   0-1    |   0-2    |\n",
-            "+-----+----------+----------+----------+\n",
-            "|  1  |   1-0    |   1-1    |   1-2    |\n",
-            "+-----+----------+----------+----------+\n",
-            "   N  | column 0 | column 1 | column 2  \n",
-            " -----+----------+----------+---------- \n",
-            "  123 |   0-0    |   0-1    |   0-2     \n",
-            "   1  |   1-0    |   1-1    |   1-2     \n",
+        assert_eq!(
+            table3.to_string(),
+            concat!(
+                "+-----+----------+----------+----------+\n",
+                "|  N  | column 0 | column 1 | column 2 |\n",
+                "+-----+----------+----------+----------+\n",
+                "|  0  |   0-0    |   0-1    |   0-2    |\n",
+                "+-----+----------+----------+----------+\n",
+                "|  1  |   1-0    |   1-1    |   1-2    |\n",
+                "+-----+----------+----------+----------+\n",
+                "|  N  | column 0 | column 1 | column 2 |\n",
+                "+-----+----------+----------+----------+\n",
+                "| 123 |   0-0    |   0-1    |   0-2    |\n",
+                "+-----+----------+----------+----------+\n",
+                "|  1  |   1-0    |   1-1    |   1-2    |\n",
+                "+-----+----------+----------+----------+\n",
+            )
         );
-
-        assert_eq!(table3.to_string(), expected);
     }
 }
 
@@ -61,39 +61,38 @@ fn table_join_horizontal() {
     let data2 = create_vector::<2, 3>();
 
     {
-        let table1 = Table::new(&data1).with(Style::psql());
-        let table2 = Table::new(&data2).with(Style::ascii());
+        let table1 = Table::new(&data1).with(Style::ascii());
+        let table2 = Table::new(&data2).with(Style::psql());
         let table3 = table2.with(Concat::horizontal(table1));
 
-        let expected = concat!(
-            "+---+----------+----------+----------+                                    \n",
-            "| N | column 0 | column 1 | column 2 | N | column 0 | column 1 | column 2 \n",
-            "+---+----------+----------+----------+---+----------+----------+----------\n",
-            "| 0 |   0-0    |   0-1    |   0-2    | 0 |   0-0    |   0-1    |   0-2    \n",
-            "+---+----------+----------+----------+                                    \n",
-            "| 1 |   1-0    |   1-1    |   1-2    | 1 |   1-0    |   1-1    |   1-2    \n",
-            "+---+----------+----------+----------+                                    \n",
+        assert_eq!(
+            table3.to_string(),
+            concat!(
+                " N | column 0 | column 1 | column 2 | N | column 0 | column 1 | column 2 \n",
+                "---+----------+----------+----------                                     \n",
+                " 0 |   0-0    |   0-1    |   0-2    | 0 |   0-0    |   0-1    |   0-2    \n",
+                " 1 |   1-0    |   1-1    |   1-2    | 1 |   1-0    |   1-1    |   1-2    \n",
+            )
         );
-
-        assert_eq!(expected, table3.to_string());
     }
 
     {
-        let table1 = Table::new(&data1).with(Style::psql());
-        let table2 = Table::new(&data2).with(Style::ascii());
+        let table1 = Table::new(&data1).with(Style::ascii());
+        let table2 = Table::new(&data2).with(Style::psql());
         let table3 = table1.with(Concat::horizontal(table2));
 
-        let expected = concat!(
-            "                                    +---+----------+----------+----------+\n",
-            " N | column 0 | column 1 | column 2 | N | column 0 | column 1 | column 2 |\n",
-            "---+----------+----------+----------+---+----------+----------+----------+\n",
-            " 0 |   0-0    |   0-1    |   0-2    | 0 |   0-0    |   0-1    |   0-2    |\n",
-            "                                    +---+----------+----------+----------+\n",
-            " 1 |   1-0    |   1-1    |   1-2    | 1 |   1-0    |   1-1    |   1-2    |\n",
-            "                                    +---+----------+----------+----------+\n",
+        assert_eq!(
+            table3.to_string(),
+            concat!(
+                "+---+----------+----------+----------+---+----------+----------+----------+\n",
+                "| N | column 0 | column 1 | column 2 | N | column 0 | column 1 | column 2 |\n",
+                "+---+----------+----------+----------+---+----------+----------+----------+\n",
+                "| 0 |   0-0    |   0-1    |   0-2    | 0 |   0-0    |   0-1    |   0-2    |\n",
+                "+---+----------+----------+----------+---+----------+----------+----------+\n",
+                "| 1 |   1-0    |   1-1    |   1-2    | 1 |   1-0    |   1-1    |   1-2    |\n",
+                "+---+----------+----------+----------+---+----------+----------+----------+\n",
+            )
         );
-
-        assert_eq!(expected, table3.to_string());
     }
 }
 
@@ -106,18 +105,18 @@ fn table_join_vertical_different_size() {
     let table2 = Table::new(&data2).with(Style::psql());
     let table3 = table1.with(Concat::vertical(table2));
 
-    let expected = concat!(
-        " N | column 0 | column 1            \n",
-        "---+----------+----------           \n",
-        " 0 |   0-0    |   0-1               \n",
-        " 1 |   1-0    |   1-1               \n",
-        " N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+----------\n",
-        " 0 |   0-0    |   0-1    |   0-2    \n",
-        " 1 |   1-0    |   1-1    |   1-2    \n",
+    assert_eq!(
+        table3.to_string(),
+        concat!(
+            " N | column 0 | column 1 |          \n",
+            "---+----------+----------           \n",
+            " 0 |   0-0    |   0-1    |          \n",
+            " 1 |   1-0    |   1-1    |          \n",
+            " N | column 0 | column 1 | column 2 \n",
+            " 0 |   0-0    |   0-1    |   0-2    \n",
+            " 1 |   1-0    |   1-1    |   1-2    \n",
+        )
     );
-
-    assert_eq!(expected, table3.to_string());
 }
 
 #[test]
@@ -129,15 +128,16 @@ fn table_join_horizontal_different_size() {
     let table2 = Table::new(&data2).with(Style::psql());
     let table3 = table1.with(Concat::horizontal(table2));
 
-    let expected = concat!(
-        " N | column 0 | column 1 | column 2  N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+-------------+----------+----------+----------\n",
-        " 0 |   0-0    |   0-1    |   0-2     0 |   0-0    |   0-1    |   0-2    \n",
-        " 1 |   1-0    |   1-1    |   1-2     1 |   1-0    |   1-1    |   1-2    \n",
-        "                                     2 |   2-0    |   2-1    |   2-2    \n",
+    assert_eq!(
+        table3.to_string(),
+        concat!(
+            " N | column 0 | column 1 | column 2 | N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------                                     \n",
+            " 0 |   0-0    |   0-1    |   0-2    | 0 |   0-0    |   0-1    |   0-2    \n",
+            " 1 |   1-0    |   1-1    |   1-2    | 1 |   1-0    |   1-1    |   1-2    \n",
+            "   |          |          |          | 2 |   2-0    |   2-1    |   2-2    \n",
+        )
     );
-
-    assert_eq!(expected, table3.to_string());
 }
 
 #[test]
@@ -149,15 +149,16 @@ fn table_join_horizontal_with_not_default_empty_string() {
     let table2 = Table::new(&data2).with(Style::psql());
     let table3 = table1.with(Concat::horizontal(table2).default_cell("NaN"));
 
-    let expected = concat!(
-        " N | column 0 | column 1 | column 2  N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+-------------+----------+----------+----------\n",
-        " 0 |   0-0    |   0-1    |   0-2     0 |   0-0    |   0-1    |   0-2    \n",
-        " 1 |   1-0    |   1-1    |   1-2     1 |   1-0    |   1-1    |   1-2    \n",
-        "NaN NaN        NaN        NaN        2 |   2-0    |   2-1    |   2-2    \n",
+    assert_eq!(
+        table3.to_string(),
+        concat!(
+            " N | column 0 | column 1 | column 2 | N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------                                     \n",
+            " 0 |   0-0    |   0-1    |   0-2    | 0 |   0-0    |   0-1    |   0-2    \n",
+            " 1 |   1-0    |   1-1    |   1-2    | 1 |   1-0    |   1-1    |   1-2    \n",
+            "NaN|NaN       |NaN       |NaN       | 2 |   2-0    |   2-1    |   2-2    \n",
+        )
     );
-
-    assert_eq!(expected, table3.to_string());
 }
 
 #[test]
@@ -169,16 +170,16 @@ fn table_join_vertical_with_not_default_empty_string() {
     let table2 = Table::new(&data2).with(Style::psql());
     let table3 = table1.with(Concat::vertical(table2).default_cell("NaN"));
 
-    let expected = concat!(
-        " N | column 0 | column 1  NaN       \n",
-        "---+----------+----------           \n",
-        " 0 |   0-0    |   0-1     NaN       \n",
-        " 1 |   1-0    |   1-1     NaN       \n",
-        " N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+----------\n",
-        " 0 |   0-0    |   0-1    |   0-2    \n",
-        " 1 |   1-0    |   1-1    |   1-2    \n",
+    assert_eq!(
+        table3.to_string(),
+        concat!(
+            " N | column 0 | column 1 |NaN       \n",
+            "---+----------+----------           \n",
+            " 0 |   0-0    |   0-1    |NaN       \n",
+            " 1 |   1-0    |   1-1    |NaN       \n",
+            " N | column 0 | column 1 | column 2 \n",
+            " 0 |   0-0    |   0-1    |   0-2    \n",
+            " 1 |   1-0    |   1-1    |   1-2    \n",
+        )
     );
-
-    assert_eq!(expected, table3.to_string());
 }

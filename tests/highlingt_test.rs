@@ -8,7 +8,6 @@ use tabled::{
 mod util;
 
 #[test]
-#[should_panic]
 fn highlingt_object_exceeds_bounderies() {
     let data = create_vector::<3, 3>();
     let _table = Table::new(&data)

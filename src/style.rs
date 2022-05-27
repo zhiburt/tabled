@@ -84,8 +84,8 @@
 
 use std::{borrow::Cow, marker::PhantomData};
 
-use crate::{object::Cell, CellOption, Highlight, TableOption};
-use papergrid::{Entity, Grid, Settings};
+use crate::{CellOption, TableOption};
+use papergrid::{Borders, Entity, Grid, Settings};
 
 /// Style is represents a theme of a [Table].
 ///
@@ -280,7 +280,7 @@ impl Style {
     }
 
     const EMPTY: StyleSettings =
-        StyleSettings::new(Frame::empty(), Line::empty(), Line::empty(), Line::empty());
+        StyleSettings::new(Frame::empty(), Line::empty(), Line::empty(), None);
 
     const ASCII: StyleSettings = StyleSettings::new(
         Frame::full(
@@ -292,21 +292,17 @@ impl Style {
         ),
         Line::new('-', '+'),
         Line::new('-', '+'),
-        Line::new('|', '+'),
+        Some('|'),
     );
 
-    const BLANK: StyleSettings = StyleSettings::new(
-        Frame::empty(),
-        Line::empty(),
-        Line::empty(),
-        Line::new(' ', ' '),
-    );
+    const BLANK: StyleSettings =
+        StyleSettings::new(Frame::empty(), Line::empty(), Line::empty(), Some(' '));
 
     const PSQL: StyleSettings = StyleSettings::new(
         Frame::empty(),
         Line::empty(),
         Line::new('-', '+'),
-        Line::new('|', '+'),
+        Some('|'),
     );
 
     const GITHUB_MARKDOWN: StyleSettings = StyleSettings::new(
@@ -318,7 +314,7 @@ impl Style {
         ),
         Line::empty(),
         Line::new('-', '+'),
-        Line::new('|', '|'),
+        Some('|'),
     );
 
     const MODERN: StyleSettings = StyleSettings::new(
@@ -331,7 +327,7 @@ impl Style {
         ),
         Line::new('─', '┼'),
         Line::new('─', '┼'),
-        Line::new('│', '┼'),
+        Some('│'),
     );
 
     const MODERN_ROUNDED: StyleSettings = StyleSettings::new(
@@ -344,7 +340,7 @@ impl Style {
         ),
         Line::empty(),
         Line::new('─', '┼'),
-        Line::new('│', '┼'),
+        Some('│'),
     );
 
     const EXTENDED: StyleSettings = StyleSettings::new(
@@ -357,7 +353,7 @@ impl Style {
         ),
         Line::new('═', '╬'),
         Line::new('═', '╬'),
-        Line::new('║', '╬'),
+        Some('║'),
     );
 
     const DOTS: StyleSettings = StyleSettings::new(
@@ -370,7 +366,7 @@ impl Style {
         ),
         Line::new('.', ':'),
         Line::new('.', ':'),
-        Line::new(':', ':'),
+        Some(':'),
     );
 
     const RE_STRUCTURED_TEXT: StyleSettings = StyleSettings::new(
@@ -382,7 +378,7 @@ impl Style {
         ),
         Line::empty(),
         Line::new('=', ' '),
-        Line::new(' ', ' '),
+        Some(' '),
     );
 }
 
@@ -391,11 +387,11 @@ struct StyleSettings {
     frame: Frame,
     horizontal: Line,
     header: Line,
-    vertical: Line,
+    vertical: Option<char>,
 }
 
 impl StyleSettings {
-    const fn new(frame: Frame, horizontal: Line, header: Line, vertical: Line) -> Self {
+    const fn new(frame: Frame, horizontal: Line, header: Line, vertical: Option<char>) -> Self {
         Self {
             frame,
             horizontal,
@@ -404,10 +400,8 @@ impl StyleSettings {
         }
     }
 
-    const fn is_there_vertical(&self) -> bool {
-        self.horizontal.intersection.is_some()
-            || self.vertical.main.is_some()
-            || self.vertical.intersection.is_some()
+    const fn has_vertical(&self) -> bool {
+        self.horizontal.intersection.is_some() || self.vertical.is_some()
     }
 }
 
@@ -505,276 +499,36 @@ impl Frame {
 
 impl TableOption for StyleSettings {
     fn change(&mut self, grid: &mut Grid) {
-        grid.clear_split_grid();
-        grid.clear_overide_split_lines();
+        let borders = Borders {
+            top: self.frame.top.main.map(Symbol::from_char),
+            top_intersection: self.frame.top.intersection.map(Symbol::from_char),
+            bottom: self.frame.bottom.main.map(Symbol::from_char),
+            bottom_intersection: self.frame.bottom.intersection.map(Symbol::from_char),
+            horizontal_left: self.frame.left.intersection.map(Symbol::from_char),
+            horizontal_right: self.frame.right.intersection.map(Symbol::from_char),
+            top_left: self.frame.corner_top_left.map(Symbol::from_char),
+            top_right: self.frame.corner_top_right.map(Symbol::from_char),
+            bottom_left: self.frame.corner_bottom_left.map(Symbol::from_char),
+            bottom_right: self.frame.corner_bottom_right.map(Symbol::from_char),
+            horizontal: self.horizontal.main.map(Symbol::from_char),
+            intersection: self.horizontal.intersection.map(Symbol::from_char),
+            vertical_left: self.frame.left.main.map(Symbol::from_char),
+            vertical_intersection: self.vertical.map(Symbol::from_char),
+            vertical_right: self.frame.right.main.map(Symbol::from_char),
+        };
 
-        let count_rows = grid.count_rows();
-        let count_columns = grid.count_columns();
-        for row in 0..count_rows {
-            for column in 0..count_columns {
-                let mut border = make_style(self, row, column, count_rows, count_columns);
-                make_style_header(&mut border, self, row, column, count_rows, count_columns);
+        grid.clear_theme();
+        grid.set_borders(borders);
 
-                grid.set(
-                    Entity::Cell(row, column),
-                    Settings::default().border(border).border_restriction(false),
-                );
-            }
-        }
-    }
-}
-
-fn make_style(
-    style: &StyleSettings,
-    row: usize,
-    column: usize,
-    count_rows: usize,
-    count_columns: usize,
-) -> Border {
-    let is_first_row = row == 0;
-    let is_last_row = row + 1 == count_rows;
-    let is_first_column = column == 0;
-    let is_last_column = column + 1 == count_columns;
-
-    let inner_intersection = style.horizontal.intersection;
-    let frame_left_intersection = if style.horizontal.is_empty() {
-        None
-    } else {
-        style.frame.left.intersection
-    };
-    let frame_right_intersection = if style.horizontal.is_empty() {
-        None
-    } else {
-        style.frame.right.intersection
-    };
-
-    match (is_first_row, is_last_row, is_first_column, is_last_column) {
-        // A table with a single cell
-        (true, true, true, true) => Border {
-            top: style.frame.top.main.map(From::from),
-            bottom: style.frame.bottom.main.map(From::from),
-            right: style.frame.right.main.map(From::from),
-            right_top_corner: style.frame.corner_top_right.map(From::from),
-            right_bottom_corner: style.frame.corner_bottom_right.map(From::from),
-            left: style.frame.left.main.map(From::from),
-            left_top_corner: style.frame.corner_top_left.map(From::from),
-            left_bottom_corner: style.frame.corner_bottom_left.map(From::from),
-        },
-        // Single row
-        (true, true, true, false) => Border {
-            top: style.frame.top.main.map(From::from),
-            bottom: style.frame.bottom.main.map(From::from),
-            left: style.frame.left.main.map(From::from),
-            left_top_corner: style.frame.corner_top_left.map(From::from),
-            left_bottom_corner: style.frame.corner_bottom_left.map(From::from),
-            right: style.vertical.main.map(From::from),
-            right_top_corner: style.frame.top.intersection.map(From::from),
-            right_bottom_corner: style.frame.bottom.intersection.map(From::from),
-        },
-        (true, true, false, true) => Border {
-            top: style.frame.top.main.map(From::from),
-            bottom: style.frame.bottom.main.map(From::from),
-            left: style.frame.left.main.map(From::from),
-            left_top_corner: style.frame.top.intersection.map(From::from),
-            left_bottom_corner: style.frame.bottom.intersection.map(From::from),
-            right: style.vertical.main.map(From::from),
-            right_top_corner: style.frame.corner_top_right.map(From::from),
-            right_bottom_corner: style.frame.corner_bottom_right.map(From::from),
-        },
-        (true, true, false, false) => Border {
-            top: style.frame.top.main.map(From::from),
-            bottom: style.frame.bottom.main.map(From::from),
-            left: style.vertical.main.map(From::from),
-            left_top_corner: style.frame.top.intersection.map(From::from),
-            left_bottom_corner: style.frame.bottom.intersection.map(From::from),
-            right: style.vertical.main.map(From::from),
-            right_top_corner: style.frame.top.intersection.map(From::from),
-            right_bottom_corner: style.frame.bottom.intersection.map(From::from),
-        },
-        // Single column
-        (true, false, true, true) => Border {
-            top: style.frame.top.main.map(From::from),
-            bottom: style.horizontal.main.map(From::from),
-            left: style.frame.left.main.map(From::from),
-            left_top_corner: style.frame.corner_top_left.map(From::from),
-            left_bottom_corner: frame_left_intersection.map(From::from),
-            right: style.frame.right.main.map(From::from),
-            right_top_corner: style.frame.corner_top_right.map(From::from),
-            right_bottom_corner: frame_right_intersection.map(From::from),
-        },
-        (false, true, true, true) => Border {
-            top: style.horizontal.main.map(From::from),
-            bottom: style.frame.bottom.main.map(From::from),
-            left: style.frame.left.main.map(From::from),
-            left_top_corner: frame_left_intersection.map(From::from),
-            left_bottom_corner: style.frame.corner_bottom_left.map(From::from),
-            right: style.frame.right.main.map(From::from),
-            right_top_corner: frame_right_intersection.map(From::from),
-            right_bottom_corner: style.frame.corner_bottom_right.map(From::from),
-        },
-        (false, false, true, true) => Border {
-            top: style.horizontal.main.map(From::from),
-            bottom: style.horizontal.main.map(From::from),
-            left: style.frame.left.main.map(From::from),
-            left_top_corner: frame_left_intersection.map(From::from),
-            left_bottom_corner: frame_left_intersection.map(From::from),
-            right: style.frame.right.main.map(From::from),
-            right_top_corner: frame_right_intersection.map(From::from),
-            right_bottom_corner: frame_right_intersection.map(From::from),
-        },
-        // General
-        (true, false, true, false) => Border {
-            top: style.frame.top.main.map(Symbol::from),
-            bottom: style.horizontal.main.map(Symbol::from),
-            left: style.frame.left.main.map(Symbol::from),
-            right: style.vertical.main.map(Symbol::from),
-            left_top_corner: style.frame.corner_top_left.map(Symbol::from),
-            left_bottom_corner: frame_left_intersection.map(Symbol::from),
-            right_top_corner: style.frame.top.intersection.map(Symbol::from),
-            right_bottom_corner: inner_intersection.map(Symbol::from),
-        },
-        (true, false, false, true) => Border {
-            top: style.frame.top.main.map(Symbol::from),
-            bottom: style.horizontal.main.map(Symbol::from),
-            left: style.vertical.main.map(Symbol::from),
-            right: style.frame.right.main.map(Symbol::from),
-            left_top_corner: style.frame.top.intersection.map(Symbol::from),
-            left_bottom_corner: inner_intersection.map(Symbol::from),
-            right_top_corner: style.frame.corner_top_right.map(Symbol::from),
-            right_bottom_corner: frame_right_intersection.map(Symbol::from),
-        },
-        (true, false, false, false) => Border {
-            top: style.frame.top.main.map(Symbol::from),
-            bottom: style.horizontal.main.map(Symbol::from),
-            left: style.vertical.main.map(Symbol::from),
-            right: style.vertical.main.map(Symbol::from),
-            left_top_corner: style.frame.top.intersection.map(Symbol::from),
-            left_bottom_corner: inner_intersection.map(Symbol::from),
-            right_top_corner: style.frame.top.intersection.map(Symbol::from),
-            right_bottom_corner: inner_intersection.map(Symbol::from),
-        },
-        (false, true, true, false) => Border {
-            top: style.horizontal.main.map(Symbol::from),
-            bottom: style.frame.bottom.main.map(Symbol::from),
-            left: style.frame.left.main.map(Symbol::from),
-            right: style.vertical.main.map(Symbol::from),
-            left_top_corner: frame_left_intersection.map(Symbol::from),
-            left_bottom_corner: style.frame.corner_bottom_left.map(Symbol::from),
-            right_top_corner: inner_intersection.map(Symbol::from),
-            right_bottom_corner: style.frame.bottom.intersection.map(Symbol::from),
-        },
-        (false, true, false, true) => Border {
-            top: style.horizontal.main.map(Symbol::from),
-            bottom: style.frame.bottom.main.map(Symbol::from),
-            left: style.vertical.main.map(Symbol::from),
-            right: style.frame.right.main.map(Symbol::from),
-            left_top_corner: inner_intersection.map(Symbol::from),
-            left_bottom_corner: style.frame.bottom.intersection.map(Symbol::from),
-            right_top_corner: frame_right_intersection.map(Symbol::from),
-            right_bottom_corner: style.frame.corner_bottom_right.map(Symbol::from),
-        },
-        (false, true, false, false) => Border {
-            top: style.horizontal.main.map(Symbol::from),
-            bottom: style.frame.bottom.main.map(Symbol::from),
-            left: style.vertical.main.map(Symbol::from),
-            right: style.vertical.main.map(Symbol::from),
-            left_top_corner: inner_intersection.map(Symbol::from),
-            left_bottom_corner: style.frame.bottom.intersection.map(Symbol::from),
-            right_top_corner: inner_intersection.map(Symbol::from),
-            right_bottom_corner: style.frame.bottom.intersection.map(Symbol::from),
-        },
-        (false, false, true, false) => Border {
-            top: style.horizontal.main.map(Symbol::from),
-            bottom: style.horizontal.main.map(Symbol::from),
-            left: style.frame.left.main.map(Symbol::from),
-            right: style.vertical.main.map(Symbol::from),
-            left_top_corner: frame_left_intersection.map(Symbol::from),
-            left_bottom_corner: frame_left_intersection.map(Symbol::from),
-            right_top_corner: inner_intersection.map(Symbol::from),
-            right_bottom_corner: inner_intersection.map(Symbol::from),
-        },
-        (false, false, false, true) => Border {
-            top: style.horizontal.main.map(Symbol::from),
-            bottom: style.horizontal.main.map(Symbol::from),
-            left: style.vertical.main.map(Symbol::from),
-            right: style.frame.right.main.map(Symbol::from),
-            left_top_corner: inner_intersection.map(Symbol::from),
-            left_bottom_corner: inner_intersection.map(Symbol::from),
-            right_top_corner: frame_right_intersection.map(Symbol::from),
-            right_bottom_corner: frame_right_intersection.map(Symbol::from),
-        },
-        (false, false, false, false) => Border {
-            top: style.horizontal.main.map(Symbol::from),
-            bottom: style.horizontal.main.map(Symbol::from),
-            left: style.vertical.main.map(Symbol::from),
-            right: style.vertical.main.map(Symbol::from),
-            left_top_corner: inner_intersection.map(Symbol::from),
-            left_bottom_corner: inner_intersection.map(Symbol::from),
-            right_top_corner: inner_intersection.map(Symbol::from),
-            right_bottom_corner: inner_intersection.map(Symbol::from),
-        },
-    }
-}
-
-fn make_style_header(
-    border: &mut Border,
-    style: &StyleSettings,
-    row: usize,
-    column: usize,
-    count_rows: usize,
-    count_columns: usize,
-) {
-    let is_first_column = column == 0;
-    let is_last_column = column + 1 == count_columns;
-
-    let is_single_row = row + 1 == count_rows;
-    if is_single_row {
-        return;
-    }
-
-    if !style.header.is_empty() {
-        if row == 1 {
-            border.top = style.header.main.map(Symbol::from);
-
-            if is_last_column {
-                border.right_top_corner = style.frame.right.intersection.map(Symbol::from);
-            } else {
-                border.right_top_corner = style.header.intersection.map(Symbol::from);
-            }
-
-            if is_first_column {
-                border.left_top_corner = style.frame.left.intersection.map(Symbol::from);
-            } else {
-                border.left_top_corner = style.header.intersection.map(Symbol::from);
-            }
-        }
-
-        if row == 0 {
-            border.bottom = style.header.main.map(Symbol::from);
-
-            if is_last_column {
-                border.right_bottom_corner = style.frame.right.intersection.map(Symbol::from);
-            } else {
-                border.right_bottom_corner = style.header.intersection.map(Symbol::from);
-            }
-
-            if is_first_column {
-                border.left_bottom_corner = style.frame.left.intersection.map(Symbol::from);
-            } else {
-                border.left_bottom_corner = style.header.intersection.map(Symbol::from);
-            }
-        }
-    } else if count_columns > 1 {
-        if row == 1 {
-            border.top = None;
-            border.right_top_corner = None;
-            border.left_top_corner = None;
-        }
-
-        if row == 0 {
-            border.bottom = None;
-            border.right_bottom_corner = None;
-            border.left_bottom_corner = None;
+        if grid.count_rows() > 1 {
+            grid.set_split_line(
+                1,
+                papergrid::Line {
+                    horizontal: self.header.main.map(Symbol::from_char),
+                    intersection: self.header.intersection.map(Symbol::from_char),
+                    ..Default::default()
+                },
+            );
         }
     }
 }
@@ -947,7 +701,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
             style.frame.corner_top_right = Some(c);
         }
 
-        if style.is_there_vertical() {
+        if style.has_vertical() {
             style.frame.top.intersection = Some(c);
         }
 
@@ -969,7 +723,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
             style.frame.corner_bottom_right = Some(c);
         }
 
-        if style.is_there_vertical() {
+        if style.has_vertical() {
             style.frame.bottom.intersection = Some(c);
         }
 
@@ -1034,8 +788,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
             style.horizontal.intersection = Some(c);
         }
 
-        if !style.vertical.is_empty() {
-            style.vertical.intersection = Some(c);
+        if style.vertical.is_some() {
             style.horizontal.intersection = Some(c);
         }
 
@@ -1055,7 +808,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// Any corners and intersections which were set will be overridden.
     pub const fn vertical(self, c: char) -> CustomStyle<T, B, L, R, IH, On, H> {
         let mut style = self.inner;
-        style.vertical.main = Some(c);
+        style.vertical = Some(c);
 
         if !style.horizontal.is_empty() {
             style.horizontal.intersection = Some(c);
@@ -1083,7 +836,7 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
         let mut style = self.inner;
         style.header.main = Some(c);
 
-        if !style.vertical.is_empty() {
+        if style.vertical.is_some() {
             style.header.intersection = Some(c);
         }
 
@@ -1176,7 +929,6 @@ impl<T, B, L, R, H> CustomStyle<T, B, L, R, On, On, H> {
     /// A char between horizontal and vertical split lines.
     pub const fn inner_intersection(mut self, c: char) -> Self {
         self.inner.horizontal.intersection = Some(c);
-        self.inner.vertical.intersection = Some(c);
         CustomStyle::new(self.inner)
     }
 }
@@ -1239,7 +991,6 @@ impl<T, B, L, R, IV, H> CustomStyle<T, B, L, R, On, IV, H> {
     /// Not including 1st split line.
     pub const fn horizontal_off(mut self) -> CustomStyle<T, B, L, R, (), IV, H> {
         self.inner.horizontal = Line::empty();
-        self.inner.vertical.intersection = None;
 
         CustomStyle::new(self.inner)
     }
@@ -1248,7 +999,7 @@ impl<T, B, L, R, IV, H> CustomStyle<T, B, L, R, On, IV, H> {
 impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, On, H> {
     /// Removes vertical split lines.
     pub const fn vertical_off(mut self) -> CustomStyle<T, B, L, R, IH, (), H> {
-        self.inner.vertical = Line::empty();
+        self.inner.vertical = None;
         self.inner.horizontal.intersection = None;
         self.inner.header.intersection = None;
         self.inner.frame.top.intersection = None;
@@ -1284,8 +1035,11 @@ impl<T, B, L, R, IH, IV, H> TableOption for CustomStyle<T, B, L, R, IH, IV, H> {
 pub use papergrid::Border;
 
 impl CellOption for Border {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        Highlight::new(Cell(row, column), self.clone()).change(grid);
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, col: usize) {
+        grid.set(
+            Entity::Cell(row, col),
+            Settings::default().border(self.clone()),
+        );
     }
 }
 

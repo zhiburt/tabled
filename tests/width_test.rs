@@ -701,6 +701,7 @@ fn total_width_big_with_panel() {
         "| 2            |   2-0               |   2-1              |   2-2              |\n",
     );
 
+    assert!(is_lines_equal(&table, 80));
     assert_eq!(table, expected);
 }
 
@@ -795,7 +796,7 @@ fn total_width_small_with_panel() {
         .with(MinWidth::new(5))
         .to_string();
 
-    let expected = concat!(" Hel \n", "+---+\n", "| u |\n", "+---+\n",);
+    let expected = concat!("+---+\n", "|Hel|\n", "+---+\n", "| u |\n", "+---+\n",);
 
     assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 5));
@@ -1345,6 +1346,8 @@ fn min_width_works_with_right_alignment() {
                 .with(TrimStrategy::None),
         );
 
+    println!("{table}");
+
     assert_eq!(
         table.to_string(),
         concat!(
@@ -1637,6 +1640,50 @@ fn justify_width_max_test() {
             "|    0     |   0-0    |   0-1    |   0-2    |\n",
             "|    1     |   1-0    |   1-1    |   1-2    |\n",
             "|    2     |   2-0    |   2-1    |   2-2    |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_when_cell_has_tabs() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("\tHello\tWorld\t");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Columns::new(..)).with(MaxWidth::truncating(1)))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "| N | c | c | c |\n",
+            "|---+---+---+---|\n",
+            "| 0 | 0 | 0 | 0 |\n",
+            "| 1 |   | 1 | 1 |\n",
+            "| 2 | 2 | 2 | 2 |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_table_when_cell_has_tabs() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("\tHello\tWorld\t");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(15))
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "|  | co |  |  |\n",
+            "|--+----+--+--|\n",
+            "|  | 0- |  |  |\n",
+            "|  |    |  |  |\n",
+            "|  | 2- |  |  |\n",
         )
     );
 }

@@ -154,6 +154,7 @@ fn table_with_margin_and_max_width() {
 }
 
 #[test]
+#[ignore = "It's not yet clear what to do with such spans"]
 fn table_0_spanned_with_width() {
     let data = create_vector::<0, 0>();
 

@@ -67,6 +67,8 @@ use papergrid::{Entity, Grid, Settings};
 ///                .with(Highlight::new(Segment::all().not(Cell(0,0).and(Cell(1, 0).and(Cell(0, 1)).and(Cell(0, 3)))), Border::filled('*')))
 ///                .to_string();
 ///
+/// println!("{table}");
+///
 /// assert_eq!(
 ///     table,
 ///     concat!(
@@ -76,7 +78,6 @@ use papergrid::{Entity, Grid, Settings};
 ///         "|   0   *  ELF  | Extensible Linking Format | true  *\n",
 ///         "*********                                           *\n",
 ///         "*   1   | DWARF |                           | true  *\n",
-///         "*                                                   *\n",
 ///         "*   2   |  PE   |    Portable Executable    | false *\n",
 ///         "*****************************************************\n",
 ///     ),
@@ -205,10 +206,7 @@ fn set_border(grid: &mut Grid, sector: HashSet<(usize, usize)>, border: Border) 
     for &(row, col) in &sector {
         let border = build_cell_border(&sector, row, col, &border);
 
-        grid.set(
-            Entity::Cell(row, col),
-            Settings::default().border(border).border_restriction(false),
-        );
+        grid.set(Entity::Cell(row, col), Settings::default().border(border));
     }
 }
 

@@ -96,7 +96,7 @@ impl std::fmt::Display for ExpandedDisplay {
 
         let max_field_width = fields
             .iter()
-            .map(|f| papergrid::string_width(f))
+            .map(|f| papergrid::string_width_multiline(f))
             .max()
             .unwrap_or_default();
 
@@ -115,11 +115,10 @@ impl std::fmt::Display for ExpandedDisplay {
             .map(|record| {
                 record
                     .iter()
-                    .map(|v| v.lines().map(papergrid::string_width).max())
+                    .map(|v| papergrid::string_width_multiline(v))
                     .max()
             })
             .max()
-            .unwrap_or_default()
             .unwrap_or_default()
             .unwrap_or_default();
 

@@ -153,6 +153,8 @@ fn header() {
         " 2 |   2-0    |   2-1    |   2-2    \n",
     );
 
+    println!("{table}");
+
     assert_eq!(table, expected);
 }
 
@@ -175,6 +177,8 @@ fn footer() {
         " 2 |   2-0    |   2-1    |   2-2    \n",
         "              The end               \n",
     );
+
+    println!("{table}");
 
     assert_eq!(table, expected);
 }

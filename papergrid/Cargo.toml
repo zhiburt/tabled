@@ -16,6 +16,7 @@ color = ["strip-ansi-escapes", "ansi-str"]
 unicode-width = "0.1.8"
 strip-ansi-escapes = { version = "0.1.0", optional = true }
 ansi-str = { version = "0.1.1", optional = true }
+bytecount = "0.6.2"
 
 [dev-dependencies]
 owo-colors = "3.4.0"
