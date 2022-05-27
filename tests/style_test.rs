@@ -411,6 +411,29 @@ fn top_border_override_cleared_after_restyling_test() {
     assert_eq!(table, expected);
 }
 
+
+#[test]
+fn top_border_override_with_big_string_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(BorderText::first("-Tableeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1231"))
+        .to_string();
+
+    let expected = concat!(
+        "-Tableeeeeeeeeeeeeeeeeeeeee\n",
+        "| N | column 0 | column 1 |\n",
+        "+---+----------+----------+\n",
+        "| 0 |   0-0    |   0-1    |\n",
+        "+---+----------+----------+\n",
+        "| 1 |   1-0    |   1-1    |\n",
+        "+---+----------+----------+\n",
+    );
+
+    println!("{table}");
+
+    assert_eq!(table, expected);
+}
+
 #[test]
 fn empty_style() {
     let data = create_vector::<3, 3>();
