@@ -598,7 +598,6 @@ fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usi
 
 fn truncate_total_width(grid: &mut Grid, width: usize) {
     let points = decrease_total_width(grid, width);
-    println!("{points:?}");
 
     for ((row, col), width) in points {
         Truncate::new(width).change_cell(grid, row, col);

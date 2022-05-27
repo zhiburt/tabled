@@ -172,83 +172,34 @@ impl Grid {
         }
     }
 
-    fn set_span(&mut self, mut span: usize, row: usize, mut col: usize) {
-        if row >= self.count_rows() {
-            return;
-        }
-
-        // It's a default span so we can do nothing.
-        if span == 1 {
-            return;
-        }
-
-        if col == 0 && span == 0 {
-            return;
-        }
-
-        if col + span > self.count_columns() {
-            span = self.count_columns() - col;
-        }
-
-        if span == 0 && col > 0 {
-            match closest_visible(self, row, col - 1) {
-                Some(c) => {
-                    span += 1 + col - c;
-                    col = c;
-                }
-                None => return,
-            }
-        }
-
-        self.spans
-            .entry((col, col + span))
-            .and_modify(|rows| {
-                rows.insert(row);
-            })
-            .or_insert_with(|| {
-                let mut m = HashSet::with_capacity(1);
-                m.insert(row);
-                m
-            });
-
-        // it may happen that a colided span will be left so we checks if there's one
-        // like we insert (0, 3) but (0, 2) was in a set.
-        // such span makes no sense so we delete it.
-
-        for span in 0..span {
-            let mut do_remove = false;
-            if let Some(rows) = self.spans.get_mut(&(col, col + span)) {
-                rows.remove(&row);
-                do_remove = rows.is_empty();
-            }
-
-            if do_remove {
-                self.spans.remove(&(col, col + span));
-            }
-        }
-    }
-
+    /// Set a [Margin] value.
     pub fn margin(&mut self, margin: Margin) {
         self.margin = margin
     }
 
+    /// Returns a [Margin] value currently set.
     pub fn get_margin(&self) -> &Margin {
         &self.margin
     }
 
+    /// Clears all theme changes.
+    /// And sets it to default.
     pub fn clear_theme(&mut self) {
         self.theme = Theme::new();
         self.override_split_lines.clear();
     }
 
+    /// Set the [Borders] value as currect one.
     pub fn set_borders(&mut self, borders: Borders) {
         self.theme.borders = borders;
     }
 
+    /// Returns a current [Borders] structure.
     pub fn get_borders(&self) -> &Borders {
         &self.theme.borders
     }
 
+    /// Set border set a border value to all cells in [Entity].
     pub fn set_border(&mut self, entity: Entity, border: Border) {
         match entity {
             Entity::Global => {
@@ -274,6 +225,10 @@ impl Grid {
         }
     }
 
+    /// Set the border line by row index.
+    ///
+    /// Row `0` means the top row.
+    /// Row `grid.count_rows()` means the bottom row.
     pub fn set_split_line(&mut self, row: usize, line: Line) {
         self.theme.override_line(row, line)
     }
@@ -305,6 +260,7 @@ impl Grid {
         }
     }
 
+    /// Returns a border of a cell.
     pub fn get_border(&self, row: usize, col: usize) -> Border {
         let mut border = self
             .theme
@@ -389,29 +345,6 @@ impl Grid {
         self.styles.get(&Entity::Global).unwrap()
     }
 
-    fn style_mut(&mut self, entity: Entity) -> &mut Style {
-        if self.styles.contains_key(&entity) {
-            return self.styles.get_mut(&entity).unwrap();
-        }
-
-        let style = self.style(entity).clone();
-        self.styles.insert(entity, style);
-        self.styles.get_mut(&entity).unwrap()
-    }
-
-    fn remove_inherited_styles(&mut self, entity: Entity) {
-        match entity {
-            Entity::Global => self.styles.retain(|k, _| matches!(k, Entity::Global)),
-            Entity::Column(col) => self
-                .styles
-                .retain(move |k, _| !matches!(k, Entity::Cell(_, c) if *c == col)),
-            Entity::Row(row) => self
-                .styles
-                .retain(move |k, _| !matches!(k, Entity::Cell(r, _) if *r == row)),
-            Entity::Cell(_, _) => {}
-        }
-    }
-
     /// get_cell_content returns content without any style changes
     pub fn get_cell_content(&self, row: usize, column: usize) -> &str {
         self.cells[row][column].as_str()
@@ -427,35 +360,9 @@ impl Grid {
         self.size.1
     }
 
+    /// Set text value to all cells in [Entity].
     pub fn set_text(&mut self, entity: Entity, text: String) {
-        // let style = self.style(entity);
-        // replace_tab(&mut text, style.formatting.tab_width);
         self._set_text(entity, text);
-    }
-
-    fn _set_text(&mut self, entity: Entity, text: String) {
-        match entity {
-            Entity::Cell(row, col) => {
-                self.cells[row][col] = text;
-            }
-            Entity::Column(col) => {
-                for row in 0..self.count_rows() {
-                    self.cells[row][col] = text.clone();
-                }
-            }
-            Entity::Row(row) => {
-                for col in 0..self.count_columns() {
-                    self.cells[row][col] = text.clone();
-                }
-            }
-            Entity::Global => {
-                for row in 0..self.count_rows() {
-                    for col in 0..self.count_columns() {
-                        self.cells[row][col] = text.clone();
-                    }
-                }
-            }
-        }
     }
 
     /// Returns a new [Grid] that reflects a segment of the referenced [Grid]
@@ -525,6 +432,9 @@ impl Grid {
         total_width(self, &widths, &self.margin)
     }
 
+    /// Override the split line with a custom text.
+    ///
+    /// If borders are not set the string won't be rendered.
     pub fn override_split_line(&mut self, row: usize, line: impl Into<String>) {
         self.override_split_lines.insert(row, line.into());
     }
@@ -535,6 +445,7 @@ impl Grid {
         columns_width(self)
     }
 
+    /// This function returns a cells widths.
     pub fn build_cells_widths(&self) -> Vec<Vec<usize>> {
         let widths = columns_width(self);
 
@@ -557,6 +468,9 @@ impl Grid {
         cells_widths
     }
 
+    /// The function returns all cells by lines.
+    ///
+    /// It's considered that [string_width] on these cells will be the same as the one which will be used in rendering.
     pub fn collect_cells(&self) -> Vec<Vec<Vec<String>>> {
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
@@ -576,9 +490,114 @@ impl Grid {
         rows
     }
 
+    /// The function returns whether the cells will be rendered or it will be hidden by a cell with a span.
     pub fn is_cell_visible(&self, pos: Position) -> bool {
         let is_cell_overriden = is_cell_overriden(self, pos);
         !is_cell_overriden
+    }
+
+    fn set_span(&mut self, mut span: usize, row: usize, mut col: usize) {
+        if row >= self.count_rows() {
+            return;
+        }
+
+        // It's a default span so we can do nothing.
+        if span == 1 {
+            return;
+        }
+
+        if col == 0 && span == 0 {
+            return;
+        }
+
+        if col + span > self.count_columns() {
+            span = self.count_columns() - col;
+        }
+
+        if span == 0 && col > 0 {
+            match closest_visible(self, row, col - 1) {
+                Some(c) => {
+                    span += 1 + col - c;
+                    col = c;
+                }
+                None => return,
+            }
+        }
+
+        self.spans
+            .entry((col, col + span))
+            .and_modify(|rows| {
+                rows.insert(row);
+            })
+            .or_insert_with(|| {
+                let mut m = HashSet::with_capacity(1);
+                m.insert(row);
+                m
+            });
+
+        // it may happen that a colided span will be left so we checks if there's one
+        // like we insert (0, 3) but (0, 2) was in a set.
+        // such span makes no sense so we delete it.
+
+        for span in 0..span {
+            let mut do_remove = false;
+            if let Some(rows) = self.spans.get_mut(&(col, col + span)) {
+                rows.remove(&row);
+                do_remove = rows.is_empty();
+            }
+
+            if do_remove {
+                self.spans.remove(&(col, col + span));
+            }
+        }
+    }
+
+    fn _set_text(&mut self, entity: Entity, text: String) {
+        match entity {
+            Entity::Cell(row, col) => {
+                self.cells[row][col] = text;
+            }
+            Entity::Column(col) => {
+                for row in 0..self.count_rows() {
+                    self.cells[row][col] = text.clone();
+                }
+            }
+            Entity::Row(row) => {
+                for col in 0..self.count_columns() {
+                    self.cells[row][col] = text.clone();
+                }
+            }
+            Entity::Global => {
+                for row in 0..self.count_rows() {
+                    for col in 0..self.count_columns() {
+                        self.cells[row][col] = text.clone();
+                    }
+                }
+            }
+        }
+    }
+
+    fn style_mut(&mut self, entity: Entity) -> &mut Style {
+        if self.styles.contains_key(&entity) {
+            return self.styles.get_mut(&entity).unwrap();
+        }
+
+        let style = self.style(entity).clone();
+        self.styles.insert(entity, style);
+        self.styles.get_mut(&entity).unwrap()
+    }
+
+    fn remove_inherited_styles(&mut self, entity: Entity) {
+        match entity {
+            Entity::Global => self.styles.retain(|k, _| matches!(k, Entity::Global)),
+            Entity::Column(col) => self
+                .styles
+                .retain(move |k, _| !matches!(k, Entity::Cell(_, c) if *c == col)),
+            Entity::Row(row) => self
+                .styles
+                .retain(move |k, _| !matches!(k, Entity::Cell(r, _) if *r == row)),
+            Entity::Cell(_, _) => {}
+        }
     }
 }
 
@@ -767,10 +786,12 @@ impl Default for Indent {
 }
 
 impl Indent {
+    /// Creates a new Indent structure.
     pub fn new(size: usize, fill: char) -> Self {
         Self { size, fill }
     }
 
+    /// Creates a new Indent startucture with space (`' '`) as a fill character.
     pub fn spaced(size: usize) -> Self {
         Self {
             size,
@@ -1101,7 +1122,9 @@ fn line_with_width(
 
     Ok(())
 }
-
+/// strip cuts the string to a specific width.
+///
+/// Width is expected to be in bytes.
 pub fn strip(s: &str, width: usize) -> String {
     #[cfg(not(feature = "color"))]
     {
@@ -1119,11 +1142,13 @@ fn to_byte_length(s: &str, width: usize) -> usize {
     s.chars().take(width).map(|c| c.len_utf8()).sum::<usize>()
 }
 
+/// Returns a string width.
 #[cfg(not(feature = "color"))]
 pub fn string_width(text: &str) -> usize {
     unicode_width::UnicodeWidthStr::width(text)
 }
 
+/// Returns a string width.
 #[cfg(feature = "color")]
 pub fn string_width(text: &str) -> usize {
     let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
@@ -1131,6 +1156,7 @@ pub fn string_width(text: &str) -> usize {
     unicode_width::UnicodeWidthStr::width(s)
 }
 
+/// Returns a max string width of a line.
 #[cfg(not(feature = "color"))]
 pub fn string_width_multiline(text: &str) -> usize {
     text.lines()
@@ -1139,6 +1165,7 @@ pub fn string_width_multiline(text: &str) -> usize {
         .unwrap_or(0)
 }
 
+/// Returns a max string width of a line.
 #[cfg(feature = "color")]
 pub fn string_width_multiline(text: &str) -> usize {
     let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
@@ -1763,6 +1790,10 @@ enum InnerSymbol {
 pub struct Symbol(char);
 
 impl Symbol {
+    /// Creates a new [Symbol] from the String.
+    /// The string must contain 1 UTF-8 character and any list of Ansi sequences.
+    ///
+    /// If it contains more then 1 character `None` will be returned.
     #[cfg(feature = "color")]
     pub fn ansi(s: String) -> Option<Self> {
         let mut chars = s.chars();
@@ -1781,6 +1812,7 @@ impl Symbol {
         Some(Self(InnerSymbol::Ansi(s)))
     }
 
+    /// A function which create a [Symbol] from [char].
     pub const fn from_char(c: char) -> Self {
         #[cfg(feature = "color")]
         {
@@ -2028,7 +2060,7 @@ fn row_width_grid(grid: &Grid, widths: &[usize]) -> usize {
     row_width + count_borders
 }
 
-pub fn has_vertical(grid: &Grid, col: usize) -> bool {
+fn has_vertical(grid: &Grid, col: usize) -> bool {
     (0..grid.count_rows())
         .map(|row| grid.theme.get_vertical((row, col), grid.count_columns()))
         .any(|c| c.is_some())
