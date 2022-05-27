@@ -1644,7 +1644,6 @@ fn justify_width_max_test() {
     );
 }
 
-// fixme: We need to handle it somehow.
 #[test]
 fn max_width_when_cell_has_tabs() {
     let mut data = create_vector::<3, 3>();
@@ -1658,11 +1657,11 @@ fn max_width_when_cell_has_tabs() {
     assert_eq!(
         table,
         concat!(
-            "| N |  c   | c | c |\n",
-            "|---+------+---+---|\n",
-            "| 0 |  0   | 0 | 0 |\n",
-            "| 1 |      | 1 | 1 |\n",
-            "| 2 |  2   | 2 | 2 |\n",
+            "| N | c | c | c |\n",
+            "|---+---+---+---|\n",
+            "| 0 | 0 | 0 | 0 |\n",
+            "| 1 |   | 1 | 1 |\n",
+            "| 2 | 2 | 2 | 2 |\n",
         )
     );
 }
@@ -1680,11 +1679,11 @@ fn max_width_table_when_cell_has_tabs() {
     assert_eq!(
         table,
         concat!(
-            "|  |  co   |  |  |\n",
-            "|--+-------+--+--|\n",
-            "|  |  0-   |  |  |\n",
-            "|  |     H |  |  |\n",
-            "|  |  2-   |  |  |\n",
+            "|  | co |  |  |\n",
+            "|--+----+--+--|\n",
+            "|  | 0- |  |  |\n",
+            "|  |    |  |  |\n",
+            "|  | 2- |  |  |\n",
         )
     );
 }

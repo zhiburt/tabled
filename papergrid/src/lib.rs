@@ -350,6 +350,13 @@ impl Grid {
         self.cells[row][column].as_str()
     }
 
+    /// get_cell_content_styled returns content with style changes
+    pub fn get_cell_content_styled(&self, row: usize, column: usize) -> String {
+        let style = self.style(Entity::Cell(row, column));
+        let text = self.get_cell_content(row, column);
+        replace_tab(text, style.formatting.tab_width)
+    }
+
     /// Count_rows returns an amount of rows on the grid
     pub fn count_rows(&self) -> usize {
         self.size.0

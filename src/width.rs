@@ -129,8 +129,8 @@ where
     S: AsRef<str>,
 {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let content = grid.get_cell_content(row, column);
-        let striped_content = strip(content, self.width);
+        let content = grid.get_cell_content_styled(row, column);
+        let striped_content = strip(&content, self.width);
         if striped_content.len() < content.len() {
             let new_content = format!("{}{}", striped_content, self.suffix.as_ref());
             grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
@@ -177,13 +177,13 @@ impl Wrap {
 
 impl CellOption for Wrap {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let content = grid.get_cell_content(row, column);
+        let content = grid.get_cell_content_styled(row, column);
         let wrapped_content = if self.width == 0 {
             String::new()
         } else if !self.keep_words {
-            split(content, self.width)
+            split(&content, self.width)
         } else {
-            split_keeping_words(content, self.width)
+            split_keeping_words(&content, self.width)
         };
 
         grid.set(
@@ -443,8 +443,8 @@ impl MinWidth {
 
 impl CellOption for MinWidth {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let content = grid.get_cell_content(row, column);
-        let new_content = increase_width(content, self.size, self.fill);
+        let content = grid.get_cell_content_styled(row, column);
+        let new_content = increase_width(&content, self.size, self.fill);
         grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
     }
 }
@@ -589,8 +589,8 @@ fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usi
     }
 
     for ((row, col), inc) in increase_list {
-        let content = grid.get_cell_content(row, col);
-        let content_width = string_width_multiline(content);
+        let content = grid.get_cell_content_styled(row, col);
+        let content_width = string_width_multiline(&content);
 
         MinWidth::new(content_width + inc).change_cell(grid, row, col);
     }
@@ -778,8 +778,8 @@ fn grid_widths(grid: &Grid) -> Vec<Vec<usize>> {
         .map(|row| {
             (0..grid.count_columns())
                 .map(|col| {
-                    let content = grid.get_cell_content(row, col);
-                    string_width_multiline(content)
+                    let content = grid.get_cell_content_styled(row, col);
+                    string_width_multiline(&content)
                 })
                 .collect()
         })
