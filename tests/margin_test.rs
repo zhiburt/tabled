@@ -138,6 +138,7 @@ fn table_with_margin_and_max_width() {
 
     println!("{}", table);
 
+    assert_eq!(papergrid::string_width_multiline(&table), 50);
     assert_eq!(
         table,
         concat!(
@@ -150,7 +151,6 @@ fn table_with_margin_and_max_width() {
             "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
         )
     );
-    assert!(is_lines_equal(&table, 50))
 }
 
 #[test]

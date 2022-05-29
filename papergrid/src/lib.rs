@@ -1229,7 +1229,7 @@ fn is_simple_cell(grid: &Grid, pos: Position) -> bool {
     !is_spanned
 }
 
-fn count_borders_in_range(grid: &Grid, start: usize, end: usize) -> usize {
+pub fn count_borders_in_range(grid: &Grid, start: usize, end: usize) -> usize {
     (start..end)
         .skip(1)
         .filter(|&i| has_vertical(grid, i))
