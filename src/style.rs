@@ -387,7 +387,7 @@ struct StyleSettings {
     frame: Frame,
     horizontal: Line,
     header: Line,
-    vertical: Option<char>,
+    vertical: Option<Symbol>,
 }
 
 impl StyleSettings {
@@ -396,7 +396,7 @@ impl StyleSettings {
             frame,
             horizontal,
             header,
-            vertical,
+            vertical: char_to_symbol(vertical),
         }
     }
 
@@ -408,16 +408,16 @@ impl StyleSettings {
 /// Line represents a horizontal line on a [Table].
 #[derive(Debug, Clone, Default)]
 struct Line {
-    main: Option<char>,
-    intersection: Option<char>,
+    main: Option<Symbol>,
+    intersection: Option<Symbol>,
 }
 
 impl Line {
     /// Create a new line.
     const fn new(main: char, intersection: char) -> Self {
         Self {
-            main: Some(main),
-            intersection: Some(intersection),
+            main: Some(Symbol::from_char(main)),
+            intersection: Some(Symbol::from_char(intersection)),
         }
     }
 
@@ -441,10 +441,10 @@ struct Frame {
     bottom: Line,
     left: Line,
     right: Line,
-    corner_top_left: Option<char>,
-    corner_top_right: Option<char>,
-    corner_bottom_left: Option<char>,
-    corner_bottom_right: Option<char>,
+    corner_top_left: Option<Symbol>,
+    corner_top_right: Option<Symbol>,
+    corner_bottom_left: Option<Symbol>,
+    corner_bottom_right: Option<Symbol>,
 }
 
 impl Frame {
@@ -461,10 +461,10 @@ impl Frame {
             bottom,
             left,
             right,
-            corner_top_left: Some(top_left),
-            corner_top_right: Some(top_right),
-            corner_bottom_left: Some(bottom_left),
-            corner_bottom_right: Some(bottom_right),
+            corner_top_left: Some(Symbol::from_char(top_left)),
+            corner_top_right: Some(Symbol::from_char(top_right)),
+            corner_bottom_left: Some(Symbol::from_char(bottom_left)),
+            corner_bottom_right: Some(Symbol::from_char(bottom_right)),
         }
     }
 
@@ -500,21 +500,21 @@ impl Frame {
 impl TableOption for StyleSettings {
     fn change(&mut self, grid: &mut Grid) {
         let borders = Borders {
-            top: self.frame.top.main.map(Symbol::from_char),
-            top_intersection: self.frame.top.intersection.map(Symbol::from_char),
-            bottom: self.frame.bottom.main.map(Symbol::from_char),
-            bottom_intersection: self.frame.bottom.intersection.map(Symbol::from_char),
-            horizontal_left: self.frame.left.intersection.map(Symbol::from_char),
-            horizontal_right: self.frame.right.intersection.map(Symbol::from_char),
-            top_left: self.frame.corner_top_left.map(Symbol::from_char),
-            top_right: self.frame.corner_top_right.map(Symbol::from_char),
-            bottom_left: self.frame.corner_bottom_left.map(Symbol::from_char),
-            bottom_right: self.frame.corner_bottom_right.map(Symbol::from_char),
-            horizontal: self.horizontal.main.map(Symbol::from_char),
-            intersection: self.horizontal.intersection.map(Symbol::from_char),
-            vertical_left: self.frame.left.main.map(Symbol::from_char),
-            vertical_intersection: self.vertical.map(Symbol::from_char),
-            vertical_right: self.frame.right.main.map(Symbol::from_char),
+            top: self.frame.top.main.clone(),
+            top_intersection: self.frame.top.intersection.clone(),
+            bottom: self.frame.bottom.main.clone(),
+            bottom_intersection: self.frame.bottom.intersection.clone(),
+            horizontal_left: self.frame.left.intersection.clone(),
+            horizontal_right: self.frame.right.intersection.clone(),
+            top_left: self.frame.corner_top_left.clone(),
+            top_right: self.frame.corner_top_right.clone(),
+            bottom_left: self.frame.corner_bottom_left.clone(),
+            bottom_right: self.frame.corner_bottom_right.clone(),
+            horizontal: self.horizontal.main.clone(),
+            intersection: self.horizontal.intersection.clone(),
+            vertical_left: self.frame.left.main.clone(),
+            vertical_intersection: self.vertical.clone(),
+            vertical_right: self.frame.right.main.clone(),
         };
 
         grid.clear_theme();
@@ -524,8 +524,8 @@ impl TableOption for StyleSettings {
             grid.set_split_line(
                 1,
                 papergrid::Line {
-                    horizontal: self.header.main.map(Symbol::from_char),
-                    intersection: self.header.intersection.map(Symbol::from_char),
+                    horizontal: self.header.main.clone(),
+                    intersection: self.header.intersection.clone(),
                     ..Default::default()
                 },
             );
@@ -663,16 +663,16 @@ impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
     ///     )
     /// );
     /// ```
-    pub const fn frame(&self) -> Border {
+    pub fn frame(&self) -> Border {
         Border {
-            top: char_to_symbol(self.inner.frame.top.main),
-            bottom: char_to_symbol(self.inner.frame.bottom.main),
-            left: char_to_symbol(self.inner.frame.left.main),
-            right: char_to_symbol(self.inner.frame.right.main),
-            left_top_corner: char_to_symbol(self.inner.frame.corner_top_left),
-            left_bottom_corner: char_to_symbol(self.inner.frame.corner_bottom_left),
-            right_top_corner: char_to_symbol(self.inner.frame.corner_top_right),
-            right_bottom_corner: char_to_symbol(self.inner.frame.corner_bottom_right),
+            top: self.inner.frame.top.main.clone(),
+            bottom: self.inner.frame.bottom.main.clone(),
+            left: self.inner.frame.left.main.clone(),
+            right: self.inner.frame.right.main.clone(),
+            left_top_corner: self.inner.frame.corner_top_left.clone(),
+            left_bottom_corner: self.inner.frame.corner_bottom_left.clone(),
+            right_top_corner: self.inner.frame.corner_top_right.clone(),
+            right_bottom_corner: self.inner.frame.corner_bottom_right.clone(),
         }
     }
 }
@@ -688,17 +688,21 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// Sets a top border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn top(self, c: char) -> CustomStyle<On, B, L, R, IH, IV, H> {
+    pub fn top<S>(self, c: S) -> CustomStyle<On, B, L, R, IH, IV, H>
+    where
+        S: Into<Symbol>,
+    {
+        let c = c.into();
         let mut style = self.inner;
 
-        style.frame.top.main = Some(c);
+        style.frame.top.main = Some(c.clone());
 
         if !style.frame.left.is_empty() {
-            style.frame.corner_top_left = Some(c);
+            style.frame.corner_top_left = Some(c.clone());
         }
 
         if !style.frame.right.is_empty() {
-            style.frame.corner_top_right = Some(c);
+            style.frame.corner_top_right = Some(c.clone());
         }
 
         if style.has_vertical() {
@@ -711,16 +715,20 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// Sets a bottom border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn bottom(self, c: char) -> CustomStyle<T, On, L, R, IH, IV, H> {
+    pub fn bottom<S>(self, c: S) -> CustomStyle<T, On, L, R, IH, IV, H>
+    where
+        S: Into<Symbol>,
+    {
+        let c = c.into();
         let mut style = self.inner;
-        style.frame.bottom.main = Some(c);
+        style.frame.bottom.main = Some(c.clone());
 
         if !style.frame.left.is_empty() {
-            style.frame.corner_bottom_left = Some(c);
+            style.frame.corner_bottom_left = Some(c.clone());
         }
 
         if !style.frame.right.is_empty() {
-            style.frame.corner_bottom_right = Some(c);
+            style.frame.corner_bottom_right = Some(c.clone());
         }
 
         if style.has_vertical() {
@@ -733,16 +741,20 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// Sets a left border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn left(self, c: char) -> CustomStyle<T, B, On, R, IH, IV, H> {
+    pub fn left<S>(self, c: S) -> CustomStyle<T, B, On, R, IH, IV, H>
+    where
+        S: Into<Symbol>,
+    {
+        let c = c.into();
         let mut style = self.inner;
-        style.frame.left.main = Some(c);
+        style.frame.left.main = Some(c.clone());
 
         if !style.frame.top.is_empty() {
-            style.frame.corner_top_left = Some(c);
+            style.frame.corner_top_left = Some(c.clone());
         }
 
         if !style.frame.bottom.is_empty() {
-            style.frame.corner_bottom_left = Some(c);
+            style.frame.corner_bottom_left = Some(c.clone());
         }
 
         if !style.horizontal.is_empty() {
@@ -755,16 +767,20 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// Sets a right border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn right(self, c: char) -> CustomStyle<T, B, L, On, IH, IV, H> {
+    pub fn right<S>(self, c: S) -> CustomStyle<T, B, L, On, IH, IV, H>
+    where
+        S: Into<Symbol>,
+    {
+        let c = c.into();
         let mut style = self.inner;
-        style.frame.right.main = Some(c);
+        style.frame.right.main = Some(c.clone());
 
         if !style.frame.top.is_empty() {
-            style.frame.corner_top_right = Some(c);
+            style.frame.corner_top_right = Some(c.clone());
         }
 
         if !style.frame.bottom.is_empty() {
-            style.frame.corner_bottom_right = Some(c);
+            style.frame.corner_bottom_right = Some(c.clone());
         }
 
         if !style.horizontal.is_empty() {
@@ -780,20 +796,24 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// It must be set via its own method [Self::header].
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn horizontal(self, c: char) -> CustomStyle<T, B, L, R, On, IV, H> {
+    pub fn horizontal<S>(self, c: S) -> CustomStyle<T, B, L, R, On, IV, H>
+    where
+        S: Into<Symbol>,
+    {
+        let c = c.into();
         let mut style = self.inner;
-        style.horizontal.main = Some(c);
+        style.horizontal.main = Some(c.clone());
 
         if style.horizontal.intersection.is_some() {
-            style.horizontal.intersection = Some(c);
+            style.horizontal.intersection = Some(c.clone());
         }
 
         if style.vertical.is_some() {
-            style.horizontal.intersection = Some(c);
+            style.horizontal.intersection = Some(c.clone());
         }
 
         if !style.frame.left.is_empty() {
-            style.frame.left.intersection = Some(c);
+            style.frame.left.intersection = Some(c.clone());
         }
 
         if !style.frame.right.is_empty() {
@@ -806,20 +826,24 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// Sets a vertical split line.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn vertical(self, c: char) -> CustomStyle<T, B, L, R, IH, On, H> {
+    pub fn vertical<S>(self, c: S) -> CustomStyle<T, B, L, R, IH, On, H>
+    where
+        S: Into<Symbol>,
+    {
+        let c = c.into();
         let mut style = self.inner;
-        style.vertical = Some(c);
+        style.vertical = Some(c.clone());
 
         if !style.horizontal.is_empty() {
-            style.horizontal.intersection = Some(c);
+            style.horizontal.intersection = Some(c.clone());
         }
 
         if !style.header.is_empty() {
-            style.header.intersection = Some(c);
+            style.header.intersection = Some(c.clone());
         }
 
         if !style.frame.top.is_empty() {
-            style.frame.top.intersection = Some(c);
+            style.frame.top.intersection = Some(c.clone());
         }
 
         if !style.frame.bottom.is_empty() {
@@ -832,9 +856,13 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
     /// Sets a 1st horizontal split line.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn header(self, c: char) -> CustomStyle<T, B, L, R, IH, IV, On> {
+    pub fn header<S>(self, c: S) -> CustomStyle<T, B, L, R, IH, IV, On>
+    where
+        S: Into<Symbol>,
+    {
+        let c = c.into();
         let mut style = self.inner;
-        style.header.main = Some(c);
+        style.header.main = Some(c.clone());
 
         if style.vertical.is_some() {
             style.header.intersection = Some(c);
@@ -846,9 +874,12 @@ impl<T, B, L, R, IH, IV, H> CustomStyle<T, B, L, R, IH, IV, H> {
 
 impl<B, R, IH, IV, H> CustomStyle<On, B, On, R, IH, IV, H> {
     /// Sets a top left corner.
-    pub const fn top_left_corner(self, c: char) -> Self {
+    pub fn top_left_corner<S>(self, c: S) -> Self
+    where
+        S: Into<Symbol>,
+    {
         let mut style = self.inner;
-        style.frame.corner_top_left = Some(c);
+        style.frame.corner_top_left = Some(c.into());
 
         CustomStyle::new(style)
     }
@@ -856,9 +887,12 @@ impl<B, R, IH, IV, H> CustomStyle<On, B, On, R, IH, IV, H> {
 
 impl<B, L, IH, IV, H> CustomStyle<On, B, L, On, IH, IV, H> {
     /// Sets a top right corner.
-    pub const fn top_right_corner(self, c: char) -> Self {
+    pub fn top_right_corner<S>(self, c: S) -> Self
+    where
+        S: Into<Symbol>,
+    {
         let mut style = self.inner;
-        style.frame.corner_top_right = Some(c);
+        style.frame.corner_top_right = Some(c.into());
 
         CustomStyle::new(style)
     }
@@ -866,9 +900,12 @@ impl<B, L, IH, IV, H> CustomStyle<On, B, L, On, IH, IV, H> {
 
 impl<T, L, IH, IV, H> CustomStyle<T, On, L, On, IH, IV, H> {
     /// Sets a bottom right corner.
-    pub const fn bottom_right_corner(self, c: char) -> Self {
+    pub fn bottom_right_corner<S>(self, c: S) -> Self
+    where
+        S: Into<Symbol>,
+    {
         let mut style = self.inner;
-        style.frame.corner_bottom_right = Some(c);
+        style.frame.corner_bottom_right = Some(c.into());
 
         CustomStyle::new(style)
     }
@@ -876,9 +913,12 @@ impl<T, L, IH, IV, H> CustomStyle<T, On, L, On, IH, IV, H> {
 
 impl<T, R, IH, IV, H> CustomStyle<T, On, On, R, IH, IV, H> {
     /// Sets a bottom left corner.
-    pub const fn bottom_left_corner(self, c: char) -> Self {
+    pub fn bottom_left_corner<S>(self, c: S) -> Self
+    where
+        S: Into<Symbol>,
+    {
         let mut style = self.inner;
-        style.frame.corner_bottom_left = Some(c);
+        style.frame.corner_bottom_left = Some(c.into());
 
         CustomStyle::new(style)
     }
@@ -886,9 +926,12 @@ impl<T, R, IH, IV, H> CustomStyle<T, On, On, R, IH, IV, H> {
 
 impl<T, B, R, IV, H> CustomStyle<T, B, On, R, On, IV, H> {
     /// Sets a left intersection char.
-    pub const fn left_intersection(self, c: char) -> Self {
+    pub fn left_intersection<I>(self, c: I) -> Self
+    where
+        I: Into<Symbol>,
+    {
         let mut style = self.inner;
-        style.frame.left.intersection = Some(c);
+        style.frame.left.intersection = Some(c.into());
 
         CustomStyle::new(style)
     }
@@ -896,9 +939,12 @@ impl<T, B, R, IV, H> CustomStyle<T, B, On, R, On, IV, H> {
 
 impl<T, B, L, IV, H> CustomStyle<T, B, L, On, On, IV, H> {
     /// Sets a right intersection char.
-    pub const fn right_intersection(self, c: char) -> Self {
+    pub fn right_intersection<S>(self, c: S) -> Self
+    where
+        S: Into<Symbol>,
+    {
         let mut style = self.inner;
-        style.frame.right.intersection = Some(c);
+        style.frame.right.intersection = Some(c.into());
 
         CustomStyle::new(style)
     }
@@ -906,9 +952,12 @@ impl<T, B, L, IV, H> CustomStyle<T, B, L, On, On, IV, H> {
 
 impl<B, L, R, IH, H> CustomStyle<On, B, L, R, IH, On, H> {
     /// Sets a top intersection char.
-    pub const fn top_intersection(self, c: char) -> Self {
+    pub fn top_intersection<S>(self, c: S) -> Self
+    where
+        S: Into<Symbol>,
+    {
         let mut style = self.inner;
-        style.frame.top.intersection = Some(c);
+        style.frame.top.intersection = Some(c.into());
 
         CustomStyle::new(style)
     }
@@ -916,9 +965,12 @@ impl<B, L, R, IH, H> CustomStyle<On, B, L, R, IH, On, H> {
 
 impl<T, L, R, IH, H> CustomStyle<T, On, L, R, IH, On, H> {
     /// Sets a bottom intersection char.
-    pub const fn bottom_intersection(self, c: char) -> Self {
+    pub fn bottom_intersection<S>(self, c: S) -> Self
+    where
+        S: Into<Symbol>,
+    {
         let mut style = self.inner;
-        style.frame.bottom.intersection = Some(c);
+        style.frame.bottom.intersection = Some(c.into());
 
         CustomStyle::new(style)
     }
@@ -927,23 +979,29 @@ impl<T, L, R, IH, H> CustomStyle<T, On, L, R, IH, On, H> {
 impl<T, B, L, R, H> CustomStyle<T, B, L, R, On, On, H> {
     /// Sets an inner intersection char.
     /// A char between horizontal and vertical split lines.
-    pub const fn inner_intersection(mut self, c: char) -> Self {
-        self.inner.horizontal.intersection = Some(c);
+    pub fn inner_intersection<S>(mut self, c: S) -> Self
+    where
+        S: Into<Symbol>,
+    {
+        self.inner.horizontal.intersection = Some(c.into());
         CustomStyle::new(self.inner)
     }
 }
 
 impl<T, B, L, R, IH> CustomStyle<T, B, L, R, IH, On, On> {
     /// Sets an intersection char of a 1st horizontal split line.
-    pub const fn header_intersection(mut self, c: char) -> Self {
-        self.inner.header.intersection = Some(c);
+    pub fn header_intersection<S>(mut self, c: S) -> Self
+    where
+        S: Into<Symbol>,
+    {
+        self.inner.header.intersection = Some(c.into());
         CustomStyle::new(self.inner)
     }
 }
 
 impl<B, L, R, IH, IV, H> CustomStyle<On, B, L, R, IH, IV, H> {
     /// Removes top border.
-    pub const fn top_off(mut self) -> CustomStyle<(), B, L, R, IH, IV, H> {
+    pub fn top_off(mut self) -> CustomStyle<(), B, L, R, IH, IV, H> {
         self.inner.frame.top = Line::empty();
         self.inner.frame.corner_top_left = None;
         self.inner.frame.corner_top_right = None;
@@ -954,7 +1012,7 @@ impl<B, L, R, IH, IV, H> CustomStyle<On, B, L, R, IH, IV, H> {
 
 impl<T, L, R, IH, IV, H> CustomStyle<T, On, L, R, IH, IV, H> {
     /// Removes bottom border.
-    pub const fn bottom_off(mut self) -> CustomStyle<T, (), L, R, IH, IV, H> {
+    pub fn bottom_off(mut self) -> CustomStyle<T, (), L, R, IH, IV, H> {
         self.inner.frame.bottom = Line::empty();
         self.inner.frame.corner_bottom_left = None;
         self.inner.frame.corner_bottom_right = None;
@@ -965,7 +1023,7 @@ impl<T, L, R, IH, IV, H> CustomStyle<T, On, L, R, IH, IV, H> {
 
 impl<T, B, R, IH, IV, H> CustomStyle<T, B, On, R, IH, IV, H> {
     /// Removes left border.
-    pub const fn left_off(mut self) -> CustomStyle<T, B, (), R, IH, IV, H> {
+    pub fn left_off(mut self) -> CustomStyle<T, B, (), R, IH, IV, H> {
         self.inner.frame.left = Line::empty();
         self.inner.frame.corner_top_left = None;
         self.inner.frame.corner_bottom_left = None;
@@ -976,7 +1034,7 @@ impl<T, B, R, IH, IV, H> CustomStyle<T, B, On, R, IH, IV, H> {
 
 impl<T, B, L, IH, IV, H> CustomStyle<T, B, L, On, IH, IV, H> {
     /// Removes right border.
-    pub const fn right_off(mut self) -> CustomStyle<T, B, L, (), IH, IV, H> {
+    pub fn right_off(mut self) -> CustomStyle<T, B, L, (), IH, IV, H> {
         self.inner.frame.right = Line::empty();
         self.inner.frame.corner_top_right = None;
         self.inner.frame.corner_bottom_right = None;
@@ -989,7 +1047,7 @@ impl<T, B, L, R, IV, H> CustomStyle<T, B, L, R, On, IV, H> {
     /// Removes horizontal split lines.
     ///
     /// Not including 1st split line.
-    pub const fn horizontal_off(mut self) -> CustomStyle<T, B, L, R, (), IV, H> {
+    pub fn horizontal_off(mut self) -> CustomStyle<T, B, L, R, (), IV, H> {
         self.inner.horizontal = Line::empty();
 
         CustomStyle::new(self.inner)
@@ -998,7 +1056,7 @@ impl<T, B, L, R, IV, H> CustomStyle<T, B, L, R, On, IV, H> {
 
 impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, On, H> {
     /// Removes vertical split lines.
-    pub const fn vertical_off(mut self) -> CustomStyle<T, B, L, R, IH, (), H> {
+    pub fn vertical_off(mut self) -> CustomStyle<T, B, L, R, IH, (), H> {
         self.inner.vertical = None;
         self.inner.horizontal.intersection = None;
         self.inner.header.intersection = None;
@@ -1011,7 +1069,7 @@ impl<T, B, L, R, IH, H> CustomStyle<T, B, L, R, IH, On, H> {
 
 impl<T, B, L, R, IH, IV> CustomStyle<T, B, L, R, IH, IV, On> {
     /// Removes 1st horizontal split line.
-    pub const fn header_off(mut self) -> CustomStyle<T, B, L, R, IH, IV, ()> {
+    pub fn header_off(mut self) -> CustomStyle<T, B, L, R, IH, IV, ()> {
         self.inner.header = Line::empty();
         CustomStyle::new(self.inner)
     }
