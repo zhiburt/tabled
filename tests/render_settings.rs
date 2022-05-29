@@ -22,24 +22,25 @@ fn alignment_per_line() {
         )
         .to_string();
 
-    let expected = concat!(
-        "         N | column 0 | column 1 | column 2 \n",
-        "-----------+----------+----------+----------\n",
-        "         0 |      0-0 |      0-1 |      0-2 \n",
-        "       asd |      1-0 |      1-1 |      1-2 \n",
-        "  21213123 |          |          |          \n",
-        "           |          |          |          \n",
-        "    asdasd |          |          |          \n",
-        "           |          |          |          \n",
-        "         2 |      2-0 | https:// |      2-2 \n",
-        "           |          |      www |          \n",
-        "           |          |        . |          \n",
-        "           |          |   redhat |          \n",
-        "           |          |     .com |          \n",
-        "           |          |      /en |          \n",
+    assert_eq!(
+        table,
+        concat!(
+            "         N | column 0 | column 1 | column 2 \n",
+            "-----------+----------+----------+----------\n",
+            "         0 |      0-0 |      0-1 |      0-2 \n",
+            "       asd |      1-0 |      1-1 |      1-2 \n",
+            "  21213123 |          |          |          \n",
+            "           |          |          |          \n",
+            "    asdasd |          |          |          \n",
+            "           |          |          |          \n",
+            "         2 |      2-0 | https:// |      2-2 \n",
+            "           |          |      www |          \n",
+            "           |          |        . |          \n",
+            "           |          |   redhat |          \n",
+            "           |          |     .com |          \n",
+            "           |          |      /en |          \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -58,24 +59,25 @@ fn alignment_per_line_with_trim() {
         )
         .to_string();
 
-    let expected = concat!(
-        "         N | column 0 | column 1 | column 2 \n",
-        "-----------+----------+----------+----------\n",
-        "         0 |      0-0 |      0-1 |      0-2 \n",
-        "       asd |      1-0 |      1-1 |      1-2 \n",
-        "  21213123 |          |          |          \n",
-        "           |          |          |          \n",
-        "    asdasd |          |          |          \n",
-        "           |          |          |          \n",
-        "         2 |      2-0 | https:// |      2-2 \n",
-        "           |          |      www |          \n",
-        "           |          |        . |          \n",
-        "           |          |   redhat |          \n",
-        "           |          |     .com |          \n",
-        "           |          |      /en |          \n",
+    assert_eq!(
+        table,
+        concat!(
+            "         N | column 0 | column 1 | column 2 \n",
+            "-----------+----------+----------+----------\n",
+            "         0 |      0-0 |      0-1 |      0-2 \n",
+            "       asd |      1-0 |      1-1 |      1-2 \n",
+            "  21213123 |          |          |          \n",
+            "           |          |          |          \n",
+            "    asdasd |          |          |          \n",
+            "           |          |          |          \n",
+            "         2 |      2-0 | https:// |      2-2 \n",
+            "           |          |      www |          \n",
+            "           |          |        . |          \n",
+            "           |          |   redhat |          \n",
+            "           |          |     .com |          \n",
+            "           |          |      /en |          \n",
+        )
     );
-
-    assert_eq!(table, expected);
 
     let mut data = create_vector::<3, 3>();
     data[1][0] = String::from("\n\n\nasd\n21213123   asdasd\n\n\n");
@@ -92,26 +94,27 @@ fn alignment_per_line_with_trim() {
         )
         .to_string();
 
-    let expected = concat!(
-        " N                 | column 0 | column 1 | column 2 \n",
-        "-------------------+----------+----------+----------\n",
-        " 0                 | 0-0      | 0-1      | 0-2      \n",
-        "                   |          |          |          \n",
-        "                   |          |          |          \n",
-        " asd               |          |          |          \n",
-        " 21213123   asdasd | 1-0      | 1-1      | 1-2      \n",
-        "                   |          |          |          \n",
-        "                   |          |          |          \n",
-        "                   |          |          |          \n",
-        "                   |          | https:// |          \n",
-        "                   |          | www      |          \n",
-        " 2                 | 2-0      | .        | 2-2      \n",
-        "                   |          | redhat   |          \n",
-        "                   |          | .com     |          \n",
-        "                   |          | /en      |          \n",
+    assert_eq!(
+        table,
+        concat!(
+            " N                 | column 0 | column 1 | column 2 \n",
+            "-------------------+----------+----------+----------\n",
+            " 0                 | 0-0      | 0-1      | 0-2      \n",
+            "                   |          |          |          \n",
+            "                   |          |          |          \n",
+            " asd               |          |          |          \n",
+            " 21213123   asdasd | 1-0      | 1-1      | 1-2      \n",
+            "                   |          |          |          \n",
+            "                   |          |          |          \n",
+            "                   |          |          |          \n",
+            "                   |          | https:// |          \n",
+            "                   |          | www      |          \n",
+            " 2                 | 2-0      | .        | 2-2      \n",
+            "                   |          | redhat   |          \n",
+            "                   |          | .com     |          \n",
+            "                   |          | /en      |          \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -122,20 +125,21 @@ fn tab_size_test() {
 
     let mut table = Table::new(&data).with(Style::psql());
 
-    let expected = concat!(
-        "          N           | column 0 |   column 1   | column 2 \n",
-        "----------------------+----------+--------------+----------\n",
-        "          0           |   0-0    |     0-1      |   0-2    \n",
-        " 123    123    asdasd |   1-0    |     1-1      |   1-2    \n",
-        "          2           |   2-0    | htt    ps:// |   2-2    \n",
-        "                      |          | www          |          \n",
-        "                      |          | .            |          \n",
-        "                      |          | red    hat   |          \n",
-        "                      |          | .c    om     |          \n",
-        "                      |          | /en          |          \n",
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "          N           | column 0 |   column 1   | column 2 \n",
+            "----------------------+----------+--------------+----------\n",
+            "          0           |   0-0    |     0-1      |   0-2    \n",
+            " 123    123    asdasd |   1-0    |     1-1      |   1-2    \n",
+            "          2           |   2-0    | htt    ps:// |   2-2    \n",
+            "                      |          | www          |          \n",
+            "                      |          | .            |          \n",
+            "                      |          | red    hat   |          \n",
+            "                      |          | .c    om     |          \n",
+            "                      |          | /en          |          \n",
+        )
     );
-
-    assert_eq!(table.to_string(), expected);
 
     table = table.with(
         Modify::new(Segment::all())
@@ -143,20 +147,21 @@ fn tab_size_test() {
             .with(TabSize(2)),
     );
 
-    let expected = concat!(
-        "                N | column 0 |   column 1 | column 2 \n",
-        "------------------+----------+------------+----------\n",
-        "                0 |      0-0 |        0-1 |      0-2 \n",
-        " 123  123  asdasd |      1-0 |        1-1 |      1-2 \n",
-        "                2 |      2-0 | htt  ps:// |      2-2 \n",
-        "                  |          | www        |          \n",
-        "                  |          | .          |          \n",
-        "                  |          | red  hat   |          \n",
-        "                  |          | .c  om     |          \n",
-        "                  |          | /en        |          \n",
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "                N | column 0 |   column 1 | column 2 \n",
+            "------------------+----------+------------+----------\n",
+            "                0 |      0-0 |        0-1 |      0-2 \n",
+            " 123  123  asdasd |      1-0 |        1-1 |      1-2 \n",
+            "                2 |      2-0 | htt  ps:// |      2-2 \n",
+            "                  |          | www        |          \n",
+            "                  |          | .          |          \n",
+            "                  |          | red  hat   |          \n",
+            "                  |          | .c  om     |          \n",
+            "                  |          | /en        |          \n",
+        )
     );
-
-    assert_eq!(table.to_string(), expected);
 
     table = table.with(
         Modify::new(Segment::all())
@@ -164,20 +169,21 @@ fn tab_size_test() {
             .with(TabSize(0)),
     );
 
-    let expected = concat!(
-        "            N | column 0 | column 1 | column 2 \n",
-        "--------------+----------+----------+----------\n",
-        "            0 |      0-0 |      0-1 |      0-2 \n",
-        " 123123asdasd |      1-0 |      1-1 |      1-2 \n",
-        "            2 |      2-0 | https:// |      2-2 \n",
-        "              |          | www      |          \n",
-        "              |          | .        |          \n",
-        "              |          | redhat   |          \n",
-        "              |          | .com     |          \n",
-        "              |          | /en      |          \n",
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "            N | column 0 | column 1 | column 2 \n",
+            "--------------+----------+----------+----------\n",
+            "            0 |      0-0 |      0-1 |      0-2 \n",
+            " 123123asdasd |      1-0 |      1-1 |      1-2 \n",
+            "            2 |      2-0 | https:// |      2-2 \n",
+            "              |          | www      |          \n",
+            "              |          | .        |          \n",
+            "              |          | redhat   |          \n",
+            "              |          | .com     |          \n",
+            "              |          | /en      |          \n",
+        )
     );
-
-    assert_eq!(table.to_string(), expected);
 }
 
 #[test]

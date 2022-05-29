@@ -194,9 +194,7 @@ fn max_width_wrapped_keep_words() {
         .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(10).keep_words()))
         .to_string();
 
-    let expected = concat!("| &str |\n", "|------|\n", "| this |\n",);
-
-    assert_eq!(table, expected);
+    assert_eq!(table, concat!("| &str |\n", "|------|\n", "| this |\n"));
     assert!(is_lines_equal(&table, 8));
 }
 
@@ -212,14 +210,12 @@ fn max_width_wrapped_keep_words_color() {
         .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
 
-    let expected = concat!(
+    assert_eq!(table, concat!(
         "| String            |\n",
         "|-------------------|\n",
         "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |\n",
         "| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntence\u{1b}[39m\u{1b}[49m          |\n",
-    );
-
-    assert_eq!(table, expected);
+    ));
 
     let data = vec!["this is a long  sentence".on_black().green().to_string()];
     let table = Table::new(&data)
@@ -228,14 +224,12 @@ fn max_width_wrapped_keep_words_color() {
         .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
 
-    let expected = concat!(
+    assert_eq!(table, concat!(
         "| String            |\n",
         "|-------------------|\n",
         "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m  |\n",
         "| \u{1b}[32m\u{1b}[40ms\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m          |\n",
-    );
-
-    assert_eq!(table, expected);
+    ));
 
     let data = vec!["this is a long   sentence".on_black().green().to_string()];
     let table = Table::new(&data)
@@ -296,15 +290,16 @@ fn max_width_wrapped_keep_words_long_word() {
         .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
 
-    let expected = concat!(
-        "| &str              |\n",
-        "|-------------------|\n",
-        "| this is a long    |\n",
-        "| sentencesentences |\n",
-        "| entence           |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| &str              |\n",
+            "|-------------------|\n",
+            "| this is a long    |\n",
+            "| sentencesentences |\n",
+            "| entence           |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[cfg(feature = "color")]
@@ -322,15 +317,13 @@ fn max_width_wrapped_keep_words_long_word_color() {
         .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
         .to_string();
 
-    let expected = concat!(
+    assert_eq!(table, concat!(
         "| String            |\n",
         "|-------------------|\n",
         "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |\n",
         "| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntencesentences\u{1b}[39m\u{1b}[49m |\n",
         "| \u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m           |\n",
-    );
-
-    assert_eq!(table, expected);
+    ));
 }
 
 #[cfg(feature = "color")]
@@ -344,26 +337,27 @@ fn max_width_wrapped_collored() {
         "asdasd".on_black().green().to_string(),
     ];
 
-    let expected = concat!(
-        "| St |\n",
-        "| ri |\n",
-        "| ng |\n",
-        "|----|\n",
-        "| \u{1b}[31mas\u{1b}[39m |\n",
-        "| \u{1b}[31md\u{1b}[39m  |\n",
-        "| \u{1b}[34mzx\u{1b}[39m |\n",
-        "| \u{1b}[34mc2\u{1b}[39m |\n",
-        "| \u{1b}[32m\u{1b}[40mas\u{1b}[39m\u{1b}[49m |\n",
-        "| \u{1b}[32m\u{1b}[40mda\u{1b}[39m\u{1b}[49m |\n",
-        "| \u{1b}[32m\u{1b}[40msd\u{1b}[39m\u{1b}[49m |\n",
-    );
-
     let table = Table::new(data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(2)))
         .to_string();
 
-    assert_eq!(expected, table);
+    assert_eq!(
+        table,
+        concat!(
+            "| St |\n",
+            "| ri |\n",
+            "| ng |\n",
+            "|----|\n",
+            "| \u{1b}[31mas\u{1b}[39m |\n",
+            "| \u{1b}[31md\u{1b}[39m  |\n",
+            "| \u{1b}[34mzx\u{1b}[39m |\n",
+            "| \u{1b}[34mc2\u{1b}[39m |\n",
+            "| \u{1b}[32m\u{1b}[40mas\u{1b}[39m\u{1b}[49m |\n",
+            "| \u{1b}[32m\u{1b}[40mda\u{1b}[39m\u{1b}[49m |\n",
+            "| \u{1b}[32m\u{1b}[40msd\u{1b}[39m\u{1b}[49m |\n",
+        )
+    );
 }
 
 #[test]
@@ -374,35 +368,37 @@ fn dont_change_content_if_width_is_less_then_max_width() {
         .with(Modify::new(Segment::all()).with(MaxWidth::truncating(1000).suffix("...")))
         .to_string();
 
-    let expected = concat!(
-        "| N | column 0 | column 1 | column 2 |\n",
-        "|---+----------+----------+----------|\n",
-        "| 0 |   0-0    |   0-1    |   0-2    |\n",
-        "| 1 |   1-0    |   1-1    |   1-2    |\n",
-        "| 2 |   2-0    |   2-1    |   2-2    |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column 0 | column 1 | column 2 |\n",
+            "|---+----------+----------+----------|\n",
+            "| 0 |   0-0    |   0-1    |   0-2    |\n",
+            "| 1 |   1-0    |   1-1    |   1-2    |\n",
+            "| 2 |   2-0    |   2-1    |   2-2    |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
 fn max_width_with_emoji() {
     let data = &["🤠", "😳🥵🥶😱😨", "🚴🏻‍♀️🚴🏻🚴🏻‍♂️🚵🏻‍♀️🚵🏻🚵🏻‍♂️"];
 
-    let _expected = concat!(
-        "|  &st...   |\n",
-        "|-----------|\n",
-        "|    🤠     |\n",
-        "| 😳🥵🥶... |\n",
-        "|  🚴🏻\u{200d}...  |\n",
-    );
-
     let table = Table::new(data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(MaxWidth::truncating(3).suffix("...")))
         .to_string();
 
-    assert_eq!(table, _expected);
+    assert_eq!(
+        table,
+        concat!(
+            "|  &st...   |\n",
+            "|-----------|\n",
+            "|    🤠     |\n",
+            "| 😳🥵🥶... |\n",
+            "|  🚴🏻\u{200d}...  |\n",
+        )
+    );
 }
 
 #[cfg(feature = "color")]
@@ -416,20 +412,21 @@ fn color_chars_are_stripped() {
         "asdasd".on_black().green().to_string(),
     ];
 
-    let expected = concat!(
-        "| Str... |\n",
-        "|--------|\n",
-        "|  \u{1b}[31masd\u{1b}[0m   |\n",
-        "|  \u{1b}[34mzxc\u{1b}[0m   |\n",
-        "| \u{1b}[32m\u{1b}[40masd\u{1b}[39m\u{1b}[49m... |\n",
-    );
-
     let table = Table::new(data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(MaxWidth::truncating(3).suffix("...")))
         .to_string();
 
-    assert_eq!(expected, table);
+    assert_eq!(
+        table,
+        concat!(
+            "| Str... |\n",
+            "|--------|\n",
+            "|  \u{1b}[31masd\u{1b}[0m   |\n",
+            "|  \u{1b}[34mzxc\u{1b}[0m   |\n",
+            "| \u{1b}[32m\u{1b}[40masd\u{1b}[39m\u{1b}[49m... |\n",
+        )
+    );
 }
 
 #[test]
@@ -472,15 +469,16 @@ fn min_width_with_filler() {
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(12).fill_with('.')))
         .to_string();
 
-    let expected = concat!(
-        "| N........... | column 0.... | column 1.... | column 2.... |\n",
-        "|--------------+--------------+--------------+--------------|\n",
-        "|      0       |     0-0      |     0-1      |     0-2      |\n",
-        "|      1       |     1-0      |     1-1      |     1-2      |\n",
-        "|      2       |     2-0      |     2-1      |     2-2      |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| N........... | column 0.... | column 1.... | column 2.... |\n",
+            "|--------------+--------------+--------------+--------------|\n",
+            "|      0       |     0-0      |     0-1      |     0-2      |\n",
+            "|      1       |     1-0      |     1-1      |     1-2      |\n",
+            "|      2       |     2-0      |     2-1      |     2-2      |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -693,17 +691,18 @@ fn total_width_big_with_panel() {
         .with(MinWidth::new(80))
         .to_string();
 
-    let expected = concat!(
-        "|Hello World                                                                   |\n",
-        "|--------------+---------------------+--------------------+--------------------|\n",
-        "| N            | column 0            | column 1           | column 2           |\n",
-        "| 0            | 0-0                 | 0-1                | 0-2                |\n",
-        "| 1            | 1-0                 | 1-1                | 1-2                |\n",
-        "| 2            | 2-0                 | 2-1                | 2-2                |\n",
-    );
-
     assert!(is_lines_equal(&table, 80));
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        concat!(
+            "|Hello World                                                                   |\n",
+            "|--------------+---------------------+--------------------+--------------------|\n",
+            "| N            | column 0            | column 1           | column 2           |\n",
+            "| 0            | 0-0                 | 0-1                | 0-2                |\n",
+            "| 1            | 1-0                 | 1-1                | 1-2                |\n",
+            "| 2            | 2-0                 | 2-1                | 2-2                |\n",
+        )
+    );
 }
 
 #[test]
@@ -737,15 +736,16 @@ fn total_width_small() {
         .with(MinWidth::new(14))
         .to_string();
 
-    let expected = concat!(
-        "|  |  |  | c |\n",
-        "|--+--+--+---|\n",
-        "|  |  |  | 0 |\n",
-        "|  |  |  | 1 |\n",
-        "|  |  |  | 2 |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  |  | c |\n",
+            "|--+--+--+---|\n",
+            "|  |  |  | 0 |\n",
+            "|  |  |  | 1 |\n",
+            "|  |  |  | 2 |\n",
+        )
     );
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 14));
 }
 
@@ -758,15 +758,16 @@ fn total_width_smaller_then_content() {
         .with(MinWidth::new(8))
         .to_string();
 
-    let expected = concat!(
-        "|  |  |  |  |\n",
-        "|--+--+--+--|\n",
-        "|  |  |  |  |\n",
-        "|  |  |  |  |\n",
-        "|  |  |  |  |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  |  |  |\n",
+            "|--+--+--+--|\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -780,15 +781,16 @@ fn total_width_small_with_panel() {
         .with(MinWidth::new(20))
         .to_string();
 
-    let expected = concat!(
-        "|  | co | co | col |\n",
-        "|--+----+----+-----|\n",
-        "|  | 0- | 0- | 0-2 |\n",
-        "|  | 1- | 1- | 1-2 |\n",
-        "|  | 2- | 2- | 2-2 |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|  | co | co | col |\n",
+            "|--+----+----+-----|\n",
+            "|  | 0- | 0- | 0-2 |\n",
+            "|  | 1- | 1- | 1-2 |\n",
+            "|  | 2- | 2- | 2-2 |\n",
+        )
     );
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 20));
 
     let table = Table::new(Vec::<usize>::new())
@@ -797,9 +799,10 @@ fn total_width_small_with_panel() {
         .with(MinWidth::new(5))
         .to_string();
 
-    let expected = concat!("+---+\n", "|Hel|\n", "+---+\n", "| u |\n", "+---+\n",);
-
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        concat!("+---+\n", "|Hel|\n", "+---+\n", "| u |\n", "+---+\n")
+    );
     assert!(is_lines_equal(&table, 5));
 
     let table = Table::new(&create_vector::<1, 2>())
@@ -810,14 +813,15 @@ fn total_width_small_with_panel() {
         .with(MinWidth::new(20))
         .to_string();
 
-    let expected = concat!(
-        "|Hello World       |\n",
-        "|--+-------+-------|\n",
-        "|  | colum | colum |\n",
-        "|  | 0-0   | 0-1   |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|Hello World       |\n",
+            "|--+-------+-------|\n",
+            "|  | colum | colum |\n",
+            "|  | 0-0   | 0-1   |\n",
+        )
     );
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 20));
 
     let table = Table::new(&data)
@@ -828,16 +832,17 @@ fn total_width_small_with_panel() {
         .with(MinWidth::new(20))
         .to_string();
 
-    let expected = concat!(
-        "|Hello World       |\n",
-        "|--+----+----+-----|\n",
-        "|  | co | co | col |\n",
-        "|  | 0- | 0- | 0-2 |\n",
-        "|  | 1- | 1- | 1-2 |\n",
-        "|  | 2- | 2- | 2-2 |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|Hello World       |\n",
+            "|--+----+----+-----|\n",
+            "|  | co | co | col |\n",
+            "|  | 0- | 0- | 0-2 |\n",
+            "|  | 1- | 1- | 1-2 |\n",
+            "|  | 2- | 2- | 2-2 |\n",
+        )
     );
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 20));
 
     let table = Table::new(&data)
@@ -848,16 +853,17 @@ fn total_width_small_with_panel() {
         .with(MinWidth::new(6))
         .to_string();
 
-    let expected = concat!(
-        "|Hello World|\n",
-        "|--+--+--+--|\n",
-        "|  |  |  |  |\n",
-        "|  |  |  |  |\n",
-        "|  |  |  |  |\n",
-        "|  |  |  |  |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|Hello World|\n",
+            "|--+--+--+--|\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+        )
     );
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 13));
 
     let table = Table::new(&data)
@@ -868,16 +874,17 @@ fn total_width_small_with_panel() {
         .with(MinWidth::new(14))
         .to_string();
 
-    let expected = concat!(
-        "|Hello World |\n",
-        "|--+--+--+---|\n",
-        "|  |  |  | c |\n",
-        "|  |  |  | 0 |\n",
-        "|  |  |  | 1 |\n",
-        "|  |  |  | 2 |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|Hello World |\n",
+            "|--+--+--+---|\n",
+            "|  |  |  | c |\n",
+            "|  |  |  | 0 |\n",
+            "|  |  |  | 1 |\n",
+            "|  |  |  | 2 |\n",
+        )
     );
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 14));
 
     let table = Table::new(&data)
@@ -888,16 +895,17 @@ fn total_width_small_with_panel() {
         .with(MinWidth::new(14))
         .to_string();
 
-    let expected = concat!(
-        "|Hello World |\n",
-        "|--+--+--+---|\n",
-        "|  |  |  | c |\n",
-        "|  |  |  | 0 |\n",
-        "|  |  |  | 1 |\n",
-        "|  |  |  | 2 |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|Hello World |\n",
+            "|--+--+--+---|\n",
+            "|  |  |  | c |\n",
+            "|  |  |  | 0 |\n",
+            "|  |  |  | 1 |\n",
+            "|  |  |  | 2 |\n",
+        )
     );
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 14));
 }
 
@@ -911,21 +919,22 @@ fn total_width_wrapping() {
         .with(MinWidth::new(20))
         .to_string();
 
-    let expected = concat!(
-        "|  | co | co | col |\n",
-        "|  | lu | lu | umn |\n",
-        "|  | mn | mn |  2  |\n",
-        "|  |  0 |  1 |     |\n",
-        "|--+----+----+-----|\n",
-        "|  | 0- | 0- | 0-2 |\n",
-        "|  | 0  | 1  |     |\n",
-        "|  | 1- | 1- | 1-2 |\n",
-        "|  | 0  | 1  |     |\n",
-        "|  | 2- | 2- | 2-2 |\n",
-        "|  | 0  | 1  |     |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|  | co | co | col |\n",
+            "|  | lu | lu | umn |\n",
+            "|  | mn | mn |  2  |\n",
+            "|  |  0 |  1 |     |\n",
+            "|--+----+----+-----|\n",
+            "|  | 0- | 0- | 0-2 |\n",
+            "|  | 0  | 1  |     |\n",
+            "|  | 1- | 1- | 1-2 |\n",
+            "|  | 0  | 1  |     |\n",
+            "|  | 2- | 2- | 2-2 |\n",
+            "|  | 0  | 1  |     |\n",
+        )
     );
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 20));
 
     let mut data = create_vector::<3, 3>();
@@ -937,18 +946,19 @@ fn total_width_wrapping() {
         .with(MinWidth::new(20))
         .to_string();
 
-    let expected = concat!(
-        "|  |  | column  |  |\n",
-        "|  |  | 1       |  |\n",
-        "|--+--+---------+--|\n",
-        "|  |  |   0-1   |  |\n",
-        "|  |  |   1-1   |  |\n",
-        "|  |  | some    |  |\n",
-        "|  |  | loong   |  |\n",
-        "|  |  | string  |  |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  | column  |  |\n",
+            "|  |  | 1       |  |\n",
+            "|--+--+---------+--|\n",
+            "|  |  |   0-1   |  |\n",
+            "|  |  |   1-1   |  |\n",
+            "|  |  | some    |  |\n",
+            "|  |  | loong   |  |\n",
+            "|  |  | string  |  |\n",
+        )
     );
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 20));
 }
 
@@ -963,22 +973,23 @@ fn total_width_small_with_panel_using_wrapping() {
         .with(MinWidth::new(20))
         .to_string();
 
-    let expected = concat!(
-        "|   Hello World    |\n",
-        "|--+----+----+-----|\n",
-        "|  | co | co | col |\n",
-        "|  | lu | lu | umn |\n",
-        "|  | mn | mn |  2  |\n",
-        "|  |  0 |  1 |     |\n",
-        "|  | 0- | 0- | 0-2 |\n",
-        "|  | 0  | 1  |     |\n",
-        "|  | 1- | 1- | 1-2 |\n",
-        "|  | 0  | 1  |     |\n",
-        "|  | 2- | 2- | 2-2 |\n",
-        "|  | 0  | 1  |     |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "|   Hello World    |\n",
+            "|--+----+----+-----|\n",
+            "|  | co | co | col |\n",
+            "|  | lu | lu | umn |\n",
+            "|  | mn | mn |  2  |\n",
+            "|  |  0 |  1 |     |\n",
+            "|  | 0- | 0- | 0-2 |\n",
+            "|  | 0  | 1  |     |\n",
+            "|  | 1- | 1- | 1-2 |\n",
+            "|  | 0  | 1  |     |\n",
+            "|  | 2- | 2- | 2-2 |\n",
+            "|  | 0  | 1  |     |\n",
+        )
     );
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 20));
 
     let table = Table::new(&data)

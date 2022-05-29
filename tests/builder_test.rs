@@ -9,15 +9,17 @@ fn builder_add_record() {
         .add_record(["a", "b", "c"])
         .add_record(["d", "e", "f"]);
     let table = builder.build().to_string();
-    let expected = "+---+---+---+\n\
-                         | 1 | 2 | 3 |\n\
-                         +---+---+---+\n\
-                         | a | b | c |\n\
-                         +---+---+---+\n\
-                         | d | e | f |\n\
-                         +---+---+---+\n";
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 | 2 | 3 |\n\
+         +---+---+---+\n\
+         | a | b | c |\n\
+         +---+---+---+\n\
+         | d | e | f |\n\
+         +---+---+---+\n"
+    );
 }
 
 #[test]
@@ -27,15 +29,17 @@ fn builder_add_record_can_has_different_types() {
         .add_record(["a", "b", "c"])
         .add_record(['d', 'e', 'f']);
     let table = builder.build().to_string();
-    let expected = "+---+---+---+\n\
-                         | 1 | 2 | 3 |\n\
-                         +---+---+---+\n\
-                         | a | b | c |\n\
-                         +---+---+---+\n\
-                         | d | e | f |\n\
-                         +---+---+---+\n";
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 | 2 | 3 |\n\
+         +---+---+---+\n\
+         | a | b | c |\n\
+         +---+---+---+\n\
+         | d | e | f |\n\
+         +---+---+---+\n"
+    );
 }
 
 #[test]
@@ -45,30 +49,34 @@ fn builder_header() {
         .add_record(["d", "e", "f"])
         .set_columns(["1", "2", "3"]);
     let table = builder.build().to_string();
-    let expected = "+---+---+---+\n\
-                         | 1 | 2 | 3 |\n\
-                         +---+---+---+\n\
-                         | a | b | c |\n\
-                         +---+---+---+\n\
-                         | d | e | f |\n\
-                         +---+---+---+\n";
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 | 2 | 3 |\n\
+         +---+---+---+\n\
+         | a | b | c |\n\
+         +---+---+---+\n\
+         | d | e | f |\n\
+         +---+---+---+\n"
+    );
 }
 
 #[test]
 fn builder_from_iter() {
     let builder = Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]]);
     let table = builder.build().to_string();
-    let expected = "+---+-----------+\n\
-                         | n |   name    |\n\
-                         +---+-----------+\n\
-                         | 0 |  Dmitriy  |\n\
-                         +---+-----------+\n\
-                         | 1 | Vladislav |\n\
-                         +---+-----------+\n";
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+---+-----------+\n\
+         | n |   name    |\n\
+         +---+-----------+\n\
+         | 0 |  Dmitriy  |\n\
+         +---+-----------+\n\
+         | 1 | Vladislav |\n\
+         +---+-----------+\n"
+    );
 }
 
 #[test]
@@ -78,42 +86,51 @@ fn builder_used_with_different_number_of_columns() {
         .add_record(["a", "b", "c"])
         .add_record(["d"]);
     let table = builder.build().to_string();
-    let expected = "+---+---+---+\n\
-                         | 1 | 2 |   |\n\
-                         +---+---+---+\n\
-                         | a | b | c |\n\
-                         +---+---+---+\n\
-                         | d |   |   |\n\
-                         +---+---+---+\n";
-    assert_eq!(table, expected);
+
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 | 2 |   |\n\
+         +---+---+---+\n\
+         | a | b | c |\n\
+         +---+---+---+\n\
+         | d |   |   |\n\
+         +---+---+---+\n"
+    );
 
     let builder = Builder::default()
         .set_columns(["1", "2", "3"])
         .add_record(["a", "b"])
         .add_record(["d"]);
     let table = builder.build().to_string();
-    let expected = "+---+---+---+\n\
-                         | 1 | 2 | 3 |\n\
-                         +---+---+---+\n\
-                         | a | b |   |\n\
-                         +---+---+---+\n\
-                         | d |   |   |\n\
-                         +---+---+---+\n";
-    assert_eq!(table, expected);
+
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 | 2 | 3 |\n\
+         +---+---+---+\n\
+         | a | b |   |\n\
+         +---+---+---+\n\
+         | d |   |   |\n\
+         +---+---+---+\n"
+    );
 
     let builder = Builder::default()
         .set_columns(["1"])
         .add_record(["a", "b"])
         .add_record(["d", "e", "f"]);
     let table = builder.build().to_string();
-    let expected = "+---+---+---+\n\
-                         | 1 |   |   |\n\
-                         +---+---+---+\n\
-                         | a | b |   |\n\
-                         +---+---+---+\n\
-                         | d | e | f |\n\
-                         +---+---+---+\n";
-    assert_eq!(table, expected);
+
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 |   |   |\n\
+         +---+---+---+\n\
+         | a | b |   |\n\
+         +---+---+---+\n\
+         | d | e | f |\n\
+         +---+---+---+\n"
+    );
 }
 
 #[test]
@@ -124,14 +141,17 @@ fn builder_with_default_cell() {
         .add_record(["a", "b", "c"])
         .add_record(["d"]);
     let table = builder.build().to_string();
-    let expected = "+---+-----+-----+\n\
-                         | 1 |  2  | NaN |\n\
-                         +---+-----+-----+\n\
-                         | a |  b  |  c  |\n\
-                         +---+-----+-----+\n\
-                         | d | NaN | NaN |\n\
-                         +---+-----+-----+\n";
-    assert_eq!(table, expected);
+
+    assert_eq!(
+        table,
+        "+---+-----+-----+\n\
+         | 1 |  2  | NaN |\n\
+         +---+-----+-----+\n\
+         | a |  b  |  c  |\n\
+         +---+-----+-----+\n\
+         | d | NaN | NaN |\n\
+         +---+-----+-----+\n"
+    );
 
     let builder = Builder::default()
         .set_default_text("NaN")
@@ -139,14 +159,17 @@ fn builder_with_default_cell() {
         .add_record(["a", "b"])
         .add_record(["d"]);
     let table = builder.build().to_string();
-    let expected = "+---+-----+-----+\n\
-                         | 1 |  2  |  3  |\n\
-                         +---+-----+-----+\n\
-                         | a |  b  | NaN |\n\
-                         +---+-----+-----+\n\
-                         | d | NaN | NaN |\n\
-                         +---+-----+-----+\n";
-    assert_eq!(table, expected);
+
+    assert_eq!(
+        table,
+        "+---+-----+-----+\n\
+         | 1 |  2  |  3  |\n\
+         +---+-----+-----+\n\
+         | a |  b  | NaN |\n\
+         +---+-----+-----+\n\
+         | d | NaN | NaN |\n\
+         +---+-----+-----+\n"
+    );
 
     let builder = Builder::default()
         .set_default_text("NaN")
@@ -154,14 +177,17 @@ fn builder_with_default_cell() {
         .add_record(["a", "b"])
         .add_record(["d", "e", "f"]);
     let table = builder.build().to_string();
-    let expected = "+---+-----+-----+\n\
-                         | 1 | NaN | NaN |\n\
-                         +---+-----+-----+\n\
-                         | a |  b  | NaN |\n\
-                         +---+-----+-----+\n\
-                         | d |  e  |  f  |\n\
-                         +---+-----+-----+\n";
-    assert_eq!(table, expected);
+
+    assert_eq!(
+        table,
+        "+---+-----+-----+\n\
+         | 1 | NaN | NaN |\n\
+         +---+-----+-----+\n\
+         | a |  b  | NaN |\n\
+         +---+-----+-----+\n\
+         | d |  e  |  f  |\n\
+         +---+-----+-----+\n"
+    );
 }
 
 #[test]
@@ -173,15 +199,16 @@ fn builder_extend() {
 
     let table = builder.build().to_string();
 
-    let expected = "+---+---+---+\n\
-                         | 1 | 2 | 3 |\n\
-                         +---+---+---+\n\
-                         | a | b | c |\n\
-                         +---+---+---+\n\
-                         | d | e | f |\n\
-                         +---+---+---+\n";
-
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 | 2 | 3 |\n\
+         +---+---+---+\n\
+         | a | b | c |\n\
+         +---+---+---+\n\
+         | d | e | f |\n\
+         +---+---+---+\n"
+    );
 }
 
 #[test]
@@ -195,15 +222,16 @@ fn builder_from_vector() {
     let builder = Builder::from(data);
     let table = builder.build().to_string();
 
-    let expected = "+---+---+---+\n\
-                         | 1 | 2 | 3 |\n\
-                         +---+---+---+\n\
-                         | a | b | c |\n\
-                         +---+---+---+\n\
-                         | d | e | f |\n\
-                         +---+---+---+\n";
-
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+---+---+---+\n\
+         | 1 | 2 | 3 |\n\
+         +---+---+---+\n\
+         | a | b | c |\n\
+         +---+---+---+\n\
+         | d | e | f |\n\
+         +---+---+---+\n"
+    );
 }
 
 #[test]
@@ -605,7 +633,6 @@ fn builder_clean_with_columns() {
 
     for (i, (builder, expected)) in tests.iter().enumerate() {
         let table = builder.clone().clean().build().to_string();
-        eprintln!("{}", table);
 
         assert_eq!(table, *expected, "index={}", i);
     }

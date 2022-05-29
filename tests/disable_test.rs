@@ -12,15 +12,16 @@ fn disable_rows() {
         .with(Disable::Row(1..=2))
         .to_string();
 
-    let expected = concat!(
-        "+---+----------+----------+----------+\n",
-        "| N | column 0 | column 1 | column 2 |\n",
-        "+---+----------+----------+----------+\n",
-        "| 2 | 2-0      | 2-1      | 2-2      |\n",
-        "+---+----------+----------+----------+\n",
+    assert_eq!(
+        table,
+        concat!(
+            "+---+----------+----------+----------+\n",
+            "| N | column 0 | column 1 | column 2 |\n",
+            "+---+----------+----------+----------+\n",
+            "| 2 | 2-0      | 2-1      | 2-2      |\n",
+            "+---+----------+----------+----------+\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -32,14 +33,15 @@ fn disable_header() {
         .with(Disable::Row(..1))
         .to_string();
 
-    let expected = concat!(
-        "---+-----+-----+-----\n",
-        " 0 | 0-0 | 0-1 | 0-2 \n",
-        " 1 | 1-0 | 1-1 | 1-2 \n",
-        " 2 | 2-0 | 2-1 | 2-2 \n",
+    assert_eq!(
+        table,
+        concat!(
+            "---+-----+-----+-----\n",
+            " 0 | 0-0 | 0-1 | 0-2 \n",
+            " 1 | 1-0 | 1-1 | 1-2 \n",
+            " 2 | 2-0 | 2-1 | 2-2 \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -63,16 +65,17 @@ fn disable_header_with_new_styling() {
         .with(Style::modern().horizontal_off())
         .to_string();
 
-    let expected = concat!(
-        "┌───┬─────┬─────┬─────┐\n",
-        "│ 0 │ 0-0 │ 0-1 │ 0-2 │\n",
-        "├───┼─────┼─────┼─────┤\n",
-        "│ 1 │ 1-0 │ 1-1 │ 1-2 │\n",
-        "│ 2 │ 2-0 │ 2-1 │ 2-2 │\n",
-        "└───┴─────┴─────┴─────┘\n",
+    assert_eq!(
+        table,
+        concat!(
+            "┌───┬─────┬─────┬─────┐\n",
+            "│ 0 │ 0-0 │ 0-1 │ 0-2 │\n",
+            "├───┼─────┼─────┼─────┤\n",
+            "│ 1 │ 1-0 │ 1-1 │ 1-2 │\n",
+            "│ 2 │ 2-0 │ 2-1 │ 2-2 │\n",
+            "└───┴─────┴─────┴─────┘\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -83,15 +86,16 @@ fn disable_columns() {
         .with(Disable::Column(..1))
         .to_string();
 
-    let expected = concat!(
-        "| column 0 | column 1 | column 2 \n",
-        "+----------+----------+----------\n",
-        "|   0-0    |   0-1    |   0-2    \n",
-        "|   1-0    |   1-1    |   1-2    \n",
-        "|   2-0    |   2-1    |   2-2    \n",
+    assert_eq!(
+        table,
+        concat!(
+            "| column 0 | column 1 | column 2 \n",
+            "+----------+----------+----------\n",
+            "|   0-0    |   0-1    |   0-2    \n",
+            "|   1-0    |   1-1    |   1-2    \n",
+            "|   2-0    |   2-1    |   2-2    \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]

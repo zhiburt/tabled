@@ -7,8 +7,6 @@ mod util;
 fn builder_index() {
     let table = Table::builder(create_vector::<3, 2>()).index().build();
 
-    println!("{}", table);
-
     assert_eq!(
         table.to_string(),
         concat!(
@@ -31,8 +29,6 @@ fn builder_index_transpose() {
         .index()
         .transpose()
         .build();
-
-    println!("{}", table);
 
     assert_eq!(
         table.to_string(),
@@ -79,8 +75,6 @@ fn builder_index_0() {
         .set_index(0)
         .build();
 
-    println!("{}", table);
-
     assert_eq!(
         table.to_string(),
         concat!(
@@ -109,8 +103,6 @@ fn builder_index_0_no_name() {
         .set_name(None)
         .build();
 
-    println!("{}", table);
-
     assert_eq!(
         table.to_string(),
         concat!(
@@ -136,8 +128,6 @@ fn builder_index_0_name() {
         .set_index(0)
         .set_name(Some("Hello World".to_owned()))
         .build();
-
-    println!("{}", table);
 
     assert_eq!(
         table.to_string(),
@@ -168,8 +158,6 @@ fn builder_index_0_name_transpose() {
         .transpose()
         .build();
 
-    println!("{}", table);
-
     assert_eq!(
         table.to_string(),
         concat!(
@@ -192,8 +180,6 @@ fn builder_index_with_no_columns() {
         .add_record(["d", "e", "f"])
         .index()
         .build();
-
-    println!("{}", table);
 
     assert_eq!(
         table.to_string(),
@@ -220,8 +206,6 @@ fn builder_index_with_no_columns_and_name() {
         .index()
         .set_name(Some("Hello World".to_owned()))
         .build();
-
-    println!("{}", table);
 
     assert_eq!(
         table.to_string(),
@@ -250,8 +234,6 @@ fn builder_index_with_no_columns_transpose() {
         .index()
         .transpose()
         .build();
-
-    println!("{}", table);
 
     assert_eq!(
         table.to_string(),

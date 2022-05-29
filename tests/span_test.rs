@@ -16,15 +16,16 @@ fn span_column_test() {
             .with(Modify::new(Columns::single(0)).with(Span::column(2)))
             .to_string();
 
-        let expected = concat!(
-            " N | column 1 | column 2 \n",
-            "-+-+----------+----------\n",
-            " 0 | 0-1      | 0-2      \n",
-            " 1 | 1-1      | 1-2      \n",
-            " 2 | 2-1      | 2-2      \n",
+        assert_eq!(
+            table,
+            concat!(
+                " N | column 1 | column 2 \n",
+                "-+-+----------+----------\n",
+                " 0 | 0-1      | 0-2      \n",
+                " 1 | 1-1      | 1-2      \n",
+                " 2 | 2-1      | 2-2      \n",
+            )
         );
-
-        assert_eq!(table, expected);
     }
     {
         let table = Table::new(&data)
@@ -33,15 +34,16 @@ fn span_column_test() {
             .with(Modify::new(Columns::new(1..2)).with(Span::column(2)))
             .to_string();
 
-        let expected = concat!(
-            " N | column 0 | column 2 \n",
-            "---+-----+----+----------\n",
-            " 0 | 0-0      | 0-2      \n",
-            " 1 | 1-0      | 1-2      \n",
-            " 2 | 2-0      | 2-2      \n",
+        assert_eq!(
+            table,
+            concat!(
+                " N | column 0 | column 2 \n",
+                "---+-----+----+----------\n",
+                " 0 | 0-0      | 0-2      \n",
+                " 1 | 1-0      | 1-2      \n",
+                " 2 | 2-0      | 2-2      \n",
+            )
         );
-
-        assert_eq!(table, expected);
     }
     {
         let table = Table::new(&data)
@@ -50,9 +52,7 @@ fn span_column_test() {
             .with(Modify::new(Columns::single(0)).with(Span::column(data.len() + 1)))
             .to_string();
 
-        let expected = concat!(" N \n", "+++\n", " 0 \n", " 1 \n", " 2 \n");
-
-        assert_eq!(table, expected);
+        assert_eq!(table, concat!(" N \n", "+++\n", " 0 \n", " 1 \n", " 2 \n"));
     }
 }
 
@@ -69,15 +69,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(0, 0)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N       | column 1 | column 2 \n",
-                "---+-----+----------+----------\n",
-                " 0 | 0-0 | 0-1      | 0-2      \n",
-                " 1 | 1-0 | 1-1      | 1-2      \n",
-                " 2 | 2-0 | 2-1      | 2-2      \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N       | column 1 | column 2 \n",
+                    "---+-----+----------+----------\n",
+                    " 0 | 0-0 | 0-1      | 0-2      \n",
+                    " 1 | 1-0 | 1-1      | 1-2      \n",
+                    " 2 | 2-0 | 2-1      | 2-2      \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
         {
             let table = Table::new(&data)
@@ -86,15 +87,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0 | column 1 | column 2 \n",
-                "---+----------+----------+----------\n",
-                " 0            | 0-1      | 0-2      \n",
-                " 1 | 1-0      | 1-1      | 1-2      \n",
-                " 2 | 2-0      | 2-1      | 2-2      \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0 | column 1 | column 2 \n",
+                    "---+----------+----------+----------\n",
+                    " 0            | 0-1      | 0-2      \n",
+                    " 1 | 1-0      | 1-1      | 1-2      \n",
+                    " 2 | 2-0      | 2-1      | 2-2      \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
         {
             let table = Table::new(&data)
@@ -102,15 +104,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0 | column 1 | column 2 \n",
-                "---+----------+----------+----------\n",
-                " 0 |   0-0    |   0-1    |   0-2    \n",
-                "      1       |   1-1    |   1-2    \n",
-                " 2 |   2-0    |   2-1    |   2-2    \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0 | column 1 | column 2 \n",
+                    "---+----------+----------+----------\n",
+                    " 0 |   0-0    |   0-1    |   0-2    \n",
+                    "      1       |   1-1    |   1-2    \n",
+                    " 2 |   2-0    |   2-1    |   2-2    \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
         {
             let table = Table::new(&data)
@@ -119,15 +122,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(3, 0)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0 | column 1 | column 2 \n",
-                "---+----------+----------+----------\n",
-                " 0 | 0-0      | 0-1      | 0-2      \n",
-                " 1 | 1-0      | 1-1      | 1-2      \n",
-                " 2            | 2-1      | 2-2      \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0 | column 1 | column 2 \n",
+                    "---+----------+----------+----------\n",
+                    " 0 | 0-0      | 0-1      | 0-2      \n",
+                    " 1 | 1-0      | 1-1      | 1-2      \n",
+                    " 2            | 2-1      | 2-2      \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
     }
 
@@ -140,15 +144,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(0, 1)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0  | column 2 \n",
-                "---+-----+-----+----------\n",
-                " 0 | 0-0 | 0-1 | 0-2      \n",
-                " 1 | 1-0 | 1-1 | 1-2      \n",
-                " 2 | 2-0 | 2-1 | 2-2      \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0  | column 2 \n",
+                    "---+-----+-----+----------\n",
+                    " 0 | 0-0 | 0-1 | 0-2      \n",
+                    " 1 | 1-0 | 1-1 | 1-2      \n",
+                    " 2 | 2-0 | 2-1 | 2-2      \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
         {
             let table = Table::new(&data)
@@ -157,15 +162,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0 | column 1 | column 2 \n",
-                "---+----------+----------+----------\n",
-                " 0 | 0-0                 | 0-2      \n",
-                " 1 | 1-0      | 1-1      | 1-2      \n",
-                " 2 | 2-0      | 2-1      | 2-2      \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0 | column 1 | column 2 \n",
+                    "---+----------+----------+----------\n",
+                    " 0 | 0-0                 | 0-2      \n",
+                    " 1 | 1-0      | 1-1      | 1-2      \n",
+                    " 2 | 2-0      | 2-1      | 2-2      \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
         {
             let table = Table::new(&data)
@@ -174,15 +180,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0 | column 1 | column 2 \n",
-                "---+----------+----------+----------\n",
-                " 0 | 0-0      | 0-1      | 0-2      \n",
-                " 1 | 1-0                 | 1-2      \n",
-                " 2 | 2-0      | 2-1      | 2-2      \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0 | column 1 | column 2 \n",
+                    "---+----------+----------+----------\n",
+                    " 0 | 0-0      | 0-1      | 0-2      \n",
+                    " 1 | 1-0                 | 1-2      \n",
+                    " 2 | 2-0      | 2-1      | 2-2      \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
         {
             let table = Table::new(&data)
@@ -191,15 +198,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(3, 1)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0 | column 1 | column 2 \n",
-                "---+----------+----------+----------\n",
-                " 0 | 0-0      | 0-1      | 0-2      \n",
-                " 1 | 1-0      | 1-1      | 1-2      \n",
-                " 2 | 2-0                 | 2-2      \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0 | column 1 | column 2 \n",
+                    "---+----------+----------+----------\n",
+                    " 0 | 0-0      | 0-1      | 0-2      \n",
+                    " 1 | 1-0      | 1-1      | 1-2      \n",
+                    " 2 | 2-0                 | 2-2      \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
     }
 
@@ -212,15 +220,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(0, 2)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0 | column 1  \n",
-                "---+----------+-----+-----\n",
-                " 0 |   0-0    | 0-1 | 0-2 \n",
-                " 1 |   1-0    | 1-1 | 1-2 \n",
-                " 2 |   2-0    | 2-1 | 2-2 \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0 | column 1  \n",
+                    "---+----------+-----+-----\n",
+                    " 0 |   0-0    | 0-1 | 0-2 \n",
+                    " 1 |   1-0    | 1-1 | 1-2 \n",
+                    " 2 |   2-0    | 2-1 | 2-2 \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
         {
             let table = Table::new(&data)
@@ -228,15 +237,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(1, 2)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0 | column 1 | column 2 \n",
-                "---+----------+----------+----------\n",
-                " 0 |   0-0    |         0-1         \n",
-                " 1 |   1-0    |   1-1    |   1-2    \n",
-                " 2 |   2-0    |   2-1    |   2-2    \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0 | column 1 | column 2 \n",
+                    "---+----------+----------+----------\n",
+                    " 0 |   0-0    |         0-1         \n",
+                    " 1 |   1-0    |   1-1    |   1-2    \n",
+                    " 2 |   2-0    |   2-1    |   2-2    \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
         {
             let table = Table::new(&data)
@@ -244,15 +254,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(2, 2)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0 | column 1 | column 2 \n",
-                "---+----------+----------+----------\n",
-                " 0 |   0-0    |   0-1    |   0-2    \n",
-                " 1 |   1-0    |         1-1         \n",
-                " 2 |   2-0    |   2-1    |   2-2    \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0 | column 1 | column 2 \n",
+                    "---+----------+----------+----------\n",
+                    " 0 |   0-0    |   0-1    |   0-2    \n",
+                    " 1 |   1-0    |         1-1         \n",
+                    " 2 |   2-0    |   2-1    |   2-2    \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
         {
             let table = Table::new(&data)
@@ -260,15 +271,16 @@ fn cell_span_test() {
                 .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
                 .to_string();
 
-            let expected = concat!(
-                " N | column 0 | column 1 | column 2 \n",
-                "---+----------+----------+----------\n",
-                " 0 |   0-0    |   0-1    |   0-2    \n",
-                " 1 |   1-0    |   1-1    |   1-2    \n",
-                " 2 |   2-0    |         2-1         \n",
+            assert_eq!(
+                table,
+                concat!(
+                    " N | column 0 | column 1 | column 2 \n",
+                    "---+----------+----------+----------\n",
+                    " 0 |   0-0    |   0-1    |   0-2    \n",
+                    " 1 |   1-0    |   1-1    |   1-2    \n",
+                    " 2 |   2-0    |         2-1         \n",
+                )
             );
-
-            assert_eq!(table, expected);
         }
     }
 }
@@ -357,20 +369,21 @@ fn span_multiline() {
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
         .to_string();
 
-    let expected = concat!(
-        " N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+----------\n",
-        " 0 |   0-0    |   0-1    |   0-2    \n",
-        " 1 |   1-0    |   1-1    |   1-2    \n",
-        " 2 |   2-0    |      https://       \n",
-        "   |          |      www            \n",
-        "   |          |      .              \n",
-        "   |          |      redhat         \n",
-        "   |          |      .com           \n",
-        "   |          |      /en            \n",
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            " 0 |   0-0    |   0-1    |   0-2    \n",
+            " 1 |   1-0    |   1-1    |   1-2    \n",
+            " 2 |   2-0    |      https://       \n",
+            "   |          |      www            \n",
+            "   |          |      .              \n",
+            "   |          |      redhat         \n",
+            "   |          |      .com           \n",
+            "   |          |      /en            \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -385,15 +398,16 @@ fn indent_works_in_spaned_columns() {
         .with(Modify::new(Cell(3, 1)).with(Span::column(3)))
         .to_string();
 
-    let expected = concat!(
-        "   N|   column 0|   column 1|   column 2\n",
-        "----+-----------+-----------+-----------\n",
-        "   0|   0-0                             \n",
-        "   1|   1-0     |   1-1     |   1-2     \n",
-        "   2|   2-0                             \n",
+    assert_eq!(
+        table,
+        concat!(
+            "   N|   column 0|   column 1|   column 2\n",
+            "----+-----------+-----------+-----------\n",
+            "   0|   0-0                             \n",
+            "   1|   1-0     |   1-1     |   1-2     \n",
+            "   2|   2-0                             \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -439,23 +453,24 @@ fn spaned_columns_with_colision() {
         )
         .to_string();
 
-    let expected = concat!(
-        "┌───────────────┬───────────────┬───────────────┬───────────────┬───────────────┐\n",
-        "│                              span all 5 columns                               │\n",
-        "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤\n",
-        "│                        span 4 columns                         │ just 1 column │\n",
-        "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤\n",
-        "│                span 3 columns                 │        span 2 columns         │\n",
-        "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤\n",
-        "│        span 3 columns         │                span 3 columns                 │\n",
-        "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤\n",
-        "│ just 1 column │                        span 4 columns                         │\n",
-        "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤\n",
-        "│ just 1 column │ just 1 column │ just 1 column │ just 1 column │ just 1 column │\n",
-        "└───────────────┴───────────────┴───────────────┴───────────────┴───────────────┘\n",
+    assert_eq!(
+        table,
+        concat!(
+            "┌───────────────┬───────────────┬───────────────┬───────────────┬───────────────┐\n",
+            "│                              span all 5 columns                               │\n",
+            "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤\n",
+            "│                        span 4 columns                         │ just 1 column │\n",
+            "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤\n",
+            "│                span 3 columns                 │        span 2 columns         │\n",
+            "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤\n",
+            "│        span 3 columns         │                span 3 columns                 │\n",
+            "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤\n",
+            "│ just 1 column │                        span 4 columns                         │\n",
+            "├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┤\n",
+            "│ just 1 column │ just 1 column │ just 1 column │ just 1 column │ just 1 column │\n",
+            "└───────────────┴───────────────┴───────────────┴───────────────┴───────────────┘\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -551,8 +566,6 @@ fn span_zero_test() {
         .with(Modify::new(Cell(3, 2)).with(Span::column(0)))
         .with(Modify::new(Cell(3, 1)).with(Span::column(0)))
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(
         table,

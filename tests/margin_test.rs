@@ -18,24 +18,23 @@ fn margin_with_table_based_on_grid_borders() {
         .with(Margin::new(1, 2, 1, 2).set_fill('>', '<', 'V', '^'))
         .to_string();
 
-    let expected = concat!(
-        "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n",
-        ">+++++══════════╦══════════╦══════════╗<<\n",
-        ">+ N + column 0 ║ column 1 ║ column 2 ║<<\n",
-        ">++++************══════════╬══════════╣<<\n",
-        ">║ 0 *   0-0    *   0-1    ║   0-2    ║<<\n",
-        ">╠═══************══════════╬══════════╣<<\n",
-        ">║ 1 ║   1-0    ║   1-1    ║   1-2    ║<<\n",
-        ">╠═══╬══════════╬══════════╬══════════╣<<\n",
-        ">║ 2 ║   2-0    ║   2-1    ║   2-2    ║<<\n",
-        ">╚═══╩══════════╩══════════╩══════════╝<<\n",
-        "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-        "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+    assert_eq!(
+        table,
+        concat!(
+            "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n",
+            ">+++++══════════╦══════════╦══════════╗<<\n",
+            ">+ N + column 0 ║ column 1 ║ column 2 ║<<\n",
+            ">++++************══════════╬══════════╣<<\n",
+            ">║ 0 *   0-0    *   0-1    ║   0-2    ║<<\n",
+            ">╠═══************══════════╬══════════╣<<\n",
+            ">║ 1 ║   1-0    ║   1-1    ║   1-2    ║<<\n",
+            ">╠═══╬══════════╬══════════╬══════════╣<<\n",
+            ">║ 2 ║   2-0    ║   2-1    ║   2-2    ║<<\n",
+            ">╚═══╩══════════╩══════════╩══════════╝<<\n",
+            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+        )
     );
-
-    println!("{}", table);
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -49,24 +48,23 @@ fn margin_without_table_based_on_grid_borders() {
         .with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'))
         .to_string();
 
-    let expected = concat!(
-        "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n",
-        "> N | column 0 | column 1 | column 2 <\n",
-        ">---+----------+----------+----------<\n",
-        "> 0 |   0-0    |   0-1    |   0-2    <\n",
-        "> 1 |   1-0    |   1-1    |   1-2    <\n",
-        "> 2 |   2-0    |      https://       <\n",
-        ">   |          |      www            <\n",
-        ">   |          |      .              <\n",
-        ">   |          |      redhat         <\n",
-        ">   |          |      .com           <\n",
-        ">   |          |      /en            <\n",
-        "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+    assert_eq!(
+        table,
+        concat!(
+            "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n",
+            "> N | column 0 | column 1 | column 2 <\n",
+            ">---+----------+----------+----------<\n",
+            "> 0 |   0-0    |   0-1    |   0-2    <\n",
+            "> 1 |   1-0    |   1-1    |   1-2    <\n",
+            "> 2 |   2-0    |      https://       <\n",
+            ">   |          |      www            <\n",
+            ">   |          |      .              <\n",
+            ">   |          |      redhat         <\n",
+            ">   |          |      .com           <\n",
+            ">   |          |      /en            <\n",
+            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+        )
     );
-
-    println!("{}", table);
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -80,22 +78,21 @@ fn table_with_empty_margin() {
         .with(Margin::new(0, 0, 0, 0).set_fill('>', '<', 'V', '^'))
         .to_string();
 
-    let expected = concat!(
-        " N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+----------\n",
-        " 0 |   0-0    |   0-1    |   0-2    \n",
-        " 1 |   1-0    |   1-1    |   1-2    \n",
-        " 2 |   2-0    |      https://       \n",
-        "   |          |      www            \n",
-        "   |          |      .              \n",
-        "   |          |      redhat         \n",
-        "   |          |      .com           \n",
-        "   |          |      /en            \n",
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            " 0 |   0-0    |   0-1    |   0-2    \n",
+            " 1 |   1-0    |   1-1    |   1-2    \n",
+            " 2 |   2-0    |      https://       \n",
+            "   |          |      www            \n",
+            "   |          |      .              \n",
+            "   |          |      redhat         \n",
+            "   |          |      .com           \n",
+            "   |          |      /en            \n",
+        )
     );
-
-    println!("{}", table);
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -109,19 +106,18 @@ fn table_with_margin_and_min_width() {
         .with(MaxWidth::truncating(20))
         .to_string();
 
-    let expected = concat!(
-        "VVVVVVVVVVVVVVVVVVVV\n",
-        ">  | co | co | col <\n",
-        ">--+----+----+-----<\n",
-        ">  |   0-0   | 0-2 <\n",
-        ">  | 1- | 1- | 1-2 <\n",
-        ">  | 2- | 2- | 2-2 <\n",
-        "^^^^^^^^^^^^^^^^^^^^\n",
+    assert_eq!(
+        table,
+        concat!(
+            "VVVVVVVVVVVVVVVVVVVV\n",
+            ">  | co | co | col <\n",
+            ">--+----+----+-----<\n",
+            ">  |   0-0   | 0-2 <\n",
+            ">  | 1- | 1- | 1-2 <\n",
+            ">  | 2- | 2- | 2-2 <\n",
+            "^^^^^^^^^^^^^^^^^^^^\n",
+        )
     );
-
-    println!("{}", table);
-
-    assert_eq!(table, expected);
     assert!(is_lines_equal(&table, 20))
 }
 
@@ -135,8 +131,6 @@ fn table_with_margin_and_max_width() {
         .with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'))
         .with(MinWidth::new(50))
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(papergrid::string_width_multiline(&table), 50);
     assert_eq!(
