@@ -32,7 +32,7 @@
 //! );
 //! ```
 
-use std::collections::HashMap;
+use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 
 use crate::{CellOption, TableOption};
 use papergrid::{string_width, string_width_multiline, Entity, Grid, Settings};
@@ -78,7 +78,7 @@ pub struct MaxWidth;
 
 impl MaxWidth {
     /// Returns a [Truncate] object.
-    pub fn truncating(width: usize) -> Truncate<&'static str> {
+    pub fn truncating(width: usize) -> Truncate<'static> {
         Truncate::new(width)
     }
 
@@ -101,37 +101,46 @@ impl MaxWidth {
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Truncate::new(3)));
 /// ```
-pub struct Truncate<S> {
+pub struct Truncate<'a, P = PriorityNone> {
     width: usize,
-    suffix: S,
+    suffix: Cow<'a, str>,
+    _priority: PhantomData<P>,
 }
 
-impl Truncate<&'static str> {
+impl Truncate<'static> {
     /// Creates a [Truncate] object
-    pub fn new(width: usize) -> Self {
-        Self { width, suffix: "" }
-    }
-}
-
-impl<T> Truncate<T> {
-    /// Sets a suffix which will be appended to a resultant string
-    /// in case a truncate is applied.
-    pub fn suffix<S>(self, suffix: S) -> Truncate<S> {
-        Truncate {
-            width: self.width,
-            suffix,
+    pub fn new(width: usize) -> Truncate<'static> {
+        Self {
+            width,
+            suffix: Cow::Borrowed(""),
+            _priority: Default::default(),
         }
     }
+}
 
-    pub fn prioritize_max(self) -> PriorityMaxTruncate<T> {
-        PriorityMaxTruncate { control: self }
+impl<P> Truncate<'_, P> {
+    /// Sets a suffix which will be appended to a resultant string
+    /// in case a truncate is applied.
+    pub fn suffix<'a, S: Into<Cow<'a, str>>>(self, suffix: S) -> Truncate<'a, P> {
+        Truncate {
+            width: self.width,
+            suffix: suffix.into(),
+            _priority: Default::default(),
+        }
     }
 }
 
-impl<S> CellOption for Truncate<S>
-where
-    S: AsRef<str>,
-{
+impl<'a, P> Truncate<'a, P> {
+    pub fn priority<PP: ColumnPeaker>(self) -> Truncate<'a, PP> {
+        Truncate {
+            width: self.width,
+            suffix: self.suffix,
+            _priority: Default::default(),
+        }
+    }
+}
+
+impl<P> CellOption for Truncate<'_, P> {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let content = grid.get_cell_content_styled(row, column);
         let striped_content = strip(&content, self.width);
@@ -156,9 +165,10 @@ where
 ///     .with(Modify::new(Segment::all()).with(Wrap::new(3)));
 /// ```
 #[derive(Debug, Clone)]
-pub struct Wrap {
+pub struct Wrap<P = PriorityNone> {
     width: usize,
     keep_words: bool,
+    _priority: PhantomData<P>,
 }
 
 impl Wrap {
@@ -167,6 +177,7 @@ impl Wrap {
         Self {
             width,
             keep_words: false,
+            _priority: Default::default(),
         }
     }
 
@@ -178,9 +189,15 @@ impl Wrap {
         self.keep_words = true;
         self
     }
+}
 
-    pub fn prioritize_max(self) -> PriorityMaxWrap {
-        PriorityMaxWrap { control: self }
+impl<P> Wrap<P> {
+    pub fn priority<PP>(self) -> Wrap<PP> {
+        Wrap {
+            width: self.width,
+            keep_words: self.keep_words,
+            _priority: Default::default(),
+        }
     }
 }
 
@@ -431,22 +448,37 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 /// ```
 ///
 /// [Padding]: crate::Padding
-pub struct MinWidth {
+pub struct MinWidth<P = PriorityNone> {
     size: usize,
     fill: char,
+    _priority: PhantomData<P>,
 }
 
 impl MinWidth {
     /// Creates a new instance of MinWidth.
     pub fn new(size: usize) -> Self {
-        Self { size, fill: ' ' }
+        Self {
+            size,
+            fill: ' ',
+            _priority: Default::default(),
+        }
     }
+}
 
+impl<P> MinWidth<P> {
     /// Set's a fill character which will be used to fill the space
     /// when increasing the length of the string to the set boundary.
     pub fn fill_with(mut self, c: char) -> Self {
         self.fill = c;
         self
+    }
+
+    pub fn priority<PP: ColumnPeaker>(self) -> MinWidth<PP> {
+        MinWidth {
+            fill: self.fill,
+            size: self.size,
+            _priority: Default::default(),
+        }
     }
 }
 
@@ -500,9 +532,9 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
     }
 }
 
-impl<S> TableOption for Truncate<S>
+impl<P> TableOption for Truncate<'_, P>
 where
-    S: AsRef<str>,
+    P: ColumnPeaker,
 {
     fn change(&mut self, grid: &mut Grid) {
         if grid.count_columns() == 0 || grid.count_rows() == 0 {
@@ -519,12 +551,21 @@ where
         }
 
         if self.width < total_width {
-            truncate_total_width(grid, total_width, self.width, self.suffix.as_ref());
+            truncate_total_width(
+                grid,
+                total_width,
+                self.width,
+                self.suffix.as_ref(),
+                P::create(),
+            );
         }
     }
 }
 
-impl TableOption for Wrap {
+impl<P> TableOption for Wrap<P>
+where
+    P: ColumnPeaker,
+{
     fn change(&mut self, grid: &mut Grid) {
         if grid.count_columns() == 0 || grid.count_rows() == 0 {
             return;
@@ -540,12 +581,15 @@ impl TableOption for Wrap {
         }
 
         if self.width < total_width {
-            wrap_total_width(grid, total_width, self.width, self.keep_words);
+            wrap_total_width(grid, total_width, self.width, self.keep_words, P::create());
         }
     }
 }
 
-impl TableOption for MinWidth {
+impl<P> TableOption for MinWidth<P>
+where
+    P: ColumnPeaker,
+{
     fn change(&mut self, grid: &mut Grid) {
         if grid.count_columns() == 0 || grid.count_rows() == 0 {
             return;
@@ -560,21 +604,31 @@ impl TableOption for MinWidth {
             return;
         }
 
-        increase_total_width(grid, total_width, self.size);
+        increase_total_width(grid, total_width, self.size, P::create());
     }
 }
 
-fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usize) {
-    let increase_list =
-        increase_total_width_fn(grid, expected_width, total_width, priority_none_fn());
+fn increase_total_width<P: ColumnPeaker>(
+    grid: &mut Grid,
+    total_width: usize,
+    expected_width: usize,
+    priority: P,
+) {
+    let increase_list = increase_total_width_fn(grid, expected_width, total_width, priority);
 
     for ((row, col), width) in increase_list {
         MinWidth::new(width).change_cell(grid, row, col);
     }
 }
 
-fn truncate_total_width(grid: &mut Grid, total_width: usize, width: usize, suffix: &str) {
-    let points = decrease_total_width_fn(grid, total_width, width, priority_none_fn());
+fn truncate_total_width<P: ColumnPeaker>(
+    grid: &mut Grid,
+    total_width: usize,
+    width: usize,
+    suffix: &str,
+    priority: P,
+) {
+    let points = decrease_total_width_fn(grid, total_width, width, priority);
 
     for ((row, col), width) in points {
         Truncate::new(width)
@@ -584,8 +638,14 @@ fn truncate_total_width(grid: &mut Grid, total_width: usize, width: usize, suffi
     }
 }
 
-fn wrap_total_width(grid: &mut Grid, total_width: usize, width: usize, keep_words: bool) {
-    let points = decrease_total_width_fn(grid, total_width, width, priority_none_fn());
+fn wrap_total_width<P: ColumnPeaker>(
+    grid: &mut Grid,
+    total_width: usize,
+    width: usize,
+    keep_words: bool,
+    priority: P,
+) {
+    let points = decrease_total_width_fn(grid, total_width, width, priority);
 
     let mut wrap = Wrap::new(0);
     wrap.keep_words = keep_words;
@@ -729,114 +789,6 @@ impl Width for Min {
     }
 }
 
-pub struct PriorityMaxWrap {
-    control: Wrap,
-}
-
-impl TableOption for PriorityMaxWrap {
-    fn change(&mut self, grid: &mut Grid) {
-        if grid.count_columns() == 0 || grid.count_rows() == 0 {
-            return;
-        }
-
-        if is_zero_spanned_grid(grid) {
-            return;
-        }
-
-        let total_width = grid.total_width();
-        if total_width <= self.control.width {
-            return;
-        }
-
-        let points =
-            decrease_total_width_fn(grid, total_width, self.control.width, priority_max_fn());
-        let mut wrap = self.control.clone();
-        for ((row, col), width) in points {
-            wrap.width = width;
-            wrap.change_cell(grid, row, col);
-        }
-    }
-}
-
-pub struct PriorityMaxTruncate<S> {
-    control: Truncate<S>,
-}
-
-impl<S> TableOption for PriorityMaxTruncate<S>
-where
-    S: AsRef<str>,
-{
-    fn change(&mut self, grid: &mut Grid) {
-        if grid.count_columns() == 0 || grid.count_rows() == 0 {
-            return;
-        }
-
-        if is_zero_spanned_grid(grid) {
-            return;
-        }
-
-        let total_width = grid.total_width();
-        if total_width <= self.control.width {
-            return;
-        }
-
-        let points =
-            decrease_total_width_fn(grid, total_width, self.control.width, priority_max_fn());
-
-        let orig_width = self.control.width;
-
-        for ((row, col), width) in points {
-            self.control.width = width;
-            self.control.change_cell(grid, row, col);
-        }
-
-        self.control.width = orig_width;
-    }
-}
-
-fn priority_none_fn() -> impl FnMut(&[usize]) -> Option<usize> {
-    let mut i = 0;
-    move |widths: &[usize]| {
-        while widths[i] == 0 {
-            i += 1;
-            if i >= widths.len() {
-                i = 0;
-            }
-        }
-
-        let col = i;
-
-        i += 1;
-        if i >= widths.len() {
-            i = 0;
-        }
-
-        Some(col)
-    }
-}
-
-fn priority_max_fn() -> impl FnMut(&[usize]) -> Option<usize> {
-    |widths| {
-        let col = (0..widths.len()).max_by_key(|&i| widths[i]).unwrap();
-        if widths[col] == 0 {
-            None
-        } else {
-            Some(col)
-        }
-    }
-}
-
-fn priority_min_fn() -> impl FnMut(&[usize]) -> Option<usize> {
-    |widths| {
-        let col = (0..widths.len()).min_by_key(|&i| widths[i]).unwrap();
-        if widths[col] == 0 {
-            None
-        } else {
-            Some(col)
-        }
-    }
-}
-
 fn decrease_total_width_fn<F>(
     grid: &Grid,
     total_width: usize,
@@ -844,7 +796,7 @@ fn decrease_total_width_fn<F>(
     mut cmp_fn: F,
 ) -> HashMap<(usize, usize), usize>
 where
-    F: FnMut(&[usize]) -> Option<usize>,
+    F: ColumnPeaker,
 {
     let min_widths = build_min_widths(grid);
     let mut widths = grid.build_widths();
@@ -861,7 +813,7 @@ where
             break;
         }
 
-        let col = match (cmp_fn)(&widths) {
+        let col = match cmp_fn.peak(&min_widths, &widths) {
             Some(col) => col,
             None => break,
         };
@@ -927,11 +879,11 @@ fn increase_total_width_fn<F>(
     mut cmp_fn: F,
 ) -> HashMap<(usize, usize), usize>
 where
-    F: FnMut(&[usize]) -> Option<usize>,
+    F: ColumnPeaker,
 {
     let mut widths = grid.build_widths();
     while width != total_width {
-        let col = match (cmp_fn)(&widths) {
+        let col = match cmp_fn.peak(&[], &widths) {
             Some(col) => col,
             None => break,
         };
@@ -985,6 +937,79 @@ fn build_min_widths(grid: &Grid) -> Vec<usize> {
     grid.set(Entity::Global, Settings::default().text(""));
 
     grid.build_widths()
+}
+
+pub trait ColumnPeaker {
+    fn create() -> Self;
+    fn peak(&mut self, min_widths: &[usize], widths: &[usize]) -> Option<usize>;
+}
+
+pub struct PriorityNone {
+    i: usize,
+}
+
+impl ColumnPeaker for PriorityNone {
+    fn create() -> Self {
+        Self { i: 0 }
+    }
+
+    fn peak(&mut self, _: &[usize], widths: &[usize]) -> Option<usize> {
+        let mut i = self.i;
+        while widths[i] == 0 {
+            i += 1;
+            if i >= widths.len() {
+                i = 0;
+            }
+        }
+
+        let col = i;
+
+        i += 1;
+        if i >= widths.len() {
+            i = 0;
+        }
+
+        self.i = i;
+
+        Some(col)
+    }
+}
+
+pub struct PriorityMax;
+
+impl ColumnPeaker for PriorityMax {
+    fn create() -> Self {
+        Self
+    }
+
+    fn peak(&mut self, _: &[usize], widths: &[usize]) -> Option<usize> {
+        let col = (0..widths.len()).max_by_key(|&i| widths[i]).unwrap();
+        if widths[col] == 0 {
+            None
+        } else {
+            Some(col)
+        }
+    }
+}
+
+pub struct PriorityMin;
+
+impl ColumnPeaker for PriorityMin {
+    fn create() -> Self {
+        Self
+    }
+
+    fn peak(&mut self, min_widths: &[usize], widths: &[usize]) -> Option<usize> {
+        let col = (0..widths.len())
+            .filter(|&i| min_widths.is_empty() || widths[i] > min_widths[i])
+            .min_by_key(|&i| widths[i])
+            .unwrap();
+        if widths[col] == 0 {
+            None
+        } else {
+            Some(col)
+        }
+    }
 }
 
 #[cfg(feature = "color")]

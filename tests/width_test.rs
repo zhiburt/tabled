@@ -2,6 +2,7 @@ use crate::util::{create_vector, is_lines_equal};
 use tabled::{
     formatting_settings::TrimStrategy,
     object::{Cell, Columns, Object, Rows, Segment},
+    width::{PriorityMax, PriorityMin},
     Alignment, Justify, MaxWidth, MinWidth, Modify, Panel, Span, Style, Table, Tabled,
 };
 
@@ -668,8 +669,6 @@ fn total_width_big() {
         .with(Modify::new(Segment::all()).with(TrimStrategy::None))
         .to_string();
 
-    println!("{table}");
-
     assert_eq!(papergrid::string_width_multiline(&table), 80);
     assert_eq!(
         table,
@@ -1062,41 +1061,35 @@ fn max_width_with_span() {
         .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 2)).with(Span::column(2)));
 
-    // let table = table.with(MaxWidth::truncating(40));
+    let table = table.with(MaxWidth::truncating(40));
 
-    // println!("{}", table);
-
-    // assert_eq!(
-    //     table.to_string(),
-    //     concat!(
-    //         " N | column 0 | column 1 | column 2 \n",
-    //         "---+----------+----------+----------\n",
-    //         " 0 |    a long string    |   0-2    \n",
-    //         " 1 |   1-0    |         1-1         \n",
-    //         " 2 |   2-0    |   2-1    |   2-2    \n",
-    //     )
-    // );
-    // assert!(is_lines_equal(&table.to_string(), 36));
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            " 0 |    a long string    |   0-2    \n",
+            " 1 |   1-0    |         1-1         \n",
+            " 2 |   2-0    |   2-1    |   2-2    \n",
+        )
+    );
+    assert!(is_lines_equal(&table.to_string(), 36));
 
     let table = table.with(MaxWidth::truncating(20));
 
-    // println!("{}", table);
-
-    // assert_eq!(
-    //     table.to_string(),
-    //     concat!(
-    //         "  | col | col | col \n",
-    //         "--+-----+-----+-----\n",
-    //         "  | a long st | 0-2 \n",
-    //         "  | 1-0 |    1-1    \n",
-    //         "  | 2-0 | 2-1 | 2-2 \n",
-    //     )
-    // );
-    // assert!(is_lines_equal(&table.to_string(), 20));
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "  | col | col | col \n",
+            "--+-----+-----+-----\n",
+            "  | a long st | 0-2 \n",
+            "  | 1-0 |    1-1    \n",
+            "  | 2-0 | 2-1 | 2-2 \n",
+        )
+    );
+    assert!(is_lines_equal(&table.to_string(), 20));
 
     let table = table.with(MaxWidth::truncating(10));
-
-    println!("{}", table);
 
     assert_eq!(
         table.to_string(),
@@ -1220,8 +1213,6 @@ fn wrapping_as_total_multiline_color() {
         .with(MaxWidth::wrapping(57))
         .to_string();
 
-    println!("{}", table);
-
     assert_eq!(
         table,
         concat!(
@@ -1244,8 +1235,6 @@ fn wrapping_as_total_multiline_color() {
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(MaxWidth::wrapping(57).keep_words())
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(
         table,
@@ -1310,8 +1299,6 @@ fn truncating_as_total_multiline_color() {
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(MaxWidth::truncating(57))
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(
         table,
@@ -1390,8 +1377,6 @@ fn min_width_works_with_right_alignment() {
 
     let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
 
-    println!("{}", table);
-
     assert_eq!(
         table.to_string(),
         concat!(
@@ -1419,8 +1404,6 @@ fn min_width_works_with_right_alignment() {
                 .with(Alignment::center())
                 .with(TrimStrategy::None),
         );
-
-    println!("{}", table);
 
     assert_eq!(
         table.to_string(),
@@ -1463,8 +1446,6 @@ fn min_width_works_with_right_alignment() {
     assert!(is_lines_equal(&table.to_string(), 50));
 
     let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
-
-    println!("{}", table);
 
     assert_eq!(
         table.to_string(),
@@ -1689,206 +1670,6 @@ fn max_width_table_when_cell_has_tabs() {
 }
 
 #[test]
-fn max_width_truncate_priority_max() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(MaxWidth::truncating(35).prioritize_max())
-        .to_string();
-
-    assert!(is_lines_equal(&table, 35));
-    assert_eq!(
-        table,
-        concat!(
-            "| N | column  | column  | column  |\n",
-            "|---+---------+---------+---------|\n",
-            "| 0 |   0-0   |   0-1   |   0-2   |\n",
-            "| 1 | Hello W |   1-1   |   1-2   |\n",
-            "| 2 |   2-0   |   2-1   |   2-2   |\n",
-        )
-    );
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(MaxWidth::truncating(20).prioritize_max())
-        .to_string();
-
-    assert!(is_lines_equal(&table, 20));
-    assert_eq!(
-        table,
-        concat!(
-            "| N | co | co | co |\n",
-            "|---+----+----+----|\n",
-            "| 0 | 0- | 0- | 0- |\n",
-            "| 1 | He | 1- | 1- |\n",
-            "| 2 | 2- | 2- | 2- |\n",
-        )
-    );
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(MaxWidth::truncating(0).prioritize_max())
-        .to_string();
-
-    assert!(is_lines_equal(&table, 13));
-    assert_eq!(
-        table,
-        concat!(
-            "|  |  |  |  |\n",
-            "|--+--+--+--|\n",
-            "|  |  |  |  |\n",
-            "|  |  |  |  |\n",
-            "|  |  |  |  |\n",
-        )
-    );
-}
-
-#[test]
-fn max_width_truncate_priority_max_with_span() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
-        .with(MaxWidth::truncating(15).prioritize_max())
-        .to_string();
-
-    assert!(is_lines_equal(&table, 15));
-    assert_eq!(
-        table,
-        concat!(
-            "| N | c |  |  |\n",
-            "|---+---+--+--|\n",
-            "| 0 | 0 |  |  |\n",
-            "| 1 | Hell |  |\n",
-            "| 2 | 2 |  |  |\n",
-        )
-    );
-}
-
-#[test]
-fn max_width_wrap_priority_max() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(35).prioritize_max())
-        .to_string();
-
-    assert!(is_lines_equal(&table, 35));
-    assert_eq!(
-        table,
-        concat!(
-            "| N | column  | column  | column  |\n",
-            "|   | 0       | 1       | 2       |\n",
-            "|---+---------+---------+---------|\n",
-            "| 0 |   0-0   |   0-1   |   0-2   |\n",
-            "| 1 | Hello W |   1-1   |   1-2   |\n",
-            "|   | orld Wi |         |         |\n",
-            "|   | th Big  |         |         |\n",
-            "|   | Line    |         |         |\n",
-            "| 2 |   2-0   |   2-1   |   2-2   |\n",
-        )
-    );
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(20).prioritize_max())
-        .to_string();
-
-    assert!(is_lines_equal(&table, 20));
-    assert_eq!(
-        table,
-        concat!(
-            "| N | co | co | co |\n",
-            "|   | lu | lu | lu |\n",
-            "|   | mn | mn | mn |\n",
-            "|   |  0 |  1 |  2 |\n",
-            "|---+----+----+----|\n",
-            "| 0 | 0- | 0- | 0- |\n",
-            "|   | 0  | 1  | 2  |\n",
-            "| 1 | He | 1- | 1- |\n",
-            "|   | ll | 1  | 2  |\n",
-            "|   | o  |    |    |\n",
-            "|   | Wo |    |    |\n",
-            "|   | rl |    |    |\n",
-            "|   | d  |    |    |\n",
-            "|   | Wi |    |    |\n",
-            "|   | th |    |    |\n",
-            "|   |  B |    |    |\n",
-            "|   | ig |    |    |\n",
-            "|   |  L |    |    |\n",
-            "|   | in |    |    |\n",
-            "|   | e  |    |    |\n",
-            "| 2 | 2- | 2- | 2- |\n",
-            "|   | 0  | 1  | 2  |\n",
-        )
-    );
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(0).prioritize_max())
-        .to_string();
-
-    assert!(is_lines_equal(&table, 13));
-    assert_eq!(
-        table,
-        concat!(
-            "|  |  |  |  |\n",
-            "|--+--+--+--|\n",
-            "|  |  |  |  |\n",
-            "|  |  |  |  |\n",
-            "|  |  |  |  |\n",
-        )
-    );
-}
-
-#[test]
-fn max_width_wrap_priority_max_with_span() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
-        .with(MaxWidth::wrapping(15).prioritize_max())
-        .to_string();
-
-    assert!(is_lines_equal(&table, 15));
-    assert_eq!(
-        table,
-        concat!(
-            "| N | c |  |  |\n",
-            "|   | o |  |  |\n",
-            "|   | l |  |  |\n",
-            "|   | u |  |  |\n",
-            "|   | m |  |  |\n",
-            "|   | n |  |  |\n",
-            "|   |   |  |  |\n",
-            "|   | 0 |  |  |\n",
-            "|---+---+--+--|\n",
-            "| 0 | 0 |  |  |\n",
-            "|   | - |  |  |\n",
-            "|   | 0 |  |  |\n",
-            "| 1 | Hell |  |\n",
-            "|   | o Wo |  |\n",
-            "|   | rld  |  |\n",
-            "|   | With |  |\n",
-            "|   |  Big |  |\n",
-            "|   |  Lin |  |\n",
-            "|   | e    |  |\n",
-            "| 2 | 2 |  |  |\n",
-            "|   | - |  |  |\n",
-            "|   | 0 |  |  |\n",
-        )
-    );
-}
-
-#[test]
 fn max_width_truncate_with_big_span() {
     let mut data = create_vector::<3, 3>();
     data[1][1] = String::from("Hello World With Big Line; Here we gooooooo");
@@ -1957,5 +1738,437 @@ fn max_width_truncate_with_big_span() {
             "|  | Hello World With Big Line; He | 1 |\n",
             "|  |      2-0      | Hello World With  |\n",
         )
+    );
+}
+
+#[test]
+fn max_width_truncate_priority_max() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(35).priority::<PriorityMax>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 35));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column  | column  | column  |\n",
+            "|---+---------+---------+---------|\n",
+            "| 0 |   0-0   |   0-1   |   0-2   |\n",
+            "| 1 | Hello W |   1-1   |   1-2   |\n",
+            "| 2 |   2-0   |   2-1   |   2-2   |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(20).priority::<PriorityMax>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 20));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | co | co | co |\n",
+            "|---+----+----+----|\n",
+            "| 0 | 0- | 0- | 0- |\n",
+            "| 1 | He | 1- | 1- |\n",
+            "| 2 | 2- | 2- | 2- |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(0).priority::<PriorityMax>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 13));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  |  |  |\n",
+            "|--+--+--+--|\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_truncate_priority_max_with_span() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(MaxWidth::truncating(15).priority::<PriorityMax>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 15));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | c |  |  |\n",
+            "|---+---+--+--|\n",
+            "| 0 | 0 |  |  |\n",
+            "| 1 | Hell |  |\n",
+            "| 2 | 2 |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_wrap_priority_max() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(35).priority::<PriorityMax>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 35));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column  | column  | column  |\n",
+            "|   | 0       | 1       | 2       |\n",
+            "|---+---------+---------+---------|\n",
+            "| 0 |   0-0   |   0-1   |   0-2   |\n",
+            "| 1 | Hello W |   1-1   |   1-2   |\n",
+            "|   | orld Wi |         |         |\n",
+            "|   | th Big  |         |         |\n",
+            "|   | Line    |         |         |\n",
+            "| 2 |   2-0   |   2-1   |   2-2   |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(20).priority::<PriorityMax>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 20));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | co | co | co |\n",
+            "|   | lu | lu | lu |\n",
+            "|   | mn | mn | mn |\n",
+            "|   |  0 |  1 |  2 |\n",
+            "|---+----+----+----|\n",
+            "| 0 | 0- | 0- | 0- |\n",
+            "|   | 0  | 1  | 2  |\n",
+            "| 1 | He | 1- | 1- |\n",
+            "|   | ll | 1  | 2  |\n",
+            "|   | o  |    |    |\n",
+            "|   | Wo |    |    |\n",
+            "|   | rl |    |    |\n",
+            "|   | d  |    |    |\n",
+            "|   | Wi |    |    |\n",
+            "|   | th |    |    |\n",
+            "|   |  B |    |    |\n",
+            "|   | ig |    |    |\n",
+            "|   |  L |    |    |\n",
+            "|   | in |    |    |\n",
+            "|   | e  |    |    |\n",
+            "| 2 | 2- | 2- | 2- |\n",
+            "|   | 0  | 1  | 2  |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(0).priority::<PriorityMax>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 13));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  |  |  |\n",
+            "|--+--+--+--|\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_wrap_priority_max_with_span() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(MaxWidth::wrapping(15).priority::<PriorityMax>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 15));
+    assert_eq!(
+        table,
+        concat!(
+            "| N | c |  |  |\n",
+            "|   | o |  |  |\n",
+            "|   | l |  |  |\n",
+            "|   | u |  |  |\n",
+            "|   | m |  |  |\n",
+            "|   | n |  |  |\n",
+            "|   |   |  |  |\n",
+            "|   | 0 |  |  |\n",
+            "|---+---+--+--|\n",
+            "| 0 | 0 |  |  |\n",
+            "|   | - |  |  |\n",
+            "|   | 0 |  |  |\n",
+            "| 1 | Hell |  |\n",
+            "|   | o Wo |  |\n",
+            "|   | rld  |  |\n",
+            "|   | With |  |\n",
+            "|   |  Big |  |\n",
+            "|   |  Lin |  |\n",
+            "|   | e    |  |\n",
+            "| 2 | 2 |  |  |\n",
+            "|   | - |  |  |\n",
+            "|   | 0 |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_truncate_priority_min() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(35).priority::<PriorityMin>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 35));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |        column 0        |  |  |\n",
+            "|--+------------------------+--+--|\n",
+            "|  |          0-0           |  |  |\n",
+            "|  | Hello World With Big L |  |  |\n",
+            "|  |          2-0           |  |  |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(20).priority::<PriorityMin>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 20));
+    assert_eq!(
+        table,
+        concat!(
+            "|  | column  |  |  |\n",
+            "|--+---------+--+--|\n",
+            "|  |   0-0   |  |  |\n",
+            "|  | Hello W |  |  |\n",
+            "|  |   2-0   |  |  |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::truncating(0).priority::<PriorityMin>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 13));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  |  |  |\n",
+            "|--+--+--+--|\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_truncate_priority_min_with_span() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(MaxWidth::truncating(15).priority::<PriorityMin>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 15));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  | co |  |\n",
+            "|--+--+----+--|\n",
+            "|  |  | 0- |  |\n",
+            "|  | Hello |  |\n",
+            "|  |  | 2- |  |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(MaxWidth::truncating(17).priority::<PriorityMin>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 17));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  | colu |  |\n",
+            "|--+--+------+--|\n",
+            "|  |  | 0-1  |  |\n",
+            "|  | Hello W |  |\n",
+            "|  |  | 2-1  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_wrap_priority_min() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(35).priority::<PriorityMin>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 35));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |        column 0        |  |  |\n",
+            "|--+------------------------+--+--|\n",
+            "|  |          0-0           |  |  |\n",
+            "|  | Hello World With Big L |  |  |\n",
+            "|  | ine                    |  |  |\n",
+            "|  |          2-0           |  |  |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(20).priority::<PriorityMin>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 20));
+    assert_eq!(
+        table,
+        concat!(
+            "|  | column  |  |  |\n",
+            "|  | 0       |  |  |\n",
+            "|--+---------+--+--|\n",
+            "|  |   0-0   |  |  |\n",
+            "|  | Hello W |  |  |\n",
+            "|  | orld Wi |  |  |\n",
+            "|  | th Big  |  |  |\n",
+            "|  | Line    |  |  |\n",
+            "|  |   2-0   |  |  |\n",
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MaxWidth::wrapping(0).priority::<PriorityMin>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 13));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  |  |  |\n",
+            "|--+--+--+--|\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+            "|  |  |  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn max_width_wrap_priority_min_with_span() {
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(MaxWidth::wrapping(15).priority::<PriorityMin>())
+        .to_string();
+
+    assert!(is_lines_equal(&table, 15));
+    assert_eq!(
+        table,
+        concat!(
+            "|  |  | co |  |\n",
+            "|  |  | lu |  |\n",
+            "|  |  | mn |  |\n",
+            "|  |  |  1 |  |\n",
+            "|--+--+----+--|\n",
+            "|  |  | 0- |  |\n",
+            "|  |  | 1  |  |\n",
+            "|  | Hello |  |\n",
+            "|  |  Worl |  |\n",
+            "|  | d Wit |  |\n",
+            "|  | h Big |  |\n",
+            "|  |  Line |  |\n",
+            "|  |  | 2- |  |\n",
+            "|  |  | 1  |  |\n",
+        )
+    );
+}
+
+#[test]
+fn min_width_priority_max() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MinWidth::new(60).priority::<PriorityMax>());
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "| N | column 0 | column 1 |            column 2            |\n",
+            "|---+----------+----------+--------------------------------|\n",
+            "| 0 |   0-0    |   0-1    |              0-2               |\n",
+            "| 1 |   1-0    |   1-1    |              1-2               |\n",
+            "| 2 |   2-0    |   2-1    |              2-2               |\n",
+        ),
+    );
+}
+
+#[test]
+fn min_width_priority_min() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(MinWidth::new(60).priority::<PriorityMin>());
+
+    assert_eq!(
+        table.to_string(),
+        concat!(
+            "|      N       |   column 0   |   column 1   |  column 2   |\n",
+            "|--------------+--------------+--------------+-------------|\n",
+            "|      0       |     0-0      |     0-1      |     0-2     |\n",
+            "|      1       |     1-0      |     1-1      |     1-2     |\n",
+            "|      2       |     2-0      |     2-1      |     2-2     |\n",
+        ),
     );
 }
