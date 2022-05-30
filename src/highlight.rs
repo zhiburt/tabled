@@ -67,7 +67,7 @@ use papergrid::{Entity, Grid, Settings};
 ///                .with(Highlight::new(Segment::all().not(Cell(0,0).and(Cell(1, 0).and(Cell(0, 1)).and(Cell(0, 3)))), Border::filled('*')))
 ///                .to_string();
 ///
-/// println!("{table}");
+/// println!("{}", table);
 ///
 /// assert_eq!(
 ///     table,

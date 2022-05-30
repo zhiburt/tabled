@@ -37,25 +37,26 @@ fn display() {
     let data = create_vector::<3, 3>();
     let table = ExpandedDisplay::new(&data).to_string();
 
-    let expected = concat!(
-        "-[ RECORD 0 ]-\n",
-        "N        | 0\n",
-        "column 0 | 0-0\n",
-        "column 1 | 0-1\n",
-        "column 2 | 0-2\n",
-        "-[ RECORD 1 ]-\n",
-        "N        | 1\n",
-        "column 0 | 1-0\n",
-        "column 1 | 1-1\n",
-        "column 2 | 1-2\n",
-        "-[ RECORD 2 ]-\n",
-        "N        | 2\n",
-        "column 0 | 2-0\n",
-        "column 1 | 2-1\n",
-        "column 2 | 2-2\n",
+    assert_eq!(
+        table,
+        concat!(
+            "-[ RECORD 0 ]-\n",
+            "N        | 0\n",
+            "column 0 | 0-0\n",
+            "column 1 | 0-1\n",
+            "column 2 | 0-2\n",
+            "-[ RECORD 1 ]-\n",
+            "N        | 1\n",
+            "column 0 | 1-0\n",
+            "column 1 | 1-1\n",
+            "column 2 | 1-2\n",
+            "-[ RECORD 2 ]-\n",
+            "N        | 2\n",
+            "column 0 | 2-0\n",
+            "column 1 | 2-1\n",
+            "column 2 | 2-2\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[cfg(feature = "color")]
@@ -74,25 +75,26 @@ fn display_colored() {
 
     let table = ExpandedDisplay::new(&data).to_string();
 
-    let expected = concat!(
-        "-[ RECORD 0 ]-----------------------\n",
-        "N        | 0\n",
-        "column 0 | 0-0\n",
-        "column 1 | \u{1b}[44m\u{1b}[31mhttps://getfedora.org/\u{1b}[0m\u{1b}[0m\n",
-        "column 2 | 0-2\n",
-        "-[ RECORD 1 ]-----------------------\n",
-        "N        | 1\n",
-        "column 0 | 1-0\n",
-        "column 1 | \u{1b}[40m\u{1b}[32mhttps://www.opensuse.org/\u{1b}[0m\u{1b}[0m\n",
-        "column 2 | 1-2\n",
-        "-[ RECORD 2 ]-----------------------\n",
-        "N        | 2\n",
-        "column 0 | 2-0\n",
-        "column 1 | \u{1b}[4m\u{1b}[34mhttps://endeavouros.com/\u{1b}[0m\u{1b}[0m\n",
-        "column 2 | 2-2\n",
+    assert_eq!(
+        table,
+        concat!(
+            "-[ RECORD 0 ]-----------------------\n",
+            "N        | 0\n",
+            "column 0 | 0-0\n",
+            "column 1 | \u{1b}[44m\u{1b}[31mhttps://getfedora.org/\u{1b}[0m\u{1b}[0m\n",
+            "column 2 | 0-2\n",
+            "-[ RECORD 1 ]-----------------------\n",
+            "N        | 1\n",
+            "column 0 | 1-0\n",
+            "column 1 | \u{1b}[40m\u{1b}[32mhttps://www.opensuse.org/\u{1b}[0m\u{1b}[0m\n",
+            "column 2 | 1-2\n",
+            "-[ RECORD 2 ]-----------------------\n",
+            "N        | 2\n",
+            "column 0 | 2-0\n",
+            "column 1 | \u{1b}[4m\u{1b}[34mhttps://endeavouros.com/\u{1b}[0m\u{1b}[0m\n",
+            "column 2 | 2-2\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -240,21 +242,22 @@ fn display_multiline_record_value() {
 
     let table = ExpandedDisplay::new(&data).to_string();
 
-    let expected = concat!(
-        "-[ RECORD 0 ]---\n",
-        "N        | Hello\n",
-        "         | World\n",
-        "column 0 | 123\n",
-        "column 1 | asd\n",
-        "column 2 | 0-2\n",
-        "-[ RECORD 1 ]---\n",
-        "N        | 1\n",
-        "column 0 | 1-0\n",
-        "column 1 | 1-1\n",
-        "column 2 | 1-2\n",
+    assert_eq!(
+        table,
+        concat!(
+            "-[ RECORD 0 ]---\n",
+            "N        | Hello\n",
+            "         | World\n",
+            "column 0 | 123\n",
+            "column 1 | asd\n",
+            "column 2 | 0-2\n",
+            "-[ RECORD 1 ]---\n",
+            "N        | 1\n",
+            "column 0 | 1-0\n",
+            "column 1 | 1-1\n",
+            "column 2 | 1-2\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -264,20 +267,21 @@ fn display_with_header_template() {
         .header_template(|i| format!("=== Record => {}", i))
         .to_string();
 
-    let expected = concat!(
-        "=== Record => 0\n",
-        "N        | 0\n",
-        "column 0 | 0-0\n",
-        "column 1 | 0-1\n",
-        "column 2 | 0-2\n",
-        "=== Record => 1\n",
-        "N        | 1\n",
-        "column 0 | 1-0\n",
-        "column 1 | 1-1\n",
-        "column 2 | 1-2\n",
+    assert_eq!(
+        table,
+        concat!(
+            "=== Record => 0\n",
+            "N        | 0\n",
+            "column 0 | 0-0\n",
+            "column 1 | 0-1\n",
+            "column 2 | 0-2\n",
+            "=== Record => 1\n",
+            "N        | 1\n",
+            "column 0 | 1-0\n",
+            "column 1 | 1-1\n",
+            "column 2 | 1-2\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -289,29 +293,30 @@ fn display_with_formatter() {
         .formatter(|s| format!("{}!\n\n", s))
         .to_string();
 
-    let expected = concat!(
-        "-[ RECORD 0 ]--\n",
-        "N        | 0!\n",
-        "         | \n",
-        "column 0 | 123\n",
-        "         | 456!\n",
-        "         | \n",
-        "column 1 | 0-1!\n",
-        "         | \n",
-        "column 2 | 0-2!\n",
-        "         | \n",
-        "-[ RECORD 1 ]--\n",
-        "N        | 1!\n",
-        "         | \n",
-        "column 0 | 1-0!\n",
-        "         | \n",
-        "column 1 | 1-1!\n",
-        "         | \n",
-        "column 2 | 1-2!\n",
-        "         | \n",
+    assert_eq!(
+        table,
+        concat!(
+            "-[ RECORD 0 ]--\n",
+            "N        | 0!\n",
+            "         | \n",
+            "column 0 | 123\n",
+            "         | 456!\n",
+            "         | \n",
+            "column 1 | 0-1!\n",
+            "         | \n",
+            "column 2 | 0-2!\n",
+            "         | \n",
+            "-[ RECORD 1 ]--\n",
+            "N        | 1!\n",
+            "         | \n",
+            "column 0 | 1-0!\n",
+            "         | \n",
+            "column 1 | 1-1!\n",
+            "         | \n",
+            "column 2 | 1-2!\n",
+            "         | \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -325,15 +330,16 @@ fn display_with_one_line_formatter() {
         .formatter(|s| s.escape_debug().to_string())
         .to_string();
 
-    let expected = concat!(
-        "-[ RECORD 0 ]----------\n",
-        "N        | Hello\\nWorld\n",
-        "column 0 | 123\n",
-        "column 1 | asd\n",
-        "column 2 | 0-2\n",
+    assert_eq!(
+        table,
+        concat!(
+            "-[ RECORD 0 ]----------\n",
+            "N        | Hello\\nWorld\n",
+            "column 0 | 123\n",
+            "column 1 | asd\n",
+            "column 2 | 0-2\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -341,25 +347,26 @@ fn display_with_truncate() {
     let data = create_vector::<3, 3>();
     let table = ExpandedDisplay::new(&data).truncate(2, "").to_string();
 
-    let expected = concat!(
-        "-[ RECORD 0 ]-\n",
-        "N        | 0\n",
-        "column 0 | 0-\n",
-        "column 1 | 0-\n",
-        "column 2 | 0-\n",
-        "-[ RECORD 1 ]-\n",
-        "N        | 1\n",
-        "column 0 | 1-\n",
-        "column 1 | 1-\n",
-        "column 2 | 1-\n",
-        "-[ RECORD 2 ]-\n",
-        "N        | 2\n",
-        "column 0 | 2-\n",
-        "column 1 | 2-\n",
-        "column 2 | 2-\n",
+    assert_eq!(
+        table,
+        concat!(
+            "-[ RECORD 0 ]-\n",
+            "N        | 0\n",
+            "column 0 | 0-\n",
+            "column 1 | 0-\n",
+            "column 2 | 0-\n",
+            "-[ RECORD 1 ]-\n",
+            "N        | 1\n",
+            "column 0 | 1-\n",
+            "column 1 | 1-\n",
+            "column 2 | 1-\n",
+            "-[ RECORD 2 ]-\n",
+            "N        | 2\n",
+            "column 0 | 2-\n",
+            "column 1 | 2-\n",
+            "column 2 | 2-\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -367,20 +374,21 @@ fn display_with_truncate_with_tail() {
     let data = create_vector::<2, 3>();
     let table = ExpandedDisplay::new(&data).truncate(2, "...").to_string();
 
-    let expected = concat!(
-        "-[ RECORD 0 ]---\n",
-        "N        | 0\n",
-        "column 0 | 0-...\n",
-        "column 1 | 0-...\n",
-        "column 2 | 0-...\n",
-        "-[ RECORD 1 ]---\n",
-        "N        | 1\n",
-        "column 0 | 1-...\n",
-        "column 1 | 1-...\n",
-        "column 2 | 1-...\n",
+    assert_eq!(
+        table,
+        concat!(
+            "-[ RECORD 0 ]---\n",
+            "N        | 0\n",
+            "column 0 | 0-...\n",
+            "column 1 | 0-...\n",
+            "column 2 | 0-...\n",
+            "-[ RECORD 1 ]---\n",
+            "N        | 1\n",
+            "column 0 | 1-...\n",
+            "column 1 | 1-...\n",
+            "column 2 | 1-...\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -388,32 +396,33 @@ fn display_with_wrap() {
     let data = create_vector::<2, 3>();
     let table = ExpandedDisplay::new(&data).wrap(1).to_string();
 
-    let expected = concat!(
-        "-[ RECORD 0 ]-\n",
-        "N        | 0\n",
-        "column 0 | 0\n",
-        "         | -\n",
-        "         | 0\n",
-        "column 1 | 0\n",
-        "         | -\n",
-        "         | 1\n",
-        "column 2 | 0\n",
-        "         | -\n",
-        "         | 2\n",
-        "-[ RECORD 1 ]-\n",
-        "N        | 1\n",
-        "column 0 | 1\n",
-        "         | -\n",
-        "         | 0\n",
-        "column 1 | 1\n",
-        "         | -\n",
-        "         | 1\n",
-        "column 2 | 1\n",
-        "         | -\n",
-        "         | 2\n",
+    assert_eq!(
+        table,
+        concat!(
+            "-[ RECORD 0 ]-\n",
+            "N        | 0\n",
+            "column 0 | 0\n",
+            "         | -\n",
+            "         | 0\n",
+            "column 1 | 0\n",
+            "         | -\n",
+            "         | 1\n",
+            "column 2 | 0\n",
+            "         | -\n",
+            "         | 2\n",
+            "-[ RECORD 1 ]-\n",
+            "N        | 1\n",
+            "column 0 | 1\n",
+            "         | -\n",
+            "         | 0\n",
+            "column 1 | 1\n",
+            "         | -\n",
+            "         | 1\n",
+            "column 2 | 1\n",
+            "         | -\n",
+            "         | 2\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[cfg(feature = "color")]
@@ -429,54 +438,55 @@ fn display_with_wrap_colored() {
 
     let table = ExpandedDisplay::new(&data).wrap(2).to_string();
 
-    let expected = concat!(
-        "-[ RECORD 0 ]-\n",
-        "N        | 0\n",
-        "column 0 | 0-\n",
-        "         | 0\n",
-        "column 1 | \u{1b}[31mht\u{1b}[39m\n",
-        "         | \u{1b}[31mtp\u{1b}[39m\n",
-        "         | \u{1b}[31ms:\u{1b}[39m\n",
-        "         | \u{1b}[31m//\u{1b}[39m\n",
-        "         | \u{1b}[31mge\u{1b}[39m\n",
-        "         | \u{1b}[31mtf\u{1b}[39m\n",
-        "         | \u{1b}[31med\u{1b}[39m\n",
-        "         | \u{1b}[31mor\u{1b}[39m\n",
-        "         | \u{1b}[31ma.\u{1b}[39m\n",
-        "         | \u{1b}[31mor\u{1b}[39m\n",
-        "         | \u{1b}[31mg/\u{1b}[39m\n",
-        "column 2 | 0-\n",
-        "         | 2\n",
-        "-[ RECORD 1 ]-\n",
-        "N        | 1\n",
-        "column 0 | \u{1b}[37m\u{1b}[40mht\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40mtp\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40ms:\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40m//\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40men\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40mde\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40mav\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40mou\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40mro\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40ms.\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40mco\u{1b}[39m\u{1b}[49m\n",
-        "         | \u{1b}[37m\u{1b}[40mm/\u{1b}[39m\u{1b}[49m\n",
-        "column 1 | ht\n",
-        "         | tp\n",
-        "         | s:\n",
-        "         | //\n",
-        "         | ww\n",
-        "         | w.\n",
-        "         | op\n",
-        "         | en\n",
-        "         | su\n",
-        "         | se\n",
-        "         | .o\n",
-        "         | rg\n",
-        "         | /\n",
-        "column 2 | 1-\n",
-        "         | 2\n",
+    assert_eq!(
+        table,
+        concat!(
+            "-[ RECORD 0 ]-\n",
+            "N        | 0\n",
+            "column 0 | 0-\n",
+            "         | 0\n",
+            "column 1 | \u{1b}[31mht\u{1b}[39m\n",
+            "         | \u{1b}[31mtp\u{1b}[39m\n",
+            "         | \u{1b}[31ms:\u{1b}[39m\n",
+            "         | \u{1b}[31m//\u{1b}[39m\n",
+            "         | \u{1b}[31mge\u{1b}[39m\n",
+            "         | \u{1b}[31mtf\u{1b}[39m\n",
+            "         | \u{1b}[31med\u{1b}[39m\n",
+            "         | \u{1b}[31mor\u{1b}[39m\n",
+            "         | \u{1b}[31ma.\u{1b}[39m\n",
+            "         | \u{1b}[31mor\u{1b}[39m\n",
+            "         | \u{1b}[31mg/\u{1b}[39m\n",
+            "column 2 | 0-\n",
+            "         | 2\n",
+            "-[ RECORD 1 ]-\n",
+            "N        | 1\n",
+            "column 0 | \u{1b}[37m\u{1b}[40mht\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40mtp\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40ms:\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40m//\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40men\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40mde\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40mav\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40mou\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40mro\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40ms.\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40mco\u{1b}[39m\u{1b}[49m\n",
+            "         | \u{1b}[37m\u{1b}[40mm/\u{1b}[39m\u{1b}[49m\n",
+            "column 1 | ht\n",
+            "         | tp\n",
+            "         | s:\n",
+            "         | //\n",
+            "         | ww\n",
+            "         | w.\n",
+            "         | op\n",
+            "         | en\n",
+            "         | su\n",
+            "         | se\n",
+            "         | .o\n",
+            "         | rg\n",
+            "         | /\n",
+            "column 2 | 1-\n",
+            "         | 2\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }

@@ -32,10 +32,10 @@
 //! );
 //! ```
 
-use std::collections::{HashMap, HashSet};
+use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 
 use crate::{CellOption, TableOption};
-use papergrid::{string_width, string_width_multiline, Entity, Grid, Settings, Style};
+use papergrid::{string_width, string_width_multiline, Entity, Grid, Settings};
 
 /// MaxWidth allows you to set a max width of an object on a [Table],
 /// using different strategies.
@@ -78,7 +78,7 @@ pub struct MaxWidth;
 
 impl MaxWidth {
     /// Returns a [Truncate] object.
-    pub fn truncating(width: usize) -> Truncate<&'static str> {
+    pub fn truncating(width: usize) -> Truncate<'static> {
         Truncate::new(width)
     }
 
@@ -101,33 +101,46 @@ impl MaxWidth {
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Truncate::new(3)));
 /// ```
-pub struct Truncate<S> {
+pub struct Truncate<'a, P = PriorityNone> {
     width: usize,
-    suffix: S,
+    suffix: Cow<'a, str>,
+    _priority: PhantomData<P>,
 }
 
-impl Truncate<&'static str> {
+impl Truncate<'static> {
     /// Creates a [Truncate] object
-    pub fn new(width: usize) -> Self {
-        Self { width, suffix: "" }
-    }
-}
-
-impl<T> Truncate<T> {
-    /// Sets a suffix which will be appended to a resultant string
-    /// in case a truncate is applied.
-    pub fn suffix<S>(self, suffix: S) -> Truncate<S> {
-        Truncate {
-            width: self.width,
-            suffix,
+    pub fn new(width: usize) -> Truncate<'static> {
+        Self {
+            width,
+            suffix: Cow::Borrowed(""),
+            _priority: Default::default(),
         }
     }
 }
 
-impl<S> CellOption for Truncate<S>
-where
-    S: AsRef<str>,
-{
+impl<P> Truncate<'_, P> {
+    /// Sets a suffix which will be appended to a resultant string
+    /// in case a truncate is applied.
+    pub fn suffix<'a, S: Into<Cow<'a, str>>>(self, suffix: S) -> Truncate<'a, P> {
+        Truncate {
+            width: self.width,
+            suffix: suffix.into(),
+            _priority: Default::default(),
+        }
+    }
+}
+
+impl<'a, P> Truncate<'a, P> {
+    pub fn priority<PP: ColumnPeaker>(self) -> Truncate<'a, PP> {
+        Truncate {
+            width: self.width,
+            suffix: self.suffix,
+            _priority: Default::default(),
+        }
+    }
+}
+
+impl<P> CellOption for Truncate<'_, P> {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let content = grid.get_cell_content_styled(row, column);
         let striped_content = strip(&content, self.width);
@@ -151,9 +164,11 @@ where
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Wrap::new(3)));
 /// ```
-pub struct Wrap {
+#[derive(Debug, Clone)]
+pub struct Wrap<P = PriorityNone> {
     width: usize,
     keep_words: bool,
+    _priority: PhantomData<P>,
 }
 
 impl Wrap {
@@ -162,6 +177,7 @@ impl Wrap {
         Self {
             width,
             keep_words: false,
+            _priority: Default::default(),
         }
     }
 
@@ -172,6 +188,16 @@ impl Wrap {
     pub fn keep_words(mut self) -> Self {
         self.keep_words = true;
         self
+    }
+}
+
+impl<P> Wrap<P> {
+    pub fn priority<PP>(self) -> Wrap<PP> {
+        Wrap {
+            width: self.width,
+            keep_words: self.keep_words,
+            _priority: Default::default(),
+        }
     }
 }
 
@@ -422,22 +448,37 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 /// ```
 ///
 /// [Padding]: crate::Padding
-pub struct MinWidth {
+pub struct MinWidth<P = PriorityNone> {
     size: usize,
     fill: char,
+    _priority: PhantomData<P>,
 }
 
 impl MinWidth {
     /// Creates a new instance of MinWidth.
     pub fn new(size: usize) -> Self {
-        Self { size, fill: ' ' }
+        Self {
+            size,
+            fill: ' ',
+            _priority: Default::default(),
+        }
     }
+}
 
+impl<P> MinWidth<P> {
     /// Set's a fill character which will be used to fill the space
     /// when increasing the length of the string to the set boundary.
     pub fn fill_with(mut self, c: char) -> Self {
         self.fill = c;
         self
+    }
+
+    pub fn priority<PP: ColumnPeaker>(self) -> MinWidth<PP> {
+        MinWidth {
+            fill: self.fill,
+            size: self.size,
+            _priority: Default::default(),
+        }
     }
 }
 
@@ -491,9 +532,9 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
     }
 }
 
-impl<S> TableOption for Truncate<S>
+impl<P> TableOption for Truncate<'_, P>
 where
-    S: AsRef<str>,
+    P: ColumnPeaker,
 {
     fn change(&mut self, grid: &mut Grid) {
         if grid.count_columns() == 0 || grid.count_rows() == 0 {
@@ -510,12 +551,21 @@ where
         }
 
         if self.width < total_width {
-            truncate_total_width(grid, self.width);
+            truncate_total_width(
+                grid,
+                total_width,
+                self.width,
+                self.suffix.as_ref(),
+                P::create(),
+            );
         }
     }
 }
 
-impl TableOption for Wrap {
+impl<P> TableOption for Wrap<P>
+where
+    P: ColumnPeaker,
+{
     fn change(&mut self, grid: &mut Grid) {
         if grid.count_columns() == 0 || grid.count_rows() == 0 {
             return;
@@ -531,12 +581,15 @@ impl TableOption for Wrap {
         }
 
         if self.width < total_width {
-            wrap_total_width(grid, self.width, self.keep_words);
+            wrap_total_width(grid, total_width, self.width, self.keep_words, P::create());
         }
     }
 }
 
-impl TableOption for MinWidth {
+impl<P> TableOption for MinWidth<P>
+where
+    P: ColumnPeaker,
+{
     fn change(&mut self, grid: &mut Grid) {
         if grid.count_columns() == 0 || grid.count_rows() == 0 {
             return;
@@ -546,66 +599,53 @@ impl TableOption for MinWidth {
             return;
         }
 
-        // loop is necessary because increase_total_width may not work properly in 1 call.
-        //
-        // todo: Try to fix it in other way?
-        loop {
-            let total_width = grid.total_width();
-            if total_width >= self.size {
-                break;
-            }
-
-            increase_total_width(grid, total_width, self.size);
+        let total_width = grid.total_width();
+        if total_width >= self.size {
+            return;
         }
+
+        increase_total_width(grid, total_width, self.size, P::create());
     }
 }
 
-fn increase_total_width(grid: &mut Grid, total_width: usize, expected_width: usize) {
-    let mut increase_list = HashMap::new();
-    let mut size = expected_width;
-    for col in (0..grid.count_columns()).cycle() {
-        if size == total_width {
-            break;
-        }
+fn increase_total_width<P: ColumnPeaker>(
+    grid: &mut Grid,
+    total_width: usize,
+    expected_width: usize,
+    priority: P,
+) {
+    let increase_list = increase_total_width_fn(grid, expected_width, total_width, priority);
 
-        let mut increased = false;
-        #[allow(clippy::needless_range_loop)]
-        for row in 0..grid.count_rows() {
-            if !grid.is_cell_visible((row, col)) {
-                continue;
-            }
-
-            increase_list
-                .entry((row, col))
-                .and_modify(|e| *e += 1)
-                .or_insert(1);
-
-            increased = true;
-        }
-
-        if increased {
-            size -= 1;
-        }
-    }
-
-    for ((row, col), inc) in increase_list {
-        let content = grid.get_cell_content_styled(row, col);
-        let content_width = string_width_multiline(&content);
-
-        MinWidth::new(content_width + inc).change_cell(grid, row, col);
+    for ((row, col), width) in increase_list {
+        MinWidth::new(width).change_cell(grid, row, col);
     }
 }
 
-fn truncate_total_width(grid: &mut Grid, width: usize) {
-    let points = decrease_total_width(grid, width);
+fn truncate_total_width<P: ColumnPeaker>(
+    grid: &mut Grid,
+    total_width: usize,
+    width: usize,
+    suffix: &str,
+    priority: P,
+) {
+    let points = decrease_total_width_fn(grid, total_width, width, priority);
 
     for ((row, col), width) in points {
-        Truncate::new(width).change_cell(grid, row, col);
+        Truncate::new(width)
+            .suffix(suffix)
+            .change_cell(grid, row, col);
+        MinWidth::new(width).change_cell(grid, row, col);
     }
 }
 
-fn wrap_total_width(grid: &mut Grid, width: usize, keep_words: bool) {
-    let points = decrease_total_width(grid, width);
+fn wrap_total_width<P: ColumnPeaker>(
+    grid: &mut Grid,
+    total_width: usize,
+    width: usize,
+    keep_words: bool,
+    priority: P,
+) {
+    let points = decrease_total_width_fn(grid, total_width, width, priority);
 
     let mut wrap = Wrap::new(0);
     wrap.keep_words = keep_words;
@@ -613,164 +653,6 @@ fn wrap_total_width(grid: &mut Grid, width: usize, keep_words: bool) {
         wrap.width = width;
         wrap.change_cell(grid, row, col);
     }
-}
-
-fn decrease_total_width(grid: &Grid, width: usize) -> HashMap<(usize, usize), usize> {
-    let mut points = HashMap::new();
-
-    let count_columns = grid.count_columns();
-    let count_rows = grid.count_rows();
-
-    if count_columns == 0 || count_rows == 0 {
-        return points;
-    }
-
-    let orig_widths = grid_widths(grid);
-    let min_widths = build_min_widths(grid);
-    let borders = build_borders_list(grid);
-
-    let mut empty_columns = HashSet::new();
-    let mut widths = build_cell_widths(grid);
-    let mut total_width = new_total_width(grid, &widths, &borders);
-    let mut columns = (0..count_columns).cycle();
-    while total_width != width {
-        // all cells are zero width.
-        let reached_the_end = empty_columns.len() == count_columns;
-        if reached_the_end {
-            break;
-        }
-
-        let col = columns.next().unwrap();
-        if empty_columns.contains(&col) {
-            continue;
-        }
-
-        let is_empty_column = (0..count_rows).all(|row| widths[row][col] == 0);
-        if is_empty_column {
-            empty_columns.insert(col);
-            continue;
-        }
-
-        update_widths_column(grid, &orig_widths, &mut widths, col);
-
-        total_width = new_total_width(grid, &widths, &borders);
-    }
-
-    for col in 0..count_columns {
-        for row in 0..count_rows {
-            let width = std::cmp::max(widths[row][col], min_widths[row][col]);
-            let orig_width = orig_widths[row][col];
-
-            if width < orig_width {
-                points.insert((row, col), width);
-            }
-        }
-    }
-
-    points
-}
-
-fn new_total_width(grid: &Grid, widths: &[Vec<usize>], borders: &[usize]) -> usize {
-    (0..grid.count_rows())
-        .map(|row| {
-            (0..grid.count_columns())
-                .filter(|&col| grid.is_cell_visible((row, col)))
-                .map(|col| {
-                    let padding = &grid.style(Entity::Cell(row, col)).padding;
-                    widths[row][col] + padding.left.size + padding.right.size
-                })
-                .sum::<usize>()
-                + borders[row]
-        })
-        .max()
-        .unwrap_or(0)
-        + grid.get_margin().left.size
-        + grid.get_margin().right.size
-}
-
-fn build_borders_list(grid: &Grid) -> Vec<usize> {
-    let mut borders_count = Vec::with_capacity(grid.count_rows());
-
-    #[allow(clippy::needless_range_loop)]
-    for row in 0..grid.count_rows() {
-        let mut count = 0;
-        for col in 0..grid.count_columns() {
-            let border = grid.get_border(row, col);
-
-            if grid.is_cell_visible((row, col)) && border.left.is_some() {
-                count += 1;
-            }
-
-            if col + 1 == grid.count_columns() && border.right.is_some() {
-                count += 1;
-            }
-        }
-
-        borders_count.push(count);
-    }
-
-    borders_count
-}
-
-fn build_min_widths(grid: &Grid) -> Vec<Vec<usize>> {
-    let mut grid = grid.clone();
-    grid.set(Entity::Global, Settings::default().text(""));
-
-    build_cell_widths(&grid)
-}
-
-fn build_cell_widths(grid: &Grid) -> Vec<Vec<usize>> {
-    let mut widths = grid.build_cells_widths();
-    correct_widths(grid, &mut widths);
-    widths
-}
-
-fn correct_widths(grid: &Grid, widths: &mut [Vec<usize>]) {
-    (0..grid.count_rows()).for_each(|row| {
-        (0..grid.count_columns()).for_each(|col| {
-            widths[row][col] = correct_width(grid.style(Entity::Cell(row, col)), widths[row][col])
-        })
-    });
-}
-
-fn update_widths_column(
-    grid: &Grid,
-    orig_widths: &[Vec<usize>],
-    widths: &mut [Vec<usize>],
-    col: usize,
-) -> bool {
-    let mut some_content_was_changed = false;
-    for row in 0..grid.count_rows() {
-        let mut col = col;
-        while !grid.is_cell_visible((row, col)) {
-            // todo:
-            // well it may happen, in a grid with all cells being with span 0.
-            // not sure how to handle it in a good way.
-            if col == 0 {
-                break;
-            }
-
-            col -= 1;
-        }
-
-        if widths[row][col] == 0 {
-            continue;
-        }
-
-        widths[row][col] -= 1;
-
-        let orig_content_was_changed = orig_widths[row][col] > widths[row][col];
-        if orig_content_was_changed {
-            some_content_was_changed = true;
-        }
-    }
-
-    some_content_was_changed
-}
-
-fn correct_width(style: &Style, width: usize) -> usize {
-    let padding = style.padding.left.size + style.padding.right.size;
-    width.saturating_sub(padding)
 }
 
 fn grid_widths(grid: &Grid) -> Vec<Vec<usize>> {
@@ -904,6 +786,229 @@ impl Width for Min {
             .map(|r| r.into_iter().min().unwrap_or(0))
             .min()
             .unwrap_or(0)
+    }
+}
+
+fn decrease_total_width_fn<F>(
+    grid: &Grid,
+    total_width: usize,
+    mut width: usize,
+    mut cmp_fn: F,
+) -> HashMap<(usize, usize), usize>
+where
+    F: ColumnPeaker,
+{
+    let min_widths = build_min_widths(grid);
+    let mut widths = grid.build_widths();
+
+    let mut empty_list = 0;
+    for col in 0..widths.len() {
+        if widths[col] == 0 || widths[col] <= min_widths[col] {
+            empty_list += 1;
+        }
+    }
+
+    while width != total_width {
+        if empty_list == widths.len() {
+            break;
+        }
+
+        let col = match cmp_fn.peak(&min_widths, &widths) {
+            Some(col) => col,
+            None => break,
+        };
+
+        if widths[col] == 0 || widths[col] <= min_widths[col] {
+            continue;
+        }
+
+        widths[col] -= 1;
+
+        if widths[col] == 0 || widths[col] <= min_widths[col] {
+            empty_list += 1;
+        }
+
+        width += 1;
+    }
+
+    let mut points = HashMap::new();
+    #[allow(clippy::needless_range_loop)]
+    for row in 0..grid.count_rows() {
+        let mut col = 0;
+        while col < widths.len() {
+            match grid.get_column_span((row, col)) {
+                Some(span) => {
+                    let width = (col..col + span)
+                        .map(|i| std::cmp::max(widths[i], min_widths[i]))
+                        .sum::<usize>();
+                    let count_borders = papergrid::count_borders_in_range(grid, col, col + span);
+
+                    let left_padding = grid.style(Entity::Cell(row, col)).padding.left.size;
+                    let right_padding = grid
+                        .style(Entity::Cell(row, col + span - 1))
+                        .padding
+                        .right
+                        .size;
+                    let width = width.saturating_sub(left_padding + right_padding);
+
+                    let width = width + count_borders;
+
+                    points.insert((row, col), width);
+                    col += span;
+                }
+                None => {
+                    let style = grid.style(Entity::Cell(row, col));
+                    let width = std::cmp::max(widths[col], min_widths[col]);
+                    let width =
+                        width.saturating_sub(style.padding.left.size + style.padding.right.size);
+
+                    points.insert((row, col), width);
+                    col += 1;
+                }
+            }
+        }
+    }
+
+    points
+}
+
+fn increase_total_width_fn<F>(
+    grid: &Grid,
+    total_width: usize,
+    mut width: usize,
+    mut cmp_fn: F,
+) -> HashMap<(usize, usize), usize>
+where
+    F: ColumnPeaker,
+{
+    let mut widths = grid.build_widths();
+    while width != total_width {
+        let col = match cmp_fn.peak(&[], &widths) {
+            Some(col) => col,
+            None => break,
+        };
+
+        widths[col] += 1;
+
+        width += 1;
+    }
+
+    let mut points = HashMap::new();
+    #[allow(clippy::needless_range_loop)]
+    for row in 0..grid.count_rows() {
+        let mut col = 0;
+        while col < widths.len() {
+            match grid.get_column_span((row, col)) {
+                Some(span) => {
+                    let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
+                    let count_borders = papergrid::count_borders_in_range(grid, col, col + span);
+
+                    let left_padding = grid.style(Entity::Cell(row, col)).padding.left.size;
+                    let right_padding = grid
+                        .style(Entity::Cell(row, col + span - 1))
+                        .padding
+                        .right
+                        .size;
+                    let width = width.saturating_sub(left_padding + right_padding);
+
+                    let width = width + count_borders;
+
+                    points.insert((row, col), width);
+                    col += span;
+                }
+                None => {
+                    let style = grid.style(Entity::Cell(row, col));
+                    let width = widths[col];
+                    let width =
+                        width.saturating_sub(style.padding.left.size + style.padding.right.size);
+
+                    points.insert((row, col), width);
+                    col += 1;
+                }
+            }
+        }
+    }
+
+    points
+}
+
+fn build_min_widths(grid: &Grid) -> Vec<usize> {
+    let mut grid = grid.clone();
+    grid.set(Entity::Global, Settings::default().text(""));
+
+    grid.build_widths()
+}
+
+pub trait ColumnPeaker {
+    fn create() -> Self;
+    fn peak(&mut self, min_widths: &[usize], widths: &[usize]) -> Option<usize>;
+}
+
+pub struct PriorityNone {
+    i: usize,
+}
+
+impl ColumnPeaker for PriorityNone {
+    fn create() -> Self {
+        Self { i: 0 }
+    }
+
+    fn peak(&mut self, _: &[usize], widths: &[usize]) -> Option<usize> {
+        let mut i = self.i;
+        while widths[i] == 0 {
+            i += 1;
+            if i >= widths.len() {
+                i = 0;
+            }
+        }
+
+        let col = i;
+
+        i += 1;
+        if i >= widths.len() {
+            i = 0;
+        }
+
+        self.i = i;
+
+        Some(col)
+    }
+}
+
+pub struct PriorityMax;
+
+impl ColumnPeaker for PriorityMax {
+    fn create() -> Self {
+        Self
+    }
+
+    fn peak(&mut self, _: &[usize], widths: &[usize]) -> Option<usize> {
+        let col = (0..widths.len()).max_by_key(|&i| widths[i]).unwrap();
+        if widths[col] == 0 {
+            None
+        } else {
+            Some(col)
+        }
+    }
+}
+
+pub struct PriorityMin;
+
+impl ColumnPeaker for PriorityMin {
+    fn create() -> Self {
+        Self
+    }
+
+    fn peak(&mut self, min_widths: &[usize], widths: &[usize]) -> Option<usize> {
+        let col = (0..widths.len())
+            .filter(|&i| min_widths.is_empty() || widths[i] > min_widths[i])
+            .min_by_key(|&i| widths[i])
+            .unwrap();
+        if widths[col] == 0 {
+            None
+        } else {
+            Some(col)
+        }
     }
 }
 

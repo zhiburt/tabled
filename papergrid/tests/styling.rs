@@ -43,8 +43,6 @@ fn grid_2x2_custom_column_test() {
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
     );
 
-    println!("{}", grid);
-
     assert_eq!(
         grid.to_string(),
         "#***#---+\n\
@@ -100,8 +98,6 @@ fn grid_2x2_change_cell_border_test() {
         Entity::Cell(0, 1),
         Settings::new().border(Border::new('*', '^', '@', '#', '~', '!', '%', '&')),
     );
-
-    println!("{}", grid);
 
     assert_eq!(
         grid.to_string(),

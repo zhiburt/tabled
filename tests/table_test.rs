@@ -14,287 +14,318 @@ mod default_types {
     #[test]
     fn table_str_vec() {
         let data = vec!["hello", "world"];
-        let expected = "+-------+\n\
-                             | &str  |\n\
-                             +-------+\n\
-                             | hello |\n\
-                             +-------+\n\
-                             | world |\n\
-                             +-------+\n";
-
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+-------+\n\
+             | &str  |\n\
+             +-------+\n\
+             | hello |\n\
+             +-------+\n\
+             | world |\n\
+             +-------+\n"
+        );
     }
 
     #[test]
     fn table_char_vec() {
         let data = vec!['a', 'b', 'c'];
-        let expected = "+------+\n\
-                             | char |\n\
-                             +------+\n\
-                             |  a   |\n\
-                             +------+\n\
-                             |  b   |\n\
-                             +------+\n\
-                             |  c   |\n\
-                             +------+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+------+\n\
+             | char |\n\
+             +------+\n\
+             |  a   |\n\
+             +------+\n\
+             |  b   |\n\
+             +------+\n\
+             |  c   |\n\
+             +------+\n"
+        );
     }
 
     #[test]
     fn table_bool_vec() {
         let data = vec![true, false, true];
-        let expected = "+-------+\n\
-                             | bool  |\n\
-                             +-------+\n\
-                             | true  |\n\
-                             +-------+\n\
-                             | false |\n\
-                             +-------+\n\
-                             | true  |\n\
-                             +-------+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+-------+\n\
+             | bool  |\n\
+             +-------+\n\
+             | true  |\n\
+             +-------+\n\
+             | false |\n\
+             +-------+\n\
+             | true  |\n\
+             +-------+\n"
+        );
     }
 
     #[test]
     fn table_usize_vec() {
         let data = vec![0usize, 1usize, 2usize];
-        let expected = "+-------+\n\
-                             | usize |\n\
-                             +-------+\n\
-                             |   0   |\n\
-                             +-------+\n\
-                             |   1   |\n\
-                             +-------+\n\
-                             |   2   |\n\
-                             +-------+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+-------+\n\
+             | usize |\n\
+             +-------+\n\
+             |   0   |\n\
+             +-------+\n\
+             |   1   |\n\
+             +-------+\n\
+             |   2   |\n\
+             +-------+\n"
+        );
     }
 
     #[test]
     fn table_isize_vec() {
         let data = vec![0isize, 1isize, 2isize];
-        let expected = "+-------+\n\
-                             | isize |\n\
-                             +-------+\n\
-                             |   0   |\n\
-                             +-------+\n\
-                             |   1   |\n\
-                             +-------+\n\
-                             |   2   |\n\
-                             +-------+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+-------+\n\
+             | isize |\n\
+             +-------+\n\
+             |   0   |\n\
+             +-------+\n\
+             |   1   |\n\
+             +-------+\n\
+             |   2   |\n\
+             +-------+\n"
+        );
     }
 
     #[test]
     fn table_u8_vec() {
         let data = vec![0u8, 1u8, 2u8];
-        let expected = "+----+\n\
-                             | u8 |\n\
-                             +----+\n\
-                             | 0  |\n\
-                             +----+\n\
-                             | 1  |\n\
-                             +----+\n\
-                             | 2  |\n\
-                             +----+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+----+\n\
+             | u8 |\n\
+             +----+\n\
+             | 0  |\n\
+             +----+\n\
+             | 1  |\n\
+             +----+\n\
+             | 2  |\n\
+             +----+\n"
+        );
     }
 
     #[test]
     fn table_u16_vec() {
         let data = vec![0u16, 1u16, 2u16];
-        let expected = "+-----+\n\
-                             | u16 |\n\
-                             +-----+\n\
-                             |  0  |\n\
-                             +-----+\n\
-                             |  1  |\n\
-                             +-----+\n\
-                             |  2  |\n\
-                             +-----+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+-----+\n\
+             | u16 |\n\
+             +-----+\n\
+             |  0  |\n\
+             +-----+\n\
+             |  1  |\n\
+             +-----+\n\
+             |  2  |\n\
+             +-----+\n"
+        );
     }
 
     #[test]
     fn table_u32_vec() {
         let data = vec![0u32, 1u32, 2u32];
-        let expected = "+-----+\n\
-                             | u32 |\n\
-                             +-----+\n\
-                             |  0  |\n\
-                             +-----+\n\
-                             |  1  |\n\
-                             +-----+\n\
-                             |  2  |\n\
-                             +-----+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+-----+\n\
+             | u32 |\n\
+             +-----+\n\
+             |  0  |\n\
+             +-----+\n\
+             |  1  |\n\
+             +-----+\n\
+             |  2  |\n\
+             +-----+\n"
+        );
     }
 
     #[test]
     fn table_u64_vec() {
         let data = vec![0u64, 1u64, 2u64];
-        let expected = "+-----+\n\
-                             | u64 |\n\
-                             +-----+\n\
-                             |  0  |\n\
-                             +-----+\n\
-                             |  1  |\n\
-                             +-----+\n\
-                             |  2  |\n\
-                             +-----+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+-----+\n\
+             | u64 |\n\
+             +-----+\n\
+             |  0  |\n\
+             +-----+\n\
+             |  1  |\n\
+             +-----+\n\
+             |  2  |\n\
+             +-----+\n"
+        );
     }
 
     #[test]
     fn table_u128_vec() {
         let data = vec![0u128, 1u128, 2u128];
-        let expected = "+------+\n\
-                             | u128 |\n\
-                             +------+\n\
-                             |  0   |\n\
-                             +------+\n\
-                             |  1   |\n\
-                             +------+\n\
-                             |  2   |\n\
-                             +------+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+------+\n\
+             | u128 |\n\
+             +------+\n\
+             |  0   |\n\
+             +------+\n\
+             |  1   |\n\
+             +------+\n\
+             |  2   |\n\
+             +------+\n"
+        );
     }
 
     #[test]
     fn table_i8_vec() {
         let data = vec![0i8, 1i8, 2i8];
-        let expected = "+----+\n\
-                             | i8 |\n\
-                             +----+\n\
-                             | 0  |\n\
-                             +----+\n\
-                             | 1  |\n\
-                             +----+\n\
-                             | 2  |\n\
-                             +----+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+----+\n\
+             | i8 |\n\
+             +----+\n\
+             | 0  |\n\
+             +----+\n\
+             | 1  |\n\
+             +----+\n\
+             | 2  |\n\
+             +----+\n"
+        );
     }
 
     #[test]
     fn table_i16_vec() {
         let data = vec![0i16, 1i16, 2i16];
-        let expected = "+-----+\n\
-                             | i16 |\n\
-                             +-----+\n\
-                             |  0  |\n\
-                             +-----+\n\
-                             |  1  |\n\
-                             +-----+\n\
-                             |  2  |\n\
-                             +-----+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+-----+\n\
+             | i16 |\n\
+             +-----+\n\
+             |  0  |\n\
+             +-----+\n\
+             |  1  |\n\
+             +-----+\n\
+             |  2  |\n\
+             +-----+\n"
+        );
     }
 
     #[test]
     fn table_i32_vec() {
         let data = vec![0i32, 1i32, 2i32];
-        let expected = "+-----+\n\
-                             | i32 |\n\
-                             +-----+\n\
-                             |  0  |\n\
-                             +-----+\n\
-                             |  1  |\n\
-                             +-----+\n\
-                             |  2  |\n\
-                             +-----+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+-----+\n\
+             | i32 |\n\
+             +-----+\n\
+             |  0  |\n\
+             +-----+\n\
+             |  1  |\n\
+             +-----+\n\
+             |  2  |\n\
+             +-----+\n"
+        );
     }
 
     #[test]
     fn table_i64_vec() {
         let data = vec![0i64, 1i64, 2i64];
-        let expected = "+-----+\n\
-                             | i64 |\n\
-                             +-----+\n\
-                             |  0  |\n\
-                             +-----+\n\
-                             |  1  |\n\
-                             +-----+\n\
-                             |  2  |\n\
-                             +-----+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+-----+\n\
+             | i64 |\n\
+             +-----+\n\
+             |  0  |\n\
+             +-----+\n\
+             |  1  |\n\
+             +-----+\n\
+             |  2  |\n\
+             +-----+\n"
+        );
     }
 
     #[test]
     fn table_i128_vec() {
         let data = vec![0i128, 1i128, 2i128];
-        let expected = "+------+\n\
-                             | i128 |\n\
-                             +------+\n\
-                             |  0   |\n\
-                             +------+\n\
-                             |  1   |\n\
-                             +------+\n\
-                             |  2   |\n\
-                             +------+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+------+\n\
+             | i128 |\n\
+             +------+\n\
+             |  0   |\n\
+             +------+\n\
+             |  1   |\n\
+             +------+\n\
+             |  2   |\n\
+             +------+\n"
+        );
     }
 
     #[test]
     fn table_array() {
         let data = vec![[0, 1, 2], [3, 4, 5], [6, 7, 8]];
-        let expected = "+---+---+---+\n\
-                             | 0 | 1 | 2 |\n\
-                             +---+---+---+\n\
-                             | 0 | 1 | 2 |\n\
-                             +---+---+---+\n\
-                             | 3 | 4 | 5 |\n\
-                             +---+---+---+\n\
-                             | 6 | 7 | 8 |\n\
-                             +---+---+---+\n";
 
         let table = Table::new(&data).to_string();
 
-        assert_eq!(table, expected);
+        assert_eq!(
+            table,
+            "+---+---+---+\n\
+             | 0 | 1 | 2 |\n\
+             +---+---+---+\n\
+             | 0 | 1 | 2 |\n\
+             +---+---+---+\n\
+             | 3 | 4 | 5 |\n\
+             +---+---+---+\n\
+             | 6 | 7 | 8 |\n\
+             +---+---+---+\n"
+        );
     }
 }
 
@@ -307,17 +338,19 @@ fn table_vector_structures() {
     }
 
     let st = vec![St { f1: 0, f2: "0" }, St { f1: 1, f2: "1" }];
-    let expected = "+----+----+\n\
-                         | f1 | f2 |\n\
-                         +----+----+\n\
-                         | 0  | 0  |\n\
-                         +----+----+\n\
-                         | 1  | 1  |\n\
-                         +----+----+\n";
 
     let table = Table::new(st).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+----+----+\n\
+         | f1 | f2 |\n\
+         +----+----+\n\
+         | 0  | 0  |\n\
+         +----+----+\n\
+         | 1  | 1  |\n\
+         +----+----+\n"
+    );
 }
 
 #[test]
@@ -329,13 +362,15 @@ fn table_empty_vector_structures() {
     }
 
     let st: Vec<St> = Vec::new();
-    let expected = "+----+----+\n\
-                         | f1 | f2 |\n\
-                         +----+----+\n";
 
     let table = Table::new(st).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+----+----+\n\
+         | f1 | f2 |\n\
+         +----+----+\n"
+    );
 }
 
 #[test]
@@ -347,15 +382,17 @@ fn table_option() {
     }
 
     let st = Some(St { f1: 0, f2: "0" });
-    let expected = "+----+----+\n\
-                         | f1 | f2 |\n\
-                         +----+----+\n\
-                         | 0  | 0  |\n\
-                         +----+----+\n";
 
     let table = Table::new(st).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+----+----+\n\
+         | f1 | f2 |\n\
+         +----+----+\n\
+         | 0  | 0  |\n\
+         +----+----+\n"
+    );
 }
 
 #[test]
@@ -367,57 +404,65 @@ fn table_option_none() {
     }
 
     let st: Option<St> = None;
-    let expected = "+----+----+\n\
-                         | f1 | f2 |\n\
-                         +----+----+\n";
 
     let table = Table::new(st).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+----+----+\n\
+         | f1 | f2 |\n\
+         +----+----+\n"
+    );
 }
 
 #[test]
 fn table_tuple() {
     let t = ("we are in", 2020);
-    let expected = "+-----------+------+\n\
-                         |   &str    | i32  |\n\
-                         +-----------+------+\n\
-                         | we are in | 2020 |\n\
-                         +-----------+------+\n";
 
     let table = Table::new(&[t]).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+-----------+------+\n\
+         |   &str    | i32  |\n\
+         +-----------+------+\n\
+         | we are in | 2020 |\n\
+         +-----------+------+\n"
+    );
 }
 
 #[test]
 fn table_single_tuple() {
     let t = (2020,);
-    let expected = "+------+\n\
-                         | i32  |\n\
-                         +------+\n\
-                         | 2020 |\n\
-                         +------+\n";
 
     let table = Table::new(&[t]).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+------+\n\
+         | i32  |\n\
+         +------+\n\
+         | 2020 |\n\
+         +------+\n"
+    );
 }
 
 #[test]
 fn table_tuple_vec() {
     let map = [(0, "Monday"), (1, "Thursday")];
-    let expected = "+-----+----------+\n\
-                         | i32 |   &str   |\n\
-                         +-----+----------+\n\
-                         |  0  |  Monday  |\n\
-                         +-----+----------+\n\
-                         |  1  | Thursday |\n\
-                         +-----+----------+\n";
 
     let table = Table::new(&map).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+-----+----------+\n\
+         | i32 |   &str   |\n\
+         +-----+----------+\n\
+         |  0  |  Monday  |\n\
+         +-----+----------+\n\
+         |  1  | Thursday |\n\
+         +-----+----------+\n"
+    );
 }
 
 #[test]
@@ -429,17 +474,19 @@ fn table_tuple_with_structure_vec() {
     }
 
     let map = [(0, St { f1: 0, f2: "0str" }), (1, St { f1: 1, f2: "1str" })];
-    let expected = "+-----+----+------+\n\
-                         | i32 | f1 |  f2  |\n\
-                         +-----+----+------+\n\
-                         |  0  | 0  | 0str |\n\
-                         +-----+----+------+\n\
-                         |  1  | 1  | 1str |\n\
-                         +-----+----+------+\n";
 
     let table = Table::new(&map).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+-----+----+------+\n\
+         | i32 | f1 |  f2  |\n\
+         +-----+----+------+\n\
+         |  0  | 0  | 0str |\n\
+         +-----+----+------+\n\
+         |  1  | 1  | 1str |\n\
+         +-----+----+------+\n"
+    );
 }
 
 #[allow(dead_code)]
@@ -453,17 +500,19 @@ fn table_vector_structures_with_hidden_tabled() {
     }
 
     let st = vec![St { f1: 0, f2: "0" }, St { f1: 1, f2: "1" }];
-    let expected = "+----+\n\
-                         | f2 |\n\
-                         +----+\n\
-                         | 0  |\n\
-                         +----+\n\
-                         | 1  |\n\
-                         +----+\n";
 
     let table = Table::new(&st).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+----+\n\
+         | f2 |\n\
+         +----+\n\
+         | 0  |\n\
+         +----+\n\
+         | 1  |\n\
+         +----+\n"
+    );
 }
 
 #[test]
@@ -493,23 +542,24 @@ fn table_enum() {
         Letters::Digit,
     ];
 
-    let expected = "+--------+-----------+-------+\n\
-                         | Vowels | Consonant | Digit |\n\
-                         +--------+-----------+-------+\n\
-                         |   +    |           |       |\n\
-                         +--------+-----------+-------+\n\
-                         |        |     +     |       |\n\
-                         +--------+-----------+-------+\n\
-                         |   +    |           |       |\n\
-                         +--------+-----------+-------+\n\
-                         |   +    |           |       |\n\
-                         +--------+-----------+-------+\n\
-                         |        |           |   +   |\n\
-                         +--------+-----------+-------+\n";
-
     let table = Table::new(&data).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+--------+-----------+-------+\n\
+         | Vowels | Consonant | Digit |\n\
+         +--------+-----------+-------+\n\
+         |   +    |           |       |\n\
+         +--------+-----------+-------+\n\
+         |        |     +     |       |\n\
+         +--------+-----------+-------+\n\
+         |   +    |           |       |\n\
+         +--------+-----------+-------+\n\
+         |   +    |           |       |\n\
+         +--------+-----------+-------+\n\
+         |        |           |   +   |\n\
+         +--------+-----------+-------+\n"
+    );
 }
 
 #[test]
@@ -543,23 +593,24 @@ fn table_enum_with_hidden_variant() {
         Letters::Digit,
     ];
 
-    let expected = "+--------+-----------+\n\
-                         | Vowels | Consonant |\n\
-                         +--------+-----------+\n\
-                         |   +    |           |\n\
-                         +--------+-----------+\n\
-                         |        |     +     |\n\
-                         +--------+-----------+\n\
-                         |   +    |           |\n\
-                         +--------+-----------+\n\
-                         |   +    |           |\n\
-                         +--------+-----------+\n\
-                         |        |           |\n\
-                         +--------+-----------+\n";
-
     let table = Table::new(&data).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+--------+-----------+\n\
+         | Vowels | Consonant |\n\
+         +--------+-----------+\n\
+         |   +    |           |\n\
+         +--------+-----------+\n\
+         |        |     +     |\n\
+         +--------+-----------+\n\
+         |   +    |           |\n\
+         +--------+-----------+\n\
+         |   +    |           |\n\
+         +--------+-----------+\n\
+         |        |           |\n\
+         +--------+-----------+\n"
+    );
 }
 
 #[test]
@@ -575,19 +626,20 @@ fn table_btreemap() {
     map.insert(1, A { b: 2, c: "s2" });
     map.insert(3, A { b: 3, c: "s3" });
 
-    let expected = "+-----+---+----+\n\
-                         | i32 | b | c  |\n\
-                         +-----+---+----+\n\
-                         |  0  | 1 | s1 |\n\
-                         +-----+---+----+\n\
-                         |  1  | 2 | s2 |\n\
-                         +-----+---+----+\n\
-                         |  3  | 3 | s3 |\n\
-                         +-----+---+----+\n";
-
     let table = Table::new(&map).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+-----+---+----+\n\
+         | i32 | b | c  |\n\
+         +-----+---+----+\n\
+         |  0  | 1 | s1 |\n\
+         +-----+---+----+\n\
+         |  1  | 2 | s2 |\n\
+         +-----+---+----+\n\
+         |  3  | 3 | s3 |\n\
+         +-----+---+----+\n"
+    );
 }
 
 #[test]
@@ -603,19 +655,20 @@ fn table_btreeset() {
     map.insert(A { b: 2, c: "s2" });
     map.insert(A { b: 3, c: "s3" });
 
-    let expected = "+---+----+\n\
-                         | b | c  |\n\
-                         +---+----+\n\
-                         | 1 | s1 |\n\
-                         +---+----+\n\
-                         | 2 | s2 |\n\
-                         +---+----+\n\
-                         | 3 | s3 |\n\
-                         +---+----+\n";
-
     let table = Table::new(&map).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+---+----+\n\
+         | b | c  |\n\
+         +---+----+\n\
+         | 1 | s1 |\n\
+         +---+----+\n\
+         | 2 | s2 |\n\
+         +---+----+\n\
+         | 3 | s3 |\n\
+         +---+----+\n"
+    );
 }
 
 #[test]
@@ -645,19 +698,20 @@ fn table_emojie() {
         },
     ];
 
-    let expected = "+---------+----------------+---------------+\n\
-                         |  name   |  designed_by   | invented_year |\n\
-                         +---------+----------------+---------------+\n\
-                         |  C 💕   | Dennis Ritchie |     1972      |\n\
-                         +---------+----------------+---------------+\n\
-                         | Rust 👍 | Graydon Hoare  |     2010      |\n\
-                         +---------+----------------+---------------+\n\
-                         |  Go 🧋  |    Rob Pike    |     2009      |\n\
-                         +---------+----------------+---------------+\n";
-
     let table = Table::new(&languages).to_string();
 
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        "+---------+----------------+---------------+\n\
+         |  name   |  designed_by   | invented_year |\n\
+         +---------+----------------+---------------+\n\
+         |  C 💕   | Dennis Ritchie |     1972      |\n\
+         +---------+----------------+---------------+\n\
+         | Rust 👍 | Graydon Hoare  |     2010      |\n\
+         +---------+----------------+---------------+\n\
+         |  Go 🧋  |    Rob Pike    |     2009      |\n\
+         +---------+----------------+---------------+\n"
+    );
 }
 
 #[test]
@@ -685,21 +739,20 @@ fn table_emojie_multiline() {
         },
     ];
 
-    // Note: it looks OK in a terminal
-    let expected =
-    "+------------------------------------+-----------------+-------------------------------+--------+\n\
-     |                name                |     author      |             text              | rating |\n\
-     +------------------------------------+-----------------+-------------------------------+--------+\n\
-     | Rebase vs Merge commit in depth 👋 | Rose Kuphal DVM | A multiline                   |   43   |\n\
-     |                                    |                 |  text with 🤯 😳 🥵 🥶        |        |\n\
-     |                                    |                 |  a bunch of emojies ☄\u{fe0f} 💥 🔥 🌪 |        |\n\
-     +------------------------------------+-----------------+-------------------------------+--------+\n\
-     |           Keep it simple           |     Unknown     |              🍳               |  100   |\n\
-     +------------------------------------+-----------------+-------------------------------+--------+\n";
-
     let table = Table::new(&languages).to_string();
 
-    assert_eq!(table, expected);
+    // Note: it looks OK in a terminal
+    assert_eq!(
+        table,
+        "+------------------------------------+-----------------+-------------------------------+--------+\n\
+         |                name                |     author      |             text              | rating |\n\
+         +------------------------------------+-----------------+-------------------------------+--------+\n\
+         | Rebase vs Merge commit in depth 👋 | Rose Kuphal DVM | A multiline                   |   43   |\n\
+         |                                    |                 |  text with 🤯 😳 🥵 🥶        |        |\n\
+         |                                    |                 |  a bunch of emojies ☄\u{fe0f} 💥 🔥 🌪 |        |\n\
+         +------------------------------------+-----------------+-------------------------------+--------+\n\
+         |           Keep it simple           |     Unknown     |              🍳               |  100   |\n\
+         +------------------------------------+-----------------+-------------------------------+--------+\n");
 }
 
 #[test]
@@ -777,15 +830,16 @@ fn build_table_from_iterator() {
     let data = create_vector::<3, 3>();
     let table = Table::from_iter(data).with(Style::psql()).to_string();
 
-    let expected = concat!(
-        " N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+----------\n",
-        " 0 |   0-0    |   0-1    |   0-2    \n",
-        " 1 |   1-0    |   1-1    |   1-2    \n",
-        " 2 |   2-0    |   2-1    |   2-2    \n",
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            " 0 |   0-0    |   0-1    |   0-2    \n",
+            " 1 |   1-0    |   1-1    |   1-2    \n",
+            " 2 |   2-0    |   2-1    |   2-2    \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -815,17 +869,18 @@ fn table_emojie_utf8_style() {
         },
     ];
 
-    // Note: It doesn't look good in VS Code
-    let expected = "┌─────────┬────────────────┬───────────────┐\n\
-                         │  name   │  designed_by   │ invented_year │\n\
-                         │  C 💕   │ Dennis Ritchie │     1972      │\n\
-                         │ Rust 👍 │ Graydon Hoare  │     2010      │\n\
-                         │  Go 🧋  │    Rob Pike    │     2009      │\n\
-                         └─────────┴────────────────┴───────────────┘\n";
-
     let table = Table::new(&languages)
         .with(tabled::Style::modern().header_off().horizontal_off())
         .to_string();
 
-    assert_eq!(table, expected);
+    // Note: It doesn't look good in VS Code
+    assert_eq!(
+        table,
+        "┌─────────┬────────────────┬───────────────┐\n\
+         │  name   │  designed_by   │ invented_year │\n\
+         │  C 💕   │ Dennis Ritchie │     1972      │\n\
+         │ Rust 👍 │ Graydon Hoare  │     2010      │\n\
+         │  Go 🧋  │    Rob Pike    │     2009      │\n\
+         └─────────┴────────────────┴───────────────┘\n"
+    );
 }

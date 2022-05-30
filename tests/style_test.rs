@@ -16,19 +16,20 @@ fn default_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(Style::ascii()).to_string();
 
-    let expected = concat!(
-        "+---+----------+----------+----------+\n",
-        "| N | column 0 | column 1 | column 2 |\n",
-        "+---+----------+----------+----------+\n",
-        "| 0 |   0-0    |   0-1    |   0-2    |\n",
-        "+---+----------+----------+----------+\n",
-        "| 1 |   1-0    |   1-1    |   1-2    |\n",
-        "+---+----------+----------+----------+\n",
-        "| 2 |   2-0    |   2-1    |   2-2    |\n",
-        "+---+----------+----------+----------+\n",
+    assert_eq!(
+        table,
+        concat!(
+            "+---+----------+----------+----------+\n",
+            "| N | column 0 | column 1 | column 2 |\n",
+            "+---+----------+----------+----------+\n",
+            "| 0 |   0-0    |   0-1    |   0-2    |\n",
+            "+---+----------+----------+----------+\n",
+            "| 1 |   1-0    |   1-1    |   1-2    |\n",
+            "+---+----------+----------+----------+\n",
+            "| 2 |   2-0    |   2-1    |   2-2    |\n",
+            "+---+----------+----------+----------+\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -36,15 +37,16 @@ fn psql_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(Style::psql()).to_string();
 
-    let expected = concat!(
-        " N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+----------\n",
-        " 0 |   0-0    |   0-1    |   0-2    \n",
-        " 1 |   1-0    |   1-1    |   1-2    \n",
-        " 2 |   2-0    |   2-1    |   2-2    \n",
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            " 0 |   0-0    |   0-1    |   0-2    \n",
+            " 1 |   1-0    |   1-1    |   1-2    \n",
+            " 2 |   2-0    |   2-1    |   2-2    \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -52,15 +54,16 @@ fn github_markdown_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(Style::github_markdown()).to_string();
 
-    let expected = concat!(
-        "| N | column 0 | column 1 | column 2 |\n",
-        "|---+----------+----------+----------|\n",
-        "| 0 |   0-0    |   0-1    |   0-2    |\n",
-        "| 1 |   1-0    |   1-1    |   1-2    |\n",
-        "| 2 |   2-0    |   2-1    |   2-2    |\n",
+    assert_eq!(
+        table,
+        concat!(
+            "| N | column 0 | column 1 | column 2 |\n",
+            "|---+----------+----------+----------|\n",
+            "| 0 |   0-0    |   0-1    |   0-2    |\n",
+            "| 1 |   1-0    |   1-1    |   1-2    |\n",
+            "| 2 |   2-0    |   2-1    |   2-2    |\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -68,19 +71,20 @@ fn pseudo_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(Style::modern()).to_string();
 
-    let expected = concat!(
-        "┌───┬──────────┬──────────┬──────────┐\n",
-        "│ N │ column 0 │ column 1 │ column 2 │\n",
-        "├───┼──────────┼──────────┼──────────┤\n",
-        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
-        "├───┼──────────┼──────────┼──────────┤\n",
-        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
-        "├───┼──────────┼──────────┼──────────┤\n",
-        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
-        "└───┴──────────┴──────────┴──────────┘\n",
+    assert_eq!(
+        table,
+        concat!(
+            "┌───┬──────────┬──────────┬──────────┐\n",
+            "│ N │ column 0 │ column 1 │ column 2 │\n",
+            "├───┼──────────┼──────────┼──────────┤\n",
+            "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+            "├───┼──────────┼──────────┼──────────┤\n",
+            "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+            "├───┼──────────┼──────────┼──────────┤\n",
+            "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+            "└───┴──────────┴──────────┴──────────┘\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -88,19 +92,18 @@ fn rounded_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(Style::rounded()).to_string();
 
-    let expected = concat!(
-        "╭───┬──────────┬──────────┬──────────╮\n",
-        "│ N │ column 0 │ column 1 │ column 2 │\n",
-        "├───┼──────────┼──────────┼──────────┤\n",
-        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
-        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
-        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
-        "╰───┴──────────┴──────────┴──────────╯\n",
+    assert_eq!(
+        table,
+        concat!(
+            "╭───┬──────────┬──────────┬──────────╮\n",
+            "│ N │ column 0 │ column 1 │ column 2 │\n",
+            "├───┼──────────┼──────────┼──────────┤\n",
+            "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+            "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+            "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+            "╰───┴──────────┴──────────┴──────────╯\n",
+        )
     );
-
-    println!("{}", table);
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -110,19 +113,18 @@ fn pseudo_clean_style() {
         .with(Style::modern().horizontal_off())
         .to_string();
 
-    let expected = concat!(
-        "┌───┬──────────┬──────────┬──────────┐\n",
-        "│ N │ column 0 │ column 1 │ column 2 │\n",
-        "├───┼──────────┼──────────┼──────────┤\n",
-        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
-        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
-        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
-        "└───┴──────────┴──────────┴──────────┘\n",
+    assert_eq!(
+        table,
+        concat!(
+            "┌───┬──────────┬──────────┬──────────┐\n",
+            "│ N │ column 0 │ column 1 │ column 2 │\n",
+            "├───┼──────────┼──────────┼──────────┤\n",
+            "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+            "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+            "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+            "└───┴──────────┴──────────┴──────────┘\n",
+        )
     );
-
-    println!("{table}");
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -130,14 +132,15 @@ fn blank_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(Style::blank()).to_string();
 
-    let expected = concat!(
-        " N   column 0   column 1   column 2 \n",
-        " 0     0-0        0-1        0-2    \n",
-        " 1     1-0        1-1        1-2    \n",
-        " 2     2-0        2-1        2-2    \n",
+    assert_eq!(
+        table,
+        concat!(
+            " N   column 0   column 1   column 2 \n",
+            " 0     0-0        0-1        0-2    \n",
+            " 1     1-0        1-1        1-2    \n",
+            " 2     2-0        2-1        2-2    \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -145,19 +148,20 @@ fn extended_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(Style::extended()).to_string();
 
-    let expected = concat!(
-        "╔═══╦══════════╦══════════╦══════════╗\n",
-        "║ N ║ column 0 ║ column 1 ║ column 2 ║\n",
-        "╠═══╬══════════╬══════════╬══════════╣\n",
-        "║ 0 ║   0-0    ║   0-1    ║   0-2    ║\n",
-        "╠═══╬══════════╬══════════╬══════════╣\n",
-        "║ 1 ║   1-0    ║   1-1    ║   1-2    ║\n",
-        "╠═══╬══════════╬══════════╬══════════╣\n",
-        "║ 2 ║   2-0    ║   2-1    ║   2-2    ║\n",
-        "╚═══╩══════════╩══════════╩══════════╝\n",
+    assert_eq!(
+        table,
+        concat!(
+            "╔═══╦══════════╦══════════╦══════════╗\n",
+            "║ N ║ column 0 ║ column 1 ║ column 2 ║\n",
+            "╠═══╬══════════╬══════════╬══════════╣\n",
+            "║ 0 ║   0-0    ║   0-1    ║   0-2    ║\n",
+            "╠═══╬══════════╬══════════╬══════════╣\n",
+            "║ 1 ║   1-0    ║   1-1    ║   1-2    ║\n",
+            "╠═══╬══════════╬══════════╬══════════╣\n",
+            "║ 2 ║   2-0    ║   2-1    ║   2-2    ║\n",
+            "╚═══╩══════════╩══════════╩══════════╝\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -165,19 +169,20 @@ fn ascii_dots_style() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(Style::dots()).to_string();
 
-    let expected = concat!(
-        "......................................\n",
-        ": N : column 0 : column 1 : column 2 :\n",
-        ":...:..........:..........:..........:\n",
-        ": 0 :   0-0    :   0-1    :   0-2    :\n",
-        ":...:..........:..........:..........:\n",
-        ": 1 :   1-0    :   1-1    :   1-2    :\n",
-        ":...:..........:..........:..........:\n",
-        ": 2 :   2-0    :   2-1    :   2-2    :\n",
-        ":...:..........:..........:..........:\n",
+    assert_eq!(
+        table,
+        concat!(
+            "......................................\n",
+            ": N : column 0 : column 1 : column 2 :\n",
+            ":...:..........:..........:..........:\n",
+            ": 0 :   0-0    :   0-1    :   0-2    :\n",
+            ":...:..........:..........:..........:\n",
+            ": 1 :   1-0    :   1-1    :   1-2    :\n",
+            ":...:..........:..........:..........:\n",
+            ": 2 :   2-0    :   2-1    :   2-2    :\n",
+            ":...:..........:..........:..........:\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -187,17 +192,18 @@ fn re_structured_text_style() {
         .with(Style::re_structured_text())
         .to_string();
 
-    let expected = concat!(
-        "=== ========== ========== ==========\n",
-        " N   column 0   column 1   column 2 \n",
-        "=== ========== ========== ==========\n",
-        " 0     0-0        0-1        0-2    \n",
-        " 1     1-0        1-1        1-2    \n",
-        " 2     2-0        2-1        2-2    \n",
-        "=== ========== ========== ==========\n",
+    assert_eq!(
+        table,
+        concat!(
+            "=== ========== ========== ==========\n",
+            " N   column 0   column 1   column 2 \n",
+            "=== ========== ========== ==========\n",
+            " 0     0-0        0-1        0-2    \n",
+            " 1     1-0        1-1        1-2    \n",
+            " 2     2-0        2-1        2-2    \n",
+            "=== ========== ========== ==========\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -207,16 +213,17 @@ fn style_head_changes() {
         .with(Style::modern().horizontal_off().header_off())
         .to_string();
 
-    let expected = concat!(
-        "┌───┬──────────┬──────────┬──────────┐\n",
-        "│ N │ column 0 │ column 1 │ column 2 │\n",
-        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
-        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
-        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
-        "└───┴──────────┴──────────┴──────────┘\n",
+    assert_eq!(
+        table,
+        concat!(
+            "┌───┬──────────┬──────────┬──────────┐\n",
+            "│ N │ column 0 │ column 1 │ column 2 │\n",
+            "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+            "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+            "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+            "└───┴──────────┴──────────┴──────────┘\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -226,15 +233,16 @@ fn style_frame_changes() {
         .with(Style::modern().top_off().bottom_off().horizontal_off())
         .to_string();
 
-    let expected = concat!(
-        "│ N │ column 0 │ column 1 │ column 2 │\n",
-        "├───┼──────────┼──────────┼──────────┤\n",
-        "│ 0 │   0-0    │   0-1    │   0-2    │\n",
-        "│ 1 │   1-0    │   1-1    │   1-2    │\n",
-        "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+    assert_eq!(
+        table,
+        concat!(
+            "│ N │ column 0 │ column 1 │ column 2 │\n",
+            "├───┼──────────┼──────────┼──────────┤\n",
+            "│ 0 │   0-0    │   0-1    │   0-2    │\n",
+            "│ 1 │   1-0    │   1-1    │   1-2    │\n",
+            "│ 2 │   2-0    │   2-1    │   2-2    │\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -252,20 +260,19 @@ fn custom_style() {
         )
         .to_string();
 
-    let expected = concat!(
-        " N ' column 0 ' column 1 ' column 2 \n",
-        "````````````````````````````````````\n",
-        " 0 '   0-0    '   0-1    '   0-2    \n",
-        "```'``````````'``````````'``````````\n",
-        " 1 '   1-0    '   1-1    '   1-2    \n",
-        "```'``````````'``````````'``````````\n",
-        " 2 '   2-0    '   2-1    '   2-2    \n",
-        "***'**********'**********'**********\n",
+    assert_eq!(
+        table,
+        concat!(
+            " N ' column 0 ' column 1 ' column 2 \n",
+            "````````````````````````````````````\n",
+            " 0 '   0-0    '   0-1    '   0-2    \n",
+            "```'``````````'``````````'``````````\n",
+            " 1 '   1-0    '   1-1    '   1-2    \n",
+            "```'``````````'``````````'``````````\n",
+            " 2 '   2-0    '   2-1    '   2-2    \n",
+            "***'**********'**********'**********\n",
+        )
     );
-
-    println!("{}", table);
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -273,15 +280,11 @@ fn style_single_cell() {
     let data = create_vector::<0, 0>();
     let table = Table::new(&data).with(Style::ascii()).to_string();
 
-    let expected = concat!("+---+\n", "| N |\n", "+---+\n",);
-
-    assert_eq!(table, expected);
+    assert_eq!(table, concat!("+---+\n", "| N |\n", "+---+\n"));
 
     let table = Table::new(&data).with(Style::blank()).to_string();
 
-    let expected = " N \n";
-
-    assert_eq!(table, expected);
+    assert_eq!(table, " N \n");
 }
 
 #[test]
@@ -292,17 +295,18 @@ fn top_border_override_first_test() {
         .with(BorderText::first("-Table"))
         .to_string();
 
-    let expected = concat!(
-        "-Table---------+----------+\n",
-        "| N | column 0 | column 1 |\n",
-        "+---+----------+----------+\n",
-        "| 0 |   0-0    |   0-1    |\n",
-        "+---+----------+----------+\n",
-        "| 1 |   1-0    |   1-1    |\n",
-        "+---+----------+----------+\n",
+    assert_eq!(
+        table,
+        concat!(
+            "-Table---------+----------+\n",
+            "| N | column 0 | column 1 |\n",
+            "+---+----------+----------+\n",
+            "| 0 |   0-0    |   0-1    |\n",
+            "+---+----------+----------+\n",
+            "| 1 |   1-0    |   1-1    |\n",
+            "+---+----------+----------+\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -313,17 +317,18 @@ fn top_border_override_last_test() {
         .with(BorderText::last("-Table"))
         .to_string();
 
-    let expected = concat!(
-        "+---+----------+----------+\n",
-        "| N | column 0 | column 1 |\n",
-        "+---+----------+----------+\n",
-        "| 0 |   0-0    |   0-1    |\n",
-        "+---+----------+----------+\n",
-        "| 1 |   1-0    |   1-1    |\n",
-        "-Table---------+----------+\n",
+    assert_eq!(
+        table,
+        concat!(
+            "+---+----------+----------+\n",
+            "| N | column 0 | column 1 |\n",
+            "+---+----------+----------+\n",
+            "| 0 |   0-0    |   0-1    |\n",
+            "+---+----------+----------+\n",
+            "| 1 |   1-0    |   1-1    |\n",
+            "-Table---------+----------+\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -335,17 +340,18 @@ fn top_border_override_new_test() {
         .with(BorderText::new(2, "-Table"))
         .to_string();
 
-    let expected = concat!(
-        "+---+----------+----------+\n",
-        "| N | column 0 | column 1 |\n",
-        "-Table---------+----------+\n",
-        "| 0 |   0-0    |   0-1    |\n",
-        "-Table---------+----------+\n",
-        "| 1 |   1-0    |   1-1    |\n",
-        "+---+----------+----------+\n",
+    assert_eq!(
+        table,
+        concat!(
+            "+---+----------+----------+\n",
+            "| N | column 0 | column 1 |\n",
+            "-Table---------+----------+\n",
+            "| 0 |   0-0    |   0-1    |\n",
+            "-Table---------+----------+\n",
+            "| 1 |   1-0    |   1-1    |\n",
+            "+---+----------+----------+\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -356,17 +362,18 @@ fn top_border_override_new_doesnt_panic_when_index_is_invalid() {
         .with(BorderText::new(100, "-Table"))
         .to_string();
 
-    let expected = concat!(
-        "+---+----------+----------+\n",
-        "| N | column 0 | column 1 |\n",
-        "+---+----------+----------+\n",
-        "| 0 |   0-0    |   0-1    |\n",
-        "+---+----------+----------+\n",
-        "| 1 |   1-0    |   1-1    |\n",
-        "+---+----------+----------+\n",
+    assert_eq!(
+        table,
+        concat!(
+            "+---+----------+----------+\n",
+            "| N | column 0 | column 1 |\n",
+            "+---+----------+----------+\n",
+            "| 0 |   0-0    |   0-1    |\n",
+            "+---+----------+----------+\n",
+            "| 1 |   1-0    |   1-1    |\n",
+            "+---+----------+----------+\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -377,14 +384,15 @@ fn top_override_doesnt_work_with_style_with_no_top_border_test() {
         .with(BorderText::first("-Table"))
         .to_string();
 
-    let expected = concat!(
-        " N | column 0 | column 1 \n",
-        "---+----------+----------\n",
-        " 0 |   0-0    |   0-1    \n",
-        " 1 |   1-0    |   1-1    \n",
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 \n",
+            "---+----------+----------\n",
+            " 0 |   0-0    |   0-1    \n",
+            " 1 |   1-0    |   1-1    \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -396,19 +404,18 @@ fn top_border_override_cleared_after_restyling_test() {
         .with(Style::ascii())
         .to_string();
 
-    let expected = concat!(
-        "+---+----------+----------+\n",
-        "| N | column 0 | column 1 |\n",
-        "+---+----------+----------+\n",
-        "| 0 |   0-0    |   0-1    |\n",
-        "+---+----------+----------+\n",
-        "| 1 |   1-0    |   1-1    |\n",
-        "+---+----------+----------+\n",
+    assert_eq!(
+        table,
+        concat!(
+            "+---+----------+----------+\n",
+            "| N | column 0 | column 1 |\n",
+            "+---+----------+----------+\n",
+            "| 0 |   0-0    |   0-1    |\n",
+            "+---+----------+----------+\n",
+            "| 1 |   1-0    |   1-1    |\n",
+            "+---+----------+----------+\n",
+        )
     );
-
-    println!("{table}");
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -420,19 +427,18 @@ fn top_border_override_with_big_string_test() {
         ))
         .to_string();
 
-    let expected = concat!(
-        "-Tableeeeeeeeeeeeeeeeeeeeee\n",
-        "| N | column 0 | column 1 |\n",
-        "+---+----------+----------+\n",
-        "| 0 |   0-0    |   0-1    |\n",
-        "+---+----------+----------+\n",
-        "| 1 |   1-0    |   1-1    |\n",
-        "+---+----------+----------+\n",
+    assert_eq!(
+        table,
+        concat!(
+            "-Tableeeeeeeeeeeeeeeeeeeeee\n",
+            "| N | column 0 | column 1 |\n",
+            "+---+----------+----------+\n",
+            "| 0 |   0-0    |   0-1    |\n",
+            "+---+----------+----------+\n",
+            "| 1 |   1-0    |   1-1    |\n",
+            "+---+----------+----------+\n",
+        )
     );
-
-    println!("{table}");
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -443,14 +449,15 @@ fn empty_style() {
         .with(Modify::new(Segment::all()).with(Padding::zero()))
         .to_string();
 
-    let expected = concat!(
-        "Ncolumn 0column 1column 2\n",
-        "0  0-0     0-1     0-2   \n",
-        "1  1-0     1-1     1-2   \n",
-        "2  2-0     2-1     2-2   \n",
+    assert_eq!(
+        table,
+        concat!(
+            "Ncolumn 0column 1column 2\n",
+            "0  0-0     0-1     0-2   \n",
+            "1  1-0     1-1     1-2   \n",
+            "2  2-0     2-1     2-2   \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -458,23 +465,22 @@ fn single_column_style() {
     let data = create_vector::<2, 0>();
     let table = Table::new(&data).with(Style::modern()).to_string();
 
-    let expected = concat!(
-        "┌───┐\n",
-        "│ N │\n",
-        "├───┤\n",
-        "│ 0 │\n",
-        "├───┤\n",
-        "│ 1 │\n",
-        "└───┘\n",
+    assert_eq!(
+        table,
+        concat!(
+            "┌───┐\n",
+            "│ N │\n",
+            "├───┤\n",
+            "│ 0 │\n",
+            "├───┤\n",
+            "│ 1 │\n",
+            "└───┘\n",
+        )
     );
-
-    assert_eq!(table, expected);
 
     let table = Table::new(&data).with(Style::blank()).to_string();
 
-    let expected = concat!(" N \n", " 0 \n", " 1 \n",);
-
-    assert_eq!(table, expected);
+    assert_eq!(table, concat!(" N \n", " 0 \n", " 1 \n"));
 }
 
 #[test]
@@ -484,9 +490,10 @@ fn single_column_last_row_style() {
         .with(Style::re_structured_text())
         .to_string();
 
-    let expected = concat!("===\n", " N \n", "===\n", " 0 \n", " 1 \n", " 2 \n", "===\n",);
-
-    assert_eq!(table, expected);
+    assert_eq!(
+        table,
+        concat!("===\n", " N \n", "===\n", " 0 \n", " 1 \n", " 2 \n", "===\n")
+    );
 }
 
 #[test]

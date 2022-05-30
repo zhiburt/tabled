@@ -1095,8 +1095,6 @@ fn tab_size_test() {
     let mut grid = util::new_grid::<1, 1>();
     grid.set(Entity::Cell(0, 0), Settings::new().text(json));
 
-    println!("{}", grid);
-
     assert_eq!(
         grid.to_string(),
         "+-------------------------------+\n\
@@ -1119,8 +1117,6 @@ fn tab_size_test() {
         }),
     );
 
-    println!("{}", grid);
-
     assert_eq!(
         grid.to_string(),
         "+-------------------------+\n\
@@ -1142,8 +1138,6 @@ fn tab_size_test() {
             ..Default::default()
         }),
     );
-
-    println!("{}", grid);
 
     assert_eq!(
         grid.to_string(),

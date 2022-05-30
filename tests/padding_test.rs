@@ -15,21 +15,22 @@ fn padding() {
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 0, 2)))
         .to_string();
 
-    let expected = concat!(
-        " N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+----------\n",
-        " 0 | 0-0      | 0-1      | 0-2      \n",
-        "   |          |          |          \n",
-        "   |          |          |          \n",
-        " 1 | 1-0      | 1-1      | 1-2      \n",
-        "   |          |          |          \n",
-        "   |          |          |          \n",
-        " 2 | 2-0      | 2-1      | 2-2      \n",
-        "   |          |          |          \n",
-        "   |          |          |          \n",
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            " 0 | 0-0      | 0-1      | 0-2      \n",
+            "   |          |          |          \n",
+            "   |          |          |          \n",
+            " 1 | 1-0      | 1-1      | 1-2      \n",
+            "   |          |          |          \n",
+            "   |          |          |          \n",
+            " 2 | 2-0      | 2-1      | 2-2      \n",
+            "   |          |          |          \n",
+            "   |          |          |          \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -42,23 +43,24 @@ fn padding_with_set_characters() {
         )
         .to_string();
 
-    let expected = concat!(
-        "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
-        ">N<<|>column 0<<|>column 1<<|>column 2<<\n",
-        "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
-        "----+-----------+-----------+-----------\n",
-        "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
-        ">0<<|>  0-0   <<|>  0-1   <<|>  0-2   <<\n",
-        "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
-        "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
-        ">1<<|>  1-0   <<|>  1-1   <<|>  1-2   <<\n",
-        "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
-        "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
-        ">2<<|>  2-0   <<|>  2-1   <<|>  2-2   <<\n",
-        "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
+    assert_eq!(
+        table,
+        concat!(
+            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
+            ">N<<|>column 0<<|>column 1<<|>column 2<<\n",
+            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
+            "----+-----------+-----------+-----------\n",
+            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
+            ">0<<|>  0-0   <<|>  0-1   <<|>  0-2   <<\n",
+            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
+            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
+            ">1<<|>  1-0   <<|>  1-1   <<|>  1-2   <<\n",
+            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
+            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
+            ">2<<|>  2-0   <<|>  2-1   <<|>  2-2   <<\n",
+            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -69,15 +71,16 @@ fn padding_with_set_characters_and_zero_ident() {
         .with(Modify::new(Segment::all()).with(Padding::zero().set_fill('>', '<', '^', 'V')))
         .to_string();
 
-    let expected = concat!(
-        "N|column 0|column 1|column 2\n",
-        "-+--------+--------+--------\n",
-        "0|  0-0   |  0-1   |  0-2   \n",
-        "1|  1-0   |  1-1   |  1-2   \n",
-        "2|  2-0   |  2-1   |  2-2   \n",
+    assert_eq!(
+        table,
+        concat!(
+            "N|column 0|column 1|column 2\n",
+            "-+--------+--------+--------\n",
+            "0|  0-0   |  0-1   |  0-2   \n",
+            "1|  1-0   |  1-1   |  1-2   \n",
+            "2|  2-0   |  2-1   |  2-2   \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -88,21 +91,22 @@ fn padding_multiline() {
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 1, 1)))
         .to_string();
 
-    let expected = concat!(
-        " N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+----------\n",
-        "   |          |          |          \n",
-        " 0 |   0-0    |   0-1    |   0-2    \n",
-        "   |          |          |          \n",
-        "   |          |          |          \n",
-        " 1 |   1-0    |   1-1    |   1-2    \n",
-        "   |          |          |          \n",
-        "   |          |          |          \n",
-        " 2 |   2-0    |   2-1    |   2-2    \n",
-        "   |          |          |          \n",
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            "   |          |          |          \n",
+            " 0 |   0-0    |   0-1    |   0-2    \n",
+            "   |          |          |          \n",
+            "   |          |          |          \n",
+            " 1 |   1-0    |   1-1    |   1-2    \n",
+            "   |          |          |          \n",
+            "   |          |          |          \n",
+            " 2 |   2-0    |   2-1    |   2-2    \n",
+            "   |          |          |          \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
 
 #[test]
@@ -118,19 +122,20 @@ fn padding_multiline_with_vertical_alignment() {
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 1, 1)))
         .to_string();
 
-    let expected = concat!(
-        " N | column 0 | column 1 | column 2 \n",
-        "---+----------+----------+----------\n",
-        "   |          |          |          \n",
-        " 0 |   0-0    |   0-1    |   0-2    \n",
-        "   |          |          |          \n",
-        "   |          |          |          \n",
-        " 1 |   1-0    |   1-1    |   1-2    \n",
-        "   |          |          |          \n",
-        "   |          |          |          \n",
-        " 2 |   2-0    |   2-1    |   2-2    \n",
-        "   |          |          |          \n",
+    assert_eq!(
+        table,
+        concat!(
+            " N | column 0 | column 1 | column 2 \n",
+            "---+----------+----------+----------\n",
+            "   |          |          |          \n",
+            " 0 |   0-0    |   0-1    |   0-2    \n",
+            "   |          |          |          \n",
+            "   |          |          |          \n",
+            " 1 |   1-0    |   1-1    |   1-2    \n",
+            "   |          |          |          \n",
+            "   |          |          |          \n",
+            " 2 |   2-0    |   2-1    |   2-2    \n",
+            "   |          |          |          \n",
+        )
     );
-
-    assert_eq!(table, expected);
 }
