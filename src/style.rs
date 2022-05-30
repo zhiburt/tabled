@@ -406,7 +406,9 @@ impl StyleSettings {
     const fn has_vertical(&self) -> bool {
         self.horizontal.intersection.is_some() || self.vertical.is_some()
     }
+}
 
+impl StyleSettings {
     /// This function runs a function for each border character and changes it accordingly.
     ///
     /// See [CustomStyle::try_map]

@@ -179,6 +179,8 @@ use std::fmt;
 
 pub use tabled_derive::Tabled;
 
+pub use papergrid;
+
 pub use crate::{
     alignment::*,
     concat::*,
