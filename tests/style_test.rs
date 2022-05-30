@@ -1471,3 +1471,23 @@ fn single_row_test() {
         )
     );
 }
+
+#[cfg(feature = "color")]
+#[test]
+fn style_with_color_test() {
+    use owo_colors::OwoColorize;
+
+    let style = Style::ascii()
+        .left(tabled::style::Symbol::ansi('['.red().to_string()).unwrap())
+        .right(tabled::style::Symbol::ansi(']'.red().to_string()).unwrap())
+        .top(tabled::style::Symbol::ansi('-'.blue().to_string()).unwrap())
+        .bottom(tabled::style::Symbol::ansi('-'.blue().to_string()).unwrap())
+        .vertical(tabled::style::Symbol::ansi('|'.yellow().to_string()).unwrap())
+        .inner_intersection(tabled::style::Symbol::ansi('+'.purple().to_string()).unwrap())
+        .header_intersection(tabled::style::Symbol::ansi('+'.purple().to_string()).unwrap());
+
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(style).to_string();
+
+    assert_eq!(table, "\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m N \u{1b}[33m|\u{1b}[0m column 0 \u{1b}[33m|\u{1b}[0m column 1 \u{1b}[33m|\u{1b}[0m column 2 \u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m---\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m 0 \u{1b}[33m|\u{1b}[0m   0-0    \u{1b}[33m|\u{1b}[0m   0-1    \u{1b}[33m|\u{1b}[0m   0-2    \u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m---\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m 1 \u{1b}[33m|\u{1b}[0m   1-0    \u{1b}[33m|\u{1b}[0m   1-1    \u{1b}[33m|\u{1b}[0m   1-2    \u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m---\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m 2 \u{1b}[33m|\u{1b}[0m   2-0    \u{1b}[33m|\u{1b}[0m   2-1    \u{1b}[33m|\u{1b}[0m   2-2    \u{1b}[31m]\u{1b}[0m\n\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\n");
+}

@@ -7,7 +7,8 @@ use owo_colors::OwoColorize;
 
 use tabled::{
     object::{Columns, Rows},
-    Alignment, Modify, Style, Table, Tabled,
+    style::{Style, Symbol},
+    Alignment, Modify, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -47,7 +48,12 @@ fn main() {
     ];
 
     let table = Table::new(&data)
-        .with(Style::psql())
+        .with(
+            Style::psql()
+                .header_intersection(Symbol::ansi('+'.purple().to_string()).unwrap())
+                .header(Symbol::ansi('-'.purple().to_string()).unwrap())
+                .vertical(Symbol::ansi('|'.purple().to_string()).unwrap()),
+        )
         .with(Modify::new(Rows::first()).with(Alignment::center()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
         .with(Modify::new(Columns::single(0)).with(|s: &str| s.blue().to_string()))
