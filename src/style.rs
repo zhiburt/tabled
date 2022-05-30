@@ -675,6 +675,48 @@ impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
             right_bottom_corner: self.inner.frame.corner_bottom_right.clone(),
         }
     }
+
+    /// This function runs a function for each border character and changes it accordingly.
+    ///
+    /// It may be useful when you wan't to colorize the borders.
+    #[cfg(feature = "color")]
+    pub fn try_map<F, S>(mut self, f: F) -> Self
+    where
+        F: Fn(Symbol) -> S,
+        S: Into<Symbol>,
+    {
+        self.inner.frame.left.main = map_symbol(self.inner.frame.left.main, &f);
+        self.inner.frame.left.intersection = map_symbol(self.inner.frame.left.intersection, &f);
+        self.inner.frame.right.main = map_symbol(self.inner.frame.right.main, &f);
+        self.inner.frame.right.intersection = map_symbol(self.inner.frame.right.intersection, &f);
+        self.inner.frame.top.main = map_symbol(self.inner.frame.top.main, &f);
+        self.inner.frame.top.intersection = map_symbol(self.inner.frame.top.intersection, &f);
+        self.inner.frame.bottom.main = map_symbol(self.inner.frame.bottom.main, &f);
+        self.inner.frame.bottom.intersection = map_symbol(self.inner.frame.bottom.intersection, &f);
+        self.inner.frame.corner_bottom_left = map_symbol(self.inner.frame.corner_bottom_left, &f);
+        self.inner.frame.corner_top_left = map_symbol(self.inner.frame.corner_top_left, &f);
+        self.inner.frame.corner_bottom_right = map_symbol(self.inner.frame.corner_bottom_right, &f);
+        self.inner.frame.corner_top_right = map_symbol(self.inner.frame.corner_top_right, &f);
+
+        self.inner.header.main = map_symbol(self.inner.header.main, &f);
+        self.inner.header.intersection = map_symbol(self.inner.header.intersection, &f);
+
+        self.inner.horizontal.main = map_symbol(self.inner.horizontal.main, &f);
+        self.inner.horizontal.intersection = map_symbol(self.inner.horizontal.intersection, &f);
+
+        self.inner.vertical = map_symbol(self.inner.vertical, &f);
+
+        self
+    }
+}
+
+#[cfg(feature = "color")]
+fn map_symbol<F, S>(symbol: Option<Symbol>, f: F) -> Option<Symbol>
+where
+    F: Fn(Symbol) -> S,
+    S: Into<Symbol>,
+{
+    symbol.map(|s| (f)(s).into())
 }
 
 const fn char_to_symbol(c: Option<char>) -> Option<Symbol> {

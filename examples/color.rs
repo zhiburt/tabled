@@ -50,9 +50,9 @@ fn main() {
     let table = Table::new(&data)
         .with(
             Style::psql()
-                .header_intersection(Symbol::ansi('+'.purple().to_string()).unwrap())
-                .header(Symbol::ansi('-'.purple().to_string()).unwrap())
-                .vertical(Symbol::ansi('|'.purple().to_string()).unwrap()),
+                .try_map(|s| Symbol::ansi(s.yellow().to_string()).unwrap_or(s))
+                .header(Symbol::ansi('-'.red().to_string()).unwrap())
+                .header_intersection(Symbol::ansi('+'.purple().to_string()).unwrap()),
         )
         .with(Modify::new(Rows::first()).with(Alignment::center()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
