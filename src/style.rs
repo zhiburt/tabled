@@ -679,6 +679,19 @@ impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
     /// This function runs a function for each border character and changes it accordingly.
     ///
     /// It may be useful when you wan't to colorize the borders.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{Table, style::{Style, Symbol}};
+    /// use owo_colors::OwoColorize;
+    ///
+    /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
+    /// let table = Table::new(data)
+    ///     .with(Style::modern().try_map(|s| Symbol::ansi(s.blue().to_string()).unwrap()));
+    ///
+    /// println!("{}", table);
+    /// ```
     #[cfg(feature = "color")]
     pub fn try_map<F, S>(mut self, f: F) -> Self
     where
