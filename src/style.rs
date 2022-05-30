@@ -406,6 +406,39 @@ impl StyleSettings {
     const fn has_vertical(&self) -> bool {
         self.horizontal.intersection.is_some() || self.vertical.is_some()
     }
+
+    /// This function runs a function for each border character and changes it accordingly.
+    ///
+    /// See [CustomStyle::try_map]
+    #[cfg(feature = "color")]
+    pub fn try_map<F, S>(mut self, f: F) -> Self
+    where
+        F: Fn(Symbol) -> S,
+        S: Into<Symbol>,
+    {
+        self.frame.left.main = map_symbol(self.frame.left.main, &f);
+        self.frame.left.intersection = map_symbol(self.frame.left.intersection, &f);
+        self.frame.right.main = map_symbol(self.frame.right.main, &f);
+        self.frame.right.intersection = map_symbol(self.frame.right.intersection, &f);
+        self.frame.top.main = map_symbol(self.frame.top.main, &f);
+        self.frame.top.intersection = map_symbol(self.frame.top.intersection, &f);
+        self.frame.bottom.main = map_symbol(self.frame.bottom.main, &f);
+        self.frame.bottom.intersection = map_symbol(self.frame.bottom.intersection, &f);
+        self.frame.corner_bottom_left = map_symbol(self.frame.corner_bottom_left, &f);
+        self.frame.corner_top_left = map_symbol(self.frame.corner_top_left, &f);
+        self.frame.corner_bottom_right = map_symbol(self.frame.corner_bottom_right, &f);
+        self.frame.corner_top_right = map_symbol(self.frame.corner_top_right, &f);
+
+        self.header.main = map_symbol(self.header.main, &f);
+        self.header.intersection = map_symbol(self.header.intersection, &f);
+
+        self.horizontal.main = map_symbol(self.horizontal.main, &f);
+        self.horizontal.intersection = map_symbol(self.horizontal.intersection, &f);
+
+        self.vertical = map_symbol(self.vertical, &f);
+
+        self
+    }
 }
 
 /// Line represents a horizontal line on a [Table].
@@ -637,26 +670,7 @@ impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
         F: Fn(Symbol) -> S,
         S: Into<Symbol>,
     {
-        self.inner.frame.left.main = map_symbol(self.inner.frame.left.main, &f);
-        self.inner.frame.left.intersection = map_symbol(self.inner.frame.left.intersection, &f);
-        self.inner.frame.right.main = map_symbol(self.inner.frame.right.main, &f);
-        self.inner.frame.right.intersection = map_symbol(self.inner.frame.right.intersection, &f);
-        self.inner.frame.top.main = map_symbol(self.inner.frame.top.main, &f);
-        self.inner.frame.top.intersection = map_symbol(self.inner.frame.top.intersection, &f);
-        self.inner.frame.bottom.main = map_symbol(self.inner.frame.bottom.main, &f);
-        self.inner.frame.bottom.intersection = map_symbol(self.inner.frame.bottom.intersection, &f);
-        self.inner.frame.corner_bottom_left = map_symbol(self.inner.frame.corner_bottom_left, &f);
-        self.inner.frame.corner_top_left = map_symbol(self.inner.frame.corner_top_left, &f);
-        self.inner.frame.corner_bottom_right = map_symbol(self.inner.frame.corner_bottom_right, &f);
-        self.inner.frame.corner_top_right = map_symbol(self.inner.frame.corner_top_right, &f);
-
-        self.inner.header.main = map_symbol(self.inner.header.main, &f);
-        self.inner.header.intersection = map_symbol(self.inner.header.intersection, &f);
-
-        self.inner.horizontal.main = map_symbol(self.inner.horizontal.main, &f);
-        self.inner.horizontal.intersection = map_symbol(self.inner.horizontal.intersection, &f);
-
-        self.inner.vertical = map_symbol(self.inner.vertical, &f);
+        self.inner = self.inner.try_map(f);
 
         self
     }
