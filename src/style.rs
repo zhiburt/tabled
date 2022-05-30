@@ -382,8 +382,11 @@ impl Style {
     );
 }
 
+/// A raw style data, which can be produced safely from [CustomStyle].
+///
+/// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
 #[derive(Debug, Clone)]
-struct StyleSettings {
+pub struct StyleSettings {
     frame: Frame,
     horizontal: Line,
     header: Line,
@@ -533,78 +536,6 @@ impl TableOption for StyleSettings {
     }
 }
 
-/// TopBorderText writes a custom text on a top border.
-///
-/// # Example
-///
-/// ```rust
-/// use tabled::{Table, style::BorderText};
-/// let table = Table::new(["Hello World"])
-///     .with(BorderText::first("+-.table"));
-///
-/// assert_eq!(
-///     table.to_string(),
-///     "+-.table------+\n\
-///      |    &str     |\n\
-///      +-------------+\n\
-///      | Hello World |\n\
-///      +-------------+\n"
-/// );
-/// ```
-pub struct BorderText<'a> {
-    // todo: offset from which we start overriding border
-    // offset: usize,
-    text: Cow<'a, str>,
-    row: SplitLineIndex,
-}
-
-enum SplitLineIndex {
-    First,
-    Last,
-    Line(usize),
-}
-
-impl<'a> BorderText<'a> {
-    pub fn new<S: Into<Cow<'a, str>>>(line: usize, text: S) -> Self {
-        Self {
-            text: text.into(),
-            row: SplitLineIndex::Line(line),
-        }
-    }
-
-    pub fn first<S: Into<Cow<'a, str>>>(text: S) -> Self {
-        Self {
-            text: text.into(),
-            row: SplitLineIndex::First,
-        }
-    }
-
-    pub fn last<S: Into<Cow<'a, str>>>(text: S) -> Self {
-        Self {
-            text: text.into(),
-            row: SplitLineIndex::Last,
-        }
-    }
-}
-
-impl<'a> TableOption for BorderText<'a> {
-    fn change(&mut self, grid: &mut Grid) {
-        let row = match self.row {
-            SplitLineIndex::First => 0,
-            SplitLineIndex::Last => grid.count_rows(),
-            SplitLineIndex::Line(row) => {
-                if row > grid.count_rows() {
-                    return;
-                }
-
-                row
-            }
-        };
-
-        grid.override_split_line(row, self.text.as_ref())
-    }
-}
-
 /// CustomStyle represents a style controlling a valid state of it.
 ///
 /// For example.
@@ -619,6 +550,14 @@ pub struct CustomStyle<Top, Bottom, Left, Right, Horizontal, Vertical, Header> {
     _i_h_border: PhantomData<Horizontal>,
     _i_v_border: PhantomData<Vertical>,
     _h_border: PhantomData<Header>,
+}
+
+impl<Top, Bottom, Left, Right, Horizontal, Vertical, Header>
+    From<CustomStyle<Top, Bottom, Left, Right, Horizontal, Vertical, Header>> for StyleSettings
+{
+    fn from(val: CustomStyle<Top, Bottom, Left, Right, Horizontal, Vertical, Header>) -> Self {
+        val.inner
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -1133,6 +1072,78 @@ impl<T, B, L, R, IH, IV> CustomStyle<T, B, L, R, IH, IV, On> {
 impl<T, B, L, R, IH, IV, H> TableOption for CustomStyle<T, B, L, R, IH, IV, H> {
     fn change(&mut self, grid: &mut Grid) {
         self.inner.change(grid);
+    }
+}
+
+/// TopBorderText writes a custom text on a top border.
+///
+/// # Example
+///
+/// ```rust
+/// use tabled::{Table, style::BorderText};
+/// let table = Table::new(["Hello World"])
+///     .with(BorderText::first("+-.table"));
+///
+/// assert_eq!(
+///     table.to_string(),
+///     "+-.table------+\n\
+///      |    &str     |\n\
+///      +-------------+\n\
+///      | Hello World |\n\
+///      +-------------+\n"
+/// );
+/// ```
+pub struct BorderText<'a> {
+    // todo: offset from which we start overriding border
+    // offset: usize,
+    text: Cow<'a, str>,
+    row: SplitLineIndex,
+}
+
+enum SplitLineIndex {
+    First,
+    Last,
+    Line(usize),
+}
+
+impl<'a> BorderText<'a> {
+    pub fn new<S: Into<Cow<'a, str>>>(line: usize, text: S) -> Self {
+        Self {
+            text: text.into(),
+            row: SplitLineIndex::Line(line),
+        }
+    }
+
+    pub fn first<S: Into<Cow<'a, str>>>(text: S) -> Self {
+        Self {
+            text: text.into(),
+            row: SplitLineIndex::First,
+        }
+    }
+
+    pub fn last<S: Into<Cow<'a, str>>>(text: S) -> Self {
+        Self {
+            text: text.into(),
+            row: SplitLineIndex::Last,
+        }
+    }
+}
+
+impl<'a> TableOption for BorderText<'a> {
+    fn change(&mut self, grid: &mut Grid) {
+        let row = match self.row {
+            SplitLineIndex::First => 0,
+            SplitLineIndex::Last => grid.count_rows(),
+            SplitLineIndex::Line(row) => {
+                if row > grid.count_rows() {
+                    return;
+                }
+
+                row
+            }
+        };
+
+        grid.override_split_line(row, self.text.as_ref())
     }
 }
 
