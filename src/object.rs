@@ -27,6 +27,11 @@ pub trait Object: Sized {
     fn not<O: Object>(self, rhs: O) -> DiffCombination<Self, O> {
         DiffCombination { lhs: self, rhs }
     }
+
+    /// Returns cells which are present in both [Object]s only.
+    fn intersect<O: Object>(self, rhs: O) -> IntersectionCombination<Self, O> {
+        IntersectionCombination { lhs: self, rhs }
+    }
 }
 
 /// Segment represents a sub table of [Table].
@@ -419,6 +424,30 @@ where
     }
 }
 
+/// Intersection struct used for chaining [Object]'s.
+///
+/// Returns cells which are present in 2 sets.
+/// But not in one of them
+pub struct IntersectionCombination<L, R> {
+    lhs: L,
+    rhs: R,
+}
+
+impl<L, R> Object for IntersectionCombination<L, R>
+where
+    L: Object,
+    R: Object,
+{
+    type Iter = IntersectIter<L::Iter>;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        let lhs = self.lhs.cells(count_rows, count_columns);
+        let rhs = self.rhs.cells(count_rows, count_columns);
+
+        IntersectIter::new(lhs, rhs)
+    }
+}
+
 pub struct SectorIter {
     rows_end: usize,
     cols_start: usize,
@@ -772,6 +801,50 @@ where
     }
 }
 
+pub struct IntersectIter<L> {
+    lhs: L,
+    seen: HashSet<(usize, usize)>,
+}
+
+impl<L> IntersectIter<L>
+where
+    L: Iterator<Item = (usize, usize)>,
+{
+    fn new<R>(lhs: L, rhs: R) -> Self
+    where
+        R: Iterator<Item = (usize, usize)>,
+    {
+        let size = match rhs.size_hint() {
+            (s1, Some(s2)) if s1 == s2 => s1,
+            _ => 0,
+        };
+
+        let mut seen = HashSet::with_capacity(size);
+        for p in rhs {
+            seen.insert(p);
+        }
+
+        Self { lhs, seen }
+    }
+}
+
+impl<L> Iterator for IntersectIter<L>
+where
+    L: Iterator<Item = (usize, usize)>,
+{
+    type Item = (usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        for p in self.lhs.by_ref() {
+            if self.seen.contains(&p) {
+                return Some(p);
+            }
+        }
+
+        None
+    }
+}
+
 /// Converts a range bound to its indexes.
 pub(crate) fn bounds_to_usize(
     left: Bound<&usize>,
@@ -1078,6 +1151,38 @@ mod tests {
         assert_eq!(
             Rows::first()
                 .not(Cell(0, 0))
+                .cells(0, 0)
+                .collect::<Vec<_>>(),
+            vec![]
+        );
+    }
+
+    #[test]
+    fn object_intersect_test() {
+        assert_eq!(
+            Segment::all()
+                .intersect(Rows::single(1))
+                .cells(2, 3)
+                .collect::<Vec<_>>(),
+            vec![(1, 0), (1, 1), (1, 2)]
+        );
+        assert_eq!(
+            Cell(0, 0)
+                .intersect(Cell(0, 0))
+                .cells(2, 3)
+                .collect::<Vec<_>>(),
+            vec![(0, 0)]
+        );
+        assert_eq!(
+            Rows::first()
+                .intersect(Cell(0, 0))
+                .cells(2, 3)
+                .collect::<Vec<_>>(),
+            vec![(0, 0)]
+        );
+        assert_eq!(
+            Rows::first()
+                .intersect(Cell(0, 0))
                 .cells(0, 0)
                 .collect::<Vec<_>>(),
             vec![]
