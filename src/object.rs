@@ -19,13 +19,116 @@ pub trait Object: Sized {
 
     /// Combines cells.
     /// It doesn't repeat cells.
-    fn and<O: Object>(self, rhs: O) -> UntionCombination<Self, O> {
-        UntionCombination { lhs: self, rhs }
+    fn and<O: Object>(self, rhs: O) -> UnionCombination<Self, O> {
+        UnionCombination { lhs: self, rhs }
     }
 
     /// Excludes rhs cells from this cells.
     fn not<O: Object>(self, rhs: O) -> DiffCombination<Self, O> {
         DiffCombination { lhs: self, rhs }
+    }
+
+    /// Returns cells which are present in both [Object]s only.
+    fn intersect<O: Object>(self, rhs: O) -> IntersectionCombination<Self, O> {
+        IntersectionCombination { lhs: self, rhs }
+    }
+
+    /// Returns cells which are not present in target [Object].
+    fn inverse(self) -> InversionCombination<Self> {
+        InversionCombination { obj: self }
+    }
+}
+
+/// Combination struct used for chaining [Object]'s.
+///
+/// Combines 2 sets of cells into one.
+///
+/// Duplicates are removed from the output set.
+pub struct UnionCombination<L, R> {
+    lhs: L,
+    rhs: R,
+}
+
+impl<L, R> Object for UnionCombination<L, R>
+where
+    L: Object,
+    R: Object,
+{
+    type Iter = UnionIter<L::Iter, R::Iter>;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        let lhs = self.lhs.cells(count_rows, count_columns);
+        let rhs = self.rhs.cells(count_rows, count_columns);
+
+        UnionIter::new(lhs, rhs)
+    }
+}
+
+/// Difference struct used for chaining [Object]'s.
+///
+/// Returns cells from 1st set with removed ones from the 2nd set.
+pub struct DiffCombination<L, R> {
+    lhs: L,
+    rhs: R,
+}
+
+impl<L, R> Object for DiffCombination<L, R>
+where
+    L: Object,
+    R: Object,
+{
+    type Iter = DiffIter<L::Iter>;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        let lhs = self.lhs.cells(count_rows, count_columns);
+        let rhs = self.rhs.cells(count_rows, count_columns);
+
+        DiffIter::new(lhs, rhs)
+    }
+}
+
+/// Intersection struct used for chaining [Object]'s.
+///
+/// Returns cells which are present in 2 sets.
+/// But not in one of them
+pub struct IntersectionCombination<L, R> {
+    lhs: L,
+    rhs: R,
+}
+
+impl<L, R> Object for IntersectionCombination<L, R>
+where
+    L: Object,
+    R: Object,
+{
+    type Iter = IntersectIter<L::Iter>;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        let lhs = self.lhs.cells(count_rows, count_columns);
+        let rhs = self.rhs.cells(count_rows, count_columns);
+
+        IntersectIter::new(lhs, rhs)
+    }
+}
+
+/// Inversion struct used for chaining [Object]'s.
+///
+/// Returns cells which are present in 2 sets.
+/// But not in one of them
+pub struct InversionCombination<O> {
+    obj: O,
+}
+
+impl<O> Object for InversionCombination<O>
+where
+    O: Object,
+{
+    type Iter = InversionIter;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        let obj = self.obj.cells(count_rows, count_columns);
+
+        InversionIter::new(obj, count_rows, count_columns)
     }
 }
 
@@ -183,7 +286,7 @@ where
 {
     /// Returns a new instance of [Rows] for a range of rows.
     ///
-    /// If the boundaries are exeeded it may panic.
+    /// If the boundaries are exceeded it may panic.
     pub fn new(range: R) -> Self {
         Self { range }
     }
@@ -192,7 +295,7 @@ where
 impl Rows<()> {
     /// Returns a new instance of [Rows] with a single row.
     ///
-    /// If the boundaries are exeeded it may panic.
+    /// If the boundaries are exceeded it may panic.
     pub fn single(index: usize) -> Row {
         Row { index }
     }
@@ -238,7 +341,7 @@ where
 {
     /// Returns a new instance of [Columns] for a range of columns.
     ///
-    /// If the boundaries are exeeded it may panic.
+    /// If the boundaries are exceeded it may panic.
     pub fn new(range: R) -> Self {
         Self { range }
     }
@@ -247,21 +350,21 @@ where
 impl Columns<()> {
     /// Returns a new instance of [Columns] for a single column.
     ///
-    /// If the boundaries are exeeded it may panic.
+    /// If the boundaries are exceeded it may panic.
     pub fn single(index: usize) -> Column {
         Column(index)
     }
 
     /// Returns a new instance of [Columns] for a first column.
     ///
-    /// If the boundaries are exeeded the object will produce no cells.
+    /// If the boundaries are exceeded the object will produce no cells.
     pub fn first() -> FirstColumn {
         FirstColumn
     }
 
     /// Returns a new instance of [Columns] for a last column.
     ///
-    /// If the boundaries are exeeded the object will produce no cells.
+    /// If the boundaries are exceeded the object will produce no cells.
     pub fn last() -> LastColumn {
         LastColumn
     }
@@ -368,54 +471,6 @@ impl Object for Cell {
 
     fn cells(&self, _: usize, _: usize) -> Self::Iter {
         CellIter::new(self.0, self.1)
-    }
-}
-
-/// Combination struct used for chaining [Object]'s.
-///
-/// Combines 2 sets of cells into one.
-///
-/// Duplicates are removed from the output set.
-pub struct UntionCombination<L, R> {
-    lhs: L,
-    rhs: R,
-}
-
-impl<L, R> Object for UntionCombination<L, R>
-where
-    L: Object,
-    R: Object,
-{
-    type Iter = UnionIter<L::Iter, R::Iter>;
-
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let lhs = self.lhs.cells(count_rows, count_columns);
-        let rhs = self.rhs.cells(count_rows, count_columns);
-
-        UnionIter::new(lhs, rhs)
-    }
-}
-
-/// Difference struct used for chaining [Object]'s.
-///
-/// Returns cells from 1st set with removed ones from the 2nd set.
-pub struct DiffCombination<L, R> {
-    lhs: L,
-    rhs: R,
-}
-
-impl<L, R> Object for DiffCombination<L, R>
-where
-    L: Object,
-    R: Object,
-{
-    type Iter = DiffIter<L::Iter>;
-
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let lhs = self.lhs.cells(count_rows, count_columns);
-        let rhs = self.rhs.cells(count_rows, count_columns);
-
-        DiffIter::new(lhs, rhs)
     }
 }
 
@@ -772,6 +827,88 @@ where
     }
 }
 
+pub struct IntersectIter<L> {
+    lhs: L,
+    seen: HashSet<(usize, usize)>,
+}
+
+impl<L> IntersectIter<L>
+where
+    L: Iterator<Item = (usize, usize)>,
+{
+    fn new<R>(lhs: L, rhs: R) -> Self
+    where
+        R: Iterator<Item = (usize, usize)>,
+    {
+        let size = match rhs.size_hint() {
+            (s1, Some(s2)) if s1 == s2 => s1,
+            _ => 0,
+        };
+
+        let mut seen = HashSet::with_capacity(size);
+        for p in rhs {
+            seen.insert(p);
+        }
+
+        Self { lhs, seen }
+    }
+}
+
+impl<L> Iterator for IntersectIter<L>
+where
+    L: Iterator<Item = (usize, usize)>,
+{
+    type Item = (usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        for p in self.lhs.by_ref() {
+            if self.seen.contains(&p) {
+                return Some(p);
+            }
+        }
+
+        None
+    }
+}
+
+pub struct InversionIter {
+    all: SectorIter,
+    seen: HashSet<(usize, usize)>,
+}
+
+impl InversionIter {
+    fn new<O>(obj: O, count_rows: usize, count_columns: usize) -> Self
+    where
+        O: Iterator<Item = (usize, usize)>,
+    {
+        let size = match obj.size_hint() {
+            (s1, Some(s2)) if s1 == s2 => s1,
+            _ => 0,
+        };
+
+        let mut seen = HashSet::with_capacity(size);
+        seen.extend(obj);
+
+        let all = Segment::all().cells(count_rows, count_columns);
+
+        Self { all, seen }
+    }
+}
+
+impl Iterator for InversionIter {
+    type Item = (usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        for p in self.all.by_ref() {
+            if !self.seen.contains(&p) {
+                return Some(p);
+            }
+        }
+
+        None
+    }
+}
+
 /// Converts a range bound to its indexes.
 pub(crate) fn bounds_to_usize(
     left: Bound<&usize>,
@@ -1080,6 +1217,58 @@ mod tests {
                 .not(Cell(0, 0))
                 .cells(0, 0)
                 .collect::<Vec<_>>(),
+            vec![]
+        );
+    }
+
+    #[test]
+    fn object_intersect_test() {
+        assert_eq!(
+            Segment::all()
+                .intersect(Rows::single(1))
+                .cells(2, 3)
+                .collect::<Vec<_>>(),
+            vec![(1, 0), (1, 1), (1, 2)]
+        );
+        assert_eq!(
+            Cell(0, 0)
+                .intersect(Cell(0, 0))
+                .cells(2, 3)
+                .collect::<Vec<_>>(),
+            vec![(0, 0)]
+        );
+        assert_eq!(
+            Rows::first()
+                .intersect(Cell(0, 0))
+                .cells(2, 3)
+                .collect::<Vec<_>>(),
+            vec![(0, 0)]
+        );
+        assert_eq!(
+            Rows::first()
+                .intersect(Cell(0, 0))
+                .cells(0, 0)
+                .collect::<Vec<_>>(),
+            vec![]
+        );
+    }
+
+    #[test]
+    fn object_inverse_test() {
+        assert_eq!(
+            Segment::all().inverse().cells(2, 3).collect::<Vec<_>>(),
+            vec![]
+        );
+        assert_eq!(
+            Cell(0, 0).inverse().cells(2, 3).collect::<Vec<_>>(),
+            vec![(0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+        );
+        assert_eq!(
+            Rows::first().inverse().cells(2, 3).collect::<Vec<_>>(),
+            vec![(1, 0), (1, 1), (1, 2)]
+        );
+        assert_eq!(
+            Rows::first().inverse().cells(0, 0).collect::<Vec<_>>(),
             vec![]
         );
     }
