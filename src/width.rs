@@ -78,12 +78,18 @@ pub struct MaxWidth;
 
 impl MaxWidth {
     /// Returns a [Truncate] object.
-    pub fn truncating(width: usize) -> Truncate<'static> {
+    pub fn truncating<W>(width: W) -> Truncate<'static, W>
+    where
+        W: Width,
+    {
         Truncate::new(width)
     }
 
     /// Returns a [Wrap] object.
-    pub fn wrapping(width: usize) -> Wrap {
+    pub fn wrapping<W>(width: W) -> Wrap<W>
+    where
+        W: Width,
+    {
         Wrap::new(width)
     }
 }
@@ -101,15 +107,18 @@ impl MaxWidth {
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Truncate::new(3)));
 /// ```
-pub struct Truncate<'a, P = PriorityNone> {
-    width: usize,
+pub struct Truncate<'a, W = usize, P = PriorityNone> {
+    width: W,
     suffix: Cow<'a, str>,
     _priority: PhantomData<P>,
 }
 
-impl Truncate<'static> {
+impl<W> Truncate<'static, W>
+where
+    W: Width,
+{
     /// Creates a [Truncate] object
-    pub fn new(width: usize) -> Truncate<'static> {
+    pub fn new(width: W) -> Truncate<'static, W> {
         Self {
             width,
             suffix: Cow::Borrowed(""),
@@ -118,10 +127,10 @@ impl Truncate<'static> {
     }
 }
 
-impl<P> Truncate<'_, P> {
+impl<W, P> Truncate<'_, W, P> {
     /// Sets a suffix which will be appended to a resultant string
     /// in case a truncate is applied.
-    pub fn suffix<'a, S: Into<Cow<'a, str>>>(self, suffix: S) -> Truncate<'a, P> {
+    pub fn suffix<'a, S: Into<Cow<'a, str>>>(self, suffix: S) -> Truncate<'a, W, P> {
         Truncate {
             width: self.width,
             suffix: suffix.into(),
@@ -130,13 +139,13 @@ impl<P> Truncate<'_, P> {
     }
 }
 
-impl<'a, P> Truncate<'a, P> {
+impl<'a, W, P> Truncate<'a, W, P> {
     /// Priority defines the logic by which a truncate will be applied when is done for the whole table.
     ///
     /// - [PriorityNone] which cuts the columns one after another.
     /// - [PriorityMax] cuts the biggest columns first.
     /// - [PriorityMin] cuts the lowest columns first.
-    pub fn priority<PP: ColumnPeaker>(self) -> Truncate<'a, PP> {
+    pub fn priority<PP: ColumnPeaker>(self) -> Truncate<'a, W, PP> {
         Truncate {
             width: self.width,
             suffix: self.suffix,
@@ -145,10 +154,15 @@ impl<'a, P> Truncate<'a, P> {
     }
 }
 
-impl<P> CellOption for Truncate<'_, P> {
+impl<W, P> CellOption for Truncate<'_, W, P>
+where
+    W: Width,
+{
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        let width = self.width.width(grid);
+
         let content = grid.get_cell_content_styled(row, column);
-        let striped_content = strip(&content, self.width);
+        let striped_content = strip(&content, width);
         if striped_content.len() < content.len() {
             let new_content = format!("{}{}", striped_content, self.suffix.as_ref());
             grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
@@ -170,15 +184,18 @@ impl<P> CellOption for Truncate<'_, P> {
 ///     .with(Modify::new(Segment::all()).with(Wrap::new(3)));
 /// ```
 #[derive(Debug, Clone)]
-pub struct Wrap<P = PriorityNone> {
-    width: usize,
+pub struct Wrap<W = usize, P = PriorityNone> {
+    width: W,
     keep_words: bool,
     _priority: PhantomData<P>,
 }
 
-impl Wrap {
+impl<W> Wrap<W>
+where
+    W: Width,
+{
     /// Creates a [Wrap] object
-    pub fn new(width: usize) -> Self {
+    pub fn new(width: W) -> Self {
         Self {
             width,
             keep_words: false,
@@ -196,13 +213,13 @@ impl Wrap {
     }
 }
 
-impl<P> Wrap<P> {
+impl<W, P> Wrap<W, P> {
     /// Priority defines the logic by which a truncate will be applied when is done for the whole table.
     ///
     /// - [PriorityNone] which cuts the columns one after another.
     /// - [PriorityMax] cuts the biggest columns first.
     /// - [PriorityMin] cuts the lowest columns first.
-    pub fn priority<PP>(self) -> Wrap<PP> {
+    pub fn priority<PP>(self) -> Wrap<W, PP> {
         Wrap {
             width: self.width,
             keep_words: self.keep_words,
@@ -211,15 +228,19 @@ impl<P> Wrap<P> {
     }
 }
 
-impl CellOption for Wrap {
+impl<W> CellOption for Wrap<W>
+where
+    W: Width,
+{
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        let width = self.width.width(grid);
         let content = grid.get_cell_content_styled(row, column);
-        let wrapped_content = if self.width == 0 {
+        let wrapped_content = if width == 0 {
             String::new()
         } else if !self.keep_words {
-            split(&content, self.width)
+            split(&content, width)
         } else {
-            split_keeping_words(&content, self.width)
+            split_keeping_words(&content, width)
         };
 
         grid.set(
@@ -258,15 +279,18 @@ impl CellOption for Wrap {
 /// ```
 ///
 /// [Padding]: crate::Padding
-pub struct MinWidth<P = PriorityNone> {
-    size: usize,
+pub struct MinWidth<W = usize, P = PriorityNone> {
+    size: W,
     fill: char,
     _priority: PhantomData<P>,
 }
 
-impl MinWidth {
+impl<W> MinWidth<W>
+where
+    W: Width,
+{
     /// Creates a new instance of MinWidth.
-    pub fn new(size: usize) -> Self {
+    pub fn new(size: W) -> Self {
         Self {
             size,
             fill: ' ',
@@ -275,7 +299,7 @@ impl MinWidth {
     }
 }
 
-impl<P> MinWidth<P> {
+impl<W, P> MinWidth<W, P> {
     /// Set's a fill character which will be used to fill the space
     /// when increasing the length of the string to the set boundary.
     pub fn fill_with(mut self, c: char) -> Self {
@@ -288,7 +312,7 @@ impl<P> MinWidth<P> {
     /// - [PriorityNone] which inc the columns one after another.
     /// - [PriorityMax] inc the biggest columns first.
     /// - [PriorityMin] inc the lowest columns first.
-    pub fn priority<PP: ColumnPeaker>(self) -> MinWidth<PP> {
+    pub fn priority<PP: ColumnPeaker>(self) -> MinWidth<W, PP> {
         MinWidth {
             fill: self.fill,
             size: self.size,
@@ -297,16 +321,21 @@ impl<P> MinWidth<P> {
     }
 }
 
-impl CellOption for MinWidth {
+impl<W> CellOption for MinWidth<W>
+where
+    W: Width,
+{
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        let width = self.size.width(grid);
         let content = grid.get_cell_content_styled(row, column);
-        let new_content = increase_width(&content, self.size, self.fill);
+        let new_content = increase_width(&content, width, self.fill);
         grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
     }
 }
 
-impl<P> TableOption for Truncate<'_, P>
+impl<W, P> TableOption for Truncate<'_, W, P>
 where
+    W: Width,
     P: ColumnPeaker,
 {
     fn change(&mut self, grid: &mut Grid) {
@@ -318,26 +347,23 @@ where
             return;
         }
 
+        let width = self.width.width(grid);
+
         let total_width = grid.total_width();
-        if total_width == self.width {
+        if total_width == width {
             return;
         }
 
-        if self.width < total_width {
-            truncate_total_width(
-                grid,
-                total_width,
-                self.width,
-                self.suffix.as_ref(),
-                P::create(),
-            );
+        if width < total_width {
+            truncate_total_width(grid, total_width, width, self.suffix.as_ref(), P::create());
         }
     }
 }
 
-impl<P> TableOption for Wrap<P>
+impl<W, P> TableOption for Wrap<W, P>
 where
     P: ColumnPeaker,
+    W: Width,
 {
     fn change(&mut self, grid: &mut Grid) {
         if grid.count_columns() == 0 || grid.count_rows() == 0 {
@@ -348,19 +374,22 @@ where
             return;
         }
 
+        let width = self.width.width(grid);
+
         let total_width = grid.total_width();
-        if total_width == self.width {
+        if total_width == width {
             return;
         }
 
-        if self.width < total_width {
-            wrap_total_width(grid, total_width, self.width, self.keep_words, P::create());
+        if width < total_width {
+            wrap_total_width(grid, total_width, width, self.keep_words, P::create());
         }
     }
 }
 
-impl<P> TableOption for MinWidth<P>
+impl<W, P> TableOption for MinWidth<W, P>
 where
+    W: Width,
     P: ColumnPeaker,
 {
     fn change(&mut self, grid: &mut Grid) {
@@ -372,12 +401,14 @@ where
             return;
         }
 
+        let width = self.size.width(grid);
+
         let total_width = grid.total_width();
-        if total_width >= self.size {
+        if total_width >= width {
             return;
         }
 
-        increase_total_width(grid, total_width, self.size, P::create());
+        increase_total_width(grid, total_width, width, P::create());
     }
 }
 
@@ -460,7 +491,7 @@ where
 /// A width value which can be obtained on behalf of [Table].
 ///
 /// [Table]: crate::Table
-trait Width {
+pub trait Width {
     /// Returns a width value.
     fn width(&self, grid: &Grid) -> usize;
 }
@@ -494,6 +525,16 @@ impl Width for Min {
             .map(|r| r.into_iter().min().unwrap_or(0))
             .min()
             .unwrap_or(0)
+    }
+}
+
+/// Percent from a total table width.
+pub struct Percent(pub usize);
+
+impl Width for Percent {
+    fn width(&self, grid: &Grid) -> usize {
+        let total = grid.total_width();
+        (total * self.0) / 100
     }
 }
 
