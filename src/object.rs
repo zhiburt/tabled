@@ -19,8 +19,8 @@ pub trait Object: Sized {
 
     /// Combines cells.
     /// It doesn't repeat cells.
-    fn and<O: Object>(self, rhs: O) -> UntionCombination<Self, O> {
-        UntionCombination { lhs: self, rhs }
+    fn and<O: Object>(self, rhs: O) -> UnionCombination<Self, O> {
+        UnionCombination { lhs: self, rhs }
     }
 
     /// Excludes rhs cells from this cells.
@@ -376,12 +376,12 @@ impl Object for Cell {
 /// Combines 2 sets of cells into one.
 ///
 /// Duplicates are removed from the output set.
-pub struct UntionCombination<L, R> {
+pub struct UnionCombination<L, R> {
     lhs: L,
     rhs: R,
 }
 
-impl<L, R> Object for UntionCombination<L, R>
+impl<L, R> Object for UnionCombination<L, R>
 where
     L: Object,
     R: Object,
