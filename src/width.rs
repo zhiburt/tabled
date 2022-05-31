@@ -9,11 +9,11 @@
 //! ## Example
 //!
 //! ```
-//! use tabled::{MaxWidth, MinWidth, Table};
+//! use tabled::{Width, Table};
 //!
 //! let table = Table::new(&["Hello World!"])
-//!     .with(MaxWidth::wrapping(7))
-//!     .with(MinWidth::new(7))
+//!     .with(Width::wrap(7))
+//!     .with(Width::increase(7))
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -37,60 +37,90 @@ use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 use crate::{CellOption, TableOption};
 use papergrid::{string_width, string_width_multiline, Entity, Grid, Settings};
 
-/// MaxWidth allows you to set a max width of an object on a [Table],
+/// Width allows you to set a min and max width of an object on a [Table]
 /// using different strategies.
-/// It also allows you to set a MaxWidth for a whole table.
+///
+/// It also allows you to set a min and max width for a whole table.
+///
+/// You can apply a min and max strategy at the same time with the same value,
+/// the value will be a total table width.
 ///
 /// It is an abstract factory.
 ///
 /// Beware that borders are not removed when you set a size value to very small.
 /// For example if you set size to 0 the table still be rendered but with all content removed.
 ///
-/// Also be aware that it doesn't changes [Padding] settings.
+/// Also be aware that it doesn't changes [Padding] settings nor it considers them.
 ///
 /// The function is color aware if a `color` feature is on.
 ///
 /// ## Examples
 ///
-/// Cell change
+/// ### Cell change
 ///
 /// ```
-/// use tabled::{object::Segment, MaxWidth, Modify, Style, Table};
+/// use tabled::{object::Segment, Width, Modify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::github_markdown())
-///     .with(Modify::new(Segment::all()).with(MaxWidth::truncating(3).suffix("...")));
+///     .with(Modify::new(Segment::all()).with(Width::truncate(3).suffix("...")));
 /// ```
 ///
-/// Table change
+/// ### Table change
 ///
 /// ```
-/// use tabled::{MaxWidth, Table};
+/// use tabled::{Width, Table};
 ///
-/// let table = Table::new(&["Hello World!"]).with(MaxWidth::wrapping(5));
+/// let table = Table::new(&["Hello World!"]).with(Width::wrap(5));
+/// ```
+///
+/// ### Total width
+///
+/// ```
+/// use tabled::{Width, Table};
+///
+/// let table = Table::new(&["Hello World!"])
+///     .with(Width::wrap(5))
+///     .with(Width::increase(5));
 /// ```
 ///
 /// [Padding]: crate::Padding
 /// [Table]: crate::Table
-pub struct MaxWidth;
+pub struct Width;
 
-impl MaxWidth {
-    /// Returns a [Truncate] object.
-    pub fn truncating<W>(width: W) -> Truncate<'static, W>
+impl Width {
+    /// Returns a [Wrap] structure.
+    pub fn wrap<W>(width: W) -> Wrap<W>
     where
-        W: Width,
+        W: WidthValue,
+    {
+        Wrap::new(width)
+    }
+
+    /// Returns a [Truncate] structure.
+    pub fn truncate<W>(width: W) -> Truncate<'static, W>
+    where
+        W: WidthValue,
     {
         Truncate::new(width)
     }
 
-    /// Returns a [Wrap] object.
-    pub fn wrapping<W>(width: W) -> Wrap<W>
+    /// Returns a [MinWidth] structure.
+    pub fn increase<W>(width: W) -> MinWidth<W>
     where
-        W: Width,
+        W: WidthValue,
     {
-        Wrap::new(width)
+        MinWidth::new(width)
+    }
+
+    /// Returns a [Justify] structure.
+    pub fn justify<W>(width: W) -> Justify<W>
+    where
+        W: WidthValue,
+    {
+        Justify::new(width)
     }
 }
 
@@ -102,7 +132,7 @@ impl MaxWidth {
 /// ## Example
 ///
 /// ```
-/// use tabled::{object::Segment, Truncate, Modify, Table};
+/// use tabled::{object::Segment, width::Truncate, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Truncate::new(3)));
@@ -115,7 +145,7 @@ pub struct Truncate<'a, W = usize, P = PriorityNone> {
 
 impl<W> Truncate<'static, W>
 where
-    W: Width,
+    W: WidthValue,
 {
     /// Creates a [Truncate] object
     pub fn new(width: W) -> Truncate<'static, W> {
@@ -156,7 +186,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
 
 impl<W, P> CellOption for Truncate<'_, W, P>
 where
-    W: Width,
+    W: WidthValue,
 {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let width = self.width.width(grid);
@@ -178,7 +208,7 @@ where
 /// ## Example
 ///
 /// ```
-/// use tabled::{object::Segment, Wrap, Modify, Table};
+/// use tabled::{object::Segment, width::Wrap, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Wrap::new(3)));
@@ -192,7 +222,7 @@ pub struct Wrap<W = usize, P = PriorityNone> {
 
 impl<W> Wrap<W>
 where
-    W: Width,
+    W: WidthValue,
 {
     /// Creates a [Wrap] object
     pub fn new(width: W) -> Self {
@@ -230,7 +260,7 @@ impl<W, P> Wrap<W, P> {
 
 impl<W> CellOption for Wrap<W>
 where
-    W: Width,
+    W: WidthValue,
 {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let width = self.width.width(grid);
@@ -262,7 +292,7 @@ where
 /// Cell change
 ///
 /// ```
-/// use tabled::{object::Segment, MinWidth, Modify, Style, Table};
+/// use tabled::{object::Segment, width::MinWidth, Modify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -273,7 +303,7 @@ where
 /// Table change
 ///
 /// ```
-/// use tabled::{MinWidth, Table};
+/// use tabled::{width::MinWidth, Table};
 ///
 /// let table = Table::new(&["Hello World!"]).with(MinWidth::new(5));
 /// ```
@@ -287,7 +317,7 @@ pub struct MinWidth<W = usize, P = PriorityNone> {
 
 impl<W> MinWidth<W>
 where
-    W: Width,
+    W: WidthValue,
 {
     /// Creates a new instance of MinWidth.
     pub fn new(size: W) -> Self {
@@ -323,7 +353,7 @@ impl<W, P> MinWidth<W, P> {
 
 impl<W> CellOption for MinWidth<W>
 where
-    W: Width,
+    W: WidthValue,
 {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let width = self.size.width(grid);
@@ -335,7 +365,7 @@ where
 
 impl<W, P> TableOption for Truncate<'_, W, P>
 where
-    W: Width,
+    W: WidthValue,
     P: ColumnPeaker,
 {
     fn change(&mut self, grid: &mut Grid) {
@@ -362,8 +392,8 @@ where
 
 impl<W, P> TableOption for Wrap<W, P>
 where
+    W: WidthValue,
     P: ColumnPeaker,
-    W: Width,
 {
     fn change(&mut self, grid: &mut Grid) {
         if grid.count_columns() == 0 || grid.count_rows() == 0 {
@@ -389,7 +419,7 @@ where
 
 impl<W, P> TableOption for MinWidth<W, P>
 where
-    W: Width,
+    W: WidthValue,
     P: ColumnPeaker,
 {
     fn change(&mut self, grid: &mut Grid) {
@@ -420,7 +450,7 @@ where
 /// ## Examples
 ///
 /// ```
-/// use tabled::{Justify, Style, Modify, object::Segment, Padding, Table};
+/// use tabled::{width::Justify, Style, Modify, object::Segment, Padding, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -433,7 +463,7 @@ where
 /// [Max] usage to justify by a max column width.
 ///
 /// ```
-/// use tabled::{Justify, Style, Table};
+/// use tabled::{width::Justify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -447,13 +477,16 @@ pub struct Justify<W> {
     width: W,
 }
 
-impl Justify<usize> {
+impl<W> Justify<W>
+where
+    W: WidthValue,
+{
     /// Creates a new Justify instance.
     ///
     /// Be aware that [Padding] is not considered when comparing the width.
     ///
     /// [Padding]: crate::Padding
-    pub fn new(width: usize) -> Self {
+    pub fn new(width: W) -> Self {
         Self { width }
     }
 }
@@ -474,15 +507,15 @@ impl Justify<Min> {
 
 impl<W> TableOption for Justify<W>
 where
-    W: Width,
+    W: WidthValue,
 {
     fn change(&mut self, grid: &mut Grid) {
         let width = self.width.width(grid);
 
         for row in 0..grid.count_rows() {
             for col in 0..grid.count_columns() {
-                MinWidth::new(width).change_cell(grid, row, col);
-                MaxWidth::truncating(width).change_cell(grid, row, col);
+                Width::increase(width).change_cell(grid, row, col);
+                Width::truncate(width).change_cell(grid, row, col);
             }
         }
     }
@@ -491,12 +524,12 @@ where
 /// A width value which can be obtained on behalf of [Table].
 ///
 /// [Table]: crate::Table
-pub trait Width {
+pub trait WidthValue {
     /// Returns a width value.
     fn width(&self, grid: &Grid) -> usize;
 }
 
-impl Width for usize {
+impl WidthValue for usize {
     fn width(&self, _: &Grid) -> usize {
         *self
     }
@@ -505,7 +538,7 @@ impl Width for usize {
 /// Max width value.
 pub struct Max;
 
-impl Width for Max {
+impl WidthValue for Max {
     fn width(&self, grid: &Grid) -> usize {
         grid_widths(grid)
             .into_iter()
@@ -518,7 +551,7 @@ impl Width for Max {
 /// Min width value.
 pub struct Min;
 
-impl Width for Min {
+impl WidthValue for Min {
     fn width(&self, grid: &Grid) -> usize {
         grid_widths(grid)
             .into_iter()
@@ -531,7 +564,7 @@ impl Width for Min {
 /// Percent from a total table width.
 pub struct Percent(pub usize);
 
-impl Width for Percent {
+impl WidthValue for Percent {
     fn width(&self, grid: &Grid) -> usize {
         let total = grid.total_width();
         (total * self.0) / 100

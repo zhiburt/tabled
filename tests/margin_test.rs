@@ -1,7 +1,7 @@
 use tabled::{
     object::Cell,
     style::{Border, Style},
-    Highlight, Margin, MaxWidth, MinWidth, Modify, Span, Table,
+    Highlight, Margin, Modify, Span, Table, Width,
 };
 
 use crate::util::{create_vector, is_lines_equal};
@@ -103,7 +103,7 @@ fn table_with_margin_and_min_width() {
         .with(Style::psql())
         .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'))
-        .with(MaxWidth::truncating(20))
+        .with(Width::truncate(20))
         .to_string();
 
     assert_eq!(
@@ -129,7 +129,7 @@ fn table_with_margin_and_max_width() {
         .with(Style::psql())
         .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'))
-        .with(MinWidth::new(50))
+        .with(Width::increase(50))
         .to_string();
 
     assert_eq!(papergrid::string_width_multiline(&table), 50);
@@ -154,14 +154,14 @@ fn table_0_spanned_with_width() {
 
     let table = Table::new(&data)
         .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
-        .with(MinWidth::new(50))
+        .with(Width::increase(50))
         .to_string();
 
     assert_eq!(table, "++\n|\n++\n");
 
     let table = Table::new(&data)
         .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
-        .with(MaxWidth::truncating(50))
+        .with(Width::truncate(50))
         .to_string();
 
     assert_eq!(table, "++\n|\n++\n");

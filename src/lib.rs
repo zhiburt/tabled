@@ -182,20 +182,8 @@ pub use tabled_derive::Tabled;
 pub use papergrid;
 
 pub use crate::{
-    alignment::*,
-    concat::*,
-    disable::*,
-    extract::*,
-    formating::*,
-    highlight::*,
-    margin::*,
-    padding::*,
-    panel::*,
-    rotate::*,
-    span::*,
-    style::Style,
-    table::*,
-    width::{Justify, MaxWidth, MinWidth, Truncate, Wrap},
+    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::*, margin::*,
+    padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::Width,
 };
 
 // todo: change return type to impl Iterator<Cow<str>>?

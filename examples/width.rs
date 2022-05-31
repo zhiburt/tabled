@@ -1,11 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example width`
 
-use tabled::{
-    object::Segment,
-    width::{MinWidth, Percent},
-    Alignment, MaxWidth, Modify, Style, Table,
-};
+use tabled::{object::Segment, width::Percent, Alignment, Modify, Style, Table, Width};
 
 fn main() {
     let data = [
@@ -23,15 +19,15 @@ fn main() {
 
     println!("Original table\n{}", table);
 
-    let table = table.with(MaxWidth::truncating(20).suffix("..."));
+    let table = table.with(Width::truncate(20).suffix("..."));
 
     println!("Truncated table\n{}", table);
 
-    let table = table.with(Modify::new(Segment::all()).with(MaxWidth::wrapping(5)));
+    let table = table.with(Modify::new(Segment::all()).with(Width::wrap(5)));
 
     println!("Wrapped table\n{}", table);
 
-    let table = table.with(MinWidth::new(Percent(200)));
+    let table = table.with(Width::increase(Percent(200)));
 
     println!("Widen table\n{}", table);
 }

@@ -2,8 +2,9 @@ use crate::util::{create_vector, is_lines_equal};
 use tabled::{
     formatting_settings::TrimStrategy,
     object::{Cell, Columns, Object, Rows, Segment},
+    width::{Justify, MinWidth, Width},
     width::{PriorityMax, PriorityMin},
-    Alignment, Justify, MaxWidth, MinWidth, Modify, Panel, Span, Style, Table, Tabled,
+    Alignment, Modify, Panel, Span, Style, Table, Tabled,
 };
 
 mod util;
@@ -13,7 +14,7 @@ fn max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::truncating(1)))
+        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(1)))
         .to_string();
 
     assert_eq!(
@@ -35,7 +36,7 @@ fn max_width_with_suffix() {
         .with(Style::github_markdown())
         .with(
             Modify::new(Columns::new(1..).not(Rows::single(0)))
-                .with(MaxWidth::truncating(2).suffix("...")),
+                .with(Width::truncate(2).suffix("...")),
         )
         .to_string();
 
@@ -56,7 +57,7 @@ fn max_width_doesnt_icrease_width_if_it_is_smaller() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::truncating(50)))
+        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(50)))
         .to_string();
 
     assert_eq!(
@@ -76,7 +77,7 @@ fn max_width_wrapped() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::wrapping(2)))
+        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(2)))
         .to_string();
 
     assert_eq!(
@@ -99,7 +100,7 @@ fn max_width_wrapped_does_nothing_if_str_is_smaller() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(MaxWidth::wrapping(100)))
+        .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(100)))
         .to_string();
 
     assert_eq!(
@@ -120,7 +121,7 @@ fn max_width_wrapped_keep_words() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
     assert_eq!(
@@ -138,7 +139,7 @@ fn max_width_wrapped_keep_words() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
     assert_eq!(
@@ -156,7 +157,7 @@ fn max_width_wrapped_keep_words() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
     assert_eq!(
@@ -173,7 +174,7 @@ fn max_width_wrapped_keep_words() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
     // 'sentence' doesn't have a space ' sentence' because we use left alignment
@@ -191,7 +192,7 @@ fn max_width_wrapped_keep_words() {
     let data = vec!["this"];
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(10).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
         .to_string();
 
     assert_eq!(table, concat!("| &str |\n", "|------|\n", "| this |\n"));
@@ -207,7 +208,7 @@ fn max_width_wrapped_keep_words_color() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
     assert_eq!(table, concat!(
@@ -221,7 +222,7 @@ fn max_width_wrapped_keep_words_color() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
     assert_eq!(table, concat!(
@@ -235,7 +236,7 @@ fn max_width_wrapped_keep_words_color() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
     assert_eq!(
@@ -252,7 +253,7 @@ fn max_width_wrapped_keep_words_color() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
     assert_eq!(
@@ -268,7 +269,7 @@ fn max_width_wrapped_keep_words_color() {
     let data = vec!["this".on_black().green().to_string()];
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(10).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
         .to_string();
 
     assert_eq!(
@@ -287,7 +288,7 @@ fn max_width_wrapped_keep_words_long_word() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
     assert_eq!(
@@ -314,7 +315,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(17).keep_words()))
+        .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
     assert_eq!(table, concat!(
@@ -339,7 +340,7 @@ fn max_width_wrapped_collored() {
 
     let table = Table::new(data)
         .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(MaxWidth::wrapping(2)))
+        .with(Modify::new(Segment::all()).with(Width::wrap(2)))
         .to_string();
 
     assert_eq!(
@@ -365,7 +366,7 @@ fn dont_change_content_if_width_is_less_then_max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(MaxWidth::truncating(1000).suffix("...")))
+        .with(Modify::new(Segment::all()).with(Width::truncate(1000).suffix("...")))
         .to_string();
 
     assert_eq!(
@@ -386,7 +387,7 @@ fn max_width_with_emoji() {
 
     let table = Table::new(data)
         .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(MaxWidth::truncating(3).suffix("...")))
+        .with(Modify::new(Segment::all()).with(Width::truncate(3).suffix("...")))
         .to_string();
 
     assert_eq!(
@@ -414,7 +415,7 @@ fn color_chars_are_stripped() {
 
     let table = Table::new(data)
         .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(MaxWidth::truncating(3).suffix("...")))
+        .with(Modify::new(Segment::all()).with(Width::truncate(3).suffix("...")))
         .to_string();
 
     assert_eq!(
@@ -532,7 +533,7 @@ fn min_with_max_width() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(MaxWidth::truncating(3)));
+        .with(Modify::new(Rows::single(0)).with(Width::truncate(3)));
 
     assert_eq!(
         table.to_string(),
@@ -565,7 +566,7 @@ fn min_with_max_width_truncate_suffix() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
-        .with(Modify::new(Rows::single(0)).with(MaxWidth::truncating(3).suffix("...")));
+        .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("...")));
 
     assert_eq!(
         table.to_string(),
@@ -644,7 +645,7 @@ fn total_width_big() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(80))
+        .with(Width::truncate(80))
         .with(MinWidth::new(80))
         .to_string();
 
@@ -662,7 +663,7 @@ fn total_width_big() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(80))
+        .with(Width::truncate(80))
         .with(MinWidth::new(80))
         .with(Modify::new(Segment::all()).with(TrimStrategy::None))
         .to_string();
@@ -687,7 +688,7 @@ fn total_width_big_with_panel() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(80))
+        .with(Width::truncate(80))
         .with(MinWidth::new(80))
         .to_string();
 
@@ -712,7 +713,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(80))
+        .with(Width::wrap(80))
         .with(MinWidth::new(80))
         .to_string();
 
@@ -720,7 +721,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(80))
+        .with(Width::truncate(80))
         .with(MinWidth::new(80))
         .to_string();
 
@@ -732,7 +733,7 @@ fn total_width_small() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(14))
+        .with(Width::truncate(14))
         .with(MinWidth::new(14))
         .to_string();
 
@@ -754,7 +755,7 @@ fn total_width_smaller_then_content() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(8))
+        .with(Width::truncate(8))
         .with(MinWidth::new(8))
         .to_string();
 
@@ -777,7 +778,7 @@ fn total_width_small_with_panel() {
     let table = Table::new(&data)
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(20))
+        .with(Width::truncate(20))
         .with(MinWidth::new(20))
         .to_string();
 
@@ -795,7 +796,7 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(Vec::<usize>::new())
         .with(Panel("Hello World", 0))
-        .with(MaxWidth::truncating(5))
+        .with(Width::truncate(5))
         .with(MinWidth::new(5))
         .to_string();
 
@@ -809,7 +810,7 @@ fn total_width_small_with_panel() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(20))
+        .with(Width::truncate(20))
         .with(MinWidth::new(20))
         .to_string();
 
@@ -828,7 +829,7 @@ fn total_width_small_with_panel() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(20))
+        .with(Width::truncate(20))
         .with(MinWidth::new(20))
         .to_string();
 
@@ -849,7 +850,7 @@ fn total_width_small_with_panel() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(6))
+        .with(Width::truncate(6))
         .with(MinWidth::new(6))
         .to_string();
 
@@ -870,7 +871,7 @@ fn total_width_small_with_panel() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(14))
+        .with(Width::truncate(14))
         .with(MinWidth::new(14))
         .to_string();
 
@@ -891,7 +892,7 @@ fn total_width_small_with_panel() {
         .with(Panel("Hello World 123", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(14))
+        .with(Width::truncate(14))
         .with(MinWidth::new(14))
         .to_string();
 
@@ -915,7 +916,7 @@ fn total_width_wrapping() {
     let table = Table::new(&data)
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(20))
+        .with(Width::wrap(20))
         .with(MinWidth::new(20))
         .to_string();
 
@@ -942,7 +943,7 @@ fn total_width_wrapping() {
     let table = Table::new(&data)
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(20).keep_words())
+        .with(Width::wrap(20).keep_words())
         .with(MinWidth::new(20))
         .to_string();
 
@@ -969,7 +970,7 @@ fn total_width_small_with_panel_using_wrapping() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(20))
+        .with(Width::wrap(20))
         .with(MinWidth::new(20))
         .to_string();
 
@@ -996,7 +997,7 @@ fn total_width_small_with_panel_using_wrapping() {
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(14))
+        .with(Width::wrap(14))
         .with(MinWidth::new(14))
         .to_string();
 
@@ -1030,7 +1031,7 @@ fn total_width_small_with_panel_using_wrapping() {
         .with(Panel("Hello World 123", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(14))
+        .with(Width::wrap(14))
         .with(MinWidth::new(14))
         .to_string();
 
@@ -1072,7 +1073,7 @@ fn max_width_with_span() {
         .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 2)).with(Span::column(2)));
 
-    let table = table.with(MaxWidth::truncating(40));
+    let table = table.with(Width::truncate(40));
 
     assert_eq!(
         table.to_string(),
@@ -1086,7 +1087,7 @@ fn max_width_with_span() {
     );
     assert!(is_lines_equal(&table.to_string(), 36));
 
-    let table = table.with(MaxWidth::truncating(20));
+    let table = table.with(Width::truncate(20));
 
     assert_eq!(
         table.to_string(),
@@ -1100,7 +1101,7 @@ fn max_width_with_span() {
     );
     assert!(is_lines_equal(&table.to_string(), 20));
 
-    let table = table.with(MaxWidth::truncating(10));
+    let table = table.with(Width::truncate(10));
 
     assert_eq!(
         table.to_string(),
@@ -1134,7 +1135,7 @@ fn wrapping_as_total_multiline() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(MaxWidth::wrapping(57))
+        .with(Width::wrap(57))
         .to_string();
 
     assert_eq!(
@@ -1157,7 +1158,7 @@ fn wrapping_as_total_multiline() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(MaxWidth::wrapping(57).keep_words())
+        .with(Width::wrap(57).keep_words())
         .to_string();
 
     assert_eq!(
@@ -1221,7 +1222,7 @@ fn wrapping_as_total_multiline_color() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(MaxWidth::wrapping(57))
+        .with(Width::wrap(57))
         .to_string();
 
     assert_eq!(
@@ -1242,7 +1243,7 @@ fn wrapping_as_total_multiline_color() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(MaxWidth::wrapping(57).keep_words())
+        .with(Width::wrap(57).keep_words())
         .to_string();
 
     assert_eq!(
@@ -1304,7 +1305,7 @@ fn truncating_as_total_multiline_color() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(MaxWidth::truncating(57))
+        .with(Width::truncate(57))
         .to_string();
 
     assert_eq!(
@@ -1639,7 +1640,7 @@ fn max_width_when_cell_has_tabs() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(Modify::new(Columns::new(..)).with(MaxWidth::truncating(1)))
+        .with(Modify::new(Columns::new(..)).with(Width::truncate(1)))
         .to_string();
 
     assert_eq!(
@@ -1661,7 +1662,7 @@ fn max_width_table_when_cell_has_tabs() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(15))
+        .with(Width::truncate(15))
         .to_string();
 
     assert_eq!(
@@ -1684,7 +1685,7 @@ fn max_width_truncate_with_big_span() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
-        .with(MaxWidth::truncating(40))
+        .with(Width::truncate(40))
         .to_string();
 
     assert_eq!(papergrid::string_width_multiline(&table), 40);
@@ -1707,7 +1708,7 @@ fn max_width_truncate_with_big_span() {
         .with(Style::github_markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
-        .with(MaxWidth::truncating(40))
+        .with(Width::truncate(40))
         .to_string();
 
     // bigest influence
@@ -1732,7 +1733,7 @@ fn max_width_truncate_with_big_span() {
         .with(Style::github_markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
-        .with(MaxWidth::truncating(40))
+        .with(Width::truncate(40))
         .to_string();
 
     assert_eq!(papergrid::string_width_multiline(&table), 40);
@@ -1755,7 +1756,7 @@ fn max_width_truncate_priority_max() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(35).priority::<PriorityMax>())
+        .with(Width::truncate(35).priority::<PriorityMax>())
         .to_string();
 
     assert!(is_lines_equal(&table, 35));
@@ -1772,7 +1773,7 @@ fn max_width_truncate_priority_max() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(20).priority::<PriorityMax>())
+        .with(Width::truncate(20).priority::<PriorityMax>())
         .to_string();
 
     assert!(is_lines_equal(&table, 20));
@@ -1789,7 +1790,7 @@ fn max_width_truncate_priority_max() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(0).priority::<PriorityMax>())
+        .with(Width::truncate(0).priority::<PriorityMax>())
         .to_string();
 
     assert!(is_lines_equal(&table, 13));
@@ -1813,7 +1814,7 @@ fn max_width_truncate_priority_max_with_span() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
-        .with(MaxWidth::truncating(15).priority::<PriorityMax>())
+        .with(Width::truncate(15).priority::<PriorityMax>())
         .to_string();
 
     assert!(is_lines_equal(&table, 15));
@@ -1836,7 +1837,7 @@ fn max_width_wrap_priority_max() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(35).priority::<PriorityMax>())
+        .with(Width::wrap(35).priority::<PriorityMax>())
         .to_string();
 
     assert!(is_lines_equal(&table, 35));
@@ -1857,7 +1858,7 @@ fn max_width_wrap_priority_max() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(20).priority::<PriorityMax>())
+        .with(Width::wrap(20).priority::<PriorityMax>())
         .to_string();
 
     assert!(is_lines_equal(&table, 20));
@@ -1891,7 +1892,7 @@ fn max_width_wrap_priority_max() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(0).priority::<PriorityMax>())
+        .with(Width::wrap(0).priority::<PriorityMax>())
         .to_string();
 
     assert!(is_lines_equal(&table, 13));
@@ -1915,7 +1916,7 @@ fn max_width_wrap_priority_max_with_span() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
-        .with(MaxWidth::wrapping(15).priority::<PriorityMax>())
+        .with(Width::wrap(15).priority::<PriorityMax>())
         .to_string();
 
     assert!(is_lines_equal(&table, 15));
@@ -1955,7 +1956,7 @@ fn max_width_truncate_priority_min() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(35).priority::<PriorityMin>())
+        .with(Width::truncate(35).priority::<PriorityMin>())
         .to_string();
 
     assert!(is_lines_equal(&table, 35));
@@ -1972,7 +1973,7 @@ fn max_width_truncate_priority_min() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(20).priority::<PriorityMin>())
+        .with(Width::truncate(20).priority::<PriorityMin>())
         .to_string();
 
     assert!(is_lines_equal(&table, 20));
@@ -1989,7 +1990,7 @@ fn max_width_truncate_priority_min() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::truncating(0).priority::<PriorityMin>())
+        .with(Width::truncate(0).priority::<PriorityMin>())
         .to_string();
 
     assert!(is_lines_equal(&table, 13));
@@ -2013,7 +2014,7 @@ fn max_width_truncate_priority_min_with_span() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
-        .with(MaxWidth::truncating(15).priority::<PriorityMin>())
+        .with(Width::truncate(15).priority::<PriorityMin>())
         .to_string();
 
     assert!(is_lines_equal(&table, 15));
@@ -2031,7 +2032,7 @@ fn max_width_truncate_priority_min_with_span() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
-        .with(MaxWidth::truncating(17).priority::<PriorityMin>())
+        .with(Width::truncate(17).priority::<PriorityMin>())
         .to_string();
 
     assert!(is_lines_equal(&table, 17));
@@ -2054,7 +2055,7 @@ fn max_width_wrap_priority_min() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(35).priority::<PriorityMin>())
+        .with(Width::wrap(35).priority::<PriorityMin>())
         .to_string();
 
     assert!(is_lines_equal(&table, 35));
@@ -2072,7 +2073,7 @@ fn max_width_wrap_priority_min() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(20).priority::<PriorityMin>())
+        .with(Width::wrap(20).priority::<PriorityMin>())
         .to_string();
 
     assert!(is_lines_equal(&table, 20));
@@ -2093,7 +2094,7 @@ fn max_width_wrap_priority_min() {
 
     let table = Table::new(&data)
         .with(Style::github_markdown())
-        .with(MaxWidth::wrapping(0).priority::<PriorityMin>())
+        .with(Width::wrap(0).priority::<PriorityMin>())
         .to_string();
 
     assert!(is_lines_equal(&table, 13));
@@ -2117,7 +2118,7 @@ fn max_width_wrap_priority_min_with_span() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
-        .with(MaxWidth::wrapping(15).priority::<PriorityMin>())
+        .with(Width::wrap(15).priority::<PriorityMin>())
         .to_string();
 
     assert!(is_lines_equal(&table, 15));

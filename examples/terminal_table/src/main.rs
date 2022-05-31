@@ -1,8 +1,6 @@
 //! The example shows how we could spread a table to the size of a terminal.
 
-use tabled::{
-    object::Segment, Alignment, MaxWidth, MinWidth, Modify, Style, TableIteratorExt, Tabled,
-};
+use tabled::{object::Segment, Alignment, Modify, Style, TableIteratorExt, Tabled, Width};
 
 #[derive(Tabled)]
 struct Release {
@@ -40,8 +38,8 @@ fn main() {
         .table()
         .with(Style::extended())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(MaxWidth::wrapping(width as usize).keep_words())
-        .with(MinWidth::new(width as usize));
+        .with(Width::wrap(width as usize).keep_words())
+        .with(Width::increase(width as usize));
 
     println!("{}", table);
 }

@@ -24,8 +24,7 @@ use crossterm::{
 use tabled::{
     object::{Columns, Object, Rows},
     style::{Border, BorderText, Symbol},
-    Alignment, Disable, Header, Highlight, Margin, MaxWidth, MinWidth, Modify, Style, Table,
-    Tabled,
+    Alignment, Disable, Header, Highlight, Margin, Modify, Style, Table, Tabled, Width,
 };
 
 mod config;
@@ -214,29 +213,29 @@ fn run(movies: &[Movie], debug: bool) {
 
     #[rustfmt::skip]
     let resize_actions: Vec<Action> = vec![
-        detached_action(|t, _| t.with(MaxWidth::wrapping(115).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(110).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(105).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(100).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(95).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(90).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(80).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(115).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(110).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(105).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(100).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(95).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(90).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(80).keep_words())),
         //
-        detached_action(|t, _| t.with(MaxWidth::wrapping(80).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(90).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(95).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(100).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(105).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(110).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(115).keep_words())),
-        detached_action(|t, _| t.with(MaxWidth::wrapping(120).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(80).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(90).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(95).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(100).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(105).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(110).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(115).keep_words())),
+        detached_action(|t, _| t.with(Width::wrap(120).keep_words())),
         //
-        detached_action(|t, _| t.with(MinWidth::new(125))),
-        detached_action(|t, _| t.with(MinWidth::new(130))),
-        detached_action(|t, _| t.with(MinWidth::new(135))),
-        detached_action(|t, _| t.with(MinWidth::new(140))),
-        detached_action(|t, _| t.with(MinWidth::new(145))),
-        detached_action(|t, _| t.with(MinWidth::new(150))),
+        detached_action(|t, _| t.with(Width::increase(125))),
+        detached_action(|t, _| t.with(Width::increase(130))),
+        detached_action(|t, _| t.with(Width::increase(135))),
+        detached_action(|t, _| t.with(Width::increase(140))),
+        detached_action(|t, _| t.with(Width::increase(145))),
+        detached_action(|t, _| t.with(Width::increase(150))),
     ];
 
     let mut runner = Runner::new(movies);

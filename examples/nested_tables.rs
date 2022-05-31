@@ -8,7 +8,7 @@ use std::iter::FromIterator;
 use tabled::{
     builder::Builder,
     object::{Rows, Segment},
-    Alignment, MinWidth, Modify, Padding, Style, Table,
+    Alignment, Modify, Padding, Style, Table, Width,
 };
 
 fn main() {
@@ -64,10 +64,10 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
     let table_methods_width = table_methods.to_string().lines().next().unwrap().len();
     match table_fields_width.cmp(&table_methods_width) {
         std::cmp::Ordering::Less => {
-            table_fields = table_fields.with(MinWidth::new(table_methods_width))
+            table_fields = table_fields.with(Width::increase(table_methods_width))
         }
         std::cmp::Ordering::Greater => {
-            table_methods = table_methods.with(MinWidth::new(table_fields_width))
+            table_methods = table_methods.with(Width::increase(table_fields_width))
         }
         std::cmp::Ordering::Equal => (),
     }
