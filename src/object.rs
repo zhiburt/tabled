@@ -32,6 +32,11 @@ pub trait Object: Sized {
     fn intersect<O: Object>(self, rhs: O) -> IntersectionCombination<Self, O> {
         IntersectionCombination { lhs: self, rhs }
     }
+
+    /// Returns cells which are not present in target [Object].
+    fn inverse(self) -> InversionCombination<Self> {
+        InversionCombination { obj: self }
+    }
 }
 
 /// Segment represents a sub table of [Table].
@@ -448,6 +453,27 @@ where
     }
 }
 
+/// Inversion struct used for chaining [Object]'s.
+///
+/// Returns cells which are present in 2 sets.
+/// But not in one of them
+pub struct InversionCombination<O> {
+    obj: O,
+}
+
+impl<O> Object for InversionCombination<O>
+where
+    O: Object,
+{
+    type Iter = InversionIter;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        let obj = self.obj.cells(count_rows, count_columns);
+
+        InversionIter::new(obj, count_rows, count_columns)
+    }
+}
+
 pub struct SectorIter {
     rows_end: usize,
     cols_start: usize,
@@ -845,6 +871,44 @@ where
     }
 }
 
+pub struct InversionIter {
+    all: SectorIter,
+    seen: HashSet<(usize, usize)>,
+}
+
+impl InversionIter {
+    fn new<O>(obj: O, count_rows: usize, count_columns: usize) -> Self
+    where
+        O: Iterator<Item = (usize, usize)>,
+    {
+        let size = match obj.size_hint() {
+            (s1, Some(s2)) if s1 == s2 => s1,
+            _ => 0,
+        };
+
+        let mut seen = HashSet::with_capacity(size);
+        seen.extend(obj);
+
+        let all = Segment::all().cells(count_rows, count_columns);
+
+        Self { all, seen }
+    }
+}
+
+impl Iterator for InversionIter {
+    type Item = (usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        for p in self.all.by_ref() {
+            if !self.seen.contains(&p) {
+                return Some(p);
+            }
+        }
+
+        None
+    }
+}
+
 /// Converts a range bound to its indexes.
 pub(crate) fn bounds_to_usize(
     left: Bound<&usize>,
@@ -1185,6 +1249,26 @@ mod tests {
                 .intersect(Cell(0, 0))
                 .cells(0, 0)
                 .collect::<Vec<_>>(),
+            vec![]
+        );
+    }
+
+    #[test]
+    fn object_inverse_test() {
+        assert_eq!(
+            Segment::all().inverse().cells(2, 3).collect::<Vec<_>>(),
+            vec![]
+        );
+        assert_eq!(
+            Cell(0, 0).inverse().cells(2, 3).collect::<Vec<_>>(),
+            vec![(0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+        );
+        assert_eq!(
+            Rows::first().inverse().cells(2, 3).collect::<Vec<_>>(),
+            vec![(1, 0), (1, 1), (1, 2)]
+        );
+        assert_eq!(
+            Rows::first().inverse().cells(0, 0).collect::<Vec<_>>(),
             vec![]
         );
     }
