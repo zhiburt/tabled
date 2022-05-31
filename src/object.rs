@@ -39,6 +39,99 @@ pub trait Object: Sized {
     }
 }
 
+/// Combination struct used for chaining [Object]'s.
+///
+/// Combines 2 sets of cells into one.
+///
+/// Duplicates are removed from the output set.
+pub struct UnionCombination<L, R> {
+    lhs: L,
+    rhs: R,
+}
+
+impl<L, R> Object for UnionCombination<L, R>
+where
+    L: Object,
+    R: Object,
+{
+    type Iter = UnionIter<L::Iter, R::Iter>;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        let lhs = self.lhs.cells(count_rows, count_columns);
+        let rhs = self.rhs.cells(count_rows, count_columns);
+
+        UnionIter::new(lhs, rhs)
+    }
+}
+
+/// Difference struct used for chaining [Object]'s.
+///
+/// Returns cells from 1st set with removed ones from the 2nd set.
+pub struct DiffCombination<L, R> {
+    lhs: L,
+    rhs: R,
+}
+
+impl<L, R> Object for DiffCombination<L, R>
+where
+    L: Object,
+    R: Object,
+{
+    type Iter = DiffIter<L::Iter>;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        let lhs = self.lhs.cells(count_rows, count_columns);
+        let rhs = self.rhs.cells(count_rows, count_columns);
+
+        DiffIter::new(lhs, rhs)
+    }
+}
+
+/// Intersection struct used for chaining [Object]'s.
+///
+/// Returns cells which are present in 2 sets.
+/// But not in one of them
+pub struct IntersectionCombination<L, R> {
+    lhs: L,
+    rhs: R,
+}
+
+impl<L, R> Object for IntersectionCombination<L, R>
+where
+    L: Object,
+    R: Object,
+{
+    type Iter = IntersectIter<L::Iter>;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        let lhs = self.lhs.cells(count_rows, count_columns);
+        let rhs = self.rhs.cells(count_rows, count_columns);
+
+        IntersectIter::new(lhs, rhs)
+    }
+}
+
+/// Inversion struct used for chaining [Object]'s.
+///
+/// Returns cells which are present in 2 sets.
+/// But not in one of them
+pub struct InversionCombination<O> {
+    obj: O,
+}
+
+impl<O> Object for InversionCombination<O>
+where
+    O: Object,
+{
+    type Iter = InversionIter;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        let obj = self.obj.cells(count_rows, count_columns);
+
+        InversionIter::new(obj, count_rows, count_columns)
+    }
+}
+
 /// Segment represents a sub table of [Table].
 ///
 /// [Table]: crate::Table
@@ -193,7 +286,7 @@ where
 {
     /// Returns a new instance of [Rows] for a range of rows.
     ///
-    /// If the boundaries are exeeded it may panic.
+    /// If the boundaries are exceeded it may panic.
     pub fn new(range: R) -> Self {
         Self { range }
     }
@@ -202,7 +295,7 @@ where
 impl Rows<()> {
     /// Returns a new instance of [Rows] with a single row.
     ///
-    /// If the boundaries are exeeded it may panic.
+    /// If the boundaries are exceeded it may panic.
     pub fn single(index: usize) -> Row {
         Row { index }
     }
@@ -248,7 +341,7 @@ where
 {
     /// Returns a new instance of [Columns] for a range of columns.
     ///
-    /// If the boundaries are exeeded it may panic.
+    /// If the boundaries are exceeded it may panic.
     pub fn new(range: R) -> Self {
         Self { range }
     }
@@ -257,21 +350,21 @@ where
 impl Columns<()> {
     /// Returns a new instance of [Columns] for a single column.
     ///
-    /// If the boundaries are exeeded it may panic.
+    /// If the boundaries are exceeded it may panic.
     pub fn single(index: usize) -> Column {
         Column(index)
     }
 
     /// Returns a new instance of [Columns] for a first column.
     ///
-    /// If the boundaries are exeeded the object will produce no cells.
+    /// If the boundaries are exceeded the object will produce no cells.
     pub fn first() -> FirstColumn {
         FirstColumn
     }
 
     /// Returns a new instance of [Columns] for a last column.
     ///
-    /// If the boundaries are exeeded the object will produce no cells.
+    /// If the boundaries are exceeded the object will produce no cells.
     pub fn last() -> LastColumn {
         LastColumn
     }
@@ -378,99 +471,6 @@ impl Object for Cell {
 
     fn cells(&self, _: usize, _: usize) -> Self::Iter {
         CellIter::new(self.0, self.1)
-    }
-}
-
-/// Combination struct used for chaining [Object]'s.
-///
-/// Combines 2 sets of cells into one.
-///
-/// Duplicates are removed from the output set.
-pub struct UnionCombination<L, R> {
-    lhs: L,
-    rhs: R,
-}
-
-impl<L, R> Object for UnionCombination<L, R>
-where
-    L: Object,
-    R: Object,
-{
-    type Iter = UnionIter<L::Iter, R::Iter>;
-
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let lhs = self.lhs.cells(count_rows, count_columns);
-        let rhs = self.rhs.cells(count_rows, count_columns);
-
-        UnionIter::new(lhs, rhs)
-    }
-}
-
-/// Difference struct used for chaining [Object]'s.
-///
-/// Returns cells from 1st set with removed ones from the 2nd set.
-pub struct DiffCombination<L, R> {
-    lhs: L,
-    rhs: R,
-}
-
-impl<L, R> Object for DiffCombination<L, R>
-where
-    L: Object,
-    R: Object,
-{
-    type Iter = DiffIter<L::Iter>;
-
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let lhs = self.lhs.cells(count_rows, count_columns);
-        let rhs = self.rhs.cells(count_rows, count_columns);
-
-        DiffIter::new(lhs, rhs)
-    }
-}
-
-/// Intersection struct used for chaining [Object]'s.
-///
-/// Returns cells which are present in 2 sets.
-/// But not in one of them
-pub struct IntersectionCombination<L, R> {
-    lhs: L,
-    rhs: R,
-}
-
-impl<L, R> Object for IntersectionCombination<L, R>
-where
-    L: Object,
-    R: Object,
-{
-    type Iter = IntersectIter<L::Iter>;
-
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let lhs = self.lhs.cells(count_rows, count_columns);
-        let rhs = self.rhs.cells(count_rows, count_columns);
-
-        IntersectIter::new(lhs, rhs)
-    }
-}
-
-/// Inversion struct used for chaining [Object]'s.
-///
-/// Returns cells which are present in 2 sets.
-/// But not in one of them
-pub struct InversionCombination<O> {
-    obj: O,
-}
-
-impl<O> Object for InversionCombination<O>
-where
-    O: Object,
-{
-    type Iter = InversionIter;
-
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let obj = self.obj.cells(count_rows, count_columns);
-
-        InversionIter::new(obj, count_rows, count_columns)
     }
 }
 
