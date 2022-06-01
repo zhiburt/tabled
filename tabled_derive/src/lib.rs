@@ -2,7 +2,7 @@ extern crate proc_macro;
 
 use proc_macro2::TokenStream;
 use quote::*;
-use std::str;
+use std::{collections::HashMap, str};
 use syn::{
     parse_macro_input, token, Attribute, Data, DataEnum, DataStruct, DeriveInput, Field, Fields,
     Ident, Index, Lit, Meta, NestedMeta, Type, Variant,
@@ -49,7 +49,7 @@ fn get_tabled_length(ast: &DeriveInput) -> Result<TokenStream, String> {
 }
 
 fn get_fields_length(fields: &Fields) -> TokenStream {
-    let size_compontents = fields
+    let size_components = fields
         .iter()
         .map(|field| {
             let attributes = Attributes::parse(&field.attrs);
@@ -65,10 +65,10 @@ fn get_fields_length(fields: &Fields) -> TokenStream {
             }
         });
 
-    let size_compontents = std::iter::once(quote!(0)).chain(size_compontents);
+    let size_components = std::iter::once(quote!(0)).chain(size_components);
 
     let mut stream = TokenStream::new();
-    stream.append_separated(size_compontents, syn::token::Add::default());
+    stream.append_separated(size_components, syn::token::Add::default());
 
     stream
 }
@@ -121,6 +121,8 @@ fn info_from_fields(
     field_name: impl Fn(usize, &Field) -> TokenStream,
     header_prefix: &str,
 ) -> Result<Impl, String> {
+    let count_fields = fields.len();
+
     let fields = fields.into_iter().enumerate().map(|(i, field)| {
         let attributes = Attributes::parse(&field.attrs);
         (i, field, attributes)
@@ -128,10 +130,19 @@ fn info_from_fields(
 
     let mut headers = Vec::new();
     let mut values = Vec::new();
+    let mut reorder = HashMap::new();
 
     for (i, field, attributes) in fields {
         if attributes.is_ignored() {
             continue;
+        }
+
+        if let Some(order) = attributes.order {
+            if order >= count_fields {
+                panic!("An order index '{}' is out of fields scope", order);
+            }
+
+            reorder.insert(order, i);
         }
 
         let header = field_headers(field, i, &attributes, header_prefix);
@@ -142,6 +153,11 @@ fn info_from_fields(
         let value = get_field_fields(field_name, &attributes);
 
         values.push(value);
+    }
+
+    if !reorder.is_empty() {
+        values = reorder_fields(&reorder, values);
+        headers = reorder_fields(&reorder, headers);
     }
 
     let headers = quote!({
@@ -157,6 +173,34 @@ fn info_from_fields(
     });
 
     Ok(Impl { headers, values })
+}
+
+fn reorder_fields<T: Clone>(order: &HashMap<usize, usize>, elements: Vec<T>) -> Vec<T> {
+    let mut out: Vec<Option<T>> = Vec::with_capacity(elements.len());
+    out.resize(elements.len(), None);
+
+    for (pos, index) in order {
+        let value = elements[*index].clone();
+        out[*pos] = Some(value);
+    }
+
+    let mut j = 0;
+    for el in out.iter_mut() {
+        if el.is_some() {
+            continue;
+        }
+
+        while order.values().any(|&pos| j == pos) {
+            j += 1;
+        }
+
+        let v = elements[j].clone();
+        *el = Some(v);
+
+        j += 1;
+    }
+
+    out.into_iter().flatten().collect()
 }
 
 fn field_headers(
@@ -401,6 +445,7 @@ struct Attributes {
     inline_prefix: Option<String>,
     name: Option<String>,
     display_with: Option<String>,
+    order: Option<usize>,
 }
 
 impl Attributes {
@@ -410,12 +455,14 @@ impl Attributes {
         let inline_prefix = look_for_inline_prefix(attrs);
         let display_with = check_display_with_func(attrs);
         let override_header_name = override_header_name(attrs);
+        let order = override_header_order(attrs);
 
         Self {
             display_with,
             is_ignored,
-            inline: should_be_inlined,
+            order,
             inline_prefix,
+            inline: should_be_inlined,
             name: override_header_name,
         }
     }
@@ -427,6 +474,10 @@ impl Attributes {
 
 fn override_header_name(attrs: &[Attribute]) -> Option<String> {
     find_name_attribute(attrs, "tabled", "rename", look_up_nested_meta_str)
+}
+
+fn override_header_order(attrs: &[Attribute]) -> Option<usize> {
+    find_name_attribute(attrs, "tabled", "order", look_up_nested_meta_usize)
 }
 
 fn check_display_with_func(attrs: &[Attribute]) -> Option<String> {
@@ -543,6 +594,31 @@ fn look_up_nested_flag_str_in_attr(
             parse_name_attribute_nested(list.nested.iter(), "", name, look_up_nested_meta_flag_str)
                 .ok_or_else(|| "An attribute doesn't have expected value".to_string())
                 .map(Some)
+        }
+        _ => Ok(None),
+    }
+}
+
+fn look_up_nested_meta_usize(meta: &NestedMeta, name: &str) -> Result<Option<usize>, String> {
+    match meta {
+        NestedMeta::Meta(Meta::NameValue(value)) => {
+            if value.path.is_ident(name) {
+                check_usize_literal(&value.lit)
+            } else {
+                Ok(None)
+            }
+        }
+        _ => Ok(None),
+    }
+}
+
+fn check_usize_literal(lit: &Lit) -> Result<Option<usize>, String> {
+    match lit {
+        Lit::Int(value) => {
+            let value = value
+                .base10_parse::<usize>()
+                .map_err(|e| format!("Failed to parse int {:?}; {}", value.to_string(), e))?;
+            Ok(Some(value))
         }
         _ => Ok(None),
     }
