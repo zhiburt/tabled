@@ -126,6 +126,170 @@ mod tupple_structure {
 
         assert_eq!(St::<String>::LENGTH, 1);
     }
+
+    #[test]
+    fn unit_order_tabled() {
+        {
+            #[derive(Tabled)]
+            struct St(#[tabled(order = 0)] u8, u8, u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["0", "1", "2"], st.fields());
+            assert_eq!(vec!["0", "1", "2"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(#[tabled(order = 1)] u8, u8, u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["1", "0", "2"], st.fields());
+            assert_eq!(vec!["1", "0", "2"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(#[tabled(order = 2)] u8, u8, u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["1", "2", "0"], st.fields());
+            assert_eq!(vec!["1", "2", "0"], St::headers());
+        }
+
+        {
+            #[derive(Tabled)]
+            struct St(u8, #[tabled(order = 0)] u8, u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["1", "0", "2"], st.fields());
+            assert_eq!(vec!["1", "0", "2"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(u8, #[tabled(order = 1)] u8, u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["0", "1", "2"], st.fields());
+            assert_eq!(vec!["0", "1", "2"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(u8, #[tabled(order = 2)] u8, u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["0", "2", "1"], st.fields());
+            assert_eq!(vec!["0", "2", "1"], St::headers());
+        }
+
+        {
+            #[derive(Tabled)]
+            struct St(u8, u8, #[tabled(order = 0)] u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["2", "0", "1"], st.fields());
+            assert_eq!(vec!["2", "0", "1"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(u8, u8, #[tabled(order = 1)] u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["0", "2", "1"], st.fields());
+            assert_eq!(vec!["0", "2", "1"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(u8, u8, #[tabled(order = 2)] u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["0", "1", "2"], st.fields());
+            assert_eq!(vec!["0", "1", "2"], St::headers());
+        }
+
+        {
+            #[derive(Tabled)]
+            struct St(#[tabled(order = 2)] u8, u8, #[tabled(order = 0)] u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["2", "1", "0"], st.fields());
+            assert_eq!(vec!["2", "1", "0"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(#[tabled(order = 2)] u8, #[tabled(order = 1)] u8, u8);
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["2", "1", "0"], st.fields());
+            assert_eq!(vec!["2", "1", "0"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(
+                #[tabled(order = 2)] u8,
+                #[tabled(order = 2)] u8,
+                #[tabled(order = 1)] u8,
+            );
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["0", "2", "1"], st.fields());
+            assert_eq!(vec!["0", "2", "1"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(
+                #[tabled(order = 2)] u8,
+                #[tabled(order = 2)] u8,
+                #[tabled(order = 2)] u8,
+            );
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["0", "1", "2"], st.fields());
+            assert_eq!(vec!["0", "1", "2"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(
+                #[tabled(order = 1)] u8,
+                #[tabled(order = 1)] u8,
+                #[tabled(order = 1)] u8,
+            );
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["0", "2", "1"], st.fields());
+            assert_eq!(vec!["0", "2", "1"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St(
+                #[tabled(order = 2)] u8,
+                #[tabled(order = 1)] u8,
+                #[tabled(order = 0)] u8,
+            );
+
+            let st = St(0, 1, 2);
+
+            assert_eq!(vec!["2", "1", "0"], st.fields());
+            assert_eq!(vec!["2", "1", "0"], St::headers());
+        }
+    }
+
+    // #[test]
+    // fn order_compile_fail_when_order_is_bigger_then_count_fields() {
+    //     #[derive(Tabled)]
+    //     struct St(#[tabled(order = 3)] u8, u8, u8);
+    // }
 }
 
 mod enum_ {
@@ -631,6 +795,284 @@ mod structure {
         assert_eq!(vec!["0".to_owned(), "some v2".to_owned()], st.fields());
         assert_eq!(vec!["f1".to_owned(), "f2".to_owned()], St::headers());
     }
+
+    #[test]
+    fn order_tabled() {
+        {
+            #[derive(Tabled)]
+            struct St {
+                #[tabled(order = 0)]
+                f0: u8,
+                f1: u8,
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["0", "1", "2"], st.fields());
+            assert_eq!(vec!["f0", "f1", "f2"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St {
+                #[tabled(order = 1)]
+                f0: u8,
+                f1: u8,
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["1", "0", "2"], st.fields());
+            assert_eq!(vec!["f1", "f0", "f2"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St {
+                #[tabled(order = 2)]
+                f0: u8,
+                f1: u8,
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["1", "2", "0"], st.fields());
+            assert_eq!(vec!["f1", "f2", "f0"], St::headers());
+        }
+
+        {
+            #[derive(Tabled)]
+            struct St {
+                f0: u8,
+                #[tabled(order = 0)]
+                f1: u8,
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["1", "0", "2"], st.fields());
+            assert_eq!(vec!["f1", "f0", "f2"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St {
+                f0: u8,
+                #[tabled(order = 1)]
+                f1: u8,
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["0", "1", "2"], st.fields());
+            assert_eq!(vec!["f0", "f1", "f2"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St {
+                f0: u8,
+                #[tabled(order = 2)]
+                f1: u8,
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["0", "2", "1"], st.fields());
+            assert_eq!(vec!["f0", "f2", "f1"], St::headers());
+        }
+
+        {
+            #[derive(Tabled)]
+            struct St {
+                f0: u8,
+                f1: u8,
+                #[tabled(order = 0)]
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["2", "0", "1"], st.fields());
+            assert_eq!(vec!["f2", "f0", "f1"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St {
+                f0: u8,
+                f1: u8,
+                #[tabled(order = 1)]
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["0", "2", "1"], st.fields());
+            assert_eq!(vec!["f0", "f2", "f1"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St {
+                f0: u8,
+                f1: u8,
+                #[tabled(order = 2)]
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["0", "1", "2"], st.fields());
+            assert_eq!(vec!["f0", "f1", "f2"], St::headers());
+        }
+
+        {
+            #[derive(Tabled)]
+            struct St {
+                #[tabled(order = 2)]
+                f0: u8,
+                f1: u8,
+                #[tabled(order = 0)]
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["2", "1", "0"], st.fields());
+            assert_eq!(vec!["f2", "f1", "f0"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St {
+                #[tabled(order = 2)]
+                f0: u8,
+                #[tabled(order = 1)]
+                f1: u8,
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["2", "1", "0"], st.fields());
+            assert_eq!(vec!["f2", "f1", "f0"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St {
+                #[tabled(order = 2)]
+                f0: u8,
+                #[tabled(order = 2)]
+                f1: u8,
+                #[tabled(order = 1)]
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["0", "2", "1"], st.fields());
+            assert_eq!(vec!["f0", "f2", "f1"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St {
+                #[tabled(order = 2)]
+                f0: u8,
+                #[tabled(order = 2)]
+                f1: u8,
+                #[tabled(order = 2)]
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["0", "1", "2"], st.fields());
+            assert_eq!(vec!["f0", "f1", "f2"], St::headers());
+        }
+        {
+            #[derive(Tabled)]
+            struct St {
+                #[tabled(order = 2)]
+                f0: u8,
+                #[tabled(order = 1)]
+                f1: u8,
+                #[tabled(order = 0)]
+                f2: u8,
+            }
+
+            let st = St {
+                f0: 0,
+                f1: 1,
+                f2: 2,
+            };
+
+            assert_eq!(vec!["2", "1", "0"], st.fields());
+            assert_eq!(vec!["f2", "f1", "f0"], St::headers());
+        }
+    }
+
+    // #[test]
+    // fn order_compile_fail_when_order_is_bigger_then_count_fields() {
+    //     #[derive(Tabled)]
+    //     struct St {
+    //         #[tabled(order = 3)]
+    //         f0: u8,
+    //         f1: u8,
+    //         f2: u8,
+    //     }
+    // }
 }
 
 #[test]
