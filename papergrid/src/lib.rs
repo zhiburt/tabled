@@ -1361,21 +1361,76 @@ fn total_width(grid: &Grid, widths: &[usize], margin: &Margin) -> usize {
 /// strip cuts the string to a specific width.
 ///
 /// Width is expected to be in bytes.
-pub fn strip(s: &str, width: usize) -> String {
-    #[cfg(not(feature = "color"))]
-    {
-        s.chars().take(width).collect::<String>()
+pub fn cut_str(s: &str, width: usize) -> String {
+    __cut_str(s, width)
+}
+
+#[cfg(not(feature = "color"))]
+fn __cut_str(s: &str, width: usize) -> String {
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    let mut buf = String::with_capacity(width);
+    let mut i = 0;
+    for c in s.chars() {
+        if i == width {
+            break;
+        };
+
+        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+
+        // We cut the chars which takes more then 1 symbol to display,
+        // in order to archive the necessary width.
+        if i + c_width > width {
+            let count = width - i;
+            i += count;
+
+            for _ in 0..count {
+                buf.push(REPLACEMENT);
+            }
+        } else {
+            i += c_width;
+            buf.push(c);
+        }
     }
-    #[cfg(feature = "color")]
-    {
-        let width = to_byte_length(s, width);
-        ansi_str::AnsiStr::ansi_cut(s, ..width)
-    }
+
+    buf
 }
 
 #[cfg(feature = "color")]
-fn to_byte_length(s: &str, width: usize) -> usize {
-    s.chars().take(width).map(|c| c.len_utf8()).sum::<usize>()
+fn __cut_str(s: &str, width: usize) -> String {
+    let stripped = ansi_str::AnsiStr::ansi_strip(s);
+    let (byte_length, count_unknowns) = cut_str_to_min_length(&stripped, width);
+    let mut buf = ansi_str::AnsiStr::ansi_cut(s, ..byte_length);
+
+    const REPLACEMENT: char = '\u{FFFD}';
+    buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+
+    buf
+}
+
+#[cfg(feature = "color")]
+fn cut_str_to_min_length(s: &str, width: usize) -> (usize, usize) {
+    let mut length = 0;
+    let mut i = 0;
+    for c in s.chars() {
+        if i == width {
+            break;
+        };
+
+        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+
+        // We cut the chars which takes more then 1 symbol to display,
+        // in order to archive the necessary width.
+        if i + c_width > width {
+            let count = width - i;
+            return (length, count);
+        }
+
+        i += c_width;
+        length += c.len_utf8();
+    }
+
+    (length, 0)
 }
 
 /// Returns a string width.
@@ -1985,7 +2040,7 @@ fn print_split_line(
     let mut char_skip = 0;
     let override_text = grid.override_split_lines.get(&row);
     if let Some(text) = override_text {
-        let text = strip(text, max_width);
+        let text = cut_str(text, max_width);
         let line = text.lines().next().unwrap();
         char_skip = string_width(line);
         f.write_str(line)?;
@@ -2195,5 +2250,66 @@ mod tests {
         );
         assert_eq!(string_width("\u{1b}[34m0\u{1b}[0m"), 1);
         assert_eq!(string_width(&"0".red().to_string()), 1);
+    }
+
+    #[test]
+    fn strip_test() {
+        assert_eq!(cut_str("123456", 0), "");
+        assert_eq!(cut_str("123456", 3), "123");
+        assert_eq!(cut_str("123456", 10), "123456");
+
+        assert_eq!(cut_str("😳😳😳😳😳", 0), "");
+        assert_eq!(cut_str("😳😳😳😳😳", 3), "😳�");
+        assert_eq!(cut_str("😳😳😳😳😳", 4), "😳😳");
+        assert_eq!(cut_str("😳😳😳😳😳", 20), "😳😳😳😳😳");
+
+        assert_eq!(cut_str("🏳️🏳️", 0), "");
+        assert_eq!(cut_str("🏳️🏳️", 1), "🏳");
+        assert_eq!(cut_str("🏳️🏳️", 2), "🏳\u{fe0f}🏳");
+        assert_eq!(string_width("🏳️🏳️"), string_width("🏳\u{fe0f}🏳"));
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn strip_color_test() {
+        use owo_colors::OwoColorize;
+
+        let numbers = "123456".red().on_bright_black().to_string();
+
+        assert_eq!(cut_str(&numbers, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
+        assert_eq!(
+            cut_str(&numbers, 3),
+            "\u{1b}[31;100m123\u{1b}[39m\u{1b}[49m"
+        );
+        assert_eq!(cut_str(&numbers, 10), "\u{1b}[31;100m123456\u{1b}[0m");
+
+        let emojies = "😳😳😳😳😳".red().on_bright_black().to_string();
+
+        assert_eq!(cut_str(&emojies, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
+        assert_eq!(
+            cut_str(&emojies, 3),
+            "\u{1b}[31;100m😳\u{1b}[39m\u{1b}[49m�"
+        );
+        assert_eq!(
+            cut_str(&emojies, 4),
+            "\u{1b}[31;100m😳😳\u{1b}[39m\u{1b}[49m"
+        );
+        assert_eq!(cut_str(&emojies, 20), "\u{1b}[31;100m😳😳😳😳😳\u{1b}[0m");
+
+        let emojies = "🏳️🏳️".red().on_bright_black().to_string();
+
+        println!("{:?}", cut_str(&emojies, 2));
+        println!("{}", cut_str(&emojies, 2));
+
+        assert_eq!(cut_str(&emojies, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
+        assert_eq!(cut_str(&emojies, 1), "\u{1b}[31;100m🏳\u{1b}[39m\u{1b}[49m");
+        assert_eq!(
+            cut_str(&emojies, 2),
+            "\u{1b}[31;100m🏳\u{fe0f}🏳\u{1b}[39m\u{1b}[49m"
+        );
+        assert_eq!(
+            string_width(&emojies),
+            string_width("\u{1b}[31;100m🏳\u{fe0f}🏳\u{1b}[39m\u{1b}[49m")
+        );
     }
 }
