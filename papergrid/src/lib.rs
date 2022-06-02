@@ -1361,12 +1361,12 @@ fn total_width(grid: &Grid, widths: &[usize], margin: &Margin) -> usize {
 /// strip cuts the string to a specific width.
 ///
 /// Width is expected to be in bytes.
-pub fn strip(s: &str, width: usize) -> String {
-    __strip(s, width)
+pub fn cut_str(s: &str, width: usize) -> String {
+    __cut_str(s, width)
 }
 
 #[cfg(not(feature = "color"))]
-fn __strip(s: &str, width: usize) -> String {
+fn __cut_str(s: &str, width: usize) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
     let mut buf = String::with_capacity(width);
@@ -1397,9 +1397,9 @@ fn __strip(s: &str, width: usize) -> String {
 }
 
 #[cfg(feature = "color")]
-fn __strip(s: &str, width: usize) -> String {
+fn __cut_str(s: &str, width: usize) -> String {
     let stripped = ansi_str::AnsiStr::ansi_strip(s);
-    let (byte_length, count_unknowns) = strip_to_min_length(&stripped, width);
+    let (byte_length, count_unknowns) = cut_str_to_min_length(&stripped, width);
     let mut buf = ansi_str::AnsiStr::ansi_cut(s, ..byte_length);
 
     const REPLACEMENT: char = '\u{FFFD}';
@@ -1409,7 +1409,7 @@ fn __strip(s: &str, width: usize) -> String {
 }
 
 #[cfg(feature = "color")]
-fn strip_to_min_length(s: &str, width: usize) -> (usize, usize) {
+fn cut_str_to_min_length(s: &str, width: usize) -> (usize, usize) {
     let mut length = 0;
     let mut i = 0;
     for c in s.chars() {
@@ -2040,7 +2040,7 @@ fn print_split_line(
     let mut char_skip = 0;
     let override_text = grid.override_split_lines.get(&row);
     if let Some(text) = override_text {
-        let text = strip(text, max_width);
+        let text = cut_str(text, max_width);
         let line = text.lines().next().unwrap();
         char_skip = string_width(line);
         f.write_str(line)?;
@@ -2254,18 +2254,18 @@ mod tests {
 
     #[test]
     fn strip_test() {
-        assert_eq!(strip("123456", 0), "");
-        assert_eq!(strip("123456", 3), "123");
-        assert_eq!(strip("123456", 10), "123456");
+        assert_eq!(cut_str("123456", 0), "");
+        assert_eq!(cut_str("123456", 3), "123");
+        assert_eq!(cut_str("123456", 10), "123456");
 
-        assert_eq!(strip("😳😳😳😳😳", 0), "");
-        assert_eq!(strip("😳😳😳😳😳", 3), "😳�");
-        assert_eq!(strip("😳😳😳😳😳", 4), "😳😳");
-        assert_eq!(strip("😳😳😳😳😳", 20), "😳😳😳😳😳");
+        assert_eq!(cut_str("😳😳😳😳😳", 0), "");
+        assert_eq!(cut_str("😳😳😳😳😳", 3), "😳�");
+        assert_eq!(cut_str("😳😳😳😳😳", 4), "😳😳");
+        assert_eq!(cut_str("😳😳😳😳😳", 20), "😳😳😳😳😳");
 
-        assert_eq!(strip("🏳️🏳️", 0), "");
-        assert_eq!(strip("🏳️🏳️", 1), "🏳");
-        assert_eq!(strip("🏳️🏳️", 2), "🏳\u{fe0f}🏳");
+        assert_eq!(cut_str("🏳️🏳️", 0), "");
+        assert_eq!(cut_str("🏳️🏳️", 1), "🏳");
+        assert_eq!(cut_str("🏳️🏳️", 2), "🏳\u{fe0f}🏳");
         assert_eq!(string_width("🏳️🏳️"), string_width("🏳\u{fe0f}🏳"));
     }
 
@@ -2276,26 +2276,35 @@ mod tests {
 
         let numbers = "123456".red().on_bright_black().to_string();
 
-        assert_eq!(strip(&numbers, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
-        assert_eq!(strip(&numbers, 3), "\u{1b}[31;100m123\u{1b}[39m\u{1b}[49m");
-        assert_eq!(strip(&numbers, 10), "\u{1b}[31;100m123456\u{1b}[0m");
+        assert_eq!(cut_str(&numbers, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
+        assert_eq!(
+            cut_str(&numbers, 3),
+            "\u{1b}[31;100m123\u{1b}[39m\u{1b}[49m"
+        );
+        assert_eq!(cut_str(&numbers, 10), "\u{1b}[31;100m123456\u{1b}[0m");
 
         let emojies = "😳😳😳😳😳".red().on_bright_black().to_string();
 
-        assert_eq!(strip(&emojies, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
-        assert_eq!(strip(&emojies, 3), "\u{1b}[31;100m😳\u{1b}[39m\u{1b}[49m�");
-        assert_eq!(strip(&emojies, 4), "\u{1b}[31;100m😳😳\u{1b}[39m\u{1b}[49m");
-        assert_eq!(strip(&emojies, 20), "\u{1b}[31;100m😳😳😳😳😳\u{1b}[0m");
+        assert_eq!(cut_str(&emojies, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
+        assert_eq!(
+            cut_str(&emojies, 3),
+            "\u{1b}[31;100m😳\u{1b}[39m\u{1b}[49m�"
+        );
+        assert_eq!(
+            cut_str(&emojies, 4),
+            "\u{1b}[31;100m😳😳\u{1b}[39m\u{1b}[49m"
+        );
+        assert_eq!(cut_str(&emojies, 20), "\u{1b}[31;100m😳😳😳😳😳\u{1b}[0m");
 
         let emojies = "🏳️🏳️".red().on_bright_black().to_string();
 
-        println!("{:?}", strip(&emojies, 2));
-        println!("{}", strip(&emojies, 2));
+        println!("{:?}", cut_str(&emojies, 2));
+        println!("{}", cut_str(&emojies, 2));
 
-        assert_eq!(strip(&emojies, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
-        assert_eq!(strip(&emojies, 1), "\u{1b}[31;100m🏳\u{1b}[39m\u{1b}[49m");
+        assert_eq!(cut_str(&emojies, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");
+        assert_eq!(cut_str(&emojies, 1), "\u{1b}[31;100m🏳\u{1b}[39m\u{1b}[49m");
         assert_eq!(
-            strip(&emojies, 2),
+            cut_str(&emojies, 2),
             "\u{1b}[31;100m🏳\u{fe0f}🏳\u{1b}[39m\u{1b}[49m"
         );
         assert_eq!(
