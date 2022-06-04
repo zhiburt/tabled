@@ -198,9 +198,9 @@ fn write_record_line(
 }
 
 fn truncate(s: &str, max: usize) -> String {
-    crate::width::strip(s, max)
+    papergrid::cut_str(s, max)
 }
 
 fn wrap(s: &str, max: usize) -> String {
-    crate::width::split(s, max)
+    papergrid::split_by_lines(s, max)
 }

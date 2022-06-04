@@ -192,7 +192,7 @@ where
         let width = self.width.width(grid);
 
         let content = grid.get_cell_content_styled(row, column);
-        let striped_content = strip(&content, width);
+        let striped_content = papergrid::cut_str(&content, width);
         if striped_content.len() < content.len() {
             let new_content = format!("{}{}", striped_content, self.suffix.as_ref());
             grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
@@ -265,13 +265,15 @@ where
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
         let width = self.width.width(grid);
         let content = grid.get_cell_content_styled(row, column);
-        let wrapped_content = if width == 0 {
-            String::new()
-        } else if !self.keep_words {
-            split(&content, width)
-        } else {
-            split_keeping_words(&content, width)
-        };
+
+        let wrapped_content = papergrid::wrap_text(&content, width, self.keep_words);
+        assert!(
+            width >= papergrid::string_width_multiline(&wrapped_content),
+            "width{:?}\n\n content={:?}\n\n wrap={:?}\n",
+            width,
+            content,
+            wrapped_content
+        );
 
         grid.set(
             Entity::Cell(row, column),
@@ -751,206 +753,6 @@ fn is_zero_spanned_grid(grid: &Grid) -> bool {
         .all(|row| (0..grid.count_columns()).all(|col| !grid.is_cell_visible((row, col))))
 }
 
-pub(crate) fn strip(s: &str, width: usize) -> String {
-    #[cfg(not(feature = "color"))]
-    {
-        s.chars().take(width).collect::<String>()
-    }
-    #[cfg(feature = "color")]
-    {
-        let width = to_byte_length(s, width);
-        ansi_str::AnsiStr::ansi_cut(s, ..width)
-    }
-}
-
-pub(crate) fn split(s: &str, width: usize) -> String {
-    #[cfg(not(feature = "color"))]
-    {
-        s.chars()
-            .enumerate()
-            .flat_map(|(i, c)| {
-                if i != 0 && i % width == 0 {
-                    Some('\n')
-                } else {
-                    None
-                }
-                .into_iter()
-                .chain(std::iter::once(c))
-            })
-            .collect::<String>()
-    }
-    #[cfg(feature = "color")]
-    {
-        if width == 0 {
-            s.to_string()
-        } else {
-            chunks(s, width).join("\n")
-        }
-    }
-}
-
-#[cfg(not(feature = "color"))]
-fn split_keeping_words(s: &str, width: usize) -> String {
-    let mut buf = String::new();
-    let mut i = 0;
-    for c in s.chars() {
-        let is_splitting_pos = i == width;
-        if !is_splitting_pos {
-            i += 1;
-            buf.push(c);
-            continue;
-        }
-
-        i = 1;
-
-        let prev_c = buf.chars().last().unwrap();
-        let is_splitting_word = !prev_c.is_whitespace() && !c.is_whitespace();
-        if !is_splitting_word {
-            // This place doesn't separate a word
-            // So we just do a general split.
-            buf.push('\n');
-            buf.push(c);
-            continue;
-        }
-
-        let pos = buf.chars().rev().position(|c| c.is_whitespace());
-        match pos {
-            Some(pos) => {
-                if pos < width {
-                    // it's a part of a word which we is ok to move to the next line;
-                    // we know that there will be enough space for this part + next character.
-                    //
-                    // todo: test about this next char space
-                    let range_len = buf
-                        .chars()
-                        .rev()
-                        .take(pos)
-                        .map(|c| c.len_utf8())
-                        .sum::<usize>();
-
-                    // put an spaces in order to not limit widths and keep it correct.
-                    for i in 0..range_len {
-                        buf.insert(buf.len() - range_len - i, ' ');
-                    }
-
-                    buf.insert(buf.len() - range_len, '\n');
-
-                    i = range_len + 1;
-                } else {
-                    // The words is too long to be moved,
-                    // we can't move it any way so just leave everything as it is
-                    buf.push('\n');
-                }
-
-                buf.push(c);
-            }
-            None => {
-                // We don't find a whitespace
-                // so its a long word so we can do nothing about it
-                buf.push('\n');
-                buf.push(c);
-            }
-        }
-    }
-
-    buf
-}
-
-#[cfg(feature = "color")]
-fn split_keeping_words(s: &str, width: usize) -> String {
-    use ansi_str::AnsiStr;
-
-    let mut buf = String::new();
-    let mut s = s.to_string();
-    while !s.is_empty() {
-        let width = to_byte_length(&s, width);
-        let (mut lhs, mut rhs) = s.ansi_split_at(width);
-
-        let lhs_stripped = lhs.ansi_strip();
-        let left_ends_with_letter = lhs_stripped
-            .chars()
-            .last()
-            .map_or(false, |c| !c.is_whitespace());
-        let right_starts_with_letter = rhs
-            .ansi_strip()
-            .chars()
-            .next()
-            .map_or(false, |c| !c.is_whitespace());
-
-        let is_splitting_word = left_ends_with_letter && right_starts_with_letter;
-        if !is_splitting_word {
-            buf.push_str(&lhs);
-            buf.push('\n');
-            s = rhs;
-            continue;
-        }
-
-        let pos = lhs_stripped.chars().rev().position(|c| c.is_whitespace());
-        match pos {
-            Some(pos) => {
-                if pos < width {
-                    // it's a part of a word which we is ok to move to the next line;
-                    // we know that there will be enough space for this part + next character.
-                    //
-                    // todo: test about this next char space
-                    let range_len = lhs_stripped
-                        .chars()
-                        .rev()
-                        .take(pos)
-                        .map(|c| c.len_utf8())
-                        .sum::<usize>();
-
-                    let move_part = lhs.ansi_get(lhs_stripped.len() - range_len..).unwrap();
-                    lhs = lhs.ansi_get(..lhs_stripped.len() - range_len).unwrap();
-                    rhs = move_part + &rhs;
-
-                    // put an spaces in order to not limit widths and keep it correct.
-                    lhs.extend(std::iter::repeat(' ').take(range_len));
-
-                    buf.push_str(&lhs);
-                    buf.push('\n');
-                } else {
-                    // The words is too long to be moved,
-                    // we can't move it any way so just leave everything as it is
-                    buf.push_str(&lhs);
-                    buf.push('\n');
-                }
-            }
-            None => {
-                // We don't find a whitespace
-                // so its a long word so we can do nothing about it
-                buf.push_str(&lhs);
-                buf.push('\n');
-            }
-        }
-
-        s = rhs;
-    }
-
-    buf
-}
-
-#[cfg(feature = "color")]
-fn to_byte_length(s: &str, width: usize) -> usize {
-    s.chars().take(width).map(|c| c.len_utf8()).sum::<usize>()
-}
-
-#[cfg(feature = "color")]
-fn chunks(s: &str, width: usize) -> Vec<String> {
-    use ansi_str::AnsiStr;
-
-    let mut v = Vec::new();
-    let mut s = s.to_string();
-    while !s.is_empty() {
-        let width = to_byte_length(&s, width);
-        let (lhs, rhs) = s.ansi_split_at(width);
-        s = rhs;
-        v.push(lhs);
-    }
-
-    v
-}
-
 fn decrease_total_width_fn<F>(
     grid: &Grid,
     total_width: usize,
@@ -1104,7 +906,6 @@ fn build_min_widths(grid: &Grid) -> Vec<usize> {
 #[cfg(feature = "color")]
 #[cfg(test)]
 mod tests {
-    use super::*;
     use owo_colors::{colors::Yellow, OwoColorize};
 
     #[test]
@@ -1115,7 +916,7 @@ mod tests {
             .blink()
             .to_string();
         assert_eq!(
-            strip(&s, 1),
+            papergrid::cut_str(&s, 1),
             "\u{1b}[5m\u{1b}[48;2;12;200;100m\u{1b}[33mC\u{1b}[25m\u{1b}[39m\u{1b}[49m"
         )
     }
