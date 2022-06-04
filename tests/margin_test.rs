@@ -4,7 +4,7 @@ use tabled::{
     Highlight, Margin, Modify, Span, Table, Width,
 };
 
-use crate::util::{create_vector, is_lines_equal};
+use crate::util::{create_vector, is_lines_equal, static_table};
 
 mod util;
 
@@ -20,19 +20,19 @@ fn margin_with_table_based_on_grid_borders() {
 
     assert_eq!(
         table,
-        concat!(
-            "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n",
-            ">+++++══════════╦══════════╦══════════╗<<\n",
-            ">+ N + column 0 ║ column 1 ║ column 2 ║<<\n",
-            ">++++************══════════╬══════════╣<<\n",
-            ">║ 0 *   0-0    *   0-1    ║   0-2    ║<<\n",
-            ">╠═══************══════════╬══════════╣<<\n",
-            ">║ 1 ║   1-0    ║   1-1    ║   1-2    ║<<\n",
-            ">╠═══╬══════════╬══════════╬══════════╣<<\n",
-            ">║ 2 ║   2-0    ║   2-1    ║   2-2    ║<<\n",
-            ">╚═══╩══════════╩══════════╩══════════╝<<\n",
-            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
-            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+        static_table!(
+            "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
+            ">+++++══════════╦══════════╦══════════╗<<"
+            ">+ N + column 0 ║ column 1 ║ column 2 ║<<"
+            ">++++************══════════╬══════════╣<<"
+            ">║ 0 *   0-0    *   0-1    ║   0-2    ║<<"
+            ">╠═══************══════════╬══════════╣<<"
+            ">║ 1 ║   1-0    ║   1-1    ║   1-2    ║<<"
+            ">╠═══╬══════════╬══════════╬══════════╣<<"
+            ">║ 2 ║   2-0    ║   2-1    ║   2-2    ║<<"
+            ">╚═══╩══════════╩══════════╩══════════╝<<"
+            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
         )
     );
 }
@@ -50,19 +50,19 @@ fn margin_without_table_based_on_grid_borders() {
 
     assert_eq!(
         table,
-        concat!(
-            "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n",
-            "> N | column 0 | column 1 | column 2 <\n",
-            ">---+----------+----------+----------<\n",
-            "> 0 |   0-0    |   0-1    |   0-2    <\n",
-            "> 1 |   1-0    |   1-1    |   1-2    <\n",
-            "> 2 |   2-0    |      https://       <\n",
-            ">   |          |      www            <\n",
-            ">   |          |      .              <\n",
-            ">   |          |      redhat         <\n",
-            ">   |          |      .com           <\n",
-            ">   |          |      /en            <\n",
-            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+        static_table!(
+            "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
+            "> N | column 0 | column 1 | column 2 <"
+            ">---+----------+----------+----------<"
+            "> 0 |   0-0    |   0-1    |   0-2    <"
+            "> 1 |   1-0    |   1-1    |   1-2    <"
+            "> 2 |   2-0    |      https://       <"
+            ">   |          |      www            <"
+            ">   |          |      .              <"
+            ">   |          |      redhat         <"
+            ">   |          |      .com           <"
+            ">   |          |      /en            <"
+            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
         )
     );
 }
@@ -80,17 +80,17 @@ fn table_with_empty_margin() {
 
     assert_eq!(
         table,
-        concat!(
-            " N | column 0 | column 1 | column 2 \n",
-            "---+----------+----------+----------\n",
-            " 0 |   0-0    |   0-1    |   0-2    \n",
-            " 1 |   1-0    |   1-1    |   1-2    \n",
-            " 2 |   2-0    |      https://       \n",
-            "   |          |      www            \n",
-            "   |          |      .              \n",
-            "   |          |      redhat         \n",
-            "   |          |      .com           \n",
-            "   |          |      /en            \n",
+        static_table!(
+            " N | column 0 | column 1 | column 2 "
+            "---+----------+----------+----------"
+            " 0 |   0-0    |   0-1    |   0-2    "
+            " 1 |   1-0    |   1-1    |   1-2    "
+            " 2 |   2-0    |      https://       "
+            "   |          |      www            "
+            "   |          |      .              "
+            "   |          |      redhat         "
+            "   |          |      .com           "
+            "   |          |      /en            "
         )
     );
 }
@@ -108,14 +108,14 @@ fn table_with_margin_and_min_width() {
 
     assert_eq!(
         table,
-        concat!(
-            "VVVVVVVVVVVVVVVVVVVV\n",
-            ">  | co | co | col <\n",
-            ">--+----+----+-----<\n",
-            ">  |   0-0   | 0-2 <\n",
-            ">  | 1- | 1- | 1-2 <\n",
-            ">  | 2- | 2- | 2-2 <\n",
-            "^^^^^^^^^^^^^^^^^^^^\n",
+        static_table!(
+            "VVVVVVVVVVVVVVVVVVVV"
+            ">  | co | co | col <"
+            ">--+----+----+-----<"
+            ">  |   0-0   | 0-2 <"
+            ">  | 1- | 1- | 1-2 <"
+            ">  | 2- | 2- | 2-2 <"
+            "^^^^^^^^^^^^^^^^^^^^"
         )
     );
     assert!(is_lines_equal(&table, 20))
@@ -135,14 +135,14 @@ fn table_with_margin_and_max_width() {
     assert_eq!(papergrid::string_width_multiline(&table), 50);
     assert_eq!(
         table,
-        concat!(
-            "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\n",
-            ">  N   |  column 0   |  column 1   |  column 2   <\n",
-            ">------+-------------+-------------+-------------<\n",
-            ">  0   |            0-0            |     0-2     <\n",
-            ">  1   |     1-0     |     1-1     |     1-2     <\n",
-            ">  2   |     2-0     |     2-1     |     2-2     <\n",
-            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+        static_table!(
+            "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
+            ">  N   |  column 0   |  column 1   |  column 2   <"
+            ">------+-------------+-------------+-------------<"
+            ">  0   |            0-0            |     0-2     <"
+            ">  1   |     1-0     |     1-1     |     1-2     <"
+            ">  2   |     2-0     |     2-1     |     2-2     <"
+            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
         )
     );
 }

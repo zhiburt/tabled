@@ -1,9 +1,10 @@
-use crate::util::create_vector;
 use tabled::{
     formatting_settings::{AlignmentStrategy, TabSize, TrimStrategy},
     object::{Cell, Segment},
     Alignment, Modify, Span, Style, Table,
 };
+
+use crate::util::{create_vector, static_table};
 
 mod util;
 
@@ -24,21 +25,21 @@ fn alignment_per_line() {
 
     assert_eq!(
         table,
-        concat!(
-            "         N | column 0 | column 1 | column 2 \n",
-            "-----------+----------+----------+----------\n",
-            "         0 |      0-0 |      0-1 |      0-2 \n",
-            "       asd |      1-0 |      1-1 |      1-2 \n",
-            "  21213123 |          |          |          \n",
-            "           |          |          |          \n",
-            "    asdasd |          |          |          \n",
-            "           |          |          |          \n",
-            "         2 |      2-0 | https:// |      2-2 \n",
-            "           |          |      www |          \n",
-            "           |          |        . |          \n",
-            "           |          |   redhat |          \n",
-            "           |          |     .com |          \n",
-            "           |          |      /en |          \n",
+        static_table!(
+            "         N | column 0 | column 1 | column 2 "
+            "-----------+----------+----------+----------"
+            "         0 |      0-0 |      0-1 |      0-2 "
+            "       asd |      1-0 |      1-1 |      1-2 "
+            "  21213123 |          |          |          "
+            "           |          |          |          "
+            "    asdasd |          |          |          "
+            "           |          |          |          "
+            "         2 |      2-0 | https:// |      2-2 "
+            "           |          |      www |          "
+            "           |          |        . |          "
+            "           |          |   redhat |          "
+            "           |          |     .com |          "
+            "           |          |      /en |          "
         )
     );
 }
@@ -61,21 +62,21 @@ fn alignment_per_line_with_trim() {
 
     assert_eq!(
         table,
-        concat!(
-            "         N | column 0 | column 1 | column 2 \n",
-            "-----------+----------+----------+----------\n",
-            "         0 |      0-0 |      0-1 |      0-2 \n",
-            "       asd |      1-0 |      1-1 |      1-2 \n",
-            "  21213123 |          |          |          \n",
-            "           |          |          |          \n",
-            "    asdasd |          |          |          \n",
-            "           |          |          |          \n",
-            "         2 |      2-0 | https:// |      2-2 \n",
-            "           |          |      www |          \n",
-            "           |          |        . |          \n",
-            "           |          |   redhat |          \n",
-            "           |          |     .com |          \n",
-            "           |          |      /en |          \n",
+        static_table!(
+            "         N | column 0 | column 1 | column 2 "
+            "-----------+----------+----------+----------"
+            "         0 |      0-0 |      0-1 |      0-2 "
+            "       asd |      1-0 |      1-1 |      1-2 "
+            "  21213123 |          |          |          "
+            "           |          |          |          "
+            "    asdasd |          |          |          "
+            "           |          |          |          "
+            "         2 |      2-0 | https:// |      2-2 "
+            "           |          |      www |          "
+            "           |          |        . |          "
+            "           |          |   redhat |          "
+            "           |          |     .com |          "
+            "           |          |      /en |          "
         )
     );
 
@@ -96,23 +97,23 @@ fn alignment_per_line_with_trim() {
 
     assert_eq!(
         table,
-        concat!(
-            " N                 | column 0 | column 1 | column 2 \n",
-            "-------------------+----------+----------+----------\n",
-            " 0                 | 0-0      | 0-1      | 0-2      \n",
-            "                   |          |          |          \n",
-            "                   |          |          |          \n",
-            " asd               |          |          |          \n",
-            " 21213123   asdasd | 1-0      | 1-1      | 1-2      \n",
-            "                   |          |          |          \n",
-            "                   |          |          |          \n",
-            "                   |          |          |          \n",
-            "                   |          | https:// |          \n",
-            "                   |          | www      |          \n",
-            " 2                 | 2-0      | .        | 2-2      \n",
-            "                   |          | redhat   |          \n",
-            "                   |          | .com     |          \n",
-            "                   |          | /en      |          \n",
+        static_table!(
+            " N                 | column 0 | column 1 | column 2 "
+            "-------------------+----------+----------+----------"
+            " 0                 | 0-0      | 0-1      | 0-2      "
+            "                   |          |          |          "
+            "                   |          |          |          "
+            " asd               |          |          |          "
+            " 21213123   asdasd | 1-0      | 1-1      | 1-2      "
+            "                   |          |          |          "
+            "                   |          |          |          "
+            "                   |          |          |          "
+            "                   |          | https:// |          "
+            "                   |          | www      |          "
+            " 2                 | 2-0      | .        | 2-2      "
+            "                   |          | redhat   |          "
+            "                   |          | .com     |          "
+            "                   |          | /en      |          "
         )
     );
 }
@@ -127,17 +128,17 @@ fn tab_size_test() {
 
     assert_eq!(
         table.to_string(),
-        concat!(
-            "          N           | column 0 |   column 1   | column 2 \n",
-            "----------------------+----------+--------------+----------\n",
-            "          0           |   0-0    |     0-1      |   0-2    \n",
-            " 123    123    asdasd |   1-0    |     1-1      |   1-2    \n",
-            "          2           |   2-0    | htt    ps:// |   2-2    \n",
-            "                      |          | www          |          \n",
-            "                      |          | .            |          \n",
-            "                      |          | red    hat   |          \n",
-            "                      |          | .c    om     |          \n",
-            "                      |          | /en          |          \n",
+        static_table!(
+            "          N           | column 0 |   column 1   | column 2 "
+            "----------------------+----------+--------------+----------"
+            "          0           |   0-0    |     0-1      |   0-2    "
+            " 123    123    asdasd |   1-0    |     1-1      |   1-2    "
+            "          2           |   2-0    | htt    ps:// |   2-2    "
+            "                      |          | www          |          "
+            "                      |          | .            |          "
+            "                      |          | red    hat   |          "
+            "                      |          | .c    om     |          "
+            "                      |          | /en          |          "
         )
     );
 
@@ -149,17 +150,17 @@ fn tab_size_test() {
 
     assert_eq!(
         table.to_string(),
-        concat!(
-            "                N | column 0 |   column 1 | column 2 \n",
-            "------------------+----------+------------+----------\n",
-            "                0 |      0-0 |        0-1 |      0-2 \n",
-            " 123  123  asdasd |      1-0 |        1-1 |      1-2 \n",
-            "                2 |      2-0 | htt  ps:// |      2-2 \n",
-            "                  |          | www        |          \n",
-            "                  |          | .          |          \n",
-            "                  |          | red  hat   |          \n",
-            "                  |          | .c  om     |          \n",
-            "                  |          | /en        |          \n",
+        static_table!(
+            "                N | column 0 |   column 1 | column 2 "
+            "------------------+----------+------------+----------"
+            "                0 |      0-0 |        0-1 |      0-2 "
+            " 123  123  asdasd |      1-0 |        1-1 |      1-2 "
+            "                2 |      2-0 | htt  ps:// |      2-2 "
+            "                  |          | www        |          "
+            "                  |          | .          |          "
+            "                  |          | red  hat   |          "
+            "                  |          | .c  om     |          "
+            "                  |          | /en        |          "
         )
     );
 
@@ -171,17 +172,17 @@ fn tab_size_test() {
 
     assert_eq!(
         table.to_string(),
-        concat!(
-            "            N | column 0 | column 1 | column 2 \n",
-            "--------------+----------+----------+----------\n",
-            "            0 |      0-0 |      0-1 |      0-2 \n",
-            " 123123asdasd |      1-0 |      1-1 |      1-2 \n",
-            "            2 |      2-0 | https:// |      2-2 \n",
-            "              |          | www      |          \n",
-            "              |          | .        |          \n",
-            "              |          | redhat   |          \n",
-            "              |          | .com     |          \n",
-            "              |          | /en      |          \n",
+        static_table!(
+            "            N | column 0 | column 1 | column 2 "
+            "--------------+----------+----------+----------"
+            "            0 |      0-0 |      0-1 |      0-2 "
+            " 123123asdasd |      1-0 |      1-1 |      1-2 "
+            "            2 |      2-0 | https:// |      2-2 "
+            "              |          | www      |          "
+            "              |          | .        |          "
+            "              |          | redhat   |          "
+            "              |          | .com     |          "
+            "              |          | /en      |          "
         )
     );
 }
@@ -201,17 +202,17 @@ fn tab_size_span_test() {
 
     assert_eq!(
         table.to_string(),
-        concat!(
-            "                     N                     | column 2 \n",
-            "----------------------+-----+--------------+----------\n",
-            "     H        ello    World |     0-1      |   0-2    \n",
-            " 123    123    asdasd |        1-0         |   1-2    \n",
-            "          2           | 2-0 | htt    ps:// |   2-2    \n",
-            "                      |     | www          |          \n",
-            "                      |     | .            |          \n",
-            "                      |     | red    hat   |          \n",
-            "                      |     | .c    om     |          \n",
-            "                      |     | /en          |          \n",
+        static_table!(
+            "                     N                     | column 2 "
+            "----------------------+-----+--------------+----------"
+            "     H        ello    World |     0-1      |   0-2    "
+            " 123    123    asdasd |        1-0         |   1-2    "
+            "          2           | 2-0 | htt    ps:// |   2-2    "
+            "                      |     | www          |          "
+            "                      |     | .            |          "
+            "                      |     | red    hat   |          "
+            "                      |     | .c    om     |          "
+            "                      |     | /en          |          "
         )
     );
 }

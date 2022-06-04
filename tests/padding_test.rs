@@ -1,8 +1,9 @@
-use crate::util::create_vector;
 use tabled::{
     object::{Rows, Segment},
     Alignment, Modify, Padding, Style, Table,
 };
+
+use crate::util::{create_vector, static_table};
 
 mod util;
 
@@ -17,18 +18,18 @@ fn padding() {
 
     assert_eq!(
         table,
-        concat!(
-            " N | column 0 | column 1 | column 2 \n",
-            "---+----------+----------+----------\n",
-            " 0 | 0-0      | 0-1      | 0-2      \n",
-            "   |          |          |          \n",
-            "   |          |          |          \n",
-            " 1 | 1-0      | 1-1      | 1-2      \n",
-            "   |          |          |          \n",
-            "   |          |          |          \n",
-            " 2 | 2-0      | 2-1      | 2-2      \n",
-            "   |          |          |          \n",
-            "   |          |          |          \n",
+        static_table!(
+            " N | column 0 | column 1 | column 2 "
+            "---+----------+----------+----------"
+            " 0 | 0-0      | 0-1      | 0-2      "
+            "   |          |          |          "
+            "   |          |          |          "
+            " 1 | 1-0      | 1-1      | 1-2      "
+            "   |          |          |          "
+            "   |          |          |          "
+            " 2 | 2-0      | 2-1      | 2-2      "
+            "   |          |          |          "
+            "   |          |          |          "
         )
     );
 }
@@ -45,20 +46,20 @@ fn padding_with_set_characters() {
 
     assert_eq!(
         table,
-        concat!(
-            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
-            ">N<<|>column 0<<|>column 1<<|>column 2<<\n",
-            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
-            "----+-----------+-----------+-----------\n",
-            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
-            ">0<<|>  0-0   <<|>  0-1   <<|>  0-2   <<\n",
-            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
-            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
-            ">1<<|>  1-0   <<|>  1-1   <<|>  1-2   <<\n",
-            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
-            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV\n",
-            ">2<<|>  2-0   <<|>  2-1   <<|>  2-2   <<\n",
-            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^\n",
+        static_table!(
+            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV"
+            ">N<<|>column 0<<|>column 1<<|>column 2<<"
+            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^"
+            "----+-----------+-----------+-----------"
+            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV"
+            ">0<<|>  0-0   <<|>  0-1   <<|>  0-2   <<"
+            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^"
+            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV"
+            ">1<<|>  1-0   <<|>  1-1   <<|>  1-2   <<"
+            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^"
+            "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV"
+            ">2<<|>  2-0   <<|>  2-1   <<|>  2-2   <<"
+            "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^"
         )
     );
 }
@@ -73,12 +74,12 @@ fn padding_with_set_characters_and_zero_ident() {
 
     assert_eq!(
         table,
-        concat!(
-            "N|column 0|column 1|column 2\n",
-            "-+--------+--------+--------\n",
-            "0|  0-0   |  0-1   |  0-2   \n",
-            "1|  1-0   |  1-1   |  1-2   \n",
-            "2|  2-0   |  2-1   |  2-2   \n",
+        static_table!(
+            "N|column 0|column 1|column 2"
+            "-+--------+--------+--------"
+            "0|  0-0   |  0-1   |  0-2   "
+            "1|  1-0   |  1-1   |  1-2   "
+            "2|  2-0   |  2-1   |  2-2   "
         )
     );
 }
@@ -93,18 +94,18 @@ fn padding_multiline() {
 
     assert_eq!(
         table,
-        concat!(
-            " N | column 0 | column 1 | column 2 \n",
-            "---+----------+----------+----------\n",
-            "   |          |          |          \n",
-            " 0 |   0-0    |   0-1    |   0-2    \n",
-            "   |          |          |          \n",
-            "   |          |          |          \n",
-            " 1 |   1-0    |   1-1    |   1-2    \n",
-            "   |          |          |          \n",
-            "   |          |          |          \n",
-            " 2 |   2-0    |   2-1    |   2-2    \n",
-            "   |          |          |          \n",
+        static_table!(
+            " N | column 0 | column 1 | column 2 "
+            "---+----------+----------+----------"
+            "   |          |          |          "
+            " 0 |   0-0    |   0-1    |   0-2    "
+            "   |          |          |          "
+            "   |          |          |          "
+            " 1 |   1-0    |   1-1    |   1-2    "
+            "   |          |          |          "
+            "   |          |          |          "
+            " 2 |   2-0    |   2-1    |   2-2    "
+            "   |          |          |          "
         )
     );
 }
@@ -124,18 +125,18 @@ fn padding_multiline_with_vertical_alignment() {
 
     assert_eq!(
         table,
-        concat!(
-            " N | column 0 | column 1 | column 2 \n",
-            "---+----------+----------+----------\n",
-            "   |          |          |          \n",
-            " 0 |   0-0    |   0-1    |   0-2    \n",
-            "   |          |          |          \n",
-            "   |          |          |          \n",
-            " 1 |   1-0    |   1-1    |   1-2    \n",
-            "   |          |          |          \n",
-            "   |          |          |          \n",
-            " 2 |   2-0    |   2-1    |   2-2    \n",
-            "   |          |          |          \n",
+        static_table!(
+            " N | column 0 | column 1 | column 2 "
+            "---+----------+----------+----------"
+            "   |          |          |          "
+            " 0 |   0-0    |   0-1    |   0-2    "
+            "   |          |          |          "
+            "   |          |          |          "
+            " 1 |   1-0    |   1-1    |   1-2    "
+            "   |          |          |          "
+            "   |          |          |          "
+            " 2 |   2-0    |   2-1    |   2-2    "
+            "   |          |          |          "
         )
     );
 }

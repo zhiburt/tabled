@@ -1,3 +1,7 @@
+#![allow(dead_code)]
+#![allow(unused_macros)]
+#![allow(unused_imports)]
+
 use std::ops::{Index, IndexMut};
 
 use tabled::Tabled;
@@ -58,7 +62,16 @@ pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUM
     arr
 }
 
-#[allow(dead_code)]
 pub fn is_lines_equal(s: &str, width: usize) -> bool {
     papergrid::string_width_multiline(s) == width
 }
+
+macro_rules! static_table {
+    ($($line:expr)*) => {
+        concat!(
+            $($line, "\n",)*
+        )
+    };
+}
+
+pub(crate) use static_table;

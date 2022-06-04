@@ -1,9 +1,10 @@
-use crate::util::create_vector;
 use tabled::{
     object::{Cell, Object, Rows, Segment},
     style::{Border, Style},
     Alignment, Footer, Header, Highlight, Modify, Panel, Table,
 };
+
+use crate::util::{create_vector, static_table};
 
 mod util;
 
@@ -19,13 +20,13 @@ fn panel_has_no_style_by_default() {
 
     assert_eq!(
         table,
-        concat!(
-            "Linux Distributions                 \n",
-            " N | column 0 | column 1 | column 2 \n",
-            "---+----------+----------+----------\n",
-            " 0 |   0-0    |   0-1    |   0-2    \n",
-            " 1 |   1-0    |   1-1    |   1-2    \n",
-            " 2 |   2-0    |   2-1    |   2-2    \n",
+        static_table!(
+            "Linux Distributions                 "
+            " N | column 0 | column 1 | column 2 "
+            "---+----------+----------+----------"
+            " 0 |   0-0    |   0-1    |   0-2    "
+            " 1 |   1-0    |   1-1    |   1-2    "
+            " 2 |   2-0    |   2-1    |   2-2    "
         )
     );
 }
@@ -44,14 +45,14 @@ fn highligt_panel() {
 
     assert_eq!(
         table,
-        concat!(
-            "#####                                \n",
-            "#Linux Distributions                 \n",
-            "#####----------+----------+----------\n",
-            "  N | column 0 | column 1 | column 2 \n",
-            "  0 |   0-0    |   0-1    |   0-2    \n",
-            "  1 |   1-0    |   1-1    |   1-2    \n",
-            "  2 |   2-0    |   2-1    |   2-2    \n",
+        static_table!(
+            "#####                                "
+            "#Linux Distributions                 "
+            "#####----------+----------+----------"
+            "  N | column 0 | column 1 | column 2 "
+            "  0 |   0-0    |   0-1    |   0-2    "
+            "  1 |   1-0    |   1-1    |   1-2    "
+            "  2 |   2-0    |   2-1    |   2-2    "
         )
     );
 
@@ -68,14 +69,14 @@ fn highligt_panel() {
     // it is because it has right border printed
     assert_eq!(
         table,
-        concat!(
-            "######################################\n",
-            "#Linux Distributions                 #\n",
-            "######################################\n",
-            "  N | column 0 | column 1 | column 2  \n",
-            "  0 |   0-0    |   0-1    |   0-2     \n",
-            "  1 |   1-0    |   1-1    |   1-2     \n",
-            "  2 |   2-0    |   2-1    |   2-2     \n",
+        static_table!(
+            "######################################"
+            "#Linux Distributions                 #"
+            "######################################"
+            "  N | column 0 | column 1 | column 2  "
+            "  0 |   0-0    |   0-1    |   0-2     "
+            "  1 |   1-0    |   1-1    |   1-2     "
+            "  2 |   2-0    |   2-1    |   2-2     "
         )
     );
 }
@@ -90,13 +91,13 @@ fn top_panel() {
 
     assert_eq!(
         table,
-        concat!(
-            "        Linux Distributions         \n",
-            "---+----------+----------+----------\n",
-            " N | column 0 | column 1 | column 2 \n",
-            " 0 |   0-0    |   0-1    |   0-2    \n",
-            " 1 |   1-0    |   1-1    |   1-2    \n",
-            " 2 |   2-0    |   2-1    |   2-2    \n",
+        static_table!(
+            "        Linux Distributions         "
+            "---+----------+----------+----------"
+            " N | column 0 | column 1 | column 2 "
+            " 0 |   0-0    |   0-1    |   0-2    "
+            " 1 |   1-0    |   1-1    |   1-2    "
+            " 2 |   2-0    |   2-1    |   2-2    "
         )
     );
 }
@@ -112,13 +113,13 @@ fn bottom_panel() {
 
     assert_eq!(
         table,
-        concat!(
-            " N | column 0 | column 1 | column 2 \n",
-            "---+----------+----------+----------\n",
-            " 0 |   0-0    |   0-1    |   0-2    \n",
-            " 1 |   1-0    |   1-1    |   1-2    \n",
-            " 2 |   2-0    |   2-1    |   2-2    \n",
-            "        Linux Distributions         \n",
+        static_table!(
+            " N | column 0 | column 1 | column 2 "
+            "---+----------+----------+----------"
+            " 0 |   0-0    |   0-1    |   0-2    "
+            " 1 |   1-0    |   1-1    |   1-2    "
+            " 2 |   2-0    |   2-1    |   2-2    "
+            "        Linux Distributions         "
         )
     );
 }
@@ -133,13 +134,13 @@ fn inner_panel() {
 
     assert_eq!(
         table,
-        concat!(
-            " N | column 0 | column 1 | column 2 \n",
-            "---+----------+----------+----------\n",
-            " 0 |   0-0    |   0-1    |   0-2    \n",
-            "        Linux Distributions         \n",
-            " 1 |   1-0    |   1-1    |   1-2    \n",
-            " 2 |   2-0    |   2-1    |   2-2    \n",
+        static_table!(
+            " N | column 0 | column 1 | column 2 "
+            "---+----------+----------+----------"
+            " 0 |   0-0    |   0-1    |   0-2    "
+            "        Linux Distributions         "
+            " 1 |   1-0    |   1-1    |   1-2    "
+            " 2 |   2-0    |   2-1    |   2-2    "
         )
     );
 }
@@ -154,13 +155,13 @@ fn header() {
 
     assert_eq!(
         table,
-        concat!(
-            "        Linux Distributions         \n",
-            "---+----------+----------+----------\n",
-            " N | column 0 | column 1 | column 2 \n",
-            " 0 |   0-0    |   0-1    |   0-2    \n",
-            " 1 |   1-0    |   1-1    |   1-2    \n",
-            " 2 |   2-0    |   2-1    |   2-2    \n",
+        static_table!(
+            "        Linux Distributions         "
+            "---+----------+----------+----------"
+            " N | column 0 | column 1 | column 2 "
+            " 0 |   0-0    |   0-1    |   0-2    "
+            " 1 |   1-0    |   1-1    |   1-2    "
+            " 2 |   2-0    |   2-1    |   2-2    "
         )
     );
 }
@@ -177,14 +178,14 @@ fn footer() {
 
     assert_eq!(
         table,
-        concat!(
-            "        Linux Distributions         \n",
-            "---+----------+----------+----------\n",
-            " N | column 0 | column 1 | column 2 \n",
-            " 0 |   0-0    |   0-1    |   0-2    \n",
-            " 1 |   1-0    |   1-1    |   1-2    \n",
-            " 2 |   2-0    |   2-1    |   2-2    \n",
-            "              The end               \n",
+        static_table!(
+            "        Linux Distributions         "
+            "---+----------+----------+----------"
+            " N | column 0 | column 1 | column 2 "
+            " 0 |   0-0    |   0-1    |   0-2    "
+            " 1 |   1-0    |   1-1    |   1-2    "
+            " 2 |   2-0    |   2-1    |   2-2    "
+            "              The end               "
         )
     );
 }
@@ -198,14 +199,14 @@ fn panel_style_uses_most_left_and_right_cell_styles() {
 
     assert_eq!(
         table,
-        concat!(
-            "┌─────┬─────┐\n",
-            "│Numbers    │\n",
-            "├─────┼─────┤\n",
-            "│ i32 │ i32 │\n",
-            "├─────┼─────┤\n",
-            "│  0  │  1  │\n",
-            "└─────┴─────┘\n",
+        static_table!(
+            "┌─────┬─────┐"
+            "│Numbers    │"
+            "├─────┼─────┤"
+            "│ i32 │ i32 │"
+            "├─────┼─────┤"
+            "│  0  │  1  │"
+            "└─────┴─────┘"
         )
     );
 }
@@ -224,14 +225,14 @@ fn panel_style_change() {
 
     assert_eq!(
         table,
-        concat!(
-            "┌───────────┐\n",
-            "│  Numbers  │\n",
-            "├─────┬─────┤\n",
-            "│ i32 │ i32 │\n",
-            "├─────┼─────┤\n",
-            "│  0  │  1  │\n",
-            "└─────┴─────┘\n",
+        static_table!(
+            "┌───────────┐"
+            "│  Numbers  │"
+            "├─────┬─────┤"
+            "│ i32 │ i32 │"
+            "├─────┼─────┤"
+            "│  0  │  1  │"
+            "└─────┴─────┘"
         )
     );
 }
@@ -245,14 +246,14 @@ fn panel_in_single_column() {
 
     assert_eq!(
         table,
-        concat!(
-            "┌───────┐\n",
-            "│Numbers│\n",
-            "├───────┤\n",
-            "│  i32  │\n",
-            "├───────┤\n",
-            "│   0   │\n",
-            "└───────┘\n",
+        static_table!(
+            "┌───────┐"
+            "│Numbers│"
+            "├───────┤"
+            "│  i32  │"
+            "├───────┤"
+            "│   0   │"
+            "└───────┘"
         )
     );
 }

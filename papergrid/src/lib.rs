@@ -2299,7 +2299,7 @@ fn split_by_line_keeping_words(s: &str, width: usize) -> String {
         }
     }
 
-    buf.trim_end_matches("\n").to_owned()
+    buf.trim_end_matches('\n').to_owned()
 }
 
 #[cfg(feature = "color")]
