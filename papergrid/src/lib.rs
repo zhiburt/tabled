@@ -2524,6 +2524,8 @@ mod tests {
         assert_eq!(cut_str("123456", 3), "123");
         assert_eq!(cut_str("123456", 10), "123456");
 
+        assert_eq!(cut_str("a week ago", 4), "a we");
+
         assert_eq!(cut_str("😳😳😳😳😳", 0), "");
         assert_eq!(cut_str("😳😳😳😳😳", 3), "😳�");
         assert_eq!(cut_str("😳😳😳😳😳", 4), "😳😳");

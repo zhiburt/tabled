@@ -193,7 +193,7 @@ where
 
         let content = grid.get_cell_content_styled(row, column);
         let striped_content = papergrid::cut_str(&content, width);
-        if striped_content.len() < content.len() {
+        if papergrid::string_width(&striped_content) < papergrid::string_width(&content) {
             let new_content = format!("{}{}", striped_content, self.suffix.as_ref());
             grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
         }
