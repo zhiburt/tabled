@@ -2040,10 +2040,12 @@ fn print_split_line(
     let mut char_skip = 0;
     let override_text = grid.override_split_lines.get(&row);
     if let Some(text) = override_text {
-        let text = cut_str(text, max_width);
-        let line = text.lines().next().unwrap();
-        char_skip = string_width(line);
-        f.write_str(line)?;
+        if !text.is_empty() {
+            let text = cut_str(text, max_width);
+            let line = text.lines().next().unwrap();
+            char_skip = string_width(line);
+            f.write_str(line)?;
+        }
     }
 
     for (col, width) in widths.iter().enumerate() {

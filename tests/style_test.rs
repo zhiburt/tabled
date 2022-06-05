@@ -1498,3 +1498,22 @@ fn style_with_color_test() {
 
     assert_eq!(table, "\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m N \u{1b}[33m|\u{1b}[0m column 0 \u{1b}[33m|\u{1b}[0m column 1 \u{1b}[33m|\u{1b}[0m column 2 \u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m---\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m 0 \u{1b}[33m|\u{1b}[0m   0-0    \u{1b}[33m|\u{1b}[0m   0-1    \u{1b}[33m|\u{1b}[0m   0-2    \u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m---\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m 1 \u{1b}[33m|\u{1b}[0m   1-0    \u{1b}[33m|\u{1b}[0m   1-1    \u{1b}[33m|\u{1b}[0m   1-2    \u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m---\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[35m+\u{1b}[0m----------\u{1b}[31m]\u{1b}[0m\n\u{1b}[31m[\u{1b}[0m 2 \u{1b}[33m|\u{1b}[0m   2-0    \u{1b}[33m|\u{1b}[0m   2-1    \u{1b}[33m|\u{1b}[0m   2-2    \u{1b}[31m]\u{1b}[0m\n\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[33m|\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\u{1b}[34m-\u{1b}[0m\n");
 }
+
+#[test]
+fn empty_border_text_doesnt_panic_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data).with(BorderText::first("")).to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---+----------+----------+"
+            "| N | column 0 | column 1 |"
+            "+---+----------+----------+"
+            "| 0 |   0-0    |   0-1    |"
+            "+---+----------+----------+"
+            "| 1 |   1-0    |   1-1    |"
+            "+---+----------+----------+"
+        )
+    );
+}
