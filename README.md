@@ -963,6 +963,7 @@ fn main() {
         .build()
         .with(Style::psql());
 
+
     println!("{}", table);
 }
 ```
