@@ -657,6 +657,7 @@ fn main() {
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)));
 
     println!("{}", table);
+}
 ```
 
 ```text
@@ -963,7 +964,7 @@ fn main() {
         .with(Style::psql());
 
     println!("{}", table);
-}**
+}
 ```
 
 ### Index
