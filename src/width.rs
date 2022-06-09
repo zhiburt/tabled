@@ -34,8 +34,12 @@
 
 use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 
+use papergrid::{
+    count_borders_in_range, cut_str, string_width, string_width_multiline, wrap_text, Entity, Grid,
+    Settings,
+};
+
 use crate::{CellOption, TableOption};
-use papergrid::{string_width, string_width_multiline, Entity, Grid, Settings};
 
 /// Width allows you to set a min and max width of an object on a [Table]
 /// using different strategies.
@@ -192,8 +196,8 @@ where
         let width = self.width.width(grid);
 
         let content = grid.get_cell_content_styled(row, column);
-        let striped_content = papergrid::cut_str(&content, width);
-        if papergrid::string_width(&striped_content) < papergrid::string_width(&content) {
+        let striped_content = cut_str(&content, width);
+        if string_width(&striped_content) < string_width(&content) {
             let new_content = format!("{}{}", striped_content, self.suffix.as_ref());
             grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
         }
@@ -266,9 +270,9 @@ where
         let width = self.width.width(grid);
         let content = grid.get_cell_content_styled(row, column);
 
-        let wrapped_content = papergrid::wrap_text(&content, width, self.keep_words);
+        let wrapped_content = wrap_text(&content, width, self.keep_words);
         assert!(
-            width >= papergrid::string_width_multiline(&wrapped_content),
+            width >= string_width_multiline(&wrapped_content),
             "width{:?}\n\n content={:?}\n\n wrap={:?}\n",
             width,
             content,
@@ -813,7 +817,7 @@ where
                     let width = (col..col + span)
                         .map(|i| std::cmp::max(widths[i], min_widths[i]))
                         .sum::<usize>();
-                    let count_borders = papergrid::count_borders_in_range(grid, col, col + span);
+                    let count_borders = count_borders_in_range(grid, col, col + span);
 
                     let left_padding = grid.style(Entity::Cell(row, col)).padding.left.size;
                     let right_padding = grid
@@ -873,7 +877,7 @@ where
             match grid.get_column_span((row, col)) {
                 Some(span) => {
                     let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
-                    let count_borders = papergrid::count_borders_in_range(grid, col, col + span);
+                    let count_borders = count_borders_in_range(grid, col, col + span);
 
                     let left_padding = grid.style(Entity::Cell(row, col)).padding.left.size;
                     let right_padding = grid
@@ -915,6 +919,7 @@ fn build_min_widths(grid: &Grid) -> Vec<usize> {
 #[cfg(test)]
 mod tests {
     use owo_colors::{colors::Yellow, OwoColorize};
+    use papergrid::cut_str;
 
     #[test]
     fn test_color_strip() {
@@ -924,7 +929,7 @@ mod tests {
             .blink()
             .to_string();
         assert_eq!(
-            papergrid::cut_str(&s, 1),
+            cut_str(&s, 1),
             "\u{1b}[5m\u{1b}[48;2;12;200;100m\u{1b}[33mC\u{1b}[25m\u{1b}[39m\u{1b}[49m"
         )
     }

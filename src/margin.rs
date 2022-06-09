@@ -27,8 +27,9 @@
 //!
 //! [Table]: crate::Table
 
-use crate::TableOption;
 use papergrid::{Grid, Indent};
+
+use crate::TableOption;
 
 /// Margin is responsible for a left/right/top/bottom outer indent of a grid.
 ///

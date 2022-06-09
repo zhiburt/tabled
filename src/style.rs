@@ -84,8 +84,9 @@
 
 use std::{borrow::Cow, marker::PhantomData};
 
-use crate::{CellOption, TableOption};
 use papergrid::{Borders, Entity, Grid, Position, Settings};
+
+use crate::{CellOption, TableOption};
 
 /// Style is represents a theme of a [Table].
 ///
@@ -1292,7 +1293,8 @@ fn correct_span_styles(grid: &mut Grid) {
 
             let is_first = col == c;
             let has_up = row > 0 && has_vertical(grid, &spans, (row - 1, col));
-            let has_down = row + 1 < grid.count_rows() && has_vertical(grid, &spans, (row + 1, col));
+            let has_down =
+                row + 1 < grid.count_rows() && has_vertical(grid, &spans, (row + 1, col));
 
             let mut border = grid.get_border(row, col);
 

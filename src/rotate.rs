@@ -29,8 +29,9 @@
 //! [Table]: crate::Table
 //! [Builder::index]: crate::builder::Builder::index
 
-use crate::TableOption;
 use papergrid::{Entity, Grid};
+
+use crate::TableOption;
 
 /// Rotate can be used to rotate a table by 90 degrees.
 #[derive(Debug)]

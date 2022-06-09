@@ -1,18 +1,17 @@
 //! This module contains a [Highlight] primitive, which helps
-//! changing a [Border] style of any segment on a [Table].
+//! changing a [Border] style of any segment on a [crate::Table].
 
 use std::collections::HashSet;
 
-#[allow(unused)]
-use crate::Table;
+use papergrid::{Entity, Grid, Settings};
+
 use crate::{
     object::{Frame, Object},
     style::Border,
     TableOption,
 };
-use papergrid::{Entity, Grid, Settings};
 
-/// Highlight modifies a table style by changing a border of a target [Table] segment.
+/// Highlight modifies a table style by changing a border of a target [crate::Table] segment.
 ///
 /// [Default] implementation runs Highlight for a [Frame].
 ///

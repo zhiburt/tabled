@@ -1,6 +1,7 @@
 use tabled::{
     formatting_settings::TrimStrategy,
     object::{Cell, Columns, Object, Rows, Segment},
+    papergrid::string_width_multiline,
     width::{Justify, MinWidth, Width},
     width::{PriorityMax, PriorityMin},
     Alignment, Modify, Panel, Span, Style, Table, Tabled,
@@ -659,7 +660,7 @@ fn total_width_big() {
         .with(MinWidth::new(80))
         .to_string();
 
-    assert_eq!(papergrid::string_width_multiline(&table), 80);
+    assert_eq!(string_width_multiline(&table), 80);
     assert_eq!(
         table,
         static_table!(
@@ -678,7 +679,7 @@ fn total_width_big() {
         .with(Modify::new(Segment::all()).with(TrimStrategy::None))
         .to_string();
 
-    assert_eq!(papergrid::string_width_multiline(&table), 80);
+    assert_eq!(string_width_multiline(&table), 80);
     assert_eq!(
         table,
         static_table!(
@@ -1698,7 +1699,7 @@ fn max_width_truncate_with_big_span() {
         .with(Width::truncate(40))
         .to_string();
 
-    assert_eq!(papergrid::string_width_multiline(&table), 40);
+    assert_eq!(string_width_multiline(&table), 40);
     assert_eq!(
         table,
         static_table!(
@@ -1723,7 +1724,7 @@ fn max_width_truncate_with_big_span() {
 
     // bigest influence
 
-    assert_eq!(papergrid::string_width_multiline(&table), 40);
+    assert_eq!(string_width_multiline(&table), 40);
     assert_eq!(
         table,
         static_table!(
@@ -1746,7 +1747,7 @@ fn max_width_truncate_with_big_span() {
         .with(Width::truncate(40))
         .to_string();
 
-    assert_eq!(papergrid::string_width_multiline(&table), 40);
+    assert_eq!(string_width_multiline(&table), 40);
     assert_eq!(
         table,
         static_table!(

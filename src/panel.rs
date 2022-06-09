@@ -36,8 +36,9 @@
 //! [Table]: crate::Table
 //! [Span]: crate::Span
 
-use crate::TableOption;
 use papergrid::{Entity, Grid, Settings};
+
+use crate::TableOption;
 
 /// Panel allows to add a Row which has 1 continues Cell to a [Table].
 ///

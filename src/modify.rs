@@ -97,9 +97,9 @@ where
 }
 
 /// An utility trait for a different interface of [Modify] creation.
-/// 
+///
 /// # Example
-/// 
+///
 /// ```
 /// # use tabled::{object::Cell, Modify, ModifyObject};
 /// // 1st way to create modification container
