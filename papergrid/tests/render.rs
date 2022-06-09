@@ -705,17 +705,41 @@ fn hieroglyph_handling() {
 }
 
 #[test]
-#[ignore = "I am not sure what is the right behaiviour here"]
 fn hieroglyph_multiline_handling() {
     let mut grid = util::new_grid::<1, 2>();
     grid.set(Entity::Cell(0, 0), Settings::new().text("哈哈"));
     grid.set(Entity::Cell(0, 1), Settings::new().text("哈\n哈"));
 
+    println!("{grid}");
+
     assert_eq!(
         grid.to_string(),
         "+----+--+\n\
-         |哈哈  |哈 |\n\
-         |    |哈 |\n\
+         |哈哈|哈|\n\
+         |    |哈|\n\
          +----+--+\n"
+    )
+}
+
+#[test]
+fn hieroglyph_handling_2() {
+    let mut grid = util::new_grid::<2, 1>();
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().text("জী._ডি._ব্লক_সল্টলেক_দূর্গা_পুজো_২০১৮.jpg"),
+    );
+    grid.set(Entity::Cell(1, 0), Settings::new().text("Hello"));
+
+    println!("{grid}");
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+------------------------------------+\n",
+            "|জী._ডি._ব্লক_সল্টলেক_দূর্গা_পুজো_২০১৮.jpg|\n",
+            "+------------------------------------+\n",
+            "|Hello                               |\n",
+            "+------------------------------------+\n",
+        )
     )
 }

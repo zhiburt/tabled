@@ -10,7 +10,6 @@ fn main() {
 
     let table = data
         .table()
-        .with(Style::modern())
         .with(
             Modify::new(Cell(0, 0))
                 .with(Span::column(5))
@@ -45,7 +44,9 @@ fn main() {
             Modify::new(Cell(4, 1))
                 .with(Span::column(4))
                 .with(|_: &str| "span 4 columns".to_string()),
-        );
+        )
+        .with(Style::modern())
+        .with(Style::correct_spans());
 
     println!("{}", table);
 }
