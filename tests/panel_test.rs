@@ -228,7 +228,56 @@ fn panel_style_change() {
         static_table!(
             "┌───────────┐"
             "│  Numbers  │"
+            "├─────┬─────┤" // it's different because we use a top_intersection char by default when making style for `Panel`s.
+            "│ i32 │ i32 │"
+            "├─────┼─────┤"
+            "│  0  │  1  │"
+            "└─────┴─────┘"
+        )
+    );
+}
+
+#[test]
+fn panel_style_uses_most_left_and_right_cell_styles_correct() {
+    let table = Table::new(&[(0, 1)])
+        .with(tabled::Panel("Numbers", 0))
+        .with(Style::modern())
+        .with(Style::correct_spans())
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "┌───────────┐"
+            "│Numbers    │"
             "├─────┬─────┤"
+            "│ i32 │ i32 │"
+            "├─────┼─────┤"
+            "│  0  │  1  │"
+            "└─────┴─────┘"
+        )
+    );
+}
+
+#[test]
+fn panel_style_change_corect() {
+    let table = Table::new(&[(0, 1)])
+        .with(tabled::Panel("Numbers", 0))
+        .with(
+            Style::modern()
+                .top_intersection('─')
+                .header_intersection('┬'),
+        )
+        .with(Style::correct_spans())
+        .with(Modify::new(Cell(0, 0)).with(Alignment::center()))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "┌───────────┐"
+            "│  Numbers  │"
+            "├───────────┤" // it's different because we use a top_intersection char by default when making style for `Panel`s.
             "│ i32 │ i32 │"
             "├─────┼─────┤"
             "│  0  │  1  │"

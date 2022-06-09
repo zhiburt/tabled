@@ -661,3 +661,74 @@ fn span_with_panel_test() {
         )
     );
 }
+
+#[test]
+fn span_with_panel_with_correction_test() {
+    let data = [[1, 2, 3]];
+    let table = Table::new(data)
+        .with(Panel("Tabled Releases", 0))
+        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
+        .with(Style::ascii())
+        .with(Style::correct_spans())
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---------------+"
+            "|Tabled Releases|"
+            "+----------+----+"
+            "|    0     | 2  |"
+            "+-----+----+----+"
+            "|  1  | 2  | 3  |"
+            "+-----+----+----+"
+        )
+    );
+
+    let data = [[1, 2, 3], [4, 5, 6]];
+    let table = Table::new(data)
+        .with(Panel("Tabled Releases", 0))
+        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Style::ascii())
+        .with(Style::correct_spans())
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---------------+"
+            "|Tabled Releases|"
+            "+-----+----+----+"
+            "|  0  | 1  | 2  |"
+            "+-----+----+----+"
+            "|    1     | 3  |"
+            "+-----+----+----+"
+            "|  4  | 5  | 6  |"
+            "+-----+----+----+"
+        )
+    );
+
+    let data = [[1, 2, 3], [4, 5, 6]];
+    let table = Table::new(data)
+        .with(Panel("Tabled Releases", 0))
+        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
+        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Style::ascii())
+        .with(Style::correct_spans())
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---------------+"
+            "|Tabled Releases|"
+            "+----------+----+"
+            "|    0     | 2  |"
+            "+----------+----+"
+            "|    1     | 3  |"
+            "+-----+----+----+"
+            "|  4  | 5  | 6  |"
+            "+-----+----+----+"
+        )
+    );
+}

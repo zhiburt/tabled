@@ -611,6 +611,13 @@ impl Grid {
             .map(|((start, end), _)| end - start)
     }
 
+    /// Get a span value of the cell, if any is set.
+    pub fn iter_column_spans(&self) -> impl Iterator<Item = (Position, usize)> + '_ {
+        self.spans.iter().flat_map(move |(&(start, end), rows)| {
+            rows.iter().map(move |&row| ((row, start), end - start))
+        })
+    }
+
     /// Verifies if there's any spans set.
     pub fn has_column_spans(&self) -> bool {
         !self.spans.is_empty()

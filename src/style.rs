@@ -85,7 +85,7 @@
 use std::{borrow::Cow, marker::PhantomData};
 
 use crate::{CellOption, TableOption};
-use papergrid::{Borders, Entity, Grid, Settings};
+use papergrid::{Borders, Entity, Grid, Position, Settings};
 
 /// Style is represents a theme of a [Table].
 ///
@@ -277,6 +277,62 @@ impl Style {
     /// ```
     pub const fn re_structured_text() -> CustomStyle<On, On, (), (), (), On, On> {
         CustomStyle::new(Self::RE_STRUCTURED_TEXT)
+    }
+
+    /// Try to fix the style when table contains spans.
+    ///
+    /// By default [Style] doesn't implies any logic to better render split lines when
+    /// [crate::Span] is used.
+    ///
+    /// So this function can be used to set the split lines in regard of spans used.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{TableIteratorExt, Style, Modify, Format, Span, object::Cell};
+    ///
+    /// let data = vec![
+    ///     ("09", "June", "2022"),
+    ///     ("10", "July", "2022"),
+    /// ];
+    ///
+    /// let table = data.table()
+    ///     .with(
+    ///         Modify::new(Cell(0, 0))
+    ///             .with(Format::new(|_| String::from("date")))
+    ///             .with(Span::column(3))
+    ///     );
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     concat!(
+    ///         "+----+------+------+\n",
+    ///         "|       date       |\n",
+    ///         "+----+------+------+\n",
+    ///         "| 09 | June | 2022 |\n",
+    ///         "+----+------+------+\n",
+    ///         "| 10 | July | 2022 |\n",
+    ///         "+----+------+------+\n",
+    ///     )
+    /// );
+    ///
+    /// let table = table.with(Style::correct_spans());
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     concat!(
+    ///         "+------------------+\n",
+    ///         "|       date       |\n",
+    ///         "+----+------+------+\n",
+    ///         "| 09 | June | 2022 |\n",
+    ///         "+----+------+------+\n",
+    ///         "| 10 | July | 2022 |\n",
+    ///         "+----+------+------+\n",
+    ///     )
+    /// );
+    /// ```
+    pub const fn correct_spans() -> StyleCorrectSpan {
+        StyleCorrectSpan
     }
 
     const EMPTY: StyleSettings =
@@ -1201,3 +1257,87 @@ pub use papergrid::Symbol;
 
 #[cfg(not(feature = "color"))]
 use papergrid::Symbol;
+
+/// A correctnes function of style for [crate::Table] which has [crate::Span]s.
+///
+/// See [Style::correct_spans].
+#[derive(Debug)]
+pub struct StyleCorrectSpan;
+
+impl TableOption for StyleCorrectSpan {
+    fn change(&mut self, grid: &mut Grid) {
+        correct_span_styles(grid);
+    }
+}
+
+fn correct_span_styles(grid: &mut Grid) {
+    let borders = grid.get_borders();
+    let inner_intersection = borders.intersection.clone();
+    let bottom_intersection = borders.bottom_intersection.clone();
+    let top_intersection = borders.top_intersection.clone();
+
+    let spans = grid.iter_column_spans().collect::<Vec<_>>();
+
+    for &((row, c), span) in &spans {
+        for col in c..c + span {
+            if col == 0 {
+                continue;
+            }
+
+            let is_first = col == c;
+            let has_up = row > 0 && has_vertical(grid, &spans, (row - 1, col));
+            let has_down = has_vertical(grid, &spans, (row + 1, col));
+
+            let mut border = grid.get_border(row, col);
+
+            let has_top_border = border.left_top_corner.is_some() && border.top.is_some();
+            if has_top_border {
+                if has_up && is_first {
+                    border.left_top_corner = inner_intersection.clone();
+                } else if has_up {
+                    border.left_top_corner = bottom_intersection.clone();
+                } else if is_first {
+                    border.left_top_corner = top_intersection.clone();
+                } else {
+                    border.left_top_corner = border.top.clone();
+                }
+            }
+
+            let has_bottom_border = border.left_bottom_corner.is_some() && border.bottom.is_some();
+            if has_bottom_border {
+                if has_down && is_first {
+                    border.left_bottom_corner = inner_intersection.clone();
+                } else if has_down {
+                    border.left_bottom_corner = top_intersection.clone();
+                } else if is_first {
+                    border.left_bottom_corner = bottom_intersection.clone();
+                } else {
+                    border.left_bottom_corner = border.bottom.clone();
+                }
+            }
+
+            grid.set_border(Entity::Cell(row, col), border);
+        }
+    }
+}
+
+fn has_vertical(grid: &Grid, spans: &[(Position, usize)], pos: Position) -> bool {
+    if is_in_span_range(spans, pos) {
+        return spans.iter().any(|&(p, _)| p == pos);
+    }
+
+    if grid.is_cell_visible(pos) {
+        let border = grid.get_border(pos.0, pos.1);
+        return border.left.is_some()
+            || border.left_top_corner.is_some()
+            || border.left_bottom_corner.is_some();
+    }
+
+    false
+}
+
+fn is_in_span_range(spans: &[(Position, usize)], pos: Position) -> bool {
+    spans
+        .iter()
+        .any(|&((row, col), span)| row == pos.0 && pos.1 > col && pos.1 < col + span)
+}
