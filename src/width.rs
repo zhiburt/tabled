@@ -573,11 +573,17 @@ impl WidthValue for Percent {
     }
 }
 
+/// A strategy of width function.
+/// It determines the order how the function is applied.
 pub trait ColumnPeaker {
+    /// Creates a new instance.
     fn create() -> Self;
+    /// This function returns a column index which will be changed.
+    /// Or `None` if no changes are necessary.
     fn peak(&mut self, min_widths: &[usize], widths: &[usize]) -> Option<usize>;
 }
 
+/// A Peaker which goes over column 1 by 1.
 pub struct PriorityNone {
     i: usize,
 }
@@ -609,6 +615,7 @@ impl ColumnPeaker for PriorityNone {
     }
 }
 
+/// A Peaker which goes over the biggest column first.
 pub struct PriorityMax;
 
 impl ColumnPeaker for PriorityMax {
@@ -626,6 +633,7 @@ impl ColumnPeaker for PriorityMax {
     }
 }
 
+/// A Peaker which goes over the smallest column first.
 pub struct PriorityMin;
 
 impl ColumnPeaker for PriorityMin {

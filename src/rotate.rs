@@ -35,9 +35,17 @@ use papergrid::{Entity, Grid};
 /// Rotate can be used to rotate a table by 90 degrees.
 #[derive(Debug)]
 pub enum Rotate {
+    /// Rotatate [crate::Table] to the left.
     Left,
+    /// Rotatate [crate::Table] to the right.
     Right,
+    /// Rotatate [crate::Table] to the top.
+    ///
+    /// So the top becames the bottom.
     Top,
+    /// Rotatate [crate::Table] to the bottom.
+    ///
+    /// So the top becames the bottom.
     Bottom,
 }
 

@@ -134,7 +134,7 @@ impl Style {
     ///     .top_intersection('*');
     /// ```
     pub const fn empty() -> CustomStyle<(), (), (), (), (), (), ()> {
-        CustomStyle::new(Self::EMPTY)
+        CustomStyle::new(EMPTY)
     }
 
     /// Blank style looks like the following table
@@ -146,7 +146,7 @@ impl Style {
     ///      3    Endeavouros    https://endeavouros.com/
     /// ```
     pub const fn blank() -> CustomStyle<(), (), (), (), (), On, ()> {
-        CustomStyle::new(Self::BLANK)
+        CustomStyle::new(BLANK)
     }
 
     /// Default style looks like the following table
@@ -163,7 +163,7 @@ impl Style {
     ///     +----+--------------+---------------------------+
     /// ```
     pub const fn ascii() -> CustomStyle<On, On, On, On, On, On, On> {
-        CustomStyle::new(Self::ASCII)
+        CustomStyle::new(ASCII)
     }
 
     /// Dots style looks like the following table
@@ -180,7 +180,7 @@ impl Style {
     ///     :....:..............:...........................:
     /// ```
     pub const fn dots() -> CustomStyle<On, On, On, On, On, On, On> {
-        CustomStyle::new(Self::DOTS)
+        CustomStyle::new(DOTS)
     }
 
     /// Psql style looks like the following table
@@ -193,7 +193,7 @@ impl Style {
     ///      3  | Endeavouros  | https://endeavouros.com/
     /// ```
     pub const fn psql() -> CustomStyle<(), (), (), (), (), On, On> {
-        CustomStyle::new(Self::PSQL)
+        CustomStyle::new(PSQL)
     }
 
     /// Github_markdown style looks like the following table
@@ -206,7 +206,7 @@ impl Style {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     /// ```
     pub const fn github_markdown() -> CustomStyle<(), (), On, On, (), On, On> {
-        CustomStyle::new(Self::GITHUB_MARKDOWN)
+        CustomStyle::new(GITHUB_MARKDOWN)
     }
 
     /// Modern style looks like the following table.
@@ -225,7 +225,7 @@ impl Style {
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
     pub const fn modern() -> CustomStyle<On, On, On, On, On, On, On> {
-        CustomStyle::new(Self::MODERN)
+        CustomStyle::new(MODERN)
     }
 
     /// Rounded style looks like the following table.
@@ -242,7 +242,7 @@ impl Style {
     ///     ╰────┴──────────────┴───────────────────────────╯
     /// ```
     pub const fn rounded() -> CustomStyle<On, On, On, On, (), On, On> {
-        CustomStyle::new(Self::MODERN_ROUNDED)
+        CustomStyle::new(MODERN_ROUNDED)
     }
 
     /// Extended style looks like the following table
@@ -261,7 +261,7 @@ impl Style {
     ///     ╚════╩══════════════╩═══════════════════════════╝
     /// ```
     pub const fn extended() -> CustomStyle<On, On, On, On, On, On, On> {
-        CustomStyle::new(Self::EXTENDED)
+        CustomStyle::new(EXTENDED)
     }
 
     /// ReStructuredText style looks like the following table
@@ -276,111 +276,110 @@ impl Style {
     ///     ==== ============== ===========================
     /// ```
     pub const fn re_structured_text() -> CustomStyle<On, On, (), (), (), On, On> {
-        CustomStyle::new(Self::RE_STRUCTURED_TEXT)
+        CustomStyle::new(RE_STRUCTURED_TEXT)
     }
-
-    const EMPTY: StyleSettings =
-        StyleSettings::new(Frame::empty(), Line::empty(), Line::empty(), None);
-
-    const ASCII: StyleSettings = StyleSettings::new(
-        Frame::full(
-            Line::new('-', '+'),
-            Line::new('-', '+'),
-            Line::new('|', '+'),
-            Line::new('|', '+'),
-            ('+', '+', '+', '+'),
-        ),
-        Line::new('-', '+'),
-        Line::new('-', '+'),
-        Some('|'),
-    );
-
-    const BLANK: StyleSettings =
-        StyleSettings::new(Frame::empty(), Line::empty(), Line::empty(), Some(' '));
-
-    const PSQL: StyleSettings = StyleSettings::new(
-        Frame::empty(),
-        Line::empty(),
-        Line::new('-', '+'),
-        Some('|'),
-    );
-
-    const GITHUB_MARKDOWN: StyleSettings = StyleSettings::new(
-        Frame::bordered(
-            Line::empty(),
-            Line::empty(),
-            Line::new('|', '|'),
-            Line::new('|', '|'),
-        ),
-        Line::empty(),
-        Line::new('-', '+'),
-        Some('|'),
-    );
-
-    const MODERN: StyleSettings = StyleSettings::new(
-        Frame::full(
-            Line::new('─', '┬'),
-            Line::new('─', '┴'),
-            Line::new('│', '├'),
-            Line::new('│', '┤'),
-            ('┌', '┐', '└', '┘'),
-        ),
-        Line::new('─', '┼'),
-        Line::new('─', '┼'),
-        Some('│'),
-    );
-
-    const MODERN_ROUNDED: StyleSettings = StyleSettings::new(
-        Frame::full(
-            Line::new('─', '┬'),
-            Line::new('─', '┴'),
-            Line::new('│', '├'),
-            Line::new('│', '┤'),
-            ('╭', '╮', '╰', '╯'),
-        ),
-        Line::empty(),
-        Line::new('─', '┼'),
-        Some('│'),
-    );
-
-    const EXTENDED: StyleSettings = StyleSettings::new(
-        Frame::full(
-            Line::new('═', '╦'),
-            Line::new('═', '╩'),
-            Line::new('║', '╠'),
-            Line::new('║', '╣'),
-            ('╔', '╗', '╚', '╝'),
-        ),
-        Line::new('═', '╬'),
-        Line::new('═', '╬'),
-        Some('║'),
-    );
-
-    const DOTS: StyleSettings = StyleSettings::new(
-        Frame::full(
-            Line::new('.', '.'),
-            Line::new('.', ':'),
-            Line::new(':', ':'),
-            Line::new(':', ':'),
-            ('.', '.', ':', ':'),
-        ),
-        Line::new('.', ':'),
-        Line::new('.', ':'),
-        Some(':'),
-    );
-
-    const RE_STRUCTURED_TEXT: StyleSettings = StyleSettings::new(
-        Frame::bordered(
-            Line::new('=', ' '),
-            Line::new('=', ' '),
-            Line::empty(),
-            Line::empty(),
-        ),
-        Line::empty(),
-        Line::new('=', ' '),
-        Some(' '),
-    );
 }
+
+const EMPTY: StyleSettings = StyleSettings::new(Frame::empty(), Line::empty(), Line::empty(), None);
+
+const ASCII: StyleSettings = StyleSettings::new(
+    Frame::full(
+        Line::new('-', '+'),
+        Line::new('-', '+'),
+        Line::new('|', '+'),
+        Line::new('|', '+'),
+        ('+', '+', '+', '+'),
+    ),
+    Line::new('-', '+'),
+    Line::new('-', '+'),
+    Some('|'),
+);
+
+const BLANK: StyleSettings =
+    StyleSettings::new(Frame::empty(), Line::empty(), Line::empty(), Some(' '));
+
+const PSQL: StyleSettings = StyleSettings::new(
+    Frame::empty(),
+    Line::empty(),
+    Line::new('-', '+'),
+    Some('|'),
+);
+
+const GITHUB_MARKDOWN: StyleSettings = StyleSettings::new(
+    Frame::bordered(
+        Line::empty(),
+        Line::empty(),
+        Line::new('|', '|'),
+        Line::new('|', '|'),
+    ),
+    Line::empty(),
+    Line::new('-', '+'),
+    Some('|'),
+);
+
+const MODERN: StyleSettings = StyleSettings::new(
+    Frame::full(
+        Line::new('─', '┬'),
+        Line::new('─', '┴'),
+        Line::new('│', '├'),
+        Line::new('│', '┤'),
+        ('┌', '┐', '└', '┘'),
+    ),
+    Line::new('─', '┼'),
+    Line::new('─', '┼'),
+    Some('│'),
+);
+
+const MODERN_ROUNDED: StyleSettings = StyleSettings::new(
+    Frame::full(
+        Line::new('─', '┬'),
+        Line::new('─', '┴'),
+        Line::new('│', '├'),
+        Line::new('│', '┤'),
+        ('╭', '╮', '╰', '╯'),
+    ),
+    Line::empty(),
+    Line::new('─', '┼'),
+    Some('│'),
+);
+
+const EXTENDED: StyleSettings = StyleSettings::new(
+    Frame::full(
+        Line::new('═', '╦'),
+        Line::new('═', '╩'),
+        Line::new('║', '╠'),
+        Line::new('║', '╣'),
+        ('╔', '╗', '╚', '╝'),
+    ),
+    Line::new('═', '╬'),
+    Line::new('═', '╬'),
+    Some('║'),
+);
+
+const DOTS: StyleSettings = StyleSettings::new(
+    Frame::full(
+        Line::new('.', '.'),
+        Line::new('.', ':'),
+        Line::new(':', ':'),
+        Line::new(':', ':'),
+        ('.', '.', ':', ':'),
+    ),
+    Line::new('.', ':'),
+    Line::new('.', ':'),
+    Some(':'),
+);
+
+const RE_STRUCTURED_TEXT: StyleSettings = StyleSettings::new(
+    Frame::bordered(
+        Line::new('=', ' '),
+        Line::new('=', ' '),
+        Line::empty(),
+        Line::empty(),
+    ),
+    Line::empty(),
+    Line::new('=', ' '),
+    Some(' '),
+);
 
 /// A raw style data, which can be produced safely from [CustomStyle].
 ///
@@ -595,6 +594,7 @@ impl<Top, Bottom, Left, Right, Horizontal, Vertical, Header>
     }
 }
 
+/// A marker struct which is used in [CustomStyle].
 #[derive(Debug, Clone)]
 pub struct On;
 
@@ -1123,6 +1123,10 @@ enum SplitLineIndex {
 }
 
 impl<'a> BorderText<'a> {
+    /// Creates a [BorderText] instance.
+    ///
+    /// Lines are numbered from 0 to the count_rows included
+    /// (`line >= 0 && line <= count_rows`).
     pub fn new<S: Into<Cow<'a, str>>>(line: usize, text: S) -> Self {
         Self {
             text: text.into(),
@@ -1130,6 +1134,7 @@ impl<'a> BorderText<'a> {
         }
     }
 
+    /// Creates a [BorderText] instance for a top line.
     pub fn first<S: Into<Cow<'a, str>>>(text: S) -> Self {
         Self {
             text: text.into(),
@@ -1137,6 +1142,7 @@ impl<'a> BorderText<'a> {
         }
     }
 
+    /// Creates a [BorderText] instance for a bottom line.
     pub fn last<S: Into<Cow<'a, str>>>(text: S) -> Self {
         Self {
             text: text.into(),
