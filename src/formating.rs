@@ -141,7 +141,7 @@ impl<F> FormatWithIndex<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
 {
-    pub fn new(f: F) -> Self {
+    fn new(f: F) -> Self {
         Self { f }
     }
 }

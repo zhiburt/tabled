@@ -64,7 +64,9 @@ pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 /// [Table]: crate::Table
 #[derive(Debug)]
 pub enum Alignment {
+    /// A horizontal alignment.
     Horizontal(AlignmentHorizontal),
+    /// A vertical alignment.
     Vertical(AlignmentVertical),
 }
 

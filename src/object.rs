@@ -12,6 +12,7 @@ use std::{
 ///
 /// [Table]: crate::Table
 pub trait Object: Sized {
+    /// An [Iterator] which returns a list of cells.
     type Iter: Iterator<Item = (usize, usize)>;
 
     /// Cells returns a set of coordinates of cells
@@ -474,6 +475,7 @@ impl Object for Cell {
     }
 }
 
+/// An [Iterator] which goes goes over all cell in a sector in a [crate::Table].
 pub struct SectorIter {
     rows_end: usize,
     cols_start: usize,
@@ -483,12 +485,7 @@ pub struct SectorIter {
 }
 
 impl SectorIter {
-    pub const fn new(
-        rows_start: usize,
-        rows_end: usize,
-        cols_start: usize,
-        cols_end: usize,
-    ) -> Self {
+    const fn new(rows_start: usize, rows_end: usize, cols_start: usize, cols_end: usize) -> Self {
         Self {
             rows_end,
             cols_start,
@@ -525,6 +522,7 @@ impl Iterator for SectorIter {
     }
 }
 
+/// An [Iterator] which goes goes over all cell on a frame of a [crate::Table].
 pub struct FrameIter {
     rows: usize,
     cols: usize,
@@ -533,7 +531,7 @@ pub struct FrameIter {
 }
 
 impl FrameIter {
-    pub const fn new(count_rows: usize, count_columns: usize) -> Self {
+    const fn new(count_rows: usize, count_columns: usize) -> Self {
         Self {
             rows: count_rows,
             cols: count_columns,
@@ -569,6 +567,7 @@ impl Iterator for FrameIter {
     }
 }
 
+/// An [Iterator] which goes goes over all rows of a [crate::Table].
 pub struct RowsIter {
     rows: usize,
     cols: usize,
@@ -577,7 +576,7 @@ pub struct RowsIter {
 }
 
 impl RowsIter {
-    pub const fn new(rows_start: usize, rows_end: usize, count_columns: usize) -> Self {
+    const fn new(rows_start: usize, rows_end: usize, count_columns: usize) -> Self {
         Self {
             rows: rows_end,
             cols: count_columns,
@@ -609,6 +608,7 @@ impl Iterator for RowsIter {
     }
 }
 
+/// An [Iterator] which goes goes over a single row of a [crate::Table].
 pub struct RowIter {
     cols: usize,
     col: usize,
@@ -616,7 +616,7 @@ pub struct RowIter {
 }
 
 impl RowIter {
-    pub const fn new(row: usize, count_columns: usize) -> Self {
+    const fn new(row: usize, count_columns: usize) -> Self {
         Self {
             cols: count_columns,
             row,
@@ -641,6 +641,7 @@ impl Iterator for RowIter {
     }
 }
 
+/// An [Iterator] which goes goes over columns of a [crate::Table].
 pub struct ColumnsIter {
     rows: usize,
     cols: usize,
@@ -649,7 +650,7 @@ pub struct ColumnsIter {
 }
 
 impl ColumnsIter {
-    pub const fn new(cols_start: usize, cols_end: usize, count_rows: usize) -> Self {
+    const fn new(cols_start: usize, cols_end: usize, count_rows: usize) -> Self {
         Self {
             rows: count_rows,
             cols: cols_end,
@@ -681,6 +682,7 @@ impl Iterator for ColumnsIter {
     }
 }
 
+/// An [Iterator] which goes goes over a single column of a [crate::Table].
 pub struct ColumnIter {
     rows: usize,
     col: usize,
@@ -688,7 +690,7 @@ pub struct ColumnIter {
 }
 
 impl ColumnIter {
-    pub const fn new(col: usize, count_rows: usize) -> Self {
+    const fn new(col: usize, count_rows: usize) -> Self {
         Self {
             rows: count_rows,
             row: 0,
@@ -714,6 +716,7 @@ impl Iterator for ColumnIter {
     }
 }
 
+/// An [Iterator] which goes goes over a single cell of a [crate::Table].
 pub struct CellIter {
     cell: Option<(usize, usize)>,
 }
@@ -734,6 +737,7 @@ impl Iterator for CellIter {
     }
 }
 
+/// An [Iterator] which goes over a combination [Object::Iter].
 pub struct UnionIter<L, R> {
     lhs: L,
     rhs: R,
@@ -783,6 +787,7 @@ where
     }
 }
 
+/// An [Iterator] which goes over only cells which are present in first [Object::Iter] but not second.
 pub struct DiffIter<L> {
     lhs: L,
     seen: HashSet<(usize, usize)>,
@@ -827,6 +832,7 @@ where
     }
 }
 
+/// An [Iterator] which goes goes over cells which are present in both [Object::Iter]ators.
 pub struct IntersectIter<L> {
     lhs: L,
     seen: HashSet<(usize, usize)>,
@@ -871,6 +877,7 @@ where
     }
 }
 
+/// An [Iterator] which goes goes over cells which are not present an [Object::Iter]ator.
 pub struct InversionIter {
     all: SectorIter,
     seen: HashSet<(usize, usize)>,

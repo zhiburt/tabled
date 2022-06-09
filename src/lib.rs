@@ -1,3 +1,5 @@
+#![warn(missing_docs)]
+
 //! An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
 //!
 //! The library is based on a [Tabled] trait which is used to actually build tables.
