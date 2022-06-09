@@ -5,7 +5,7 @@
 
 use tabled::{
     object::{Columns, Object, Rows},
-    Format, Modify, Style, Table, Tabled,
+    Format, ModifyObject, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -37,11 +37,15 @@ fn main() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(
-            Modify::new(Rows::new(..1))
+            Rows::new(..1)
+                .modify()
                 .with(Format::with_index(|_, (_, column)| column.to_string())),
         )
         .with(
-            Modify::new(Columns::new(..1).not(Rows::new(..1))).with(|s: &str| format!("{}...", s)),
+            Columns::new(..1)
+                .not(Rows::new(..1))
+                .modify()
+                .with(|s: &str| format!("{}...", s)),
         );
 
     println!("{}", table);
