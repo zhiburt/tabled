@@ -4,9 +4,9 @@ use crate::util::{create_vector, static_table};
 
 use tabled::{
     builder::Builder,
-    object::{Rows, Segment},
+    object::{Cell, Rows, Segment},
     style::{Border, BorderText},
-    Highlight, Modify, Padding, Style, Table, TableIteratorExt,
+    Highlight, Modify, Padding, Span, Style, Table, TableIteratorExt,
 };
 
 mod util;
@@ -1514,6 +1514,76 @@ fn empty_border_text_doesnt_panic_test() {
             "+---+----------+----------+"
             "| 1 |   1-0    |   1-1    |"
             "+---+----------+----------+"
+        )
+    );
+}
+
+#[test]
+fn span_correct_test() {
+    let data = create_vector::<6, 4>();
+    let table = Table::new(&data)
+        .with(Modify::new(Cell(0, 3)).with(Span::column(2)))
+        .with(Modify::new(Cell(1, 0)).with(Span::column(3)))
+        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Modify::new(Cell(2, 3)).with(Span::column(2)))
+        .with(Modify::new(Cell(3, 0)).with(Span::column(5)))
+        .with(Modify::new(Cell(4, 1)).with(Span::column(4)))
+        .with(Modify::new(Cell(5, 0)).with(Span::column(5)))
+        .with(Modify::new(Cell(6, 0)).with(Span::column(5)))
+        .with(Style::correct_spans())
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---+----------+----------+-----------+"
+            "| N | column 0 | column 1 | column 2  |"
+            "+---+----------+----------+-----+-----+"
+            "|            0            | 0-2 | 0-3 |"
+            "+--------------+----------+-----+-----+"
+            "|      1       |   1-1    |    1-2    |"
+            "+--------------+----------+-----------+"
+            "|                  2                  |"
+            "+---+---------------------------------+"
+            "| 3 |               3-0               |"
+            "+---+---------------------------------+"
+            "|                  4                  |"
+            "+-------------------------------------+"
+            "|                  5                  |"
+            "+-------------------------------------+"
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Modify::new(Cell(0, 0)).with(Span::column(5)))
+        .with(Modify::new(Cell(1, 0)).with(Span::column(3)))
+        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Modify::new(Cell(2, 3)).with(Span::column(2)))
+        .with(Modify::new(Cell(3, 0)).with(Span::column(5)))
+        .with(Modify::new(Cell(4, 1)).with(Span::column(4)))
+        .with(Modify::new(Cell(5, 0)).with(Span::column(5)))
+        .with(Modify::new(Cell(6, 0)).with(Span::column(5)))
+        .with(Style::correct_spans())
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+----------------------+"
+            "|          N           |"
+            "+----------+-----+-----+"
+            "|    0     | 0-2 | 0-3 |"
+            "+----+-----+-----+-----+"
+            "| 1  | 1-1 |    1-2    |"
+            "+----+-----+-----------+"
+            "|          2           |"
+            "+---+------------------+"
+            "| 3 |       3-0        |"
+            "+---+------------------+"
+            "|          4           |"
+            "+----------------------+"
+            "|          5           |"
+            "+----------------------+"
         )
     );
 }
