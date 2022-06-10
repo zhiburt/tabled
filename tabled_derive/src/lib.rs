@@ -5,7 +5,7 @@ use quote::*;
 use std::{collections::HashMap, str};
 use syn::{
     parse_macro_input, token, Attribute, Data, DataEnum, DataStruct, DeriveInput, Field, Fields,
-    Ident, Index, Lit, Meta, NestedMeta, Type, Variant,
+    Ident, Index, Lit, Meta, MetaNameValue, NestedMeta, Type, Variant,
 };
 
 #[proc_macro_derive(Tabled, attributes(tabled))]
@@ -295,7 +295,11 @@ fn get_field_fields(field: TokenStream, attr: &Attributes) -> TokenStream {
     }
 
     if let Some(func) = &attr.display_with {
-        let func_call = use_function_for(field, func);
+        let func_call = match attr.display_with_use_self {
+            true => use_function_with_self(func),
+            false => use_function_for(field, func),
+        };
+
         return quote!(vec![#func_call]);
     }
 
@@ -311,6 +315,19 @@ fn use_function_for(field: TokenStream, function: &str) -> TokenStream {
         _ => {
             let function = Ident::new(function, proc_macro2::Span::call_site());
             quote! { #function(&#field) }
+        }
+    }
+}
+
+fn use_function_with_self(function: &str) -> TokenStream {
+    let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
+    match path {
+        Ok(path) => {
+            quote! { #path(&self) }
+        }
+        _ => {
+            let function = Ident::new(function, proc_macro2::Span::call_site());
+            quote! { #function(&self) }
         }
     }
 }
@@ -445,6 +462,7 @@ struct Attributes {
     inline_prefix: Option<String>,
     name: Option<String>,
     display_with: Option<String>,
+    display_with_use_self: bool,
     order: Option<usize>,
 }
 
@@ -453,12 +471,14 @@ impl Attributes {
         let is_ignored = attrs_has_ignore_sign(attrs);
         let should_be_inlined = should_be_inlined(attrs);
         let inline_prefix = look_for_inline_prefix(attrs);
-        let display_with = check_display_with_func(attrs);
         let override_header_name = override_header_name(attrs);
         let order = override_header_order(attrs);
+        let (display_with, display_with_use_self) =
+            check_display_with_func(attrs).map_or((None, false), |(a, b)| (Some(a), b));
 
         Self {
             display_with,
+            display_with_use_self,
             is_ignored,
             order,
             inline_prefix,
@@ -480,8 +500,11 @@ fn override_header_order(attrs: &[Attribute]) -> Option<usize> {
     find_name_attribute(attrs, "tabled", "order", look_up_nested_meta_usize)
 }
 
-fn check_display_with_func(attrs: &[Attribute]) -> Option<String> {
-    find_name_attribute(attrs, "tabled", "display_with", look_up_nested_meta_str)
+fn check_display_with_func(attrs: &[Attribute]) -> Option<(String, bool)> {
+    find_name_attribute_(attrs, |attr| {
+        Ok(parse_display_with_attribute(attr, "tabled"))
+    })
+    .unwrap()
 }
 
 fn should_be_inlined(attrs: &[Attribute]) -> bool {
@@ -590,7 +613,7 @@ fn look_up_nested_flag_str_in_attr(
     name: &str,
 ) -> Result<Option<String>, String> {
     match meta {
-        NestedMeta::Meta(Meta::List(list)) => {
+        NestedMeta::Meta(Meta::List(list)) if list.path.is_ident(name) => {
             parse_name_attribute_nested(list.nested.iter(), "", name, look_up_nested_meta_flag_str)
                 .ok_or_else(|| "An attribute doesn't have expected value".to_string())
                 .map(Some)
@@ -636,4 +659,86 @@ where
     attributes
         .iter()
         .find_map(|attr| parse_name_attribute(attr, method, name, lookup.clone()))
+}
+
+fn find_name_attribute_<R, F>(attributes: &[Attribute], lookup: F) -> Result<Option<R>, String>
+where
+    F: Fn(&Attribute) -> Result<Option<R>, String>,
+{
+    for attr in attributes {
+        let result = (lookup)(attr)?;
+        if result.is_some() {
+            return Ok(result);
+        }
+    }
+
+    Ok(None)
+}
+
+fn parse_display_with_attribute(attr: &Attribute, attr_name: &str) -> Option<(String, bool)> {
+    if !attr.path.is_ident(attr_name) {
+        return None;
+    }
+
+    let meta = attr.parse_meta().ok()?;
+
+    if let Meta::List(list) = meta {
+        for meta in list.nested {
+            let val = parse_display_with_attribute_obj(&meta, "display_with");
+            match val {
+                Ok(Some(value)) => return Some(value),
+                Err(err) => {
+                    panic!("{error} macros {macro} field {name}", error=err, macro=attr_name, name="display_with")
+                }
+                _ => {}
+            }
+        }
+    }
+
+    None
+}
+
+fn parse_display_with_attribute_obj(
+    meta: &NestedMeta,
+    attr_name: &str,
+) -> Result<Option<(String, bool)>, String> {
+    match meta {
+        NestedMeta::Meta(Meta::NameValue(MetaNameValue { path, lit, .. }))
+            if path.is_ident(attr_name) =>
+        {
+            let value = take_str_literal(lit)?;
+            Ok(Some((value, false)))
+        }
+        NestedMeta::Meta(Meta::List(list)) if list.path.is_ident(attr_name) => {
+            let mut name = None;
+            let mut use_self = false;
+            for meta in &list.nested {
+                match meta {
+                    NestedMeta::Meta(Meta::Path(path)) if path.is_ident("args") => {
+                        use_self = true;
+                    }
+                    NestedMeta::Lit(lit) if name.is_none() => {
+                        name = Some(take_str_literal(lit)?);
+                    }
+                    _ => {}
+                }
+            }
+
+            match name {
+                Some(name) => Ok(Some((name, use_self))),
+                None => Ok(None),
+            }
+        }
+        _ => Ok(None),
+    }
+}
+
+fn take_str_literal(lit: &Lit) -> Result<String, String> {
+    match lit {
+        Lit::Str(value) => Ok(value.value()),
+        Lit::ByteStr(value) => str::from_utf8(&value.value())
+            .map(|s| s.to_owned())
+            .map_err(|_| "Expected a valid UTF-8 string for a field".to_owned()),
+        _ => Err("Expected a string but got something else".to_owned()),
+    }
 }
