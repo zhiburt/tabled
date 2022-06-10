@@ -1464,3 +1464,105 @@ fn skipped_fields_may_not_implement_display() {
         );
     }
 }
+
+#[test]
+fn display_with_used_with_inline() {
+    #[derive(Tabled)]
+    struct Struct1 {
+        f1: &'static str,
+        f2: &'static str,
+        #[tabled(display_with = "print", inline)]
+        f3: usize,
+    }
+
+    #[allow(dead_code)]
+    fn print<T>(_: T) -> String {
+        String::new()
+    }
+
+    let st = Struct1 {
+        f1: "123",
+        f2: "456",
+        f3: 789,
+    };
+
+    assert_eq!(Struct1::headers(), vec!["f1", "f2", "usize"],);
+    assert_eq!(st.fields(), vec!["123", "456", "789"]);
+}
+
+#[test]
+fn display_with_used_with_inline_2() {
+    #[derive(Tabled)]
+    struct Struct1 {
+        f1: &'static str,
+        f2: &'static str,
+        #[tabled(display_with = "print")]
+        #[tabled(inline)]
+        f3: usize,
+    }
+
+    #[allow(dead_code)]
+    fn print<T>(_: T) -> String {
+        String::new()
+    }
+
+    let st = Struct1 {
+        f1: "123",
+        f2: "456",
+        f3: 789,
+    };
+
+    assert_eq!(Struct1::headers(), vec!["f1", "f2", "usize"],);
+    assert_eq!(st.fields(), vec!["123", "456", "789"]);
+}
+
+#[test]
+fn display_with_rename() {
+    #[derive(Tabled)]
+    struct Struct1 {
+        f1: &'static str,
+        f2: &'static str,
+        #[tabled(display_with = "print", rename = "Field 3")]
+        f3: usize,
+    }
+
+    #[allow(dead_code)]
+    fn print<T>(_: T) -> String {
+        String::new()
+    }
+
+    let st = Struct1 {
+        f1: "123",
+        f2: "456",
+        f3: 789,
+    };
+
+    assert_eq!(Struct1::headers(), vec!["f1", "f2", "Field 3"],);
+    assert_eq!(st.fields(), vec!["123", "456", ""]);
+}
+
+#[test]
+fn display_with_rename_2() {
+    #[derive(Tabled)]
+    struct Struct1 {
+        f1: &'static str,
+        f2: &'static str,
+        #[tabled(display_with = "print")]
+        #[tabled(rename = "Field 3")]
+        f3: usize,
+    }
+
+    #[allow(dead_code)]
+    fn print<T>(_: T) -> String {
+        String::new()
+    }
+
+    let st = Struct1 {
+        f1: "123",
+        f2: "456",
+        f3: 789,
+    };
+
+    assert_eq!(Struct1::headers(), vec!["f1", "f2", "Field 3"],);
+    assert_eq!(st.fields(), vec!["123", "456", ""]);
+}
