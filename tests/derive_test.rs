@@ -54,7 +54,7 @@ mod tupple_structure {
 
     #[allow(dead_code)]
     #[test]
-    fn display_with_self_static_method() {
+    fn display_with_static_method() {
         #[derive(Tabled)]
         struct St(
             u8,
@@ -67,6 +67,76 @@ mod tupple_structure {
                     Some(s) => format!("some {}", s),
                     None => "none".to_string(),
                 }
+            }
+        }
+
+        let st = St(0, Some("v2"));
+
+        assert_eq!(vec!["0".to_owned(), "some v2".to_owned()], st.fields());
+        assert_eq!(vec!["0".to_owned(), "1".to_owned()], St::headers());
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn display_with_self_static_method() {
+        #[derive(Tabled)]
+        struct St(
+            u8,
+            #[tabled(display_with("Self::display_option", args))] Option<&'static str>,
+        );
+
+        impl St {
+            fn display_option(&self) -> String {
+                match self.1 {
+                    Some(s) => format!("some {}", s),
+                    None => "none".to_string(),
+                }
+            }
+        }
+
+        let st = St(0, Some("v2"));
+
+        assert_eq!(vec!["0".to_owned(), "some v2".to_owned()], st.fields());
+        assert_eq!(vec!["0".to_owned(), "1".to_owned()], St::headers());
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn display_with_self_static_method2() {
+        #[derive(Tabled)]
+        struct St(
+            u8,
+            #[tabled(display_with("Self::display_option", args))] Option<&'static str>,
+        );
+
+        impl St {
+            fn display_option(o: &St) -> String {
+                match o.1 {
+                    Some(s) => format!("some {}", s),
+                    None => "none".to_string(),
+                }
+            }
+        }
+
+        let st = St(0, Some("v2"));
+
+        assert_eq!(vec!["0".to_owned(), "some v2".to_owned()], st.fields());
+        assert_eq!(vec!["0".to_owned(), "1".to_owned()], St::headers());
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn display_with_self_func() {
+        #[derive(Tabled)]
+        struct St(
+            u8,
+            #[tabled(display_with("display_option", args))] Option<&'static str>,
+        );
+
+        fn display_option(o: &St) -> String {
+            match o.1 {
+                Some(s) => format!("some {}", s),
+                None => "none".to_string(),
             }
         }
 
@@ -517,6 +587,36 @@ mod enum_ {
     }
 
     #[test]
+    fn inline_field_with_display_self_function() {
+        #[derive(Tabled)]
+        enum Developer {
+            #[tabled(inline("backend::"))]
+            Backend {
+                #[tabled(rename = "name")]
+                #[tabled(display_with("display", args))]
+                specific: &'static str,
+            },
+            Frontend,
+        }
+        fn display(_: &Developer) -> String {
+            "asd".to_string()
+        }
+
+        assert_eq!(
+            vec!["backend::name".to_owned(), "Frontend".to_owned()],
+            Developer::headers()
+        );
+        assert_eq!(
+            vec!["asd".to_owned(), "".to_owned()],
+            Developer::Backend { specific: "123" }.fields(),
+        );
+        assert_eq!(
+            vec!["".to_owned(), "+".to_owned()],
+            Developer::Frontend.fields(),
+        );
+    }
+
+    #[test]
     fn with_display() {
         #[allow(dead_code)]
         #[derive(Tabled)]
@@ -528,6 +628,30 @@ mod enum_ {
 
         impl Fact {
             fn format<const ID: usize>(_: &'static str) -> String {
+                ID.to_string()
+            }
+        }
+
+        assert_eq!(vec!["0".to_owned(), "Unknown".to_owned(),], Fact::headers());
+        assert_eq!(
+            vec!["4".to_owned(), "".to_owned(),],
+            Fact::Known("Hello World").fields()
+        );
+        assert_eq!(vec!["".to_owned(), "+".to_owned(),], Fact::Unknown.fields());
+    }
+
+    #[test]
+    fn with_display_self() {
+        #[allow(dead_code)]
+        #[derive(Tabled)]
+        enum Fact {
+            #[tabled(inline)]
+            Known(#[tabled(display_with("Self::format::<4>", args))] &'static str),
+            Unknown,
+        }
+
+        impl Fact {
+            fn format<const ID: usize>(_: &Fact) -> String {
                 ID.to_string()
             }
         }
@@ -784,6 +908,116 @@ mod structure {
                     Some(s) => format!("some {}", s),
                     None => "none".to_string(),
                 }
+            }
+        }
+
+        let st = St {
+            f1: 0,
+            f2: Some("v2"),
+        };
+
+        assert_eq!(vec!["0".to_owned(), "some v2".to_owned()], st.fields());
+        assert_eq!(vec!["f1".to_owned(), "f2".to_owned()], St::headers());
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn display_with_2_self_static_method() {
+        #[derive(Tabled)]
+        struct St {
+            f1: u8,
+            #[tabled(display_with("Self::display_option"))]
+            f2: Option<&'static str>,
+        }
+
+        impl St {
+            fn display_option(o: &Option<&'static str>) -> String {
+                match o {
+                    Some(s) => format!("some {}", s),
+                    None => "none".to_string(),
+                }
+            }
+        }
+
+        let st = St {
+            f1: 0,
+            f2: Some("v2"),
+        };
+
+        assert_eq!(vec!["0".to_owned(), "some v2".to_owned()], st.fields());
+        assert_eq!(vec!["f1".to_owned(), "f2".to_owned()], St::headers());
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn display_with_self_self_static_method() {
+        #[derive(Tabled)]
+        struct St {
+            f1: u8,
+            #[tabled(display_with("Self::display_option", args))]
+            f2: Option<&'static str>,
+        }
+
+        impl St {
+            fn display_option(o: &St) -> String {
+                match o.f2 {
+                    Some(s) => format!("some {}", s),
+                    None => "none".to_string(),
+                }
+            }
+        }
+
+        let st = St {
+            f1: 0,
+            f2: Some("v2"),
+        };
+
+        assert_eq!(vec!["0".to_owned(), "some v2".to_owned()], st.fields());
+        assert_eq!(vec!["f1".to_owned(), "f2".to_owned()], St::headers());
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn display_with_self_2_self_static_method() {
+        #[derive(Tabled)]
+        struct St {
+            f1: u8,
+            #[tabled(display_with("Self::display_option", args))]
+            f2: Option<&'static str>,
+        }
+
+        impl St {
+            fn display_option(&self) -> String {
+                match self.f2 {
+                    Some(s) => format!("some {}", s),
+                    None => "none".to_string(),
+                }
+            }
+        }
+
+        let st = St {
+            f1: 0,
+            f2: Some("v2"),
+        };
+
+        assert_eq!(vec!["0".to_owned(), "some v2".to_owned()], st.fields());
+        assert_eq!(vec!["f1".to_owned(), "f2".to_owned()], St::headers());
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn display_with_self_3_self_static_method() {
+        #[derive(Tabled)]
+        struct St {
+            f1: u8,
+            #[tabled(display_with("display_option", args))]
+            f2: Option<&'static str>,
+        }
+
+        fn display_option(o: &St) -> String {
+            match o.f2 {
+                Some(s) => format!("some {}", s),
+                None => "none".to_string(),
             }
         }
 
@@ -1229,4 +1463,106 @@ fn skipped_fields_may_not_implement_display() {
             st.fields()
         );
     }
+}
+
+#[test]
+fn display_with_used_with_inline() {
+    #[derive(Tabled)]
+    struct Struct1 {
+        f1: &'static str,
+        f2: &'static str,
+        #[tabled(display_with = "print", inline)]
+        f3: usize,
+    }
+
+    #[allow(dead_code)]
+    fn print<T>(_: T) -> String {
+        String::new()
+    }
+
+    let st = Struct1 {
+        f1: "123",
+        f2: "456",
+        f3: 789,
+    };
+
+    assert_eq!(Struct1::headers(), vec!["f1", "f2", "usize"],);
+    assert_eq!(st.fields(), vec!["123", "456", "789"]);
+}
+
+#[test]
+fn display_with_used_with_inline_2() {
+    #[derive(Tabled)]
+    struct Struct1 {
+        f1: &'static str,
+        f2: &'static str,
+        #[tabled(display_with = "print")]
+        #[tabled(inline)]
+        f3: usize,
+    }
+
+    #[allow(dead_code)]
+    fn print<T>(_: T) -> String {
+        String::new()
+    }
+
+    let st = Struct1 {
+        f1: "123",
+        f2: "456",
+        f3: 789,
+    };
+
+    assert_eq!(Struct1::headers(), vec!["f1", "f2", "usize"],);
+    assert_eq!(st.fields(), vec!["123", "456", "789"]);
+}
+
+#[test]
+fn display_with_rename() {
+    #[derive(Tabled)]
+    struct Struct1 {
+        f1: &'static str,
+        f2: &'static str,
+        #[tabled(display_with = "print", rename = "Field 3")]
+        f3: usize,
+    }
+
+    #[allow(dead_code)]
+    fn print<T>(_: T) -> String {
+        String::new()
+    }
+
+    let st = Struct1 {
+        f1: "123",
+        f2: "456",
+        f3: 789,
+    };
+
+    assert_eq!(Struct1::headers(), vec!["f1", "f2", "Field 3"],);
+    assert_eq!(st.fields(), vec!["123", "456", ""]);
+}
+
+#[test]
+fn display_with_rename_2() {
+    #[derive(Tabled)]
+    struct Struct1 {
+        f1: &'static str,
+        f2: &'static str,
+        #[tabled(display_with = "print")]
+        #[tabled(rename = "Field 3")]
+        f3: usize,
+    }
+
+    #[allow(dead_code)]
+    fn print<T>(_: T) -> String {
+        String::new()
+    }
+
+    let st = Struct1 {
+        f1: "123",
+        f2: "456",
+        f3: 789,
+    };
+
+    assert_eq!(Struct1::headers(), vec!["f1", "f2", "Field 3"],);
+    assert_eq!(st.fields(), vec!["123", "456", ""]);
 }
