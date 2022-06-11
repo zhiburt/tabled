@@ -36,8 +36,9 @@
 //!
 //! [Table]: crate::Table
 
-use crate::CellOption;
 use papergrid::{Entity, Grid, Indent, Settings};
+
+use crate::CellOption;
 
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///

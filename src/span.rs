@@ -27,8 +27,9 @@
 //! )
 //! ```
 
-use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
+
+use crate::CellOption;
 
 pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 

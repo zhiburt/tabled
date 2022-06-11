@@ -45,10 +45,11 @@
 //! )
 //! ```
 
-use crate::Table;
-use crate::TableOption;
-use papergrid::{Entity, Grid};
 use std::cmp;
+
+use papergrid::{Entity, Grid};
+
+use crate::{Table, TableOption};
 
 /// Concat concatenate tables along a particular axis [Horizontal | Vertical].
 /// It doesn't do any key or column comparisons like SQL's join does.

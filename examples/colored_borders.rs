@@ -3,8 +3,12 @@
 //!
 //! This example requires a `color` feature.
 
-use papergrid::Border;
-use tabled::{object::Segment, Alignment, Highlight, Modify, Style, Table, Tabled};
+use owo_colors::OwoColorize;
+use tabled::{
+    object::Segment,
+    style::{Border, Style, Symbol},
+    Alignment, Highlight, Modify, Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct CodeEditor {
@@ -24,9 +28,6 @@ impl CodeEditor {
 }
 
 fn main() {
-    use owo_colors::OwoColorize;
-    use papergrid::Symbol;
-
     let data = [
         CodeEditor::new("Sublime Text 3", "2008", "Sublime HQ"),
         CodeEditor::new("Visual Studio Code", "2015", "Microsoft"),

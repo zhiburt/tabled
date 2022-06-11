@@ -4,7 +4,7 @@
 
 use std::ops::{Index, IndexMut};
 
-use tabled::Tabled;
+use tabled::{papergrid::string_width_multiline, Tabled};
 
 #[derive(Debug)]
 pub struct Obj<const N: usize> {
@@ -63,7 +63,7 @@ pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUM
 }
 
 pub fn is_lines_equal(s: &str, width: usize) -> bool {
-    papergrid::string_width_multiline(s) == width
+    string_width_multiline(s) == width
 }
 
 macro_rules! static_table {

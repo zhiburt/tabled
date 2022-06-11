@@ -164,6 +164,7 @@ mod extract;
 mod formating;
 mod highlight;
 mod margin;
+mod modify;
 mod padding;
 mod panel;
 mod rotate;
@@ -185,7 +186,7 @@ pub use papergrid;
 
 pub use crate::{
     alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::*, margin::*,
-    padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::Width,
+    modify::*, padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::Width,
 };
 
 // todo: change return type to impl Iterator<Cow<str>>?

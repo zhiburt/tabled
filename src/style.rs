@@ -84,8 +84,9 @@
 
 use std::{borrow::Cow, marker::PhantomData};
 
-use crate::{CellOption, TableOption};
 use papergrid::{Borders, Entity, Grid, Position, Settings};
+
+use crate::{CellOption, TableOption};
 
 /// Style is represents a theme of a [Table].
 ///

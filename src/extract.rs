@@ -8,6 +8,8 @@
 
 use std::ops::{RangeBounds, RangeFull};
 
+use papergrid::Grid;
+
 use crate::TableOption;
 
 /// Returns a new [Table] that reflects a segment of the referenced [Table]
@@ -152,7 +154,7 @@ where
     R: RangeBounds<usize> + Clone,
     C: RangeBounds<usize> + Clone,
 {
-    fn change(&mut self, grid: &mut papergrid::Grid) {
+    fn change(&mut self, grid: &mut Grid) {
         *grid = grid.extract(self.rows.clone(), self.columns.clone());
     }
 }

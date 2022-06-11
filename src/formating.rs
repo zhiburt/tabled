@@ -2,8 +2,9 @@
 //!
 //! [Table]: crate::Table
 
-use crate::CellOption;
 use papergrid::{Entity, Grid, Settings};
+
+use crate::CellOption;
 
 /// Formatting function of particular cells on a [Table].
 ///

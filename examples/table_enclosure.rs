@@ -1,10 +1,10 @@
 //! The example can be run by this command
 //! `cargo run --example table_enclosure`
 
-use papergrid::Border;
 use tabled::{
     object::{Cell, Segment},
-    Alignment, Extract, Header, Highlight, Modify, Style, TableIteratorExt, Tabled,
+    style::{Border, Style},
+    Alignment, Extract, Header, Highlight, Modify, TableIteratorExt, Tabled,
 };
 
 #[derive(Tabled)]

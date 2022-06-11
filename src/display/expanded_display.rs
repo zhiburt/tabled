@@ -1,6 +1,8 @@
 //! This module contains an [ExpandedDisplay] structure which is useful in cases where
 //! a structure has a lot of fields.
 
+use papergrid::{cut_str, split_by_lines, string_width_multiline};
+
 use crate::Tabled;
 
 /// ExpandedDisplay display data in a 'expanded display mode' from postgresql.
@@ -96,7 +98,7 @@ impl std::fmt::Display for ExpandedDisplay {
 
         let max_field_width = fields
             .iter()
-            .map(|f| papergrid::string_width_multiline(f))
+            .map(|f| string_width_multiline(f))
             .max()
             .unwrap_or_default();
 
@@ -112,12 +114,7 @@ impl std::fmt::Display for ExpandedDisplay {
 
         let max_values_length = values
             .iter()
-            .map(|record| {
-                record
-                    .iter()
-                    .map(|v| papergrid::string_width_multiline(v))
-                    .max()
-            })
+            .map(|record| record.iter().map(|v| string_width_multiline(v)).max())
             .max()
             .unwrap_or_default()
             .unwrap_or_default();
@@ -198,9 +195,9 @@ fn write_record_line(
 }
 
 fn truncate(s: &str, max: usize) -> String {
-    papergrid::cut_str(s, max)
+    cut_str(s, max)
 }
 
 fn wrap(s: &str, max: usize) -> String {
-    papergrid::split_by_lines(s, max)
+    split_by_lines(s, max)
 }
