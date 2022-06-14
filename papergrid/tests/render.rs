@@ -323,7 +323,7 @@ fn render_row_span_with_horizontal_ident() {
 }
 
 #[test]
-fn render_row_span_3x3_with_horizontal_ident() {
+fn render_row_span_3x3() {
     let mut grid = util::new_grid::<3, 3>();
 
     grid.set(Entity::Cell(0, 0), Settings::new().span(3));
@@ -742,4 +742,984 @@ fn hieroglyph_handling_2() {
             "+------------------------------------+\n",
         )
     )
+}
+
+#[test]
+fn render_col_span_v_alignment_center() {
+    let mut grid = util::new_grid::<2, 2>();
+
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .span_vertical(2)
+            .vertical_alignment(AlignmentVertical::Center),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+\n",
+            "|   |0-1|\n",
+            "+0-0+---+\n",
+            "|   |1-1|\n",
+            "+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_col_span_v_alignment_top() {
+    let mut grid = util::new_grid::<2, 2>();
+
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .span_vertical(2)
+            .vertical_alignment(AlignmentVertical::Top),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+\n",
+            "|0-0|0-1|\n",
+            "+   +---+\n",
+            "|   |1-1|\n",
+            "+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_col_span_v_alignment_bottom() {
+    let mut grid = util::new_grid::<2, 2>();
+
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .span_vertical(2)
+            .vertical_alignment(AlignmentVertical::Bottom),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+\n",
+            "|   |0-1|\n",
+            "+   +---+\n",
+            "|0-0|1-1|\n",
+            "+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_col_span_miltiline() {
+    let mut grid = util::new_grid::<2, 2>();
+
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .text("0-0\n0-1xxx")
+            .span_vertical(2)
+            .alignment(AlignmentHorizontal::Center),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+------+---+\n",
+            "|0-0   |0-1|\n",
+            "+0-1xxx+---+\n",
+            "|      |1-1|\n",
+            "+------+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_col_span_multilane() {
+    let mut grid = util::new_grid::<4, 3>();
+
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().text("first line").span_vertical(2),
+    );
+    grid.set(Entity::Cell(0, 2), Settings::new().text("e.g."));
+    grid.set(Entity::Cell(1, 0), Settings::new().text("0"));
+    grid.set(Entity::Cell(1, 1), Settings::new().text("1"));
+    grid.set(Entity::Cell(1, 2), Settings::new().text("2"));
+    grid.set(Entity::Cell(2, 0), Settings::new().text("0"));
+    grid.set(Entity::Cell(2, 1), Settings::new().text("1"));
+    grid.set(Entity::Cell(2, 2), Settings::new().text("2"));
+    grid.set(
+        Entity::Cell(0, 2),
+        Settings::new().text("full last line").span_vertical(4),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+----------+---+--------------+\n",
+            "|first line|0-1|full last line|\n",
+            "+          +---+              +\n",
+            "|          |1  |              |\n",
+            "+----------+---+              +\n",
+            "|0         |1  |              |\n",
+            "+----------+---+              +\n",
+            "|3-0       |3-1|              |\n",
+            "+----------+---+--------------+\n",
+        )
+    );
+}
+
+#[test]
+fn render_col_span_with_horizontal_ident_on_spanned_cell() {
+    let mut grid = util::new_grid::<3, 2>();
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(2));
+    grid.set(
+        Entity::Cell(1, 0),
+        Settings::new().padding(
+            Indent::spaced(4),
+            Indent::spaced(4),
+            Indent::default(),
+            Indent::default(),
+        ),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+\n",
+            "|0-0|0-1|\n",
+            "+   +---+\n",
+            "|   |1-1|\n",
+            "+---+---+\n",
+            "|2-0|2-1|\n",
+            "+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_col_span_with_horizontal_ident() {
+    let mut grid = util::new_grid::<3, 2>();
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(2));
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().padding(
+            Indent::spaced(4),
+            Indent::spaced(4),
+            Indent::default(),
+            Indent::default(),
+        ),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+-----------+---+\n",
+            "|    0-0    |0-1|\n",
+            "+           +---+\n",
+            "|           |1-1|\n",
+            "+-----------+---+\n",
+            "|2-0        |2-1|\n",
+            "+-----------+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_col_span_with_vertical_ident() {
+    let mut grid = util::new_grid::<3, 2>();
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(2));
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().padding(
+            Indent::default(),
+            Indent::default(),
+            Indent::spaced(4),
+            Indent::spaced(4),
+        ),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+\n",
+            "|   |0-1|\n",
+            "|   |   |\n",
+            "|   |   |\n",
+            "|   |   |\n",
+            "+0-0+---+\n",
+            "|   |1-1|\n",
+            "|   |   |\n",
+            "|   |   |\n",
+            "|   |   |\n",
+            "+---+---+\n",
+            "|2-0|2-1|\n",
+            "+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_col_span_3x3() {
+    let mut grid = util::new_grid::<3, 3>();
+
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(3));
+    grid.set(Entity::Cell(0, 1), Settings::new().span_vertical(2));
+    grid.set(Entity::Cell(0, 2), Settings::new().span_vertical(2));
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+\n",
+            "|0-0|0-1|0-2|\n",
+            "+   +---+---+\n",
+            "|   |2-1|2-2|\n",
+            "+---+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_2_colided_col_span_3x3() {
+    let mut grid = util::new_grid::<3, 3>();
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().text("0-0xxxxxxx").span_vertical(2),
+    );
+    grid.set(Entity::Cell(1, 1), Settings::new().span_vertical(2));
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+----------+---+---+\n",
+            "|0-0xxxxxxx|0-1|0-2|\n",
+            "+          +---+---+\n",
+            "|          |1-1|1-2|\n",
+            "+----------+   +---+\n",
+            "|2-0       |   |2-2|\n",
+            "+----------+---+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<3, 3>();
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(2));
+    grid.set(
+        Entity::Cell(1, 1),
+        Settings::new().text("1-1xxxxxxx").span_vertical(2),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+----------+---+\n",
+            "|0-0|0-1       |0-2|\n",
+            "+   +----------+---+\n",
+            "|   |1-1xxxxxxx|1-2|\n",
+            "+---+          +---+\n",
+            "|2-0|          |2-2|\n",
+            "+---+----------+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<3, 3>();
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(2));
+    grid.set(
+        Entity::Cell(1, 1),
+        Settings::new().text("1-1\nx\nx\nxxxxx").span_vertical(2),
+    );
+    grid.set(
+        Entity::Cell(0, 2),
+        Settings::new().text("2-0x\nxxx\nxx\nxxxxxxx"),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+-----+-------+\n",
+            "|0-0|0-1  |2-0x   |\n",
+            "|   |     |xxx    |\n",
+            "|   |     |xx     |\n",
+            "|   |     |xxxxxxx|\n",
+            "+   +-----+-------+\n",
+            "|   |1-1  |1-2    |\n",
+            "|   |x    |       |\n",
+            "+---+x    +-------+\n",
+            "|2-0|xxxxx|2-2    |\n",
+            "+---+-----+-------+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<3, 3>();
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(2));
+    grid.set(Entity::Cell(1, 1), Settings::new().span_vertical(2));
+    grid.set(
+        Entity::Cell(1, 2),
+        Settings::new().text("2-1\nxx\nxx\nxx\nxxxxxx\nx"),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+------+\n",
+            "|0-0|0-1|0-2   |\n",
+            "+   +---+------+\n",
+            "|   |1-1|2-1   |\n",
+            "|   |   |xx    |\n",
+            "|   |   |xx    |\n",
+            "|   |   |xx    |\n",
+            "|   |   |xxxxxx|\n",
+            "|   |   |x     |\n",
+            "+---+   +------+\n",
+            "|2-0|   |2-2   |\n",
+            "+---+---+------+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<3, 3>();
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(2));
+    grid.set(Entity::Cell(1, 2), Settings::new().span_vertical(2));
+    grid.set(
+        Entity::Cell(2, 1),
+        Settings::new().text("0-2\nx\nx\nx\nx\nxxxxxxx\nx\nx"),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+-------+---+\n",
+            "|0-0|0-1    |0-2|\n",
+            "+   +-------+---+\n",
+            "|   |1-1    |1-2|\n",
+            "+---+-------+   +\n",
+            "|2-0|0-2    |   |\n",
+            "|   |x      |   |\n",
+            "|   |x      |   |\n",
+            "|   |x      |   |\n",
+            "|   |x      |   |\n",
+            "|   |xxxxxxx|   |\n",
+            "|   |x      |   |\n",
+            "|   |x      |   |\n",
+            "+---+-------+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_spaned_row_in_first_cell_3x3() {
+    let mut grid = util::new_grid::<3, 3>();
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .text("0-0\nxx\nx\nx\nx\nx\nx")
+            .span_vertical(2),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+\n",
+            "|0-0|0-1|0-2|\n",
+            "|xx |   |   |\n",
+            "|x  |   |   |\n",
+            "+x  +---+---+\n",
+            "|x  |1-1|1-2|\n",
+            "|x  |   |   |\n",
+            "|x  |   |   |\n",
+            "+---+---+---+\n",
+            "|2-0|2-1|2-2|\n",
+            "+---+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_col_span_with_different_length() {
+    let mut grid = util::new_grid::<2, 3>();
+
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().text("f\nir\nst\n ro\nw").span_vertical(2),
+    );
+    grid.set(Entity::Cell(1, 0), Settings::new().text("0"));
+    grid.set(Entity::Cell(1, 1), Settings::new().text("1"));
+    grid.set(
+        Entity::Cell(0, 2),
+        Settings::new()
+            .text("a\n \nlonger\n \nsecond\n \nrow")
+            .span_vertical(2),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+------+\n",
+            "|f  |0-1|a     |\n",
+            "|ir |   |      |\n",
+            "|st |   |longer|\n",
+            "+ ro+---+      +\n",
+            "|w  |1  |second|\n",
+            "|   |   |      |\n",
+            "|   |   |row   |\n",
+            "+---+---+------+\n",
+        )
+    );
+}
+
+#[test]
+fn render_col_span_with_odd_length() {
+    let mut grid = util::new_grid::<2, 2>();
+
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().text("3\n \n \n ").span_vertical(2),
+    );
+    grid.set(Entity::Cell(0, 1), Settings::new().text("2"));
+    grid.set(Entity::Cell(1, 1), Settings::new().text("4"));
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!("+-+-+\n", "|3|2|\n", "| | |\n", "+ +-+\n", "| |4|\n", "+-+-+\n",)
+    );
+}
+
+#[test]
+fn render_only_col_spaned() {
+    let mut grid = util::new_grid::<2, 3>();
+
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(2));
+    grid.set(Entity::Cell(0, 1), Settings::new().span_vertical(2));
+    grid.set(Entity::Cell(0, 2), Settings::new().span_vertical(2));
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!("+---+---+---+\n", "|0-0|0-1|0-2|\n", "+---+---+---+\n",),
+    );
+}
+
+#[test]
+fn grid_2x2_col_span_test() {
+    let mut grid = util::new_grid::<2, 2>();
+    grid.set(Entity::Global, Settings::new().text("asd"));
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().text("1\n\n\n\n\n\n\n23").span_vertical(2),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+--+---+\n",
+            "|1 |asd|\n",
+            "|  |   |\n",
+            "|  |   |\n",
+            "|  |   |\n",
+            "+  +---+\n",
+            "|  |asd|\n",
+            "|  |   |\n",
+            "|23|   |\n",
+            "+--+---+\n",
+        )
+    )
+}
+
+#[test]
+fn grid_2x2_col_span_2_test() {
+    let mut grid = util::new_grid::<2, 2>();
+    grid.set(Entity::Global, Settings::new().text("asd"));
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().text("12\n3\n4").span_vertical(2),
+    );
+    grid.set(
+        Entity::Cell(0, 1),
+        Settings::new().text("a\ns\ndw").span_vertical(2),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        "+--+--+\n\
+         |12|a |\n\
+         |3 |s |\n\
+         +--+--+\n"
+    );
+
+    grid.set(Entity::Cell(0, 0), Settings::new().text("1"));
+    grid.set(Entity::Cell(0, 1), Settings::new().text("a"));
+
+    let str = grid.to_string();
+    assert_eq!(
+        str,
+        "+-+-+\n\
+         |1|a|\n\
+         +-+-+\n"
+    );
+}
+
+#[test]
+fn render_col_span_with_no_split_style() {
+    let mut grid = util::new_grid::<2, 2>();
+    grid.set_borders(Borders::default());
+
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .span_vertical(2)
+            .vertical_alignment(AlignmentVertical::Center),
+    );
+    grid.set(Entity::Cell(0, 0), Settings::new().text("1\n2\n3\n"));
+
+    println!("{}", grid);
+
+    assert_eq!(grid.to_string(), concat!("10-1\n", "2   \n", "31-1\n",));
+}
+
+#[test]
+fn render_zero_col_span_between_cells() {
+    let mut grid = util::new_grid::<3, 2>();
+
+    grid.set(Entity::Cell(1, 0), Settings::new().span_vertical(0));
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+\n",
+            "|0-0|0-1|\n",
+            "+   +---+\n",
+            "|   |1-1|\n",
+            "+---+---+\n",
+            "|2-0|2-1|\n",
+            "+---+---+\n",
+        )
+    );
+
+    grid.set(Entity::Cell(1, 1), Settings::new().span_vertical(0));
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+\n",
+            "|0-0|0-1|\n",
+            "+---+---+\n",
+            "|2-0|2-1|\n",
+            "+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_zero_col_span_at_the_end() {
+    let mut grid = util::new_grid::<3, 2>();
+
+    grid.set(Entity::Cell(1, 1), Settings::new().span_vertical(0));
+    grid.set(Entity::Cell(2, 1), Settings::new().span_vertical(0));
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+\n",
+            "|0-0|0-1|\n",
+            "+---+   +\n",
+            "|1-0|   |\n",
+            "+---+   +\n",
+            "|2-0|   |\n",
+            "+---+---+\n",
+        )
+    );
+
+    grid.set(Entity::Cell(1, 0), Settings::new().span_vertical(0));
+    grid.set(Entity::Cell(2, 0), Settings::new().span_vertical(0));
+
+    assert_eq!(
+        grid.to_string(),
+        concat!("+---+---+\n", "|0-0|0-1|\n", "+---+---+\n",)
+    );
+}
+
+#[test]
+fn render_zero_col_span_grid() {
+    let mut grid = util::new_grid::<2, 2>();
+
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(0));
+    grid.set(Entity::Cell(0, 1), Settings::new().span_vertical(0));
+    grid.set(Entity::Cell(1, 0), Settings::new().span_vertical(0));
+    grid.set(Entity::Cell(1, 1), Settings::new().span_vertical(0));
+
+    // todo: determine if it's correct behaviour?
+    assert_eq!(grid.to_string(), "+---+---+\n|0-0|0-1|\n+---+---+\n");
+}
+
+#[test]
+fn render_cell_with_row_span_and_col_span() {
+    let mut grid = util::new_grid::<4, 4>();
+    grid.set(
+        Entity::Cell(1, 1),
+        Settings::new()
+            .span_vertical(2)
+            .span(2)
+            .vertical_alignment(AlignmentVertical::Center)
+            .alignment(AlignmentHorizontal::Center)
+            .text("123\n345\n555\n333\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|0-0|0-1|0-2|0-3|\n",
+            "+---+---+---+---+\n",
+            "|1-0|  123  |1-3|\n",
+            "|   |  345  |   |\n",
+            "+---+  555  +---+\n",
+            "|2-0|  333  |2-3|\n",
+            "+---+---+---+---+\n",
+            "|3-0|3-1|3-2|3-3|\n",
+            "+---+---+---+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<4, 4>();
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .span_vertical(2)
+            .span(2)
+            .vertical_alignment(AlignmentVertical::Center)
+            .alignment(AlignmentHorizontal::Center)
+            .text("123\n345\n555\n333\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|  123  |0-2|0-3|\n",
+            "|  345  |   |   |\n",
+            "+  555  +---+---+\n",
+            "|  333  |1-2|1-3|\n",
+            "+---+---+---+---+\n",
+            "|2-0|2-1|2-2|2-3|\n",
+            "+---+---+---+---+\n",
+            "|3-0|3-1|3-2|3-3|\n",
+            "+---+---+---+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<4, 4>();
+    grid.set(
+        Entity::Cell(2, 0),
+        Settings::new()
+            .span_vertical(2)
+            .span(2)
+            .vertical_alignment(AlignmentVertical::Center)
+            .alignment(AlignmentHorizontal::Center)
+            .text("123\n345\n555\n333\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|0-0|0-1|0-2|0-3|\n",
+            "+---+---+---+---+\n",
+            "|1-0|1-1|1-2|1-3|\n",
+            "+---+---+---+---+\n",
+            "|  123  |2-2|2-3|\n",
+            "|  345  |   |   |\n",
+            "+  555  +---+---+\n",
+            "|  333  |3-2|3-3|\n",
+            "+---+---+---+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<4, 4>();
+    grid.set(
+        Entity::Cell(2, 2),
+        Settings::new()
+            .span_vertical(2)
+            .span(2)
+            .vertical_alignment(AlignmentVertical::Center)
+            .alignment(AlignmentHorizontal::Center)
+            .text("123\n345\n555\n333\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|0-0|0-1|0-2|0-3|\n",
+            "+---+---+---+---+\n",
+            "|1-0|1-1|1-2|1-3|\n",
+            "+---+---+---+---+\n",
+            "|2-0|2-1|  123  |\n",
+            "|   |   |  345  |\n",
+            "+---+---+  555  +\n",
+            "|3-0|3-1|  333  |\n",
+            "+---+---+---+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<4, 4>();
+    grid.set(
+        Entity::Cell(0, 2),
+        Settings::new()
+            .span_vertical(2)
+            .span(2)
+            .vertical_alignment(AlignmentVertical::Center)
+            .alignment(AlignmentHorizontal::Center)
+            .text("123\n345\n555\n333\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|0-0|0-1|  123  |\n",
+            "|   |   |  345  |\n",
+            "+---+---+  555  +\n",
+            "|1-0|1-1|  333  |\n",
+            "+---+---+---+---+\n",
+            "|2-0|2-1|2-2|2-3|\n",
+            "+---+---+---+---+\n",
+            "|3-0|3-1|3-2|3-3|\n",
+            "+---+---+---+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<4, 4>();
+    grid.set(
+        Entity::Cell(0, 1),
+        Settings::new()
+            .span_vertical(2)
+            .span(2)
+            .vertical_alignment(AlignmentVertical::Center)
+            .alignment(AlignmentHorizontal::Center)
+            .text("123\n345\n555\n333\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|0-0|  123  |0-3|\n",
+            "|   |  345  |   |\n",
+            "+---+  555  +---+\n",
+            "|1-0|  333  |1-3|\n",
+            "+---+---+---+---+\n",
+            "|2-0|2-1|2-2|2-3|\n",
+            "+---+---+---+---+\n",
+            "|3-0|3-1|3-2|3-3|\n",
+            "+---+---+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_cell_with_row_span_and_col_span_2() {
+    let mut grid = util::new_grid::<4, 4>();
+    grid.set(
+        Entity::Cell(1, 1),
+        Settings::new()
+            .span_vertical(3)
+            .span(3)
+            .vertical_alignment(AlignmentVertical::Center)
+            .alignment(AlignmentHorizontal::Center)
+            .text("123\n345\n555\n333\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|0-0|0-1|0-2|0-3|\n",
+            "+---+---+---+---+\n",
+            "|1-0|    123    |\n",
+            "+---+    345    +\n",
+            "|2-0|    555    |\n",
+            "+---+    333    +\n",
+            "|3-0|           |\n",
+            "+---+---+---+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<4, 4>();
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new()
+            .span_vertical(3)
+            .span(3)
+            .vertical_alignment(AlignmentVertical::Center)
+            .alignment(AlignmentHorizontal::Center)
+            .text("123\n345\n555\n333\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|    123    |0-3|\n",
+            "+    345    +---+\n",
+            "|    555    |1-3|\n",
+            "+    333    +---+\n",
+            "|           |2-3|\n",
+            "+---+---+---+---+\n",
+            "|3-0|3-1|3-2|3-3|\n",
+            "+---+---+---+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<4, 4>();
+    grid.set(
+        Entity::Cell(0, 1),
+        Settings::new()
+            .span_vertical(3)
+            .span(3)
+            .vertical_alignment(AlignmentVertical::Center)
+            .alignment(AlignmentHorizontal::Center)
+            .text("123\n345\n555\n333\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|0-0|    123    |\n",
+            "+---+    345    +\n",
+            "|1-0|    555    |\n",
+            "+---+    333    +\n",
+            "|2-0|           |\n",
+            "+---+---+---+---+\n",
+            "|3-0|3-1|3-2|3-3|\n",
+            "+---+---+---+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<4, 4>();
+    grid.set(
+        Entity::Cell(1, 0),
+        Settings::new()
+            .span_vertical(3)
+            .span(3)
+            .vertical_alignment(AlignmentVertical::Center)
+            .alignment(AlignmentHorizontal::Center)
+            .text("123\n345\n555\n333\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|0-0|0-1|0-2|0-3|\n",
+            "+---+---+---+---+\n",
+            "|    123    |1-3|\n",
+            "+    345    +---+\n",
+            "|    555    |2-3|\n",
+            "+    333    +---+\n",
+            "|           |3-3|\n",
+            "+---+---+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_grid_with_row_span_and_col_span() {
+    let mut grid = util::new_grid::<4, 4>();
+
+    grid.set(Entity::Cell(1, 1), Settings::new().span(2));
+    grid.set(Entity::Cell(3, 0), Settings::new().span(3));
+    grid.set(Entity::Cell(0, 0), Settings::new().span_vertical(2));
+    grid.set(Entity::Cell(0, 3), Settings::new().span_vertical(3));
+
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().text("hello\nworld\n!\n!\n!\n!\n"),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+-----+---+---+---+\n",
+            "|hello|0-1|0-2|0-3|\n",
+            "|world|   |   |   |\n",
+            "|!    |   |   |   |\n",
+            "+!    +---+---+   +\n",
+            "|!    |1-1    |   |\n",
+            "|!    |       |   |\n",
+            "+-----+---+---+   +\n",
+            "|2-0  |2-1|2-2|   |\n",
+            "+-----+---+---+---+\n",
+            "|3-0          |3-3|\n",
+            "+-----+---+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn check_correct_print_of_col_span() {
+    let mut grid = util::new_grid::<5, 2>();
+
+    grid.set(
+        Entity::Cell(1, 1),
+        Settings::new().text("1\n2\n3\n4").span_vertical(4),
+    );
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+\n",
+            "|0-0|0-1|\n",
+            "+---+---+\n",
+            "|1-0|1  |\n",
+            "+---+2  +\n",
+            "|2-0|3  |\n",
+            "+---+4  +\n",
+            "|3-0|   |\n",
+            "+---+   +\n",
+            "|4-0|   |\n",
+            "+---+---+\n",
+        )
+    );
 }

@@ -70,6 +70,7 @@ pub struct Grid {
     theme: Theme,
     override_split_lines: HashMap<usize, String>,
     spans: BTreeMap<(usize, usize), HashSet<usize>>,
+    vertical_spans: BTreeMap<(usize, usize), HashSet<usize>>,
 }
 
 impl Grid {
@@ -103,6 +104,7 @@ impl Grid {
             theme: Theme::new(),
             override_split_lines: HashMap::new(),
             spans: BTreeMap::new(),
+            vertical_spans: BTreeMap::new(),
         }
     }
 
@@ -131,6 +133,7 @@ impl Grid {
             || settings.alignment_h.is_some()
             || settings.alignment_v.is_some()
             || settings.span.is_some()
+            || settings.span_vertical.is_some()
             || settings.formatting.is_some();
 
         if is_style_changes {
@@ -168,6 +171,15 @@ impl Grid {
                 Entity::Column(_) => (),
                 Entity::Row(_) => (),
                 Entity::Cell(row, col) => self.set_span(span, row, col),
+            }
+        }
+
+        if let Some(span) = settings.span_vertical {
+            match entity {
+                Entity::Global => (),
+                Entity::Column(_) => (),
+                Entity::Row(_) => (),
+                Entity::Cell(row, col) => self.set_vertical_span(span, row, col),
             }
         }
     }
@@ -253,6 +265,7 @@ impl Grid {
             alignment_v: Some(style.alignment_v),
             formatting: None,
             span,
+            span_vertical: None, // fixme:
         }
     }
 
@@ -499,6 +512,10 @@ impl Grid {
         !is_cell_overriden
     }
 
+    pub fn is_cell_visible_(&self, pos: Position) -> bool {
+        is_cell_visible_all(self, pos)
+    }
+
     fn set_span(&mut self, mut span: usize, row: usize, mut col: usize) {
         if row >= self.count_rows() {
             return;
@@ -551,6 +568,62 @@ impl Grid {
 
             if do_remove {
                 self.spans.remove(&(col, col + span));
+            }
+        }
+    }
+
+    fn set_vertical_span(&mut self, mut span: usize, mut row: usize, col: usize) {
+        if col >= self.count_columns() {
+            return;
+        }
+
+        // It's a default span so we can do nothing.
+        if span == 1 {
+            return;
+        }
+
+        if row == 0 && span == 0 {
+            return;
+        }
+
+        if row + span > self.count_rows() {
+            span = self.count_rows() - row;
+        }
+
+        if span == 0 && row > 0 {
+            match closest_visible_vertical(self, row - 1, col) {
+                Some(r) => {
+                    span = 1 + row - r;
+                    row = r;
+                }
+                None => return,
+            }
+        }
+
+        self.vertical_spans
+            .entry((row, row + span))
+            .and_modify(|cols| {
+                cols.insert(col);
+            })
+            .or_insert_with(|| {
+                let mut m = HashSet::with_capacity(1);
+                m.insert(col);
+                m
+            });
+
+        // it may happen that a colided span will be left so we checks if there's one
+        // like we insert (0, 3) but (0, 2) was in a set.
+        // such span makes no sense so we delete it.
+
+        for span in 0..span {
+            let mut do_remove = false;
+            if let Some(cols) = self.vertical_spans.get_mut(&(row, row + span)) {
+                cols.remove(&col);
+                do_remove = cols.is_empty();
+            }
+
+            if do_remove {
+                self.vertical_spans.remove(&(row, row + span));
             }
         }
     }
@@ -611,10 +684,30 @@ impl Grid {
             .map(|((start, end), _)| end - start)
     }
 
-    /// Get a span value of the cell, if any is set.
+    /// Get a list of horizontal spans which are set on the grid.
     pub fn iter_column_spans(&self) -> impl Iterator<Item = (Position, usize)> + '_ {
         self.spans.iter().flat_map(move |(&(start, end), rows)| {
             rows.iter().map(move |&row| ((row, start), end - start))
+        })
+    }
+
+    /// Get a list of vertical spans which are set on the grid.
+    pub fn iter_row_spans(&self) -> impl Iterator<Item = (Position, usize)> + '_ {
+        self.vertical_spans
+            .iter()
+            .flat_map(move |(&(start, end), cols)| {
+                cols.iter().map(move |&col| ((start, col), end - start))
+            })
+    }
+
+    /// Get a list of vertical spans which are set on the grid.
+    pub fn iter_invisible_cells(&self) -> impl Iterator<Item = Position> + '_ {
+        // todo: can be optimized
+
+        (0..self.count_rows()).flat_map(move |row| {
+            (0..self.count_columns())
+                .map(move |col| (row, col))
+                .filter(move |&p| !self.is_cell_visible_(p))
         })
     }
 
@@ -660,6 +753,7 @@ pub struct Settings {
     padding: Option<Padding>,
     border: Option<Border>,
     span: Option<usize>,
+    span_vertical: Option<usize>,
     alignment_h: Option<AlignmentHorizontal>,
     alignment_v: Option<AlignmentVertical>,
     formatting: Option<Formatting>,
@@ -703,6 +797,12 @@ impl Settings {
     /// Set the settings's span.
     pub fn span(mut self, span: usize) -> Self {
         self.span = Some(span);
+        self
+    }
+
+    /// Set the settings's span.
+    pub fn span_vertical(mut self, span: usize) -> Self {
+        self.span_vertical = Some(span);
         self
     }
 
@@ -995,7 +1095,7 @@ impl AlignmentVertical {
 
 fn build_line_cell(
     f: &mut fmt::Formatter<'_>,
-    line_index: usize,
+    line: usize,
     cell: &str,
     style: &Style,
     width: usize,
@@ -1005,17 +1105,9 @@ fn build_line_cell(
     if style.formatting.vertical_trim {
         let cell = skip_empty_lines(cell, cell_height);
         let cell_height = cell.clone().count();
-        build_format_line(f, line_index, cell, style, width, height, cell_height)
+        build_format_line(f, line, cell, style, width, height, cell_height)
     } else {
-        build_format_line(
-            f,
-            line_index,
-            cell.lines(),
-            style,
-            width,
-            height,
-            cell_height,
-        )
+        build_format_line(f, line, cell.lines(), style, width, height, cell_height)
     }
 }
 
@@ -1152,7 +1244,7 @@ fn columns_width(grid: &Grid) -> Vec<usize> {
         let mut max = 0;
 
         for row in 0..grid.count_rows() {
-            if !is_simple_cell(grid, (row, col)) {
+            if !is_simple_cell(grid, (row, col)) || !is_cell_visible_v(grid, (row, col)) {
                 continue;
             }
 
@@ -1199,7 +1291,7 @@ fn adjust_range(
         return;
     }
 
-    inc_range_width(widths, max_span_width - range_width, start, end);
+    inc_range(widths, max_span_width - range_width, start, end);
 }
 
 fn get_cell_width(grid: &Grid, (row, col): Position) -> usize {
@@ -1236,6 +1328,15 @@ fn is_simple_cell(grid: &Grid, pos: Position) -> bool {
     !is_spanned
 }
 
+fn is_simple_cell_v(grid: &Grid, pos: Position) -> bool {
+    let is_spanned = grid
+        .vertical_spans
+        .iter()
+        .any(|(&(start, end), cols)| pos.0 >= start && pos.0 < end && cols.contains(&pos.1));
+
+    !is_spanned
+}
+
 pub fn count_borders_in_range(grid: &Grid, start: usize, end: usize) -> usize {
     (start..end)
         .skip(1)
@@ -1243,8 +1344,8 @@ pub fn count_borders_in_range(grid: &Grid, start: usize, end: usize) -> usize {
         .count()
 }
 
-fn inc_range_width(widths: &mut [usize], size: usize, start: usize, end: usize) {
-    if widths.is_empty() {
+fn inc_range(values: &mut [usize], size: usize, start: usize, end: usize) {
+    if values.is_empty() {
         return;
     }
 
@@ -1255,9 +1356,9 @@ fn inc_range_width(widths: &mut [usize], size: usize, start: usize, end: usize) 
     let mut i = start;
     while i < end {
         if i == start {
-            widths[i] += one + rest;
+            values[i] += one + rest;
         } else {
-            widths[i] += one;
+            values[i] += one;
         }
 
         i += 1;
@@ -1278,18 +1379,139 @@ fn closest_visible(grid: &Grid, row: usize, mut col: usize) -> Option<usize> {
     }
 }
 
-fn rows_height(grid: &Grid) -> impl Iterator<Item = usize> + '_ {
-    (0..grid.count_rows()).map(move |row| {
+fn rows_height(grid: &Grid) -> Vec<usize> {
+    let mut heights = Vec::with_capacity(grid.count_rows());
+    for row in 0..grid.count_rows() {
         let mut max_height = 0;
-        (0..grid.count_columns()).for_each(|col| {
+        let mut is_not_spanned_row = false;
+        for col in 0..grid.count_columns() {
+            if cell_has_vertical_span(grid, (row, col)) {
+                is_not_spanned_row = true;
+            }
+
+            if !is_simple_cell_v(grid, (row, col)) {
+                continue;
+            }
+
+            is_not_spanned_row = true;
+
             let cell = &grid.cells[row][col];
             let style = grid.style(Entity::Cell(row, col));
             let cell_height = cell_height(cell, style);
             max_height = max(max_height, cell_height);
-        });
+        }
 
-        max_height
-    })
+        if is_not_spanned_row {
+            max_height = max(max_height, 1);
+        }
+
+        heights.push(max_height);
+    }
+
+    adjust_spans_vertical(grid, &mut heights);
+
+    heights
+}
+
+fn cell_has_vertical_span(grid: &Grid, pos: (usize, usize)) -> bool {
+    grid.vertical_spans
+        .iter()
+        .any(|(&(start, _end), columns)| pos.0 == start && columns.contains(&pos.1))
+}
+
+fn is_cell_visible_v(grid: &Grid, pos: Position) -> bool {
+    let is_cell_overriden = is_cell_overriden_v(grid, pos);
+    !is_cell_overriden
+}
+
+fn is_cell_overriden_v(grid: &Grid, pos: Position) -> bool {
+    grid.vertical_spans
+        .iter()
+        .any(|(&(start, end), cols)| pos.0 > start && pos.0 < end && cols.contains(&pos.1))
+}
+
+fn adjust_spans_vertical(grid: &Grid, heights: &mut [usize]) {
+    for (&(start, end), cols) in &grid.vertical_spans {
+        adjust_range_vertical(grid, cols.iter().copied(), heights, start, end);
+    }
+}
+
+fn adjust_range_vertical(
+    grid: &Grid,
+    cols: impl ExactSizeIterator<Item = usize>,
+    heights: &mut [usize],
+    start: usize,
+    end: usize,
+) {
+    if cols.len() == 0 {
+        return;
+    }
+
+    let max_span_height = cols
+        .map(|col| get_cell_height(grid, (start, col)))
+        .max()
+        .unwrap_or(0);
+    let range_height = range_height(grid, start, end, heights);
+
+    if range_height >= max_span_height {
+        return;
+    }
+
+    inc_range(heights, max_span_height - range_height, start, end);
+}
+
+fn get_cell_height(grid: &Grid, (row, col): Position) -> usize {
+    let style = grid.style(Entity::Cell(row, col));
+    let text = &grid.cells[row][col];
+    cell_height(text, style)
+}
+
+fn range_height(grid: &Grid, start: usize, end: usize, heights: &[usize]) -> usize {
+    let count_borders = count_borders_in_range_vertical(grid, start, end);
+    let range_width = heights[start..end].iter().sum::<usize>();
+    count_borders + range_width
+}
+
+pub fn count_borders_in_range_vertical(grid: &Grid, start: usize, end: usize) -> usize {
+    (start..end)
+        .skip(1)
+        .filter(|&row| has_horizontal(grid, row))
+        .count()
+}
+
+fn closest_visible_vertical(grid: &Grid, mut row: usize, col: usize) -> Option<usize> {
+    loop {
+        if is_cell_visible_v(grid, (row, col)) {
+            return Some(row);
+        }
+
+        if row == 0 {
+            return None;
+        }
+
+        row -= 1;
+    }
+}
+
+fn is_cell_visible_all(grid: &Grid, pos: Position) -> bool {
+    if !is_cell_visible(grid, pos) || !is_cell_visible_v(grid, pos) {
+        return false;
+    }
+
+    let found_span = is_cell_covered_by_both_spans(grid, pos);
+
+    !found_span
+}
+
+fn is_cell_covered_by_both_spans(grid: &Grid, pos: Position) -> bool {
+    grid.vertical_spans
+        .keys()
+        .filter(|(row, end)| pos.0 > *row && pos.0 < *end)
+        .any(|&(row, _)| {
+            grid.spans
+                .iter()
+                .any(|(&(col, end), rows)| pos.1 > col && pos.1 < end && rows.contains(&row))
+        })
 }
 
 fn cell_height(cell: &str, style: &Style) -> usize {
@@ -1939,32 +2161,59 @@ fn print_grid(
     f: &mut fmt::Formatter,
     grid: &Grid,
     widths: Vec<usize>,
-    mut heights: impl Iterator<Item = usize>,
+    heights: Vec<usize>,
 ) -> fmt::Result {
     let table_width = row_width_grid(grid, &widths);
     print_margin_top(f, &grid.margin, table_width)?;
 
     for row in 0..grid.count_rows() {
-        print_split_line(f, grid, &widths, table_width, row)?;
+        let height = heights[row];
 
-        let height = heights.next().unwrap();
+        if row == 0 {
+            print_split_line(f, grid, &widths, table_width, row)?;
+        } else {
+            print_split_line_with_content(f, grid, &widths, table_width, row, &heights)?;
+        }
 
-        for i in 0..height {
+        for line in 0..height {
             print_margin_left(f, &grid.margin)?;
 
             for col in 0..grid.count_columns() {
                 let border = grid.get_border(row, col);
 
-                if is_cell_visible(grid, (row, col)) {
+                if !is_cell_covered_by_both_spans(grid, (row, col))
+                    && is_cell_visible(grid, (row, col))
+                {
                     if let Some(c) = border.left {
                         c.fmt(f)?;
                     }
 
-                    let style = grid.style(Entity::Cell(row, col));
-                    let width = grid_cell_width(grid, &widths, (row, col));
-                    let text = &grid.cells[row][col];
+                    if !is_cell_visible_all(grid, (row, col)) {
+                        // means it's part of other a spanned cell
+                        // so. we just need to use line from other cell.
+                        let row_o = closest_visible_vertical(grid, row, col).unwrap();
 
-                    build_line_cell(f, i, text, style, width, height)?;
+                        let style = grid.style(Entity::Cell(row_o, col));
+                        let width = grid_cell_width(grid, &widths, (row_o, col));
+                        let height = grid_cell_height(grid, &heights, (row_o, col));
+                        let text = &grid.cells[row_o][col];
+
+                        let mut skip_lines = heights[row_o..row].iter().sum::<usize>();
+                        skip_lines += (row_o..row)
+                            .map(|row| has_horizontal(grid, row) as usize)
+                            .sum::<usize>();
+
+                        let line = line + skip_lines;
+
+                        build_line_cell(f, line, text, style, width, height)?;
+                    } else {
+                        let style = grid.style(Entity::Cell(row, col));
+                        let width = grid_cell_width(grid, &widths, (row, col));
+                        let height = grid_cell_height(grid, &heights, (row, col));
+                        let text = &grid.cells[row][col];
+
+                        build_line_cell(f, line, text, style, width, height)?;
+                    }
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();
@@ -1995,11 +2244,23 @@ fn grid_cell_width(grid: &Grid, widths: &[usize], pos: Position) -> usize {
     let span = grid
         .spans
         .iter()
-        .find(|((col, _), rows)| *col == pos.1 && rows.contains(&pos.0))
+        .find(|((col, _end), rows)| *col == pos.1 && rows.contains(&pos.0))
         .map(|(span, _)| span);
     match span {
         Some(&(start, end)) => range_width(grid, start, end, widths),
         None => widths[pos.1],
+    }
+}
+
+fn grid_cell_height(grid: &Grid, heights: &[usize], pos: Position) -> usize {
+    let span = grid
+        .vertical_spans
+        .iter()
+        .find(|((row, _end), cols)| *row == pos.0 && cols.contains(&pos.1))
+        .map(|(span, _)| span);
+    match span {
+        Some(&(start, end)) => range_height(grid, start, end, heights),
+        None => heights[pos.0],
     }
 }
 
@@ -2088,6 +2349,127 @@ fn print_split_line(
         match main {
             Some(c) => repeat_symbol(f, c, width)?,
             None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+        }
+
+        let right = grid
+            .theme
+            .get_intersection((row, col + 1), grid.count_rows(), grid.count_columns())
+            .or_else(|| {
+                if has_vertical(grid, col + 1) {
+                    Some(DEFAULT_BORDER_VERTICAL_SYMBOL_REF)
+                } else {
+                    None
+                }
+            });
+
+        if let Some(c) = right {
+            if char_skip == 0 {
+                c.fmt(f)?;
+            } else {
+                char_skip -= 1;
+            }
+        }
+    }
+
+    print_margin_right(f, &grid.margin)?;
+
+    f.write_char('\n')?;
+
+    Ok(())
+}
+
+fn print_split_line_with_content(
+    f: &mut fmt::Formatter,
+    grid: &Grid,
+    widths: &[usize],
+    max_width: usize,
+    row: usize,
+    heights: &[usize],
+) -> fmt::Result {
+    if !has_horizontal(grid, row) {
+        return Ok(());
+    }
+
+    if heights[row] == 0 {
+        return Ok(());
+    }
+
+    print_margin_left(f, &grid.margin)?;
+
+    let mut char_skip = 0;
+    let override_text = grid.override_split_lines.get(&row);
+    if let Some(text) = override_text {
+        if !text.is_empty() {
+            let text = cut_str(text, max_width);
+            let line = text.lines().next().unwrap();
+            char_skip = string_width(line);
+            f.write_str(line)?;
+        }
+    }
+
+    for (mut col, width) in widths.iter().enumerate() {
+        if is_cell_covered_by_both_spans(grid, (row, col)) {
+            continue;
+        }
+
+        if col == 0 {
+            let left = grid
+                .theme
+                .get_intersection((row, col), grid.count_rows(), grid.count_columns())
+                .or_else(|| {
+                    if has_vertical(grid, col) {
+                        Some(DEFAULT_BORDER_VERTICAL_SYMBOL_REF)
+                    } else {
+                        None
+                    }
+                });
+
+            if let Some(c) = left {
+                if char_skip == 0 {
+                    c.fmt(f)?;
+                } else {
+                    char_skip -= 1;
+                }
+            }
+        }
+
+        let mut width = *width;
+        if char_skip > 0 {
+            let sub = cmp::min(width, char_skip);
+            width -= sub;
+            char_skip -= sub;
+        }
+
+        if !is_cell_visible_v(grid, (row, col)) {
+            match closest_visible_vertical(grid, row, col) {
+                Some(row_o) => {
+                    let style = grid.style(Entity::Cell(row_o, col));
+                    let width = grid_cell_width(grid, widths, (row_o, col));
+                    let height = grid_cell_height(grid, heights, (row_o, col));
+                    let text = &grid.cells[row_o][col];
+
+                    let mut line = heights[row_o..row].iter().sum::<usize>();
+                    if row > 0 {
+                        line += (row_o..row - 1)
+                            .map(|row| has_horizontal(grid, row) as usize)
+                            .sum::<usize>();
+                    }
+
+                    build_line_cell(f, line, text, style, width, height)?;
+
+                    // We need to use a correct right split char.
+                    if let Some(span) = grid.get_column_span((row_o, col)) {
+                        col += span - 1;
+                    }
+                }
+                None => todo!(),
+            }
+        } else {
+            let main = grid.theme.get_horizontal((row, col), grid.count_rows());
+            match main {
+                Some(c) => repeat_symbol(f, c, width)?,
+                None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+            }
         }
 
         let right = grid
