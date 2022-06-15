@@ -4,13 +4,15 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{object::Cell, Modify, TableIteratorExt, Span};
+//! use tabled::{object::Cell, ModifyObject, TableIteratorExt, Span};
 //!
 //! let data = [[1, 2, 3], [4, 5, 6]];
 //!
 //! let table = data.table()
-//!     .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
-//!     .with(Modify::new(Cell(0, 1)).with(Span::column(2)))
+//!     .with(Cell(2, 0).modify().with(Span::column(2)))
+//!     .with(Cell(0, 1).modify().with(Span::column(2)))
+//!     .with(Cell(0, 0).modify().with(Span::row(2)))
+//!     .with(Cell(1, 2).modify().with(Span::row(2)))
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -18,10 +20,10 @@
 //!     concat!(
 //!         "+---+---+---+\n",
 //!         "| 0 |   1   |\n",
-//!         "+---+---+---+\n",
-//!         "| 1 | 2 | 3 |\n",
-//!         "+---+---+---+\n",
-//!         "|   4   | 6 |\n",
+//!         "+   +---+---+\n",
+//!         "|   | 2 | 3 |\n",
+//!         "+---+---+   +\n",
+//!         "|   4   |   |\n",
 //!         "+---+---+---+\n",
 //!     )
 //! )
@@ -35,28 +37,69 @@ pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 
 /// Span represent a horizontal/column span setting for any cell on a [Table].
 ///
+/// # Example
+/// 
 /// ```rust,no_run
-///   # use tabled::{Style, Span, Modify, object::Columns, Table};
+///   # use tabled::{Style, Span, ModifyObject, object::Columns, TableIteratorExt};
 ///   # let data: Vec<&'static str> = Vec::new();
-///     let table = Table::new(&data)
-///         .with(Modify::new(Columns::single(0)).with(Span::column(2)));
+///     let table = data.table()
+///         .with(
+///             Columns::single(0)
+///                 .modify()
+///                 .with(Span::column(2))
+///                 .with(Span::row(2))
+///         );
 /// ```
 ///
 /// [Table]: crate::Table
 #[derive(Debug)]
-pub struct Span {
-    size: usize,
-}
+pub struct Span;
 
 impl Span {
     /// New constructs a horizontal/column [Span].
-    pub fn column(size: usize) -> Self {
-        Self { size }
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    ///   # use tabled::{Style, Span, ModifyObject, object::Cell, TableIteratorExt};
+    ///   # let data: Vec<&'static str> = Vec::new();
+    ///     let table = data.table().with(Cell(0, 1).modify().with(Span::column(2)));
+    /// ```
+    pub fn column(size: usize) -> ColumnSpan {
+        ColumnSpan(size)
+    }
+
+    /// New constructs a vertical/row [Span].
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    ///   # use tabled::{Style, Span, ModifyObject, object::Cell, TableIteratorExt};
+    ///   # let data: Vec<&'static str> = Vec::new();
+    ///     let table = data.table().with(Cell(0, 1).modify().with(Span::row(2)));
+    /// ```
+    pub fn row(size: usize) -> RowSpan {
+        RowSpan(size)
     }
 }
 
-impl CellOption for Span {
+/// ColumnSpan represents a horizontal span.
+pub struct ColumnSpan(usize);
+
+/// RowSpan represents a vertical span.
+pub struct RowSpan(usize);
+
+impl CellOption for ColumnSpan {
     fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        grid.set(Entity::Cell(row, column), Settings::new().span(self.size));
+        grid.set(Entity::Cell(row, column), Settings::new().span(self.0));
+    }
+}
+
+impl CellOption for RowSpan {
+    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+        grid.set(
+            Entity::Cell(row, column),
+            Settings::new().span_vertical(self.0),
+        );
     }
 }

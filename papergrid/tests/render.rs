@@ -1789,3 +1789,124 @@ fn render_grid_with_row_span_and_col_span_3() {
         )
     );
 }
+
+#[test]
+#[ignore = "todo; create some logic of combining spans? or somehow resolving to not get the following"]
+fn render_grid_with_row_3() {
+    let mut grid = util::new_grid::<3, 5>();
+
+    grid.set(Entity::Cell(0, 0), Settings::new().span(2));
+    grid.set(Entity::Cell(0, 1), Settings::new().span(2));
+    grid.set(Entity::Cell(0, 2), Settings::new().span(2));
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+--+\n",
+            "|0-0    |0-2|q  |q1|\n",
+            "|       |   |w  |w1|\n",
+            "+---+---+---+e  +e1+\n",
+            "|1-0|1-1|1-2|r  |r1|\n",
+            "|   |   |   |t  |t1|\n",
+            "+---+---+---+---+  +\n",
+            "|2-0|2-1|2-2|2-3|  |\n",
+            "+---+---+---+---+--+\n",
+        )
+    );
+}
+
+#[test]
+fn render_grid_with_row_4() {
+    let mut grid = util::new_grid::<3, 4>();
+
+    grid.set(Entity::Cell(0, 0), Settings::new().span(2));
+    grid.set(Entity::Cell(1, 0), Settings::new().span(2));
+    grid.set(Entity::Cell(2, 0), Settings::new().span(2));
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+-+-+---+---+\n",
+            "|0-0|0-2|0-3|\n",
+            "+-+-+---+---+\n",
+            "|1-0|1-2|1-3|\n",
+            "+-+-+---+---+\n",
+            "|2-0|2-2|2-3|\n",
+            "+-+-+---+---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<3, 4>();
+
+    grid.set(Entity::Cell(0, 0), Settings::new().span(3));
+    grid.set(Entity::Cell(1, 0), Settings::new().span(3));
+    grid.set(Entity::Cell(2, 0), Settings::new().span(3));
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+-+++---+\n",
+            "|0-0|0-3|\n",
+            "+-+++---+\n",
+            "|1-0|1-3|\n",
+            "+-+++---+\n",
+            "|2-0|2-3|\n",
+            "+-+++---+\n",
+        )
+    );
+
+    let mut grid = util::new_grid::<3, 4>();
+
+    grid.set(Entity::Cell(0, 0), Settings::new().span(3).text(""));
+    grid.set(Entity::Cell(1, 0), Settings::new().span(3).text(""));
+    grid.set(Entity::Cell(2, 0), Settings::new().span(3).text(""));
+
+    println!("{}", grid);
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "++++---+\n",
+            "|  |0-3|\n",
+            "++++---+\n",
+            "|  |1-3|\n",
+            "++++---+\n",
+            "|  |2-3|\n",
+            "++++---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_grid_with_row_and_col_4() {
+    let mut grid = util::new_grid::<3, 4>();
+
+    grid.set(Entity::Cell(0, 0), Settings::new().span(2));
+    grid.set(
+        Entity::Cell(1, 0),
+        Settings::new().span(2).span_vertical(2),
+    );
+
+    println!("{}", grid);
+
+    // is this correct?
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+-+-+---+---+\n",
+            "|0-0|0-2|0-3|\n",
+            "+-+-+---+---+\n",
+            "|1-0|1-2|1-3|\n",
+            "+   +---+---+\n",
+            "|   |2-2|2-3|\n",
+            "+-+-+---+---+\n",
+        )
+    );
+}

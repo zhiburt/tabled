@@ -1256,7 +1256,7 @@ fn columns_width(grid: &Grid) -> Vec<usize> {
         let mut max = 0;
 
         for row in 0..grid.count_rows() {
-            if !is_simple_cell(grid, (row, col)) || !is_cell_visible_v(grid, (row, col)) {
+            if !is_simple_cell(grid, (row, col)) || !is_cell_visible_all(grid, (row, col)) {
                 continue;
             }
 
