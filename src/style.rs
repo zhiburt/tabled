@@ -82,7 +82,7 @@
 //!
 //! [Table]: crate::Table
 
-use std::{borrow::Cow, marker::PhantomData};
+use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 
 use papergrid::{Borders, Entity, Grid, Position, Settings};
 
@@ -335,6 +335,9 @@ impl Style {
     pub const fn correct_spans() -> StyleCorrectSpan {
         StyleCorrectSpan
     }
+
+    // todo: Add comment that it works only for styles which are `is_complete()`.
+    // todo: Add is_complete method
 }
 
 const EMPTY: StyleSettings = StyleSettings::new(Frame::empty(), Line::empty(), Line::empty(), None);
@@ -1279,73 +1282,121 @@ impl TableOption for StyleCorrectSpan {
 
 fn correct_span_styles(grid: &mut Grid) {
     let borders = grid.get_borders();
-    let inner_intersection = borders.intersection.clone();
     let bottom_intersection = borders.bottom_intersection.clone();
     let top_intersection = borders.top_intersection.clone();
+    let left_intersection = borders.horizontal_left.clone();
+    let right_intersection = borders.horizontal_right.clone();
+    let inner_vertical = borders.vertical_intersection.clone();
+    let inner_horizontal = borders.horizontal.clone();
 
-    let spans = grid.iter_column_spans().collect::<Vec<_>>();
+    let invisible = grid.iter_invisible_cells().collect::<Vec<_>>();
 
-    for &((row, c), span) in &spans {
-        for col in c..c + span {
-            if col == 0 {
-                continue;
-            }
-
-            let is_first = col == c;
-            let has_up = row > 0 && has_vertical(grid, &spans, (row - 1, col));
-            let has_down =
-                row + 1 < grid.count_rows() && has_vertical(grid, &spans, (row + 1, col));
+    let h_spans = grid.iter_column_spans().collect::<Vec<_>>();
+    for &((row, col), span) in &h_spans {
+        for col in col + 1..col + span {
+            let v_top = row > 0 && !cell_is_in(&invisible, (row - 1, col));
+            let v_bottom = row + 1 < grid.count_rows() && !cell_is_in(&invisible, (row + 1, col));
 
             let mut border = grid.get_border(row, col);
 
-            let has_top_border = border.left_top_corner.is_some() && border.top.is_some();
-            if has_top_border {
-                if has_up && is_first {
-                    border.left_top_corner = inner_intersection.clone();
-                } else if has_up {
-                    border.left_top_corner = bottom_intersection.clone();
-                } else if is_first {
-                    border.left_top_corner = top_intersection.clone();
+            if border.left_top_corner.is_some() {
+                let c = if v_top {
+                    &bottom_intersection
                 } else {
-                    border.left_top_corner = border.top.clone();
-                }
+                    &inner_horizontal
+                };
+
+                border.left_top_corner = c.clone();
             }
 
-            let has_bottom_border = border.left_bottom_corner.is_some() && border.bottom.is_some();
-            if has_bottom_border {
-                if has_down && is_first {
-                    border.left_bottom_corner = inner_intersection.clone();
-                } else if has_down {
-                    border.left_bottom_corner = top_intersection.clone();
-                } else if is_first {
-                    border.left_bottom_corner = bottom_intersection.clone();
+            if border.left_bottom_corner.is_some() {
+                let c = if v_bottom {
+                    &top_intersection
                 } else {
-                    border.left_bottom_corner = border.bottom.clone();
-                }
+                    &inner_horizontal
+                };
+
+                border.left_bottom_corner = c.clone();
             }
 
             grid.set_border(Entity::Cell(row, col), border);
         }
     }
-}
 
-fn has_vertical(grid: &Grid, spans: &[(Position, usize)], pos: Position) -> bool {
-    if is_in_span_range(spans, pos) {
-        return spans.iter().any(|&(p, _)| p == pos);
+    let spans = grid.iter_row_spans().collect::<HashMap<_, _>>();
+    for (&(row, col), &span) in &spans {
+        for row in row + 1..row + span {
+            let v_left = col > 0 && !cell_is_in(&invisible, (row, col - 1));
+            let v_right = col + 1 < grid.count_columns() && !cell_is_in(&invisible, (row, col + 1));
+
+            let v_left_top = col > 0
+                && row > 0
+                && ((!cell_is_in(&invisible, (row - 1, col - 1))
+                    && !spans.contains_key(&(row - 1, col - 1)))
+                    || (cell_is_in(&invisible, (row - 1, col - 1))
+                        && h_spans
+                            .iter()
+                            .any(|(p, span)| p.0 == row && col - 1 > p.1 && col - 1 < p.1 + span)));
+
+            let mut border = grid.get_border(row, col);
+
+            if border.left_top_corner.is_some() {
+                let c = if v_left || v_left_top {
+                    &right_intersection
+                } else {
+                    &inner_vertical
+                };
+
+                border.left_top_corner = c.clone();
+            }
+
+            if border.right_top_corner.is_some() {
+                let c = if v_right {
+                    &left_intersection
+                } else {
+                    &inner_vertical
+                };
+
+                border.right_top_corner = c.clone();
+            }
+
+            grid.set_border(Entity::Cell(row, col), border);
+        }
     }
 
-    if grid.is_cell_visible(pos) {
-        let border = grid.get_border(pos.0, pos.1);
-        return border.left.is_some()
-            || border.left_top_corner.is_some()
-            || border.left_bottom_corner.is_some();
-    }
+    let cells = grid.iter_spanned_cells().collect::<Vec<_>>();
+    for (row, col) in cells {
+        let v_bottom = row + 1 < grid.count_rows() && !cell_is_in(&invisible, (row + 1, col));
+        let v_right = col + 1 < grid.count_columns() && !cell_is_in(&invisible, (row, col + 1));
 
-    false
+        let mut border = grid.get_border(row, col);
+
+        if border.left_bottom_corner.is_some() {
+            let c = if v_bottom {
+                &top_intersection
+            } else if row + 1 == grid.count_rows() {
+                &border.bottom
+            } else {
+                &None
+            };
+
+            border.left_bottom_corner = c.clone();
+        }
+
+        if border.right_top_corner.is_some() {
+            let c = if v_right {
+                &left_intersection
+            } else {
+                &None
+            };
+
+            border.right_top_corner = c.clone();
+        }
+
+        grid.set_border(Entity::Cell(row, col), border);
+    }
 }
 
-fn is_in_span_range(spans: &[(Position, usize)], pos: Position) -> bool {
-    spans
-        .iter()
-        .any(|&((row, col), span)| row == pos.0 && pos.1 > col && pos.1 < col + span)
+fn cell_is_in(spans: &[Position], pos: Position) -> bool {
+    spans.iter().any(|&p| p == pos)
 }
