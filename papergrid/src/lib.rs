@@ -1936,6 +1936,8 @@ impl Theme {
             &self.borders.top_left
         } else if is_first_col {
             &self.borders.horizontal_left
+        } else if is_first_row {
+            &self.borders.top_intersection
         } else {
             &self.borders.intersection
         };
@@ -1944,6 +1946,8 @@ impl Theme {
             &self.borders.bottom_left
         } else if is_first_col {
             &self.borders.horizontal_left
+        } else if is_last_row {
+            &self.borders.bottom_intersection
         } else {
             &self.borders.intersection
         };
@@ -1958,6 +1962,8 @@ impl Theme {
             &self.borders.top_right
         } else if is_last_col {
             &self.borders.horizontal_right
+        } else if is_first_row {
+            &self.borders.top_intersection
         } else {
             &self.borders.intersection
         };
@@ -1966,6 +1972,8 @@ impl Theme {
             &self.borders.bottom_right
         } else if is_last_col {
             &self.borders.horizontal_right
+        } else if is_last_row {
+            &self.borders.bottom_intersection
         } else {
             &self.borders.intersection
         };
