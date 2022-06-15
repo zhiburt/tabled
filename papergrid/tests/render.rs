@@ -1723,3 +1723,69 @@ fn check_correct_print_of_col_span() {
         )
     );
 }
+
+#[test]
+fn render_grid_with_row_span_and_col_span_2() {
+    let mut grid = util::new_grid::<4, 4>();
+
+    grid.set(Entity::Cell(0, 0), Settings::new().span(2));
+    grid.set(
+        Entity::Cell(0, 2),
+        Settings::new().span_vertical(2).text("q\nw\ne\nr\nt\n"),
+    );
+    grid.set(
+        Entity::Cell(0, 3),
+        Settings::new()
+            .span_vertical(3)
+            .text("q1\nw1\ne1\nr1\nt1\n"),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+\n",
+            "|0-0    |q  |q1 |\n",
+            "|       |w  |w1 |\n",
+            "+---+---+e  +e1 +\n",
+            "|1-0|1-1|r  |r1 |\n",
+            "|   |   |t  |t1 |\n",
+            "+---+---+---+   +\n",
+            "|2-0|2-1|2-2|   |\n",
+            "+---+---+---+---+\n",
+            "|3-0|3-1|3-2|3-3|\n",
+            "+---+---+---+---+\n",
+        )
+    );
+}
+
+#[test]
+fn render_grid_with_row_span_and_col_span_3() {
+    let mut grid = util::new_grid::<3, 5>();
+
+    grid.set(Entity::Cell(0, 0), Settings::new().span(2));
+    grid.set(
+        Entity::Cell(0, 3),
+        Settings::new().span_vertical(2).text("q\nw\ne\nr\nt\n"),
+    );
+    grid.set(
+        Entity::Cell(0, 4),
+        Settings::new()
+            .span_vertical(3)
+            .text("q1\nw1\ne1\nr1\nt1\n"),
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+---+---+---+--+\n",
+            "|0-0    |0-2|q  |q1|\n",
+            "|       |   |w  |w1|\n",
+            "+---+---+---+e  +e1+\n",
+            "|1-0|1-1|1-2|r  |r1|\n",
+            "|   |   |   |t  |t1|\n",
+            "+---+---+---+---+  +\n",
+            "|2-0|2-1|2-2|2-3|  |\n",
+            "+---+---+---+---+--+\n",
+        )
+    );
+}

@@ -700,7 +700,8 @@ impl Grid {
             })
     }
 
-    /// Get a list of vertical spans which are set on the grid.
+    /// Get a list of cells which are covered by vertical and horizontal spans.
+    /// Including the cells covered by both spans at the same time.
     pub fn iter_invisible_cells(&self) -> impl Iterator<Item = Position> + '_ {
         // todo: can be optimized
 
@@ -708,6 +709,17 @@ impl Grid {
             (0..self.count_columns())
                 .map(move |col| (row, col))
                 .filter(move |&p| !self.is_cell_visible_(p))
+        })
+    }
+
+    /// Get a list of cells which are covered by both vertical and horizontal spans simoteniosly.
+    pub fn iter_spanned_cells(&self) -> impl Iterator<Item = Position> + '_ {
+        // todo: can be optimized
+
+        (0..self.count_rows()).flat_map(move |row| {
+            (0..self.count_columns())
+                .map(move |col| (row, col))
+                .filter(move |&p| is_cell_covered_by_both_spans(self, p))
         })
     }
 
@@ -1504,14 +1516,14 @@ fn is_cell_visible_all(grid: &Grid, pos: Position) -> bool {
 }
 
 fn is_cell_covered_by_both_spans(grid: &Grid, pos: Position) -> bool {
-    grid.vertical_spans
-        .keys()
-        .filter(|(row, end)| pos.0 > *row && pos.0 < *end)
-        .any(|&(row, _)| {
-            grid.spans
-                .iter()
-                .any(|(&(col, end), rows)| pos.1 > col && pos.1 < end && rows.contains(&row))
-        })
+    grid.vertical_spans.iter().any(|(&(row, row_end), cols)| {
+        grid.spans
+            .iter()
+            .filter(|(&(col, _), rows)| cols.contains(&col) && rows.contains(&row))
+            .any(|(&(col, col_end), _)| {
+                pos.0 > row && pos.0 < row_end && pos.1 > col && pos.1 < col_end
+            })
+    })
 }
 
 fn cell_height(cell: &str, style: &Style) -> usize {
