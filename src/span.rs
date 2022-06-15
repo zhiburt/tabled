@@ -38,7 +38,7 @@ pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 /// Span represent a horizontal/column span setting for any cell on a [Table].
 ///
 /// # Example
-/// 
+///
 /// ```rust,no_run
 ///   # use tabled::{Style, Span, ModifyObject, object::Columns, TableIteratorExt};
 ///   # let data: Vec<&'static str> = Vec::new();
@@ -59,7 +59,7 @@ impl Span {
     /// New constructs a horizontal/column [Span].
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     ///   # use tabled::{Style, Span, ModifyObject, object::Cell, TableIteratorExt};
     ///   # let data: Vec<&'static str> = Vec::new();

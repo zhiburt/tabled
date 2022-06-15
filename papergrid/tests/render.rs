@@ -1888,10 +1888,7 @@ fn render_grid_with_row_and_col_4() {
     let mut grid = util::new_grid::<3, 4>();
 
     grid.set(Entity::Cell(0, 0), Settings::new().span(2));
-    grid.set(
-        Entity::Cell(1, 0),
-        Settings::new().span(2).span_vertical(2),
-    );
+    grid.set(Entity::Cell(1, 0), Settings::new().span(2).span_vertical(2));
 
     println!("{}", grid);
 

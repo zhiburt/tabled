@@ -1384,11 +1384,7 @@ fn correct_span_styles(grid: &mut Grid) {
         }
 
         if border.right_top_corner.is_some() {
-            let c = if v_right {
-                &left_intersection
-            } else {
-                &None
-            };
+            let c = if v_right { &left_intersection } else { &None };
 
             border.right_top_corner = c.clone();
         }
