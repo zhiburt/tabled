@@ -22,7 +22,7 @@
 //! ```
 
 use std::{
-    cmp::{self, max},
+    cmp,
     collections::{BTreeMap, HashMap, HashSet},
     fmt::{self, Display, Write},
     hash::Hash,
@@ -131,7 +131,8 @@ impl Grid {
             || settings.alignment_h.is_some()
             || settings.alignment_v.is_some()
             || settings.span.is_some()
-            || settings.formatting.is_some();
+            || settings.formatting.is_some()
+            || settings.limits.is_some();
 
         if is_style_changes {
             self.remove_inherited_styles(entity);
@@ -151,6 +152,10 @@ impl Grid {
 
             if let Some(formatting) = settings.formatting {
                 style.formatting = formatting;
+            }
+
+            if let Some(limits) = settings.limits {
+                style.limits = Some(limits);
             }
         }
 
@@ -251,6 +256,7 @@ impl Grid {
             border: Some(border),
             alignment_h: Some(style.alignment_h),
             alignment_v: Some(style.alignment_v),
+            limits: style.limits,
             formatting: None,
             span,
         }
@@ -663,6 +669,7 @@ pub struct Settings {
     alignment_h: Option<AlignmentHorizontal>,
     alignment_v: Option<AlignmentVertical>,
     formatting: Option<Formatting>,
+    limits: Option<Limits>,
 }
 
 impl Settings {
@@ -725,6 +732,14 @@ impl Settings {
     /// It overades them even if any were not set.
     pub fn formatting(mut self, formatting: Formatting) -> Self {
         self.formatting = Some(formatting);
+        self
+    }
+
+    /// Set a formatting settings.
+    ///
+    /// It overades them even if any were not set.
+    pub fn width(mut self, value: usize, fill: char) -> Self {
+        self.limits = Some(Limits { fill, width: value });
         self
     }
 }
@@ -839,6 +854,7 @@ pub struct Style {
     pub alignment_h: AlignmentHorizontal,
     pub alignment_v: AlignmentVertical,
     pub formatting: Formatting,
+    pub limits: Option<Limits>,
 }
 
 impl Default for Style {
@@ -853,6 +869,7 @@ impl Default for Style {
                 allow_lines_alignement: false,
                 tab_width: 4,
             },
+            limits: None,
         }
     }
 }
@@ -864,6 +881,12 @@ pub struct Formatting {
     pub vertical_trim: bool,
     pub allow_lines_alignement: bool,
     pub tab_width: usize,
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct Limits {
+    pub width: usize,
+    pub fill: char,
 }
 
 /// Margin represent a 4 indents of table as a whole.
@@ -923,56 +946,44 @@ pub enum AlignmentHorizontal {
     Right,
 }
 
-impl AlignmentHorizontal {
-    fn align_with_max_width(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-        text: &str,
-        width: usize,
-        text_width: usize,
-        max_text_width: usize,
-        tab_width: usize,
-    ) -> fmt::Result {
-        let diff = width - text_width;
+fn print_text_formated(
+    f: &mut fmt::Formatter<'_>,
+    text: &str,
+    text_width: usize,
+    alignment: AlignmentHorizontal,
+    available: usize,
+    tab_width: usize,
+) -> fmt::Result {
+    let diff = available - text_width;
+    let (left, right) = match alignment {
+        AlignmentHorizontal::Left => (0, diff),
+        AlignmentHorizontal::Right => (diff, 0),
+        AlignmentHorizontal::Center => {
+            let left = diff / 2;
+            let rest = diff - left;
+            (left, rest)
+        }
+    };
 
-        match self {
-            AlignmentHorizontal::Left => Self::align(f, text, 0, diff, tab_width),
-            AlignmentHorizontal::Right => {
-                let max_diff = width - max_text_width;
-                let rest = diff - max_diff;
-                Self::align(f, text, max_diff, rest, tab_width)
-            }
-            AlignmentHorizontal::Center => {
-                let max_diff = width - max_text_width;
-                let left = max_diff / 2;
-                let rest = diff - left;
-                Self::align(f, text, left, rest, tab_width)
-            }
+    repeat_char(f, ' ', left)?;
+    print_text(f, text, tab_width)?;
+    repeat_char(f, ' ', right)?;
+
+    Ok(())
+}
+
+fn print_text(f: &mut fmt::Formatter<'_>, text: &str, tab_width: usize) -> fmt::Result {
+    // So to not use replace_tab we are printing by char;
+    // Hopefully it's more affective as it reduceses a number of allocations.
+    for c in text.chars() {
+        if c == '\t' {
+            repeat_char(f, ' ', tab_width)?;
+        } else {
+            f.write_char(c)?;
         }
     }
 
-    fn align(
-        f: &mut fmt::Formatter<'_>,
-        text: &str,
-        left: usize,
-        right: usize,
-        tab_width: usize,
-    ) -> fmt::Result {
-        repeat_char(f, ' ', left)?;
-
-        // So to not use replace_tab we are printing by char;
-        // Hopefully it's more affective as it reduceses a number of allocations.
-        for c in text.chars() {
-            if c == '\t' {
-                repeat_char(f, ' ', tab_width)?;
-            } else {
-                f.write_char(c)?;
-            }
-        }
-
-        repeat_char(f, ' ', right)?;
-        Ok(())
-    }
+    Ok(())
 }
 
 /// AlignmentVertical represents an vertical alignment of a cell content.
@@ -1003,12 +1014,22 @@ fn build_line_cell(
 ) -> fmt::Result {
     let cell_height = count_lines(cell);
     if style.formatting.vertical_trim {
-        let cell = skip_empty_lines(cell, cell_height);
-        let cell_height = cell.clone().count();
-        build_format_line(f, line_index, cell, style, width, height, cell_height)
+        let lines = skip_empty_lines(cell, cell_height);
+        let cell_height = lines.clone().count();
+        build_format_line(
+            f,
+            cell,
+            line_index,
+            lines,
+            style,
+            width,
+            height,
+            cell_height,
+        )
     } else {
         build_format_line(
             f,
+            cell,
             line_index,
             cell.lines(),
             style,
@@ -1019,10 +1040,12 @@ fn build_line_cell(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_format_line<'a>(
     f: &mut fmt::Formatter<'_>,
+    cell: &str,
     line_index: usize,
-    mut cell: impl Iterator<Item = &'a str>,
+    mut lines: impl Iterator<Item = &'a str>,
     style: &Style,
     width: usize,
     height: usize,
@@ -1040,51 +1063,55 @@ fn build_format_line<'a>(
         return repeat_char(f, style.padding.bottom.fill, width);
     }
 
-    if style.formatting.allow_lines_alignement {
-        let mut line = cell.nth(cell_line_index).unwrap();
-        if style.formatting.horizontal_trim && style.formatting.allow_lines_alignement {
+    // We consider empty strings to have a height 1,
+    // So this is the unwrap_or handles this case.
+    let mut line = lines.nth(cell_line_index).unwrap_or("");
+
+    if style.formatting.horizontal_trim {
+        if style.formatting.allow_lines_alignement {
             line = line.trim();
-        } else if style.formatting.horizontal_trim {
-            line = line.trim_end();
+        } else {
+            line = line.trim_end()
+        }
+    }
+
+    let line_width = string_width_tab(line, style.formatting.tab_width);
+
+    let width = width - style.padding.left.size - style.padding.right.size;
+    repeat_char(f, style.padding.left.fill, style.padding.left.size)?;
+
+    if style.formatting.allow_lines_alignement {
+        print_text_formated(
+            f,
+            line,
+            line_width,
+            style.alignment_h,
+            width,
+            style.formatting.tab_width,
+        )?;
+    } else {
+        let cell_width = if style.formatting.horizontal_trim {
+            string_width_multiline_tab_trim_end(cell, style.formatting.tab_width)
+        } else {
+            string_width_multiline_tab(cell, style.formatting.tab_width)
         };
 
-        let line_width = string_width_tab(line, style.formatting.tab_width);
+        print_text_formated(
+            f,
+            line,
+            cell_width,
+            style.alignment_h,
+            width,
+            style.formatting.tab_width,
+        )?;
 
-        line_with_width(f, line, width, line_width, line_width, style)
-    } else {
-        let (max_line_width, (text, line_width)) =
-            cell.enumerate().fold((0, ("", 0)), |mut acc, (i, line)| {
-                if i == cell_line_index {
-                    let line = if style.formatting.horizontal_trim
-                        && style.formatting.allow_lines_alignement
-                    {
-                        line.trim()
-                    } else if style.formatting.horizontal_trim {
-                        line.trim_end()
-                    } else {
-                        line
-                    };
-
-                    acc.1 = (line, string_width_tab(line, style.formatting.tab_width));
-                }
-
-                let line = if style.formatting.horizontal_trim {
-                    line.trim_end()
-                } else {
-                    line
-                };
-
-                let len = string_width_tab(line, style.formatting.tab_width);
-
-                if acc.0 < len {
-                    acc.0 = len;
-                }
-
-                acc
-            });
-
-        line_with_width(f, text, width, line_width, max_line_width, style)
+        let rest_width = cell_width - line_width;
+        repeat_char(f, ' ', rest_width)?;
     }
+
+    repeat_char(f, style.padding.right.fill, style.padding.right.size)?;
+
+    Ok(())
 }
 
 fn skip_empty_lines(s: &str, length: usize) -> impl Iterator<Item = &'_ str> + Clone {
@@ -1119,48 +1146,17 @@ fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     Ok(())
 }
 
-fn line_with_width(
-    f: &mut fmt::Formatter<'_>,
-    text: &str,
-    width: usize,
-    width_text: usize,
-    width_text_max: usize,
-    style: &Style,
-) -> fmt::Result {
-    let left_indent = style.padding.left;
-    let right_indent = style.padding.right;
-    let alignment = style.alignment_h;
-
-    repeat_char(f, left_indent.fill, left_indent.size)?;
-    let width = width - left_indent.size - right_indent.size;
-    alignment.align_with_max_width(
-        f,
-        text,
-        width,
-        width_text,
-        width_text_max,
-        style.formatting.tab_width,
-    )?;
-    repeat_char(f, right_indent.fill, right_indent.size)?;
-
-    Ok(())
-}
-
+#[allow(clippy::needless_range_loop)]
 fn columns_width(grid: &Grid) -> Vec<usize> {
-    let mut widths = Vec::with_capacity(grid.count_columns());
+    let mut widths = vec![0; grid.count_columns()];
     for col in 0..grid.count_columns() {
-        let mut max = 0;
+        let max = (0..grid.count_rows())
+            .filter(|&row| is_simple_cell(grid, (row, col)))
+            .map(|row| get_cell_width(grid, (row, col)))
+            .max()
+            .unwrap_or(0);
 
-        for row in 0..grid.count_rows() {
-            if !is_simple_cell(grid, (row, col)) {
-                continue;
-            }
-
-            let width = get_cell_width(grid, (row, col));
-            max = cmp::max(width, max);
-        }
-
-        widths.push(max);
+        widths[col] = max;
     }
 
     adjust_spans(grid, &mut widths);
@@ -1280,25 +1276,19 @@ fn closest_visible(grid: &Grid, row: usize, mut col: usize) -> Option<usize> {
 
 fn rows_height(grid: &Grid) -> impl Iterator<Item = usize> + '_ {
     (0..grid.count_rows()).map(move |row| {
-        let mut max_height = 0;
-        (0..grid.count_columns()).for_each(|col| {
-            let cell = &grid.cells[row][col];
-            let style = grid.style(Entity::Cell(row, col));
-            let cell_height = cell_height(cell, style);
-            max_height = max(max_height, cell_height);
-        });
-
-        max_height
+        (0..grid.count_columns())
+            .map(|col| {
+                let cell = &grid.cells[row][col];
+                let style = grid.style(Entity::Cell(row, col));
+                cell_height(cell, style)
+            })
+            .max()
+            .unwrap_or(0)
     })
 }
 
 fn cell_height(cell: &str, style: &Style) -> usize {
-    let content_height = if cell.is_empty() {
-        1
-    } else {
-        count_lines(cell)
-    };
-
+    let content_height = count_lines(cell);
     content_height + style.padding.top.size + style.padding.bottom.size
 }
 
@@ -1485,6 +1475,13 @@ fn string_width_tab(text: &str, tab_width: usize) -> usize {
 fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
     text.lines()
         .map(|line| string_width_tab(line, tab_width))
+        .max()
+        .unwrap_or(0)
+}
+
+fn string_width_multiline_tab_trim_end(text: &str, tab_width: usize) -> usize {
+    text.lines()
+        .map(|line| string_width_tab(line.trim_end(), tab_width))
         .max()
         .unwrap_or(0)
 }
@@ -2410,7 +2407,14 @@ fn count_tabs(s: &str) -> usize {
 }
 
 fn count_lines(s: &str) -> usize {
+    if s.is_empty() {
+        return 1;
+    }
+
     let mut count = bytecount::count(s.as_bytes(), b'\n');
+    if count == 0 {
+        return 1;
+    }
 
     // we need to identify if the last char is '\n' for this matter we need to strip the string
     #[cfg(feature = "color")]
@@ -2481,8 +2485,8 @@ mod tests {
 
         impl fmt::Display for F<'_> {
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                let w = string_width(self.0);
-                self.1.align_with_max_width(f, self.0, self.2, w, w, 0)
+                let width = string_width(self.0);
+                print_text_formated(f, self.0, width, self.1, self.2, 0)
             }
         }
 
