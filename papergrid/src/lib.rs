@@ -1683,124 +1683,27 @@ impl Theme {
     // we can take only a border of a cell
     // which is a pitty,
     // would be cool if we could take a border of any Entity
-    fn get_border(&self, pos: Position, count_rows: usize, count_cols: usize) -> Border {
-        let is_first_row = pos.0 == 0;
-        let is_last_row = pos.0 + 1 == count_rows;
-        let is_first_col = pos.1 == 0;
-        let is_last_col = pos.1 + 1 == count_cols;
-
-        let top = if is_first_row {
-            &self.borders.top
-        } else {
-            &self.borders.horizontal
-        };
-
-        let bottom = if is_last_row {
-            &self.borders.bottom
-        } else {
-            &self.borders.horizontal
-        };
-
-        let left = if is_first_col {
-            &self.borders.vertical_left
-        } else {
-            &self.borders.vertical_intersection
-        };
-
-        let left_top_corner = if is_first_row && is_first_col {
-            &self.borders.top_left
-        } else if is_first_col {
-            &self.borders.horizontal_left
-        } else {
-            &self.borders.intersection
-        };
-
-        let left_bottom_corner = if is_last_row && is_first_col {
-            &self.borders.bottom_left
-        } else if is_first_col {
-            &self.borders.horizontal_left
-        } else {
-            &self.borders.intersection
-        };
-
-        let right = if is_last_col {
-            &self.borders.vertical_right
-        } else {
-            &self.borders.vertical_intersection
-        };
-
-        let right_top_corner = if is_first_row && is_last_col {
-            &self.borders.top_right
-        } else if is_last_col {
-            &self.borders.horizontal_right
-        } else {
-            &self.borders.intersection
-        };
-
-        let right_bottom_corner = if is_last_row && is_last_col {
-            &self.borders.bottom_right
-        } else if is_last_col {
-            &self.borders.horizontal_right
-        } else {
-            &self.borders.intersection
-        };
-
-        let mut border = Border {
-            top: top.clone(),
-            bottom: bottom.clone(),
-            left: left.clone(),
-            left_top_corner: left_top_corner.clone(),
-            left_bottom_corner: left_bottom_corner.clone(),
-            right: right.clone(),
-            right_top_corner: right_top_corner.clone(),
-            right_bottom_corner: right_bottom_corner.clone(),
-        };
-
-        if let Some(line) = self.override_lines.get(&pos.0) {
-            border.top = line.horizontal.clone().or(border.top);
-
-            if is_first_col {
-                border.left_top_corner = line.left.clone().or(border.left_top_corner);
-            } else {
-                border.left_top_corner = line.intersection.clone().or(border.left_top_corner);
-            }
-
-            if is_last_col {
-                border.right_top_corner = line.right.clone().or(border.right_top_corner);
-            } else {
-                border.right_top_corner = line.intersection.clone().or(border.right_top_corner);
-            }
+    fn get_border(&self, pos: Position, count_rows: usize, count_columns: usize) -> Border {
+        Border {
+            top: self.get_horizontal(pos, count_rows).cloned(),
+            bottom: self.get_horizontal((pos.0 + 1, pos.1), count_rows).cloned(),
+            left: self.get_vertical(pos, count_columns).cloned(),
+            left_top_corner: self
+                .get_intersection(pos, count_rows, count_columns)
+                .cloned(),
+            left_bottom_corner: self
+                .get_intersection((pos.0 + 1, pos.1), count_rows, count_columns)
+                .cloned(),
+            right: self
+                .get_vertical((pos.0, pos.1 + 1), count_columns)
+                .cloned(),
+            right_top_corner: self
+                .get_intersection((pos.0, pos.1 + 1), count_rows, count_columns)
+                .cloned(),
+            right_bottom_corner: self
+                .get_intersection((pos.0 + 1, pos.1 + 1), count_rows, count_columns)
+                .cloned(),
         }
-
-        if let Some(line) = self.override_lines.get(&(pos.0 + 1)) {
-            border.bottom = line.horizontal.clone().or(border.bottom);
-
-            if is_first_col {
-                border.left_bottom_corner = line.left.clone().or(border.left_bottom_corner);
-            } else {
-                border.left_bottom_corner = line.intersection.clone().or(border.left_bottom_corner);
-            }
-
-            if is_last_col {
-                border.right_bottom_corner = line.right.clone().or(border.right_bottom_corner);
-            } else {
-                border.right_bottom_corner =
-                    line.intersection.clone().or(border.right_bottom_corner);
-            }
-        }
-
-        if let Some(b) = self.get_override_border(&pos) {
-            border.top = b.top.or(border.top);
-            border.bottom = b.bottom.or(border.bottom);
-            border.left = b.left.or(border.left);
-            border.left_top_corner = b.left_top_corner.or(border.left_top_corner);
-            border.left_bottom_corner = b.left_bottom_corner.or(border.left_bottom_corner);
-            border.right = b.right.or(border.right);
-            border.right_top_corner = b.right_top_corner.or(border.right_top_corner);
-            border.right_bottom_corner = b.right_bottom_corner.or(border.right_bottom_corner);
-        }
-
-        border
     }
 
     fn get_vertical(&self, pos: Position, count_cols: usize) -> Option<&Symbol> {
@@ -1893,44 +1796,11 @@ impl Theme {
             self.borders.intersection.as_ref()
         }
     }
-
-    fn get_override_border(&self, pos: &Position) -> Option<Border> {
-        let top = self.override_borders.horizontal.get(pos);
-        let bottom = self.override_borders.horizontal.get(&(pos.0 + 1, pos.1));
-        let left = self.override_borders.vertical.get(pos);
-        let right = self.override_borders.vertical.get(&(pos.0, pos.1 + 1));
-        let left_top = self.override_borders.intersection.get(pos);
-        let left_bottom = self.override_borders.intersection.get(&(pos.0 + 1, pos.1));
-        let right_top = self.override_borders.intersection.get(&(pos.0, pos.1 + 1));
-        let right_bottom = self
-            .override_borders
-            .intersection
-            .get(&(pos.0 + 1, pos.1 + 1));
-
-        if top.is_some()
-            || bottom.is_some()
-            || left.is_some()
-            || right.is_some()
-            || left_top.is_some()
-            || left_bottom.is_some()
-            || right_top.is_some()
-            || right_bottom.is_some()
-        {
-            return Some(Border {
-                top: top.cloned(),
-                bottom: bottom.cloned(),
-                left: left.cloned(),
-                left_top_corner: left_top.cloned(),
-                left_bottom_corner: left_bottom.cloned(),
-                right: right.cloned(),
-                right_top_corner: right_top.cloned(),
-                right_bottom_corner: right_bottom.cloned(),
-            });
-        }
-
-        None
-    }
 }
+
+// fn get_vertical(grid: &Grid, col: usize) -> Option<&Symbol> {
+//     grid.theme.get_vertical(pos, count_cols)
+// }
 
 fn print_grid(
     f: &mut fmt::Formatter,
