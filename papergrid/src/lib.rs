@@ -56,7 +56,9 @@ const DEFAULT_BORDER_HORIZONTAL_CHAR: char = ' ';
 const DEFAULT_BORDER_HORIZONTAL_SYMBOL: Symbol = Symbol::from_char(' ');
 const DEFAULT_BORDER_VERTICAL_SYMBOL: Symbol = Symbol::from_char(' ');
 
+const DEFAULT_BORDER_HORIZONTAL_SYMBOL_REF: &Symbol = &DEFAULT_BORDER_VERTICAL_SYMBOL;
 const DEFAULT_BORDER_VERTICAL_SYMBOL_REF: &Symbol = &DEFAULT_BORDER_VERTICAL_SYMBOL;
+const DEFAULT_BORDER_INTERSECTION_SYMBOL_REF: &Symbol = &DEFAULT_BORDER_VERTICAL_SYMBOL;
 
 const DEFAULT_INDENT_FILL_CHAR: char = ' ';
 
@@ -1798,9 +1800,46 @@ impl Theme {
     }
 }
 
-// fn get_vertical(grid: &Grid, col: usize) -> Option<&Symbol> {
-//     grid.theme.get_vertical(pos, count_cols)
-// }
+fn get_vertical(grid: &Grid, pos: Position) -> Option<&Symbol> {
+    let v = grid.theme.get_vertical(pos, grid.count_columns());
+    if v.is_some() {
+        return v;
+    }
+
+    if has_vertical(grid, pos.1) {
+        return Some(DEFAULT_BORDER_VERTICAL_SYMBOL_REF);
+    }
+
+    None
+}
+
+fn get_horizontal(grid: &Grid, pos: Position) -> Option<&Symbol> {
+    let v = grid.theme.get_horizontal(pos, grid.count_rows());
+    if v.is_some() {
+        return v;
+    }
+
+    if has_horizontal(grid, pos.0) {
+        return Some(DEFAULT_BORDER_HORIZONTAL_SYMBOL_REF);
+    }
+
+    None
+}
+
+fn get_intersection(grid: &Grid, pos: Position) -> Option<&Symbol> {
+    let v = grid
+        .theme
+        .get_intersection(pos, grid.count_rows(), grid.count_columns());
+    if v.is_some() {
+        return v;
+    }
+
+    if has_horizontal(grid, pos.0) && has_vertical(grid, pos.1) {
+        return Some(DEFAULT_BORDER_INTERSECTION_SYMBOL_REF);
+    }
+
+    None
+}
 
 fn print_grid(
     f: &mut fmt::Formatter,
@@ -1820,10 +1859,9 @@ fn print_grid(
             print_margin_left(f, &grid.margin)?;
 
             for col in 0..grid.count_columns() {
-                let border = grid.get_border(row, col);
-
                 if is_cell_visible(grid, (row, col)) {
-                    if let Some(c) = border.left {
+                    let left = get_vertical(grid, (row, col));
+                    if let Some(c) = left {
                         c.fmt(f)?;
                     }
 
@@ -1836,7 +1874,8 @@ fn print_grid(
 
                 let is_last_column = col + 1 == grid.count_columns();
                 if is_last_column {
-                    if let Some(c) = border.right {
+                    let right = get_vertical(grid, (row, col + 1));
+                    if let Some(c) = right {
                         c.fmt(f)?;
                     }
                 }
@@ -1924,17 +1963,7 @@ fn print_split_line(
 
     for (col, width) in widths.iter().enumerate() {
         if col == 0 {
-            let left = grid
-                .theme
-                .get_intersection((row, col), grid.count_rows(), grid.count_columns())
-                .or_else(|| {
-                    if has_vertical(grid, col) {
-                        Some(DEFAULT_BORDER_VERTICAL_SYMBOL_REF)
-                    } else {
-                        None
-                    }
-                });
-
+            let left = get_intersection(grid, (row, col));
             if let Some(c) = left {
                 if char_skip == 0 {
                     c.fmt(f)?;
@@ -1951,23 +1980,13 @@ fn print_split_line(
             char_skip -= sub;
         }
 
-        let main = grid.theme.get_horizontal((row, col), grid.count_rows());
+        let main = get_horizontal(grid, (row, col));
         match main {
             Some(c) => repeat_symbol(f, c, width)?,
             None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
         }
 
-        let right = grid
-            .theme
-            .get_intersection((row, col + 1), grid.count_rows(), grid.count_columns())
-            .or_else(|| {
-                if has_vertical(grid, col + 1) {
-                    Some(DEFAULT_BORDER_VERTICAL_SYMBOL_REF)
-                } else {
-                    None
-                }
-            });
-
+        let right = get_intersection(grid, (row, col + 1));
         if let Some(c) = right {
             if char_skip == 0 {
                 c.fmt(f)?;
