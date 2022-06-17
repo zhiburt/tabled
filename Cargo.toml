@@ -31,10 +31,10 @@ color = ["papergrid/color", "ansi-str"]
 [dependencies]
 tabled_derive = { path = "./tabled_derive" }
 papergrid = { path = "./papergrid" }
-ansi-str = { version = "0.1.1", optional = true }
+ansi-str = { git = "https://github.com/zhiburt/ansi-str", branch = "master", optional = true }
 
 [dev-dependencies]
-owo-colors = "1"
+owo-colors = "3.4.0"
 criterion = "0.3.5"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
@@ -52,7 +52,7 @@ name = "color"
 required-features = ["color"]
 
 # experiment thing to check how it will work on docs.rs
-[package.metadata.docs.rs]
-features = ["unstable-doc"]
-rustdoc-args = ["--cfg", "docsrs"]
-cargo-args = ["-Zunstable-options"]
+# [package.metadata.docs.rs]
+# features = ["unstable-doc"]
+# rustdoc-args = ["--cfg", "docsrs"]
+# cargo-args = ["-Zunstable-options"]
