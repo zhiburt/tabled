@@ -458,25 +458,17 @@ impl Grid {
 
     /// This function returns a cells widths.
     pub fn build_cells_widths(&self) -> Vec<Vec<usize>> {
-        let widths = columns_width(self);
-
-        let mut cells_widths = Vec::with_capacity(self.count_rows());
-        for row in 0..self.count_rows() {
-            let mut row_widths = Vec::with_capacity(self.count_columns());
+        let mut widths = vec![vec![0; self.count_columns()]; self.count_rows()];
+        for (row, cols) in widths.iter_mut().enumerate().take(self.count_rows()) {
             for col in 0..self.count_columns() {
-                let width = if is_cell_visible(self, (row, col)) {
-                    grid_cell_width(self, &widths, (row, col))
-                } else {
-                    0
+                if is_cell_visible(self, (row, col)) {
+                    let w = grid_cell_width(self, cols, (row, col));
+                    cols[col] = w;
                 };
-
-                row_widths.push(width);
             }
-
-            cells_widths.push(row_widths);
         }
 
-        cells_widths
+        widths
     }
 
     /// The function returns all cells by lines.
@@ -1148,17 +1140,16 @@ fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     Ok(())
 }
 
-#[allow(clippy::needless_range_loop)]
 fn columns_width(grid: &Grid) -> Vec<usize> {
     let mut widths = vec![0; grid.count_columns()];
-    for col in 0..grid.count_columns() {
+    for (col, column) in widths.iter_mut().enumerate() {
         let max = (0..grid.count_rows())
             .filter(|&row| is_simple_cell(grid, (row, col)))
             .map(|row| get_cell_width(grid, (row, col)))
             .max()
             .unwrap_or(0);
 
-        widths[col] = max;
+        *column = max;
     }
 
     adjust_spans(grid, &mut widths);
