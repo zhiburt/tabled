@@ -2411,28 +2411,7 @@ fn count_lines(s: &str) -> usize {
         return 1;
     }
 
-    let mut count = bytecount::count(s.as_bytes(), b'\n');
-    if count == 0 {
-        return 1;
-    }
-
-    // we need to identify if the last char is '\n' for this matter we need to strip the string
-    #[cfg(feature = "color")]
-    {
-        let ends_with_new_line = ansi_str::AnsiStr::ansi_ends_with(s, "\n");
-        if !ends_with_new_line {
-            count += 1;
-        }
-    }
-    #[cfg(not(feature = "color"))]
-    {
-        let ends_with_new_line = s.ends_with('\n');
-        if !ends_with_new_line {
-            count += 1;
-        }
-    }
-
-    count
+    bytecount::count(s.as_bytes(), b'\n') + 1
 }
 
 fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> (usize, usize) {
@@ -2662,5 +2641,14 @@ mod tests {
         let text = "\u{1b}[37mJapanese “vacancy” button\u{1b}[0m";
         assert_eq!(split_by_line_keeping_words(text, 2), "\u{1b}[37mJa\u{1b}[39m\n\u{1b}[37mpa\u{1b}[39m\n\u{1b}[37mne\u{1b}[39m\n\u{1b}[37mse\u{1b}[39m\n\u{1b}[37m \u{1b}[39m \n\u{1b}[37m“\u{1b}[39m\u{1b}[37mv\u{1b}[39m\n\u{1b}[37mac\u{1b}[39m\n\u{1b}[37man\u{1b}[39m\n\u{1b}[37mcy\u{1b}[39m\n\u{1b}[37m” \u{1b}[39m\n\u{1b}[37mbu\u{1b}[39m\n\u{1b}[37mtt\u{1b}[39m\n\u{1b}[37mon\u{1b}[39m");
         assert_eq!(split_by_line_keeping_words(text, 1), "\u{1b}[37mJ\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mp\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37ms\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37m“\u{1b}[39m\n\u{1b}[37mv\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37my\u{1b}[39m\n\u{1b}[37m”\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37mb\u{1b}[39m\n\u{1b}[37mu\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mo\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m");
+    }
+
+    #[test]
+    fn count_lines_test() {
+        assert_eq!(
+            count_lines("\u{1b}[37mnow is the time for all good men\n\u{1b}[0m"),
+            2
+        );
+        assert_eq!(count_lines("now is the time for all good men\n"), 2);
     }
 }
