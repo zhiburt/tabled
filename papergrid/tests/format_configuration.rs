@@ -907,8 +907,6 @@ fn formatting_test() {
                 .formatting(formatting),
         );
 
-        println!("{}\n{}", i, grid);
-
         assert_eq!(
             grid.to_string(),
             expected,

@@ -204,8 +204,6 @@ fn tab_size_span_test() {
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)));
 
-    println!("{}", table);
-
     assert_eq!(
         table.to_string(),
         static_table!(
@@ -272,8 +270,6 @@ fn trim_colored_string_test() {
         )
         .to_string();
 
-    println!("{}", table);
-
     assert_eq!(
         table,
         static_table!(
@@ -303,8 +299,6 @@ fn trim_colored_string_test() {
                 .with(TrimStrategy::Horizontal),
         )
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(
         table,
