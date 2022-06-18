@@ -278,11 +278,11 @@ mod color {
         assert_eq!(
             table,
             static_table!(
-                " \u{1b}[31mN\u{1b}[0m | \u{1b}[34mcolumn 0\u{1b}[0m | \u{1b}[31mcolumn 1\u{1b}[0m | \u{1b}[31mcolumn 2\u{1b}[0m "
+                " \u{1b}[31mN\u{1b}[39m | \u{1b}[34mcolumn 0\u{1b}[39m | \u{1b}[31mcolumn 1\u{1b}[39m | \u{1b}[31mcolumn 2\u{1b}[39m "
                 "---+----------+----------+----------"
-                " \u{1b}[31m0\u{1b}[0m |   \u{1b}[34m0-0\u{1b}[0m    |   \u{1b}[31m0-1\u{1b}[0m    |   \u{1b}[31m0-2\u{1b}[0m    "
-                " \u{1b}[31m1\u{1b}[0m |   \u{1b}[34m1-0\u{1b}[0m    |   \u{1b}[31m1-1\u{1b}[0m    |   \u{1b}[31m1-2\u{1b}[0m    "
-                " \u{1b}[31m2\u{1b}[0m |   \u{1b}[34m2-0\u{1b}[0m    |   \u{1b}[31m2-1\u{1b}[0m    |   \u{1b}[31m2-2\u{1b}[0m    "
+                " \u{1b}[31m0\u{1b}[39m |   \u{1b}[34m0-0\u{1b}[39m    |   \u{1b}[31m0-1\u{1b}[39m    |   \u{1b}[31m0-2\u{1b}[39m    "
+                " \u{1b}[31m1\u{1b}[39m |   \u{1b}[34m1-0\u{1b}[39m    |   \u{1b}[31m1-1\u{1b}[39m    |   \u{1b}[31m1-2\u{1b}[39m    "
+                " \u{1b}[31m2\u{1b}[39m |   \u{1b}[34m2-0\u{1b}[39m    |   \u{1b}[31m2-1\u{1b}[39m    |   \u{1b}[31m2-2\u{1b}[39m    "
             )
         );
     }
@@ -304,19 +304,19 @@ mod color {
         assert_eq!(
             table,
             static_table!(
-                " \u{1b}[31mN\u{1b}[0m | \u{1b}[34mcolumn 0\u{1b}[0m | \u{1b}[32mcolumn 1\u{1b}[0m | \u{1b}[32mcolumn 2\u{1b}[0m "
+                " \u{1b}[31mN\u{1b}[39m | \u{1b}[34mcolumn 0\u{1b}[39m | \u{1b}[32mcolumn 1\u{1b}[39m | \u{1b}[32mcolumn 2\u{1b}[39m "
                 "---+----------+----------+----------"
-                " \u{1b}[31m0\u{1b}[0m |   \u{1b}[34m0-0\u{1b}[0m    |   \u{1b}[32m0-1\u{1b}[0m    |   \u{1b}[32m0-2\u{1b}[0m    "
-                " \u{1b}[31m1\u{1b}[0m |   \u{1b}[34m1-0\u{1b}[0m    |   \u{1b}[32mE\u{1b}[0m      |   \u{1b}[32m1-2\u{1b}[0m    "
-                "   |          |   \u{1b}[32mnde\u{1b}[0m    |          "
-                "   |          |   \u{1b}[32mavou\u{1b}[0m   |          "
-                "   |          |   \u{1b}[32mros\u{1b}[0m    |          "
-                " \u{1b}[31m2\u{1b}[0m |   \u{1b}[34m2-0\u{1b}[0m    |   \u{1b}[32mRed\u{1b}[0m    | \u{1b}[32mhttps://\u{1b}[0m "
-                "   |          |   \u{1b}[32mHat\u{1b}[0m    | \u{1b}[32mwww\u{1b}[0m      "
-                "   |          |          | \u{1b}[32m.\u{1b}[0m        "
-                "   |          |          | \u{1b}[32mredhat\u{1b}[0m   "
-                "   |          |          | \u{1b}[32m.com\u{1b}[0m     "
-                "   |          |          | \u{1b}[32m/en\u{1b}[0m      "
+                " \u{1b}[31m0\u{1b}[39m |   \u{1b}[34m0-0\u{1b}[39m    |   \u{1b}[32m0-1\u{1b}[39m    |   \u{1b}[32m0-2\u{1b}[39m    "
+                " \u{1b}[31m1\u{1b}[39m |   \u{1b}[34m1-0\u{1b}[39m    |   \u{1b}[32mE\u{1b}[39m      |   \u{1b}[32m1-2\u{1b}[39m    "
+                "   |          |   \u{1b}[32mnde\u{1b}[39m    |          "
+                "   |          |   \u{1b}[32mavou\u{1b}[39m   |          "
+                "   |          |   \u{1b}[32mros\u{1b}[39m    |          "
+                " \u{1b}[31m2\u{1b}[39m |   \u{1b}[34m2-0\u{1b}[39m    |   \u{1b}[32mRed\u{1b}[39m    | \u{1b}[32mhttps://\u{1b}[39m "
+                "   |          |   \u{1b}[32mHat\u{1b}[39m    | \u{1b}[32mwww\u{1b}[39m      "
+                "   |          |          | \u{1b}[32m.\u{1b}[39m        "
+                "   |          |          | \u{1b}[32mredhat\u{1b}[39m   "
+                "   |          |          | \u{1b}[32m.com\u{1b}[39m     "
+                "   |          |          | \u{1b}[32m/en\u{1b}[39m      "
             )
         );
     }

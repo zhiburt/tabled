@@ -190,6 +190,7 @@ fn tab_size_test() {
     );
 }
 
+#[cfg(feature = "color")]
 #[test]
 fn tab_size_span_test() {
     let mut data = create_vector::<3, 3>();
@@ -202,6 +203,8 @@ fn tab_size_span_test() {
         .with(Modify::new(Cell(0, 0)).with(Span::column(3)))
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)));
+
+    println!("{}", table);
 
     assert_eq!(
         table.to_string(),
@@ -216,6 +219,111 @@ fn tab_size_span_test() {
             "                      |     | red    hat   |          "
             "                      |     | .c    om     |          "
             "                      |     | /en          |          "
+        )
+    );
+}
+
+#[cfg(feature = "color")]
+#[test]
+fn trim_colored_string_test() {
+    use owo_colors::OwoColorize;
+
+    let mut data = create_vector::<3, 3>();
+    data[1][0] = "asd\n21213123\n\n   asdasd\n\n".red().to_string();
+    data[2][2] = "https://\nwww\n.\nredhat\n.com\n/en".on_blue().to_string();
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::right())
+                .with(TrimStrategy::None),
+        )
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "         N | column 0 | column 1 | column 2 "
+            "-----------+----------+----------+----------"
+            "         0 |      0-0 |      0-1 |      0-2 "
+            " \u{1b}[31masd\u{1b}[39m       |      1-0 |      1-1 |      1-2 "
+            " \u{1b}[31m21213123\u{1b}[39m  |          |          |          "
+            " \u{1b}[31m\u{1b}[39m          |          |          |          "
+            " \u{1b}[31m   asdasd\u{1b}[39m |          |          |          "
+            " \u{1b}[31m\u{1b}[39m          |          |          |          "
+            " \u{1b}[31m\u{1b}[39m          |          |          |          "
+            "         2 |      2-0 | \u{1b}[44mhttps://\u{1b}[49m |      2-2 "
+            "           |          | \u{1b}[44mwww\u{1b}[49m      |          "
+            "           |          | \u{1b}[44m.\u{1b}[49m        |          "
+            "           |          | \u{1b}[44mredhat\u{1b}[49m   |          "
+            "           |          | \u{1b}[44m.com\u{1b}[49m     |          "
+            "           |          | \u{1b}[44m/en\u{1b}[49m      |          "
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::right())
+                .with(TrimStrategy::Horizontal)
+                .with(AlignmentStrategy::PerLine),
+        )
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        static_table!(
+            "         N | column 0 | column 1 | column 2 "
+            "-----------+----------+----------+----------"
+            "         0 |      0-0 |      0-1 |      0-2 "
+            "       \u{1b}[31masd\u{1b}[39m |      1-0 |      1-1 |      1-2 "
+            "  \u{1b}[31m21213123\u{1b}[39m |          |          |          "
+            "          \u{1b}[31m\u{1b}[39m |          |          |          "
+            "    \u{1b}[31masdasd\u{1b}[39m |          |          |          "
+            "          \u{1b}[31m\u{1b}[39m |          |          |          "
+            "          \u{1b}[31m\u{1b}[39m |          |          |          "
+            "         2 |      2-0 | \u{1b}[44mhttps://\u{1b}[49m |      2-2 "
+            "           |          |      \u{1b}[44mwww\u{1b}[49m |          "
+            "           |          |        \u{1b}[44m.\u{1b}[49m |          "
+            "           |          |   \u{1b}[44mredhat\u{1b}[49m |          "
+            "           |          |     \u{1b}[44m.com\u{1b}[49m |          "
+            "           |          |      \u{1b}[44m/en\u{1b}[49m |          "
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::right())
+                .with(TrimStrategy::Horizontal),
+        )
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        static_table!(
+            "         N | column 0 | column 1 | column 2 "
+            "-----------+----------+----------+----------"
+            "         0 |      0-0 |      0-1 |      0-2 "
+            " \u{1b}[31masd\u{1b}[39m       |      1-0 |      1-1 |      1-2 "
+            " \u{1b}[31m21213123\u{1b}[39m  |          |          |          "
+            "           |          |          |          "
+            " \u{1b}[31m   asdasd\u{1b}[39m |          |          |          "
+            "           |          |          |          "
+            "           |          |          |          "
+            "         2 |      2-0 | \u{1b}[44mhttps://\u{1b}[49m |      2-2 "
+            "           |          | \u{1b}[44mwww\u{1b}[49m      |          "
+            "           |          | \u{1b}[44m.\u{1b}[49m        |          "
+            "           |          | \u{1b}[44mredhat\u{1b}[49m   |          "
+            "           |          | \u{1b}[44m.com\u{1b}[49m     |          "
+            "           |          | \u{1b}[44m/en\u{1b}[49m      |          "
         )
     );
 }

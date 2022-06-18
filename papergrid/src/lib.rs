@@ -22,6 +22,7 @@
 //! ```
 
 use std::{
+    borrow::Cow,
     cmp,
     collections::{BTreeMap, HashMap, HashSet},
     fmt::{self, Display, Write},
@@ -1008,42 +1009,62 @@ fn build_line_cell(
 ) -> fmt::Result {
     let cell_height = count_lines(cell);
     if style.formatting.vertical_trim {
-        let lines = skip_empty_lines(cell, cell_height);
+        let lines = skip_empty_lines(cell, cell_height).map(Cow::Borrowed);
         let cell_height = lines.clone().count();
         build_format_line(
             f,
-            cell,
             line_index,
-            lines,
+            cell,
             style,
             width,
             height,
             cell_height,
+            lines,
         )
     } else {
-        build_format_line(
-            f,
-            cell,
-            line_index,
-            cell.lines(),
-            style,
-            width,
-            height,
-            cell_height,
-        )
+        #[cfg(feature = "color")]
+        {
+            let lines = get_lines(cell);
+            let lines = lines.map(Cow::Owned);
+
+            build_format_line(
+                f,
+                line_index,
+                cell,
+                style,
+                width,
+                height,
+                cell_height,
+                lines,
+            )
+        }
+        #[cfg(not(feature = "color"))]
+        {
+            let lines = get_lines(cell).map(Cow::Borrowed);
+            build_format_line(
+                f,
+                line_index,
+                cell,
+                style,
+                width,
+                height,
+                cell_height,
+                lines,
+            )
+        }
     }
 }
 
 #[allow(clippy::too_many_arguments)]
 fn build_format_line<'a>(
     f: &mut fmt::Formatter<'_>,
-    cell: &str,
     line_index: usize,
-    mut lines: impl Iterator<Item = &'a str>,
+    cell: &str,
     style: &Style,
     width: usize,
     height: usize,
     cell_height: usize,
+    mut lines: impl Iterator<Item = Cow<'a, str>>,
 ) -> Result<(), fmt::Error> {
     let top_indent = top_indent(cell_height, style, height);
     if top_indent > line_index {
@@ -1059,17 +1080,18 @@ fn build_format_line<'a>(
 
     // We consider empty strings to have a height 1,
     // So this is the unwrap_or handles this case.
-    let mut line = lines.nth(cell_line_index).unwrap_or("");
-
-    if style.formatting.horizontal_trim {
+    let line = lines.nth(cell_line_index).unwrap_or_else(|| "".into());
+    let line = if style.formatting.horizontal_trim {
         if style.formatting.allow_lines_alignement {
-            line = line.trim();
+            string_trim(&line)
         } else {
-            line = line.trim_end()
+            string_trim_end(&line)
         }
-    }
+    } else {
+        line
+    };
 
-    let line_width = string_width_tab(line, style.formatting.tab_width);
+    let line_width = string_width_tab(&line, style.formatting.tab_width);
 
     let width = width - style.padding.left.size - style.padding.right.size;
     repeat_char(f, style.padding.left.fill, style.padding.left.size)?;
@@ -1077,7 +1099,7 @@ fn build_format_line<'a>(
     if style.formatting.allow_lines_alignement {
         print_text_formated(
             f,
-            line,
+            &line,
             line_width,
             style.alignment_h,
             width,
@@ -1092,7 +1114,7 @@ fn build_format_line<'a>(
 
         print_text_formated(
             f,
-            line,
+            &line,
             cell_width,
             style.alignment_h,
             width,
@@ -1465,6 +1487,13 @@ fn string_width_tab(text: &str, tab_width: usize) -> usize {
     width + count_tabs * tab_width
 }
 
+fn string_width_multiline_tab_trim_end(text: &str, tab_width: usize) -> usize {
+    text.lines()
+        .map(|line| string_width_tab(line.trim_end(), tab_width))
+        .max()
+        .unwrap_or(0)
+}
+
 fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
     text.lines()
         .map(|line| string_width_tab(line, tab_width))
@@ -1472,11 +1501,36 @@ fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
         .unwrap_or(0)
 }
 
-fn string_width_multiline_tab_trim_end(text: &str, tab_width: usize) -> usize {
+#[cfg(feature = "color")]
+fn string_trim_end(text: &str) -> Cow<str> {
+    let pos = ansi_str::AnsiStr::ansi_strip(text).trim_end().len();
+    let (text, _) = ansi_str::AnsiStr::ansi_split_at(text, pos);
+    text.into()
+}
+
+#[cfg(not(feature = "color"))]
+fn string_trim_end(text: &str) -> Cow<str> {
+    text.trim_end().into()
+}
+
+#[cfg(not(feature = "color"))]
+fn string_trim(text: &str) -> Cow<str> {
+    text.trim().into()
+}
+
+#[cfg(feature = "color")]
+fn string_trim(text: &str) -> Cow<str> {
+    ansi_str::AnsiStr::ansi_trim(text).into()
+}
+
+#[cfg(not(feature = "color"))]
+fn get_lines(text: &str) -> std::str::Lines {
     text.lines()
-        .map(|line| string_width_tab(line.trim_end(), tab_width))
-        .max()
-        .unwrap_or(0)
+}
+
+#[cfg(feature = "color")]
+fn get_lines(text: &str) -> ansi_str::AnsiSplit {
+    ansi_str::AnsiStr::ansi_split(text, "\n")
 }
 
 #[derive(Debug, Clone)]
