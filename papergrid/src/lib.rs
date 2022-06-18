@@ -989,109 +989,77 @@ pub enum AlignmentVertical {
     Bottom,
 }
 
-impl AlignmentVertical {
-    fn top_ident(&self, height: usize, real_height: usize) -> usize {
-        match self {
-            AlignmentVertical::Top => 0,
-            AlignmentVertical::Bottom => height - real_height,
-            AlignmentVertical::Center => (height - real_height) / 2,
-        }
+fn indent_from_top(alignment: AlignmentVertical, height: usize, real_height: usize) -> usize {
+    match alignment {
+        AlignmentVertical::Top => 0,
+        AlignmentVertical::Bottom => height - real_height,
+        AlignmentVertical::Center => (height - real_height) / 2,
     }
 }
 
-fn build_line_cell(
+fn build_cell_line(
     f: &mut fmt::Formatter<'_>,
-    line_index: usize,
+    line: usize,
     cell: &str,
     style: &Style,
     width: usize,
     height: usize,
 ) -> fmt::Result {
-    let cell_height = count_lines(cell);
+    let original_cell_height = count_lines(cell);
+    let mut cell_height = original_cell_height;
+
     if style.formatting.vertical_trim {
         let lines = skip_empty_lines(cell, cell_height).map(Cow::Borrowed);
-        let cell_height = lines.clone().count();
-        build_format_line(
-            f,
-            line_index,
-            cell,
-            style,
-            width,
-            height,
-            cell_height,
-            lines,
-        )
-    } else {
-        #[cfg(feature = "color")]
-        {
-            let lines = get_lines(cell);
-            let lines = lines.map(Cow::Owned);
-
-            build_format_line(
-                f,
-                line_index,
-                cell,
-                style,
-                width,
-                height,
-                cell_height,
-                lines,
-            )
-        }
-        #[cfg(not(feature = "color"))]
-        {
-            let lines = get_lines(cell).map(Cow::Borrowed);
-            build_format_line(
-                f,
-                line_index,
-                cell,
-                style,
-                width,
-                height,
-                cell_height,
-                lines,
-            )
-        }
+        cell_height = lines.count();
     }
-}
 
-#[allow(clippy::too_many_arguments)]
-fn build_format_line<'a>(
-    f: &mut fmt::Formatter<'_>,
-    line_index: usize,
-    cell: &str,
-    style: &Style,
-    width: usize,
-    height: usize,
-    cell_height: usize,
-    mut lines: impl Iterator<Item = Cow<'a, str>>,
-) -> Result<(), fmt::Error> {
-    let top_indent = top_indent(cell_height, style, height);
-    if top_indent > line_index {
+    let skip_lines = top_indent(style, cell_height, height);
+    if skip_lines > line {
         return repeat_char(f, style.padding.top.fill, width);
     }
 
-    let cell_line_index = line_index - top_indent;
-    let cell_has_this_line = cell_height > cell_line_index;
+    let mut index = line - skip_lines;
+    let cell_has_this_line = cell_height > index;
     // happens when other cells have bigger height
     if !cell_has_this_line {
         return repeat_char(f, style.padding.bottom.fill, width);
     }
 
+    if style.formatting.vertical_trim {
+        let empty_lines = count_empty_lines_at_start(cell);
+        index += empty_lines;
+
+        if index > original_cell_height {
+            return repeat_char(f, style.padding.top.fill, width);
+        }
+    }
+
+    let mut lines = get_lines(cell);
+    let line = lines.nth(index).unwrap_or(Cow::Borrowed(""));
+
+    build_format_line(f, line, cell, style, width)
+}
+
+fn build_format_line(
+    f: &mut fmt::Formatter<'_>,
+    text: Cow<str>,
+    cell: &str,
+    style: &Style,
+    width: usize,
+) -> Result<(), fmt::Error> {
     // We consider empty strings to have a height 1,
     // So this is the unwrap_or handles this case.
-    let line = lines.nth(cell_line_index).unwrap_or_else(|| "".into());
-    let line = if style.formatting.horizontal_trim {
+    let text = if style.formatting.horizontal_trim {
         if style.formatting.allow_lines_alignement {
-            string_trim(&line)
+            string_trim(&text)
         } else {
-            string_trim_end(&line)
+            string_trim_end(&text)
         }
     } else {
-        line
+        text
     };
 
-    let line_width = string_width_tab(&line, style.formatting.tab_width);
+    let line_width = string_width_tab(&text, style.formatting.tab_width);
 
     let width = width - style.padding.left.size - style.padding.right.size;
     repeat_char(f, style.padding.left.fill, style.padding.left.size)?;
@@ -1099,7 +1067,7 @@ fn build_format_line<'a>(
     if style.formatting.allow_lines_alignement {
         print_text_formated(
             f,
-            &line,
+            &text,
             line_width,
             style.alignment_h,
             width,
@@ -1114,7 +1082,7 @@ fn build_format_line<'a>(
 
         print_text_formated(
             f,
-            &line,
+            &text,
             cell_width,
             style.alignment_h,
             width,
@@ -1137,9 +1105,13 @@ fn skip_empty_lines(s: &str, length: usize) -> impl Iterator<Item = &'_ str> + C
     s.lines().take(n).skip_while(is_empty)
 }
 
-fn top_indent(cell_height: usize, style: &Style, height: usize) -> usize {
+fn count_empty_lines_at_start(s: &str) -> usize {
+    s.lines().take_while(|s| s.trim().is_empty()).count()
+}
+
+fn top_indent(style: &Style, cell_height: usize, height: usize) -> usize {
     let height = height - style.padding.top.size;
-    let indent = style.alignment_v.top_ident(height, cell_height);
+    let indent = indent_from_top(style.alignment_v, height, cell_height);
 
     indent + style.padding.top.size
 }
@@ -1524,13 +1496,13 @@ fn string_trim(text: &str) -> Cow<str> {
 }
 
 #[cfg(not(feature = "color"))]
-fn get_lines(text: &str) -> std::str::Lines {
-    text.lines()
+fn get_lines(text: &str) -> impl Iterator<Item = Cow<str>> {
+    text.lines().map(Cow::Borrowed)
 }
 
 #[cfg(feature = "color")]
-fn get_lines(text: &str) -> ansi_str::AnsiSplit {
-    ansi_str::AnsiStr::ansi_split(text, "\n")
+fn get_lines(text: &str) -> impl Iterator<Item = Cow<str>> {
+    ansi_str::AnsiStr::ansi_split(text, "\n").map(Cow::Owned)
 }
 
 #[derive(Debug, Clone)]
@@ -1914,7 +1886,7 @@ fn print_grid(
                     let width = grid_cell_width(grid, &widths, (row, col));
                     let text = &grid.cells[row][col];
 
-                    build_line_cell(f, i, text, style, width, height)?;
+                    build_cell_line(f, i, text, style, width, height)?;
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();
@@ -2422,13 +2394,15 @@ mod tests {
 
     #[test]
     fn vertical_aligment_test() {
-        assert_eq!(AlignmentVertical::Bottom.top_ident(1, 1), 0);
-        assert_eq!(AlignmentVertical::Top.top_ident(1, 1), 0);
-        assert_eq!(AlignmentVertical::Center.top_ident(1, 1), 0);
-        assert_eq!(AlignmentVertical::Bottom.top_ident(3, 1), 2);
-        assert_eq!(AlignmentVertical::Top.top_ident(3, 1), 0);
-        assert_eq!(AlignmentVertical::Center.top_ident(3, 1), 1);
-        assert_eq!(AlignmentVertical::Center.top_ident(4, 1), 1);
+        use AlignmentVertical::*;
+
+        assert_eq!(indent_from_top(Bottom, 1, 1), 0);
+        assert_eq!(indent_from_top(Top, 1, 1), 0);
+        assert_eq!(indent_from_top(Center, 1, 1), 0);
+        assert_eq!(indent_from_top(Bottom, 3, 1), 2);
+        assert_eq!(indent_from_top(Top, 3, 1), 0);
+        assert_eq!(indent_from_top(Center, 3, 1), 1);
+        assert_eq!(indent_from_top(Center, 4, 1), 1);
     }
 
     #[cfg(feature = "color")]

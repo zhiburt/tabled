@@ -295,7 +295,6 @@ fn formatting_test() {
              |         line|          |\n\
              +-------------+----------+\n",
         ),
-        //
         // asd
         (
             AlignmentHorizontal::Left,
@@ -910,7 +909,7 @@ fn formatting_test() {
         assert_eq!(
             grid.to_string(),
             expected,
-            "test case #{:?} failed;\nah={:?}\nav={:?}\nf={:?}",
+            "test case #{:?} failed; ah={:?} av={:?}f={:?}",
             i,
             halignemnt,
             valignemnt,

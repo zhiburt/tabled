@@ -190,7 +190,6 @@ fn tab_size_test() {
     );
 }
 
-#[cfg(feature = "color")]
 #[test]
 fn tab_size_span_test() {
     let mut data = create_vector::<3, 3>();
@@ -318,6 +317,31 @@ fn trim_colored_string_test() {
             "           |          | \u{1b}[44mredhat\u{1b}[49m   |          "
             "           |          | \u{1b}[44m.com\u{1b}[49m     |          "
             "           |          | \u{1b}[44m/en\u{1b}[49m      |          "
+        )
+    );
+}
+
+#[test]
+fn test_top_alignment_and_vertical_trim_1() {
+    let table = Table::new(&["   \n\n\n    Hello World"])
+        .with(Style::modern())
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::top())
+                .with(TrimStrategy::Vertical),
+        );
+
+    assert_eq!(
+        table.to_string(),
+        static_table!(
+            "┌─────────────────┐"
+            "│      &str       │"
+            "├─────────────────┤"
+            "│     Hello World │"
+            "│                 │"
+            "│                 │"
+            "│                 │"
+            "└─────────────────┘"
         )
     );
 }
