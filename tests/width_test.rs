@@ -355,7 +355,6 @@ fn max_width_wrapped_keep_words_long_word_color() {
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
-    println!("{}", table);
     assert_eq!(
         ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
