@@ -73,6 +73,12 @@ pub struct Grid {
     theme: Theme,
     override_split_lines: HashMap<usize, String>,
     spans: BTreeMap<(usize, usize), HashSet<usize>>,
+    config: GridConfig,
+}
+
+#[derive(Debug, Clone)]
+struct GridConfig {
+    tab_width: usize,
 }
 
 impl Grid {
@@ -106,6 +112,7 @@ impl Grid {
             theme: Theme::new(),
             override_split_lines: HashMap::new(),
             spans: BTreeMap::new(),
+            config: GridConfig { tab_width: 4 },
         }
     }
 
@@ -200,6 +207,11 @@ impl Grid {
     /// Set the [Borders] value as currect one.
     pub fn set_borders(&mut self, borders: Borders) {
         self.theme.borders = borders;
+    }
+
+    /// Set the [Borders] value as currect one.
+    pub fn set_tab_width(&mut self, width: usize) {
+        self.config.tab_width = width;
     }
 
     /// Returns a current [Borders] structure.
@@ -357,9 +369,8 @@ impl Grid {
 
     /// get_cell_content_styled returns content with style changes
     pub fn get_cell_content_styled(&self, row: usize, column: usize) -> String {
-        let style = self.style(Entity::Cell(row, column));
         let text = self.get_cell_content(row, column);
-        replace_tab(text, style.formatting.tab_width)
+        replace_tab(text, self.config.tab_width)
     }
 
     /// Count_rows returns an amount of rows on the grid
@@ -482,8 +493,7 @@ impl Grid {
         let mut rows = vec![Vec::with_capacity(self.count_columns()); self.count_rows()];
         (0..count_rows).for_each(|row| {
             (0..count_columns).for_each(|col| {
-                let style = self.style(Entity::Cell(row, col));
-                let content = replace_tab(&self.cells[row][col], style.formatting.tab_width);
+                let content = replace_tab(&self.cells[row][col], self.config.tab_width);
 
                 // fixme: I guess it can be done in a different place?
                 let lines: Vec<_> = content.lines().map(|l| l.to_owned()).collect();
@@ -862,7 +872,6 @@ impl Default for Style {
                 horizontal_trim: false,
                 vertical_trim: false,
                 allow_lines_alignement: false,
-                tab_width: 4,
             },
             limits: None,
         }
@@ -875,7 +884,6 @@ pub struct Formatting {
     pub horizontal_trim: bool,
     pub vertical_trim: bool,
     pub allow_lines_alignement: bool,
-    pub tab_width: usize,
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -999,11 +1007,12 @@ fn indent_from_top(alignment: AlignmentVertical, height: usize, real_height: usi
 
 fn build_cell_line(
     f: &mut fmt::Formatter<'_>,
-    line: usize,
     cell: &str,
-    style: &Style,
+    line: usize,
     width: usize,
     height: usize,
+    style: &Style,
+    tab_width: usize,
 ) -> fmt::Result {
     let original_cell_height = count_lines(cell);
     let mut cell_height = original_cell_height;
@@ -1037,20 +1046,40 @@ fn build_cell_line(
     let mut lines = get_lines(cell);
     let line = lines.nth(index).unwrap_or(Cow::Borrowed(""));
 
-    build_format_line(f, line, cell, style, width)
+    let width = width - style.padding.left.size - style.padding.right.size;
+    repeat_char(f, style.padding.left.fill, style.padding.left.size)?;
+
+    build_format_line(
+        f,
+        line,
+        cell,
+        width,
+        style.alignment_h,
+        style.formatting.horizontal_trim,
+        style.formatting.allow_lines_alignement,
+        tab_width,
+    )?;
+
+    repeat_char(f, style.padding.right.fill, style.padding.right.size)?;
+
+    Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_format_line(
     f: &mut fmt::Formatter<'_>,
     text: Cow<str>,
     cell: &str,
-    style: &Style,
     width: usize,
+    alignment: AlignmentHorizontal,
+    horizontal_trim: bool,
+    lines_alignement: bool,
+    tab_width: usize,
 ) -> Result<(), fmt::Error> {
     // We consider empty strings to have a height 1,
     // So this is the unwrap_or handles this case.
-    let text = if style.formatting.horizontal_trim {
-        if style.formatting.allow_lines_alignement {
+    let text = if horizontal_trim {
+        if lines_alignement {
             string_trim(&text)
         } else {
             string_trim_end(&text)
@@ -1059,41 +1088,22 @@ fn build_format_line(
         text
     };
 
-    let line_width = string_width_tab(&text, style.formatting.tab_width);
+    let line_width = string_width_tab(&text, tab_width);
 
-    let width = width - style.padding.left.size - style.padding.right.size;
-    repeat_char(f, style.padding.left.fill, style.padding.left.size)?;
-
-    if style.formatting.allow_lines_alignement {
-        print_text_formated(
-            f,
-            &text,
-            line_width,
-            style.alignment_h,
-            width,
-            style.formatting.tab_width,
-        )?;
+    if lines_alignement {
+        print_text_formated(f, &text, line_width, alignment, width, tab_width)?;
     } else {
-        let cell_width = if style.formatting.horizontal_trim {
-            string_width_multiline_tab_trim_end(cell, style.formatting.tab_width)
+        let cell_width = if horizontal_trim {
+            string_width_multiline_tab_trim_end(cell, tab_width)
         } else {
-            string_width_multiline_tab(cell, style.formatting.tab_width)
+            string_width_multiline_tab(cell, tab_width)
         };
 
-        print_text_formated(
-            f,
-            &text,
-            cell_width,
-            style.alignment_h,
-            width,
-            style.formatting.tab_width,
-        )?;
+        print_text_formated(f, &text, cell_width, alignment, width, tab_width)?;
 
         let rest_width = cell_width - line_width;
         repeat_char(f, ' ', rest_width)?;
     }
-
-    repeat_char(f, style.padding.right.fill, style.padding.right.size)?;
 
     Ok(())
 }
@@ -1188,7 +1198,7 @@ fn adjust_range(
 fn get_cell_width(grid: &Grid, (row, col): Position) -> usize {
     let style = grid.style(Entity::Cell(row, col));
     let text = &grid.cells[row][col];
-    let width = string_width_multiline_tab(text, style.formatting.tab_width);
+    let width = string_width_multiline_tab(text, grid.config.tab_width);
 
     width + style.padding.left.size + style.padding.right.size
 }
@@ -1886,7 +1896,7 @@ fn print_grid(
                     let width = grid_cell_width(grid, &widths, (row, col));
                     let text = &grid.cells[row][col];
 
-                    build_cell_line(f, i, text, style, width, height)?;
+                    build_cell_line(f, text, i, width, height, style, grid.config.tab_width)?;
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();

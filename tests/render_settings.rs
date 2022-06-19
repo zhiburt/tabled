@@ -145,11 +145,9 @@ fn tab_size_test() {
         )
     );
 
-    table = table.with(
-        Modify::new(Segment::all())
-            .with(Alignment::right())
-            .with(TabSize(2)),
-    );
+    table = table
+        .with(Modify::new(Segment::all()).with(Alignment::right()))
+        .with(TabSize(2));
 
     assert_eq!(
         table.to_string(),
@@ -167,11 +165,9 @@ fn tab_size_test() {
         )
     );
 
-    table = table.with(
-        Modify::new(Segment::all())
-            .with(Alignment::right())
-            .with(TabSize(0)),
-    );
+    table = table
+        .with(Modify::new(Segment::all()).with(Alignment::right()))
+        .with(TabSize(0));
 
     assert_eq!(
         table.to_string(),

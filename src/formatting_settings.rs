@@ -8,7 +8,7 @@
 
 use papergrid::{Entity, Grid, Settings};
 
-use crate::CellOption;
+use crate::{CellOption, TableOption};
 
 /// Set a tab size.
 ///
@@ -21,15 +21,9 @@ use crate::CellOption;
 #[derive(Debug, Default, Clone)]
 pub struct TabSize(pub usize);
 
-impl CellOption for TabSize {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut formatting = grid.style(Entity::Cell(row, column)).formatting;
-        formatting.tab_width = self.0;
-
-        grid.set(
-            Entity::Cell(row, column),
-            Settings::new().formatting(formatting),
-        )
+impl TableOption for TabSize {
+    fn change(&mut self, grid: &mut Grid) {
+        grid.set_tab_width(self.0);
     }
 }
 

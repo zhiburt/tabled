@@ -452,6 +452,7 @@ fn create_table_from_grid(grid: Grid) -> Table {
     // it's crusial to set a global setting rather than a setting for an each cell
     // as it will be hard to override that since how Grid::style method works
     table.grid.set(Entity::Global, default_cell_style());
+    table.grid.set_tab_width(4);
 
     table.with(Style::ascii())
 }
@@ -466,7 +467,6 @@ fn default_cell_style() -> Settings {
         )
         .alignment(AlignmentHorizontal::Center)
         .formatting(Formatting {
-            tab_width: 4,
             horizontal_trim: true,
             allow_lines_alignement: false,
             vertical_trim: false,
