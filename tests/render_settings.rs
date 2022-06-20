@@ -204,7 +204,7 @@ fn tab_size_span_test() {
         static_table!(
             "                     N                     | column 2 "
             "----------------------+-----+--------------+----------"
-            "   H        ello    World   |     0-1      |   0-2    "
+            "     H        ello    World |     0-1      |   0-2    "
             " 123    123    asdasd |        1-0         |   1-2    "
             "          2           | 2-0 | htt    ps:// |   2-2    "
             "                      |     | www          |          "
@@ -333,7 +333,7 @@ fn test_top_alignment_and_vertical_trim_1() {
             "┌─────────────────┐"
             "│      &str       │"
             "├─────────────────┤"
-            "│   Hello World   │"
+            "│     Hello World │"
             "│                 │"
             "│                 │"
             "│                 │"

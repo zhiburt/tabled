@@ -494,11 +494,11 @@ impl Grid {
     /// This function returns a cells widths.
     pub fn build_cells_widths(&self) -> Vec<Vec<usize>> {
         let mut widths = vec![vec![0; self.count_columns()]; self.count_rows()];
-        for (row, cols) in widths.iter_mut().enumerate().take(self.count_rows()) {
-            for col in 0..self.count_columns() {
+        for (row, cols) in widths.iter_mut().enumerate() {
+            for (col, width) in cols.iter_mut().enumerate() {
                 if is_cell_visible(self, (row, col)) {
-                    let w = grid_cell_width(self, cols, (row, col));
-                    cols[col] = w;
+                    let w = get_cell_width(self, (row, col));
+                    *width = w;
                 };
             }
         }
@@ -1164,6 +1164,7 @@ fn adjust_spans(grid: &Grid, widths: &mut [usize]) {
         return;
     }
 
+    // todo: the order is matter here; we need to figure out what is correct.
     for (&(start, end), rows) in &grid.spans {
         adjust_range(grid, rows.iter().copied(), widths, start, end);
     }

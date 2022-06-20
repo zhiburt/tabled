@@ -196,10 +196,13 @@ where
         let width = self.width.width(grid);
 
         let content = grid.get_cell_content_styled(row, column);
-        let striped_content = cut_str(&content, width);
-        if string_width(&striped_content) < string_width(&content) {
-            let new_content = format!("{}{}", striped_content, self.suffix.as_ref());
-            grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
+        if width < string_width(&content) {
+            let mut content = cut_str(&content, width);
+            if !self.suffix.as_ref().is_empty() {
+                content.push_str(self.suffix.as_ref());
+            }
+
+            grid.set(Entity::Cell(row, column), Settings::new().text(content))
         }
     }
 }
@@ -386,10 +389,6 @@ where
         let width = self.width.width(grid);
 
         let total_width = grid.total_width();
-        if total_width == width {
-            return;
-        }
-
         if width < total_width {
             truncate_total_width(grid, total_width, width, self.suffix.as_ref(), P::create());
         }
@@ -721,11 +720,11 @@ fn truncate_total_width<P: ColumnPeaker>(
     priority: P,
 ) {
     let points = decrease_total_width_fn(grid, total_width, width, priority);
-
     for ((row, col), width) in points {
         Truncate::new(width)
             .suffix(suffix)
             .change_cell(grid, row, col);
+        // todo: fixme;
         MinWidth::new(width).change_cell(grid, row, col);
     }
 }
@@ -812,28 +811,23 @@ where
     for row in 0..grid.count_rows() {
         let mut col = 0;
         while col < widths.len() {
+            let style = grid.style(Entity::Cell(row, col));
             match grid.get_column_span((row, col)) {
                 Some(span) => {
-                    let width = (col..col + span)
-                        .map(|i| std::cmp::max(widths[i], min_widths[i]))
-                        .sum::<usize>();
+                    let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
+                    let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
+                    let width = std::cmp::max(width, min_width);
+
                     let count_borders = count_borders_in_range(grid, col, col + span);
-
-                    let left_padding = grid.style(Entity::Cell(row, col)).padding.left.size;
-                    let right_padding = grid
-                        .style(Entity::Cell(row, col + span - 1))
-                        .padding
-                        .right
-                        .size;
-                    let width = width.saturating_sub(left_padding + right_padding);
-
                     let width = width + count_borders;
+
+                    let width =
+                        width.saturating_sub(style.padding.left.size + style.padding.right.size);
 
                     points.insert((row, col), width);
                     col += span;
                 }
                 None => {
-                    let style = grid.style(Entity::Cell(row, col));
                     let width = std::cmp::max(widths[col], min_widths[col]);
                     let width =
                         width.saturating_sub(style.padding.left.size + style.padding.right.size);

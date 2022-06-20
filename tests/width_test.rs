@@ -186,7 +186,7 @@ fn max_width_wrapped_keep_words() {
             "| &str              |"
             "|-------------------|"
             "| this is a long    |"
-            "| sentence          |"
+            "|  sentence         |"
         )
     );
     assert!(is_lines_equal(&table, 17 + 2 + 2));
@@ -478,7 +478,7 @@ fn min_width() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|      N       |   column 0   |   column 1   |   column 2   |"
+            "| N            | column 0     | column 1     | column 2     |"
             "|--------------+--------------+--------------+--------------|"
             "|      0       |     0-0      |     0-1      |     0-2      |"
             "|      1       |     1-0      |     1-1      |     1-2      |"
@@ -530,7 +530,7 @@ fn min_width_one_column() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|   N   | column 0 | column 1 | column 2 |"
+            "| N     | column 0 | column 1 | column 2 |"
             "|-------+----------+----------+----------|"
             "|   0   |   0-0    |   0-1    |   0-2    |"
             "|   1   |   1-0    |   1-1    |   1-2    |"
@@ -576,7 +576,7 @@ fn min_with_max_width() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|  N  | col | col | col |"
+            "| N   | col | col | col |"
             "|-----+-----+-----+-----|"
             "|  0  | 0-0 | 0-1 | 0-2 |"
             "|  1  | 1-0 | 1-1 | 1-2 |"
@@ -609,7 +609,7 @@ fn min_with_max_width_truncate_suffix() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|  N  | col... | col... | col... |"
+            "| N   | col... | col... | col... |"
             "|-----+--------+--------+--------|"
             "|  0  |  0-0   |  0-1   |  0-2   |"
             "|  1  |  1-0   |  1-1   |  1-2   |"
@@ -696,11 +696,11 @@ fn total_width_big() {
     assert_eq!(
         table,
         static_table!(
-            "|      N       |      column 0       |      column 1      |      column 2      |"
+            "| N            | column 0            | column 1           | column 2           |"
             "|--------------+---------------------+--------------------+--------------------|"
-            "|      0       |         0-0         |        0-1         |        0-2         |"
-            "|      1       |         1-0         |        1-1         |        1-2         |"
-            "|      2       |         2-0         |        2-1         |        2-2         |"
+            "| 0            | 0-0                 | 0-1                | 0-2                |"
+            "| 1            | 1-0                 | 1-1                | 1-2                |"
+            "| 2            | 2-0                 | 2-1                | 2-2                |"
         )
     );
 
@@ -968,8 +968,8 @@ fn total_width_wrapping() {
         static_table!(
             "|  | co | co | col |"
             "|  | lu | lu | umn |"
-            "|  | mn | mn | 2   |"
-            "|  | 0  | 1  |     |"
+            "|  | mn | mn |  2  |"
+            "|  |  0 |  1 |     |"
             "|--+----+----+-----|"
             "|  | 0- | 0- | 0-2 |"
             "|  | 0  | 1  |     |"
@@ -1138,7 +1138,7 @@ fn max_width_with_span() {
             "  | col | col | col "
             "--+-----+-----+-----"
             "  | a long st | 0-2 "
-            "  | 1-0 |    1-1    "
+            "  | 1-0 | 1-1       "
             "  | 2-0 | 2-1 | 2-2 "
         )
     );
@@ -1538,11 +1538,11 @@ fn min_width_with_span_1() {
     assert_eq!(
         table,
         static_table!(
-            "|                                   0                                    |            1            |"
+            "| 0                                                                      | 1                       |"
             "|------------------------------------------------------------------------+-------------------------|"
-            "|                                                0                                                 |"
-            "|            a long string which will affect min width logic             |                         |"
-            "|                                   2                                    |            3            |"
+            "| 0                                                                                                |"
+            "| a long string which will affect min width logic                        |                         |"
+            "| 2                                                                      | 3                       |"
         )
     );
     assert!(is_lines_equal(&table, 100));
@@ -1565,11 +1565,11 @@ fn min_width_with_span_2() {
     assert_eq!(
         table,
         static_table!(
-            "|                        0                        |                       1                        |"
+            "| 0                                               | 1                                              |"
             "|-------------------------------------------------+------------------------------------------------|"
-            "|                        0                        |                       1                        |"
-            "|                         a long string which will affect min width logic                          |"
-            "|                        2                        |                       3                        |"
+            "| 0                                               | 1                                              |"
+            "| a long string which will affect min width logic                                                  |"
+            "| 2                                               | 3                                              |"
         )
     );
     assert!(is_lines_equal(&table, 100));
@@ -1586,11 +1586,11 @@ fn justify_width_constant_test() {
     assert_eq!(
         table,
         static_table!(
-            "|  N  | col | col | col |"
+            "| N   | col | col | col |"
             "|-----+-----+-----+-----|"
-            "|  0  | 0-0 | 0-1 | 0-2 |"
-            "|  1  | 1-0 | 1-1 | 1-2 |"
-            "|  2  | 2-0 | 2-1 | 2-2 |"
+            "| 0   | 0-0 | 0-1 | 0-2 |"
+            "| 1   | 1-0 | 1-1 | 1-2 |"
+            "| 2   | 2-0 | 2-1 | 2-2 |"
         )
     );
 }
@@ -1609,11 +1609,11 @@ fn justify_width_constant_different_sizes_test() {
     assert_eq!(
         table,
         static_table!(
-            "|  N  | col | col | col |"
+            "| N   | col | col | col |"
             "|-----+-----+-----+-----|"
-            "|  0  | Hel | 0-1 | 0-2 |"
-            "|  1  | 1-0 | 1-1 | 1-2 |"
-            "|  2  | 2-0 | mul | 2-2 |"
+            "| 0   | Hel | 0-1 | 0-2 |"
+            "| 1   | 1-0 | 1-1 | 1-2 |"
+            "| 2   | 2-0 | mul | 2-2 |"
         )
     );
 }
@@ -1670,11 +1670,11 @@ fn justify_width_max_test() {
     assert_eq!(
         table,
         static_table!(
-            "|    N     | column 0 | column 1 | column 2 |"
+            "| N        | column 0 | column 1 | column 2 |"
             "|----------+----------+----------+----------|"
-            "|    0     |   0-0    |   0-1    |   0-2    |"
-            "|    1     |   1-0    |   1-1    |   1-2    |"
-            "|    2     |   2-0    |   2-1    |   2-2    |"
+            "| 0        | 0-0      | 0-1      | 0-2      |"
+            "| 1        | 1-0      | 1-1      | 1-2      |"
+            "| 2        | 2-0      | 2-1      | 2-2      |"
         )
     );
 }
@@ -1723,6 +1723,18 @@ fn max_width_table_when_cell_has_tabs() {
     );
 }
 
+// WE GOT [["", "column 0", "column 1 ", "column 2  "], ["", "0-0     ", "0-1      ", "0-2       "], ["", "Hello World With Big Line; Here w", "1-1", "1-2"], ["", "2-0     ", "Hello World With Big L", "2-2"]]
+// [2, 10, 11, 12]
+// 40 55 40
+
+// BEFORE ADJ [2, 10, 11, 12]
+
+// WE GOT [["", "column 0", "column 1", "column 2"], ["", "0-0", "0-1", "0-2"], ["", "Hello World With Big Line; Here w", "1-1", "1-2"], ["", "2-0", "Hello World With Big L", "2-2"]]
+// [2, 11, 12, 11]
+// 41 55 40
+
+// adj [2, 10, 10, 10]
+
 #[test]
 fn max_width_truncate_with_big_span() {
     let mut data = create_vector::<3, 3>();
@@ -1740,9 +1752,9 @@ fn max_width_truncate_with_big_span() {
         static_table!(
             "|  | column 0  | column 1  | column 2  |"
             "|--+-----------+-----------+-----------|"
-            "|  |    0-0    |    0-1    |    0-2    |"
+            "|  | 0-0       | 0-1       | 0-2       |"
             "|  | Hello World With Big Line; Here w |"
-            "|  |    2-0    |    2-1    |    2-2    |"
+            "|  | 2-0       | 2-1       | 2-2       |"
         )
     );
 
@@ -1754,22 +1766,37 @@ fn max_width_truncate_with_big_span() {
         .with(Style::github_markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
-        .with(Width::truncate(40))
         .to_string();
 
-    // bigest influence
-
-    assert_eq!(string_width_multiline(&table), 40);
     assert_eq!(
         table,
         static_table!(
-            "|  | column 0 | column 1  |  column 2  |"
-            "|--+----------+-----------+------------|"
-            "|  |   0-0    |    0-1    |    0-2     |"
-            "|  | Hello World With Big Line; Here w |"
-            "|  |   2-0    | Hello World With Big L |"
+            "| N |   column 0    |    column 1    |    column 2    |"
+            "|---+---------------+----------------+----------------|"
+            "| 0 |      0-0      |      0-1       |      0-2       |"
+            "| 1 |   Hello World With Big Line; Here we gooooooo   |"
+            "| 2 |      2-0      | Hello World With Big Line; Here |"
         )
     );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
+        .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+        .with(Width::truncate(40))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "|  | column 0 | column 1  | column 2   |"
+            "|--+----------+-----------+------------|"
+            "|  | 0-0      | 0-1       | 0-2        |"
+            "|  | Hello World With Big Line; Here w |"
+            "|  | 2-0      | Hello World With Big L |"
+        )
+    );
+    assert_eq!(string_width_multiline(&table), 40);
 
     let mut data = create_vector::<3, 3>();
     data[1][1] = String::from("Hello World With Big Line; Here we gooooooo");
@@ -1786,11 +1813,11 @@ fn max_width_truncate_with_big_span() {
     assert_eq!(
         table,
         static_table!(
-            "|  |   column 0    |   column 1    | c |"
+            "|  | column 0      | column 1      | c |"
             "|--+---------------+---------------+---|"
-            "|  |      0-0      |      0-1      | 0 |"
+            "|  | 0-0           | 0-1           | 0 |"
             "|  | Hello World With Big Line; He | 1 |"
-            "|  |      2-0      | Hello World With  |"
+            "|  | 2-0           | Hello World With  |"
         )
     );
 }
@@ -1811,9 +1838,9 @@ fn max_width_truncate_priority_max() {
         static_table!(
             "| N | column  | column  | column  |"
             "|---+---------+---------+---------|"
-            "| 0 |   0-0   |   0-1   |   0-2   |"
-            "| 1 | Hello W |   1-1   |   1-2   |"
-            "| 2 |   2-0   |   2-1   |   2-2   |"
+            "| 0 | 0-0     | 0-1     | 0-2     |"
+            "| 1 | Hello W | 1-1     | 1-2     |"
+            "| 2 | 2-0     | 2-1     | 2-2     |"
         )
     );
 
@@ -1914,7 +1941,7 @@ fn max_width_wrap_priority_max() {
             "| N | co | co | co |"
             "|   | lu | lu | lu |"
             "|   | mn | mn | mn |"
-            "|   | 0  | 1  | 2  |"
+            "|   |  0 |  1 |  2 |"
             "|---+----+----+----|"
             "| 0 | 0- | 0- | 0- |"
             "|   | 0  | 1  | 2  |"
@@ -1926,9 +1953,9 @@ fn max_width_wrap_priority_max() {
             "|   | d  |    |    |"
             "|   | Wi |    |    |"
             "|   | th |    |    |"
-            "|   | B  |    |    |"
+            "|   |  B |    |    |"
             "|   | ig |    |    |"
-            "|   | L  |    |    |"
+            "|   |  L |    |    |"
             "|   | in |    |    |"
             "|   | e  |    |    |"
             "| 2 | 2- | 2- | 2- |"
@@ -1985,8 +2012,8 @@ fn max_width_wrap_priority_max_with_span() {
             "|   | o Wo |  |"
             "|   | rld  |  |"
             "|   | With |  |"
-            "|   | Big  |  |"
-            "|   | Lin  |  |"
+            "|   |  Big |  |"
+            "|   |  Lin |  |"
             "|   | e    |  |"
             "| 2 | 2 |  |  |"
             "|   | - |  |  |"
@@ -2009,11 +2036,11 @@ fn max_width_truncate_priority_min() {
     assert_eq!(
         table,
         static_table!(
-            "|  |        column 0        |  |  |"
+            "|  | column 0               |  |  |"
             "|--+------------------------+--+--|"
-            "|  |          0-0           |  |  |"
+            "|  | 0-0                    |  |  |"
             "|  | Hello World With Big L |  |  |"
-            "|  |          2-0           |  |  |"
+            "|  | 2-0                    |  |  |"
         )
     );
 
@@ -2028,9 +2055,9 @@ fn max_width_truncate_priority_min() {
         static_table!(
             "|  | column  |  |  |"
             "|--+---------+--+--|"
-            "|  |   0-0   |  |  |"
+            "|  | 0-0     |  |  |"
             "|  | Hello W |  |  |"
-            "|  |   2-0   |  |  |"
+            "|  | 2-0     |  |  |"
         )
     );
 
@@ -2174,15 +2201,15 @@ fn max_width_wrap_priority_min_with_span() {
             "|  |  | co |  |"
             "|  |  | lu |  |"
             "|  |  | mn |  |"
-            "|  |  | 1  |  |"
+            "|  |  |  1 |  |"
             "|--+--+----+--|"
             "|  |  | 0- |  |"
             "|  |  | 1  |  |"
             "|  | Hello |  |"
-            "|  | Worl  |  |"
+            "|  |  Worl |  |"
             "|  | d Wit |  |"
             "|  | h Big |  |"
-            "|  | Line  |  |"
+            "|  |  Line |  |"
             "|  |  | 2- |  |"
             "|  |  | 1  |  |"
         )
@@ -2199,11 +2226,11 @@ fn min_width_priority_max() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| N | column 0 | column 1 |            column 2            |"
+            "| N | column 0 | column 1 | column 2                       |"
             "|---+----------+----------+--------------------------------|"
-            "| 0 |   0-0    |   0-1    |              0-2               |"
-            "| 1 |   1-0    |   1-1    |              1-2               |"
-            "| 2 |   2-0    |   2-1    |              2-2               |"
+            "| 0 | 0-0      | 0-1      | 0-2                            |"
+            "| 1 | 1-0      | 1-1      | 1-2                            |"
+            "| 2 | 2-0      | 2-1      | 2-2                            |"
         ),
     );
 }
@@ -2218,11 +2245,11 @@ fn min_width_priority_min() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|      N       |   column 0   |   column 1   |  column 2   |"
+            "| N            | column 0     | column 1     | column 2    |"
             "|--------------+--------------+--------------+-------------|"
-            "|      0       |     0-0      |     0-1      |     0-2     |"
-            "|      1       |     1-0      |     1-1      |     1-2     |"
-            "|      2       |     2-0      |     2-1      |     2-2     |"
+            "| 0            | 0-0          | 0-1          | 0-2         |"
+            "| 1            | 1-0          | 1-1          | 1-2         |"
+            "| 2            | 2-0          | 2-1          | 2-2         |"
         ),
     );
 }

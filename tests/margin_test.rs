@@ -112,7 +112,7 @@ fn table_with_margin_and_min_width() {
             "VVVVVVVVVVVVVVVVVVVV"
             ">  | co | co | col <"
             ">--+----+----+-----<"
-            ">  |   0-0   | 0-2 <"
+            ">  | 0-0     | 0-2 <"
             ">  | 1- | 1- | 1-2 <"
             ">  | 2- | 2- | 2-2 <"
             "^^^^^^^^^^^^^^^^^^^^"
@@ -137,11 +137,11 @@ fn table_with_margin_and_max_width() {
         table,
         static_table!(
             "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
-            ">  N   |  column 0   |  column 1   |  column 2   <"
+            "> N    | column 0    | column 1    | column 2    <"
             ">------+-------------+-------------+-------------<"
-            ">  0   |            0-0            |     0-2     <"
-            ">  1   |     1-0     |     1-1     |     1-2     <"
-            ">  2   |     2-0     |     2-1     |     2-2     <"
+            "> 0    | 0-0                       | 0-2         <"
+            "> 1    | 1-0         | 1-1         | 1-2         <"
+            "> 2    | 2-0         | 2-1         | 2-2         <"
             "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
         )
     );

@@ -230,7 +230,7 @@ impl CellOption for AlignmentStrategy {
 ///     "┌─────────────────┐\n\
 ///      │      &str       │\n\
 ///      ├─────────────────┤\n\
-///      │   Hello World   │\n\
+///      │     Hello World │\n\
 ///      │                 │\n\
 ///      │                 │\n\
 ///      │                 │\n\

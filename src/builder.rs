@@ -467,7 +467,7 @@ fn default_cell_style() -> Settings {
         )
         .alignment(AlignmentHorizontal::Center)
         .formatting(Formatting {
-            horizontal_trim: true,
+            horizontal_trim: false,
             allow_lines_alignement: false,
             vertical_trim: false,
         })
