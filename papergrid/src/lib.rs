@@ -15,7 +15,7 @@
 //!         "|0-0|0-1|\n",
 //!         "+---+---+\n",
 //!         "|1-0|1-1|\n",
-//!         "+---+---+\n",
+//!         "+---+---+",
 //!     );
 //!
 //!     assert_eq!(expected, grid.to_string());
@@ -114,7 +114,7 @@ impl Grid {
     ///           |||\n\
     ///           +++\n\
     ///           |||\n\
-    ///           +++\n"
+    ///           +++"
     ///     )
     /// ```
     pub fn new(rows: usize, columns: usize) -> Self {
@@ -166,7 +166,7 @@ impl Grid {
     ///           |row 1|row 1|\n\
     ///           +-----+-----+\n\
     ///           |row 2|row 2|\n\
-    ///           +-----+-----+\n"
+    ///           +-----+-----+"
     ///     )
     /// ```
     pub fn set(&mut self, entity: Entity, settings: Settings) {
@@ -1856,15 +1856,27 @@ fn print_grid(
     mut heights: impl Iterator<Item = usize>,
 ) -> fmt::Result {
     let table_width = row_width_grid(grid, &widths);
-    print_margin_top(f, &grid.margin, table_width)?;
+
+    if grid.margin.top.size > 0 {
+        let width = table_width + grid.margin.left.size + grid.margin.right.size;
+        repeat_lines(f, grid.margin.top.size, width, grid.margin.top.fill)?;
+        f.write_char('\n')?;
+    }
 
     for row in 0..grid.count_rows() {
-        print_split_line(f, grid, &widths, table_width, row)?;
+        if has_horizontal(grid, row) {
+            repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
+            print_split_line(f, grid, &widths, table_width, row)?;
+            repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
+            f.write_char('\n')?;
+        }
 
         let height = heights.next().unwrap();
 
+        let is_last_row = row + 1 == grid.count_rows();
+
         for i in 0..height {
-            print_margin_left(f, &grid.margin)?;
+            repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
 
             for col in 0..grid.count_columns() {
                 if is_cell_visible(grid, (row, col)) {
@@ -1889,18 +1901,27 @@ fn print_grid(
                 }
             }
 
-            print_margin_right(f, &grid.margin)?;
+            repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
 
-            f.write_char('\n')?;
-        }
-
-        let is_last_row = row + 1 == grid.count_rows();
-        if is_last_row {
-            print_split_line(f, grid, &widths, table_width, row + 1)?;
+            let is_last_line = i + 1 == height;
+            if !(is_last_line && is_last_row) {
+                f.write_char('\n')?;
+            }
         }
     }
 
-    print_margin_bottom(f, &grid.margin, table_width)?;
+    if has_horizontal(grid, grid.count_rows()) {
+        f.write_char('\n')?;
+        repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
+        print_split_line(f, grid, &widths, table_width, grid.count_rows())?;
+        repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
+    }
+
+    if grid.margin.bottom.size > 0 {
+        f.write_char('\n')?;
+        let width = table_width + grid.margin.left.size + grid.margin.right.size;
+        repeat_lines(f, grid.margin.bottom.size, width, grid.margin.bottom.fill)?;
+    }
 
     Ok(())
 }
@@ -1917,32 +1938,16 @@ fn grid_cell_width(grid: &Grid, widths: &[usize], pos: Position) -> usize {
     }
 }
 
-fn print_margin_top(f: &mut fmt::Formatter, margin: &Margin, table_width: usize) -> fmt::Result {
-    let size = table_width + margin.left.size + margin.right.size;
-    for _ in 0..margin.top.size {
-        repeat_char(f, margin.top.fill, size)?;
-        f.write_char('\n')?
+fn repeat_lines(f: &mut fmt::Formatter, size: usize, width: usize, fill: char) -> fmt::Result {
+    for i in 0..size {
+        repeat_char(f, fill, width)?;
+
+        if i + 1 != size {
+            f.write_char('\n')?
+        }
     }
 
     Ok(())
-}
-
-fn print_margin_bottom(f: &mut fmt::Formatter, margin: &Margin, table_width: usize) -> fmt::Result {
-    let size = table_width + margin.left.size + margin.right.size;
-    for _ in 0..margin.bottom.size {
-        repeat_char(f, margin.bottom.fill, size)?;
-        f.write_char('\n')?
-    }
-
-    Ok(())
-}
-
-fn print_margin_left(f: &mut fmt::Formatter, margin: &Margin) -> fmt::Result {
-    repeat_char(f, margin.left.fill, margin.left.size)
-}
-
-fn print_margin_right(f: &mut fmt::Formatter, margin: &Margin) -> fmt::Result {
-    repeat_char(f, margin.right.fill, margin.right.size)
 }
 
 fn print_split_line(
@@ -1952,12 +1957,6 @@ fn print_split_line(
     max_width: usize,
     row: usize,
 ) -> fmt::Result {
-    if !has_horizontal(grid, row) {
-        return Ok(());
-    }
-
-    print_margin_left(f, &grid.margin)?;
-
     let mut char_skip = 0;
     let override_text = grid.override_split_lines.get(&row);
     if let Some(text) = override_text {
@@ -2003,10 +2002,6 @@ fn print_split_line(
             }
         }
     }
-
-    print_margin_right(f, &grid.margin)?;
-
-    f.write_char('\n')?;
 
     Ok(())
 }

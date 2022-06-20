@@ -42,7 +42,7 @@ use crate::{
 ///         "|   0   |  ELF  | Extensible Linking Format | true  |\n",
 ///         "|   1   | DWARF |                           | true  |\n",
 ///         "|   2   |  PE   |    Portable Executable    | false |\n",
-///         " vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv \n",
+///         " vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv ",
 ///     ),
 /// );
 /// ```
@@ -78,7 +78,7 @@ use crate::{
 ///         "*********                                           *\n",
 ///         "*   1   | DWARF |                           | true  *\n",
 ///         "*   2   |  PE   |    Portable Executable    | false *\n",
-///         "*****************************************************\n",
+///         "*****************************************************",
 ///     ),
 /// );
 /// ```

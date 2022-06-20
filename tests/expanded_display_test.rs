@@ -75,6 +75,8 @@ fn display_colored() {
 
     let table = ExpandedDisplay::new(&data).to_string();
 
+    println!("{}", table);
+
     assert_eq!(
         table,
         util::static_table!(
@@ -94,6 +96,8 @@ fn display_colored() {
             "column 1 | \u{1b}[4m\u{1b}[34mhttps://endeavouros.com/\u{1b}[39m\u{1b}[0m"
             "column 2 | 2-2"
         )
+        .to_owned()
+            + "\n"
     );
 }
 

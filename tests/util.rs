@@ -71,6 +71,7 @@ macro_rules! static_table {
         concat!(
             $($line, "\n",)*
         )
+        .trim_end_matches('\n')
     };
 }
 

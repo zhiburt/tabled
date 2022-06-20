@@ -92,8 +92,7 @@ impl TableOption for TabSize {
 /// │         { "id": "5004", "type": "Maple" }                     │
 /// │     ]                                                         │
 /// │ }                                                             │
-/// └───────────────────────────────────────────────────────────────┘
-/// "#);
+/// └───────────────────────────────────────────────────────────────┘"#);
 ///
 /// let table = table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
 ///
@@ -122,8 +121,7 @@ impl TableOption for TabSize {
 /// │                             { "id": "5004", "type": "Maple" } │
 /// │                                                             ] │
 /// │                                                             } │
-/// └───────────────────────────────────────────────────────────────┘
-/// "#);
+/// └───────────────────────────────────────────────────────────────┘"#);
 /// ```
 #[derive(Debug, Clone)]
 pub enum AlignmentStrategy {
@@ -174,7 +172,7 @@ impl CellOption for AlignmentStrategy {
 ///      │ &str           │\n\
 ///      ├────────────────┤\n\
 ///      │    Hello World │\n\
-///      └────────────────┘\n"
+///      └────────────────┘"
 /// );
 ///
 /// // To trim lines you would need also set [AlignmentStrategy]
@@ -186,7 +184,7 @@ impl CellOption for AlignmentStrategy {
 ///      │ &str           │\n\
 ///      ├────────────────┤\n\
 ///      │ Hello World    │\n\
-///      └────────────────┘\n"
+///      └────────────────┘"
 /// );
 ///
 /// let table = Table::new(&["   \n\n\n    Hello World"])
@@ -206,7 +204,7 @@ impl CellOption for AlignmentStrategy {
 ///      │                 │\n\
 ///      │                 │\n\
 ///      │                 │\n\
-///      └─────────────────┘\n"
+///      └─────────────────┘"
 /// );
 /// ```
 ///

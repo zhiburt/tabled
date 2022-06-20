@@ -16,7 +16,7 @@ fn grid_2x2_custom_frame_test() {
          |0-0|0-1|\n\
          #***#***#\n\
          |1-0|1-1|\n\
-         #***#***#\n"
+         #***#***#",
     )
 }
 
@@ -34,7 +34,7 @@ fn grid_2x2_custom_column_test() {
          |0-0|0-1|\n\
          +---#***#\n\
          |1-0|1-1|\n\
-         +---#***#\n",
+         +---#***#",
     );
 
     grid.clear_theme();
@@ -49,7 +49,7 @@ fn grid_2x2_custom_column_test() {
          |0-0|0-1|\n\
          #***#---+\n\
          |1-0|1-1|\n\
-         #***#---+\n",
+         #***#---+",
     )
 }
 
@@ -69,7 +69,7 @@ fn grid_2x2_custom_row_test() {
             "|0-0|0-1|\n",
             "#***#***#\n",
             "|1-0|1-1|\n",
-            "+---+---+\n",
+            "+---+---+",
         )
     );
 
@@ -86,7 +86,7 @@ fn grid_2x2_custom_row_test() {
          |0-0|0-1|\n\
          #***#***#\n\
          |1-0|1-1|\n\
-         #***#***#\n"
+         #***#***#",
     );
 }
 
@@ -105,7 +105,7 @@ fn grid_2x2_change_cell_border_test() {
          |0-0@0-1#\n\
          +---%^^^&\n\
          |1-0|1-1|\n\
-         +---+---+\n"
+         +---+---+",
     )
 }
 
@@ -130,7 +130,7 @@ fn grid_2x2_alignment_test() {
          |asd    |asd    |\n\
          +-------+-------+\n\
          |1-0    |    1-1|\n\
-         +-------+-------+\n"
+         +-------+-------+",
     );
 
     grid.set(Entity::Global, Settings::new().text("asd    "));
@@ -141,7 +141,7 @@ fn grid_2x2_alignment_test() {
          |asd    |asd    |\n\
          +-------+-------+\n\
          |asd    |asd    |\n\
-         +-------+-------+\n"
+         +-------+-------+",
     );
 }
 
@@ -179,7 +179,7 @@ fn grid_2x2_indent_test() {
          |1-0|     |\n\
          |   | 1-1 |\n\
          |   |     |\n\
-         +---+-----+\n"
+         +---+-----+",
     )
 }
 
@@ -196,7 +196,7 @@ fn grid_2x2_vertical_resize_test() {
          |0-0|0-1     |\n\
          +---+--------+\n\
          |1-0|asd     |\n\
-         +---+--------+\n"
+         +---+--------+",
     )
 }
 
@@ -211,7 +211,7 @@ fn grid_2x2_without_frame_test() {
     assert_eq!(
         grid.to_string(),
         "0-0 0-1\n\
-         1-0 1-1\n"
+         1-0 1-1",
     );
 
     grid.set_borders(Borders {
@@ -223,7 +223,7 @@ fn grid_2x2_without_frame_test() {
 
     assert_eq!(
         grid.to_string(),
-        concat!("0-0 0-1\n", "       \n", "1-0 1-1\n",),
+        concat!("0-0 0-1\n", "       \n", "1-0 1-1"),
     );
 }
 
@@ -287,7 +287,7 @@ fn grid_2x2_custom_border_test() {
          $0-0@0-1%\n\
          +---+---+\n\
          #1-0^1-1!\n\
-         \u{0020}*** *** \n"
+         \u{0020}*** *** ",
     )
 }
 
@@ -329,7 +329,7 @@ fn grid_2x2_ansi_border_test() {
                 "\u{1b}[37;41m~\u{1b}[0m0-0\u{1b}[37;41m~\u{1b}[0m0-1\u{1b}[32;41m!\u{1b}[0m\n",
                 "\u{1b}[35m@\u{1b}[39m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[35m@\u{1b}[39m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[32;41m*\u{1b}[0m\u{1b}[44m$\u{1b}[49m\n",
                 "\u{1b}[37;41m~\u{1b}[0m1-0\u{1b}[37;41m~\u{1b}[0m1-1\u{1b}[32;41m!\u{1b}[0m\n",
-                "\u{1b}[33m%\u{1b}[39m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[33m%\u{1b}[39m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[43m^\u{1b}[49m\n",
+                "\u{1b}[33m%\u{1b}[39m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[33m%\u{1b}[39m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[34;42m#\u{1b}[0m\u{1b}[43m^\u{1b}[49m",
             )
         )
 }
@@ -364,7 +364,7 @@ fn when_border_is_not_complet_default_char_is_used_test() {
 
     assert_eq!(
         grid.to_string(),
-        concat!("0-0 0-1\n", "    ***\n", "1-0 1-1\n",),
+        concat!("0-0 0-1\n", "    ***\n", "1-0 1-1"),
     );
 }
 
@@ -380,6 +380,6 @@ fn when_1_vertical_is_set_second_must_use_default_test() {
     assert_eq!(
         grid.to_string(),
         "0-0 0-1\n\
-         1-0*1-1\n"
+         1-0*1-1",
     );
 }

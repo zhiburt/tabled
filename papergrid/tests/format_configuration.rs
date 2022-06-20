@@ -25,7 +25,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
              +-------------+----------+\n\
@@ -34,7 +33,7 @@ fn formatting_test() {
              |with         |          |\n\
              | new         |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -56,7 +55,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
              +-------------+----------+\n\
@@ -65,7 +63,7 @@ fn formatting_test() {
              |with         |          |\n\
              |new          |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -87,7 +85,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
              +-------------+----------+\n\
@@ -96,7 +93,7 @@ fn formatting_test() {
              |with         |          |\n\
              |new          |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -119,7 +116,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
              +-------------+----------+\n\
@@ -128,7 +124,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -150,7 +146,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
              +-------------+----------+\n\
@@ -159,7 +154,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -181,7 +176,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
              +-------------+----------+\n\
@@ -190,7 +184,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -213,7 +207,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
              +-------------+----------+\n\
@@ -222,7 +215,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -244,7 +237,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
              +-------------+----------+\n\
@@ -253,7 +245,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -275,7 +267,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
              +-------------+----------+\n\
@@ -284,7 +275,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         // asd
         (
@@ -307,7 +298,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
              +-------------+----------+\n\
@@ -316,7 +306,7 @@ fn formatting_test() {
              |with         |...       |\n\
              | new         |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -338,7 +328,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
              +-------------+----------+\n\
@@ -347,7 +336,7 @@ fn formatting_test() {
              |with         |...       |\n\
              |new          |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -360,11 +349,10 @@ fn formatting_test() {
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              |             |A         |\n\
              |             |string    |\n\
-             |A long string|with      |\n\
-             |             |new       |\n\
+             |             |with      |\n\
+             |A long string|new       |\n\
              |             |line      |\n\
              |             |          |\n\
              |             |          |\n\
@@ -378,7 +366,7 @@ fn formatting_test() {
              |with         |...       |\n\
              |new          |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -401,7 +389,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
              +-------------+----------+\n\
@@ -410,7 +397,7 @@ fn formatting_test() {
              |    with     |   ...    |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -432,7 +419,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
              +-------------+----------+\n\
@@ -441,7 +427,7 @@ fn formatting_test() {
              |    with     |   ...    |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -454,11 +440,10 @@ fn formatting_test() {
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              |             |    A     |\n\
              |             |  string  |\n\
-             |A long string|   with   |\n\
-             |             |   new    |\n\
+             |             |   with   |\n\
+             |A long string|   new    |\n\
              |             |   line   |\n\
              |             |          |\n\
              |             |          |\n\
@@ -472,7 +457,7 @@ fn formatting_test() {
              |    with     |   ...    |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -495,7 +480,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
              +-------------+----------+\n\
@@ -504,7 +488,7 @@ fn formatting_test() {
              |         with|       ...|\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -526,7 +510,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
              +-------------+----------+\n\
@@ -535,7 +518,7 @@ fn formatting_test() {
              |         with|       ...|\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -548,11 +531,10 @@ fn formatting_test() {
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              |             |         A|\n\
              |             |    string|\n\
-             |A long string|      with|\n\
-             |             |       new|\n\
+             |             |      with|\n\
+             |A long string|       new|\n\
              |             |      line|\n\
              |             |          |\n\
              |             |          |\n\
@@ -566,7 +548,7 @@ fn formatting_test() {
              |         with|       ...|\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         // asd
@@ -589,7 +571,6 @@ fn formatting_test() {
              |             |line      |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
@@ -599,7 +580,7 @@ fn formatting_test() {
              |with         |          |\n\
              | new         |          |\n\
              |line         |...       |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -620,7 +601,6 @@ fn formatting_test() {
              |             |line      |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
@@ -630,7 +610,7 @@ fn formatting_test() {
              |with         |          |\n\
              |new          |          |\n\
              |line         |...       |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -641,7 +621,6 @@ fn formatting_test() {
                 vertical_trim: true,
             },
             "+-------------+----------+\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
@@ -661,7 +640,7 @@ fn formatting_test() {
              |with         |          |\n\
              |new          |          |\n\
              |line         |...       |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -683,7 +662,6 @@ fn formatting_test() {
              |             |   line   |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
@@ -693,7 +671,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |   ...    |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -714,7 +692,6 @@ fn formatting_test() {
              |             |   line   |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
@@ -724,7 +701,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |   ...    |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -735,7 +712,6 @@ fn formatting_test() {
                 vertical_trim: true,
             },
             "+-------------+----------+\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
@@ -755,7 +731,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |   ...    |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -777,7 +753,6 @@ fn formatting_test() {
              |             |      line|\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
@@ -787,7 +762,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|       ...|\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -808,7 +783,6 @@ fn formatting_test() {
              |             |      line|\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
@@ -818,7 +792,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|       ...|\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -829,7 +803,6 @@ fn formatting_test() {
                 vertical_trim: true,
             },
             "+-------------+----------+\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
@@ -849,7 +822,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|       ...|\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
     ];
 
@@ -857,7 +830,7 @@ fn formatting_test() {
     grid.set(Entity::Cell(0, 0), Settings::new().text("A long string"));
     grid.set(
         Entity::Cell(0, 1),
-        Settings::new().text("\n\n\nA\n    string\nwith\n new\nline\n\n\n\n"),
+        Settings::new().text("\n\n\nA\n    string\nwith\n new\nline\n\n\n"),
     );
     grid.set(
         Entity::Cell(2, 0),
@@ -866,28 +839,20 @@ fn formatting_test() {
     grid.set(Entity::Cell(2, 1), Settings::new().text("..."));
 
     for (i, test) in tests.iter().enumerate() {
-        let halignemnt = test.0;
-        let valignemnt = test.1;
-        let formatting = test.2;
         let expected = test.3;
 
         grid.set(
             Entity::Global,
             Settings::new()
-                .alignment(halignemnt)
-                .vertical_alignment(valignemnt)
-                .formatting(formatting),
+                .alignment(test.0)
+                .vertical_alignment(test.1)
+                .formatting(test.2),
         );
 
-        assert_eq!(
-            grid.to_string(),
-            expected,
-            "test case #{:?} failed; ah={:?} av={:?}f={:?}",
-            i,
-            halignemnt,
-            valignemnt,
-            formatting
-        );
+        println!("{}", grid);
+        println!("{}", expected);
+
+        assert_eq!(grid.to_string(), expected, "test case #{:?} failed", i,);
     }
 }
 
@@ -974,7 +939,6 @@ fn formatting_1x1_test() {
             r#"+--------------------------------------------------+"#,
         ]
         .join("\n")
-            + "\n"
     );
 
     grid.set(
@@ -1006,7 +970,6 @@ fn formatting_1x1_test() {
             r#"+--------------------------------------------------+"#,
         ]
         .join("\n")
-            + "\n"
     );
 
     grid.set(
@@ -1038,7 +1001,6 @@ fn formatting_1x1_test() {
             r#"+--------------------------------------------------+"#,
         ]
         .join("\n")
-            + "\n"
     );
 
     grid.set(
@@ -1070,7 +1032,6 @@ fn formatting_1x1_test() {
             r#"+--------------------------------------------------+"#,
         ]
         .join("\n")
-            + "\n"
     );
 }
 
@@ -1099,7 +1060,7 @@ fn tab_size_test() {
          |                 [4, 5, 6],    |\n\
          |         ]                     |\n\
          |}                              |\n\
-         +-------------------------------+\n",
+         +-------------------------------+",
     );
 
     grid.set_tab_width(1);
@@ -1115,7 +1076,7 @@ fn tab_size_test() {
          |     [4, 5, 6],          |\n\
          |   ]                     |\n\
          |}                        |\n\
-         +-------------------------+\n"
+         +-------------------------+"
     );
 
     grid.set_tab_width(0);
@@ -1131,6 +1092,6 @@ fn tab_size_test() {
          | [4, 5, 6],            |\n\
          | ]                     |\n\
          |}                      |\n\
-         +-----------------------+\n"
+         +-----------------------+"
     );
 }

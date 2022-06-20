@@ -11,7 +11,7 @@ fn set_global_text_2x2() {
          |asd|asd|\n\
          +---+---+\n\
          |asd|asd|\n\
-         +---+---+\n"
+         +---+---+",
     )
 }
 
@@ -29,7 +29,7 @@ fn global_styles_overrides_everything_2x2() {
          |xxxxx|xx        |\n\
          +-----+----------+\n\
          |y    |yyyyyyyyyy|\n\
-         +-----+----------+\n"
+         +-----+----------+",
     );
 
     grid.set(
@@ -43,6 +43,6 @@ fn global_styles_overrides_everything_2x2() {
          |xxxxx|    xx    |\n\
          +-----+----------+\n\
          |  y  |yyyyyyyyyy|\n\
-         +-----+----------+\n"
+         +-----+----------+",
     );
 }
