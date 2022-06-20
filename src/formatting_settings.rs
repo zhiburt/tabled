@@ -35,7 +35,7 @@ impl TableOption for TabSize {
 /// ```
 /// use tabled::{
 ///     Table, Style, Modify, Alignment, object::Segment,
-///     formatting_settings::AlignmentStrategy
+///     formatting_settings::{AlignmentStrategy, TrimStrategy}
 /// };
 ///
 /// // sample_from: https://opensource.adobe.com/Spry/samples/data_region/JSONDataSetSample.html
@@ -61,11 +61,10 @@ impl TableOption for TabSize {
 ///
 /// let table = Table::new(&[json])
 ///     .with(Style::modern())
-///     .with(
-///         Modify::new(Segment::all())
-///             .with(Alignment::right())
-///             .with(AlignmentStrategy::PerCell)
-///     );
+///     .with(Modify::new(Segment::all()).with(Alignment::right()))
+///     .with(Modify::new(Segment::all()).with(TrimStrategy::None));
+///
+/// println!("{}", table);
 ///
 /// assert_eq!(
 ///     format!("\n{}", table),
@@ -92,6 +91,37 @@ impl TableOption for TabSize {
 /// │         { "id": "5004", "type": "Maple" }                     │
 /// │     ]                                                         │
 /// │ }                                                             │
+/// └───────────────────────────────────────────────────────────────┘"#);
+///
+/// let table = table
+///     .with(Modify::new(Segment::all()).with(AlignmentStrategy::PerCell))
+///     .with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
+///
+/// assert_eq!(
+///     format!("\n{}", table),
+///     r#"
+/// ┌───────────────────────────────────────────────────────────────┐
+/// │                                                          &str │
+/// ├───────────────────────────────────────────────────────────────┤
+/// │                                                               │
+/// │         {                                                     │
+/// │         "id": "0001",                                         │
+/// │         "type": "donut",                                      │
+/// │         "name": "Cake",                                       │
+/// │         "ppu": 0.55,                                          │
+/// │         "batters": {                                          │
+/// │         "batter": [                                           │
+/// │         { "id": "1001", "type": "Regular" },                  │
+/// │         { "id": "1002", "type": "Chocolate" },                │
+/// │         ]                                                     │
+/// │         },                                                    │
+/// │         "topping": [                                          │
+/// │         { "id": "5001", "type": "None" },                     │
+/// │         { "id": "5006", "type": "Chocolate with Sprinkles" }, │
+/// │         { "id": "5003", "type": "Chocolate" },                │
+/// │         { "id": "5004", "type": "Maple" }                     │
+/// │         ]                                                     │
+/// │         }                                                     │
 /// └───────────────────────────────────────────────────────────────┘"#);
 ///
 /// let table = table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
@@ -171,7 +201,7 @@ impl CellOption for AlignmentStrategy {
 ///     "┌────────────────┐\n\
 ///      │ &str           │\n\
 ///      ├────────────────┤\n\
-///      │    Hello World │\n\
+///      │ Hello World    │\n\
 ///      └────────────────┘"
 /// );
 ///
@@ -200,7 +230,7 @@ impl CellOption for AlignmentStrategy {
 ///     "┌─────────────────┐\n\
 ///      │      &str       │\n\
 ///      ├─────────────────┤\n\
-///      │     Hello World │\n\
+///      │   Hello World   │\n\
 ///      │                 │\n\
 ///      │                 │\n\
 ///      │                 │\n\

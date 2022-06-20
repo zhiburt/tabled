@@ -75,8 +75,6 @@ fn display_colored() {
 
     let table = ExpandedDisplay::new(&data).to_string();
 
-    println!("{}", table);
-
     assert_eq!(
         table,
         util::static_table!(

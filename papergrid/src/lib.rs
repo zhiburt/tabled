@@ -1053,38 +1053,27 @@ fn build_format_line(
     cell: &str,
     width: usize,
     alignment: AlignmentHorizontal,
-    horizontal_trim: bool,
-    lines_alignement: bool,
+    line_trim: bool,
+    line_alignement: bool,
     tab_width: usize,
 ) -> Result<(), fmt::Error> {
-    // We consider empty strings to have a height 1,
-    // So this is the unwrap_or handles this case.
-    let text = if horizontal_trim {
-        if lines_alignement {
-            string_trim(&text)
-        } else {
-            string_trim_end(&text)
-        }
-    } else {
-        text
-    };
-
+    let text = if line_trim { string_trim(&text) } else { text };
     let line_width = string_width_tab(&text, tab_width);
 
-    if lines_alignement {
-        print_text_formated(f, &text, line_width, alignment, width, tab_width)?;
-    } else {
-        let cell_width = if horizontal_trim {
-            string_width_multiline_tab_trim_end(cell, tab_width)
-        } else {
-            string_width_multiline_tab(cell, tab_width)
-        };
-
-        print_text_formated(f, &text, cell_width, alignment, width, tab_width)?;
-
-        let rest_width = cell_width - line_width;
-        repeat_char(f, ' ', rest_width)?;
+    if line_alignement {
+        return print_text_formated(f, &text, line_width, alignment, width, tab_width);
     }
+
+    let cell_width = if line_trim {
+        string_width_multiline_tab_trim(cell, tab_width)
+    } else {
+        string_width_multiline_tab(cell, tab_width)
+    };
+
+    print_text_formated(f, &text, cell_width, alignment, width, tab_width)?;
+
+    let rest_width = cell_width - line_width;
+    repeat_char(f, ' ', rest_width)?;
 
     Ok(())
 }
@@ -1124,6 +1113,34 @@ fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     }
     Ok(())
 }
+
+// struct CellContent<'a> {
+//     lines: Vec<Cow<'a, str>>,
+//     lines_width: Vec<usize>,
+//     width: usize,
+// }
+
+// fn cells_lines(grid: &Grid) -> Vec<Vec<CellContent>> {
+//     let mut cells = vec![vec![Vec::new(); grid.count_columns()]; grid.count_rows()];
+//     for row in 0..grid.count_rows() {
+//         for col in 0..grid.count_columns() {
+//             if is_simple_cell(grid, (row, col)) {
+//                 continue;
+//             }
+
+//             let text = &grid.cells[row][col];
+//             let lines = get_lines(text).collect();
+
+//             let width = lines.iter().map(|line| {
+
+//             });
+
+//             cells[row][col] = lines;
+//         }
+//     }
+
+//     cells
+// }
 
 fn columns_width(grid: &Grid) -> Vec<usize> {
     let mut widths = vec![0; grid.count_columns()];
@@ -1450,9 +1467,9 @@ fn string_width_tab(text: &str, tab_width: usize) -> usize {
     width + count_tabs * tab_width
 }
 
-fn string_width_multiline_tab_trim_end(text: &str, tab_width: usize) -> usize {
+fn string_width_multiline_tab_trim(text: &str, tab_width: usize) -> usize {
     text.lines()
-        .map(|line| string_width_tab(line.trim_end(), tab_width))
+        .map(|line| string_width_tab(line.trim(), tab_width))
         .max()
         .unwrap_or(0)
 }
@@ -1462,18 +1479,6 @@ fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
         .map(|line| string_width_tab(line, tab_width))
         .max()
         .unwrap_or(0)
-}
-
-#[cfg(feature = "color")]
-fn string_trim_end(text: &str) -> Cow<str> {
-    let pos = ansi_str::AnsiStr::ansi_strip(text).trim_end().len();
-    let (text, _) = ansi_str::AnsiStr::ansi_split_at(text, pos);
-    text.into()
-}
-
-#[cfg(not(feature = "color"))]
-fn string_trim_end(text: &str) -> Cow<str> {
-    text.trim_end().into()
 }
 
 #[cfg(not(feature = "color"))]

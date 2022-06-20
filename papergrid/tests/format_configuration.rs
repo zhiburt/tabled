@@ -849,9 +849,6 @@ fn formatting_test() {
                 .formatting(test.2),
         );
 
-        println!("{}", grid);
-        println!("{}", expected);
-
         assert_eq!(grid.to_string(), expected, "test case #{:?} failed", i,);
     }
 }

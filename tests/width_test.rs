@@ -186,7 +186,7 @@ fn max_width_wrapped_keep_words() {
             "| &str              |"
             "|-------------------|"
             "| this is a long    |"
-            "|  sentence         |"
+            "| sentence          |"
         )
     );
     assert!(is_lines_equal(&table, 17 + 2 + 2));
@@ -225,7 +225,7 @@ fn max_width_wrapped_keep_words_color() {
 
     assert_eq!(
         table,
-        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long\u{1b}[39m\u{1b}[49m    |\n| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntence\u{1b}[39m\u{1b}[49m          |"
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntence\u{1b}[39m\u{1b}[49m          |",
     );
 
     let data = vec!["this is a long  sentence".on_black().green().to_string()];
@@ -247,7 +247,7 @@ fn max_width_wrapped_keep_words_color() {
 
     assert_eq!(
         table,
-        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long\u{1b}[39m\u{1b}[49m    |\n| \u{1b}[32m\u{1b}[40ms\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m          |"
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m  |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40ms\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m          |",
     );
 
     let data = vec!["this is a long   sentence".on_black().green().to_string()];
@@ -269,7 +269,7 @@ fn max_width_wrapped_keep_words_color() {
 
     assert_eq!(
         table,
-        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long\u{1b}[39m\u{1b}[49m    |\n| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long\u{1b}[39m\u{1b}[49m    |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |",
     );
 
     let data = vec!["this is a long    sentence".on_black().green().to_string()];
@@ -285,13 +285,13 @@ fn max_width_wrapped_keep_words_color() {
             "| String            |"
             "|-------------------|"
             "| this is a long    |"
-            "|  sentence         |"
+            "| sentence          |"
         )
     );
 
     assert_eq!(
         table,
-        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long\u{1b}[39m\u{1b}[49m    |\n| \u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |"
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long\u{1b}[39m\u{1b}[49m    |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |",
     );
 
     let data = vec!["this".on_black().green().to_string()];
@@ -368,7 +368,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
 
     assert_eq!(
         table,
-        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long\u{1b}[39m\u{1b}[49m    |\n| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntencesentences\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m           |"
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntencesentences\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m           |"
     );
 }
 
@@ -390,19 +390,7 @@ fn max_width_wrapped_collored() {
 
     assert_eq!(
         table,
-        static_table!(
-            "| St |"
-            "| ri |"
-            "| ng |"
-            "|----|"
-            "| \u{1b}[31mas\u{1b}[39m |"
-            "| \u{1b}[31md\u{1b}[39m  |"
-            "| \u{1b}[34mzx\u{1b}[39m |"
-            "| \u{1b}[34mc2\u{1b}[39m |"
-            "| \u{1b}[32m\u{1b}[40mas\u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40mda\u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40msd\u{1b}[39m\u{1b}[49m |"
-        )
+        "| St |\n| ri |\n| ng |\n|----|\n| \u{1b}[31mas\u{1b}[39m |\n| \u{1b}[31m\u{1b}[39m\u{1b}[31md\u{1b}[39m  |\n| \u{1b}[34mzx\u{1b}[39m |\n| \u{1b}[34m\u{1b}[39m\u{1b}[34mc2\u{1b}[39m |\n| \u{1b}[32m\u{1b}[40mas\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mda\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40msd\u{1b}[39m\u{1b}[49m |",
     );
 }
 
@@ -476,7 +464,7 @@ fn color_chars_are_stripped() {
 
     assert_eq!(
         table,
-        "| Str... |\n|--------|\n|  \u{1b}[31masd\u{1b}[39m   |\n|  \u{1b}[34mzxc\u{1b}[39m   |\n| \u{1b}[32m\u{1b}[40masd\u{1b}[39m\u{1b}[49m... |",
+        "| Str... |\n|--------|\n|  \u{1b}[31masd\u{1b}[39m   |\n|  \u{1b}[34mzxc\u{1b}[39m   |\n| \u{1b}[32;40masd\u{1b}[39m\u{1b}[49m... |",
     );
 }
 
@@ -672,7 +660,7 @@ fn min_width_color() {
 
     assert_eq!(
         table,
-        "|   String   |\n|------------|\n|    \u{1b}[31masd\u{1b}[39m     |\n|    \u{1b}[34mzxc\u{1b}[39m     |\n|   \u{1b}[32m\u{1b}[40masdasd\u{1b}[39m\u{1b}[49m   |"
+        "|   String   |\n|------------|\n|    \u{1b}[31masd\u{1b}[39m     |\n|    \u{1b}[34mzxc\u{1b}[39m     |\n|   \u{1b}[32;40masdasd\u{1b}[0m   |"
     );
 }
 
@@ -980,8 +968,8 @@ fn total_width_wrapping() {
         static_table!(
             "|  | co | co | col |"
             "|  | lu | lu | umn |"
-            "|  | mn | mn |  2  |"
-            "|  |  0 |  1 |     |"
+            "|  | mn | mn | 2   |"
+            "|  | 0  | 1  |     |"
             "|--+----+----+-----|"
             "|  | 0- | 0- | 0-2 |"
             "|  | 0  | 1  |     |"
@@ -1282,16 +1270,7 @@ fn wrapping_as_total_multiline_color() {
 
     assert_eq!(
         table,
-        "| ver | published_d | is_act | major_feature            |\n\
-         | sio | ate         | ive    |                          |\n\
-         | n   |             |        |                          |\n\
-         |-----+-------------+--------+--------------------------|\n\
-         | \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n\
-         | \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                      |\n\
-         | \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n\
-         | \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n\
-         | \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n\
-         | \u{1b}[37m.4\u{1b}[39m  |             |        |                          |"
+        "| ver | published_d | is_act | major_feature            |\n| sio | ate         | ive    |                          |\n| n   |             |        |                          |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m\u{1b}[39m\u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42m\u{1b}[39m\u{1b}[49m\u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                      |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[31m\u{1b}[39m\u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n| \u{1b}[37m\u{1b}[39m\u{1b}[37m.4\u{1b}[39m  |             |        |                          |",
     );
     assert!(is_lines_equal(&table, 57));
 
@@ -1319,7 +1298,7 @@ fn wrapping_as_total_multiline_color() {
 
     assert_eq!(
         table,
-        "| ver | published_d | is_act | major_feature            |\n| sio | ate         | ive    |                          |\n| n   |             |        |                          |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)]\u{1b}[39m\u{1b}[49m        |\n| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattrib\u{1b}[39m\u{1b}[49m\u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |"
+        "| ver | published_d | is_act | major_feature            |\n| sio | ate         | ive    |                          |\n| n   |             |        |                          |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |\n| \u{1b}[31m\u{1b}[39m\u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42m\u{1b}[39m\u{1b}[49m\u{1b}[34m\u{1b}[42mattrib\u{1b}[39m\u{1b}[49m\u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[31m\u{1b}[39m\u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n| \u{1b}[37m\u{1b}[39m\u{1b}[37m.4\u{1b}[39m  |             |        |                          |",
     );
     assert!(is_lines_equal(&table, 57));
 }
@@ -1383,7 +1362,7 @@ fn truncating_as_total_multiline_color() {
 
     assert_eq!(
         table,
-        "| ver | published_d | is_act | major_feature            |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |"
+        "| ver | published_d | is_act | major_feature            |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
     );
     assert!(is_lines_equal(&table, 57));
 }
@@ -1434,18 +1413,18 @@ fn min_width_works_with_right_alignment() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|                                           &str |"
-            "|------------------------------------------------|"
-            "|                                                |"
-            "|                          {                     |"
-            "|                              \"some\": \"random\", |"
-            "|                              \"json\": [         |"
-            "|                                  { \"1\": \"2\" }, |"
-            "|                                  { \"1\": \"2\" }, |"
-            "|                                  { \"1\": \"2\" }  |"
-            "|                              ]                 |"
-            "|                          }                     |"
-            "|                                                |"
+            r#"|                                           &str |"#
+            r#"|------------------------------------------------|"#
+            r#"|                                                |"#
+            r#"|                              {                 |"#
+            r#"|                              "some": "random", |"#
+            r#"|                              "json": [         |"#
+            r#"|                              { "1": "2" },     |"#
+            r#"|                              { "1": "2" },     |"#
+            r#"|                              { "1": "2" }      |"#
+            r#"|                              ]                 |"#
+            r#"|                              }                 |"#
+            r#"|                                                |"#
         )
     );
     assert!(is_lines_equal(&table.to_string(), 50));
@@ -1455,18 +1434,18 @@ fn min_width_works_with_right_alignment() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|                                           &str |"
-            "|------------------------------------------------|"
-            "|                          {                     |"
-            "|                              \"some\": \"random\", |"
-            "|                              \"json\": [         |"
-            "|                                  { \"1\": \"2\" }, |"
-            "|                                  { \"1\": \"2\" }, |"
-            "|                                  { \"1\": \"2\" }  |"
-            "|                              ]                 |"
-            "|                          }                     |"
-            "|                                                |"
-            "|                                                |"
+            r#"|                                           &str |"#
+            r#"|------------------------------------------------|"#
+            r#"|                              {                 |"#
+            r#"|                              "some": "random", |"#
+            r#"|                              "json": [         |"#
+            r#"|                              { "1": "2" },     |"#
+            r#"|                              { "1": "2" },     |"#
+            r#"|                              { "1": "2" }      |"#
+            r#"|                              ]                 |"#
+            r#"|                              }                 |"#
+            r#"|                                                |"#
+            r#"|                                                |"#
         )
     );
     assert!(is_lines_equal(&table.to_string(), 50));
@@ -1504,18 +1483,18 @@ fn min_width_works_with_right_alignment() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|                      &str                      |"
-            "|------------------------------------------------|"
-            "|                                                |"
-            "|               {                                |"
-            "|                   \"some\": \"random\",            |"
-            "|                   \"json\": [                    |"
-            "|                       { \"1\": \"2\" },            |"
-            "|                       { \"1\": \"2\" },            |"
-            "|                       { \"1\": \"2\" }             |"
-            "|                   ]                            |"
-            "|               }                                |"
-            "|                                                |"
+            r#"|                      &str                      |"#
+            r#"|------------------------------------------------|"#
+            r#"|                                                |"#
+            r#"|               {                                |"#
+            r#"|               "some": "random",                |"#
+            r#"|               "json": [                        |"#
+            r#"|               { "1": "2" },                    |"#
+            r#"|               { "1": "2" },                    |"#
+            r#"|               { "1": "2" }                     |"#
+            r#"|               ]                                |"#
+            r#"|               }                                |"#
+            r#"|                                                |"#
         )
     );
     assert!(is_lines_equal(&table.to_string(), 50));
@@ -1525,18 +1504,18 @@ fn min_width_works_with_right_alignment() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|                      &str                      |"
-            "|------------------------------------------------|"
-            "|               {                                |"
-            "|                   \"some\": \"random\",            |"
-            "|                   \"json\": [                    |"
-            "|                       { \"1\": \"2\" },            |"
-            "|                       { \"1\": \"2\" },            |"
-            "|                       { \"1\": \"2\" }             |"
-            "|                   ]                            |"
-            "|               }                                |"
-            "|                                                |"
-            "|                                                |"
+            r#"|                      &str                      |"#
+            r#"|------------------------------------------------|"#
+            r#"|               {                                |"#
+            r#"|               "some": "random",                |"#
+            r#"|               "json": [                        |"#
+            r#"|               { "1": "2" },                    |"#
+            r#"|               { "1": "2" },                    |"#
+            r#"|               { "1": "2" }                     |"#
+            r#"|               ]                                |"#
+            r#"|               }                                |"#
+            r#"|                                                |"#
+            r#"|                                                |"#
         )
     );
     assert!(is_lines_equal(&table.to_string(), 50));
@@ -1935,7 +1914,7 @@ fn max_width_wrap_priority_max() {
             "| N | co | co | co |"
             "|   | lu | lu | lu |"
             "|   | mn | mn | mn |"
-            "|   |  0 |  1 |  2 |"
+            "|   | 0  | 1  | 2  |"
             "|---+----+----+----|"
             "| 0 | 0- | 0- | 0- |"
             "|   | 0  | 1  | 2  |"
@@ -1947,9 +1926,9 @@ fn max_width_wrap_priority_max() {
             "|   | d  |    |    |"
             "|   | Wi |    |    |"
             "|   | th |    |    |"
-            "|   |  B |    |    |"
+            "|   | B  |    |    |"
             "|   | ig |    |    |"
-            "|   |  L |    |    |"
+            "|   | L  |    |    |"
             "|   | in |    |    |"
             "|   | e  |    |    |"
             "| 2 | 2- | 2- | 2- |"
@@ -2006,8 +1985,8 @@ fn max_width_wrap_priority_max_with_span() {
             "|   | o Wo |  |"
             "|   | rld  |  |"
             "|   | With |  |"
-            "|   |  Big |  |"
-            "|   |  Lin |  |"
+            "|   | Big  |  |"
+            "|   | Lin  |  |"
             "|   | e    |  |"
             "| 2 | 2 |  |  |"
             "|   | - |  |  |"
@@ -2195,15 +2174,15 @@ fn max_width_wrap_priority_min_with_span() {
             "|  |  | co |  |"
             "|  |  | lu |  |"
             "|  |  | mn |  |"
-            "|  |  |  1 |  |"
+            "|  |  | 1  |  |"
             "|--+--+----+--|"
             "|  |  | 0- |  |"
             "|  |  | 1  |  |"
             "|  | Hello |  |"
-            "|  |  Worl |  |"
+            "|  | Worl  |  |"
             "|  | d Wit |  |"
             "|  | h Big |  |"
-            "|  |  Line |  |"
+            "|  | Line  |  |"
             "|  |  | 2- |  |"
             "|  |  | 1  |  |"
         )
