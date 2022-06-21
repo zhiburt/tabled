@@ -1002,8 +1002,6 @@ fn multiline_table_test3() {
 
     let table = Table::new(&data).with(tabled::Style::modern());
 
-    println!("{}", table);
-
     assert_eq!(
         table.to_string(),
         static_table!(

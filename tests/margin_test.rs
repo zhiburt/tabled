@@ -78,6 +78,8 @@ fn table_with_empty_margin() {
         .with(Margin::new(0, 0, 0, 0).set_fill('>', '<', 'V', '^'))
         .to_string();
 
+    println!("{}", table);
+
     assert_eq!(
         table,
         static_table!(

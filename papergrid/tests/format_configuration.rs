@@ -24,7 +24,6 @@ fn formatting_test() {
              |             |line      |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
              +-------------+----------+\n\
@@ -52,7 +51,6 @@ fn formatting_test() {
              |             |with      |\n\
              |             |new       |\n\
              |             |line      |\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              +-------------+----------+\n\
@@ -84,7 +82,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
              +-------------+----------+\n\
@@ -115,7 +112,6 @@ fn formatting_test() {
              |             |   line   |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
              +-------------+----------+\n\
@@ -143,7 +139,6 @@ fn formatting_test() {
              |             |   with   |\n\
              |             |   new    |\n\
              |             |   line   |\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              +-------------+----------+\n\
@@ -175,7 +170,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
              +-------------+----------+\n\
@@ -206,7 +200,6 @@ fn formatting_test() {
              |             |      line|\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
              +-------------+----------+\n\
@@ -234,7 +227,6 @@ fn formatting_test() {
              |             |      with|\n\
              |             |       new|\n\
              |             |      line|\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              +-------------+----------+\n\
@@ -266,7 +258,6 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
-             |             |          |\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
              +-------------+----------+\n\
@@ -291,11 +282,10 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |A         |\n\
-             |             |    string|\n\
-             |A long string|with      |\n\
+             |A long string|    string|\n\
+             |             |with      |\n\
              |             | new      |\n\
              |             |line      |\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              +-------------+----------+\n\
@@ -321,11 +311,10 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |A         |\n\
-             |             |string    |\n\
-             |A long string|with      |\n\
+             |A long string|string    |\n\
+             |             |with      |\n\
              |             |new       |\n\
              |             |line      |\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              +-------------+----------+\n\
@@ -351,10 +340,9 @@ fn formatting_test() {
              |             |          |\n\
              |             |A         |\n\
              |             |string    |\n\
-             |             |with      |\n\
-             |A long string|new       |\n\
+             |A long string|with      |\n\
+             |             |new       |\n\
              |             |line      |\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
@@ -382,11 +370,10 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |    A     |\n\
-             |             |    string|\n\
-             |A long string|   with   |\n\
+             |A long string|    string|\n\
+             |             |   with   |\n\
              |             |    new   |\n\
              |             |   line   |\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              +-------------+----------+\n\
@@ -412,11 +399,10 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |    A     |\n\
-             |             |  string  |\n\
-             |A long string|   with   |\n\
+             |A long string|  string  |\n\
+             |             |   with   |\n\
              |             |   new    |\n\
              |             |   line   |\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              +-------------+----------+\n\
@@ -442,10 +428,9 @@ fn formatting_test() {
              |             |          |\n\
              |             |    A     |\n\
              |             |  string  |\n\
-             |             |   with   |\n\
-             |A long string|   new    |\n\
+             |A long string|   with   |\n\
+             |             |   new    |\n\
              |             |   line   |\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
@@ -473,11 +458,10 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |         A|\n\
-             |             |    string|\n\
-             |A long string|      with|\n\
+             |A long string|    string|\n\
+             |             |      with|\n\
              |             |       new|\n\
              |             |      line|\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              +-------------+----------+\n\
@@ -503,11 +487,10 @@ fn formatting_test() {
              |             |          |\n\
              |             |          |\n\
              |             |         A|\n\
-             |             |    string|\n\
-             |A long string|      with|\n\
+             |A long string|    string|\n\
+             |             |      with|\n\
              |             |       new|\n\
              |             |      line|\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              +-------------+----------+\n\
@@ -533,10 +516,9 @@ fn formatting_test() {
              |             |          |\n\
              |             |         A|\n\
              |             |    string|\n\
-             |             |      with|\n\
-             |A long string|       new|\n\
+             |A long string|      with|\n\
+             |             |       new|\n\
              |             |      line|\n\
-             |             |          |\n\
              |             |          |\n\
              |             |          |\n\
              |             |          |\n\
@@ -570,7 +552,6 @@ fn formatting_test() {
              |             | new      |\n\
              |             |line      |\n\
              |             |          |\n\
-             |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
@@ -599,7 +580,6 @@ fn formatting_test() {
              |             |with      |\n\
              |             |new       |\n\
              |             |line      |\n\
-             |             |          |\n\
              |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
@@ -630,8 +610,7 @@ fn formatting_test() {
              |             |string    |\n\
              |             |with      |\n\
              |             |new       |\n\
-             |             |line      |\n\
-             |A long string|          |\n\
+             |A long string|line      |\n\
              +-------------+----------+\n\
              |1-0          |1-1       |\n\
              +-------------+----------+\n\
@@ -660,7 +639,6 @@ fn formatting_test() {
              |             |   with   |\n\
              |             |    new   |\n\
              |             |   line   |\n\
-             |             |          |\n\
              |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
@@ -691,7 +669,6 @@ fn formatting_test() {
              |             |   new    |\n\
              |             |   line   |\n\
              |             |          |\n\
-             |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
@@ -721,8 +698,7 @@ fn formatting_test() {
              |             |  string  |\n\
              |             |   with   |\n\
              |             |   new    |\n\
-             |             |   line   |\n\
-             |A long string|          |\n\
+             |A long string|   line   |\n\
              +-------------+----------+\n\
              |     1-0     |   1-1    |\n\
              +-------------+----------+\n\
@@ -752,7 +728,6 @@ fn formatting_test() {
              |             |       new|\n\
              |             |      line|\n\
              |             |          |\n\
-             |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
@@ -781,7 +756,6 @@ fn formatting_test() {
              |             |      with|\n\
              |             |       new|\n\
              |             |      line|\n\
-             |             |          |\n\
              |             |          |\n\
              |A long string|          |\n\
              +-------------+----------+\n\
@@ -812,8 +786,7 @@ fn formatting_test() {
              |             |    string|\n\
              |             |      with|\n\
              |             |       new|\n\
-             |             |      line|\n\
-             |A long string|          |\n\
+             |A long string|      line|\n\
              +-------------+----------+\n\
              |          1-0|       1-1|\n\
              +-------------+----------+\n\
@@ -848,6 +821,8 @@ fn formatting_test() {
                 .vertical_alignment(test.1)
                 .formatting(test.2),
         );
+
+        println!("{}", grid);
 
         assert_eq!(grid.to_string(), expected, "test case #{:?} failed", i,);
     }

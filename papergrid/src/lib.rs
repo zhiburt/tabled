@@ -473,7 +473,8 @@ impl Grid {
             return 0;
         }
 
-        let widths = columns_width(self);
+        let cells = cells_content(self);
+        let widths = columns_width(self, &cells);
 
         total_width(self, &widths, &self.margin)
     }
@@ -488,7 +489,8 @@ impl Grid {
     // hide it by feature?
     // 'private'
     pub fn build_widths(&self) -> Vec<usize> {
-        columns_width(self)
+        let cells = cells_content(self);
+        columns_width(self, &cells)
     }
 
     /// This function returns a cells widths.
@@ -641,10 +643,12 @@ impl fmt::Display for Grid {
             return Ok(());
         }
 
-        let heights = rows_height(self);
-        let widths = columns_width(self);
+        let cells = cells_content(self);
 
-        print_grid(f, self, widths, heights)
+        let heights = rows_height(self, &cells);
+        let widths = columns_width(self, &cells);
+
+        print_grid(f, self, widths, heights, &cells)
     }
 }
 
@@ -988,19 +992,18 @@ fn indent_from_top(alignment: AlignmentVertical, height: usize, real_height: usi
 
 fn build_cell_line(
     f: &mut fmt::Formatter<'_>,
-    cell: &str,
+    cell: &CellContent,
     line: usize,
     width: usize,
     height: usize,
     style: &Style,
     tab_width: usize,
 ) -> fmt::Result {
-    let original_cell_height = count_lines(cell);
+    let original_cell_height = cell.count_new_lines;
     let mut cell_height = original_cell_height;
 
     if style.formatting.vertical_trim {
-        let lines = skip_empty_lines(cell, cell_height).map(Cow::Borrowed);
-        cell_height = lines.count();
+        cell_height -= count_empty_lines_on_ends(&cell.lines);
     }
 
     let skip_lines = top_indent(style, cell_height, height);
@@ -1016,7 +1019,7 @@ fn build_cell_line(
     }
 
     if style.formatting.vertical_trim {
-        let empty_lines = count_empty_lines_at_start(cell);
+        let empty_lines = count_empty_lines_at_start(&cell.lines);
         index += empty_lines;
 
         if index > original_cell_height {
@@ -1024,15 +1027,15 @@ fn build_cell_line(
         }
     }
 
-    let mut lines = get_lines(cell);
-    let line = lines.nth(index).unwrap_or(Cow::Borrowed(""));
-
     let width = width - style.padding.left.size - style.padding.right.size;
     repeat_char(f, style.padding.left.fill, style.padding.left.size)?;
 
+    let text = cell.lines.get(index).unwrap_or(&Cow::Borrowed(""));
+
     build_format_line(
         f,
-        line,
+        index,
+        text,
         cell,
         width,
         style.alignment_horizontal,
@@ -1049,28 +1052,46 @@ fn build_cell_line(
 #[allow(clippy::too_many_arguments)]
 fn build_format_line(
     f: &mut fmt::Formatter<'_>,
-    text: Cow<str>,
-    cell: &str,
+    index: usize,
+    line: &str,
+    cell: &CellContent,
     width: usize,
     alignment: AlignmentHorizontal,
     line_trim: bool,
     line_alignement: bool,
     tab_width: usize,
 ) -> Result<(), fmt::Error> {
-    let text = if line_trim { string_trim(&text) } else { text };
-    let line_width = string_width_tab(&text, tab_width);
+    let text = if line_trim {
+        string_trim(line)
+    } else {
+        Cow::Borrowed(line)
+    };
+
+    let line_width = if line_trim {
+        string_width_tab(&text, tab_width)
+    } else {
+        cell.lines_width.get(index).copied().unwrap_or(0)
+    };
 
     if line_alignement {
         return print_text_formated(f, &text, line_width, alignment, width, tab_width);
     }
 
     let cell_width = if line_trim {
-        string_width_multiline_tab_trim(cell, tab_width)
+        cell.lines
+            .iter()
+            .map(|line| string_width_tab(line.trim(), tab_width))
+            .max()
+            .unwrap_or(0)
     } else {
-        string_width_multiline_tab(cell, tab_width)
+        cell.width
     };
 
     print_text_formated(f, &text, cell_width, alignment, width, tab_width)?;
+
+    if cell_width < line_width {
+        println!("asdasd");
+    }
 
     let rest_width = cell_width - line_width;
     repeat_char(f, ' ', rest_width)?;
@@ -1078,15 +1099,18 @@ fn build_format_line(
     Ok(())
 }
 
-fn skip_empty_lines(s: &str, length: usize) -> impl Iterator<Item = &'_ str> + Clone {
-    let is_empty = |s: &&str| s.trim().is_empty();
-    let end_lines = s.lines().rev().take_while(is_empty).count();
-    let n = length - end_lines;
-    s.lines().take(n).skip_while(is_empty)
+fn count_empty_lines_on_ends(lines: &[Cow<str>]) -> usize {
+    let end_lines = lines
+        .iter()
+        .rev()
+        .take_while(|s| s.trim().is_empty())
+        .count();
+    let start_lines = lines.iter().take_while(|s| s.trim().is_empty()).count();
+    start_lines + end_lines
 }
 
-fn count_empty_lines_at_start(s: &str) -> usize {
-    s.lines().take_while(|s| s.trim().is_empty()).count()
+fn count_empty_lines_at_start(lines: &[Cow<str>]) -> usize {
+    lines.iter().take_while(|s| s.trim().is_empty()).count()
 }
 
 fn top_indent(style: &Style, cell_height: usize, height: usize) -> usize {
@@ -1114,64 +1138,101 @@ fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     Ok(())
 }
 
-// struct CellContent<'a> {
-//     lines: Vec<Cow<'a, str>>,
-//     lines_width: Vec<usize>,
-//     width: usize,
-// }
+#[derive(Debug, Clone)]
+struct CellContent<'a> {
+    lines: Vec<Cow<'a, str>>,
+    lines_width: Vec<usize>,
+    width: usize,
+    count_new_lines: usize,
+}
 
-// fn cells_lines(grid: &Grid) -> Vec<Vec<CellContent>> {
-//     let mut cells = vec![vec![Vec::new(); grid.count_columns()]; grid.count_rows()];
-//     for row in 0..grid.count_rows() {
-//         for col in 0..grid.count_columns() {
-//             if is_simple_cell(grid, (row, col)) {
-//                 continue;
-//             }
+fn cells_content(grid: &Grid) -> Vec<Vec<CellContent>> {
+    let mut cells = vec![
+        vec![
+            CellContent {
+                lines: Vec::new(),
+                lines_width: Vec::new(),
+                width: 0,
+                count_new_lines: 0,
+            };
+            grid.count_columns()
+        ];
+        grid.count_rows()
+    ];
 
-//             let text = &grid.cells[row][col];
-//             let lines = get_lines(text).collect();
+    for (row, cells) in cells.iter_mut().enumerate() {
+        for (col, cell) in cells.iter_mut().enumerate() {
+            if is_cell_overriden(grid, (row, col)) {
+                continue;
+            }
 
-//             let width = lines.iter().map(|line| {
+            let text = &grid.cells[row][col];
+            let lines = get_lines(text).collect::<Vec<_>>();
 
-//             });
+            let widths = lines
+                .iter()
+                .map(|line| string_width_tab(line, grid.config.tab_width))
+                .collect::<Vec<_>>();
 
-//             cells[row][col] = lines;
-//         }
-//     }
+            let max = widths.iter().max().copied().unwrap_or(0);
 
-//     cells
-// }
+            let mut count_new_lines = 0;
 
-fn columns_width(grid: &Grid) -> Vec<usize> {
+            #[cfg(feature = "color")]
+            {
+                count_new_lines = lines.len();
+            }
+            #[cfg(not(feature = "color"))]
+            {
+                count_new_lines = count_lines(text);
+            }
+
+            *cell = CellContent {
+                lines,
+                lines_width: widths,
+                width: max,
+                count_new_lines,
+            };
+        }
+    }
+
+    cells
+}
+
+fn columns_width(grid: &Grid, cells: &[Vec<CellContent>]) -> Vec<usize> {
     let mut widths = vec![0; grid.count_columns()];
     for (col, column) in widths.iter_mut().enumerate() {
         let max = (0..grid.count_rows())
             .filter(|&row| is_simple_cell(grid, (row, col)))
-            .map(|row| get_cell_width(grid, (row, col)))
+            .map(|row| {
+                let style = grid.style(Entity::Cell(row, col));
+                cells[row][col].width + style.padding.left.size + style.padding.right.size
+            })
             .max()
             .unwrap_or(0);
 
         *column = max;
     }
 
-    adjust_spans(grid, &mut widths);
+    adjust_spans(grid, cells, &mut widths);
 
     widths
 }
 
-fn adjust_spans(grid: &Grid, widths: &mut [usize]) {
+fn adjust_spans(grid: &Grid, cells: &[Vec<CellContent>], widths: &mut [usize]) {
     if grid.spans.is_empty() {
         return;
     }
 
     // todo: the order is matter here; we need to figure out what is correct.
     for (&(start, end), rows) in &grid.spans {
-        adjust_range(grid, rows.iter().copied(), widths, start, end);
+        adjust_range(grid, cells, rows.iter().copied(), widths, start, end);
     }
 }
 
 fn adjust_range(
     grid: &Grid,
+    cells: &[Vec<CellContent>],
     rows: impl ExactSizeIterator<Item = usize>,
     widths: &mut [usize],
     start: usize,
@@ -1182,7 +1243,10 @@ fn adjust_range(
     }
 
     let max_span_width = rows
-        .map(|row| get_cell_width(grid, (row, start)))
+        .map(|row| {
+            let style = grid.style(Entity::Cell(row, start));
+            cells[row][start].width + style.padding.left.size + style.padding.right.size
+        })
         .max()
         .unwrap_or(0);
     let range_width = range_width(grid, start, end, widths);
@@ -1270,16 +1334,24 @@ fn closest_visible(grid: &Grid, row: usize, mut col: usize) -> Option<usize> {
     }
 }
 
-fn rows_height(grid: &Grid) -> impl Iterator<Item = usize> + '_ {
+fn rows_height<'a>(
+    grid: &'a Grid,
+    cells: &'a [Vec<CellContent>],
+) -> impl Iterator<Item = usize> + 'a {
     (0..grid.count_rows()).map(move |row| {
-        (0..grid.count_columns())
+        let h = (0..grid.count_columns())
             .map(|col| {
-                let cell = &grid.cells[row][col];
                 let style = grid.style(Entity::Cell(row, col));
-                cell_height(cell, &style)
+                cells[row][col].count_new_lines + style.padding.top.size + style.padding.bottom.size
             })
             .max()
-            .unwrap_or(0)
+            .unwrap_or(0);
+
+        if h == 0 {
+            1
+        } else {
+            h
+        }
     })
 }
 
@@ -1860,6 +1932,7 @@ fn print_grid(
     grid: &Grid,
     widths: Vec<usize>,
     mut heights: impl Iterator<Item = usize>,
+    cells: &[Vec<CellContent>],
 ) -> fmt::Result {
     let table_width = row_width_grid(grid, &widths);
 
@@ -1892,10 +1965,9 @@ fn print_grid(
                     }
 
                     let style = grid.style(Entity::Cell(row, col));
+                    let cell = &cells[row][col];
                     let width = grid_cell_width(grid, &widths, (row, col));
-                    let text = &grid.cells[row][col];
-
-                    build_cell_line(f, text, i, width, height, &style, grid.config.tab_width)?;
+                    build_cell_line(f, cell, i, width, height, &style, grid.config.tab_width)?;
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();
