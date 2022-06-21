@@ -960,10 +960,10 @@ fn print_text(f: &mut fmt::Formatter<'_>, text: &str, tab_width: usize) -> fmt::
     // So to not use replace_tab we are printing by char;
     // Hopefully it's more affective as it reduceses a number of allocations.
     for c in text.chars() {
-        if c == '\t' {
-            repeat_char(f, ' ', tab_width)?;
-        } else {
-            f.write_char(c)?;
+        match c {
+            '\r' => (),
+            '\t' => repeat_char(f, ' ', tab_width)?,
+            c => f.write_char(c)?,
         }
     }
 

@@ -269,7 +269,7 @@ fn max_width_wrapped_keep_words_color() {
 
     assert_eq!(
         table,
-        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long\u{1b}[39m\u{1b}[49m    |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |",
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |",
     );
 
     let data = vec!["this is a long    sentence".on_black().green().to_string()];
@@ -285,13 +285,13 @@ fn max_width_wrapped_keep_words_color() {
             "| String            |"
             "|-------------------|"
             "| this is a long    |"
-            "| sentence          |"
+            "|  sentence         |"
         )
     );
 
     assert_eq!(
         table,
-        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long\u{1b}[39m\u{1b}[49m    |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |",
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40m\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |",
     );
 
     let data = vec!["this".on_black().green().to_string()];
@@ -650,17 +650,17 @@ fn min_width_color() {
     assert_eq!(
         ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
-            "|   String   |"
+            "| String     |"
             "|------------|"
-            "|    asd     |"
-            "|    zxc     |"
-            "|   asdasd   |"
+            "| asd        |"
+            "| zxc        |"
+            "| asdasd     |"
         )
     );
 
     assert_eq!(
         table,
-        "|   String   |\n|------------|\n|    \u{1b}[31masd\u{1b}[39m     |\n|    \u{1b}[34mzxc\u{1b}[39m     |\n|   \u{1b}[32;40masdasd\u{1b}[0m   |"
+        "| String     |\n|------------|\n| \u{1b}[31masd\u{1b}[39m        |\n| \u{1b}[34mzxc\u{1b}[39m        |\n| \u{1b}[32;40masdasd\u{1b}[0m     |",
     );
 }
 

@@ -739,3 +739,33 @@ fn hieroglyph_handling_2() {
         )
     )
 }
+
+#[test]
+fn render_return_carige() {
+    let mut grid = util::new_grid::<2, 2>();
+    grid.set(Entity::Cell(0, 1), Settings::new().text("123\r\r\r567"));
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+------+\n",
+            "|0-0|123567|\n",
+            "+---+------+\n",
+            "|1-0|1-1   |\n",
+            "+---+------+",
+        )
+    );
+
+    grid.set(Entity::Cell(1, 1), Settings::new().text("12345678"));
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+--------+\n",
+            "|0-0|123567  |\n",
+            "+---+--------+\n",
+            "|1-0|12345678|\n",
+            "+---+--------+",
+        )
+    );
+}
