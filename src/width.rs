@@ -684,12 +684,13 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
     #[cfg(feature = "color")]
     {
         ansi_str::AnsiStr::ansi_split(s, "\n")
-            .map(|mut line| {
+            .map(|line| {
                 let length = string_width(&line);
                 if length < width {
+                    let mut line = line.into_owned();
                     let remain = width - length;
                     line.extend(std::iter::repeat(fill_with).take(remain));
-                    line
+                    std::borrow::Cow::Owned(line)
                 } else {
                     line
                 }
