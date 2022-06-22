@@ -499,8 +499,7 @@ impl Grid {
         for (row, cols) in widths.iter_mut().enumerate() {
             for (col, width) in cols.iter_mut().enumerate() {
                 if is_cell_visible(self, (row, col)) {
-                    let w = get_cell_width(self, (row, col));
-                    *width = w;
+                    *width = get_cell_width(self, (row, col));
                 };
             }
         }
@@ -1167,31 +1166,24 @@ fn cells_content(grid: &Grid) -> Vec<Vec<CellContent>> {
             }
 
             let text = &grid.cells[row][col];
-            let lines = get_lines(text).collect::<Vec<_>>();
 
-            let widths = lines
-                .iter()
-                .map(|line| string_width_tab(line, grid.config.tab_width))
-                .collect::<Vec<_>>();
+            let count_lines = count_lines(text);
 
-            let max = widths.iter().max().copied().unwrap_or(0);
+            let mut lines = vec![Cow::Borrowed(""); count_lines];
+            let mut widths = vec![0; count_lines];
+            let mut max_width = 0;
 
-            let mut count_new_lines = 0;
-
-            #[cfg(feature = "color")]
-            {
-                count_new_lines = lines.len();
-            }
-            #[cfg(not(feature = "color"))]
-            {
-                count_new_lines = count_lines(text);
+            for (i, line) in get_lines(text).enumerate() {
+                widths[i] = string_width_tab(&line, grid.config.tab_width);
+                lines[i] = line;
+                max_width = cmp::max(max_width, widths[i]);
             }
 
             *cell = CellContent {
                 lines,
                 lines_width: widths,
-                width: max,
-                count_new_lines,
+                width: max_width,
+                count_new_lines: count_lines,
             };
         }
     }
@@ -1204,10 +1196,7 @@ fn columns_width(grid: &Grid, cells: &[Vec<CellContent>]) -> Vec<usize> {
     for (col, column) in widths.iter_mut().enumerate() {
         let max = (0..grid.count_rows())
             .filter(|&row| is_simple_cell(grid, (row, col)))
-            .map(|row| {
-                let style = grid.style(Entity::Cell(row, col));
-                cells[row][col].width + style.padding.left.size + style.padding.right.size
-            })
+            .map(|row| get_cell_width_cells(grid, cells, (row, col)))
             .max()
             .unwrap_or(0);
 
@@ -1243,10 +1232,7 @@ fn adjust_range(
     }
 
     let max_span_width = rows
-        .map(|row| {
-            let style = grid.style(Entity::Cell(row, start));
-            cells[row][start].width + style.padding.left.size + style.padding.right.size
-        })
+        .map(|row| get_cell_width_cells(grid, cells, (row, start)))
         .max()
         .unwrap_or(0);
     let range_width = range_width(grid, start, end, widths);
@@ -1264,6 +1250,11 @@ fn get_cell_width(grid: &Grid, (row, col): Position) -> usize {
     let width = string_width_multiline_tab(text, grid.config.tab_width);
 
     width + style.padding.left.size + style.padding.right.size
+}
+
+fn get_cell_width_cells(grid: &Grid, cells: &[Vec<CellContent>], (row, col): Position) -> usize {
+    let style = grid.style(Entity::Cell(row, col));
+    cells[row][col].width + style.padding.left.size + style.padding.right.size
 }
 
 fn range_width(grid: &Grid, start: usize, end: usize, widths: &[usize]) -> usize {
@@ -1339,25 +1330,22 @@ fn rows_height<'a>(
     cells: &'a [Vec<CellContent>],
 ) -> impl Iterator<Item = usize> + 'a {
     (0..grid.count_rows()).map(move |row| {
-        let h = (0..grid.count_columns())
-            .map(|col| {
-                let style = grid.style(Entity::Cell(row, col));
-                cells[row][col].count_new_lines + style.padding.top.size + style.padding.bottom.size
-            })
+        (0..grid.count_columns())
+            .map(|col| cell_height(grid, cells, (row, col)))
             .max()
-            .unwrap_or(0);
-
-        if h == 0 {
-            1
-        } else {
-            h
-        }
+            .unwrap_or(0)
     })
 }
 
-fn cell_height(cell: &str, style: &Style) -> usize {
-    let content_height = count_lines(cell);
-    content_height + style.padding.top.size + style.padding.bottom.size
+fn cell_height(grid: &Grid, cells: &[Vec<CellContent>], pos: Position) -> usize {
+    let count_lines = if cells.is_empty() {
+        1
+    } else {
+        cells[pos.0][pos.1].count_new_lines
+    };
+
+    let style = grid.style(Entity::Cell(pos.0, pos.1));
+    count_lines + style.padding.top.size + style.padding.bottom.size
 }
 
 fn replace_tab(text: &str, n: usize) -> String {
@@ -1540,13 +1528,6 @@ fn string_width_tab(text: &str, tab_width: usize) -> usize {
     width + count_tabs * tab_width
 }
 
-fn string_width_multiline_tab_trim(text: &str, tab_width: usize) -> usize {
-    text.lines()
-        .map(|line| string_width_tab(line.trim(), tab_width))
-        .max()
-        .unwrap_or(0)
-}
-
 fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
     text.lines()
         .map(|line| string_width_tab(line, tab_width))
@@ -1566,7 +1547,8 @@ fn string_trim(text: &str) -> Cow<str> {
 
 #[cfg(not(feature = "color"))]
 fn get_lines(text: &str) -> impl Iterator<Item = Cow<str>> {
-    text.lines().map(Cow::Borrowed)
+    // we call split but not `lines()` in order to match colored implementation
+    text.split('\n').map(Cow::Borrowed)
 }
 
 #[cfg(feature = "color")]
@@ -1927,6 +1909,7 @@ fn get_intersection(grid: &Grid, pos: Position) -> Option<&Symbol> {
     None
 }
 
+#[allow(clippy::needless_range_loop)]
 fn print_grid(
     f: &mut fmt::Formatter,
     grid: &Grid,
@@ -2376,7 +2359,7 @@ fn count_tabs(s: &str) -> usize {
     bytecount::count(s.as_bytes(), b'\t')
 }
 
-fn count_lines(s: &str) -> usize {
+pub fn count_lines(s: &str) -> usize {
     if s.is_empty() {
         return 1;
     }
