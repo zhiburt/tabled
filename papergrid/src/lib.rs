@@ -1553,7 +1553,7 @@ fn get_lines(text: &str) -> impl Iterator<Item = Cow<str>> {
 
 #[cfg(feature = "color")]
 fn get_lines(text: &str) -> impl Iterator<Item = Cow<str>> {
-    ansi_str::AnsiStr::ansi_split(text, "\n").map(Cow::Owned)
+    ansi_str::AnsiStr::ansi_split(text, "\n")
 }
 
 #[derive(Debug, Clone)]
