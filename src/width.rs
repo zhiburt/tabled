@@ -35,8 +35,7 @@
 use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 
 use papergrid::{
-    count_borders_in_range, cut_str, string_width, string_width_multiline, wrap_text, Entity, Grid,
-    Settings,
+    count_borders_in_range, cut_str, string_width, string_width_multiline, Entity, Grid, Settings,
 };
 
 use crate::{CellOption, TableOption};
@@ -663,41 +662,44 @@ fn increase_width(s: &str, width: usize, fill_with: char) -> String {
         return s.to_owned();
     }
 
-    #[cfg(not(feature = "color"))]
-    {
-        s.lines()
-            .map(|line| {
-                let length = string_width(line);
-                if width > length {
-                    let remain = width - length;
-                    let mut new_line = String::with_capacity(width);
-                    new_line.push_str(line);
-                    new_line.extend(std::iter::repeat(fill_with).take(remain));
-                    std::borrow::Cow::Owned(new_line)
-                } else {
-                    std::borrow::Cow::Borrowed(line)
-                }
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
-    }
-    #[cfg(feature = "color")]
-    {
-        ansi_str::AnsiStr::ansi_split(s, "\n")
-            .map(|line| {
-                let length = string_width(&line);
-                if length < width {
-                    let mut line = line.into_owned();
-                    let remain = width - length;
-                    line.extend(std::iter::repeat(fill_with).take(remain));
-                    std::borrow::Cow::Owned(line)
-                } else {
-                    line
-                }
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
-    }
+    __increase_width(s, width, fill_with)
+}
+
+#[cfg(not(feature = "color"))]
+fn __increase_width(s: &str, width: usize, fill_with: char) -> String {
+    s.lines()
+        .map(|line| {
+            let length = string_width(line);
+            if width > length {
+                let remain = width - length;
+                let mut new_line = String::with_capacity(width);
+                new_line.push_str(line);
+                new_line.extend(std::iter::repeat(fill_with).take(remain));
+                std::borrow::Cow::Owned(new_line)
+            } else {
+                std::borrow::Cow::Borrowed(line)
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+#[cfg(feature = "color")]
+fn __increase_width(s: &str, width: usize, fill_with: char) -> String {
+    ansi_str::AnsiStr::ansi_split(s, "\n")
+        .map(|line| {
+            let length = string_width(&line);
+            if length < width {
+                let mut line = line.into_owned();
+                let remain = width - length;
+                line.extend(std::iter::repeat(fill_with).take(remain));
+                std::borrow::Cow::Owned(line)
+            } else {
+                line
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 fn increase_total_width<P: ColumnPeaker>(
@@ -770,7 +772,7 @@ fn decrease_total_width_fn<F>(
     total_width: usize,
     mut width: usize,
     mut cmp_fn: F,
-) -> HashMap<(usize, usize), usize>
+) -> Vec<((usize, usize), usize)>
 where
     F: ColumnPeaker,
 {
@@ -807,38 +809,38 @@ where
         width += 1;
     }
 
-    let mut points = HashMap::new();
-    #[allow(clippy::needless_range_loop)]
-    for row in 0..grid.count_rows() {
-        let mut col = 0;
-        while col < widths.len() {
-            let style = grid.style(Entity::Cell(row, col));
-            match grid.get_column_span((row, col)) {
-                Some(span) => {
-                    let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
-                    let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
-                    let width = std::cmp::max(width, min_width);
+    let mut points = Vec::with_capacity(grid.count_columns() * grid.count_rows());
+    (0..grid.count_columns()).for_each(|col| {
+        (0..grid.count_rows())
+            .filter(|&row| grid.is_cell_visible((row, col)))
+            .for_each(|row| {
+                let style = grid.style(Entity::Cell(row, col));
+                match grid.get_column_span((row, col)) {
+                    Some(span) => {
+                        let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
+                        let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
+                        if width >= min_width {
+                            let count_borders = count_borders_in_range(grid, col, col + span);
+                            let width = width + count_borders;
 
-                    let count_borders = count_borders_in_range(grid, col, col + span);
-                    let width = width + count_borders;
+                            let width = width
+                                .saturating_sub(style.padding.left.size + style.padding.right.size);
 
-                    let width =
-                        width.saturating_sub(style.padding.left.size + style.padding.right.size);
+                            points.push(((row, col), width));
+                        }
+                    }
+                    None => {
+                        if widths[col] >= min_widths[col] {
+                            let width = std::cmp::max(widths[col], min_widths[col]);
+                            let width = width
+                                .saturating_sub(style.padding.left.size + style.padding.right.size);
 
-                    points.insert((row, col), width);
-                    col += span;
+                            points.push(((row, col), width));
+                        }
+                    }
                 }
-                None => {
-                    let width = std::cmp::max(widths[col], min_widths[col]);
-                    let width =
-                        width.saturating_sub(style.padding.left.size + style.padding.right.size);
-
-                    points.insert((row, col), width);
-                    col += 1;
-                }
-            }
-        }
-    }
+            })
+    });
 
     points
 }
@@ -910,9 +912,277 @@ fn build_min_widths(grid: &Grid) -> Vec<usize> {
     grid.build_widths()
 }
 
+fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
+    if width == 0 {
+        String::new()
+    } else if keep_words {
+        split_by_line_keeping_words(text, width)
+    } else {
+        split_by_lines(text, width)
+    }
+}
+
+pub(crate) fn split_by_lines(s: &str, width: usize) -> String {
+    if width == 0 {
+        return String::new();
+    }
+
+    chunks(s, width).join("\n")
+}
+
+#[cfg(not(feature = "color"))]
+fn chunks(s: &str, width: usize) -> Vec<String> {
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    let mut buf = String::with_capacity(width);
+    let mut list = Vec::new();
+    let mut i = 0;
+    for c in s.chars() {
+        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+        if i + c_width > width {
+            let count_unknowns = width - i;
+            buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            i += count_unknowns;
+        } else {
+            buf.push(c);
+            i += c_width;
+        }
+
+        if i == width {
+            list.push(buf);
+            buf = String::with_capacity(width);
+            i = 0;
+        }
+    }
+
+    if !buf.is_empty() {
+        list.push(buf);
+    }
+
+    list
+}
+
+#[cfg(feature = "color")]
+fn chunks(s: &str, width: usize) -> Vec<String> {
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    let mut list = Vec::new();
+    let mut text = s.to_string();
+    while !text.is_empty() {
+        let stripped_text = ansi_str::AnsiStr::ansi_strip(&text);
+        let (length, count_unknowns, char_size) =
+            papergrid::cut_str_to_min_length(&stripped_text, width);
+
+        if length == 0 && count_unknowns == 0 {
+            break;
+        }
+
+        if length != 0 && count_unknowns != 0 {
+            let (mut lhs, _) = ansi_str::AnsiStr::ansi_split_at(&text, length);
+            lhs.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+
+            list.push(lhs);
+
+            let (_, rhs) = ansi_str::AnsiStr::ansi_split_at(&text, length + char_size);
+            text = rhs;
+        } else if length == 0 {
+            let mut s = String::with_capacity(count_unknowns);
+            s.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            list.push(s);
+
+            let (_, rhs) = ansi_str::AnsiStr::ansi_split_at(&text, char_size);
+            text = rhs;
+        } else {
+            let (lhs, rhs) = ansi_str::AnsiStr::ansi_split_at(&text, length);
+            list.push(lhs);
+            text = rhs;
+        }
+    }
+
+    list
+}
+
+#[cfg(not(feature = "color"))]
+fn split_by_line_keeping_words(s: &str, width: usize) -> String {
+    let mut buf = String::new();
+    let mut i = 0;
+    for c in s.chars() {
+        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+        let is_splitting_pos = i + c_width > width;
+        if !is_splitting_pos {
+            i += c_width;
+            buf.push(c);
+            continue;
+        }
+
+        if c_width > 1 {
+            let count_unknowns = width - i;
+            const REPLACEMENT: char = '\u{FFFD}';
+            buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            buf.push('\n');
+            i = 0;
+            continue;
+        }
+
+        if i == 0 && width == 1 {
+            buf.push(c);
+            buf.push('\n');
+            continue;
+        }
+
+        let is_prev_whitespace = buf.chars().last().map(char::is_whitespace).unwrap_or(false);
+        let is_splitting_word = !is_prev_whitespace && !c.is_whitespace();
+        if !is_splitting_word {
+            // This place doesn't separate a word
+            // So we just do a general split.
+            buf.push('\n');
+            buf.push(c);
+            i = 1;
+            continue;
+        }
+
+        let pos = buf.chars().rev().position(|c| c == ' ');
+        match pos {
+            Some(pos) if pos < width => {
+                // it's a part of a word which we is ok to move to the next line;
+                // we know that there will be enough space for this part + next character.
+                //
+                // todo: test about this next char space
+                let range_len = buf
+                    .chars()
+                    .rev()
+                    .take(pos)
+                    .map(|c| unicode_width::UnicodeWidthChar::width(c).unwrap_or(0))
+                    .sum::<usize>();
+
+                // put an spaces in order to not limit widths and keep it correct.
+                for i in 0..range_len {
+                    buf.insert(buf.len() - range_len - i, ' ');
+                }
+
+                buf.insert(buf.len() - range_len, '\n');
+                buf.push(c);
+
+                i = range_len + 1;
+            }
+            Some(_) => {
+                // The words is too long to be moved,
+                // we can't move it any way so just leave everything as it is
+                buf.push('\n');
+                buf.push(c);
+                i = 1;
+            }
+            None => {
+                // We don't find a whitespace
+                // so its a long word so we can do nothing about it
+                buf.push('\n');
+                buf.push(c);
+                i = 1;
+            }
+        }
+    }
+
+    buf.trim_end_matches('\n').to_owned()
+}
+
+#[cfg(feature = "color")]
+fn split_by_line_keeping_words(s: &str, width: usize) -> String {
+    use ansi_str::AnsiStr;
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    let mut buf = Vec::new();
+    let mut text = s.to_string();
+    while !text.is_empty() {
+        let stripped = ansi_str::AnsiStr::ansi_strip(&text);
+        let (byte_length, count_unknowns, split_char_size) =
+            papergrid::cut_str_to_min_length(&stripped, width);
+        let (mut lhs, mut rhs) = if byte_length == 0 {
+            if split_char_size == 0 {
+                break;
+            }
+
+            let mut s = String::with_capacity(count_unknowns);
+            s.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+
+            let (_, rhs) = ansi_str::AnsiStr::ansi_split_at(&text, split_char_size);
+
+            (s, rhs)
+        } else {
+            let (mut lhs, rhs) = ansi_str::AnsiStr::ansi_split_at(&text, byte_length);
+
+            lhs.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+
+            (lhs, rhs)
+        };
+
+        let lhs_stripped = lhs.ansi_strip();
+        let left_ends_with_letter = lhs_stripped.chars().last().map_or(false, |c| c != ' ');
+        let right_starts_with_letter = rhs.ansi_strip().chars().next().map_or(false, |c| c != ' ');
+
+        let is_splitting_word = left_ends_with_letter && right_starts_with_letter;
+        if !is_splitting_word {
+            buf.push(lhs);
+            text = rhs;
+            continue;
+        }
+
+        let pos = lhs_stripped.chars().rev().position(|c| c == ' ');
+        match pos {
+            Some(pos) => {
+                if pos < width {
+                    // it's a part of a word which we is ok to move to the next line;
+                    // we know that there will be enough space for this part + next character.
+                    //
+                    // todo: test about this next char space
+                    let range_len = lhs_stripped
+                        .chars()
+                        .rev()
+                        .take(pos)
+                        .map(|c| unicode_width::UnicodeWidthChar::width(c).unwrap_or(0))
+                        .sum::<usize>();
+
+                    let range_len_bytes = lhs_stripped
+                        .chars()
+                        .rev()
+                        .take(pos)
+                        .map(|c| c.len_utf8())
+                        .sum::<usize>();
+
+                    let move_part = lhs
+                        .ansi_get(lhs_stripped.len() - range_len_bytes..)
+                        .unwrap();
+                    lhs = lhs
+                        .ansi_get(..lhs_stripped.len() - range_len_bytes)
+                        .unwrap();
+                    rhs = move_part + &rhs;
+
+                    // put an spaces in order to not limit widths and keep it correct.
+                    lhs.extend(std::iter::repeat(' ').take(range_len));
+
+                    buf.push(lhs);
+                } else {
+                    // The words is too long to be moved,
+                    // we can't move it any way so just leave everything as it is
+                    buf.push(lhs);
+                }
+            }
+            None => {
+                // We don't find a whitespace
+                // so its a long word so we can do nothing about it
+                buf.push(lhs);
+            }
+        }
+
+        text = rhs;
+    }
+
+    buf.join("\n")
+}
+
 #[cfg(feature = "color")]
 #[cfg(test)]
 mod tests {
+    use super::*;
     use owo_colors::{colors::Yellow, OwoColorize};
     use papergrid::cut_str;
 
@@ -927,5 +1197,59 @@ mod tests {
             cut_str(&s, 1),
             "\u{1b}[5m\u{1b}[48;2;12;200;100m\u{1b}[33mC\u{1b}[25m\u{1b}[39m\u{1b}[49m"
         )
+    }
+
+    #[test]
+    fn split_by_lines_test() {
+        assert_eq!(split_by_lines("123456", 0), "");
+
+        assert_eq!(split_by_lines("123456", 1), "1\n2\n3\n4\n5\n6");
+        assert_eq!(split_by_lines("123456", 2), "12\n34\n56");
+        assert_eq!(split_by_lines("12345", 2), "12\n34\n5");
+        assert_eq!(split_by_lines("123456", 6), "123456");
+        assert_eq!(split_by_lines("123456", 10), "123456");
+
+        assert_eq!(split_by_lines("😳😳😳😳😳", 1), "�\n�\n�\n�\n�");
+        assert_eq!(split_by_lines("😳😳😳😳😳", 2), "😳\n😳\n😳\n😳\n😳");
+        assert_eq!(split_by_lines("😳😳😳😳😳", 3), "😳�\n😳�\n😳");
+        assert_eq!(split_by_lines("😳😳😳😳😳", 6), "😳😳😳\n😳😳");
+        assert_eq!(split_by_lines("😳😳😳😳😳", 20), "😳😳😳😳😳");
+
+        assert_eq!(split_by_lines("😳123😳", 1), "�\n1\n2\n3\n�");
+        assert_eq!(split_by_lines("😳12😳3", 1), "�\n1\n2\n�\n3");
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn chunks_test() {
+        assert_eq!(chunks("123456", 0), [""; 0]);
+
+        assert_eq!(chunks("123456", 1), ["1", "2", "3", "4", "5", "6"]);
+        assert_eq!(chunks("123456", 2), ["12", "34", "56"]);
+        assert_eq!(chunks("12345", 2), ["12", "34", "5"]);
+
+        assert_eq!(chunks("😳😳😳😳😳", 1), ["�", "�", "�", "�", "�"]);
+        assert_eq!(chunks("😳😳😳😳😳", 2), ["😳", "😳", "😳", "😳", "😳"]);
+        assert_eq!(chunks("😳😳😳😳😳", 3), ["😳�", "😳�", "😳"]);
+    }
+
+    #[test]
+    fn split_by_line_keeping_words_test() {
+        assert_eq!(split_by_line_keeping_words("123456", 1), "1\n2\n3\n4\n5\n6");
+        assert_eq!(split_by_line_keeping_words("123456", 2), "12\n34\n56");
+        assert_eq!(split_by_line_keeping_words("12345", 2), "12\n34\n5");
+
+        assert_eq!(
+            split_by_line_keeping_words("😳😳😳😳😳", 1),
+            "�\n�\n�\n�\n�"
+        );
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn split_by_line_keeping_words_color_test() {
+        let text = "\u{1b}[37mJapanese “vacancy” button\u{1b}[0m";
+        assert_eq!(split_by_line_keeping_words(text, 2), "\u{1b}[37mJa\u{1b}[39m\n\u{1b}[37mpa\u{1b}[39m\n\u{1b}[37mne\u{1b}[39m\n\u{1b}[37mse\u{1b}[39m\n\u{1b}[37m \u{1b}[39m \n\u{1b}[37m“\u{1b}[39m\u{1b}[37mv\u{1b}[39m\n\u{1b}[37mac\u{1b}[39m\n\u{1b}[37man\u{1b}[39m\n\u{1b}[37mcy\u{1b}[39m\n\u{1b}[37m” \u{1b}[39m\n\u{1b}[37mbu\u{1b}[39m\n\u{1b}[37mtt\u{1b}[39m\n\u{1b}[37mon\u{1b}[39m");
+        assert_eq!(split_by_line_keeping_words(text, 1), "\u{1b}[37mJ\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mp\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37ms\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37m“\u{1b}[39m\n\u{1b}[37mv\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37my\u{1b}[39m\n\u{1b}[37m”\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37mb\u{1b}[39m\n\u{1b}[37mu\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mo\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m");
     }
 }

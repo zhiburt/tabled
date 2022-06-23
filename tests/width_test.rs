@@ -1820,6 +1820,27 @@ fn max_width_truncate_with_big_span() {
             "|  | 2-0           | Hello World With  |"
         )
     );
+
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line; Here w");
+    data[2][2] = String::from("Hello World With Big L");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
+        .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "| N | column 0  |  column 1  | column 2  |"
+            "|---+-----------+------------+-----------|"
+            "| 0 |    0-0    |    0-1     |    0-2    |"
+            "| 1 | Hello World With Big Line; Here w  |"
+            "| 2 |    2-0    | Hello World With Big L |"
+        )
+    );
 }
 
 #[test]

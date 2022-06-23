@@ -32,6 +32,7 @@ color = ["papergrid/color", "ansi-str"]
 tabled_derive = { path = "./tabled_derive" }
 papergrid = { path = "./papergrid" }
 ansi-str = { git = "https://github.com/zhiburt/ansi-str", branch = "master", optional = true }
+unicode-width = "0.1.9"
 
 [dev-dependencies]
 owo-colors = "3.4.0"
