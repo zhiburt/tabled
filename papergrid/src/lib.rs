@@ -24,7 +24,7 @@
 use std::{
     borrow::Cow,
     cmp,
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::HashMap,
     fmt::{self, Display, Write},
     hash::Hash,
     ops::{Bound, RangeBounds},
@@ -71,7 +71,7 @@ pub struct Grid {
     margin: Margin,
     theme: Theme,
     override_split_lines: HashMap<usize, String>,
-    spans: BTreeMap<(usize, usize), HashSet<usize>>,
+    spans: HashMap<Position, usize>,
     config: GridConfig,
 }
 
@@ -144,7 +144,7 @@ impl Grid {
             margin: Margin::default(),
             theme: Theme::new(),
             override_split_lines: HashMap::new(),
-            spans: BTreeMap::new(),
+            spans: HashMap::new(),
             config,
         }
     }
@@ -562,32 +562,7 @@ impl Grid {
             }
         }
 
-        self.spans
-            .entry((col, col + span))
-            .and_modify(|rows| {
-                rows.insert(row);
-            })
-            .or_insert_with(|| {
-                let mut m = HashSet::with_capacity(1);
-                m.insert(row);
-                m
-            });
-
-        // it may happen that a colided span will be left so we checks if there's one
-        // like we insert (0, 3) but (0, 2) was in a set.
-        // such span makes no sense so we delete it.
-
-        for span in 0..span {
-            let mut do_remove = false;
-            if let Some(rows) = self.spans.get_mut(&(col, col + span)) {
-                rows.remove(&row);
-                do_remove = rows.is_empty();
-            }
-
-            if do_remove {
-                self.spans.remove(&(col, col + span));
-            }
-        }
+        self.spans.insert((row, col), span);
     }
 
     fn _set_text(&mut self, entity: Entity, text: String) {
@@ -617,17 +592,12 @@ impl Grid {
 
     /// Get a span value of the cell, if any is set.
     pub fn get_column_span(&self, (row, col): Position) -> Option<usize> {
-        self.spans
-            .iter()
-            .find(|((c, _), rows)| rows.contains(&row) && *c == col)
-            .map(|((start, end), _)| end - start)
+        self.spans.get(&(row, col)).copied()
     }
 
     /// Get a span value of the cell, if any is set.
     pub fn iter_column_spans(&self) -> impl Iterator<Item = (Position, usize)> + '_ {
-        self.spans.iter().flat_map(move |(&(start, end), rows)| {
-            rows.iter().map(move |&row| ((row, start), end - start))
-        })
+        self.spans.iter().map(|(&pos, &span)| (pos, span))
     }
 
     /// Verifies if there's any spans set.
@@ -1213,9 +1183,18 @@ fn adjust_spans(grid: &Grid, cells: &[Vec<CellContent>], widths: &mut [usize]) {
         return;
     }
 
+    // The overall width disctribution will be different depend on the order.
+    //
+    // We sort spans in order to prioritize the smaller spans first.
+    let mut spans = grid.spans.iter().collect::<Vec<_>>();
+    spans.sort_unstable_by(|a, b| match a.1.cmp(b.1) {
+        cmp::Ordering::Equal => a.0.cmp(b.0),
+        o => o,
+    });
+
     // todo: the order is matter here; we need to figure out what is correct.
-    for (&(start, end), rows) in &grid.spans {
-        adjust_range(grid, cells, rows.iter().copied(), widths, start, end);
+    for (&(row, col), span) in spans {
+        adjust_range(grid, cells, std::iter::once(row), widths, col, col + span);
     }
 }
 
@@ -1271,14 +1250,14 @@ fn is_cell_visible(grid: &Grid, pos: Position) -> bool {
 fn is_cell_overriden(grid: &Grid, pos: Position) -> bool {
     grid.spans
         .iter()
-        .any(|(&(start, end), rows)| pos.1 > start && pos.1 < end && rows.contains(&pos.0))
+        .any(|(&(row, col), span)| pos.1 > col && pos.1 < col + span && row == pos.0)
 }
 
 fn is_simple_cell(grid: &Grid, pos: Position) -> bool {
     let is_spanned = grid
         .spans
         .iter()
-        .any(|(&(start, end), rows)| pos.1 >= start && pos.1 < end && rows.contains(&pos.0));
+        .any(|(&(row, col), span)| pos.1 >= col && pos.1 < col + span && pos.0 == row);
 
     !is_spanned
 }
@@ -1988,13 +1967,9 @@ fn print_grid(
 }
 
 fn grid_cell_width(grid: &Grid, widths: &[usize], pos: Position) -> usize {
-    let span = grid
-        .spans
-        .iter()
-        .find(|((col, _), rows)| *col == pos.1 && rows.contains(&pos.0))
-        .map(|(span, _)| span);
+    let span = grid.get_column_span(pos);
     match span {
-        Some(&(start, end)) => range_width(grid, start, end, widths),
+        Some(span) => range_width(grid, pos.1, pos.1 + span, widths),
         None => widths[pos.1],
     }
 }

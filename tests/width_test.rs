@@ -1771,11 +1771,11 @@ fn max_width_truncate_with_big_span() {
     assert_eq!(
         table,
         static_table!(
-            "| N |   column 0    |    column 1    |    column 2    |"
-            "|---+---------------+----------------+----------------|"
-            "| 0 |      0-0      |      0-1       |      0-2       |"
-            "| 1 |   Hello World With Big Line; Here we gooooooo   |"
-            "| 2 |      2-0      | Hello World With Big Line; Here |"
+            "| N | column 0  |    column 1    |    column 2    |"
+            "|---+-----------+----------------+----------------|"
+            "| 0 |    0-0    |      0-1       |      0-2       |"
+            "| 1 | Hello World With Big Line; Here we gooooooo |"
+            "| 2 |    2-0    | Hello World With Big Line; Here |"
         )
     );
 
@@ -1789,11 +1789,11 @@ fn max_width_truncate_with_big_span() {
     assert_eq!(
         table,
         static_table!(
-            "|  | column 0 | column 1  | column 2   |"
-            "|--+----------+-----------+------------|"
-            "|  | 0-0      | 0-1       | 0-2        |"
+            "|  | colum | column 1    | column 2    |"
+            "|--+-------+-------------+-------------|"
+            "|  | 0-0   | 0-1         | 0-2         |"
             "|  | Hello World With Big Line; Here w |"
-            "|  | 2-0      | Hello World With Big L |"
+            "|  | 2-0   | Hello World With Big Line |"
         )
     );
     assert_eq!(string_width_multiline(&table), 40);
@@ -1834,11 +1834,11 @@ fn max_width_truncate_with_big_span() {
     assert_eq!(
         table,
         static_table!(
-            "| N | column 0  |  column 1  | column 2  |"
-            "|---+-----------+------------+-----------|"
-            "| 0 |    0-0    |    0-1     |    0-2    |"
-            "| 1 | Hello World With Big Line; Here w  |"
-            "| 2 |    2-0    | Hello World With Big L |"
+            "| N | column 0 |  column 1  | column 2  |"
+            "|---+----------+------------+-----------|"
+            "| 0 |   0-0    |    0-1     |    0-2    |"
+            "| 1 | Hello World With Big Line; Here w |"
+            "| 2 |   2-0    | Hello World With Big L |"
         )
     );
 }
