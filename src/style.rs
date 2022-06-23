@@ -84,7 +84,7 @@
 
 use std::{borrow::Cow, marker::PhantomData};
 
-use papergrid::{Borders, Entity, Grid, Position, Settings};
+use papergrid::{Borders, Entity, Grid, Position};
 
 use crate::{CellOption, TableOption};
 
@@ -1238,11 +1238,8 @@ impl<'a> TableOption for BorderText<'a> {
 pub use papergrid::Border;
 
 impl CellOption for Border {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, col: usize) {
-        grid.set(
-            Entity::Cell(row, col),
-            Settings::default().border(self.clone()),
-        );
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        grid.set_border(entity, self.clone());
     }
 }
 

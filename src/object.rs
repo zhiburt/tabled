@@ -40,6 +40,12 @@ pub trait Object: Sized {
     fn inverse(self) -> InversionCombination<Self> {
         InversionCombination { obj: self }
     }
+
+    /// A Entity representation of an object.
+    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
+        // todo: Make a better interface to support a list of Entities.
+        None
+    }
 }
 
 /// Combination struct used for chaining [Object]'s.
@@ -144,11 +150,9 @@ pub struct Segment<C, R> {
 }
 
 impl Segment<RangeFull, RangeFull> {
-    /// Returns a full table segment.
-    ///
-    /// The same as [Full].
-    pub fn all() -> Self {
-        Self::new(.., ..)
+    /// Returns a table segment on which are present all cells.
+    pub fn all() -> SegmentAll {
+        SegmentAll
     }
 }
 
@@ -184,6 +188,24 @@ where
     }
 }
 
+/// Segment which cantains all cells on the table.
+///
+/// Can be crated from [Segment::all].
+#[non_exhaustive]
+pub struct SegmentAll;
+
+impl Object for SegmentAll {
+    type Iter = SectorIter;
+
+    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        SectorIter::new(0, count_rows, 0, count_columns)
+    }
+
+    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
+        Some(Entity::Global)
+    }
+}
+
 /// Frame includes cells which are on the edges of each side.
 /// Therefore it's [Object] implementation returns a subset of cells which are present in frame.
 pub struct Frame;
@@ -208,6 +230,10 @@ impl Object for FirstRow {
     fn cells(&self, _: usize, count_columns: usize) -> Self::Iter {
         RowIter::new(0, count_columns)
     }
+
+    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
+        Some(Entity::Row(0))
+    }
 }
 
 impl Add<usize> for FirstRow {
@@ -229,6 +255,11 @@ impl Object for LastRow {
     fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
         let row = if count_rows == 0 { 0 } else { count_rows - 1 };
         RowIter::new(row, count_columns)
+    }
+
+    fn as_entity(&self, count_rows: usize, _: usize) -> Option<Entity> {
+        let row = if count_rows == 0 { 0 } else { count_rows - 1 };
+        Some(Entity::Row(row))
     }
 }
 
@@ -254,6 +285,10 @@ impl Object for Row {
         }
 
         RowIter::new(self.index, count_columns)
+    }
+
+    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
+        Some(Entity::Row(self.index))
     }
 }
 
@@ -399,6 +434,10 @@ impl Object for FirstColumn {
     fn cells(&self, count_rows: usize, _: usize) -> Self::Iter {
         ColumnIter::new(0, count_rows)
     }
+
+    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
+        Some(Entity::Column(0))
+    }
 }
 
 impl Add<usize> for FirstColumn {
@@ -418,6 +457,11 @@ impl Object for LastColumn {
     fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
         let col = count_columns.saturating_sub(1);
         ColumnIter::new(col, count_rows)
+    }
+
+    fn as_entity(&self, _: usize, count_columns: usize) -> Option<Entity> {
+        let col = count_columns.saturating_sub(1);
+        Some(Entity::Column(col))
     }
 }
 
@@ -443,6 +487,15 @@ impl Object for Column {
 
         ColumnIter::new(col, count_rows)
     }
+
+    fn as_entity(&self, _: usize, count_columns: usize) -> Option<Entity> {
+        let col = self.0;
+        if col >= count_columns {
+            return None;
+        }
+
+        Some(Entity::Column(self.0))
+    }
 }
 
 /// LastColumnOffset represents a single column on a grid indexed via offset from the last column.
@@ -462,6 +515,16 @@ impl Object for LastColumnOffset {
         let col = col - self.offset;
         ColumnIter::new(col, count_rows)
     }
+
+    fn as_entity(&self, _: usize, count_columns: usize) -> Option<Entity> {
+        let col = count_columns.saturating_sub(1);
+        if self.offset > col {
+            return None;
+        }
+
+        let col = col - self.offset;
+        Some(Entity::Column(col))
+    }
 }
 
 /// Cell denotes a particular cell on a [Table].
@@ -474,6 +537,10 @@ impl Object for Cell {
 
     fn cells(&self, _: usize, _: usize) -> Self::Iter {
         CellIter::new(self.0, self.1)
+    }
+
+    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
+        Some(Entity::Cell(self.0, self.1))
     }
 }
 

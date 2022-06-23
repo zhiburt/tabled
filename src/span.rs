@@ -27,7 +27,7 @@
 //! )
 //! ```
 
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{Entity, Grid};
 
 use crate::CellOption;
 
@@ -56,7 +56,7 @@ impl Span {
 }
 
 impl CellOption for Span {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        grid.set(Entity::Cell(row, column), Settings::new().span(self.size));
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        grid.set_span(entity, self.size);
     }
 }

@@ -6,7 +6,7 @@
 //!
 //! [Alignment]: crate::Alignment
 
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{Entity, Grid};
 
 use crate::{CellOption, TableOption};
 
@@ -162,17 +162,14 @@ pub enum AlignmentStrategy {
 }
 
 impl CellOption for AlignmentStrategy {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut formatting = grid.style(Entity::Cell(row, column)).formatting;
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        let mut formatting = grid.style(entity).formatting;
         match &self {
             AlignmentStrategy::PerCell => formatting.allow_lines_alignement = false,
             AlignmentStrategy::PerLine => formatting.allow_lines_alignement = true,
         }
 
-        grid.set(
-            Entity::Cell(row, column),
-            Settings::new().formatting(formatting),
-        )
+        grid.set_formatting(entity, formatting);
     }
 }
 
@@ -252,8 +249,8 @@ pub enum TrimStrategy {
 }
 
 impl CellOption for TrimStrategy {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut formatting = grid.style(Entity::Cell(row, column)).formatting;
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        let mut formatting = grid.style(entity).formatting;
 
         match self {
             TrimStrategy::Vertical => {
@@ -272,9 +269,6 @@ impl CellOption for TrimStrategy {
             }
         }
 
-        grid.set(
-            Entity::Cell(row, column),
-            Settings::new().formatting(formatting),
-        )
+        grid.set_formatting(entity, formatting)
     }
 }

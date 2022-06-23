@@ -124,10 +124,12 @@ impl<F> CellOption for Format<F>
 where
     F: FnMut(&str) -> String,
 {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let content = grid.get_cell_content(row, column);
-        let content = (self.f)(content);
-        grid.set(Entity::Cell(row, column), Settings::new().text(content))
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        for (row, col) in entity.iter(grid) {
+            let content = grid.get_cell_content(row, col);
+            let content = (self.f)(content);
+            grid.set(Entity::Cell(row, col), Settings::new().text(content))
+        }
     }
 }
 
@@ -151,10 +153,12 @@ impl<F> CellOption for FormatWithIndex<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
 {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let content = grid.get_cell_content(row, column);
-        let content = (self.f)(content, (row, column));
-        grid.set(Entity::Cell(row, column), Settings::new().text(content))
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        for (row, col) in entity.iter(grid) {
+            let content = grid.get_cell_content(row, col);
+            let content = (self.f)(content, (row, col));
+            grid.set(Entity::Cell(row, col), Settings::new().text(content))
+        }
     }
 }
 
@@ -162,9 +166,11 @@ impl<F> CellOption for F
 where
     F: FnMut(&str) -> String,
 {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let content = grid.get_cell_content(row, column);
-        let content = (self)(content);
-        grid.set(Entity::Cell(row, column), Settings::new().text(content))
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        for (row, col) in entity.iter(grid) {
+            let content = grid.get_cell_content(row, col);
+            let content = (self)(content);
+            grid.set(Entity::Cell(row, col), Settings::new().text(content))
+        }
     }
 }

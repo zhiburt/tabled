@@ -35,10 +35,10 @@
 use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 
 use papergrid::{
-    count_borders_in_range, cut_str, string_width, string_width_multiline, Entity, Grid, Settings,
+    count_borders_in_range, cut_str, string_width, string_width_multiline, Grid, Settings,
 };
 
-use crate::{CellOption, TableOption};
+use crate::{object::Entity, CellOption, TableOption};
 
 /// Width allows you to set a min and max width of an object on a [Table]
 /// using different strategies.
@@ -191,17 +191,19 @@ impl<W, P> CellOption for Truncate<'_, W, P>
 where
     W: WidthValue,
 {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
         let width = self.width.width(grid);
 
-        let content = grid.get_cell_content_styled(row, column);
-        if width < string_width(&content) {
-            let mut content = cut_str(&content, width);
-            if !self.suffix.as_ref().is_empty() {
-                content.push_str(self.suffix.as_ref());
-            }
+        for (row, col) in entity.iter(grid) {
+            let content = grid.get_cell_content_styled(row, col);
+            if width < string_width(&content) {
+                let mut content = cut_str(&content, width);
+                if !self.suffix.as_ref().is_empty() {
+                    content.push_str(self.suffix.as_ref());
+                }
 
-            grid.set(Entity::Cell(row, column), Settings::new().text(content))
+                grid.set(Entity::Cell(row, col), Settings::new().text(content))
+            }
         }
     }
 }
@@ -268,23 +270,23 @@ impl<W> CellOption for Wrap<W>
 where
     W: WidthValue,
 {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
         let width = self.width.width(grid);
-        let content = grid.get_cell_content_styled(row, column);
 
-        let wrapped_content = wrap_text(&content, width, self.keep_words);
-        assert!(
-            width >= string_width_multiline(&wrapped_content),
-            "width{:?}\n\n content={:?}\n\n wrap={:?}\n",
-            width,
-            content,
-            wrapped_content
-        );
+        for (row, col) in entity.iter(grid) {
+            let content = grid.get_cell_content_styled(row, col);
+            let wrapped = wrap_text(&content, width, self.keep_words);
 
-        grid.set(
-            Entity::Cell(row, column),
-            Settings::new().text(wrapped_content),
-        )
+            debug_assert!(
+                width >= string_width_multiline(&wrapped),
+                "width={:?}\n\n content={:?}\n\n wrap={:?}\n",
+                width,
+                content,
+                wrapped
+            );
+
+            grid.set(Entity::Cell(row, col), Settings::new().text(wrapped))
+        }
     }
 }
 
@@ -363,11 +365,14 @@ impl<W> CellOption for MinWidth<W>
 where
     W: WidthValue,
 {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
         let width = self.size.width(grid);
-        let content = grid.get_cell_content_styled(row, column);
-        let new_content = increase_width(&content, width, self.fill);
-        grid.set(Entity::Cell(row, column), Settings::new().text(new_content))
+
+        for (row, col) in entity.iter(grid) {
+            let content = grid.get_cell_content_styled(row, col);
+            let new_content = increase_width(&content, width, self.fill);
+            grid.set(Entity::Cell(row, col), Settings::new().text(new_content))
+        }
     }
 }
 
@@ -518,8 +523,8 @@ where
 
         for row in 0..grid.count_rows() {
             for col in 0..grid.count_columns() {
-                Width::increase(width).change_cell(grid, row, col);
-                Width::truncate(width).change_cell(grid, row, col);
+                Width::increase(width).change_cell(grid, Entity::Cell(row, col));
+                Width::truncate(width).change_cell(grid, Entity::Cell(row, col));
             }
         }
     }
@@ -711,7 +716,7 @@ fn increase_total_width<P: ColumnPeaker>(
     let increase_list = increase_total_width_fn(grid, expected_width, total_width, priority);
 
     for ((row, col), width) in increase_list {
-        MinWidth::new(width).change_cell(grid, row, col);
+        MinWidth::new(width).change_cell(grid, Entity::Cell(row, col));
     }
 }
 
@@ -726,7 +731,7 @@ fn truncate_total_width<P: ColumnPeaker>(
     for ((row, col), width) in points {
         Truncate::new(width)
             .suffix(suffix)
-            .change_cell(grid, row, col);
+            .change_cell(grid, Entity::Cell(row, col));
     }
 }
 
@@ -743,7 +748,7 @@ fn wrap_total_width<P: ColumnPeaker>(
     wrap.keep_words = keep_words;
     for ((row, col), width) in points {
         wrap.width = width;
-        wrap.change_cell(grid, row, col);
+        wrap.change_cell(grid, Entity::Cell(row, col));
     }
 }
 
