@@ -860,10 +860,10 @@ fn total_width_small_with_panel() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World       |"
+            "|   Hello World    |"
             "|--+-------+-------|"
             "|  | colum | colum |"
-            "|  | 0-0   | 0-1   |"
+            "|  |  0-0  |  0-1  |"
         )
     );
     assert!(is_lines_equal(&table, 20));
@@ -879,7 +879,7 @@ fn total_width_small_with_panel() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World       |"
+            "|   Hello World    |"
             "|--+----+----+-----|"
             "|  | co | co | col |"
             "|  | 0- | 0- | 0-2 |"
@@ -1138,7 +1138,7 @@ fn max_width_with_span() {
             "  | col | col | col "
             "--+-----+-----+-----"
             "  | a long st | 0-2 "
-            "  | 1-0 | 1-1       "
+            "  | 1-0 |    1-1    "
             "  | 2-0 | 2-1 | 2-2 "
         )
     );
@@ -1752,9 +1752,9 @@ fn max_width_truncate_with_big_span() {
         static_table!(
             "|  | column 0  | column 1  | column 2  |"
             "|--+-----------+-----------+-----------|"
-            "|  | 0-0       | 0-1       | 0-2       |"
+            "|  |    0-0    |    0-1    |    0-2    |"
             "|  | Hello World With Big Line; Here w |"
-            "|  | 2-0       | 2-1       | 2-2       |"
+            "|  |    2-0    |    2-1    |    2-2    |"
         )
     );
 
@@ -1789,11 +1789,11 @@ fn max_width_truncate_with_big_span() {
     assert_eq!(
         table,
         static_table!(
-            "|  | colum | column 1    | column 2    |"
+            "|  | colum |  column 1   |  column 2   |"
             "|--+-------+-------------+-------------|"
-            "|  | 0-0   | 0-1         | 0-2         |"
+            "|  |  0-0  |     0-1     |     0-2     |"
             "|  | Hello World With Big Line; Here w |"
-            "|  | 2-0   | Hello World With Big Line |"
+            "|  |  2-0  | Hello World With Big Line |"
         )
     );
     assert_eq!(string_width_multiline(&table), 40);
@@ -1813,11 +1813,11 @@ fn max_width_truncate_with_big_span() {
     assert_eq!(
         table,
         static_table!(
-            "|  | column 0      | column 1      | c |"
+            "|  |   column 0    |   column 1    | c |"
             "|--+---------------+---------------+---|"
-            "|  | 0-0           | 0-1           | 0 |"
+            "|  |      0-0      |      0-1      | 0 |"
             "|  | Hello World With Big Line; He | 1 |"
-            "|  | 2-0           | Hello World With  |"
+            "|  |      2-0      | Hello World With  |"
         )
     );
 
@@ -1859,9 +1859,9 @@ fn max_width_truncate_priority_max() {
         static_table!(
             "| N | column  | column  | column  |"
             "|---+---------+---------+---------|"
-            "| 0 | 0-0     | 0-1     | 0-2     |"
-            "| 1 | Hello W | 1-1     | 1-2     |"
-            "| 2 | 2-0     | 2-1     | 2-2     |"
+            "| 0 |   0-0   |   0-1   |   0-2   |"
+            "| 1 | Hello W |   1-1   |   1-2   |"
+            "| 2 |   2-0   |   2-1   |   2-2   |"
         )
     );
 
@@ -2057,11 +2057,11 @@ fn max_width_truncate_priority_min() {
     assert_eq!(
         table,
         static_table!(
-            "|  | column 0               |  |  |"
+            "|  |        column 0        |  |  |"
             "|--+------------------------+--+--|"
-            "|  | 0-0                    |  |  |"
+            "|  |          0-0           |  |  |"
             "|  | Hello World With Big L |  |  |"
-            "|  | 2-0                    |  |  |"
+            "|  |          2-0           |  |  |"
         )
     );
 
@@ -2076,9 +2076,9 @@ fn max_width_truncate_priority_min() {
         static_table!(
             "|  | column  |  |  |"
             "|--+---------+--+--|"
-            "|  | 0-0     |  |  |"
+            "|  |   0-0   |  |  |"
             "|  | Hello W |  |  |"
-            "|  | 2-0     |  |  |"
+            "|  |   2-0   |  |  |"
         )
     );
 

@@ -727,8 +727,6 @@ fn truncate_total_width<P: ColumnPeaker>(
         Truncate::new(width)
             .suffix(suffix)
             .change_cell(grid, row, col);
-        // todo: fixme;
-        MinWidth::new(width).change_cell(grid, row, col);
     }
 }
 
