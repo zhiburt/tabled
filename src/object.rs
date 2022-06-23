@@ -8,6 +8,8 @@ use std::{
     ops::{Add, Bound, RangeBounds, RangeFull, Sub},
 };
 
+pub use papergrid::Entity;
+
 /// Object helps to locate a necessary part of a [Table].
 ///
 /// [Table]: crate::Table

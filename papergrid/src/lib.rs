@@ -211,12 +211,7 @@ impl Grid {
         }
 
         if let Some(span) = settings.span {
-            match entity {
-                Entity::Global => (),
-                Entity::Column(_) => (),
-                Entity::Row(_) => (),
-                Entity::Cell(row, col) => self.set_span(span, row, col),
-            }
+            self.set_span(entity, span);
         }
     }
 
@@ -254,28 +249,9 @@ impl Grid {
 
     /// Set border set a border value to all cells in [Entity].
     pub fn set_border(&mut self, entity: Entity, border: Border) {
-        match entity {
-            Entity::Global => {
-                for col in 0..self.count_columns() {
-                    for row in 0..self.count_rows() {
-                        self.theme.override_border((row, col), border.clone());
-                    }
-                }
-            }
-            Entity::Column(col) => {
-                for row in 0..self.count_rows() {
-                    self.theme.override_border((row, col), border.clone());
-                }
-            }
-            Entity::Row(row) => {
-                for col in 0..self.count_columns() {
-                    self.theme.override_border((row, col), border.clone());
-                }
-            }
-            Entity::Cell(row, col) => {
-                self.theme.override_border((row, col), border);
-            }
-        }
+        entity
+            .iter(self)
+            .for_each(|pos| self.theme.override_border(pos, border.clone()))
     }
 
     /// Set the border line by row index.
@@ -534,7 +510,13 @@ impl Grid {
         !is_cell_overriden
     }
 
-    fn set_span(&mut self, mut span: usize, row: usize, mut col: usize) {
+    fn set_span(&mut self, entity: Entity, span: usize) {
+        entity
+            .iter(self)
+            .for_each(|pos| self.set_cell_span(pos, span));
+    }
+
+    fn set_cell_span(&mut self, (row, mut col): Position, mut span: usize) {
         if row >= self.count_rows() {
             return;
         }
@@ -566,28 +548,9 @@ impl Grid {
     }
 
     fn _set_text(&mut self, entity: Entity, text: String) {
-        match entity {
-            Entity::Cell(row, col) => {
-                self.cells[row][col] = text;
-            }
-            Entity::Column(col) => {
-                for row in 0..self.count_rows() {
-                    self.cells[row][col] = text.clone();
-                }
-            }
-            Entity::Row(row) => {
-                for col in 0..self.count_columns() {
-                    self.cells[row][col] = text.clone();
-                }
-            }
-            Entity::Global => {
-                for row in 0..self.count_rows() {
-                    for col in 0..self.count_columns() {
-                        self.cells[row][col] = text.clone();
-                    }
-                }
-            }
-        }
+        entity.iter(self).for_each(|(row, col)| {
+            self.cells[row][col] = text.clone();
+        });
     }
 
     /// Get a span value of the cell, if any is set.
@@ -632,6 +595,80 @@ pub enum Entity {
     Row(usize),
     /// A particular cell (row, column) on the grid.
     Cell(usize, usize),
+}
+
+impl Entity {
+    fn iter(&self, grid: &Grid) -> EntityIterator {
+        EntityIterator {
+            entity: *self,
+            count_cols: grid.count_columns(),
+            count_rows: grid.count_rows(),
+            i: 0,
+            j: 0,
+        }
+    }
+}
+
+struct EntityIterator {
+    entity: Entity,
+    count_rows: usize,
+    count_cols: usize,
+    i: usize,
+    j: usize,
+}
+
+impl Iterator for EntityIterator {
+    type Item = Position;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.count_rows == 0 || self.count_cols == 0 {
+            return None;
+        }
+
+        match self.entity {
+            Entity::Cell(row, col) => {
+                self.count_cols = 0;
+                self.count_rows = 0;
+
+                Some((row, col))
+            }
+            Entity::Column(col) => {
+                if self.i >= self.count_cols {
+                    return None;
+                }
+
+                let i = self.i;
+                self.i += 1;
+
+                Some((i, col))
+            }
+            Entity::Row(row) => {
+                if self.j >= self.count_rows {
+                    return None;
+                }
+
+                let j = self.j;
+                self.j += 1;
+
+                Some((row, j))
+            }
+            Entity::Global => {
+                if self.i >= self.count_cols {
+                    self.i = 0;
+                    self.j += 1;
+
+                    if self.j >= self.count_rows {
+                        return None;
+                    }
+                }
+
+                let i = self.i;
+                self.i += 1;
+
+                Some((self.j, i))
+            }
+        }
+    }
 }
 
 /// Settings represent setting of a particular cell
@@ -1107,7 +1144,7 @@ fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     Ok(())
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 struct CellContent<'a> {
     lines: Vec<Cow<'a, str>>,
     lines_width: Vec<usize>,
@@ -1116,18 +1153,7 @@ struct CellContent<'a> {
 }
 
 fn cells_content(grid: &Grid) -> Vec<Vec<CellContent>> {
-    let mut cells = vec![
-        vec![
-            CellContent {
-                lines: Vec::new(),
-                lines_width: Vec::new(),
-                width: 0,
-                count_new_lines: 0,
-            };
-            grid.count_columns()
-        ];
-        grid.count_rows()
-    ];
+    let mut cells = vec![vec![CellContent::default(); grid.count_columns()]; grid.count_rows()];
 
     for (row, cells) in cells.iter_mut().enumerate() {
         for (col, cell) in cells.iter_mut().enumerate() {
