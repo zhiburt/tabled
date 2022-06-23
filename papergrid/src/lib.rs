@@ -170,36 +170,20 @@ impl Grid {
     ///     )
     /// ```
     pub fn set(&mut self, entity: Entity, settings: Settings) {
-        let styles = &mut self.config.styles;
-        if let Some(v) = settings.padding {
-            set_entity_value(&mut styles.padding, &mut styles.global.padding, entity, v)
+        if let Some(padding) = settings.padding {
+            self.set_padding(entity, padding);
         }
 
-        if let Some(v) = settings.alignment_horizontal {
-            set_entity_value(
-                &mut styles.alignment_horizontal,
-                &mut styles.global.alignment_horizontal,
-                entity,
-                v,
-            )
+        if let Some(alignment) = settings.alignment_horizontal {
+            self.set_alignment_horizontal(entity, alignment);
         }
 
-        if let Some(v) = settings.alignment_vertical {
-            set_entity_value(
-                &mut styles.alignment_vertical,
-                &mut styles.global.alignment_vertical,
-                entity,
-                v,
-            )
+        if let Some(alignment) = settings.alignment_vertical {
+            self.set_alignment_vertical(entity, alignment);
         }
 
-        if let Some(v) = settings.formatting {
-            set_entity_value(
-                &mut styles.formatting,
-                &mut styles.global.formatting,
-                entity,
-                v,
-            )
+        if let Some(formatting) = settings.formatting {
+            self.set_formatting(entity, formatting);
         }
 
         if let Some(text) = settings.text {
@@ -510,10 +494,51 @@ impl Grid {
         !is_cell_overriden
     }
 
-    fn set_span(&mut self, entity: Entity, span: usize) {
+    /// Set a column span to a given cells.
+    pub fn set_span(&mut self, entity: Entity, span: usize) {
         entity
             .iter(self)
             .for_each(|pos| self.set_cell_span(pos, span));
+    }
+
+    /// Set a padding to a given cells.
+    pub fn set_padding(&mut self, entity: Entity, padding: Padding) {
+        set_entity_value(
+            &mut self.config.styles.padding,
+            &mut self.config.styles.global.padding,
+            entity,
+            padding,
+        )
+    }
+
+    /// Set a formatting to a given cells.
+    pub fn set_formatting(&mut self, entity: Entity, formatting: Formatting) {
+        set_entity_value(
+            &mut self.config.styles.formatting,
+            &mut self.config.styles.global.formatting,
+            entity,
+            formatting,
+        )
+    }
+
+    /// Set a vertical alignment to a given cells.
+    pub fn set_alignment_vertical(&mut self, entity: Entity, alignment: AlignmentVertical) {
+        set_entity_value(
+            &mut self.config.styles.alignment_vertical,
+            &mut self.config.styles.global.alignment_vertical,
+            entity,
+            alignment,
+        )
+    }
+
+    /// Set a horizontal alignment to a given cells.
+    pub fn set_alignment_horizontal(&mut self, entity: Entity, alignment: AlignmentHorizontal) {
+        set_entity_value(
+            &mut self.config.styles.alignment_horizontal,
+            &mut self.config.styles.global.alignment_horizontal,
+            entity,
+            alignment,
+        )
     }
 
     fn set_cell_span(&mut self, (row, mut col): Position, mut span: usize) {
@@ -598,7 +623,8 @@ pub enum Entity {
 }
 
 impl Entity {
-    fn iter(&self, grid: &Grid) -> EntityIterator {
+    /// Iterate over cells which are covered via the [Entity].
+    pub fn iter(&self, grid: &Grid) -> EntityIterator {
         EntityIterator {
             entity: *self,
             count_cols: grid.count_columns(),
@@ -609,7 +635,11 @@ impl Entity {
     }
 }
 
-struct EntityIterator {
+/// An iterator over cells.
+///
+/// Produced from [Entity::iter].
+#[derive(Debug)]
+pub struct EntityIterator {
     entity: Entity,
     count_rows: usize,
     count_cols: usize,
@@ -633,7 +663,7 @@ impl Iterator for EntityIterator {
                 Some((row, col))
             }
             Entity::Column(col) => {
-                if self.i >= self.count_cols {
+                if self.i >= self.count_rows {
                     return None;
                 }
 
@@ -643,7 +673,7 @@ impl Iterator for EntityIterator {
                 Some((i, col))
             }
             Entity::Row(row) => {
-                if self.j >= self.count_rows {
+                if self.j >= self.count_cols {
                     return None;
                 }
 
@@ -653,19 +683,19 @@ impl Iterator for EntityIterator {
                 Some((row, j))
             }
             Entity::Global => {
-                if self.i >= self.count_cols {
-                    self.i = 0;
-                    self.j += 1;
+                if self.j >= self.count_cols {
+                    self.j = 0;
+                    self.i += 1;
 
-                    if self.j >= self.count_rows {
+                    if self.i >= self.count_rows {
                         return None;
                     }
                 }
 
-                let i = self.i;
-                self.i += 1;
+                let j = self.j;
+                self.j += 1;
 
-                Some((self.j, i))
+                Some((self.i, j))
             }
         }
     }
