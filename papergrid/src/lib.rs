@@ -1194,26 +1194,19 @@ fn adjust_spans(grid: &Grid, cells: &[Vec<CellContent>], widths: &mut [usize]) {
 
     // todo: the order is matter here; we need to figure out what is correct.
     for (&(row, col), span) in spans {
-        adjust_range(grid, cells, std::iter::once(row), widths, col, col + span);
+        adjust_range(grid, cells, row, col, col + span, widths);
     }
 }
 
 fn adjust_range(
     grid: &Grid,
     cells: &[Vec<CellContent>],
-    rows: impl ExactSizeIterator<Item = usize>,
-    widths: &mut [usize],
+    row: usize,
     start: usize,
     end: usize,
+    widths: &mut [usize],
 ) {
-    if rows.len() == 0 {
-        return;
-    }
-
-    let max_span_width = rows
-        .map(|row| get_cell_width_cells(grid, cells, (row, start)))
-        .max()
-        .unwrap_or(0);
+    let max_span_width = get_cell_width_cells(grid, cells, (row, start));
     let range_width = range_width(grid, start, end, widths);
 
     if range_width >= max_span_width {
