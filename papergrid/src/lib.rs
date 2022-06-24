@@ -234,7 +234,7 @@ impl Grid {
     /// Set border set a border value to all cells in [Entity].
     pub fn set_border(&mut self, entity: Entity, border: Border) {
         entity
-            .iter(self)
+            .iter(self.count_rows(), self.count_columns())
             .for_each(|pos| self.theme.override_border(pos, border.clone()))
     }
 
@@ -497,7 +497,7 @@ impl Grid {
     /// Set a column span to a given cells.
     pub fn set_span(&mut self, entity: Entity, span: usize) {
         entity
-            .iter(self)
+            .iter(self.count_rows(), self.count_columns())
             .for_each(|pos| self.set_cell_span(pos, span));
     }
 
@@ -573,9 +573,11 @@ impl Grid {
     }
 
     fn _set_text(&mut self, entity: Entity, text: String) {
-        entity.iter(self).for_each(|(row, col)| {
-            self.cells[row][col] = text.clone();
-        });
+        entity
+            .iter(self.count_rows(), self.count_columns())
+            .for_each(|(row, col)| {
+                self.cells[row][col] = text.clone();
+            });
     }
 
     /// Get a span value of the cell, if any is set.
@@ -624,11 +626,11 @@ pub enum Entity {
 
 impl Entity {
     /// Iterate over cells which are covered via the [Entity].
-    pub fn iter(&self, grid: &Grid) -> EntityIterator {
+    pub fn iter(&self, count_rows: usize, count_cols: usize) -> EntityIterator {
         EntityIterator {
             entity: *self,
-            count_cols: grid.count_columns(),
-            count_rows: grid.count_rows(),
+            count_rows,
+            count_cols,
             i: 0,
             j: 0,
         }

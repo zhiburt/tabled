@@ -145,7 +145,7 @@ fn formatting_cell_test() {
 }
 
 #[test]
-fn formatting_and_combination_test() {
+fn formatting_combination_and_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
@@ -168,7 +168,7 @@ fn formatting_and_combination_test() {
 }
 
 #[test]
-fn formatting_not_combination_test() {
+fn formatting_combination_not_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Style::psql())
@@ -186,6 +186,49 @@ fn formatting_not_combination_test() {
             " (x) 0 |     0-0      |     0-1      |     0-2      "
             " (x) 1 |     1-0      |     1-1      |     1-2      "
             " (x) 2 |     2-0      |     2-1      |     2-2      "
+        )
+    );
+}
+
+#[test]
+fn formatting_combination_inverse_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(Modify::new(Columns::single(0).inverse()).with(Format::new(|s| format!("(x) {}", s))))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            " N | (x) column 0 | (x) column 1 | (x) column 2 "
+            "---+--------------+--------------+--------------"
+            " 0 |   (x) 0-0    |   (x) 0-1    |   (x) 0-2    "
+            " 1 |   (x) 1-0    |   (x) 1-1    |   (x) 1-2    "
+            " 2 |   (x) 2-0    |   (x) 2-1    |   (x) 2-2    "
+        )
+    );
+}
+
+#[test]
+fn formatting_combination_intersect_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(
+            Modify::new(Columns::new(1..3).intersect(Rows::new(1..3)))
+                .with(Format::new(|s| format!("(x) {}", s))),
+        )
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            " N | column 0 | column 1 | column 2 "
+            "---+----------+----------+----------"
+            " 0 | (x) 0-0  | (x) 0-1  |   0-2    "
+            " 1 | (x) 1-0  | (x) 1-1  |   1-2    "
+            " 2 |   2-0    |   2-1    |   2-2    "
         )
     );
 }

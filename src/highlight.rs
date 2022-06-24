@@ -115,7 +115,7 @@ where
 {
     fn change(&mut self, grid: &mut Grid) {
         let cells = self.target.cells(grid.count_rows(), grid.count_columns());
-        let segments = split_segments(cells);
+        let segments = split_segments(cells, grid.count_rows(), grid.count_columns());
 
         for sector in segments {
             set_border(grid, sector, self.border.clone());
@@ -123,21 +123,27 @@ where
     }
 }
 
-fn split_segments(cells: impl Iterator<Item = (usize, usize)>) -> Vec<HashSet<(usize, usize)>> {
+fn split_segments(
+    cells: impl Iterator<Item = Entity>,
+    count_rows: usize,
+    count_cols: usize,
+) -> Vec<HashSet<(usize, usize)>> {
     let mut segments: Vec<HashSet<(usize, usize)>> = Vec::new();
-    for cell in cells {
-        let found_segment = segments
-            .iter_mut()
-            .find(|s| s.iter().any(|&c| is_cell_connected(cell, c)));
+    for entity in cells {
+        for cell in entity.iter(count_rows, count_cols) {
+            let found_segment = segments
+                .iter_mut()
+                .find(|s| s.iter().any(|&c| is_cell_connected(cell, c)));
 
-        match found_segment {
-            Some(segment) => {
-                segment.insert(cell);
-            }
-            None => {
-                let mut segment = HashSet::new();
-                segment.insert(cell);
-                segments.push(segment);
+            match found_segment {
+                Some(segment) => {
+                    segment.insert(cell);
+                }
+                None => {
+                    let mut segment = HashSet::new();
+                    segment.insert(cell);
+                    segments.push(segment);
+                }
             }
         }
     }

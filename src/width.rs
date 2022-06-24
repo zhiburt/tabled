@@ -194,7 +194,7 @@ where
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
         let width = self.width.width(grid);
 
-        for (row, col) in entity.iter(grid) {
+        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content_styled(row, col);
             if width < string_width(&content) {
                 let mut content = cut_str(&content, width);
@@ -273,7 +273,7 @@ where
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
         let width = self.width.width(grid);
 
-        for (row, col) in entity.iter(grid) {
+        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content_styled(row, col);
             let wrapped = wrap_text(&content, width, self.keep_words);
 
@@ -368,7 +368,7 @@ where
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
         let width = self.size.width(grid);
 
-        for (row, col) in entity.iter(grid) {
+        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content_styled(row, col);
             let new_content = increase_width(&content, width, self.fill);
             grid.set(Entity::Cell(row, col), Settings::new().text(new_content))

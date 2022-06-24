@@ -125,7 +125,7 @@ where
     F: FnMut(&str) -> String,
 {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        for (row, col) in entity.iter(grid) {
+        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content(row, col);
             let content = (self.f)(content);
             grid.set(Entity::Cell(row, col), Settings::new().text(content))
@@ -154,7 +154,7 @@ where
     F: FnMut(&str, (usize, usize)) -> String,
 {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        for (row, col) in entity.iter(grid) {
+        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content(row, col);
             let content = (self.f)(content, (row, col));
             grid.set(Entity::Cell(row, col), Settings::new().text(content))
@@ -167,7 +167,7 @@ where
     F: FnMut(&str) -> String,
 {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        for (row, col) in entity.iter(grid) {
+        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content(row, col);
             let content = (self)(content);
             grid.set(Entity::Cell(row, col), Settings::new().text(content))

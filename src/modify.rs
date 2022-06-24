@@ -72,14 +72,9 @@ where
     S: CellOption,
 {
     fn change(&mut self, grid: &mut Grid) {
-        match self.obj.as_entity(grid.count_rows(), grid.count_columns()) {
-            Some(entity) => self.modifiers.change_cell(grid, entity),
-            None => {
-                let cells = self.obj.cells(grid.count_rows(), grid.count_columns());
-                for (row, col) in cells {
-                    self.modifiers.change_cell(grid, Entity::Cell(row, col));
-                }
-            }
+        let cells = self.obj.cells(grid.count_rows(), grid.count_columns());
+        for entity in cells {
+            self.modifiers.change_cell(grid, entity);
         }
     }
 }

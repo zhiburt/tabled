@@ -9,42 +9,46 @@ use std::{
 };
 
 pub use papergrid::Entity;
+use papergrid::EntityIterator;
 
 /// Object helps to locate a necessary part of a [Table].
 ///
 /// [Table]: crate::Table
 pub trait Object: Sized {
     /// An [Iterator] which returns a list of cells.
-    type Iter: Iterator<Item = (usize, usize)>;
+    type Iter: Iterator<Item = Entity>;
 
     /// Cells returns a set of coordinates of cells
     fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter;
 
     /// Combines cells.
     /// It doesn't repeat cells.
-    fn and<O: Object>(self, rhs: O) -> UnionCombination<Self, O> {
+    fn and<O>(self, rhs: O) -> UnionCombination<Self, O>
+    where
+        O: Object,
+    {
         UnionCombination { lhs: self, rhs }
     }
 
     /// Excludes rhs cells from this cells.
-    fn not<O: Object>(self, rhs: O) -> DiffCombination<Self, O> {
+    fn not<O>(self, rhs: O) -> DiffCombination<Self, O>
+    where
+        O: Object,
+    {
         DiffCombination { lhs: self, rhs }
     }
 
     /// Returns cells which are present in both [Object]s only.
-    fn intersect<O: Object>(self, rhs: O) -> IntersectionCombination<Self, O> {
+    fn intersect<O>(self, rhs: O) -> IntersectionCombination<Self, O>
+    where
+        O: Object,
+    {
         IntersectionCombination { lhs: self, rhs }
     }
 
     /// Returns cells which are not present in target [Object].
     fn inverse(self) -> InversionCombination<Self> {
         InversionCombination { obj: self }
-    }
-
-    /// A Entity representation of an object.
-    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
-        // todo: Make a better interface to support a list of Entities.
-        None
     }
 }
 
@@ -69,7 +73,7 @@ where
         let lhs = self.lhs.cells(count_rows, count_columns);
         let rhs = self.rhs.cells(count_rows, count_columns);
 
-        UnionIter::new(lhs, rhs)
+        UnionIter::new(lhs, rhs, count_rows, count_columns)
     }
 }
 
@@ -92,7 +96,7 @@ where
         let lhs = self.lhs.cells(count_rows, count_columns);
         let rhs = self.rhs.cells(count_rows, count_columns);
 
-        DiffIter::new(lhs, rhs)
+        DiffIter::new(lhs, rhs, count_rows, count_columns)
     }
 }
 
@@ -116,7 +120,7 @@ where
         let lhs = self.lhs.cells(count_rows, count_columns);
         let rhs = self.rhs.cells(count_rows, count_columns);
 
-        IntersectIter::new(lhs, rhs)
+        IntersectIter::new(lhs, rhs, count_rows, count_columns)
     }
 }
 
@@ -191,18 +195,13 @@ where
 /// Segment which cantains all cells on the table.
 ///
 /// Can be crated from [Segment::all].
-#[non_exhaustive]
 pub struct SegmentAll;
 
 impl Object for SegmentAll {
-    type Iter = SectorIter;
+    type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        SectorIter::new(0, count_rows, 0, count_columns)
-    }
-
-    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
-        Some(Entity::Global)
+    fn cells(&self, _: usize, _: usize) -> Self::Iter {
+        EntityOnce::new(Some(Entity::Global))
     }
 }
 
@@ -225,14 +224,14 @@ impl Object for Frame {
 pub struct FirstRow;
 
 impl Object for FirstRow {
-    type Iter = RowIter;
+    type Iter = EntityOnce;
 
-    fn cells(&self, _: usize, count_columns: usize) -> Self::Iter {
-        RowIter::new(0, count_columns)
-    }
+    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
+        if count_rows == 0 || count_cols == 0 {
+            return EntityOnce::new(None);
+        }
 
-    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
-        Some(Entity::Row(0))
+        EntityOnce::new(Some(Entity::Row(0)))
     }
 }
 
@@ -250,16 +249,15 @@ impl Add<usize> for FirstRow {
 pub struct LastRow;
 
 impl Object for LastRow {
-    type Iter = RowIter;
+    type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let row = if count_rows == 0 { 0 } else { count_rows - 1 };
-        RowIter::new(row, count_columns)
-    }
+    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
+        if count_rows == 0 || count_cols == 0 {
+            return EntityOnce::new(None);
+        }
 
-    fn as_entity(&self, count_rows: usize, _: usize) -> Option<Entity> {
         let row = if count_rows == 0 { 0 } else { count_rows - 1 };
-        Some(Entity::Row(row))
+        EntityOnce::new(Some(Entity::Row(row)))
     }
 }
 
@@ -277,18 +275,18 @@ pub struct Row {
 }
 
 impl Object for Row {
-    type Iter = RowIter;
+    type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        if self.index >= count_rows {
-            return RowIter::new(0, 0);
+    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
+        if count_rows == 0 || count_cols == 0 {
+            return EntityOnce::new(None);
         }
 
-        RowIter::new(self.index, count_columns)
-    }
+        if self.index >= count_rows {
+            return EntityOnce::new(None);
+        }
 
-    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
-        Some(Entity::Row(self.index))
+        EntityOnce::new(Some(Entity::Row(self.index)))
     }
 }
 
@@ -298,16 +296,20 @@ pub struct LastRowOffset {
 }
 
 impl Object for LastRowOffset {
-    type Iter = RowIter;
+    type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
+        if count_rows == 0 || count_cols == 0 {
+            return EntityOnce::new(None);
+        }
+
         let row = if count_rows == 0 { 0 } else { count_rows - 1 };
         if self.offset > row {
-            return RowIter::new(0, 0);
+            return EntityOnce::new(None);
         }
 
         let row = row - self.offset;
-        RowIter::new(row, count_columns)
+        EntityOnce::new(Some(Entity::Row(row)))
     }
 }
 
@@ -359,10 +361,10 @@ where
 {
     type Iter = RowsIter;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+    fn cells(&self, count_rows: usize, _: usize) -> Self::Iter {
         let (x, y) = bounds_to_usize(self.range.start_bound(), self.range.end_bound(), count_rows);
 
-        RowsIter::new(x, y, count_columns)
+        RowsIter::new(x, y)
     }
 }
 
@@ -414,14 +416,9 @@ where
 {
     type Iter = ColumnsIter;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let (x, y) = bounds_to_usize(
-            self.range.start_bound(),
-            self.range.end_bound(),
-            count_columns,
-        );
-
-        ColumnsIter::new(x, y, count_rows)
+    fn cells(&self, _: usize, count_cols: usize) -> Self::Iter {
+        let (x, y) = bounds_to_usize(self.range.start_bound(), self.range.end_bound(), count_cols);
+        ColumnsIter::new(x, y)
     }
 }
 
@@ -429,14 +426,14 @@ where
 pub struct FirstColumn;
 
 impl Object for FirstColumn {
-    type Iter = ColumnIter;
+    type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, _: usize) -> Self::Iter {
-        ColumnIter::new(0, count_rows)
-    }
+    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
+        if count_rows == 0 || count_cols == 0 {
+            return EntityOnce::new(None);
+        }
 
-    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
-        Some(Entity::Column(0))
+        EntityOnce::new(Some(Entity::Column(0)))
     }
 }
 
@@ -452,16 +449,15 @@ impl Add<usize> for FirstColumn {
 pub struct LastColumn;
 
 impl Object for LastColumn {
-    type Iter = ColumnIter;
+    type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let col = count_columns.saturating_sub(1);
-        ColumnIter::new(col, count_rows)
-    }
+    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
+        if count_rows == 0 || count_cols == 0 {
+            return EntityOnce::new(None);
+        }
 
-    fn as_entity(&self, _: usize, count_columns: usize) -> Option<Entity> {
-        let col = count_columns.saturating_sub(1);
-        Some(Entity::Column(col))
+        let col = count_cols.saturating_sub(1);
+        EntityOnce::new(Some(Entity::Column(col)))
     }
 }
 
@@ -477,24 +473,19 @@ impl Sub<usize> for LastColumn {
 pub struct Column(usize);
 
 impl Object for Column {
-    type Iter = ColumnIter;
+    type Iter = EntityOnce;
 
     fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let col = self.0;
-        if col >= count_columns {
-            return ColumnIter::new(0, 0);
+        if count_rows == 0 || count_columns == 0 {
+            return EntityOnce::new(None);
         }
 
-        ColumnIter::new(col, count_rows)
-    }
-
-    fn as_entity(&self, _: usize, count_columns: usize) -> Option<Entity> {
         let col = self.0;
         if col >= count_columns {
-            return None;
+            return EntityOnce::new(None);
         }
 
-        Some(Entity::Column(self.0))
+        EntityOnce::new(Some(Entity::Column(col)))
     }
 }
 
@@ -504,26 +495,20 @@ pub struct LastColumnOffset {
 }
 
 impl Object for LastColumnOffset {
-    type Iter = ColumnIter;
+    type Iter = EntityOnce;
 
     fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
+        if count_rows == 0 || count_columns == 0 {
+            return EntityOnce::new(None);
+        }
+
         let col = count_columns.saturating_sub(1);
         if self.offset > col {
-            return ColumnIter::new(0, 0);
+            return EntityOnce::new(None);
         }
 
         let col = col - self.offset;
-        ColumnIter::new(col, count_rows)
-    }
-
-    fn as_entity(&self, _: usize, count_columns: usize) -> Option<Entity> {
-        let col = count_columns.saturating_sub(1);
-        if self.offset > col {
-            return None;
-        }
-
-        let col = col - self.offset;
-        Some(Entity::Column(col))
+        EntityOnce::new(Some(Entity::Column(col)))
     }
 }
 
@@ -533,19 +518,36 @@ impl Object for LastColumnOffset {
 pub struct Cell(pub usize, pub usize);
 
 impl Object for Cell {
-    type Iter = CellIter;
+    type Iter = EntityOnce;
 
     fn cells(&self, _: usize, _: usize) -> Self::Iter {
-        CellIter::new(self.0, self.1)
-    }
-
-    fn as_entity(&self, _: usize, _: usize) -> Option<Entity> {
-        Some(Entity::Cell(self.0, self.1))
+        EntityOnce::new(Some(Entity::Cell(self.0, self.1)))
     }
 }
 
 /// An [Iterator] which goes goes over all cell in a sector in a [crate::Table].
 pub struct SectorIter {
+    iter: SectorCellsIter,
+}
+
+impl SectorIter {
+    const fn new(rows_start: usize, rows_end: usize, cols_start: usize, cols_end: usize) -> Self {
+        Self {
+            iter: SectorCellsIter::new(rows_start, rows_end, cols_start, cols_end),
+        }
+    }
+}
+
+impl Iterator for SectorIter {
+    type Item = Entity;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (row, col) = self.iter.next()?;
+        Some(Entity::Cell(row, col))
+    }
+}
+
+struct SectorCellsIter {
     rows_end: usize,
     cols_start: usize,
     cols_end: usize,
@@ -553,7 +555,7 @@ pub struct SectorIter {
     col: usize,
 }
 
-impl SectorIter {
+impl SectorCellsIter {
     const fn new(rows_start: usize, rows_end: usize, cols_start: usize, cols_end: usize) -> Self {
         Self {
             rows_end,
@@ -565,7 +567,7 @@ impl SectorIter {
     }
 }
 
-impl Iterator for SectorIter {
+impl Iterator for SectorCellsIter {
     type Item = (usize, usize);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -611,7 +613,7 @@ impl FrameIter {
 }
 
 impl Iterator for FrameIter {
-    type Item = (usize, usize);
+    type Item = Entity;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.cols == 0 || self.rows == 0 {
@@ -632,223 +634,156 @@ impl Iterator for FrameIter {
             self.col = 0;
         }
 
-        Some((row, col))
+        Some(Entity::Cell(row, col))
     }
 }
 
 /// An [Iterator] which goes goes over all rows of a [crate::Table].
 pub struct RowsIter {
-    rows: usize,
-    cols: usize,
-    col: usize,
-    row: usize,
+    start: usize,
+    end: usize,
 }
 
 impl RowsIter {
-    const fn new(rows_start: usize, rows_end: usize, count_columns: usize) -> Self {
-        Self {
-            rows: rows_end,
-            cols: count_columns,
-            row: rows_start,
-            col: 0,
-        }
+    const fn new(start: usize, end: usize) -> Self {
+        Self { start, end }
     }
 }
 
 impl Iterator for RowsIter {
-    type Item = (usize, usize);
+    type Item = Entity;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.row == self.rows {
+        if self.start == self.end {
             return None;
         }
 
-        let row = self.row;
-        let col = self.col;
+        let col = self.start;
+        self.start += 1;
 
-        self.col += 1;
-
-        if self.col == self.cols {
-            self.row += 1;
-            self.col = 0;
-        }
-
-        Some((row, col))
-    }
-}
-
-/// An [Iterator] which goes goes over a single row of a [crate::Table].
-pub struct RowIter {
-    cols: usize,
-    col: usize,
-    row: usize,
-}
-
-impl RowIter {
-    const fn new(row: usize, count_columns: usize) -> Self {
-        Self {
-            cols: count_columns,
-            row,
-            col: 0,
-        }
-    }
-}
-
-impl Iterator for RowIter {
-    type Item = (usize, usize);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.col == self.cols {
-            return None;
-        }
-
-        let col = self.col;
-
-        self.col += 1;
-
-        Some((self.row, col))
+        Some(Entity::Row(col))
     }
 }
 
 /// An [Iterator] which goes goes over columns of a [crate::Table].
 pub struct ColumnsIter {
-    rows: usize,
-    cols: usize,
-    col: usize,
-    row: usize,
+    start: usize,
+    end: usize,
 }
 
 impl ColumnsIter {
-    const fn new(cols_start: usize, cols_end: usize, count_rows: usize) -> Self {
-        Self {
-            rows: count_rows,
-            cols: cols_end,
-            row: 0,
-            col: cols_start,
-        }
+    const fn new(start: usize, end: usize) -> Self {
+        Self { start, end }
     }
 }
 
 impl Iterator for ColumnsIter {
-    type Item = (usize, usize);
+    type Item = Entity;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.col == self.cols {
+        if self.start == self.end {
             return None;
         }
 
-        let row = self.row;
-        let col = self.col;
+        let col = self.start;
+        self.start += 1;
 
-        self.row += 1;
-
-        if self.row == self.rows {
-            self.col += 1;
-            self.row = 0;
-        }
-
-        Some((row, col))
+        Some(Entity::Column(col))
     }
 }
 
-/// An [Iterator] which goes goes over a single column of a [crate::Table].
-pub struct ColumnIter {
-    rows: usize,
-    col: usize,
-    row: usize,
+/// An [Iterator] which returns an entity once.
+pub struct EntityOnce {
+    entity: Option<Entity>,
 }
 
-impl ColumnIter {
-    const fn new(col: usize, count_rows: usize) -> Self {
-        Self {
-            rows: count_rows,
-            row: 0,
-            col,
-        }
+impl EntityOnce {
+    const fn new(entity: Option<Entity>) -> Self {
+        Self { entity }
     }
 }
 
-impl Iterator for ColumnIter {
-    type Item = (usize, usize);
+impl Iterator for EntityOnce {
+    type Item = Entity;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.row == self.rows {
-            return None;
-        }
-
-        let row = self.row;
-        let col = self.col;
-
-        self.row += 1;
-
-        Some((row, col))
-    }
-}
-
-/// An [Iterator] which goes goes over a single cell of a [crate::Table].
-pub struct CellIter {
-    cell: Option<(usize, usize)>,
-}
-
-impl CellIter {
-    fn new(row: usize, col: usize) -> Self {
-        Self {
-            cell: Some((row, col)),
-        }
-    }
-}
-
-impl Iterator for CellIter {
-    type Item = (usize, usize);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.cell.take()
+        self.entity.take()
     }
 }
 
 /// An [Iterator] which goes over a combination [Object::Iter].
 pub struct UnionIter<L, R> {
-    lhs: L,
+    lhs: Option<L>,
     rhs: R,
     seen: HashSet<(usize, usize)>,
+    current: Option<EntityIterator>,
+    count_rows: usize,
+    count_cols: usize,
 }
 
 impl<L, R> UnionIter<L, R>
 where
-    L: Iterator<Item = (usize, usize)>,
-    R: Iterator<Item = (usize, usize)>,
+    L: Iterator<Item = Entity>,
+    R: Iterator<Item = Entity>,
 {
-    fn new(lhs: L, rhs: R) -> Self {
+    fn new(lhs: L, rhs: R, count_rows: usize, count_cols: usize) -> Self {
         let size = match lhs.size_hint() {
             (s1, Some(s2)) if s1 == s2 => s1,
             _ => 0,
         };
 
         Self {
-            lhs,
+            lhs: Some(lhs),
             rhs,
             seen: HashSet::with_capacity(size),
+            current: None,
+            count_rows,
+            count_cols,
         }
     }
 }
 
 impl<L, R> Iterator for UnionIter<L, R>
 where
-    L: Iterator<Item = (usize, usize)>,
-    R: Iterator<Item = (usize, usize)>,
+    L: Iterator<Item = Entity>,
+    R: Iterator<Item = Entity>,
 {
-    type Item = (usize, usize);
+    type Item = Entity;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(p) = self.lhs.next() {
-            self.seen.insert(p);
-            return Some(p);
+        if let Some(iter) = self.current.as_mut() {
+            for p in iter.by_ref() {
+                if self.lhs.is_none() && self.seen.contains(&p) {
+                    continue;
+                }
+
+                self.seen.insert(p);
+                return Some(Entity::Cell(p.0, p.1));
+            }
         }
 
-        for p in self.rhs.by_ref() {
-            if !self.seen.contains(&p) {
-                self.seen.insert(p);
-                return Some(p);
+        if let Some(lhs) = self.lhs.as_mut() {
+            for entity in lhs.by_ref() {
+                let mut iter = entity.iter(self.count_rows, self.count_cols);
+                if let Some(p) = iter.by_ref().next() {
+                    self.seen.insert(p);
+                    self.current = Some(iter);
+                    return Some(Entity::Cell(p.0, p.1));
+                }
+            }
+
+            self.lhs = None;
+        }
+
+        for entity in self.rhs.by_ref() {
+            let mut iter = entity.iter(self.count_rows, self.count_cols);
+
+            for p in iter.by_ref() {
+                if !self.seen.contains(&p) {
+                    self.seen.insert(p);
+                    self.current = Some(iter);
+                    return Some(Entity::Cell(p.0, p.1));
+                }
             }
         }
 
@@ -860,15 +795,18 @@ where
 pub struct DiffIter<L> {
     lhs: L,
     seen: HashSet<(usize, usize)>,
+    count_rows: usize,
+    count_cols: usize,
+    current: Option<EntityIterator>,
 }
 
 impl<L> DiffIter<L>
 where
-    L: Iterator<Item = (usize, usize)>,
+    L: Iterator<Item = Entity>,
 {
-    fn new<R>(lhs: L, rhs: R) -> Self
+    fn new<R>(lhs: L, rhs: R, count_rows: usize, count_cols: usize) -> Self
     where
-        R: Iterator<Item = (usize, usize)>,
+        R: Iterator<Item = Entity>,
     {
         let size = match rhs.size_hint() {
             (s1, Some(s2)) if s1 == s2 => s1,
@@ -876,24 +814,43 @@ where
         };
 
         let mut seen = HashSet::with_capacity(size);
-        for p in rhs {
-            seen.insert(p);
+        for entity in rhs {
+            seen.extend(entity.iter(count_rows, count_cols));
         }
 
-        Self { lhs, seen }
+        Self {
+            lhs,
+            seen,
+            count_rows,
+            count_cols,
+            current: None,
+        }
     }
 }
 
 impl<L> Iterator for DiffIter<L>
 where
-    L: Iterator<Item = (usize, usize)>,
+    L: Iterator<Item = Entity>,
 {
-    type Item = (usize, usize);
+    type Item = Entity;
 
     fn next(&mut self) -> Option<Self::Item> {
-        for p in self.lhs.by_ref() {
-            if !self.seen.contains(&p) {
-                return Some(p);
+        if let Some(iter) = self.current.as_mut() {
+            for p in iter.by_ref() {
+                if !self.seen.contains(&p) {
+                    return Some(Entity::Cell(p.0, p.1));
+                }
+            }
+        }
+
+        for entity in self.lhs.by_ref() {
+            let mut iter = entity.iter(self.count_rows, self.count_cols);
+
+            for p in iter.by_ref() {
+                if !self.seen.contains(&p) {
+                    self.current = Some(iter);
+                    return Some(Entity::Cell(p.0, p.1));
+                }
             }
         }
 
@@ -905,15 +862,18 @@ where
 pub struct IntersectIter<L> {
     lhs: L,
     seen: HashSet<(usize, usize)>,
+    count_rows: usize,
+    count_cols: usize,
+    current: Option<EntityIterator>,
 }
 
 impl<L> IntersectIter<L>
 where
-    L: Iterator<Item = (usize, usize)>,
+    L: Iterator<Item = Entity>,
 {
-    fn new<R>(lhs: L, rhs: R) -> Self
+    fn new<R>(lhs: L, rhs: R, count_rows: usize, count_cols: usize) -> Self
     where
-        R: Iterator<Item = (usize, usize)>,
+        R: Iterator<Item = Entity>,
     {
         let size = match rhs.size_hint() {
             (s1, Some(s2)) if s1 == s2 => s1,
@@ -921,24 +881,43 @@ where
         };
 
         let mut seen = HashSet::with_capacity(size);
-        for p in rhs {
-            seen.insert(p);
+        for entity in rhs {
+            seen.extend(entity.iter(count_rows, count_cols));
         }
 
-        Self { lhs, seen }
+        Self {
+            lhs,
+            seen,
+            count_rows,
+            count_cols,
+            current: None,
+        }
     }
 }
 
 impl<L> Iterator for IntersectIter<L>
 where
-    L: Iterator<Item = (usize, usize)>,
+    L: Iterator<Item = Entity>,
 {
-    type Item = (usize, usize);
+    type Item = Entity;
 
     fn next(&mut self) -> Option<Self::Item> {
-        for p in self.lhs.by_ref() {
-            if self.seen.contains(&p) {
-                return Some(p);
+        if let Some(iter) = self.current.as_mut() {
+            for p in iter.by_ref() {
+                if self.seen.contains(&p) {
+                    return Some(Entity::Cell(p.0, p.1));
+                }
+            }
+        }
+
+        for entity in self.lhs.by_ref() {
+            let mut iter = entity.iter(self.count_rows, self.count_cols);
+
+            for p in iter.by_ref() {
+                if self.seen.contains(&p) {
+                    self.current = Some(iter);
+                    return Some(Entity::Cell(p.0, p.1));
+                }
             }
         }
 
@@ -948,14 +927,14 @@ where
 
 /// An [Iterator] which goes goes over cells which are not present an [Object::Iter]ator.
 pub struct InversionIter {
-    all: SectorIter,
+    all: SectorCellsIter,
     seen: HashSet<(usize, usize)>,
 }
 
 impl InversionIter {
     fn new<O>(obj: O, count_rows: usize, count_columns: usize) -> Self
     where
-        O: Iterator<Item = (usize, usize)>,
+        O: Iterator<Item = Entity>,
     {
         let size = match obj.size_hint() {
             (s1, Some(s2)) if s1 == s2 => s1,
@@ -963,21 +942,23 @@ impl InversionIter {
         };
 
         let mut seen = HashSet::with_capacity(size);
-        seen.extend(obj);
+        for entity in obj {
+            seen.extend(entity.iter(count_rows, count_columns));
+        }
 
-        let all = Segment::all().cells(count_rows, count_columns);
+        let all = SectorCellsIter::new(0, count_rows, 0, count_columns);
 
         Self { all, seen }
     }
 }
 
 impl Iterator for InversionIter {
-    type Item = (usize, usize);
+    type Item = Entity;
 
     fn next(&mut self) -> Option<Self::Item> {
         for p in self.all.by_ref() {
             if !self.seen.contains(&p) {
-                return Some(p);
+                return Some(Entity::Cell(p.0, p.1));
             }
         }
 
@@ -1011,341 +992,254 @@ mod tests {
     use super::*;
 
     #[test]
+    fn columns_test() {
+        assert_eq!(
+            vec_cells(Columns::new(..), 2, 3),
+            [Entity::Column(0), Entity::Column(1), Entity::Column(2)]
+        );
+        assert_eq!(
+            vec_cells(Columns::new(1..), 2, 3),
+            [Entity::Column(1), Entity::Column(2)]
+        );
+        assert_eq!(vec_cells(Columns::new(2..), 2, 3), [Entity::Column(2)]);
+        assert_eq!(vec_cells(Columns::new(3..), 2, 3), []);
+        assert_eq!(vec_cells(Columns::new(0..1), 2, 3), [Entity::Column(0)]);
+        assert_eq!(vec_cells(Columns::new(1..2), 2, 3), [Entity::Column(1)]);
+        assert_eq!(vec_cells(Columns::new(2..3), 2, 3), [Entity::Column(2)]);
+        assert_eq!(vec_cells(Columns::new(..), 0, 0), []);
+        assert_eq!(vec_cells(Columns::new(..), 2, 0), []);
+        assert_eq!(
+            vec_cells(Columns::new(..), 0, 3),
+            [Entity::Column(0), Entity::Column(1), Entity::Column(2)]
+        );
+    }
+
+    #[test]
     fn first_column_test() {
-        assert_eq!((Columns::first()).cells(0, 0).collect::<Vec<_>>(), vec![]);
-        // is this correct?
-        assert_eq!(
-            (Columns::first()).cells(10, 0).collect::<Vec<_>>(),
-            vec![
-                (0, 0),
-                (1, 0),
-                (2, 0),
-                (3, 0),
-                (4, 0),
-                (5, 0),
-                (6, 0),
-                (7, 0),
-                (8, 0),
-                (9, 0)
-            ]
-        );
-        assert_eq!((Columns::first()).cells(0, 10).collect::<Vec<_>>(), vec![]);
-        assert_eq!(
-            (Columns::first()).cells(5, 2).collect::<Vec<_>>(),
-            vec![(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
-        );
+        assert_eq!(vec_cells(Columns::first(), 5, 2), [Entity::Column(0)]);
+        assert_eq!(vec_cells(Columns::first(), 0, 0), []);
+        assert_eq!(vec_cells(Columns::first(), 10, 0), []);
+        assert_eq!(vec_cells(Columns::first(), 0, 10), []);
     }
 
     #[test]
     fn last_column_test() {
-        assert_eq!((Columns::last()).cells(0, 0).collect::<Vec<_>>(), vec![]);
-        // is this correct?
-        assert_eq!(
-            (Columns::last()).cells(10, 0).collect::<Vec<_>>(),
-            vec![
-                (0, 0),
-                (1, 0),
-                (2, 0),
-                (3, 0),
-                (4, 0),
-                (5, 0),
-                (6, 0),
-                (7, 0),
-                (8, 0),
-                (9, 0)
-            ]
-        );
-        assert_eq!((Columns::last()).cells(0, 10).collect::<Vec<_>>(), vec![]);
-        assert_eq!(
-            (Columns::last()).cells(5, 2).collect::<Vec<_>>(),
-            vec![(0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]
-        );
+        assert_eq!(vec_cells(Columns::last(), 5, 2), [Entity::Column(1)]);
+        assert_eq!(vec_cells(Columns::last(), 5, 29), [Entity::Column(28)]);
+        assert_eq!(vec_cells(Columns::last(), 0, 0), []);
+        assert_eq!(vec_cells(Columns::last(), 10, 0), []);
+        assert_eq!(vec_cells(Columns::last(), 0, 10), []);
     }
 
     #[test]
     fn last_column_sub_test() {
-        assert_eq!(
-            (Columns::last()).cells(5, 2).collect::<Vec<_>>(),
-            vec![(0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]
-        );
-        assert_eq!(
-            (Columns::last() - 0).cells(5, 2).collect::<Vec<_>>(),
-            vec![(0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]
-        );
-        assert_eq!(
-            (Columns::last() - 1).cells(5, 2).collect::<Vec<_>>(),
-            vec![(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
-        );
-        assert_eq!(
-            (Columns::last() - 2).cells(5, 2).collect::<Vec<_>>(),
-            vec![]
-        );
-        assert_eq!(
-            (Columns::last() - 100).cells(5, 2).collect::<Vec<_>>(),
-            vec![]
-        );
+        assert_eq!(vec_cells(Columns::last(), 5, 2), [Entity::Column(1)]);
+        assert_eq!(vec_cells(Columns::last() - 0, 5, 2), [Entity::Column(1)]);
+        assert_eq!(vec_cells(Columns::last() - 1, 5, 2), [Entity::Column(0)]);
+        assert_eq!(vec_cells(Columns::last() - 2, 5, 2), []);
+        assert_eq!(vec_cells(Columns::last() - 100, 5, 2), []);
     }
 
     #[test]
-    fn first_column_sub_test() {
-        assert_eq!(
-            (Columns::first()).cells(5, 2).collect::<Vec<_>>(),
-            [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
-        );
-        assert_eq!(
-            (Columns::first() + 0).cells(5, 2).collect::<Vec<_>>(),
-            [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
-        );
-        assert_eq!(
-            (Columns::first() + 1).cells(5, 2).collect::<Vec<_>>(),
-            [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]
-        );
-        assert_eq!((Columns::first() + 2).cells(5, 2).collect::<Vec<_>>(), []);
-        assert_eq!((Columns::first() + 100).cells(5, 2).collect::<Vec<_>>(), []);
-    }
-
-    #[test]
-    fn last_row_sub_test() {
-        assert_eq!(
-            (Rows::last()).cells(5, 2).collect::<Vec<_>>(),
-            vec![(4, 0), (4, 1)]
-        );
-        assert_eq!(
-            (Rows::last() - 0).cells(5, 2).collect::<Vec<_>>(),
-            vec![(4, 0), (4, 1)]
-        );
-        assert_eq!(
-            (Rows::last() - 1).cells(5, 2).collect::<Vec<_>>(),
-            vec![(3, 0), (3, 1)]
-        );
-        assert_eq!(
-            (Rows::last() - 2).cells(5, 2).collect::<Vec<_>>(),
-            vec![(2, 0), (2, 1)]
-        );
-        assert_eq!(
-            (Rows::last() - 3).cells(5, 2).collect::<Vec<_>>(),
-            vec![(1, 0), (1, 1)]
-        );
-        assert_eq!(
-            (Rows::last() - 4).cells(5, 2).collect::<Vec<_>>(),
-            vec![(0, 0), (0, 1)]
-        );
-        assert_eq!((Rows::last() - 5).cells(5, 2).collect::<Vec<_>>(), vec![]);
-        assert_eq!((Rows::last() - 100).cells(5, 2).collect::<Vec<_>>(), vec![]);
-    }
-
-    #[test]
-    fn first_row_sub_test() {
-        assert_eq!(
-            (Rows::first()).cells(5, 2).collect::<Vec<_>>(),
-            vec![(0, 0), (0, 1)]
-        );
-        assert_eq!(
-            (Rows::first() + 0).cells(5, 2).collect::<Vec<_>>(),
-            vec![(0, 0), (0, 1)]
-        );
-        assert_eq!(
-            (Rows::first() + 1).cells(5, 2).collect::<Vec<_>>(),
-            vec![(1, 0), (1, 1)]
-        );
-        assert_eq!(
-            (Rows::first() + 2).cells(5, 2).collect::<Vec<_>>(),
-            vec![(2, 0), (2, 1)]
-        );
-        assert_eq!(
-            (Rows::first() + 3).cells(5, 2).collect::<Vec<_>>(),
-            vec![(3, 0), (3, 1)]
-        );
-        assert_eq!(
-            (Rows::first() + 4).cells(5, 2).collect::<Vec<_>>(),
-            vec![(4, 0), (4, 1)]
-        );
-        assert_eq!((Rows::first() + 5).cells(5, 2).collect::<Vec<_>>(), vec![]);
-        assert_eq!(
-            (Rows::first() + 100).cells(5, 2).collect::<Vec<_>>(),
-            vec![]
-        );
+    fn first_column_add_test() {
+        assert_eq!(vec_cells(Columns::first(), 5, 2), [Entity::Column(0)]);
+        assert_eq!(vec_cells(Columns::first() + 0, 5, 2), [Entity::Column(0)]);
+        assert_eq!(vec_cells(Columns::first() + 1, 5, 2), [Entity::Column(1)]);
+        assert_eq!(vec_cells(Columns::first() + 2, 5, 2), []);
+        assert_eq!(vec_cells(Columns::first() + 100, 5, 2), []);
     }
 
     #[test]
     fn rows_test() {
         assert_eq!(
-            (Rows::new(..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+            vec_cells(Rows::new(..), 2, 3),
+            [Entity::Row(0), Entity::Row(1)]
         );
+        assert_eq!(vec_cells(Rows::new(1..), 2, 3), [Entity::Row(1)]);
+        assert_eq!(vec_cells(Rows::new(2..), 2, 3), []);
+        assert_eq!(vec_cells(Rows::new(0..1), 2, 3), [Entity::Row(0)],);
+        assert_eq!(vec_cells(Rows::new(1..2), 2, 3), [Entity::Row(1)],);
+        assert_eq!(vec_cells(Rows::new(..), 0, 0), []);
+        assert_eq!(vec_cells(Rows::new(..), 0, 3), []);
         assert_eq!(
-            (Rows::new(1..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(1, 0), (1, 1), (1, 2)]
-        );
-        assert_eq!((Rows::new(2..)).cells(2, 3).collect::<Vec<_>>(), vec![]);
-        assert_eq!(
-            (Rows::new(1..2)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(1, 0), (1, 1), (1, 2)]
+            vec_cells(Rows::new(..), 2, 0),
+            [Entity::Row(0), Entity::Row(1)]
         );
     }
 
     #[test]
-    fn columns_test() {
-        assert_eq!(
-            (Columns::new(..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2)]
-        );
-        assert_eq!(
-            (Columns::new(1..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 1), (1, 1), (0, 2), (1, 2)]
-        );
-        assert_eq!(
-            (Columns::new(2..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 2), (1, 2)]
-        );
-        assert_eq!((Columns::new(3..)).cells(2, 3).collect::<Vec<_>>(), vec![]);
-        assert_eq!(
-            (Columns::new(1..2)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 1), (1, 1)]
-        );
+    fn last_row_test() {
+        assert_eq!(vec_cells(Rows::last(), 5, 2), [Entity::Row(4)]);
+        assert_eq!(vec_cells(Rows::last(), 100, 2), [Entity::Row(99)]);
+        assert_eq!(vec_cells(Rows::last(), 0, 0), []);
+        assert_eq!(vec_cells(Rows::last(), 5, 0), []);
+        assert_eq!(vec_cells(Rows::last(), 0, 2), []);
+    }
+
+    #[test]
+    fn first_row_test() {
+        assert_eq!(vec_cells(Rows::first(), 5, 2), [Entity::Row(0)]);
+        assert_eq!(vec_cells(Rows::first(), 100, 2), [Entity::Row(0)]);
+        assert_eq!(vec_cells(Rows::first(), 0, 0), []);
+        assert_eq!(vec_cells(Rows::first(), 5, 0), []);
+        assert_eq!(vec_cells(Rows::first(), 0, 2), []);
+    }
+
+    #[test]
+    fn last_row_sub_test() {
+        assert_eq!(vec_cells(Rows::last(), 5, 2), [Entity::Row(4)]);
+        assert_eq!(vec_cells(Rows::last() - 0, 5, 2), [Entity::Row(4)]);
+        assert_eq!(vec_cells(Rows::last() - 1, 5, 2), [Entity::Row(3)]);
+        assert_eq!(vec_cells(Rows::last() - 2, 5, 2), [Entity::Row(2)]);
+        assert_eq!(vec_cells(Rows::last() - 3, 5, 2), [Entity::Row(1)]);
+        assert_eq!(vec_cells(Rows::last() - 4, 5, 2), [Entity::Row(0)]);
+        assert_eq!(vec_cells(Rows::last() - 5, 5, 2), []);
+        assert_eq!(vec_cells(Rows::last() - 100, 5, 2), []);
+        assert_eq!(vec_cells(Rows::last() - 1, 0, 0), []);
+        assert_eq!(vec_cells(Rows::last() - 1, 5, 0), []);
+        assert_eq!(vec_cells(Rows::last() - 1, 0, 2), []);
+    }
+
+    #[test]
+    fn first_row_add_test() {
+        assert_eq!(vec_cells(Rows::first(), 5, 2), [Entity::Row(0)]);
+        assert_eq!(vec_cells(Rows::first() + 0, 5, 2), [Entity::Row(0)]);
+        assert_eq!(vec_cells(Rows::first() + 1, 5, 2), [Entity::Row(1)]);
+        assert_eq!(vec_cells(Rows::first() + 2, 5, 2), [Entity::Row(2)]);
+        assert_eq!(vec_cells(Rows::first() + 3, 5, 2), [Entity::Row(3)]);
+        assert_eq!(vec_cells(Rows::first() + 4, 5, 2), [Entity::Row(4)]);
+        assert_eq!(vec_cells(Rows::first() + 5, 5, 2), []);
+        assert_eq!(vec_cells(Rows::first() + 100, 5, 2), []);
+        assert_eq!(vec_cells(Rows::first() + 1, 0, 0), []);
+        assert_eq!(vec_cells(Rows::first() + 1, 5, 0), []);
+        assert_eq!(vec_cells(Rows::first() + 1, 0, 2), []);
     }
 
     #[test]
     fn frame_test() {
         assert_eq!(
-            Frame.cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+            vec_cells(Frame, 2, 3),
+            [
+                Entity::Cell(0, 0),
+                Entity::Cell(0, 1),
+                Entity::Cell(0, 2),
+                Entity::Cell(1, 0),
+                Entity::Cell(1, 1),
+                Entity::Cell(1, 2)
+            ]
         );
-        assert_eq!(Frame.cells(0, 0).collect::<Vec<_>>(), vec![]);
-        assert_eq!(Frame.cells(2, 0).collect::<Vec<_>>(), vec![]);
-        assert_eq!(Frame.cells(0, 2).collect::<Vec<_>>(), vec![]);
+        assert_eq!(vec_cells(Frame, 0, 0), []);
+        assert_eq!(vec_cells(Frame, 2, 0), []);
+        assert_eq!(vec_cells(Frame, 0, 2), []);
     }
 
     #[test]
     fn segment_test() {
         assert_eq!(
-            (Segment::new(.., ..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+            vec_cells(Segment::new(.., ..), 2, 3),
+            [
+                Entity::Cell(0, 0),
+                Entity::Cell(0, 1),
+                Entity::Cell(0, 2),
+                Entity::Cell(1, 0),
+                Entity::Cell(1, 1),
+                Entity::Cell(1, 2)
+            ]
         );
         assert_eq!(
-            (Segment::new(1.., ..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(1, 0), (1, 1), (1, 2)]
+            vec_cells(Segment::new(1.., ..), 2, 3),
+            [Entity::Cell(1, 0), Entity::Cell(1, 1), Entity::Cell(1, 2)]
         );
-        assert_eq!(
-            (Segment::new(2.., ..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![]
-        );
+        assert_eq!(vec_cells(Segment::new(2.., ..), 2, 3), []);
 
         assert_eq!(
-            (Segment::new(.., 1..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 1), (0, 2), (1, 1), (1, 2)]
+            vec_cells(Segment::new(.., 1..), 2, 3),
+            [
+                Entity::Cell(0, 1),
+                Entity::Cell(0, 2),
+                Entity::Cell(1, 1),
+                Entity::Cell(1, 2)
+            ]
         );
         assert_eq!(
-            (Segment::new(.., 2..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 2), (1, 2)]
+            vec_cells(Segment::new(.., 2..), 2, 3),
+            [Entity::Cell(0, 2), Entity::Cell(1, 2)]
         );
-        assert_eq!(
-            (Segment::new(.., 3..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![]
-        );
+        assert_eq!(vec_cells(Segment::new(.., 3..), 2, 3), []);
 
         assert_eq!(
-            (Segment::new(1.., 1..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(1, 1), (1, 2)]
+            vec_cells(Segment::new(1.., 1..), 2, 3),
+            [Entity::Cell(1, 1), Entity::Cell(1, 2)]
         );
         assert_eq!(
-            (Segment::new(1..2, 1..2)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(1, 1)]
+            vec_cells(Segment::new(1..2, 1..2), 2, 3),
+            [Entity::Cell(1, 1)]
         );
 
-        assert_eq!(
-            (Segment::new(5.., 5..)).cells(2, 3).collect::<Vec<_>>(),
-            vec![]
-        );
+        assert_eq!(vec_cells(Segment::new(5.., 5..), 2, 3), []);
     }
 
     #[test]
     fn object_and_test() {
         assert_eq!(
-            Cell(0, 0).and(Cell(0, 0)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 0)]
+            vec_cells(Cell(0, 0).and(Cell(0, 0)), 2, 3),
+            [Entity::Cell(0, 0)]
         );
         assert_eq!(
-            Cell(0, 0).and(Cell(1, 2)).cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 0), (1, 2)]
+            vec_cells(Cell(0, 0).and(Cell(1, 2)), 2, 3),
+            [Entity::Cell(0, 0), Entity::Cell(1, 2)]
         );
-        assert_eq!(
-            Cell(0, 0).and(Cell(1, 2)).cells(0, 0).collect::<Vec<_>>(),
-            vec![(0, 0), (1, 2)]
-        );
+        assert_eq!(vec_cells(Cell(0, 0).and(Cell(1, 2)), 0, 0), []);
     }
 
     #[test]
     fn object_not_test() {
+        assert_eq!(vec_cells(Cell(0, 0).not(Cell(0, 0)), 2, 3), []);
         assert_eq!(
-            Cell(0, 0).not(Cell(0, 0)).cells(2, 3).collect::<Vec<_>>(),
-            vec![]
+            vec_cells(Rows::first().not(Cell(0, 0)), 2, 3),
+            [Entity::Cell(0, 1), Entity::Cell(0, 2)]
         );
-        assert_eq!(
-            Rows::first()
-                .not(Cell(0, 0))
-                .cells(2, 3)
-                .collect::<Vec<_>>(),
-            vec![(0, 1), (0, 2)]
-        );
-        assert_eq!(
-            Rows::first()
-                .not(Cell(0, 0))
-                .cells(0, 0)
-                .collect::<Vec<_>>(),
-            vec![]
-        );
+        assert_eq!(vec_cells(Rows::first().not(Cell(0, 0)), 0, 0), []);
     }
 
     #[test]
     fn object_intersect_test() {
         assert_eq!(
-            Segment::all()
-                .intersect(Rows::single(1))
-                .cells(2, 3)
-                .collect::<Vec<_>>(),
-            vec![(1, 0), (1, 1), (1, 2)]
+            vec_cells(Segment::all().intersect(Rows::single(1)), 2, 3),
+            [Entity::Cell(1, 0), Entity::Cell(1, 1), Entity::Cell(1, 2)]
         );
         assert_eq!(
-            Cell(0, 0)
-                .intersect(Cell(0, 0))
-                .cells(2, 3)
-                .collect::<Vec<_>>(),
-            vec![(0, 0)]
+            vec_cells(Cell(0, 0).intersect(Cell(0, 0)), 2, 3),
+            [Entity::Cell(0, 0)]
         );
         assert_eq!(
-            Rows::first()
-                .intersect(Cell(0, 0))
-                .cells(2, 3)
-                .collect::<Vec<_>>(),
-            vec![(0, 0)]
+            vec_cells(Rows::first().intersect(Cell(0, 0)), 2, 3),
+            [Entity::Cell(0, 0)]
         );
-        assert_eq!(
-            Rows::first()
-                .intersect(Cell(0, 0))
-                .cells(0, 0)
-                .collect::<Vec<_>>(),
-            vec![]
-        );
+        assert_eq!(vec_cells(Rows::first().intersect(Cell(0, 0)), 0, 0), []);
     }
 
     #[test]
     fn object_inverse_test() {
+        assert_eq!(vec_cells(Segment::all().inverse(), 2, 3), []);
         assert_eq!(
-            Segment::all().inverse().cells(2, 3).collect::<Vec<_>>(),
-            vec![]
+            vec_cells(Cell(0, 0).inverse(), 2, 3),
+            [
+                Entity::Cell(0, 1),
+                Entity::Cell(0, 2),
+                Entity::Cell(1, 0),
+                Entity::Cell(1, 1),
+                Entity::Cell(1, 2)
+            ]
         );
         assert_eq!(
-            Cell(0, 0).inverse().cells(2, 3).collect::<Vec<_>>(),
-            vec![(0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+            vec_cells(Rows::first().inverse(), 2, 3),
+            [Entity::Cell(1, 0), Entity::Cell(1, 1), Entity::Cell(1, 2)]
         );
-        assert_eq!(
-            Rows::first().inverse().cells(2, 3).collect::<Vec<_>>(),
-            vec![(1, 0), (1, 1), (1, 2)]
-        );
-        assert_eq!(
-            Rows::first().inverse().cells(0, 0).collect::<Vec<_>>(),
-            vec![]
-        );
+        assert_eq!(vec_cells(Rows::first().inverse(), 0, 0), []);
+    }
+
+    fn vec_cells<O: Object>(o: O, count_rows: usize, count_cols: usize) -> Vec<Entity> {
+        o.cells(count_rows, count_cols).collect::<Vec<_>>()
     }
 }
