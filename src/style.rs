@@ -536,6 +536,30 @@ impl StyleConfig {
         self
     }
 
+    /// Set a character for a top left corner.
+    pub fn set_top_left(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.corner_top_left = s;
+        self
+    }
+
+    /// Set a character for a top right corner.
+    pub fn set_top_right(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.corner_top_right = s;
+        self
+    }
+
+    /// Set a character for a bottom left corner.
+    pub fn set_bottom_left(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.corner_bottom_left = s;
+        self
+    }
+
+    /// Set a character for a bottom right corner.
+    pub fn set_bottom_right(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.corner_bottom_right = s;
+        self
+    }
+
     /// This function runs a function for each border character and changes it accordingly.
     ///
     /// See [CustomStyle::try_map]
