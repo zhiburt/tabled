@@ -8,8 +8,7 @@ use std::{
     ops::{Add, Bound, RangeBounds, RangeFull, Sub},
 };
 
-pub use papergrid::Entity;
-use papergrid::EntityIterator;
+pub use papergrid::{Entity, EntityIterator};
 
 /// Object helps to locate a necessary part of a [Table].
 ///
