@@ -2,10 +2,11 @@ use std::iter::FromIterator;
 
 use crate::util::{create_vector, static_table};
 
+use papergrid::Symbol;
 use tabled::{
     builder::Builder,
     object::{Cell, Rows, Segment},
-    style::{Border, BorderText},
+    style::{Border, BorderText, StyleSettings},
     Highlight, Modify, Padding, Span, Style, Table, TableIteratorExt,
 };
 
@@ -1617,6 +1618,42 @@ fn span_correct_test() {
             "+----------------------+"
             "|          5           |"
             "+----------------------+"
+        )
+    );
+}
+
+#[test]
+fn style_settings_usage_test() {
+    let mut style: StyleSettings = Style::modern().into();
+    style
+        .set_internal(Some(Symbol::from_char('x')))
+        .set_bottom(Some(Symbol::from_char('a')))
+        .set_left(Some(Symbol::from_char('b')))
+        .set_right(None)
+        .set_top(None)
+        .set_top_split(None);
+
+    let mut data = create_vector::<3, 3>();
+    data[0][1] = "a longer string".to_owned();
+
+    let table = Table::new(&data).with(style).to_string();
+
+    println!("{}", table);
+
+    // todo: determine if it's OK.
+    //       in my understanding we had to use a ' ' as a missing right symbol.
+
+    assert_eq!(
+        table,
+        static_table!(
+            "b N │    column 0     │ column 1 │ column 2 "
+            "├───x─────────────────x──────────x──────────┤"
+            "b 0 │ a longer string │   0-1    │   0-2    "
+            "├───x─────────────────x──────────x──────────┤"
+            "b 1 │       1-0       │   1-1    │   1-2    "
+            "├───x─────────────────x──────────x──────────┤"
+            "b 2 │       2-0       │   2-1    │   2-2    "
+            "└aaa┴aaaaaaaaaaaaaaaaa┴aaaaaaaaaa┴aaaaaaaaaa┘"
         )
     );
 }

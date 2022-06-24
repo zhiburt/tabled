@@ -462,9 +462,74 @@ impl StyleSettings {
     const fn has_vertical(&self) -> bool {
         self.horizontal.intersection.is_some() || self.vertical.is_some()
     }
-}
 
-impl StyleSettings {
+    /// Set a top border character.
+    pub fn set_top(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.top.main = s;
+        self
+    }
+
+    /// Set a bottom border character.
+    pub fn set_bottom(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.bottom.main = s;
+        self
+    }
+
+    /// Set a left border character.
+    pub fn set_left(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.left.main = s;
+        self
+    }
+
+    /// Set a right border character.
+    pub fn set_right(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.right.main = s;
+        self
+    }
+
+    /// Set a top split border character.
+    pub fn set_top_split(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.top.intersection = s;
+        self
+    }
+
+    /// Set a bottom split character.
+    pub fn set_bottom_split(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.bottom.intersection = s;
+        self
+    }
+
+    /// Set a left split character.
+    pub fn set_left_split(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.left.intersection = s;
+        self
+    }
+
+    /// Set a right split character.
+    pub fn set_right_split(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.frame.right.intersection = s;
+        self
+    }
+
+    /// Set an internal character.
+    pub fn set_internal(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.horizontal.intersection = s.clone();
+        self.header.intersection = s;
+        self
+    }
+
+    /// Set a vertical character.
+    pub fn set_vertical(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.vertical = s;
+        self
+    }
+
+    /// Set a horizontal character.
+    pub fn set_horizontal(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.horizontal.main = s;
+        self
+    }
+
     /// This function runs a function for each border character and changes it accordingly.
     ///
     /// See [CustomStyle::try_map]
