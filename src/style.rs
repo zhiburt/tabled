@@ -19,7 +19,7 @@
 //!         " &str  \n",
 //!         "-------\n",
 //!         " Hello \n",
-//!         " 2022  \n",
+//!         " 2022  ",
 //!     )
 //! )
 //! ```
@@ -45,7 +45,7 @@
 //!         " &str  \n",
 //!         "Santa--\n",
 //!         " Hello \n",
-//!         " 2022  \n",
+//!         " 2022  ",
 //!     )
 //! )
 //! ```
@@ -75,7 +75,7 @@
 //!         "│ &str  │\n",
 //!         "└───────┘\n",
 //!         "  Hello  \n",
-//!         "  2022   \n",
+//!         "  2022   ",
 //!     )
 //! )
 //! ```
@@ -84,7 +84,7 @@
 
 use std::{borrow::Cow, marker::PhantomData};
 
-use papergrid::{Borders, Entity, Grid, Position, Settings};
+use papergrid::{Borders, Entity, Grid, Position};
 
 use crate::{CellOption, TableOption};
 
@@ -313,7 +313,7 @@ impl Style {
     ///         "| 09 | June | 2022 |\n",
     ///         "+----+------+------+\n",
     ///         "| 10 | July | 2022 |\n",
-    ///         "+----+------+------+\n",
+    ///         "+----+------+------+",
     ///     )
     /// );
     ///
@@ -328,7 +328,7 @@ impl Style {
     ///         "| 09 | June | 2022 |\n",
     ///         "+----+------+------+\n",
     ///         "| 10 | July | 2022 |\n",
-    ///         "+----+------+------+\n",
+    ///         "+----+------+------+",
     ///     )
     /// );
     /// ```
@@ -690,7 +690,7 @@ impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
     ///         "| 10:52:19 | Hello |\n",
     ///         "+----------+-------+\n",
     ///         "| 10:52:20 | World |\n",
-    ///         "+----------+-------+\n",
+    ///         "+----------+-------+",
     ///     )
     /// );
     /// ```
@@ -1163,7 +1163,7 @@ impl<T, B, L, R, IH, IV, H> TableOption for CustomStyle<T, B, L, R, IH, IV, H> {
 ///      |    &str     |\n\
 ///      +-------------+\n\
 ///      | Hello World |\n\
-///      +-------------+\n"
+///      +-------------+"
 /// );
 /// ```
 pub struct BorderText<'a> {
@@ -1238,11 +1238,8 @@ impl<'a> TableOption for BorderText<'a> {
 pub use papergrid::Border;
 
 impl CellOption for Border {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, col: usize) {
-        grid.set(
-            Entity::Cell(row, col),
-            Settings::default().border(self.clone()),
-        );
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        grid.set_border(entity, self.clone());
     }
 }
 

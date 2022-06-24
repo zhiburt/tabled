@@ -1,9 +1,9 @@
 //! This module contains an [ExpandedDisplay] structure which is useful in cases where
 //! a structure has a lot of fields.
 
-use papergrid::{cut_str, split_by_lines, string_width_multiline};
+use papergrid::{cut_str, string_width_multiline};
 
-use crate::Tabled;
+use crate::{width::split_by_lines, Tabled};
 
 /// ExpandedDisplay display data in a 'expanded display mode' from postgresql.
 /// It may be useful for a large data sets with a lot of fields.

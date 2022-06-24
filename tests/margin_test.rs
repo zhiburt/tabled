@@ -78,6 +78,8 @@ fn table_with_empty_margin() {
         .with(Margin::new(0, 0, 0, 0).set_fill('>', '<', 'V', '^'))
         .to_string();
 
+    println!("{}", table);
+
     assert_eq!(
         table,
         static_table!(
@@ -137,11 +139,11 @@ fn table_with_margin_and_max_width() {
         table,
         static_table!(
             "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
-            ">  N   |  column 0   |  column 1   |  column 2   <"
+            "> N    | column 0    | column 1    | column 2    <"
             ">------+-------------+-------------+-------------<"
-            ">  0   |            0-0            |     0-2     <"
-            ">  1   |     1-0     |     1-1     |     1-2     <"
-            ">  2   |     2-0     |     2-1     |     2-2     <"
+            "> 0    | 0-0                       | 0-2         <"
+            "> 1    | 1-0         | 1-1         | 1-2         <"
+            "> 2    | 2-0         | 2-1         | 2-2         <"
             "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
         )
     );

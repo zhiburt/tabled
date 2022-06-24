@@ -13,10 +13,10 @@ license = "MIT"
 color = ["strip-ansi-escapes", "ansi-str"]
 
 [dependencies]
-unicode-width = "0.1.8"
-strip-ansi-escapes = { version = "0.1.0", optional = true }
-ansi-str = { version = "0.1.1", optional = true }
-bytecount = "0.6.2"
+unicode-width = "0.1.9"
+strip-ansi-escapes = { version = "0.1.1", optional = true }
+ansi-str = { git = "https://github.com/zhiburt/ansi-str", rev = "349d52624183e3238a7fc99508a26b930d1d6e8c", optional = true }
+bytecount = "0.6.3"
 
 [dev-dependencies]
 owo-colors = "3.4.0"

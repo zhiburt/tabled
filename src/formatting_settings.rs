@@ -6,9 +6,9 @@
 //!
 //! [Alignment]: crate::Alignment
 
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{Entity, Grid};
 
-use crate::CellOption;
+use crate::{CellOption, TableOption};
 
 /// Set a tab size.
 ///
@@ -21,15 +21,9 @@ use crate::CellOption;
 #[derive(Debug, Default, Clone)]
 pub struct TabSize(pub usize);
 
-impl CellOption for TabSize {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut formatting = grid.style(Entity::Cell(row, column)).formatting;
-        formatting.tab_width = self.0;
-
-        grid.set(
-            Entity::Cell(row, column),
-            Settings::new().formatting(formatting),
-        )
+impl TableOption for TabSize {
+    fn change(&mut self, grid: &mut Grid) {
+        grid.set_tab_width(self.0);
     }
 }
 
@@ -41,7 +35,7 @@ impl CellOption for TabSize {
 /// ```
 /// use tabled::{
 ///     Table, Style, Modify, Alignment, object::Segment,
-///     formatting_settings::AlignmentStrategy
+///     formatting_settings::{AlignmentStrategy, TrimStrategy}
 /// };
 ///
 /// // sample_from: https://opensource.adobe.com/Spry/samples/data_region/JSONDataSetSample.html
@@ -67,11 +61,10 @@ impl CellOption for TabSize {
 ///
 /// let table = Table::new(&[json])
 ///     .with(Style::modern())
-///     .with(
-///         Modify::new(Segment::all())
-///             .with(Alignment::right())
-///             .with(AlignmentStrategy::PerCell)
-///     );
+///     .with(Modify::new(Segment::all()).with(Alignment::right()))
+///     .with(Modify::new(Segment::all()).with(TrimStrategy::None));
+///
+/// println!("{}", table);
 ///
 /// assert_eq!(
 ///     format!("\n{}", table),
@@ -98,8 +91,38 @@ impl CellOption for TabSize {
 /// │         { "id": "5004", "type": "Maple" }                     │
 /// │     ]                                                         │
 /// │ }                                                             │
-/// └───────────────────────────────────────────────────────────────┘
-/// "#);
+/// └───────────────────────────────────────────────────────────────┘"#);
+///
+/// let table = table
+///     .with(Modify::new(Segment::all()).with(AlignmentStrategy::PerCell))
+///     .with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
+///
+/// assert_eq!(
+///     format!("\n{}", table),
+///     r#"
+/// ┌───────────────────────────────────────────────────────────────┐
+/// │                                                          &str │
+/// ├───────────────────────────────────────────────────────────────┤
+/// │                                                               │
+/// │         {                                                     │
+/// │         "id": "0001",                                         │
+/// │         "type": "donut",                                      │
+/// │         "name": "Cake",                                       │
+/// │         "ppu": 0.55,                                          │
+/// │         "batters": {                                          │
+/// │         "batter": [                                           │
+/// │         { "id": "1001", "type": "Regular" },                  │
+/// │         { "id": "1002", "type": "Chocolate" },                │
+/// │         ]                                                     │
+/// │         },                                                    │
+/// │         "topping": [                                          │
+/// │         { "id": "5001", "type": "None" },                     │
+/// │         { "id": "5006", "type": "Chocolate with Sprinkles" }, │
+/// │         { "id": "5003", "type": "Chocolate" },                │
+/// │         { "id": "5004", "type": "Maple" }                     │
+/// │         ]                                                     │
+/// │         }                                                     │
+/// └───────────────────────────────────────────────────────────────┘"#);
 ///
 /// let table = table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
 ///
@@ -128,8 +151,7 @@ impl CellOption for TabSize {
 /// │                             { "id": "5004", "type": "Maple" } │
 /// │                                                             ] │
 /// │                                                             } │
-/// └───────────────────────────────────────────────────────────────┘
-/// "#);
+/// └───────────────────────────────────────────────────────────────┘"#);
 /// ```
 #[derive(Debug, Clone)]
 pub enum AlignmentStrategy {
@@ -140,17 +162,14 @@ pub enum AlignmentStrategy {
 }
 
 impl CellOption for AlignmentStrategy {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut formatting = grid.style(Entity::Cell(row, column)).formatting;
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        let mut formatting = grid.style(entity).formatting;
         match &self {
             AlignmentStrategy::PerCell => formatting.allow_lines_alignement = false,
             AlignmentStrategy::PerLine => formatting.allow_lines_alignement = true,
         }
 
-        grid.set(
-            Entity::Cell(row, column),
-            Settings::new().formatting(formatting),
-        )
+        grid.set_formatting(entity, formatting);
     }
 }
 
@@ -179,8 +198,8 @@ impl CellOption for AlignmentStrategy {
 ///     "┌────────────────┐\n\
 ///      │ &str           │\n\
 ///      ├────────────────┤\n\
-///      │    Hello World │\n\
-///      └────────────────┘\n"
+///      │ Hello World    │\n\
+///      └────────────────┘"
 /// );
 ///
 /// // To trim lines you would need also set [AlignmentStrategy]
@@ -192,7 +211,7 @@ impl CellOption for AlignmentStrategy {
 ///      │ &str           │\n\
 ///      ├────────────────┤\n\
 ///      │ Hello World    │\n\
-///      └────────────────┘\n"
+///      └────────────────┘"
 /// );
 ///
 /// let table = Table::new(&["   \n\n\n    Hello World"])
@@ -212,7 +231,7 @@ impl CellOption for AlignmentStrategy {
 ///      │                 │\n\
 ///      │                 │\n\
 ///      │                 │\n\
-///      └─────────────────┘\n"
+///      └─────────────────┘"
 /// );
 /// ```
 ///
@@ -230,8 +249,8 @@ pub enum TrimStrategy {
 }
 
 impl CellOption for TrimStrategy {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let mut formatting = grid.style(Entity::Cell(row, column)).formatting;
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        let mut formatting = grid.style(entity).formatting;
 
         match self {
             TrimStrategy::Vertical => {
@@ -250,9 +269,6 @@ impl CellOption for TrimStrategy {
             }
         }
 
-        grid.set(
-            Entity::Cell(row, column),
-            Settings::new().formatting(formatting),
-        )
+        grid.set_formatting(entity, formatting)
     }
 }

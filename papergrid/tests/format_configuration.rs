@@ -12,7 +12,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: false,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |A long string|          |\n\
@@ -34,7 +33,7 @@ fn formatting_test() {
              |with         |          |\n\
              | new         |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -43,7 +42,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |A long string|          |\n\
@@ -65,7 +63,7 @@ fn formatting_test() {
              |with         |          |\n\
              |new          |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -74,7 +72,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: true,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |A long string|A         |\n\
@@ -96,7 +93,7 @@ fn formatting_test() {
              |with         |          |\n\
              |new          |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -106,7 +103,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: false,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |A long string|          |\n\
@@ -128,7 +124,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -137,7 +133,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |A long string|          |\n\
@@ -159,7 +154,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -168,7 +163,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: true,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |A long string|    A     |\n\
@@ -190,7 +184,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -200,7 +194,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: false,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |A long string|          |\n\
@@ -222,7 +215,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -231,7 +224,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |A long string|          |\n\
@@ -253,7 +245,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -262,7 +254,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: true,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |A long string|         A|\n\
@@ -284,9 +275,8 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
-        //
         // asd
         (
             AlignmentHorizontal::Left,
@@ -295,7 +285,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: false,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -317,7 +306,7 @@ fn formatting_test() {
              |with         |...       |\n\
              | new         |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -326,7 +315,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -348,7 +336,7 @@ fn formatting_test() {
              |with         |...       |\n\
              |new          |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -357,7 +345,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: true,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -379,7 +366,7 @@ fn formatting_test() {
              |with         |...       |\n\
              |new          |          |\n\
              |line         |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -389,7 +376,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: false,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -411,7 +397,7 @@ fn formatting_test() {
              |    with     |   ...    |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -420,7 +406,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -442,7 +427,7 @@ fn formatting_test() {
              |    with     |   ...    |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -451,7 +436,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: true,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -473,7 +457,7 @@ fn formatting_test() {
              |    with     |   ...    |\n\
              |     new     |          |\n\
              |    line     |          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -483,7 +467,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: false,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -505,7 +488,7 @@ fn formatting_test() {
              |         with|       ...|\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -514,7 +497,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -536,7 +518,7 @@ fn formatting_test() {
              |         with|       ...|\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -545,7 +527,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: true,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -567,7 +548,7 @@ fn formatting_test() {
              |         with|       ...|\n\
              |          new|          |\n\
              |         line|          |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         // asd
@@ -578,7 +559,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: false,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -600,7 +580,7 @@ fn formatting_test() {
              |with         |          |\n\
              | new         |          |\n\
              |line         |...       |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -609,7 +589,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -631,7 +610,7 @@ fn formatting_test() {
              |with         |          |\n\
              |new          |          |\n\
              |line         |...       |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Left,
@@ -640,7 +619,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: true,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -662,7 +640,7 @@ fn formatting_test() {
              |with         |          |\n\
              |new          |          |\n\
              |line         |...       |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -672,7 +650,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: false,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -694,7 +671,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |   ...    |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -703,7 +680,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -725,7 +701,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |   ...    |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Center,
@@ -734,7 +710,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: true,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -756,7 +731,7 @@ fn formatting_test() {
              |    with     |          |\n\
              |     new     |          |\n\
              |    line     |   ...    |\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         //
         (
@@ -766,7 +741,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: false,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -788,7 +762,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|       ...|\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -797,7 +771,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: false,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -819,7 +792,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|       ...|\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
         (
             AlignmentHorizontal::Right,
@@ -828,7 +801,6 @@ fn formatting_test() {
                 allow_lines_alignement: true,
                 horizontal_trim: true,
                 vertical_trim: true,
-                ..Default::default()
             },
             "+-------------+----------+\n\
              |             |          |\n\
@@ -850,7 +822,7 @@ fn formatting_test() {
              |         with|          |\n\
              |          new|          |\n\
              |         line|       ...|\n\
-             +-------------+----------+\n",
+             +-------------+----------+",
         ),
     ];
 
@@ -858,7 +830,7 @@ fn formatting_test() {
     grid.set(Entity::Cell(0, 0), Settings::new().text("A long string"));
     grid.set(
         Entity::Cell(0, 1),
-        Settings::new().text("\n\n\nA\n    string\nwith\n new\nline\n\n\n\n"),
+        Settings::new().text("\n\n\nA\n    string\nwith\n new\nline\n\n\n"),
     );
     grid.set(
         Entity::Cell(2, 0),
@@ -867,28 +839,19 @@ fn formatting_test() {
     grid.set(Entity::Cell(2, 1), Settings::new().text("..."));
 
     for (i, test) in tests.iter().enumerate() {
-        let halignemnt = test.0;
-        let valignemnt = test.1;
-        let formatting = test.2;
         let expected = test.3;
 
         grid.set(
             Entity::Global,
             Settings::new()
-                .alignment(halignemnt)
-                .vertical_alignment(valignemnt)
-                .formatting(formatting),
+                .alignment(test.0)
+                .vertical_alignment(test.1)
+                .formatting(test.2),
         );
 
-        assert_eq!(
-            grid.to_string(),
-            expected,
-            "test case #{:?} failed;\nah={:?}\nav={:?}\nf={:?}",
-            i,
-            halignemnt,
-            valignemnt,
-            formatting
-        );
+        println!("{}", grid);
+
+        assert_eq!(grid.to_string(), expected, "test case #{:?} failed", i,);
     }
 }
 
@@ -901,7 +864,6 @@ fn formatting_empty_test() {
             allow_lines_alignement: true,
             horizontal_trim: true,
             vertical_trim: true,
-            ..Default::default()
         }),
     );
 
@@ -914,7 +876,6 @@ fn formatting_empty_test() {
             allow_lines_alignement: true,
             horizontal_trim: true,
             vertical_trim: true,
-            ..Default::default()
         }),
     );
 
@@ -927,7 +888,6 @@ fn formatting_empty_test() {
             allow_lines_alignement: true,
             horizontal_trim: true,
             vertical_trim: true,
-            ..Default::default()
         }),
     );
 
@@ -978,7 +938,6 @@ fn formatting_1x1_test() {
             r#"+--------------------------------------------------+"#,
         ]
         .join("\n")
-            + "\n"
     );
 
     grid.set(
@@ -987,7 +946,6 @@ fn formatting_1x1_test() {
             allow_lines_alignement: true,
             horizontal_trim: false,
             vertical_trim: false,
-            ..Default::default()
         }),
     );
 
@@ -1011,7 +969,6 @@ fn formatting_1x1_test() {
             r#"+--------------------------------------------------+"#,
         ]
         .join("\n")
-            + "\n"
     );
 
     grid.set(
@@ -1020,7 +977,6 @@ fn formatting_1x1_test() {
             allow_lines_alignement: true,
             horizontal_trim: true,
             vertical_trim: false,
-            ..Default::default()
         }),
     );
 
@@ -1044,7 +1000,6 @@ fn formatting_1x1_test() {
             r#"+--------------------------------------------------+"#,
         ]
         .join("\n")
-            + "\n"
     );
 
     grid.set(
@@ -1053,7 +1008,6 @@ fn formatting_1x1_test() {
             allow_lines_alignement: true,
             horizontal_trim: true,
             vertical_trim: true,
-            ..Default::default()
         }),
     );
 
@@ -1077,7 +1031,6 @@ fn formatting_1x1_test() {
             r#"+--------------------------------------------------+"#,
         ]
         .join("\n")
-            + "\n"
     );
 }
 
@@ -1106,16 +1059,10 @@ fn tab_size_test() {
          |                 [4, 5, 6],    |\n\
          |         ]                     |\n\
          |}                              |\n\
-         +-------------------------------+\n",
+         +-------------------------------+",
     );
 
-    grid.set(
-        Entity::Cell(0, 0),
-        Settings::new().formatting(Formatting {
-            tab_width: 1,
-            ..Default::default()
-        }),
-    );
+    grid.set_tab_width(1);
 
     assert_eq!(
         grid.to_string(),
@@ -1128,16 +1075,10 @@ fn tab_size_test() {
          |     [4, 5, 6],          |\n\
          |   ]                     |\n\
          |}                        |\n\
-         +-------------------------+\n"
+         +-------------------------+"
     );
 
-    grid.set(
-        Entity::Cell(0, 0),
-        Settings::new().formatting(Formatting {
-            tab_width: 0,
-            ..Default::default()
-        }),
-    );
+    grid.set_tab_width(0);
 
     assert_eq!(
         grid.to_string(),
@@ -1150,6 +1091,6 @@ fn tab_size_test() {
          | [4, 5, 6],            |\n\
          | ]                     |\n\
          |}                      |\n\
-         +-----------------------+\n"
+         +-----------------------+"
     );
 }

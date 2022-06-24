@@ -77,23 +77,25 @@ fn display_colored() {
 
     assert_eq!(
         table,
-        concat!(
-            "-[ RECORD 0 ]-----------------------\n",
-            "N        | 0\n",
-            "column 0 | 0-0\n",
-            "column 1 | \u{1b}[44m\u{1b}[31mhttps://getfedora.org/\u{1b}[0m\u{1b}[0m\n",
-            "column 2 | 0-2\n",
-            "-[ RECORD 1 ]-----------------------\n",
-            "N        | 1\n",
-            "column 0 | 1-0\n",
-            "column 1 | \u{1b}[40m\u{1b}[32mhttps://www.opensuse.org/\u{1b}[0m\u{1b}[0m\n",
-            "column 2 | 1-2\n",
-            "-[ RECORD 2 ]-----------------------\n",
-            "N        | 2\n",
-            "column 0 | 2-0\n",
-            "column 1 | \u{1b}[4m\u{1b}[34mhttps://endeavouros.com/\u{1b}[0m\u{1b}[0m\n",
-            "column 2 | 2-2\n",
+        util::static_table!(
+            "-[ RECORD 0 ]-----------------------"
+            "N        | 0"
+            "column 0 | 0-0"
+            "column 1 | \u{1b}[31;44mhttps://getfedora.org/\u{1b}[0m"
+            "column 2 | 0-2"
+            "-[ RECORD 1 ]-----------------------"
+            "N        | 1"
+            "column 0 | 1-0"
+            "column 1 | \u{1b}[32;40mhttps://www.opensuse.org/\u{1b}[0m"
+            "column 2 | 1-2"
+            "-[ RECORD 2 ]-----------------------"
+            "N        | 2"
+            "column 0 | 2-0"
+            "column 1 | \u{1b}[4m\u{1b}[34mhttps://endeavouros.com/\u{1b}[39m\u{1b}[0m"
+            "column 2 | 2-2"
         )
+        .to_owned()
+            + "\n"
     );
 }
 

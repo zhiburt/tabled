@@ -8,7 +8,7 @@ use std::{fmt, iter::FromIterator};
 
 use papergrid::Grid;
 
-use crate::{builder::Builder, Tabled};
+use crate::{builder::Builder, object::Entity, Tabled};
 
 /// A trait which is responsilbe for configuration of a [Table].
 pub trait TableOption {
@@ -33,7 +33,7 @@ where
 /// [Cell]: crate::object::Cell
 pub trait CellOption {
     /// Modification function of a single cell.
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize);
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity);
 }
 
 /// Table structure provides an interface for building a table for types that implements [Tabled].
@@ -119,7 +119,7 @@ impl Table {
     ///      |   device::PC   |      |    +    |  +   |\n\
     ///      +----------------+------+---------+------+\n\
     ///      | device::Mobile |  +   |         |      |\n\
-    ///      +----------------+------+---------+------+\n"
+    ///      +----------------+------+---------+------+"
     /// )
     /// ```
     pub fn builder<I, T>(iter: I) -> Builder

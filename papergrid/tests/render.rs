@@ -25,7 +25,7 @@ fn render_2x2_test() {
             "|0-0|0-1|\n",
             "+---+---+\n",
             "|1-0|1-1|\n",
-            "+---+---+\n",
+            "+---+---+",
         )
     );
 }
@@ -37,7 +37,7 @@ fn render_1x1_test() {
 
     assert_eq!(
         grid.to_string(),
-        concat!("+--------+\n", "|one line|\n", "+--------+\n")
+        concat!("+--------+\n", "|one line|\n", "+--------+")
     );
 }
 
@@ -54,7 +54,7 @@ fn render_3x2_test() {
          |asd|asd|\n\
          +---+---+\n\
          |asd|asd|\n\
-         +---+---+\n"
+         +---+---+",
     )
 }
 
@@ -67,7 +67,7 @@ fn render_not_quadratic() {
 
     assert_eq!(
         grid.to_string(),
-        concat!("+-----+-----+\n", "|hello|world|\n", "+-----+-----+\n")
+        concat!("+-----+-----+\n", "|hello|world|\n", "+-----+-----+")
     );
 }
 
@@ -105,7 +105,7 @@ fn render_multilane() {
             "|                                        |a        |\n",
             "|                                        |long     |\n",
             "|                                        |string   |\n",
-            "+----------------------------------------+---------+\n"
+            "+----------------------------------------+---------+",
         )
     );
 }
@@ -145,7 +145,7 @@ fn render_multilane_alignment() {
          |                                        | a       |\n\
          |                                        | long    |\n\
          |                                        | string  |\n\
-         +----------------------------------------+---------+\n"
+         +----------------------------------------+---------+",
         )
     );
 }
@@ -187,7 +187,7 @@ fn render_multilane_vertical_alignment() {
          |                                        | a       |\n\
          |                                        | long    |\n\
          |                                        | string  |\n\
-         +----------------------------------------+---------+\n"
+         +----------------------------------------+---------+",
         )
     );
 }
@@ -205,7 +205,7 @@ fn render_empty_cell() {
             "|0-0|   |\n",
             "+---+---+\n",
             "|1-0|1-1|\n",
-            "+---+---+\n",
+            "+---+---+",
         )
     );
 }
@@ -228,7 +228,7 @@ fn render_row_span() {
             "|  0-0  |\n",
             "+---+---+\n",
             "|1-0|1-1|\n",
-            "+---+---+\n"
+            "+---+---+",
         )
     );
 }
@@ -253,7 +253,7 @@ fn render_miltiline_span() {
             "|  0-1  |\n",
             "+---+---+\n",
             "|1-0|1-1|\n",
-            "+---+---+\n"
+            "+---+---+",
         )
     );
 }
@@ -289,7 +289,7 @@ fn render_row_span_multilane() {
             "|0    |1   |2   |\n",
             "+-----+----+----+\n",
             "|full last line |\n",
-            "+-----+----+----+\n",
+            "+-----+----+----+",
         )
     );
 }
@@ -317,7 +317,7 @@ fn render_row_span_with_horizontal_ident() {
             "|    1-0    |1-1|\n",
             "+-----------+---+\n",
             "|2-0        |2-1|\n",
-            "+-----------+---+\n",
+            "+-----------+---+",
         )
     );
 }
@@ -339,7 +339,7 @@ fn render_row_span_3x3_with_horizontal_ident() {
             "|1-0|1-2|\n",
             "+-+-+---+\n",
             "|2-0|2-2|\n",
-            "+-+-+---+\n",
+            "+-+-+---+",
         )
     );
 }
@@ -362,7 +362,7 @@ fn render_2_colided_row_span_3x3() {
             "|1-0  |1-1     |\n",
             "+-----+----+---+\n",
             "|2-0  |2-1 |2-2|\n",
-            "+-----+----+---+\n",
+            "+-----+----+---+",
         )
     );
 
@@ -382,7 +382,7 @@ fn render_2_colided_row_span_3x3() {
             "|1-0|1-1xxxxxxx|\n",
             "+---+-----+----+\n",
             "|2-0|2-1  |2-2 |\n",
-            "+---+-----+----+\n",
+            "+---+-----+----+",
         )
     );
 
@@ -403,7 +403,7 @@ fn render_2_colided_row_span_3x3() {
             "|1-0             |1-1xxxxxxx|\n",
             "+----------------+-----+----+\n",
             "|2-0xxxxxxxxxxxxx|2-1  |2-2 |\n",
-            "+----------------+-----+----+\n",
+            "+----------------+-----+----+",
         )
     );
 
@@ -421,7 +421,7 @@ fn render_2_colided_row_span_3x3() {
             "|1-0|1-1                 |\n",
             "+---+----------------+---+\n",
             "|2-0|2-1xxxxxxxxxxxxx|2-2|\n",
-            "+---+----------------+---+\n",
+            "+---+----------------+---+",
         )
     );
 
@@ -439,7 +439,7 @@ fn render_2_colided_row_span_3x3() {
             "|1-0|1-1                 |\n",
             "+---+---+----------------+\n",
             "|2-0|2-1|2-2             |\n",
-            "+---+---+----------------+\n",
+            "+---+---+----------------+",
         )
     );
 }
@@ -462,7 +462,7 @@ fn render_spaned_column_in_first_cell_3x3() {
             "|1-0  |1-1 |1-2|\n",
             "+-----+----+---+\n",
             "|2-0  |2-1 |2-2|\n",
-            "+-----+----+---+\n",
+            "+-----+----+---+",
         )
     );
 }
@@ -491,7 +491,7 @@ fn render_row_span_with_different_length() {
             "|0        |1        |\n",
             "+---------+---------+\n",
             "|a longer second row|\n",
-            "+---------+---------+\n",
+            "+---------+---------+",
         )
     );
 }
@@ -506,7 +506,7 @@ fn render_row_span_with_odd_length() {
 
     assert_eq!(
         grid.to_string(),
-        concat!("+--+-+\n", "|3   |\n", "+--+-+\n", "|2 |4|\n", "+--+-+\n")
+        concat!("+--+-+\n", "|3   |\n", "+--+-+\n", "|2 |4|\n", "+--+-+")
     );
 }
 
@@ -526,7 +526,7 @@ fn render_only_row_spaned() {
          |1-0|\n\
          +-+-+\n\
          |2-0|\n\
-         +-+-+\n"
+         +-+-+",
     );
 }
 
@@ -542,7 +542,7 @@ fn grid_2x2_span_test() {
          |123    |\n\
          +---+---+\n\
          |asd|asd|\n\
-         +---+---+\n"
+         +---+---+",
     )
 }
 
@@ -559,7 +559,7 @@ fn grid_2x2_span_2_test() {
          |1234|\n\
          +--+-+\n\
          |asdw|\n\
-         +--+-+\n"
+         +--+-+",
     );
 
     grid.set(Entity::Cell(0, 0), Settings::new().text("1"));
@@ -572,7 +572,7 @@ fn grid_2x2_span_2_test() {
          |1|\n\
          +++\n\
          |a|\n\
-         +++\n"
+         +++",
     );
 }
 
@@ -589,7 +589,7 @@ fn render_row_span_with_no_split_style() {
     );
     grid.set(Entity::Cell(0, 1), Settings::new().text(""));
 
-    assert_eq!(grid.to_string(), concat!(" 0-0  \n", "1-01-1\n"));
+    assert_eq!(grid.to_string(), concat!(" 0-0  \n", "1-01-1"));
 }
 
 #[test]
@@ -606,7 +606,7 @@ fn render_zero_span_of_first_cell() {
             "|0-1    |\n",
             "+---+---+\n",
             "|1-0|1-1|\n",
-            "+---+---+\n",
+            "+---+---+",
         )
     );
 
@@ -614,7 +614,7 @@ fn render_zero_span_of_first_cell() {
 
     assert_eq!(
         grid.to_string(),
-        concat!("+-+-+\n", "|0-1|\n", "+-+-+\n", "|1-1|\n", "+-+-+\n")
+        concat!("+-+-+\n", "|0-1|\n", "+-+-+\n", "|1-1|\n", "+-+-+")
     );
 }
 
@@ -631,7 +631,7 @@ fn render_zero_span_between_cells() {
             "|0-0    |0-2|\n",
             "+---+---+---+\n",
             "|1-0|1-1|1-2|\n",
-            "+---+---+---+\n",
+            "+---+---+---+",
         )
     );
 
@@ -644,7 +644,7 @@ fn render_zero_span_between_cells() {
             "|0-0|0-2|\n",
             "+-+-+---+\n",
             "|1-0|1-2|\n",
-            "+-+-+---+\n",
+            "+-+-+---+",
         )
     );
 }
@@ -663,7 +663,7 @@ fn render_zero_span_at_the_end() {
             "|0-0        |\n",
             "+---+---+---+\n",
             "|1-0|1-1|1-2|\n",
-            "+---+---+---+\n",
+            "+---+---+---+",
         )
     );
 
@@ -672,7 +672,7 @@ fn render_zero_span_at_the_end() {
 
     assert_eq!(
         grid.to_string(),
-        concat!("+-+++\n", "|0-0|\n", "+-+++\n", "|1-0|\n", "+-+++\n")
+        concat!("+-+++\n", "|0-0|\n", "+-+++\n", "|1-0|\n", "+-+++")
     );
 }
 
@@ -686,7 +686,7 @@ fn render_zero_span_grid() {
     grid.set(Entity::Cell(1, 1), Settings::new().span(0));
 
     // todo: determine if it's correct behaviour?
-    assert_eq!("+-+-+\n|0-0|\n+-+-+\n|1-0|\n+-+-+\n", grid.to_string());
+    assert_eq!(grid.to_string(), "+-+-+\n|0-0|\n+-+-+\n|1-0|\n+-+-+");
 }
 
 #[test]
@@ -700,7 +700,7 @@ fn hieroglyph_handling() {
         grid.to_string(),
         "+----+--+\n\
          |哈哈  |哈 |\n\
-         +----+--+\n"
+         +----+--+",
     )
 }
 
@@ -710,14 +710,12 @@ fn hieroglyph_multiline_handling() {
     grid.set(Entity::Cell(0, 0), Settings::new().text("哈哈"));
     grid.set(Entity::Cell(0, 1), Settings::new().text("哈\n哈"));
 
-    println!("{grid}");
-
     assert_eq!(
         grid.to_string(),
         "+----+--+\n\
          |哈哈|哈|\n\
          |    |哈|\n\
-         +----+--+\n"
+         +----+--+",
     )
 }
 
@@ -730,8 +728,6 @@ fn hieroglyph_handling_2() {
     );
     grid.set(Entity::Cell(1, 0), Settings::new().text("Hello"));
 
-    println!("{grid}");
-
     assert_eq!(
         grid.to_string(),
         concat!(
@@ -739,7 +735,37 @@ fn hieroglyph_handling_2() {
             "|জী._ডি._ব্লক_সল্টলেক_দূর্গা_পুজো_২০১৮.jpg|\n",
             "+------------------------------------+\n",
             "|Hello                               |\n",
-            "+------------------------------------+\n",
+            "+------------------------------------+",
         )
     )
+}
+
+#[test]
+fn render_return_carige() {
+    let mut grid = util::new_grid::<2, 2>();
+    grid.set(Entity::Cell(0, 1), Settings::new().text("123\r\r\r567"));
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+------+\n",
+            "|0-0|123567|\n",
+            "+---+------+\n",
+            "|1-0|1-1   |\n",
+            "+---+------+",
+        )
+    );
+
+    grid.set(Entity::Cell(1, 1), Settings::new().text("12345678"));
+
+    assert_eq!(
+        grid.to_string(),
+        concat!(
+            "+---+--------+\n",
+            "|0-0|123567  |\n",
+            "+---+--------+\n",
+            "|1-0|12345678|\n",
+            "+---+--------+",
+        )
+    );
 }

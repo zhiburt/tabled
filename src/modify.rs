@@ -1,4 +1,4 @@
-use papergrid::Grid;
+use papergrid::{Entity, Grid};
 
 use crate::{object::Object, CellOption, TableOption};
 
@@ -73,8 +73,8 @@ where
 {
     fn change(&mut self, grid: &mut Grid) {
         let cells = self.obj.cells(grid.count_rows(), grid.count_columns());
-        for (row, column) in cells {
-            self.modifiers.change_cell(grid, row, column)
+        for entity in cells {
+            self.modifiers.change_cell(grid, entity);
         }
     }
 }
@@ -90,9 +90,9 @@ where
     S1: CellOption,
     S2: CellOption,
 {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        self.s1.change_cell(grid, row, column);
-        self.s2.change_cell(grid, row, column);
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        self.s1.change_cell(grid, entity);
+        self.s2.change_cell(grid, entity);
     }
 }
 

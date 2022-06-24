@@ -40,7 +40,7 @@
 //!         "│ Text  │            │      │\n",
 //!         "├───────┼────────────┼──────┤\n",
 //!         "│   4   │     5      │  6   │\n",
-//!         "└───────┴────────────┴──────┘\n",
+//!         "└───────┴────────────┴──────┘",
 //!     ),
 //! )
 //! ```
@@ -48,7 +48,7 @@
 //! [Table]: crate::Table
 //! [AlignmentStrategy]: crate::formatting_settings::AlignmentStrategy
 
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{Entity, Grid};
 
 use crate::CellOption;
 
@@ -63,7 +63,7 @@ pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 /// ```
 ///
 /// [Table]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Alignment {
     /// A horizontal alignment.
     Horizontal(AlignmentHorizontal),
@@ -130,12 +130,10 @@ impl Alignment {
 }
 
 impl CellOption for Alignment {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        let settings = match &self {
-            Self::Horizontal(a) => Settings::new().alignment(*a),
-            Self::Vertical(a) => Settings::new().vertical_alignment(*a),
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        match *self {
+            Self::Horizontal(a) => grid.set_alignment_horizontal(entity, a),
+            Self::Vertical(a) => grid.set_alignment_vertical(entity, a),
         };
-
-        grid.set(Entity::Cell(row, column), settings);
     }
 }

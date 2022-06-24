@@ -29,14 +29,14 @@
 //!         "│  2   │\n",
 //!         "├──────┤\n",
 //!         "│  2   │\n",
-//!         "└──────┘\n",
+//!         "└──────┘",
 //!     ),
 //! );
 //! ```
 //!
 //! [Table]: crate::Table
 
-use papergrid::{Entity, Grid, Indent, Settings};
+use papergrid::{Entity, Grid, Indent};
 
 use crate::CellOption;
 
@@ -88,10 +88,7 @@ impl Padding {
 }
 
 impl CellOption for Padding {
-    fn change_cell(&mut self, grid: &mut Grid, row: usize, column: usize) {
-        grid.set(
-            Entity::Cell(row, column),
-            Settings::new().padding(self.0.left, self.0.right, self.0.top, self.0.bottom),
-        )
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        grid.set_padding(entity, self.0)
     }
 }

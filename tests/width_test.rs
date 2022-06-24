@@ -214,13 +214,18 @@ fn max_width_wrapped_keep_words_color() {
         .to_string();
 
     assert_eq!(
-        table,
+        ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
             "| String            |"
             "|-------------------|"
-            "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |"
-            "| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntence\u{1b}[39m\u{1b}[49m          |"
+            "| this is a long    |"
+            "| sentence          |"
         )
+    );
+
+    assert_eq!(
+        table,
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |\n| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntence\u{1b}[39m\u{1b}[49m          |"
     );
 
     let data = vec!["this is a long  sentence".on_black().green().to_string()];
@@ -231,13 +236,18 @@ fn max_width_wrapped_keep_words_color() {
         .to_string();
 
     assert_eq!(
-        table,
+        ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
             "| String            |"
             "|-------------------|"
-            "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m  |"
-            "| \u{1b}[32m\u{1b}[40ms\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m          |"
+            "| this is a long    |"
+            "| sentence          |"
         )
+    );
+
+    assert_eq!(
+        table,
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m  |\n| \u{1b}[32m\u{1b}[40ms\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m          |"
     );
 
     let data = vec!["this is a long   sentence".on_black().green().to_string()];
@@ -248,13 +258,18 @@ fn max_width_wrapped_keep_words_color() {
         .to_string();
 
     assert_eq!(
-        table,
+        ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
             "| String            |"
             "|-------------------|"
-            "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
+            "| this is a long    |"
+            "| sentence          |"
         )
+    );
+
+    assert_eq!(
+        table,
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
     );
 
     let data = vec!["this is a long    sentence".on_black().green().to_string()];
@@ -265,13 +280,18 @@ fn max_width_wrapped_keep_words_color() {
         .to_string();
 
     assert_eq!(
-        table,
+        ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
             "| String            |"
             "|-------------------|"
-            "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |"
+            "| this is a long    |"
+            "|  sentence         |"
         )
+    );
+
+    assert_eq!(
+        table,
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |"
     );
 
     let data = vec!["this".on_black().green().to_string()];
@@ -279,6 +299,15 @@ fn max_width_wrapped_keep_words_color() {
         .with(Style::github_markdown())
         .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
         .to_string();
+
+    assert_eq!(
+        ansi_str::AnsiStr::ansi_strip(&table),
+        static_table!(
+            "| String |"
+            "|--------|"
+            "|  this  |"
+        )
+    );
 
     assert_eq!(
         table,
@@ -327,14 +356,19 @@ fn max_width_wrapped_keep_words_long_word_color() {
         .to_string();
 
     assert_eq!(
-        table,
+        ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
             "| String            |"
             "|-------------------|"
-            "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |"
-            "| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntencesentences\u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m           |"
+            "| this is a long    |"
+            "| sentencesentences |"
+            "| entence           |"
         )
+    );
+
+    assert_eq!(
+        table,
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |\n| \u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mntencesentences\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m           |"
     );
 }
 
@@ -356,19 +390,7 @@ fn max_width_wrapped_collored() {
 
     assert_eq!(
         table,
-        static_table!(
-            "| St |"
-            "| ri |"
-            "| ng |"
-            "|----|"
-            "| \u{1b}[31mas\u{1b}[39m |"
-            "| \u{1b}[31md\u{1b}[39m  |"
-            "| \u{1b}[34mzx\u{1b}[39m |"
-            "| \u{1b}[34mc2\u{1b}[39m |"
-            "| \u{1b}[32m\u{1b}[40mas\u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40mda\u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40msd\u{1b}[39m\u{1b}[49m |"
-        )
+        "| St |\n| ri |\n| ng |\n|----|\n| \u{1b}[31mas\u{1b}[39m |\n| \u{1b}[31md\u{1b}[39m  |\n| \u{1b}[34mzx\u{1b}[39m |\n| \u{1b}[34mc2\u{1b}[39m |\n| \u{1b}[32m\u{1b}[40mas\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40mda\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40msd\u{1b}[39m\u{1b}[49m |"
     );
 }
 
@@ -430,14 +452,19 @@ fn color_chars_are_stripped() {
         .to_string();
 
     assert_eq!(
-        table,
+        ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
             "| Str... |"
             "|--------|"
-            "|  \u{1b}[31masd\u{1b}[0m   |"
-            "|  \u{1b}[34mzxc\u{1b}[0m   |"
-            "| \u{1b}[32m\u{1b}[40masd\u{1b}[39m\u{1b}[49m... |"
+            "|  asd   |"
+            "|  zxc   |"
+            "| asd... |"
         )
+    );
+
+    assert_eq!(
+        table,
+        "| Str... |\n|--------|\n|  \u{1b}[31masd\u{1b}[39m   |\n|  \u{1b}[34mzxc\u{1b}[39m   |\n| \u{1b}[32;40masd\u{1b}[39m\u{1b}[49m... |",
     );
 }
 
@@ -451,7 +478,7 @@ fn min_width() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|      N       |   column 0   |   column 1   |   column 2   |"
+            "| N            | column 0     | column 1     | column 2     |"
             "|--------------+--------------+--------------+--------------|"
             "|      0       |     0-0      |     0-1      |     0-2      |"
             "|      1       |     1-0      |     1-1      |     1-2      |"
@@ -503,7 +530,7 @@ fn min_width_one_column() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|   N   | column 0 | column 1 | column 2 |"
+            "| N     | column 0 | column 1 | column 2 |"
             "|-------+----------+----------+----------|"
             "|   0   |   0-0    |   0-1    |   0-2    |"
             "|   1   |   1-0    |   1-1    |   1-2    |"
@@ -549,7 +576,7 @@ fn min_with_max_width() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|  N  | col | col | col |"
+            "| N   | col | col | col |"
             "|-----+-----+-----+-----|"
             "|  0  | 0-0 | 0-1 | 0-2 |"
             "|  1  | 1-0 | 1-1 | 1-2 |"
@@ -582,7 +609,7 @@ fn min_with_max_width_truncate_suffix() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|  N  | col... | col... | col... |"
+            "| N   | col... | col... | col... |"
             "|-----+--------+--------+--------|"
             "|  0  |  0-0   |  0-1   |  0-2   |"
             "|  1  |  1-0   |  1-1   |  1-2   |"
@@ -621,14 +648,19 @@ fn min_width_color() {
         .to_string();
 
     assert_eq!(
-        table,
+        ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
-            "|   String   |"
+            "| String     |"
             "|------------|"
-            "|    \u{1b}[31masd\u{1b}[0m     |"
-            "|    \u{1b}[34mzxc\u{1b}[0m     |"
-            "|   \u{1b}[32m\u{1b}[40masdasd\u{1b}[0m\u{1b}[0m   |"
+            "| asd        |"
+            "| zxc        |"
+            "| asdasd     |"
         )
+    );
+
+    assert_eq!(
+        table,
+        "| String     |\n|------------|\n| \u{1b}[31masd\u{1b}[39m        |\n| \u{1b}[34mzxc\u{1b}[39m        |\n| \u{1b}[32;40masdasd\u{1b}[0m     |",
     );
 }
 
@@ -664,11 +696,11 @@ fn total_width_big() {
     assert_eq!(
         table,
         static_table!(
-            "|      N       |      column 0       |      column 1      |      column 2      |"
+            "| N            | column 0            | column 1           | column 2           |"
             "|--------------+---------------------+--------------------+--------------------|"
-            "|      0       |         0-0         |        0-1         |        0-2         |"
-            "|      1       |         1-0         |        1-1         |        1-2         |"
-            "|      2       |         2-0         |        2-1         |        2-2         |"
+            "| 0            | 0-0                 | 0-1                | 0-2                |"
+            "| 1            | 1-0                 | 1-1                | 1-2                |"
+            "| 2            | 2-0                 | 2-1                | 2-2                |"
         )
     );
 
@@ -828,10 +860,10 @@ fn total_width_small_with_panel() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World       |"
+            "|   Hello World    |"
             "|--+-------+-------|"
             "|  | colum | colum |"
-            "|  | 0-0   | 0-1   |"
+            "|  |  0-0  |  0-1  |"
         )
     );
     assert!(is_lines_equal(&table, 20));
@@ -847,7 +879,7 @@ fn total_width_small_with_panel() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World       |"
+            "|   Hello World    |"
             "|--+----+----+-----|"
             "|  | co | co | col |"
             "|  | 0- | 0- | 0-2 |"
@@ -1238,16 +1270,7 @@ fn wrapping_as_total_multiline_color() {
 
     assert_eq!(
         table,
-        "| ver | published_d | is_act | major_feature            |\n\
-         | sio | ate         | ive    |                          |\n\
-         | n   |             |        |                          |\n\
-         |-----+-------------+--------+--------------------------|\n\
-         | \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n\
-         | \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                      |\n\
-         | \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n\
-         | \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n\
-         | \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n\
-         | \u{1b}[37m.4\u{1b}[39m  |             |        |                          |\n"
+        "| ver | published_d | is_act | major_feature            |\n| sio | ate         | ive    |                          |\n| n   |             |        |                          |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                      |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |",
     );
     assert!(is_lines_equal(&table, 57));
 
@@ -1258,17 +1281,24 @@ fn wrapping_as_total_multiline_color() {
         .to_string();
 
     assert_eq!(
+        ansi_str::AnsiStr::ansi_strip(&table),
+        static_table!(
+            "| ver | published_d | is_act | major_feature            |"
+            "| sio | ate         | ive    |                          |"
+            "| n   |             |        |                          |"
+            "|-----+-------------+--------+--------------------------|"
+            "| 0.2 | 2021-06-23  | true   | #[header(inline)]        |"
+            "| .1  |             |        | attribute                |"
+            "| 0.2 | 2021-06-19  | false  | API changes              |"
+            "| .0  |             |        |                          |"
+            "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
+            "| .4  |             |        |                          |"
+        )
+    );
+
+    assert_eq!(
         table,
-        "| ver | published_d | is_act | major_feature            |\n\
-         | sio | ate         | ive    |                          |\n\
-         | n   |             |        |                          |\n\
-         |-----+-------------+--------+--------------------------|\n\
-         | \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |\n\
-         | \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattrib\u{1b}[39m\u{1b}[49m\u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                |\n\
-         | \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n\
-         | \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n\
-         | \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n\
-         | \u{1b}[37m.4\u{1b}[39m  |             |        |                          |\n"
+        "| ver | published_d | is_act | major_feature            |\n| sio | ate         | ive    |                          |\n| n   |             |        |                          |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |\n| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattrib\u{1b}[39m\u{1b}[49m\u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |"
     );
     assert!(is_lines_equal(&table, 57));
 }
@@ -1320,14 +1350,19 @@ fn truncating_as_total_multiline_color() {
         .to_string();
 
     assert_eq!(
-        table,
+        ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
             "| ver | published_d | is_act | major_feature            |"
             "|-----+-------------+--------+--------------------------|"
-            "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[0m\u{1b}[0m  | true   | \u{1b}[42m\u{1b}[34m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[0m\u{1b}[0m  | false  | \u{1b}[33mAPI changes\u{1b}[0m              |"
-            "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[0m\u{1b}[0m  | false  | \u{1b}[40m\u{1b}[31mdisplay_with attribute\u{1b}[0m\u{1b}[0m   |"
+            "| 0.2 | 2021-06-23  | true   | #[header(inline)] attrib |"
+            "| 0.2 | 2021-06-19  | false  | API changes              |"
+            "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
         )
+    );
+
+    assert_eq!(
+        table,
+        "| ver | published_d | is_act | major_feature            |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
     );
     assert!(is_lines_equal(&table, 57));
 }
@@ -1378,18 +1413,18 @@ fn min_width_works_with_right_alignment() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|                                           &str |"
-            "|------------------------------------------------|"
-            "|                                                |"
-            "|                          {                     |"
-            "|                              \"some\": \"random\", |"
-            "|                              \"json\": [         |"
-            "|                                  { \"1\": \"2\" }, |"
-            "|                                  { \"1\": \"2\" }, |"
-            "|                                  { \"1\": \"2\" }  |"
-            "|                              ]                 |"
-            "|                          }                     |"
-            "|                                                |"
+            r#"|                                           &str |"#
+            r#"|------------------------------------------------|"#
+            r#"|                                                |"#
+            r#"|                              {                 |"#
+            r#"|                              "some": "random", |"#
+            r#"|                              "json": [         |"#
+            r#"|                              { "1": "2" },     |"#
+            r#"|                              { "1": "2" },     |"#
+            r#"|                              { "1": "2" }      |"#
+            r#"|                              ]                 |"#
+            r#"|                              }                 |"#
+            r#"|                                                |"#
         )
     );
     assert!(is_lines_equal(&table.to_string(), 50));
@@ -1399,18 +1434,18 @@ fn min_width_works_with_right_alignment() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|                                           &str |"
-            "|------------------------------------------------|"
-            "|                          {                     |"
-            "|                              \"some\": \"random\", |"
-            "|                              \"json\": [         |"
-            "|                                  { \"1\": \"2\" }, |"
-            "|                                  { \"1\": \"2\" }, |"
-            "|                                  { \"1\": \"2\" }  |"
-            "|                              ]                 |"
-            "|                          }                     |"
-            "|                                                |"
-            "|                                                |"
+            r#"|                                           &str |"#
+            r#"|------------------------------------------------|"#
+            r#"|                              {                 |"#
+            r#"|                              "some": "random", |"#
+            r#"|                              "json": [         |"#
+            r#"|                              { "1": "2" },     |"#
+            r#"|                              { "1": "2" },     |"#
+            r#"|                              { "1": "2" }      |"#
+            r#"|                              ]                 |"#
+            r#"|                              }                 |"#
+            r#"|                                                |"#
+            r#"|                                                |"#
         )
     );
     assert!(is_lines_equal(&table.to_string(), 50));
@@ -1448,18 +1483,18 @@ fn min_width_works_with_right_alignment() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|                      &str                      |"
-            "|------------------------------------------------|"
-            "|                                                |"
-            "|               {                                |"
-            "|                   \"some\": \"random\",            |"
-            "|                   \"json\": [                    |"
-            "|                       { \"1\": \"2\" },            |"
-            "|                       { \"1\": \"2\" },            |"
-            "|                       { \"1\": \"2\" }             |"
-            "|                   ]                            |"
-            "|               }                                |"
-            "|                                                |"
+            r#"|                      &str                      |"#
+            r#"|------------------------------------------------|"#
+            r#"|                                                |"#
+            r#"|               {                                |"#
+            r#"|               "some": "random",                |"#
+            r#"|               "json": [                        |"#
+            r#"|               { "1": "2" },                    |"#
+            r#"|               { "1": "2" },                    |"#
+            r#"|               { "1": "2" }                     |"#
+            r#"|               ]                                |"#
+            r#"|               }                                |"#
+            r#"|                                                |"#
         )
     );
     assert!(is_lines_equal(&table.to_string(), 50));
@@ -1469,18 +1504,18 @@ fn min_width_works_with_right_alignment() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|                      &str                      |"
-            "|------------------------------------------------|"
-            "|               {                                |"
-            "|                   \"some\": \"random\",            |"
-            "|                   \"json\": [                    |"
-            "|                       { \"1\": \"2\" },            |"
-            "|                       { \"1\": \"2\" },            |"
-            "|                       { \"1\": \"2\" }             |"
-            "|                   ]                            |"
-            "|               }                                |"
-            "|                                                |"
-            "|                                                |"
+            r#"|                      &str                      |"#
+            r#"|------------------------------------------------|"#
+            r#"|               {                                |"#
+            r#"|               "some": "random",                |"#
+            r#"|               "json": [                        |"#
+            r#"|               { "1": "2" },                    |"#
+            r#"|               { "1": "2" },                    |"#
+            r#"|               { "1": "2" }                     |"#
+            r#"|               ]                                |"#
+            r#"|               }                                |"#
+            r#"|                                                |"#
+            r#"|                                                |"#
         )
     );
     assert!(is_lines_equal(&table.to_string(), 50));
@@ -1503,11 +1538,11 @@ fn min_width_with_span_1() {
     assert_eq!(
         table,
         static_table!(
-            "|                                   0                                    |            1            |"
+            "| 0                                                                      | 1                       |"
             "|------------------------------------------------------------------------+-------------------------|"
-            "|                                                0                                                 |"
-            "|            a long string which will affect min width logic             |                         |"
-            "|                                   2                                    |            3            |"
+            "| 0                                                                                                |"
+            "| a long string which will affect min width logic                        |                         |"
+            "| 2                                                                      | 3                       |"
         )
     );
     assert!(is_lines_equal(&table, 100));
@@ -1530,11 +1565,11 @@ fn min_width_with_span_2() {
     assert_eq!(
         table,
         static_table!(
-            "|                        0                        |                       1                        |"
+            "| 0                                               | 1                                              |"
             "|-------------------------------------------------+------------------------------------------------|"
-            "|                        0                        |                       1                        |"
-            "|                         a long string which will affect min width logic                          |"
-            "|                        2                        |                       3                        |"
+            "| 0                                               | 1                                              |"
+            "| a long string which will affect min width logic                                                  |"
+            "| 2                                               | 3                                              |"
         )
     );
     assert!(is_lines_equal(&table, 100));
@@ -1551,11 +1586,11 @@ fn justify_width_constant_test() {
     assert_eq!(
         table,
         static_table!(
-            "|  N  | col | col | col |"
+            "| N   | col | col | col |"
             "|-----+-----+-----+-----|"
-            "|  0  | 0-0 | 0-1 | 0-2 |"
-            "|  1  | 1-0 | 1-1 | 1-2 |"
-            "|  2  | 2-0 | 2-1 | 2-2 |"
+            "| 0   | 0-0 | 0-1 | 0-2 |"
+            "| 1   | 1-0 | 1-1 | 1-2 |"
+            "| 2   | 2-0 | 2-1 | 2-2 |"
         )
     );
 }
@@ -1574,11 +1609,11 @@ fn justify_width_constant_different_sizes_test() {
     assert_eq!(
         table,
         static_table!(
-            "|  N  | col | col | col |"
+            "| N   | col | col | col |"
             "|-----+-----+-----+-----|"
-            "|  0  | Hel | 0-1 | 0-2 |"
-            "|  1  | 1-0 | 1-1 | 1-2 |"
-            "|  2  | 2-0 | mul | 2-2 |"
+            "| 0   | Hel | 0-1 | 0-2 |"
+            "| 1   | 1-0 | 1-1 | 1-2 |"
+            "| 2   | 2-0 | mul | 2-2 |"
         )
     );
 }
@@ -1635,11 +1670,11 @@ fn justify_width_max_test() {
     assert_eq!(
         table,
         static_table!(
-            "|    N     | column 0 | column 1 | column 2 |"
+            "| N        | column 0 | column 1 | column 2 |"
             "|----------+----------+----------+----------|"
-            "|    0     |   0-0    |   0-1    |   0-2    |"
-            "|    1     |   1-0    |   1-1    |   1-2    |"
-            "|    2     |   2-0    |   2-1    |   2-2    |"
+            "| 0        | 0-0      | 0-1      | 0-2      |"
+            "| 1        | 1-0      | 1-1      | 1-2      |"
+            "| 2        | 2-0      | 2-1      | 2-2      |"
         )
     );
 }
@@ -1688,6 +1723,18 @@ fn max_width_table_when_cell_has_tabs() {
     );
 }
 
+// WE GOT [["", "column 0", "column 1 ", "column 2  "], ["", "0-0     ", "0-1      ", "0-2       "], ["", "Hello World With Big Line; Here w", "1-1", "1-2"], ["", "2-0     ", "Hello World With Big L", "2-2"]]
+// [2, 10, 11, 12]
+// 40 55 40
+
+// BEFORE ADJ [2, 10, 11, 12]
+
+// WE GOT [["", "column 0", "column 1", "column 2"], ["", "0-0", "0-1", "0-2"], ["", "Hello World With Big Line; Here w", "1-1", "1-2"], ["", "2-0", "Hello World With Big L", "2-2"]]
+// [2, 11, 12, 11]
+// 41 55 40
+
+// adj [2, 10, 10, 10]
+
 #[test]
 fn max_width_truncate_with_big_span() {
     let mut data = create_vector::<3, 3>();
@@ -1719,22 +1766,37 @@ fn max_width_truncate_with_big_span() {
         .with(Style::github_markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
-        .with(Width::truncate(40))
         .to_string();
 
-    // bigest influence
-
-    assert_eq!(string_width_multiline(&table), 40);
     assert_eq!(
         table,
         static_table!(
-            "|  | column 0 | column 1  |  column 2  |"
-            "|--+----------+-----------+------------|"
-            "|  |   0-0    |    0-1    |    0-2     |"
-            "|  | Hello World With Big Line; Here w |"
-            "|  |   2-0    | Hello World With Big L |"
+            "| N | column 0  |    column 1    |    column 2    |"
+            "|---+-----------+----------------+----------------|"
+            "| 0 |    0-0    |      0-1       |      0-2       |"
+            "| 1 | Hello World With Big Line; Here we gooooooo |"
+            "| 2 |    2-0    | Hello World With Big Line; Here |"
         )
     );
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
+        .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+        .with(Width::truncate(40))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "|  | colum |  column 1   |  column 2   |"
+            "|--+-------+-------------+-------------|"
+            "|  |  0-0  |     0-1     |     0-2     |"
+            "|  | Hello World With Big Line; Here w |"
+            "|  |  2-0  | Hello World With Big Line |"
+        )
+    );
+    assert_eq!(string_width_multiline(&table), 40);
 
     let mut data = create_vector::<3, 3>();
     data[1][1] = String::from("Hello World With Big Line; Here we gooooooo");
@@ -1756,6 +1818,27 @@ fn max_width_truncate_with_big_span() {
             "|  |      0-0      |      0-1      | 0 |"
             "|  | Hello World With Big Line; He | 1 |"
             "|  |      2-0      | Hello World With  |"
+        )
+    );
+
+    let mut data = create_vector::<3, 3>();
+    data[1][1] = String::from("Hello World With Big Line; Here w");
+    data[2][2] = String::from("Hello World With Big L");
+
+    let table = Table::new(&data)
+        .with(Style::github_markdown())
+        .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
+        .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "| N | column 0 |  column 1  | column 2  |"
+            "|---+----------+------------+-----------|"
+            "| 0 |   0-0    |    0-1     |    0-2    |"
+            "| 1 | Hello World With Big Line; Here w |"
+            "| 2 |   2-0    | Hello World With Big L |"
         )
     );
 }
@@ -2164,11 +2247,11 @@ fn min_width_priority_max() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| N | column 0 | column 1 |            column 2            |"
+            "| N | column 0 | column 1 | column 2                       |"
             "|---+----------+----------+--------------------------------|"
-            "| 0 |   0-0    |   0-1    |              0-2               |"
-            "| 1 |   1-0    |   1-1    |              1-2               |"
-            "| 2 |   2-0    |   2-1    |              2-2               |"
+            "| 0 | 0-0      | 0-1      | 0-2                            |"
+            "| 1 | 1-0      | 1-1      | 1-2                            |"
+            "| 2 | 2-0      | 2-1      | 2-2                            |"
         ),
     );
 }
@@ -2183,11 +2266,11 @@ fn min_width_priority_min() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "|      N       |   column 0   |   column 1   |  column 2   |"
+            "| N            | column 0     | column 1     | column 2    |"
             "|--------------+--------------+--------------+-------------|"
-            "|      0       |     0-0      |     0-1      |     0-2     |"
-            "|      1       |     1-0      |     1-1      |     1-2     |"
-            "|      2       |     2-0      |     2-1      |     2-2     |"
+            "| 0            | 0-0          | 0-1          | 0-2         |"
+            "| 1            | 1-0          | 1-1          | 1-2         |"
+            "| 2            | 2-0          | 2-1          | 2-2         |"
         ),
     );
 }

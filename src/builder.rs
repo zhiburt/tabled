@@ -53,7 +53,7 @@
 //!         "│  Ready   │         │       │\n",
 //!         "├──────────┼─────────┼───────┤\n",
 //!         "│ Unknown  │    +    │       │\n",
-//!         "└──────────┴─────────┴───────┘\n",
+//!         "└──────────┴─────────┴───────┘",
 //!    ),
 //! )
 //! ```
@@ -100,7 +100,7 @@
 //!         "│                   │                    │    +    │\n",
 //!         "├───────────────────┼────────────────────┼─────────┤\n",
 //!         "│        123        │        234         │         │\n",
-//!         "└───────────────────┴────────────────────┴─────────┘\n",
+//!         "└───────────────────┴────────────────────┴─────────┘",
 //!    ),
 //! )
 //! ```
@@ -254,7 +254,7 @@ impl Builder {
     ///      | 1 | World |\n\
     ///      +---+-------+\n\
     ///      | 2 |   !   |\n\
-    ///      +---+-------+\n"
+    ///      +---+-------+"
     /// )
     /// ```
     pub fn index(self) -> IndexBuilder {
@@ -277,7 +277,7 @@ impl Builder {
     ///      | Hello |\n\
     ///      +-------+\n\
     ///      | World |\n\
-    ///      +-------+\n"
+    ///      +-------+"
     /// )
     /// ```
     pub fn clean(mut self) -> Self {
@@ -452,6 +452,7 @@ fn create_table_from_grid(grid: Grid) -> Table {
     // it's crusial to set a global setting rather than a setting for an each cell
     // as it will be hard to override that since how Grid::style method works
     table.grid.set(Entity::Global, default_cell_style());
+    table.grid.set_tab_width(4);
 
     table.with(Style::ascii())
 }
@@ -466,8 +467,7 @@ fn default_cell_style() -> Settings {
         )
         .alignment(AlignmentHorizontal::Center)
         .formatting(Formatting {
-            tab_width: 4,
-            horizontal_trim: true,
+            horizontal_trim: false,
             allow_lines_alignement: false,
             vertical_trim: false,
         })
@@ -530,7 +530,7 @@ impl IndexBuilder {
     ///      |   | i |  col-1  |  col-2  |\n\
     ///      +---+---+---------+---------+\n\
     ///      | 0 | 0 | value-1 | value-2 |\n\
-    ///      +---+---+---------+---------+\n"
+    ///      +---+---+---------+---------+"
     /// )
     /// ```
     fn new(mut b: Builder) -> Self {
@@ -588,7 +588,7 @@ impl IndexBuilder {
     ///      | column1 |   |         |\n\
     ///      +---------+---+---------+\n\
     ///      | value1  | 0 | value2  |\n\
-    ///      +---------+---+---------+\n"
+    ///      +---------+---+---------+"
     /// )
     /// ```
     pub fn set_index(mut self, column: usize) -> Self {
@@ -642,7 +642,7 @@ impl IndexBuilder {
     ///      | column-2 | value-2 | value-5 | value-8 |\n\
     ///      +----------+---------+---------+---------+\n\
     ///      | column-3 | value-3 | value-6 | value-9 |\n\
-    ///      +----------+---------+---------+---------+\n"
+    ///      +----------+---------+---------+---------+"
     /// )
     /// ```
     pub fn transpose(mut self) -> Self {
