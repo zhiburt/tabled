@@ -530,6 +530,12 @@ impl StyleConfig {
         self
     }
 
+    /// Set a header character.
+    pub fn set_header(&mut self, s: Option<Symbol>) -> &mut Self {
+        self.header.main = s;
+        self
+    }
+
     /// This function runs a function for each border character and changes it accordingly.
     ///
     /// See [CustomStyle::try_map]
