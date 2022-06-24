@@ -6,7 +6,7 @@ use papergrid::Symbol;
 use tabled::{
     builder::Builder,
     object::{Cell, Rows, Segment},
-    style::{Border, BorderText, StyleSettings},
+    style::{Border, BorderText, StyleConfig},
     Highlight, Modify, Padding, Span, Style, Table, TableIteratorExt,
 };
 
@@ -1624,7 +1624,7 @@ fn span_correct_test() {
 
 #[test]
 fn style_settings_usage_test() {
-    let mut style: StyleSettings = Style::modern().into();
+    let mut style: StyleConfig = Style::modern().into();
     style
         .set_internal(Some(Symbol::from_char('x')))
         .set_bottom(Some(Symbol::from_char('a')))

@@ -337,9 +337,9 @@ impl Style {
     }
 }
 
-const EMPTY: StyleSettings = StyleSettings::new(Frame::empty(), Line::empty(), Line::empty(), None);
+const EMPTY: StyleConfig = StyleConfig::new(Frame::empty(), Line::empty(), Line::empty(), None);
 
-const ASCII: StyleSettings = StyleSettings::new(
+const ASCII: StyleConfig = StyleConfig::new(
     Frame::full(
         Line::new('-', '+'),
         Line::new('-', '+'),
@@ -352,17 +352,17 @@ const ASCII: StyleSettings = StyleSettings::new(
     Some('|'),
 );
 
-const BLANK: StyleSettings =
-    StyleSettings::new(Frame::empty(), Line::empty(), Line::empty(), Some(' '));
+const BLANK: StyleConfig =
+    StyleConfig::new(Frame::empty(), Line::empty(), Line::empty(), Some(' '));
 
-const PSQL: StyleSettings = StyleSettings::new(
+const PSQL: StyleConfig = StyleConfig::new(
     Frame::empty(),
     Line::empty(),
     Line::new('-', '+'),
     Some('|'),
 );
 
-const GITHUB_MARKDOWN: StyleSettings = StyleSettings::new(
+const GITHUB_MARKDOWN: StyleConfig = StyleConfig::new(
     Frame::bordered(
         Line::empty(),
         Line::empty(),
@@ -374,7 +374,7 @@ const GITHUB_MARKDOWN: StyleSettings = StyleSettings::new(
     Some('|'),
 );
 
-const MODERN: StyleSettings = StyleSettings::new(
+const MODERN: StyleConfig = StyleConfig::new(
     Frame::full(
         Line::new('─', '┬'),
         Line::new('─', '┴'),
@@ -387,7 +387,7 @@ const MODERN: StyleSettings = StyleSettings::new(
     Some('│'),
 );
 
-const MODERN_ROUNDED: StyleSettings = StyleSettings::new(
+const MODERN_ROUNDED: StyleConfig = StyleConfig::new(
     Frame::full(
         Line::new('─', '┬'),
         Line::new('─', '┴'),
@@ -400,7 +400,7 @@ const MODERN_ROUNDED: StyleSettings = StyleSettings::new(
     Some('│'),
 );
 
-const EXTENDED: StyleSettings = StyleSettings::new(
+const EXTENDED: StyleConfig = StyleConfig::new(
     Frame::full(
         Line::new('═', '╦'),
         Line::new('═', '╩'),
@@ -413,7 +413,7 @@ const EXTENDED: StyleSettings = StyleSettings::new(
     Some('║'),
 );
 
-const DOTS: StyleSettings = StyleSettings::new(
+const DOTS: StyleConfig = StyleConfig::new(
     Frame::full(
         Line::new('.', '.'),
         Line::new('.', ':'),
@@ -426,7 +426,7 @@ const DOTS: StyleSettings = StyleSettings::new(
     Some(':'),
 );
 
-const RE_STRUCTURED_TEXT: StyleSettings = StyleSettings::new(
+const RE_STRUCTURED_TEXT: StyleConfig = StyleConfig::new(
     Frame::bordered(
         Line::new('=', ' '),
         Line::new('=', ' '),
@@ -442,14 +442,14 @@ const RE_STRUCTURED_TEXT: StyleSettings = StyleSettings::new(
 ///
 /// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
 #[derive(Debug, Clone)]
-pub struct StyleSettings {
+pub struct StyleConfig {
     frame: Frame,
     horizontal: Line,
     header: Line,
     vertical: Option<Symbol>,
 }
 
-impl StyleSettings {
+impl StyleConfig {
     const fn new(frame: Frame, horizontal: Line, header: Line, vertical: Option<char>) -> Self {
         Self {
             frame,
@@ -656,7 +656,7 @@ impl Frame {
     }
 }
 
-impl TableOption for StyleSettings {
+impl TableOption for StyleConfig {
     fn change(&mut self, grid: &mut Grid) {
         let borders = Borders {
             top: self.frame.top.main.clone(),
@@ -698,7 +698,7 @@ impl TableOption for StyleSettings {
 /// It doesn't allow to call method [CustomStyle::top_left_corner] unless [CustomStyle::left] and [CustomStyle::top] is set.
 #[derive(Debug, Clone)]
 pub struct CustomStyle<Top, Bottom, Left, Right, Horizontal, Vertical, Header> {
-    inner: StyleSettings,
+    inner: StyleConfig,
     _l_border: PhantomData<Left>,
     _r_border: PhantomData<Right>,
     _t_border: PhantomData<Top>,
@@ -709,7 +709,7 @@ pub struct CustomStyle<Top, Bottom, Left, Right, Horizontal, Vertical, Header> {
 }
 
 impl<Top, Bottom, Left, Right, Horizontal, Vertical, Header>
-    From<CustomStyle<Top, Bottom, Left, Right, Horizontal, Vertical, Header>> for StyleSettings
+    From<CustomStyle<Top, Bottom, Left, Right, Horizontal, Vertical, Header>> for StyleConfig
 {
     fn from(val: CustomStyle<Top, Bottom, Left, Right, Horizontal, Vertical, Header>) -> Self {
         val.inner
@@ -723,7 +723,7 @@ pub struct On;
 impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
     CustomStyle<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
 {
-    const fn new(style: StyleSettings) -> Self {
+    const fn new(style: StyleConfig) -> Self {
         Self {
             inner: style,
             _b_border: PhantomData,
