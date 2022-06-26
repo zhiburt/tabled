@@ -22,8 +22,9 @@ use crossterm::{
     terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use tabled::{
+    formatting_settings::TrimStrategy,
     object::{Columns, Object, Rows},
-    style::{Border, BorderText, Symbol},
+    style::{BorderText, ColoredBorder, Symbol},
     Alignment, Disable, Header, Highlight, Margin, Modify, Style, Table, Tabled, Width,
 };
 
@@ -192,8 +193,8 @@ fn run(movies: &[Movie], debug: bool) {
 
     #[rustfmt::skip]
     let border_colors_actions: Vec<Action> = vec![
-        action(|t| t.with(Highlight::new(Rows::first(), Border::default().bottom(Symbol::ansi("━".yellow().to_string()).unwrap())))),
-        action(|t| t.with(Highlight::new(Rows::last(), Border::default().top(Symbol::ansi("━".yellow().to_string()).unwrap())))),
+        action(|t| t.with(Highlight::colored(Rows::first(), ColoredBorder::default().bottom(Symbol::ansi("━".yellow().to_string()).unwrap())))),
+        action(|t| t.with(Highlight::colored(Rows::last(), ColoredBorder::default().top(Symbol::ansi("━".yellow().to_string()).unwrap())))),
     ];
 
     #[rustfmt::skip]
@@ -230,12 +231,12 @@ fn run(movies: &[Movie], debug: bool) {
         detached_action(|t, _| t.with(Width::wrap(115).keep_words())),
         detached_action(|t, _| t.with(Width::wrap(120).keep_words())),
         //
-        detached_action(|t, _| t.with(Width::increase(125))),
-        detached_action(|t, _| t.with(Width::increase(130))),
-        detached_action(|t, _| t.with(Width::increase(135))),
-        detached_action(|t, _| t.with(Width::increase(140))),
-        detached_action(|t, _| t.with(Width::increase(145))),
-        detached_action(|t, _| t.with(Width::increase(150))),
+        detached_action(|t, _| t.with(Width::increase(125)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
+        detached_action(|t, _| t.with(Width::increase(130)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
+        detached_action(|t, _| t.with(Width::increase(135)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
+        detached_action(|t, _| t.with(Width::increase(140)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
+        detached_action(|t, _| t.with(Width::increase(145)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
+        detached_action(|t, _| t.with(Width::increase(150)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
     ];
 
     let mut runner = Runner::new(movies);

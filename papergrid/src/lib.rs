@@ -30,36 +30,37 @@ use std::{
     ops::{Bound, RangeBounds},
 };
 
+/// todo make Default Nones; to delete it.
 pub const DEFAULT_BORDERS: Borders = Borders {
-    top: Some(Symbol::from_char('-')),
-    top_left: Some(Symbol::from_char('+')),
-    top_right: Some(Symbol::from_char('+')),
-    top_intersection: Some(Symbol::from_char('+')),
+    top: Some('-'),
+    top_left: Some('+'),
+    top_right: Some('+'),
+    top_intersection: Some('+'),
 
-    bottom: Some(Symbol::from_char('-')),
-    bottom_left: Some(Symbol::from_char('+')),
-    bottom_right: Some(Symbol::from_char('+')),
-    bottom_intersection: Some(Symbol::from_char('+')),
+    bottom: Some('-'),
+    bottom_left: Some('+'),
+    bottom_right: Some('+'),
+    bottom_intersection: Some('+'),
 
-    horizontal: Some(Symbol::from_char('-')),
-    horizontal_left: Some(Symbol::from_char('+')),
-    horizontal_right: Some(Symbol::from_char('+')),
+    horizontal: Some('-'),
+    horizontal_left: Some('+'),
+    horizontal_right: Some('+'),
 
-    vertical_left: Some(Symbol::from_char('|')),
-    vertical_right: Some(Symbol::from_char('|')),
-    vertical_intersection: Some(Symbol::from_char('|')),
+    vertical_left: Some('|'),
+    vertical_right: Some('|'),
+    vertical_intersection: Some('|'),
 
-    intersection: Some(Symbol::from_char('+')),
+    intersection: Some('+'),
 };
 
 const DEFAULT_BORDER_HORIZONTAL_CHAR: char = ' ';
 
-const DEFAULT_BORDER_HORIZONTAL_SYMBOL: Symbol = Symbol::from_char(' ');
-const DEFAULT_BORDER_VERTICAL_SYMBOL: Symbol = Symbol::from_char(' ');
+const DEFAULT_BORDER_HORIZONTAL_SYMBOL: char = ' ';
+const DEFAULT_BORDER_VERTICAL_SYMBOL: char = ' ';
 
-const DEFAULT_BORDER_HORIZONTAL_SYMBOL_REF: &Symbol = &DEFAULT_BORDER_VERTICAL_SYMBOL;
-const DEFAULT_BORDER_VERTICAL_SYMBOL_REF: &Symbol = &DEFAULT_BORDER_VERTICAL_SYMBOL;
-const DEFAULT_BORDER_INTERSECTION_SYMBOL_REF: &Symbol = &DEFAULT_BORDER_VERTICAL_SYMBOL;
+const DEFAULT_BORDER_HORIZONTAL_SYMBOL_REF: &char = &DEFAULT_BORDER_VERTICAL_SYMBOL;
+const DEFAULT_BORDER_VERTICAL_SYMBOL_REF: &char = &DEFAULT_BORDER_VERTICAL_SYMBOL;
+const DEFAULT_BORDER_INTERSECTION_SYMBOL_REF: &char = &DEFAULT_BORDER_VERTICAL_SYMBOL;
 
 const DEFAULT_INDENT_FILL_CHAR: char = ' ';
 
@@ -73,6 +74,8 @@ pub struct Grid {
     override_split_lines: HashMap<usize, String>,
     spans: HashMap<Position, usize>,
     config: GridConfig,
+    #[cfg(feature = "color")]
+    border_colors: ColorConfig,
 }
 
 #[derive(Debug, Clone)]
@@ -125,11 +128,7 @@ impl Grid {
                     alignment_horizontal: AlignmentHorizontal::Left,
                     alignment_vertical: AlignmentVertical::Top,
                     padding: Padding::default(),
-                    formatting: Formatting {
-                        allow_lines_alignement: false,
-                        horizontal_trim: false,
-                        vertical_trim: false,
-                    },
+                    formatting: Formatting::default(),
                 },
                 alignment_horizontal: HashMap::new(),
                 alignment_vertical: HashMap::new(),
@@ -146,6 +145,8 @@ impl Grid {
             override_split_lines: HashMap::new(),
             spans: HashMap::new(),
             config,
+            #[cfg(feature = "color")]
+            border_colors: ColorConfig::default(),
         }
     }
 
@@ -417,6 +418,11 @@ impl Grid {
         let mut new_grid = Grid::new(new_count_rows, new_count_columns);
         new_grid.theme = self.theme.clone();
 
+        #[cfg(feature = "color")]
+        {
+            new_grid.border_colors = self.border_colors.clone();
+        }
+
         for (new_row, row) in (start_row..end_row).enumerate() {
             for (new_column, column) in (start_column..end_column).enumerate() {
                 let settings = self.get_settings(row, column);
@@ -593,6 +599,144 @@ impl Grid {
     /// Verifies if there's any spans set.
     pub fn has_column_spans(&self) -> bool {
         !self.spans.is_empty()
+    }
+}
+
+#[cfg(feature = "color")]
+impl Grid {
+    pub fn get_border_color(&self) -> Option<&BorderColor> {
+        self.border_colors.global.as_ref()
+    }
+
+    pub fn get_colored_border(&self, (row, col): Position) -> ColoredBorder {
+        let b = self.get_border(row, col);
+
+        ColoredBorder {
+            top: b
+                .top
+                .map(|c| Symbol::new(c, self.border_colors.get_horizontal((row, col)).cloned())),
+            bottom: b.bottom.map(|c| {
+                Symbol::new(
+                    c,
+                    self.border_colors.get_horizontal((row + 1, col)).cloned(),
+                )
+            }),
+            left: b.left.map(|c| {
+                Symbol::new(
+                    c,
+                    self.border_colors
+                        .get_color_vertical_char((row, col))
+                        .cloned(),
+                )
+            }),
+            right: b.right.map(|c| {
+                Symbol::new(
+                    c,
+                    self.border_colors
+                        .get_color_vertical_char((row, col + 1))
+                        .cloned(),
+                )
+            }),
+            left_top_corner: b
+                .left_top_corner
+                .map(|c| Symbol::new(c, self.border_colors.get_intersection((row, col)).cloned())),
+            left_bottom_corner: b.left_bottom_corner.map(|c| {
+                Symbol::new(
+                    c,
+                    self.border_colors.get_intersection((row + 1, col)).cloned(),
+                )
+            }),
+            right_top_corner: b.right_top_corner.map(|c| {
+                Symbol::new(
+                    c,
+                    self.border_colors.get_intersection((row, col + 1)).cloned(),
+                )
+            }),
+            right_bottom_corner: b.right_bottom_corner.map(|c| {
+                Symbol::new(
+                    c,
+                    self.border_colors
+                        .get_intersection((row + 1, col + 1))
+                        .cloned(),
+                )
+            }),
+        }
+    }
+
+    pub fn set_border_color(&mut self, clr: BorderColor) {
+        self.border_colors = ColorConfig::default();
+        self.border_colors.global = Some(clr);
+    }
+
+    pub fn set_colored_border(&mut self, entity: Entity, border: ColoredBorder) {
+        let border_chars = Border {
+            top: border.top.as_ref().map(|s| s.c),
+            bottom: border.bottom.as_ref().map(|s| s.c),
+            left: border.left.as_ref().map(|s| s.c),
+            right: border.right.as_ref().map(|s| s.c),
+            left_bottom_corner: border.left_bottom_corner.as_ref().map(|s| s.c),
+            left_top_corner: border.left_top_corner.as_ref().map(|s| s.c),
+            right_bottom_corner: border.right_bottom_corner.as_ref().map(|s| s.c),
+            right_top_corner: border.right_top_corner.as_ref().map(|s| s.c),
+        };
+
+        self.set_border(entity, border_chars);
+
+        for pos in entity.iter(self.count_rows(), self.count_columns()) {
+            self.set_border_color_for_pos(pos, &border);
+        }
+    }
+
+    fn set_border_color_for_pos(&mut self, pos: (usize, usize), border: &ColoredBorder) {
+        if let Some(clr) = border.top.as_ref().and_then(|s| s.ansi_sequences.clone()) {
+            self.border_colors.set_horizontal_color(pos, clr);
+        }
+        if let Some(clr) = border
+            .bottom
+            .as_ref()
+            .and_then(|s| s.ansi_sequences.clone())
+        {
+            self.border_colors
+                .set_horizontal_color((pos.0 + 1, pos.1), clr);
+        }
+        if let Some(clr) = border.left.as_ref().and_then(|s| s.ansi_sequences.clone()) {
+            self.border_colors.set_vertical_color(pos, clr);
+        }
+        if let Some(clr) = border.right.as_ref().and_then(|s| s.ansi_sequences.clone()) {
+            self.border_colors
+                .set_vertical_color((pos.0, pos.1 + 1), clr);
+        }
+        if let Some(clr) = border
+            .left_top_corner
+            .as_ref()
+            .and_then(|s| s.ansi_sequences.clone())
+        {
+            self.border_colors.set_intersection_color(pos, clr);
+        }
+        if let Some(clr) = border
+            .left_bottom_corner
+            .as_ref()
+            .and_then(|s| s.ansi_sequences.clone())
+        {
+            self.border_colors
+                .set_intersection_color((pos.0 + 1, pos.1), clr);
+        }
+        if let Some(clr) = border
+            .right_top_corner
+            .as_ref()
+            .and_then(|s| s.ansi_sequences.clone())
+        {
+            self.border_colors
+                .set_intersection_color((pos.0, pos.1 + 1), clr);
+        }
+        if let Some(clr) = border
+            .right_bottom_corner
+            .as_ref()
+            .and_then(|s| s.ansi_sequences.clone())
+        {
+            self.border_colors
+                .set_intersection_color((pos.0 + 1, pos.1 + 1), clr);
+        }
     }
 }
 
@@ -791,102 +935,92 @@ impl Settings {
 /// Border is a representation of a cells's borders (left, right, top, bottom, and the corners)
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Border {
-    pub top: Option<Symbol>,
-    pub bottom: Option<Symbol>,
-    pub left: Option<Symbol>,
-    pub left_top_corner: Option<Symbol>,
-    pub left_bottom_corner: Option<Symbol>,
-    pub right: Option<Symbol>,
-    pub right_top_corner: Option<Symbol>,
-    pub right_bottom_corner: Option<Symbol>,
+    pub top: Option<char>,
+    pub bottom: Option<char>,
+    pub left: Option<char>,
+    pub left_top_corner: Option<char>,
+    pub left_bottom_corner: Option<char>,
+    pub right: Option<char>,
+    pub right_top_corner: Option<char>,
+    pub right_bottom_corner: Option<char>,
 }
 
 impl Border {
     /// This function constructs a cell borders with all sides set.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        top: impl Into<Symbol>,
-        bottom: impl Into<Symbol>,
-        left: impl Into<Symbol>,
-        right: impl Into<Symbol>,
-        top_left: impl Into<Symbol>,
-        top_right: impl Into<Symbol>,
-        bottom_left: impl Into<Symbol>,
-        bottom_right: impl Into<Symbol>,
+        top: char,
+        bottom: char,
+        left: char,
+        right: char,
+        top_left: char,
+        top_right: char,
+        bottom_left: char,
+        bottom_right: char,
     ) -> Self {
         Self {
-            top: Some(top.into()),
-            bottom: Some(bottom.into()),
-            right: Some(right.into()),
-            right_top_corner: Some(top_right.into()),
-            right_bottom_corner: Some(bottom_right.into()),
-            left: Some(left.into()),
-            left_bottom_corner: Some(bottom_left.into()),
-            left_top_corner: Some(top_left.into()),
+            top: Some(top),
+            bottom: Some(bottom),
+            right: Some(right),
+            right_top_corner: Some(top_right),
+            right_bottom_corner: Some(bottom_right),
+            left: Some(left),
+            left_bottom_corner: Some(bottom_left),
+            left_top_corner: Some(top_left),
         }
     }
 
     /// This function constructs a cell borders with all sides's char set to a given character.
     /// It behaives like [Border::new] with the same character set to each side.
-    pub fn filled(c: impl Into<Symbol>) -> Self {
-        let c = c.into();
-        Self::new(
-            c.clone(),
-            c.clone(),
-            c.clone(),
-            c.clone(),
-            c.clone(),
-            c.clone(),
-            c.clone(),
-            c,
-        )
+    pub fn filled(c: char) -> Self {
+        Self::new(c, c, c, c, c, c, c, c)
     }
 
     /// Set a top border character.
-    pub fn top(mut self, c: impl Into<Symbol>) -> Self {
-        self.top = Some(c.into());
+    pub fn top(mut self, c: char) -> Self {
+        self.top = Some(c);
         self
     }
 
     /// Set a bottom border character.
-    pub fn bottom(mut self, c: impl Into<Symbol>) -> Self {
-        self.bottom = Some(c.into());
+    pub fn bottom(mut self, c: char) -> Self {
+        self.bottom = Some(c);
         self
     }
 
     /// Set a left border character.
-    pub fn left(mut self, c: impl Into<Symbol>) -> Self {
-        self.left = Some(c.into());
+    pub fn left(mut self, c: char) -> Self {
+        self.left = Some(c);
         self
     }
 
     /// Set a right border character.
-    pub fn right(mut self, c: impl Into<Symbol>) -> Self {
-        self.right = Some(c.into());
+    pub fn right(mut self, c: char) -> Self {
+        self.right = Some(c);
         self
     }
 
     /// Set a top left intersection character.
-    pub fn top_left_corner(mut self, c: impl Into<Symbol>) -> Self {
-        self.left_top_corner = Some(c.into());
+    pub fn top_left_corner(mut self, c: char) -> Self {
+        self.left_top_corner = Some(c);
         self
     }
 
     /// Set a top right intersection character.
-    pub fn top_right_corner(mut self, c: impl Into<Symbol>) -> Self {
-        self.right_top_corner = Some(c.into());
+    pub fn top_right_corner(mut self, c: char) -> Self {
+        self.right_top_corner = Some(c);
         self
     }
 
     /// Set a bottom left intersection character.
-    pub fn bottom_left_corner(mut self, c: impl Into<Symbol>) -> Self {
-        self.left_bottom_corner = Some(c.into());
+    pub fn bottom_left_corner(mut self, c: char) -> Self {
+        self.left_bottom_corner = Some(c);
         self
     }
 
     /// Set a bottom right intersection character.
-    pub fn bottom_right_corner(mut self, c: impl Into<Symbol>) -> Self {
-        self.right_bottom_corner = Some(c.into());
+    pub fn bottom_right_corner(mut self, c: char) -> Self {
+        self.right_bottom_corner = Some(c);
         self
     }
 }
@@ -1127,10 +1261,6 @@ fn build_format_line(
 
     print_text_formated(f, &text, cell_width, alignment, width, tab_width)?;
 
-    if cell_width < line_width {
-        println!("asdasd");
-    }
-
     let rest_width = cell_width - line_width;
     repeat_char(f, ' ', rest_width)?;
 
@@ -1158,7 +1288,7 @@ fn top_indent(style: &Style, cell_height: usize, height: usize) -> usize {
     indent + style.padding.top.size
 }
 
-fn repeat_symbol(f: &mut fmt::Formatter<'_>, c: &Symbol, n: usize) -> fmt::Result {
+fn repeat_symbol(f: &mut fmt::Formatter<'_>, c: &char, n: usize) -> fmt::Result {
     if n > 0 {
         for _ in 0..n {
             c.fmt(f)?;
@@ -1595,128 +1725,40 @@ struct Theme {
 
 #[derive(Debug, Clone, Default)]
 pub struct Borders {
-    pub top: Option<Symbol>,
-    pub top_left: Option<Symbol>,
-    pub top_right: Option<Symbol>,
-    pub top_intersection: Option<Symbol>,
+    pub top: Option<char>,
+    pub top_left: Option<char>,
+    pub top_right: Option<char>,
+    pub top_intersection: Option<char>,
 
-    pub bottom: Option<Symbol>,
-    pub bottom_left: Option<Symbol>,
-    pub bottom_right: Option<Symbol>,
-    pub bottom_intersection: Option<Symbol>,
+    pub bottom: Option<char>,
+    pub bottom_left: Option<char>,
+    pub bottom_right: Option<char>,
+    pub bottom_intersection: Option<char>,
 
-    pub horizontal: Option<Symbol>,
-    pub horizontal_left: Option<Symbol>,
-    pub horizontal_right: Option<Symbol>,
+    pub horizontal: Option<char>,
+    pub horizontal_left: Option<char>,
+    pub horizontal_right: Option<char>,
 
-    pub vertical_left: Option<Symbol>,
-    pub vertical_intersection: Option<Symbol>,
-    pub vertical_right: Option<Symbol>,
+    pub vertical_left: Option<char>,
+    pub vertical_intersection: Option<char>,
+    pub vertical_right: Option<char>,
 
-    pub intersection: Option<Symbol>,
+    pub intersection: Option<char>,
 }
 
 #[derive(Debug, Clone)]
 struct BordersMap {
-    vertical: HashMap<Position, Symbol>,
-    horizontal: HashMap<Position, Symbol>,
-    intersection: HashMap<Position, Symbol>,
+    vertical: HashMap<Position, char>,
+    horizontal: HashMap<Position, char>,
+    intersection: HashMap<Position, char>,
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct Line {
-    pub horizontal: Option<Symbol>,
-    pub intersection: Option<Symbol>,
-    pub left: Option<Symbol>,
-    pub right: Option<Symbol>,
-}
-
-/// A single character representation.
-///
-/// It uses String to support ANSI colors.
-#[cfg(feature = "color")]
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Symbol(InnerSymbol);
-
-#[cfg(feature = "color")]
-#[derive(Debug, Clone, Eq, PartialEq)]
-enum InnerSymbol {
-    Ansi(String),
-    Char(char),
-}
-
-/// A single character representation.
-///
-/// It uses String to support ANSI colors.
-#[cfg(not(feature = "color"))]
-#[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct Symbol(char);
-
-impl Symbol {
-    /// Creates a new [Symbol] from the String.
-    /// The string must contain 1 UTF-8 character and any list of Ansi sequences.
-    ///
-    /// If it contains more then 1 character `None` will be returned.
-    #[cfg(feature = "color")]
-    pub fn ansi(s: String) -> Option<Self> {
-        let mut chars = s.chars();
-        let c = chars.next();
-        let no_other_chars = chars.next().is_none();
-        drop(chars);
-        match c {
-            Some(c) if no_other_chars => return Some(Self(InnerSymbol::Char(c))),
-            _ => (),
-        }
-
-        if string_width(&s) != 1 {
-            return None;
-        }
-
-        Some(Self(InnerSymbol::Ansi(s)))
-    }
-
-    /// A function which create a [Symbol] from [char].
-    pub const fn from_char(c: char) -> Self {
-        #[cfg(feature = "color")]
-        {
-            Self(InnerSymbol::Char(c))
-        }
-
-        #[cfg(not(feature = "color"))]
-        {
-            Self(c)
-        }
-    }
-}
-
-#[cfg(feature = "color")]
-impl Default for Symbol {
-    fn default() -> Self {
-        Self(InnerSymbol::Char(char::default()))
-    }
-}
-
-impl From<char> for Symbol {
-    fn from(c: char) -> Self {
-        Self::from_char(c)
-    }
-}
-
-impl fmt::Display for Symbol {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        #[cfg(feature = "color")]
-        {
-            match &self.0 {
-                InnerSymbol::Ansi(s) => f.write_str(s),
-                InnerSymbol::Char(c) => f.write_char(*c),
-            }
-        }
-
-        #[cfg(not(feature = "color"))]
-        {
-            f.write_char(self.0)
-        }
-    }
+    pub horizontal: Option<char>,
+    pub intersection: Option<char>,
+    pub left: Option<char>,
+    pub right: Option<char>,
 }
 
 pub type Position = (usize, usize);
@@ -1806,7 +1848,7 @@ impl Theme {
         }
     }
 
-    fn get_vertical(&self, pos: Position, count_cols: usize) -> Option<&Symbol> {
+    fn get_vertical(&self, pos: Position, count_cols: usize) -> Option<&char> {
         let use_left = pos.1 == 0;
         let use_right = pos.1 == count_cols;
 
@@ -1823,7 +1865,7 @@ impl Theme {
         }
     }
 
-    fn get_horizontal(&self, pos: Position, count_rows: usize) -> Option<&Symbol> {
+    fn get_horizontal(&self, pos: Position, count_rows: usize) -> Option<&char> {
         let use_top = pos.0 == 0;
         let use_bottom = pos.0 == count_rows;
 
@@ -1851,7 +1893,7 @@ impl Theme {
         pos: Position,
         count_rows: usize,
         count_cols: usize,
-    ) -> Option<&Symbol> {
+    ) -> Option<&char> {
         let use_top = pos.0 == 0;
         let use_bottom = pos.0 == count_rows;
 
@@ -1898,7 +1940,7 @@ impl Theme {
     }
 }
 
-fn get_vertical(grid: &Grid, pos: Position) -> Option<&Symbol> {
+fn get_vertical(grid: &Grid, pos: Position) -> Option<&char> {
     let v = grid.theme.get_vertical(pos, grid.count_columns());
     if v.is_some() {
         return v;
@@ -1911,7 +1953,7 @@ fn get_vertical(grid: &Grid, pos: Position) -> Option<&Symbol> {
     None
 }
 
-fn get_horizontal(grid: &Grid, pos: Position) -> Option<&Symbol> {
+fn get_horizontal(grid: &Grid, pos: Position) -> Option<&char> {
     let v = grid.theme.get_horizontal(pos, grid.count_rows());
     if v.is_some() {
         return v;
@@ -1924,7 +1966,7 @@ fn get_horizontal(grid: &Grid, pos: Position) -> Option<&Symbol> {
     None
 }
 
-fn get_intersection(grid: &Grid, pos: Position) -> Option<&Symbol> {
+fn get_intersection(grid: &Grid, pos: Position) -> Option<&char> {
     let v = grid
         .theme
         .get_intersection(pos, grid.count_rows(), grid.count_columns());
@@ -1974,6 +2016,14 @@ fn print_grid(
                 if is_cell_visible(grid, (row, col)) {
                     let left = get_vertical(grid, (row, col));
                     if let Some(c) = left {
+                        #[cfg(feature = "color")]
+                        write_colored(
+                            f,
+                            |f| c.fmt(f),
+                            grid.border_colors.get_color_vertical_char((row, col)),
+                        )?;
+
+                        #[cfg(not(feature = "color"))]
                         c.fmt(f)?;
                     }
 
@@ -1987,6 +2037,14 @@ fn print_grid(
                 if is_last_column {
                     let right = get_vertical(grid, (row, col + 1));
                     if let Some(c) = right {
+                        #[cfg(feature = "color")]
+                        write_colored(
+                            f,
+                            |f| c.fmt(f),
+                            grid.border_colors.get_color_vertical_char((row, col + 1)),
+                        )?;
+
+                        #[cfg(not(feature = "color"))]
                         c.fmt(f)?;
                     }
                 }
@@ -2055,11 +2113,22 @@ fn print_split_line(
         }
     }
 
+    #[cfg(feature = "color")]
+    let mut used_color = None;
+
     for (col, width) in widths.iter().enumerate() {
         if col == 0 {
             let left = get_intersection(grid, (row, col));
             if let Some(c) = left {
                 if char_skip == 0 {
+                    #[cfg(feature = "color")]
+                    {
+                        if let Some(clr) = grid.border_colors.get_intersection((row, col)) {
+                            clr.write_begin_sequence(f)?;
+                            used_color = Some(clr);
+                        }
+                    }
+
                     c.fmt(f)?;
                 } else {
                     char_skip -= 1;
@@ -2076,18 +2145,89 @@ fn print_split_line(
 
         let main = get_horizontal(grid, (row, col));
         match main {
-            Some(c) => repeat_symbol(f, c, width)?,
+            Some(c) => {
+                #[cfg(feature = "color")]
+                {
+                    prepare_coloring(
+                        f,
+                        grid.border_colors.get_horizontal((row, col)),
+                        &mut used_color,
+                    )?;
+                }
+
+                repeat_symbol(f, c, width)?;
+            }
             None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
         }
 
         let right = get_intersection(grid, (row, col + 1));
         if let Some(c) = right {
             if char_skip == 0 {
+                #[cfg(feature = "color")]
+                {
+                    prepare_coloring(
+                        f,
+                        grid.border_colors.get_intersection((row, col + 1)),
+                        &mut used_color,
+                    )?;
+                }
+
                 c.fmt(f)?;
             } else {
                 char_skip -= 1;
             }
         }
+    }
+
+    #[cfg(feature = "color")]
+    if let Some(clr) = used_color.take() {
+        clr.write_end_sequence(f)?;
+    }
+
+    Ok(())
+}
+
+#[cfg(feature = "color")]
+fn prepare_coloring<'a>(
+    f: &mut fmt::Formatter,
+    clr: Option<&'a BorderColor>,
+    used_color: &mut Option<&'a BorderColor>,
+) -> fmt::Result {
+    match clr {
+        Some(clr) => match used_color.as_mut() {
+            Some(used_clr) => {
+                if **used_clr != *clr {
+                    used_clr.write_end_sequence(f)?;
+                    clr.write_begin_sequence(f)?;
+                    *used_clr = clr;
+                }
+            }
+            None => {
+                clr.write_begin_sequence(f)?;
+                *used_color = Some(clr);
+            }
+        },
+        None => match used_color.take() {
+            Some(clr) => clr.write_end_sequence(f)?,
+            None => (),
+        },
+    }
+
+    Ok(())
+}
+
+#[cfg(feature = "color")]
+fn write_colored(
+    f: &mut fmt::Formatter,
+    write: impl Fn(&mut fmt::Formatter) -> fmt::Result,
+    clr: Option<&BorderColor>,
+) -> fmt::Result {
+    if let Some(clr) = &clr {
+        clr.write_begin_sequence(f)?;
+        (write)(f)?;
+        clr.write_end_sequence(f)?;
+    } else {
+        (write)(f)?;
     }
 
     Ok(())
@@ -2165,6 +2305,257 @@ fn set_entity_value<T>(map: &mut HashMap<Entity, T>, global: &mut T, entity: Ent
             map.insert(entity, value);
         }
     }
+}
+
+#[cfg(feature = "color")]
+#[derive(Debug, Clone, Default)]
+struct ColorConfig {
+    global: Option<BorderColor>,
+    vertical: HashMap<Position, BorderColor>,
+    horizontal: HashMap<Position, BorderColor>,
+    intersection: HashMap<Position, BorderColor>,
+}
+
+#[cfg(feature = "color")]
+impl ColorConfig {
+    fn set_vertical_color(&mut self, pos: Position, clr: BorderColor) {
+        self.vertical.insert(pos, clr);
+    }
+
+    fn set_intersection_color(&mut self, pos: Position, clr: BorderColor) {
+        self.intersection.insert(pos, clr);
+    }
+
+    fn set_horizontal_color(&mut self, pos: Position, clr: BorderColor) {
+        self.horizontal.insert(pos, clr);
+    }
+
+    fn get_color_vertical_char(&self, pos: Position) -> Option<&BorderColor> {
+        self.vertical.get(&pos).or(self.global.as_ref())
+    }
+
+    fn get_horizontal(&self, pos: Position) -> Option<&BorderColor> {
+        self.horizontal.get(&pos).or(self.global.as_ref())
+    }
+
+    fn get_intersection(&self, pos: Position) -> Option<&BorderColor> {
+        self.intersection.get(&pos).or(self.global.as_ref())
+    }
+}
+
+#[cfg(feature = "color")]
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct BorderColor(String, String);
+
+#[cfg(feature = "color")]
+impl BorderColor {
+    pub fn new(start: String, end: String) -> Self {
+        BorderColor(start, end)
+    }
+
+    fn write_begin_sequence(&self, f: &mut impl fmt::Write) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+
+    fn write_end_sequence(&self, f: &mut impl fmt::Write) -> fmt::Result {
+        f.write_str(&self.1)
+    }
+}
+
+#[cfg(feature = "color")]
+impl std::convert::TryFrom<&str> for BorderColor {
+    type Error = ();
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match get_ansi_secuences(value) {
+            Some((_, start, end)) => Ok(Self::new(start, end)),
+            None => Err(()),
+        }
+    }
+}
+
+#[cfg(feature = "color")]
+impl std::convert::TryFrom<String> for BorderColor {
+    type Error = ();
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::try_from(value.as_str())
+    }
+}
+
+#[cfg(feature = "color")]
+#[derive(Debug, Clone, Default, Eq, PartialEq)]
+pub struct ColoredBorder {
+    pub top: Option<Symbol>,
+    pub bottom: Option<Symbol>,
+    pub left: Option<Symbol>,
+    pub right: Option<Symbol>,
+    pub left_top_corner: Option<Symbol>,
+    pub left_bottom_corner: Option<Symbol>,
+    pub right_top_corner: Option<Symbol>,
+    pub right_bottom_corner: Option<Symbol>,
+}
+
+#[cfg(feature = "color")]
+impl ColoredBorder {
+    /// This function constructs a cell borders with all sides set.
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        top: Symbol,
+        bottom: Symbol,
+        left: Symbol,
+        right: Symbol,
+        top_left: Symbol,
+        top_right: Symbol,
+        bottom_left: Symbol,
+        bottom_right: Symbol,
+    ) -> Self {
+        Self {
+            top: Some(top),
+            bottom: Some(bottom),
+            right: Some(right),
+            right_top_corner: Some(top_right),
+            right_bottom_corner: Some(bottom_right),
+            left: Some(left),
+            left_bottom_corner: Some(bottom_left),
+            left_top_corner: Some(top_left),
+        }
+    }
+
+    pub fn filled(c: Symbol) -> Self {
+        Self {
+            top: Some(c.clone()),
+            bottom: Some(c.clone()),
+            left: Some(c.clone()),
+            right: Some(c.clone()),
+            left_top_corner: Some(c.clone()),
+            left_bottom_corner: Some(c.clone()),
+            right_top_corner: Some(c.clone()),
+            right_bottom_corner: Some(c),
+        }
+    }
+
+    /// Set a top border character.
+    pub fn top(mut self, c: Symbol) -> Self {
+        self.top = Some(c);
+        self
+    }
+
+    /// Set a bottom border character.
+    pub fn bottom(mut self, c: Symbol) -> Self {
+        self.bottom = Some(c);
+        self
+    }
+
+    /// Set a left border character.
+    pub fn left(mut self, c: Symbol) -> Self {
+        self.left = Some(c);
+        self
+    }
+
+    /// Set a right border character.
+    pub fn right(mut self, c: Symbol) -> Self {
+        self.right = Some(c);
+        self
+    }
+
+    /// Set a top left intersection character.
+    pub fn top_left_corner(mut self, c: Symbol) -> Self {
+        self.left_top_corner = Some(c);
+        self
+    }
+
+    /// Set a top right intersection character.
+    pub fn top_right_corner(mut self, c: Symbol) -> Self {
+        self.right_top_corner = Some(c);
+        self
+    }
+
+    /// Set a bottom left intersection character.
+    pub fn bottom_left_corner(mut self, c: Symbol) -> Self {
+        self.left_bottom_corner = Some(c);
+        self
+    }
+
+    /// Set a bottom right intersection character.
+    pub fn bottom_right_corner(mut self, c: Symbol) -> Self {
+        self.right_bottom_corner = Some(c);
+        self
+    }
+}
+
+#[cfg(feature = "color")]
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct Symbol {
+    c: char,
+    ansi_sequences: Option<BorderColor>,
+}
+
+#[cfg(feature = "color")]
+impl Symbol {
+    const fn new(c: char, ansi_sequences: Option<BorderColor>) -> Self {
+        Self { c, ansi_sequences }
+    }
+
+    /// Creates a new [Symbol] from the String.
+    /// The string must contain 1 UTF-8 character and any list of Ansi sequences.
+    ///
+    /// If it contains more then 1 character `None` will be returned.
+    pub fn ansi(s: impl AsRef<str>) -> Option<Self> {
+        let s = s.as_ref();
+
+        let mut chars = s.chars();
+        let c = chars.next();
+        let no_other_chars = chars.next().is_none();
+        drop(chars);
+        match c {
+            Some(c) if no_other_chars => return Some(Self::new(c, None)),
+            _ => (),
+        }
+
+        if string_width(s) != 1 {
+            return None;
+        }
+
+        let (c, start, end) = get_ansi_secuences(s)?;
+        if start.is_empty() && end.is_empty() {
+            return Some(Self::new(c, None));
+        }
+
+        Some(Self::new(c, Some(BorderColor(start, end))))
+    }
+
+    /// A function which create a [Symbol] from [char].
+    pub const fn from_char(c: char) -> Self {
+        Self::new(c, None)
+    }
+}
+
+#[cfg(feature = "color")]
+impl Default for Symbol {
+    fn default() -> Self {
+        Self::from_char(char::default())
+    }
+}
+
+#[cfg(feature = "color")]
+impl From<char> for Symbol {
+    fn from(c: char) -> Self {
+        Self::from_char(c)
+    }
+}
+
+#[cfg(feature = "color")]
+fn get_ansi_secuences(s: &str) -> Option<(char, String, String)> {
+    let mut original = ansi_str::get_blocks(s);
+    let block = original.next()?;
+
+    let c = block.text().chars().next()?;
+
+    let start = block.start().to_string();
+    let end = block.end().to_string();
+
+    Some((c, start, end))
 }
 
 #[cfg(test)]

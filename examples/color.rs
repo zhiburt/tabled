@@ -3,12 +3,15 @@
 //!
 //! This example requires a color feature
 
+use std::convert::TryFrom;
+
 use owo_colors::OwoColorize;
 
+use papergrid::{BorderColor, ColoredBorder};
 use tabled::{
-    object::{Columns, Rows},
+    object::{Columns, Object, Rows},
     style::{Style, Symbol},
-    Alignment, Modify, Table, Tabled,
+    Alignment, ModifyObject, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -47,18 +50,36 @@ fn main() {
         },
     ];
 
-    let table = Table::new(&data)
-        .with(
-            Style::psql()
-                .try_map(|s| Symbol::ansi(s.yellow().to_string()).unwrap_or(s))
-                .header(Symbol::ansi('-'.red().to_string()).unwrap())
-                .header_intersection(Symbol::ansi('+'.purple().to_string()).unwrap()),
-        )
-        .with(Modify::new(Rows::first()).with(Alignment::center()))
-        .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
-        .with(Modify::new(Columns::single(0)).with(|s: &str| s.blue().to_string()))
-        .with(Modify::new(Columns::single(1)).with(|s: &str| s.green().to_string()))
-        .with(Modify::new(Columns::single(2)).with(|s: &str| s.red().to_string()));
+    let table =
+        Table::new(&data)
+            .with(Style::psql())
+            .with(BorderColor::try_from(" ".yellow().to_string()).unwrap())
+            .with(Rows::first().modify().with(
+                ColoredBorder::default().bottom(Symbol::ansi('-'.red().to_string()).unwrap()),
+            ))
+            .with(
+                Rows::first().not(Columns::first()).modify().with(
+                    ColoredBorder::default()
+                        .bottom_left_corner(Symbol::ansi('+'.purple().to_string()).unwrap()),
+                ),
+            )
+            .with(Rows::first().modify().with(Alignment::center()))
+            .with(Rows::new(1..).modify().with(Alignment::left()))
+            .with(
+                Columns::single(0)
+                    .modify()
+                    .with(|s: &str| s.blue().to_string()),
+            )
+            .with(
+                Columns::single(1)
+                    .modify()
+                    .with(|s: &str| s.green().to_string()),
+            )
+            .with(
+                Columns::single(2)
+                    .modify()
+                    .with(|s: &str| s.red().to_string()),
+            );
 
     println!("{}", table);
 }

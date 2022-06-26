@@ -3,10 +3,13 @@
 //!
 //! This example requires a `color` feature.
 
+use std::convert::TryFrom;
+
 use owo_colors::OwoColorize;
+
 use tabled::{
     object::Segment,
-    style::{Border, Style, Symbol},
+    style::{BorderColor, ColoredBorder, Style, Symbol},
     Alignment, Highlight, Modify, Table, Tabled,
 };
 
@@ -39,9 +42,10 @@ fn main() {
     let table = Table::new(&data)
         .with(Style::extended())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Highlight::new(
+        .with(BorderColor::try_from(" ".magenta().to_string()).unwrap())
+        .with(Highlight::colored(
             Segment::all(),
-            Border::default()
+            ColoredBorder::default()
                 .top(Symbol::ansi("═".red().to_string()).unwrap())
                 .bottom(Symbol::ansi("═".blue().to_string()).unwrap())
                 .left(Symbol::ansi("║".green().to_string()).unwrap())

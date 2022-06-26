@@ -52,6 +52,14 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
     fn change(&mut self, grid: &mut Grid) {
         let mut new_grid = Grid::new(grid.count_rows() + 1, grid.count_columns());
         new_grid.set_borders(grid.get_borders().clone());
+
+        #[cfg(feature = "color")]
+        {
+            if let Some(clr) = grid.get_border_color() {
+                new_grid.set_border_color(clr.clone());
+            }
+        }
+
         for row in 0..grid.count_rows() {
             for column in 0..grid.count_columns() {
                 let cell_settings = grid.get_settings(row, column);
@@ -59,6 +67,16 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
                     new_grid.set(Entity::Cell(row + 1, column), cell_settings);
                 } else {
                     new_grid.set(Entity::Cell(row, column), cell_settings);
+                }
+
+                #[cfg(feature = "color")]
+                {
+                    let colored = grid.get_colored_border((row, column));
+                    if row >= self.1 {
+                        new_grid.set_colored_border(Entity::Cell(row + 1, column), colored);
+                    } else {
+                        new_grid.set_colored_border(Entity::Cell(row, column), colored);
+                    }
                 }
             }
         }
