@@ -2,23 +2,42 @@
 //!
 //! # Example
 //! ```rust
-//!     use papergrid::{Grid, Entity, Settings};
-//!     let mut grid = Grid::new(2, 2);
+//! use papergrid::{Grid, Entity, Borders, Settings};
 //!
-//!     grid.set(Entity::Cell(0, 0), Settings::new().text("0-0"));
-//!     grid.set(Entity::Cell(0, 1), Settings::new().text("0-1"));
-//!     grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
-//!     grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
+//! let mut grid = Grid::new(2, 2);
+//! grid.set_borders(Borders {
+//!     top: Some('-'),
+//!     top_left: Some('+'),
+//!     top_right: Some('+'),
+//!     top_intersection: Some('+'),
+//!     bottom: Some('-'),
+//!     bottom_left: Some('+'),
+//!     bottom_right: Some('+'),
+//!     bottom_intersection: Some('+'),
+//!     horizontal: Some('-'),
+//!     horizontal_left: Some('+'),
+//!     horizontal_right: Some('+'),
+//!     vertical_left: Some('|'),
+//!     vertical_right: Some('|'),
+//!     vertical_intersection: Some('|'),
+//!     intersection: Some('+'),
+//! });
 //!
-//!     let expected = concat!(
+//! grid.set(Entity::Cell(0, 0), Settings::new().text("0-0"));
+//! grid.set(Entity::Cell(0, 1), Settings::new().text("0-1"));
+//! grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
+//! grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
+//!
+//! assert_eq!(
+//!     grid.to_string(),
+//!     concat!(
 //!         "+---+---+\n",
 //!         "|0-0|0-1|\n",
 //!         "+---+---+\n",
 //!         "|1-0|1-1|\n",
 //!         "+---+---+",
-//!     );
-//!
-//!     assert_eq!(expected, grid.to_string());
+//!     )
+//! );
 //! ```
 
 use std::{
@@ -30,38 +49,12 @@ use std::{
     ops::{Bound, RangeBounds},
 };
 
-/// todo make Default Nones; to delete it.
-pub const DEFAULT_BORDERS: Borders = Borders {
-    top: Some('-'),
-    top_left: Some('+'),
-    top_right: Some('+'),
-    top_intersection: Some('+'),
-
-    bottom: Some('-'),
-    bottom_left: Some('+'),
-    bottom_right: Some('+'),
-    bottom_intersection: Some('+'),
-
-    horizontal: Some('-'),
-    horizontal_left: Some('+'),
-    horizontal_right: Some('+'),
-
-    vertical_left: Some('|'),
-    vertical_right: Some('|'),
-    vertical_intersection: Some('|'),
-
-    intersection: Some('+'),
-};
-
 const DEFAULT_BORDER_HORIZONTAL_CHAR: char = ' ';
-
 const DEFAULT_BORDER_HORIZONTAL_SYMBOL: char = ' ';
 const DEFAULT_BORDER_VERTICAL_SYMBOL: char = ' ';
-
 const DEFAULT_BORDER_HORIZONTAL_SYMBOL_REF: &char = &DEFAULT_BORDER_VERTICAL_SYMBOL;
 const DEFAULT_BORDER_VERTICAL_SYMBOL_REF: &char = &DEFAULT_BORDER_VERTICAL_SYMBOL;
 const DEFAULT_BORDER_INTERSECTION_SYMBOL_REF: &char = &DEFAULT_BORDER_VERTICAL_SYMBOL;
-
 const DEFAULT_INDENT_FILL_CHAR: char = ' ';
 
 /// Grid provides a set of methods for building a text-based table
@@ -108,17 +101,37 @@ impl Grid {
     ///
     /// # Example
     ///
+    /// ```
+    /// use papergrid::{Grid, Entity, Settings, Border};
+    ///
+    ///
+    /// let mut grid = Grid::new(2, 2);
+    ///
+    /// grid.set(Entity::Global, Settings::new().text("Hello World").border(Border::default().right(' ')));
+    ///
+    /// assert_eq!(
+    ///     grid.to_string(),
+    ///     "Hello World Hello World \n\
+    ///      Hello World Hello World "
+    /// );
+    /// ```
+    ///
+    /// Not empty initialization but empty content
+    ///
     /// ```rust
-    ///     use papergrid::{Grid, Entity, Settings};
-    ///     let mut grid = Grid::new(2, 2);
-    ///     assert_eq!(
-    ///          grid.to_string(),
-    ///          "+++\n\
-    ///           |||\n\
-    ///           +++\n\
-    ///           |||\n\
-    ///           +++"
-    ///     )
+    /// use papergrid::Grid;
+    ///
+    /// let mut grid = Grid::new(2, 2);
+    /// assert_eq!(grid.to_string(), "\n");
+    /// ```
+    ///
+    /// Empty
+    ///
+    /// ```rust
+    /// use papergrid::Grid;
+    ///
+    /// let mut grid = Grid::new(0, 0);
+    /// assert_eq!(grid.to_string(), "");
     /// ```
     pub fn new(rows: usize, columns: usize) -> Self {
         let config = GridConfig {
@@ -157,17 +170,23 @@ impl Grid {
     /// # Example
     ///
     /// ```rust
-    ///     use papergrid::{Grid, Entity, Settings};
+    ///     use papergrid::{Grid, Entity, Settings, Borders};
+    ///
     ///     let mut grid = Grid::new(2, 2);
+    ///
+    ///     grid.set_borders(Borders {
+    ///         vertical_intersection: Some('|'),
+    ///         horizontal: Some('-'),
+    ///         ..Default::default()
+    ///     });
+    ///
     ///     grid.set(Entity::Row(0), Settings::new().text("row 1"));
     ///     grid.set(Entity::Row(1), Settings::new().text("row 2"));
     ///     assert_eq!(
     ///          grid.to_string(),
-    ///          "+-----+-----+\n\
-    ///           |row 1|row 1|\n\
-    ///           +-----+-----+\n\
-    ///           |row 2|row 2|\n\
-    ///           +-----+-----+"
+    ///          "row 1|row 1\n\
+    ///           ----- -----\n\
+    ///           row 2|row 2"
     ///     )
     /// ```
     pub fn set(&mut self, entity: Entity, settings: Settings) {
@@ -1750,7 +1769,7 @@ pub type Position = (usize, usize);
 impl Theme {
     fn new() -> Self {
         Self {
-            borders: DEFAULT_BORDERS,
+            borders: Borders::default(),
             override_borders: BordersMap {
                 vertical: HashMap::new(),
                 horizontal: HashMap::new(),

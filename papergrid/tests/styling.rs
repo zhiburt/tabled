@@ -37,7 +37,7 @@ fn grid_2x2_custom_column_test() {
          +---#***#",
     );
 
-    grid.clear_theme();
+    let mut grid = util::new_grid::<2, 2>();
     grid.set(
         Entity::Column(0),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
@@ -56,7 +56,6 @@ fn grid_2x2_custom_column_test() {
 #[test]
 fn grid_2x2_custom_row_test() {
     let mut grid = util::new_grid::<2, 2>();
-
     grid.set(
         Entity::Row(0),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),
@@ -73,7 +72,7 @@ fn grid_2x2_custom_row_test() {
         )
     );
 
-    grid.clear_theme();
+    let mut grid = util::new_grid::<2, 2>();
     grid.set(
         Entity::Row(1),
         Settings::new().border(Border::new('*', '*', '|', '|', '#', '#', '#', '#')),

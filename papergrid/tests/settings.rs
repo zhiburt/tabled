@@ -1,8 +1,10 @@
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{Entity, Settings};
+
+mod util;
 
 #[test]
 fn set_global_text_2x2() {
-    let mut grid = Grid::new(2, 2);
+    let mut grid = util::new_grid::<2, 2>();
     grid.set(Entity::Global, Settings::new().text("asd"));
     let str = grid.to_string();
     assert_eq!(
@@ -17,7 +19,7 @@ fn set_global_text_2x2() {
 
 #[test]
 fn global_styles_overrides_everything_2x2() {
-    let mut grid = Grid::new(2, 2);
+    let mut grid = util::new_grid::<2, 2>();
     grid.set(Entity::Cell(0, 0), Settings::new().text("xxxxx"));
     grid.set(Entity::Cell(0, 1), Settings::new().text("xx"));
     grid.set(Entity::Cell(1, 0), Settings::new().text("y"));
