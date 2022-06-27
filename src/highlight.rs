@@ -3,7 +3,7 @@
 
 use std::collections::HashSet;
 
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{Entity, Grid, Position, Settings};
 
 use crate::{object::Object, style::Border, TableOption};
 
@@ -118,6 +118,44 @@ where
     }
 }
 
+/// A [Highlight] object which works with a [crate::style::ColoredBorder]
+#[cfg(feature = "color")]
+pub struct HighlightColored<O> {
+    target: O,
+    border: crate::style::ColoredBorder,
+}
+
+#[cfg(feature = "color")]
+impl<O> TableOption for HighlightColored<O>
+where
+    O: Object,
+{
+    fn change(&mut self, grid: &mut Grid) {
+        let cells = self.target.cells(grid.count_rows(), grid.count_columns());
+        let segments = split_segments(cells, grid.count_rows(), grid.count_columns());
+
+        for sector in segments {
+            set_border_colored(grid, sector, self.border.clone());
+        }
+    }
+}
+
+#[cfg(feature = "color")]
+fn set_border_colored(
+    grid: &mut Grid,
+    sector: HashSet<(usize, usize)>,
+    border: crate::style::ColoredBorder,
+) {
+    if sector.is_empty() {
+        return;
+    }
+
+    for &(row, col) in &sector {
+        let border = build_cell_border(&sector, (row, col), &border.0);
+        grid.set_colored_border(Entity::Cell(row, col), border);
+    }
+}
+
 fn split_segments(
     cells: impl Iterator<Item = Entity>,
     count_rows: usize,
@@ -204,18 +242,20 @@ fn set_border(grid: &mut Grid, sector: HashSet<(usize, usize)>, border: Border) 
     }
 
     for &(row, col) in &sector {
-        let border = build_cell_border(&sector, row, col, &border);
+        let border = build_cell_border(&sector, (row, col), &border);
 
         grid.set(Entity::Cell(row, col), Settings::default().border(border));
     }
 }
 
-fn build_cell_border(
+fn build_cell_border<T>(
     sector: &HashSet<(usize, usize)>,
-    row: usize,
-    col: usize,
-    border: &Border,
-) -> Border {
+    (row, col): Position,
+    border: &Border<T>,
+) -> Border<T>
+where
+    T: Default + Clone,
+{
     let cell_has_top_neighbor = cell_has_top_neighbor(sector, row, col);
     let cell_has_bottom_neighbor = cell_has_bottom_neighbor(sector, row, col);
     let cell_has_left_neighbor = cell_has_left_neighbor(sector, row, col);
@@ -227,206 +267,6 @@ fn build_cell_border(
     let this_has_right_bottom_neighbor = is_there_right_bottom_cell(sector, row, col);
 
     let mut cell_border = Border::default();
-    if let Some(c) = border.top {
-        if !cell_has_top_neighbor {
-            cell_border = cell_border.top(c);
-
-            if cell_has_right_neighbor && !this_has_right_top_neighbor {
-                cell_border = cell_border.top_right_corner(c);
-            }
-        }
-    }
-    if let Some(c) = border.bottom {
-        if !cell_has_bottom_neighbor {
-            cell_border = cell_border.bottom(c);
-
-            if cell_has_right_neighbor && !this_has_right_bottom_neighbor {
-                cell_border = cell_border.bottom_right_corner(c);
-            }
-        }
-    }
-    if let Some(c) = border.left {
-        if !cell_has_left_neighbor {
-            cell_border = cell_border.left(c);
-
-            if cell_has_bottom_neighbor && !this_has_left_bottom_neighbor {
-                cell_border = cell_border.bottom_left_corner(c);
-            }
-        }
-    }
-    if let Some(c) = border.right {
-        if !cell_has_right_neighbor {
-            cell_border = cell_border.right(c);
-
-            if cell_has_bottom_neighbor && !this_has_right_bottom_neighbor {
-                cell_border = cell_border.bottom_right_corner(c);
-            }
-        }
-    }
-    if let Some(c) = border.left_top_corner {
-        if !cell_has_left_neighbor && !cell_has_top_neighbor {
-            cell_border = cell_border.top_left_corner(c);
-        }
-    }
-    if let Some(c) = border.left_bottom_corner {
-        if !cell_has_left_neighbor && !cell_has_bottom_neighbor {
-            cell_border = cell_border.bottom_left_corner(c);
-        }
-    }
-    if let Some(c) = border.right_top_corner {
-        if !cell_has_right_neighbor && !cell_has_top_neighbor {
-            cell_border = cell_border.top_right_corner(c);
-        }
-    }
-    if let Some(c) = border.right_bottom_corner {
-        if !cell_has_right_neighbor && !cell_has_bottom_neighbor {
-            cell_border = cell_border.bottom_right_corner(c);
-        }
-    }
-    {
-        if !cell_has_bottom_neighbor {
-            if !cell_has_left_neighbor && this_has_left_top_neighbor {
-                if let Some(c) = border.right_top_corner {
-                    cell_border = cell_border.top_left_corner(c);
-                }
-            }
-
-            if cell_has_left_neighbor && this_has_left_bottom_neighbor {
-                if let Some(c) = border.left_top_corner {
-                    cell_border = cell_border.bottom_left_corner(c);
-                }
-            }
-
-            if !cell_has_right_neighbor && this_has_right_top_neighbor {
-                if let Some(c) = border.left_top_corner {
-                    cell_border = cell_border.top_right_corner(c);
-                }
-            }
-
-            if cell_has_right_neighbor && this_has_right_bottom_neighbor {
-                if let Some(c) = border.right_top_corner {
-                    cell_border = cell_border.bottom_right_corner(c);
-                }
-            }
-        }
-
-        if !cell_has_top_neighbor {
-            if !cell_has_left_neighbor && this_has_left_bottom_neighbor {
-                if let Some(c) = border.right_bottom_corner {
-                    cell_border = cell_border.bottom_left_corner(c);
-                }
-            }
-
-            if cell_has_left_neighbor && this_has_left_top_neighbor {
-                if let Some(c) = border.left_bottom_corner {
-                    cell_border = cell_border.top_left_corner(c);
-                }
-            }
-
-            if !cell_has_right_neighbor && this_has_right_bottom_neighbor {
-                if let Some(c) = border.left_bottom_corner {
-                    cell_border = cell_border.bottom_right_corner(c);
-                }
-            }
-
-            if cell_has_right_neighbor && this_has_right_top_neighbor {
-                if let Some(c) = border.right_bottom_corner {
-                    cell_border = cell_border.top_right_corner(c);
-                }
-            }
-        }
-    }
-
-    cell_border
-}
-
-fn cell_has_top_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
-    row > 0 && sector.contains(&(row - 1, col))
-}
-
-fn cell_has_bottom_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
-    sector.contains(&(row + 1, col))
-}
-
-fn cell_has_left_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
-    col > 0 && sector.contains(&(row, col - 1))
-}
-
-fn cell_has_right_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
-    sector.contains(&(row, col + 1))
-}
-
-fn is_there_left_top_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
-    row > 0 && col > 0 && sector.contains(&(row - 1, col - 1))
-}
-
-fn is_there_right_top_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
-    row > 0 && sector.contains(&(row - 1, col + 1))
-}
-
-fn is_there_left_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
-    col > 0 && sector.contains(&(row + 1, col - 1))
-}
-
-fn is_there_right_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
-    sector.contains(&(row + 1, col + 1))
-}
-
-/// A [Highlight] object which works with a [crate::style::ColoredBorder]
-#[cfg(feature = "color")]
-pub struct HighlightColored<O> {
-    target: O,
-    border: crate::style::ColoredBorder,
-}
-
-#[cfg(feature = "color")]
-impl<O> TableOption for HighlightColored<O>
-where
-    O: Object,
-{
-    fn change(&mut self, grid: &mut Grid) {
-        let cells = self.target.cells(grid.count_rows(), grid.count_columns());
-        let segments = split_segments(cells, grid.count_rows(), grid.count_columns());
-
-        for sector in segments {
-            set_border_colored(grid, sector, self.border.clone());
-        }
-    }
-}
-
-#[cfg(feature = "color")]
-fn set_border_colored(
-    grid: &mut Grid,
-    sector: HashSet<(usize, usize)>,
-    border: crate::style::ColoredBorder,
-) {
-    if sector.is_empty() {
-        return;
-    }
-
-    for &(row, col) in &sector {
-        let border = build_cell_border_colored(&sector, &border.0, (row, col));
-        grid.set_colored_border(Entity::Cell(row, col), border);
-    }
-}
-
-#[cfg(feature = "color")]
-fn build_cell_border_colored(
-    sector: &HashSet<(usize, usize)>,
-    border: &papergrid::Border<papergrid::Symbol>,
-    (row, col): papergrid::Position,
-) -> papergrid::Border<papergrid::Symbol> {
-    let cell_has_top_neighbor = cell_has_top_neighbor(sector, row, col);
-    let cell_has_bottom_neighbor = cell_has_bottom_neighbor(sector, row, col);
-    let cell_has_left_neighbor = cell_has_left_neighbor(sector, row, col);
-    let cell_has_right_neighbor = cell_has_right_neighbor(sector, row, col);
-
-    let this_has_left_top_neighbor = is_there_left_top_cell(sector, row, col);
-    let this_has_right_top_neighbor = is_there_right_top_cell(sector, row, col);
-    let this_has_left_bottom_neighbor = is_there_left_bottom_cell(sector, row, col);
-    let this_has_right_bottom_neighbor = is_there_right_bottom_cell(sector, row, col);
-
-    let mut cell_border = papergrid::Border::default();
     if let Some(c) = border.top.clone() {
         if !cell_has_top_neighbor {
             cell_border = cell_border.top(c.clone());
@@ -538,6 +378,38 @@ fn build_cell_border_colored(
     }
 
     cell_border
+}
+
+fn cell_has_top_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    row > 0 && sector.contains(&(row - 1, col))
+}
+
+fn cell_has_bottom_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    sector.contains(&(row + 1, col))
+}
+
+fn cell_has_left_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    col > 0 && sector.contains(&(row, col - 1))
+}
+
+fn cell_has_right_neighbor(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    sector.contains(&(row, col + 1))
+}
+
+fn is_there_left_top_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    row > 0 && col > 0 && sector.contains(&(row - 1, col - 1))
+}
+
+fn is_there_right_top_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    row > 0 && sector.contains(&(row - 1, col + 1))
+}
+
+fn is_there_left_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    col > 0 && sector.contains(&(row + 1, col - 1))
+}
+
+fn is_there_right_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
+    sector.contains(&(row + 1, col + 1))
 }
 
 #[cfg(test)]
