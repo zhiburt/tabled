@@ -608,64 +608,48 @@ impl Grid {
         self.border_colors.global.as_ref()
     }
 
+    pub fn get_color_borders(&self) -> &BordersColors {
+        &self.border_colors.borders
+    }
+
     pub fn get_colored_border(&self, (row, col): Position) -> ColoredBorder {
         let b = self.get_border(row, col);
 
         ColoredBorder {
             top: b
                 .top
-                .map(|c| Symbol::new(c, self.border_colors.get_horizontal((row, col)).cloned())),
-            bottom: b.bottom.map(|c| {
-                Symbol::new(
-                    c,
-                    self.border_colors.get_horizontal((row + 1, col)).cloned(),
-                )
-            }),
-            left: b.left.map(|c| {
-                Symbol::new(
-                    c,
-                    self.border_colors
-                        .get_color_vertical_char((row, col))
-                        .cloned(),
-                )
-            }),
-            right: b.right.map(|c| {
-                Symbol::new(
-                    c,
-                    self.border_colors
-                        .get_color_vertical_char((row, col + 1))
-                        .cloned(),
-                )
-            }),
+                .map(|c| Symbol::new(c, get_horizontal_color(self, (row, col)).cloned())),
+            bottom: b
+                .bottom
+                .map(|c| Symbol::new(c, get_horizontal_color(self, (row + 1, col)).cloned())),
+            left: b
+                .left
+                .map(|c| Symbol::new(c, get_vertical_color(self, (row, col)).cloned())),
+            right: b
+                .right
+                .map(|c| Symbol::new(c, get_vertical_color(self, (row, col + 1)).cloned())),
             left_top_corner: b
                 .left_top_corner
-                .map(|c| Symbol::new(c, self.border_colors.get_intersection((row, col)).cloned())),
-            left_bottom_corner: b.left_bottom_corner.map(|c| {
-                Symbol::new(
-                    c,
-                    self.border_colors.get_intersection((row + 1, col)).cloned(),
-                )
-            }),
-            right_top_corner: b.right_top_corner.map(|c| {
-                Symbol::new(
-                    c,
-                    self.border_colors.get_intersection((row, col + 1)).cloned(),
-                )
-            }),
-            right_bottom_corner: b.right_bottom_corner.map(|c| {
-                Symbol::new(
-                    c,
-                    self.border_colors
-                        .get_intersection((row + 1, col + 1))
-                        .cloned(),
-                )
-            }),
+                .map(|c| Symbol::new(c, get_intersection_color(self, (row, col)).cloned())),
+            left_bottom_corner: b
+                .left_bottom_corner
+                .map(|c| Symbol::new(c, get_intersection_color(self, (row + 1, col)).cloned())),
+            right_top_corner: b
+                .right_top_corner
+                .map(|c| Symbol::new(c, get_intersection_color(self, (row, col + 1)).cloned())),
+            right_bottom_corner: b
+                .right_bottom_corner
+                .map(|c| Symbol::new(c, get_intersection_color(self, (row + 1, col + 1)).cloned())),
         }
     }
 
     pub fn set_border_color(&mut self, clr: BorderColor) {
         self.border_colors = ColorConfig::default();
         self.border_colors.global = Some(clr);
+    }
+
+    pub fn set_borders_color(&mut self, clrs: BordersColors) {
+        self.border_colors.borders = clrs;
     }
 
     pub fn set_colored_border(&mut self, entity: Entity, border: ColoredBorder) {
@@ -1981,6 +1965,22 @@ fn get_intersection(grid: &Grid, pos: Position) -> Option<&char> {
     None
 }
 
+#[cfg(feature = "color")]
+fn get_intersection_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
+    grid.border_colors
+        .get_intersection(pos, grid.count_rows(), grid.count_columns())
+}
+
+#[cfg(feature = "color")]
+fn get_horizontal_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
+    grid.border_colors.get_horizontal(pos, grid.count_rows())
+}
+
+#[cfg(feature = "color")]
+fn get_vertical_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
+    grid.border_colors.get_vertical(pos, grid.count_columns())
+}
+
 #[allow(clippy::needless_range_loop)]
 fn print_grid(
     f: &mut fmt::Formatter,
@@ -2017,11 +2017,7 @@ fn print_grid(
                     let left = get_vertical(grid, (row, col));
                     if let Some(c) = left {
                         #[cfg(feature = "color")]
-                        write_colored(
-                            f,
-                            |f| c.fmt(f),
-                            grid.border_colors.get_color_vertical_char((row, col)),
-                        )?;
+                        write_colored(f, c, get_vertical_color(grid, (row, col)))?;
 
                         #[cfg(not(feature = "color"))]
                         c.fmt(f)?;
@@ -2038,11 +2034,7 @@ fn print_grid(
                     let right = get_vertical(grid, (row, col + 1));
                     if let Some(c) = right {
                         #[cfg(feature = "color")]
-                        write_colored(
-                            f,
-                            |f| c.fmt(f),
-                            grid.border_colors.get_color_vertical_char((row, col + 1)),
-                        )?;
+                        write_colored(f, c, get_vertical_color(grid, (row, col + 1)))?;
 
                         #[cfg(not(feature = "color"))]
                         c.fmt(f)?;
@@ -2123,7 +2115,7 @@ fn print_split_line(
                 if char_skip == 0 {
                     #[cfg(feature = "color")]
                     {
-                        if let Some(clr) = grid.border_colors.get_intersection((row, col)) {
+                        if let Some(clr) = get_intersection_color(grid, (row, col)) {
                             clr.write_begin_sequence(f)?;
                             used_color = Some(clr);
                         }
@@ -2148,11 +2140,7 @@ fn print_split_line(
             Some(c) => {
                 #[cfg(feature = "color")]
                 {
-                    prepare_coloring(
-                        f,
-                        grid.border_colors.get_horizontal((row, col)),
-                        &mut used_color,
-                    )?;
+                    prepare_coloring(f, get_horizontal_color(grid, (row, col)), &mut used_color)?;
                 }
 
                 repeat_symbol(f, c, width)?;
@@ -2167,7 +2155,7 @@ fn print_split_line(
                 {
                     prepare_coloring(
                         f,
-                        grid.border_colors.get_intersection((row, col + 1)),
+                        get_intersection_color(grid, (row, col + 1)),
                         &mut used_color,
                     )?;
                 }
@@ -2219,15 +2207,15 @@ fn prepare_coloring<'a>(
 #[cfg(feature = "color")]
 fn write_colored(
     f: &mut fmt::Formatter,
-    write: impl Fn(&mut fmt::Formatter) -> fmt::Result,
+    c: impl fmt::Display,
     clr: Option<&BorderColor>,
 ) -> fmt::Result {
     if let Some(clr) = &clr {
         clr.write_begin_sequence(f)?;
-        (write)(f)?;
+        c.fmt(f)?;
         clr.write_end_sequence(f)?;
     } else {
-        (write)(f)?;
+        c.fmt(f)?;
     }
 
     Ok(())
@@ -2311,6 +2299,7 @@ fn set_entity_value<T>(map: &mut HashMap<Entity, T>, global: &mut T, entity: Ent
 #[derive(Debug, Clone, Default)]
 struct ColorConfig {
     global: Option<BorderColor>,
+    borders: BordersColors,
     vertical: HashMap<Position, BorderColor>,
     horizontal: HashMap<Position, BorderColor>,
     intersection: HashMap<Position, BorderColor>,
@@ -2330,16 +2319,72 @@ impl ColorConfig {
         self.horizontal.insert(pos, clr);
     }
 
-    fn get_color_vertical_char(&self, pos: Position) -> Option<&BorderColor> {
-        self.vertical.get(&pos).or(self.global.as_ref())
+    fn get_vertical(&self, pos: Position, count_cols: usize) -> Option<&BorderColor> {
+        self.vertical
+            .get(&pos)
+            .or({
+                if pos.1 == 0 {
+                    self.borders.vertical_left.as_ref()
+                } else if pos.1 == count_cols {
+                    self.borders.vertical_right.as_ref()
+                } else {
+                    self.borders.vertical_intersection.as_ref()
+                }
+            })
+            .or(self.global.as_ref())
     }
 
-    fn get_horizontal(&self, pos: Position) -> Option<&BorderColor> {
-        self.horizontal.get(&pos).or(self.global.as_ref())
+    fn get_horizontal(&self, pos: Position, count_rows: usize) -> Option<&BorderColor> {
+        self.horizontal
+            .get(&pos)
+            .or({
+                if pos.1 == 0 {
+                    self.borders.top.as_ref()
+                } else if pos.1 == count_rows {
+                    self.borders.bottom.as_ref()
+                } else {
+                    self.borders.horizontal.as_ref()
+                }
+            })
+            .or(self.global.as_ref())
     }
 
-    fn get_intersection(&self, pos: Position) -> Option<&BorderColor> {
-        self.intersection.get(&pos).or(self.global.as_ref())
+    fn get_intersection(
+        &self,
+        pos: Position,
+        count_rows: usize,
+        count_cols: usize,
+    ) -> Option<&BorderColor> {
+        self.intersection
+            .get(&pos)
+            .or_else(|| {
+                let use_top = pos.0 == 0;
+                let use_bottom = pos.0 == count_rows;
+
+                let use_left = pos.1 == 0;
+                let use_right = pos.1 == count_cols;
+
+                if use_top && use_left {
+                    self.borders.top_left.as_ref()
+                } else if use_top && use_right {
+                    self.borders.top_right.as_ref()
+                } else if use_bottom && use_left {
+                    self.borders.bottom_left.as_ref()
+                } else if use_bottom && use_right {
+                    self.borders.bottom_right.as_ref()
+                } else if use_top {
+                    self.borders.top_intersection.as_ref()
+                } else if use_bottom {
+                    self.borders.bottom_intersection.as_ref()
+                } else if use_left {
+                    self.borders.horizontal_left.as_ref()
+                } else if use_right {
+                    self.borders.horizontal_right.as_ref()
+                } else {
+                    self.borders.intersection.as_ref()
+                }
+            })
+            .or(self.global.as_ref())
     }
 }
 
@@ -2381,6 +2426,30 @@ impl std::convert::TryFrom<String> for BorderColor {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Self::try_from(value.as_str())
     }
+}
+
+#[cfg(feature = "color")]
+#[derive(Debug, Clone, Default)]
+pub struct BordersColors {
+    pub top: Option<BorderColor>,
+    pub top_left: Option<BorderColor>,
+    pub top_right: Option<BorderColor>,
+    pub top_intersection: Option<BorderColor>,
+
+    pub bottom: Option<BorderColor>,
+    pub bottom_left: Option<BorderColor>,
+    pub bottom_right: Option<BorderColor>,
+    pub bottom_intersection: Option<BorderColor>,
+
+    pub horizontal: Option<BorderColor>,
+    pub horizontal_left: Option<BorderColor>,
+    pub horizontal_right: Option<BorderColor>,
+
+    pub vertical_left: Option<BorderColor>,
+    pub vertical_intersection: Option<BorderColor>,
+    pub vertical_right: Option<BorderColor>,
+
+    pub intersection: Option<BorderColor>,
 }
 
 #[cfg(feature = "color")]
@@ -2528,6 +2597,16 @@ impl Symbol {
     /// A function which create a [Symbol] from [char].
     pub const fn from_char(c: char) -> Self {
         Self::new(c, None)
+    }
+
+    /// A function which returns a used [char].
+    pub const fn c(&self) -> char {
+        self.c
+    }
+
+    /// A function which returns a used [char].
+    pub fn color(self) -> Option<BorderColor> {
+        self.ansi_sequences
     }
 }
 
