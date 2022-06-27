@@ -567,7 +567,7 @@ impl StyleConfig {
     pub fn colored(self) -> StyleConfigColored {
         StyleConfigColored {
             borders: self,
-            colors: papergrid::BordersColors::default(),
+            colors: Borders::default(),
         }
     }
 }
@@ -1229,12 +1229,71 @@ impl CellOption for Border {
 ///     .with(Modify::new(Rows::single(0)).with(ColoredBorder::default().top(c)));
 /// ```
 #[cfg(feature = "color")]
-pub use papergrid::ColoredBorder;
+#[derive(Debug, Clone, Default, Eq, PartialEq)]
+pub struct ColoredBorder(pub(crate) Border<Symbol>);
+
+#[cfg(feature = "color")]
+impl ColoredBorder {
+    /// Set a top border character.
+    pub fn top(self, c: Symbol) -> Self {
+        Self(self.0.top(c))
+    }
+
+    /// Set a bottom border character.
+    pub fn bottom(self, c: Symbol) -> Self {
+        Self(self.0.bottom(c))
+    }
+
+    /// Set a left border character.
+    pub fn left(self, c: Symbol) -> Self {
+        Self(self.0.left(c))
+    }
+
+    /// Set a right border character.
+    pub fn right(self, c: Symbol) -> Self {
+        Self(self.0.right(c))
+    }
+
+    /// Set a top left intersection character.
+    pub fn top_left_corner(self, c: Symbol) -> Self {
+        Self(self.0.top_left_corner(c))
+    }
+
+    /// Set a top right intersection character.
+    pub fn top_right_corner(self, c: Symbol) -> Self {
+        Self(self.0.top_right_corner(c))
+    }
+
+    /// Set a bottom left intersection character.
+    pub fn bottom_left_corner(self, c: Symbol) -> Self {
+        Self(self.0.bottom_left_corner(c))
+    }
+
+    /// Set a bottom right intersection character.
+    pub fn bottom_right_corner(self, c: Symbol) -> Self {
+        Self(self.0.bottom_right_corner(c))
+    }
+
+    /// This function constructs a cell borders with all sides's char set to a given character.
+    /// It behaives like [Border::new] with the same character set to each side.
+    pub fn filled(c: Symbol) -> Self {
+        Self(Border {
+            top: Some(c.clone()),
+            bottom: Some(c.clone()),
+            left: Some(c.clone()),
+            right: Some(c.clone()),
+            left_bottom_corner: Some(c.clone()),
+            left_top_corner: Some(c.clone()),
+            right_bottom_corner: Some(c.clone()),
+            right_top_corner: Some(c),
+        })
+    }
+}
 
 #[cfg(feature = "color")]
 impl CellOption for ColoredBorder {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        grid.set_colored_border(entity, self.clone());
+        grid.set_colored_border(entity, self.0.clone());
     }
 }
 
@@ -1281,7 +1340,7 @@ fn correct_span_styles(grid: &mut Grid) {
             let has_down =
                 row + 1 < grid.count_rows() && has_vertical(grid, &spans, (row + 1, col));
 
-            let mut border = grid.get_border(row, col);
+            let mut border = grid.get_border((row, col));
 
             let has_top_border = border.left_top_corner.is_some() && border.top.is_some();
             if has_top_border {
@@ -1320,7 +1379,7 @@ fn has_vertical(grid: &Grid, spans: &[(Position, usize)], pos: Position) -> bool
     }
 
     if grid.is_cell_visible(pos) {
-        let border = grid.get_border(pos.0, pos.1);
+        let border = grid.get_border(pos);
         return border.left.is_some()
             || border.left_top_corner.is_some()
             || border.left_bottom_corner.is_some();
@@ -1370,7 +1429,7 @@ impl TableOption for BorderColor {
 #[derive(Debug, Clone)]
 pub struct StyleConfigColored {
     borders: StyleConfig,
-    colors: papergrid::BordersColors,
+    colors: Borders<BorderColor>,
 }
 
 #[cfg(feature = "color")]

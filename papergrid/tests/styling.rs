@@ -243,17 +243,7 @@ fn grid_2x2_custom_border_test() {
     );
     grid.set(
         Entity::Cell(0, 1),
-        Settings::new().border(
-            Border::default()
-                .top('*')
-                .bottom('-')
-                .left('@')
-                .top_left_corner(' ')
-                .bottom_left_corner('+')
-                .right('%')
-                .top_right_corner(' ')
-                .bottom_right_corner('+'),
-        ),
+        Settings::new().border(Border::new('*', '-', '@', '%', ' ', ' ', '+', '+')),
     );
     grid.set(
         Entity::Cell(1, 0),
@@ -294,7 +284,7 @@ fn grid_2x2_custom_border_test() {
 #[test]
 fn grid_2x2_ansi_border_test() {
     use owo_colors::OwoColorize;
-    use papergrid::{ColoredBorder, Symbol};
+    use papergrid::{Border, Symbol};
 
     let mut grid = util::new_grid::<2, 2>();
 
@@ -309,7 +299,7 @@ fn grid_2x2_ansi_border_test() {
 
     grid.set_colored_border(
         Entity::Global,
-        ColoredBorder::new(
+        Border::new(
             top,
             bottom,
             left,

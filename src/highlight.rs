@@ -99,7 +99,7 @@ where
 impl<O> Highlight<O> {
     /// Build a new instance of [HighlightColored]
     #[cfg(feature = "color")]
-    pub fn colored(target: O, border: papergrid::ColoredBorder) -> HighlightColored<O> {
+    pub fn colored(target: O, border: crate::style::ColoredBorder) -> HighlightColored<O> {
         HighlightColored { target, border }
     }
 }
@@ -376,7 +376,7 @@ fn is_there_right_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col:
 #[cfg(feature = "color")]
 pub struct HighlightColored<O> {
     target: O,
-    border: papergrid::ColoredBorder,
+    border: crate::style::ColoredBorder,
 }
 
 #[cfg(feature = "color")]
@@ -398,14 +398,14 @@ where
 fn set_border_colored(
     grid: &mut Grid,
     sector: HashSet<(usize, usize)>,
-    border: papergrid::ColoredBorder,
+    border: crate::style::ColoredBorder,
 ) {
     if sector.is_empty() {
         return;
     }
 
     for &(row, col) in &sector {
-        let border = build_cell_border_colored(&sector, &border, (row, col));
+        let border = build_cell_border_colored(&sector, &border.0, (row, col));
         grid.set_colored_border(Entity::Cell(row, col), border);
     }
 }
@@ -413,9 +413,9 @@ fn set_border_colored(
 #[cfg(feature = "color")]
 fn build_cell_border_colored(
     sector: &HashSet<(usize, usize)>,
-    border: &papergrid::ColoredBorder,
+    border: &papergrid::Border<papergrid::Symbol>,
     (row, col): papergrid::Position,
-) -> papergrid::ColoredBorder {
+) -> papergrid::Border<papergrid::Symbol> {
     let cell_has_top_neighbor = cell_has_top_neighbor(sector, row, col);
     let cell_has_bottom_neighbor = cell_has_bottom_neighbor(sector, row, col);
     let cell_has_left_neighbor = cell_has_left_neighbor(sector, row, col);
@@ -426,7 +426,7 @@ fn build_cell_border_colored(
     let this_has_left_bottom_neighbor = is_there_left_bottom_cell(sector, row, col);
     let this_has_right_bottom_neighbor = is_there_right_bottom_cell(sector, row, col);
 
-    let mut cell_border = papergrid::ColoredBorder::default();
+    let mut cell_border = papergrid::Border::default();
     if let Some(c) = border.top.clone() {
         if !cell_has_top_neighbor {
             cell_border = cell_border.top(c.clone());

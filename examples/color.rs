@@ -7,10 +7,9 @@ use std::convert::TryFrom;
 
 use owo_colors::OwoColorize;
 
-use papergrid::{BorderColor, ColoredBorder};
 use tabled::{
     object::{Columns, Object, Rows},
-    style::{Style, Symbol},
+    style::{BorderColor, ColoredBorder, Style, Symbol},
     Alignment, ModifyObject, Table, Tabled,
 };
 

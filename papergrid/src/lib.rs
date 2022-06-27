@@ -63,12 +63,12 @@ pub struct Grid {
     size: (usize, usize),
     cells: Vec<Vec<String>>,
     margin: Margin,
-    theme: Theme,
+    borders: BordersConfig<char>,
     override_split_lines: HashMap<usize, String>,
     spans: HashMap<Position, usize>,
     config: GridConfig,
     #[cfg(feature = "color")]
-    border_colors: ColorConfig,
+    border_colors: BordersConfig<BorderColor>,
 }
 
 #[derive(Debug, Clone)]
@@ -154,12 +154,12 @@ impl Grid {
             size: (rows, columns),
             cells: vec![vec![String::new(); columns]; rows],
             margin: Margin::default(),
-            theme: Theme::new(),
-            override_split_lines: HashMap::new(),
             spans: HashMap::new(),
             config,
+            override_split_lines: HashMap::new(),
+            borders: BordersConfig::default(),
             #[cfg(feature = "color")]
-            border_colors: ColorConfig::default(),
+            border_colors: BordersConfig::default(),
         }
     }
 
@@ -232,13 +232,13 @@ impl Grid {
     /// Clears all theme changes.
     /// And sets it to default.
     pub fn clear_theme(&mut self) {
-        self.theme = Theme::new();
+        self.borders = BordersConfig::default();
         self.override_split_lines.clear();
     }
 
     /// Set the [Borders] value as currect one.
-    pub fn set_borders(&mut self, borders: Borders) {
-        self.theme.borders = borders;
+    pub fn set_borders(&mut self, borders: Borders<char>) {
+        self.borders.borders = borders;
     }
 
     /// Set the [Borders] value as currect one.
@@ -247,30 +247,30 @@ impl Grid {
     }
 
     /// Returns a current [Borders] structure.
-    pub fn get_borders(&self) -> &Borders {
-        &self.theme.borders
+    pub fn get_borders(&self) -> &Borders<char> {
+        &self.borders.borders
     }
 
     /// Set border set a border value to all cells in [Entity].
     pub fn set_border(&mut self, entity: Entity, border: Border) {
         entity
             .iter(self.count_rows(), self.count_columns())
-            .for_each(|pos| self.theme.override_border(pos, border.clone()))
+            .for_each(|pos| self.borders.insert_border(pos, border.clone()))
     }
 
     /// Set the border line by row index.
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
-    pub fn set_split_line(&mut self, row: usize, line: Line) {
-        self.theme.override_line(row, line)
+    pub fn set_split_line(&mut self, row: usize, line: Line<char>) {
+        self.borders.insert_line(row, line)
     }
 
     /// get_cell_settings returns a settings of a cell
     pub fn get_settings(&self, row: usize, col: usize) -> Settings {
         let style = self.style(Entity::Cell(row, col));
         let content = &self.cells[row][col];
-        let border = self.get_border(row, col);
+        let border = self.get_border((row, col));
         let span = self.get_column_span((row, col));
 
         Settings {
@@ -291,10 +291,11 @@ impl Grid {
     }
 
     /// Returns a border of a cell.
-    pub fn get_border(&self, row: usize, col: usize) -> Border {
+    pub fn get_border(&self, (row, col): Position) -> Border<char> {
         let mut border = self
-            .theme
-            .get_border((row, col), self.count_rows(), self.count_columns());
+            .borders
+            .get_border((row, col), self.count_rows(), self.count_columns())
+            .cloned();
 
         // make sure that there's no user defined lines
         // in which case we use spaces.
@@ -434,22 +435,33 @@ impl Grid {
 
         let new_count_rows = end_row - start_row;
         let new_count_columns = end_column - start_column;
-        let mut new_grid = Grid::new(new_count_rows, new_count_columns);
-        new_grid.theme = self.theme.clone();
-
-        #[cfg(feature = "color")]
-        {
-            new_grid.border_colors = self.border_colors.clone();
-        }
+        let mut new = self.resize(new_count_rows, new_count_columns);
 
         for (new_row, row) in (start_row..end_row).enumerate() {
             for (new_column, column) in (start_column..end_column).enumerate() {
                 let settings = self.get_settings(row, column);
-                new_grid.set(Entity::Cell(new_row, new_column), settings);
+                new.set(Entity::Cell(new_row, new_column), settings);
             }
         }
 
-        new_grid
+        new
+    }
+
+    pub fn resize(&self, count_rows: usize, count_cols: usize) -> Self {
+        let mut new = Self::new(count_rows, count_cols);
+        new.borders.borders = self.borders.borders.clone();
+        new.borders.global = self.borders.global;
+        new.margin = self.margin;
+        new.config.tab_width = self.config.tab_width;
+        new.config.styles.global = self.config.styles.global.clone();
+
+        #[cfg(feature = "color")]
+        {
+            new.border_colors.borders = self.border_colors.borders.clone();
+            new.border_colors.global = self.border_colors.global.clone();
+        }
+
+        new
     }
 
     /// Returns a total width of table, including split lines.
@@ -623,123 +635,85 @@ impl Grid {
 
 #[cfg(feature = "color")]
 impl Grid {
-    pub fn get_border_color(&self) -> Option<&BorderColor> {
-        self.border_colors.global.as_ref()
-    }
-
-    pub fn get_color_borders(&self) -> &BordersColors {
+    pub fn get_color_borders(&self) -> &Borders<BorderColor> {
         &self.border_colors.borders
     }
 
-    pub fn get_colored_border(&self, (row, col): Position) -> ColoredBorder {
-        let b = self.get_border(row, col);
+    pub fn get_colored_border(&self, pos: Position) -> Border<Symbol> {
+        let b = self.get_border(pos);
+        let cls = self
+            .border_colors
+            .get_border(pos, self.count_rows(), self.count_columns());
 
-        ColoredBorder {
-            top: b
-                .top
-                .map(|c| Symbol::new(c, get_horizontal_color(self, (row, col)).cloned())),
-            bottom: b
-                .bottom
-                .map(|c| Symbol::new(c, get_horizontal_color(self, (row + 1, col)).cloned())),
-            left: b
-                .left
-                .map(|c| Symbol::new(c, get_vertical_color(self, (row, col)).cloned())),
-            right: b
-                .right
-                .map(|c| Symbol::new(c, get_vertical_color(self, (row, col + 1)).cloned())),
+        Border {
+            top: b.top.map(|c| Symbol::new(c, cls.top.cloned())),
+            bottom: b.bottom.map(|c| Symbol::new(c, cls.bottom.cloned())),
+            left: b.left.map(|c| Symbol::new(c, cls.left.cloned())),
+            right: b.right.map(|c| Symbol::new(c, cls.right.cloned())),
             left_top_corner: b
                 .left_top_corner
-                .map(|c| Symbol::new(c, get_intersection_color(self, (row, col)).cloned())),
+                .map(|c| Symbol::new(c, cls.left_top_corner.cloned())),
             left_bottom_corner: b
                 .left_bottom_corner
-                .map(|c| Symbol::new(c, get_intersection_color(self, (row + 1, col)).cloned())),
+                .map(|c| Symbol::new(c, cls.left_bottom_corner.cloned())),
             right_top_corner: b
                 .right_top_corner
-                .map(|c| Symbol::new(c, get_intersection_color(self, (row, col + 1)).cloned())),
+                .map(|c| Symbol::new(c, cls.right_top_corner.cloned())),
             right_bottom_corner: b
                 .right_bottom_corner
-                .map(|c| Symbol::new(c, get_intersection_color(self, (row + 1, col + 1)).cloned())),
+                .map(|c| Symbol::new(c, cls.right_bottom_corner.cloned())),
         }
     }
 
     pub fn set_border_color(&mut self, clr: BorderColor) {
-        self.border_colors = ColorConfig::default();
+        self.border_colors = BordersConfig::default();
         self.border_colors.global = Some(clr);
     }
 
-    pub fn set_borders_color(&mut self, clrs: BordersColors) {
+    pub fn set_borders_color(&mut self, clrs: Borders<BorderColor>) {
         self.border_colors.borders = clrs;
     }
 
-    pub fn set_colored_border(&mut self, entity: Entity, border: ColoredBorder) {
-        let border_chars = Border {
-            top: border.top.as_ref().map(|s| s.c),
-            bottom: border.bottom.as_ref().map(|s| s.c),
-            left: border.left.as_ref().map(|s| s.c),
-            right: border.right.as_ref().map(|s| s.c),
-            left_bottom_corner: border.left_bottom_corner.as_ref().map(|s| s.c),
-            left_top_corner: border.left_top_corner.as_ref().map(|s| s.c),
-            right_bottom_corner: border.right_bottom_corner.as_ref().map(|s| s.c),
-            right_top_corner: border.right_top_corner.as_ref().map(|s| s.c),
-        };
-
+    pub fn set_colored_border(&mut self, entity: Entity, border: Border<Symbol>) {
+        let border_chars = symbol_border_into_border(&border);
         self.set_border(entity, border_chars);
 
-        for pos in entity.iter(self.count_rows(), self.count_columns()) {
-            self.set_border_color_for_pos(pos, &border);
-        }
+        let border = symbol_border_into_color_border(border);
+        self.set_border_color_(entity, border);
     }
 
-    fn set_border_color_for_pos(&mut self, pos: (usize, usize), border: &ColoredBorder) {
-        if let Some(clr) = border.top.as_ref().and_then(|s| s.ansi_sequences.clone()) {
-            self.border_colors.set_horizontal_color(pos, clr);
-        }
-        if let Some(clr) = border
-            .bottom
-            .as_ref()
-            .and_then(|s| s.ansi_sequences.clone())
-        {
-            self.border_colors
-                .set_horizontal_color((pos.0 + 1, pos.1), clr);
-        }
-        if let Some(clr) = border.left.as_ref().and_then(|s| s.ansi_sequences.clone()) {
-            self.border_colors.set_vertical_color(pos, clr);
-        }
-        if let Some(clr) = border.right.as_ref().and_then(|s| s.ansi_sequences.clone()) {
-            self.border_colors
-                .set_vertical_color((pos.0, pos.1 + 1), clr);
-        }
-        if let Some(clr) = border
-            .left_top_corner
-            .as_ref()
-            .and_then(|s| s.ansi_sequences.clone())
-        {
-            self.border_colors.set_intersection_color(pos, clr);
-        }
-        if let Some(clr) = border
-            .left_bottom_corner
-            .as_ref()
-            .and_then(|s| s.ansi_sequences.clone())
-        {
-            self.border_colors
-                .set_intersection_color((pos.0 + 1, pos.1), clr);
-        }
-        if let Some(clr) = border
-            .right_top_corner
-            .as_ref()
-            .and_then(|s| s.ansi_sequences.clone())
-        {
-            self.border_colors
-                .set_intersection_color((pos.0, pos.1 + 1), clr);
-        }
-        if let Some(clr) = border
-            .right_bottom_corner
-            .as_ref()
-            .and_then(|s| s.ansi_sequences.clone())
-        {
-            self.border_colors
-                .set_intersection_color((pos.0 + 1, pos.1 + 1), clr);
-        }
+    fn set_border_color_(&mut self, entity: Entity, border: Border<BorderColor>) {
+        entity
+            .iter(self.count_rows(), self.count_columns())
+            .for_each(|pos| self.border_colors.insert_border(pos, border.clone()))
+    }
+}
+
+#[cfg(feature = "color")]
+fn symbol_border_into_border(border: &Border<Symbol>) -> Border {
+    Border {
+        top: border.top.as_ref().map(|s| s.c),
+        bottom: border.bottom.as_ref().map(|s| s.c),
+        left: border.left.as_ref().map(|s| s.c),
+        left_top_corner: border.left_top_corner.as_ref().map(|s| s.c),
+        left_bottom_corner: border.left_bottom_corner.as_ref().map(|s| s.c),
+        right: border.right.as_ref().map(|s| s.c),
+        right_top_corner: border.right_top_corner.as_ref().map(|s| s.c),
+        right_bottom_corner: border.right_bottom_corner.as_ref().map(|s| s.c),
+    }
+}
+
+#[cfg(feature = "color")]
+fn symbol_border_into_color_border(border: Border<Symbol>) -> Border<BorderColor> {
+    Border {
+        top: border.top.and_then(|s| s.ansi_sequences),
+        bottom: border.bottom.and_then(|s| s.ansi_sequences),
+        left: border.left.and_then(|s| s.ansi_sequences),
+        left_top_corner: border.left_top_corner.and_then(|s| s.ansi_sequences),
+        left_bottom_corner: border.left_bottom_corner.and_then(|s| s.ansi_sequences),
+        right: border.right.and_then(|s| s.ansi_sequences),
+        right_top_corner: border.right_top_corner.and_then(|s| s.ansi_sequences),
+        right_bottom_corner: border.right_bottom_corner.and_then(|s| s.ansi_sequences),
     }
 }
 
@@ -937,29 +911,29 @@ impl Settings {
 
 /// Border is a representation of a cells's borders (left, right, top, bottom, and the corners)
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct Border {
-    pub top: Option<char>,
-    pub bottom: Option<char>,
-    pub left: Option<char>,
-    pub left_top_corner: Option<char>,
-    pub left_bottom_corner: Option<char>,
-    pub right: Option<char>,
-    pub right_top_corner: Option<char>,
-    pub right_bottom_corner: Option<char>,
+pub struct Border<T = char> {
+    pub top: Option<T>,
+    pub bottom: Option<T>,
+    pub left: Option<T>,
+    pub left_top_corner: Option<T>,
+    pub left_bottom_corner: Option<T>,
+    pub right: Option<T>,
+    pub right_top_corner: Option<T>,
+    pub right_bottom_corner: Option<T>,
 }
 
-impl Border {
+impl<T> Border<T> {
     /// This function constructs a cell borders with all sides set.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        top: char,
-        bottom: char,
-        left: char,
-        right: char,
-        top_left: char,
-        top_right: char,
-        bottom_left: char,
-        bottom_right: char,
+        top: T,
+        bottom: T,
+        left: T,
+        right: T,
+        top_left: T,
+        top_right: T,
+        bottom_left: T,
+        bottom_right: T,
     ) -> Self {
         Self {
             top: Some(top),
@@ -973,58 +947,77 @@ impl Border {
         }
     }
 
-    /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [Border::new] with the same character set to each side.
-    pub fn filled(c: char) -> Self {
-        Self::new(c, c, c, c, c, c, c, c)
-    }
-
     /// Set a top border character.
-    pub fn top(mut self, c: char) -> Self {
+    pub fn top(mut self, c: T) -> Self {
         self.top = Some(c);
         self
     }
 
     /// Set a bottom border character.
-    pub fn bottom(mut self, c: char) -> Self {
+    pub fn bottom(mut self, c: T) -> Self {
         self.bottom = Some(c);
         self
     }
 
     /// Set a left border character.
-    pub fn left(mut self, c: char) -> Self {
+    pub fn left(mut self, c: T) -> Self {
         self.left = Some(c);
         self
     }
 
     /// Set a right border character.
-    pub fn right(mut self, c: char) -> Self {
+    pub fn right(mut self, c: T) -> Self {
         self.right = Some(c);
         self
     }
 
     /// Set a top left intersection character.
-    pub fn top_left_corner(mut self, c: char) -> Self {
+    pub fn top_left_corner(mut self, c: T) -> Self {
         self.left_top_corner = Some(c);
         self
     }
 
     /// Set a top right intersection character.
-    pub fn top_right_corner(mut self, c: char) -> Self {
+    pub fn top_right_corner(mut self, c: T) -> Self {
         self.right_top_corner = Some(c);
         self
     }
 
     /// Set a bottom left intersection character.
-    pub fn bottom_left_corner(mut self, c: char) -> Self {
+    pub fn bottom_left_corner(mut self, c: T) -> Self {
         self.left_bottom_corner = Some(c);
         self
     }
 
     /// Set a bottom right intersection character.
-    pub fn bottom_right_corner(mut self, c: char) -> Self {
+    pub fn bottom_right_corner(mut self, c: T) -> Self {
         self.right_bottom_corner = Some(c);
         self
+    }
+}
+
+impl<T: Copy> Border<T> {
+    /// This function constructs a cell borders with all sides's char set to a given character.
+    /// It behaives like [Border::new] with the same character set to each side.
+    pub fn filled(c: T) -> Self {
+        Self::new(c, c, c, c, c, c, c, c)
+    }
+}
+
+impl<T: Copy> Border<&T> {
+    /// This function constructs a cell borders with all sides's char set to a given character.
+    /// It behaives like [Border::new] with the same character set to each side.
+    pub fn cloned(&self) -> Border<T> {
+        Border {
+            top: self.top.cloned(),
+            bottom: self.bottom.cloned(),
+            left: self.left.cloned(),
+            right: self.right.cloned(),
+            left_bottom_corner: self.left_bottom_corner.cloned(),
+            left_top_corner: self.left_top_corner.cloned(),
+            right_bottom_corner: self.right_bottom_corner.cloned(),
+            right_top_corner: self.right_top_corner.cloned(),
+        }
     }
 }
 
@@ -1719,232 +1712,193 @@ fn get_lines(text: &str) -> impl Iterator<Item = Cow<str>> {
     ansi_str::AnsiStr::ansi_split(text, "\n")
 }
 
-#[derive(Debug, Clone)]
-struct Theme {
-    borders: Borders,
-    override_borders: BordersMap,
-    override_lines: HashMap<usize, Line>,
+#[derive(Debug, Clone, Default)]
+struct BordersConfig<T> {
+    global: Option<T>,
+    borders: Borders<T>,
+    cells: BordersMap<T>,
+    lines: HashMap<usize, Line<T>>,
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct Borders {
-    pub top: Option<char>,
-    pub top_left: Option<char>,
-    pub top_right: Option<char>,
-    pub top_intersection: Option<char>,
+pub struct Borders<T = char> {
+    pub top: Option<T>,
+    pub top_left: Option<T>,
+    pub top_right: Option<T>,
+    pub top_intersection: Option<T>,
 
-    pub bottom: Option<char>,
-    pub bottom_left: Option<char>,
-    pub bottom_right: Option<char>,
-    pub bottom_intersection: Option<char>,
+    pub bottom: Option<T>,
+    pub bottom_left: Option<T>,
+    pub bottom_right: Option<T>,
+    pub bottom_intersection: Option<T>,
 
-    pub horizontal: Option<char>,
-    pub horizontal_left: Option<char>,
-    pub horizontal_right: Option<char>,
+    pub horizontal: Option<T>,
+    pub horizontal_left: Option<T>,
+    pub horizontal_right: Option<T>,
 
-    pub vertical_left: Option<char>,
-    pub vertical_intersection: Option<char>,
-    pub vertical_right: Option<char>,
+    pub vertical_left: Option<T>,
+    pub vertical_intersection: Option<T>,
+    pub vertical_right: Option<T>,
 
-    pub intersection: Option<char>,
-}
-
-#[derive(Debug, Clone)]
-struct BordersMap {
-    vertical: HashMap<Position, char>,
-    horizontal: HashMap<Position, char>,
-    intersection: HashMap<Position, char>,
+    pub intersection: Option<T>,
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct Line {
-    pub horizontal: Option<char>,
-    pub intersection: Option<char>,
-    pub left: Option<char>,
-    pub right: Option<char>,
+struct BordersMap<T> {
+    vertical: HashMap<Position, T>,
+    horizontal: HashMap<Position, T>,
+    intersection: HashMap<Position, T>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct Line<T> {
+    pub horizontal: Option<T>,
+    pub intersection: Option<T>,
+    pub left: Option<T>,
+    pub right: Option<T>,
 }
 
 pub type Position = (usize, usize);
 
-impl Theme {
-    fn new() -> Self {
-        Self {
-            borders: Borders::default(),
-            override_borders: BordersMap {
-                vertical: HashMap::new(),
-                horizontal: HashMap::new(),
-                intersection: HashMap::new(),
-            },
-            override_lines: HashMap::new(),
-        }
-    }
-
-    fn override_border(&mut self, pos: Position, border: Border) {
+impl<T> BordersConfig<T> {
+    fn insert_border(&mut self, pos: Position, border: Border<T>) {
         if let Some(c) = border.top {
-            self.override_borders.horizontal.insert(pos, c);
+            self.cells.horizontal.insert(pos, c);
         }
 
         if let Some(c) = border.bottom {
-            self.override_borders
-                .horizontal
-                .insert((pos.0 + 1, pos.1), c);
+            self.cells.horizontal.insert((pos.0 + 1, pos.1), c);
         }
 
         if let Some(c) = border.left {
-            self.override_borders.vertical.insert(pos, c);
+            self.cells.vertical.insert(pos, c);
         }
 
         if let Some(c) = border.right {
-            self.override_borders.vertical.insert((pos.0, pos.1 + 1), c);
+            self.cells.vertical.insert((pos.0, pos.1 + 1), c);
         }
 
         if let Some(c) = border.left_top_corner {
-            self.override_borders.intersection.insert((pos.0, pos.1), c);
+            self.cells.intersection.insert((pos.0, pos.1), c);
         }
 
         if let Some(c) = border.left_bottom_corner {
-            self.override_borders
-                .intersection
-                .insert((pos.0 + 1, pos.1), c);
+            self.cells.intersection.insert((pos.0 + 1, pos.1), c);
         }
 
         if let Some(c) = border.right_top_corner {
-            self.override_borders
-                .intersection
-                .insert((pos.0, pos.1 + 1), c);
+            self.cells.intersection.insert((pos.0, pos.1 + 1), c);
         }
 
         if let Some(c) = border.right_bottom_corner {
-            self.override_borders
-                .intersection
-                .insert((pos.0 + 1, pos.1 + 1), c);
+            self.cells.intersection.insert((pos.0 + 1, pos.1 + 1), c);
         }
     }
 
-    fn override_line(&mut self, row: usize, line: Line) {
-        self.override_lines.insert(row, line);
-    }
-
-    // we can take only a border of a cell
-    // which is a pitty,
-    // would be cool if we could take a border of any Entity
-    fn get_border(&self, pos: Position, count_rows: usize, count_columns: usize) -> Border {
+    fn get_border(&self, pos: Position, count_rows: usize, count_cols: usize) -> Border<&T> {
         Border {
-            top: self.get_horizontal(pos, count_rows).cloned(),
-            bottom: self.get_horizontal((pos.0 + 1, pos.1), count_rows).cloned(),
-            left: self.get_vertical(pos, count_columns).cloned(),
-            left_top_corner: self
-                .get_intersection(pos, count_rows, count_columns)
-                .cloned(),
-            left_bottom_corner: self
-                .get_intersection((pos.0 + 1, pos.1), count_rows, count_columns)
-                .cloned(),
-            right: self
-                .get_vertical((pos.0, pos.1 + 1), count_columns)
-                .cloned(),
-            right_top_corner: self
-                .get_intersection((pos.0, pos.1 + 1), count_rows, count_columns)
-                .cloned(),
-            right_bottom_corner: self
-                .get_intersection((pos.0 + 1, pos.1 + 1), count_rows, count_columns)
-                .cloned(),
+            top: self.get_horizontal(pos, count_rows),
+            bottom: self.get_horizontal((pos.0 + 1, pos.1), count_rows),
+            left: self.get_vertical(pos, count_cols),
+            left_top_corner: self.get_intersection(pos, count_rows, count_cols),
+            left_bottom_corner: self.get_intersection((pos.0 + 1, pos.1), count_rows, count_cols),
+            right: self.get_vertical((pos.0, pos.1 + 1), count_cols),
+            right_top_corner: self.get_intersection((pos.0, pos.1 + 1), count_rows, count_cols),
+            right_bottom_corner: self.get_intersection(
+                (pos.0 + 1, pos.1 + 1),
+                count_rows,
+                count_cols,
+            ),
         }
     }
 
-    fn get_vertical(&self, pos: Position, count_cols: usize) -> Option<&char> {
-        let use_left = pos.1 == 0;
-        let use_right = pos.1 == count_cols;
-
-        if let Some(b) = self.override_borders.vertical.get(&pos) {
-            return Some(b);
-        }
-
-        if use_right {
-            self.borders.vertical_right.as_ref()
-        } else if use_left {
-            self.borders.vertical_left.as_ref()
-        } else {
-            self.borders.vertical_intersection.as_ref()
-        }
+    fn insert_line(&mut self, row: usize, line: Line<T>) {
+        self.lines.insert(row, line);
     }
 
-    fn get_horizontal(&self, pos: Position, count_rows: usize) -> Option<&char> {
-        let use_top = pos.0 == 0;
-        let use_bottom = pos.0 == count_rows;
-
-        if let Some(b) = self.override_borders.horizontal.get(&pos) {
-            return Some(b);
-        }
-
-        if let Some(line) = self.override_lines.get(&pos.0) {
-            if line.horizontal.is_some() {
-                return line.horizontal.as_ref();
-            }
-        }
-
-        if use_top {
-            self.borders.top.as_ref()
-        } else if use_bottom {
-            self.borders.bottom.as_ref()
-        } else {
-            self.borders.horizontal.as_ref()
-        }
+    fn get_vertical(&self, pos: Position, count_cols: usize) -> Option<&T> {
+        self.cells
+            .vertical
+            .get(&pos)
+            .or({
+                if pos.1 == count_cols {
+                    self.borders.vertical_right.as_ref()
+                } else if pos.1 == 0 {
+                    self.borders.vertical_left.as_ref()
+                } else {
+                    self.borders.vertical_intersection.as_ref()
+                }
+            })
+            .or(self.global.as_ref())
     }
 
-    fn get_intersection(
-        &self,
-        pos: Position,
-        count_rows: usize,
-        count_cols: usize,
-    ) -> Option<&char> {
+    fn get_horizontal(&self, pos: Position, count_rows: usize) -> Option<&T> {
+        self.cells
+            .horizontal
+            .get(&pos)
+            .or_else(|| self.lines.get(&pos.0).and_then(|l| l.horizontal.as_ref()))
+            .or({
+                if pos.0 == 0 {
+                    self.borders.top.as_ref()
+                } else if pos.0 == count_rows {
+                    self.borders.bottom.as_ref()
+                } else {
+                    self.borders.horizontal.as_ref()
+                }
+            })
+            .or(self.global.as_ref())
+    }
+
+    fn get_intersection(&self, pos: Position, count_rows: usize, count_cols: usize) -> Option<&T> {
         let use_top = pos.0 == 0;
         let use_bottom = pos.0 == count_rows;
 
         let use_left = pos.1 == 0;
         let use_right = pos.1 == count_cols;
 
-        if let Some(b) = self.override_borders.intersection.get(&pos) {
-            return Some(b);
-        }
-
-        if let Some(line) = self.override_lines.get(&pos.0) {
-            if use_left && line.left.is_some() {
-                return line.left.as_ref();
-            }
-
-            if use_right && line.right.is_some() {
-                return line.right.as_ref();
-            }
-
-            if !use_right && !use_left && line.intersection.is_some() {
-                return line.intersection.as_ref();
-            }
-        }
-
-        if use_top && use_left {
-            self.borders.top_left.as_ref()
-        } else if use_top && use_right {
-            self.borders.top_right.as_ref()
-        } else if use_bottom && use_left {
-            self.borders.bottom_left.as_ref()
-        } else if use_bottom && use_right {
-            self.borders.bottom_right.as_ref()
-        } else if use_top {
-            self.borders.top_intersection.as_ref()
-        } else if use_bottom {
-            self.borders.bottom_intersection.as_ref()
-        } else if use_left {
-            self.borders.horizontal_left.as_ref()
-        } else if use_right {
-            self.borders.horizontal_right.as_ref()
-        } else {
-            self.borders.intersection.as_ref()
-        }
+        self.cells
+            .intersection
+            .get(&pos)
+            .or_else(|| {
+                self.lines.get(&pos.0).and_then(|l| {
+                    if use_left && l.left.is_some() {
+                        l.left.as_ref()
+                    } else if use_right && l.right.is_some() {
+                        l.right.as_ref()
+                    } else if !use_right && !use_left && l.intersection.is_some() {
+                        l.intersection.as_ref()
+                    } else {
+                        None
+                    }
+                })
+            })
+            .or({
+                if use_top && use_left {
+                    self.borders.top_left.as_ref()
+                } else if use_top && use_right {
+                    self.borders.top_right.as_ref()
+                } else if use_bottom && use_left {
+                    self.borders.bottom_left.as_ref()
+                } else if use_bottom && use_right {
+                    self.borders.bottom_right.as_ref()
+                } else if use_top {
+                    self.borders.top_intersection.as_ref()
+                } else if use_bottom {
+                    self.borders.bottom_intersection.as_ref()
+                } else if use_left {
+                    self.borders.horizontal_left.as_ref()
+                } else if use_right {
+                    self.borders.horizontal_right.as_ref()
+                } else {
+                    self.borders.intersection.as_ref()
+                }
+            })
+            .or(self.global.as_ref())
     }
 }
 
 fn get_vertical(grid: &Grid, pos: Position) -> Option<&char> {
-    let v = grid.theme.get_vertical(pos, grid.count_columns());
+    let v = grid.borders.get_vertical(pos, grid.count_columns());
     if v.is_some() {
         return v;
     }
@@ -1956,8 +1910,9 @@ fn get_vertical(grid: &Grid, pos: Position) -> Option<&char> {
     None
 }
 
+// todo: see get_border probably there's an issue;
 fn get_horizontal(grid: &Grid, pos: Position) -> Option<&char> {
-    let v = grid.theme.get_horizontal(pos, grid.count_rows());
+    let v = grid.borders.get_horizontal(pos, grid.count_rows());
     if v.is_some() {
         return v;
     }
@@ -1971,7 +1926,7 @@ fn get_horizontal(grid: &Grid, pos: Position) -> Option<&char> {
 
 fn get_intersection(grid: &Grid, pos: Position) -> Option<&char> {
     let v = grid
-        .theme
+        .borders
         .get_intersection(pos, grid.count_rows(), grid.count_columns());
     if v.is_some() {
         return v;
@@ -1982,22 +1937,6 @@ fn get_intersection(grid: &Grid, pos: Position) -> Option<&char> {
     }
 
     None
-}
-
-#[cfg(feature = "color")]
-fn get_intersection_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
-    grid.border_colors
-        .get_intersection(pos, grid.count_rows(), grid.count_columns())
-}
-
-#[cfg(feature = "color")]
-fn get_horizontal_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
-    grid.border_colors.get_horizontal(pos, grid.count_rows())
-}
-
-#[cfg(feature = "color")]
-fn get_vertical_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
-    grid.border_colors.get_vertical(pos, grid.count_columns())
 }
 
 #[allow(clippy::needless_range_loop)]
@@ -2240,6 +2179,22 @@ fn write_colored(
     Ok(())
 }
 
+#[cfg(feature = "color")]
+fn get_intersection_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
+    grid.border_colors
+        .get_intersection(pos, grid.count_rows(), grid.count_columns())
+}
+
+#[cfg(feature = "color")]
+fn get_horizontal_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
+    grid.border_colors.get_horizontal(pos, grid.count_rows())
+}
+
+#[cfg(feature = "color")]
+fn get_vertical_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
+    grid.border_colors.get_vertical(pos, grid.count_columns())
+}
+
 fn row_width_grid(grid: &Grid, widths: &[usize]) -> usize {
     let row_width = widths.iter().sum::<usize>();
     let count_borders = (0..grid.count_columns())
@@ -2252,13 +2207,13 @@ fn row_width_grid(grid: &Grid, widths: &[usize]) -> usize {
 
 fn has_vertical(grid: &Grid, col: usize) -> bool {
     (0..grid.count_rows())
-        .map(|row| grid.theme.get_vertical((row, col), grid.count_columns()))
+        .map(|row| grid.borders.get_vertical((row, col), grid.count_columns()))
         .any(|c| c.is_some())
 }
 
 fn has_horizontal(grid: &Grid, row: usize) -> bool {
     (0..grid.count_columns())
-        .map(|col| grid.theme.get_horizontal((row, col), grid.count_rows()))
+        .map(|col| grid.borders.get_horizontal((row, col), grid.count_rows()))
         .any(|c| c.is_some())
 }
 
@@ -2315,100 +2270,7 @@ fn set_entity_value<T>(map: &mut HashMap<Entity, T>, global: &mut T, entity: Ent
 }
 
 #[cfg(feature = "color")]
-#[derive(Debug, Clone, Default)]
-struct ColorConfig {
-    global: Option<BorderColor>,
-    borders: BordersColors,
-    vertical: HashMap<Position, BorderColor>,
-    horizontal: HashMap<Position, BorderColor>,
-    intersection: HashMap<Position, BorderColor>,
-}
-
-#[cfg(feature = "color")]
-impl ColorConfig {
-    fn set_vertical_color(&mut self, pos: Position, clr: BorderColor) {
-        self.vertical.insert(pos, clr);
-    }
-
-    fn set_intersection_color(&mut self, pos: Position, clr: BorderColor) {
-        self.intersection.insert(pos, clr);
-    }
-
-    fn set_horizontal_color(&mut self, pos: Position, clr: BorderColor) {
-        self.horizontal.insert(pos, clr);
-    }
-
-    fn get_vertical(&self, pos: Position, count_cols: usize) -> Option<&BorderColor> {
-        self.vertical
-            .get(&pos)
-            .or({
-                if pos.1 == 0 {
-                    self.borders.vertical_left.as_ref()
-                } else if pos.1 == count_cols {
-                    self.borders.vertical_right.as_ref()
-                } else {
-                    self.borders.vertical_intersection.as_ref()
-                }
-            })
-            .or(self.global.as_ref())
-    }
-
-    fn get_horizontal(&self, pos: Position, count_rows: usize) -> Option<&BorderColor> {
-        self.horizontal
-            .get(&pos)
-            .or({
-                if pos.1 == 0 {
-                    self.borders.top.as_ref()
-                } else if pos.1 == count_rows {
-                    self.borders.bottom.as_ref()
-                } else {
-                    self.borders.horizontal.as_ref()
-                }
-            })
-            .or(self.global.as_ref())
-    }
-
-    fn get_intersection(
-        &self,
-        pos: Position,
-        count_rows: usize,
-        count_cols: usize,
-    ) -> Option<&BorderColor> {
-        self.intersection
-            .get(&pos)
-            .or_else(|| {
-                let use_top = pos.0 == 0;
-                let use_bottom = pos.0 == count_rows;
-
-                let use_left = pos.1 == 0;
-                let use_right = pos.1 == count_cols;
-
-                if use_top && use_left {
-                    self.borders.top_left.as_ref()
-                } else if use_top && use_right {
-                    self.borders.top_right.as_ref()
-                } else if use_bottom && use_left {
-                    self.borders.bottom_left.as_ref()
-                } else if use_bottom && use_right {
-                    self.borders.bottom_right.as_ref()
-                } else if use_top {
-                    self.borders.top_intersection.as_ref()
-                } else if use_bottom {
-                    self.borders.bottom_intersection.as_ref()
-                } else if use_left {
-                    self.borders.horizontal_left.as_ref()
-                } else if use_right {
-                    self.borders.horizontal_right.as_ref()
-                } else {
-                    self.borders.intersection.as_ref()
-                }
-            })
-            .or(self.global.as_ref())
-    }
-}
-
-#[cfg(feature = "color")]
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Default)]
 pub struct BorderColor(String, String);
 
 #[cfg(feature = "color")]
@@ -2469,107 +2331,6 @@ pub struct BordersColors {
     pub vertical_right: Option<BorderColor>,
 
     pub intersection: Option<BorderColor>,
-}
-
-#[cfg(feature = "color")]
-#[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct ColoredBorder {
-    pub top: Option<Symbol>,
-    pub bottom: Option<Symbol>,
-    pub left: Option<Symbol>,
-    pub right: Option<Symbol>,
-    pub left_top_corner: Option<Symbol>,
-    pub left_bottom_corner: Option<Symbol>,
-    pub right_top_corner: Option<Symbol>,
-    pub right_bottom_corner: Option<Symbol>,
-}
-
-#[cfg(feature = "color")]
-impl ColoredBorder {
-    /// This function constructs a cell borders with all sides set.
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        top: Symbol,
-        bottom: Symbol,
-        left: Symbol,
-        right: Symbol,
-        top_left: Symbol,
-        top_right: Symbol,
-        bottom_left: Symbol,
-        bottom_right: Symbol,
-    ) -> Self {
-        Self {
-            top: Some(top),
-            bottom: Some(bottom),
-            right: Some(right),
-            right_top_corner: Some(top_right),
-            right_bottom_corner: Some(bottom_right),
-            left: Some(left),
-            left_bottom_corner: Some(bottom_left),
-            left_top_corner: Some(top_left),
-        }
-    }
-
-    pub fn filled(c: Symbol) -> Self {
-        Self {
-            top: Some(c.clone()),
-            bottom: Some(c.clone()),
-            left: Some(c.clone()),
-            right: Some(c.clone()),
-            left_top_corner: Some(c.clone()),
-            left_bottom_corner: Some(c.clone()),
-            right_top_corner: Some(c.clone()),
-            right_bottom_corner: Some(c),
-        }
-    }
-
-    /// Set a top border character.
-    pub fn top(mut self, c: Symbol) -> Self {
-        self.top = Some(c);
-        self
-    }
-
-    /// Set a bottom border character.
-    pub fn bottom(mut self, c: Symbol) -> Self {
-        self.bottom = Some(c);
-        self
-    }
-
-    /// Set a left border character.
-    pub fn left(mut self, c: Symbol) -> Self {
-        self.left = Some(c);
-        self
-    }
-
-    /// Set a right border character.
-    pub fn right(mut self, c: Symbol) -> Self {
-        self.right = Some(c);
-        self
-    }
-
-    /// Set a top left intersection character.
-    pub fn top_left_corner(mut self, c: Symbol) -> Self {
-        self.left_top_corner = Some(c);
-        self
-    }
-
-    /// Set a top right intersection character.
-    pub fn top_right_corner(mut self, c: Symbol) -> Self {
-        self.right_top_corner = Some(c);
-        self
-    }
-
-    /// Set a bottom left intersection character.
-    pub fn bottom_left_corner(mut self, c: Symbol) -> Self {
-        self.left_bottom_corner = Some(c);
-        self
-    }
-
-    /// Set a bottom right intersection character.
-    pub fn bottom_right_corner(mut self, c: Symbol) -> Self {
-        self.right_bottom_corner = Some(c);
-        self
-    }
 }
 
 #[cfg(feature = "color")]

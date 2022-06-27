@@ -21,7 +21,7 @@ fn panel_has_no_style_by_default() {
     assert_eq!(
         table,
         static_table!(
-            "Linux Distributions                 "
+            "        Linux Distributions         "
             " N | column 0 | column 1 | column 2 "
             "---+----------+----------+----------"
             " 0 |   0-0    |   0-1    |   0-2    "
@@ -47,7 +47,7 @@ fn highligt_panel() {
         table,
         static_table!(
             "#####                                "
-            "#Linux Distributions                 "
+            "#        Linux Distributions         "
             "#####----------+----------+----------"
             "  N | column 0 | column 1 | column 2 "
             "  0 |   0-0    |   0-1    |   0-2    "
@@ -71,7 +71,7 @@ fn highligt_panel() {
         table,
         static_table!(
             "######################################"
-            "#Linux Distributions                 #"
+            "#        Linux Distributions         #"
             "######################################"
             "  N | column 0 | column 1 | column 2  "
             "  0 |   0-0    |   0-1    |   0-2     "
@@ -201,7 +201,7 @@ fn panel_style_uses_most_left_and_right_cell_styles() {
         table,
         static_table!(
             "┌─────┬─────┐"
-            "│Numbers    │"
+            "│  Numbers  │"
             "├─────┼─────┤"
             "│ i32 │ i32 │"
             "├─────┼─────┤"
@@ -249,7 +249,7 @@ fn panel_style_uses_most_left_and_right_cell_styles_correct() {
         table,
         static_table!(
             "┌───────────┐"
-            "│Numbers    │"
+            "│  Numbers  │"
             "├─────┬─────┤"
             "│ i32 │ i32 │"
             "├─────┼─────┤"
@@ -296,13 +296,13 @@ fn panel_in_single_column() {
     assert_eq!(
         table,
         static_table!(
-            "┌───────┐"
-            "│Numbers│"
-            "├───────┤"
-            "│  i32  │"
-            "├───────┤"
-            "│   0   │"
-            "└───────┘"
+            "┌─────────┐"
+            "│ Numbers │"
+            "├─────────┤"
+            "│   i32   │"
+            "├─────────┤"
+            "│    0    │"
+            "└─────────┘"
         )
     );
 }
