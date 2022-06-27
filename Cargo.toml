@@ -18,6 +18,7 @@ members = [
     "tabled_derive",
     "examples/terminal_table",
     "examples/show",
+    "benches"
 ]
 
 [badges]
@@ -36,13 +37,8 @@ unicode-width = "0.1.9"
 
 [dev-dependencies]
 owo-colors = "3.4.0"
-criterion = "0.3.5"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
-
-[[bench]]
-name = "table_build"
-harness = false
 
 [[example]]
 name = "colored_borders"
@@ -51,9 +47,3 @@ required-features = ["color"]
 [[example]]
 name = "color"
 required-features = ["color"]
-
-# experiment thing to check how it will work on docs.rs
-# [package.metadata.docs.rs]
-# features = ["unstable-doc"]
-# rustdoc-args = ["--cfg", "docsrs"]
-# cargo-args = ["-Zunstable-options"]
