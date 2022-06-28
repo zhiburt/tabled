@@ -4,7 +4,7 @@ use crate::util::{create_vector, static_table};
 
 use tabled::{
     builder::Builder,
-    object::{Cell, Rows, Segment},
+    object::{Cell, Columns, Rows, Segment},
     style::{Border, BorderText, StyleConfig},
     Highlight, Modify, Padding, Span, Style, Table, TableIteratorExt,
 };
@@ -2174,4 +2174,44 @@ fn test_default_border_usage() {
             " 2        2-0          2-1        2-2     "
         )
     }
+}
+
+#[test]
+fn border_none_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
+        .with(Modify::new(Rows::single(1)).with(Border::none()))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---+----------+----------+"
+            "| N | column 0 | column 1 |"
+            "+---+----------+----------+"
+            "| 0 |   0-0    |   0-1    |"
+            "+---+----------+----------+"
+            "| 1 |   1-0    |   1-1    |"
+            "+---+----------+----------+"
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::empty())
+        .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
+        .with(Modify::new(Columns::single(1)).with(Border::none()))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "  N  column 0  column 1  "
+            "*###          ##########*"
+            "* 0    0-0       0-1    *"
+            "****          ***********"
+            "  1    1-0       1-1     "
+        )
+    );
 }

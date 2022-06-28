@@ -108,7 +108,3 @@ impl<R: RangeBounds<usize>> TableOption for Disable<R> {
         }
     }
 }
-
-// todo: this
-// todo: Wrap Border to have struct Border(Option<papergrid::Border<char>>);
-//       So this way we could create a method `Border::none` which would remove borders.

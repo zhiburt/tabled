@@ -258,6 +258,15 @@ impl Grid {
             .for_each(|pos| self.borders.insert_border(pos, border.clone()))
     }
 
+    /// Sets off all borders possible on the [Entity].
+    ///
+    /// It doesn't changes globaly set borders through [Grid::set_borders].
+    pub fn remove_border(&mut self, entity: Entity) {
+        entity
+            .iter(self.count_rows(), self.count_columns())
+            .for_each(|pos| self.borders.remove_border(pos))
+    }
+
     /// Set the border line by row index.
     ///
     /// Row `0` means the top row.
@@ -1793,6 +1802,17 @@ impl<T> BordersConfig<T> {
         if let Some(c) = border.right_bottom_corner {
             self.cells.intersection.insert((pos.0 + 1, pos.1 + 1), c);
         }
+    }
+
+    fn remove_border(&mut self, pos: Position) {
+        self.cells.horizontal.remove(&pos);
+        self.cells.horizontal.remove(&(pos.0 + 1, pos.1));
+        self.cells.vertical.remove(&pos);
+        self.cells.vertical.remove(&(pos.0, pos.1 + 1));
+        self.cells.intersection.remove(&pos);
+        self.cells.intersection.remove(&(pos.0 + 1, pos.1));
+        self.cells.intersection.remove(&(pos.0, pos.1 + 1));
+        self.cells.intersection.remove(&(pos.0 + 1, pos.1 + 1));
     }
 
     fn get_border(&self, pos: Position, count_rows: usize, count_cols: usize) -> Border<&T> {

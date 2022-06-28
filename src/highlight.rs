@@ -242,18 +242,20 @@ fn set_border(grid: &mut Grid, sector: HashSet<(usize, usize)>, border: Border) 
         return;
     }
 
-    for &(row, col) in &sector {
-        let border = build_cell_border(&sector, (row, col), &border);
+    if let Some(border) = border.into() {
+        for &(row, col) in &sector {
+            let border = build_cell_border(&sector, (row, col), &border);
 
-        grid.set(Entity::Cell(row, col), Settings::default().border(border));
+            grid.set(Entity::Cell(row, col), Settings::default().border(border));
+        }
     }
 }
 
 fn build_cell_border<T>(
     sector: &HashSet<(usize, usize)>,
     (row, col): Position,
-    border: &Border<T>,
-) -> Border<T>
+    border: &papergrid::Border<T>,
+) -> papergrid::Border<T>
 where
     T: Default + Clone,
 {
@@ -267,7 +269,7 @@ where
     let this_has_left_bottom_neighbor = is_there_left_bottom_cell(sector, row, col);
     let this_has_right_bottom_neighbor = is_there_right_bottom_cell(sector, row, col);
 
-    let mut cell_border = Border::default();
+    let mut cell_border = papergrid::Border::default();
     if let Some(c) = border.top.clone() {
         if !cell_has_top_neighbor {
             cell_border = cell_border.top(c.clone());
