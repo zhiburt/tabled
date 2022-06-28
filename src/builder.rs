@@ -117,6 +117,7 @@ use crate::{Style, Table};
 ///
 /// ```rust
 /// use tabled::builder::Builder;
+///
 /// let table = Builder::default()
 ///     .set_columns(["index", "measure", "value"])
 ///     .add_record(["0", "weight", "0.443"])
@@ -130,6 +131,7 @@ use crate::{Style, Table};
 /// ```rust
 /// use tabled::builder::Builder;
 /// use std::iter::FromIterator;
+///
 /// let data = vec![
 ///     ["column1", "column2"],
 ///     ["data1", "data2"],
@@ -164,6 +166,7 @@ impl Builder {
     ///
     /// ```rust
     /// use tabled::builder::Builder;
+    ///
     /// let builder = Builder::default()
     ///     .set_columns(0..3)
     ///     .add_record(["i", "surname", "lastname"]);
@@ -186,6 +189,7 @@ impl Builder {
     ///
     /// ```rust
     /// use tabled::builder::Builder;
+    ///
     /// let builder = Builder::default()
     ///     .add_record(0..3)
     ///     .add_record(["i", "surname", "lastname"]);
@@ -207,6 +211,7 @@ impl Builder {
     ///
     /// ```rust
     /// use tabled::builder::Builder;
+    ///
     /// let table = Builder::default()
     ///     .set_default_text("undefined")
     ///     .set_columns(0..3)
@@ -222,6 +227,7 @@ impl Builder {
     ///
     /// ```rust
     /// use tabled::builder::Builder;
+    ///
     /// let table = Builder::default()
     ///     .set_columns(["i", "column1", "column2"])
     ///     .add_record(["0", "value1", "value2"])
@@ -240,6 +246,7 @@ impl Builder {
     ///
     /// ```
     /// use tabled::Table;
+    ///
     /// let table = Table::builder(&["Hello", "World", "!"])
     ///     .index()
     ///     .build();
@@ -267,6 +274,7 @@ impl Builder {
     ///
     /// ```
     /// use tabled::Table;
+    ///
     /// let table = Table::builder(&["Hello", "World", ""]).clean().build();
     ///
     /// assert_eq!(
@@ -487,6 +495,7 @@ fn append_vec(v: &mut Vec<String>, n: usize, value: String) {
 ///
 /// ```
 /// use tabled::builder::Builder;
+///
 /// let table = Builder::default()
 ///     .index()
 ///     .build();
@@ -518,6 +527,7 @@ impl IndexBuilder {
     ///
     /// ```
     /// use tabled::builder::Builder;
+    ///
     /// let table = Builder::default()
     ///     .set_columns(["i", "col-1", "col-2"])
     ///     .add_record(["0", "value-1", "value-2"])
@@ -573,6 +583,7 @@ impl IndexBuilder {
     ///
     /// ```
     /// use tabled::builder::Builder;
+    ///
     /// let table = Builder::default()
     ///     .set_columns(["i", "column1", "column2"])
     ///     .add_record(["0", "value1", "value2"])
@@ -622,6 +633,7 @@ impl IndexBuilder {
     ///
     /// ```
     /// use tabled::builder::Builder;
+    ///
     /// let table = Builder::default()
     ///     .set_columns(["i", "column-1", "column-2", "column-3"])
     ///     .add_record(["0", "value-1", "value-2", "value-3"])

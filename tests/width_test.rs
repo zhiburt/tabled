@@ -4,7 +4,7 @@ use tabled::{
     papergrid::string_width_multiline,
     width::{Justify, MinWidth, Width},
     width::{PriorityMax, PriorityMin},
-    Alignment, Modify, Panel, Span, Style, Table, Tabled,
+    Alignment, Modify, Padding, Panel, Span, Style, Table, Tabled,
 };
 
 use crate::util::{create_vector, is_lines_equal, static_table};
@@ -729,7 +729,11 @@ fn total_width_big_with_panel() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::center())
+                .with(Padding::zero()),
+        )
         .with(Style::github_markdown())
         .with(Width::truncate(80))
         .with(MinWidth::new(80))
@@ -839,6 +843,11 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(Vec::<usize>::new())
         .with(Panel("Hello World", 0))
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::center())
+                .with(Padding::zero()),
+        )
         .with(Width::truncate(5))
         .with(MinWidth::new(5))
         .to_string();
@@ -891,7 +900,11 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::center())
+                .with(Padding::zero()),
+        )
         .with(Style::github_markdown())
         .with(Width::truncate(6))
         .with(MinWidth::new(6))
@@ -912,7 +925,11 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::center())
+                .with(Padding::zero()),
+        )
         .with(Style::github_markdown())
         .with(Width::truncate(14))
         .with(MinWidth::new(14))
@@ -933,7 +950,11 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World 123", 0))
-        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::center())
+                .with(Padding::zero()),
+        )
         .with(Style::github_markdown())
         .with(Width::truncate(14))
         .with(MinWidth::new(14))
@@ -1038,7 +1059,11 @@ fn total_width_small_with_panel_using_wrapping() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::center())
+                .with(Padding::zero()),
+        )
         .with(Style::github_markdown())
         .with(Width::wrap(14))
         .with(MinWidth::new(14))
@@ -1072,7 +1097,11 @@ fn total_width_small_with_panel_using_wrapping() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World 123", 0))
-        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::center())
+                .with(Padding::zero()),
+        )
         .with(Style::github_markdown())
         .with(Width::wrap(14))
         .with(MinWidth::new(14))

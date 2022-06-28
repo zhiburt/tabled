@@ -20,15 +20,15 @@
 //! assert_eq!(
 //!     table,
 //!     concat!(
-//!         "+-----+----+----+\n",
-//!         "|Tabled Releases|\n",
-//!         "+-----+----+----+\n",
-//!         "|  0  | 1  | 2  |\n",
-//!         "+-----+----+----+\n",
-//!         "|    1     | 3  |\n",
-//!         "+-----+----+----+\n",
-//!         "|  4  | 5  | 6  |\n",
-//!         "+-----+----+----+",
+//!         "+-----+-----+-----+\n",
+//!         "| Tabled Releases |\n",
+//!         "+-----+-----+-----+\n",
+//!         "|  0  |  1  |  2  |\n",
+//!         "+-----+-----+-----+\n",
+//!         "|     1     |  3  |\n",
+//!         "+-----+-----+-----+\n",
+//!         "|  4  |  5  |  6  |\n",
+//!         "+-----+-----+-----+",
 //!     )
 //! )
 //! ```
@@ -50,27 +50,36 @@ pub struct Panel<S: AsRef<str>>(pub S, pub usize);
 
 impl<S: AsRef<str>> TableOption for Panel<S> {
     fn change(&mut self, grid: &mut Grid) {
-        let mut new_grid = Grid::new(grid.count_rows() + 1, grid.count_columns());
-        new_grid.set_borders(grid.get_borders().clone());
+        let mut new = grid.resize(grid.count_rows() + 1, grid.count_columns());
         for row in 0..grid.count_rows() {
             for column in 0..grid.count_columns() {
                 let cell_settings = grid.get_settings(row, column);
                 if row >= self.1 {
-                    new_grid.set(Entity::Cell(row + 1, column), cell_settings);
+                    new.set(Entity::Cell(row + 1, column), cell_settings);
                 } else {
-                    new_grid.set(Entity::Cell(row, column), cell_settings);
+                    new.set(Entity::Cell(row, column), cell_settings);
+                }
+
+                #[cfg(feature = "color")]
+                {
+                    let colored = grid.get_colored_border((row, column));
+                    if row >= self.1 {
+                        new.set_colored_border(Entity::Cell(row + 1, column), colored);
+                    } else {
+                        new.set_colored_border(Entity::Cell(row, column), colored);
+                    }
                 }
             }
         }
 
-        new_grid.set(
+        new.set(
             Entity::Cell(self.1, 0),
             Settings::new()
                 .text(self.0.as_ref().to_owned())
-                .span(new_grid.count_columns()),
+                .span(new.count_columns()),
         );
 
-        *grid = new_grid;
+        *grid = new;
     }
 }
 

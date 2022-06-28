@@ -98,6 +98,7 @@ impl Format<()> {
     ///
     /// ```rust,no_run
     /// use tabled::{Table, Format, object::Segment, Modify};
+    ///
     /// let data: Vec<&'static str> = Vec::new();
     /// let table = Table::new(&data)
     ///     .with(Modify::new(Segment::all()).with(Format::multiline(|s| format!("{}", s))))

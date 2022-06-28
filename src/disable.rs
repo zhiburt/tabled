@@ -38,9 +38,9 @@ use crate::{object::bounds_to_usize, TableOption};
 /// # Example
 ///
 /// ```rust,no_run
-///   # use tabled::{Disable, Table};
-///   # let data: Vec<&'static str> = Vec::new();
-///     let table = Table::new(&data).with(Disable::Row(..1));
+/// # use tabled::{Disable, Table};
+/// # let data: Vec<&'static str> = Vec::new();
+/// let table = Table::new(&data).with(Disable::Row(..1));
 /// ```
 #[derive(Debug)]
 pub enum Disable<R: RangeBounds<usize>> {

@@ -43,9 +43,9 @@ use crate::CellOption;
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///
 /// ```rust,no_run
-///   # use tabled::{Style, Padding, object::Rows, Table, Modify};
-///   # let data: Vec<&'static str> = Vec::new();
-///     let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).set_fill('>', '<', '^', 'V')));
+/// # use tabled::{Style, Padding, object::Rows, Table, Modify};
+/// # let data: Vec<&'static str> = Vec::new();
+/// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).set_fill('>', '<', '^', 'V')));
 /// ```
 pub struct Padding(papergrid::Padding);
 

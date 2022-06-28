@@ -2,10 +2,9 @@ use std::iter::FromIterator;
 
 use crate::util::{create_vector, static_table};
 
-use papergrid::Symbol;
 use tabled::{
     builder::Builder,
-    object::{Cell, Rows, Segment},
+    object::{Cell, Columns, Rows, Segment},
     style::{Border, BorderText, StyleConfig},
     Highlight, Modify, Padding, Span, Style, Table, TableIteratorExt,
 };
@@ -1363,14 +1362,14 @@ fn border_test() {
 #[test]
 fn border_colored_test() {
     use owo_colors::OwoColorize;
-    use tabled::style::Symbol;
+    use tabled::style::{ColoredBorder, Symbol};
 
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
         .with(Style::ascii())
         .with(
             Modify::new(Rows::single(1)).with(
-                Border::filled(Symbol::ansi('*'.blue().to_string()).unwrap())
+                ColoredBorder::filled(Symbol::ansi('*'.blue().to_string()).unwrap())
                     .top(Symbol::ansi('#'.truecolor(12, 220, 100).to_string()).unwrap()),
             ),
         )
@@ -1394,9 +1393,9 @@ fn border_colored_test() {
         static_table!(
             "+---+----------+----------+"
             "| N | column 0 | column 1 |"
-            "\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[34m*\u{1b}[39m"
+            "\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m###\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m##########\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m##########\u{1b}[39m\u{1b}[34m*\u{1b}[39m"
             "\u{1b}[34m*\u{1b}[39m 0 \u{1b}[34m*\u{1b}[39m   0-0    \u{1b}[34m*\u{1b}[39m   0-1    \u{1b}[34m*\u{1b}[39m"
-            "\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m"
+            "\u{1b}[34m***************************\u{1b}[39m"
             "| 1 |   1-0    |   1-1    |"
             "+---+----------+----------+"
         )
@@ -1406,7 +1405,7 @@ fn border_colored_test() {
         .with(Style::empty())
         .with(
             Modify::new(Rows::single(1)).with(
-                Border::filled(Symbol::ansi('*'.blue().to_string()).unwrap())
+                ColoredBorder::filled(Symbol::ansi('*'.blue().to_string()).unwrap())
                     .top(Symbol::ansi('#'.truecolor(12, 220, 100).to_string()).unwrap()),
             ),
         )
@@ -1425,7 +1424,7 @@ fn border_colored_test() {
 
     assert_eq!(
         table,
-        "  N   column 0   column 1  \n\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[38;2;12;220;100m#\u{1b}[39m\u{1b}[34m*\u{1b}[39m\n\u{1b}[34m*\u{1b}[39m 0 \u{1b}[34m*\u{1b}[39m   0-0    \u{1b}[34m*\u{1b}[39m   0-1    \u{1b}[34m*\u{1b}[39m\n\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[34m*\u{1b}[39m\n  1     1-0        1-1     ",
+        "  N   column 0   column 1  \n\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m###\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m##########\u{1b}[39m\u{1b}[34m*\u{1b}[39m\u{1b}[38;2;12;220;100m##########\u{1b}[39m\u{1b}[34m*\u{1b}[39m\n\u{1b}[34m*\u{1b}[39m 0 \u{1b}[34m*\u{1b}[39m   0-0    \u{1b}[34m*\u{1b}[39m   0-1    \u{1b}[34m*\u{1b}[39m\n\u{1b}[34m***************************\u{1b}[39m\n  1     1-0        1-1     ",
     );
 }
 
@@ -1502,35 +1501,39 @@ fn single_row_test() {
 #[test]
 fn style_with_color_test() {
     use owo_colors::OwoColorize;
+    use tabled::style::Symbol;
 
-    let style = Style::ascii()
-        .left(tabled::style::Symbol::ansi('['.red().to_string()).unwrap())
-        .right(tabled::style::Symbol::ansi(']'.red().to_string()).unwrap())
-        .top(tabled::style::Symbol::ansi('-'.blue().to_string()).unwrap())
-        .bottom(tabled::style::Symbol::ansi('-'.blue().to_string()).unwrap())
-        .vertical(tabled::style::Symbol::ansi('|'.yellow().to_string()).unwrap())
-        .inner_intersection(tabled::style::Symbol::ansi('+'.purple().to_string()).unwrap())
-        .header_intersection(tabled::style::Symbol::ansi('+'.purple().to_string()).unwrap());
+    let style: StyleConfig = Style::ascii().into();
+    let mut style = style.colored();
+    style
+        .set_left(Some(Symbol::ansi('['.red().to_string()).unwrap()))
+        .set_right(Some(Symbol::ansi(']'.red().to_string()).unwrap()))
+        .set_top(Some(Symbol::ansi('-'.blue().to_string()).unwrap()))
+        .set_bottom(Some(Symbol::ansi('-'.blue().to_string()).unwrap()))
+        .set_vertical(Some(Symbol::ansi('|'.yellow().to_string()).unwrap()))
+        .set_internal(Some(Symbol::ansi('+'.purple().to_string()).unwrap()));
 
     let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(style).to_string();
 
+    println!("{}", table);
+
     assert_eq!(
         ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
-            "----|----------|----------|-----------"
+            "+---+----------+----------+----------+"
             "[ N | column 0 | column 1 | column 2 ]"
-            "[---+----------+----------+----------]"
+            "+---+----------+----------+----------+"
             "[ 0 |   0-0    |   0-1    |   0-2    ]"
-            "[---+----------+----------+----------]"
+            "+---+----------+----------+----------+"
             "[ 1 |   1-0    |   1-1    |   1-2    ]"
-            "[---+----------+----------+----------]"
+            "+---+----------+----------+----------+"
             "[ 2 |   2-0    |   2-1    |   2-2    ]"
-            "----|----------|----------|-----------"
+            "+---+----------+----------+----------+"
         )
     );
 
-    assert_eq!(table, "\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[33m|\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[33m|\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[33m|\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\n\u{1b}[31m[\u{1b}[39m N \u{1b}[33m|\u{1b}[39m column 0 \u{1b}[33m|\u{1b}[39m column 1 \u{1b}[33m|\u{1b}[39m column 2 \u{1b}[31m]\u{1b}[39m\n\u{1b}[31m[\u{1b}[39m---\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------\u{1b}[31m]\u{1b}[39m\n\u{1b}[31m[\u{1b}[39m 0 \u{1b}[33m|\u{1b}[39m   0-0    \u{1b}[33m|\u{1b}[39m   0-1    \u{1b}[33m|\u{1b}[39m   0-2    \u{1b}[31m]\u{1b}[39m\n\u{1b}[31m[\u{1b}[39m---\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------\u{1b}[31m]\u{1b}[39m\n\u{1b}[31m[\u{1b}[39m 1 \u{1b}[33m|\u{1b}[39m   1-0    \u{1b}[33m|\u{1b}[39m   1-1    \u{1b}[33m|\u{1b}[39m   1-2    \u{1b}[31m]\u{1b}[39m\n\u{1b}[31m[\u{1b}[39m---\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------\u{1b}[31m]\u{1b}[39m\n\u{1b}[31m[\u{1b}[39m 2 \u{1b}[33m|\u{1b}[39m   2-0    \u{1b}[33m|\u{1b}[39m   2-1    \u{1b}[33m|\u{1b}[39m   2-2    \u{1b}[31m]\u{1b}[39m\n\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[33m|\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[33m|\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[33m|\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m\u{1b}[34m-\u{1b}[39m");
+    assert_eq!(table, "+\u{1b}[34m---\u{1b}[39m+\u{1b}[34m----------\u{1b}[39m+\u{1b}[34m----------\u{1b}[39m+\u{1b}[34m----------\u{1b}[39m+\n\u{1b}[31m[\u{1b}[39m N \u{1b}[33m|\u{1b}[39m column 0 \u{1b}[33m|\u{1b}[39m column 1 \u{1b}[33m|\u{1b}[39m column 2 \u{1b}[31m]\u{1b}[39m\n+---\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------+\n\u{1b}[31m[\u{1b}[39m 0 \u{1b}[33m|\u{1b}[39m   0-0    \u{1b}[33m|\u{1b}[39m   0-1    \u{1b}[33m|\u{1b}[39m   0-2    \u{1b}[31m]\u{1b}[39m\n+---\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------+\n\u{1b}[31m[\u{1b}[39m 1 \u{1b}[33m|\u{1b}[39m   1-0    \u{1b}[33m|\u{1b}[39m   1-1    \u{1b}[33m|\u{1b}[39m   1-2    \u{1b}[31m]\u{1b}[39m\n+---\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------\u{1b}[35m+\u{1b}[39m----------+\n\u{1b}[31m[\u{1b}[39m 2 \u{1b}[33m|\u{1b}[39m   2-0    \u{1b}[33m|\u{1b}[39m   2-1    \u{1b}[33m|\u{1b}[39m   2-2    \u{1b}[31m]\u{1b}[39m\n+\u{1b}[34m---\u{1b}[39m+\u{1b}[34m----------\u{1b}[39m+\u{1b}[34m----------\u{1b}[39m+\u{1b}[34m----------\u{1b}[39m+");
 }
 
 #[test]
@@ -1624,36 +1627,591 @@ fn span_correct_test() {
 
 #[test]
 fn style_settings_usage_test() {
-    let mut style: StyleConfig = Style::modern().into();
-    style
-        .set_internal(Some(Symbol::from_char('x')))
-        .set_bottom(Some(Symbol::from_char('a')))
-        .set_left(Some(Symbol::from_char('b')))
-        .set_right(None)
-        .set_top(None)
-        .set_top_split(None);
-
     let mut data = create_vector::<3, 3>();
     data[0][1] = "a longer string".to_owned();
 
+    let mut style: StyleConfig = Style::modern().into();
+    style
+        .set_internal(Some('x'))
+        .set_bottom(Some('a'))
+        .set_left(Some('b'))
+        .set_right(None)
+        .set_top(None)
+        .set_top_split(None)
+        .set_top_left(None)
+        .set_top_right(None);
+
     let table = Table::new(&data).with(style).to_string();
-
-    println!("{}", table);
-
-    // todo: determine if it's OK.
-    //       in my understanding we had to use a ' ' as a missing right symbol.
 
     assert_eq!(
         table,
         static_table!(
-            "b N │    column 0     │ column 1 │ column 2 "
+            "b N │    column 0     │ column 1 │ column 2  "
             "├───x─────────────────x──────────x──────────┤"
-            "b 0 │ a longer string │   0-1    │   0-2    "
+            "b 0 │ a longer string │   0-1    │   0-2     "
             "├───x─────────────────x──────────x──────────┤"
-            "b 1 │       1-0       │   1-1    │   1-2    "
+            "b 1 │       1-0       │   1-1    │   1-2     "
             "├───x─────────────────x──────────x──────────┤"
-            "b 2 │       2-0       │   2-1    │   2-2    "
+            "b 2 │       2-0       │   2-1    │   2-2     "
             "└aaa┴aaaaaaaaaaaaaaaaa┴aaaaaaaaaa┴aaaaaaaaaa┘"
+        )
+    );
+
+    let mut style: StyleConfig = Style::modern().into();
+    style.set_bottom(None);
+
+    let table = Table::new(&data).with(style).to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "┌───┬─────────────────┬──────────┬──────────┐"
+            "│ N │    column 0     │ column 1 │ column 2 │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 0 │ a longer string │   0-1    │   0-2    │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 1 │       1-0       │   1-1    │   1-2    │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 2 │       2-0       │   2-1    │   2-2    │"
+        )
+    );
+
+    let mut style: StyleConfig = Style::modern().into();
+    style.set_bottom(None);
+
+    let table = Table::new(&data)
+        .with(style)
+        .with(Modify::new(Rows::last()).with(Border::default().bottom_left_corner('*')))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "┌───┬─────────────────┬──────────┬──────────┐"
+            "│ N │    column 0     │ column 1 │ column 2 │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 0 │ a longer string │   0-1    │   0-2    │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 1 │       1-0       │   1-1    │   1-2    │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 2 │       2-0       │   2-1    │   2-2    │"
+            "*   *                 *          *          ┘"
+        )
+    );
+}
+
+#[test]
+fn test_default_border_usage() {
+    macro_rules! test_border {
+        ($modify:expr, $expected:expr) => {
+            let mut data = create_vector::<3, 3>();
+            data[0][1] = "a longer string".to_owned();
+
+            let table = Table::new(&data)
+                .with(Style::empty())
+                .with($modify)
+                .to_string();
+
+            assert_eq!(table, $expected);
+        };
+    }
+
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().bottom_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+            "                    *                    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().bottom_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+            "                              *          "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().bottom('*')),
+        static_table!(
+            " N     column 0      column 1  column 2 "
+            " 0  a longer string    0-1       0-2    "
+            " 1        1-0          1-1       1-2    "
+            " 2        2-0          2-1       2-2    "
+            "                    **********          "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().bottom('*').bottom_left_corner('#')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+            "                    #**********          "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().bottom('*').bottom_right_corner('#')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+            "                    **********#          "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().left('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0       *   2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            "                    *                    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().left('#').top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            "                    *                    "
+            " 2        2-0       #   2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().left('#').bottom_left_corner('@').top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            "                    *                    "
+            " 2        2-0       #   2-1       2-2    "
+            "                    @                    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().right('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1    *   2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().top_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            "                              *          "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().right('#').top_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            "                              *          "
+            " 2        2-0          2-1    #   2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().right('#').top_right_corner('*').bottom_right_corner('@')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            "                              *          "
+            " 2        2-0          2-1    #   2-2    "
+            "                              @          "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().right('#').top_right_corner('*').bottom_left_corner('@')),
+        static_table!(
+            " N     column 0       column 1   column 2 "
+            " 0  a longer string     0-1        0-2    "
+            " 1        1-0           1-1        1-2    "
+            "                               *          "
+            " 2        2-0           2-1    #   2-2    "
+            "                    @                     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::filled('@')),
+        static_table!(
+            " N     column 0       column 1   column 2 "
+            " 0  a longer string     0-1        0-2    "
+            " 1        1-0           1-1        1-2    "
+            "                    @@@@@@@@@@@@          "
+            " 2        2-0       @   2-1    @   2-2    "
+            "                    @@@@@@@@@@@@          "
+        )
+    }
+
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().bottom_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            "                    *                    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().bottom_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            "                              *          "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().bottom('*')),
+        static_table!(
+            " N     column 0      column 1  column 2 "
+            " 0  a longer string    0-1       0-2    "
+            "                    **********          "
+            " 1        1-0          1-1       1-2    "
+            " 2        2-0          2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().bottom('*').bottom_left_corner('#')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            "                    #**********          "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().bottom('*').bottom_right_corner('#')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            "                    **********#          "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().left('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string *   0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            "                    *                    "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().left('#').top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            "                    *                    "
+            " 0  a longer string #   0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().left('#').bottom_left_corner('@').top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            "                    *                    "
+            " 0  a longer string #   0-1       0-2    "
+            "                    @                    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().right('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1    *   0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().top_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            "                              *          "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().right('#').top_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            "                              *          "
+            " 0  a longer string    0-1    #   0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().right('#').top_right_corner('*').bottom_right_corner('@')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            "                              *          "
+            " 0  a longer string    0-1    #   0-2    "
+            "                              @          "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().right('#').top_right_corner('*').bottom_left_corner('@')),
+        static_table!(
+            " N     column 0       column 1   column 2 "
+            "                               *          "
+            " 0  a longer string     0-1    #   0-2    "
+            "                    @                     "
+            " 1        1-0           1-1        1-2    "
+            " 2        2-0           2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::filled('@')),
+        static_table!(
+            " N     column 0       column 1   column 2 "
+            "                    @@@@@@@@@@@@          "
+            " 0  a longer string @   0-1    @   0-2    "
+            "                    @@@@@@@@@@@@          "
+            " 1        1-0           1-1        1-2    "
+            " 2        2-0           2-1        2-2    "
+        )
+    }
+
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().bottom_left_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            "                              *          "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().bottom_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1  column 2  "
+            "                                        *"
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().bottom('*')),
+        static_table!(
+            " N     column 0      column 1  column 2 "
+            "                              **********"
+            " 0  a longer string    0-1       0-2    "
+            " 1        1-0          1-1       1-2    "
+            " 2        2-0          2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().bottom('*').bottom_left_corner('#')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            "                              #**********"
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().bottom('*').bottom_right_corner('#')),
+        static_table!(
+            " N     column 0      column 1  column 2  "
+            "                              **********#"
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().left('*')),
+        static_table!(
+            " N     column 0      column 1 * column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().top_left_corner('*')),
+        static_table!(
+            "                              *          "
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().left('#').top_left_corner('*')),
+        static_table!(
+            "                              *          "
+            " N     column 0      column 1 # column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().left('#').bottom_left_corner('@').top_left_corner('*')),
+        static_table!(
+            "                              *          "
+            " N     column 0      column 1 # column 2 "
+            "                              @          "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().right('*')),
+        static_table!(
+            " N     column 0      column 1  column 2 *"
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().top_right_corner('*')),
+        static_table!(
+            "                                        *"
+            " N     column 0      column 1  column 2  "
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().right('#').top_right_corner('*')),
+        static_table!(
+            "                                        *"
+            " N     column 0      column 1  column 2 #"
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().right('#').top_right_corner('*').bottom_right_corner('@')),
+        static_table!(
+            "                                        *"
+            " N     column 0      column 1  column 2 #"
+            "                                        @"
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().right('#').top_right_corner('*').bottom_left_corner('@')),
+        static_table!(
+            "                                         *"
+            " N     column 0      column 1   column 2 #"
+            "                              @           "
+            " 0  a longer string    0-1        0-2     "
+            " 1        1-0          1-1        1-2     "
+            " 2        2-0          2-1        2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::filled('@')),
+        static_table!(
+            "                              @@@@@@@@@@@@"
+            " N     column 0      column 1 @ column 2 @"
+            "                              @@@@@@@@@@@@"
+            " 0  a longer string    0-1        0-2     "
+            " 1        1-0          1-1        1-2     "
+            " 2        2-0          2-1        2-2     "
+        )
+    }
+}
+
+#[test]
+fn border_none_test() {
+    let data = create_vector::<2, 2>();
+    let table = Table::new(&data)
+        .with(Style::ascii())
+        .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
+        .with(Modify::new(Rows::single(1)).with(Border::none()))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---+----------+----------+"
+            "| N | column 0 | column 1 |"
+            "+---+----------+----------+"
+            "| 0 |   0-0    |   0-1    |"
+            "+---+----------+----------+"
+            "| 1 |   1-0    |   1-1    |"
+            "+---+----------+----------+"
+        )
+    );
+
+    let table = Table::new(&data)
+        .with(Style::empty())
+        .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
+        .with(Modify::new(Columns::single(1)).with(Border::none()))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "  N  column 0  column 1  "
+            "*###          ##########*"
+            "* 0    0-0       0-1    *"
+            "****          ***********"
+            "  1    1-0       1-1     "
         )
     );
 }

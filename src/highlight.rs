@@ -3,13 +3,9 @@
 
 use std::collections::HashSet;
 
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{Entity, Grid, Position, Settings};
 
-use crate::{
-    object::{Frame, Object},
-    style::Border,
-    TableOption,
-};
+use crate::{object::Object, style::Border, TableOption};
 
 /// Highlight modifies a table style by changing a border of a target [crate::Table] segment.
 ///
@@ -77,6 +73,7 @@ use crate::{
 ///         "|   0   *  ELF  | Extensible Linking Format | true  *\n",
 ///         "*********                                           *\n",
 ///         "*   1   | DWARF |                           | true  *\n",
+///         "*                                                   *\n",
 ///         "*   2   |  PE   |    Portable Executable    | false *\n",
 ///         "*****************************************************",
 ///     ),
@@ -86,15 +83,6 @@ use crate::{
 pub struct Highlight<O> {
     target: O,
     border: Border,
-}
-
-impl Default for Highlight<Frame> {
-    fn default() -> Self {
-        Self {
-            target: Frame,
-            border: Default::default(),
-        }
-    }
 }
 
 impl<O> Highlight<O>
@@ -109,6 +97,14 @@ where
     }
 }
 
+impl<O> Highlight<O> {
+    /// Build a new instance of [HighlightColored]
+    #[cfg(feature = "color")]
+    pub fn colored(target: O, border: crate::style::ColoredBorder) -> HighlightColored<O> {
+        HighlightColored { target, border }
+    }
+}
+
 impl<O> TableOption for Highlight<O>
 where
     O: Object,
@@ -120,6 +116,44 @@ where
         for sector in segments {
             set_border(grid, sector, self.border.clone());
         }
+    }
+}
+
+/// A [Highlight] object which works with a [crate::style::ColoredBorder]
+#[cfg(feature = "color")]
+pub struct HighlightColored<O> {
+    target: O,
+    border: crate::style::ColoredBorder,
+}
+
+#[cfg(feature = "color")]
+impl<O> TableOption for HighlightColored<O>
+where
+    O: Object,
+{
+    fn change(&mut self, grid: &mut Grid) {
+        let cells = self.target.cells(grid.count_rows(), grid.count_columns());
+        let segments = split_segments(cells, grid.count_rows(), grid.count_columns());
+
+        for sector in segments {
+            set_border_colored(grid, sector, self.border.clone());
+        }
+    }
+}
+
+#[cfg(feature = "color")]
+fn set_border_colored(
+    grid: &mut Grid,
+    sector: HashSet<(usize, usize)>,
+    border: crate::style::ColoredBorder,
+) {
+    if sector.is_empty() {
+        return;
+    }
+
+    for &(row, col) in &sector {
+        let border = build_cell_border(&sector, (row, col), &border.0);
+        grid.set_colored_border(Entity::Cell(row, col), border);
     }
 }
 
@@ -208,19 +242,23 @@ fn set_border(grid: &mut Grid, sector: HashSet<(usize, usize)>, border: Border) 
         return;
     }
 
-    for &(row, col) in &sector {
-        let border = build_cell_border(&sector, row, col, &border);
+    if let Some(border) = border.into() {
+        for &(row, col) in &sector {
+            let border = build_cell_border(&sector, (row, col), &border);
 
-        grid.set(Entity::Cell(row, col), Settings::default().border(border));
+            grid.set(Entity::Cell(row, col), Settings::default().border(border));
+        }
     }
 }
 
-fn build_cell_border(
+fn build_cell_border<T>(
     sector: &HashSet<(usize, usize)>,
-    row: usize,
-    col: usize,
-    border: &Border,
-) -> Border {
+    (row, col): Position,
+    border: &papergrid::Border<T>,
+) -> papergrid::Border<T>
+where
+    T: Default + Clone,
+{
     let cell_has_top_neighbor = cell_has_top_neighbor(sector, row, col);
     let cell_has_bottom_neighbor = cell_has_bottom_neighbor(sector, row, col);
     let cell_has_left_neighbor = cell_has_left_neighbor(sector, row, col);
@@ -231,7 +269,7 @@ fn build_cell_border(
     let this_has_left_bottom_neighbor = is_there_left_bottom_cell(sector, row, col);
     let this_has_right_bottom_neighbor = is_there_right_bottom_cell(sector, row, col);
 
-    let mut cell_border = Border::default();
+    let mut cell_border = papergrid::Border::default();
     if let Some(c) = border.top.clone() {
         if !cell_has_top_neighbor {
             cell_border = cell_border.top(c.clone());

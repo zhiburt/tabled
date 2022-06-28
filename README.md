@@ -1001,7 +1001,7 @@ fn main() {
 
 The library support emojies out of the box but be aware that some of the terminals and editors may not render them as you would expect.
 
-Let's add emojies to an example from a [Usage](##Usage) section.
+Let's add emojies to an example from a [Usage](#Usage) section.
 
 ```rust
  let languages = vec![
