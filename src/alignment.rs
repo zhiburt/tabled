@@ -57,9 +57,9 @@ pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 /// Alignment represent a horizontal and vertical alignment setting for any cell on a [Table].
 ///
 /// ```rust,no_run
-///   # use tabled::{Alignment, Modify, object::Rows, Table};
-///   # let data: Vec<&'static str> = Vec::new();
-///     let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Alignment::center()));
+/// # use tabled::{Alignment, Modify, object::Rows, Table};
+/// # let data: Vec<&'static str> = Vec::new();
+/// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Alignment::center()));
 /// ```
 ///
 /// [Table]: crate::Table

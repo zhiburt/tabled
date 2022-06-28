@@ -170,24 +170,24 @@ impl Grid {
     /// # Example
     ///
     /// ```rust
-    ///     use papergrid::{Grid, Entity, Settings, Borders};
+    /// use papergrid::{Grid, Entity, Settings, Borders};
     ///
-    ///     let mut grid = Grid::new(2, 2);
+    /// let mut grid = Grid::new(2, 2);
     ///
-    ///     grid.set_borders(Borders {
-    ///         vertical_intersection: Some('|'),
-    ///         horizontal: Some('-'),
-    ///         ..Default::default()
-    ///     });
+    /// grid.set_borders(Borders {
+    ///     vertical_intersection: Some('|'),
+    ///     horizontal: Some('-'),
+    ///     ..Default::default()
+    /// });
     ///
-    ///     grid.set(Entity::Row(0), Settings::new().text("row 1"));
-    ///     grid.set(Entity::Row(1), Settings::new().text("row 2"));
-    ///     assert_eq!(
-    ///          grid.to_string(),
-    ///          "row 1|row 1\n\
-    ///           ----- -----\n\
-    ///           row 2|row 2"
-    ///     )
+    /// grid.set(Entity::Row(0), Settings::new().text("row 1"));
+    /// grid.set(Entity::Row(1), Settings::new().text("row 2"));
+    /// assert_eq!(
+    ///      grid.to_string(),
+    ///      "row 1|row 1\n\
+    ///       ----- -----\n\
+    ///       row 2|row 2"
+    /// )
     /// ```
     pub fn set(&mut self, entity: Entity, settings: Settings) {
         if let Some(padding) = settings.padding {

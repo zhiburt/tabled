@@ -50,6 +50,7 @@ pub trait CellOption {
 ///
 /// ```rust,no_run
 /// use tabled::Table;
+///
 /// let table = Table::new(&["Year", "2021"]);
 /// ```
 ///
@@ -57,10 +58,12 @@ pub trait CellOption {
 ///
 /// ```rust,no_run
 /// use tabled::{Table, Style, Alignment, object::Segment, Modify};
+///
 /// let data = vec!["Hello", "2021"];
 /// let table = Table::new(&data)
 ///                 .with(Style::psql())
 ///                 .with(Modify::new(Segment::all()).with(Alignment::left()));
+///
 /// println!("{}", table);
 /// ```
 ///

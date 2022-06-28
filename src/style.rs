@@ -750,6 +750,7 @@ impl<Top, Bottom, Left, Rright, Horizontal, Vertical, Header>
     ///
     /// ```
     /// use tabled::{Table, Style, Highlight, object::Rows};
+    ///
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
     /// let table = Table::new(data)
     ///     .with(Highlight::new(Rows::first(), Style::modern().frame()));
@@ -1126,6 +1127,7 @@ impl<T, B, L, R, IH, IV, H> TableOption for CustomStyle<T, B, L, R, IH, IV, H> {
 ///
 /// ```rust
 /// use tabled::{Table, style::BorderText};
+///
 /// let table = Table::new(["Hello World"])
 ///     .with(BorderText::first("+-.table"));
 ///
@@ -1201,11 +1203,11 @@ impl<'a> TableOption for BorderText<'a> {
 /// Border represents a border of a Cell.
 ///
 /// ```rust,no_run
-///   # use tabled::{style::{Style, Border}, object::Rows, Table, Modify};
-///   # let data: Vec<&'static str> = Vec::new();
-///     let table = Table::new(&data)
-///         .with(Style::ascii())
-///         .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
+/// # use tabled::{style::{Style, Border}, object::Rows, Table, Modify};
+/// # let data: Vec<&'static str> = Vec::new();
+/// let table = Table::new(&data)
+///     .with(Style::ascii())
+///     .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
 /// ```
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Border {

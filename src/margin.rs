@@ -34,9 +34,9 @@ use crate::TableOption;
 /// Margin is responsible for a left/right/top/bottom outer indent of a grid.
 ///
 /// ```rust,no_run
-///   # use tabled::{Margin, Table};
-///   # let data: Vec<&'static str> = Vec::new();
-///     let table = Table::new(&data).with(Margin::new(0, 0, 0, 0).set_fill('>', '<', 'V', '^'));
+/// # use tabled::{Margin, Table};
+/// # let data: Vec<&'static str> = Vec::new();
+/// let table = Table::new(&data).with(Margin::new(0, 0, 0, 0).set_fill('>', '<', 'V', '^'));
 /// ```
 pub struct Margin(papergrid::Margin);
 
