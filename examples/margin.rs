@@ -22,6 +22,6 @@ fn main() {
          xxx A   B   C yyy\n\
          xxx D   E   F yyy\n\
          xxx G   H   I yyy\n\
-         xxx=== === ===yyy\n"
+         xxx=== === ===yyy"
     )
 }
