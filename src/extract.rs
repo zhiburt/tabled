@@ -8,9 +8,9 @@
 
 use std::ops::{RangeBounds, RangeFull};
 
-use papergrid::Grid;
+use papergrid::{Entity, Grid};
 
-use crate::TableOption;
+use crate::{object::bounds_to_usize, TableOption};
 
 /// Returns a new [Table] that reflects a segment of the referenced [Table]
 ///
@@ -155,6 +155,71 @@ where
     C: RangeBounds<usize> + Clone,
 {
     fn change(&mut self, grid: &mut Grid) {
-        *grid = grid.extract(self.rows.clone(), self.columns.clone());
+        let row_bounds = bounds_to_usize(
+            self.rows.start_bound(),
+            self.rows.end_bound(),
+            grid.count_rows(),
+        );
+        let col_bounds = bounds_to_usize(
+            self.columns.start_bound(),
+            self.columns.end_bound(),
+            grid.count_columns(),
+        );
+
+        *grid = extract(grid, row_bounds, col_bounds);
     }
+}
+
+/// Returns a new [Grid] that reflects a segment of the referenced [Grid]
+///
+/// The segment is defined by [RangeBounds<usize>] for Rows and Columns
+///
+/// # Example
+///
+/// ```text
+/// grid
+/// +---+---+---+
+/// |0-0|0-1|0-2|
+/// +---+---+---+
+/// |1-0|1-1|1-2|
+/// +---+---+---+
+/// |2-0|2-1|2-2|
+/// +---+---+---+
+///
+/// let rows = ..;
+/// let columns = ..1;
+/// grid.extract(rows, columns)
+///
+/// grid
+/// +---+
+/// |0-0|
+/// +---+
+/// |1-0|
+/// +---+
+/// |2-0|
+/// +---+
+/// ```
+fn extract(
+    grid: &Grid,
+    (start_row, end_row): (usize, usize),
+    (start_col, end_col): (usize, usize),
+) -> Grid {
+    let new_count_rows = end_row - start_row;
+    let new_count_columns = end_col - start_col;
+    let mut new = grid.resize(new_count_rows, new_count_columns);
+
+    for (new_row, row) in (start_row..end_row).enumerate() {
+        for (new_col, col) in (start_col..end_col).enumerate() {
+            let settings = grid.get_settings(row, col);
+            new.set(Entity::Cell(new_row, new_col), settings);
+
+            #[cfg(feature = "color")]
+            {
+                let colored_border = grid.get_colored_border((row, col));
+                new.set_colored_border(Entity::Cell(new_row, new_col), colored_border);
+            }
+        }
+    }
+
+    new
 }

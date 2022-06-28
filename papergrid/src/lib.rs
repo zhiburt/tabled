@@ -46,7 +46,6 @@ use std::{
     collections::HashMap,
     fmt::{self, Display, Write},
     hash::Hash,
-    ops::{Bound, RangeBounds},
 };
 
 const DEFAULT_BORDER_HORIZONTAL_CHAR: char = ' ';
@@ -403,59 +402,10 @@ impl Grid {
         self._set_text(entity, text);
     }
 
-    /// Returns a new [Grid] that reflects a segment of the referenced [Grid]
+    /// Creates a new Grid from original,
+    /// Coping the things like styles and borders.
     ///
-    /// The segment is defined by [RangeBounds<usize>] for Rows and Columns
-    ///
-    /// # Example
-    ///
-    /// ```text,no_run
-    /// grid
-    /// +---+---+---+
-    /// |0-0|0-1|0-2|
-    /// +---+---+---+
-    /// |1-0|1-1|1-2|
-    /// +---+---+---+
-    /// |2-0|2-1|2-2|
-    /// +---+---+---+
-    /// let rows = ..;
-    /// let columns = ..1;
-    /// grid.extract(rows, columns)
-    /// +---+
-    /// |0-0|
-    /// +---+
-    /// |1-0|
-    /// +---+
-    /// |2-0|
-    /// +---+
-    /// ```
-    pub fn extract<R, C>(&self, rows: R, columns: C) -> Self
-    where
-        R: RangeBounds<usize>,
-        C: RangeBounds<usize>,
-    {
-        let (start_row, end_row) =
-            bounds_to_usize(rows.start_bound(), rows.end_bound(), self.count_rows());
-        let (start_column, end_column) = bounds_to_usize(
-            columns.start_bound(),
-            columns.end_bound(),
-            self.count_columns(),
-        );
-
-        let new_count_rows = end_row - start_row;
-        let new_count_columns = end_column - start_column;
-        let mut new = self.resize(new_count_rows, new_count_columns);
-
-        for (new_row, row) in (start_row..end_row).enumerate() {
-            for (new_column, column) in (start_column..end_column).enumerate() {
-                let settings = self.get_settings(row, column);
-                new.set(Entity::Cell(new_row, new_column), settings);
-            }
-        }
-
-        new
-    }
-
+    /// It doesn't copy specifics of cells.
     pub fn resize(&self, count_rows: usize, count_cols: usize) -> Self {
         let mut new = Self::new(count_rows, count_cols);
         new.borders.borders = self.borders.borders.clone();
@@ -2271,20 +2221,6 @@ pub fn count_lines(s: &str) -> usize {
     }
 
     bytecount::count(s.as_bytes(), b'\n') + 1
-}
-
-fn bounds_to_usize(left: Bound<&usize>, right: Bound<&usize>, length: usize) -> (usize, usize) {
-    match (left, right) {
-        (Bound::Included(x), Bound::Included(y)) => (*x, y + 1),
-        (Bound::Included(x), Bound::Excluded(y)) => (*x, *y),
-        (Bound::Included(x), Bound::Unbounded) => (*x, length),
-        (Bound::Unbounded, Bound::Unbounded) => (0, length),
-        (Bound::Unbounded, Bound::Included(y)) => (0, y + 1),
-        (Bound::Unbounded, Bound::Excluded(y)) => (0, *y),
-        (Bound::Excluded(_), _) => {
-            unreachable!("A start bound can't be excluded")
-        }
-    }
 }
 
 fn lookup_entity_value<T>(map: &HashMap<Entity, T>, global: T, entity: Entity) -> T

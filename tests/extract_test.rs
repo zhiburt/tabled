@@ -1,4 +1,4 @@
-use tabled::{object::Segment, Alignment, Extract, Format, Modify, Padding, Table};
+use tabled::{object::Segment, Alignment, Disable, Extract, Format, Modify, Padding, Table};
 
 use crate::util::{create_vector, static_table};
 
@@ -263,4 +263,106 @@ fn extract_columns_partial_view_test() {
             "+-------+--------------+"
         )
     );
+}
+
+#[test]
+fn extract_inside_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Disable::Row(..1))
+        .with(Extract::segment(1..2, 1..2));
+
+    assert_eq!(
+        table.to_string(),
+        "+-----+\n\
+         | 1-0 |\n\
+         +-----+"
+    )
+}
+
+#[test]
+fn extract_left_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Disable::Row(..1))
+        .with(Extract::segment(.., ..1));
+
+    assert_eq!(
+        table.to_string(),
+        "+---+\n\
+         | 0 |\n\
+         +---+\n\
+         | 1 |\n\
+         +---+\n\
+         | 2 |\n\
+         +---+"
+    )
+}
+
+#[test]
+fn extract_right_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Disable::Row(..1))
+        .with(Extract::segment(.., 2..));
+
+    assert_eq!(
+        table.to_string(),
+        "+-----+-----+\n\
+         | 0-1 | 0-2 |\n\
+         +-----+-----+\n\
+         | 1-1 | 1-2 |\n\
+         +-----+-----+\n\
+         | 2-1 | 2-2 |\n\
+         +-----+-----+"
+    )
+}
+
+#[test]
+fn extract_top_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Disable::Row(..1))
+        .with(Extract::segment(..1, ..));
+
+    assert_eq!(
+        table.to_string(),
+        "+---+-----+-----+-----+\n\
+         | 0 | 0-0 | 0-1 | 0-2 |\n\
+         +---+-----+-----+-----+"
+    )
+}
+
+#[test]
+fn extract_bottom_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Disable::Row(..1))
+        .with(Extract::segment(2.., ..));
+
+    assert_eq!(
+        table.to_string(),
+        "+---+-----+-----+-----+\n\
+         | 2 | 2-0 | 2-1 | 2-2 |\n\
+         +---+-----+-----+-----+",
+    )
+}
+
+#[test]
+fn extract_all_test() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data)
+        .with(Disable::Row(..1))
+        .with(Extract::segment(3.., 3..));
+
+    assert_eq!(table.to_string(), "");
+}
+
+#[test]
+fn extract_empty_test() {
+    let table = tabled::builder::Builder::default()
+        .build()
+        .with(Extract::segment(.., ..));
+
+    assert_eq!(table.to_string(), "");
 }
