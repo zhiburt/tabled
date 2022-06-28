@@ -1895,6 +1895,22 @@ impl<T> BordersConfig<T> {
             })
             .or(self.global.as_ref())
     }
+
+    fn is_line_defined(&self, row: usize) -> bool {
+        self.lines
+            .get(&row)
+            .map(|l| {
+                l.left.is_some()
+                    || l.right.is_some()
+                    || l.intersection.is_some()
+                    || l.horizontal.is_some()
+            })
+            .unwrap_or(false)
+    }
+
+    fn is_intersection_defined(&self, pos: Position) -> bool {
+        self.cells.intersection.contains_key(&pos)
+    }
 }
 
 fn get_vertical(grid: &Grid, pos: Position) -> Option<&char> {
@@ -1910,7 +1926,6 @@ fn get_vertical(grid: &Grid, pos: Position) -> Option<&char> {
     None
 }
 
-// todo: see get_border probably there's an issue;
 fn get_horizontal(grid: &Grid, pos: Position) -> Option<&char> {
     let v = grid.borders.get_horizontal(pos, grid.count_rows());
     if v.is_some() {
@@ -1939,7 +1954,6 @@ fn get_intersection(grid: &Grid, pos: Position) -> Option<&char> {
     None
 }
 
-#[allow(clippy::needless_range_loop)]
 fn print_grid(
     f: &mut fmt::Formatter,
     grid: &Grid,
@@ -1955,6 +1969,7 @@ fn print_grid(
         f.write_char('\n')?;
     }
 
+    #[allow(clippy::needless_range_loop)]
     for row in 0..grid.count_rows() {
         if has_horizontal(grid, row) {
             repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
@@ -2206,15 +2221,24 @@ fn row_width_grid(grid: &Grid, widths: &[usize]) -> usize {
 }
 
 fn has_vertical(grid: &Grid, col: usize) -> bool {
-    (0..grid.count_rows())
-        .map(|row| grid.borders.get_vertical((row, col), grid.count_columns()))
-        .any(|c| c.is_some())
+    (0..grid.count_rows()).any(|row| {
+        grid.borders
+            .get_vertical((row, col), grid.count_columns())
+            .is_some()
+    }) || (0..=grid.count_rows()).any(|row| {
+        grid.borders
+            .get_intersection((row, col), grid.count_rows(), grid.count_columns())
+            .is_some()
+    })
 }
 
 fn has_horizontal(grid: &Grid, row: usize) -> bool {
-    (0..grid.count_columns())
-        .map(|col| grid.borders.get_horizontal((row, col), grid.count_rows()))
-        .any(|c| c.is_some())
+    (0..grid.count_columns()).any(|col| {
+        grid.borders
+            .get_horizontal((row, col), grid.count_rows())
+            .is_some()
+    }) || (0..=grid.count_columns()).any(|col| grid.borders.is_intersection_defined((row, col)))
+        || grid.borders.is_line_defined(row)
 }
 
 fn count_tabs(s: &str) -> usize {

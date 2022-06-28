@@ -73,6 +73,7 @@ use crate::{object::Object, style::Border, TableOption};
 ///         "|   0   *  ELF  | Extensible Linking Format | true  *\n",
 ///         "*********                                           *\n",
 ///         "*   1   | DWARF |                           | true  *\n",
+///         "*                                                   *\n",
 ///         "*   2   |  PE   |    Portable Executable    | false *\n",
 ///         "*****************************************************",
 ///     ),

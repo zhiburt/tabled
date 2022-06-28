@@ -189,8 +189,6 @@ pub use crate::{
     modify::*, padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::Width,
 };
 
-// todo: change return type to impl Iterator<Cow<str>>?
-
 /// Tabled a trait responsible for providing a header fields and a row fields.
 ///
 /// It's urgent that `header` len is equal to `fields` len.

@@ -1627,6 +1627,9 @@ fn span_correct_test() {
 
 #[test]
 fn style_settings_usage_test() {
+    let mut data = create_vector::<3, 3>();
+    data[0][1] = "a longer string".to_owned();
+
     let mut style: StyleConfig = Style::modern().into();
     style
         .set_internal(Some('x'))
@@ -1634,29 +1637,541 @@ fn style_settings_usage_test() {
         .set_left(Some('b'))
         .set_right(None)
         .set_top(None)
-        .set_top_split(None);
-
-    let mut data = create_vector::<3, 3>();
-    data[0][1] = "a longer string".to_owned();
+        .set_top_split(None)
+        .set_top_left(None)
+        .set_top_right(None);
 
     let table = Table::new(&data).with(style).to_string();
-
-    println!("{}", table);
-
-    // todo: determine if it's OK.
-    //       in my understanding we had to use a ' ' as a missing right symbol.
 
     assert_eq!(
         table,
         static_table!(
-            "b N │    column 0     │ column 1 │ column 2 "
+            "b N │    column 0     │ column 1 │ column 2  "
             "├───x─────────────────x──────────x──────────┤"
-            "b 0 │ a longer string │   0-1    │   0-2    "
+            "b 0 │ a longer string │   0-1    │   0-2     "
             "├───x─────────────────x──────────x──────────┤"
-            "b 1 │       1-0       │   1-1    │   1-2    "
+            "b 1 │       1-0       │   1-1    │   1-2     "
             "├───x─────────────────x──────────x──────────┤"
-            "b 2 │       2-0       │   2-1    │   2-2    "
+            "b 2 │       2-0       │   2-1    │   2-2     "
             "└aaa┴aaaaaaaaaaaaaaaaa┴aaaaaaaaaa┴aaaaaaaaaa┘"
         )
     );
+
+    let mut style: StyleConfig = Style::modern().into();
+    style.set_bottom(None);
+
+    let table = Table::new(&data).with(style).to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "┌───┬─────────────────┬──────────┬──────────┐"
+            "│ N │    column 0     │ column 1 │ column 2 │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 0 │ a longer string │   0-1    │   0-2    │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 1 │       1-0       │   1-1    │   1-2    │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 2 │       2-0       │   2-1    │   2-2    │"
+        )
+    );
+
+    let mut style: StyleConfig = Style::modern().into();
+    style.set_bottom(None);
+
+    let table = Table::new(&data)
+        .with(style)
+        .with(Modify::new(Rows::last()).with(Border::default().bottom_left_corner('*')))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "┌───┬─────────────────┬──────────┬──────────┐"
+            "│ N │    column 0     │ column 1 │ column 2 │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 0 │ a longer string │   0-1    │   0-2    │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 1 │       1-0       │   1-1    │   1-2    │"
+            "├───┼─────────────────┼──────────┼──────────┤"
+            "│ 2 │       2-0       │   2-1    │   2-2    │"
+            "*   *                 *          *          ┘"
+        )
+    );
+}
+
+#[test]
+fn test_default_border_usage() {
+    macro_rules! test_border {
+        ($modify:expr, $expected:expr) => {
+            let mut data = create_vector::<3, 3>();
+            data[0][1] = "a longer string".to_owned();
+
+            let table = Table::new(&data)
+                .with(Style::empty())
+                .with($modify)
+                .to_string();
+
+            assert_eq!(table, $expected);
+        };
+    }
+
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().bottom_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+            "                    *                    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().bottom_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+            "                              *          "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().bottom('*')),
+        static_table!(
+            " N     column 0      column 1  column 2 "
+            " 0  a longer string    0-1       0-2    "
+            " 1        1-0          1-1       1-2    "
+            " 2        2-0          2-1       2-2    "
+            "                    **********          "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().bottom('*').bottom_left_corner('#')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+            "                    #**********          "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().bottom('*').bottom_right_corner('#')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+            "                    **********#          "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().left('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0       *   2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            "                    *                    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().left('#').top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            "                    *                    "
+            " 2        2-0       #   2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().left('#').bottom_left_corner('@').top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            "                    *                    "
+            " 2        2-0       #   2-1       2-2    "
+            "                    @                    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().right('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1    *   2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().top_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            "                              *          "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().right('#').top_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            "                              *          "
+            " 2        2-0          2-1    #   2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().right('#').top_right_corner('*').bottom_right_corner('@')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            "                              *          "
+            " 2        2-0          2-1    #   2-2    "
+            "                              @          "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::default().right('#').top_right_corner('*').bottom_left_corner('@')),
+        static_table!(
+            " N     column 0       column 1   column 2 "
+            " 0  a longer string     0-1        0-2    "
+            " 1        1-0           1-1        1-2    "
+            "                               *          "
+            " 2        2-0           2-1    #   2-2    "
+            "                    @                     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(3, 2)).with(Border::filled('@')),
+        static_table!(
+            " N     column 0       column 1   column 2 "
+            " 0  a longer string     0-1        0-2    "
+            " 1        1-0           1-1        1-2    "
+            "                    @@@@@@@@@@@@          "
+            " 2        2-0       @   2-1    @   2-2    "
+            "                    @@@@@@@@@@@@          "
+        )
+    }
+
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().bottom_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            "                    *                    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().bottom_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            "                              *          "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().bottom('*')),
+        static_table!(
+            " N     column 0      column 1  column 2 "
+            " 0  a longer string    0-1       0-2    "
+            "                    **********          "
+            " 1        1-0          1-1       1-2    "
+            " 2        2-0          2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().bottom('*').bottom_left_corner('#')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string     0-1       0-2    "
+            "                    #**********          "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().bottom('*').bottom_right_corner('#')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            "                    **********#          "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().left('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            " 0  a longer string *   0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            "                    *                    "
+            " 0  a longer string     0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().left('#').top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            "                    *                    "
+            " 0  a longer string #   0-1       0-2    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().left('#').bottom_left_corner('@').top_left_corner('*')),
+        static_table!(
+            " N     column 0       column 1  column 2 "
+            "                    *                    "
+            " 0  a longer string #   0-1       0-2    "
+            "                    @                    "
+            " 1        1-0           1-1       1-2    "
+            " 2        2-0           2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().right('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1    *   0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().top_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            "                              *          "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().right('#').top_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            "                              *          "
+            " 0  a longer string    0-1    #   0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().right('#').top_right_corner('*').bottom_right_corner('@')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            "                              *          "
+            " 0  a longer string    0-1    #   0-2    "
+            "                              @          "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::default().right('#').top_right_corner('*').bottom_left_corner('@')),
+        static_table!(
+            " N     column 0       column 1   column 2 "
+            "                               *          "
+            " 0  a longer string     0-1    #   0-2    "
+            "                    @                     "
+            " 1        1-0           1-1        1-2    "
+            " 2        2-0           2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(1, 2)).with(Border::filled('@')),
+        static_table!(
+            " N     column 0       column 1   column 2 "
+            "                    @@@@@@@@@@@@          "
+            " 0  a longer string @   0-1    @   0-2    "
+            "                    @@@@@@@@@@@@          "
+            " 1        1-0           1-1        1-2    "
+            " 2        2-0           2-1        2-2    "
+        )
+    }
+
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().bottom_left_corner('*')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            "                              *          "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().bottom_right_corner('*')),
+        static_table!(
+            " N     column 0      column 1  column 2  "
+            "                                        *"
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().bottom('*')),
+        static_table!(
+            " N     column 0      column 1  column 2 "
+            "                              **********"
+            " 0  a longer string    0-1       0-2    "
+            " 1        1-0          1-1       1-2    "
+            " 2        2-0          2-1       2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().bottom('*').bottom_left_corner('#')),
+        static_table!(
+            " N     column 0      column 1   column 2 "
+            "                              #**********"
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().bottom('*').bottom_right_corner('#')),
+        static_table!(
+            " N     column 0      column 1  column 2  "
+            "                              **********#"
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().left('*')),
+        static_table!(
+            " N     column 0      column 1 * column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().top_left_corner('*')),
+        static_table!(
+            "                              *          "
+            " N     column 0      column 1   column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().left('#').top_left_corner('*')),
+        static_table!(
+            "                              *          "
+            " N     column 0      column 1 # column 2 "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().left('#').bottom_left_corner('@').top_left_corner('*')),
+        static_table!(
+            "                              *          "
+            " N     column 0      column 1 # column 2 "
+            "                              @          "
+            " 0  a longer string    0-1        0-2    "
+            " 1        1-0          1-1        1-2    "
+            " 2        2-0          2-1        2-2    "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().right('*')),
+        static_table!(
+            " N     column 0      column 1  column 2 *"
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().top_right_corner('*')),
+        static_table!(
+            "                                        *"
+            " N     column 0      column 1  column 2  "
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().right('#').top_right_corner('*')),
+        static_table!(
+            "                                        *"
+            " N     column 0      column 1  column 2 #"
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().right('#').top_right_corner('*').bottom_right_corner('@')),
+        static_table!(
+            "                                        *"
+            " N     column 0      column 1  column 2 #"
+            "                                        @"
+            " 0  a longer string    0-1       0-2     "
+            " 1        1-0          1-1       1-2     "
+            " 2        2-0          2-1       2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::default().right('#').top_right_corner('*').bottom_left_corner('@')),
+        static_table!(
+            "                                         *"
+            " N     column 0      column 1   column 2 #"
+            "                              @           "
+            " 0  a longer string    0-1        0-2     "
+            " 1        1-0          1-1        1-2     "
+            " 2        2-0          2-1        2-2     "
+        )
+    }
+    test_border! {
+        Modify::new(Cell(0, 3)).with(Border::filled('@')),
+        static_table!(
+            "                              @@@@@@@@@@@@"
+            " N     column 0      column 1 @ column 2 @"
+            "                              @@@@@@@@@@@@"
+            " 0  a longer string    0-1        0-2     "
+            " 1        1-0          1-1        1-2     "
+            " 2        2-0          2-1        2-2     "
+        )
+    }
 }
