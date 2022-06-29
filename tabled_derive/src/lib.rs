@@ -1,8 +1,10 @@
 extern crate proc_macro;
 
+mod error;
 mod parse;
 
 use proc_macro2::TokenStream;
+use proc_macro_error::proc_macro_error;
 use quote::*;
 use std::{collections::HashMap, str};
 use syn::{
@@ -10,7 +12,10 @@ use syn::{
     Ident, Index, LitInt, Type, Variant,
 };
 
+use error::Error;
+
 #[proc_macro_derive(Tabled, attributes(tabled))]
+#[proc_macro_error]
 pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let ast = impl_tabled(&input);
@@ -18,10 +23,12 @@ pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 fn impl_tabled(ast: &DeriveInput) -> TokenStream {
-    let attrs = ObjectAttributes::parse(&ast.attrs).expect("attribute parsing");
+    let attrs = ObjectAttributes::parse(&ast.attrs)
+        .map_err(error::abort)
+        .unwrap();
 
-    let length = get_tabled_length(ast).unwrap();
-    let info = collect_info(ast, attrs).unwrap();
+    let length = get_tabled_length(ast).map_err(error::abort).unwrap();
+    let info = collect_info(ast, attrs).map_err(error::abort).unwrap();
     let fields = info.values;
     let headers = info.headers;
 
@@ -44,22 +51,22 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     expanded
 }
 
-fn get_tabled_length(ast: &DeriveInput) -> Result<TokenStream, String> {
+fn get_tabled_length(ast: &DeriveInput) -> Result<TokenStream, Error> {
     match &ast.data {
-        Data::Struct(data) => Ok(get_fields_length(&data.fields)?),
-        Data::Enum(data) => Ok(get_enum_length(data)?),
-        Data::Union(_) => Err("Union type isn't supported".to_owned()),
+        Data::Struct(data) => get_fields_length(&data.fields),
+        Data::Enum(data) => get_enum_length(data),
+        Data::Union(_) => Err(Error::message("Union type isn't supported")),
     }
 }
 
-fn get_fields_length(fields: &Fields) -> Result<TokenStream, String> {
+fn get_fields_length(fields: &Fields) -> Result<TokenStream, Error> {
     let size_components = fields
         .iter()
-        .map(|field| -> Result<_, String> {
+        .map(|field| {
             let attributes = Attributes::parse(&field.attrs)?;
             Ok((field, attributes))
         })
-        .collect::<Result<Vec<_>, String>>()?
+        .collect::<Result<Vec<_>, Error>>()?
         .into_iter()
         .filter(|(_, attr)| !attr.is_ignored())
         .map(|(field, attr)| {
@@ -79,7 +86,7 @@ fn get_fields_length(fields: &Fields) -> Result<TokenStream, String> {
     Ok(stream)
 }
 
-fn get_enum_length(enum_ast: &DataEnum) -> Result<TokenStream, String> {
+fn get_enum_length(enum_ast: &DataEnum) -> Result<TokenStream, Error> {
     let variant_sizes = get_enum_variant_length(enum_ast);
 
     let mut stream = TokenStream::new();
@@ -98,11 +105,11 @@ fn get_enum_length(enum_ast: &DataEnum) -> Result<TokenStream, String> {
 
 fn get_enum_variant_length(
     enum_ast: &DataEnum,
-) -> impl Iterator<Item = Result<TokenStream, String>> + '_ {
+) -> impl Iterator<Item = Result<TokenStream, Error>> + '_ {
     enum_ast
         .variants
         .iter()
-        .map(|variant| -> Result<_, String> {
+        .map(|variant| -> Result<_, Error> {
             let attributes = Attributes::parse(&variant.attrs)?;
             Ok((variant, attributes))
         })
@@ -118,15 +125,15 @@ fn get_enum_variant_length(
         })
 }
 
-fn collect_info(ast: &DeriveInput, attrs: ObjectAttributes) -> Result<Impl, String> {
+fn collect_info(ast: &DeriveInput, attrs: ObjectAttributes) -> Result<Impl, Error> {
     match &ast.data {
         Data::Struct(data) => collect_info_struct(data, attrs),
         Data::Enum(data) => collect_info_enum(data, attrs),
-        Data::Union(_) => Err("Union type isn't supported".to_owned()),
+        Data::Union(_) => Err(Error::message("Union type isn't supported")),
     }
 }
 
-fn collect_info_struct(ast: &DataStruct, attrs: ObjectAttributes) -> Result<Impl, String> {
+fn collect_info_struct(ast: &DataStruct, attrs: ObjectAttributes) -> Result<Impl, Error> {
     info_from_fields(&ast.fields, &attrs, field_var_name, "")
 }
 
@@ -138,13 +145,13 @@ fn info_from_fields(
     attrs: &ObjectAttributes,
     field_name: impl Fn(usize, &Field) -> TokenStream,
     header_prefix: &str,
-) -> Result<Impl, String> {
+) -> Result<Impl, Error> {
     let count_fields = fields.len();
 
     let fields = fields
         .into_iter()
         .enumerate()
-        .map(|(i, field)| -> Result<_, String> {
+        .map(|(i, field)| -> Result<_, Error> {
             let mut attributes = Attributes::parse(&field.attrs)?;
             merge_attributes(&mut attributes, attrs);
 
@@ -163,7 +170,10 @@ fn info_from_fields(
 
         if let Some(order) = attributes.order {
             if order >= count_fields {
-                return Err(format!("An order index '{}' is out of fields scope", order));
+                return Err(Error::message(format!(
+                    "An order index '{}' is out of fields scope",
+                    order
+                )));
             }
 
             reorder.insert(order, i);
@@ -249,7 +259,7 @@ fn field_headers(
     }
 }
 
-fn collect_info_enum(ast: &DataEnum, attrs: ObjectAttributes) -> Result<Impl, String> {
+fn collect_info_enum(ast: &DataEnum, attrs: ObjectAttributes) -> Result<Impl, Error> {
     let mut headers_list = Vec::new();
     let mut variants = Vec::new();
     for variant in &ast.variants {
@@ -265,7 +275,7 @@ fn collect_info_enum(ast: &DataEnum, attrs: ObjectAttributes) -> Result<Impl, St
     }
 
     let variant_sizes = get_enum_variant_length(ast)
-        .collect::<Result<Vec<_>, String>>()?
+        .collect::<Result<Vec<_>, Error>>()?
         .into_iter();
     let values = values_for_enum(variant_sizes, variants);
 
@@ -283,7 +293,7 @@ fn info_from_variant(
     variant: &Variant,
     attributes: &Attributes,
     attrs: &ObjectAttributes,
-) -> Result<Impl, String> {
+) -> Result<Impl, Error> {
     if attributes.inline {
         let prefix = attributes
             .inline_prefix
@@ -512,16 +522,16 @@ struct Attributes {
 }
 
 impl Attributes {
-    fn parse(attrs: &[Attribute]) -> Result<Self, String> {
+    fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
         let mut attributes = Self::default();
         attributes.fill_attributes(attrs)?;
 
         Ok(attributes)
     }
 
-    fn fill_attributes(&mut self, attrs: &[Attribute]) -> Result<(), String> {
+    fn fill_attributes(&mut self, attrs: &[Attribute]) -> Result<(), Error> {
         for attrs in parse::parse_attributes(attrs) {
-            let attrs = attrs.map_err(|e| e.to_string())?;
+            let attrs = attrs?;
             for attr in attrs {
                 self.insert_attribute(attr)?;
             }
@@ -530,7 +540,7 @@ impl Attributes {
         Ok(())
     }
 
-    fn insert_attribute(&mut self, attr: parse::TabledAttr) -> Result<(), String> {
+    fn insert_attribute(&mut self, attr: parse::TabledAttr) -> Result<(), Error> {
         match attr.kind {
             parse::TabledAttrKind::Skip(b) => {
                 if b.value {
@@ -548,7 +558,7 @@ impl Attributes {
             }
             parse::TabledAttrKind::Rename(value) => self.rename = Some(value.value()),
             parse::TabledAttrKind::RenameAll(lit) => {
-                self.rename_all = Some(CasingStyle::from_lit(lit))
+                self.rename_all = Some(CasingStyle::from_lit(lit)?)
             }
             parse::TabledAttrKind::DisplayWith(path, use_self) => {
                 self.display_with = Some(path.value());
@@ -565,10 +575,14 @@ impl Attributes {
     }
 }
 
-fn lit_int_to_usize(value: &LitInt) -> Result<usize, String> {
-    value
-        .base10_parse::<usize>()
-        .map_err(|e| format!("Failed to parse int {:?}; {}", value.to_string(), e))
+fn lit_int_to_usize(value: &LitInt) -> Result<usize, Error> {
+    value.base10_parse::<usize>().map_err(|e| {
+        Error::new(
+            format!("Failed to parse {:?} as usize; {}", value.to_string(), e),
+            value.span(),
+            None,
+        )
+    })
 }
 
 struct ObjectAttributes {
@@ -576,7 +590,7 @@ struct ObjectAttributes {
 }
 
 impl ObjectAttributes {
-    fn parse(attrs: &[Attribute]) -> Result<Self, String> {
+    fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
         let attrs = Attributes::parse(attrs)?;
         Ok(Self {
             rename_all: attrs.rename_all,
@@ -612,22 +626,22 @@ enum CasingStyle {
 }
 
 impl CasingStyle {
-    fn from_lit(name: syn::LitStr) -> Self {
+    fn from_lit(name: syn::LitStr) -> Result<Self, Error> {
         use self::CasingStyle::*;
         use heck::ToUpperCamelCase;
 
         let normalized = name.value().to_upper_camel_case().to_lowercase();
 
         match normalized.as_ref() {
-            "camel" | "camelcase" => Camel,
-            "kebab" | "kebabcase" => Kebab,
-            "pascal" | "pascalcase" => Pascal,
-            "screamingsnake" | "screamingsnakecase" => ScreamingSnake,
-            "snake" | "snakecase" => Snake,
-            "lower" | "lowercase" => Lower,
-            "upper" | "uppercase" => Upper,
-            "verbatim" | "verbatimcase" => Verbatim,
-            _ => panic!("unsupported casing: `{:?}`; supperted values are ['camelCase', 'kebab-case', 'PascalCase', 'SCREAMING_SNAKE_CASE', 'snake_case', 'lowercase', 'UPPERCASE', 'verbatim']", name.value()),
+            "camel" | "camelcase" => Ok(Camel),
+            "kebab" | "kebabcase" => Ok(Kebab),
+            "pascal" | "pascalcase" => Ok(Pascal),
+            "screamingsnake" | "screamingsnakecase" => Ok(ScreamingSnake),
+            "snake" | "snakecase" => Ok(Snake),
+            "lower" | "lowercase" => Ok(Lower),
+            "upper" | "uppercase" => Ok(Upper),
+            "verbatim" | "verbatimcase" => Ok(Verbatim),
+            _ => Err(Error::new(format!("unsupported casing: `{:?}`", name.value()), name.span(), Some("supperted values are ['camelCase', 'kebab-case', 'PascalCase', 'SCREAMING_SNAKE_CASE', 'snake_case', 'lowercase', 'UPPERCASE', 'verbatim']".to_owned())))
         }
     }
 
