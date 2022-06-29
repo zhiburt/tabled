@@ -16,8 +16,10 @@ pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 fn impl_tabled(ast: &DeriveInput) -> TokenStream {
+    let attrs = ObjectAttributes::parse(&ast.attrs);
+
     let length = get_tabled_length(ast).unwrap();
-    let info = collect_info(ast).unwrap();
+    let info = collect_info(ast, attrs).unwrap();
     let fields = info.values;
     let headers = info.headers;
 
@@ -101,16 +103,16 @@ fn get_enum_variant_length(enum_ast: &DataEnum) -> impl Iterator<Item = TokenStr
         })
 }
 
-fn collect_info(ast: &DeriveInput) -> Result<Impl, String> {
+fn collect_info(ast: &DeriveInput, attrs: ObjectAttributes) -> Result<Impl, String> {
     match &ast.data {
-        Data::Struct(data) => collect_info_struct(data),
-        Data::Enum(data) => collect_info_enum(data),
+        Data::Struct(data) => collect_info_struct(data, attrs),
+        Data::Enum(data) => collect_info_enum(data, attrs),
         Data::Union(_) => Err("Union type isn't supported".to_owned()),
     }
 }
 
-fn collect_info_struct(ast: &DataStruct) -> Result<Impl, String> {
-    info_from_fields(&ast.fields, field_var_name, "")
+fn collect_info_struct(ast: &DataStruct, attrs: ObjectAttributes) -> Result<Impl, String> {
+    info_from_fields(&ast.fields, &attrs, field_var_name, "")
 }
 
 // todo: refactoring. instead of using a lambda + prefix
@@ -118,13 +120,16 @@ fn collect_info_struct(ast: &DataStruct) -> Result<Impl, String> {
 // So the called would prefix it on its own
 fn info_from_fields(
     fields: &Fields,
+    attrs: &ObjectAttributes,
     field_name: impl Fn(usize, &Field) -> TokenStream,
     header_prefix: &str,
 ) -> Result<Impl, String> {
     let count_fields = fields.len();
 
     let fields = fields.into_iter().enumerate().map(|(i, field)| {
-        let attributes = Attributes::parse(&field.attrs);
+        let mut attributes = Attributes::parse(&field.attrs);
+        merge_attributes(&mut attributes, attrs);
+
         (i, field, attributes)
     });
 
@@ -225,16 +230,17 @@ fn field_headers(
     }
 }
 
-fn collect_info_enum(ast: &DataEnum) -> Result<Impl, String> {
+fn collect_info_enum(ast: &DataEnum, attrs: ObjectAttributes) -> Result<Impl, String> {
     let mut headers_list = Vec::new();
     let mut variants = Vec::new();
     for variant in &ast.variants {
-        let attributes = Attributes::parse(&variant.attrs);
+        let mut attributes = Attributes::parse(&variant.attrs);
+        merge_attributes(&mut attributes, &attrs);
         if attributes.is_ignored() {
             continue;
         }
 
-        let info = info_from_variant(variant, &attributes)?;
+        let info = info_from_variant(variant, &attributes, &attrs)?;
         variants.push((variant, info.values));
         headers_list.push(info.headers);
     }
@@ -252,13 +258,17 @@ fn collect_info_enum(ast: &DataEnum) -> Result<Impl, String> {
     Ok(Impl { headers, values })
 }
 
-fn info_from_variant(variant: &Variant, attributes: &Attributes) -> Result<Impl, String> {
+fn info_from_variant(
+    variant: &Variant,
+    attributes: &Attributes,
+    attrs: &ObjectAttributes,
+) -> Result<Impl, String> {
     if attributes.inline {
         let prefix = attributes
             .inline_prefix
             .as_ref()
             .map_or_else(|| "", |s| s.as_str());
-        return info_from_fields(&variant.fields, variant_var_name, prefix);
+        return info_from_fields(&variant.fields, attrs, variant_var_name, prefix);
     }
 
     let variant_name = variant_name(variant, attributes);
@@ -439,18 +449,31 @@ fn match_variant(v: &Variant) -> TokenStream {
 
 fn variant_name(variant: &Variant, attributes: &Attributes) -> String {
     attributes
-        .name
+        .rename
         .clone()
+        .or_else(|| {
+            attributes
+                .rename_all
+                .as_ref()
+                .map(|case| case.cast(variant.ident.to_string()))
+        })
         .unwrap_or_else(|| variant.ident.to_string())
 }
 
 fn field_header_name(f: &Field, attr: &Attributes, index: usize) -> String {
-    match &attr.name {
-        Some(name) => name.to_string(),
-        None => match f.ident.as_ref() {
-            Some(name) => name.to_string(),
-            None => format!("{}", index),
-        },
+    if let Some(name) = &attr.rename {
+        return name.to_string();
+    }
+
+    match &f.ident {
+        Some(name) => {
+            let name = name.to_string();
+            match &attr.rename_all {
+                Some(case) => case.cast(name),
+                None => name,
+            }
+        }
+        None => index.to_string(),
     }
 }
 
@@ -460,7 +483,8 @@ struct Attributes {
     is_ignored: bool,
     inline: bool,
     inline_prefix: Option<String>,
-    name: Option<String>,
+    rename: Option<String>,
+    rename_all: Option<CasingStyle>,
     display_with: Option<String>,
     display_with_use_self: bool,
     order: Option<usize>,
@@ -471,7 +495,8 @@ impl Attributes {
         let is_ignored = attrs_has_ignore_sign(attrs);
         let should_be_inlined = should_be_inlined(attrs);
         let inline_prefix = look_for_inline_prefix(attrs);
-        let override_header_name = override_header_name(attrs);
+        let rename_attr = override_header_name(attrs);
+        let rename_all_attr = lookup_rename_all_attr(attrs);
         let order = override_header_order(attrs);
         let (display_with, display_with_use_self) =
             check_display_with_func(attrs).map_or((None, false), |(a, b)| (Some(a), b));
@@ -483,7 +508,8 @@ impl Attributes {
             order,
             inline_prefix,
             inline: should_be_inlined,
-            name: override_header_name,
+            rename: rename_attr,
+            rename_all: rename_all_attr,
         }
     }
 
@@ -494,6 +520,10 @@ impl Attributes {
 
 fn override_header_name(attrs: &[Attribute]) -> Option<String> {
     find_name_attribute(attrs, "tabled", "rename", look_up_nested_meta_str)
+}
+
+fn lookup_rename_all_attr(attrs: &[Attribute]) -> Option<CasingStyle> {
+    find_name_attribute(attrs, "tabled", "rename_all", look_up_nested_meta_casing)
 }
 
 fn override_header_order(attrs: &[Attribute]) -> Option<usize> {
@@ -568,12 +598,20 @@ where
 
 fn look_up_nested_meta_str(meta: &NestedMeta, name: &str) -> Result<Option<String>, String> {
     match meta {
-        NestedMeta::Meta(Meta::NameValue(value)) => {
-            if value.path.is_ident(name) {
-                check_str_literal(&value.lit)
-            } else {
-                Ok(None)
-            }
+        NestedMeta::Meta(Meta::NameValue(value)) if value.path.is_ident(name) => {
+            check_str_literal(&value.lit)
+        }
+        _ => Ok(None),
+    }
+}
+
+fn look_up_nested_meta_casing(
+    meta: &NestedMeta,
+    name: &str,
+) -> Result<Option<CasingStyle>, String> {
+    match meta {
+        NestedMeta::Meta(Meta::NameValue(value)) if value.path.is_ident(name) => {
+            check_casing_literal(&value.lit)
         }
         _ => Ok(None),
     }
@@ -593,6 +631,13 @@ fn check_str_literal(lit: &Lit) -> Result<Option<String>, String> {
             .map(|s| s.to_owned())
             .map(Some)
             .map_err(|_| "Expected a valid UTF-8 string for a field".to_owned()),
+        _ => Ok(None),
+    }
+}
+
+fn check_casing_literal(lit: &Lit) -> Result<Option<CasingStyle>, String> {
+    match lit {
+        Lit::Str(value) => Ok(Some(CasingStyle::from_lit(value.clone()))),
         _ => Ok(None),
     }
 }
@@ -740,5 +785,79 @@ fn take_str_literal(lit: &Lit) -> Result<String, String> {
             .map(|s| s.to_owned())
             .map_err(|_| "Expected a valid UTF-8 string for a field".to_owned()),
         _ => Err("Expected a string but got something else".to_owned()),
+    }
+}
+
+struct ObjectAttributes {
+    rename_all: Option<CasingStyle>,
+}
+
+impl ObjectAttributes {
+    fn parse(attrs: &[Attribute]) -> Self {
+        let rename_all = lookup_rename_all_attr(attrs);
+        Self { rename_all }
+    }
+}
+
+fn merge_attributes(attr: &mut Attributes, global_attr: &ObjectAttributes) {
+    if attr.rename_all.is_none() {
+        attr.rename_all = global_attr.rename_all;
+    }
+}
+
+/// Defines the casing for the attributes long representation.
+#[derive(Copy, Clone, Debug, PartialEq)]
+enum CasingStyle {
+    /// Indicate word boundaries with uppercase letter, excluding the first word.
+    Camel,
+    /// Keep all letters lowercase and indicate word boundaries with hyphens.
+    Kebab,
+    /// Indicate word boundaries with uppercase letter, including the first word.
+    Pascal,
+    /// Keep all letters uppercase and indicate word boundaries with underscores.
+    ScreamingSnake,
+    /// Keep all letters lowercase and indicate word boundaries with underscores.
+    Snake,
+    /// Keep all letters lowercase and remove word boundaries.
+    Lower,
+    /// Keep all letters uppercase and remove word boundaries.
+    Upper,
+    /// Use the original attribute name defined in the code.
+    Verbatim,
+}
+
+impl CasingStyle {
+    fn from_lit(name: syn::LitStr) -> Self {
+        use self::CasingStyle::*;
+        use heck::ToUpperCamelCase;
+
+        let normalized = name.value().to_upper_camel_case().to_lowercase();
+
+        match normalized.as_ref() {
+            "camel" | "camelcase" => Camel,
+            "kebab" | "kebabcase" => Kebab,
+            "pascal" | "pascalcase" => Pascal,
+            "screamingsnake" | "screamingsnakecase" => ScreamingSnake,
+            "snake" | "snakecase" => Snake,
+            "lower" | "lowercase" => Lower,
+            "upper" | "uppercase" => Upper,
+            "verbatim" | "verbatimcase" => Verbatim,
+            _ => panic!("unsupported casing: `{:?}`; supperted values are ['camelCase', 'kebab-case', 'PascalCase', 'SCREAMING_SNAKE_CASE', 'snake_case', 'lowercase', 'UPPERCASE', 'verbatim']", name.value()),
+        }
+    }
+
+    fn cast(&self, s: String) -> String {
+        use CasingStyle::*;
+
+        match self {
+            Pascal => heck::ToUpperCamelCase::to_upper_camel_case(s.as_str()),
+            Camel => heck::ToLowerCamelCase::to_lower_camel_case(s.as_str()),
+            Kebab => heck::ToKebabCase::to_kebab_case(s.as_str()),
+            Snake => heck::ToSnakeCase::to_snake_case(s.as_str()),
+            ScreamingSnake => heck::ToShoutySnakeCase::to_shouty_snake_case(s.as_str()),
+            Lower => heck::ToSnakeCase::to_snake_case(s.as_str()).replace('_', ""),
+            Upper => heck::ToShoutySnakeCase::to_shouty_snake_case(s.as_str()).replace('_', ""),
+            Verbatim => s,
+        }
     }
 }

@@ -360,6 +360,43 @@ mod tupple_structure {
     //     #[derive(Tabled)]
     //     struct St(#[tabled(order = 3)] u8, u8, u8);
     // }
+
+    #[test]
+    fn rename_all_field() {
+        #[derive(Tabled)]
+        struct St(u8, #[tabled(rename_all = "UPPERCASE")] &'static str);
+
+        let st = St(0, "123");
+
+        assert_eq!(vec!["0".to_owned(), "123".to_owned()], st.fields());
+        assert_eq!(vec!["0".to_owned(), "1".to_owned()], St::headers());
+    }
+
+    #[test]
+    fn rename_all_field_with_rename() {
+        #[derive(Tabled)]
+        struct St(
+            u8,
+            #[tabled(rename_all = "UPPERCASE", rename = "Something")] &'static str,
+        );
+
+        let st = St(0, "123");
+
+        assert_eq!(vec!["0".to_owned(), "123".to_owned()], st.fields());
+        assert_eq!(vec!["0".to_owned(), "Something".to_owned()], St::headers());
+    }
+
+    #[test]
+    fn rename_all_tuple() {
+        #[derive(Tabled)]
+        #[tabled(rename_all = "UPPERCASE")]
+        struct St(u8, &'static str);
+
+        let st = St(0, "123");
+
+        assert_eq!(vec!["0".to_owned(), "123".to_owned()], st.fields());
+        assert_eq!(vec!["0".to_owned(), "1".to_owned()], St::headers());
+    }
 }
 
 mod enum_ {
@@ -662,6 +699,164 @@ mod enum_ {
             Fact::Known("Hello World").fields()
         );
         assert_eq!(vec!["".to_owned(), "+".to_owned(),], Fact::Unknown.fields());
+    }
+
+    #[test]
+    fn rename_all_variant() {
+        #[allow(dead_code)]
+        #[derive(Tabled)]
+        enum E {
+            #[tabled(rename_all = "snake_case")]
+            VariantName1 {
+                a: u8,
+                b: i32,
+            },
+            #[tabled(rename_all = "UPPERCASE")]
+            VariantName2(String),
+            K,
+        }
+
+        assert_eq!(E::headers(), ["variant_name1", "VARIANTNAME2", "K"]);
+    }
+
+    #[test]
+    fn rename_all_enum() {
+        #[allow(dead_code)]
+        #[derive(Tabled)]
+        #[tabled(rename_all = "snake_case")]
+        enum E {
+            VariantName1 { a: u8, b: i32 },
+            VariantName2(String),
+            K,
+        }
+
+        assert_eq!(E::headers(), ["variant_name1", "variant_name2", "k"]);
+    }
+
+    #[test]
+    fn rename_all_enum_inhirited_inside_struct_enum() {
+        #[allow(dead_code)]
+        #[derive(Tabled)]
+        #[tabled(rename_all = "snake_case")]
+        enum E {
+            #[tabled(inline)]
+            VariantName1 {
+                some_field_1: u8,
+                some_field_2: i32,
+            },
+            VariantName2(String),
+            K,
+        }
+
+        assert_eq!(
+            E::headers(),
+            ["some_field_1", "some_field_2", "variant_name2", "k"]
+        );
+    }
+
+    #[test]
+    fn rename_all_enum_inhirited_inside_struct_override_by_rename_enum() {
+        #[allow(dead_code)]
+        #[derive(Tabled)]
+        #[tabled(rename_all = "snake_case")]
+        enum E {
+            #[tabled(inline)]
+            VariantName1 {
+                #[tabled(rename = "f1")]
+                some_field_1: u8,
+                #[tabled(rename = "f2")]
+                some_field_2: i32,
+            },
+            VariantName2(String),
+            K,
+        }
+
+        assert_eq!(E::headers(), ["f1", "f2", "variant_name2", "k"]);
+    }
+
+    #[test]
+    fn rename_all_enum_inhirited_inside_struct_override_by_rename_all_enum() {
+        #[allow(dead_code)]
+        #[derive(Tabled)]
+        #[tabled(rename_all = "snake_case")]
+        enum E {
+            #[tabled(inline)]
+            VariantName1 {
+                #[tabled(rename_all = "UPPERCASE")]
+                some_field_1: u8,
+                #[tabled(rename_all = "CamelCase")]
+                some_field_2: i32,
+            },
+            VariantName2(String),
+            K,
+        }
+
+        assert_eq!(
+            E::headers(),
+            ["SOMEFIELD1", "someField2", "variant_name2", "k"]
+        );
+    }
+
+    #[test]
+    fn rename_all_variant_inhirited_inside_struct_enum() {
+        #[allow(dead_code)]
+        #[derive(Tabled)]
+        enum E {
+            #[tabled(rename_all = "snake_case")]
+            #[tabled(inline)]
+            VariantName1 {
+                some_field_1: u8,
+                some_field_2: i32,
+            },
+            VariantName2(String),
+            K,
+        }
+
+        assert_eq!(
+            E::headers(),
+            ["some_field_1", "some_field_2", "VariantName2", "K"]
+        );
+    }
+
+    #[test]
+    fn rename_all_variant_inhirited_inside_struct_override_by_rename_enum() {
+        #[allow(dead_code)]
+        #[derive(Tabled)]
+        enum E {
+            #[tabled(inline, rename_all = "snake_case")]
+            VariantName1 {
+                #[tabled(rename = "f1")]
+                some_field_1: u8,
+                #[tabled(rename = "f2")]
+                some_field_2: i32,
+            },
+            VariantName2(String),
+            K,
+        }
+
+        assert_eq!(E::headers(), ["f1", "f2", "VariantName2", "K"]);
+    }
+
+    #[test]
+    fn rename_all_variant_inhirited_inside_struct_override_by_rename_all_enum() {
+        #[allow(dead_code)]
+        #[derive(Tabled)]
+        enum E {
+            #[tabled(rename_all = "snake_case", inline)]
+            VariantName1 {
+                #[tabled(rename_all = "UPPERCASE")]
+                some_field_1: u8,
+                #[tabled(rename_all = "CamelCase")]
+                some_field_2: i32,
+            },
+            VariantName2(String),
+            K,
+        }
+
+        assert_eq!(
+            E::headers(),
+            ["SOMEFIELD1", "someField2", "VariantName2", "K"]
+        );
     }
 }
 
@@ -1307,6 +1502,80 @@ mod structure {
     //         f2: u8,
     //     }
     // }
+
+    #[test]
+    fn rename_all_test() {
+        #[derive(Tabled)]
+        #[tabled(rename_all = "UPPERCASE")]
+        struct St {
+            f1: u8,
+            f2: &'static str,
+        }
+
+        let st = St { f1: 0, f2: "v2" };
+        assert_eq!(st.fields(), ["0", "v2"]);
+        assert_eq!(St::headers(), ["F1", "F2"],);
+    }
+
+    #[test]
+    fn rename_all_override_in_field_by_rename_test() {
+        #[derive(Tabled)]
+        #[tabled(rename_all = "UPPERCASE")]
+        struct St {
+            #[tabled(rename = "213213")]
+            f1: u8,
+            f2: &'static str,
+        }
+
+        let st = St { f1: 0, f2: "v2" };
+        assert_eq!(st.fields(), ["0", "v2"]);
+        assert_eq!(St::headers(), ["213213", "F2"],);
+    }
+
+    #[test]
+    fn rename_all_override_in_field_by_rename_all_test() {
+        #[derive(Tabled)]
+        #[tabled(rename_all = "UPPERCASE")]
+        struct St {
+            #[tabled(rename_all = "lowercase")]
+            f1: u8,
+            f2: &'static str,
+        }
+
+        let st = St { f1: 0, f2: "v2" };
+        assert_eq!(st.fields(), ["0", "v2"]);
+        assert_eq!(St::headers(), ["f1", "F2"],);
+    }
+
+    #[test]
+    fn rename_all_field_test() {
+        #[derive(Tabled)]
+        struct St {
+            #[tabled(rename_all = "lowercase")]
+            f1: u8,
+            #[tabled(rename_all = "UPPERCASE")]
+            f2: &'static str,
+        }
+
+        let st = St { f1: 0, f2: "v2" };
+        assert_eq!(st.fields(), ["0", "v2"]);
+        assert_eq!(St::headers(), ["f1", "F2"],);
+    }
+
+    #[test]
+    fn rename_all_field_overriden_by_rename_test() {
+        #[derive(Tabled)]
+        struct St {
+            #[tabled(rename_all = "lowercase", rename = "Hello")]
+            f1: u8,
+            #[tabled(rename_all = "UPPERCASE")]
+            f2: &'static str,
+        }
+
+        let st = St { f1: 0, f2: "v2" };
+        assert_eq!(st.fields(), ["0", "v2"]);
+        assert_eq!(St::headers(), ["Hello", "F2"],);
+    }
 }
 
 #[test]
@@ -1565,4 +1834,104 @@ fn display_with_rename_2() {
 
     assert_eq!(Struct1::headers(), vec!["f1", "f2", "Field 3"],);
     assert_eq!(st.fields(), vec!["123", "456", ""]);
+}
+
+#[test]
+fn display_with_rename_all() {
+    #[derive(Tabled)]
+    struct Struct1 {
+        f1: &'static str,
+        f2: &'static str,
+        #[tabled(display_with = "print", rename_all = "UPPERCASE")]
+        f3: usize,
+    }
+
+    #[allow(dead_code)]
+    fn print<T>(_: T) -> String {
+        String::new()
+    }
+
+    let st = Struct1 {
+        f1: "123",
+        f2: "456",
+        f3: 789,
+    };
+
+    assert_eq!(Struct1::headers(), vec!["f1", "f2", "F3"],);
+    assert_eq!(st.fields(), vec!["123", "456", ""]);
+}
+
+#[test]
+fn rename_all_variants() {
+    macro_rules! test_case {
+        ( $name:ident, $case:expr ) => {
+            #[derive(Tabled)]
+            #[tabled(rename_all = $case)]
+            struct $name {
+                field: usize,
+            }
+        };
+    }
+
+    test_case!(S1, "UPPERCASE");
+    test_case!(S2, "lowercase");
+    test_case!(S3, "camelCase");
+    test_case!(S4, "PascalCase");
+    test_case!(S5, "snake_case");
+    test_case!(S6, "SCREAMING_SNAKE_CASE");
+    test_case!(S7, "kebab-case");
+    test_case!(S8, "verbatimcase");
+}
+
+#[test]
+fn wrong_rename_all_doesnt_panic_when_used_as_not_first() {
+    #[derive(Tabled)]
+    #[tabled(rename_all = "UPPERCASE")]
+    #[tabled(rename_all = "some wrong case")]
+    struct Struct1 {
+        field: usize,
+    }
+
+    let st = Struct1 { field: 789 };
+
+    assert_eq!(Struct1::headers(), vec!["FIELD"],);
+    assert_eq!(st.fields(), vec!["789"]);
+
+    #[derive(Tabled)]
+    #[tabled(rename_all = "UPPERCASE", rename_all = "some wrong case")]
+    struct Struct2 {
+        field: usize,
+    }
+
+    let st = Struct2 { field: 789 };
+
+    assert_eq!(Struct1::headers(), vec!["FIELD"],);
+    assert_eq!(st.fields(), vec!["789"]);
+}
+
+
+#[test]
+fn rename_all_gets_first_value() {
+    #[derive(Tabled)]
+    #[tabled(rename_all = "UPPERCASE")]
+    #[tabled(rename_all = "PascalCase")]
+    struct Struct1 {
+        field: usize,
+    }
+
+    let st = Struct1 { field: 789 };
+
+    assert_eq!(Struct1::headers(), vec!["FIELD"],);
+    assert_eq!(st.fields(), vec!["789"]);
+
+    #[derive(Tabled)]
+    #[tabled(rename_all = "UPPERCASE", rename_all = ""PascalCase"")]
+    struct Struct2 {
+        field: usize,
+    }
+
+    let st = Struct2 { field: 789 };
+    
+    assert_eq!(Struct1::headers(), vec!["FIELD"],);
+    assert_eq!(st.fields(), vec!["789"]);
 }

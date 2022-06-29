@@ -16,3 +16,4 @@ proc-macro = true
 syn = "1"
 quote = "1"
 proc-macro2 = "1"
+heck = "0.4.0"
