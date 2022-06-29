@@ -1,14 +1,21 @@
 extern crate proc_macro;
 
+mod error;
+mod parse;
+
 use proc_macro2::TokenStream;
+use proc_macro_error::proc_macro_error;
 use quote::*;
 use std::{collections::HashMap, str};
 use syn::{
     parse_macro_input, token, Attribute, Data, DataEnum, DataStruct, DeriveInput, Field, Fields,
-    Ident, Index, Lit, Meta, MetaNameValue, NestedMeta, Type, Variant,
+    Ident, Index, LitInt, Type, Variant,
 };
 
+use error::Error;
+
 #[proc_macro_derive(Tabled, attributes(tabled))]
+#[proc_macro_error]
 pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let ast = impl_tabled(&input);
@@ -16,10 +23,12 @@ pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 fn impl_tabled(ast: &DeriveInput) -> TokenStream {
-    let attrs = ObjectAttributes::parse(&ast.attrs);
+    let attrs = ObjectAttributes::parse(&ast.attrs)
+        .map_err(error::abort)
+        .unwrap();
 
-    let length = get_tabled_length(ast).unwrap();
-    let info = collect_info(ast, attrs).unwrap();
+    let length = get_tabled_length(ast).map_err(error::abort).unwrap();
+    let info = collect_info(ast, attrs).map_err(error::abort).unwrap();
     let fields = info.values;
     let headers = info.headers;
 
@@ -42,21 +51,23 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     expanded
 }
 
-fn get_tabled_length(ast: &DeriveInput) -> Result<TokenStream, String> {
+fn get_tabled_length(ast: &DeriveInput) -> Result<TokenStream, Error> {
     match &ast.data {
-        Data::Struct(data) => Ok(get_fields_length(&data.fields)),
-        Data::Enum(data) => Ok(get_enum_length(data)),
-        Data::Union(_) => Err("Union type isn't supported".to_owned()),
+        Data::Struct(data) => get_fields_length(&data.fields),
+        Data::Enum(data) => get_enum_length(data),
+        Data::Union(_) => Err(Error::message("Union type isn't supported")),
     }
 }
 
-fn get_fields_length(fields: &Fields) -> TokenStream {
+fn get_fields_length(fields: &Fields) -> Result<TokenStream, Error> {
     let size_components = fields
         .iter()
         .map(|field| {
-            let attributes = Attributes::parse(&field.attrs);
-            (field, attributes)
+            let attributes = Attributes::parse(&field.attrs)?;
+            Ok((field, attributes))
         })
+        .collect::<Result<Vec<_>, Error>>()?
+        .into_iter()
         .filter(|(_, attr)| !attr.is_ignored())
         .map(|(field, attr)| {
             if !attr.inline {
@@ -72,46 +83,57 @@ fn get_fields_length(fields: &Fields) -> TokenStream {
     let mut stream = TokenStream::new();
     stream.append_separated(size_components, syn::token::Add::default());
 
-    stream
+    Ok(stream)
 }
 
-fn get_enum_length(enum_ast: &DataEnum) -> TokenStream {
+fn get_enum_length(enum_ast: &DataEnum) -> Result<TokenStream, Error> {
     let variant_sizes = get_enum_variant_length(enum_ast);
-    let variant_sizes = std::iter::once(quote!(0)).chain(variant_sizes);
 
     let mut stream = TokenStream::new();
-    stream.append_separated(variant_sizes, syn::token::Add::default());
+    for (i, size) in variant_sizes.enumerate() {
+        let size = size?;
 
-    stream
+        if i != 0 {
+            stream.append_all(syn::token::Add::default().into_token_stream());
+        }
+
+        stream.append_all(size);
+    }
+
+    Ok(stream)
 }
 
-fn get_enum_variant_length(enum_ast: &DataEnum) -> impl Iterator<Item = TokenStream> + '_ {
+fn get_enum_variant_length(
+    enum_ast: &DataEnum,
+) -> impl Iterator<Item = Result<TokenStream, Error>> + '_ {
     enum_ast
         .variants
         .iter()
-        .map(|variant| {
-            let attributes = Attributes::parse(&variant.attrs);
-            (variant, attributes)
+        .map(|variant| -> Result<_, Error> {
+            let attributes = Attributes::parse(&variant.attrs)?;
+            Ok((variant, attributes))
         })
-        .filter(|(_, attr)| !attr.is_ignored())
-        .map(|(variant, attr)| {
+        .filter(|result| result.is_err() || matches!(result, Ok((_, attr)) if !attr.is_ignored()))
+        .map(|result| {
+            let (variant, attr) = result?;
+
             if !attr.inline {
-                quote!(1)
+                Ok(quote!(1))
             } else {
                 get_fields_length(&variant.fields)
             }
         })
 }
 
-fn collect_info(ast: &DeriveInput, attrs: ObjectAttributes) -> Result<Impl, String> {
+fn collect_info(ast: &DeriveInput, attrs: ObjectAttributes) -> Result<Impl, Error> {
     match &ast.data {
         Data::Struct(data) => collect_info_struct(data, attrs),
         Data::Enum(data) => collect_info_enum(data, attrs),
-        Data::Union(_) => Err("Union type isn't supported".to_owned()),
+        Data::Union(_) => Err(Error::message("Union type isn't supported")),
     }
 }
 
-fn collect_info_struct(ast: &DataStruct, attrs: ObjectAttributes) -> Result<Impl, String> {
+fn collect_info_struct(ast: &DataStruct, attrs: ObjectAttributes) -> Result<Impl, Error> {
     info_from_fields(&ast.fields, &attrs, field_var_name, "")
 }
 
@@ -123,28 +145,35 @@ fn info_from_fields(
     attrs: &ObjectAttributes,
     field_name: impl Fn(usize, &Field) -> TokenStream,
     header_prefix: &str,
-) -> Result<Impl, String> {
+) -> Result<Impl, Error> {
     let count_fields = fields.len();
 
-    let fields = fields.into_iter().enumerate().map(|(i, field)| {
-        let mut attributes = Attributes::parse(&field.attrs);
-        merge_attributes(&mut attributes, attrs);
+    let fields = fields
+        .into_iter()
+        .enumerate()
+        .map(|(i, field)| -> Result<_, Error> {
+            let mut attributes = Attributes::parse(&field.attrs)?;
+            merge_attributes(&mut attributes, attrs);
 
-        (i, field, attributes)
-    });
+            Ok((i, field, attributes))
+        });
 
     let mut headers = Vec::new();
     let mut values = Vec::new();
     let mut reorder = HashMap::new();
 
-    for (i, field, attributes) in fields {
+    for result in fields {
+        let (i, field, attributes) = result?;
         if attributes.is_ignored() {
             continue;
         }
 
         if let Some(order) = attributes.order {
             if order >= count_fields {
-                panic!("An order index '{}' is out of fields scope", order);
+                return Err(Error::message(format!(
+                    "An order index '{}' is out of fields scope",
+                    order
+                )));
             }
 
             reorder.insert(order, i);
@@ -230,11 +259,11 @@ fn field_headers(
     }
 }
 
-fn collect_info_enum(ast: &DataEnum, attrs: ObjectAttributes) -> Result<Impl, String> {
+fn collect_info_enum(ast: &DataEnum, attrs: ObjectAttributes) -> Result<Impl, Error> {
     let mut headers_list = Vec::new();
     let mut variants = Vec::new();
     for variant in &ast.variants {
-        let mut attributes = Attributes::parse(&variant.attrs);
+        let mut attributes = Attributes::parse(&variant.attrs)?;
         merge_attributes(&mut attributes, &attrs);
         if attributes.is_ignored() {
             continue;
@@ -245,7 +274,9 @@ fn collect_info_enum(ast: &DataEnum, attrs: ObjectAttributes) -> Result<Impl, St
         headers_list.push(info.headers);
     }
 
-    let variant_sizes = get_enum_variant_length(ast);
+    let variant_sizes = get_enum_variant_length(ast)
+        .collect::<Result<Vec<_>, Error>>()?
+        .into_iter();
     let values = values_for_enum(variant_sizes, variants);
 
     let headers = quote! {
@@ -262,7 +293,7 @@ fn info_from_variant(
     variant: &Variant,
     attributes: &Attributes,
     attrs: &ObjectAttributes,
-) -> Result<Impl, String> {
+) -> Result<Impl, Error> {
     if attributes.inline {
         let prefix = attributes
             .inline_prefix
@@ -478,7 +509,7 @@ fn field_header_name(f: &Field, attr: &Attributes, index: usize) -> String {
 }
 
 // todo: make String a &static str
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct Attributes {
     is_ignored: bool,
     inline: bool,
@@ -491,26 +522,52 @@ struct Attributes {
 }
 
 impl Attributes {
-    fn parse(attrs: &[Attribute]) -> Self {
-        let is_ignored = attrs_has_ignore_sign(attrs);
-        let should_be_inlined = should_be_inlined(attrs);
-        let inline_prefix = look_for_inline_prefix(attrs);
-        let rename_attr = override_header_name(attrs);
-        let rename_all_attr = lookup_rename_all_attr(attrs);
-        let order = override_header_order(attrs);
-        let (display_with, display_with_use_self) =
-            check_display_with_func(attrs).map_or((None, false), |(a, b)| (Some(a), b));
+    fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
+        let mut attributes = Self::default();
+        attributes.fill_attributes(attrs)?;
 
-        Self {
-            display_with,
-            display_with_use_self,
-            is_ignored,
-            order,
-            inline_prefix,
-            inline: should_be_inlined,
-            rename: rename_attr,
-            rename_all: rename_all_attr,
+        Ok(attributes)
+    }
+
+    fn fill_attributes(&mut self, attrs: &[Attribute]) -> Result<(), Error> {
+        for attrs in parse::parse_attributes(attrs) {
+            let attrs = attrs?;
+            for attr in attrs {
+                self.insert_attribute(attr)?;
+            }
         }
+
+        Ok(())
+    }
+
+    fn insert_attribute(&mut self, attr: parse::TabledAttr) -> Result<(), Error> {
+        match attr.kind {
+            parse::TabledAttrKind::Skip(b) => {
+                if b.value {
+                    self.is_ignored = true;
+                }
+            }
+            parse::TabledAttrKind::Inline(b, prefix) => {
+                if b.value {
+                    self.inline = true;
+                }
+
+                if let Some(prefix) = prefix {
+                    self.inline_prefix = Some(prefix.value())
+                }
+            }
+            parse::TabledAttrKind::Rename(value) => self.rename = Some(value.value()),
+            parse::TabledAttrKind::RenameAll(lit) => {
+                self.rename_all = Some(CasingStyle::from_lit(lit)?)
+            }
+            parse::TabledAttrKind::DisplayWith(path, use_self) => {
+                self.display_with = Some(path.value());
+                self.display_with_use_self = use_self;
+            }
+            parse::TabledAttrKind::Order(value) => self.order = Some(lit_int_to_usize(&value)?),
+        }
+
+        Ok(())
     }
 
     fn is_ignored(&self) -> bool {
@@ -518,274 +575,14 @@ impl Attributes {
     }
 }
 
-fn override_header_name(attrs: &[Attribute]) -> Option<String> {
-    find_name_attribute(attrs, "tabled", "rename", look_up_nested_meta_str)
-}
-
-fn lookup_rename_all_attr(attrs: &[Attribute]) -> Option<CasingStyle> {
-    find_name_attribute(attrs, "tabled", "rename_all", look_up_nested_meta_casing)
-}
-
-fn override_header_order(attrs: &[Attribute]) -> Option<usize> {
-    find_name_attribute(attrs, "tabled", "order", look_up_nested_meta_usize)
-}
-
-fn check_display_with_func(attrs: &[Attribute]) -> Option<(String, bool)> {
-    find_name_attribute_(attrs, |attr| {
-        Ok(parse_display_with_attribute(attr, "tabled"))
+fn lit_int_to_usize(value: &LitInt) -> Result<usize, Error> {
+    value.base10_parse::<usize>().map_err(|e| {
+        Error::new(
+            format!("Failed to parse {:?} as usize; {}", value.to_string(), e),
+            value.span(),
+            None,
+        )
     })
-    .unwrap()
-}
-
-fn should_be_inlined(attrs: &[Attribute]) -> bool {
-    let inline_attr = find_name_attribute(attrs, "tabled", "inline", look_up_nested_meta_bool)
-        .or_else(|| {
-            find_name_attribute(attrs, "tabled", "inline", look_up_nested_flag_str_in_attr)
-                .map(|_| true)
-        });
-    inline_attr == Some(true)
-}
-
-fn look_for_inline_prefix(attrs: &[Attribute]) -> Option<String> {
-    find_name_attribute(attrs, "tabled", "inline", look_up_nested_flag_str_in_attr)
-}
-
-fn attrs_has_ignore_sign(attrs: &[Attribute]) -> bool {
-    let is_ignored = find_name_attribute(attrs, "tabled", "skip", look_up_nested_meta_bool);
-    is_ignored == Some(true)
-}
-
-fn parse_name_attribute<R, F>(attr: &Attribute, method: &str, name: &str, lookup: F) -> Option<R>
-where
-    F: Fn(&NestedMeta, &str) -> Result<Option<R>, String>,
-{
-    if !attr.path.is_ident(method) {
-        return None;
-    }
-
-    let meta = attr.parse_meta().ok()?;
-
-    if let Meta::List(meta_list) = meta {
-        let val = parse_name_attribute_nested(meta_list.nested.iter(), method, name, lookup);
-        if val.is_some() {
-            return val;
-        }
-    }
-
-    None
-}
-
-fn parse_name_attribute_nested<'a, R, F>(
-    nested: impl Iterator<Item = &'a NestedMeta>,
-    method: &str,
-    name: &str,
-    lookup: F,
-) -> Option<R>
-where
-    F: Fn(&NestedMeta, &str) -> Result<Option<R>, String>,
-{
-    for nested_meta in nested {
-        let val = lookup(nested_meta, name).unwrap_or_else(
-            |e| panic!("{error} macros {macro} field {name}", error=e, macro=method, name=name),
-        );
-
-        if val.is_some() {
-            return val;
-        }
-    }
-    None
-}
-
-fn look_up_nested_meta_str(meta: &NestedMeta, name: &str) -> Result<Option<String>, String> {
-    match meta {
-        NestedMeta::Meta(Meta::NameValue(value)) if value.path.is_ident(name) => {
-            check_str_literal(&value.lit)
-        }
-        _ => Ok(None),
-    }
-}
-
-fn look_up_nested_meta_casing(
-    meta: &NestedMeta,
-    name: &str,
-) -> Result<Option<CasingStyle>, String> {
-    match meta {
-        NestedMeta::Meta(Meta::NameValue(value)) if value.path.is_ident(name) => {
-            check_casing_literal(&value.lit)
-        }
-        _ => Ok(None),
-    }
-}
-
-fn look_up_nested_meta_flag_str(meta: &NestedMeta, _: &str) -> Result<Option<String>, String> {
-    match meta {
-        NestedMeta::Lit(lit) => check_str_literal(lit),
-        _ => Ok(None),
-    }
-}
-
-fn check_str_literal(lit: &Lit) -> Result<Option<String>, String> {
-    match lit {
-        Lit::Str(value) => Ok(Some(value.value())),
-        Lit::ByteStr(value) => str::from_utf8(&value.value())
-            .map(|s| s.to_owned())
-            .map(Some)
-            .map_err(|_| "Expected a valid UTF-8 string for a field".to_owned()),
-        _ => Ok(None),
-    }
-}
-
-fn check_casing_literal(lit: &Lit) -> Result<Option<CasingStyle>, String> {
-    match lit {
-        Lit::Str(value) => Ok(Some(CasingStyle::from_lit(value.clone()))),
-        _ => Ok(None),
-    }
-}
-
-fn look_up_nested_meta_bool(meta: &NestedMeta, name: &str) -> Result<Option<bool>, String> {
-    match meta {
-        NestedMeta::Meta(Meta::Path(path)) if path.is_ident(name) => Ok(Some(true)),
-        NestedMeta::Meta(Meta::NameValue(value)) if value.path.is_ident(name) => match &value.lit {
-            Lit::Bool(value) => Ok(Some(value.value())),
-            _ => Err("A parameter should be a bool value".to_string()),
-        },
-        _ => Ok(None),
-    }
-}
-
-fn look_up_nested_flag_str_in_attr(
-    meta: &NestedMeta,
-    name: &str,
-) -> Result<Option<String>, String> {
-    match meta {
-        NestedMeta::Meta(Meta::List(list)) if list.path.is_ident(name) => {
-            parse_name_attribute_nested(list.nested.iter(), "", name, look_up_nested_meta_flag_str)
-                .ok_or_else(|| "An attribute doesn't have expected value".to_string())
-                .map(Some)
-        }
-        _ => Ok(None),
-    }
-}
-
-fn look_up_nested_meta_usize(meta: &NestedMeta, name: &str) -> Result<Option<usize>, String> {
-    match meta {
-        NestedMeta::Meta(Meta::NameValue(value)) => {
-            if value.path.is_ident(name) {
-                check_usize_literal(&value.lit)
-            } else {
-                Ok(None)
-            }
-        }
-        _ => Ok(None),
-    }
-}
-
-fn check_usize_literal(lit: &Lit) -> Result<Option<usize>, String> {
-    match lit {
-        Lit::Int(value) => {
-            let value = value
-                .base10_parse::<usize>()
-                .map_err(|e| format!("Failed to parse int {:?}; {}", value.to_string(), e))?;
-            Ok(Some(value))
-        }
-        _ => Ok(None),
-    }
-}
-
-fn find_name_attribute<R, F>(
-    attributes: &[Attribute],
-    method: &str,
-    name: &str,
-    lookup: F,
-) -> Option<R>
-where
-    F: Fn(&NestedMeta, &str) -> Result<Option<R>, String> + Clone,
-{
-    attributes
-        .iter()
-        .find_map(|attr| parse_name_attribute(attr, method, name, lookup.clone()))
-}
-
-fn find_name_attribute_<R, F>(attributes: &[Attribute], lookup: F) -> Result<Option<R>, String>
-where
-    F: Fn(&Attribute) -> Result<Option<R>, String>,
-{
-    for attr in attributes {
-        let result = (lookup)(attr)?;
-        if result.is_some() {
-            return Ok(result);
-        }
-    }
-
-    Ok(None)
-}
-
-fn parse_display_with_attribute(attr: &Attribute, attr_name: &str) -> Option<(String, bool)> {
-    if !attr.path.is_ident(attr_name) {
-        return None;
-    }
-
-    let meta = attr.parse_meta().ok()?;
-
-    if let Meta::List(list) = meta {
-        for meta in list.nested {
-            let val = parse_display_with_attribute_obj(&meta, "display_with");
-            match val {
-                Ok(Some(value)) => return Some(value),
-                Err(err) => {
-                    panic!("{error} macros {macro} field {name}", error=err, macro=attr_name, name="display_with")
-                }
-                _ => {}
-            }
-        }
-    }
-
-    None
-}
-
-fn parse_display_with_attribute_obj(
-    meta: &NestedMeta,
-    attr_name: &str,
-) -> Result<Option<(String, bool)>, String> {
-    match meta {
-        NestedMeta::Meta(Meta::NameValue(MetaNameValue { path, lit, .. }))
-            if path.is_ident(attr_name) =>
-        {
-            let value = take_str_literal(lit)?;
-            Ok(Some((value, false)))
-        }
-        NestedMeta::Meta(Meta::List(list)) if list.path.is_ident(attr_name) => {
-            let mut name = None;
-            let mut use_self = false;
-            for meta in &list.nested {
-                match meta {
-                    NestedMeta::Meta(Meta::Path(path)) if path.is_ident("args") => {
-                        use_self = true;
-                    }
-                    NestedMeta::Lit(lit) if name.is_none() => {
-                        name = Some(take_str_literal(lit)?);
-                    }
-                    _ => {}
-                }
-            }
-
-            match name {
-                Some(name) => Ok(Some((name, use_self))),
-                None => Ok(None),
-            }
-        }
-        _ => Ok(None),
-    }
-}
-
-fn take_str_literal(lit: &Lit) -> Result<String, String> {
-    match lit {
-        Lit::Str(value) => Ok(value.value()),
-        Lit::ByteStr(value) => str::from_utf8(&value.value())
-            .map(|s| s.to_owned())
-            .map_err(|_| "Expected a valid UTF-8 string for a field".to_owned()),
-        _ => Err("Expected a string but got something else".to_owned()),
-    }
 }
 
 struct ObjectAttributes {
@@ -793,9 +590,11 @@ struct ObjectAttributes {
 }
 
 impl ObjectAttributes {
-    fn parse(attrs: &[Attribute]) -> Self {
-        let rename_all = lookup_rename_all_attr(attrs);
-        Self { rename_all }
+    fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
+        let attrs = Attributes::parse(attrs)?;
+        Ok(Self {
+            rename_all: attrs.rename_all,
+        })
     }
 }
 
@@ -827,22 +626,22 @@ enum CasingStyle {
 }
 
 impl CasingStyle {
-    fn from_lit(name: syn::LitStr) -> Self {
+    fn from_lit(name: syn::LitStr) -> Result<Self, Error> {
         use self::CasingStyle::*;
         use heck::ToUpperCamelCase;
 
         let normalized = name.value().to_upper_camel_case().to_lowercase();
 
         match normalized.as_ref() {
-            "camel" | "camelcase" => Camel,
-            "kebab" | "kebabcase" => Kebab,
-            "pascal" | "pascalcase" => Pascal,
-            "screamingsnake" | "screamingsnakecase" => ScreamingSnake,
-            "snake" | "snakecase" => Snake,
-            "lower" | "lowercase" => Lower,
-            "upper" | "uppercase" => Upper,
-            "verbatim" | "verbatimcase" => Verbatim,
-            _ => panic!("unsupported casing: `{:?}`; supperted values are ['camelCase', 'kebab-case', 'PascalCase', 'SCREAMING_SNAKE_CASE', 'snake_case', 'lowercase', 'UPPERCASE', 'verbatim']", name.value()),
+            "camel" | "camelcase" => Ok(Camel),
+            "kebab" | "kebabcase" => Ok(Kebab),
+            "pascal" | "pascalcase" => Ok(Pascal),
+            "screamingsnake" | "screamingsnakecase" => Ok(ScreamingSnake),
+            "snake" | "snakecase" => Ok(Snake),
+            "lower" | "lowercase" => Ok(Lower),
+            "upper" | "uppercase" => Ok(Upper),
+            "verbatim" | "verbatimcase" => Ok(Verbatim),
+            _ => Err(Error::new(format!("unsupported casing: `{:?}`", name.value()), name.span(), Some("supperted values are ['camelCase', 'kebab-case', 'PascalCase', 'SCREAMING_SNAKE_CASE', 'snake_case', 'lowercase', 'UPPERCASE', 'verbatim']".to_owned())))
         }
     }
 
