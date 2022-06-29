@@ -1909,7 +1909,6 @@ fn wrong_rename_all_doesnt_panic_when_used_as_not_first() {
     assert_eq!(st.fields(), vec!["789"]);
 }
 
-
 #[test]
 fn rename_all_gets_first_value() {
     #[derive(Tabled)]
@@ -1931,7 +1930,7 @@ fn rename_all_gets_first_value() {
     }
 
     let st = Struct2 { field: 789 };
-    
+
     assert_eq!(Struct1::headers(), vec!["FIELD"],);
     assert_eq!(st.fields(), vec!["789"]);
 }
