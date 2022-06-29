@@ -1924,7 +1924,7 @@ fn rename_all_gets_first_value() {
     assert_eq!(st.fields(), vec!["789"]);
 
     #[derive(Tabled)]
-    #[tabled(rename_all = "UPPERCASE", rename_all = ""PascalCase"")]
+    #[tabled(rename_all = "UPPERCASE", rename_all = "PascalCase")]
     struct Struct2 {
         field: usize,
     }
