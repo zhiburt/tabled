@@ -77,8 +77,8 @@ enum Contact {
         username: &'static str,
         number: &'static str,
     },
-    #[tabled(hidden)]
+    #[tabled(skip)]
     No,
-    #[tabled(inline)]
+    #[tabled(skip)]
     Number(#[tabled("number")] &'static str),
 }

@@ -1883,34 +1883,34 @@ fn rename_all_variants() {
     test_case!(S8, "verbatimcase");
 }
 
+// #[test]
+// fn wrong_rename_all_panic_when_used_as_not_first() {
+//     #[derive(Tabled)]
+//     #[tabled(rename_all = "UPPERCASE")]
+//     #[tabled(rename_all = "some wrong case")]
+//     struct Struct1 {
+//         field: usize,
+//     }
+
+//     let st = Struct1 { field: 789 };
+
+//     assert_eq!(Struct1::headers(), vec!["FIELD"],);
+//     assert_eq!(st.fields(), vec!["789"]);
+
+//     #[derive(Tabled)]
+//     #[tabled(rename_all = "UPPERCASE", rename_all = "some wrong case")]
+//     struct Struct2 {
+//         field: usize,
+//     }
+
+//     let st = Struct2 { field: 789 };
+
+//     assert_eq!(Struct1::headers(), vec!["FIELD"],);
+//     assert_eq!(st.fields(), vec!["789"]);
+// }
+
 #[test]
-fn wrong_rename_all_doesnt_panic_when_used_as_not_first() {
-    #[derive(Tabled)]
-    #[tabled(rename_all = "UPPERCASE")]
-    #[tabled(rename_all = "some wrong case")]
-    struct Struct1 {
-        field: usize,
-    }
-
-    let st = Struct1 { field: 789 };
-
-    assert_eq!(Struct1::headers(), vec!["FIELD"],);
-    assert_eq!(st.fields(), vec!["789"]);
-
-    #[derive(Tabled)]
-    #[tabled(rename_all = "UPPERCASE", rename_all = "some wrong case")]
-    struct Struct2 {
-        field: usize,
-    }
-
-    let st = Struct2 { field: 789 };
-
-    assert_eq!(Struct1::headers(), vec!["FIELD"],);
-    assert_eq!(st.fields(), vec!["789"]);
-}
-
-#[test]
-fn rename_all_gets_first_value() {
+fn rename_all_gets_last_value() {
     #[derive(Tabled)]
     #[tabled(rename_all = "UPPERCASE")]
     #[tabled(rename_all = "PascalCase")]
@@ -1920,7 +1920,7 @@ fn rename_all_gets_first_value() {
 
     let st = Struct1 { field: 789 };
 
-    assert_eq!(Struct1::headers(), vec!["FIELD"],);
+    assert_eq!(Struct1::headers(), vec!["Field"],);
     assert_eq!(st.fields(), vec!["789"]);
 
     #[derive(Tabled)]
@@ -1931,6 +1931,6 @@ fn rename_all_gets_first_value() {
 
     let st = Struct2 { field: 789 };
 
-    assert_eq!(Struct1::headers(), vec!["FIELD"],);
+    assert_eq!(Struct1::headers(), vec!["Field"],);
     assert_eq!(st.fields(), vec!["789"]);
 }
