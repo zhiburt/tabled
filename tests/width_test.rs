@@ -745,10 +745,10 @@ fn total_width_big_with_panel() {
         static_table!(
             "|Hello World                                                                   |"
             "|--------------+---------------------+--------------------+--------------------|"
-            "| N            | column 0            | column 1           | column 2           |"
-            "| 0            | 0-0                 | 0-1                | 0-2                |"
-            "| 1            | 1-0                 | 1-1                | 1-2                |"
-            "| 2            | 2-0                 | 2-1                | 2-2                |"
+            "|N             |column 0             |column 1            |column 2            |"
+            "|0             |0-0                  |0-1                 |0-2                 |"
+            "|1             |1-0                  |1-1                 |1-2                 |"
+            "|2             |2-0                  |2-1                 |2-2                 |"
         )
     );
 }
@@ -854,7 +854,7 @@ fn total_width_small_with_panel() {
 
     assert_eq!(
         table,
-        static_table!("+---+" "|Hel|" "+---+" "| u |" "+---+")
+        static_table!("+---+" "|Hel|" "+---+" "|usi|" "+---+")
     );
     assert!(is_lines_equal(&table, 5));
 
@@ -900,11 +900,7 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::center())
-                .with(Padding::zero()),
-        )
+        .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(Width::truncate(6))
         .with(MinWidth::new(6))
@@ -913,7 +909,7 @@ fn total_width_small_with_panel() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World|"
+            "| Hello Wor |"
             "|--+--+--+--|"
             "|  |  |  |  |"
             "|  |  |  |  |"
@@ -925,11 +921,7 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::center())
-                .with(Padding::zero()),
-        )
+        .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(Width::truncate(14))
         .with(MinWidth::new(14))
@@ -938,7 +930,7 @@ fn total_width_small_with_panel() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World |"
+            "| Hello Worl |"
             "|--+--+--+---|"
             "|  |  |  | c |"
             "|  |  |  | 0 |"
@@ -950,11 +942,7 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World 123", 0))
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::center())
-                .with(Padding::zero()),
-        )
+        .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(Width::truncate(14))
         .with(MinWidth::new(14))
@@ -963,7 +951,7 @@ fn total_width_small_with_panel() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World |"
+            "| Hello Worl |"
             "|--+--+--+---|"
             "|  |  |  | c |"
             "|  |  |  | 0 |"
@@ -1059,11 +1047,7 @@ fn total_width_small_with_panel_using_wrapping() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::center())
-                .with(Padding::zero()),
-        )
+        .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(Width::wrap(14))
         .with(MinWidth::new(14))
@@ -1072,7 +1056,8 @@ fn total_width_small_with_panel_using_wrapping() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World |"
+            "| Hello Worl |"
+            "| d          |"
             "|--+--+--+---|"
             "|  |  |  | c |"
             "|  |  |  | o |"
@@ -1097,11 +1082,7 @@ fn total_width_small_with_panel_using_wrapping() {
 
     let table = Table::new(&data)
         .with(Panel("Hello World 123", 0))
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::center())
-                .with(Padding::zero()),
-        )
+        .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::github_markdown())
         .with(Width::wrap(14))
         .with(MinWidth::new(14))
@@ -1110,8 +1091,8 @@ fn total_width_small_with_panel_using_wrapping() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World |"
-            "|123         |"
+            "| Hello Worl |"
+            "| d 123      |"
             "|--+--+--+---|"
             "|  |  |  | c |"
             "|  |  |  | o |"

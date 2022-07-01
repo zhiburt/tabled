@@ -2242,10 +2242,41 @@ where
 
 fn set_entity_value<T>(map: &mut HashMap<Entity, T>, global: &mut T, entity: Entity, value: T) {
     match entity {
-        Entity::Global => *global = value,
+        Entity::Global => {
+            *global = value;
+        }
         _ => {
             map.insert(entity, value);
         }
+    }
+
+    invalidate_entity(map, entity);
+}
+
+fn invalidate_entity<T>(map: &mut HashMap<Entity, T>, entity: Entity) {
+    match entity {
+        Entity::Global => {
+            map.clear();
+        }
+        Entity::Column(col) => {
+            while let Some(o) = map
+                .keys()
+                .find(|entity| matches!(entity, Entity::Cell(c, _) if *c == col))
+                .cloned()
+            {
+                let _ = map.remove(&o);
+            }
+        }
+        Entity::Row(row) => {
+            while let Some(o) = map
+                .keys()
+                .find(|entity| matches!(entity, Entity::Cell(_, r) if *r == row))
+                .cloned()
+            {
+                let _ = map.remove(&o);
+            }
+        }
+        Entity::Cell(_, _) => (),
     }
 }
 
