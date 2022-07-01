@@ -9,19 +9,7 @@ fn main() {
     let table = data
         .table()
         .with(Style::re_structured_text())
-        .with(Margin::new(3, 3, 1, 0).set_fill('x', 'y', 'j', ' '));
+        .with(Margin::new(4, 3, 2, 1).set_fill('<', '>', 'v', '^'));
 
     println!("{}", table);
-
-    assert_eq!(
-        table.to_string(),
-        "jjjjjjjjjjjjjjjjj\n\
-         xxx=== === ===yyy\n\
-         xxx 0   1   2 yyy\n\
-         xxx=== === ===yyy\n\
-         xxx A   B   C yyy\n\
-         xxx D   E   F yyy\n\
-         xxx G   H   I yyy\n\
-         xxx=== === ===yyy"
-    )
 }

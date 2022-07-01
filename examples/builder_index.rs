@@ -1,7 +1,7 @@
 //! The example can be run by this command
-//! `cargo run --example expanded_display`
+//! `cargo run --example builder_index`
 
-use tabled::{display::ExpandedDisplay, Tabled};
+use tabled::{Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {
@@ -25,11 +25,17 @@ impl Distribution {
 fn main() {
     let data = [
         Distribution::new("Manjaro", "Arch", true, true),
-        Distribution::new("Arch", "", true, true),
-        Distribution::new("Debian", "", true, true),
+        Distribution::new("Arch", "None", true, true),
+        Distribution::new("Debian", "None", true, true),
     ];
 
-    let table = ExpandedDisplay::new(&data);
+    let table = Table::builder(&data)
+        .index()
+        .set_index(0)
+        .set_name(None)
+        .transpose()
+        .build()
+        .with(Style::modern());
 
     println!("{}", table);
 }

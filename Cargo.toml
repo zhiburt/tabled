@@ -47,3 +47,31 @@ required-features = ["color"]
 [[example]]
 name = "color"
 required-features = ["color"]
+
+[[example]]
+name = "rename_all"
+path = "examples/derive/rename_all.rs"
+
+[[example]]
+name = "rename"
+path = "examples/derive/rename.rs"
+
+[[example]]
+name = "order"
+path = "examples/derive/order.rs"
+
+[[example]]
+name = "skip"
+path = "examples/derive/skip.rs"
+
+[[example]]
+name = "inline"
+path = "examples/derive/inline.rs"
+
+[[example]]
+name = "inline_enum"
+path = "examples/derive/inline_enum.rs"
+
+[[example]]
+name = "display_with"
+path = "examples/derive/display_with.rs"

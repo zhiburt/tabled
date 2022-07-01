@@ -1,14 +1,7 @@
 //! The example can be run by this command
-//! `cargo run --example default_array`
+//! `cargo run --example print_matrix`
 
 use tabled::{Style, Table};
-
-fn main() {
-    let data = matrix::<10>();
-    let table = Table::new(&data).with(Style::modern());
-
-    println!("{}", table);
-}
 
 fn matrix<const N: usize>() -> [[usize; N]; N] {
     let mut matrix = [[0; N]; N];
@@ -21,4 +14,11 @@ fn matrix<const N: usize>() -> [[usize; N]; N] {
     }
 
     matrix
+}
+
+fn main() {
+    let data = matrix::<10>();
+    let table = Table::new(&data).with(Style::modern());
+
+    println!("{}", table);
 }

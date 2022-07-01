@@ -8,17 +8,22 @@ use tabled::{object::Cell, ModifyObject, Span, Style, TableIteratorExt};
 fn main() {
     let data = [["just 1 column"; 5]; 5];
 
-    let cell_span = |r, c, span| Cell(r, c).modify().with(Span::column(span));
+    let span_cell = |r, c, span, text: &'static str| {
+        Cell(r, c)
+            .modify()
+            .with(Span::column(span))
+            .with(move |_: &str| text.to_string())
+    };
 
     let table = data
         .table()
-        .with(cell_span(0, 0, 5).with(|_: &str| "span all 5 columns".to_string()))
-        .with(cell_span(1, 0, 4).with(|_: &str| "span 4 columns".to_string()))
-        .with(cell_span(2, 0, 3).with(|_: &str| "span 3 columns".to_string()))
-        .with(cell_span(2, 3, 2).with(|_: &str| "span 2 columns".to_string()))
-        .with(cell_span(3, 0, 2).with(|_: &str| "span 3 columns".to_string()))
-        .with(cell_span(3, 2, 3).with(|_: &str| "span 3 columns".to_string()))
-        .with(cell_span(4, 1, 4).with(|_: &str| "span 4 columns".to_string()))
+        .with(span_cell(0, 0, 5, "span all 5 columns"))
+        .with(span_cell(1, 0, 4, "span 4 columns"))
+        .with(span_cell(2, 0, 3, "span 3 columns"))
+        .with(span_cell(2, 3, 2, "span 2 columns"))
+        .with(span_cell(3, 0, 2, "span 2 columns"))
+        .with(span_cell(3, 2, 3, "span 3 columns"))
+        .with(span_cell(4, 1, 4, "span 4 columns"))
         .with(Style::modern())
         .with(Style::correct_spans());
 

@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example table_enclosure`
+//! `cargo run --example nested_table_3`
 
 use tabled::{
     object::{Cell, Segment},
@@ -13,22 +13,22 @@ struct Contribution {
     profile: &'static str,
 }
 
+impl Contribution {
+    fn new(author: &'static str, profile: &'static str) -> Self {
+        Self { author, profile }
+    }
+}
+
 fn main() {
     let commiters = [
-        Contribution {
-            author: "kozmod",
-            profile: "https:/github.com/kozmod",
-        },
-        Contribution {
-            author: "IsaacCloos",
-            profile: "https:/github.com/IsaacCloos",
-        },
+        Contribution::new("kozmod", "https:/github.com/kozmod"),
+        Contribution::new("IsaacCloos", "https:/github.com/IsaacCloos"),
     ];
 
-    let issuers = [Contribution {
-        author: "aharpervc",
-        profile: "https:/github.com/aharpervc",
-    }];
+    let issuers = [Contribution::new(
+        "aharpervc",
+        "https:/github.com/aharpervc",
+    )];
 
     let commiters_table = commiters
         .table()

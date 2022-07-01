@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 
 use tabled::{
     object::{Columns, Rows},
-    Alignment, Extract, Format, Modify, Style, Table, Tabled,
+    Alignment, Extract, Modify, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -16,6 +16,23 @@ struct Album {
     level_of_greatness: LevelOfGreatness,
 }
 
+impl Album {
+    fn new(
+        artist: &'static str,
+        name: &'static str,
+        released: &'static str,
+        level_of_greatness: LevelOfGreatness,
+    ) -> Self {
+        Self {
+            artist,
+            name,
+            released,
+            level_of_greatness,
+        }
+    }
+}
+
+#[derive(Debug)]
 enum LevelOfGreatness {
     Supreme,
     Outstanding,
@@ -24,37 +41,31 @@ enum LevelOfGreatness {
 
 impl Display for LevelOfGreatness {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        match self {
-            LevelOfGreatness::Supreme => write!(f, "Supreme"),
-            LevelOfGreatness::Outstanding => write!(f, "Outstanding"),
-            LevelOfGreatness::Unparalleled => write!(f, "Unparalleled"),
-        }
+        std::fmt::Debug::fmt(&self, f)
     }
 }
 
 fn main() {
+    use LevelOfGreatness::*;
+
     let data = [
-        Album {
-            artist: "Pink Floyd",
-            name: "The Dark Side of the Moon",
-            released: "01 March 1973",
-            level_of_greatness: LevelOfGreatness::Unparalleled,
-        },
-        Album {
-            artist: "Fleetwood Mac",
-            name: "Rumours",
-            released: "04 February 1977",
-            level_of_greatness: LevelOfGreatness::Outstanding,
-        },
-        Album {
-            artist: "Led Zeppelin",
-            name: "Led Zeppelin IV",
-            released: "08 November 1971",
-            level_of_greatness: LevelOfGreatness::Supreme,
-        },
+        Album::new(
+            "Pink Floyd",
+            "The Dark Side of the Moon",
+            "01 March 1973",
+            Unparalleled,
+        ),
+        Album::new("Fleetwood Mac", "Rumours", "04 February 1977", Outstanding),
+        Album::new(
+            "Led Zeppelin",
+            "Led Zeppelin IV",
+            "08 November 1971",
+            Supreme,
+        ),
     ];
 
     println!("Full");
+
     let table = Table::new(&data)
         .with(Style::modern())
         .with(Modify::new(Rows::first()).with(Alignment::center()))
@@ -62,18 +73,22 @@ fn main() {
     println!("{}", table);
 
     println!("Segment   row: (1..=2)   column: (1..)");
+
     let table = table.with(Extract::segment(1..=2, 1..));
     println!("{}", table);
 
     println!("Refinished segment");
+
+    let highlight = |s: &str| {
+        if s == "Outstanding" {
+            format!("+{}+", s)
+        } else {
+            s.to_string()
+        }
+    };
+
     let table = table
         .with(Style::modern())
-        .with(Modify::new(Columns::new(1..)).with(Format::new(|s| {
-            if s == "Outstanding" {
-                format!("+{}+", s)
-            } else {
-                s.to_string()
-            }
-        })));
+        .with(Modify::new(Columns::new(1..)).with(highlight));
     println!("{}", table);
 }

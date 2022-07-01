@@ -6,46 +6,31 @@ use tabled::{object::Rows, Alignment, ModifyObject, Style, Table, Tabled};
 #[derive(Tabled)]
 struct Distribution {
     name: &'static str,
-    #[tabled(display_with = "Self::display_based_on")]
-    based_on: Option<&'static str>,
+    based_on: &'static str,
     is_active: bool,
     is_cool: bool,
 }
 
 impl Distribution {
-    fn display_based_on(o: &Option<&'static str>) -> String {
-        match o {
-            &Some(s) => s.into(),
-            None => "Independent".into(),
+    fn new(name: &'static str, based_on: &'static str, is_active: bool, is_cool: bool) -> Self {
+        Self {
+            name,
+            based_on,
+            is_active,
+            is_cool,
         }
     }
 }
 
 fn main() {
     let data = [
-        Distribution {
-            name: "Manjaro",
-            based_on: Some("Arch"),
-            is_cool: true,
-            is_active: true,
-        },
-        Distribution {
-            name: "Debian",
-            based_on: None,
-            is_cool: true,
-            is_active: true,
-        },
-        Distribution {
-            name: "Debian",
-            based_on: None,
-            is_cool: true,
-            is_active: true,
-        },
+        Distribution::new("Manjaro", "Arch", true, true),
+        Distribution::new("Arch", "", true, true),
+        Distribution::new("Debian", "", true, true),
     ];
 
     let table = Table::new(&data)
-        .with(Style::modern())
-        .with(Rows::first().modify().with(Alignment::center()))
+        .with(Style::github_markdown())
         .with(Rows::new(1..).modify().with(Alignment::left()));
 
     println!("{}", table);

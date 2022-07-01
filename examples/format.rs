@@ -37,13 +37,13 @@ fn main() {
     let table = Table::new(&data)
         .with(Style::github_markdown())
         .with(
-            Rows::new(..1)
+            Rows::first()
                 .modify()
                 .with(Format::with_index(|_, (_, column)| column.to_string())),
         )
         .with(
-            Columns::new(..1)
-                .not(Rows::new(..1))
+            Columns::first()
+                .not(Rows::first())
                 .modify()
                 .with(|s: &str| format!("{}...", s)),
         );

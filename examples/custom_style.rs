@@ -29,15 +29,15 @@ fn main() {
         CodeEditor::new("Neovim", "2015", "Vim community"),
     ];
 
+    let theme = Style::modern()
+        .left_intersection('│')
+        .right_intersection('│')
+        .horizontal_off()
+        .vertical_off()
+        .header(' ');
+
     let table = Table::new(&data)
-        .with(
-            Style::modern()
-                .left_intersection('│')
-                .right_intersection('│')
-                .horizontal_off()
-                .vertical_off()
-                .header(' '),
-        )
+        .with(theme)
         .with(Segment::all().modify().with(Alignment::left()));
 
     println!("{}", table);

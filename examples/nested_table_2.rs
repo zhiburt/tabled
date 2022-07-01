@@ -1,7 +1,7 @@
 //! The example can be run by this command
-//! `cargo run --example basic`
+//! `cargo run --example nested_table_2`
 
-use tabled::{object::Rows, Alignment, Modify, Style, Table, Tabled};
+use tabled::{Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Vendor {
@@ -10,6 +10,16 @@ struct Vendor {
     main_os: Distribution,
     #[tabled(display_with = "display_distribution")]
     switch_os: Distribution,
+}
+
+impl Vendor {
+    fn new(name: &'static str, main_os: Distribution, switch_os: Distribution) -> Self {
+        Self {
+            name,
+            main_os,
+            switch_os,
+        }
+    }
 }
 
 fn display_distribution(d: &Distribution) -> String {
@@ -34,59 +44,42 @@ impl Distribution {
     }
 }
 
+impl Distribution {
+    fn new(
+        name: &'static str,
+        based_on: Option<&'static str>,
+        is_active: bool,
+        is_cool: bool,
+    ) -> Self {
+        Self {
+            name,
+            based_on,
+            is_active,
+            is_cool,
+        }
+    }
+}
+
 fn main() {
     let data = [
-        Vendor {
-            name: "Azure",
-            main_os: Distribution {
-                name: "Manjaro",
-                based_on: Some("Arch"),
-                is_cool: true,
-                is_active: true,
-            },
-            switch_os: Distribution {
-                name: "Manjaro",
-                based_on: Some("Arch"),
-                is_cool: true,
-                is_active: true,
-            },
-        },
-        Vendor {
-            name: "AWS",
-            main_os: Distribution {
-                name: "Debian",
-                based_on: None,
-                is_cool: true,
-                is_active: true,
-            },
-            switch_os: Distribution {
-                name: "Debian",
-                based_on: None,
-                is_cool: true,
-                is_active: true,
-            },
-        },
-        Vendor {
-            name: "GCP",
-            main_os: Distribution {
-                name: "Debian",
-                based_on: None,
-                is_cool: true,
-                is_active: true,
-            },
-            switch_os: Distribution {
-                name: "Debian",
-                based_on: None,
-                is_cool: true,
-                is_active: true,
-            },
-        },
+        Vendor::new(
+            "Azure",
+            Distribution::new("Windows", None, true, true),
+            Distribution::new("Manjaro", Some("Arch"), true, true),
+        ),
+        Vendor::new(
+            "AWS",
+            Distribution::new("Debian", None, true, true),
+            Distribution::new("Arch", None, true, true),
+        ),
+        Vendor::new(
+            "GCP",
+            Distribution::new("Debian", None, true, true),
+            Distribution::new("Arch", None, true, true),
+        ),
     ];
 
-    let table = Table::new(&data)
-        .with(Style::modern())
-        .with(Modify::new(Rows::first()).with(Alignment::center()))
-        .with(Modify::new(Rows::new(1..)).with(Alignment::left()));
+    let table = Table::new(&data).with(Style::modern());
 
     println!("{}", table);
 }

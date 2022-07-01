@@ -23,13 +23,11 @@ fn main() {
     let data = [some_json];
     let table = data.table().with(Style::rounded());
 
-    println!("A default Alignment settings");
-    println!("{}", table);
+    println!("A default Alignment settings\n{}", table);
 
     let table = table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
 
-    println!("Per line Alignment strategy");
-    println!("{}", table);
+    println!("Per line Alignment strategy\n{}", table);
 
     let table = table.with(
         Modify::new(Segment::all())
@@ -37,6 +35,8 @@ fn main() {
             .with(TrimStrategy::Both),
     );
 
-    println!("A default Alignment; allowing vertical and horizontal trim");
-    println!("{}", table);
+    println!(
+        "A default Alignment; allowing vertical and horizontal trim\n{}",
+        table
+    );
 }

@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example width`
+//! `cargo run --example table_width`
 
 use tabled::{object::Segment, width::Percent, Alignment, Modify, Style, Table, Width};
 

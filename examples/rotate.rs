@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example rotate`
 
-use tabled::{object::Segment, Modify, Padding, Rotate, Style, Table, Tabled};
+use tabled::{Rotate, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {
@@ -10,29 +10,24 @@ struct Linux {
     link: &'static str,
 }
 
+impl Linux {
+    fn new(id: u8, destribution: &'static str, link: &'static str) -> Self {
+        Self {
+            id,
+            destribution,
+            link,
+        }
+    }
+}
+
 fn main() {
     let data = vec![
-        Linux {
-            id: 0,
-            destribution: "Fedora",
-            link: "https://getfedora.org/",
-        },
-        Linux {
-            id: 2,
-            destribution: "OpenSUSE",
-            link: "https://www.opensuse.org/",
-        },
-        Linux {
-            id: 3,
-            destribution: "Endeavouros",
-            link: "https://endeavouros.com/",
-        },
+        Linux::new(0, "Fedora", "https://getfedora.org/"),
+        Linux::new(2, "OpenSUSE", "https://www.opensuse.org/"),
+        Linux::new(3, "Endeavouros", "https://endeavouros.com/"),
     ];
 
-    let table = Table::new(&data)
-        .with(Rotate::Left)
-        .with(Style::blank())
-        .with(Modify::new(Segment::all()).with(Padding::new(1, 1, 0, 0)));
+    let table = Table::new(&data).with(Rotate::Left);
 
     println!("{}", table);
 }

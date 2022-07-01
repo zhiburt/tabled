@@ -8,9 +8,9 @@ use std::convert::TryFrom;
 use owo_colors::OwoColorize;
 
 use tabled::{
-    object::{Columns, Object, Rows},
+    object::{Columns, Rows},
     style::{BorderColor, ColoredBorder, Style, Symbol},
-    Alignment, ModifyObject, Table, Tabled,
+    ModifyObject, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -20,65 +20,48 @@ struct Bsd {
     is_active: bool,
 }
 
+impl Bsd {
+    fn new(distribution: &'static str, year_of_first_release: usize, is_active: bool) -> Self {
+        Self {
+            distribution,
+            year_of_first_release,
+            is_active,
+        }
+    }
+}
+
 fn main() {
     let data = vec![
-        Bsd {
-            distribution: "SunOS",
-            year_of_first_release: 1982,
-            is_active: false,
-        },
-        Bsd {
-            distribution: "NetBSD",
-            year_of_first_release: 1993,
-            is_active: true,
-        },
-        Bsd {
-            distribution: "FreeBSD",
-            year_of_first_release: 1993,
-            is_active: true,
-        },
-        Bsd {
-            distribution: "BSD",
-            year_of_first_release: 1978,
-            is_active: false,
-        },
-        Bsd {
-            distribution: "OpenBSD",
-            year_of_first_release: 1995,
-            is_active: true,
-        },
+        Bsd::new("BSD", 1978, false),
+        Bsd::new("SunOS", 1982, false),
+        Bsd::new("NetBSD", 1993, true),
+        Bsd::new("FreeBSD", 1993, true),
+        Bsd::new("OpenBSD", 1995, true),
     ];
 
-    let table =
-        Table::new(&data)
-            .with(Style::psql())
-            .with(BorderColor::try_from(" ".yellow().to_string()).unwrap())
-            .with(Rows::first().modify().with(
-                ColoredBorder::default().bottom(Symbol::ansi('-'.red().to_string()).unwrap()),
-            ))
-            .with(
-                Rows::first().not(Columns::first()).modify().with(
-                    ColoredBorder::default()
-                        .bottom_left_corner(Symbol::ansi('+'.purple().to_string()).unwrap()),
-                ),
-            )
-            .with(Rows::first().modify().with(Alignment::center()))
-            .with(Rows::new(1..).modify().with(Alignment::left()))
-            .with(
-                Columns::single(0)
-                    .modify()
-                    .with(|s: &str| s.blue().to_string()),
-            )
-            .with(
-                Columns::single(1)
-                    .modify()
-                    .with(|s: &str| s.green().to_string()),
-            )
-            .with(
-                Columns::single(2)
-                    .modify()
-                    .with(|s: &str| s.red().to_string()),
-            );
+    let red = |s: &str| s.red().on_bright_white().to_string();
+    let blue = |s: &str| s.blue().to_string();
+    let green = |s: &str| s.green().to_string();
+
+    let red_split = |c: char| Symbol::ansi(c.red().to_string()).unwrap();
+    let purple_split = |c: char| Symbol::ansi(c.purple().to_string()).unwrap();
+
+    let yellow_color = BorderColor::try_from(' '.yellow().to_string()).unwrap();
+
+    let first_row_style = Rows::first().modify().with(
+        ColoredBorder::default()
+            .bottom(red_split('-'))
+            .bottom_left_corner(purple_split('+'))
+            .bottom_right_corner(purple_split('+')),
+    );
+
+    let table = Table::new(&data)
+        .with(Style::psql())
+        .with(yellow_color)
+        .with(first_row_style)
+        .with(Columns::single(0).modify().with(red))
+        .with(Columns::single(1).modify().with(green))
+        .with(Columns::single(2).modify().with(blue));
 
     println!("{}", table);
 }
