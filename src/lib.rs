@@ -162,7 +162,6 @@ mod concat;
 mod disable;
 mod extract;
 mod formating;
-mod highlight;
 mod margin;
 mod modify;
 mod padding;
@@ -174,6 +173,7 @@ mod table;
 pub mod builder;
 pub mod display;
 pub mod formatting_settings;
+pub mod highlight;
 pub mod object;
 pub mod style;
 pub mod width;
@@ -185,7 +185,7 @@ pub use tabled_derive::Tabled;
 pub use papergrid;
 
 pub use crate::{
-    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::*, margin::*,
+    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::Highlight, margin::*,
     modify::*, padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::Width,
 };
 

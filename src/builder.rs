@@ -183,6 +183,49 @@ impl Builder {
         self
     }
 
+    /// Sets a [Table] header.
+    ///
+    /// If not set a first row will be considered a header.
+    ///
+    /// ```rust
+    /// use tabled::Table;
+    ///
+    /// let data = [("Hello", 1u8, false), ("World", 21u8, true)];
+    ///
+    /// let table = Table::builder(data).build().to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     "+-------+----+-------+\n\
+    ///      | &str  | u8 | bool  |\n\
+    ///      +-------+----+-------+\n\
+    ///      | Hello | 1  | false |\n\
+    ///      +-------+----+-------+\n\
+    ///      | World | 21 | true  |\n\
+    ///      +-------+----+-------+"
+    /// );
+    ///
+    ///
+    /// let table = Table::builder(data).remove_columns().build().to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     "+-------+----+-------+\n\
+    ///      | Hello | 1  | false |\n\
+    ///      +-------+----+-------+\n\
+    ///      | World | 21 | true  |\n\
+    ///      +-------+----+-------+"
+    /// );
+    ///
+    /// ```
+    pub fn remove_columns(mut self) -> Self {
+        self.columns = None;
+        let size = self.get_size();
+        self.size = size;
+
+        self
+    }
+
     /// Adds a row to a [Table].
     ///
     /// If [Self::set_columns] is not set the first row will be considered a header.
@@ -349,6 +392,20 @@ impl Builder {
         if size > self.size {
             self.size = size;
         }
+    }
+
+    fn get_size(&mut self) -> usize {
+        let mut max = self
+            .columns
+            .as_ref()
+            .map(|columns| columns.len())
+            .unwrap_or(0);
+
+        let max_records = self.records.iter().map(|row| row.len()).max().unwrap_or(0);
+
+        max = std::cmp::max(max_records, max);
+
+        max
     }
 
     fn fix_rows(&mut self) {
@@ -562,7 +619,30 @@ impl IndexBuilder {
     /// No flag makes builder to not use an index.
     ///
     /// It may be useful when only [Self::transpose] need to be used.
-    pub fn no_index(mut self) -> Self {
+    ///
+    /// ```
+    /// use tabled::builder::Builder;
+    ///
+    /// let table = Builder::default()
+    ///     .set_columns(["i", "col-1", "col-2"])
+    ///     .add_record(["0", "value-1", "value-2"])
+    ///     .add_record(["2", "value-3", "value-4"])
+    ///     .index()
+    ///     .hide_index()
+    ///     .build();
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "+---+---------+---------+\n\
+    ///      | i |  col-1  |  col-2  |\n\
+    ///      +---+---------+---------+\n\
+    ///      | 0 | value-1 | value-2 |\n\
+    ///      +---+---------+---------+\n\
+    ///      | 2 | value-3 | value-4 |\n\
+    ///      +---+---------+---------+"
+    /// )
+    /// ```
+    pub fn hide_index(mut self) -> Self {
         self.print_index = false;
         self
     }
@@ -697,8 +777,6 @@ fn build_index(mut b: IndexBuilder) -> Builder {
         return b.b;
     }
 
-    b.b.size += 1;
-
     let records = &mut b.b.records;
 
     let columns = b.b.columns.take().unwrap();
@@ -706,6 +784,7 @@ fn build_index(mut b: IndexBuilder) -> Builder {
 
     // add index column
     if b.print_index {
+        b.b.size += 1;
         b.index.insert(0, String::new());
         insert_column(records, b.index, 0);
     }

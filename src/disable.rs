@@ -23,6 +23,8 @@
 //!      +-------+"
 //! );
 //! ```
+//!
+//! [Table]: crate::Table
 
 use std::ops::RangeBounds;
 

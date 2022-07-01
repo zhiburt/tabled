@@ -81,6 +81,7 @@
 //! ```
 //!
 //! [Table]: crate::Table
+//! [Symbol]: crate::style::Symbol
 
 use std::{borrow::Cow, marker::PhantomData};
 
@@ -564,6 +565,7 @@ impl StyleConfig {
 impl StyleConfig {
     /// Returns a [StyleConfig] version which can set colors.
     #[cfg(feature = "color")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
     pub fn colored(self) -> StyleConfigColored {
         StyleConfigColored {
             borders: self,
@@ -1345,6 +1347,7 @@ impl CellOption for Border {
 ///     .with(Modify::new(Rows::single(0)).with(ColoredBorder::default().top(c)));
 /// ```
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct ColoredBorder(pub(crate) papergrid::Border<Symbol>);
 
@@ -1428,6 +1431,7 @@ impl CellOption for ColoredBorder {
 ///     .with(Modify::new(Rows::single(0)).with(ColoredBorder::filled(Symbol::ansi(colored_char).unwrap())));
 /// ```
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub use papergrid::Symbol;
 
 /// A correctnes function of style for [crate::Table] which has [crate::Span]s.
@@ -1531,6 +1535,7 @@ fn is_in_span_range(spans: &[(Position, usize)], pos: Position) -> bool {
 /// println!("{}", table);
 /// ```
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub use papergrid::BorderColor;
 
 #[cfg(feature = "color")]
@@ -1542,6 +1547,7 @@ impl TableOption for BorderColor {
 
 /// A colored [StyleConfig] versions.
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone)]
 pub struct StyleConfigColored {
     borders: StyleConfig,

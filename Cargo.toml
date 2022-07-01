@@ -75,3 +75,12 @@ path = "examples/derive/inline_enum.rs"
 [[example]]
 name = "display_with"
 path = "examples/derive/display_with.rs"
+
+[package.metadata.docs.rs]
+# To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
+#
+# RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
+features = ["unstable-doc"]
+cargo-args = ["-Zunstable-options"]
+rustdoc-args = ["--cfg", "docsrs"]
+rustc-args = ["--cfg", "docsrs"]

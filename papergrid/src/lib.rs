@@ -842,10 +842,6 @@ impl Settings {
     /// The border setting is in a restrictive manner, by default.
     /// So if there was no split line but border relies on it
     /// a error will be issued.
-    ///
-    /// To fix it you can construct split lines before calling this function.
-    /// Or you can pass a `false` argument into [Self::border_restriction]
-    /// so if absent lines will be created.
     pub fn border(mut self, border: Border) -> Self {
         self.border = Some(border);
         self

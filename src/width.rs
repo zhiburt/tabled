@@ -4,7 +4,7 @@
 //! - [Wrap] split the content via new lines in order to fit max width.
 //! - [Justify] sets columns width to the same value.
 //!
-//! To set a a table width a combination of [MaxWidth] and [MinWidth] can be set.
+//! To set a a table width, a combination of [Width::truncate] or [Width::wrap] and [Width::increase] can be used.
 //!
 //! ## Example
 //!

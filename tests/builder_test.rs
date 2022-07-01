@@ -73,6 +73,45 @@ fn builder_header() {
 }
 
 #[test]
+fn builder_header_remove() {
+    let builder = Builder::default()
+        .add_record(["a", "b", "c"])
+        .add_record(["d", "e", "f"])
+        .set_columns(["1", "2", "3"])
+        .remove_columns();
+    let table = builder.build().to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---+---+---+"
+            "| a | b | c |"
+            "+---+---+---+"
+            "| d | e | f |"
+            "+---+---+---+"
+        )
+    );
+
+    let builder = Builder::default()
+        .add_record(["a", "b", "c"])
+        .add_record(["d", "e", "f"])
+        .set_columns(["1", "2", "3", "4", "5"])
+        .remove_columns();
+    let table = builder.build().to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---+---+---+"
+            "| a | b | c |"
+            "+---+---+---+"
+            "| d | e | f |"
+            "+---+---+---+"
+        )
+    );
+}
+
+#[test]
 fn builder_from_iter() {
     let builder = Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]]);
     let table = builder.build().to_string();
@@ -757,4 +796,182 @@ fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
         .map(|line| papergrid::string_width(line))
         .all(|line_width| line_width == lines[0].len());
     lines_has_the_same_length
+}
+
+#[test]
+fn builder_index() {
+    let table = Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
+        .index()
+        .build()
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---+---+-----------+"
+            "|   | 0 |     1     |"
+            "+---+---+-----------+"
+            "| 0 | n |   name    |"
+            "+---+---+-----------+"
+            "| 1 | 0 |  Dmitriy  |"
+            "+---+---+-----------+"
+            "| 2 | 1 | Vladislav |"
+            "+---+---+-----------+"
+        )
+    );
+}
+
+#[test]
+fn builder_index_set_name() {
+    let table = Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
+        .index()
+        .set_name(Some("A index name".to_owned()))
+        .build()
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+--------------+---+-----------+"
+            "|              | 0 |     1     |"
+            "+--------------+---+-----------+"
+            "| A index name |   |           |"
+            "+--------------+---+-----------+"
+            "|      0       | n |   name    |"
+            "+--------------+---+-----------+"
+            "|      1       | 0 |  Dmitriy  |"
+            "+--------------+---+-----------+"
+            "|      2       | 1 | Vladislav |"
+            "+--------------+---+-----------+"
+        )
+    );
+}
+
+#[test]
+fn builder_index_enumeration() {
+    let table = Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
+        .index()
+        .hide_index()
+        .build()
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---+-----------+"
+            "| 0 |     1     |"
+            "+---+-----------+"
+            "| n |   name    |"
+            "+---+-----------+"
+            "| 0 |  Dmitriy  |"
+            "+---+-----------+"
+            "| 1 | Vladislav |"
+            "+---+-----------+"
+        )
+    );
+}
+
+#[test]
+fn builder_set_index() {
+    let table = Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
+        .index()
+        .set_index(1)
+        .build()
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+-----------+---+"
+            "|           | 0 |"
+            "+-----------+---+"
+            "|     1     |   |"
+            "+-----------+---+"
+            "|   name    | n |"
+            "+-----------+---+"
+            "|  Dmitriy  | 0 |"
+            "+-----------+---+"
+            "| Vladislav | 1 |"
+            "+-----------+---+"
+        )
+    );
+}
+
+#[test]
+fn builder_set_index_and_set_index_name() {
+    let table = Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
+        .index()
+        .set_index(1)
+        .set_name(Some("Hello".to_owned()))
+        .build()
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+-----------+---+"
+            "|           | 0 |"
+            "+-----------+---+"
+            "|   Hello   |   |"
+            "+-----------+---+"
+            "|   name    | n |"
+            "+-----------+---+"
+            "|  Dmitriy  | 0 |"
+            "+-----------+---+"
+            "| Vladislav | 1 |"
+            "+-----------+---+"
+        )
+    );
+
+    let table = Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
+        .index()
+        .set_index(1)
+        .set_name(None)
+        .build()
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+-----------+---+"
+            "|           | 0 |"
+            "+-----------+---+"
+            "|   name    | n |"
+            "+-----------+---+"
+            "|  Dmitriy  | 0 |"
+            "+-----------+---+"
+            "| Vladislav | 1 |"
+            "+-----------+---+"
+        )
+    );
+}
+
+#[test]
+fn builder_index_transpose() {
+    let data = [
+        ["n", "name", "zz"],
+        ["0", "Dmitriy", "123"],
+        ["1", "Vladislav", "123"],
+    ];
+
+    let table = Builder::from_iter(data)
+        .index()
+        .transpose()
+        .build()
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+---+------+---------+-----------+"
+            "|   |  0   |    1    |     2     |"
+            "+---+------+---------+-----------+"
+            "| 0 |  n   |    0    |     1     |"
+            "+---+------+---------+-----------+"
+            "| 1 | name | Dmitriy | Vladislav |"
+            "+---+------+---------+-----------+"
+            "| 2 |  zz  |   123   |    123    |"
+            "+---+------+---------+-----------+"
+        )
+    );
 }

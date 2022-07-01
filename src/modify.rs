@@ -25,6 +25,9 @@ where
     /// IMPORTANT:
     ///     The function *doesn't* changes a [Table].
     ///     [Table] will be changed only after passing [Modify] object to [Table::with].
+    ///
+    /// [Table]: crate::Table
+    /// [Table::with]: crate::Table::with
     pub fn with<F>(self, s: F) -> ModifyList<O, F>
     where
         F: CellOption,
@@ -52,6 +55,9 @@ where
     /// IMPORTANT:
     ///     The function *doesn't* changes a [Table].
     ///     [Table] will be changed only after passing [Modify] object to [Table::with].
+    ///
+    /// [Table]: crate::Table
+    /// [Table::with]: crate::Table::with
     pub fn with<F>(self, s: F) -> ModifyList<O, CellSettingsList<S, F>>
     where
         F: CellOption,

@@ -9,8 +9,6 @@ use crate::{object::Object, style::Border, TableOption};
 
 /// Highlight modifies a table style by changing a border of a target [crate::Table] segment.
 ///
-/// [Default] implementation runs Highlight for a [Frame].
-///
 /// # Example
 ///
 /// ```
@@ -80,6 +78,7 @@ use crate::{object::Object, style::Border, TableOption};
 /// );
 /// ```
 ///
+///
 pub struct Highlight<O> {
     target: O,
     border: Border,
@@ -100,6 +99,7 @@ where
 impl<O> Highlight<O> {
     /// Build a new instance of [HighlightColored]
     #[cfg(feature = "color")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
     pub fn colored(target: O, border: crate::style::ColoredBorder) -> HighlightColored<O> {
         HighlightColored { target, border }
     }
@@ -121,6 +121,7 @@ where
 
 /// A [Highlight] object which works with a [crate::style::ColoredBorder]
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub struct HighlightColored<O> {
     target: O,
     border: crate::style::ColoredBorder,
