@@ -62,22 +62,17 @@ Bellow there's a list of results of running some examples.
 ```
 ## color
 
-```
-|  name   | based_on | is_active | is_cool |
-|---------+----------+-----------+---------|
-| Manjaro | Arch     | true      | true    |
-| Arch    |          | true      | true    |
-| Debian  |          | true      | true    |
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/color-example-1-dark.png">
+  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/color-example-1-light.png">
+</picture>
+
 ## colored_borders
 
-```
-|  name   | based_on | is_active | is_cool |
-|---------+----------+-----------+---------|
-| Manjaro | Arch     | true      | true    |
-| Arch    |          | true      | true    |
-| Debian  |          | true      | true    |
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/color-example-2-dark.png">
+  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/color-example-2-light.png">
+</picture>
 
 ## concat
 
