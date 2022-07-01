@@ -1,5 +1,51 @@
 //! This module contains an [ExpandedDisplay] structure which is useful in cases where
 //! a structure has a lot of fields.
+//!
+//! ```
+//! use tabled::{Tabled, display::ExpandedDisplay};
+//!
+//! #[derive(Tabled)]
+//! struct Language {
+//!     name: &'static str,
+//!     designed_by: &'static str,
+//!     invented_year: usize,
+//! }
+//!
+//! let languages = vec![
+//!     Language{
+//!         name: "C",
+//!         designed_by: "Dennis Ritchie",
+//!         invented_year: 1972
+//!     },
+//!     Language{
+//!         name: "Rust",
+//!         designed_by: "Graydon Hoare",
+//!         invented_year: 2010
+//!     },
+//!     Language{
+//!         name: "Go",
+//!         designed_by: "Rob Pike",
+//!         invented_year: 2009
+//!     },
+//! ];
+//!
+//! let table = ExpandedDisplay::new(languages).to_string();
+//!
+//! let expected = "-[ RECORD 0 ]-+---------------\n\
+//!                 name          | C\n\
+//!                 designed_by   | Dennis Ritchie\n\
+//!                 invented_year | 1972\n\
+//!                 -[ RECORD 1 ]-+---------------\n\
+//!                 name          | Rust\n\
+//!                 designed_by   | Graydon Hoare\n\
+//!                 invented_year | 2010\n\
+//!                 -[ RECORD 2 ]-+---------------\n\
+//!                 name          | Go\n\
+//!                 designed_by   | Rob Pike\n\
+//!                 invented_year | 2009";
+//!
+//! assert_eq!(table, expected);
+//! ```
 
 use papergrid::{cut_str, string_width_multiline};
 
@@ -12,6 +58,23 @@ use crate::{width::split_by_lines, Tabled};
 ///
 /// It escapes strings to resolve a multi-line ones.
 /// Because of that `colors` may not be rendered.
+///
+/// ```
+/// use tabled::{display::ExpandedDisplay};
+///
+/// let data = vec!["Hello", "2021"];
+/// let table = ExpandedDisplay::new(&data);
+///
+/// assert_eq!(
+///     table.to_string(),
+///     concat!(
+///         "-[ RECORD 0 ]-\n",
+///         "&str | Hello\n",
+///         "-[ RECORD 1 ]-\n",
+///         "&str | 2021",
+///     )
+/// );
+/// ```
 pub struct ExpandedDisplay {
     format_record_splitter: Option<fn(usize) -> String>,
     format_value: Option<Box<dyn Fn(&str) -> String>>,
@@ -76,6 +139,10 @@ impl ExpandedDisplay {
 
 impl std::fmt::Display for ExpandedDisplay {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.records.is_empty() {
+            return Ok(());
+        }
+
         let format_value = |value: &String| match &self.format_value {
             Some(f) => (f)(value),
             None => value.to_string(),
@@ -119,19 +186,25 @@ impl std::fmt::Display for ExpandedDisplay {
             .unwrap_or_default()
             .unwrap_or_default();
 
-        for (i, values) in values.into_iter().enumerate() {
+        for (i, records) in values.iter().enumerate() {
             match self.format_record_splitter {
                 Some(f_header) => {
                     let header = (f_header)(i);
-                    writeln!(f, "{}", header)?;
+                    write!(f, "{}", header)?;
                 }
                 None => {
                     write_header_template(f, i, max_field_width, max_values_length)?;
                 }
             }
 
-            for (value, field) in values.iter().zip(fields.iter()) {
-                write_record_line(f, field, value, max_field_width)?;
+            for (value, field) in records.iter().zip(fields.iter()) {
+                writeln!(f)?;
+                write_record(f, field, value, max_field_width)?;
+            }
+
+            let is_last_record = i + 1 == values.len();
+            if !is_last_record {
+                writeln!(f)?;
             }
         }
 
@@ -171,26 +244,31 @@ fn write_header_template(
         }
     }
 
-    writeln!(f, "{}", template)?;
+    write!(f, "{}", template)?;
 
     Ok(())
 }
 
-fn write_record_line(
+fn write_record(
     f: &mut std::fmt::Formatter<'_>,
     field: &str,
     value: &str,
     max_field_width: usize,
 ) -> std::fmt::Result {
     if value.is_empty() {
-        writeln!(f, "{:width$} | {}", field, value, width = max_field_width)?;
+        write!(f, "{:width$} | {}", field, value, width = max_field_width)?;
         return Ok(());
     }
 
     for (i, line) in value.lines().enumerate() {
+        if i > 0 {
+            writeln!(f)?;
+        }
+
         let field = if i == 0 { field } else { "" };
-        writeln!(f, "{:width$} | {}", field, line, width = max_field_width)?;
+        write!(f, "{:width$} | {}", field, line, width = max_field_width)?;
     }
+
     Ok(())
 }
 

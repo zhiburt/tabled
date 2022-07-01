@@ -1,4 +1,4 @@
-use crate::util::create_vector;
+use crate::util::{create_vector, static_table};
 use tabled::{display::ExpandedDisplay, Tabled};
 
 #[cfg(feature = "color")]
@@ -34,29 +34,57 @@ macro_rules! build_tabled_type {
 
 #[test]
 fn display() {
-    let data = create_vector::<3, 3>();
-    let table = ExpandedDisplay::new(&data).to_string();
-
-    assert_eq!(
-        table,
-        concat!(
-            "-[ RECORD 0 ]-\n",
-            "N        | 0\n",
-            "column 0 | 0-0\n",
-            "column 1 | 0-1\n",
-            "column 2 | 0-2\n",
-            "-[ RECORD 1 ]-\n",
-            "N        | 1\n",
-            "column 0 | 1-0\n",
-            "column 1 | 1-1\n",
-            "column 2 | 1-2\n",
-            "-[ RECORD 2 ]-\n",
-            "N        | 2\n",
-            "column 0 | 2-0\n",
-            "column 1 | 2-1\n",
-            "column 2 | 2-2\n",
+    assert_expanded_display!(
+        create_vector::<3, 3>(),
+        static_table!(
+            "-[ RECORD 0 ]-"
+            "N        | 0"
+            "column 0 | 0-0"
+            "column 1 | 0-1"
+            "column 2 | 0-2"
+            "-[ RECORD 1 ]-"
+            "N        | 1"
+            "column 0 | 1-0"
+            "column 1 | 1-1"
+            "column 2 | 1-2"
+            "-[ RECORD 2 ]-"
+            "N        | 2"
+            "column 0 | 2-0"
+            "column 1 | 2-1"
+            "column 2 | 2-2"
         )
     );
+}
+
+#[test]
+fn display_empty_records() {
+    build_tabled_type!(TestType, 3, ["He", "123", "asd"], ["1", "2", "3"]);
+    let data: Vec<TestType> = vec![];
+    assert_expanded_display!(data, "");
+}
+
+#[test]
+fn display_empty() {
+    build_tabled_type!(
+        TestType,
+        3,
+        {
+            let d: Vec<String> = vec![];
+            d
+        },
+        {
+            let d: Vec<String> = vec![];
+            d
+        }
+    );
+    let data: Vec<TestType> = vec![];
+    assert_expanded_display!(data, "");
+}
+
+#[test]
+fn display_empty_2() {
+    build_tabled_type!(EmptyType, 0, [""; 0], [""; 0]);
+    assert_expanded_display!(&[EmptyType], "-[ RECORD 0 ]-");
 }
 
 #[cfg(feature = "color")]
@@ -73,11 +101,9 @@ fn display_colored() {
         .to_string();
     data[2][2] = "https://endeavouros.com/".blue().underline().to_string();
 
-    let table = ExpandedDisplay::new(&data).to_string();
-
-    assert_eq!(
-        table,
-        util::static_table!(
+    assert_expanded_display!(
+        data,
+        static_table!(
             "-[ RECORD 0 ]-----------------------"
             "N        | 0"
             "column 0 | 0-0"
@@ -94,15 +120,7 @@ fn display_colored() {
             "column 1 | \u{1b}[4m\u{1b}[34mhttps://endeavouros.com/\u{1b}[39m\u{1b}[0m"
             "column 2 | 2-2"
         )
-        .to_owned()
-            + "\n"
     );
-}
-
-#[test]
-fn display_empty() {
-    build_tabled_type!(EmptyType, 0, [""; 0], [""; 0]);
-    assert_expanded_display!(&[EmptyType], "-[ RECORD 0 ]-\n");
 }
 
 #[test]
@@ -111,18 +129,23 @@ fn display_dynamic_header_template() {
         build_tabled_type!(TestType, 3, ["He", "123", "asd"], ["1", "2", "3"]);
         assert_expanded_display!(
             &[TestType],
-            concat!("-[ RECORD 0 ]-\n", "1 | He\n", "2 | 123\n", "3 | asd\n",)
+            static_table!(
+                "-[ RECORD 0 ]-"
+                "1 | He"
+                "2 | 123"
+                "3 | asd"
+            )
         );
     }
     {
         build_tabled_type!(TestType, 3, ["He", "123", "asd"], ["11", "2222222", "3"]);
         assert_expanded_display!(
             &[TestType],
-            concat!(
-                "-[ RECORD 0 ]-\n",
-                "11      | He\n",
-                "2222222 | 123\n",
-                "3       | asd\n",
+            static_table!(
+                "-[ RECORD 0 ]-"
+                "11      | He"
+                "2222222 | 123"
+                "3       | asd"
             )
         );
     }
@@ -135,11 +158,11 @@ fn display_dynamic_header_template() {
         );
         assert_expanded_display!(
             &[TestType],
-            concat!(
-                "-[ RECORD 0 ]-----\n",
-                "11      | HeheHehe\n",
-                "2222222 | 123\n",
-                "3       | asd\n",
+            static_table!(
+                "-[ RECORD 0 ]-----"
+                "11      | HeheHehe"
+                "2222222 | 123"
+                "3       | asd"
             )
         );
     }
@@ -147,11 +170,11 @@ fn display_dynamic_header_template() {
         build_tabled_type!(TestType, 3, ["He", "123", "asd"], ["11111111111", "2", "3"]);
         assert_expanded_display!(
             &[TestType],
-            concat!(
-                "-[ RECORD 0 ]----\n",
-                "11111111111 | He\n",
-                "2           | 123\n",
-                "3           | asd\n",
+            static_table!(
+                "-[ RECORD 0 ]----"
+                "11111111111 | He"
+                "2           | 123"
+                "3           | asd"
             )
         );
     }
@@ -164,11 +187,11 @@ fn display_dynamic_header_template() {
         );
         assert_expanded_display!(
             &[TestType],
-            concat!(
-                "-[ RECORD 0 ]-+----\n",
-                "1111111111111 | He\n",
-                "2             | 123\n",
-                "3             | asd\n",
+            static_table!(
+                "-[ RECORD 0 ]-+----"
+                "1111111111111 | He"
+                "2             | 123"
+                "3             | asd"
             )
         );
     }
@@ -181,11 +204,11 @@ fn display_dynamic_header_template() {
         );
         assert_expanded_display!(
             &[TestType],
-            concat!(
-                "-[ RECORD 0 ]-----------------+----\n",
-                "11111111111111111111111111111 | He\n",
-                "2                             | 123\n",
-                "3                             | asd\n",
+            static_table!(
+                "-[ RECORD 0 ]-----------------+----"
+                "11111111111111111111111111111 | He"
+                "2                             | 123"
+                "3                             | asd"
             )
         );
     }
@@ -193,29 +216,29 @@ fn display_dynamic_header_template() {
         build_tabled_type!(TestType, 3, ["22"], ["11111111111"]);
         assert_expanded_display!(
             std::iter::repeat(TestType).take(11),
-            concat!(
-                "-[ RECORD 0 ]---\n",
-                "11111111111 | 22\n",
-                "-[ RECORD 1 ]---\n",
-                "11111111111 | 22\n",
-                "-[ RECORD 2 ]---\n",
-                "11111111111 | 22\n",
-                "-[ RECORD 3 ]---\n",
-                "11111111111 | 22\n",
-                "-[ RECORD 4 ]---\n",
-                "11111111111 | 22\n",
-                "-[ RECORD 5 ]---\n",
-                "11111111111 | 22\n",
-                "-[ RECORD 6 ]---\n",
-                "11111111111 | 22\n",
-                "-[ RECORD 7 ]---\n",
-                "11111111111 | 22\n",
-                "-[ RECORD 8 ]---\n",
-                "11111111111 | 22\n",
-                "-[ RECORD 9 ]---\n",
-                "11111111111 | 22\n",
-                "-[ RECORD 10 ]--\n",
-                "11111111111 | 22\n",
+            static_table!(
+                "-[ RECORD 0 ]---"
+                "11111111111 | 22"
+                "-[ RECORD 1 ]---"
+                "11111111111 | 22"
+                "-[ RECORD 2 ]---"
+                "11111111111 | 22"
+                "-[ RECORD 3 ]---"
+                "11111111111 | 22"
+                "-[ RECORD 4 ]---"
+                "11111111111 | 22"
+                "-[ RECORD 5 ]---"
+                "11111111111 | 22"
+                "-[ RECORD 6 ]---"
+                "11111111111 | 22"
+                "-[ RECORD 7 ]---"
+                "11111111111 | 22"
+                "-[ RECORD 8 ]---"
+                "11111111111 | 22"
+                "-[ RECORD 9 ]---"
+                "11111111111 | 22"
+                "-[ RECORD 10 ]--"
+                "11111111111 | 22"
             )
         );
     }
@@ -226,11 +249,11 @@ fn display_multiline_field() {
     build_tabled_type!(TestType, 3, ["1", "2", "3"], ["Hello\nWorld", "123", "asd"]);
     assert_expanded_display!(
         [TestType],
-        concat!(
-            "-[ RECORD 0 ]---\n",
-            "Hello\\nWorld | 1\n",
-            "123          | 2\n",
-            "asd          | 3\n",
+        static_table!(
+            "-[ RECORD 0 ]---"
+            "Hello\\nWorld | 1"
+            "123          | 2"
+            "asd          | 3"
         )
     );
 }
@@ -242,22 +265,20 @@ fn display_multiline_record_value() {
     data[0][1] = "123".to_string();
     data[0][2] = "asd".to_string();
 
-    let table = ExpandedDisplay::new(&data).to_string();
-
-    assert_eq!(
-        table,
-        concat!(
-            "-[ RECORD 0 ]---\n",
-            "N        | Hello\n",
-            "         | World\n",
-            "column 0 | 123\n",
-            "column 1 | asd\n",
-            "column 2 | 0-2\n",
-            "-[ RECORD 1 ]---\n",
-            "N        | 1\n",
-            "column 0 | 1-0\n",
-            "column 1 | 1-1\n",
-            "column 2 | 1-2\n",
+    assert_expanded_display!(
+        data,
+        static_table!(
+            "-[ RECORD 0 ]---"
+            "N        | Hello"
+            "         | World"
+            "column 0 | 123"
+            "column 1 | asd"
+            "column 2 | 0-2"
+            "-[ RECORD 1 ]---"
+            "N        | 1"
+            "column 0 | 1-0"
+            "column 1 | 1-1"
+            "column 2 | 1-2"
         )
     );
 }
@@ -271,17 +292,17 @@ fn display_with_header_template() {
 
     assert_eq!(
         table,
-        concat!(
-            "=== Record => 0\n",
-            "N        | 0\n",
-            "column 0 | 0-0\n",
-            "column 1 | 0-1\n",
-            "column 2 | 0-2\n",
-            "=== Record => 1\n",
-            "N        | 1\n",
-            "column 0 | 1-0\n",
-            "column 1 | 1-1\n",
-            "column 2 | 1-2\n",
+        static_table!(
+            "=== Record => 0"
+            "N        | 0"
+            "column 0 | 0-0"
+            "column 1 | 0-1"
+            "column 2 | 0-2"
+            "=== Record => 1"
+            "N        | 1"
+            "column 0 | 1-0"
+            "column 1 | 1-1"
+            "column 2 | 1-2"
         )
     );
 }
@@ -297,26 +318,26 @@ fn display_with_formatter() {
 
     assert_eq!(
         table,
-        concat!(
-            "-[ RECORD 0 ]--\n",
-            "N        | 0!\n",
-            "         | \n",
-            "column 0 | 123\n",
-            "         | 456!\n",
-            "         | \n",
-            "column 1 | 0-1!\n",
-            "         | \n",
-            "column 2 | 0-2!\n",
-            "         | \n",
-            "-[ RECORD 1 ]--\n",
-            "N        | 1!\n",
-            "         | \n",
-            "column 0 | 1-0!\n",
-            "         | \n",
-            "column 1 | 1-1!\n",
-            "         | \n",
-            "column 2 | 1-2!\n",
-            "         | \n",
+        static_table!(
+            "-[ RECORD 0 ]--"
+            "N        | 0!"
+            "         | "
+            "column 0 | 123"
+            "         | 456!"
+            "         | "
+            "column 1 | 0-1!"
+            "         | "
+            "column 2 | 0-2!"
+            "         | "
+            "-[ RECORD 1 ]--"
+            "N        | 1!"
+            "         | "
+            "column 0 | 1-0!"
+            "         | "
+            "column 1 | 1-1!"
+            "         | "
+            "column 2 | 1-2!"
+            "         | "
         )
     );
 }
@@ -334,12 +355,12 @@ fn display_with_one_line_formatter() {
 
     assert_eq!(
         table,
-        concat!(
-            "-[ RECORD 0 ]----------\n",
-            "N        | Hello\\nWorld\n",
-            "column 0 | 123\n",
-            "column 1 | asd\n",
-            "column 2 | 0-2\n",
+        static_table!(
+            "-[ RECORD 0 ]----------"
+            "N        | Hello\\nWorld"
+            "column 0 | 123"
+            "column 1 | asd"
+            "column 2 | 0-2"
         )
     );
 }
@@ -351,22 +372,22 @@ fn display_with_truncate() {
 
     assert_eq!(
         table,
-        concat!(
-            "-[ RECORD 0 ]-\n",
-            "N        | 0\n",
-            "column 0 | 0-\n",
-            "column 1 | 0-\n",
-            "column 2 | 0-\n",
-            "-[ RECORD 1 ]-\n",
-            "N        | 1\n",
-            "column 0 | 1-\n",
-            "column 1 | 1-\n",
-            "column 2 | 1-\n",
-            "-[ RECORD 2 ]-\n",
-            "N        | 2\n",
-            "column 0 | 2-\n",
-            "column 1 | 2-\n",
-            "column 2 | 2-\n",
+        static_table!(
+            "-[ RECORD 0 ]-"
+            "N        | 0"
+            "column 0 | 0-"
+            "column 1 | 0-"
+            "column 2 | 0-"
+            "-[ RECORD 1 ]-"
+            "N        | 1"
+            "column 0 | 1-"
+            "column 1 | 1-"
+            "column 2 | 1-"
+            "-[ RECORD 2 ]-"
+            "N        | 2"
+            "column 0 | 2-"
+            "column 1 | 2-"
+            "column 2 | 2-"
         )
     );
 }
@@ -378,17 +399,17 @@ fn display_with_truncate_with_tail() {
 
     assert_eq!(
         table,
-        concat!(
-            "-[ RECORD 0 ]---\n",
-            "N        | 0\n",
-            "column 0 | 0-...\n",
-            "column 1 | 0-...\n",
-            "column 2 | 0-...\n",
-            "-[ RECORD 1 ]---\n",
-            "N        | 1\n",
-            "column 0 | 1-...\n",
-            "column 1 | 1-...\n",
-            "column 2 | 1-...\n",
+        static_table!(
+            "-[ RECORD 0 ]---"
+            "N        | 0"
+            "column 0 | 0-..."
+            "column 1 | 0-..."
+            "column 2 | 0-..."
+            "-[ RECORD 1 ]---"
+            "N        | 1"
+            "column 0 | 1-..."
+            "column 1 | 1-..."
+            "column 2 | 1-..."
         )
     );
 }
@@ -400,29 +421,29 @@ fn display_with_wrap() {
 
     assert_eq!(
         table,
-        concat!(
-            "-[ RECORD 0 ]-\n",
-            "N        | 0\n",
-            "column 0 | 0\n",
-            "         | -\n",
-            "         | 0\n",
-            "column 1 | 0\n",
-            "         | -\n",
-            "         | 1\n",
-            "column 2 | 0\n",
-            "         | -\n",
-            "         | 2\n",
-            "-[ RECORD 1 ]-\n",
-            "N        | 1\n",
-            "column 0 | 1\n",
-            "         | -\n",
-            "         | 0\n",
-            "column 1 | 1\n",
-            "         | -\n",
-            "         | 1\n",
-            "column 2 | 1\n",
-            "         | -\n",
-            "         | 2\n",
+        static_table!(
+            "-[ RECORD 0 ]-"
+            "N        | 0"
+            "column 0 | 0"
+            "         | -"
+            "         | 0"
+            "column 1 | 0"
+            "         | -"
+            "         | 1"
+            "column 2 | 0"
+            "         | -"
+            "         | 2"
+            "-[ RECORD 1 ]-"
+            "N        | 1"
+            "column 0 | 1"
+            "         | -"
+            "         | 0"
+            "column 1 | 1"
+            "         | -"
+            "         | 1"
+            "column 2 | 1"
+            "         | -"
+            "         | 2"
         )
     );
 }
@@ -442,53 +463,53 @@ fn display_with_wrap_colored() {
 
     assert_eq!(
         table,
-        concat!(
-            "-[ RECORD 0 ]-\n",
-            "N        | 0\n",
-            "column 0 | 0-\n",
-            "         | 0\n",
-            "column 1 | \u{1b}[31mht\u{1b}[39m\n",
-            "         | \u{1b}[31mtp\u{1b}[39m\n",
-            "         | \u{1b}[31ms:\u{1b}[39m\n",
-            "         | \u{1b}[31m//\u{1b}[39m\n",
-            "         | \u{1b}[31mge\u{1b}[39m\n",
-            "         | \u{1b}[31mtf\u{1b}[39m\n",
-            "         | \u{1b}[31med\u{1b}[39m\n",
-            "         | \u{1b}[31mor\u{1b}[39m\n",
-            "         | \u{1b}[31ma.\u{1b}[39m\n",
-            "         | \u{1b}[31mor\u{1b}[39m\n",
-            "         | \u{1b}[31mg/\u{1b}[39m\n",
-            "column 2 | 0-\n",
-            "         | 2\n",
-            "-[ RECORD 1 ]-\n",
-            "N        | 1\n",
-            "column 0 | \u{1b}[37m\u{1b}[40mht\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40mtp\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40ms:\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40m//\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40men\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40mde\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40mav\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40mou\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40mro\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40ms.\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40mco\u{1b}[39m\u{1b}[49m\n",
-            "         | \u{1b}[37m\u{1b}[40mm/\u{1b}[39m\u{1b}[49m\n",
-            "column 1 | ht\n",
-            "         | tp\n",
-            "         | s:\n",
-            "         | //\n",
-            "         | ww\n",
-            "         | w.\n",
-            "         | op\n",
-            "         | en\n",
-            "         | su\n",
-            "         | se\n",
-            "         | .o\n",
-            "         | rg\n",
-            "         | /\n",
-            "column 2 | 1-\n",
-            "         | 2\n",
+        static_table!(
+            "-[ RECORD 0 ]-"
+            "N        | 0"
+            "column 0 | 0-"
+            "         | 0"
+            "column 1 | \u{1b}[31mht\u{1b}[39m"
+            "         | \u{1b}[31mtp\u{1b}[39m"
+            "         | \u{1b}[31ms:\u{1b}[39m"
+            "         | \u{1b}[31m//\u{1b}[39m"
+            "         | \u{1b}[31mge\u{1b}[39m"
+            "         | \u{1b}[31mtf\u{1b}[39m"
+            "         | \u{1b}[31med\u{1b}[39m"
+            "         | \u{1b}[31mor\u{1b}[39m"
+            "         | \u{1b}[31ma.\u{1b}[39m"
+            "         | \u{1b}[31mor\u{1b}[39m"
+            "         | \u{1b}[31mg/\u{1b}[39m"
+            "column 2 | 0-"
+            "         | 2"
+            "-[ RECORD 1 ]-"
+            "N        | 1"
+            "column 0 | \u{1b}[37m\u{1b}[40mht\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40mtp\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40ms:\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40m//\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40men\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40mde\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40mav\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40mou\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40mro\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40ms.\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40mco\u{1b}[39m\u{1b}[49m"
+            "         | \u{1b}[37m\u{1b}[40mm/\u{1b}[39m\u{1b}[49m"
+            "column 1 | ht"
+            "         | tp"
+            "         | s:"
+            "         | //"
+            "         | ww"
+            "         | w."
+            "         | op"
+            "         | en"
+            "         | su"
+            "         | se"
+            "         | .o"
+            "         | rg"
+            "         | /"
+            "column 2 | 1-"
+            "         | 2"
         )
     );
 }
