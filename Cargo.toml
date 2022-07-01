@@ -16,7 +16,7 @@ readme = "README.md"
 members = [
     "papergrid",
     "tabled_derive",
-    "examples/terminal_table",
+    "examples/table_with_terminal_width",
     "examples/show",
     "benches"
 ]
