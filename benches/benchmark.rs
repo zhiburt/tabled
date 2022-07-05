@@ -9,12 +9,16 @@ macro_rules! bench_lib {
                 let (columns, data) = $data_fn(size);
 
                 $({
-                    let table = $lib_table(columns.clone(), data.clone());
+                    let mut table = $lib_table(columns.clone(), data.clone());
                     group.bench_with_input(BenchmarkId::new($lib_name, size), &size, |b, _size| {
                         b.iter(|| {
-                            let _ = black_box({
-                                $lib_print(&table);
-                            });
+                            let ptr: *mut _ = &mut table;
+                            black_box(ptr);
+
+                            let _ = black_box($lib_print(&table));
+
+                            let ptr: *mut _ = &mut table;
+                            black_box(ptr);
                         });
                     });
                 })*
@@ -54,31 +58,26 @@ create_bench!(test_const_table, |size| build_cost_table(
 
 create_bench!(test_dynamic_table, build_dynamic_table);
 
-create_bench!(test_multiline_small_table, |size| build_cost_table(
+create_bench!(test_multiline_table, |size| build_cost_table(
     size,
-    "Hello\nWorld",
+    "H\ne\nl\nlo\nWo\nr\nld",
     "Hello\n111\n111\ni\n!"
 ));
 
-create_bench!(test_multiline_1000_table, |size| build_cost_table(
-    size,
-    (0..1000)
-        .map(|i| i.to_string())
-        .collect::<Vec<_>>()
-        .join("\n"),
-    (0..1000)
-        .map(|i| i.to_string())
-        .collect::<Vec<_>>()
-        .join("\n"),
-));
+create_bench!(test_colored_table, |size| {
+    use owo_colors::OwoColorize;
+
+    let header = "Hello World".red().on_blue().to_string();
+    let cell = "He\nll\no W\nor\nld".green().on_blue().to_string();
+    build_cost_table(size, header, cell)
+});
 
 criterion_group!(
     benches,
     test_empty_table,
     test_const_table,
     test_dynamic_table,
-    test_multiline_small_table,
-    test_multiline_1000_table,
+    test_multiline_table,
 );
 criterion_main!(benches);
 

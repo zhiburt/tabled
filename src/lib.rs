@@ -14,7 +14,7 @@ pub mod tabled {
 
 pub mod tabled_color {
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> tabled_color::Table {
-        tabled::builder::Builder::from(data)
+        tabled_color::builder::Builder::from(data)
             .set_columns(columns)
             .build()
     }

@@ -9,7 +9,7 @@ homepage = "https://github.com/zhiburt/tabled"
 license = "MIT"
 
 [dependencies]
-tabled = { git = "https://github.com/zhiburt/tabled/", branch = "try-improve-perf-of-printing" }
+tabled = { git = "https://github.com/zhiburt/tabled/", branch = "master" }
 
 tabled_color = { path = "./tabled_color" }
 
@@ -27,6 +27,7 @@ prettytable-rs = "0.8.0"
 
 [dev-dependencies]
 criterion = "0.3.5"
+owo-colors = "3.4.0"
 
 [[bench]]
 name = "benchmark"
