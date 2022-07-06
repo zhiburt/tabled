@@ -14,7 +14,8 @@
 //!
 //! Then you can create `Table::new` to create a table;
 //!
-//! ```rust
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{Tabled, Table};
 //!
 //! #[derive(Tabled)]
@@ -111,7 +112,8 @@
 //! of a table which will be printed.
 //! You could change it dynamically as well.
 //!
-//! ```rust
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{Tabled, Table, Style};
 //!
 //! #[derive(Tabled)]
@@ -180,6 +182,8 @@ pub mod width;
 
 use std::fmt;
 
+#[cfg(feature = "derive")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub use tabled_derive::Tabled;
 
 pub use papergrid;

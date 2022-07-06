@@ -1,3 +1,5 @@
+#![cfg(feature = "derive")]
+
 use tabled::Tabled;
 
 mod tupple_structure {

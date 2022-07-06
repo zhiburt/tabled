@@ -18,7 +18,7 @@ members = [
     "tabled_derive",
     "examples/table_with_terminal_width",
     "examples/show",
-    "benches"
+    "benches",
 ]
 
 [badges]
@@ -27,10 +27,12 @@ coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master
 maintenance = { status = "actively-developed" }
 
 [features]
+default = ["derive"]
+derive = ["tabled_derive"]
 color = ["papergrid/color", "ansi-str"]
 
 [dependencies]
-tabled_derive = { path = "./tabled_derive" }
+tabled_derive = { path = "./tabled_derive", optional = true }
 papergrid = { path = "./papergrid" }
 ansi-str = { git = "https://github.com/zhiburt/ansi-str", branch = "master", optional = true }
 unicode-width = "0.1.9"
@@ -40,42 +42,6 @@ owo-colors = "3.4.0"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
 
-[[example]]
-name = "colored_borders"
-required-features = ["color"]
-
-[[example]]
-name = "color"
-required-features = ["color"]
-
-[[example]]
-name = "rename_all"
-path = "examples/derive/rename_all.rs"
-
-[[example]]
-name = "rename"
-path = "examples/derive/rename.rs"
-
-[[example]]
-name = "order"
-path = "examples/derive/order.rs"
-
-[[example]]
-name = "skip"
-path = "examples/derive/skip.rs"
-
-[[example]]
-name = "inline"
-path = "examples/derive/inline.rs"
-
-[[example]]
-name = "inline_enum"
-path = "examples/derive/inline_enum.rs"
-
-[[example]]
-name = "display_with"
-path = "examples/derive/display_with.rs"
-
 [package.metadata.docs.rs]
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #
@@ -84,3 +50,101 @@ features = ["unstable-doc"]
 cargo-args = ["-Zunstable-options"]
 rustdoc-args = ["--cfg", "docsrs"]
 rustc-args = ["--cfg", "docsrs"]
+
+[[example]]
+name = "colored_borders"
+required-features = ["color", "derive"]
+
+[[example]]
+name = "color"
+required-features = ["color", "derive"]
+
+[[example]]
+name = "rename_all"
+path = "examples/derive/rename_all.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "rename"
+path = "examples/derive/rename.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "order"
+path = "examples/derive/order.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "skip"
+path = "examples/derive/skip.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "inline"
+path = "examples/derive/inline.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "inline_enum"
+path = "examples/derive/inline_enum.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "display_with"
+path = "examples/derive/display_with.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "builder_index"
+path = "examples/builder_index.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "concat"
+path = "examples/concat.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "custom_style"
+path = "examples/custom_style.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "expanded_display"
+path = "examples/expanded_display.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "extract"
+path = "examples/extract.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "format"
+path = "examples/format.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "panel"
+path = "examples/panel.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "rotate"
+path = "examples/rotate.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "nested_table_2"
+path = "examples/nested_table_2.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "nested_table_3"
+path = "examples/nested_table_3.rs"
+required-features = ["derive"]

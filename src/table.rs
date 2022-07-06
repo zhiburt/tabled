@@ -77,7 +77,10 @@ pub struct Table {
 
 impl Table {
     /// New creates a Table instance.
-    pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
+    pub fn new<T>(iter: impl IntoIterator<Item = T>) -> Self
+    where
+        T: Tabled,
+    {
         Self::from_iter(iter)
     }
 
@@ -85,7 +88,9 @@ impl Table {
     ///
     /// # Example
     ///
-    /// ```
+    ///
+    #[cfg_attr(feature = "derive", doc = "```")]
+    #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
     /// use tabled::{Table, Tabled};
     ///
     /// #[derive(Tabled)]
@@ -174,8 +179,11 @@ where
 ///
 /// ```rust
 /// use tabled::{TableIteratorExt, Style};
+///
 /// let strings: &[&str] = &["Hello", "World"];
+///
 /// let table = strings.table().with(Style::psql());
+///
 /// println!("{}", table);
 /// ```
 pub trait TableIteratorExt {

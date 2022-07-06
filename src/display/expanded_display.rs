@@ -1,7 +1,8 @@
 //! This module contains an [ExpandedDisplay] structure which is useful in cases where
 //! a structure has a lot of fields.
 //!
-//! ```
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{Tabled, display::ExpandedDisplay};
 //!
 //! #[derive(Tabled)]

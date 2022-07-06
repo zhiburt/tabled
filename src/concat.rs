@@ -2,7 +2,8 @@
 //!
 //! # Example
 //!
-//! ```
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{Table, Tabled, Style, Concat};
 //!
 //! #[derive(Tabled)]

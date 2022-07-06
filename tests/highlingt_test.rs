@@ -1,7 +1,7 @@
 use tabled::{
     object::{Cell, Columns, Frame, Object, Rows, Segment},
     style::Border,
-    Highlight, Style, Table, Tabled,
+    Highlight, Style, Table,
 };
 
 use crate::util::{create_vector, static_table};
@@ -17,9 +17,10 @@ fn highlingt_object_exceeds_bounderies() {
         .to_string();
 }
 
+#[cfg(feature = "derive")]
 #[test]
 fn highlingt_empty_table() {
-    #[derive(Tabled)]
+    #[derive(tabled::Tabled)]
     struct EmptyStruct;
 
     let data: [EmptyStruct; 0] = [];
