@@ -28,7 +28,8 @@ jobs:
           override: true
       - uses: actions-rs/cargo@v1
         with:
-          command: check --no-default-features --features ${{ matrix.features }}
+          command: check
+          args: --no-default-features --features ${{ matrix.features }}
 
   fmt:
     name: Rustfmt
@@ -69,7 +70,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl]
-        features: ["", "color", "derive", "color,derive"]
+        features: ["derive", "color,derive"]
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
