@@ -20,7 +20,9 @@ fn highlingt_object_exceeds_bounderies() {
 #[cfg(feature = "derive")]
 #[test]
 fn highlingt_empty_table() {
-    #[derive(tabled::Tabled)]
+    use tabled::Tabled;
+
+    #[derive(Tabled)]
     struct EmptyStruct;
 
     let data: [EmptyStruct; 0] = [];
