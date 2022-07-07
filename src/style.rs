@@ -109,6 +109,7 @@ use crate::{CellOption, TableOption};
 /// ```
 ///
 /// [Table]: crate::Table
+#[derive(Debug)]
 pub struct Style;
 
 impl Style {
@@ -1142,6 +1143,7 @@ impl<T, B, L, R, IH, IV, H> TableOption for CustomStyle<T, B, L, R, IH, IV, H> {
 ///      +-------------+"
 /// );
 /// ```
+#[derive(Debug)]
 pub struct BorderText<'a> {
     // todo: offset from which we start overriding border
     // offset: usize,
@@ -1149,6 +1151,7 @@ pub struct BorderText<'a> {
     row: SplitLineIndex,
 }
 
+#[derive(Debug)]
 enum SplitLineIndex {
     First,
     Last,

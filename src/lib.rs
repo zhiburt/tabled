@@ -1,4 +1,10 @@
-#![warn(missing_docs)]
+#![warn(
+    missing_docs,
+    rust_2018_idioms,
+    missing_debug_implementations,
+    unreachable_pub
+)]
+#![deny(unused_must_use)]
 
 //! An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
 //!

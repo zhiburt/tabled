@@ -48,6 +48,8 @@
 //! assert_eq!(table, expected);
 //! ```
 
+use std::fmt;
+
 use papergrid::{cut_str, string_width_multiline};
 
 use crate::{width::split_by_lines, Tabled};
@@ -210,6 +212,17 @@ impl std::fmt::Display for ExpandedDisplay {
         }
 
         Ok(())
+    }
+}
+
+impl fmt::Debug for ExpandedDisplay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ExpandedDisplay")
+            .field("format_record_splitter", &self.format_record_splitter)
+            .field("format_value", &self.format_value.is_some())
+            .field("fields", &self.fields)
+            .field("records", &self.records)
+            .finish()
     }
 }
 

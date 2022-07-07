@@ -1,3 +1,6 @@
+#![warn(rust_2018_idioms, missing_debug_implementations, unreachable_pub)]
+#![deny(unused_must_use)]
+
 //! Papergrid is a library for generating text-based tables for display
 //!
 //! # Example
@@ -1115,7 +1118,7 @@ fn indent_from_top(alignment: AlignmentVertical, height: usize, real_height: usi
 
 fn build_cell_line(
     f: &mut fmt::Formatter<'_>,
-    cell: &CellContent,
+    cell: &CellContent<'_>,
     line: usize,
     width: usize,
     height: usize,
@@ -1177,7 +1180,7 @@ fn build_format_line(
     f: &mut fmt::Formatter<'_>,
     index: usize,
     line: &str,
-    cell: &CellContent,
+    cell: &CellContent<'_>,
     width: usize,
     alignment: AlignmentHorizontal,
     line_trim: bool,
@@ -1218,7 +1221,7 @@ fn build_format_line(
     Ok(())
 }
 
-fn count_empty_lines_on_ends(lines: &[Cow<str>]) -> usize {
+fn count_empty_lines_on_ends(lines: &[Cow<'_, str>]) -> usize {
     let end_lines = lines
         .iter()
         .rev()
@@ -1228,7 +1231,7 @@ fn count_empty_lines_on_ends(lines: &[Cow<str>]) -> usize {
     start_lines + end_lines
 }
 
-fn count_empty_lines_at_start(lines: &[Cow<str>]) -> usize {
+fn count_empty_lines_at_start(lines: &[Cow<'_, str>]) -> usize {
     lines.iter().take_while(|s| s.trim().is_empty()).count()
 }
 
@@ -1265,7 +1268,7 @@ struct CellContent<'a> {
     count_new_lines: usize,
 }
 
-fn cells_content(grid: &Grid) -> Vec<Vec<CellContent>> {
+fn cells_content(grid: &Grid) -> Vec<Vec<CellContent<'_>>> {
     let mut cells = vec![vec![CellContent::default(); grid.count_columns()]; grid.count_rows()];
 
     for (row, cells) in cells.iter_mut().enumerate() {
@@ -1300,7 +1303,7 @@ fn cells_content(grid: &Grid) -> Vec<Vec<CellContent>> {
     cells
 }
 
-fn columns_width(grid: &Grid, cells: &[Vec<CellContent>]) -> Vec<usize> {
+fn columns_width(grid: &Grid, cells: &[Vec<CellContent<'_>>]) -> Vec<usize> {
     let mut widths = vec![0; grid.count_columns()];
     for (col, column) in widths.iter_mut().enumerate() {
         let max = (0..grid.count_rows())
@@ -1317,7 +1320,7 @@ fn columns_width(grid: &Grid, cells: &[Vec<CellContent>]) -> Vec<usize> {
     widths
 }
 
-fn adjust_spans(grid: &Grid, cells: &[Vec<CellContent>], widths: &mut [usize]) {
+fn adjust_spans(grid: &Grid, cells: &[Vec<CellContent<'_>>], widths: &mut [usize]) {
     if grid.spans.is_empty() {
         return;
     }
@@ -1339,7 +1342,7 @@ fn adjust_spans(grid: &Grid, cells: &[Vec<CellContent>], widths: &mut [usize]) {
 
 fn adjust_range(
     grid: &Grid,
-    cells: &[Vec<CellContent>],
+    cells: &[Vec<CellContent<'_>>],
     row: usize,
     start: usize,
     end: usize,
@@ -1363,7 +1366,11 @@ fn get_cell_width(grid: &Grid, (row, col): Position) -> usize {
     width + style.padding.left.size + style.padding.right.size
 }
 
-fn get_cell_width_cells(grid: &Grid, cells: &[Vec<CellContent>], (row, col): Position) -> usize {
+fn get_cell_width_cells(
+    grid: &Grid,
+    cells: &[Vec<CellContent<'_>>],
+    (row, col): Position,
+) -> usize {
     let style = grid.style(Entity::Cell(row, col));
     cells[row][col].width + style.padding.left.size + style.padding.right.size
 }
@@ -1438,7 +1445,7 @@ fn closest_visible(grid: &Grid, row: usize, mut col: usize) -> Option<usize> {
 
 fn rows_height<'a>(
     grid: &'a Grid,
-    cells: &'a [Vec<CellContent>],
+    cells: &'a [Vec<CellContent<'_>>],
 ) -> impl Iterator<Item = usize> + 'a {
     (0..grid.count_rows()).map(move |row| {
         (0..grid.count_columns())
@@ -1448,7 +1455,7 @@ fn rows_height<'a>(
     })
 }
 
-fn cell_height(grid: &Grid, cells: &[Vec<CellContent>], pos: Position) -> usize {
+fn cell_height(grid: &Grid, cells: &[Vec<CellContent<'_>>], pos: Position) -> usize {
     let count_lines = if cells.is_empty() {
         1
     } else {
@@ -1652,7 +1659,7 @@ fn string_trim(text: &str) -> Cow<str> {
 }
 
 #[cfg(feature = "color")]
-fn string_trim(text: &str) -> Cow<str> {
+fn string_trim(text: &str) -> Cow<'_, str> {
     ansi_str::AnsiStr::ansi_trim(text).into()
 }
 
@@ -1663,7 +1670,7 @@ fn get_lines(text: &str) -> impl Iterator<Item = Cow<str>> {
 }
 
 #[cfg(feature = "color")]
-fn get_lines(text: &str) -> impl Iterator<Item = Cow<str>> {
+fn get_lines(text: &str) -> impl Iterator<Item = Cow<'_, str>> {
     ansi_str::AnsiStr::ansi_split(text, "\n")
 }
 
@@ -1921,11 +1928,11 @@ fn get_intersection(grid: &Grid, pos: Position) -> Option<&char> {
 }
 
 fn print_grid(
-    f: &mut fmt::Formatter,
+    f: &mut fmt::Formatter<'_>,
     grid: &Grid,
     widths: Vec<usize>,
     mut heights: impl Iterator<Item = usize>,
-    cells: &[Vec<CellContent>],
+    cells: &[Vec<CellContent<'_>>],
 ) -> fmt::Result {
     let table_width = row_width_grid(grid, &widths);
 
@@ -2014,7 +2021,7 @@ fn grid_cell_width(grid: &Grid, widths: &[usize], pos: Position) -> usize {
     }
 }
 
-fn repeat_lines(f: &mut fmt::Formatter, size: usize, width: usize, fill: char) -> fmt::Result {
+fn repeat_lines(f: &mut fmt::Formatter<'_>, size: usize, width: usize, fill: char) -> fmt::Result {
     for i in 0..size {
         repeat_char(f, fill, width)?;
 
@@ -2027,7 +2034,7 @@ fn repeat_lines(f: &mut fmt::Formatter, size: usize, width: usize, fill: char) -
 }
 
 fn print_split_line(
-    f: &mut fmt::Formatter,
+    f: &mut fmt::Formatter<'_>,
     grid: &Grid,
     widths: &[usize],
     max_width: usize,
@@ -2116,7 +2123,7 @@ fn print_split_line(
 
 #[cfg(feature = "color")]
 fn prepare_coloring<'a>(
-    f: &mut fmt::Formatter,
+    f: &mut fmt::Formatter<'_>,
     clr: Option<&'a BorderColor>,
     used_color: &mut Option<&'a BorderColor>,
 ) -> fmt::Result {
@@ -2145,7 +2152,7 @@ fn prepare_coloring<'a>(
 
 #[cfg(feature = "color")]
 fn write_colored(
-    f: &mut fmt::Formatter,
+    f: &mut fmt::Formatter<'_>,
     c: impl fmt::Display,
     clr: Option<&BorderColor>,
 ) -> fmt::Result {
@@ -2459,7 +2466,7 @@ mod tests {
         struct F<'a>(&'a str, AlignmentHorizontal, usize);
 
         impl fmt::Display for F<'_> {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 let width = string_width(self.0);
                 print_text_formated(f, self.0, width, self.1, self.2, 0)
             }

@@ -7,6 +7,7 @@ use crate::{object::Object, CellOption, TableOption};
 ///
 /// Be aware that the settings are applied all to a cell at a time.
 /// So sometimes you may need to make a several calls of [Modify] in order to achieve the desired affect.
+#[derive(Debug)]
 pub struct Modify<O> {
     obj: O,
 }
@@ -40,6 +41,7 @@ where
 }
 
 /// ModifyList is a container of [CellOption]s which are applied to a set [Object].
+#[derive(Debug)]
 pub struct ModifyList<O, S> {
     obj: O,
     modifiers: S,
@@ -86,6 +88,7 @@ where
 }
 
 /// CellSettingsList is a container of [CellOption]s.
+#[derive(Debug)]
 pub struct CellSettingsList<S1, S2> {
     s1: S1,
     s2: S2,

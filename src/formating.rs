@@ -9,6 +9,7 @@ use crate::CellOption;
 /// Formatting function of particular cells on a [Table].
 ///
 /// [Table]: crate::Table
+#[derive(Debug)]
 pub struct Format<F> {
     f: F,
 }
@@ -137,6 +138,7 @@ where
 /// FormatWithIndex is like a [Format] an abstraction over a function you can use against a cell.
 ///
 /// It differerent from Format that it provides a row and column index.
+#[derive(Debug)]
 pub struct FormatWithIndex<F> {
     f: F,
 }

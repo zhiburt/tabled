@@ -91,6 +91,7 @@ use crate::{object::Entity, CellOption, TableOption};
 ///
 /// [Padding]: crate::Padding
 /// [Table]: crate::Table
+#[derive(Debug)]
 pub struct Width;
 
 impl Width {
@@ -140,6 +141,7 @@ impl Width {
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Truncate::new(3)));
 /// ```
+#[derive(Debug)]
 pub struct Truncate<'a, W = usize, P = PriorityNone> {
     width: W,
     suffix: Cow<'a, str>,
@@ -319,6 +321,7 @@ where
 /// ```
 ///
 /// [Padding]: crate::Padding
+#[derive(Debug)]
 pub struct MinWidth<W = usize, P = PriorityNone> {
     size: W,
     fill: char,
@@ -482,6 +485,7 @@ where
 /// ```
 ///
 /// [Padding]: crate::Padding
+#[derive(Debug)]
 pub struct Justify<W> {
     width: W,
 }
@@ -545,6 +549,7 @@ impl WidthValue for usize {
 }
 
 /// Max width value.
+#[derive(Debug)]
 pub struct Max;
 
 impl WidthValue for Max {
@@ -558,6 +563,7 @@ impl WidthValue for Max {
 }
 
 /// Min width value.
+#[derive(Debug)]
 pub struct Min;
 
 impl WidthValue for Min {
@@ -571,6 +577,7 @@ impl WidthValue for Min {
 }
 
 /// Percent from a total table width.
+#[derive(Debug)]
 pub struct Percent(pub usize);
 
 impl WidthValue for Percent {
@@ -591,6 +598,7 @@ pub trait ColumnPeaker {
 }
 
 /// A Peaker which goes over column 1 by 1.
+#[derive(Debug)]
 pub struct PriorityNone {
     i: usize,
 }
@@ -623,6 +631,7 @@ impl ColumnPeaker for PriorityNone {
 }
 
 /// A Peaker which goes over the biggest column first.
+#[derive(Debug)]
 pub struct PriorityMax;
 
 impl ColumnPeaker for PriorityMax {
@@ -641,6 +650,7 @@ impl ColumnPeaker for PriorityMax {
 }
 
 /// A Peaker which goes over the smallest column first.
+#[derive(Debug)]
 pub struct PriorityMin;
 
 impl ColumnPeaker for PriorityMin {

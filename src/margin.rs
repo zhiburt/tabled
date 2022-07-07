@@ -38,6 +38,7 @@ use crate::TableOption;
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data).with(Margin::new(0, 0, 0, 0).set_fill('>', '<', 'V', '^'));
 /// ```
+#[derive(Debug)]
 pub struct Margin(papergrid::Margin);
 
 impl Margin {
