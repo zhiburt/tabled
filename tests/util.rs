@@ -76,3 +76,15 @@ macro_rules! static_table {
 }
 
 pub(crate) use static_table;
+
+macro_rules! test_table {
+    ($test:ident, $table:expr, $($line:expr)*) => {
+        #[test]
+        fn $test() {
+            let table = $table.to_string();
+            assert_eq!(table, crate::util::static_table!($($line)*));
+        }
+    };
+}
+
+pub(crate) use test_table;
