@@ -1,7 +1,8 @@
 //! This module contains an [ExpandedDisplay] structure which is useful in cases where
 //! a structure has a lot of fields.
 //!
-//! ```
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{Tabled, display::ExpandedDisplay};
 //!
 //! #[derive(Tabled)]
@@ -46,6 +47,8 @@
 //!
 //! assert_eq!(table, expected);
 //! ```
+
+use std::fmt;
 
 use papergrid::{cut_str, string_width_multiline};
 
@@ -209,6 +212,17 @@ impl std::fmt::Display for ExpandedDisplay {
         }
 
         Ok(())
+    }
+}
+
+impl fmt::Debug for ExpandedDisplay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ExpandedDisplay")
+            .field("format_record_splitter", &self.format_record_splitter)
+            .field("format_value", &self.format_value.is_some())
+            .field("fields", &self.fields)
+            .field("records", &self.records)
+            .finish()
     }
 }
 

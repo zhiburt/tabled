@@ -4,7 +4,7 @@ use tabled::{
     papergrid::string_width_multiline,
     width::{Justify, MinWidth, Width},
     width::{PriorityMax, PriorityMin},
-    Alignment, Modify, Padding, Panel, Span, Style, Table, Tabled,
+    Alignment, Modify, Padding, Panel, Span, Style, Table,
 };
 
 use crate::util::{create_vector, is_lines_equal, static_table};
@@ -1170,214 +1170,6 @@ fn max_width_with_span() {
 }
 
 #[test]
-fn wrapping_as_total_multiline() {
-    #[derive(Tabled)]
-    struct D<'a>(
-        #[tabled(rename = "version")] &'a str,
-        #[tabled(rename = "published_date")] &'a str,
-        #[tabled(rename = "is_active")] &'a str,
-        #[tabled(rename = "major_feature")] &'a str,
-    );
-
-    let data = vec![
-        D("0.2.1", "2021-06-23", "true", "#[header(inline)] attribute"),
-        D("0.2.0", "2021-06-19", "false", "API changes"),
-        D("0.1.4", "2021-06-07", "false", "display_with attribute"),
-    ];
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Width::wrap(57))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "| ver | published_d | is_act | major_feature            |"
-            "| sio | ate         | ive    |                          |"
-            "| n   |             |        |                          |"
-            "|-----+-------------+--------+--------------------------|"
-            "| 0.2 | 2021-06-23  | true   | #[header(inline)] attrib |"
-            "| .1  |             |        | ute                      |"
-            "| 0.2 | 2021-06-19  | false  | API changes              |"
-            "| .0  |             |        |                          |"
-            "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
-            "| .4  |             |        |                          |"
-        )
-    );
-    assert!(is_lines_equal(&table, 57));
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Width::wrap(57).keep_words())
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "| ver | published_d | is_act | major_feature            |"
-            "| sio | ate         | ive    |                          |"
-            "| n   |             |        |                          |"
-            "|-----+-------------+--------+--------------------------|"
-            "| 0.2 | 2021-06-23  | true   | #[header(inline)]        |"
-            "| .1  |             |        | attribute                |"
-            "| 0.2 | 2021-06-19  | false  | API changes              |"
-            "| .0  |             |        |                          |"
-            "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
-            "| .4  |             |        |                          |"
-        )
-    );
-    assert!(is_lines_equal(&table, 57));
-}
-
-#[cfg(feature = "color")]
-#[test]
-fn wrapping_as_total_multiline_color() {
-    use owo_colors::{AnsiColors, OwoColorize};
-
-    #[derive(Tabled)]
-    struct D(
-        #[tabled(rename = "version")] String,
-        #[tabled(rename = "published_date")] String,
-        #[tabled(rename = "is_active")] String,
-        #[tabled(rename = "major_feature")] String,
-    );
-
-    let data = vec![
-        D(
-            "0.2.1".red().to_string(),
-            "2021-06-23".red().on_truecolor(8, 10, 30).to_string(),
-            "true".to_string(),
-            "#[header(inline)] attribute"
-                .blue()
-                .on_color(AnsiColors::Green)
-                .to_string(),
-        ),
-        D(
-            "0.2.0".red().to_string(),
-            "2021-06-19".green().on_truecolor(8, 100, 30).to_string(),
-            "false".to_string(),
-            "API changes".yellow().to_string(),
-        ),
-        D(
-            "0.1.4".white().to_string(),
-            "2021-06-07".red().on_truecolor(8, 10, 30).to_string(),
-            "false".to_string(),
-            "display_with attribute"
-                .red()
-                .on_color(AnsiColors::Black)
-                .to_string(),
-        ),
-    ];
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Width::wrap(57))
-        .to_string();
-
-    assert_eq!(
-        table,
-        "| ver | published_d | is_act | major_feature            |\n| sio | ate         | ive    |                          |\n| n   |             |        |                          |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                      |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |",
-    );
-    assert!(is_lines_equal(&table, 57));
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Width::wrap(57).keep_words())
-        .to_string();
-
-    assert_eq!(
-        ansi_str::AnsiStr::ansi_strip(&table),
-        static_table!(
-            "| ver | published_d | is_act | major_feature            |"
-            "| sio | ate         | ive    |                          |"
-            "| n   |             |        |                          |"
-            "|-----+-------------+--------+--------------------------|"
-            "| 0.2 | 2021-06-23  | true   | #[header(inline)]        |"
-            "| .1  |             |        | attribute                |"
-            "| 0.2 | 2021-06-19  | false  | API changes              |"
-            "| .0  |             |        |                          |"
-            "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
-            "| .4  |             |        |                          |"
-        )
-    );
-
-    assert_eq!(
-        table,
-        "| ver | published_d | is_act | major_feature            |\n| sio | ate         | ive    |                          |\n| n   |             |        |                          |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |\n| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattrib\u{1b}[39m\u{1b}[49m\u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |"
-    );
-    assert!(is_lines_equal(&table, 57));
-}
-
-#[cfg(feature = "color")]
-#[test]
-fn truncating_as_total_multiline_color() {
-    use owo_colors::{AnsiColors, OwoColorize};
-
-    #[derive(Tabled)]
-    struct D(
-        #[tabled(rename = "version")] String,
-        #[tabled(rename = "published_date")] String,
-        #[tabled(rename = "is_active")] String,
-        #[tabled(rename = "major_feature")] String,
-    );
-
-    let data = vec![
-        D(
-            "0.2.1".red().to_string(),
-            "2021-06-23".red().on_truecolor(8, 10, 30).to_string(),
-            "true".to_string(),
-            "#[header(inline)] attribute"
-                .blue()
-                .on_color(AnsiColors::Green)
-                .to_string(),
-        ),
-        D(
-            "0.2.0".red().to_string(),
-            "2021-06-19".green().on_truecolor(8, 100, 30).to_string(),
-            "false".to_string(),
-            "API changes".yellow().to_string(),
-        ),
-        D(
-            "0.1.4".white().to_string(),
-            "2021-06-07".red().on_truecolor(8, 10, 30).to_string(),
-            "false".to_string(),
-            "display_with attribute"
-                .red()
-                .on_color(AnsiColors::Black)
-                .to_string(),
-        ),
-    ];
-
-    let table = Table::new(&data)
-        .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Width::truncate(57))
-        .to_string();
-
-    assert_eq!(
-        ansi_str::AnsiStr::ansi_strip(&table),
-        static_table!(
-            "| ver | published_d | is_act | major_feature            |"
-            "|-----+-------------+--------+--------------------------|"
-            "| 0.2 | 2021-06-23  | true   | #[header(inline)] attrib |"
-            "| 0.2 | 2021-06-19  | false  | API changes              |"
-            "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
-        )
-    );
-
-    assert_eq!(
-        table,
-        "| ver | published_d | is_act | major_feature            |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
-    );
-    assert!(is_lines_equal(&table, 57));
-}
-
-#[test]
 fn min_width_works_with_right_alignment() {
     let json = r#"
     {
@@ -2283,4 +2075,219 @@ fn min_width_priority_min() {
             "| 2            | 2-0          | 2-1          | 2-2         |"
         ),
     );
+}
+
+#[cfg(feature = "derive")]
+mod derived {
+    use super::*;
+
+    use tabled::Tabled;
+
+    #[test]
+    fn wrapping_as_total_multiline() {
+        #[derive(Tabled)]
+        struct D<'a>(
+            #[tabled(rename = "version")] &'a str,
+            #[tabled(rename = "published_date")] &'a str,
+            #[tabled(rename = "is_active")] &'a str,
+            #[tabled(rename = "major_feature")] &'a str,
+        );
+
+        let data = vec![
+            D("0.2.1", "2021-06-23", "true", "#[header(inline)] attribute"),
+            D("0.2.0", "2021-06-19", "false", "API changes"),
+            D("0.1.4", "2021-06-07", "false", "display_with attribute"),
+        ];
+
+        let table = Table::new(&data)
+            .with(Style::github_markdown())
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Width::wrap(57))
+            .to_string();
+
+        assert_eq!(
+            table,
+            static_table!(
+                "| ver | published_d | is_act | major_feature            |"
+                "| sio | ate         | ive    |                          |"
+                "| n   |             |        |                          |"
+                "|-----+-------------+--------+--------------------------|"
+                "| 0.2 | 2021-06-23  | true   | #[header(inline)] attrib |"
+                "| .1  |             |        | ute                      |"
+                "| 0.2 | 2021-06-19  | false  | API changes              |"
+                "| .0  |             |        |                          |"
+                "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
+                "| .4  |             |        |                          |"
+            )
+        );
+        assert!(is_lines_equal(&table, 57));
+
+        let table = Table::new(&data)
+            .with(Style::github_markdown())
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Width::wrap(57).keep_words())
+            .to_string();
+
+        assert_eq!(
+            table,
+            static_table!(
+                "| ver | published_d | is_act | major_feature            |"
+                "| sio | ate         | ive    |                          |"
+                "| n   |             |        |                          |"
+                "|-----+-------------+--------+--------------------------|"
+                "| 0.2 | 2021-06-23  | true   | #[header(inline)]        |"
+                "| .1  |             |        | attribute                |"
+                "| 0.2 | 2021-06-19  | false  | API changes              |"
+                "| .0  |             |        |                          |"
+                "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
+                "| .4  |             |        |                          |"
+            )
+        );
+        assert!(is_lines_equal(&table, 57));
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn wrapping_as_total_multiline_color() {
+        use owo_colors::{AnsiColors, OwoColorize};
+
+        #[derive(Tabled)]
+        struct D(
+            #[tabled(rename = "version")] String,
+            #[tabled(rename = "published_date")] String,
+            #[tabled(rename = "is_active")] String,
+            #[tabled(rename = "major_feature")] String,
+        );
+
+        let data = vec![
+            D(
+                "0.2.1".red().to_string(),
+                "2021-06-23".red().on_truecolor(8, 10, 30).to_string(),
+                "true".to_string(),
+                "#[header(inline)] attribute"
+                    .blue()
+                    .on_color(AnsiColors::Green)
+                    .to_string(),
+            ),
+            D(
+                "0.2.0".red().to_string(),
+                "2021-06-19".green().on_truecolor(8, 100, 30).to_string(),
+                "false".to_string(),
+                "API changes".yellow().to_string(),
+            ),
+            D(
+                "0.1.4".white().to_string(),
+                "2021-06-07".red().on_truecolor(8, 10, 30).to_string(),
+                "false".to_string(),
+                "display_with attribute"
+                    .red()
+                    .on_color(AnsiColors::Black)
+                    .to_string(),
+            ),
+        ];
+
+        let table = Table::new(&data)
+            .with(Style::github_markdown())
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Width::wrap(57))
+            .to_string();
+
+        assert_eq!(
+            table,
+            "| ver | published_d | is_act | major_feature            |\n| sio | ate         | ive    |                          |\n| n   |             |        |                          |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                      |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |",
+        );
+        assert!(is_lines_equal(&table, 57));
+
+        let table = Table::new(&data)
+            .with(Style::github_markdown())
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Width::wrap(57).keep_words())
+            .to_string();
+
+        assert_eq!(
+            ansi_str::AnsiStr::ansi_strip(&table),
+            static_table!(
+                "| ver | published_d | is_act | major_feature            |"
+                "| sio | ate         | ive    |                          |"
+                "| n   |             |        |                          |"
+                "|-----+-------------+--------+--------------------------|"
+                "| 0.2 | 2021-06-23  | true   | #[header(inline)]        |"
+                "| .1  |             |        | attribute                |"
+                "| 0.2 | 2021-06-19  | false  | API changes              |"
+                "| .0  |             |        |                          |"
+                "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
+                "| .4  |             |        |                          |"
+            )
+        );
+
+        assert_eq!(
+            table,
+            "| ver | published_d | is_act | major_feature            |\n| sio | ate         | ive    |                          |\n| n   |             |        |                          |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |\n| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattrib\u{1b}[39m\u{1b}[49m\u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[32m\u{1b}[48;2;8;100;30m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[31m\u{1b}[48;2;8;10;30m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31m\u{1b}[40mdisplay_with attribute\u{1b}[39m\u{1b}[49m   |\n| \u{1b}[37m.4\u{1b}[39m  |             |        |                          |"
+        );
+        assert!(is_lines_equal(&table, 57));
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn truncating_as_total_multiline_color() {
+        use owo_colors::{AnsiColors, OwoColorize};
+
+        #[derive(Tabled)]
+        struct D(
+            #[tabled(rename = "version")] String,
+            #[tabled(rename = "published_date")] String,
+            #[tabled(rename = "is_active")] String,
+            #[tabled(rename = "major_feature")] String,
+        );
+
+        let data = vec![
+            D(
+                "0.2.1".red().to_string(),
+                "2021-06-23".red().on_truecolor(8, 10, 30).to_string(),
+                "true".to_string(),
+                "#[header(inline)] attribute"
+                    .blue()
+                    .on_color(AnsiColors::Green)
+                    .to_string(),
+            ),
+            D(
+                "0.2.0".red().to_string(),
+                "2021-06-19".green().on_truecolor(8, 100, 30).to_string(),
+                "false".to_string(),
+                "API changes".yellow().to_string(),
+            ),
+            D(
+                "0.1.4".white().to_string(),
+                "2021-06-07".red().on_truecolor(8, 10, 30).to_string(),
+                "false".to_string(),
+                "display_with attribute"
+                    .red()
+                    .on_color(AnsiColors::Black)
+                    .to_string(),
+            ),
+        ];
+
+        let table = Table::new(&data)
+            .with(Style::github_markdown())
+            .with(Modify::new(Segment::all()).with(Alignment::left()))
+            .with(Width::truncate(57))
+            .to_string();
+
+        assert_eq!(
+            ansi_str::AnsiStr::ansi_strip(&table),
+            static_table!(
+                "| ver | published_d | is_act | major_feature            |"
+                "|-----+-------------+--------+--------------------------|"
+                "| 0.2 | 2021-06-23  | true   | #[header(inline)] attrib |"
+                "| 0.2 | 2021-06-19  | false  | API changes              |"
+                "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
+            )
+        );
+
+        assert_eq!(
+            table,
+            "| ver | published_d | is_act | major_feature            |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
+        );
+        assert!(is_lines_equal(&table, 57));
+    }
 }

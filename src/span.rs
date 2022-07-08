@@ -31,8 +31,6 @@ use papergrid::{Entity, Grid};
 
 use crate::CellOption;
 
-pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
-
 /// Span represent a horizontal/column span setting for any cell on a [Table].
 ///
 /// ```rust,no_run

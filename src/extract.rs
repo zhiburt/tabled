@@ -41,6 +41,7 @@ use crate::{object::bounds_to_usize, TableOption};
 /// ```
 ///
 /// [Table]: crate::Table
+#[derive(Debug)]
 pub struct Extract<R, C> {
     rows: R,
     columns: C,

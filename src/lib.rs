@@ -1,4 +1,10 @@
-#![warn(missing_docs)]
+#![warn(
+    missing_docs,
+    rust_2018_idioms,
+    missing_debug_implementations,
+    unreachable_pub
+)]
+#![deny(unused_must_use)]
 
 //! An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
 //!
@@ -14,7 +20,8 @@
 //!
 //! Then you can create `Table::new` to create a table;
 //!
-//! ```rust
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{Tabled, Table};
 //!
 //! #[derive(Tabled)]
@@ -111,7 +118,8 @@
 //! of a table which will be printed.
 //! You could change it dynamically as well.
 //!
-//! ```rust
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{Tabled, Table, Style};
 //!
 //! #[derive(Tabled)]
@@ -180,6 +188,8 @@ pub mod width;
 
 use std::fmt;
 
+#[cfg(feature = "derive")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub use tabled_derive::Tabled;
 
 pub use papergrid;

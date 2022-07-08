@@ -17,6 +17,7 @@ jobs:
       matrix:
         rust: [nightly, stable]
         os: [ubuntu-latest, windows-latest, macos-latest]
+        features: ["", "color", "derive", "color,derive"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -28,6 +29,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
+          args: --no-default-features --features=${{ matrix.features }}
 
   fmt:
     name: Rustfmt
@@ -68,6 +70,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl]
+        features: ["derive", "color,derive"]
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -79,23 +82,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --target ${{ matrix.target }}
-
-  test_color:
-    name: Unit Test Suite for color feature
-    needs: [check, fmt, clippy]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --workspace --no-fail-fast --features color
+          args: --workspace --no-fail-fast --target ${{ matrix.target }} --no-default-features --features ${{ matrix.features }}
 
   test_quickcheck:
     name: A quickcheck test suite
@@ -115,7 +102,7 @@ jobs:
 
   coverage:
     name: Coveralls
-    needs: [test, test_color]
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

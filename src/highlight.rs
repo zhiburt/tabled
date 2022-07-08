@@ -79,6 +79,7 @@ use crate::{object::Object, style::Border, TableOption};
 /// ```
 ///
 ///
+#[derive(Debug)]
 pub struct Highlight<O> {
     target: O,
     border: Border,
@@ -122,6 +123,7 @@ where
 /// A [Highlight] object which works with a [crate::style::ColoredBorder]
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
+#[derive(Debug)]
 pub struct HighlightColored<O> {
     target: O,
     border: crate::style::ColoredBorder,

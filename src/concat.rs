@@ -2,7 +2,8 @@
 //!
 //! # Example
 //!
-//! ```
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{Table, Tabled, Style, Concat};
 //!
 //! #[derive(Tabled)]
@@ -66,11 +67,13 @@ use crate::{Table, TableOption};
 ///
 /// let table3 = table1.with(Concat::horizontal(table2));
 /// ```
+#[derive(Debug)]
 pub struct Concat {
     table: Table,
     mode: ConcatMode,
     default_cell: String,
 }
+#[derive(Debug)]
 enum ConcatMode {
     Vertical,
     Horizontal,

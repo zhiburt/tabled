@@ -7,7 +7,8 @@
 //!
 //! Here's an example of [IndexBuilder] usage
 //!
-//! ```
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{Table, Tabled, Style};
 //!
 //! #[derive(Tabled)]
@@ -60,7 +61,8 @@
 //!
 //! Example when we don't want to show empty data of enum where not all variants are used.
 //!
-//! ```
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{Table, Tabled, Style};
 //!
 //! #[derive(Tabled)]

@@ -47,6 +47,7 @@ use crate::CellOption;
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).set_fill('>', '<', '^', 'V')));
 /// ```
+#[derive(Debug)]
 pub struct Padding(papergrid::Padding);
 
 impl Padding {
