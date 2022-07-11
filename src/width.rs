@@ -163,8 +163,13 @@ where
 }
 
 impl<W, P> Truncate<'_, W, P> {
-    /// Sets a suffix which will be appended to a resultant string
-    /// in case a truncate is applied.
+    /// Sets a suffix which will be appended to a resultant string.
+    /// 
+    /// The suffix is used in 3 circamstances:
+    ///     1. If original string is *bigger* than the suffix.
+    ///        We cut more of the original string and append the suffix.
+    ///     2. If suffix is bigger than the original string.
+    ///        We cut the suffix to fit in the width.  
     pub fn suffix<'a, S: Into<Cow<'a, str>>>(self, suffix: S) -> Truncate<'a, W, P> {
         Truncate {
             width: self.width,
@@ -194,17 +199,36 @@ where
     W: WidthValue,
 {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        let width = self.width.width(grid);
+        let orig_width = self.width.width(grid);
+        let mut width = orig_width;
+
+        let mut suffix = Cow::Borrowed(self.suffix.as_ref());
+        if !suffix.is_empty() {
+            let suffix_length = string_width(&suffix);
+            if width > suffix_length {
+                width -= suffix_length;
+            } else {
+                suffix = Cow::Owned(cut_str(&suffix, width));
+                width = 0;
+            }
+        }
 
         for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content_styled(row, col);
             if width < string_width(&content) {
-                let mut content = cut_str(&content, width);
-                if !self.suffix.as_ref().is_empty() {
-                    content.push_str(self.suffix.as_ref());
-                }
+                let text = if width == 0 {
+                    if orig_width == 0 {
+                        Cow::Borrowed("")
+                    } else {
+                        Cow::Borrowed(suffix.as_ref())
+                    }
+                } else {
+                    let mut content = cut_str(&content, width);
+                    content.push_str(&suffix);
+                    Cow::Owned(content)
+                };
 
-                grid.set(Entity::Cell(row, col), Settings::new().text(content))
+                grid.set(Entity::Cell(row, col), Settings::new().text(text));
             }
         }
     }
@@ -1265,4 +1289,22 @@ mod tests {
         assert_eq!(split_by_line_keeping_words(text, 2), "\u{1b}[37mJa\u{1b}[39m\n\u{1b}[37mpa\u{1b}[39m\n\u{1b}[37mne\u{1b}[39m\n\u{1b}[37mse\u{1b}[39m\n\u{1b}[37m \u{1b}[39m \n\u{1b}[37m“\u{1b}[39m\u{1b}[37mv\u{1b}[39m\n\u{1b}[37mac\u{1b}[39m\n\u{1b}[37man\u{1b}[39m\n\u{1b}[37mcy\u{1b}[39m\n\u{1b}[37m” \u{1b}[39m\n\u{1b}[37mbu\u{1b}[39m\n\u{1b}[37mtt\u{1b}[39m\n\u{1b}[37mon\u{1b}[39m");
         assert_eq!(split_by_line_keeping_words(text, 1), "\u{1b}[37mJ\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mp\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37ms\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37m“\u{1b}[39m\n\u{1b}[37mv\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37my\u{1b}[39m\n\u{1b}[37m”\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37mb\u{1b}[39m\n\u{1b}[37mu\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mo\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m");
     }
+
+    // #[cfg(feature = "color")]
+    // #[test]
+    // fn split_by_line_keeping_words_color_2_test() {
+    //     use ansi_str::AnsiStr;
+
+    //     let text = "\u{1b}[37mTigre Ecuador   OMYA Andina     3824909999      Calcium carbonate       Colombia\u{1b}[0m";
+
+    //     panic!(
+    //         "{:#?}",
+    //         split_by_line_keeping_words(text, 10)
+    //             .ansi_split("\n")
+    //             .collect::<Vec<_>>()
+    //     );
+
+    //     assert_eq!(split_by_line_keeping_words(text, 2), "\u{1b}[37mJa\u{1b}[39m\n\u{1b}[37mpa\u{1b}[39m\n\u{1b}[37mne\u{1b}[39m\n\u{1b}[37mse\u{1b}[39m\n\u{1b}[37m \u{1b}[39m \n\u{1b}[37m“\u{1b}[39m\u{1b}[37mv\u{1b}[39m\n\u{1b}[37mac\u{1b}[39m\n\u{1b}[37man\u{1b}[39m\n\u{1b}[37mcy\u{1b}[39m\n\u{1b}[37m” \u{1b}[39m\n\u{1b}[37mbu\u{1b}[39m\n\u{1b}[37mtt\u{1b}[39m\n\u{1b}[37mon\u{1b}[39m");
+    //     assert_eq!(split_by_line_keeping_words(text, 1), "\u{1b}[37mJ\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mp\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37ms\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37m“\u{1b}[39m\n\u{1b}[37mv\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37my\u{1b}[39m\n\u{1b}[37m”\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37mb\u{1b}[39m\n\u{1b}[37mu\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mo\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m");
+    // }
 }

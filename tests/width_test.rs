@@ -47,9 +47,9 @@ fn max_width_with_suffix() {
         static_table!(
             "| N | column 0 | column 1 | column 2 |"
             "|---+----------+----------+----------|"
-            "| 0 |  0-...   |  0-...   |  0-...   |"
-            "| 1 |  1-...   |  1-...   |  1-...   |"
-            "| 2 |  2-...   |  2-...   |  2-...   |"
+            "| 0 |    ..    |    ..    |    ..    |"
+            "| 1 |    ..    |    ..    |    ..    |"
+            "| 2 |    ..    |    ..    |    ..    |"
         )
     );
 }
@@ -420,7 +420,7 @@ fn max_width_with_emoji() {
 
     let table = Table::new(data)
         .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(Width::truncate(3).suffix("...")))
+        .with(Modify::new(Segment::all()).with(Width::truncate(6).suffix("...")))
         .to_string();
 
     assert_eq!(
@@ -448,7 +448,7 @@ fn color_chars_are_stripped() {
 
     let table = Table::new(data)
         .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(Width::truncate(3).suffix("...")))
+        .with(Modify::new(Segment::all()).with(Width::truncate(6).suffix("...")))
         .to_string();
 
     assert_eq!(
@@ -609,11 +609,11 @@ fn min_with_max_width_truncate_suffix() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| N   | col... | col... | col... |"
-            "|-----+--------+--------+--------|"
-            "|  0  |  0-0   |  0-1   |  0-2   |"
-            "|  1  |  1-0   |  1-1   |  1-2   |"
-            "|  2  |  2-0   |  2-1   |  2-2   |"
+            "| ... | ... | ... | ... |"
+            "|-----+-----+-----+-----|"
+            "|  0  | 0-0 | 0-1 | 0-2 |"
+            "|  1  | 1-0 | 1-1 | 1-2 |"
+            "|  2  | 2-0 | 2-1 | 2-2 |"
         )
     );
 
@@ -622,11 +622,11 @@ fn min_with_max_width_truncate_suffix() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| N   | col... | col... | col... |"
-            "|-----+--------+--------+--------|"
-            "|  0  |  0-0   |  0-1   |  0-2   |"
-            "|  1  |  1-0   |  1-1   |  1-2   |"
-            "|  2  |  2-0   |  2-1   |  2-2   |"
+            "| ... | ... | ... | ... |"
+            "|-----+-----+-----+-----|"
+            "|  0  | 0-0 | 0-1 | 0-2 |"
+            "|  1  | 1-0 | 1-1 | 1-2 |"
+            "|  2  | 2-0 | 2-1 | 2-2 |"
         )
     );
 }
