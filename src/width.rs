@@ -164,7 +164,7 @@ where
 
 impl<W, P> Truncate<'_, W, P> {
     /// Sets a suffix which will be appended to a resultant string.
-    /// 
+    ///
     /// The suffix is used in 3 circamstances:
     ///     1. If original string is *bigger* than the suffix.
     ///        We cut more of the original string and append the suffix.
@@ -266,15 +266,6 @@ where
             _priority: Default::default(),
         }
     }
-
-    /// Set the keep words option.
-    ///
-    /// If a wrapping point will be in a word, [Wrap] will
-    /// preserve a word (if possible) and wrap the string before it.
-    pub fn keep_words(mut self) -> Self {
-        self.keep_words = true;
-        self
-    }
 }
 
 impl<W, P> Wrap<W, P> {
@@ -289,6 +280,15 @@ impl<W, P> Wrap<W, P> {
             keep_words: self.keep_words,
             _priority: Default::default(),
         }
+    }
+
+    /// Set the keep words option.
+    ///
+    /// If a wrapping point will be in a word, [Wrap] will
+    /// preserve a word (if possible) and wrap the string before it.
+    pub fn keep_words(mut self) -> Self {
+        self.keep_words = true;
+        self
     }
 }
 
