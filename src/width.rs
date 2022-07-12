@@ -263,7 +263,7 @@ where
 
         for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content_styled(row, col);
-            if width < string_width_multiline(&content) {
+            if orig_width < string_width_multiline(&content) {
                 let text = if width == 0 {
                     if orig_width == 0 {
                         Cow::Borrowed("")
