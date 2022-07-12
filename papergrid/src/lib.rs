@@ -1634,7 +1634,7 @@ fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
 }
 
 #[cfg(not(feature = "color"))]
-fn string_trim(text: &str) -> Cow<str> {
+fn string_trim(text: &str) -> Cow<'_, str> {
     text.trim().into()
 }
 
@@ -1644,7 +1644,7 @@ fn string_trim(text: &str) -> Cow<'_, str> {
 }
 
 #[cfg(not(feature = "color"))]
-fn get_lines(text: &str) -> impl Iterator<Item = Cow<str>> {
+fn get_lines(text: &str) -> impl Iterator<Item = Cow<'_, str>> {
     // we call split but not `lines()` in order to match colored implementation
     text.split('\n').map(Cow::Borrowed)
 }

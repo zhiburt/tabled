@@ -981,39 +981,70 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 
 #[cfg(feature = "color")]
 fn chunks(s: &str, width: usize) -> Vec<String> {
-    const REPLACEMENT: char = '\u{FFFD}';
+    use std::fmt::Write;
+
+    if width == 0 {
+        return Vec::new();
+    }
 
     let mut list = Vec::new();
-    let mut text = s.to_string();
-    while !text.is_empty() {
-        let stripped_text = ansi_str::AnsiStr::ansi_strip(&text);
-        let (length, count_unknowns, char_size) =
-            papergrid::string_split_at_length(&stripped_text, width);
+    let mut line = String::with_capacity(width);
+    let mut line_width = 0;
 
-        if length == 0 && count_unknowns == 0 {
-            break;
+    for b in ansi_str::get_blocks(s) {
+        if b.text().is_empty() {
+            continue;
         }
 
-        if length != 0 && count_unknowns != 0 {
-            let (mut lhs, _) = ansi_str::AnsiStr::ansi_split_at(&text, length);
-            lhs.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+        let _ = write!(&mut line, "{}", b.start());
 
-            list.push(lhs);
+        let mut part = b.text();
+        while !part.is_empty() {
+            let available_space = width - line_width;
 
-            let (_, rhs) = ansi_str::AnsiStr::ansi_split_at(&text, length + char_size);
-            text = rhs;
-        } else if length == 0 {
-            let mut s = String::with_capacity(count_unknowns);
-            s.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
-            list.push(s);
+            let part_width = unicode_width::UnicodeWidthStr::width(part);
+            if part_width <= available_space {
+                line.push_str(part);
+                line_width += part_width;
 
-            let (_, rhs) = ansi_str::AnsiStr::ansi_split_at(&text, char_size);
-            text = rhs;
-        } else {
-            let (lhs, rhs) = ansi_str::AnsiStr::ansi_split_at(&text, length);
-            list.push(lhs);
-            text = rhs;
+                if line_width == available_space {
+                    let _ = write!(&mut line, "{}", b.end());
+                    list.push(line);
+                    line = String::with_capacity(width);
+                    line_width = 0;
+                    let _ = write!(&mut line, "{}", b.start());
+                }
+
+                break;
+            }
+
+            let (lhs, rhs, (unknowns, split_char)) = split_string_at(part, available_space);
+
+            part = &rhs[split_char..];
+
+            line.push_str(lhs);
+            line_width += unicode_width::UnicodeWidthStr::width(lhs);
+
+            const REPLACEMENT: char = '\u{FFFD}';
+            line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
+            line_width += unknowns;
+
+            if line_width == width {
+                let _ = write!(&mut line, "{}", b.end());
+                list.push(line);
+                line = String::with_capacity(width);
+                line_width = 0;
+                let _ = write!(&mut line, "{}", b.start());
+            }
         }
+
+        if line_width > 0 {
+            let _ = write!(&mut line, "{}", b.end());
+        }
+    }
+
+    if line_width > 0 {
+        list.push(line);
     }
 
     list
@@ -1021,9 +1052,6 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 
 #[cfg(not(feature = "color"))]
 fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
-    use std::fmt::Write;
-    use unicode_width::UnicodeWidthStr;
-
     let mut lines = Vec::new();
     let mut line = String::with_capacity(width);
     let mut line_width = 0;
@@ -1032,7 +1060,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 
     for word in s.split(' ') {
         if !is_first_word {
-            let line_has_space = line_width + 1 <= width;
+            let line_has_space = line_width < width;
             if line_has_space {
                 line.push(' ');
                 line_width += 1;
@@ -1044,11 +1072,11 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
             is_first_word = false;
         }
 
-        let word_width = UnicodeWidthStr::width(word);
+        let word_width = unicode_width::UnicodeWidthStr::width(word);
 
         let line_has_space = line_width + word_width <= width;
         if line_has_space {
-            let _ = write!(&mut line, "{}", word);
+            line.push_str(word);
             line_width += word_width;
             continue;
         }
@@ -1074,12 +1102,10 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                 let (lhs, rhs, (unknowns, split_char)) =
                     split_string_at(word_part, available_space);
 
-                println!("{:?} {:?}", lhs, rhs);
-
                 word_part = &rhs[split_char..];
-                line_width += UnicodeWidthStr::width(lhs) + unknowns;
+                line_width += unicode_width::UnicodeWidthStr::width(lhs) + unknowns;
 
-                let _ = write!(&mut line, "{}", lhs);
+                line.push_str(lhs);
                 const REPLACEMENT: char = '\u{FFFD}';
                 line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
 
@@ -1104,7 +1130,6 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 #[cfg(feature = "color")]
 fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
     use std::fmt::Write;
-    use unicode_width::UnicodeWidthStr;
 
     let mut lines = Vec::new();
     let mut line = String::with_capacity(width);
@@ -1131,11 +1156,11 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                 is_first_word = false;
             }
 
-            let word_width = UnicodeWidthStr::width(word);
+            let word_width = unicode_width::UnicodeWidthStr::width(word);
 
             let line_has_space = line_width + word_width <= width;
             if line_has_space {
-                let _ = write!(&mut line, "{}", word);
+                line.push_str(word);
                 line_width += word_width;
                 continue;
             }
@@ -1148,12 +1173,11 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                 lines.push(line);
 
                 line = String::with_capacity(width);
-                line_width = 0;
 
                 let _ = write!(&mut line, "{}", b.start());
-                let _ = write!(&mut line, "{}", word);
-                line_width += word_width;
-                is_first_word = true;
+                line.push_str(word);
+                line_width = word_width;
+                is_first_word = false;
             } else {
                 // the word is too long any way so we split it
 
@@ -1163,10 +1187,8 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                     let (lhs, rhs, (unknowns, split_char)) =
                         split_string_at(word_part, available_space);
 
-                    println!("{:?} {:?}", lhs, rhs);
-
                     word_part = &rhs[split_char..];
-                    line_width += UnicodeWidthStr::width(lhs) + unknowns;
+                    line_width += unicode_width::UnicodeWidthStr::width(lhs) + unknowns;
 
                     let _ = write!(&mut line, "{}", lhs);
                     const REPLACEMENT: char = '\u{FFFD}';
@@ -1174,11 +1196,11 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 
                     if line_width == width {
                         let _ = write!(&mut line, "{}", b.end());
+
                         lines.push(line);
                         line = String::with_capacity(width);
                         line_width = 0;
                         is_first_word = true;
-
                         let _ = write!(&mut line, "{}", b.start());
                     }
                 }
@@ -1274,9 +1296,6 @@ mod tests {
     #[test]
     fn split_by_line_keeping_words_color_test() {
         let text = "\u{1b}[37mJapanese “vacancy” button\u{1b}[0m";
-
-        println!("{}", split_keeping_words(text, 2, "\n"));
-        println!("{}", split_keeping_words(text, 1, "\n"));
 
         assert_eq!(split_keeping_words(text, 2, "\n"), "\u{1b}[37mJa\u{1b}[39m\n\u{1b}[37mpa\u{1b}[39m\n\u{1b}[37mne\u{1b}[39m\n\u{1b}[37mse\u{1b}[39m\n\u{1b}[37m“v\u{1b}[39m\n\u{1b}[37mac\u{1b}[39m\n\u{1b}[37man\u{1b}[39m\n\u{1b}[37mcy\u{1b}[39m\n\u{1b}[37m”b\u{1b}[39m\n\u{1b}[37mut\u{1b}[39m\n\u{1b}[37mto\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m ");
         assert_eq!(split_keeping_words(text, 1, "\n"), "\u{1b}[37mJ\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mp\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37ms\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37m“\u{1b}[39m\n\u{1b}[37mv\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37my\u{1b}[39m\n\u{1b}[37m”\u{1b}[39m\n\u{1b}[37mb\u{1b}[39m\n\u{1b}[37mu\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mo\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m");
