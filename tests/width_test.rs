@@ -455,7 +455,7 @@ fn max_width_with_emoji() {
     assert_eq!(
         table,
         static_table!(
-            "| &st... |"
+            "|  &str  |"
             "|--------|"
             "|   🤠   |"
             "| 😳�... |"
@@ -477,23 +477,23 @@ fn color_chars_are_stripped() {
 
     let table = Table::new(data)
         .with(Style::github_markdown())
-        .with(Modify::new(Segment::all()).with(Width::truncate(6).suffix("...")))
+        .with(Modify::new(Segment::all()).with(Width::truncate(4).suffix("...")))
         .to_string();
 
     assert_eq!(
         ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
-            "| Str... |"
-            "|--------|"
-            "|  asd   |"
-            "|  zxc   |"
-            "| asd... |"
+            "| S... |"
+            "|------|"
+            "| asd  |"
+            "| zxc  |"
+            "| a... |"
         )
     );
 
     assert_eq!(
         table,
-        "| Str... |\n|--------|\n|  \u{1b}[31masd\u{1b}[39m   |\n|  \u{1b}[34mzxc\u{1b}[39m   |\n| \u{1b}[32;40masd\u{1b}[39m\u{1b}[49m... |",
+        "| S... |\n|------|\n| \u{1b}[31masd\u{1b}[39m  |\n| \u{1b}[34mzxc\u{1b}[39m  |\n| \u{1b}[32;40ma\u{1b}[39m\u{1b}[49m... |",
     );
 }
 
@@ -638,7 +638,7 @@ fn min_with_max_width_truncate_suffix() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| ... | ... | ... | ... |"
+            "| N   | ... | ... | ... |"
             "|-----+-----+-----+-----|"
             "|  0  | 0-0 | 0-1 | 0-2 |"
             "|  1  | 1-0 | 1-1 | 1-2 |"
@@ -651,7 +651,7 @@ fn min_with_max_width_truncate_suffix() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| ... | ... | ... | ... |"
+            "| N   | ... | ... | ... |"
             "|-----+-----+-----+-----|"
             "|  0  | 0-0 | 0-1 | 0-2 |"
             "|  1  | 1-0 | 1-1 | 1-2 |"
@@ -674,11 +674,11 @@ fn min_with_max_width_truncate_suffix_limit_replace() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| xxx | xxx | xxx | xxx |"
-            "|-----+-----+-----+-----|"
-            "|  0  | 0-0 | 0-1 | 0-2 |"
-            "|  1  | 1-0 | 1-1 | 1-2 |"
-            "|  2  | 2-0 | 2-1 | 2-2 |"
+            "| N | xxx | xxx | xxx |"
+            "|---+-----+-----+-----|"
+            "| 0 | 0-0 | 0-1 | 0-2 |"
+            "| 1 | 1-0 | 1-1 | 1-2 |"
+            "| 2 | 2-0 | 2-1 | 2-2 |"
         )
     );
 }
@@ -697,11 +697,11 @@ fn min_with_max_width_truncate_suffix_limit_cut() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| qwe | qwe | qwe | qwe |"
-            "|-----+-----+-----+-----|"
-            "|  0  | 0-0 | 0-1 | 0-2 |"
-            "|  1  | 1-0 | 1-1 | 1-2 |"
-            "|  2  | 2-0 | 2-1 | 2-2 |"
+            "| N | qwe | qwe | qwe |"
+            "|---+-----+-----+-----|"
+            "| 0 | 0-0 | 0-1 | 0-2 |"
+            "| 1 | 1-0 | 1-1 | 1-2 |"
+            "| 2 | 2-0 | 2-1 | 2-2 |"
         )
     );
 }
