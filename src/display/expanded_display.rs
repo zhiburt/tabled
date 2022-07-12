@@ -52,7 +52,7 @@ use std::fmt;
 
 use papergrid::{cut_str, string_width_multiline};
 
-use crate::{width::split_by_lines, Tabled};
+use crate::{width::wrap_text, Tabled};
 
 /// ExpandedDisplay display data in a 'expanded display mode' from postgresql.
 /// It may be useful for a large data sets with a lot of fields.
@@ -287,9 +287,9 @@ fn write_record(
 }
 
 fn truncate(s: &str, max: usize) -> String {
-    cut_str(s, max)
+    cut_str(s, max).into_owned()
 }
 
 fn wrap(s: &str, max: usize) -> String {
-    split_by_lines(s, max)
+    wrap_text(s, max, false)
 }
