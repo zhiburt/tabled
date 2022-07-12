@@ -1532,55 +1532,35 @@ fn total_width(grid: &Grid, widths: &[usize], margin: &Margin) -> usize {
 /// strip cuts the string to a specific width.
 ///
 /// Width is expected to be in bytes.
-pub fn cut_str(s: &str, width: usize) -> String {
-    __cut_str(s, width)
-}
-
-#[cfg(not(feature = "color"))]
-fn __cut_str(s: &str, width: usize) -> String {
+pub fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
     const REPLACEMENT: char = '\u{FFFD}';
 
-    let mut buf = String::with_capacity(width);
-    let mut i = 0;
-    for c in s.chars() {
-        if i == width {
-            break;
-        };
+    #[cfg(feature = "color")]
+    {
+        let stripped = ansi_str::AnsiStr::ansi_strip(s);
+        let (length, count_unknowns, _) = string_split_at_length(&stripped, width);
 
-        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+        let mut buf = ansi_str::AnsiStr::ansi_cut(s, ..length);
+        buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
 
-        // We cut the chars which takes more then 1 symbol to display,
-        // in order to archive the necessary width.
-        if i + c_width > width {
-            let count = width - i;
-            i += count;
-
-            for _ in 0..count {
-                buf.push(REPLACEMENT);
-            }
-        } else {
-            i += c_width;
-            buf.push(c);
-        }
+        Cow::Owned(buf)
     }
+    #[cfg(not(feature = "color"))]
+    {
+        let (length, count_unknowns, _) = string_split_at_length(s, width);
+        let buf = &s[..length];
+        if count_unknowns == 0 {
+            return Cow::Borrowed(buf);
+        }
 
-    buf
+        let mut buf = buf.to_owned();
+        buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+
+        Cow::Owned(buf)
+    }
 }
 
-#[cfg(feature = "color")]
-fn __cut_str(s: &str, width: usize) -> String {
-    let stripped = ansi_str::AnsiStr::ansi_strip(s);
-    let (byte_length, count_unknowns, _) = cut_str_to_min_length(&stripped, width);
-    let mut buf = ansi_str::AnsiStr::ansi_cut(s, ..byte_length);
-
-    const REPLACEMENT: char = '\u{FFFD}';
-    buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
-
-    buf
-}
-
-#[cfg(feature = "color")]
-pub fn cut_str_to_min_length(s: &str, width: usize) -> (usize, usize, usize) {
+pub fn string_split_at_length(s: &str, width: usize) -> (usize, usize, usize) {
     let mut length = 0;
     let mut i = 0;
     for c in s.chars() {
