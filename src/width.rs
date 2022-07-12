@@ -144,8 +144,25 @@ impl Width {
 #[derive(Debug)]
 pub struct Truncate<'a, W = usize, P = PriorityNone> {
     width: W,
-    suffix: Cow<'a, str>,
+    suffix: Option<TruncateSuffix<'a>>,
     _priority: PhantomData<P>,
+}
+
+#[derive(Debug)]
+struct TruncateSuffix<'a> {
+    text: Cow<'a, str>,
+    limit: SuffixLimit,
+}
+
+/// A suffix limit settings.
+#[derive(Debug)]
+pub enum SuffixLimit {
+    /// Cut the suffix.
+    Cut,
+    /// Don't show the suffix.
+    Ignore,
+    /// Use a string with n chars instead.
+    Replace(char),
 }
 
 impl<W> Truncate<'static, W>
@@ -156,19 +173,43 @@ where
     pub fn new(width: W) -> Truncate<'static, W> {
         Self {
             width,
-            suffix: Cow::Borrowed(""),
+            suffix: None,
             _priority: Default::default(),
         }
     }
 }
 
 impl<W, P> Truncate<'_, W, P> {
-    /// Sets a suffix which will be appended to a resultant string
-    /// in case a truncate is applied.
+    /// Sets a suffix which will be appended to a resultant string.
+    ///
+    /// The suffix is used in 3 circamstances:
+    ///     1. If original string is *bigger* than the suffix.
+    ///        We cut more of the original string and append the suffix.
+    ///     2. If suffix is bigger than the original string.
+    ///        We cut the suffix to fit in the width by default.
+    ///        But you can peak the behaviour by using [Truncate::suffix_limit]
     pub fn suffix<'a, S: Into<Cow<'a, str>>>(self, suffix: S) -> Truncate<'a, W, P> {
+        let used_limit = self.suffix.map_or(SuffixLimit::Cut, |s| s.limit);
+
         Truncate {
             width: self.width,
-            suffix: suffix.into(),
+            suffix: Some(TruncateSuffix {
+                text: suffix.into(),
+                limit: used_limit,
+            }),
+            _priority: Default::default(),
+        }
+    }
+}
+
+impl<'a, W, P> Truncate<'a, W, P> {
+    /// Sets a suffix limit, which is used when the suffix is too big to be used.
+    pub fn suffix_limit(self, limit: SuffixLimit) -> Truncate<'a, W, P> {
+        let text = self.suffix.map_or(Cow::Borrowed(""), |s| s.text);
+
+        Truncate {
+            width: self.width,
+            suffix: Some(TruncateSuffix { text, limit }),
             _priority: Default::default(),
         }
     }
@@ -194,19 +235,53 @@ where
     W: WidthValue,
 {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        let width = self.width.width(grid);
+        let orig_width = self.width.width(grid);
+
+        let mut width = orig_width;
+        let suffix = match self.suffix.as_ref() {
+            Some(suffix) => {
+                let suffix_length = string_width(&suffix.text);
+                if width > suffix_length {
+                    width -= suffix_length;
+                    Cow::Borrowed(suffix.text.as_ref())
+                } else {
+                    match suffix.limit {
+                        SuffixLimit::Ignore => Cow::Borrowed(""),
+                        SuffixLimit::Cut => {
+                            width = 0;
+                            cut_str(&suffix.text, orig_width)
+                        }
+                        SuffixLimit::Replace(c) => {
+                            width = 0;
+                            Cow::Owned(std::iter::repeat(c).take(orig_width).collect())
+                        }
+                    }
+                }
+            }
+            None => Cow::Borrowed(""),
+        };
 
         for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content_styled(row, col);
             if width < string_width_multiline(&content) {
-                let mut content = cut_str(&content, width);
-                if !self.suffix.as_ref().is_empty() {
-                    let mut c = content.into_owned();
-                    c.push_str(self.suffix.as_ref());
-                    content = Cow::Owned(c);
-                }
+                let text = if width == 0 {
+                    if orig_width == 0 {
+                        Cow::Borrowed("")
+                    } else {
+                        Cow::Borrowed(suffix.as_ref())
+                    }
+                } else {
+                    let content = cut_str(&content, width);
+                    if !suffix.is_empty() {
+                        let mut content = content.into_owned();
+                        content.push_str(&suffix);
+                        Cow::Owned(content)
+                    } else {
+                        content
+                    }
+                };
 
-                grid.set(Entity::Cell(row, col), Settings::new().text(content))
+                grid.set(Entity::Cell(row, col), Settings::new().text(text));
             }
         }
     }
@@ -244,15 +319,6 @@ where
             _priority: Default::default(),
         }
     }
-
-    /// Set the keep words option.
-    ///
-    /// If a wrapping point will be in a word, [Wrap] will
-    /// preserve a word (if possible) and wrap the string before it.
-    pub fn keep_words(mut self) -> Self {
-        self.keep_words = true;
-        self
-    }
 }
 
 impl<W, P> Wrap<W, P> {
@@ -267,6 +333,15 @@ impl<W, P> Wrap<W, P> {
             keep_words: self.keep_words,
             _priority: Default::default(),
         }
+    }
+
+    /// Set the keep words option.
+    ///
+    /// If a wrapping point will be in a word, [Wrap] will
+    /// preserve a word (if possible) and wrap the string before it.
+    pub fn keep_words(mut self) -> Self {
+        self.keep_words = true;
+        self
     }
 }
 
@@ -401,7 +476,8 @@ where
 
         let total_width = grid.total_width();
         if width < total_width {
-            truncate_total_width(grid, total_width, width, self.suffix.as_ref(), P::create());
+            let suffix = self.suffix.as_ref().map_or("", |s| &s.text);
+            truncate_total_width(grid, total_width, width, suffix, P::create());
         }
     }
 }
@@ -1416,4 +1492,22 @@ mod tests {
             ]
         )
     }
+
+    // #[cfg(feature = "color")]
+    // #[test]
+    // fn split_by_line_keeping_words_color_2_test() {
+    //     use ansi_str::AnsiStr;
+
+    //     let text = "\u{1b}[37mTigre Ecuador   OMYA Andina     3824909999      Calcium carbonate       Colombia\u{1b}[0m";
+
+    //     panic!(
+    //         "{:#?}",
+    //         split_by_line_keeping_words(text, 10)
+    //             .ansi_split("\n")
+    //             .collect::<Vec<_>>()
+    //     );
+
+    //     assert_eq!(split_by_line_keeping_words(text, 2), "\u{1b}[37mJa\u{1b}[39m\n\u{1b}[37mpa\u{1b}[39m\n\u{1b}[37mne\u{1b}[39m\n\u{1b}[37mse\u{1b}[39m\n\u{1b}[37m \u{1b}[39m \n\u{1b}[37m“\u{1b}[39m\u{1b}[37mv\u{1b}[39m\n\u{1b}[37mac\u{1b}[39m\n\u{1b}[37man\u{1b}[39m\n\u{1b}[37mcy\u{1b}[39m\n\u{1b}[37m” \u{1b}[39m\n\u{1b}[37mbu\u{1b}[39m\n\u{1b}[37mtt\u{1b}[39m\n\u{1b}[37mon\u{1b}[39m");
+    //     assert_eq!(split_by_line_keeping_words(text, 1), "\u{1b}[37mJ\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mp\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37ms\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37m“\u{1b}[39m\n\u{1b}[37mv\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37my\u{1b}[39m\n\u{1b}[37m”\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37mb\u{1b}[39m\n\u{1b}[37mu\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mo\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m");
+    // }
 }
