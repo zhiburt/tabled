@@ -144,8 +144,25 @@ impl Width {
 #[derive(Debug)]
 pub struct Truncate<'a, W = usize, P = PriorityNone> {
     width: W,
-    suffix: Cow<'a, str>,
+    suffix: Option<TruncateSuffix<'a>>,
     _priority: PhantomData<P>,
+}
+
+#[derive(Debug)]
+struct TruncateSuffix<'a> {
+    text: Cow<'a, str>,
+    limit: SuffixLimit,
+}
+
+/// A suffix limit settings.
+#[derive(Debug)]
+pub enum SuffixLimit {
+    /// Cut the suffix.
+    Cut,
+    /// Don't show the suffix.
+    Ignore,
+    /// Use a string with n chars instead.
+    Replace(char),
 }
 
 impl<W> Truncate<'static, W>
@@ -156,7 +173,7 @@ where
     pub fn new(width: W) -> Truncate<'static, W> {
         Self {
             width,
-            suffix: Cow::Borrowed(""),
+            suffix: None,
             _priority: Default::default(),
         }
     }
@@ -169,11 +186,30 @@ impl<W, P> Truncate<'_, W, P> {
     ///     1. If original string is *bigger* than the suffix.
     ///        We cut more of the original string and append the suffix.
     ///     2. If suffix is bigger than the original string.
-    ///        We cut the suffix to fit in the width.  
+    ///        We cut the suffix to fit in the width by default.
+    ///        But you can peak the behaviour by using [Truncate::suffix_limit]
     pub fn suffix<'a, S: Into<Cow<'a, str>>>(self, suffix: S) -> Truncate<'a, W, P> {
+        let used_limit = self.suffix.map_or(SuffixLimit::Cut, |s| s.limit);
+
         Truncate {
             width: self.width,
-            suffix: suffix.into(),
+            suffix: Some(TruncateSuffix {
+                text: suffix.into(),
+                limit: used_limit,
+            }),
+            _priority: Default::default(),
+        }
+    }
+}
+
+impl<'a, W, P> Truncate<'a, W, P> {
+    /// Sets a suffix limit, which is used when the suffix is too big to be used.
+    pub fn suffix_limit(self, limit: SuffixLimit) -> Truncate<'a, W, P> {
+        let text = self.suffix.map_or(Cow::Borrowed(""), |s| s.text);
+
+        Truncate {
+            width: self.width,
+            suffix: Some(TruncateSuffix { text, limit }),
             _priority: Default::default(),
         }
     }
@@ -200,18 +236,30 @@ where
 {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
         let orig_width = self.width.width(grid);
-        let mut width = orig_width;
 
-        let mut suffix = Cow::Borrowed(self.suffix.as_ref());
-        if !suffix.is_empty() {
-            let suffix_length = string_width(&suffix);
-            if width > suffix_length {
-                width -= suffix_length;
-            } else {
-                suffix = Cow::Owned(cut_str(&suffix, width));
-                width = 0;
+        let mut width = orig_width;
+        let suffix = match self.suffix.as_ref() {
+            Some(suffix) => {
+                let suffix_length = string_width(&suffix.text);
+                if width > suffix_length {
+                    width -= suffix_length;
+                    Cow::Borrowed(suffix.text.as_ref())
+                } else {
+                    match suffix.limit {
+                        SuffixLimit::Ignore => Cow::Borrowed(""),
+                        SuffixLimit::Cut => {
+                            width = 0;
+                            Cow::Owned(cut_str(&suffix.text, orig_width))
+                        }
+                        SuffixLimit::Replace(c) => {
+                            width = 0;
+                            Cow::Owned(std::iter::repeat(c).take(orig_width).collect())
+                        }
+                    }
+                }
             }
-        }
+            None => Cow::Borrowed(""),
+        };
 
         for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content_styled(row, col);
@@ -421,7 +469,8 @@ where
 
         let total_width = grid.total_width();
         if width < total_width {
-            truncate_total_width(grid, total_width, width, self.suffix.as_ref(), P::create());
+            let suffix = self.suffix.as_ref().map_or("", |s| &s.text);
+            truncate_total_width(grid, total_width, width, suffix, P::create());
         }
     }
 }

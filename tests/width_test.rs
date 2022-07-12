@@ -3,7 +3,7 @@ use tabled::{
     object::{Cell, Columns, Object, Rows, Segment},
     papergrid::string_width_multiline,
     width::{Justify, MinWidth, Width},
-    width::{PriorityMax, PriorityMin},
+    width::{PriorityMax, PriorityMin, SuffixLimit},
     Alignment, Modify, Padding, Panel, Span, Style, Table,
 };
 
@@ -627,6 +627,75 @@ fn min_with_max_width_truncate_suffix() {
             "|  0  | 0-0 | 0-1 | 0-2 |"
             "|  1  | 1-0 | 1-1 | 1-2 |"
             "|  2  | 2-0 | 2-1 | 2-2 |"
+        )
+    );
+}
+
+#[test]
+fn min_with_max_width_truncate_suffix_limit_replace() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(Style::github_markdown()).with(
+        Modify::new(Rows::single(0)).with(
+            Width::truncate(3)
+                .suffix("...")
+                .suffix_limit(SuffixLimit::Replace('x')),
+        ),
+    );
+
+    assert_eq!(
+        table.to_string(),
+        static_table!(
+            "| xxx | xxx | xxx | xxx |"
+            "|-----+-----+-----+-----|"
+            "|  0  | 0-0 | 0-1 | 0-2 |"
+            "|  1  | 1-0 | 1-1 | 1-2 |"
+            "|  2  | 2-0 | 2-1 | 2-2 |"
+        )
+    );
+}
+
+#[test]
+fn min_with_max_width_truncate_suffix_limit_cut() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(Style::github_markdown()).with(
+        Modify::new(Rows::single(0)).with(
+            Width::truncate(3)
+                .suffix("qwert")
+                .suffix_limit(SuffixLimit::Cut),
+        ),
+    );
+
+    assert_eq!(
+        table.to_string(),
+        static_table!(
+            "| qwe | qwe | qwe | qwe |"
+            "|-----+-----+-----+-----|"
+            "|  0  | 0-0 | 0-1 | 0-2 |"
+            "|  1  | 1-0 | 1-1 | 1-2 |"
+            "|  2  | 2-0 | 2-1 | 2-2 |"
+        )
+    );
+}
+
+#[test]
+fn min_with_max_width_truncate_suffix_limit_ignore() {
+    let data = create_vector::<3, 3>();
+    let table = Table::new(&data).with(Style::github_markdown()).with(
+        Modify::new(Rows::single(0)).with(
+            Width::truncate(3)
+                .suffix("qwert")
+                .suffix_limit(SuffixLimit::Ignore),
+        ),
+    );
+
+    assert_eq!(
+        table.to_string(),
+        static_table!(
+            "| N | col | col | col |"
+            "|---+-----+-----+-----|"
+            "| 0 | 0-0 | 0-1 | 0-2 |"
+            "| 1 | 1-0 | 1-1 | 1-2 |"
+            "| 2 | 2-0 | 2-1 | 2-2 |"
         )
     );
 }
