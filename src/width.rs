@@ -155,7 +155,7 @@ struct TruncateSuffix<'a> {
 }
 
 /// A suffix limit settings.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SuffixLimit {
     /// Cut the suffix.
     Cut,
@@ -345,7 +345,7 @@ impl<W, P> Wrap<W, P> {
     }
 }
 
-impl<W> CellOption for Wrap<W>
+impl<W, P> CellOption for Wrap<W, P>
 where
     W: WidthValue,
 {
@@ -477,7 +477,8 @@ where
         let total_width = grid.total_width();
         if width < total_width {
             let suffix = self.suffix.as_ref().map_or("", |s| &s.text);
-            truncate_total_width(grid, total_width, width, suffix, P::create());
+            let suffix_limit = self.suffix.as_ref().map_or(&SuffixLimit::Cut, |s| &s.limit);
+            truncate_total_width(grid, total_width, width, suffix, suffix_limit, P::create());
         }
     }
 }
@@ -815,12 +816,14 @@ fn truncate_total_width<P: ColumnPeaker>(
     total_width: usize,
     width: usize,
     suffix: &str,
+    suffix_limit: &SuffixLimit,
     priority: P,
 ) {
     let points = decrease_total_width_fn(grid, total_width, width, priority);
     for ((row, col), width) in points {
         Truncate::new(width)
             .suffix(suffix)
+            .suffix_limit(suffix_limit.clone())
             .change_cell(grid, Entity::Cell(row, col));
     }
 }
