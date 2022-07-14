@@ -447,6 +447,8 @@ const RE_STRUCTURED_TEXT: StyleConfig = StyleConfig::new(
 pub struct StyleConfig {
     frame: Frame,
     horizontal: Line,
+    // todo: make it Option<papergrid::Line>
+    //       or maybe move to another structure and it could be build out of CustomStyle to add custom lines.
     header: Line,
     vertical: Option<char>,
 }
@@ -1115,6 +1117,26 @@ impl<T, B, L, R, IH, IV> CustomStyle<T, B, L, R, IH, IV, On> {
     pub fn header_off(mut self) -> CustomStyle<T, B, L, R, IH, IV, ()> {
         self.inner.header = Line::empty();
         CustomStyle::new(self.inner)
+    }
+}
+
+impl<T, B, R, IV, H> CustomStyle<T, B, On, R, On, IV, H> {
+    /// Sets a left intersection char.
+    pub fn left_intersection_off(self) -> Self {
+        let mut style = self.inner;
+        style.frame.left.intersection = None;
+
+        CustomStyle::new(style)
+    }
+}
+
+impl<T, B, L, IV, H> CustomStyle<T, B, L, On, On, IV, H> {
+    /// Sets a right intersection char.
+    pub fn right_intersection_off(self) -> Self {
+        let mut style = self.inner;
+        style.frame.right.intersection = None;
+
+        CustomStyle::new(style)
     }
 }
 

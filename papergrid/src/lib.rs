@@ -46,7 +46,7 @@
 use std::{
     borrow::Cow,
     cmp,
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fmt::{self, Display, Write},
     hash::Hash,
 };
@@ -240,7 +240,7 @@ impl Grid {
 
     /// Set the [Borders] value as currect one.
     pub fn set_borders(&mut self, borders: Borders<char>) {
-        self.borders.borders = borders;
+        self.borders.set_borders(borders);
     }
 
     /// Set the [Borders] value as currect one.
@@ -1749,6 +1749,7 @@ struct BordersConfig<T> {
     borders: Borders<T>,
     cells: BordersMap<T>,
     lines: HashMap<usize, Line<T>>,
+    layout: BordersLayout,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -1789,40 +1790,58 @@ pub struct Line<T> {
     pub right: Option<T>,
 }
 
+#[derive(Debug, Clone, Default)]
+struct BordersLayout {
+    horizontal: HashSet<usize>,
+    vertical: HashSet<usize>,
+}
+
 pub type Position = (usize, usize);
 
 impl<T> BordersConfig<T> {
     fn insert_border(&mut self, pos: Position, border: Border<T>) {
         if let Some(c) = border.top {
             self.cells.horizontal.insert(pos, c);
+            self.layout.horizontal.insert(pos.0);
         }
 
         if let Some(c) = border.bottom {
             self.cells.horizontal.insert((pos.0 + 1, pos.1), c);
+            self.layout.horizontal.insert(pos.0 + 1);
         }
 
         if let Some(c) = border.left {
             self.cells.vertical.insert(pos, c);
+            self.layout.vertical.insert(pos.1);
         }
 
         if let Some(c) = border.right {
             self.cells.vertical.insert((pos.0, pos.1 + 1), c);
+            self.layout.vertical.insert(pos.1 + 1);
         }
 
         if let Some(c) = border.left_top_corner {
             self.cells.intersection.insert((pos.0, pos.1), c);
+            self.layout.horizontal.insert(pos.0);
+            self.layout.vertical.insert(pos.1);
         }
 
         if let Some(c) = border.left_bottom_corner {
             self.cells.intersection.insert((pos.0 + 1, pos.1), c);
+            self.layout.horizontal.insert(pos.0 + 1);
+            self.layout.vertical.insert(pos.1);
         }
 
         if let Some(c) = border.right_top_corner {
             self.cells.intersection.insert((pos.0, pos.1 + 1), c);
+            self.layout.horizontal.insert(pos.0);
+            self.layout.vertical.insert(pos.1 + 1);
         }
 
         if let Some(c) = border.right_bottom_corner {
             self.cells.intersection.insert((pos.0 + 1, pos.1 + 1), c);
+            self.layout.horizontal.insert(pos.0 + 1);
+            self.layout.vertical.insert(pos.1 + 1);
         }
     }
 
@@ -1835,6 +1854,35 @@ impl<T> BordersConfig<T> {
         self.cells.intersection.remove(&(pos.0 + 1, pos.1));
         self.cells.intersection.remove(&(pos.0, pos.1 + 1));
         self.cells.intersection.remove(&(pos.0 + 1, pos.1 + 1));
+
+        // clean up the layout.
+
+        if !self.is_horizontal_set(pos.0) {
+            self.layout.horizontal.remove(&pos.0);
+        }
+
+        if !self.is_horizontal_set(pos.0 + 1) {
+            self.layout.horizontal.remove(&(pos.0 + 1));
+        }
+
+        if !self.is_vertical_set(pos.1) {
+            self.layout.vertical.remove(&pos.1);
+        }
+
+        if !self.is_vertical_set(pos.1 + 1) {
+            self.layout.vertical.remove(&(pos.1 + 1));
+        }
+    }
+
+    fn is_horizontal_set(&self, row: usize) -> bool {
+        self.is_line_defined(row)
+            || self.cells.horizontal.keys().any(|&p| p.0 == row)
+            || self.cells.intersection.keys().any(|&p| p.0 == row)
+    }
+
+    fn is_vertical_set(&self, col: usize) -> bool {
+        self.cells.vertical.keys().any(|&p| p.1 == col)
+            || self.cells.intersection.keys().any(|&p| p.1 == col)
     }
 
     fn get_border(&self, pos: Position, count_rows: usize, count_cols: usize) -> Border<&T> {
@@ -1856,6 +1904,11 @@ impl<T> BordersConfig<T> {
 
     fn insert_line(&mut self, row: usize, line: Line<T>) {
         self.lines.insert(row, line);
+        self.layout.horizontal.insert(row);
+    }
+
+    fn set_borders(&mut self, borders: Borders<T>) {
+        self.borders = borders;
     }
 
     fn get_vertical(&self, pos: Position, count_cols: usize) -> Option<&T> {
@@ -1950,8 +2003,62 @@ impl<T> BordersConfig<T> {
             .unwrap_or(false)
     }
 
-    fn is_intersection_defined(&self, pos: Position) -> bool {
-        self.cells.intersection.contains_key(&pos)
+    // fixme: relay on individual setttings more; (need to update StyleSetting, CustomStyle)
+    fn has_horizontal(&self, row: usize, count_rows: usize) -> bool {
+        if self.is_horizontal_set(row) {
+            return true;
+        }
+
+        if self.global.is_some() {
+            return true;
+        }
+
+        if row == count_rows {
+            if self.borders.bottom.is_some() {
+                return true;
+            }
+        } else if row == 0 {
+            if self.borders.top.is_some() {
+                return true;
+            }
+        } else if self.borders.horizontal.is_some() {
+            return true;
+        }
+
+        false
+    }
+
+    // fixme: relay on individual setttings more; (need to update StyleSetting, CustomStyle)
+    fn has_vertical(&self, col: usize, count_cols: usize) -> bool {
+        if self.is_vertical_set(col) {
+            return true;
+        }
+
+        if self.global.is_some() {
+            return true;
+        }
+
+        if col == count_cols {
+            if self.borders.vertical_right.is_some() {
+                return true;
+            }
+
+            if self.borders.horizontal_right.is_some() {
+                return true;
+            }
+        } else if col == 0 {
+            if self.borders.vertical_left.is_some() {
+                return true;
+            }
+
+            if self.borders.horizontal_left.is_some() {
+                return true;
+            }
+        } else if self.borders.vertical_intersection.is_some() {
+            return true;
+        }
+
+        false
     }
 }
 
@@ -2263,24 +2370,11 @@ fn row_width_grid(grid: &Grid, widths: &[usize]) -> usize {
 }
 
 fn has_vertical(grid: &Grid, col: usize) -> bool {
-    (0..grid.count_rows()).any(|row| {
-        grid.borders
-            .get_vertical((row, col), grid.count_columns())
-            .is_some()
-    }) || (0..=grid.count_rows()).any(|row| {
-        grid.borders
-            .get_intersection((row, col), grid.count_rows(), grid.count_columns())
-            .is_some()
-    })
+    grid.borders.has_vertical(col, grid.count_columns())
 }
 
 fn has_horizontal(grid: &Grid, row: usize) -> bool {
-    (0..grid.count_columns()).any(|col| {
-        grid.borders
-            .get_horizontal((row, col), grid.count_rows())
-            .is_some()
-    }) || (0..=grid.count_columns()).any(|col| grid.borders.is_intersection_defined((row, col)))
-        || grid.borders.is_line_defined(row)
+    grid.borders.has_horizontal(row, grid.count_rows())
 }
 
 fn count_tabs(s: &str) -> usize {
