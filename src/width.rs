@@ -543,12 +543,13 @@ where
 
         let width = self.size.width(grid);
 
-        let total_width = grid.total_width();
+        let widths = grid.build_widths();
+        let total_width = grid.estimate_total_width(&widths);
         if total_width >= width {
             return;
         }
 
-        increase_total_width(grid, total_width, width, P::create());
+        increase_total_width(grid, widths, total_width, width, P::create());
     }
 }
 
@@ -817,11 +818,13 @@ fn __increase_width(s: &str, width: usize, fill_with: char) -> String {
 
 fn increase_total_width<P: ColumnPeaker>(
     grid: &mut Grid,
+    widths: Vec<usize>,
     total_width: usize,
     expected_width: usize,
     priority: P,
 ) {
-    let increase_list = increase_total_width_fn(grid, expected_width, total_width, priority);
+    let increase_list =
+        get_increase_total_width_list(grid, widths, expected_width, total_width, priority);
 
     for ((row, col), width) in increase_list {
         MinWidth::new(width).change_cell(grid, Entity::Cell(row, col));
@@ -941,8 +944,8 @@ where
                     None => (widths[col], min_widths[col]),
                 };
 
-                let style = grid.style(Entity::Cell(row, col));
                 if width >= width_min {
+                    let style = grid.style(Entity::Cell(row, col));
                     let width =
                         width.saturating_sub(style.padding.left.size + style.padding.right.size);
 
@@ -954,8 +957,9 @@ where
     points
 }
 
-fn increase_total_width_fn<F>(
+fn get_increase_total_width_list<F>(
     grid: &Grid,
+    mut widths: Vec<usize>,
     total_width: usize,
     mut width: usize,
     mut peaker: F,
@@ -963,7 +967,6 @@ fn increase_total_width_fn<F>(
 where
     F: ColumnPeaker,
 {
-    let mut widths = grid.build_widths();
     while width != total_width {
         let col = match peaker.peak(&[], &widths) {
             Some(col) => col,
@@ -971,7 +974,6 @@ where
         };
 
         widths[col] += 1;
-
         width += 1;
     }
 
@@ -980,34 +982,27 @@ where
     for row in 0..grid.count_rows() {
         let mut col = 0;
         while col < widths.len() {
-            match grid.get_column_span((row, col)) {
+            let this_col = col;
+            let width = match grid.get_column_span((row, col)) {
                 Some(span) => {
                     let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
                     let count_borders = count_borders_in_range(grid, col, col + span);
-
-                    let left_padding = grid.style(Entity::Cell(row, col)).padding.left.size;
-                    let right_padding = grid
-                        .style(Entity::Cell(row, col + span - 1))
-                        .padding
-                        .right
-                        .size;
-                    let width = width.saturating_sub(left_padding + right_padding);
-
                     let width = width + count_borders;
 
-                    points.insert((row, col), width);
                     col += span;
+
+                    width
                 }
                 None => {
-                    let style = grid.style(Entity::Cell(row, col));
-                    let width = widths[col];
-                    let width =
-                        width.saturating_sub(style.padding.left.size + style.padding.right.size);
-
-                    points.insert((row, col), width);
                     col += 1;
+                    widths[this_col]
                 }
-            }
+            };
+
+            let style = grid.style(Entity::Cell(row, this_col));
+            let width = width.saturating_sub(style.padding.left.size + style.padding.right.size);
+
+            points.insert((row, this_col), width);
         }
     }
 
