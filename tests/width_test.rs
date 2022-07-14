@@ -2176,6 +2176,26 @@ fn min_width_priority_min() {
     );
 }
 
+#[test]
+fn max_width_tab_0() {
+    let table =
+        Table::new(&["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
+            .with(Style::github_markdown())
+            .with(Width::wrap(60))
+            .to_string();
+
+    assert!(is_lines_equal(&table, 60));
+    assert_eq!(
+        table,
+        static_table!(
+            "|                           &str                           |"
+            "|----------------------------------------------------------|"
+            "|         Tigre Ecuador    OMYA Andina    3824909999    Ca |"
+            "| lcium carbonate    Colombia                              |"
+        )
+    );
+}
+
 #[cfg(feature = "derive")]
 mod derived {
     use super::*;

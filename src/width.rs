@@ -359,8 +359,8 @@ where
                 continue;
             }
 
-            let content = grid.get_cell_content(row, col);
-            let wrapped = wrap_text(content, width, self.keep_words);
+            let content = grid.get_cell_content_formatted(row, col);
+            let wrapped = wrap_text(&content, width, self.keep_words);
 
             debug_assert!(
                 width >= string_width_multiline(&wrapped),
