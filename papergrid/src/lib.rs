@@ -448,8 +448,19 @@ impl Grid {
     // hide it by feature?
     // 'private'
     pub fn build_widths(&self) -> Vec<usize> {
-        let cells = cells_content(self);
-        columns_width(self, &cells)
+        build_widths(self)
+    }
+
+    // hide it by feature?
+    // 'private'
+    pub fn estimate_total_width(&self, widths: &[usize]) -> usize {
+        total_width(self, widths, &self.margin)
+    }
+
+    // hide it by feature?
+    // 'private'
+    pub fn build_min_widths(&self) -> Vec<usize> {
+        build_min_widths(self)
     }
 
     /// This function returns a cells widths.
@@ -1125,7 +1136,7 @@ fn build_cell_line(
     style: &Style,
     tab_width: usize,
 ) -> fmt::Result {
-    let original_cell_height = cell.count_new_lines;
+    let original_cell_height = cell.lines.len();
     let mut cell_height = original_cell_height;
 
     if style.formatting.vertical_trim {
@@ -1265,7 +1276,6 @@ struct CellContent<'a> {
     lines: Vec<Cow<'a, str>>,
     lines_width: Vec<usize>,
     width: usize,
-    count_new_lines: usize,
 }
 
 fn cells_content(grid: &Grid) -> Vec<Vec<CellContent<'_>>> {
@@ -1295,12 +1305,106 @@ fn cells_content(grid: &Grid) -> Vec<Vec<CellContent<'_>>> {
                 lines,
                 lines_width: widths,
                 width: max_width,
-                count_new_lines: count_lines,
             };
         }
     }
 
     cells
+}
+
+fn build_widths(grid: &Grid) -> Vec<usize> {
+    let mut widths = vec![0; grid.count_columns()];
+    for (col, column) in widths.iter_mut().enumerate() {
+        let max = (0..grid.count_rows())
+            .filter(|&row| is_simple_cell(grid, (row, col)))
+            .map(|row| get_cell_width(grid, (row, col)))
+            .max()
+            .unwrap_or(0);
+
+        *column = max;
+    }
+
+    adjust_spans_2(grid, &mut widths);
+
+    widths
+}
+
+fn adjust_spans_2(grid: &Grid, widths: &mut [usize]) {
+    if grid.spans.is_empty() {
+        return;
+    }
+
+    // The overall width disctribution will be different depend on the order.
+    //
+    // We sort spans in order to prioritize the smaller spans first.
+    let mut spans = grid.spans.iter().collect::<Vec<_>>();
+    spans.sort_unstable_by(|a, b| match a.1.cmp(b.1) {
+        cmp::Ordering::Equal => a.0.cmp(b.0),
+        o => o,
+    });
+
+    // todo: the order is matter here; we need to figure out what is correct.
+    for (&(row, col), span) in spans {
+        adjust_range_2(grid, row, col, col + span, widths);
+    }
+}
+
+fn adjust_range_2(grid: &Grid, row: usize, start: usize, end: usize, widths: &mut [usize]) {
+    let max_span_width = get_cell_width(grid, (row, start));
+    let range_width = range_width(grid, start, end, widths);
+
+    if range_width >= max_span_width {
+        return;
+    }
+
+    inc_range_width(widths, max_span_width - range_width, start, end);
+}
+
+fn build_min_widths(grid: &Grid) -> Vec<usize> {
+    let mut widths = vec![0; grid.count_columns()];
+    for (col, column) in widths.iter_mut().enumerate() {
+        let max = (0..grid.count_rows())
+            .map(|row| get_cell_padding(grid, (row, col)))
+            .max()
+            .unwrap_or(0);
+
+        *column = max;
+    }
+
+    adjust_spans_min(grid, &mut widths);
+
+    widths
+}
+
+fn adjust_spans_min(grid: &Grid, widths: &mut [usize]) {
+    if grid.spans.is_empty() {
+        return;
+    }
+
+    // The overall width disctribution will be different depend on the order.
+    //
+    // We sort spans in order to prioritize the smaller spans first.
+    let mut spans = grid.spans.iter().collect::<Vec<_>>();
+    spans.sort_unstable_by(|a, b| match a.1.cmp(b.1) {
+        cmp::Ordering::Equal => a.0.cmp(b.0),
+        o => o,
+    });
+
+    // todo: the order is matter here; we need to figure out what is correct.
+    for (&(row, col), span) in spans {
+        adjust_range_min(grid, row, col, col + span, widths);
+    }
+}
+
+fn adjust_range_min(grid: &Grid, row: usize, start: usize, end: usize, widths: &mut [usize]) {
+    let max_span_width = get_cell_padding(grid, (row, start));
+    let range_width = range_width(grid, start, end, widths);
+
+    if range_width >= max_span_width {
+        return;
+    }
+
+    inc_range_width(widths, max_span_width - range_width, start, end);
 }
 
 fn columns_width(grid: &Grid, cells: &[Vec<CellContent<'_>>]) -> Vec<usize> {
@@ -1359,11 +1463,13 @@ fn adjust_range(
 }
 
 fn get_cell_width(grid: &Grid, (row, col): Position) -> usize {
-    let style = grid.style(Entity::Cell(row, col));
-    let text = &grid.cells[row][col];
-    let width = string_width_multiline_tab(text, grid.config.tab_width);
+    let width = string_width_multiline_tab(&grid.cells[row][col], grid.config.tab_width);
+    width + get_cell_padding(grid, (row, col))
+}
 
-    width + style.padding.left.size + style.padding.right.size
+fn get_cell_padding(grid: &Grid, (row, col): Position) -> usize {
+    let style = grid.style(Entity::Cell(row, col));
+    style.padding.left.size + style.padding.right.size
 }
 
 fn get_cell_width_cells(
@@ -1459,7 +1565,7 @@ fn cell_height(grid: &Grid, cells: &[Vec<CellContent<'_>>], pos: Position) -> us
     let count_lines = if cells.is_empty() {
         1
     } else {
-        cells[pos.0][pos.1].count_new_lines
+        cells[pos.0][pos.1].lines.len()
     };
 
     let style = grid.style(Entity::Cell(pos.0, pos.1));
@@ -1504,7 +1610,7 @@ fn replace_tab_range(cell: &mut String, n: usize) -> &str {
 
 // only valid to call for stabilized widths.
 fn total_width(grid: &Grid, widths: &[usize], margin: &Margin) -> usize {
-    if grid.count_rows() == 0 {
+    if grid.count_rows() == 0 || grid.count_columns() == 0 {
         return 0;
     }
 
@@ -1513,18 +1619,11 @@ fn total_width(grid: &Grid, widths: &[usize], margin: &Margin) -> usize {
         .map(|col| grid_cell_width(grid, widths, (0, col)))
         .sum::<usize>();
 
-    let count_borders = if grid.count_columns() == 0 {
-        0
-    } else {
-        let rest_borders = (0..grid.count_columns())
-            .filter(|&col| is_cell_visible(grid, (0, col)))
-            .map(|col| has_vertical(grid, col))
-            .filter(|b| *b)
-            .count();
-        let last_col_border = has_vertical(grid, grid.count_columns()) as usize;
-
-        last_col_border + rest_borders
-    };
+    let count_borders = (0..grid.count_columns())
+        .filter(|&col| is_cell_visible(grid, (0, col)))
+        .filter(|&col| has_vertical(grid, col))
+        .count()
+        + has_vertical(grid, grid.count_columns()) as usize;
 
     content_width + count_borders + margin.left.size + margin.right.size
 }

@@ -1942,8 +1942,6 @@ fn style_with_color_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data).with(style).to_string();
 
-    println!("{}", table);
-
     assert_eq!(
         ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(

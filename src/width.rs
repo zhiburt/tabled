@@ -474,11 +474,20 @@ where
 
         let width = self.width.width(grid);
 
-        let total_width = grid.total_width();
+        let widths = grid.build_widths();
+        let total_width = grid.estimate_total_width(&widths);
         if width < total_width {
             let suffix = self.suffix.as_ref().map_or("", |s| &s.text);
             let suffix_limit = self.suffix.as_ref().map_or(&SuffixLimit::Cut, |s| &s.limit);
-            truncate_total_width(grid, total_width, width, suffix, suffix_limit, P::create());
+            truncate_total_width(
+                grid,
+                widths,
+                total_width,
+                width,
+                suffix,
+                suffix_limit,
+                P::create(),
+            );
         }
     }
 }
@@ -499,13 +508,21 @@ where
 
         let width = self.width.width(grid);
 
-        let total_width = grid.total_width();
+        let widths = grid.build_widths();
+        let total_width = grid.estimate_total_width(&widths);
         if total_width == width {
             return;
         }
 
         if width < total_width {
-            wrap_total_width(grid, total_width, width, self.keep_words, P::create());
+            wrap_total_width(
+                grid,
+                widths,
+                total_width,
+                width,
+                self.keep_words,
+                P::create(),
+            );
         }
     }
 }
@@ -813,29 +830,33 @@ fn increase_total_width<P: ColumnPeaker>(
 
 fn truncate_total_width<P: ColumnPeaker>(
     grid: &mut Grid,
+    widths: Vec<usize>,
     total_width: usize,
     width: usize,
     suffix: &str,
     suffix_limit: &SuffixLimit,
     priority: P,
 ) {
-    let points = decrease_total_width_fn(grid, total_width, width, priority);
+    let points = decrease_total_width(grid, widths, total_width, width, priority);
+
+    let mut truncate = Truncate::new(0)
+        .suffix(suffix)
+        .suffix_limit(suffix_limit.clone());
     for ((row, col), width) in points {
-        Truncate::new(width)
-            .suffix(suffix)
-            .suffix_limit(suffix_limit.clone())
-            .change_cell(grid, Entity::Cell(row, col));
+        truncate.width = width;
+        truncate.change_cell(grid, Entity::Cell(row, col));
     }
 }
 
 fn wrap_total_width<P: ColumnPeaker>(
     grid: &mut Grid,
+    widths: Vec<usize>,
     total_width: usize,
     width: usize,
     keep_words: bool,
     priority: P,
 ) {
-    let points = decrease_total_width_fn(grid, total_width, width, priority);
+    let points = decrease_total_width(grid, widths, total_width, width, priority);
 
     let mut wrap = Wrap::new(0);
     wrap.keep_words = keep_words;
@@ -863,17 +884,17 @@ fn is_zero_spanned_grid(grid: &Grid) -> bool {
         .all(|row| (0..grid.count_columns()).all(|col| !grid.is_cell_visible((row, col))))
 }
 
-fn decrease_total_width_fn<F>(
+fn decrease_total_width<F>(
     grid: &Grid,
+    mut widths: Vec<usize>,
     total_width: usize,
     mut width: usize,
-    mut cmp_fn: F,
+    mut peeaker: F,
 ) -> Vec<((usize, usize), usize)>
 where
     F: ColumnPeaker,
 {
-    let min_widths = build_min_widths(grid);
-    let mut widths = grid.build_widths();
+    let min_widths = grid.build_min_widths();
 
     let mut empty_list = 0;
     for col in 0..widths.len() {
@@ -887,7 +908,7 @@ where
             break;
         }
 
-        let col = match cmp_fn.peak(&min_widths, &widths) {
+        let col = match peeaker.peak(&min_widths, &widths) {
             Some(col) => col,
             None => break,
         };
@@ -905,35 +926,27 @@ where
         width += 1;
     }
 
-    let mut points = Vec::with_capacity(grid.count_columns() * grid.count_rows());
+    let mut points = Vec::new();
     (0..grid.count_columns()).for_each(|col| {
         (0..grid.count_rows())
             .filter(|&row| grid.is_cell_visible((row, col)))
             .for_each(|row| {
-                let style = grid.style(Entity::Cell(row, col));
-                match grid.get_column_span((row, col)) {
+                let (width, width_min) = match grid.get_column_span((row, col)) {
                     Some(span) => {
                         let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
                         let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
-                        if width >= min_width {
-                            let count_borders = count_borders_in_range(grid, col, col + span);
-                            let width = width + count_borders;
-
-                            let width = width
-                                .saturating_sub(style.padding.left.size + style.padding.right.size);
-
-                            points.push(((row, col), width));
-                        }
+                        let count_borders = count_borders_in_range(grid, col, col + span);
+                        (width + count_borders, min_width + count_borders)
                     }
-                    None => {
-                        if widths[col] >= min_widths[col] {
-                            let width = std::cmp::max(widths[col], min_widths[col]);
-                            let width = width
-                                .saturating_sub(style.padding.left.size + style.padding.right.size);
+                    None => (widths[col], min_widths[col]),
+                };
 
-                            points.push(((row, col), width));
-                        }
-                    }
+                let style = grid.style(Entity::Cell(row, col));
+                if width >= width_min {
+                    let width =
+                        width.saturating_sub(style.padding.left.size + style.padding.right.size);
+
+                    points.push(((row, col), width));
                 }
             })
     });
@@ -945,14 +958,14 @@ fn increase_total_width_fn<F>(
     grid: &Grid,
     total_width: usize,
     mut width: usize,
-    mut cmp_fn: F,
+    mut peaker: F,
 ) -> HashMap<(usize, usize), usize>
 where
     F: ColumnPeaker,
 {
     let mut widths = grid.build_widths();
     while width != total_width {
-        let col = match cmp_fn.peak(&[], &widths) {
+        let col = match peaker.peak(&[], &widths) {
             Some(col) => col,
             None => break,
         };
@@ -999,13 +1012,6 @@ where
     }
 
     points
-}
-
-fn build_min_widths(grid: &Grid) -> Vec<usize> {
-    let mut grid = grid.clone();
-    grid.set(Entity::Global, Settings::default().text(""));
-
-    grid.build_widths()
 }
 
 pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
