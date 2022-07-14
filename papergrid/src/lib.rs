@@ -385,9 +385,14 @@ impl Grid {
     }
 
     /// get_cell_content_styled returns content with style changes
-    pub fn get_cell_content_styled(&self, row: usize, column: usize) -> String {
+    pub fn get_cell_content_formatted(&self, row: usize, column: usize) -> String {
         let text = self.get_cell_content(row, column);
         replace_tab(text, self.config.tab_width)
+    }
+
+    /// get_cell_width returns a string width.
+    pub fn get_string_width(&self, row: usize, column: usize) -> usize {
+        string_width_multiline_tab(self.cells[row][column].as_str(), self.config.tab_width)
     }
 
     /// Count_rows returns an amount of rows on the grid
@@ -461,20 +466,6 @@ impl Grid {
     // 'private'
     pub fn build_min_widths(&self) -> Vec<usize> {
         build_min_widths(self)
-    }
-
-    /// This function returns a cells widths.
-    pub fn build_cells_widths(&self) -> Vec<Vec<usize>> {
-        let mut widths = vec![vec![0; self.count_columns()]; self.count_rows()];
-        for (row, cols) in widths.iter_mut().enumerate() {
-            for (col, width) in cols.iter_mut().enumerate() {
-                if is_cell_visible(self, (row, col)) {
-                    *width = get_cell_width(self, (row, col));
-                };
-            }
-        }
-
-        widths
     }
 
     /// The function returns all cells by lines.
@@ -1463,8 +1454,7 @@ fn adjust_range(
 }
 
 fn get_cell_width(grid: &Grid, (row, col): Position) -> usize {
-    let width = string_width_multiline_tab(&grid.cells[row][col], grid.config.tab_width);
-    width + get_cell_padding(grid, (row, col))
+    grid.get_string_width(row, col) + get_cell_padding(grid, (row, col))
 }
 
 fn get_cell_padding(grid: &Grid, (row, col): Position) -> usize {

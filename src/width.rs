@@ -262,27 +262,29 @@ where
         };
 
         for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let content = grid.get_cell_content_styled(row, col);
-            if orig_width < string_width_multiline(&content) {
-                let text = if width == 0 {
-                    if orig_width == 0 {
-                        Cow::Borrowed("")
-                    } else {
-                        Cow::Borrowed(suffix.as_ref())
-                    }
-                } else {
-                    let content = cut_str(&content, width);
-                    if !suffix.is_empty() {
-                        let mut content = content.into_owned();
-                        content.push_str(&suffix);
-                        Cow::Owned(content)
-                    } else {
-                        content
-                    }
-                };
-
-                grid.set(Entity::Cell(row, col), Settings::new().text(text));
+            if orig_width >= grid.get_string_width(row, col) {
+                continue;
             }
+
+            let content = grid.get_cell_content_formatted(row, col);
+            let text = if width == 0 {
+                if orig_width == 0 {
+                    Cow::Borrowed("")
+                } else {
+                    Cow::Borrowed(suffix.as_ref())
+                }
+            } else {
+                let content = cut_str(&content, width);
+                if !suffix.is_empty() {
+                    let mut content = content.into_owned();
+                    content.push_str(&suffix);
+                    Cow::Owned(content)
+                } else {
+                    content
+                }
+            };
+
+            grid.set(Entity::Cell(row, col), Settings::new().text(text));
         }
     }
 }
@@ -353,20 +355,22 @@ where
         let width = self.width.width(grid);
 
         for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let content = grid.get_cell_content_styled(row, col);
-            if width < string_width_multiline(&content) {
-                let wrapped = wrap_text(&content, width, self.keep_words);
-
-                debug_assert!(
-                    width >= string_width_multiline(&wrapped),
-                    "width={:?}\n\n content={:?}\n\n wrap={:?}\n",
-                    width,
-                    content,
-                    wrapped
-                );
-
-                grid.set(Entity::Cell(row, col), Settings::new().text(wrapped))
+            if grid.get_string_width(row, col) <= width {
+                continue;
             }
+
+            let content = grid.get_cell_content(row, col);
+            let wrapped = wrap_text(content, width, self.keep_words);
+
+            debug_assert!(
+                width >= string_width_multiline(&wrapped),
+                "width={:?}\n\n content={:?}\n\n wrap={:?}\n",
+                width,
+                content,
+                wrapped
+            );
+
+            grid.set(Entity::Cell(row, col), Settings::new().text(wrapped))
         }
     }
 }
@@ -451,8 +455,12 @@ where
         let width = self.size.width(grid);
 
         for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let content = grid.get_cell_content_styled(row, col);
-            let new_content = increase_width(&content, width, self.fill);
+            if grid.get_string_width(row, col) >= width {
+                continue;
+            }
+
+            let content = grid.get_cell_content(row, col);
+            let new_content = increase_width(content, width, self.fill);
             grid.set(Entity::Cell(row, col), Settings::new().text(new_content))
         }
     }
@@ -769,18 +777,8 @@ impl ColumnPeaker for PriorityMin {
         }
     }
 }
-
-fn increase_width(s: &str, width: usize, fill_with: char) -> String {
-    let has_big_lines = s.lines().any(|line| string_width(line) < width);
-    if !has_big_lines {
-        return s.to_owned();
-    }
-
-    __increase_width(s, width, fill_with)
-}
-
 #[cfg(not(feature = "color"))]
-fn __increase_width(s: &str, width: usize, fill_with: char) -> String {
+fn increase_width(s: &str, width: usize, fill_with: char) -> String {
     s.lines()
         .map(|line| {
             let length = string_width(line);
@@ -799,7 +797,7 @@ fn __increase_width(s: &str, width: usize, fill_with: char) -> String {
 }
 
 #[cfg(feature = "color")]
-fn __increase_width(s: &str, width: usize, fill_with: char) -> String {
+fn increase_width(s: &str, width: usize, fill_with: char) -> String {
     ansi_str::AnsiStr::ansi_split(s, "\n")
         .map(|line| {
             let length = string_width(&line);
@@ -873,10 +871,7 @@ fn grid_widths(grid: &Grid) -> Vec<Vec<usize>> {
     (0..grid.count_rows())
         .map(|row| {
             (0..grid.count_columns())
-                .map(|col| {
-                    let content = grid.get_cell_content_styled(row, col);
-                    string_width_multiline(&content)
-                })
+                .map(|col| grid.get_string_width(row, col))
                 .collect()
         })
         .collect()
