@@ -32,15 +32,13 @@ fn main() {
         [duck.to_string()],
     ])
     .build()
-    .with(Style::ascii().header_off().horizontal_off())
+    .with(Style::ascii().off_horizontal())
     .with(Modify::new(Segment::all()).with(Padding::new(5, 5, 0, 0)));
 
     println!("{}", t);
 }
 
 fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> Table {
-    let clean_ascii_style = Style::ascii().header_off().horizontal_off().vertical_off();
-
     let table_fields = Builder::from_iter(fields.iter().map(|(field, t, d)| {
         if d.is_empty() {
             [format!("+{}: {}", field, t)]
@@ -49,11 +47,11 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
         }
     }))
     .build()
-    .with(clean_ascii_style.clone());
+    .with(Style::ascii().off_horizontal().off_vertical());
 
     let table_methods = Builder::from_iter(methods.iter().map(|method| [format!("+{}()", method)]))
         .build()
-        .with(clean_ascii_style);
+        .with(Style::ascii().off_horizontal().off_vertical());
 
     let (table_fields, table_methods) = make_equal_width(table_fields, table_methods);
 
@@ -62,7 +60,12 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
         .add_record([table_methods.to_string()])
         .set_columns([name])
         .build()
-        .with(Style::ascii().horizontal_off().vertical_off())
+        .with(
+            Style::ascii()
+                .lines([(1, Style::ascii().get_horizontal())])
+                .off_horizontal()
+                .off_vertical(),
+        )
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Rows::first()).with(Alignment::center()))
 }

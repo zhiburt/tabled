@@ -140,7 +140,7 @@ test_table!(
     panel_style_change,
     Table::new(&[(0, 1)])
         .with(tabled::Panel("Numbers", 0))
-        .with(Style::modern().top_intersection('─').header_intersection('┬'))
+        .with(Style::modern().top_intersection('─').lines([(1, Style::modern().get_horizontal().intersection('┬'))]))
         .with(Modify::new(Cell(0, 0)).with(Alignment::center())),
     "┌───────────┐"
     "│  Numbers  │"
@@ -170,7 +170,7 @@ test_table!(
     panel_style_change_corect,
     Table::new(&[(0, 1)])
         .with(tabled::Panel("Numbers", 0))
-        .with(Style::modern().top_intersection('─').header_intersection('┬'))
+        .with(Style::modern().top_intersection('─').lines([(1, Style::modern().get_horizontal().intersection('┬'))]))
         .with(Style::correct_spans())
         .with(Modify::new(Cell(0, 0)).with(Alignment::center())),
     "┌───────────┐"

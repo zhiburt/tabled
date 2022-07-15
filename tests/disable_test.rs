@@ -36,7 +36,7 @@ test_table!(
     Table::new(create_vector::<3, 3>())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Disable::Row(..1))
-        .with(Style::modern().horizontal_off()),
+        .with(Style::modern().off_horizontal().lines([(1, Style::modern().get_horizontal())])),
     "┌───┬─────┬─────┬─────┐"
     "│ 0 │ 0-0 │ 0-1 │ 0-2 │"
     "├───┼─────┼─────┼─────┤"
