@@ -45,7 +45,7 @@ impl Margin {
     /// Construct's an Margin object.
     ///
     /// It uses space(' ') as a default fill character.
-    /// To set a custom character you can use [Self::set_fill] function.
+    /// To set a custom character you can use [`Self::set_fill`] function.
     pub fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
         Self(papergrid::Margin {
             top: Indent::spaced(top),
@@ -67,6 +67,6 @@ impl Margin {
 
 impl TableOption for Margin {
     fn change(&mut self, grid: &mut Grid) {
-        grid.margin(self.0)
+        grid.margin(self.0);
     }
 }

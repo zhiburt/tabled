@@ -11,7 +11,7 @@ pub fn parse_attributes(
         .iter()
         .filter(|attr| attr.path.is_ident("tabled"))
         .map(|attr| attr.parse_args_with(Punctuated::<TabledAttr, Token![,]>::parse_terminated))
-        .map(|result| result.map(|list| list.into_iter()))
+        .map(|result| result.map(IntoIterator::into_iter))
 }
 
 pub struct TabledAttr {

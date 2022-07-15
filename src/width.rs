@@ -1,10 +1,10 @@
 //! This module contains object which can be used to limit a cell to a given width:
 //!
-//! - [Truncate] cuts a cell content to limit width.
-//! - [Wrap] split the content via new lines in order to fit max width.
-//! - [Justify] sets columns width to the same value.
+//! - [`Truncate`] cuts a cell content to limit width.
+//! - [`Wrap`] split the content via new lines in order to fit max width.
+//! - [`Justify`] sets columns width to the same value.
 //!
-//! To set a a table width, a combination of [Width::truncate] or [Width::wrap] and [Width::increase] can be used.
+//! To set a a table width, a combination of [`Width::truncate`] or [`Width::wrap`] and [`Width::increase`] can be used.
 //!
 //! ## Example
 //!
@@ -40,7 +40,7 @@ use papergrid::{
 
 use crate::{object::Entity, CellOption, TableOption};
 
-/// Width allows you to set a min and max width of an object on a [Table]
+/// Width allows you to set a min and max width of an object on a [`Table`]
 /// using different strategies.
 ///
 /// It also allows you to set a min and max width for a whole table.
@@ -53,7 +53,7 @@ use crate::{object::Entity, CellOption, TableOption};
 /// Beware that borders are not removed when you set a size value to very small.
 /// For example if you set size to 0 the table still be rendered but with all content removed.
 ///
-/// Also be aware that it doesn't changes [Padding] settings nor it considers them.
+/// Also be aware that it doesn't changes [`Padding`] settings nor it considers them.
 ///
 /// The function is color aware if a `color` feature is on.
 ///
@@ -89,8 +89,8 @@ use crate::{object::Entity, CellOption, TableOption};
 ///     .with(Width::increase(5));
 /// ```
 ///
-/// [Padding]: crate::Padding
-/// [Table]: crate::Table
+/// [`Padding`]: crate::Padding
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Width;
 
@@ -103,7 +103,7 @@ impl Width {
         Wrap::new(width)
     }
 
-    /// Returns a [Truncate] structure.
+    /// Returns a [`Truncate`] structure.
     pub fn truncate<W>(width: W) -> Truncate<'static, W>
     where
         W: WidthValue,
@@ -111,7 +111,7 @@ impl Width {
         Truncate::new(width)
     }
 
-    /// Returns a [MinWidth] structure.
+    /// Returns a [`MinWidth`] structure.
     pub fn increase<W>(width: W) -> MinWidth<W>
     where
         W: WidthValue,
@@ -119,7 +119,7 @@ impl Width {
         MinWidth::new(width)
     }
 
-    /// Returns a [Justify] structure.
+    /// Returns a [`Justify`] structure.
     pub fn justify<W>(width: W) -> Justify<W>
     where
         W: WidthValue,
@@ -174,7 +174,7 @@ where
         Self {
             width,
             suffix: None,
-            _priority: Default::default(),
+            _priority: PhantomData::default(),
         }
     }
 }
@@ -187,7 +187,7 @@ impl<W, P> Truncate<'_, W, P> {
     ///        We cut more of the original string and append the suffix.
     ///     2. If suffix is bigger than the original string.
     ///        We cut the suffix to fit in the width by default.
-    ///        But you can peak the behaviour by using [Truncate::suffix_limit]
+    ///        But you can peak the behaviour by using [`Truncate::suffix_limit`]
     pub fn suffix<'a, S: Into<Cow<'a, str>>>(self, suffix: S) -> Truncate<'a, W, P> {
         let used_limit = self.suffix.map_or(SuffixLimit::Cut, |s| s.limit);
 
@@ -197,7 +197,7 @@ impl<W, P> Truncate<'_, W, P> {
                 text: suffix.into(),
                 limit: used_limit,
             }),
-            _priority: Default::default(),
+            _priority: PhantomData::default(),
         }
     }
 }
@@ -210,7 +210,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
         Truncate {
             width: self.width,
             suffix: Some(TruncateSuffix { text, limit }),
-            _priority: Default::default(),
+            _priority: PhantomData::default(),
         }
     }
 }
@@ -218,14 +218,14 @@ impl<'a, W, P> Truncate<'a, W, P> {
 impl<'a, W, P> Truncate<'a, W, P> {
     /// Priority defines the logic by which a truncate will be applied when is done for the whole table.
     ///
-    /// - [PriorityNone] which cuts the columns one after another.
-    /// - [PriorityMax] cuts the biggest columns first.
-    /// - [PriorityMin] cuts the lowest columns first.
+    /// - [`PriorityNone`] which cuts the columns one after another.
+    /// - [`PriorityMax`] cuts the biggest columns first.
+    /// - [`PriorityMin`] cuts the lowest columns first.
     pub fn priority<PP: ColumnPeaker>(self) -> Truncate<'a, W, PP> {
         Truncate {
             width: self.width,
             suffix: self.suffix,
-            _priority: Default::default(),
+            _priority: PhantomData::default(),
         }
     }
 }
@@ -275,12 +275,12 @@ where
                 }
             } else {
                 let content = cut_str(&content, width);
-                if !suffix.is_empty() {
+                if suffix.is_empty() {
+                    content
+                } else {
                     let mut content = content.into_owned();
                     content.push_str(&suffix);
                     Cow::Owned(content)
-                } else {
-                    content
                 }
             };
 
@@ -318,7 +318,7 @@ where
         Self {
             width,
             keep_words: false,
-            _priority: Default::default(),
+            _priority: PhantomData::default(),
         }
     }
 }
@@ -326,14 +326,14 @@ where
 impl<W, P> Wrap<W, P> {
     /// Priority defines the logic by which a truncate will be applied when is done for the whole table.
     ///
-    /// - [PriorityNone] which cuts the columns one after another.
-    /// - [PriorityMax] cuts the biggest columns first.
-    /// - [PriorityMin] cuts the lowest columns first.
+    /// - [`PriorityNone`] which cuts the columns one after another.
+    /// - [`PriorityMax`] cuts the biggest columns first.
+    /// - [`PriorityMin`] cuts the lowest columns first.
     pub fn priority<PP>(self) -> Wrap<W, PP> {
         Wrap {
             width: self.width,
             keep_words: self.keep_words,
-            _priority: Default::default(),
+            _priority: PhantomData::default(),
         }
     }
 
@@ -370,12 +370,12 @@ where
                 wrapped
             );
 
-            grid.set(Entity::Cell(row, col), Settings::new().text(wrapped))
+            grid.set(Entity::Cell(row, col), Settings::new().text(wrapped));
         }
     }
 }
 
-/// MinWidth changes a content in case if it's length is lower then the boundary.
+/// [`MinWidth`] changes a content in case if it's length is lower then the boundary.
 ///
 /// It can be applied to a whole table.
 ///
@@ -415,12 +415,12 @@ impl<W> MinWidth<W>
 where
     W: WidthValue,
 {
-    /// Creates a new instance of MinWidth.
+    /// Creates a new instance of [`MinWidth`].
     pub fn new(size: W) -> Self {
         Self {
             size,
             fill: ' ',
-            _priority: Default::default(),
+            _priority: PhantomData::default(),
         }
     }
 }
@@ -435,14 +435,14 @@ impl<W, P> MinWidth<W, P> {
 
     /// Priority defines the logic by which a increase of width will be applied when is done for the whole table.
     ///
-    /// - [PriorityNone] which inc the columns one after another.
-    /// - [PriorityMax] inc the biggest columns first.
-    /// - [PriorityMin] inc the lowest columns first.
+    /// - [`PriorityNone`] which inc the columns one after another.
+    /// - [`PriorityMax`] inc the biggest columns first.
+    /// - [`PriorityMin`] inc the lowest columns first.
     pub fn priority<PP: ColumnPeaker>(self) -> MinWidth<W, PP> {
         MinWidth {
             fill: self.fill,
             size: self.size,
-            _priority: Default::default(),
+            _priority: PhantomData::default(),
         }
     }
 }
@@ -461,7 +461,7 @@ where
 
             let content = grid.get_cell_content(row, col);
             let new_content = increase_width(content, width, self.fill);
-            grid.set(Entity::Cell(row, col), Settings::new().text(new_content))
+            grid.set(Entity::Cell(row, col), Settings::new().text(new_content));
         }
     }
 }
@@ -946,7 +946,7 @@ where
 
                     points.push(((row, col), width));
                 }
-            })
+            });
     });
 
     points

@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example span`
 //!
-//! The table from the example originally inspired https://github.com/vdmeer/asciitable#column-span
+//! The table from the example originally inspired https://github.com/vdmeer/asciitable#column-span/
 
 use tabled::{object::Cell, ModifyObject, Span, Style, TableIteratorExt};
 

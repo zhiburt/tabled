@@ -32,7 +32,7 @@ use papergrid::{Entity, Grid};
 
 use crate::{object::bounds_to_usize, TableOption};
 
-/// Disable removes particular rows/columns from a [crate::Table].
+/// Disable removes particular rows/columns from a [`crate::Table`].
 ///
 /// It tries to keeps track of style changes which may occur.
 /// But it's not guaranteed will be the way you would expect it to be.

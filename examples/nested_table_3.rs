@@ -47,7 +47,7 @@ fn main() {
     ]
     .table()
     .with(Extract::rows(1..))
-    .with(Style::ascii().horizontal_off())
+    .with(Style::ascii().off_horizontal())
     .with(Highlight::new(Cell(0, 0), Border::filled('*')));
 
     println!("{}", a_welcome_table);

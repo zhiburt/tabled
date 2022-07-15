@@ -3,7 +3,7 @@ use papergrid::{Entity, Grid};
 use crate::{object::Object, CellOption, TableOption};
 
 /// Modify structure provide an abstraction, to be able to apply
-/// a set of [CellOption]s to the same object.
+/// a set of [`CellOption`]s to the same object.
 ///
 /// Be aware that the settings are applied all to a cell at a time.
 /// So sometimes you may need to make a several calls of [Modify] in order to achieve the desired affect.
@@ -21,11 +21,11 @@ where
         Self { obj }
     }
 
-    /// It's a generic function which stores a [CellOption].
+    /// It's a generic function which stores a [`CellOption`].
     ///
     /// IMPORTANT:
     ///     The function *doesn't* changes a [Table].
-    ///     [Table] will be changed only after passing [Modify] object to [Table::with].
+    ///     [Table] will be changed only after passing [Modify] object to [`Table::with`].
     ///
     /// [Table]: crate::Table
     /// [Table::with]: crate::Table::with
@@ -40,7 +40,7 @@ where
     }
 }
 
-/// ModifyList is a container of [CellOption]s which are applied to a set [Object].
+/// `ModifyList` is a container of [`CellOption`]s which are applied to a set [Object].
 #[derive(Debug)]
 pub struct ModifyList<O, S> {
     obj: O,
@@ -52,11 +52,11 @@ where
     O: Object,
     S: CellOption,
 {
-    /// With a generic function which stores a [CellOption].
+    /// With a generic function which stores a [`CellOption`].
     ///
     /// IMPORTANT:
     ///     The function *doesn't* changes a [Table].
-    ///     [Table] will be changed only after passing [Modify] object to [Table::with].
+    ///     [Table] will be changed only after passing [Modify] object to [`Table::with`].
     ///
     /// [Table]: crate::Table
     /// [Table::with]: crate::Table::with
@@ -87,7 +87,7 @@ where
     }
 }
 
-/// CellSettingsList is a container of [CellOption]s.
+/// `CellSettingsList` is a container of [`CellOption`]s.
 #[derive(Debug)]
 pub struct CellSettingsList<S1, S2> {
     s1: S1,

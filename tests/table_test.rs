@@ -534,7 +534,7 @@ mod derived {
                     invented_year: 2009,
                 },
             ]
-        }).with(Style::modern().horizontal_off().header_off()),
+        }).with(Style::modern().off_horizontal()),
         // Note: It doesn't look good in VS Code
         "┌─────────┬────────────────┬───────────────┐"
         "│  name   │  designed_by   │ invented_year │"

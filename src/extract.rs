@@ -14,7 +14,7 @@ use crate::{object::bounds_to_usize, TableOption};
 
 /// Returns a new [Table] that reflects a segment of the referenced [Table]
 ///
-/// The segment is defined by [RangeBounds<usize>] for Rows and Columns.
+/// The segment is defined by [`RangeBounds`<usize>] for Rows and Columns.
 ///
 /// # Example
 ///
@@ -54,7 +54,7 @@ where
 {
     /// Returns a new [Table] that reflects a segment of the referenced [Table]
     ///
-    /// The segment is defined by [RangeBounds<usize>] for Rows and Columns
+    /// The segment is defined by [`RangeBounds`<usize>] for Rows and Columns
     ///
     /// ```rust,no_run
     /// # use tabled::Extract;
@@ -65,9 +65,9 @@ where
     ///
     /// # Range
     ///
-    /// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
+    /// A [`RangeBounds`] argument can be less than or equal to the shape of a [Table]
     ///
-    /// If a [RangeBounds] argument is malformed or too large the thread will panic
+    /// If a [`RangeBounds`] argument is malformed or too large the thread will panic
     ///
     /// ```text
     /// // Empty                         Full                      Out of bounds
@@ -89,7 +89,7 @@ where
 {
     /// Returns a new [Table] that reflects a segment of the referenced [Table]
     ///
-    /// The segment is defined by [RangeBounds<usize>] for Rows
+    /// The segment is defined by [`RangeBounds`<usize>] for Rows
     ///
     /// ```rust,no_run
     /// # use tabled::Extract;
@@ -98,9 +98,9 @@ where
     ///
     /// # Range
     ///
-    /// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
+    /// A [`RangeBounds`] argument can be less than or equal to the shape of a [Table]
     ///
-    /// If a [RangeBounds] argument is malformed or too large the thread will panic
+    /// If a [`RangeBounds`] argument is malformed or too large the thread will panic
     ///
     /// ```text
     /// // Empty                Full               Out of bounds
@@ -123,7 +123,7 @@ where
 {
     /// Returns a new [Table] that reflects a segment of the referenced [Table]
     ///
-    /// The segment is defined by [RangeBounds<usize>] for Columns
+    /// The segment is defined by [`RangeBounds`<usize>] for Columns
     ///
     /// ```rust,no_run
     /// # use tabled::Extract;
@@ -132,9 +132,9 @@ where
     ///
     /// # Range
     ///
-    /// A [RangeBounds] argument can be less than or equal to the shape of a [Table]
+    /// A [`RangeBounds`] argument can be less than or equal to the shape of a [Table]
     ///
-    /// If a [RangeBounds] argument is malformed or too large the thread will panic
+    /// If a [`RangeBounds`] argument is malformed or too large the thread will panic
     ///
     /// ```text
     /// // Empty                   Full                  Out of bounds
@@ -173,7 +173,7 @@ where
 
 /// Returns a new [Grid] that reflects a segment of the referenced [Grid]
 ///
-/// The segment is defined by [RangeBounds<usize>] for Rows and Columns
+/// The segment is defined by [`RangeBounds`<usize>] for Rows and Columns
 ///
 /// # Example
 ///

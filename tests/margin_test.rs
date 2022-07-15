@@ -98,7 +98,7 @@ fn table_with_margin_and_min_width() {
             "^^^^^^^^^^^^^^^^^^^^"
         )
     );
-    assert!(is_lines_equal(&table, 20))
+    assert!(is_lines_equal(&table, 20));
 }
 
 #[test]

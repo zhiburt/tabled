@@ -1,7 +1,7 @@
 //! This module contains a [Rotate] primitive which can be used in order to rotate [Table].
 //!
 //! It's also possible to transpose the table at the point of construction.
-//! See [Builder::index].
+//! See [`Builder::index`].
 //!
 //! # Example
 //!
@@ -61,7 +61,7 @@ impl TableOption for Rotate {
                         (0..grid.count_columns()).zip((0..grid.count_columns()).rev())
                     {
                         let settings = grid.get_settings(row, lhs_column);
-                        new.set(Entity::Cell(rhs_column, row), settings)
+                        new.set(Entity::Cell(rhs_column, row), settings);
                     }
                 }
 
@@ -88,7 +88,7 @@ impl TableOption for Rotate {
                     for row in 0..grid.count_rows() {
                         let last_row = grid.count_rows() - 1 - row;
                         let border = grid.get_settings(row, column);
-                        new.set(Entity::Cell(last_row, column), border)
+                        new.set(Entity::Cell(last_row, column), border);
                     }
                 }
 

@@ -5,7 +5,7 @@ mod parse;
 
 use proc_macro2::TokenStream;
 use proc_macro_error::proc_macro_error;
-use quote::*;
+use quote::{quote, ToTokens, TokenStreamExt};
 use std::{collections::HashMap, str};
 use syn::{
     parse_macro_input, token, Attribute, Data, DataEnum, DataStruct, DeriveInput, Field, Fields,
@@ -28,7 +28,7 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
         .unwrap();
 
     let length = get_tabled_length(ast).map_err(error::abort).unwrap();
-    let info = collect_info(ast, attrs).map_err(error::abort).unwrap();
+    let info = collect_info(ast, &attrs).map_err(error::abort).unwrap();
     let fields = info.values;
     let headers = info.headers;
 
@@ -70,11 +70,11 @@ fn get_fields_length(fields: &Fields) -> Result<TokenStream, Error> {
         .into_iter()
         .filter(|(_, attr)| !attr.is_ignored())
         .map(|(field, attr)| {
-            if !attr.inline {
-                quote!({ 1 })
-            } else {
+            if attr.inline {
                 let field_type = &field.ty;
                 quote!({<#field_type as Tabled>::LENGTH})
+            } else {
+                quote!({ 1 })
             }
         });
 
@@ -117,15 +117,15 @@ fn get_enum_variant_length(
         .map(|result| {
             let (variant, attr) = result?;
 
-            if !attr.inline {
-                Ok(quote!(1))
-            } else {
+            if attr.inline {
                 get_fields_length(&variant.fields)
+            } else {
+                Ok(quote!(1))
             }
         })
 }
 
-fn collect_info(ast: &DeriveInput, attrs: ObjectAttributes) -> Result<Impl, Error> {
+fn collect_info(ast: &DeriveInput, attrs: &ObjectAttributes) -> Result<Impl, Error> {
     match &ast.data {
         Data::Struct(data) => collect_info_struct(data, attrs),
         Data::Enum(data) => collect_info_enum(data, attrs),
@@ -133,8 +133,8 @@ fn collect_info(ast: &DeriveInput, attrs: ObjectAttributes) -> Result<Impl, Erro
     }
 }
 
-fn collect_info_struct(ast: &DataStruct, attrs: ObjectAttributes) -> Result<Impl, Error> {
-    info_from_fields(&ast.fields, &attrs, field_var_name, "")
+fn collect_info_struct(ast: &DataStruct, attrs: &ObjectAttributes) -> Result<Impl, Error> {
+    info_from_fields(&ast.fields, attrs, field_var_name, "")
 }
 
 // todo: refactoring. instead of using a lambda + prefix
@@ -184,14 +184,14 @@ fn info_from_fields(
         headers.push(header);
 
         let field_name = field_name(i, field);
-        let value = get_field_fields(field_name, &attributes);
+        let value = get_field_fields(&field_name, &attributes);
 
         values.push(value);
     }
 
     if !reorder.is_empty() {
-        values = reorder_fields(&reorder, values);
-        headers = reorder_fields(&reorder, headers);
+        values = reorder_fields(&reorder, &values);
+        headers = reorder_fields(&reorder, &headers);
     }
 
     let headers = quote!({
@@ -209,7 +209,7 @@ fn info_from_fields(
     Ok(Impl { headers, values })
 }
 
-fn reorder_fields<T: Clone>(order: &HashMap<usize, usize>, elements: Vec<T>) -> Vec<T> {
+fn reorder_fields<T: Clone>(order: &HashMap<usize, usize>, elements: &[T]) -> Vec<T> {
     let mut out: Vec<Option<T>> = Vec::with_capacity(elements.len());
     out.resize(elements.len(), None);
 
@@ -219,7 +219,7 @@ fn reorder_fields<T: Clone>(order: &HashMap<usize, usize>, elements: Vec<T>) -> 
     }
 
     let mut j = 0;
-    for el in out.iter_mut() {
+    for el in &mut out {
         if el.is_some() {
             continue;
         }
@@ -252,24 +252,24 @@ fn field_headers(
     }
 
     let header_name = field_header_name(field, attributes, index);
-    if !prefix.is_empty() {
-        quote!(vec![format!("{}{}", #prefix, #header_name)])
-    } else {
+    if prefix.is_empty() {
         quote!(vec![String::from(#header_name)])
+    } else {
+        quote!(vec![format!("{}{}", #prefix, #header_name)])
     }
 }
 
-fn collect_info_enum(ast: &DataEnum, attrs: ObjectAttributes) -> Result<Impl, Error> {
+fn collect_info_enum(ast: &DataEnum, attrs: &ObjectAttributes) -> Result<Impl, Error> {
     let mut headers_list = Vec::new();
     let mut variants = Vec::new();
     for variant in &ast.variants {
         let mut attributes = Attributes::parse(&variant.attrs)?;
-        merge_attributes(&mut attributes, &attrs);
+        merge_attributes(&mut attributes, attrs);
         if attributes.is_ignored() {
             continue;
         }
 
-        let info = info_from_variant(variant, &attributes, &attrs)?;
+        let info = info_from_variant(variant, &attributes, attrs)?;
         variants.push((variant, info.values));
         headers_list.push(info.headers);
     }
@@ -277,7 +277,7 @@ fn collect_info_enum(ast: &DataEnum, attrs: ObjectAttributes) -> Result<Impl, Er
     let variant_sizes = get_enum_variant_length(ast)
         .collect::<Result<Vec<_>, Error>>()?
         .into_iter();
-    let values = values_for_enum(variant_sizes, variants);
+    let values = values_for_enum(variant_sizes, &variants);
 
     let headers = quote! {
         vec![
@@ -330,7 +330,7 @@ fn get_type_headers(field_type: &Type, inline_prefix: &str, prefix: &str) -> Tok
     }
 }
 
-fn get_field_fields(field: TokenStream, attr: &Attributes) -> TokenStream {
+fn get_field_fields(field: &TokenStream, attr: &Attributes) -> TokenStream {
     if attr.inline {
         return quote! { #field.fields() };
     }
@@ -347,13 +347,13 @@ fn get_field_fields(field: TokenStream, attr: &Attributes) -> TokenStream {
     quote!(vec![format!("{}", #field)])
 }
 
-fn use_function_for(field: TokenStream, function: &str) -> TokenStream {
+fn use_function_for(field: &TokenStream, function: &str) -> TokenStream {
     let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
     match path {
         Ok(path) => {
             quote! { #path(&#field) }
         }
-        _ => {
+        Err(_) => {
             let function = Ident::new(function, proc_macro2::Span::call_site());
             quote! { #function(&#field) }
         }
@@ -366,7 +366,7 @@ fn use_function_with_self(function: &str) -> TokenStream {
         Ok(path) => {
             quote! { #path(&self) }
         }
-        _ => {
+        Err(_) => {
             let function = Ident::new(function, proc_macro2::Span::call_site());
             quote! { #function(&self) }
         }
@@ -376,7 +376,7 @@ fn use_function_with_self(function: &str) -> TokenStream {
 fn field_var_name(index: usize, field: &Field) -> TokenStream {
     let f = field.ident.as_ref().map_or_else(
         || Index::from(index).to_token_stream(),
-        |i| i.to_token_stream(),
+        quote::ToTokens::to_token_stream,
     );
     quote!(self.#f)
 }
@@ -394,7 +394,7 @@ fn variant_var_name(index: usize, field: &Field) -> TokenStream {
 
 fn values_for_enum(
     variant_sizes: impl Iterator<Item = TokenStream>,
-    variants: Vec<(&Variant, TokenStream)>,
+    variants: &[(&Variant, TokenStream)],
 ) -> TokenStream {
     let branches = variants.iter().map(|(variant, _)| match_variant(variant));
 
@@ -553,12 +553,12 @@ impl Attributes {
                 }
 
                 if let Some(prefix) = prefix {
-                    self.inline_prefix = Some(prefix.value())
+                    self.inline_prefix = Some(prefix.value());
                 }
             }
             parse::TabledAttrKind::Rename(value) => self.rename = Some(value.value()),
             parse::TabledAttrKind::RenameAll(lit) => {
-                self.rename_all = Some(CasingStyle::from_lit(lit)?)
+                self.rename_all = Some(CasingStyle::from_lit(&lit)?);
             }
             parse::TabledAttrKind::DisplayWith(path, use_self) => {
                 self.display_with = Some(path.value());
@@ -626,7 +626,7 @@ enum CasingStyle {
 }
 
 impl CasingStyle {
-    fn from_lit(name: syn::LitStr) -> Result<Self, Error> {
+    fn from_lit(name: &syn::LitStr) -> Result<Self, Error> {
         use self::CasingStyle::*;
         use heck::ToUpperCamelCase;
 
@@ -645,7 +645,7 @@ impl CasingStyle {
         }
     }
 
-    fn cast(&self, s: String) -> String {
+    fn cast(self, s: String) -> String {
         use CasingStyle::*;
 
         match self {

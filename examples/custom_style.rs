@@ -32,9 +32,9 @@ fn main() {
     let theme = Style::modern()
         .left_intersection('│')
         .right_intersection('│')
-        .horizontal_off()
-        .vertical_off()
-        .header(' ');
+        .off_horizontal()
+        .lines([(1, Style::modern().get_horizontal())])
+        .off_vertical();
 
     let table = Table::new(&data)
         .with(theme)

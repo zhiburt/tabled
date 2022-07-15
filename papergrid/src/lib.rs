@@ -209,7 +209,7 @@ impl Grid {
         }
 
         if let Some(text) = settings.text {
-            self.set_text(entity, text);
+            self.set_text(entity, &text);
         }
 
         if let Some(border) = settings.border {
@@ -221,12 +221,12 @@ impl Grid {
         }
     }
 
-    /// Set a [Margin] value.
+    /// Set a [`Margin`] value.
     pub fn margin(&mut self, margin: Margin) {
-        self.margin = margin
+        self.margin = margin;
     }
 
-    /// Returns a [Margin] value currently set.
+    /// Returns a [`Margin`] value currently set.
     pub fn get_margin(&self) -> &Margin {
         &self.margin
     }
@@ -238,35 +238,35 @@ impl Grid {
         self.override_split_lines.clear();
     }
 
-    /// Set the [Borders] value as currect one.
+    /// Set the [`Borders`] value as currect one.
     pub fn set_borders(&mut self, borders: Borders<char>) {
         self.borders.set_borders(borders);
     }
 
-    /// Set the [Borders] value as currect one.
+    /// Set the [`Borders`] value as currect one.
     pub fn set_tab_width(&mut self, width: usize) {
         self.config.tab_width = width;
     }
 
-    /// Returns a current [Borders] structure.
+    /// Returns a current [`Borders`] structure.
     pub fn get_borders(&self) -> &Borders<char> {
         &self.borders.borders
     }
 
-    /// Set border set a border value to all cells in [Entity].
+    /// Set border set a border value to all cells in [`Entity`].
     pub fn set_border(&mut self, entity: Entity, border: Border) {
         entity
             .iter(self.count_rows(), self.count_columns())
-            .for_each(|pos| self.borders.insert_border(pos, border.clone()))
+            .for_each(|pos| self.borders.insert_border(pos, border.clone()));
     }
 
-    /// Sets off all borders possible on the [Entity].
+    /// Sets off all borders possible on the [`Entity`].
     ///
-    /// It doesn't changes globaly set borders through [Grid::set_borders].
+    /// It doesn't changes globaly set borders through [`Grid::set_borders`].
     pub fn remove_border(&mut self, entity: Entity) {
         entity
             .iter(self.count_rows(), self.count_columns())
-            .for_each(|pos| self.borders.remove_border(pos))
+            .for_each(|pos| self.borders.remove_border(pos, self.count_columns()));
     }
 
     /// Set the border line by row index.
@@ -274,10 +274,10 @@ impl Grid {
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
     pub fn set_split_line(&mut self, row: usize, line: Line<char>) {
-        self.borders.insert_line(row, line)
+        self.borders.insert_line(row, line);
     }
 
-    /// get_cell_settings returns a settings of a cell
+    /// This function returns a settings of a cell
     pub fn get_settings(&self, row: usize, col: usize) -> Settings {
         let style = self.style(Entity::Cell(row, col));
         let content = &self.cells[row][col];
@@ -379,34 +379,34 @@ impl Grid {
         }
     }
 
-    /// get_cell_content returns content without any style changes
+    /// This function returns content without any style changes
     pub fn get_cell_content(&self, row: usize, column: usize) -> &str {
         self.cells[row][column].as_str()
     }
 
-    /// get_cell_content_styled returns content with style changes
+    /// This function returns content with style changes
     pub fn get_cell_content_formatted(&self, row: usize, column: usize) -> String {
         let text = self.get_cell_content(row, column);
         replace_tab(text, self.config.tab_width)
     }
 
-    /// get_cell_width returns a string width.
+    /// This function returns a string width.
     pub fn get_string_width(&self, row: usize, column: usize) -> usize {
         string_width_multiline_tab(self.cells[row][column].as_str(), self.config.tab_width)
     }
 
-    /// Count_rows returns an amount of rows on the grid
+    /// This function returns an amount of rows on the grid
     pub fn count_rows(&self) -> usize {
         self.size.0
     }
 
-    /// Count_rows returns an amount of columns on the grid
+    /// This function returns an amount of columns on the grid
     pub fn count_columns(&self) -> usize {
         self.size.1
     }
 
     /// Set text value to all cells in [Entity].
-    pub fn set_text(&mut self, entity: Entity, text: String) {
+    pub fn set_text(&mut self, entity: Entity, text: &str) {
         self._set_text(entity, text);
     }
 
@@ -470,7 +470,7 @@ impl Grid {
 
     /// The function returns all cells by lines.
     ///
-    /// It's considered that [string_width] on these cells will be the same as the one which will be used in rendering.
+    /// It's considered that [`string_width`] on these cells will be the same as the one which will be used in rendering.
     pub fn collect_cells(&self) -> Vec<Vec<Vec<String>>> {
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
@@ -481,7 +481,7 @@ impl Grid {
                 let content = replace_tab(&self.cells[row][col], self.config.tab_width);
 
                 // fixme: I guess it can be done in a different place?
-                let lines: Vec<_> = content.lines().map(|l| l.to_owned()).collect();
+                let lines: Vec<_> = content.lines().map(ToOwned::to_owned).collect();
                 rows[row].push(lines);
             });
         });
@@ -509,7 +509,7 @@ impl Grid {
             &mut self.config.styles.global.padding,
             entity,
             padding,
-        )
+        );
     }
 
     /// Set a formatting to a given cells.
@@ -519,7 +519,7 @@ impl Grid {
             &mut self.config.styles.global.formatting,
             entity,
             formatting,
-        )
+        );
     }
 
     /// Set a vertical alignment to a given cells.
@@ -529,7 +529,7 @@ impl Grid {
             &mut self.config.styles.global.alignment_vertical,
             entity,
             alignment,
-        )
+        );
     }
 
     /// Set a horizontal alignment to a given cells.
@@ -539,7 +539,7 @@ impl Grid {
             &mut self.config.styles.global.alignment_horizontal,
             entity,
             alignment,
-        )
+        );
     }
 
     fn set_cell_span(&mut self, (row, mut col): Position, mut span: usize) {
@@ -573,11 +573,11 @@ impl Grid {
         self.spans.insert((row, col), span);
     }
 
-    fn _set_text(&mut self, entity: Entity, text: String) {
+    fn _set_text(&mut self, entity: Entity, text: &str) {
         entity
             .iter(self.count_rows(), self.count_columns())
             .for_each(|(row, col)| {
-                self.cells[row][col] = text.clone();
+                self.cells[row][col] = text.to_owned();
             });
     }
 
@@ -692,7 +692,7 @@ impl fmt::Display for Grid {
         let heights = rows_height(self, &cells);
         let widths = columns_width(self, &cells);
 
-        print_grid(f, self, widths, heights, &cells)
+        print_grid(f, self, &widths, heights, &cells)
     }
 }
 
@@ -724,7 +724,7 @@ impl Entity {
 
 /// An iterator over cells.
 ///
-/// Produced from [Entity::iter].
+/// Produced from [`Entity::iter`].
 #[derive(Debug)]
 pub struct EntityIterator {
     entity: Entity,
@@ -875,9 +875,9 @@ pub struct Border<T = char> {
     pub top: Option<T>,
     pub bottom: Option<T>,
     pub left: Option<T>,
+    pub right: Option<T>,
     pub left_top_corner: Option<T>,
     pub left_bottom_corner: Option<T>,
-    pub right: Option<T>,
     pub right_top_corner: Option<T>,
     pub right_bottom_corner: Option<T>,
 }
@@ -958,7 +958,7 @@ impl<T> Border<T> {
 
 impl<T: Copy> Border<T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [Border::new] with the same character set to each side.
+    /// It behaives like [`Border::new`] with the same character set to each side.
     pub fn filled(c: T) -> Self {
         Self::new(c, c, c, c, c, c, c, c)
     }
@@ -966,17 +966,17 @@ impl<T: Copy> Border<T> {
 
 impl<T: Copy> Border<&T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [Border::new] with the same character set to each side.
+    /// It behaives like [`Border::new`] with the same character set to each side.
     pub fn cloned(&self) -> Border<T> {
         Border {
-            top: self.top.cloned(),
-            bottom: self.bottom.cloned(),
-            left: self.left.cloned(),
-            right: self.right.cloned(),
-            left_bottom_corner: self.left_bottom_corner.cloned(),
-            left_top_corner: self.left_top_corner.cloned(),
-            right_bottom_corner: self.right_bottom_corner.cloned(),
-            right_top_corner: self.right_top_corner.cloned(),
+            top: self.top.copied(),
+            bottom: self.bottom.copied(),
+            left: self.left.copied(),
+            right: self.right.copied(),
+            left_bottom_corner: self.left_bottom_corner.copied(),
+            left_top_corner: self.left_top_corner.copied(),
+            right_bottom_corner: self.right_bottom_corner.copied(),
+            right_top_corner: self.right_top_corner.copied(),
         }
     }
 }
@@ -1033,7 +1033,7 @@ pub struct Indent {
 impl Indent {
     /// Creates a new Indent structure.
     pub fn new(size: usize, fill: char) -> Self {
-        Self { size, fill }
+        Self { fill, size }
     }
 
     /// Creates a new Indent startucture with space (`' '`) as a fill character.
@@ -1054,7 +1054,7 @@ impl Default for Indent {
     }
 }
 
-/// AlignmentHorizontal represents an horizontal alignment of a cell content.
+/// [`AlignmentHorizontal`] represents an horizontal alignment of a cell content.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentHorizontal {
     Center,
@@ -1102,7 +1102,7 @@ fn print_text(f: &mut fmt::Formatter<'_>, text: &str, tab_width: usize) -> fmt::
     Ok(())
 }
 
-/// AlignmentVertical represents an vertical alignment of a cell content.
+/// [`AlignmentVertical`] represents an vertical alignment of a cell content.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentVertical {
     Center,
@@ -1244,7 +1244,7 @@ fn top_indent(style: &Style, cell_height: usize, height: usize) -> usize {
     indent + style.padding.top.size
 }
 
-fn repeat_symbol(f: &mut fmt::Formatter<'_>, c: &char, n: usize) -> fmt::Result {
+fn repeat_symbol(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     if n > 0 {
         for _ in 0..n {
             c.fmt(f)?;
@@ -1587,7 +1587,7 @@ fn replace_tab_range(cell: &mut String, n: usize) -> &str {
         } else {
             // I'am not sure which version is faster a loop of 'replace'
             // or allacation of a string for replacement;
-            cell.replace_range(pos..pos + 1, &" ".repeat(n));
+            cell.replace_range(pos..=pos, &" ".repeat(n));
             skip = pos + 1;
         }
 
@@ -1613,7 +1613,7 @@ fn total_width(grid: &Grid, widths: &[usize], margin: &Margin) -> usize {
         .filter(|&col| is_cell_visible(grid, (0, col)))
         .filter(|&col| has_vertical(grid, col))
         .count()
-        + has_vertical(grid, grid.count_columns()) as usize;
+        + usize::from(has_vertical(grid, grid.count_columns()));
 
     content_width + count_borders + margin.left.size + margin.right.size
 }
@@ -1769,7 +1769,7 @@ pub struct Borders<T = char> {
     pub horizontal_right: Option<T>,
 
     pub vertical_left: Option<T>,
-    pub vertical_intersection: Option<T>,
+    pub vertical_intersection: Option<T>, // todo: rename to vertical
     pub vertical_right: Option<T>,
 
     pub intersection: Option<T>,
@@ -1790,15 +1790,81 @@ pub struct Line<T> {
     pub right: Option<T>,
 }
 
+impl<T> Line<T> {
+    pub const fn empty() -> Self {
+        Self {
+            horizontal: None,
+            intersection: None,
+            left: None,
+            right: None,
+        }
+    }
+
+    pub const fn filled(c: T) -> Self
+    where
+        T: Copy,
+    {
+        Self::full(c, c, c, c)
+    }
+
+    pub const fn full(horizontal: T, intersection: T, left: T, right: T) -> Self {
+        Self {
+            horizontal: Some(horizontal),
+            intersection: Some(intersection),
+            left: Some(left),
+            right: Some(right),
+        }
+    }
+
+    pub const fn short(horizontal: T, intersection: T) -> Self {
+        Self {
+            horizontal: Some(horizontal),
+            intersection: Some(intersection),
+            left: None,
+            right: None,
+        }
+    }
+
+    pub fn horizontal(mut self, c: T) -> Self {
+        self.horizontal = Some(c);
+        self
+    }
+
+    pub fn intersection(mut self, c: T) -> Self {
+        self.intersection = Some(c);
+        self
+    }
+
+    pub fn left(mut self, c: T) -> Self {
+        self.left = Some(c);
+        self
+    }
+
+    pub fn right(mut self, c: T) -> Self {
+        self.right = Some(c);
+        self
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.horizontal.is_none()
+            && self.horizontal.is_none()
+            && self.left.is_none()
+            && self.right.is_none()
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 struct BordersLayout {
     horizontal: HashSet<usize>,
     vertical: HashSet<usize>,
+    vertical_mid: bool,
+    vertical_left: bool,
+    vertical_right: bool,
 }
 
 pub type Position = (usize, usize);
 
-impl<T> BordersConfig<T> {
+impl<T: std::fmt::Debug> BordersConfig<T> {
     fn insert_border(&mut self, pos: Position, border: Border<T>) {
         if let Some(c) = border.top {
             self.cells.horizontal.insert(pos, c);
@@ -1826,16 +1892,16 @@ impl<T> BordersConfig<T> {
             self.layout.vertical.insert(pos.1);
         }
 
-        if let Some(c) = border.left_bottom_corner {
-            self.cells.intersection.insert((pos.0 + 1, pos.1), c);
-            self.layout.horizontal.insert(pos.0 + 1);
-            self.layout.vertical.insert(pos.1);
-        }
-
         if let Some(c) = border.right_top_corner {
             self.cells.intersection.insert((pos.0, pos.1 + 1), c);
             self.layout.horizontal.insert(pos.0);
             self.layout.vertical.insert(pos.1 + 1);
+        }
+
+        if let Some(c) = border.left_bottom_corner {
+            self.cells.intersection.insert((pos.0 + 1, pos.1), c);
+            self.layout.horizontal.insert(pos.0 + 1);
+            self.layout.vertical.insert(pos.1);
         }
 
         if let Some(c) = border.right_bottom_corner {
@@ -1845,7 +1911,7 @@ impl<T> BordersConfig<T> {
         }
     }
 
-    fn remove_border(&mut self, pos: Position) {
+    fn remove_border(&mut self, pos: Position, count_cols: usize) {
         self.cells.horizontal.remove(&pos);
         self.cells.horizontal.remove(&(pos.0 + 1, pos.1));
         self.cells.vertical.remove(&pos);
@@ -1857,32 +1923,21 @@ impl<T> BordersConfig<T> {
 
         // clean up the layout.
 
-        if !self.is_horizontal_set(pos.0) {
+        if !self.check_is_horizontal_set(pos.0) {
             self.layout.horizontal.remove(&pos.0);
         }
 
-        if !self.is_horizontal_set(pos.0 + 1) {
+        if !self.check_is_horizontal_set(pos.0 + 1) {
             self.layout.horizontal.remove(&(pos.0 + 1));
         }
 
-        if !self.is_vertical_set(pos.1) {
+        if !self.check_is_vertical_set(pos.1, count_cols) {
             self.layout.vertical.remove(&pos.1);
         }
 
-        if !self.is_vertical_set(pos.1 + 1) {
+        if !self.check_is_vertical_set(pos.1 + 1, count_cols) {
             self.layout.vertical.remove(&(pos.1 + 1));
         }
-    }
-
-    fn is_horizontal_set(&self, row: usize) -> bool {
-        self.is_line_defined(row)
-            || self.cells.horizontal.keys().any(|&p| p.0 == row)
-            || self.cells.intersection.keys().any(|&p| p.0 == row)
-    }
-
-    fn is_vertical_set(&self, col: usize) -> bool {
-        self.cells.vertical.keys().any(|&p| p.1 == col)
-            || self.cells.intersection.keys().any(|&p| p.1 == col)
     }
 
     fn get_border(&self, pos: Position, count_rows: usize, count_cols: usize) -> Border<&T> {
@@ -1903,6 +1958,22 @@ impl<T> BordersConfig<T> {
     }
 
     fn insert_line(&mut self, row: usize, line: Line<T>) {
+        if line.is_empty() {
+            return;
+        }
+
+        if line.left.is_some() {
+            self.layout.vertical_left = true;
+        }
+
+        if line.right.is_some() {
+            self.layout.vertical_right = true;
+        }
+
+        if line.intersection.is_some() {
+            self.layout.vertical_mid = true;
+        }
+
         self.lines.insert(row, line);
         self.layout.horizontal.insert(row);
     }
@@ -1947,7 +2018,6 @@ impl<T> BordersConfig<T> {
     fn get_intersection(&self, pos: Position, count_rows: usize, count_cols: usize) -> Option<&T> {
         let use_top = pos.0 == 0;
         let use_bottom = pos.0 == count_rows;
-
         let use_left = pos.1 == 0;
         let use_right = pos.1 == count_cols;
 
@@ -1992,73 +2062,109 @@ impl<T> BordersConfig<T> {
     }
 
     fn is_line_defined(&self, row: usize) -> bool {
-        self.lines
-            .get(&row)
-            .map(|l| {
-                l.left.is_some()
-                    || l.right.is_some()
-                    || l.intersection.is_some()
-                    || l.horizontal.is_some()
-            })
-            .unwrap_or(false)
+        self.lines.get(&row).map_or(false, |l| {
+            l.left.is_some()
+                || l.right.is_some()
+                || l.intersection.is_some()
+                || l.horizontal.is_some()
+        })
     }
 
-    // fixme: relay on individual setttings more; (need to update StyleSetting, CustomStyle)
     fn has_horizontal(&self, row: usize, count_rows: usize) -> bool {
-        if self.is_horizontal_set(row) {
-            return true;
-        }
-
         if self.global.is_some() {
             return true;
         }
 
         if row == count_rows {
-            if self.borders.bottom.is_some() {
+            if self.borders.bottom.is_some()
+                || self.borders.bottom_intersection.is_some()
+                || self.borders.bottom_left.is_some()
+                || self.borders.bottom_right.is_some()
+            {
                 return true;
             }
         } else if row == 0 {
-            if self.borders.top.is_some() {
+            if self.borders.top.is_some()
+                || self.borders.top_intersection.is_some()
+                || self.borders.top_left.is_some()
+                || self.borders.top_right.is_some()
+            {
                 return true;
             }
-        } else if self.borders.horizontal.is_some() {
+        } else if self.borders.horizontal.is_some()
+            || self.borders.horizontal_left.is_some()
+            || self.borders.horizontal_right.is_some()
+            || self.borders.intersection.is_some()
+        {
+            return true;
+        }
+
+        if self.is_horizontal_set(row) {
             return true;
         }
 
         false
     }
 
-    // fixme: relay on individual setttings more; (need to update StyleSetting, CustomStyle)
     fn has_vertical(&self, col: usize, count_cols: usize) -> bool {
-        if self.is_vertical_set(col) {
-            return true;
-        }
-
         if self.global.is_some() {
             return true;
         }
 
         if col == count_cols {
-            if self.borders.vertical_right.is_some() {
-                return true;
-            }
-
-            if self.borders.horizontal_right.is_some() {
+            if self.borders.vertical_right.is_some()
+                || self.borders.horizontal_right.is_some()
+                || self.borders.top_right.is_some()
+                || self.borders.bottom_right.is_some()
+            {
                 return true;
             }
         } else if col == 0 {
-            if self.borders.vertical_left.is_some() {
+            if self.borders.vertical_left.is_some()
+                || self.borders.horizontal_left.is_some()
+                || self.borders.top_left.is_some()
+                || self.borders.bottom_left.is_some()
+            {
                 return true;
             }
+        } else if self.borders.vertical_intersection.is_some()
+            || self.borders.top_intersection.is_some()
+            || self.borders.bottom_intersection.is_some()
+            || self.borders.intersection.is_some()
+        {
+            return true;
+        }
 
-            if self.borders.horizontal_left.is_some() {
-                return true;
-            }
-        } else if self.borders.vertical_intersection.is_some() {
+        if self.is_vertical_set(col, count_cols) {
             return true;
         }
 
         false
+    }
+
+    fn is_horizontal_set(&self, row: usize) -> bool {
+        self.layout.horizontal.contains(&row)
+    }
+
+    fn is_vertical_set(&self, col: usize, count_cols: usize) -> bool {
+        (col == 0 && self.layout.vertical_left)
+            || (col == count_cols && self.layout.vertical_right)
+            || (col > 0 && col < count_cols && self.layout.vertical_mid)
+            || self.layout.vertical.contains(&col)
+    }
+
+    fn check_is_horizontal_set(&self, row: usize) -> bool {
+        self.is_line_defined(row)
+            || self.cells.horizontal.keys().any(|&p| p.0 == row)
+            || self.cells.intersection.keys().any(|&p| p.0 == row)
+    }
+
+    fn check_is_vertical_set(&self, col: usize, count_cols: usize) -> bool {
+        (col == 0 && self.layout.vertical_left)
+            || (col == count_cols && self.layout.vertical_right)
+            || (col > 0 && col < count_cols && self.layout.vertical_mid)
+            || self.cells.vertical.keys().any(|&p| p.1 == col)
+            || self.cells.intersection.keys().any(|&p| p.1 == col)
     }
 }
 
@@ -2106,11 +2212,11 @@ fn get_intersection(grid: &Grid, pos: Position) -> Option<&char> {
 fn print_grid(
     f: &mut fmt::Formatter<'_>,
     grid: &Grid,
-    widths: Vec<usize>,
+    widths: &[usize],
     mut heights: impl Iterator<Item = usize>,
     cells: &[Vec<CellContent<'_>>],
 ) -> fmt::Result {
-    let table_width = row_width_grid(grid, &widths);
+    let table_width = row_width_grid(grid, widths);
 
     if grid.margin.top.size > 0 {
         let width = table_width + grid.margin.left.size + grid.margin.right.size;
@@ -2122,7 +2228,7 @@ fn print_grid(
     for row in 0..grid.count_rows() {
         if has_horizontal(grid, row) {
             repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
-            print_split_line(f, grid, &widths, table_width, row)?;
+            print_split_line(f, grid, widths, table_width, row)?;
             repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
             f.write_char('\n')?;
         }
@@ -2147,7 +2253,7 @@ fn print_grid(
 
                     let style = grid.style(Entity::Cell(row, col));
                     let cell = &cells[row][col];
-                    let width = grid_cell_width(grid, &widths, (row, col));
+                    let width = grid_cell_width(grid, widths, (row, col));
                     build_cell_line(f, cell, i, width, height, &style, grid.config.tab_width)?;
                 }
 
@@ -2176,7 +2282,7 @@ fn print_grid(
     if has_horizontal(grid, grid.count_rows()) {
         f.write_char('\n')?;
         repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
-        print_split_line(f, grid, &widths, table_width, grid.count_rows())?;
+        print_split_line(f, grid, widths, table_width, grid.count_rows())?;
         repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
     }
 
@@ -2202,7 +2308,7 @@ fn repeat_lines(f: &mut fmt::Formatter<'_>, size: usize, width: usize, fill: cha
         repeat_char(f, fill, width)?;
 
         if i + 1 != size {
-            f.write_char('\n')?
+            f.write_char('\n')?;
         }
     }
 
@@ -2265,7 +2371,7 @@ fn print_split_line(
                     prepare_coloring(f, get_horizontal_color(grid, (row, col)), &mut used_color)?;
                 }
 
-                repeat_symbol(f, c, width)?;
+                repeat_symbol(f, *c, width)?;
             }
             None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
         }
@@ -2364,7 +2470,7 @@ fn row_width_grid(grid: &Grid, widths: &[usize]) -> usize {
     let count_borders = (0..grid.count_columns())
         .filter(|&col| has_vertical(grid, col))
         .count()
-        + has_vertical(grid, grid.count_columns()) as usize;
+        + usize::from(has_vertical(grid, grid.count_columns()));
 
     row_width + count_borders
 }
@@ -2428,18 +2534,18 @@ fn invalidate_entity<T>(map: &mut HashMap<Entity, T>, entity: Entity) {
             while let Some(o) = map
                 .keys()
                 .find(|entity| matches!(entity, Entity::Cell(c, _) if *c == col))
-                .cloned()
+                .copied()
             {
-                let _ = map.remove(&o);
+                map.remove(&o);
             }
         }
         Entity::Row(row) => {
             while let Some(o) = map
                 .keys()
                 .find(|entity| matches!(entity, Entity::Cell(_, r) if *r == row))
-                .cloned()
+                .copied()
             {
-                let _ = map.remove(&o);
+                map.remove(&o);
             }
         }
         Entity::Cell(_, _) => (),

@@ -48,7 +48,7 @@
 
 use std::cmp;
 
-use papergrid::{Entity, Grid};
+use papergrid::{Border, Entity, Grid};
 
 use crate::{Table, TableOption};
 
@@ -131,7 +131,7 @@ impl TableOption for Concat {
                             lhs.get_settings(row, column)
                         } else {
                             rhs.get_settings(row - lhs.count_rows(), column)
-                                .border(Default::default())
+                                .border(Border::default())
                         };
 
                         new_grid.set(Entity::Cell(row, column), settings);
@@ -161,7 +161,7 @@ impl TableOption for Concat {
                             lhs.get_settings(row, column)
                         } else {
                             rhs.get_settings(row, column - lhs.count_columns())
-                                .border(Default::default())
+                                .border(Border::default())
                         };
 
                         new_grid.set(Entity::Cell(row, column), settings);

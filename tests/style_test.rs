@@ -2,10 +2,11 @@ use std::iter::FromIterator;
 
 use crate::util::{create_vector, static_table, test_table};
 
+use papergrid::Line;
 use tabled::{
     builder::Builder,
     object::{Cell, Columns, Rows, Segment},
-    style::{Border, BorderText, StyleConfig},
+    style::{Border, BorderText, RawStyle},
     Highlight, Modify, Padding, Span, Style, Table, TableIteratorExt,
 };
 
@@ -73,7 +74,7 @@ test_table!(
 
 test_table!(
     modern_clean_style,
-    Table::new(create_vector::<3, 3>()).with(Style::modern().horizontal_off()),
+    Table::new(create_vector::<3, 3>()).with(Style::modern().off_horizontal().lines(vec![(1, Style::modern().get_horizontal())])),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -134,7 +135,7 @@ test_table!(
 
 test_table!(
     style_head_changes,
-    Table::new(create_vector::<3, 3>()).with(Style::modern().horizontal_off().header_off()),
+    Table::new(create_vector::<3, 3>()).with(Style::modern().off_horizontal()),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
@@ -145,9 +146,8 @@ test_table!(
 
 test_table!(
     style_frame_changes,
-    Table::new(create_vector::<3, 3>()).with(Style::modern().top_off().bottom_off().horizontal_off()),
+    Table::new(create_vector::<3, 3>()).with(Style::modern().off_top().off_bottom().off_horizontal()),
     "│ N │ column 0 │ column 1 │ column 2 │"
-    "├───┼──────────┼──────────┼──────────┤"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
     "│ 1 │   1-0    │   1-1    │   1-2    │"
     "│ 2 │   2-0    │   2-1    │   2-2    │"
@@ -161,16 +161,16 @@ test_table!(
             .bottom_intersection('\'')
             .vertical('\'')
             .horizontal('`')
-            .header('`')
-            .inner_intersection('\'')),
-    " N ' column 0 ' column 1 ' column 2 "
-    "````````````````````````````````````"
-    " 0 '   0-0    '   0-1    '   0-2    "
-    "```'``````````'``````````'``````````"
-    " 1 '   1-0    '   1-1    '   1-2    "
-    "```'``````````'``````````'``````````"
-    " 2 '   2-0    '   2-1    '   2-2    "
-    "***'**********'**********'**********"
+            .inner_intersection('\'')
+            .lines(vec![(1, Line::full('x', '*', 'q', 'w'))])),
+    "  N ' column 0 ' column 1 ' column 2  "
+    "qxxx*xxxxxxxxxx*xxxxxxxxxx*xxxxxxxxxxw"
+    "  0 '   0-0    '   0-1    '   0-2     "
+    " ```'``````````'``````````'`````````` "
+    "  1 '   1-0    '   1-1    '   1-2     "
+    " ```'``````````'``````````'`````````` "
+    "  2 '   2-0    '   2-1    '   2-2     "
+    " ***'**********'**********'********** "
 );
 
 test_table!(
@@ -378,8 +378,8 @@ test_table!(
 );
 
 test_table!(
-    single_column_horizontal_off_test,
-    Table::new(create_vector::<3, 0>()).with(Style::ascii().header_off().horizontal_off().vertical_off()),
+    single_column_off_horizontal_test,
+    Table::new(create_vector::<3, 0>()).with(Style::ascii().off_horizontal().off_vertical()),
     "+---+"
     "| N |"
     "| 0 |"
@@ -474,9 +474,9 @@ test_table!(
             data
         })
         .with({
-            let mut style: StyleConfig = Style::modern().into();
+            let mut style: RawStyle = Style::modern().into();
             style
-                .set_internal(Some('x'))
+                .set_internal_split(Some('x'))
                 .set_bottom(Some('a'))
                 .set_left(Some('b'))
                 .set_right(None)
@@ -503,7 +503,7 @@ test_table!(
         data[0][1] = "a longer string".to_owned();
         data
         }).with({
-            let mut style: StyleConfig = Style::modern().into();
+            let mut style: RawStyle = Style::modern().into();
             style.set_bottom(None);
             style
         }),
@@ -515,6 +515,7 @@ test_table!(
     "│ 1 │       1-0       │   1-1    │   1-2    │"
     "├───┼─────────────────┼──────────┼──────────┤"
     "│ 2 │       2-0       │   2-1    │   2-2    │"
+    "└   ┴                 ┴          ┴          ┘"
 );
 
 test_table!(
@@ -524,7 +525,7 @@ test_table!(
         data[0][1] = "a longer string".to_owned();
         data
     }).with({
-            let mut style: StyleConfig = Style::modern().into();
+            let mut style: RawStyle = Style::modern().into();
             style.set_bottom(None);
             style
         })
@@ -631,7 +632,7 @@ fn custom_style_test() {
         ),
     );
     test_style!(
-        Style::empty().header('-'),
+        Style::empty().lines([(1, Line::default().horizontal('-'))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -707,7 +708,9 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().top('-').header('+'),
+        Style::empty()
+            .top('-')
+            .lines([(1, Line::default().horizontal('+'))]),
         static_table!(
             "---------------------------------"
             " N  column 0  column 1  column 2 "
@@ -773,7 +776,9 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().bottom('-').header('+'),
+        Style::empty()
+            .bottom('-')
+            .lines([(1, Line::default().horizontal('+'))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "+++++++++++++++++++++++++++++++++"
@@ -835,7 +840,9 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().left('-').header('+'),
+        Style::empty()
+            .left('-')
+            .lines([(1, Line::default().horizontal('+'))]),
         static_table!(
             "- N  column 0  column 1  column 2 "
             " +++++++++++++++++++++++++++++++++"
@@ -896,7 +903,9 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().right('-').header('+'),
+        Style::empty()
+            .right('-')
+            .lines([(1, Line::default().horizontal('+'))]),
         static_table!(
             " N  column 0  column 1  column 2 -"
             "+++++++++++++++++++++++++++++++++ "
@@ -957,10 +966,12 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().vertical('-').header('+'),
+        Style::empty()
+            .vertical('-')
+            .lines([(1, Line::default().horizontal('+'))]),
         static_table!(
             " N - column 0 - column 1 - column 2 "
-            "++++++++++++++++++++++++++++++++++++"
+            "+++ ++++++++++ ++++++++++ ++++++++++"
             " 0 -   0-0    -   0-1    -   0-2    "
             " 1 -   1-0    -   1-1    -   1-2    "
             " 2 -   2-0    -   2-1    -   2-2    "
@@ -1030,7 +1041,9 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().horizontal('-').header('+'),
+        Style::empty()
+            .horizontal('-')
+            .lines([(1, Line::default().horizontal('+'))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "+++++++++++++++++++++++++++++++++"
@@ -1043,7 +1056,9 @@ fn custom_style_test() {
     );
 
     test_style!(
-        Style::empty().header('-').top('+'),
+        Style::empty()
+            .lines([(1, Line::default().horizontal('-'))])
+            .top('+'),
         static_table!(
             "+++++++++++++++++++++++++++++++++"
             " N  column 0  column 1  column 2 "
@@ -1054,7 +1069,9 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().header('-').bottom('+'),
+        Style::empty()
+            .lines([(1, Line::default().horizontal('-'))])
+            .bottom('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -1065,27 +1082,33 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().header('-').left('+'),
+        Style::empty()
+            .lines([(1, Line::default().horizontal('-'))])
+            .left('+'),
         static_table!(
             "+ N  column 0  column 1  column 2 "
-            " ---------------------------------"
+            "+---------------------------------"
             "+ 0    0-0       0-1       0-2    "
             "+ 1    1-0       1-1       1-2    "
             "+ 2    2-0       2-1       2-2    "
         )
     );
     test_style!(
-        Style::empty().header('-').right('+'),
+        Style::empty()
+            .lines([(1, Line::default().horizontal('-'))])
+            .right('+'),
         static_table!(
             " N  column 0  column 1  column 2 +"
-            "--------------------------------- "
+            "---------------------------------+"
             " 0    0-0       0-1       0-2    +"
             " 1    1-0       1-1       1-2    +"
             " 2    2-0       2-1       2-2    +"
         )
     );
     test_style!(
-        Style::empty().header('-').vertical('+'),
+        Style::empty()
+            .lines([(1, Line::default().horizontal('-'))])
+            .vertical('+'),
         static_table!(
             " N + column 0 + column 1 + column 2 "
             "---+----------+----------+----------"
@@ -1095,7 +1118,9 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().header('-').horizontal('+'),
+        Style::empty()
+            .lines([(1, Line::default().horizontal('-'))])
+            .horizontal('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -1116,12 +1141,12 @@ fn custom_style_test() {
             .left('|')
             .right('*')
             .horizontal('x')
-            .header('x')
+            .lines([(1, Line::filled('z'))])
             .vertical('#'),
         static_table!(
             "|---#----------#----------#----------*"
             "| N # column 0 # column 1 # column 2 *"
-            "xxxx#xxxxxxxxxx#xxxxxxxxxx#xxxxxxxxxxx"
+            "zzzz#zzzzzzzzzz#zzzzzzzzzz#zzzzzzzzzzz"
             "| 0 #   0-0    #   0-1    #   0-2    *"
             "xxxx#xxxxxxxxxx#xxxxxxxxxx#xxxxxxxxxxx"
             "| 1 #   1-0    #   1-1    #   1-2    *"
@@ -1137,7 +1162,7 @@ fn custom_style_test() {
         .left('|')
         .right('*')
         .horizontal('x')
-        .header(',')
+        .lines([(1, Line::filled(','))])
         .vertical('#')
         .bottom_intersection('@')
         .top_intersection('!')
@@ -1147,14 +1172,13 @@ fn custom_style_test() {
         .bottom_left_corner('?')
         .top_right_corner('.')
         .bottom_right_corner('%')
-        .inner_intersection('+')
-        .header_intersection('m');
+        .inner_intersection('+');
     test_style!(
         full_style.clone(),
         static_table!(
             ";---!----------!----------!----------."
             "| N # column 0 # column 1 # column 2 *"
-            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$"
+            ",,,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,,"
             "| 0 #   0-0    #   0-1    #   0-2    *"
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
             "| 1 #   1-0    #   1-1    #   1-2    *"
@@ -1171,7 +1195,7 @@ fn custom_style_test() {
         static_table!(
             "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
             "| N # column 0 # column 1 # column 2 *"
-            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$"
+            ",,,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,,"
             "| 0 #   0-0    #   0-1    #   0-2    *"
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
             "| 1 #   1-0    #   1-1    #   1-2    *"
@@ -1185,7 +1209,7 @@ fn custom_style_test() {
         static_table!(
             ";---!----------!----------!----------."
             "| N # column 0 # column 1 # column 2 *"
-            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$"
+            ",,,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,,"
             "| 0 #   0-0    #   0-1    #   0-2    *"
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
             "| 1 #   1-0    #   1-1    #   1-2    *"
@@ -1199,7 +1223,7 @@ fn custom_style_test() {
         static_table!(
             "w---!----------!----------!----------."
             "w N # column 0 # column 1 # column 2 *"
-            "w,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$"
+            "w,,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,,"
             "w 0 #   0-0    #   0-1    #   0-2    *"
             "wxxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
             "w 1 #   1-0    #   1-1    #   1-2    *"
@@ -1213,7 +1237,7 @@ fn custom_style_test() {
         static_table!(
             ";---!----------!----------!----------i"
             "| N # column 0 # column 1 # column 2 i"
-            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,i"
+            ",,,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,i"
             "| 0 #   0-0    #   0-1    #   0-2    i"
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxxi"
             "| 1 #   1-0    #   1-1    #   1-2    i"
@@ -1227,7 +1251,7 @@ fn custom_style_test() {
         static_table!(
             ";---!----------!----------!----------."
             "| N # column 0 # column 1 # column 2 *"
-            "q,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,q"
+            ",,,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,,"
             "| 0 #   0-0    #   0-1    #   0-2    *"
             "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
             "| 1 #   1-0    #   1-1    #   1-2    *"
@@ -1241,7 +1265,7 @@ fn custom_style_test() {
         static_table!(
             ";---q----------q----------q----------."
             "| N q column 0 q column 1 q column 2 *"
-            "=,,,q,,,,,,,,,,q,,,,,,,,,,q,,,,,,,,,,$"
+            ",,,,q,,,,,,,,,,q,,,,,,,,,,q,,,,,,,,,,,"
             "| 0 q   0-0    q   0-1    q   0-2    *"
             "=xxxqxxxxxxxxxxqxxxxxxxxxxqxxxxxxxxxx$"
             "| 1 q   1-0    q   1-1    q   1-2    *"
@@ -1251,11 +1275,11 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        full_style.clone().header('q'),
+        full_style.clone().lines([(1, Line::filled('q'))]),
         static_table!(
             ";---!----------!----------!----------."
             "| N # column 0 # column 1 # column 2 *"
-            "=qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq$"
+            "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq"
             "| 0 #   0-0    #   0-1    #   0-2    *"
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
             "| 1 #   1-0    #   1-1    #   1-2    *"
@@ -1273,19 +1297,28 @@ fn custom_style_test() {
         " 1    1-0       1-1       1-2    "
         " 2    2-0       2-1       2-2    "
     );
-    test_style!(Style::empty().top('-').top_off(), empty_table);
-    test_style!(Style::empty().bottom('-').bottom_off(), empty_table);
-    test_style!(Style::empty().right('-').right_off(), empty_table);
-    test_style!(Style::empty().left('-').left_off(), empty_table);
-    test_style!(Style::empty().horizontal('-').horizontal_off(), empty_table);
-    test_style!(Style::empty().vertical('-').vertical_off(), empty_table);
-    test_style!(Style::empty().header('-').header_off(), empty_table);
+    test_style!(Style::empty().top('-').off_top(), empty_table);
+    test_style!(Style::empty().bottom('-').off_bottom(), empty_table);
+    test_style!(Style::empty().right('-').off_right(), empty_table);
+    test_style!(Style::empty().left('-').off_left(), empty_table);
+    test_style!(Style::empty().horizontal('-').off_horizontal(), empty_table);
+    test_style!(Style::empty().vertical('-').off_vertical(), empty_table);
+    test_style!(
+        Style::empty().lines([(1, Line::default().horizontal('-'))]),
+        static_table!(
+            " N  column 0  column 1  column 2 "
+            "---------------------------------"
+            " 0    0-0       0-1       0-2    "
+            " 1    1-0       1-1       1-2    "
+            " 2    2-0       2-1       2-2    "
+        )
+    );
 
     test_style!(
-        full_style.clone().top_off(),
+        full_style.clone().off_top(),
         static_table!(
             "| N # column 0 # column 1 # column 2 *"
-            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$"
+            ",,,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,,"
             "| 0 #   0-0    #   0-1    #   0-2    *"
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
             "| 1 #   1-0    #   1-1    #   1-2    *"
@@ -1295,11 +1328,11 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        full_style.clone().bottom_off(),
+        full_style.clone().off_bottom(),
         static_table!(
             ";---!----------!----------!----------."
             "| N # column 0 # column 1 # column 2 *"
-            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$"
+            ",,,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,,"
             "| 0 #   0-0    #   0-1    #   0-2    *"
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
             "| 1 #   1-0    #   1-1    #   1-2    *"
@@ -1308,11 +1341,11 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        full_style.clone().right_off(),
+        full_style.clone().off_right(),
         static_table!(
             ";---!----------!----------!----------"
             "| N # column 0 # column 1 # column 2 "
-            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,"
+            ",,,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,"
             "| 0 #   0-0    #   0-1    #   0-2    "
             "=xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx"
             "| 1 #   1-0    #   1-1    #   1-2    "
@@ -1322,25 +1355,25 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        full_style.clone().left_off(),
+        full_style.clone().off_left(),
         static_table!(
-            "---!----------!----------!----------."
-            " N # column 0 # column 1 # column 2 *"
-            ",,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$"
-            " 0 #   0-0    #   0-1    #   0-2    *"
-            "xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
-            " 1 #   1-0    #   1-1    #   1-2    *"
-            "xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
-            " 2 #   2-0    #   2-1    #   2-2    *"
-            "+++@++++++++++@++++++++++@++++++++++%"
+           "---!----------!----------!----------."
+           " N # column 0 # column 1 # column 2 *"
+           ",,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,,"
+           " 0 #   0-0    #   0-1    #   0-2    *"
+           "xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
+           " 1 #   1-0    #   1-1    #   1-2    *"
+           "xxx+xxxxxxxxxx+xxxxxxxxxx+xxxxxxxxxx$"
+           " 2 #   2-0    #   2-1    #   2-2    *"
+           "+++@++++++++++@++++++++++@++++++++++%"
         )
     );
     test_style!(
-        full_style.clone().horizontal_off(),
+        full_style.clone().off_horizontal(),
         static_table!(
             ";---!----------!----------!----------."
             "| N # column 0 # column 1 # column 2 *"
-            "=,,,m,,,,,,,,,,m,,,,,,,,,,m,,,,,,,,,,$"
+            ",,,,#,,,,,,,,,,#,,,,,,,,,,#,,,,,,,,,,,"
             "| 0 #   0-0    #   0-1    #   0-2    *"
             "| 1 #   1-0    #   1-1    #   1-2    *"
             "| 2 #   2-0    #   2-1    #   2-2    *"
@@ -1348,11 +1381,11 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        full_style.clone().vertical_off(),
+        full_style.clone().off_vertical(),
         static_table!(
             ";---------------------------------."
             "| N  column 0  column 1  column 2 *"
-            "=,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,$"
+            ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"
             "| 0    0-0       0-1       0-2    *"
             "=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx$"
             "| 1    1-0       1-1       1-2    *"
@@ -1362,7 +1395,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        full_style.header_off(),
+        full_style.off_lines(),
         static_table!(
             ";---!----------!----------!----------."
             "| N # column 0 # column 1 # column 2 *"
@@ -1929,7 +1962,7 @@ fn style_with_color_test() {
     use owo_colors::OwoColorize;
     use tabled::style::Symbol;
 
-    let style: StyleConfig = Style::ascii().into();
+    let style: RawStyle = Style::ascii().into();
     let mut style = style.colored();
     style
         .set_left(Some(Symbol::ansi('['.red().to_string()).unwrap()))

@@ -1,6 +1,6 @@
 //! This module contains an [Alignment] setting for cells on the [Table].
 //!
-//! An alignment strategy can be set by [AlignmentStrategy].
+//! An alignment strategy can be set by [`AlignmentStrategy`].
 //!
 //! # Example
 //!
@@ -72,17 +72,17 @@ pub enum Alignment {
 }
 
 impl Alignment {
-    /// Left constructs a horizontal alignment to [AlignmentHorizontal::Left]
+    /// Left constructs a horizontal alignment to [`AlignmentHorizontal::Left`]
     pub fn left() -> Self {
         Self::horizontal(AlignmentHorizontal::Left)
     }
 
-    /// Right constructs a horizontal alignment to [AlignmentHorizontal::Right]
+    /// Right constructs a horizontal alignment to [`AlignmentHorizontal::Right`]
     ///
     /// ## Notice
     ///
-    /// When you use [MinWidth] the alignment might not work as you expected.
-    /// You could try to apply [TrimStrategy] which may help.
+    /// When you use [`MinWidth`] the alignment might not work as you expected.
+    /// You could try to apply [`TrimStrategy`] which may help.
     ///
     /// [MinWidth]: crate::width::MinWidth
     /// [TrimStrategy]: crate::formatting_settings::TrimStrategy
@@ -90,12 +90,12 @@ impl Alignment {
         Self::horizontal(AlignmentHorizontal::Right)
     }
 
-    /// Center constructs a horizontal alignment to [AlignmentHorizontal::Center]
+    /// Center constructs a horizontal alignment to [`AlignmentHorizontal::Center`]
     ///
     /// ## Notice
     ///
-    /// When you use [MinWidth] the alignment might not work as you expected.
-    /// You could try to apply [TrimStrategy] which may help.
+    /// When you use [`MinWidth`] the alignment might not work as you expected.
+    /// You could try to apply [`TrimStrategy`] which may help.
     ///
     /// [MinWidth]: crate::width::MinWidth
     /// [TrimStrategy]: crate::formatting_settings::TrimStrategy
@@ -103,17 +103,17 @@ impl Alignment {
         Self::horizontal(AlignmentHorizontal::Center)
     }
 
-    /// Top constructs a vertical alignment to [AlignmentVertical::Top]
+    /// Top constructs a vertical alignment to [`AlignmentVertical::Top`]
     pub fn top() -> Self {
         Self::vertical(AlignmentVertical::Top)
     }
 
-    /// Bottom constructs a vertical alignment to [AlignmentVertical::Bottom]
+    /// Bottom constructs a vertical alignment to [`AlignmentVertical::Bottom`]
     pub fn bottom() -> Self {
         Self::vertical(AlignmentVertical::Bottom)
     }
 
-    /// Center_vertical constructs a vertical alignment to [AlignmentVertical::Center]
+    /// `Center_vertical` constructs a vertical alignment to [`AlignmentVertical::Center`]
     pub fn center_vertical() -> Self {
         Self::vertical(AlignmentVertical::Center)
     }
