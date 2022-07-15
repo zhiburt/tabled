@@ -1,4 +1,4 @@
-//! This module contains a [Concat] primitive which can be in order to combine 2 [Table]s into 1.
+//! This module contains a [`Concat`] primitive which can be in order to combine 2 [`Table`]s into 1.
 //!
 //! # Example
 //!
@@ -52,12 +52,12 @@ use papergrid::{Border, Entity, Grid};
 
 use crate::{Table, TableOption};
 
-/// Concat concatenate tables along a particular axis [Horizontal | Vertical].
+/// [`Concat`] concatenate tables along a particular axis [Horizontal | Vertical].
 /// It doesn't do any key or column comparisons like SQL's join does.
 ///
 /// When the tables has different sizes, empty cells will be created by default.
 ///
-/// [Concat] in horizontal mode has similar behaiviour to tuples `(a, b)`.
+/// [`Concat`] in horizontal mode has similar behaiviour to tuples `(a, b)`.
 /// But it behaives on tables rather than on an actual data.
 ///
 /// ```

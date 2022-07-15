@@ -1,5 +1,5 @@
-//! This module contains a [Disable] structure which helps to
-//! remove an etheir column or row from a [Table].
+//! This module contains a [`Disable`] structure which helps to
+//! remove an etheir column or row from a [`Table`].
 //!
 //! Essentially it is better to provide a correct data initially and not use disable.
 //!
@@ -24,7 +24,7 @@
 //! );
 //! ```
 //!
-//! [Table]: crate::Table
+//! [`Table`]: crate::Table
 
 use std::ops::RangeBounds;
 
@@ -32,7 +32,7 @@ use papergrid::{Entity, Grid};
 
 use crate::{object::bounds_to_usize, TableOption};
 
-/// Disable removes particular rows/columns from a [`crate::Table`].
+/// Disable removes particular rows/columns from a [`Table`].
 ///
 /// It tries to keeps track of style changes which may occur.
 /// But it's not guaranteed will be the way you would expect it to be.
@@ -44,6 +44,8 @@ use crate::{object::bounds_to_usize, TableOption};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data).with(Disable::Row(..1));
 /// ```
+///
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub enum Disable<R: RangeBounds<usize>> {
     /// Columns of the grid.

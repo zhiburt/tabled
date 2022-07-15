@@ -22,7 +22,7 @@ test_table!(
 
 test_table!(
     builder_index_transpose,
-    Table::builder(create_vector::<4, 2>()).index().transpose().build(),
+    Table::builder(create_vector::<4, 2>()).index().transpose().clone().build(),
     "+----------+-----+-----+-----+-----+"
     "|          |  0  |  1  |  2  |  3  |"
     "+----------+-----+-----+-----+-----+"
@@ -36,7 +36,7 @@ test_table!(
 
 test_table!(
     builder_index_0,
-    Table::builder(create_vector::<4, 2>()).index().set_index(0).build(),
+    Table::builder(create_vector::<4, 2>()).index().set_index(0).clone().build(),
     "+---+----------+----------+"
     "|   | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -54,7 +54,7 @@ test_table!(
 
 test_table!(
     builder_index_0_no_name,
-    Table::builder(create_vector::<4, 2>()).index().set_index(0).set_name(None).build(),
+    Table::builder(create_vector::<4, 2>()).index().set_index(0).set_name(None).clone().build(),
     "+---+----------+----------+"
     "|   | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -70,7 +70,7 @@ test_table!(
 
 test_table!(
     builder_index_0_name,
-    Table::builder(create_vector::<4, 2>()).index().set_index(0).set_name(Some("Hello World".to_owned())).build(),
+    Table::builder(create_vector::<4, 2>()).index().set_index(0).set_name(Some("Hello World".to_owned())).clone().build(),
     "+-------------+----------+----------+"
     "|             | column 0 | column 1 |"
     "+-------------+----------+----------+"
@@ -88,7 +88,7 @@ test_table!(
 
 test_table!(
     builder_index_0_name_transpose,
-    Table::builder(create_vector::<4, 2>()).index().set_index(0).set_name(Some("Hello World".to_owned())).transpose().build(),
+    Table::builder(create_vector::<4, 2>()).index().set_index(0).set_name(Some("Hello World".to_owned())).transpose().clone().build(),
     "+-------------+-----+-----+-----+-----+"
     "| Hello World |  0  |  1  |  2  |  3  |"
     "+-------------+-----+-----+-----+-----+"
@@ -117,6 +117,7 @@ test_table!(
     Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["d", "e", "f"]])
         .index()
         .set_name(Some("Hello World".to_owned()))
+        .clone()
         .build(),
     "+-------------+---+---+---+"
     "|             | 0 | 1 | 2 |"
@@ -136,6 +137,7 @@ test_table!(
     Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["d", "e", "f"]])
         .index()
         .transpose()
+        .clone()
         .build(),
     "+---+---+---+---+"
     "|   | 0 | 1 | 2 |"
@@ -152,13 +154,13 @@ test_table!(builder_index_empty, Builder::default().index().build(), "");
 
 test_table!(
     builder_index_transpose_empty,
-    Builder::default().index().transpose().build(),
+    Builder::default().index().transpose().clone().build(),
     ""
 );
 
 test_table!(
     builder_index_invalid_dosnt_panic,
-    Builder::default().index().set_index(100).build(),
+    Builder::default().index().set_index(100).clone().build(),
     ""
 );
 
@@ -167,6 +169,7 @@ test_table!(
     Builder::default()
         .index()
         .set_name(Some("Hello World".to_owned()))
+        .clone()
         .build(),
     ""
 );
@@ -174,10 +177,10 @@ test_table!(
 #[test]
 fn builder_index_transpose_transpose() {
     let data = create_vector::<4, 2>();
-    let builder = Table::builder(&data).index();
+    let mut builder = Table::builder(&data).index();
 
     let orig_table = builder.clone().build().to_string();
-    let two_times_transposed_table = builder.transpose().transpose().build().to_string();
+    let two_times_transposed_table = builder.transpose().transpose().clone().build().to_string();
 
     assert_eq!(orig_table, two_times_transposed_table,);
 }
@@ -185,10 +188,10 @@ fn builder_index_transpose_transpose() {
 #[test]
 fn builder_index_no_name_transpose_transpose() {
     let data = create_vector::<4, 2>();
-    let builder = Table::builder(&data).index().set_name(None);
+    let mut builder = Table::builder(&data).index().set_name(None).clone();
 
     let orig_table = builder.clone().build().to_string();
-    let two_times_transposed_table = builder.transpose().transpose().build().to_string();
+    let two_times_transposed_table = builder.transpose().transpose().clone().build().to_string();
 
     assert_eq!(orig_table, two_times_transposed_table,);
 }

@@ -1,5 +1,7 @@
-//! This module contains a [Highlight] primitive, which helps
-//! changing a [Border] style of any segment on a [`crate::Table`].
+//! This module contains a [`Highlight`] primitive, which helps
+//! changing a [`Border`] style of any segment on a [`Table`].
+//!
+//! [`Table`]: crate::Table
 
 use std::collections::HashSet;
 
@@ -7,7 +9,7 @@ use papergrid::{Entity, Grid, Position, Settings};
 
 use crate::{object::Object, style::Border, TableOption};
 
-/// Highlight modifies a table style by changing a border of a target [`crate::Table`] segment.
+/// Highlight modifies a table style by changing a border of a target [`Table`] segment.
 ///
 /// # Example
 ///
@@ -41,8 +43,7 @@ use crate::{object::Object, style::Border, TableOption};
 /// );
 /// ```
 ///
-/// It's possible to use [Highlight] for many kinds of figures.
-///
+/// It's possible to use [`Highlight`] for many kinds of figures.
 ///
 /// ```
 /// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::{Segment, Cell, Object}};
@@ -78,7 +79,7 @@ use crate::{object::Object, style::Border, TableOption};
 /// );
 /// ```
 ///
-///
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Highlight<O> {
     target: O,
@@ -89,7 +90,7 @@ impl<O> Highlight<O>
 where
     O: Object,
 {
-    /// Build a new instance of [Highlight]
+    /// Build a new instance of [`Highlight`]
     ///
     /// BE AWARE: if target exceeds boundaries it may panic.
     pub fn new(target: O, border: Border) -> Self {
@@ -98,7 +99,7 @@ where
 }
 
 impl<O> Highlight<O> {
-    /// Build a new instance of [HighlightColored]
+    /// Build a new instance of [`HighlightColored`]
     #[cfg(feature = "color")]
     #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
     pub fn colored(target: O, border: crate::style::ColoredBorder) -> HighlightColored<O> {
@@ -120,7 +121,9 @@ where
     }
 }
 
-/// A [Highlight] object which works with a [crate::style::ColoredBorder]
+/// A [`Highlight`] object which works with a [`ColoredBorder`]
+///
+/// [`ColoredBorder`]: crate::style::ColoredBorder
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug)]

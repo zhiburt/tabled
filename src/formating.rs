@@ -1,21 +1,21 @@
-//! This module contains a list of primitives to help to modify a [Table].
+//! This module contains a list of primitives to help to modify a [`Table`].
 //!
-//! [Table]: crate::Table
+//! [`Table`]: crate::Table
 
 use papergrid::{Entity, Grid, Settings};
 
 use crate::CellOption;
 
-/// Formatting function of particular cells on a [Table].
+/// A formatting function of particular cells on a [`Table`].
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Format<F> {
     f: F,
 }
 
 impl Format<()> {
-    /// This function creates a new [Format] instance, so
+    /// This function creates a new [`Format`] instance, so
     /// it can be used as a grid setting.
     ///
     /// # Example
@@ -57,7 +57,7 @@ impl Format<()> {
     /// This function creates a new [`FormatWithIndex`], so
     /// it can be used as a grid setting.
     ///
-    /// It's different from [`Self::new`] that it also provides a row and column index.
+    /// It's different from [`Format::new`] as it also provides a row and column index.
     ///
     /// # Example
     ///
@@ -135,9 +135,9 @@ where
     }
 }
 
-/// `FormatWithIndex` is like a [Format] an abstraction over a function you can use against a cell.
+/// [`FormatWithIndex`] is like a [`Format`] an abstraction over a function you can use against a cell.
 ///
-/// It differerent from Format that it provides a row and column index.
+/// It differerent from [`Format`] that it provides a row and column index.
 #[derive(Debug)]
 pub struct FormatWithIndex<F> {
     f: F,

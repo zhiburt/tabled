@@ -1,11 +1,11 @@
-//! Builder module provides a [Builder] type which helps building
-//! a [Table] dynamically.
+//! Builder module provides a [`Builder`] type which helps building
+//! a [`Table`] dynamically.
 //!
-//! It also contains [IndexBuilder] which can help to build a table with index.
+//! It also contains [`IndexBuilder`] which can help to build a table with index.
 //!
 //! # Examples
 //!
-//! Here's an example of [IndexBuilder] usage
+//! Here's an example of [`IndexBuilder`] usage
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
@@ -31,13 +31,13 @@
 //!     Mission { name: "Apolo", status: Status::Complete },
 //! ];
 //!
-//! let table = Table::builder(&data)
-//!     .index()
+//! let mut builder = Table::builder(&data).index();
+//! builder
 //!     .set_index(0)
 //!     .set_name(None)
-//!     .transpose()
-//!     .build()
-//!     .with(Style::modern());
+//!     .transpose();
+//!
+//! let table = builder.build().with(Style::modern());
 //!
 //! println!("{}", table);
 //!
@@ -85,9 +85,10 @@
 //!     Status::Complete { started_timestamp: 123, finihsed_timestamp: 234 },
 //! ];
 //!
-//! let table = Table::builder(&data)
-//!     .clean()
-//!     .build()
+//! let mut builder = Table::builder(&data);
+//! builder.clean();
+//!
+//! let table = builder.build()
 //!     .with(Style::modern())
 //!     .to_string();
 //!
@@ -113,17 +114,18 @@ use papergrid::{AlignmentHorizontal, Entity, Formatting, Grid, Indent, Settings}
 
 use crate::{Style, Table};
 
-/// Builder creates a [Table] from dynamic data set.
+/// Builder creates a [`Table`] from dynamic data set.
 ///
 /// It useful when the amount of columns or rows is not known statically.
 ///
 /// ```rust
 /// use tabled::builder::Builder;
 ///
-/// let table = Builder::default()
-///     .set_columns(["index", "measure", "value"])
-///     .add_record(["0", "weight", "0.443"])
-///     .build();
+/// let mut builder = Builder::default();
+/// builder.set_columns(["index", "measure", "value"]);
+/// builder.add_record(["0", "weight", "0.443"]);
+///
+/// let table = builder.build();
 ///
 /// println!("{}", table);
 /// ```
@@ -157,23 +159,24 @@ pub struct Builder {
 }
 
 impl Builder {
-    /// Creates a [Builder] instance.
+    /// Creates a [`Builder`] instance.
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Sets a [Table] header.
+    /// Sets a [`Table`] header.
     ///
     /// If not set a first row will be considered a header.
     ///
     /// ```rust
     /// use tabled::builder::Builder;
     ///
-    /// let builder = Builder::default()
+    /// let mut builder = Builder::default();
+    /// builder
     ///     .set_columns(0..3)
     ///     .add_record(["i", "surname", "lastname"]);
     /// ```
-    pub fn set_columns<H, T>(mut self, columns: H) -> Self
+    pub fn set_columns<H, T>(&mut self, columns: H) -> &mut Self
     where
         H: IntoIterator<Item = T>,
         T: Display,
@@ -185,7 +188,7 @@ impl Builder {
         self
     }
 
-    /// Sets a [Table] header.
+    /// Sets a [`Table`] header.
     ///
     /// If not set a first row will be considered a header.
     ///
@@ -208,7 +211,9 @@ impl Builder {
     /// );
     ///
     ///
-    /// let table = Table::builder(data).remove_columns().build().to_string();
+    /// let mut builder = Table::builder(data);
+    /// builder.remove_columns();
+    /// let table = builder.build().to_string();
     ///
     /// assert_eq!(
     ///     table,
@@ -220,7 +225,7 @@ impl Builder {
     /// );
     ///
     /// ```
-    pub fn remove_columns(mut self) -> Self {
+    pub fn remove_columns(&mut self) -> &mut Self {
         self.columns = None;
         let size = self.get_size();
         self.size = size;
@@ -228,18 +233,18 @@ impl Builder {
         self
     }
 
-    /// Adds a row to a [Table].
+    /// Adds a row to a [`Table`].
     ///
     /// If [`Self::set_columns`] is not set the first row will be considered a header.
     ///
     /// ```rust
     /// use tabled::builder::Builder;
     ///
-    /// let builder = Builder::default()
-    ///     .add_record(0..3)
-    ///     .add_record(["i", "surname", "lastname"]);
+    /// let mut builder = Builder::default();
+    /// builder.add_record(0..3);
+    /// builder.add_record(["i", "surname", "lastname"]);
     /// ```
-    pub fn add_record<R, T>(mut self, record: R) -> Self
+    pub fn add_record<R, T>(&mut self, record: R) -> &mut Self
     where
         R: IntoIterator<Item = T>,
         T: Display,
@@ -257,33 +262,31 @@ impl Builder {
     /// ```rust
     /// use tabled::builder::Builder;
     ///
-    /// let table = Builder::default()
-    ///     .set_default_text("undefined")
-    ///     .set_columns(0..3)
-    ///     .add_record(["i"])
-    ///     .build();
+    /// let mut builder = Builder::default();
+    /// builder.set_default_text("undefined");
+    /// builder.set_columns(0..3);
+    /// builder.add_record(["i"]);
     /// ```
-    pub fn set_default_text<T: Into<String>>(mut self, text: T) -> Self {
+    pub fn set_default_text<T: Into<String>>(&mut self, text: T) -> &mut Self {
         self.empty_cell_text = Some(text.into());
         self
     }
 
-    /// Build creates a [Table] instance.
+    /// Build creates a [`Table`] instance.
     ///
     /// ```rust
     /// use tabled::builder::Builder;
     ///
-    /// let table = Builder::default()
-    ///     .set_columns(["i", "column1", "column2"])
-    ///     .add_record(["0", "value1", "value2"])
-    ///     .build();
+    /// let mut builder = Builder::default();
+    /// builder.set_columns(["i", "column1", "column2"]);
+    /// builder.add_record(["0", "value1", "value2"]);
     /// ```
     pub fn build(mut self) -> Table {
         self.fix_rows();
         build_table(self.columns, self.records, self.size)
     }
 
-    /// Add an index to the [Table].
+    /// Add an index to the [`Table`].
     ///
     /// Default index is a range 0-N where N is amount of records.
     ///
@@ -292,9 +295,7 @@ impl Builder {
     /// ```
     /// use tabled::Table;
     ///
-    /// let table = Table::builder(&["Hello", "World", "!"])
-    ///     .index()
-    ///     .build();
+    /// let table = Table::builder(&["Hello", "World", "!"]).index().build();
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -320,7 +321,10 @@ impl Builder {
     /// ```
     /// use tabled::Table;
     ///
-    /// let table = Table::builder(&["Hello", "World", ""]).clean().build();
+    /// let mut builder = Table::builder(&["Hello", "World", ""]);
+    /// builder.clean();
+    ///
+    /// let table = builder.build();
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -333,7 +337,7 @@ impl Builder {
     ///      +-------+"
     /// )
     /// ```
-    pub fn clean(mut self) -> Self {
+    pub fn clean(&mut self) -> &mut Self {
         self.clean_columns();
         self.clean_rows();
         self
@@ -431,7 +435,7 @@ where
     fn from_iter<T: IntoIterator<Item = R>>(iter: T) -> Self {
         let mut builder = Self::default();
         for row in iter {
-            builder = builder.add_record(row);
+            builder.add_record(row);
         }
 
         builder
@@ -460,7 +464,7 @@ impl From<Vec<Vec<String>>> for Builder {
     }
 }
 
-/// Building [Table] from ordinary data.
+/// Building [`Table`] from ordinary data.
 fn build_table(
     columns: Option<Vec<String>>,
     records: Vec<Vec<String>>,
@@ -470,7 +474,7 @@ fn build_table(
     create_table_from_grid(grid)
 }
 
-/// Building [Grid] from ordinary data.
+/// Building [`Grid`] from ordinary data.
 fn build_grid(
     records: Vec<Vec<String>>,
     columns: Option<Vec<String>>,
@@ -573,7 +577,7 @@ pub struct IndexBuilder {
 }
 
 impl IndexBuilder {
-    /// Creates a new [Self] instance.
+    /// Creates a new [`IndexBuilder`] instance.
     ///
     /// It creates a default index a range from 0 to N. (N - count rows)
     /// It also sets a default columns to the range 0 .. N (N - count columns).
@@ -583,11 +587,11 @@ impl IndexBuilder {
     /// ```
     /// use tabled::builder::Builder;
     ///
-    /// let table = Builder::default()
-    ///     .set_columns(["i", "col-1", "col-2"])
-    ///     .add_record(["0", "value-1", "value-2"])
-    ///     .index()
-    ///     .build();
+    /// let mut builder = Builder::default();
+    /// builder.set_columns(["i", "col-1", "col-2"]);
+    /// builder.add_record(["0", "value-1", "value-2"]);
+    ///
+    /// let table = builder.index().build();
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -621,13 +625,15 @@ impl IndexBuilder {
     /// ```
     /// use tabled::builder::Builder;
     ///
-    /// let table = Builder::default()
-    ///     .set_columns(["i", "col-1", "col-2"])
-    ///     .add_record(["0", "value-1", "value-2"])
-    ///     .add_record(["2", "value-3", "value-4"])
-    ///     .index()
-    ///     .hide_index()
-    ///     .build();
+    /// let mut builder = Builder::default();
+    /// builder.set_columns(["i", "col-1", "col-2"]);
+    /// builder.add_record(["0", "value-1", "value-2"]);
+    /// builder.add_record(["2", "value-3", "value-4"]);
+    ///
+    /// let mut builder = builder.index();
+    /// builder.hide_index();
+    ///
+    /// let table = builder.build();
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -640,15 +646,15 @@ impl IndexBuilder {
     ///      +---+---------+---------+"
     /// )
     /// ```
-    pub fn hide_index(mut self) -> Self {
+    pub fn hide_index(&mut self) -> &mut Self {
         self.print_index = false;
         self
     }
 
     /// Set an index name.
     ///
-    /// When [None] the name won't be used.
-    pub fn set_name(mut self, name: Option<String>) -> Self {
+    /// When [`None`] the name won't be used.
+    pub fn set_name(&mut self, name: Option<String>) -> &mut Self {
         self.name = name;
         self
     }
@@ -662,12 +668,14 @@ impl IndexBuilder {
     /// ```
     /// use tabled::builder::Builder;
     ///
-    /// let table = Builder::default()
-    ///     .set_columns(["i", "column1", "column2"])
-    ///     .add_record(["0", "value1", "value2"])
-    ///     .index()
-    ///     .set_index(1)
-    ///     .build();
+    /// let mut builder = Builder::default();
+    /// builder.set_columns(["i", "column1", "column2"]);
+    /// builder.add_record(["0", "value1", "value2"]);
+    ///
+    /// let mut builder = builder.index();
+    /// builder.set_index(1);
+    ///
+    /// let table = builder.build();
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -680,7 +688,7 @@ impl IndexBuilder {
     ///      +---------+---+---------+"
     /// )
     /// ```
-    pub fn set_index(mut self, column: usize) -> Self {
+    pub fn set_index(&mut self, column: usize) -> &mut Self {
         if self.b.columns.is_none() {
             return self;
         }
@@ -712,15 +720,16 @@ impl IndexBuilder {
     /// ```
     /// use tabled::builder::Builder;
     ///
-    /// let table = Builder::default()
-    ///     .set_columns(["i", "column-1", "column-2", "column-3"])
-    ///     .add_record(["0", "value-1", "value-2", "value-3"])
-    ///     .add_record(["1", "value-4", "value-5", "value-6"])
-    ///     .add_record(["2", "value-7", "value-8", "value-9"])
-    ///     .index()
-    ///     .set_index(1)
-    ///     .transpose()
-    ///     .build();
+    /// let mut builder = Builder::default();
+    /// builder.set_columns(["i", "column-1", "column-2", "column-3"]);
+    /// builder.add_record(["0", "value-1", "value-2", "value-3"]);
+    /// builder.add_record(["1", "value-4", "value-5", "value-6"]);
+    /// builder.add_record(["2", "value-7", "value-8", "value-9"]);
+    ///
+    /// let mut builder = builder.index();
+    /// builder.set_index(1).transpose();
+    ///
+    /// let table = builder.build();
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -735,11 +744,11 @@ impl IndexBuilder {
     ///      +----------+---------+---------+---------+"
     /// )
     /// ```
-    pub fn transpose(mut self) -> Self {
+    pub fn transpose(&mut self) -> &mut Self {
         let columns = self.b.columns.take().unwrap_or_default();
 
-        self.b.columns = Some(self.index);
-        self.index = columns;
+        let index = std::mem::replace(&mut self.index, columns);
+        self.b.columns = Some(index);
 
         let new_count_columns = self.b.records.len();
         make_rows_columns(&mut self.b.records, self.b.size);

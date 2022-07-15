@@ -118,7 +118,7 @@ use crate::{CellOption, TableOption};
 /// println!("{}", table);
 /// ```
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug, Clone)]
 pub struct Style<T, B, L, R, H, V, Lines = ConstLines<0>> {
     inner: RawStyle<Lines>,
@@ -130,7 +130,7 @@ pub struct Style<T, B, L, R, H, V, Lines = ConstLines<0>> {
     _vertical: PhantomData<V>,
 }
 
-/// A marker struct which is used in [Style].
+/// A marker struct which is used in [`Style`].
 #[derive(Debug, Clone)]
 pub struct On;
 
@@ -306,7 +306,7 @@ impl Style<(), (), (), (), (), ()> {
     /// Try to fix the style when table contains spans.
     ///
     /// By default [`Style`] doesn't implies any logic to better render split lines when
-    /// [`crate::Span`] is used.
+    /// [`Span`] is used.
     ///
     /// So this function can be used to set the split lines in regard of spans used.
     ///
@@ -355,6 +355,8 @@ impl Style<(), (), (), (), (), ()> {
     ///     )
     /// );
     /// ```
+    ///
+    /// [`Span`]: crate::Span
     pub const fn correct_spans() -> StyleCorrectSpan {
         StyleCorrectSpan
     }
@@ -612,9 +614,6 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
 
     /// Sets a horizontal split line.
     ///
-    /// It doesn't include a header split line.
-    /// It must be set via its own method [`Self::header`].
-    ///
     /// Any corners and intersections which were set will be overridden.
     pub fn horizontal(mut self, c: char) -> Style<T, B, L, R, On, V, Lines> {
         self.inner.set_horizontal(Some(c));
@@ -704,7 +703,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
         Style::new(a)
     }
 
-    /// Get a [Style]'s default horizontal line.
+    /// Get a [`Style`]'s default horizontal line.
     ///
     /// It doesn't return an overloaded line via [`Style::lines`].
     ///
@@ -935,7 +934,7 @@ impl<T, B, L, R, H, V, Lines> From<Style<T, B, L, R, H, V, Lines>> for RawStyle<
     }
 }
 
-/// A raw style data, which can be produced safely from [Style].
+/// A raw style data, which can be produced safely from [`Style`].
 ///
 /// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
 #[derive(Debug, Clone)]
@@ -1176,7 +1175,7 @@ impl From<Borders<char>> for RawStyle {
 }
 
 impl<Lines> RawStyle<Lines> {
-    /// Returns a [RawStyle] version which can set colors.
+    /// Returns a [`RawStyle`] version which can set colors.
     #[cfg(feature = "color")]
     #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
     pub fn colored(self) -> RawStyleColored<Lines> {
@@ -1418,9 +1417,12 @@ impl CellOption for Border {
 
 pub use papergrid::Line;
 
-/// A correctnes function of style for [`crate::Table`] which has [`crate::Span`]s.
+/// A correctnes function of style for [`Table`] which has [`Span`]s.
 ///
 /// See [`Style::correct_spans`].
+///
+/// [`Table`]: crate::Table
+/// [`Span`]: crate::Span
 #[derive(Debug)]
 pub struct StyleCorrectSpan;
 
@@ -1562,7 +1564,7 @@ impl TableOption for BorderColor {
     }
 }
 
-/// A colored [StyleConfig] versions.
+/// A colored [`StyleConfig`] versions.
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone)]
@@ -1855,7 +1857,7 @@ where
     }
 }
 
-/// An interator which limits [Line] influence on iterations over lines for in [Style].
+/// An interator which limits [`Line`] influence on iterations over lines for in [`Style`].
 #[derive(Debug, Clone)]
 pub struct BorderLinesIter<I> {
     iter: I,

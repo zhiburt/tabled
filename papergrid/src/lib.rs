@@ -405,7 +405,7 @@ impl Grid {
         self.size.1
     }
 
-    /// Set text value to all cells in [Entity].
+    /// Set text value to all cells in [`Entity`].
     pub fn set_text(&mut self, entity: Entity, text: &str) {
         self._set_text(entity, text);
     }
@@ -710,7 +710,7 @@ pub enum Entity {
 }
 
 impl Entity {
-    /// Iterate over cells which are covered via the [Entity].
+    /// Iterate over cells which are covered via the [`Entity`].
     pub fn iter(&self, count_rows: usize, count_cols: usize) -> EntityIterator {
         EntityIterator {
             entity: *self,
@@ -2629,7 +2629,7 @@ impl Symbol {
         Self { c, ansi_sequences }
     }
 
-    /// Creates a new [Symbol] from the String.
+    /// Creates a new [`Symbol`] from the String.
     /// The string must contain 1 UTF-8 character and any list of Ansi sequences.
     ///
     /// If it contains more then 1 character `None` will be returned.
@@ -2657,17 +2657,17 @@ impl Symbol {
         Some(Self::new(c, Some(BorderColor(start, end))))
     }
 
-    /// A function which create a [Symbol] from [char].
+    /// A function which create a [`Symbol`] from [`char`].
     pub const fn from_char(c: char) -> Self {
         Self::new(c, None)
     }
 
-    /// A function which returns a used [char].
+    /// A function which returns a used [`char`].
     pub const fn c(&self) -> char {
         self.c
     }
 
-    /// A function which returns a used [char].
+    /// A function which returns a used [`char`].
     pub fn color(self) -> Option<BorderColor> {
         self.ansi_sequences
     }

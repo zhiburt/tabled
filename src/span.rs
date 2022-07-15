@@ -1,4 +1,4 @@
-//! This module contains a [Span] settings, it helps to
+//! This module contains a [`Span`] settings, it helps to
 //! make a cell take more space then it generally takes.
 //!
 //! # Example
@@ -31,7 +31,7 @@ use papergrid::{Entity, Grid};
 
 use crate::CellOption;
 
-/// Span represent a horizontal/column span setting for any cell on a [Table].
+/// Span represent a horizontal/column span setting for any cell on a [`Table`].
 ///
 /// ```rust,no_run
 /// # use tabled::{Style, Span, Modify, object::Columns, Table};
@@ -40,14 +40,14 @@ use crate::CellOption;
 ///     .with(Modify::new(Columns::single(0)).with(Span::column(2)));
 /// ```
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Span {
     size: usize,
 }
 
 impl Span {
-    /// New constructs a horizontal/column [Span].
+    /// New constructs a horizontal/column [`Span`].
     pub fn column(size: usize) -> Self {
         Self { size }
     }

@@ -1,10 +1,10 @@
-//! This module contains an [Extract] structure which is used to
-//! obtain an ordinary segment from the [Table].
+//! This module contains an [`Extract`] structure which is used to
+//! obtain an ordinary segment from the [`Table`].
 //!
-//! There's a similar structure [Highlight] which does a highlighting a of segments.
+//! There's a similar structure [`Highlight`] which does a highlighting a of segments.
 //!
-//! [Table]: crate::Table
-//! [Highlight]: crate::Highlight
+//! [`Table`]: crate::Table
+//! [`Highlight`]: crate::Highlight
 
 use std::ops::{RangeBounds, RangeFull};
 
@@ -12,9 +12,7 @@ use papergrid::{Entity, Grid};
 
 use crate::{object::bounds_to_usize, TableOption};
 
-/// Returns a new [Table] that reflects a segment of the referenced [Table]
-///
-/// The segment is defined by [`RangeBounds`<usize>] for Rows and Columns.
+/// Returns a new [`Table`] that reflects a segment of the referenced [`Table`]
 ///
 /// # Example
 ///
@@ -40,7 +38,7 @@ use crate::{object::bounds_to_usize, TableOption};
 ///                    +------------+----------+");
 /// ```
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Extract<R, C> {
     rows: R,
@@ -52,9 +50,7 @@ where
     R: RangeBounds<usize>,
     C: RangeBounds<usize>,
 {
-    /// Returns a new [Table] that reflects a segment of the referenced [Table]
-    ///
-    /// The segment is defined by [`RangeBounds`<usize>] for Rows and Columns
+    /// Returns a new [`Table`] that reflects a segment of the referenced [`Table`]
     ///
     /// ```rust,no_run
     /// # use tabled::Extract;
@@ -65,7 +61,7 @@ where
     ///
     /// # Range
     ///
-    /// A [`RangeBounds`] argument can be less than or equal to the shape of a [Table]
+    /// A [`RangeBounds`] argument can be less than or equal to the shape of a [`Table`]
     ///
     /// If a [`RangeBounds`] argument is malformed or too large the thread will panic
     ///
@@ -77,7 +73,7 @@ where
     ///      .   .   .                    O   O   O]                .   .   .          
     /// ```
     ///
-    /// [Table]: crate::Table
+    /// [`Table`]: crate::Table
     pub fn segment(rows: R, columns: C) -> Self {
         Extract { rows, columns }
     }
@@ -87,7 +83,7 @@ impl<R> Extract<R, RangeFull>
 where
     R: RangeBounds<usize>,
 {
-    /// Returns a new [Table] that reflects a segment of the referenced [Table]
+    /// Returns a new [`Table`] that reflects a segment of the referenced [`Table`]
     ///
     /// The segment is defined by [`RangeBounds`<usize>] for Rows
     ///
@@ -98,7 +94,7 @@ where
     ///
     /// # Range
     ///
-    /// A [`RangeBounds`] argument can be less than or equal to the shape of a [Table]
+    /// A [`RangeBounds`] argument can be less than or equal to the shape of a [`Table`]
     ///
     /// If a [`RangeBounds`] argument is malformed or too large the thread will panic
     ///
@@ -111,7 +107,7 @@ where
     ///                                             X   X   X] // ERROR          
     /// ```
     ///
-    /// [Table]: crate::Table
+    /// [`Table`]: crate::Table
     pub fn rows(rows: R) -> Self {
         Extract { rows, columns: .. }
     }
@@ -121,7 +117,7 @@ impl<C> Extract<RangeFull, C>
 where
     C: RangeBounds<usize>,
 {
-    /// Returns a new [Table] that reflects a segment of the referenced [Table]
+    /// Returns a new [`Table`] that reflects a segment of the referenced [`Table`]
     ///
     /// The segment is defined by [`RangeBounds`<usize>] for Columns
     ///
@@ -132,7 +128,7 @@ where
     ///
     /// # Range
     ///
-    /// A [`RangeBounds`] argument can be less than or equal to the shape of a [Table]
+    /// A [`RangeBounds`] argument can be less than or equal to the shape of a [`Table`]
     ///
     /// If a [`RangeBounds`] argument is malformed or too large the thread will panic
     ///
@@ -144,7 +140,7 @@ where
     ///      .   .   .              O   O   O]            O   O   O   X] // ERROR
     /// ```
     ///
-    /// [Table]: crate::Table
+    /// [`Table`]: crate::Table
     pub fn columns(columns: C) -> Self {
         Extract { rows: .., columns }
     }
@@ -171,9 +167,7 @@ where
     }
 }
 
-/// Returns a new [Grid] that reflects a segment of the referenced [Grid]
-///
-/// The segment is defined by [`RangeBounds`<usize>] for Rows and Columns
+/// Returns a new [`Grid`] that reflects a segment of the referenced [`Grid`].
 ///
 /// # Example
 ///

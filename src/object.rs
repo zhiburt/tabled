@@ -1,7 +1,7 @@
-//! This module contains a list of primitives that implement a [Object] trait.
-//! They help to locate a necessary segment on a [Table].
+//! This module contains a list of primitives that implement a [`Object`] trait.
+//! They help to locate a necessary segment on a [`Table`].
 //!
-//! [Table]: crate::Table
+//! [`Table`]: crate::Table
 
 use std::{
     collections::HashSet,
@@ -10,11 +10,11 @@ use std::{
 
 pub use papergrid::{Entity, EntityIterator};
 
-/// Object helps to locate a necessary part of a [Table].
+/// Object helps to locate a necessary part of a [`Table`].
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 pub trait Object: Sized {
-    /// An [Iterator] which returns a list of cells.
+    /// An [`Iterator`] which returns a list of cells.
     type Iter: Iterator<Item = Entity>;
 
     /// Cells returns a set of coordinates of cells
@@ -37,7 +37,7 @@ pub trait Object: Sized {
         DiffCombination { lhs: self, rhs }
     }
 
-    /// Returns cells which are present in both [Object]s only.
+    /// Returns cells which are present in both [`Object`]s only.
     fn intersect<O>(self, rhs: O) -> IntersectionCombination<Self, O>
     where
         O: Object,
@@ -45,13 +45,13 @@ pub trait Object: Sized {
         IntersectionCombination { lhs: self, rhs }
     }
 
-    /// Returns cells which are not present in target [Object].
+    /// Returns cells which are not present in target [`Object`].
     fn inverse(self) -> InversionCombination<Self> {
         InversionCombination { obj: self }
     }
 }
 
-/// Combination struct used for chaining [Object]'s.
+/// Combination struct used for chaining [`Object`]'s.
 ///
 /// Combines 2 sets of cells into one.
 ///
@@ -77,7 +77,7 @@ where
     }
 }
 
-/// Difference struct used for chaining [Object]'s.
+/// Difference struct used for chaining [`Object`]'s.
 ///
 /// Returns cells from 1st set with removed ones from the 2nd set.
 #[derive(Debug)]
@@ -101,7 +101,7 @@ where
     }
 }
 
-/// Intersection struct used for chaining [Object]'s.
+/// Intersection struct used for chaining [`Object`]'s.
 ///
 /// Returns cells which are present in 2 sets.
 /// But not in one of them
@@ -126,7 +126,7 @@ where
     }
 }
 
-/// Inversion struct used for chaining [Object]'s.
+/// Inversion struct used for chaining [`Object`]'s.
 ///
 /// Returns cells which are present in 2 sets.
 /// But not in one of them
@@ -148,9 +148,9 @@ where
     }
 }
 
-/// Segment represents a sub table of [Table].
+/// This structure represents a sub table of [`Table`].
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Segment<C, R> {
     columns: C,
@@ -169,7 +169,7 @@ where
     C: RangeBounds<usize>,
     R: RangeBounds<usize>,
 {
-    /// This function builds a [Segment].
+    /// This function builds a [`Segment`].
     pub fn new(rows: R, columns: C) -> Self {
         Self { columns, rows }
     }
@@ -196,7 +196,7 @@ where
     }
 }
 
-/// Segment which cantains all cells on the table.
+/// This is a segment which cantains all cells on the table.
 ///
 /// Can be crated from [`Segment::all`].
 #[derive(Debug)]
@@ -211,7 +211,7 @@ impl Object for SegmentAll {
 }
 
 /// Frame includes cells which are on the edges of each side.
-/// Therefore it's [Object] implementation returns a subset of cells which are present in frame.
+/// Therefore it's [`Object`] implementation returns a subset of cells which are present in frame.
 #[derive(Debug)]
 pub struct Frame;
 
@@ -223,10 +223,10 @@ impl Object for Frame {
     }
 }
 
-/// `FirstRow` represents the first row of a [Table].
+/// This structure represents the first row of a [`Table`].
 /// It's often contains headers data.
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct FirstRow;
 
@@ -250,7 +250,7 @@ impl Add<usize> for FirstRow {
     }
 }
 
-/// `LastRow` represents the last row of a [`Table`].
+/// This structure represents the last row of a [`Table`].
 ///
 /// [`Table`]: crate::Table
 #[derive(Debug)]
@@ -400,7 +400,7 @@ where
 }
 
 impl Columns<()> {
-    /// Returns a new instance of [Columns] for a single column.
+    /// Returns a new instance of [`Columns`] for a single column.
     ///
     /// If the boundaries are exceeded it may panic.
     pub fn single(index: usize) -> Column {
@@ -542,7 +542,9 @@ impl Object for Cell {
     }
 }
 
-/// An [`Iterator`] which goes goes over all cell in a sector in a [`crate::Table`].
+/// An [`Iterator`] which goes goes over all cell in a sector in a [`Table`].
+///
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct SectorIter {
     iter: SectorCellsIter,
@@ -612,7 +614,9 @@ impl Iterator for SectorCellsIter {
     }
 }
 
-/// An [`Iterator`] which goes goes over all cell on a frame of a [`crate::Table`].
+/// An [`Iterator`] which goes goes over all cell on a frame of a [`Table`].
+///
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct FrameIter {
     rows: usize,
@@ -658,7 +662,9 @@ impl Iterator for FrameIter {
     }
 }
 
-/// An [`Iterator`] which goes goes over all rows of a [`crate::Table`].
+/// An [`Iterator`] which goes goes over all rows of a [`Table`].
+///
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct RowsIter {
     start: usize,
@@ -686,7 +692,9 @@ impl Iterator for RowsIter {
     }
 }
 
-/// An [`Iterator`] which goes goes over columns of a [`crate::Table`].
+/// An [`Iterator`] which goes goes over columns of a [`Table`].
+///
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct ColumnsIter {
     start: usize,
@@ -714,7 +722,7 @@ impl Iterator for ColumnsIter {
     }
 }
 
-/// An [Iterator] which returns an entity once.
+/// An [`Iterator`] which returns an entity once.
 #[derive(Debug)]
 pub struct EntityOnce {
     entity: Option<Entity>,

@@ -55,10 +55,12 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
 
     let (table_fields, table_methods) = make_equal_width(table_fields, table_methods);
 
-    Builder::default()
+    let mut builder = Builder::default();
+    builder
         .add_record([table_fields.to_string()])
         .add_record([table_methods.to_string()])
-        .set_columns([name])
+        .set_columns([name]);
+    builder
         .build()
         .with(
             Style::ascii()

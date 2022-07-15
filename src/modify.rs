@@ -6,7 +6,7 @@ use crate::{object::Object, CellOption, TableOption};
 /// a set of [`CellOption`]s to the same object.
 ///
 /// Be aware that the settings are applied all to a cell at a time.
-/// So sometimes you may need to make a several calls of [Modify] in order to achieve the desired affect.
+/// So sometimes you may need to make a several calls of [`Modify`] in order to achieve the desired affect.
 #[derive(Debug)]
 pub struct Modify<O> {
     obj: O,
@@ -16,7 +16,7 @@ impl<O> Modify<O>
 where
     O: Object,
 {
-    /// Creates a new [Modify] without any options.
+    /// Creates a new [`Modify`] without any options.
     pub fn new(obj: O) -> Self {
         Self { obj }
     }
@@ -24,11 +24,11 @@ where
     /// It's a generic function which stores a [`CellOption`].
     ///
     /// IMPORTANT:
-    ///     The function *doesn't* changes a [Table].
-    ///     [Table] will be changed only after passing [Modify] object to [`Table::with`].
+    ///     The function *doesn't* changes a [`Table`].
+    ///     [`Table`] will be changed only after passing [`Modify`] object to [`Table::with`].
     ///
-    /// [Table]: crate::Table
-    /// [Table::with]: crate::Table::with
+    /// [`Table`]: crate::Table
+    /// [`Table::with`]: crate::Table::with
     pub fn with<F>(self, s: F) -> ModifyList<O, F>
     where
         F: CellOption,
@@ -40,7 +40,7 @@ where
     }
 }
 
-/// `ModifyList` is a container of [`CellOption`]s which are applied to a set [Object].
+/// This is a container of [`CellOption`]s which are applied to a set [`Object`].
 #[derive(Debug)]
 pub struct ModifyList<O, S> {
     obj: O,
@@ -55,11 +55,11 @@ where
     /// With a generic function which stores a [`CellOption`].
     ///
     /// IMPORTANT:
-    ///     The function *doesn't* changes a [Table].
-    ///     [Table] will be changed only after passing [Modify] object to [`Table::with`].
+    ///     The function *doesn't* changes a [`Table`].
+    ///     [`Table`] will be changed only after passing [`Modify`] object to [`Table::with`].
     ///
-    /// [Table]: crate::Table
-    /// [Table::with]: crate::Table::with
+    /// [`Table`]: crate::Table
+    /// [`Table::with`]: crate::Table::with
     pub fn with<F>(self, s: F) -> ModifyList<O, CellSettingsList<S, F>>
     where
         F: CellOption,
@@ -87,7 +87,7 @@ where
     }
 }
 
-/// `CellSettingsList` is a container of [`CellOption`]s.
+/// This is a container of [`CellOption`]s.
 #[derive(Debug)]
 pub struct CellSettingsList<S1, S2> {
     s1: S1,
@@ -105,7 +105,7 @@ where
     }
 }
 
-/// An utility trait for a different interface of [Modify] creation.
+/// An utility trait for a different interface of [`Modify`] creation.
 ///
 /// # Example
 ///
@@ -117,7 +117,7 @@ where
 /// let m = Cell(1, 1).modify();
 /// ```
 pub trait ModifyObject: Object {
-    /// Returns a Modify container of [Object]
+    /// Returns a Modify container of [`Object`]
     fn modify(self) -> Modify<Self> {
         Modify::new(self)
     }

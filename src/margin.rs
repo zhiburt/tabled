@@ -1,4 +1,4 @@
-//! This module contains a Margin settings of a [Table].
+//! This module contains a Margin settings of a [`Table`].
 //!
 //! # Example
 //!
@@ -25,7 +25,7 @@
 //! );
 //! ```
 //!
-//! [Table]: crate::Table
+//! [`Table`]: crate::Table
 
 use papergrid::{Grid, Indent};
 

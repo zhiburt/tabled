@@ -158,7 +158,7 @@ fn run(movies: &[Movie], debug: bool) {
 
     #[rustfmt::skip]
     let add_summary_actions: Vec<Action> = vec![
-        full_action(|_, m, _| Table::builder(m).add_record(["", "", "", "", ""]).build().with(Style::modern())),
+        full_action(|_, m, _| Table::builder(m).add_record(["", "", "", "", ""]).clone().build().with(Style::modern())),
         action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..2)).not(Columns::new(3..))).with(|_: &str| String::from("$1,716,500,000")))),
         action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..3)).not(Columns::new(4..))).with(|_: &str| String::from("$1,190,650,976")))),
         action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..4)).not(Columns::new(5..))).with(|_: &str| String::from("$10,263,484,824")))),

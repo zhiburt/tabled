@@ -1,4 +1,4 @@
-//! This module contains a [Rotate] primitive which can be used in order to rotate [Table].
+//! This module contains a [`Rotate`] primitive which can be used in order to rotate [`Table`].
 //!
 //! It's also possible to transpose the table at the point of construction.
 //! See [`Builder::index`].
@@ -26,8 +26,8 @@
 //! );
 //! ```
 //!
-//! [Table]: crate::Table
-//! [Builder::index]: crate::builder::Builder::index
+//! [`Table`]: crate::Table
+//! [`Builder::index`]: crate::builder::Builder::index
 
 use papergrid::{Entity, Grid};
 
@@ -36,17 +36,25 @@ use crate::TableOption;
 /// Rotate can be used to rotate a table by 90 degrees.
 #[derive(Debug)]
 pub enum Rotate {
-    /// Rotatate [crate::Table] to the left.
+    /// Rotate [`Table`] to the left.
+    ///
+    /// [`Table`]: crate::Table
     Left,
-    /// Rotatate [crate::Table] to the right.
+    /// Rotate [`Table`] to the right.
+    ///
+    /// [`Table`]: crate::Table
     Right,
-    /// Rotatate [crate::Table] to the top.
+    /// Rotate [`Table`] to the top.
     ///
     /// So the top becames the bottom.
+    ///
+    /// [`Table`]: crate::Table
     Top,
-    /// Rotatate [crate::Table] to the bottom.
+    /// Rotate [`Table`] to the bottom.
     ///
     /// So the top becames the bottom.
+    ///
+    /// [`Table`]: crate::Table
     Bottom,
 }
 

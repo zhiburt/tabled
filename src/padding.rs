@@ -1,4 +1,4 @@
-//! This module contains a [Padding] setting of a cell on a [Table].
+//! This module contains a [`Padding`] setting of a cell on a [`Table`].
 //!
 //! # Example
 //!
@@ -34,7 +34,7 @@
 //! );
 //! ```
 //!
-//! [Table]: crate::Table
+//! [`Table`]: crate::Table
 
 use papergrid::{Entity, Grid, Indent};
 

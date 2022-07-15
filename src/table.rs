@@ -1,8 +1,4 @@
-//! This module contains a main table representation of this crate [Table].
-//!
-//! There's 1 more table representation which is [`ExpandedDisplay`].
-//!
-//! [ExpandedDisplay]: crate::display::ExpandedDisplay
+//! This module contains a main table representation of this crate [`Table`].
 
 use std::{fmt, iter::FromIterator};
 
@@ -10,9 +6,9 @@ use papergrid::Grid;
 
 use crate::{builder::Builder, object::Entity, Tabled};
 
-/// A trait which is responsilbe for configuration of a [Table].
+/// A trait which is responsilbe for configuration of a [`Table`].
 pub trait TableOption {
-    /// The function modifies a [Grid] object.
+    /// The function modifies a [`Grid`] object.
     fn change(&mut self, grid: &mut Grid);
 }
 
@@ -28,21 +24,21 @@ where
 /// A trait for configuring a single cell.
 /// Where cell represented by 'row' and 'column' indexes.
 ///
-/// A cell can be targeted by [Cell].
+/// A cell can be targeted by [`Cell`].
 ///
-/// [Cell]: crate::object::Cell
+/// [`Cell`]: crate::object::Cell
 pub trait CellOption {
     /// Modification function of a single cell.
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity);
 }
 
-/// Table structure provides an interface for building a table for types that implements [Tabled].
+/// The structure provides an interface for building a table for types that implements [`Tabled`].
 ///
 /// To build a string representation of a table you must use a [`std::fmt::Display`].
 /// Or simply call `.to_string()` method.
 ///
-/// The default table [Style] is [`Style::ascii`],
-/// with a 1 left and right [Padding].
+/// The default table [`Style`] is [`Style::ascii`],
+/// with a 1 left and right [`Padding`].
 ///
 /// ## Example
 ///
@@ -67,9 +63,9 @@ pub trait CellOption {
 /// println!("{}", table);
 /// ```
 ///
-/// [Padding]: crate::Padding
-/// [Style]: crate::Style
-/// [Style::ascii]: crate::Style::ascii
+/// [`Padding`]: crate::Padding
+/// [`Style`]: crate::Style
+/// [`Style::ascii`]: crate::Style::ascii
 #[derive(Debug, Clone)]
 pub struct Table {
     pub(crate) grid: Grid,
@@ -112,12 +108,11 @@ impl Table {
     ///     User { name: "John", device: Device::PC },
     /// ];
     ///
-    /// let table = Table::builder(data)
-    ///     .index()
-    ///     .set_index(0)
-    ///     .transpose()
-    ///     .build()
-    ///     .to_string();
+    /// let mut builder = Table::builder(data).index();
+    /// builder.set_index(0);
+    /// builder.transpose();
+    ///
+    /// let table = builder.build().to_string();
     ///
     /// assert_eq!(
     ///     table,
@@ -136,7 +131,9 @@ impl Table {
         I: IntoIterator<Item = T>,
     {
         let rows = iter.into_iter().map(|t| t.fields());
-        rows.collect::<Builder>().set_columns(T::headers())
+        let mut b = rows.collect::<Builder>();
+        b.set_columns(T::headers());
+        b
     }
 
     /// Returns a table shape (count rows, count columns).
@@ -144,7 +141,7 @@ impl Table {
         (self.grid.count_rows(), self.grid.count_columns())
     }
 
-    /// With is a generic function which applies options to the [Table].
+    /// With is a generic function which applies options to the [`Table`].
     ///
     /// It applies settings immediately.
     pub fn with<O>(mut self, mut option: O) -> Self
@@ -174,7 +171,7 @@ where
     }
 }
 
-/// A trait for [`IntoIterator`] whose Item type is bound to [Tabled].
+/// A trait for [`IntoIterator`] whose Item type is bound to [`Tabled`].
 /// Any type implements [`IntoIterator`] can call this function directly
 ///
 /// ```rust
@@ -187,7 +184,7 @@ where
 /// println!("{}", table);
 /// ```
 pub trait TableIteratorExt {
-    /// Returns a [Table] instance from a given type
+    /// Returns a [`Table`] instance from a given type
     fn table(self) -> Table;
 }
 

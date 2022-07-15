@@ -1,4 +1,4 @@
-//! This module contains an [Alignment] setting for cells on the [Table].
+//! This module contains an [`Alignment`] setting for cells on the [`Table`].
 //!
 //! An alignment strategy can be set by [`AlignmentStrategy`].
 //!
@@ -45,8 +45,8 @@
 //! )
 //! ```
 //!
-//! [Table]: crate::Table
-//! [AlignmentStrategy]: crate::formatting_settings::AlignmentStrategy
+//! [`Table`]: crate::Table
+//! [`AlignmentStrategy`]: crate::formatting_settings::AlignmentStrategy
 
 use papergrid::{Entity, Grid};
 
@@ -54,7 +54,7 @@ use crate::CellOption;
 
 pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 
-/// Alignment represent a horizontal and vertical alignment setting for any cell on a [Table].
+/// Alignment represent a horizontal and vertical alignment setting for any cell on a [`Table`].
 ///
 /// ```rust,no_run
 /// # use tabled::{Alignment, Modify, object::Rows, Table};
@@ -62,7 +62,7 @@ pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 /// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Alignment::center()));
 /// ```
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug, Clone)]
 pub enum Alignment {
     /// A horizontal alignment.
@@ -84,8 +84,8 @@ impl Alignment {
     /// When you use [`MinWidth`] the alignment might not work as you expected.
     /// You could try to apply [`TrimStrategy`] which may help.
     ///
-    /// [MinWidth]: crate::width::MinWidth
-    /// [TrimStrategy]: crate::formatting_settings::TrimStrategy
+    /// [`MinWidth`]: crate::width::MinWidth
+    /// [`TrimStrategy`]: crate::formatting_settings::TrimStrategy
     pub fn right() -> Self {
         Self::horizontal(AlignmentHorizontal::Right)
     }
@@ -97,8 +97,8 @@ impl Alignment {
     /// When you use [`MinWidth`] the alignment might not work as you expected.
     /// You could try to apply [`TrimStrategy`] which may help.
     ///
-    /// [MinWidth]: crate::width::MinWidth
-    /// [TrimStrategy]: crate::formatting_settings::TrimStrategy
+    /// [`MinWidth`]: crate::width::MinWidth
+    /// [`TrimStrategy`]: crate::formatting_settings::TrimStrategy
     pub fn center() -> Self {
         Self::horizontal(AlignmentHorizontal::Center)
     }

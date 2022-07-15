@@ -1,6 +1,6 @@
-//! A module which contains a different Views for a [Table].
+//! A module which contains a different Views for a [`Table`].
 //!
-//! [Table]: crate::Table
+//! [`Table`]: crate::Table
 
 mod expanded_display;
 

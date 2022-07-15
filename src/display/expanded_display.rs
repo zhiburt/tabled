@@ -1,4 +1,4 @@
-//! This module contains an [ExpandedDisplay] structure which is useful in cases where
+//! This module contains an [`ExpandedDisplay`] structure which is useful in cases where
 //! a structure has a lot of fields.
 //!
 #![cfg_attr(feature = "derive", doc = "```")]

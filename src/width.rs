@@ -95,7 +95,7 @@ use crate::{object::Entity, CellOption, TableOption};
 pub struct Width;
 
 impl Width {
-    /// Returns a [Wrap] structure.
+    /// Returns a [`Wrap`] structure.
     pub fn wrap<W>(width: W) -> Wrap<W>
     where
         W: WidthValue,
@@ -169,7 +169,7 @@ impl<W> Truncate<'static, W>
 where
     W: WidthValue,
 {
-    /// Creates a [Truncate] object
+    /// Creates a [`Truncate`] object
     pub fn new(width: W) -> Truncate<'static, W> {
         Self {
             width,
@@ -313,7 +313,7 @@ impl<W> Wrap<W>
 where
     W: WidthValue,
 {
-    /// Creates a [Wrap] object
+    /// Creates a [`Wrap`] object
     pub fn new(width: W) -> Self {
         Self {
             width,
@@ -339,7 +339,7 @@ impl<W, P> Wrap<W, P> {
 
     /// Set the keep words option.
     ///
-    /// If a wrapping point will be in a word, [Wrap] will
+    /// If a wrapping point will be in a word, [`Wrap`] will
     /// preserve a word (if possible) and wrap the string before it.
     pub fn keep_words(mut self) -> Self {
         self.keep_words = true;
@@ -380,7 +380,7 @@ where
 /// It can be applied to a whole table.
 ///
 /// It does anything in case if the content's length is bigger then the boundary.
-/// It doesn't include a [Padding] settings.
+/// It doesn't include a [`Padding`] settings.
 ///
 /// ## Examples
 ///
@@ -403,7 +403,7 @@ where
 /// let table = Table::new(&["Hello World!"]).with(MinWidth::new(5));
 /// ```
 ///
-/// [Padding]: crate::Padding
+/// [`Padding`]: crate::Padding
 #[derive(Debug)]
 pub struct MinWidth<W = usize, P = PriorityNone> {
     size: W,
@@ -564,7 +564,7 @@ where
 /// Justify sets all columns widths to the set value.
 ///
 /// Be aware that it doesn't consider padding.
-/// So if you want to set a exact width you might need to use [Padding] to set it to 0.
+/// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
 ///
 /// ## Examples
 ///
@@ -579,7 +579,7 @@ where
 ///     .with(Justify::new(3));
 /// ```
 ///
-/// [Max] usage to justify by a max column width.
+/// [`Max`] usage to justify by a max column width.
 ///
 /// ```
 /// use tabled::{width::Justify, Style, Table};
@@ -591,7 +591,7 @@ where
 ///     .with(Justify::max());
 /// ```
 ///
-/// [Padding]: crate::Padding
+/// [`Padding`]: crate::Padding
 #[derive(Debug)]
 pub struct Justify<W> {
     width: W,
@@ -601,11 +601,11 @@ impl<W> Justify<W>
 where
     W: WidthValue,
 {
-    /// Creates a new Justify instance.
+    /// Creates a new [`Justify`] instance.
     ///
-    /// Be aware that [Padding] is not considered when comparing the width.
+    /// Be aware that [`Padding`] is not considered when comparing the width.
     ///
-    /// [Padding]: crate::Padding
+    /// [`Padding`]: crate::Padding
     pub fn new(width: W) -> Self {
         Self { width }
     }
@@ -641,9 +641,9 @@ where
     }
 }
 
-/// A width value which can be obtained on behalf of [Table].
+/// A width value which can be obtained on behalf of [`Table`].
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 pub trait WidthValue {
     /// Returns a width value.
     fn width(&self, grid: &Grid) -> usize;
