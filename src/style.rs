@@ -56,7 +56,7 @@
 //!
 //! It's possible to set a collored border when `color` feature is on.
 //! See [Symbol].
-//!
+//! 
 //! ### Example
 //!
 //! ```
@@ -79,6 +79,13 @@
 //!     )
 //! )
 //! ```
+//! 
+//! ## [RawStyle]
+//! 
+//! A different representatio of [Style].
+//! With no checks in place.
+//! 
+//! It also contains a list of types to support colors.
 //!
 //! [Table]: crate::Table
 //! [Symbol]: crate::style::Symbol
@@ -91,7 +98,10 @@ use crate::{CellOption, TableOption};
 
 /// Style is represents a theme of a [Table].
 ///
-/// It can be Modified extensively, look at [CustomStyle] methods.
+/// It tries to limit an controlling a valid state of it.
+/// It doesn't allow to call method [Style::top_left_corner] unless [Style::left] and [Style::top] is set.
+///
+/// You can turn [Style] into [RawStyle] to have more controll using [Into] implementation.
 ///
 /// # Example
 ///
@@ -109,10 +119,22 @@ use crate::{CellOption, TableOption};
 /// ```
 ///
 /// [Table]: crate::Table
-#[derive(Debug)]
-pub struct Style;
+#[derive(Debug, Clone)]
+pub struct Style<T, B, L, R, H, V, Lines = ConstLines<0>> {
+    inner: RawStyle<Lines>,
+    _top: PhantomData<T>,
+    _bottom: PhantomData<B>,
+    _left: PhantomData<L>,
+    _right: PhantomData<R>,
+    _horizontal: PhantomData<H>,
+    _vertical: PhantomData<V>,
+}
 
-impl Style {
+/// A marker struct which is used in [Style].
+#[derive(Debug, Clone)]
+pub struct On;
+
+impl Style<(), (), (), (), (), ()> {
     /// Empty style is a style with no styling options on,
     ///
     /// ```text
@@ -135,8 +157,8 @@ impl Style {
     ///     .bottom_intersection('^')
     ///     .top_intersection('*');
     /// ```
-    pub const fn empty() -> CustomStyle<(), (), (), (), (), ()> {
-        CustomStyle::new(EMPTY)
+    pub const fn empty() -> Style<(), (), (), (), (), ()> {
+        Style::new(EMPTY)
     }
 
     /// Blank style looks like the following table
@@ -147,8 +169,8 @@ impl Style {
     ///      2      OpenSUSE     https://www.opensuse.org/
     ///      3    Endeavouros    https://endeavouros.com/
     /// ```
-    pub const fn blank() -> CustomStyle<(), (), (), (), (), On> {
-        CustomStyle::new(BLANK)
+    pub const fn blank() -> Style<(), (), (), (), (), On> {
+        Style::new(BLANK)
     }
 
     /// Default style looks like the following table
@@ -164,8 +186,8 @@ impl Style {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     +----+--------------+---------------------------+
     /// ```
-    pub const fn ascii() -> CustomStyle<On, On, On, On, On, On> {
-        CustomStyle::new(ASCII)
+    pub const fn ascii() -> Style<On, On, On, On, On, On> {
+        Style::new(ASCII)
     }
 
     /// Dots style looks like the following table
@@ -181,8 +203,8 @@ impl Style {
     ///     : 3  : Endeavouros  : https://endeavouros.com/  :
     ///     :....:..............:...........................:
     /// ```
-    pub const fn dots() -> CustomStyle<On, On, On, On, On, On> {
-        CustomStyle::new(DOTS)
+    pub const fn dots() -> Style<On, On, On, On, On, On> {
+        Style::new(DOTS)
     }
 
     /// Psql style looks like the following table
@@ -194,8 +216,8 @@ impl Style {
     ///      2  |   OpenSUSE   | https://www.opensuse.org/
     ///      3  | Endeavouros  | https://endeavouros.com/
     /// ```
-    pub const fn psql() -> CustomStyle<(), (), (), (), (), On, ConstLines<1>> {
-        CustomStyle::new(PSQL)
+    pub const fn psql() -> Style<(), (), (), (), (), On, ConstLines<1>> {
+        Style::new(PSQL)
     }
 
     /// Github_markdown style looks like the following table
@@ -207,8 +229,8 @@ impl Style {
     ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     /// ```
-    pub const fn github_markdown() -> CustomStyle<(), (), On, On, (), On, ConstLines<1>> {
-        CustomStyle::new(GITHUB_MARKDOWN)
+    pub const fn github_markdown() -> Style<(), (), On, On, (), On, ConstLines<1>> {
+        Style::new(GITHUB_MARKDOWN)
     }
 
     /// Modern style looks like the following table.
@@ -226,8 +248,8 @@ impl Style {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
-    pub const fn modern() -> CustomStyle<On, On, On, On, On, On> {
-        CustomStyle::new(MODERN)
+    pub const fn modern() -> Style<On, On, On, On, On, On> {
+        Style::new(MODERN)
     }
 
     /// Rounded style looks like the following table.
@@ -243,8 +265,8 @@ impl Style {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     ╰────┴──────────────┴───────────────────────────╯
     /// ```
-    pub const fn rounded() -> CustomStyle<On, On, On, On, (), On, ConstLines<1>> {
-        CustomStyle::new(MODERN_ROUNDED)
+    pub const fn rounded() -> Style<On, On, On, On, (), On, ConstLines<1>> {
+        Style::new(MODERN_ROUNDED)
     }
 
     /// Extended style looks like the following table
@@ -262,8 +284,8 @@ impl Style {
     ///     ║ 3  ║ Endeavouros  ║ https://endeavouros.com/  ║
     ///     ╚════╩══════════════╩═══════════════════════════╝
     /// ```
-    pub const fn extended() -> CustomStyle<On, On, On, On, On, On> {
-        CustomStyle::new(EXTENDED)
+    pub const fn extended() -> Style<On, On, On, On, On, On> {
+        Style::new(EXTENDED)
     }
 
     /// ReStructuredText style looks like the following table
@@ -277,8 +299,8 @@ impl Style {
     ///      3    Endeavouros    https://endeavouros.com/  
     ///     ==== ============== ===========================
     /// ```
-    pub const fn re_structured_text() -> CustomStyle<On, On, (), (), (), On, ConstLines<1>> {
-        CustomStyle::new(RE_STRUCTURED_TEXT)
+    pub const fn re_structured_text() -> Style<On, On, (), (), (), On, ConstLines<1>> {
+        Style::new(RE_STRUCTURED_TEXT)
     }
 
     /// Try to fix the style when table contains spans.
@@ -438,7 +460,482 @@ const RE_STRUCTURED_TEXT: RawStyle<ConstLines<1>> = RawStyle::new(
     [(1, Line::short('=', ' '))],
 );
 
-/// A raw style data, which can be produced safely from [CustomStyle].
+impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
+    const fn new(style: RawStyle<Lines>) -> Self {
+        Self {
+            inner: style,
+            _top: PhantomData,
+            _bottom: PhantomData,
+            _left: PhantomData,
+            _right: PhantomData,
+            _horizontal: PhantomData,
+            _vertical: PhantomData,
+        }
+    }
+
+    /// Frame function returns a frame as a border.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{Table, Style, Highlight, object::Rows};
+    ///
+    /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
+    /// let table = Table::new(data)
+    ///     .with(Highlight::new(Rows::first(), Style::modern().frame()));
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     concat!(
+    ///         "┌──────────────────┐\n",
+    ///         "│    0     |   1   │\n",
+    ///         "└──────────────────┘\n",
+    ///         "| 10:52:19 | Hello |\n",
+    ///         "+----------+-------+\n",
+    ///         "| 10:52:20 | World |\n",
+    ///         "+----------+-------+",
+    ///     )
+    /// );
+    /// ```
+    pub fn frame(&self) -> Border {
+        Border::from(papergrid::Border {
+            top: self.inner.borders.top,
+            bottom: self.inner.borders.bottom,
+            left: self.inner.borders.vertical_left,
+            right: self.inner.borders.vertical_right,
+            left_top_corner: self.inner.borders.top_left,
+            right_top_corner: self.inner.borders.top_right,
+            left_bottom_corner: self.inner.borders.bottom_left,
+            right_bottom_corner: self.inner.borders.bottom_right,
+        })
+    }
+}
+
+impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
+    /// Sets a top border.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub fn top(mut self, c: char) -> Style<On, B, L, R, H, V, Lines> {
+        self.inner.set_top(Some(c));
+
+        if self.inner.has_left() {
+            self.inner.set_top_left(Some(c));
+        }
+
+        if self.inner.has_right() {
+            self.inner.set_top_right(Some(c));
+        }
+
+        if self.inner.has_vertical() {
+            self.inner.set_top_split(Some(c));
+        }
+
+        Style::new(self.inner)
+    }
+
+    /// Sets a bottom border.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub fn bottom(mut self, c: char) -> Style<T, On, L, R, H, V, Lines> {
+        self.inner.set_bottom(Some(c));
+
+        if self.inner.has_left() {
+            self.inner.set_bottom_left(Some(c));
+        }
+
+        if self.inner.has_right() {
+            self.inner.set_bottom_right(Some(c));
+        }
+
+        if self.inner.has_vertical() {
+            self.inner.set_bottom_split(Some(c));
+        }
+
+        Style::new(self.inner)
+    }
+
+    /// Sets a left border.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub fn left(mut self, c: char) -> Style<T, B, On, R, H, V, Lines>
+    where
+        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line<char>)>,
+    {
+        self.inner.set_left(Some(c));
+
+        if self.inner.has_top() {
+            self.inner.set_top_left(Some(c));
+        }
+
+        if self.inner.has_bottom() {
+            self.inner.set_bottom_left(Some(c));
+        }
+
+        if self.inner.has_horizontal() {
+            self.inner.set_left_split(Some(c));
+        }
+
+        for (_, line) in self.inner.get_lines_mut() {
+            line.left = Some(c);
+        }
+
+        Style::new(self.inner)
+    }
+
+    /// Sets a right border.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub fn right(mut self, c: char) -> Style<T, B, L, On, H, V, Lines>
+    where
+        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line<char>)>,
+    {
+        self.inner.set_right(Some(c));
+
+        if self.inner.has_top() {
+            self.inner.set_top_right(Some(c));
+        }
+
+        if self.inner.has_bottom() {
+            self.inner.set_bottom_right(Some(c));
+        }
+
+        if self.inner.has_horizontal() {
+            self.inner.set_right_split(Some(c));
+        }
+
+        for (_, line) in self.inner.get_lines_mut() {
+            line.right = Some(c);
+        }
+
+        Style::new(self.inner)
+    }
+
+    /// Sets a horizontal split line.
+    ///
+    /// It doesn't include a header split line.
+    /// It must be set via its own method [Self::header].
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub fn horizontal(mut self, c: char) -> Style<T, B, L, R, On, V, Lines> {
+        self.inner.set_horizontal(Some(c));
+
+        if self.inner.has_vertical() {
+            self.inner.set_internal_split(Some(c));
+        }
+
+        if self.inner.has_left() {
+            self.inner.set_left_split(Some(c));
+        }
+
+        if self.inner.has_right() {
+            self.inner.set_right_split(Some(c));
+        }
+
+        Style::new(self.inner)
+    }
+
+    /// Sets a vertical split line.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub fn vertical(mut self, c: char) -> Style<T, B, L, R, H, On, Lines>
+    where
+        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line<char>)>,
+    {
+        self.inner.set_vertical(Some(c));
+
+        if self.inner.has_horizontal() {
+            self.inner.set_internal_split(Some(c));
+        }
+
+        if self.inner.has_top() {
+            self.inner.set_top_split(Some(c));
+        }
+
+        if self.inner.has_bottom() {
+            self.inner.set_bottom_split(Some(c));
+        }
+
+        for (_, line) in self.inner.get_lines_mut() {
+            line.intersection = Some(c);
+        }
+
+        Style::new(self.inner)
+    }
+
+    /// Set border lines.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{style::{Style, Line}, TableIteratorExt};
+    ///
+    /// let table = (0..3)
+    ///    .map(|i| ("Hello", i))
+    ///    .table()
+    ///    .with(Style::rounded().lines((1..4).map(|i| (i, Line::filled('#')))))
+    ///    .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "╭───────┬─────╮\n",
+    ///         "│ &str  │ i32 │\n",
+    ///         "###############\n",
+    ///         "│ Hello │  0  │\n",
+    ///         "###############\n",
+    ///         "│ Hello │  1  │\n",
+    ///         "###############\n",
+    ///         "│ Hello │  2  │\n",
+    ///         "╰───────┴─────╯",
+    ///     )
+    /// )
+    /// ```
+    pub fn lines<NewLines>(self, lines: NewLines) -> Style<T, B, L, R, H, V, NewLines>
+    where
+        NewLines: IntoIterator<Item = (usize, Line<char>)> + Clone,
+    {
+        let a = self.inner.set_lines(lines);
+        Style::new(a)
+    }
+
+    /// Removes all lines set by [Style::lines]
+    pub fn off_lines(self) -> Style<T, B, L, R, H, V> {
+        let a = self.inner.set_lines([]);
+        Style::new(a)
+    }
+
+    /// Get a [Style]'s default horizontal line.
+    ///
+    /// It doesn't return an overloaded line via [Style::lines].
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{style::{Style, Line}, TableIteratorExt};
+    ///
+    /// let table = (0..3)
+    ///    .map(|i| ("Hello", "World", i))
+    ///    .table()
+    ///    .with(Style::ascii().off_horizontal().lines([(1, Style::modern().get_horizontal())]))
+    ///    .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "+-------+-------+-----+\n",
+    ///         "| &str  | &str  | i32 |\n",
+    ///         "├───────┼───────┼─────┤\n",
+    ///         "| Hello | World |  0  |\n",
+    ///         "| Hello | World |  1  |\n",
+    ///         "| Hello | World |  2  |\n",
+    ///         "+-------+-------+-----+",
+    ///     )
+    /// )
+    /// ```
+    pub fn get_horizontal(&self) -> Line<char> {
+        self.inner.get_horizontal()
+    }
+}
+
+impl<B, R, H, V, Lines> Style<On, B, On, R, H, V, Lines> {
+    /// Sets a top left corner.
+    pub fn top_left_corner(mut self, c: char) -> Self {
+        self.inner.set_top_left(Some(c));
+
+        Style::new(self.inner)
+    }
+}
+
+impl<B, L, H, V, Lines> Style<On, B, L, On, H, V, Lines> {
+    /// Sets a top right corner.
+    pub fn top_right_corner(mut self, c: char) -> Self {
+        self.inner.set_top_right(Some(c));
+
+        Style::new(self.inner)
+    }
+}
+
+impl<T, L, H, V, Lines> Style<T, On, L, On, H, V, Lines> {
+    /// Sets a bottom right corner.
+    pub fn bottom_right_corner(mut self, c: char) -> Self {
+        self.inner.set_bottom_right(Some(c));
+
+        Style::new(self.inner)
+    }
+}
+
+impl<T, R, H, V, Lines> Style<T, On, On, R, H, V, Lines> {
+    /// Sets a bottom left corner.
+    pub fn bottom_left_corner(mut self, c: char) -> Self {
+        self.inner.set_bottom_left(Some(c));
+
+        Style::new(self.inner)
+    }
+}
+
+impl<T, B, R, V, Lines> Style<T, B, On, R, On, V, Lines> {
+    /// Sets a left intersection char.
+    pub fn left_intersection(mut self, c: char) -> Self {
+        self.inner.set_left_split(Some(c));
+
+        Style::new(self.inner)
+    }
+}
+
+impl<T, B, L, V, Lines> Style<T, B, L, On, On, V, Lines> {
+    /// Sets a right intersection char.
+    pub fn right_intersection(mut self, c: char) -> Self {
+        self.inner.set_right_split(Some(c));
+
+        Style::new(self.inner)
+    }
+}
+
+impl<B, L, R, H, Lines> Style<On, B, L, R, H, On, Lines> {
+    /// Sets a top intersection char.
+    pub fn top_intersection(mut self, c: char) -> Self {
+        self.inner.set_top_split(Some(c));
+
+        Style::new(self.inner)
+    }
+}
+
+impl<T, L, R, H, Lines> Style<T, On, L, R, H, On, Lines> {
+    /// Sets a bottom intersection char.
+    pub fn bottom_intersection(mut self, c: char) -> Self {
+        self.inner.set_bottom_split(Some(c));
+
+        Style::new(self.inner)
+    }
+}
+
+impl<T, B, L, R, Lines> Style<T, B, L, R, On, On, Lines> {
+    /// Sets an inner intersection char.
+    /// A char between horizontal and vertical split lines.
+    pub fn inner_intersection(mut self, c: char) -> Self {
+        self.inner.set_internal_split(Some(c));
+
+        Style::new(self.inner)
+    }
+}
+
+impl<B, L, R, H, V, Lines> Style<On, B, L, R, H, V, Lines> {
+    /// Removes top border.
+    pub fn off_top(mut self) -> Style<(), B, L, R, H, V, Lines> {
+        self.inner.set_top(None);
+        self.inner.set_top_left(None);
+        self.inner.set_top_right(None);
+        self.inner.set_top_split(None);
+
+        Style::new(self.inner)
+    }
+}
+
+impl<T, L, R, H, V, Lines> Style<T, On, L, R, H, V, Lines> {
+    /// Removes bottom border.
+    pub fn off_bottom(mut self) -> Style<T, (), L, R, H, V, Lines> {
+        self.inner.set_bottom(None);
+        self.inner.set_bottom_left(None);
+        self.inner.set_bottom_right(None);
+        self.inner.set_bottom_split(None);
+
+        Style::new(self.inner)
+    }
+}
+
+impl<T, B, R, H, V, Lines> Style<T, B, On, R, H, V, Lines> {
+    /// Removes left border.
+    pub fn off_left(mut self) -> Style<T, B, (), R, H, V, BorderLinesIntoIter<Lines>>
+    where
+        Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
+    {
+        self.inner.set_left(None);
+        self.inner.set_left_split(None);
+        self.inner.set_top_left(None);
+        self.inner.set_bottom_left(None);
+
+        let iter = BorderLinesIntoIter::new(self.inner.lines, false, true, false);
+        let raw = RawStyle {
+            borders: self.inner.borders,
+            lines: iter,
+        };
+
+        Style::new(raw)
+    }
+}
+
+impl<T, B, L, H, V, Lines> Style<T, B, L, On, H, V, Lines> {
+    /// Removes right border.
+    pub fn off_right(mut self) -> Style<T, B, L, (), H, V, BorderLinesIntoIter<Lines>>
+    where
+        Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
+    {
+        self.inner.set_right(None);
+        self.inner.set_right_split(None);
+        self.inner.set_top_right(None);
+        self.inner.set_bottom_right(None);
+
+        let iter = BorderLinesIntoIter::new(self.inner.lines, false, false, true);
+        let raw = RawStyle {
+            borders: self.inner.borders,
+            lines: iter,
+        };
+
+        Style::new(raw)
+    }
+}
+
+impl<T, B, L, R, V, Lines> Style<T, B, L, R, On, V, Lines> {
+    /// Removes horizontal split lines.
+    ///
+    /// Not including 1st split line.
+    pub fn off_horizontal(mut self) -> Style<T, B, L, R, (), V, Lines> {
+        self.inner.set_horizontal(None);
+        self.inner.set_left_split(None);
+        self.inner.set_right_split(None);
+        self.inner.set_internal_split(None);
+
+        Style::new(self.inner)
+    }
+}
+
+impl<T, B, L, R, H, Lines> Style<T, B, L, R, H, On, Lines> {
+    /// Removes vertical split lines.
+    pub fn off_vertical(mut self) -> Style<T, B, L, R, H, (), BorderLinesIntoIter<Lines>>
+    where
+        Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
+    {
+        self.inner.set_vertical(None);
+        self.inner.set_top_split(None);
+        self.inner.set_bottom_split(None);
+        self.inner.set_internal_split(None);
+
+        let iter = BorderLinesIntoIter::new(self.inner.lines, true, false, false);
+        let raw = RawStyle {
+            borders: self.inner.borders,
+            lines: iter,
+        };
+
+        Style::new(raw)
+    }
+}
+
+impl<T, B, L, R, H, V, Lines> TableOption for Style<T, B, L, R, H, V, Lines>
+where
+    Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
+{
+    fn change(&mut self, grid: &mut Grid) {
+        self.inner.change(grid);
+    }
+}
+
+impl<T, B, L, R, H, V, Lines> From<Style<T, B, L, R, H, V, Lines>> for RawStyle<Lines> {
+    fn from(val: Style<T, B, L, R, H, V, Lines>) -> Self {
+        val.inner
+    }
+}
+
+/// A raw style data, which can be produced safely from [Style].
 ///
 /// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
 #[derive(Debug, Clone)]
@@ -703,500 +1200,6 @@ where
                 grid.set_split_line(row, line.clone());
             }
         }
-    }
-}
-
-/// CustomStyle represents a style controlling a valid state of it.
-///
-/// For example.
-/// It doesn't allow to call method [CustomStyle::top_left_corner] unless [CustomStyle::left] and [CustomStyle::top] is set.
-#[derive(Debug, Clone)]
-pub struct CustomStyle<T, B, L, R, H, V, Lines = ConstLines<0>> {
-    inner: RawStyle<Lines>,
-    _top: PhantomData<T>,
-    _bottom: PhantomData<B>,
-    _left: PhantomData<L>,
-    _right: PhantomData<R>,
-    _horizontal: PhantomData<H>,
-    _vertical: PhantomData<V>,
-}
-
-impl<T, B, L, R, H, V, Lines> From<CustomStyle<T, B, L, R, H, V, Lines>> for RawStyle<Lines> {
-    fn from(val: CustomStyle<T, B, L, R, H, V, Lines>) -> Self {
-        val.inner
-    }
-}
-
-/// A marker struct which is used in [CustomStyle].
-#[derive(Debug, Clone)]
-pub struct On;
-
-impl<T, B, L, R, H, V, Lines> CustomStyle<T, B, L, R, H, V, Lines> {
-    const fn new(style: RawStyle<Lines>) -> Self {
-        Self {
-            inner: style,
-            _top: PhantomData,
-            _bottom: PhantomData,
-            _left: PhantomData,
-            _right: PhantomData,
-            _horizontal: PhantomData,
-            _vertical: PhantomData,
-        }
-    }
-
-    /// Frame function returns a frame as a border.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use tabled::{Table, Style, Highlight, object::Rows};
-    ///
-    /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
-    /// let table = Table::new(data)
-    ///     .with(Highlight::new(Rows::first(), Style::modern().frame()));
-    ///
-    /// assert_eq!(
-    ///     table.to_string(),
-    ///     concat!(
-    ///         "┌──────────────────┐\n",
-    ///         "│    0     |   1   │\n",
-    ///         "└──────────────────┘\n",
-    ///         "| 10:52:19 | Hello |\n",
-    ///         "+----------+-------+\n",
-    ///         "| 10:52:20 | World |\n",
-    ///         "+----------+-------+",
-    ///     )
-    /// );
-    /// ```
-    pub fn frame(&self) -> Border {
-        Border::from(papergrid::Border {
-            top: self.inner.borders.top,
-            bottom: self.inner.borders.bottom,
-            left: self.inner.borders.vertical_left,
-            right: self.inner.borders.vertical_right,
-            left_top_corner: self.inner.borders.top_left,
-            right_top_corner: self.inner.borders.top_right,
-            left_bottom_corner: self.inner.borders.bottom_left,
-            right_bottom_corner: self.inner.borders.bottom_right,
-        })
-    }
-}
-
-impl<T, B, L, R, H, V, Lines> CustomStyle<T, B, L, R, H, V, Lines> {
-    /// Sets a top border.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn top(mut self, c: char) -> CustomStyle<On, B, L, R, H, V, Lines> {
-        self.inner.set_top(Some(c));
-
-        if self.inner.has_left() {
-            self.inner.set_top_left(Some(c));
-        }
-
-        if self.inner.has_right() {
-            self.inner.set_top_right(Some(c));
-        }
-
-        if self.inner.has_vertical() {
-            self.inner.set_top_split(Some(c));
-        }
-
-        CustomStyle::new(self.inner)
-    }
-
-    /// Sets a bottom border.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn bottom(mut self, c: char) -> CustomStyle<T, On, L, R, H, V, Lines> {
-        self.inner.set_bottom(Some(c));
-
-        if self.inner.has_left() {
-            self.inner.set_bottom_left(Some(c));
-        }
-
-        if self.inner.has_right() {
-            self.inner.set_bottom_right(Some(c));
-        }
-
-        if self.inner.has_vertical() {
-            self.inner.set_bottom_split(Some(c));
-        }
-
-        CustomStyle::new(self.inner)
-    }
-
-    /// Sets a left border.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn left(mut self, c: char) -> CustomStyle<T, B, On, R, H, V, Lines>
-    where
-        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line<char>)>,
-    {
-        self.inner.set_left(Some(c));
-
-        if self.inner.has_top() {
-            self.inner.set_top_left(Some(c));
-        }
-
-        if self.inner.has_bottom() {
-            self.inner.set_bottom_left(Some(c));
-        }
-
-        if self.inner.has_horizontal() {
-            self.inner.set_left_split(Some(c));
-        }
-
-        for (_, line) in self.inner.get_lines_mut() {
-            line.left = Some(c);
-        }
-
-        CustomStyle::new(self.inner)
-    }
-
-    /// Sets a right border.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn right(mut self, c: char) -> CustomStyle<T, B, L, On, H, V, Lines>
-    where
-        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line<char>)>,
-    {
-        self.inner.set_right(Some(c));
-
-        if self.inner.has_top() {
-            self.inner.set_top_right(Some(c));
-        }
-
-        if self.inner.has_bottom() {
-            self.inner.set_bottom_right(Some(c));
-        }
-
-        if self.inner.has_horizontal() {
-            self.inner.set_right_split(Some(c));
-        }
-
-        for (_, line) in self.inner.get_lines_mut() {
-            line.right = Some(c);
-        }
-
-        CustomStyle::new(self.inner)
-    }
-
-    /// Sets a horizontal split line.
-    ///
-    /// It doesn't include a header split line.
-    /// It must be set via its own method [Self::header].
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn horizontal(mut self, c: char) -> CustomStyle<T, B, L, R, On, V, Lines> {
-        self.inner.set_horizontal(Some(c));
-
-        if self.inner.has_vertical() {
-            self.inner.set_internal_split(Some(c));
-        }
-
-        if self.inner.has_left() {
-            self.inner.set_left_split(Some(c));
-        }
-
-        if self.inner.has_right() {
-            self.inner.set_right_split(Some(c));
-        }
-
-        CustomStyle::new(self.inner)
-    }
-
-    /// Sets a vertical split line.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn vertical(mut self, c: char) -> CustomStyle<T, B, L, R, H, On, Lines>
-    where
-        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line<char>)>,
-    {
-        self.inner.set_vertical(Some(c));
-
-        if self.inner.has_horizontal() {
-            self.inner.set_internal_split(Some(c));
-        }
-
-        if self.inner.has_top() {
-            self.inner.set_top_split(Some(c));
-        }
-
-        if self.inner.has_bottom() {
-            self.inner.set_bottom_split(Some(c));
-        }
-
-        for (_, line) in self.inner.get_lines_mut() {
-            line.intersection = Some(c);
-        }
-
-        CustomStyle::new(self.inner)
-    }
-
-    /// Set border lines.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use tabled::{style::{Style, Line}, TableIteratorExt};
-    ///
-    /// let table = (0..3)
-    ///    .map(|i| ("Hello", i))
-    ///    .table()
-    ///    .with(Style::rounded().lines((1..4).map(|i| (i, Line::filled('#')))))
-    ///    .to_string();
-    ///
-    /// assert_eq!(
-    ///     table,
-    ///     concat!(
-    ///         "╭───────┬─────╮\n",
-    ///         "│ &str  │ i32 │\n",
-    ///         "###############\n",
-    ///         "│ Hello │  0  │\n",
-    ///         "###############\n",
-    ///         "│ Hello │  1  │\n",
-    ///         "###############\n",
-    ///         "│ Hello │  2  │\n",
-    ///         "╰───────┴─────╯",
-    ///     )
-    /// )
-    /// ```
-    pub fn lines<NewLines>(self, lines: NewLines) -> CustomStyle<T, B, L, R, H, V, NewLines>
-    where
-        NewLines: IntoIterator<Item = (usize, Line<char>)> + Clone,
-    {
-        let a = self.inner.set_lines(lines);
-        CustomStyle::new(a)
-    }
-
-    /// Removes all lines set by [CustomStyle::lines]
-    pub fn off_lines(self) -> CustomStyle<T, B, L, R, H, V> {
-        let a = self.inner.set_lines([]);
-        CustomStyle::new(a)
-    }
-
-    /// Get a [Style]'s default horizontal line.
-    ///
-    /// It doesn't return an overloaded line via [CustomStyle::lines].
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use tabled::{style::{Style, Line}, TableIteratorExt};
-    ///
-    /// let table = (0..3)
-    ///    .map(|i| ("Hello", "World", i))
-    ///    .table()
-    ///    .with(Style::ascii().off_horizontal().lines([(1, Style::modern().get_horizontal())]))
-    ///    .to_string();
-    ///
-    /// assert_eq!(
-    ///     table,
-    ///     concat!(
-    ///         "+-------+-------+-----+\n",
-    ///         "| &str  | &str  | i32 |\n",
-    ///         "├───────┼───────┼─────┤\n",
-    ///         "| Hello | World |  0  |\n",
-    ///         "| Hello | World |  1  |\n",
-    ///         "| Hello | World |  2  |\n",
-    ///         "+-------+-------+-----+",
-    ///     )
-    /// )
-    /// ```
-    pub fn get_horizontal(&self) -> Line<char> {
-        self.inner.get_horizontal()
-    }
-}
-
-impl<B, R, H, V, Lines> CustomStyle<On, B, On, R, H, V, Lines> {
-    /// Sets a top left corner.
-    pub fn top_left_corner(mut self, c: char) -> Self {
-        self.inner.set_top_left(Some(c));
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<B, L, H, V, Lines> CustomStyle<On, B, L, On, H, V, Lines> {
-    /// Sets a top right corner.
-    pub fn top_right_corner(mut self, c: char) -> Self {
-        self.inner.set_top_right(Some(c));
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<T, L, H, V, Lines> CustomStyle<T, On, L, On, H, V, Lines> {
-    /// Sets a bottom right corner.
-    pub fn bottom_right_corner(mut self, c: char) -> Self {
-        self.inner.set_bottom_right(Some(c));
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<T, R, H, V, Lines> CustomStyle<T, On, On, R, H, V, Lines> {
-    /// Sets a bottom left corner.
-    pub fn bottom_left_corner(mut self, c: char) -> Self {
-        self.inner.set_bottom_left(Some(c));
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<T, B, R, V, Lines> CustomStyle<T, B, On, R, On, V, Lines> {
-    /// Sets a left intersection char.
-    pub fn left_intersection(mut self, c: char) -> Self {
-        self.inner.set_left_split(Some(c));
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<T, B, L, V, Lines> CustomStyle<T, B, L, On, On, V, Lines> {
-    /// Sets a right intersection char.
-    pub fn right_intersection(mut self, c: char) -> Self {
-        self.inner.set_right_split(Some(c));
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<B, L, R, H, Lines> CustomStyle<On, B, L, R, H, On, Lines> {
-    /// Sets a top intersection char.
-    pub fn top_intersection(mut self, c: char) -> Self {
-        self.inner.set_top_split(Some(c));
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<T, L, R, H, Lines> CustomStyle<T, On, L, R, H, On, Lines> {
-    /// Sets a bottom intersection char.
-    pub fn bottom_intersection(mut self, c: char) -> Self {
-        self.inner.set_bottom_split(Some(c));
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<T, B, L, R, Lines> CustomStyle<T, B, L, R, On, On, Lines> {
-    /// Sets an inner intersection char.
-    /// A char between horizontal and vertical split lines.
-    pub fn inner_intersection(mut self, c: char) -> Self {
-        self.inner.set_internal_split(Some(c));
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<B, L, R, H, V, Lines> CustomStyle<On, B, L, R, H, V, Lines> {
-    /// Removes top border.
-    pub fn off_top(mut self) -> CustomStyle<(), B, L, R, H, V, Lines> {
-        self.inner.set_top(None);
-        self.inner.set_top_left(None);
-        self.inner.set_top_right(None);
-        self.inner.set_top_split(None);
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<T, L, R, H, V, Lines> CustomStyle<T, On, L, R, H, V, Lines> {
-    /// Removes bottom border.
-    pub fn off_bottom(mut self) -> CustomStyle<T, (), L, R, H, V, Lines> {
-        self.inner.set_bottom(None);
-        self.inner.set_bottom_left(None);
-        self.inner.set_bottom_right(None);
-        self.inner.set_bottom_split(None);
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<T, B, R, H, V, Lines> CustomStyle<T, B, On, R, H, V, Lines> {
-    /// Removes left border.
-    pub fn off_left(mut self) -> CustomStyle<T, B, (), R, H, V, BorderLinesIntoIter<Lines>>
-    where
-        Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
-    {
-        self.inner.set_left(None);
-        self.inner.set_left_split(None);
-        self.inner.set_top_left(None);
-        self.inner.set_bottom_left(None);
-
-        let iter = BorderLinesIntoIter::new(self.inner.lines, false, true, false);
-        let raw = RawStyle {
-            borders: self.inner.borders,
-            lines: iter,
-        };
-
-        CustomStyle::new(raw)
-    }
-}
-
-impl<T, B, L, H, V, Lines> CustomStyle<T, B, L, On, H, V, Lines> {
-    /// Removes right border.
-    pub fn off_right(mut self) -> CustomStyle<T, B, L, (), H, V, BorderLinesIntoIter<Lines>>
-    where
-        Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
-    {
-        self.inner.set_right(None);
-        self.inner.set_right_split(None);
-        self.inner.set_top_right(None);
-        self.inner.set_bottom_right(None);
-
-        let iter = BorderLinesIntoIter::new(self.inner.lines, false, false, true);
-        let raw = RawStyle {
-            borders: self.inner.borders,
-            lines: iter,
-        };
-
-        CustomStyle::new(raw)
-    }
-}
-
-impl<T, B, L, R, V, Lines> CustomStyle<T, B, L, R, On, V, Lines> {
-    /// Removes horizontal split lines.
-    ///
-    /// Not including 1st split line.
-    pub fn off_horizontal(mut self) -> CustomStyle<T, B, L, R, (), V, Lines> {
-        self.inner.set_horizontal(None);
-        self.inner.set_left_split(None);
-        self.inner.set_right_split(None);
-        self.inner.set_internal_split(None);
-
-        CustomStyle::new(self.inner)
-    }
-}
-
-impl<T, B, L, R, H, Lines> CustomStyle<T, B, L, R, H, On, Lines> {
-    /// Removes vertical split lines.
-    pub fn off_vertical(mut self) -> CustomStyle<T, B, L, R, H, (), BorderLinesIntoIter<Lines>>
-    where
-        Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
-    {
-        self.inner.set_vertical(None);
-        self.inner.set_top_split(None);
-        self.inner.set_bottom_split(None);
-        self.inner.set_internal_split(None);
-
-        let iter = BorderLinesIntoIter::new(self.inner.lines, true, false, false);
-        let raw = RawStyle {
-            borders: self.inner.borders,
-            lines: iter,
-        };
-
-        CustomStyle::new(raw)
-    }
-}
-
-impl<T, B, L, R, H, V, Lines> TableOption for CustomStyle<T, B, L, R, H, V, Lines>
-where
-    Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
-{
-    fn change(&mut self, grid: &mut Grid) {
-        self.inner.change(grid);
     }
 }
 
@@ -1852,7 +1855,7 @@ where
     }
 }
 
-/// An interator which limits [Line] influence on iterations over lines for in [CustomStyle].
+/// An interator which limits [Line] influence on iterations over lines for in [Style].
 #[derive(Debug, Clone)]
 pub struct BorderLinesIter<I> {
     iter: I,
