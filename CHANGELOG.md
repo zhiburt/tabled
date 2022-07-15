@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Created `#[tabled(order = 2)]` attribute to support reordering of fields.
+- Created `#[tabled(rename_all = "UPPERCASE")]` attribute to rename columns.
+- Created `#[tabled(display_width("some_func", args))]` attribute to being able to call functions with `&self` argument.
+- Created `derive` feature to hide `Table` macro behind it.
+- Created `Object::intersect` method.
+- Created `Object::inverse` method.
+- Created `width::Percent` to set width not in absolute values.
+- Added `Priority` strategy for `Width`.
+- Added `Style::correct_spans` functions to correct borders when used with spans..
+- Added `HighlightColored` a version of `Highlight` which supports coloring.
+- Added `ModifyObject` trait to be like `Modify::new`.
+- Added `ColoredBorder` and `RawStyleColored` to colorize borders more effectively.
+- Added `Style::lines` setter so you it's possible to override not only header.
+
+### Changed
+
+- Performance was improved overall.
+- Changed `Modify`; it must be more effitient when used without `Object` methods.
+- Removed a trailing `\n` from `fmt::Display` output.
+- Changed a definition of `CellChange` trait.
+- Changed public methods of `Builder` to use `&mut self` intestead of `self`.
+- Changed logic of `Wrap::keep_words`.
+- Changed logic of `Truncate::suffix`.
+- Removed `Style::header_*` methods.
+- Renamed `MaxWidth` to `Width`.
+- Renamed `CustomStyle` to `Style`.
+- Renamed `StyleConfig` to `RawStyle`.
+- Renamed `Style::*_off` methods to `Style::off_*`.
+
+### Fixed
+
+- Fixed a list of issues with coloring
+- Fixed `Style` usage, some methods were not influence `Table` in some cases.
+- Fixed `\t` handling in `Width` functions.
+- Improved documentation.
+- Refactorings.
+
 ## [0.7.0] - 2022-05-16
 
 ### Added
