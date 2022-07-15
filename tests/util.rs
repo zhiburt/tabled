@@ -56,7 +56,7 @@ pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUM
             data.push(text);
         }
 
-        arr.push(Obj::new(row, data))
+        arr.push(Obj::new(row, data));
     }
 
     arr

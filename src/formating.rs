@@ -54,10 +54,10 @@ impl Format<()> {
         Format { f }
     }
 
-    /// This function creates a new [FormatWithIndex], so
+    /// This function creates a new [`FormatWithIndex`], so
     /// it can be used as a grid setting.
     ///
-    /// It's different from [Self::new] that it also provides a row and column index.
+    /// It's different from [`Self::new`] that it also provides a row and column index.
     ///
     /// # Example
     ///
@@ -130,12 +130,12 @@ where
         for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content(row, col);
             let content = (self.f)(content);
-            grid.set(Entity::Cell(row, col), Settings::new().text(content))
+            grid.set(Entity::Cell(row, col), Settings::new().text(content));
         }
     }
 }
 
-/// FormatWithIndex is like a [Format] an abstraction over a function you can use against a cell.
+/// `FormatWithIndex` is like a [Format] an abstraction over a function you can use against a cell.
 ///
 /// It differerent from Format that it provides a row and column index.
 #[derive(Debug)]
@@ -160,7 +160,7 @@ where
         for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content(row, col);
             let content = (self.f)(content, (row, col));
-            grid.set(Entity::Cell(row, col), Settings::new().text(content))
+            grid.set(Entity::Cell(row, col), Settings::new().text(content));
         }
     }
 }
@@ -173,7 +173,7 @@ where
         for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
             let content = grid.get_cell_content(row, col);
             let content = (self)(content);
-            grid.set(Entity::Cell(row, col), Settings::new().text(content))
+            grid.set(Entity::Cell(row, col), Settings::new().text(content));
         }
     }
 }

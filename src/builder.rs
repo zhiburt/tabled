@@ -128,7 +128,7 @@ use crate::{Style, Table};
 /// println!("{}", table);
 /// ```
 ///
-/// It may be useful to use [FromIterator] for building.
+/// It may be useful to use [`FromIterator`] for building.
 ///
 /// ```rust
 /// use tabled::builder::Builder;
@@ -230,7 +230,7 @@ impl Builder {
 
     /// Adds a row to a [Table].
     ///
-    /// If [Self::set_columns] is not set the first row will be considered a header.
+    /// If [`Self::set_columns`] is not set the first row will be considered a header.
     ///
     /// ```rust
     /// use tabled::builder::Builder;
@@ -397,13 +397,9 @@ impl Builder {
     }
 
     fn get_size(&mut self) -> usize {
-        let mut max = self
-            .columns
-            .as_ref()
-            .map(|columns| columns.len())
-            .unwrap_or(0);
+        let mut max = self.columns.as_ref().map_or(0, Vec::len);
 
-        let max_records = self.records.iter().map(|row| row.len()).max().unwrap_or(0);
+        let max_records = self.records.iter().map(Vec::len).max().unwrap_or(0);
 
         max = std::cmp::max(max_records, max);
 
@@ -415,13 +411,13 @@ impl Builder {
 
         if let Some(header) = self.columns.as_mut() {
             if self.size > header.len() {
-                append_vec(header, self.size - header.len(), empty_cell_text.clone());
+                append_vec(header, self.size - header.len(), &empty_cell_text);
             }
         }
 
-        for row in self.records.iter_mut() {
+        for row in &mut self.records {
             if self.size > row.len() {
-                append_vec(row, self.size - row.len(), empty_cell_text.clone());
+                append_vec(row, self.size - row.len(), &empty_cell_text);
             }
         }
     }
@@ -455,7 +451,7 @@ where
 
 impl From<Vec<Vec<String>>> for Builder {
     fn from(records: Vec<Vec<String>>) -> Self {
-        let max_row_length = records.iter().map(|row| row.len()).max().unwrap_or(0);
+        let max_row_length = records.iter().map(Vec::len).max().unwrap_or(0);
         Self {
             records,
             size: max_row_length,
@@ -497,7 +493,7 @@ fn build_grid(
         row = 1;
     }
 
-    for fields in records.into_iter() {
+    for fields in records {
         // don't show off a empty data array
         if fields.is_empty() {
             continue;
@@ -540,11 +536,11 @@ fn default_cell_style() -> Settings {
         })
 }
 
-fn append_vec(v: &mut Vec<String>, n: usize, value: String) {
-    v.extend((0..n).map(|_| value.clone()));
+fn append_vec(v: &mut Vec<String>, n: usize, value: &str) {
+    v.extend((0..n).map(|_| value.to_owned()));
 }
 
-/// [IndexBuilder] helps to add an index to the table.
+/// [`IndexBuilder`] helps to add an index to the table.
 ///
 /// Index is a column on the left of the table.
 ///
@@ -606,7 +602,7 @@ impl IndexBuilder {
         let index = build_range_index(b.records.len());
 
         if b.columns.is_none() {
-            b.columns = Some(build_range_index(b.size))
+            b.columns = Some(build_range_index(b.size));
         }
 
         Self {
@@ -620,7 +616,7 @@ impl IndexBuilder {
 
     /// No flag makes builder to not use an index.
     ///
-    /// It may be useful when only [Self::transpose] need to be used.
+    /// It may be useful when only [`Self::transpose`] need to be used.
     ///
     /// ```
     /// use tabled::builder::Builder;
@@ -740,7 +736,7 @@ impl IndexBuilder {
     /// )
     /// ```
     pub fn transpose(mut self) -> Self {
-        let columns = self.b.columns.take().unwrap();
+        let columns = self.b.columns.take().unwrap_or_default();
 
         self.b.columns = Some(self.index);
         self.index = columns;

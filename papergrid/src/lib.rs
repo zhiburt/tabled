@@ -209,7 +209,7 @@ impl Grid {
         }
 
         if let Some(text) = settings.text {
-            self.set_text(entity, text);
+            self.set_text(entity, &text);
         }
 
         if let Some(border) = settings.border {
@@ -221,12 +221,12 @@ impl Grid {
         }
     }
 
-    /// Set a [Margin] value.
+    /// Set a [`Margin`] value.
     pub fn margin(&mut self, margin: Margin) {
-        self.margin = margin
+        self.margin = margin;
     }
 
-    /// Returns a [Margin] value currently set.
+    /// Returns a [`Margin`] value currently set.
     pub fn get_margin(&self) -> &Margin {
         &self.margin
     }
@@ -238,31 +238,31 @@ impl Grid {
         self.override_split_lines.clear();
     }
 
-    /// Set the [Borders] value as currect one.
+    /// Set the [`Borders`] value as currect one.
     pub fn set_borders(&mut self, borders: Borders<char>) {
         self.borders.set_borders(borders);
     }
 
-    /// Set the [Borders] value as currect one.
+    /// Set the [`Borders`] value as currect one.
     pub fn set_tab_width(&mut self, width: usize) {
         self.config.tab_width = width;
     }
 
-    /// Returns a current [Borders] structure.
+    /// Returns a current [`Borders`] structure.
     pub fn get_borders(&self) -> &Borders<char> {
         &self.borders.borders
     }
 
-    /// Set border set a border value to all cells in [Entity].
+    /// Set border set a border value to all cells in [`Entity`].
     pub fn set_border(&mut self, entity: Entity, border: Border) {
         entity
             .iter(self.count_rows(), self.count_columns())
-            .for_each(|pos| self.borders.insert_border(pos, border.clone()))
+            .for_each(|pos| self.borders.insert_border(pos, border.clone()));
     }
 
-    /// Sets off all borders possible on the [Entity].
+    /// Sets off all borders possible on the [`Entity`].
     ///
-    /// It doesn't changes globaly set borders through [Grid::set_borders].
+    /// It doesn't changes globaly set borders through [`Grid::set_borders`].
     pub fn remove_border(&mut self, entity: Entity) {
         entity
             .iter(self.count_rows(), self.count_columns())
@@ -277,7 +277,7 @@ impl Grid {
         self.borders.insert_line(row, line);
     }
 
-    /// get_cell_settings returns a settings of a cell
+    /// This function returns a settings of a cell
     pub fn get_settings(&self, row: usize, col: usize) -> Settings {
         let style = self.style(Entity::Cell(row, col));
         let content = &self.cells[row][col];
@@ -379,34 +379,34 @@ impl Grid {
         }
     }
 
-    /// get_cell_content returns content without any style changes
+    /// This function returns content without any style changes
     pub fn get_cell_content(&self, row: usize, column: usize) -> &str {
         self.cells[row][column].as_str()
     }
 
-    /// get_cell_content_styled returns content with style changes
+    /// This function returns content with style changes
     pub fn get_cell_content_formatted(&self, row: usize, column: usize) -> String {
         let text = self.get_cell_content(row, column);
         replace_tab(text, self.config.tab_width)
     }
 
-    /// get_cell_width returns a string width.
+    /// This function returns a string width.
     pub fn get_string_width(&self, row: usize, column: usize) -> usize {
         string_width_multiline_tab(self.cells[row][column].as_str(), self.config.tab_width)
     }
 
-    /// Count_rows returns an amount of rows on the grid
+    /// This function returns an amount of rows on the grid
     pub fn count_rows(&self) -> usize {
         self.size.0
     }
 
-    /// Count_rows returns an amount of columns on the grid
+    /// This function returns an amount of columns on the grid
     pub fn count_columns(&self) -> usize {
         self.size.1
     }
 
     /// Set text value to all cells in [Entity].
-    pub fn set_text(&mut self, entity: Entity, text: String) {
+    pub fn set_text(&mut self, entity: Entity, text: &str) {
         self._set_text(entity, text);
     }
 
@@ -470,7 +470,7 @@ impl Grid {
 
     /// The function returns all cells by lines.
     ///
-    /// It's considered that [string_width] on these cells will be the same as the one which will be used in rendering.
+    /// It's considered that [`string_width`] on these cells will be the same as the one which will be used in rendering.
     pub fn collect_cells(&self) -> Vec<Vec<Vec<String>>> {
         let count_rows = self.count_rows();
         let count_columns = self.count_columns();
@@ -481,7 +481,7 @@ impl Grid {
                 let content = replace_tab(&self.cells[row][col], self.config.tab_width);
 
                 // fixme: I guess it can be done in a different place?
-                let lines: Vec<_> = content.lines().map(|l| l.to_owned()).collect();
+                let lines: Vec<_> = content.lines().map(ToOwned::to_owned).collect();
                 rows[row].push(lines);
             });
         });
@@ -509,7 +509,7 @@ impl Grid {
             &mut self.config.styles.global.padding,
             entity,
             padding,
-        )
+        );
     }
 
     /// Set a formatting to a given cells.
@@ -519,7 +519,7 @@ impl Grid {
             &mut self.config.styles.global.formatting,
             entity,
             formatting,
-        )
+        );
     }
 
     /// Set a vertical alignment to a given cells.
@@ -529,7 +529,7 @@ impl Grid {
             &mut self.config.styles.global.alignment_vertical,
             entity,
             alignment,
-        )
+        );
     }
 
     /// Set a horizontal alignment to a given cells.
@@ -539,7 +539,7 @@ impl Grid {
             &mut self.config.styles.global.alignment_horizontal,
             entity,
             alignment,
-        )
+        );
     }
 
     fn set_cell_span(&mut self, (row, mut col): Position, mut span: usize) {
@@ -573,11 +573,11 @@ impl Grid {
         self.spans.insert((row, col), span);
     }
 
-    fn _set_text(&mut self, entity: Entity, text: String) {
+    fn _set_text(&mut self, entity: Entity, text: &str) {
         entity
             .iter(self.count_rows(), self.count_columns())
             .for_each(|(row, col)| {
-                self.cells[row][col] = text.clone();
+                self.cells[row][col] = text.to_owned();
             });
     }
 
@@ -692,7 +692,7 @@ impl fmt::Display for Grid {
         let heights = rows_height(self, &cells);
         let widths = columns_width(self, &cells);
 
-        print_grid(f, self, widths, heights, &cells)
+        print_grid(f, self, &widths, heights, &cells)
     }
 }
 
@@ -724,7 +724,7 @@ impl Entity {
 
 /// An iterator over cells.
 ///
-/// Produced from [Entity::iter].
+/// Produced from [`Entity::iter`].
 #[derive(Debug)]
 pub struct EntityIterator {
     entity: Entity,
@@ -958,7 +958,7 @@ impl<T> Border<T> {
 
 impl<T: Copy> Border<T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [Border::new] with the same character set to each side.
+    /// It behaives like [`Border::new`] with the same character set to each side.
     pub fn filled(c: T) -> Self {
         Self::new(c, c, c, c, c, c, c, c)
     }
@@ -966,17 +966,17 @@ impl<T: Copy> Border<T> {
 
 impl<T: Copy> Border<&T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [Border::new] with the same character set to each side.
+    /// It behaives like [`Border::new`] with the same character set to each side.
     pub fn cloned(&self) -> Border<T> {
         Border {
-            top: self.top.cloned(),
-            bottom: self.bottom.cloned(),
-            left: self.left.cloned(),
-            right: self.right.cloned(),
-            left_bottom_corner: self.left_bottom_corner.cloned(),
-            left_top_corner: self.left_top_corner.cloned(),
-            right_bottom_corner: self.right_bottom_corner.cloned(),
-            right_top_corner: self.right_top_corner.cloned(),
+            top: self.top.copied(),
+            bottom: self.bottom.copied(),
+            left: self.left.copied(),
+            right: self.right.copied(),
+            left_bottom_corner: self.left_bottom_corner.copied(),
+            left_top_corner: self.left_top_corner.copied(),
+            right_bottom_corner: self.right_bottom_corner.copied(),
+            right_top_corner: self.right_top_corner.copied(),
         }
     }
 }
@@ -1033,7 +1033,7 @@ pub struct Indent {
 impl Indent {
     /// Creates a new Indent structure.
     pub fn new(size: usize, fill: char) -> Self {
-        Self { size, fill }
+        Self { fill, size }
     }
 
     /// Creates a new Indent startucture with space (`' '`) as a fill character.
@@ -1054,7 +1054,7 @@ impl Default for Indent {
     }
 }
 
-/// AlignmentHorizontal represents an horizontal alignment of a cell content.
+/// [`AlignmentHorizontal`] represents an horizontal alignment of a cell content.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentHorizontal {
     Center,
@@ -1102,7 +1102,7 @@ fn print_text(f: &mut fmt::Formatter<'_>, text: &str, tab_width: usize) -> fmt::
     Ok(())
 }
 
-/// AlignmentVertical represents an vertical alignment of a cell content.
+/// [`AlignmentVertical`] represents an vertical alignment of a cell content.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AlignmentVertical {
     Center,
@@ -1244,7 +1244,7 @@ fn top_indent(style: &Style, cell_height: usize, height: usize) -> usize {
     indent + style.padding.top.size
 }
 
-fn repeat_symbol(f: &mut fmt::Formatter<'_>, c: &char, n: usize) -> fmt::Result {
+fn repeat_symbol(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     if n > 0 {
         for _ in 0..n {
             c.fmt(f)?;
@@ -1587,7 +1587,7 @@ fn replace_tab_range(cell: &mut String, n: usize) -> &str {
         } else {
             // I'am not sure which version is faster a loop of 'replace'
             // or allacation of a string for replacement;
-            cell.replace_range(pos..pos + 1, &" ".repeat(n));
+            cell.replace_range(pos..=pos, &" ".repeat(n));
             skip = pos + 1;
         }
 
@@ -1613,7 +1613,7 @@ fn total_width(grid: &Grid, widths: &[usize], margin: &Margin) -> usize {
         .filter(|&col| is_cell_visible(grid, (0, col)))
         .filter(|&col| has_vertical(grid, col))
         .count()
-        + has_vertical(grid, grid.count_columns()) as usize;
+        + usize::from(has_vertical(grid, grid.count_columns()));
 
     content_width + count_borders + margin.left.size + margin.right.size
 }
@@ -2062,15 +2062,12 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
     }
 
     fn is_line_defined(&self, row: usize) -> bool {
-        self.lines
-            .get(&row)
-            .map(|l| {
-                l.left.is_some()
-                    || l.right.is_some()
-                    || l.intersection.is_some()
-                    || l.horizontal.is_some()
-            })
-            .unwrap_or(false)
+        self.lines.get(&row).map_or(false, |l| {
+            l.left.is_some()
+                || l.right.is_some()
+                || l.intersection.is_some()
+                || l.horizontal.is_some()
+        })
     }
 
     fn has_horizontal(&self, row: usize, count_rows: usize) -> bool {
@@ -2215,11 +2212,11 @@ fn get_intersection(grid: &Grid, pos: Position) -> Option<&char> {
 fn print_grid(
     f: &mut fmt::Formatter<'_>,
     grid: &Grid,
-    widths: Vec<usize>,
+    widths: &[usize],
     mut heights: impl Iterator<Item = usize>,
     cells: &[Vec<CellContent<'_>>],
 ) -> fmt::Result {
-    let table_width = row_width_grid(grid, &widths);
+    let table_width = row_width_grid(grid, widths);
 
     if grid.margin.top.size > 0 {
         let width = table_width + grid.margin.left.size + grid.margin.right.size;
@@ -2231,7 +2228,7 @@ fn print_grid(
     for row in 0..grid.count_rows() {
         if has_horizontal(grid, row) {
             repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
-            print_split_line(f, grid, &widths, table_width, row)?;
+            print_split_line(f, grid, widths, table_width, row)?;
             repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
             f.write_char('\n')?;
         }
@@ -2256,7 +2253,7 @@ fn print_grid(
 
                     let style = grid.style(Entity::Cell(row, col));
                     let cell = &cells[row][col];
-                    let width = grid_cell_width(grid, &widths, (row, col));
+                    let width = grid_cell_width(grid, widths, (row, col));
                     build_cell_line(f, cell, i, width, height, &style, grid.config.tab_width)?;
                 }
 
@@ -2285,7 +2282,7 @@ fn print_grid(
     if has_horizontal(grid, grid.count_rows()) {
         f.write_char('\n')?;
         repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
-        print_split_line(f, grid, &widths, table_width, grid.count_rows())?;
+        print_split_line(f, grid, widths, table_width, grid.count_rows())?;
         repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
     }
 
@@ -2311,7 +2308,7 @@ fn repeat_lines(f: &mut fmt::Formatter<'_>, size: usize, width: usize, fill: cha
         repeat_char(f, fill, width)?;
 
         if i + 1 != size {
-            f.write_char('\n')?
+            f.write_char('\n')?;
         }
     }
 
@@ -2374,7 +2371,7 @@ fn print_split_line(
                     prepare_coloring(f, get_horizontal_color(grid, (row, col)), &mut used_color)?;
                 }
 
-                repeat_symbol(f, c, width)?;
+                repeat_symbol(f, *c, width)?;
             }
             None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
         }
@@ -2473,7 +2470,7 @@ fn row_width_grid(grid: &Grid, widths: &[usize]) -> usize {
     let count_borders = (0..grid.count_columns())
         .filter(|&col| has_vertical(grid, col))
         .count()
-        + has_vertical(grid, grid.count_columns()) as usize;
+        + usize::from(has_vertical(grid, grid.count_columns()));
 
     row_width + count_borders
 }
@@ -2537,18 +2534,18 @@ fn invalidate_entity<T>(map: &mut HashMap<Entity, T>, entity: Entity) {
             while let Some(o) = map
                 .keys()
                 .find(|entity| matches!(entity, Entity::Cell(c, _) if *c == col))
-                .cloned()
+                .copied()
             {
-                let _ = map.remove(&o);
+                map.remove(&o);
             }
         }
         Entity::Row(row) => {
             while let Some(o) = map
                 .keys()
                 .find(|entity| matches!(entity, Entity::Cell(_, r) if *r == row))
-                .cloned()
+                .copied()
             {
-                let _ = map.remove(&o);
+                map.remove(&o);
             }
         }
         Entity::Cell(_, _) => (),

@@ -1,9 +1,9 @@
-//! This module contains a list of primitives which can be applied to change [Table] style.
+//! This module contains a list of primitives which can be applied to change [`Table`] style.
 //!
-//! ## [Style]
+//! ## [`Style`]
 //!
 //! It is responsible for a table border style.
-//! An individual cell border can be set by [Border].
+//! An individual cell border can be set by [`Border`].
 //!  
 //! ### Example
 //!
@@ -24,7 +24,7 @@
 //! )
 //! ```
 //!
-//! ## [BorderText]
+//! ## [`BorderText`]
 //!
 //! It's used to override a border with a custom text.
 //!
@@ -50,13 +50,13 @@
 //! )
 //! ```
 //!
-//! ## [Border]
+//! ## [`Border`]
 //!
-//! [Border] can be used to modify cell's borders.
+//! [`Border`] can be used to modify cell's borders.
 //!
 //! It's possible to set a collored border when `color` feature is on.
-//! See [Symbol].
-//! 
+//! See [`Symbol`].
+//!
 //! ### Example
 //!
 //! ```
@@ -79,16 +79,16 @@
 //!     )
 //! )
 //! ```
-//! 
-//! ## [RawStyle]
-//! 
-//! A different representatio of [Style].
+//!
+//! ## [`RawStyle`]
+//!
+//! A different representatio of [`Style`].
 //! With no checks in place.
-//! 
+//!
 //! It also contains a list of types to support colors.
 //!
-//! [Table]: crate::Table
-//! [Symbol]: crate::style::Symbol
+//! [`Table`]: crate::Table
+//! [`Symbol`]: crate::style::Symbol
 
 use std::{borrow::Cow, marker::PhantomData};
 
@@ -96,12 +96,12 @@ use papergrid::{Borders, Entity, Grid, Position};
 
 use crate::{CellOption, TableOption};
 
-/// Style is represents a theme of a [Table].
+/// Style is represents a theme of a [`Table`].
 ///
 /// It tries to limit an controlling a valid state of it.
-/// It doesn't allow to call method [Style::top_left_corner] unless [Style::left] and [Style::top] is set.
+/// It doesn't allow to call method [`Style::top_left_corner`] unless [`Style::left`] and [`Style::top`] is set.
 ///
-/// You can turn [Style] into [RawStyle] to have more controll using [Into] implementation.
+/// You can turn [`Style`] into [`RawStyle`] to have more controll using [`Into`] implementation.
 ///
 /// # Example
 ///
@@ -135,7 +135,7 @@ pub struct Style<T, B, L, R, H, V, Lines = ConstLines<0>> {
 pub struct On;
 
 impl Style<(), (), (), (), (), ()> {
-    /// Empty style is a style with no styling options on,
+    /// `Empty` style is a style with no styling options on,
     ///
     /// ```text
     ///      id  destribution            link
@@ -161,7 +161,7 @@ impl Style<(), (), (), (), (), ()> {
         Style::new(EMPTY)
     }
 
-    /// Blank style looks like the following table
+    /// `Blank` style looks like the following table
     ///
     /// ```text
     ///      id   destribution             link
@@ -173,7 +173,7 @@ impl Style<(), (), (), (), (), ()> {
         Style::new(BLANK)
     }
 
-    /// Default style looks like the following table
+    /// `Ascii` style looks like the following table
     ///
     /// ```text
     ///     +----+--------------+---------------------------+
@@ -220,7 +220,7 @@ impl Style<(), (), (), (), (), ()> {
         Style::new(PSQL)
     }
 
-    /// Github_markdown style looks like the following table
+    /// `Github_markdown` style looks like the following table
     ///
     /// ```text
     ///     | id | destribution |           link            |
@@ -233,7 +233,7 @@ impl Style<(), (), (), (), (), ()> {
         Style::new(GITHUB_MARKDOWN)
     }
 
-    /// Modern style looks like the following table.
+    /// `Modern` style looks like the following table.
     ///
     /// Beware: It uses UTF8 characters.
     ///
@@ -252,7 +252,7 @@ impl Style<(), (), (), (), (), ()> {
         Style::new(MODERN)
     }
 
-    /// Rounded style looks like the following table.
+    /// `Rounded` style looks like the following table.
     ///
     /// Beware: It uses UTF8 characters.
     ///
@@ -269,7 +269,7 @@ impl Style<(), (), (), (), (), ()> {
         Style::new(MODERN_ROUNDED)
     }
 
-    /// Extended style looks like the following table
+    /// `Extended` style looks like the following table
     ///
     /// Beware: It uses UTF8 characters.
     ///
@@ -288,7 +288,7 @@ impl Style<(), (), (), (), (), ()> {
         Style::new(EXTENDED)
     }
 
-    /// ReStructuredText style looks like the following table
+    /// `ReStructuredText` style looks like the following table
     ///
     /// ```text
     ///     ==== ============== ===========================
@@ -305,8 +305,8 @@ impl Style<(), (), (), (), (), ()> {
 
     /// Try to fix the style when table contains spans.
     ///
-    /// By default [Style] doesn't implies any logic to better render split lines when
-    /// [crate::Span] is used.
+    /// By default [`Style`] doesn't implies any logic to better render split lines when
+    /// [`crate::Span`] is used.
     ///
     /// So this function can be used to set the split lines in regard of spans used.
     ///
@@ -613,7 +613,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// Sets a horizontal split line.
     ///
     /// It doesn't include a header split line.
-    /// It must be set via its own method [Self::header].
+    /// It must be set via its own method [`Self::header`].
     ///
     /// Any corners and intersections which were set will be overridden.
     pub fn horizontal(mut self, c: char) -> Style<T, B, L, R, On, V, Lines> {
@@ -698,7 +698,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
         Style::new(a)
     }
 
-    /// Removes all lines set by [Style::lines]
+    /// Removes all lines set by [`Style::lines`]
     pub fn off_lines(self) -> Style<T, B, L, R, H, V> {
         let a = self.inner.set_lines([]);
         Style::new(a)
@@ -706,7 +706,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
 
     /// Get a [Style]'s default horizontal line.
     ///
-    /// It doesn't return an overloaded line via [Style::lines].
+    /// It doesn't return an overloaded line via [`Style::lines`].
     ///
     /// # Example
     ///
@@ -1088,7 +1088,7 @@ impl<Lines> RawStyle<Lines> {
 
     /// Get a border horizontal line.
     ///
-    /// It doesn't return an overloaded line via [RawStyle::set_lines].
+    /// It doesn't return an overloaded line via [`RawStyle::set_lines`].
     pub fn get_horizontal(&self) -> Line<char> {
         Line {
             horizontal: self.borders.horizontal,
@@ -1203,7 +1203,7 @@ where
     }
 }
 
-/// TopBorderText writes a custom text on a top border.
+/// [`BorderText`] writes a custom text on a border.
 ///
 /// # Example
 ///
@@ -1238,9 +1238,9 @@ enum SplitLineIndex {
 }
 
 impl<'a> BorderText<'a> {
-    /// Creates a [BorderText] instance.
+    /// Creates a [`BorderText`] instance.
     ///
-    /// Lines are numbered from 0 to the count_rows included
+    /// Lines are numbered from 0 to the `count_rows` included
     /// (`line >= 0 && line <= count_rows`).
     pub fn new<S: Into<Cow<'a, str>>>(line: usize, text: S) -> Self {
         Self {
@@ -1249,7 +1249,7 @@ impl<'a> BorderText<'a> {
         }
     }
 
-    /// Creates a [BorderText] instance for a top line.
+    /// Creates a [`BorderText`] instance for a top line.
     pub fn first<S: Into<Cow<'a, str>>>(text: S) -> Self {
         Self {
             text: text.into(),
@@ -1257,7 +1257,7 @@ impl<'a> BorderText<'a> {
         }
     }
 
-    /// Creates a [BorderText] instance for a bottom line.
+    /// Creates a [`BorderText`] instance for a bottom line.
     pub fn last<S: Into<Cow<'a, str>>>(text: S) -> Self {
         Self {
             text: text.into(),
@@ -1280,7 +1280,7 @@ impl<'a> TableOption for BorderText<'a> {
             }
         };
 
-        grid.override_split_line(row, self.text.as_ref())
+        grid.override_split_line(row, self.text.as_ref());
     }
 }
 
@@ -1380,7 +1380,7 @@ impl Border {
     }
 
     /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [Border::new] with the same character set to each side.
+    /// It behaives like [`Border::new`] with the same character set to each side.
     pub fn filled(c: char) -> Self {
         Self::new(c, c, c, c, c, c, c, c)
     }
@@ -1418,9 +1418,9 @@ impl CellOption for Border {
 
 pub use papergrid::Line;
 
-/// A correctnes function of style for [crate::Table] which has [crate::Span]s.
+/// A correctnes function of style for [`crate::Table`] which has [`crate::Span`]s.
 ///
-/// See [Style::correct_spans].
+/// See [`Style::correct_spans`].
 #[derive(Debug)]
 pub struct StyleCorrectSpan;
 
@@ -1818,7 +1818,7 @@ fn is_in_span_range(spans: &[(Position, usize)], pos: Position) -> bool {
         .any(|&((row, col), span)| row == pos.0 && pos.1 > col && pos.1 < col + span)
 }
 
-/// An helper for a [BorderLinesIter].
+/// An helper for a [`BorderLinesIter`].
 #[derive(Debug, Clone)]
 pub struct BorderLinesIntoIter<I> {
     iter: I,

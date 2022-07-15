@@ -1,6 +1,6 @@
 //! This module contains a main table representation of this crate [Table].
 //!
-//! There's 1 more table representation which is [ExpandedDisplay].
+//! There's 1 more table representation which is [`ExpandedDisplay`].
 //!
 //! [ExpandedDisplay]: crate::display::ExpandedDisplay
 
@@ -21,7 +21,7 @@ where
     T: TableOption + ?Sized,
 {
     fn change(&mut self, grid: &mut Grid) {
-        T::change(self, grid)
+        T::change(self, grid);
     }
 }
 
@@ -38,10 +38,10 @@ pub trait CellOption {
 
 /// Table structure provides an interface for building a table for types that implements [Tabled].
 ///
-/// To build a string representation of a table you must use a [std::fmt::Display].
+/// To build a string representation of a table you must use a [`std::fmt::Display`].
 /// Or simply call `.to_string()` method.
 ///
-/// The default table [Style] is [Style::ascii],
+/// The default table [Style] is [`Style::ascii`],
 /// with a 1 left and right [Padding].
 ///
 /// ## Example
@@ -136,7 +136,7 @@ impl Table {
         I: IntoIterator<Item = T>,
     {
         let rows = iter.into_iter().map(|t| t.fields());
-        Builder::from_iter(rows).set_columns(T::headers())
+        rows.collect::<Builder>().set_columns(T::headers())
     }
 
     /// Returns a table shape (count rows, count columns).
@@ -174,8 +174,8 @@ where
     }
 }
 
-/// A trait for [IntoIterator] whose Item type is bound to [Tabled].
-/// Any type implements [IntoIterator] can call this function directly
+/// A trait for [`IntoIterator`] whose Item type is bound to [Tabled].
+/// Any type implements [`IntoIterator`] can call this function directly
 ///
 /// ```rust
 /// use tabled::{TableIteratorExt, Style};

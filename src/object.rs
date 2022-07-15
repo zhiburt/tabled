@@ -198,7 +198,7 @@ where
 
 /// Segment which cantains all cells on the table.
 ///
-/// Can be crated from [Segment::all].
+/// Can be crated from [`Segment::all`].
 #[derive(Debug)]
 pub struct SegmentAll;
 
@@ -223,7 +223,7 @@ impl Object for Frame {
     }
 }
 
-/// FirstRow represents the first row of a [Table].
+/// `FirstRow` represents the first row of a [Table].
 /// It's often contains headers data.
 ///
 /// [Table]: crate::Table
@@ -250,9 +250,9 @@ impl Add<usize> for FirstRow {
     }
 }
 
-/// LastRow represents the last row of a [Table].
+/// `LastRow` represents the last row of a [`Table`].
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct LastRow;
 
@@ -323,9 +323,9 @@ impl Object for LastRowOffset {
     }
 }
 
-/// Row denotes a set of cells on given rows on a [Table].
+/// Row denotes a set of cells on given rows on a [`Table`].
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Rows<R> {
     range: R,
@@ -335,7 +335,7 @@ impl<R> Rows<R>
 where
     R: RangeBounds<usize>,
 {
-    /// Returns a new instance of [Rows] for a range of rows.
+    /// Returns a new instance of [`Rows`] for a range of rows.
     ///
     /// If the boundaries are exceeded it may panic.
     pub fn new(range: R) -> Self {
@@ -344,21 +344,21 @@ where
 }
 
 impl Rows<()> {
-    /// Returns a new instance of [Rows] with a single row.
+    /// Returns a new instance of [`Rows`] with a single row.
     ///
     /// If the boundaries are exceeded it may panic.
     pub fn single(index: usize) -> Row {
         Row { index }
     }
 
-    /// Returns a first row [Object].
+    /// Returns a first row [`Object`].
     ///
     /// If the table has 0 rows returns an empty set of cells.
     pub fn first() -> FirstRow {
         FirstRow
     }
 
-    /// Returns a last row [Object].
+    /// Returns a last row [`Object`].
     ///
     /// If the table has 0 rows returns an empty set of cells.
     pub fn last() -> LastRow {
@@ -379,9 +379,9 @@ where
     }
 }
 
-/// Column denotes a set of cells on given columns on a [Table].
+/// Column denotes a set of cells on given columns on a [`Table`].
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Columns<R> {
     range: R,
@@ -391,7 +391,7 @@ impl<R> Columns<R>
 where
     R: RangeBounds<usize>,
 {
-    /// Returns a new instance of [Columns] for a range of columns.
+    /// Returns a new instance of [`Columns`] for a range of columns.
     ///
     /// If the boundaries are exceeded it may panic.
     pub fn new(range: R) -> Self {
@@ -407,14 +407,14 @@ impl Columns<()> {
         Column(index)
     }
 
-    /// Returns a new instance of [Columns] for a first column.
+    /// Returns a new instance of [`Columns`] for a first column.
     ///
     /// If the boundaries are exceeded the object will produce no cells.
     pub fn first() -> FirstColumn {
         FirstColumn
     }
 
-    /// Returns a new instance of [Columns] for a last column.
+    /// Returns a new instance of [`Columns`] for a last column.
     ///
     /// If the boundaries are exceeded the object will produce no cells.
     pub fn last() -> LastColumn {
@@ -434,7 +434,7 @@ where
     }
 }
 
-/// FirstColumn represents the first column on a grid.
+/// `FirstColumn` represents the first column on a grid.
 #[derive(Debug)]
 pub struct FirstColumn;
 
@@ -458,7 +458,7 @@ impl Add<usize> for FirstColumn {
     }
 }
 
-/// LastColumn represents the last column on a grid.
+/// `LastColumn` represents the last column on a grid.
 #[derive(Debug)]
 pub struct LastColumn;
 
@@ -504,7 +504,7 @@ impl Object for Column {
     }
 }
 
-/// LastColumnOffset represents a single column on a grid indexed via offset from the last column.
+/// `LastColumnOffset` represents a single column on a grid indexed via offset from the last column.
 #[derive(Debug)]
 pub struct LastColumnOffset {
     offset: usize,
@@ -528,9 +528,9 @@ impl Object for LastColumnOffset {
     }
 }
 
-/// Cell denotes a particular cell on a [Table].
+/// Cell denotes a particular cell on a [`Table`].
 ///
-/// [Table]: crate::Table
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Cell(pub usize, pub usize);
 
@@ -542,7 +542,7 @@ impl Object for Cell {
     }
 }
 
-/// An [Iterator] which goes goes over all cell in a sector in a [crate::Table].
+/// An [`Iterator`] which goes goes over all cell in a sector in a [`crate::Table`].
 #[derive(Debug)]
 pub struct SectorIter {
     iter: SectorCellsIter,
@@ -612,7 +612,7 @@ impl Iterator for SectorCellsIter {
     }
 }
 
-/// An [Iterator] which goes goes over all cell on a frame of a [crate::Table].
+/// An [`Iterator`] which goes goes over all cell on a frame of a [`crate::Table`].
 #[derive(Debug)]
 pub struct FrameIter {
     rows: usize,
@@ -658,7 +658,7 @@ impl Iterator for FrameIter {
     }
 }
 
-/// An [Iterator] which goes goes over all rows of a [crate::Table].
+/// An [`Iterator`] which goes goes over all rows of a [`crate::Table`].
 #[derive(Debug)]
 pub struct RowsIter {
     start: usize,
@@ -686,7 +686,7 @@ impl Iterator for RowsIter {
     }
 }
 
-/// An [Iterator] which goes goes over columns of a [crate::Table].
+/// An [`Iterator`] which goes goes over columns of a [`crate::Table`].
 #[derive(Debug)]
 pub struct ColumnsIter {
     start: usize,
@@ -734,7 +734,7 @@ impl Iterator for EntityOnce {
     }
 }
 
-/// An [Iterator] which goes over a combination [Object::Iter].
+/// An [`Iterator`] which goes over a combination [`Object::Iter`].
 #[derive(Debug)]
 pub struct UnionIter<L, R> {
     lhs: Option<L>,
@@ -815,7 +815,7 @@ where
     }
 }
 
-/// An [Iterator] which goes over only cells which are present in first [Object::Iter] but not second.
+/// An [`Iterator`] which goes over only cells which are present in first [`Object::Iter`] but not second.
 #[derive(Debug)]
 pub struct DiffIter<L> {
     lhs: L,
@@ -883,7 +883,7 @@ where
     }
 }
 
-/// An [Iterator] which goes goes over cells which are present in both [Object::Iter]ators.
+/// An [`Iterator`] which goes goes over cells which are present in both [`Object::Iter`]ators.
 #[derive(Debug)]
 pub struct IntersectIter<L> {
     lhs: L,
@@ -951,7 +951,7 @@ where
     }
 }
 
-/// An [Iterator] which goes goes over cells which are not present an [Object::Iter]ator.
+/// An [`Iterator`] which goes goes over cells which are not present an [`Object::Iter`]ator.
 #[derive(Debug)]
 pub struct InversionIter {
     all: SectorCellsIter,

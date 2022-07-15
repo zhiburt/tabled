@@ -54,7 +54,7 @@ impl Padding {
     /// Construct's an Padding object.
     ///
     /// It uses space(' ') as a default fill character.
-    /// To set a custom character you can use [Self::set_fill] function.
+    /// To set a custom character you can use [`Self::set_fill`] function.
     pub fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
         Self(papergrid::Padding {
             top: Indent::spaced(top),
@@ -67,7 +67,7 @@ impl Padding {
     /// Construct's an Padding object with all sides set to 0.
     ///
     /// It uses space(' ') as a default fill character.
-    /// To set a custom character you can use [Self::set_fill] function.
+    /// To set a custom character you can use [`Self::set_fill`] function.
     pub fn zero() -> Self {
         let indent = Indent::spaced(0);
         Self(papergrid::Padding {
@@ -90,6 +90,6 @@ impl Padding {
 
 impl CellOption for Padding {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        grid.set_padding(entity, self.0)
+        grid.set_padding(entity, self.0);
     }
 }

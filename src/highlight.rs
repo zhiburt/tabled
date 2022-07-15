@@ -1,5 +1,5 @@
 //! This module contains a [Highlight] primitive, which helps
-//! changing a [Border] style of any segment on a [crate::Table].
+//! changing a [Border] style of any segment on a [`crate::Table`].
 
 use std::collections::HashSet;
 
@@ -7,7 +7,7 @@ use papergrid::{Entity, Grid, Position, Settings};
 
 use crate::{object::Object, style::Border, TableOption};
 
-/// Highlight modifies a table style by changing a border of a target [crate::Table] segment.
+/// Highlight modifies a table style by changing a border of a target [`crate::Table`] segment.
 ///
 /// # Example
 ///
@@ -115,7 +115,7 @@ where
         let segments = split_segments(cells, grid.count_rows(), grid.count_columns());
 
         for sector in segments {
-            set_border(grid, sector, self.border.clone());
+            set_border(grid, &sector, self.border.clone());
         }
     }
 }
@@ -240,14 +240,14 @@ fn is_segment_connected(
     false
 }
 
-fn set_border(grid: &mut Grid, sector: HashSet<(usize, usize)>, border: Border) {
+fn set_border(grid: &mut Grid, sector: &HashSet<(usize, usize)>, border: Border) {
     if sector.is_empty() {
         return;
     }
 
     if let Some(border) = border.into() {
-        for &(row, col) in &sector {
-            let border = build_cell_border(&sector, (row, col), &border);
+        for &(row, col) in sector {
+            let border = build_cell_border(sector, (row, col), &border);
 
             grid.set(Entity::Cell(row, col), Settings::default().border(border));
         }

@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example nested_table`
 //!
-//! The table is a take on the one from https://github.com/p-ranav/tabulate#nested-tables
+//! The table is a take on the one from https://github.com/p-ranav/tabulate#nested-tables/
 
 use std::iter::FromIterator;
 

@@ -1,8 +1,8 @@
 //! This module contains settings for render strategy of papergrid.
 //!
-//! [TrimStrategy] and [AlignmentStrategy] allows to set [Alignment] settings.
+//! [`TrimStrategy`] and [`AlignmentStrategy`] allows to set [Alignment] settings.
 //!
-//! [TabSize] sets a default tab size.
+//! [`TabSize`] sets a default tab size.
 //!
 //! [Alignment]: crate::Alignment
 
@@ -27,7 +27,7 @@ impl TableOption for TabSize {
     }
 }
 
-/// AlignmentStrategy is a responsible for a flow how we apply an alignment.
+/// `AlignmentStrategy` is a responsible for a flow how we apply an alignment.
 /// It mostly matters for multiline strings.
 ///
 /// # Examples
@@ -173,7 +173,7 @@ impl CellOption for AlignmentStrategy {
     }
 }
 
-/// TrimStrategy determines if it's allowed to use empty space while doing [Alignment].
+/// `TrimStrategy` determines if it's allowed to use empty space while doing [Alignment].
 ///
 /// # Examples
 ///
@@ -269,6 +269,6 @@ impl CellOption for TrimStrategy {
             }
         }
 
-        grid.set_formatting(entity, formatting)
+        grid.set_formatting(entity, formatting);
     }
 }

@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example format`
 //!
-//! The example shows a usage of [tabled::Format]/[tabled::FormatWithIndex].
+//! The example shows a usage of [`tabled::Format`]/[`tabled::FormatWithIndex`].
 
 use tabled::{
     object::{Columns, Object, Rows},

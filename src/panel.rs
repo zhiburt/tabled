@@ -90,7 +90,7 @@ pub struct Header<S: AsRef<str>>(pub S);
 
 impl<S: AsRef<str>> TableOption for Header<S> {
     fn change(&mut self, grid: &mut Grid) {
-        Panel(self.0.as_ref(), 0).change(grid)
+        Panel(self.0.as_ref(), 0).change(grid);
     }
 }
 
@@ -101,6 +101,6 @@ pub struct Footer<S: AsRef<str>>(pub S);
 
 impl<S: AsRef<str>> TableOption for Footer<S> {
     fn change(&mut self, grid: &mut Grid) {
-        Panel(self.0.as_ref(), grid.count_rows()).change(grid)
+        Panel(self.0.as_ref(), grid.count_rows()).change(grid);
     }
 }

@@ -54,7 +54,7 @@ use papergrid::{cut_str, string_width_multiline};
 
 use crate::{width::wrap_text, Tabled};
 
-/// ExpandedDisplay display data in a 'expanded display mode' from postgresql.
+/// `ExpandedDisplay` display data in a 'expanded display mode' from postgresql.
 /// It may be useful for a large data sets with a lot of fields.
 ///
 /// See 'Examples' in <https://www.postgresql.org/docs/current/app-psql.html.>.
@@ -86,7 +86,7 @@ pub struct ExpandedDisplay {
 }
 
 impl ExpandedDisplay {
-    /// Creates a new instance of ExpandedDisplay
+    /// Creates a new instance of `ExpandedDisplay`
     pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
         let data = iter.into_iter().map(|i| i.fields()).collect();
         let header = T::headers();
@@ -111,7 +111,7 @@ impl ExpandedDisplay {
 
     /// Sets a value formatter.
     ///
-    /// This method overrides others formatters like [ExpandedDisplay::truncate] and [ExpandedDisplay::wrap].
+    /// This method overrides others formatters like [`ExpandedDisplay::truncate`] and [`ExpandedDisplay::wrap`].
     pub fn formatter(&mut self, f: impl Fn(&str) -> String + 'static) -> &mut Self {
         self.format_value = Some(Box::new(f));
         self

@@ -306,7 +306,7 @@ impl<T: fmt::Display, const N: usize> Tabled for [T; N] {
     const LENGTH: usize = N;
 
     fn fields(&self) -> Vec<String> {
-        self.iter().map(|e| e.to_string()).collect()
+        self.iter().map(ToString::to_string).collect()
     }
 
     fn headers() -> Vec<String> {
