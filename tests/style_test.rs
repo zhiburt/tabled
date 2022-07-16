@@ -134,6 +134,17 @@ test_table!(
 );
 
 test_table!(
+    ascii_rounded_style,
+    Table::new(create_vector::<3, 3>()).with(Style::ascii_rounded()),
+    ".------------------------------------."
+    "| N | column 0 | column 1 | column 2 |"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "'------------------------------------'"
+);
+
+test_table!(
     style_head_changes,
     Table::new(create_vector::<3, 3>()).with(Style::modern().off_horizontal()),
     "┌───┬──────────┬──────────┬──────────┐"

@@ -303,6 +303,20 @@ impl Style<(), (), (), (), (), ()> {
         Style::new(RE_STRUCTURED_TEXT)
     }
 
+    /// A rounded theme, using ascii chars with no horizontal lines.
+    ///
+    /// ```text
+    ///     .-----------------------------------------------.
+    ///     | id | destribution |           link            |
+    ///     | 0  |    Fedora    |  https://getfedora.org/   |
+    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
+    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
+    ///     '-----------------------------------------------'
+    /// ```
+    pub const fn ascii_rounded() -> Style<On, On, On, On, (), On> {
+        Style::new(ASCII_ROUNDED)
+    }
+
     /// Try to fix the style when table contains spans.
     ///
     /// By default [`Style`] doesn't implies any logic to better render split lines when
@@ -460,6 +474,16 @@ const RE_STRUCTURED_TEXT: RawStyle<ConstLines<1>> = RawStyle::new(
     None,
     Some(' '),
     [(1, Line::short('=', ' '))],
+);
+
+const ASCII_ROUNDED: RawStyle = RawStyle::new(
+    Line::full('-', '-', '.', '.'),
+    Line::full('-', '-', '\'', '\''),
+    Line::empty(),
+    Some('|'),
+    Some('|'),
+    Some('|'),
+    [],
 );
 
 impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
