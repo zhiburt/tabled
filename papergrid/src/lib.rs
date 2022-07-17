@@ -1775,6 +1775,50 @@ pub struct Borders<T = char> {
     pub intersection: Option<T>,
 }
 
+impl<T> Borders<T> {
+    pub const fn has_left(&self) -> bool {
+        self.vertical_left.is_some()
+            || self.horizontal_left.is_some()
+            || self.top_left.is_some()
+            || self.bottom_left.is_some()
+    }
+
+    pub const fn has_right(&self) -> bool {
+        self.vertical_right.is_some()
+            || self.horizontal_right.is_some()
+            || self.top_right.is_some()
+            || self.bottom_right.is_some()
+    }
+
+    pub const fn has_top(&self) -> bool {
+        self.top.is_some()
+            || self.top_intersection.is_some()
+            || self.top_left.is_some()
+            || self.top_right.is_some()
+    }
+
+    pub const fn has_bottom(&self) -> bool {
+        self.bottom.is_some()
+            || self.bottom_intersection.is_some()
+            || self.bottom_left.is_some()
+            || self.bottom_right.is_some()
+    }
+
+    pub const fn has_horizontal(&self) -> bool {
+        self.horizontal.is_some()
+            || self.horizontal_left.is_some()
+            || self.horizontal_right.is_some()
+            || self.intersection.is_some()
+    }
+
+    pub const fn has_vertical(&self) -> bool {
+        self.intersection.is_some()
+            || self.vertical_intersection.is_some()
+            || self.top_intersection.is_some()
+            || self.bottom_intersection.is_some()
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 struct BordersMap<T> {
     vertical: HashMap<Position, T>,
@@ -1825,23 +1869,23 @@ impl<T> Line<T> {
         }
     }
 
-    pub fn horizontal(mut self, c: T) -> Self {
-        self.horizontal = Some(c);
+    pub fn horizontal(mut self, c: Option<T>) -> Self {
+        self.horizontal = c;
         self
     }
 
-    pub fn intersection(mut self, c: T) -> Self {
-        self.intersection = Some(c);
+    pub fn intersection(mut self, c: Option<T>) -> Self {
+        self.intersection = c;
         self
     }
 
-    pub fn left(mut self, c: T) -> Self {
-        self.left = Some(c);
+    pub fn left(mut self, c: Option<T>) -> Self {
+        self.left = c;
         self
     }
 
-    pub fn right(mut self, c: T) -> Self {
-        self.right = Some(c);
+    pub fn right(mut self, c: Option<T>) -> Self {
+        self.right = c;
         self
     }
 
@@ -2071,75 +2115,19 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
     }
 
     fn has_horizontal(&self, row: usize, count_rows: usize) -> bool {
-        if self.global.is_some() {
-            return true;
-        }
-
-        if row == count_rows {
-            if self.borders.bottom.is_some()
-                || self.borders.bottom_intersection.is_some()
-                || self.borders.bottom_left.is_some()
-                || self.borders.bottom_right.is_some()
-            {
-                return true;
-            }
-        } else if row == 0 {
-            if self.borders.top.is_some()
-                || self.borders.top_intersection.is_some()
-                || self.borders.top_left.is_some()
-                || self.borders.top_right.is_some()
-            {
-                return true;
-            }
-        } else if self.borders.horizontal.is_some()
-            || self.borders.horizontal_left.is_some()
-            || self.borders.horizontal_right.is_some()
-            || self.borders.intersection.is_some()
-        {
-            return true;
-        }
-
-        if self.is_horizontal_set(row) {
-            return true;
-        }
-
-        false
+        self.global.is_some()
+            || (row == 0 && self.borders.has_top())
+            || (row == count_rows && self.borders.has_bottom())
+            || (row > 0 && row < count_rows && self.borders.has_horizontal())
+            || self.is_horizontal_set(row)
     }
 
     fn has_vertical(&self, col: usize, count_cols: usize) -> bool {
-        if self.global.is_some() {
-            return true;
-        }
-
-        if col == count_cols {
-            if self.borders.vertical_right.is_some()
-                || self.borders.horizontal_right.is_some()
-                || self.borders.top_right.is_some()
-                || self.borders.bottom_right.is_some()
-            {
-                return true;
-            }
-        } else if col == 0 {
-            if self.borders.vertical_left.is_some()
-                || self.borders.horizontal_left.is_some()
-                || self.borders.top_left.is_some()
-                || self.borders.bottom_left.is_some()
-            {
-                return true;
-            }
-        } else if self.borders.vertical_intersection.is_some()
-            || self.borders.top_intersection.is_some()
-            || self.borders.bottom_intersection.is_some()
-            || self.borders.intersection.is_some()
-        {
-            return true;
-        }
-
-        if self.is_vertical_set(col, count_cols) {
-            return true;
-        }
-
-        false
+        self.global.is_some()
+            || (col == 0 && self.borders.has_left())
+            || (col == count_cols && self.borders.has_right())
+            || (col > 0 && col < count_cols && self.borders.has_vertical())
+            || self.is_vertical_set(col, count_cols)
     }
 
     fn is_horizontal_set(&self, row: usize) -> bool {

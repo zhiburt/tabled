@@ -132,6 +132,9 @@ impl Width {
 /// Otherwise keeps the content of a cell untouched.
 ///
 /// The function is color aware if a `color` feature is on.
+///
+/// Be aware that it doesn't consider padding.
+/// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
 ///    
 /// ## Example
 ///
@@ -154,8 +157,17 @@ struct TruncateSuffix<'a> {
     limit: SuffixLimit,
 }
 
+impl Default for TruncateSuffix<'_> {
+    fn default() -> Self {
+        Self {
+            text: Default::default(),
+            limit: SuffixLimit::Cut,
+        }
+    }
+}
+
 /// A suffix limit settings.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum SuffixLimit {
     /// Cut the suffix.
     Cut,
@@ -179,7 +191,7 @@ where
     }
 }
 
-impl<W, P> Truncate<'_, W, P> {
+impl<'a, W, P> Truncate<'a, W, P> {
     /// Sets a suffix which will be appended to a resultant string.
     ///
     /// The suffix is used in 3 circamstances:
@@ -188,28 +200,25 @@ impl<W, P> Truncate<'_, W, P> {
     ///     2. If suffix is bigger than the original string.
     ///        We cut the suffix to fit in the width by default.
     ///        But you can peak the behaviour by using [`Truncate::suffix_limit`]
-    pub fn suffix<'a, S: Into<Cow<'a, str>>>(self, suffix: S) -> Truncate<'a, W, P> {
-        let used_limit = self.suffix.map_or(SuffixLimit::Cut, |s| s.limit);
+    pub fn suffix<S: Into<Cow<'a, str>>>(self, suffix: S) -> Truncate<'a, W, P> {
+        let mut suff = self.suffix.unwrap_or_default();
+        suff.text = suffix.into();
 
         Truncate {
             width: self.width,
-            suffix: Some(TruncateSuffix {
-                text: suffix.into(),
-                limit: used_limit,
-            }),
+            suffix: Some(suff),
             _priority: PhantomData::default(),
         }
     }
-}
 
-impl<'a, W, P> Truncate<'a, W, P> {
     /// Sets a suffix limit, which is used when the suffix is too big to be used.
     pub fn suffix_limit(self, limit: SuffixLimit) -> Truncate<'a, W, P> {
-        let text = self.suffix.map_or(Cow::Borrowed(""), |s| s.text);
+        let mut suff = self.suffix.unwrap_or_default();
+        suff.limit = limit;
 
         Truncate {
             width: self.width,
-            suffix: Some(TruncateSuffix { text, limit }),
+            suffix: Some(suff),
             _priority: PhantomData::default(),
         }
     }
@@ -275,6 +284,7 @@ where
                 }
             } else {
                 let content = cut_str(&content, width);
+
                 if suffix.is_empty() {
                     content
                 } else {
@@ -293,6 +303,9 @@ where
 /// Otherwise keeps the content of a cell untouched.
 ///
 /// The function is color aware if a `color` feature is on.
+///
+/// Be aware that it doesn't consider padding.
+/// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
 ///
 /// ## Example
 ///
@@ -329,6 +342,8 @@ impl<W, P> Wrap<W, P> {
     /// - [`PriorityNone`] which cuts the columns one after another.
     /// - [`PriorityMax`] cuts the biggest columns first.
     /// - [`PriorityMin`] cuts the lowest columns first.
+    /// Be aware that it doesn't consider padding.
+    /// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
     pub fn priority<PP>(self) -> Wrap<W, PP> {
         Wrap {
             width: self.width,
@@ -381,6 +396,9 @@ where
 ///
 /// It does anything in case if the content's length is bigger then the boundary.
 /// It doesn't include a [`Padding`] settings.
+///
+/// Be aware that it doesn't consider padding.
+/// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
 ///
 /// ## Examples
 ///
@@ -485,17 +503,12 @@ where
         let widths = grid.build_widths();
         let total_width = grid.estimate_total_width(&widths);
         if width < total_width {
-            let suffix = self.suffix.as_ref().map_or("", |s| &s.text);
-            let suffix_limit = self.suffix.as_ref().map_or(&SuffixLimit::Cut, |s| &s.limit);
-            truncate_total_width(
-                grid,
-                widths,
-                total_width,
-                width,
-                suffix,
-                suffix_limit,
-                P::create(),
-            );
+            let suffix = self.suffix.as_ref().map(|s| TruncateSuffix {
+                limit: s.limit,
+                text: Cow::Borrowed(&s.text),
+            });
+
+            truncate_total_width(grid, widths, total_width, width, suffix, P::create());
         }
     }
 }
@@ -834,15 +847,13 @@ fn truncate_total_width<P: ColumnPeaker>(
     widths: Vec<usize>,
     total_width: usize,
     width: usize,
-    suffix: &str,
-    suffix_limit: &SuffixLimit,
+    suffix: Option<TruncateSuffix<'_>>,
     priority: P,
 ) {
     let points = decrease_total_width(grid, widths, total_width, width, priority);
 
-    let mut truncate = Truncate::new(0)
-        .suffix(suffix)
-        .suffix_limit(suffix_limit.clone());
+    let mut truncate = Truncate::new(0);
+    truncate.suffix = suffix;
     for ((row, col), width) in points {
         truncate.width = width;
         truncate.change_cell(grid, Entity::Cell(row, col));

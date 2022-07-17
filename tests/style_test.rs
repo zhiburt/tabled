@@ -643,7 +643,7 @@ fn custom_style_test() {
         ),
     );
     test_style!(
-        Style::empty().lines([(1, Line::default().horizontal('-'))]),
+        Style::empty().lines([(1, Line::default().horizontal(Some('-')))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -721,7 +721,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .top('-')
-            .lines([(1, Line::default().horizontal('+'))]),
+            .lines([(1, Line::default().horizontal(Some('+')))]),
         static_table!(
             "---------------------------------"
             " N  column 0  column 1  column 2 "
@@ -789,7 +789,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .bottom('-')
-            .lines([(1, Line::default().horizontal('+'))]),
+            .lines([(1, Line::default().horizontal(Some('+')))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "+++++++++++++++++++++++++++++++++"
@@ -853,7 +853,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .left('-')
-            .lines([(1, Line::default().horizontal('+'))]),
+            .lines([(1, Line::default().horizontal(Some('+')))]),
         static_table!(
             "- N  column 0  column 1  column 2 "
             " +++++++++++++++++++++++++++++++++"
@@ -916,7 +916,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .right('-')
-            .lines([(1, Line::default().horizontal('+'))]),
+            .lines([(1, Line::default().horizontal(Some('+')))]),
         static_table!(
             " N  column 0  column 1  column 2 -"
             "+++++++++++++++++++++++++++++++++ "
@@ -979,7 +979,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .vertical('-')
-            .lines([(1, Line::default().horizontal('+'))]),
+            .lines([(1, Line::default().horizontal(Some('+')))]),
         static_table!(
             " N - column 0 - column 1 - column 2 "
             "+++ ++++++++++ ++++++++++ ++++++++++"
@@ -1054,7 +1054,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .horizontal('-')
-            .lines([(1, Line::default().horizontal('+'))]),
+            .lines([(1, Line::default().horizontal(Some('+')))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "+++++++++++++++++++++++++++++++++"
@@ -1068,7 +1068,7 @@ fn custom_style_test() {
 
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal('-'))])
+            .lines([(1, Line::default().horizontal(Some('-')))])
             .top('+'),
         static_table!(
             "+++++++++++++++++++++++++++++++++"
@@ -1081,7 +1081,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal('-'))])
+            .lines([(1, Line::default().horizontal(Some('-')))])
             .bottom('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
@@ -1094,7 +1094,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal('-'))])
+            .lines([(1, Line::default().horizontal(Some('-')))])
             .left('+'),
         static_table!(
             "+ N  column 0  column 1  column 2 "
@@ -1106,7 +1106,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal('-'))])
+            .lines([(1, Line::default().horizontal(Some('-')))])
             .right('+'),
         static_table!(
             " N  column 0  column 1  column 2 +"
@@ -1118,7 +1118,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal('-'))])
+            .lines([(1, Line::default().horizontal(Some('-')))])
             .vertical('+'),
         static_table!(
             " N + column 0 + column 1 + column 2 "
@@ -1130,7 +1130,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal('-'))])
+            .lines([(1, Line::default().horizontal(Some('-')))])
             .horizontal('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
@@ -1315,7 +1315,7 @@ fn custom_style_test() {
     test_style!(Style::empty().horizontal('-').off_horizontal(), empty_table);
     test_style!(Style::empty().vertical('-').off_vertical(), empty_table);
     test_style!(
-        Style::empty().lines([(1, Line::default().horizontal('-'))]),
+        Style::empty().lines([(1, Line::default().horizontal(Some('-')))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
