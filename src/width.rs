@@ -67,7 +67,7 @@ use crate::{object::Entity, CellOption, TableOption};
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
-///     .with(Style::github_markdown())
+///     .with(Style::markdown())
 ///     .with(Modify::new(Segment::all()).with(Width::truncate(3).suffix("...")));
 /// ```
 ///
@@ -460,7 +460,7 @@ where
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
-///     .with(Style::github_markdown())
+///     .with(Style::markdown())
 ///     .with(Modify::new(Segment::all()).with(MinWidth::new(10)));
 /// ```
 /// Table change
@@ -639,7 +639,7 @@ where
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
-///     .with(Style::github_markdown())
+///     .with(Style::markdown())
 ///     .with(Modify::new(Segment::all()).with(Padding::zero()))
 ///     .with(Justify::new(3));
 /// ```
@@ -652,7 +652,7 @@ where
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
-///     .with(Style::github_markdown())
+///     .with(Style::markdown())
 ///     .with(Justify::max());
 /// ```
 ///

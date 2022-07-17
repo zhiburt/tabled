@@ -252,20 +252,16 @@ impl Style<(), (), (), (), (), ()> {
         )
     }
 
-    // todo: Rename to markdown
-    //       fix the style.
-
-    /// `github_markdown` style mimics a `Markdown` table style.
-    ///
+    /// `markdown` style mimics a `Markdown` table style.
     ///
     /// ```text
     ///     | id | destribution |           link            |
-    ///     |----+--------------+---------------------------|
+    ///     |----|--------------|---------------------------|
     ///     | 0  |    Fedora    |  https://getfedora.org/   |
     ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     /// ```
-    pub const fn github_markdown() -> Style<(), (), On, On, (), On, ConstLines<1>> {
+    pub const fn markdown() -> Style<(), (), On, On, (), On, ConstLines<1>> {
         Style::new(
             create_borders(
                 Line::empty(),
@@ -275,7 +271,7 @@ impl Style<(), (), (), (), (), ()> {
                 Some('|'),
                 Some('|'),
             ),
-            [(1, Line::full('-', '+', '|', '|'))],
+            [(1, Line::full('-', '|', '|', '|'))],
         )
     }
 

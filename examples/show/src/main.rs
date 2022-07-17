@@ -187,7 +187,7 @@ fn run(movies: &[Movie], debug: bool) {
         action(|t| t.with(Style::ascii())),
         action(|t| t.with(Style::rounded())),
         action(|t| t.with(Style::psql())),
-        action(|t| t.with(Style::github_markdown())),
+        action(|t| t.with(Style::markdown())),
         action(|t| t.with(Style::blank())),
     ];
 

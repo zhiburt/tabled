@@ -30,7 +30,7 @@ fn main() {
     ];
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Rows::new(1..).modify().with(Alignment::left()));
 
     println!("{}", table);

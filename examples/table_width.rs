@@ -14,7 +14,7 @@ fn main() {
 
     let table = Table::builder(data)
         .build()
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()));
 
     println!("Original table\n{}", table);

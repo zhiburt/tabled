@@ -25,7 +25,7 @@ use crate::{object::Object, style::Border, TableOption};
 /// let table = data.iter()
 ///                .enumerate()
 ///                .table()
-///                .with(Style::github_markdown())
+///                .with(Style::markdown())
 ///                .with(Highlight::new(Segment::all(), Border::default().top('^').bottom('v')))
 ///                .to_string();
 ///
@@ -34,7 +34,7 @@ use crate::{object::Object, style::Border, TableOption};
 ///     concat!(
 ///         " ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ \n",
 ///         "| usize | &str  |           &str            | bool  |\n",
-///         "|-------+-------+---------------------------+-------|\n",
+///         "|-------|-------|---------------------------|-------|\n",
 ///         "|   0   |  ELF  | Extensible Linking Format | true  |\n",
 ///         "|   1   | DWARF |                           | true  |\n",
 ///         "|   2   |  PE   |    Portable Executable    | false |\n",
@@ -57,7 +57,7 @@ use crate::{object::Object, style::Border, TableOption};
 /// let table = data.iter()
 ///                .enumerate()
 ///                .table()
-///                .with(Style::github_markdown())
+///                .with(Style::markdown())
 ///                .with(Highlight::new(Segment::all().not(Cell(0,0).and(Cell(1, 0).and(Cell(0, 1)).and(Cell(0, 3)))), Border::filled('*')))
 ///                .to_string();
 ///

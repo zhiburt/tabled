@@ -37,10 +37,10 @@ test_table!(
 );
 
 test_table!(
-    github_markdown_style,
-    Table::new(create_vector::<3, 3>()).with(Style::github_markdown()),
+    markdown_style,
+    Table::new(create_vector::<3, 3>()).with(Style::markdown()),
     "| N | column 0 | column 1 | column 2 |"
-    "|---+----------+----------+----------|"
+    "|---|----------|----------|----------|"
     "| 0 |   0-0    |   0-1    |   0-2    |"
     "| 1 |   1-0    |   1-1    |   1-2    |"
     "| 2 |   2-0    |   2-1    |   2-2    |"

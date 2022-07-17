@@ -10,7 +10,7 @@ Bellow there's a list of results of running some examples.
 
 ```
 |  name   | based_on | is_active | is_cool |
-|---------+----------+-----------+---------|
+|---------|----------|-----------|---------|
 | Manjaro | Arch     | true      | true    |
 | Arch    |          | true      | true    |
 | Debian  |          | true      | true    |
@@ -147,11 +147,11 @@ is_cool   | true
 ## format
 
 ```
-|                      0                      |               1                |            2            |
-|---------------------------------------------+--------------------------------+-------------------------|
-| 8ae4e8957caeaa467acbce963701e227af00a1c7... | bypass open-source transmitter |   index neural panel    |
-| 48c76de71bd685486d97dc8f4f05aa6fcc0c3f86... |      program online alarm      |   copy bluetooth card   |
-| 6ffc2a2796229fc7bf59471ad907f58b897005d0... |              CSV               | reboot mobile capacitor |
+                      0                      |               1                |            2            
+---------------------------------------------+--------------------------------+-------------------------
+ 8ae4e8957caeaa467acbce963701e227af00a1c7... | bypass open-source transmitter |   index neural panel    
+ 48c76de71bd685486d97dc8f4f05aa6fcc0c3f86... |      program online alarm      |   copy bluetooth card   
+ 6ffc2a2796229fc7bf59471ad907f58b897005d0... |              CSV               | reboot mobile capacitor 
 ```
 
 ## formatting_settings
@@ -399,7 +399,7 @@ vvvvvvvvvvvvvvvvvv
 
 ```
 | 0                | 1         |
-|------------------+-----------|
+|------------------|-----------|
 | Hello World!!!   | 3.3.22.2  |
 | Guten Morgen     | 1.1.1.1   |
 | Добры вечар      | 127.0.0.1 |
@@ -407,7 +407,7 @@ vvvvvvvvvvvvvvvvvv
 | Ciao mondo       |           |
 
 | 0             | 1      |
-|---------------+--------|
+|---------------|--------|
 | Hello Worl... | 3.3... |
 | Guten Morg... | 1.1... |
 | Добры веча... | 127... |
@@ -415,7 +415,7 @@ vvvvvvvvvvvvvvvvvv
 | Ciao mondo    |        |
 
 | 0     | 1     |
-|-------+-------|
+|-------|-------|
 | Hello | 3.3.. |
 |  Worl | .     |
 | ...   |       |
@@ -432,7 +432,7 @@ vvvvvvvvvvvvvvvvvv
 | mondo |       |
 
 | 0              | 1             |
-|----------------+---------------|
+|----------------|---------------|
 | Hello          | 3.3..         |
 |  Worl          | .             |
 | ...            |               |

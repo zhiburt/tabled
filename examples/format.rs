@@ -35,7 +35,7 @@ fn main() {
     ];
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::psql())
         .with(
             Rows::first()
                 .modify()

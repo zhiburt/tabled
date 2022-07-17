@@ -15,7 +15,7 @@ mod util;
 fn max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(1)))
         .to_string();
 
@@ -23,7 +23,7 @@ fn max_width() {
         table,
         static_table!(
             "| N | column 0 | column 1 | column 2 |"
-            "|---+----------+----------+----------|"
+            "|---|----------|----------|----------|"
             "| 0 |    0     |    0     |    0     |"
             "| 1 |    1     |    1     |    1     |"
             "| 2 |    2     |    2     |    2     |"
@@ -35,7 +35,7 @@ fn max_width() {
 fn max_width_with_suffix() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(
             Modify::new(Columns::new(1..).not(Rows::single(0)))
                 .with(Width::truncate(2).suffix("...")),
@@ -46,7 +46,7 @@ fn max_width_with_suffix() {
         table,
         static_table!(
             "| N | column 0 | column 1 | column 2 |"
-            "|---+----------+----------+----------|"
+            "|---|----------|----------|----------|"
             "| 0 |    ..    |    ..    |    ..    |"
             "| 1 |    ..    |    ..    |    ..    |"
             "| 2 |    ..    |    ..    |    ..    |"
@@ -58,7 +58,7 @@ fn max_width_with_suffix() {
 fn max_width_doesnt_icrease_width_if_it_is_smaller() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(50)))
         .to_string();
 
@@ -66,7 +66,7 @@ fn max_width_doesnt_icrease_width_if_it_is_smaller() {
         table,
         static_table!(
             "| N | column 0 | column 1 | column 2 |"
-            "|---+----------+----------+----------|"
+            "|---|----------|----------|----------|"
             "| 0 |   0-0    |   0-1    |   0-2    |"
             "| 1 |   1-0    |   1-1    |   1-2    |"
             "| 2 |   2-0    |   2-1    |   2-2    |"
@@ -78,7 +78,7 @@ fn max_width_doesnt_icrease_width_if_it_is_smaller() {
 fn max_width_wrapped() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(2)))
         .to_string();
 
@@ -86,7 +86,7 @@ fn max_width_wrapped() {
         table,
         static_table!(
             "| N | column 0 | column 1 | column 2 |"
-            "|---+----------+----------+----------|"
+            "|---|----------|----------|----------|"
             "| 0 |    0-    |    0-    |    0-    |"
             "|   |    0     |    1     |    2     |"
             "| 1 |    1-    |    1-    |    1-    |"
@@ -101,7 +101,7 @@ fn max_width_wrapped() {
 fn max_width_wrapped_does_nothing_if_str_is_smaller() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(100)))
         .to_string();
 
@@ -109,7 +109,7 @@ fn max_width_wrapped_does_nothing_if_str_is_smaller() {
         table,
         static_table!(
             "| N | column 0 | column 1 | column 2 |"
-            "|---+----------+----------+----------|"
+            "|---|----------|----------|----------|"
             "| 0 |   0-0    |   0-1    |   0-2    |"
             "| 1 |   1-0    |   1-1    |   1-2    |"
             "| 2 |   2-0    |   2-1    |   2-2    |"
@@ -122,7 +122,7 @@ fn max_width_wrapped_does_nothing_if_str_is_smaller() {
 fn max_width_wrapped_keep_words() {
     let data = vec!["this is a long sentence"];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
@@ -140,7 +140,7 @@ fn max_width_wrapped_keep_words() {
 
     let data = vec!["this is a long  sentence"];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
@@ -158,7 +158,7 @@ fn max_width_wrapped_keep_words() {
 
     let data = vec!["this is a long   sentence"];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
@@ -175,7 +175,7 @@ fn max_width_wrapped_keep_words() {
 
     let data = vec!["this is a long    sentence"];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
@@ -194,7 +194,7 @@ fn max_width_wrapped_keep_words() {
 
     let data = vec!["this"];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
         .to_string();
 
@@ -216,7 +216,7 @@ fn max_width_wrapped_keep_words_color() {
 
     let data = vec!["this is a long sentence".on_black().green().to_string()];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
@@ -243,7 +243,7 @@ fn max_width_wrapped_keep_words_color() {
 
     let data = vec!["this is a long  sentence".on_black().green().to_string()];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
@@ -270,7 +270,7 @@ fn max_width_wrapped_keep_words_color() {
 
     let data = vec!["this is a long   sentence".on_black().green().to_string()];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
@@ -292,7 +292,7 @@ fn max_width_wrapped_keep_words_color() {
 
     let data = vec!["this is a long    sentence".on_black().green().to_string()];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
@@ -319,7 +319,7 @@ fn max_width_wrapped_keep_words_color() {
 
     let data = vec!["this".on_black().green().to_string()];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
         .to_string();
 
@@ -346,7 +346,7 @@ fn max_width_wrapped_keep_words_color() {
 fn max_width_wrapped_keep_words_long_word() {
     let data = vec!["this is a long sentencesentencesentence"];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
@@ -373,7 +373,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
         .green()
         .to_string()];
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
@@ -413,7 +413,7 @@ fn max_width_wrapped_collored() {
     ];
 
     let table = Table::new(data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::wrap(2)))
         .to_string();
 
@@ -427,7 +427,7 @@ fn max_width_wrapped_collored() {
 fn dont_change_content_if_width_is_less_then_max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::truncate(1000).suffix("...")))
         .to_string();
 
@@ -435,7 +435,7 @@ fn dont_change_content_if_width_is_less_then_max_width() {
         table,
         static_table!(
             "| N | column 0 | column 1 | column 2 |"
-            "|---+----------+----------+----------|"
+            "|---|----------|----------|----------|"
             "| 0 |   0-0    |   0-1    |   0-2    |"
             "| 1 |   1-0    |   1-1    |   1-2    |"
             "| 2 |   2-0    |   2-1    |   2-2    |"
@@ -448,7 +448,7 @@ fn max_width_with_emoji() {
     let data = &["🤠", "😳🥵🥶😱😨", "🚴🏻‍♀️🚴🏻🚴🏻‍♂️🚵🏻‍♀️🚵🏻🚵🏻‍♂️"];
 
     let table = Table::new(data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::truncate(6).suffix("...")))
         .to_string();
 
@@ -476,7 +476,7 @@ fn color_chars_are_stripped() {
     ];
 
     let table = Table::new(data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::truncate(4).suffix("...")))
         .to_string();
 
@@ -501,14 +501,14 @@ fn color_chars_are_stripped() {
 fn min_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(12)));
 
     assert_eq!(
         table.to_string(),
         static_table!(
             "| N            | column 0     | column 1     | column 2     |"
-            "|--------------+--------------+--------------+--------------|"
+            "|--------------|--------------|--------------|--------------|"
             "|      0       |     0-0      |     0-1      |     0-2      |"
             "|      1       |     1-0      |     1-1      |     1-2      |"
             "|      2       |     2-0      |     2-1      |     2-2      |"
@@ -521,7 +521,7 @@ fn min_width() {
         table.to_string(),
         static_table!(
             "| N            | column 0     | column 1     | column 2     |"
-            "|--------------+--------------+--------------+--------------|"
+            "|--------------|--------------|--------------|--------------|"
             "|      0       |     0-0      |     0-1      |     0-2      |"
             "|      1       |     1-0      |     1-1      |     1-2      |"
             "|      2       |     2-0      |     2-1      |     2-2      |"
@@ -533,7 +533,7 @@ fn min_width() {
 fn min_width_with_filler() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(12).fill_with('.')))
         .to_string();
 
@@ -541,7 +541,7 @@ fn min_width_with_filler() {
         table,
         static_table!(
             "| N........... | column 0.... | column 1.... | column 2.... |"
-            "|--------------+--------------+--------------+--------------|"
+            "|--------------|--------------|--------------|--------------|"
             "|      0       |     0-0      |     0-1      |     0-2      |"
             "|      1       |     1-0      |     1-1      |     1-2      |"
             "|      2       |     2-0      |     2-1      |     2-2      |"
@@ -553,14 +553,14 @@ fn min_width_with_filler() {
 fn min_width_one_column() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(0, 0)).with(MinWidth::new(5)));
 
     assert_eq!(
         table.to_string(),
         static_table!(
             "| N     | column 0 | column 1 | column 2 |"
-            "|-------+----------+----------+----------|"
+            "|-------|----------|----------|----------|"
             "|   0   |   0-0    |   0-1    |   0-2    |"
             "|   1   |   1-0    |   1-1    |   1-2    |"
             "|   2   |   2-0    |   2-1    |   2-2    |"
@@ -573,7 +573,7 @@ fn min_width_one_column() {
         table.to_string(),
         static_table!(
             "| N     | column 0 | column 1 | column 2 |"
-            "|-------+----------+----------+----------|"
+            "|-------|----------|----------|----------|"
             "|   0   |   0-0    |   0-1    |   0-2    |"
             "|   1   |   1-0    |   1-1    |   1-2    |"
             "|   2   |   2-0    |   2-1    |   2-2    |"
@@ -587,10 +587,10 @@ fn min_width_on_smaller_content() {
 
     assert_eq!(
         Table::new(&data)
-            .with(Style::github_markdown())
+            .with(Style::markdown())
             .with(Modify::new(Rows::single(0)).with(MinWidth::new(1)))
             .to_string(),
-        Table::new(&data).with(Style::github_markdown()).to_string()
+        Table::new(&data).with(Style::markdown()).to_string()
     );
 }
 
@@ -598,7 +598,7 @@ fn min_width_on_smaller_content() {
 fn min_with_max_width() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
         .with(Modify::new(Rows::single(0)).with(Width::truncate(3)));
 
@@ -606,7 +606,7 @@ fn min_with_max_width() {
         table.to_string(),
         static_table!(
             "| N   | col | col | col |"
-            "|-----+-----+-----+-----|"
+            "|-----|-----|-----|-----|"
             "|  0  | 0-0 | 0-1 | 0-2 |"
             "|  1  | 1-0 | 1-1 | 1-2 |"
             "|  2  | 2-0 | 2-1 | 2-2 |"
@@ -619,7 +619,7 @@ fn min_with_max_width() {
         table.to_string(),
         static_table!(
             "| N   | col | col | col |"
-            "|-----+-----+-----+-----|"
+            "|-----|-----|-----|-----|"
             "|  0  | 0-0 | 0-1 | 0-2 |"
             "|  1  | 1-0 | 1-1 | 1-2 |"
             "|  2  | 2-0 | 2-1 | 2-2 |"
@@ -631,7 +631,7 @@ fn min_with_max_width() {
 fn min_with_max_width_truncate_suffix() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
         .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("...")));
 
@@ -639,7 +639,7 @@ fn min_with_max_width_truncate_suffix() {
         table.to_string(),
         static_table!(
             "| N   | ... | ... | ... |"
-            "|-----+-----+-----+-----|"
+            "|-----|-----|-----|-----|"
             "|  0  | 0-0 | 0-1 | 0-2 |"
             "|  1  | 1-0 | 1-1 | 1-2 |"
             "|  2  | 2-0 | 2-1 | 2-2 |"
@@ -652,7 +652,7 @@ fn min_with_max_width_truncate_suffix() {
         table.to_string(),
         static_table!(
             "| N   | ... | ... | ... |"
-            "|-----+-----+-----+-----|"
+            "|-----|-----|-----|-----|"
             "|  0  | 0-0 | 0-1 | 0-2 |"
             "|  1  | 1-0 | 1-1 | 1-2 |"
             "|  2  | 2-0 | 2-1 | 2-2 |"
@@ -663,7 +663,7 @@ fn min_with_max_width_truncate_suffix() {
 #[test]
 fn min_with_max_width_truncate_suffix_limit_replace() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::github_markdown()).with(
+    let table = Table::new(&data).with(Style::markdown()).with(
         Modify::new(Rows::single(0)).with(
             Width::truncate(3)
                 .suffix("...")
@@ -675,7 +675,7 @@ fn min_with_max_width_truncate_suffix_limit_replace() {
         table.to_string(),
         static_table!(
             "| N | xxx | xxx | xxx |"
-            "|---+-----+-----+-----|"
+            "|---|-----|-----|-----|"
             "| 0 | 0-0 | 0-1 | 0-2 |"
             "| 1 | 1-0 | 1-1 | 1-2 |"
             "| 2 | 2-0 | 2-1 | 2-2 |"
@@ -686,7 +686,7 @@ fn min_with_max_width_truncate_suffix_limit_replace() {
 #[test]
 fn min_with_max_width_truncate_suffix_limit_cut() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::github_markdown()).with(
+    let table = Table::new(&data).with(Style::markdown()).with(
         Modify::new(Rows::single(0)).with(
             Width::truncate(3)
                 .suffix("qwert")
@@ -698,7 +698,7 @@ fn min_with_max_width_truncate_suffix_limit_cut() {
         table.to_string(),
         static_table!(
             "| N | qwe | qwe | qwe |"
-            "|---+-----+-----+-----|"
+            "|---|-----|-----|-----|"
             "| 0 | 0-0 | 0-1 | 0-2 |"
             "| 1 | 1-0 | 1-1 | 1-2 |"
             "| 2 | 2-0 | 2-1 | 2-2 |"
@@ -709,7 +709,7 @@ fn min_with_max_width_truncate_suffix_limit_cut() {
 #[test]
 fn min_with_max_width_truncate_suffix_limit_ignore() {
     let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::github_markdown()).with(
+    let table = Table::new(&data).with(Style::markdown()).with(
         Modify::new(Rows::single(0)).with(
             Width::truncate(3)
                 .suffix("qwert")
@@ -721,7 +721,7 @@ fn min_with_max_width_truncate_suffix_limit_ignore() {
         table.to_string(),
         static_table!(
             "| N | col | col | col |"
-            "|---+-----+-----+-----|"
+            "|---|-----|-----|-----|"
             "| 0 | 0-0 | 0-1 | 0-2 |"
             "| 1 | 1-0 | 1-1 | 1-2 |"
             "| 2 | 2-0 | 2-1 | 2-2 |"
@@ -741,7 +741,7 @@ fn min_with_max_width_truncate_suffix_try_color() {
     ];
 
     let table = Table::new(data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(7).suffix("..").suffix_try_color(true));
 
     assert_eq!(
@@ -768,7 +768,7 @@ fn min_width_color() {
     ];
 
     let table = Table::new(data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(MinWidth::new(10)))
         .to_string();
 
@@ -812,7 +812,7 @@ fn min_width_color_with_smaller_then_width() {
 fn total_width_big() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(80))
         .with(MinWidth::new(80))
         .to_string();
@@ -822,7 +822,7 @@ fn total_width_big() {
         table,
         static_table!(
             "| N            | column 0            | column 1           | column 2           |"
-            "|--------------+---------------------+--------------------+--------------------|"
+            "|--------------|---------------------|--------------------|--------------------|"
             "| 0            | 0-0                 | 0-1                | 0-2                |"
             "| 1            | 1-0                 | 1-1                | 1-2                |"
             "| 2            | 2-0                 | 2-1                | 2-2                |"
@@ -830,7 +830,7 @@ fn total_width_big() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(80))
         .with(MinWidth::new(80))
         .with(Modify::new(Segment::all()).with(TrimStrategy::None))
@@ -841,7 +841,7 @@ fn total_width_big() {
         table,
         static_table!(
             "| N            | column 0            | column 1           | column 2           |"
-            "|--------------+---------------------+--------------------+--------------------|"
+            "|--------------|---------------------|--------------------|--------------------|"
             "| 0            | 0-0                 | 0-1                | 0-2                |"
             "| 1            | 1-0                 | 1-1                | 1-2                |"
             "| 2            | 2-0                 | 2-1                | 2-2                |"
@@ -859,7 +859,7 @@ fn total_width_big_with_panel() {
                 .with(Alignment::center())
                 .with(Padding::zero()),
         )
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(80))
         .with(MinWidth::new(80))
         .to_string();
@@ -869,7 +869,7 @@ fn total_width_big_with_panel() {
         table,
         static_table!(
             "|Hello World                                                                   |"
-            "|--------------+---------------------+--------------------+--------------------|"
+            "|--------------|---------------------|--------------------|--------------------|"
             "|N             |column 0             |column 1            |column 2            |"
             "|0             |0-0                  |0-1                 |0-2                 |"
             "|1             |1-0                  |1-1                 |1-2                 |"
@@ -884,7 +884,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
     let table1 = Table::new(&data)
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(80))
         .with(MinWidth::new(80))
         .to_string();
@@ -892,7 +892,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
     let table2 = Table::new(&data)
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(80))
         .with(MinWidth::new(80))
         .to_string();
@@ -904,7 +904,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
 fn total_width_small() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(14))
         .with(MinWidth::new(14))
         .to_string();
@@ -913,7 +913,7 @@ fn total_width_small() {
         table,
         static_table!(
             "|  |  |  | c |"
-            "|--+--+--+---|"
+            "|--|--|--|---|"
             "|  |  |  | 0 |"
             "|  |  |  | 1 |"
             "|  |  |  | 2 |"
@@ -926,7 +926,7 @@ fn total_width_small() {
 fn total_width_smaller_then_content() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(8))
         .with(MinWidth::new(8))
         .to_string();
@@ -935,7 +935,7 @@ fn total_width_smaller_then_content() {
         table,
         static_table!(
             "|  |  |  |  |"
-            "|--+--+--+--|"
+            "|--|--|--|--|"
             "|  |  |  |  |"
             "|  |  |  |  |"
             "|  |  |  |  |"
@@ -949,7 +949,7 @@ fn total_width_small_with_panel() {
 
     let table = Table::new(&data)
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(20))
         .with(MinWidth::new(20))
         .to_string();
@@ -958,7 +958,7 @@ fn total_width_small_with_panel() {
         table,
         static_table!(
             "|  | co | co | col |"
-            "|--+----+----+-----|"
+            "|--|----|----|-----|"
             "|  | 0- | 0- | 0-2 |"
             "|  | 1- | 1- | 1-2 |"
             "|  | 2- | 2- | 2-2 |"
@@ -986,7 +986,7 @@ fn total_width_small_with_panel() {
     let table = Table::new(&create_vector::<1, 2>())
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(20))
         .with(MinWidth::new(20))
         .to_string();
@@ -995,7 +995,7 @@ fn total_width_small_with_panel() {
         table,
         static_table!(
             "|   Hello World    |"
-            "|--+-------+-------|"
+            "|--|-------|-------|"
             "|  | colum | colum |"
             "|  |  0-0  |  0-1  |"
         )
@@ -1005,7 +1005,7 @@ fn total_width_small_with_panel() {
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(20))
         .with(MinWidth::new(20))
         .to_string();
@@ -1014,7 +1014,7 @@ fn total_width_small_with_panel() {
         table,
         static_table!(
             "|   Hello World    |"
-            "|--+----+----+-----|"
+            "|--|----|----|-----|"
             "|  | co | co | col |"
             "|  | 0- | 0- | 0-2 |"
             "|  | 1- | 1- | 1-2 |"
@@ -1026,7 +1026,7 @@ fn total_width_small_with_panel() {
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(6))
         .with(MinWidth::new(6))
         .to_string();
@@ -1035,7 +1035,7 @@ fn total_width_small_with_panel() {
         table,
         static_table!(
             "| Hello Wor |"
-            "|--+--+--+--|"
+            "|--|--|--|--|"
             "|  |  |  |  |"
             "|  |  |  |  |"
             "|  |  |  |  |"
@@ -1047,7 +1047,7 @@ fn total_width_small_with_panel() {
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(14))
         .with(MinWidth::new(14))
         .to_string();
@@ -1056,7 +1056,7 @@ fn total_width_small_with_panel() {
         table,
         static_table!(
             "| Hello Worl |"
-            "|--+--+--+---|"
+            "|--|--|--|---|"
             "|  |  |  | c |"
             "|  |  |  | 0 |"
             "|  |  |  | 1 |"
@@ -1068,7 +1068,7 @@ fn total_width_small_with_panel() {
     let table = Table::new(&data)
         .with(Panel("Hello World 123", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(14))
         .with(MinWidth::new(14))
         .to_string();
@@ -1077,7 +1077,7 @@ fn total_width_small_with_panel() {
         table,
         static_table!(
             "| Hello Worl |"
-            "|--+--+--+---|"
+            "|--|--|--|---|"
             "|  |  |  | c |"
             "|  |  |  | 0 |"
             "|  |  |  | 1 |"
@@ -1093,7 +1093,7 @@ fn total_width_wrapping() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(20))
         .with(MinWidth::new(20))
         .to_string();
@@ -1105,7 +1105,7 @@ fn total_width_wrapping() {
             "|  | lu | lu | umn |"
             "|  | mn | mn |  2  |"
             "|  |  0 |  1 |     |"
-            "|--+----+----+-----|"
+            "|--|----|----|-----|"
             "|  | 0- | 0- | 0-2 |"
             "|  | 0  | 1  |     |"
             "|  | 1- | 1- | 1-2 |"
@@ -1120,7 +1120,7 @@ fn total_width_wrapping() {
     data[2][2] = "some loong string".to_owned();
     let table = Table::new(&data)
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(20).keep_words())
         .with(MinWidth::new(20))
         .to_string();
@@ -1130,7 +1130,7 @@ fn total_width_wrapping() {
         static_table!(
             "|  |  | column  |  |"
             "|  |  | 1       |  |"
-            "|--+--+---------+--|"
+            "|--|--|---------|--|"
             "|  |  |   0-1   |  |"
             "|  |  |   1-1   |  |"
             "|  |  | some    |  |"
@@ -1147,7 +1147,7 @@ fn total_width_small_with_panel_using_wrapping() {
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(20))
         .with(MinWidth::new(20))
         .to_string();
@@ -1156,7 +1156,7 @@ fn total_width_small_with_panel_using_wrapping() {
         table,
         static_table!(
             "|   Hello World    |"
-            "|--+----+----+-----|"
+            "|--|----|----|-----|"
             "|  | co | co | col |"
             "|  | lu | lu | umn |"
             "|  | mn | mn |  2  |"
@@ -1174,7 +1174,7 @@ fn total_width_small_with_panel_using_wrapping() {
     let table = Table::new(&data)
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(14))
         .with(MinWidth::new(14))
         .to_string();
@@ -1184,7 +1184,7 @@ fn total_width_small_with_panel_using_wrapping() {
         static_table!(
             "| Hello Worl |"
             "| d          |"
-            "|--+--+--+---|"
+            "|--|--|--|---|"
             "|  |  |  | c |"
             "|  |  |  | o |"
             "|  |  |  | l |"
@@ -1209,7 +1209,7 @@ fn total_width_small_with_panel_using_wrapping() {
     let table = Table::new(&data)
         .with(Panel("Hello World 123", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(14))
         .with(MinWidth::new(14))
         .to_string();
@@ -1219,7 +1219,7 @@ fn total_width_small_with_panel_using_wrapping() {
         static_table!(
             "| Hello Worl |"
             "| d 123      |"
-            "|--+--+--+---|"
+            "|--|--|--|---|"
             "|  |  |  | c |"
             "|  |  |  | o |"
             "|  |  |  | l |"
@@ -1309,7 +1309,7 @@ fn min_width_works_with_right_alignment() {
     "#;
 
     let table = Table::new([json])
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(MinWidth::new(50))
         .with(
             Modify::new(Segment::all())
@@ -1379,7 +1379,7 @@ fn min_width_works_with_right_alignment() {
     assert!(is_lines_equal(&table.to_string(), 50));
 
     let table = Table::new([json])
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(MinWidth::new(50))
         .with(
             Modify::new(Segment::all())
@@ -1458,7 +1458,7 @@ fn min_width_with_span_1() {
     ];
 
     let table = Table::new(data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(MinWidth::new(100))
         .to_string();
@@ -1467,7 +1467,7 @@ fn min_width_with_span_1() {
         table,
         static_table!(
             "| 0                                                                      | 1                       |"
-            "|------------------------------------------------------------------------+-------------------------|"
+            "|------------------------------------------------------------------------|-------------------------|"
             "| 0                                                                                                |"
             "| a long string which will affect min width logic                        |                         |"
             "| 2                                                                      | 3                       |"
@@ -1485,7 +1485,7 @@ fn min_width_with_span_2() {
     ];
 
     let table = Table::new(data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
         .with(MinWidth::new(100))
         .to_string();
@@ -1494,7 +1494,7 @@ fn min_width_with_span_2() {
         table,
         static_table!(
             "| 0                                               | 1                                              |"
-            "|-------------------------------------------------+------------------------------------------------|"
+            "|-------------------------------------------------|------------------------------------------------|"
             "| 0                                               | 1                                              |"
             "| a long string which will affect min width logic                                                  |"
             "| 2                                               | 3                                              |"
@@ -1507,7 +1507,7 @@ fn min_width_with_span_2() {
 fn justify_width_constant_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Justify::new(3))
         .to_string();
 
@@ -1515,7 +1515,7 @@ fn justify_width_constant_test() {
         table,
         static_table!(
             "| N   | col | col | col |"
-            "|-----+-----+-----+-----|"
+            "|-----|-----|-----|-----|"
             "| 0   | 0-0 | 0-1 | 0-2 |"
             "| 1   | 1-0 | 1-1 | 1-2 |"
             "| 2   | 2-0 | 2-1 | 2-2 |"
@@ -1530,7 +1530,7 @@ fn justify_width_constant_different_sizes_test() {
     data[2][2] = "multi\nline string\n".to_owned();
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Justify::new(3))
         .to_string();
 
@@ -1538,7 +1538,7 @@ fn justify_width_constant_different_sizes_test() {
         table,
         static_table!(
             "| N   | col | col | col |"
-            "|-----+-----+-----+-----|"
+            "|-----|-----|-----|-----|"
             "| 0   | Hel | 0-1 | 0-2 |"
             "| 1   | 1-0 | 1-1 | 1-2 |"
             "| 2   | 2-0 | mul | 2-2 |"
@@ -1550,7 +1550,7 @@ fn justify_width_constant_different_sizes_test() {
 fn justify_width_constant_0_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Justify::new(0))
         .to_string();
 
@@ -1558,7 +1558,7 @@ fn justify_width_constant_0_test() {
         table,
         static_table!(
             "|  |  |  |  |"
-            "|--+--+--+--|"
+            "|--|--|--|--|"
             "|  |  |  |  |"
             "|  |  |  |  |"
             "|  |  |  |  |"
@@ -1571,7 +1571,7 @@ fn justify_width_min_test() {
     let data = create_vector::<3, 3>();
     let m = Justify::min();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(m)
         .to_string();
 
@@ -1579,7 +1579,7 @@ fn justify_width_min_test() {
         table,
         static_table!(
             "| N | c | c | c |"
-            "|---+---+---+---|"
+            "|---|---|---|---|"
             "| 0 | 0 | 0 | 0 |"
             "| 1 | 1 | 1 | 1 |"
             "| 2 | 2 | 2 | 2 |"
@@ -1591,7 +1591,7 @@ fn justify_width_min_test() {
 fn justify_width_max_test() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Justify::max())
         .to_string();
 
@@ -1599,7 +1599,7 @@ fn justify_width_max_test() {
         table,
         static_table!(
             "| N        | column 0 | column 1 | column 2 |"
-            "|----------+----------+----------+----------|"
+            "|----------|----------|----------|----------|"
             "| 0        | 0-0      | 0-1      | 0-2      |"
             "| 1        | 1-0      | 1-1      | 1-2      |"
             "| 2        | 2-0      | 2-1      | 2-2      |"
@@ -1613,7 +1613,7 @@ fn max_width_when_cell_has_tabs() {
     data[1][1] = String::from("\tHello\tWorld\t");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Columns::new(..)).with(Width::truncate(1)))
         .to_string();
 
@@ -1621,7 +1621,7 @@ fn max_width_when_cell_has_tabs() {
         table,
         static_table!(
             "| N | c | c | c |"
-            "|---+---+---+---|"
+            "|---|---|---|---|"
             "| 0 | 0 | 0 | 0 |"
             "| 1 |   | 1 | 1 |"
             "| 2 | 2 | 2 | 2 |"
@@ -1635,7 +1635,7 @@ fn max_width_table_when_cell_has_tabs() {
     data[1][1] = String::from("\tHello\tWorld\t");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(15))
         .to_string();
 
@@ -1643,7 +1643,7 @@ fn max_width_table_when_cell_has_tabs() {
         table,
         static_table!(
             "|  | co |  |  |"
-            "|--+----+--+--|"
+            "|--|----|--|--|"
             "|  | 0- |  |  |"
             "|  |    |  |  |"
             "|  | 2- |  |  |"
@@ -1669,7 +1669,7 @@ fn max_width_truncate_with_big_span() {
     data[1][1] = String::from("Hello World With Big Line; Here we gooooooo");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
         .with(Width::truncate(40))
         .to_string();
@@ -1679,7 +1679,7 @@ fn max_width_truncate_with_big_span() {
         table,
         static_table!(
             "|  | column 0  | column 1  | column 2  |"
-            "|--+-----------+-----------+-----------|"
+            "|--|-----------|-----------|-----------|"
             "|  |    0-0    |    0-1    |    0-2    |"
             "|  | Hello World With Big Line; Here w |"
             "|  |    2-0    |    2-1    |    2-2    |"
@@ -1691,7 +1691,7 @@ fn max_width_truncate_with_big_span() {
     data[2][2] = String::from("Hello World With Big Line; Here");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
         .to_string();
@@ -1700,7 +1700,7 @@ fn max_width_truncate_with_big_span() {
         table,
         static_table!(
             "| N | column 0  |    column 1    |    column 2    |"
-            "|---+-----------+----------------+----------------|"
+            "|---|-----------|----------------|----------------|"
             "| 0 |    0-0    |      0-1       |      0-2       |"
             "| 1 | Hello World With Big Line; Here we gooooooo |"
             "| 2 |    2-0    | Hello World With Big Line; Here |"
@@ -1708,7 +1708,7 @@ fn max_width_truncate_with_big_span() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
         .with(Width::truncate(40))
@@ -1718,7 +1718,7 @@ fn max_width_truncate_with_big_span() {
         table,
         static_table!(
             "|  | colum |  column 1   |  column 2   |"
-            "|--+-------+-------------+-------------|"
+            "|--|-------|-------------|-------------|"
             "|  |  0-0  |     0-1     |     0-2     |"
             "|  | Hello World With Big Line; Here w |"
             "|  |  2-0  | Hello World With Big Line |"
@@ -1731,7 +1731,7 @@ fn max_width_truncate_with_big_span() {
     data[2][2] = String::from("Hello World With Big Line; Here");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
         .with(Width::truncate(40))
@@ -1742,7 +1742,7 @@ fn max_width_truncate_with_big_span() {
         table,
         static_table!(
             "|  |   column 0    |   column 1    | c |"
-            "|--+---------------+---------------+---|"
+            "|--|---------------|---------------|---|"
             "|  |      0-0      |      0-1      | 0 |"
             "|  | Hello World With Big Line; He | 1 |"
             "|  |      2-0      | Hello World With  |"
@@ -1754,7 +1754,7 @@ fn max_width_truncate_with_big_span() {
     data[2][2] = String::from("Hello World With Big L");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
         .to_string();
@@ -1763,7 +1763,7 @@ fn max_width_truncate_with_big_span() {
         table,
         static_table!(
             "| N | column 0 |  column 1  | column 2  |"
-            "|---+----------+------------+-----------|"
+            "|---|----------|------------|-----------|"
             "| 0 |   0-0    |    0-1     |    0-2    |"
             "| 1 | Hello World With Big Line; Here w |"
             "| 2 |   2-0    | Hello World With Big L |"
@@ -1777,7 +1777,7 @@ fn max_width_truncate_priority_max() {
     data[1][1] = String::from("Hello World With Big Line");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(35).priority::<PriorityMax>())
         .to_string();
 
@@ -1786,7 +1786,7 @@ fn max_width_truncate_priority_max() {
         table,
         static_table!(
             "| N | column  | column  | column  |"
-            "|---+---------+---------+---------|"
+            "|---|---------|---------|---------|"
             "| 0 |   0-0   |   0-1   |   0-2   |"
             "| 1 | Hello W |   1-1   |   1-2   |"
             "| 2 |   2-0   |   2-1   |   2-2   |"
@@ -1794,7 +1794,7 @@ fn max_width_truncate_priority_max() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(20).priority::<PriorityMax>())
         .to_string();
 
@@ -1803,7 +1803,7 @@ fn max_width_truncate_priority_max() {
         table,
         static_table!(
             "| N | co | co | co |"
-            "|---+----+----+----|"
+            "|---|----|----|----|"
             "| 0 | 0- | 0- | 0- |"
             "| 1 | He | 1- | 1- |"
             "| 2 | 2- | 2- | 2- |"
@@ -1811,7 +1811,7 @@ fn max_width_truncate_priority_max() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(0).priority::<PriorityMax>())
         .to_string();
 
@@ -1820,7 +1820,7 @@ fn max_width_truncate_priority_max() {
         table,
         static_table!(
             "|  |  |  |  |"
-            "|--+--+--+--|"
+            "|--|--|--|--|"
             "|  |  |  |  |"
             "|  |  |  |  |"
             "|  |  |  |  |"
@@ -1834,7 +1834,7 @@ fn max_width_truncate_priority_max_with_span() {
     data[1][1] = String::from("Hello World With Big Line");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Width::truncate(15).priority::<PriorityMax>())
         .to_string();
@@ -1844,7 +1844,7 @@ fn max_width_truncate_priority_max_with_span() {
         table,
         static_table!(
             "| N | c |  |  |"
-            "|---+---+--+--|"
+            "|---|---|--|--|"
             "| 0 | 0 |  |  |"
             "| 1 | Hell |  |"
             "| 2 | 2 |  |  |"
@@ -1858,7 +1858,7 @@ fn max_width_wrap_priority_max() {
     data[1][1] = String::from("Hello World With Big Line");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(35).priority::<PriorityMax>())
         .to_string();
 
@@ -1868,7 +1868,7 @@ fn max_width_wrap_priority_max() {
         static_table!(
             "| N | column  | column  | column  |"
             "|   | 0       | 1       | 2       |"
-            "|---+---------+---------+---------|"
+            "|---|---------|---------|---------|"
             "| 0 |   0-0   |   0-1   |   0-2   |"
             "| 1 | Hello W |   1-1   |   1-2   |"
             "|   | orld Wi |         |         |"
@@ -1879,7 +1879,7 @@ fn max_width_wrap_priority_max() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(20).priority::<PriorityMax>())
         .to_string();
 
@@ -1891,7 +1891,7 @@ fn max_width_wrap_priority_max() {
             "|   | lu | lu | lu |"
             "|   | mn | mn | mn |"
             "|   |  0 |  1 |  2 |"
-            "|---+----+----+----|"
+            "|---|----|----|----|"
             "| 0 | 0- | 0- | 0- |"
             "|   | 0  | 1  | 2  |"
             "| 1 | He | 1- | 1- |"
@@ -1913,7 +1913,7 @@ fn max_width_wrap_priority_max() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(0).priority::<PriorityMax>())
         .to_string();
 
@@ -1922,7 +1922,7 @@ fn max_width_wrap_priority_max() {
         table,
         static_table!(
             "|  |  |  |  |"
-            "|--+--+--+--|"
+            "|--|--|--|--|"
             "|  |  |  |  |"
             "|  |  |  |  |"
             "|  |  |  |  |"
@@ -1936,7 +1936,7 @@ fn max_width_wrap_priority_max_with_span() {
     data[1][1] = String::from("Hello World With Big Line");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Width::wrap(15).priority::<PriorityMax>())
         .to_string();
@@ -1953,7 +1953,7 @@ fn max_width_wrap_priority_max_with_span() {
             "|   | n |  |  |"
             "|   |   |  |  |"
             "|   | 0 |  |  |"
-            "|---+---+--+--|"
+            "|---|---|--|--|"
             "| 0 | 0 |  |  |"
             "|   | - |  |  |"
             "|   | 0 |  |  |"
@@ -1977,7 +1977,7 @@ fn max_width_truncate_priority_min() {
     data[1][1] = String::from("Hello World With Big Line");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(35).priority::<PriorityMin>())
         .to_string();
 
@@ -1986,7 +1986,7 @@ fn max_width_truncate_priority_min() {
         table,
         static_table!(
             "|  |        column 0        |  |  |"
-            "|--+------------------------+--+--|"
+            "|--|------------------------|--|--|"
             "|  |          0-0           |  |  |"
             "|  | Hello World With Big L |  |  |"
             "|  |          2-0           |  |  |"
@@ -1994,7 +1994,7 @@ fn max_width_truncate_priority_min() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(20).priority::<PriorityMin>())
         .to_string();
 
@@ -2003,7 +2003,7 @@ fn max_width_truncate_priority_min() {
         table,
         static_table!(
             "|  | column  |  |  |"
-            "|--+---------+--+--|"
+            "|--|---------|--|--|"
             "|  |   0-0   |  |  |"
             "|  | Hello W |  |  |"
             "|  |   2-0   |  |  |"
@@ -2011,7 +2011,7 @@ fn max_width_truncate_priority_min() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::truncate(0).priority::<PriorityMin>())
         .to_string();
 
@@ -2020,7 +2020,7 @@ fn max_width_truncate_priority_min() {
         table,
         static_table!(
             "|  |  |  |  |"
-            "|--+--+--+--|"
+            "|--|--|--|--|"
             "|  |  |  |  |"
             "|  |  |  |  |"
             "|  |  |  |  |"
@@ -2034,7 +2034,7 @@ fn max_width_truncate_priority_min_with_span() {
     data[1][1] = String::from("Hello World With Big Line");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Width::truncate(15).priority::<PriorityMin>())
         .to_string();
@@ -2044,7 +2044,7 @@ fn max_width_truncate_priority_min_with_span() {
         table,
         static_table!(
             "|  |  | co |  |"
-            "|--+--+----+--|"
+            "|--|--|----|--|"
             "|  |  | 0- |  |"
             "|  | Hello |  |"
             "|  |  | 2- |  |"
@@ -2052,7 +2052,7 @@ fn max_width_truncate_priority_min_with_span() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Width::truncate(17).priority::<PriorityMin>())
         .to_string();
@@ -2062,7 +2062,7 @@ fn max_width_truncate_priority_min_with_span() {
         table,
         static_table!(
             "|  |  | colu |  |"
-            "|--+--+------+--|"
+            "|--|--|------|--|"
             "|  |  | 0-1  |  |"
             "|  | Hello W |  |"
             "|  |  | 2-1  |  |"
@@ -2076,7 +2076,7 @@ fn max_width_wrap_priority_min() {
     data[1][1] = String::from("Hello World With Big Line");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(35).priority::<PriorityMin>())
         .to_string();
 
@@ -2085,7 +2085,7 @@ fn max_width_wrap_priority_min() {
         table,
         static_table!(
             "|  |        column 0        |  |  |"
-            "|--+------------------------+--+--|"
+            "|--|------------------------|--|--|"
             "|  |          0-0           |  |  |"
             "|  | Hello World With Big L |  |  |"
             "|  | ine                    |  |  |"
@@ -2094,7 +2094,7 @@ fn max_width_wrap_priority_min() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(20).priority::<PriorityMin>())
         .to_string();
 
@@ -2104,7 +2104,7 @@ fn max_width_wrap_priority_min() {
         static_table!(
             "|  | column  |  |  |"
             "|  | 0       |  |  |"
-            "|--+---------+--+--|"
+            "|--|---------|--|--|"
             "|  |   0-0   |  |  |"
             "|  | Hello W |  |  |"
             "|  | orld Wi |  |  |"
@@ -2115,7 +2115,7 @@ fn max_width_wrap_priority_min() {
     );
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Width::wrap(0).priority::<PriorityMin>())
         .to_string();
 
@@ -2124,7 +2124,7 @@ fn max_width_wrap_priority_min() {
         table,
         static_table!(
             "|  |  |  |  |"
-            "|--+--+--+--|"
+            "|--|--|--|--|"
             "|  |  |  |  |"
             "|  |  |  |  |"
             "|  |  |  |  |"
@@ -2138,7 +2138,7 @@ fn max_width_wrap_priority_min_with_span() {
     data[1][1] = String::from("Hello World With Big Line");
 
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Width::wrap(15).priority::<PriorityMin>())
         .to_string();
@@ -2151,7 +2151,7 @@ fn max_width_wrap_priority_min_with_span() {
             "|  |  | lu |  |"
             "|  |  | mn |  |"
             "|  |  |  1 |  |"
-            "|--+--+----+--|"
+            "|--|--|----|--|"
             "|  |  | 0- |  |"
             "|  |  | 1  |  |"
             "|  | Hello |  |"
@@ -2169,14 +2169,14 @@ fn max_width_wrap_priority_min_with_span() {
 fn min_width_priority_max() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(MinWidth::new(60).priority::<PriorityMax>());
 
     assert_eq!(
         table.to_string(),
         static_table!(
             "| N | column 0 | column 1 | column 2                       |"
-            "|---+----------+----------+--------------------------------|"
+            "|---|----------|----------|--------------------------------|"
             "| 0 | 0-0      | 0-1      | 0-2                            |"
             "| 1 | 1-0      | 1-1      | 1-2                            |"
             "| 2 | 2-0      | 2-1      | 2-2                            |"
@@ -2188,14 +2188,14 @@ fn min_width_priority_max() {
 fn min_width_priority_min() {
     let data = create_vector::<3, 3>();
     let table = Table::new(&data)
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(MinWidth::new(60).priority::<PriorityMin>());
 
     assert_eq!(
         table.to_string(),
         static_table!(
             "| N            | column 0     | column 1     | column 2    |"
-            "|--------------+--------------+--------------+-------------|"
+            "|--------------|--------------|--------------|-------------|"
             "| 0            | 0-0          | 0-1          | 0-2         |"
             "| 1            | 1-0          | 1-1          | 1-2         |"
             "| 2            | 2-0          | 2-1          | 2-2         |"
@@ -2207,7 +2207,7 @@ fn min_width_priority_min() {
 fn max_width_tab_0() {
     let table =
         Table::new(&["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
-            .with(Style::github_markdown())
+            .with(Style::markdown())
             .with(Width::wrap(60))
             .to_string();
 
@@ -2246,7 +2246,7 @@ mod derived {
         ];
 
         let table = Table::new(&data)
-            .with(Style::github_markdown())
+            .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::wrap(57))
             .to_string();
@@ -2257,7 +2257,7 @@ mod derived {
                 "| ver | published_d | is_act | major_feature            |"
                 "| sio | ate         | ive    |                          |"
                 "| n   |             |        |                          |"
-                "|-----+-------------+--------+--------------------------|"
+                "|-----|-------------|--------|--------------------------|"
                 "| 0.2 | 2021-06-23  | true   | #[header(inline)] attrib |"
                 "| .1  |             |        | ute                      |"
                 "| 0.2 | 2021-06-19  | false  | API changes              |"
@@ -2269,7 +2269,7 @@ mod derived {
         assert!(is_lines_equal(&table, 57));
 
         let table = Table::new(&data)
-            .with(Style::github_markdown())
+            .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::wrap(57).keep_words())
             .to_string();
@@ -2280,7 +2280,7 @@ mod derived {
                 "| ver | published_d | is_act | major_feature            |"
                 "| sio | ate         | ive    |                          |"
                 "| n   |             |        |                          |"
-                "|-----+-------------+--------+--------------------------|"
+                "|-----|-------------|--------|--------------------------|"
                 "| 0.2 | 2021-06-23  | true   | #[header(inline)]        |"
                 "| .1  |             |        | attribute                |"
                 "| 0.2 | 2021-06-19  | false  | API changes              |"
@@ -2333,7 +2333,7 @@ mod derived {
         ];
 
         let table = Table::new(&data)
-            .with(Style::github_markdown())
+            .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::wrap(57))
             .to_string();
@@ -2344,7 +2344,7 @@ mod derived {
                 "| ver | published_d | is_act | major_feature            |"
                 "| sio | ate         | ive    |                          |"
                 "| n   |             |        |                          |"
-                "|-----+-------------+--------+--------------------------|"
+                "|-----|-------------|--------|--------------------------|"
                 "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |"
                 "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mute\u{1b}[39m\u{1b}[49m                      |"
                 "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |"
@@ -2356,26 +2356,10 @@ mod derived {
         assert!(is_lines_equal(&table, 57));
 
         let table = Table::new(&data)
-            .with(Style::github_markdown())
+            .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::wrap(57).keep_words())
             .to_string();
-
-        assert_eq!(
-            ansi_str::AnsiStr::ansi_strip(&table),
-            static_table!(
-                "| ver | published_d | is_act | major_feature            |"
-                "| sio | ate         | ive    |                          |"
-                "| n   |             |        |                          |"
-                "|-----+-------------+--------+--------------------------|"
-                "| 0.2 | 2021-06-23  | true   | #[header(inline)]        |"
-                "| .1  |             |        | attribute                |"
-                "| 0.2 | 2021-06-19  | false  | API changes              |"
-                "| .0  |             |        |                          |"
-                "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
-                "| .4  |             |        |                          |"
-            )
-        );
 
         assert_eq!(
             table,
@@ -2383,7 +2367,7 @@ mod derived {
                 "| ver | published_d | is_act | major_feature            |"
                 "| sio | ate         | ive    |                          |"
                 "| n   |             |        |                          |"
-                "|-----+-------------+--------+--------------------------|"
+                "|-----|-------------|--------|--------------------------|"
                 "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |"
                 "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattribute\u{1b}[39m\u{1b}[49m                |"
                 "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |"
@@ -2436,7 +2420,7 @@ mod derived {
         ];
 
         let table = Table::new(&data)
-            .with(Style::github_markdown())
+            .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::truncate(57))
             .to_string();
@@ -2445,7 +2429,7 @@ mod derived {
             ansi_str::AnsiStr::ansi_strip(&table),
             static_table!(
                 "| ver | published_d | is_act | major_feature            |"
-                "|-----+-------------+--------+--------------------------|"
+                "|-----|-------------|--------|--------------------------|"
                 "| 0.2 | 2021-06-23  | true   | #[header(inline)] attrib |"
                 "| 0.2 | 2021-06-19  | false  | API changes              |"
                 "| 0.1 | 2021-06-07  | false  | display_with attribute   |"
@@ -2454,7 +2438,7 @@ mod derived {
 
         assert_eq!(
             table,
-            "| ver | published_d | is_act | major_feature            |\n|-----+-------------+--------+--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
+            "| ver | published_d | is_act | major_feature            |\n|-----|-------------|--------|--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
         );
         assert!(is_lines_equal(&table, 57));
     }

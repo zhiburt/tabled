@@ -21,7 +21,7 @@ fn main() {
         .with(Header(link))
         .with(Panel("=".repeat(link.len()), 2))
         .with(Modify::new(Rows::single(1)).with(Width::wrap(link.len())))
-        .with(Style::github_markdown());
+        .with(Style::markdown());
 
     println!("{}", table);
 }

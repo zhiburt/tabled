@@ -24,10 +24,10 @@ test_table!(
 test_table!(
     formatting_head_test,
     Table::new(create_vector::<3, 3>())
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(Format::new(|s| format!(":{}", s)))),
     "| :N | :column 0 | :column 1 | :column 2 |"
-    "|----+-----------+-----------+-----------|"
+    "|----|-----------|-----------|-----------|"
     "| 0  |    0-0    |    0-1    |    0-2    |"
     "| 1  |    1-0    |    1-1    |    1-2    |"
     "| 2  |    2-0    |    2-1    |    2-2    |"
@@ -157,10 +157,10 @@ test_table!(
 test_table!(
     formatting_using_lambda_test,
     Table::new(create_vector::<3, 3>())
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(|s: &str| format!(":{}", s))),
     "| :N | :column 0 | :column 1 | :column 2 |"
-    "|----+-----------+-----------+-----------|"
+    "|----|-----------|-----------|-----------|"
     "| 0  |    0-0    |    0-1    |    0-2    |"
     "| 1  |    1-0    |    1-1    |    1-2    |"
     "| 2  |    2-0    |    2-1    |    2-2    |"
@@ -169,10 +169,10 @@ test_table!(
 test_table!(
     formatting_using_function_test,
     Table::new(create_vector::<3, 3>())
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(str::to_uppercase)),
     "| N | COLUMN 0 | COLUMN 1 | COLUMN 2 |"
-    "|---+----------+----------+----------|"
+    "|---|----------|----------|----------|"
     "| 0 |   0-0    |   0-1    |   0-2    |"
     "| 1 |   1-0    |   1-1    |   1-2    |"
     "| 2 |   2-0    |   2-1    |   2-2    |"
@@ -181,7 +181,7 @@ test_table!(
 test_table!(
     format_with_index,
     Table::new(create_vector::<3, 3>())
-        .with(Style::github_markdown())
+        .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(Format::with_index(|a, (b, c)| match (b, c) {
             (0, 0) => "(0, 0)".to_string(),
             (0, 1) => "(0, 1)".to_string(),
@@ -189,7 +189,7 @@ test_table!(
             _ => a.to_string(),
         }))),
     "| (0, 0) | (0, 1) | (0, 2) | column 2 |"
-    "|--------+--------+--------+----------|"
+    "|--------|--------|--------|----------|"
     "|   0    |  0-0   |  0-1   |   0-2    |"
     "|   1    |  1-0   |  1-1   |   1-2    |"
     "|   2    |  2-0   |  2-1   |   2-2    |"

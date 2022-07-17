@@ -9,7 +9,7 @@
 //!
 //! let table = data
 //!     .table()
-//!     .with(Style::github_markdown())
+//!     .with(Style::markdown())
 //!     .with(Margin::new(3, 3, 1, 0));
 //!
 //! assert_eq!(
