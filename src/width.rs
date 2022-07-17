@@ -555,8 +555,9 @@ where
         if width < total_width {
             let suffix = self.suffix.as_ref().map(|s| TruncateSuffix {
                 limit: s.limit,
-                try_color: s.try_color,
                 text: Cow::Borrowed(&s.text),
+                #[cfg(feature = "color")]
+                try_color: s.try_color,
             });
 
             truncate_total_width(grid, widths, total_width, width, suffix, P::create());
