@@ -155,6 +155,8 @@ pub struct Truncate<'a, W = usize, P = PriorityNone> {
 struct TruncateSuffix<'a> {
     text: Cow<'a, str>,
     limit: SuffixLimit,
+    #[cfg(feature = "color")]
+    try_color: bool,
 }
 
 impl Default for TruncateSuffix<'_> {
@@ -162,6 +164,8 @@ impl Default for TruncateSuffix<'_> {
         Self {
             text: Default::default(),
             limit: SuffixLimit::Cut,
+            #[cfg(feature = "color")]
+            try_color: false,
         }
     }
 }
@@ -215,6 +219,19 @@ impl<'a, W, P> Truncate<'a, W, P> {
     pub fn suffix_limit(self, limit: SuffixLimit) -> Truncate<'a, W, P> {
         let mut suff = self.suffix.unwrap_or_default();
         suff.limit = limit;
+
+        Truncate {
+            width: self.width,
+            suffix: Some(suff),
+            _priority: PhantomData::default(),
+        }
+    }
+
+    #[cfg(feature = "color")]
+    /// Sets a optional logic to try to colorize a suffix.
+    pub fn suffix_try_color(self, color: bool) -> Truncate<'a, W, P> {
+        let mut suff = self.suffix.unwrap_or_default();
+        suff.try_color = color;
 
         Truncate {
             width: self.width,
@@ -288,9 +305,42 @@ where
                 if suffix.is_empty() {
                     content
                 } else {
-                    let mut content = content.into_owned();
-                    content.push_str(&suffix);
-                    Cow::Owned(content)
+                    #[cfg(feature = "color")]
+                    {
+                        let try_to_color = self.suffix.as_ref().map_or(false, |s| s.try_color);
+                        if try_to_color {
+                            if let Some(clr) = ansi_str::get_blocks(&content).last() {
+                                if clr.has_ansi() {
+                                    Cow::Owned(format!(
+                                        "{}{}{}{}",
+                                        content,
+                                        clr.start(),
+                                        suffix,
+                                        clr.end()
+                                    ))
+                                } else {
+                                    let mut content = content.into_owned();
+                                    content.push_str(&suffix);
+                                    Cow::Owned(content)
+                                }
+                            } else {
+                                let mut content = content.into_owned();
+                                content.push_str(&suffix);
+                                Cow::Owned(content)
+                            }
+                        } else {
+                            let mut content = content.into_owned();
+                            content.push_str(&suffix);
+                            Cow::Owned(content)
+                        }
+                    }
+
+                    #[cfg(not(feature = "color"))]
+                    {
+                        let mut content = content.into_owned();
+                        content.push_str(&suffix);
+                        Cow::Owned(content)
+                    }
                 }
             };
 
@@ -505,6 +555,7 @@ where
         if width < total_width {
             let suffix = self.suffix.as_ref().map(|s| TruncateSuffix {
                 limit: s.limit,
+                try_color: s.try_color,
                 text: Cow::Borrowed(&s.text),
             });
 

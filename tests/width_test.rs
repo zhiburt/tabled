@@ -731,6 +731,33 @@ fn min_with_max_width_truncate_suffix_limit_ignore() {
 
 #[cfg(feature = "color")]
 #[test]
+fn min_with_max_width_truncate_suffix_try_color() {
+    use owo_colors::OwoColorize;
+
+    let data = &[
+        "asd".red().to_string(),
+        "zxc".blue().to_string(),
+        "asdasd".on_black().green().to_string(),
+    ];
+
+    let table = Table::new(data)
+        .with(Style::github_markdown())
+        .with(Width::truncate(7).suffix("..").suffix_try_color(true));
+
+    assert_eq!(
+        table.to_string(),
+        static_table!(
+            "| S.. |"
+            "|-----|"
+            "| \u{1b}[31masd\u{1b}[39m |"
+            "| \u{1b}[34mzxc\u{1b}[39m |"
+            "| \u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40m..\u{1b}[39m\u{1b}[49m |"
+        )
+    );
+}
+
+#[cfg(feature = "color")]
+#[test]
 fn min_width_color() {
     use owo_colors::OwoColorize;
 

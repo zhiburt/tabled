@@ -984,9 +984,6 @@ where
         grid.clear_theme();
         grid.set_borders(self.borders.clone());
 
-        println!("{:?}", self.borders);
-        println!("{:?}", self.lines);
-
         if grid.count_rows() > 1 {
             for (row, line) in self.lines.clone() {
                 grid.set_split_line(row, line.clone());
