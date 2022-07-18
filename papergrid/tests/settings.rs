@@ -63,5 +63,5 @@ fn remove_border_test() {
 
     grid.remove_border(Entity::Cell(0, 0));
 
-    assert_eq!(grid.to_string(), "0-00-1\n1-01-1 ");
+    assert_eq!(grid.to_string(), "0-00-1\n1-01-1");
 }
