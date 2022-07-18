@@ -1835,60 +1835,6 @@ pub struct Line<T> {
 }
 
 impl<T> Line<T> {
-    pub const fn empty() -> Self {
-        Self {
-            horizontal: None,
-            intersection: None,
-            left: None,
-            right: None,
-        }
-    }
-
-    pub const fn filled(c: T) -> Self
-    where
-        T: Copy,
-    {
-        Self::full(c, c, c, c)
-    }
-
-    pub const fn full(horizontal: T, intersection: T, left: T, right: T) -> Self {
-        Self {
-            horizontal: Some(horizontal),
-            intersection: Some(intersection),
-            left: Some(left),
-            right: Some(right),
-        }
-    }
-
-    pub const fn short(horizontal: T, intersection: T) -> Self {
-        Self {
-            horizontal: Some(horizontal),
-            intersection: Some(intersection),
-            left: None,
-            right: None,
-        }
-    }
-
-    pub fn horizontal(mut self, c: Option<T>) -> Self {
-        self.horizontal = c;
-        self
-    }
-
-    pub fn intersection(mut self, c: Option<T>) -> Self {
-        self.intersection = c;
-        self
-    }
-
-    pub fn left(mut self, c: Option<T>) -> Self {
-        self.left = c;
-        self
-    }
-
-    pub fn right(mut self, c: Option<T>) -> Self {
-        self.right = c;
-        self
-    }
-
     pub fn is_empty(&self) -> bool {
         self.horizontal.is_none()
             && self.horizontal.is_none()

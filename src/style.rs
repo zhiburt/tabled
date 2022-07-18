@@ -132,7 +132,7 @@ pub struct Style<T, B, L, R, H, V, Lines = ConstLines<0>> {
     _vertical: PhantomData<V>,
 }
 
-type ConstLines<const N: usize> = [(usize, Line<char>); N];
+type ConstLines<const N: usize> = [(usize, Line); N];
 
 /// A marker struct which is used in [`Style`].
 #[derive(Debug, Clone)]
@@ -248,7 +248,10 @@ impl Style<(), (), (), (), (), ()> {
                 None,
                 Some('|'),
             ),
-            [(1, Line::short('-', '+'))],
+            [(
+                1,
+                Line::empty().horizontal(Some('-')).intersection(Some('+')),
+            )],
         )
     }
 
@@ -402,14 +405,14 @@ impl Style<(), (), (), (), (), ()> {
     pub const fn re_structured_text() -> Style<On, On, (), (), (), On, ConstLines<1>> {
         Style::new(
             create_borders(
-                Line::short('=', ' '),
-                Line::short('=', ' '),
+                Line::empty().horizontal(Some('=')).intersection(Some(' ')),
+                Line::empty().horizontal(Some('=')).intersection(Some(' ')),
                 Line::empty(),
                 None,
                 None,
                 Some(' '),
             ),
-            [(1, Line::short('=', ' '))],
+            [(1, Line::new(Some('='), Some(' '), None, None))],
         )
     }
 
@@ -498,26 +501,26 @@ impl Style<(), (), (), (), (), ()> {
 }
 
 const fn create_borders(
-    top: Line<char>,
-    bottom: Line<char>,
-    horizontal: Line<char>,
+    top: Line,
+    bottom: Line,
+    horizontal: Line,
     left: Option<char>,
     right: Option<char>,
     vertical: Option<char>,
 ) -> Borders {
     Borders {
-        top: top.horizontal,
-        bottom: bottom.horizontal,
-        top_left: top.left,
-        top_right: top.right,
-        bottom_left: bottom.left,
-        bottom_right: bottom.right,
-        top_intersection: top.intersection,
-        bottom_intersection: bottom.intersection,
-        horizontal_left: horizontal.left,
-        horizontal_right: horizontal.right,
-        horizontal: horizontal.horizontal,
-        intersection: horizontal.intersection,
+        top: top.0.horizontal,
+        bottom: bottom.0.horizontal,
+        top_left: top.0.left,
+        top_right: top.0.right,
+        bottom_left: bottom.0.left,
+        bottom_right: bottom.0.right,
+        top_intersection: top.0.intersection,
+        bottom_intersection: bottom.0.intersection,
+        horizontal_left: horizontal.0.left,
+        horizontal_right: horizontal.0.right,
+        horizontal: horizontal.0.horizontal,
+        intersection: horizontal.0.intersection,
         vertical_left: left,
         vertical_right: right,
         vertical_intersection: vertical,
@@ -607,13 +610,13 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     ///     )
     /// )
     /// ```
-    pub const fn get_horizontal(&self) -> Line<char> {
-        Line {
-            horizontal: self.borders.horizontal,
-            intersection: self.borders.intersection,
-            left: self.borders.horizontal_left,
-            right: self.borders.horizontal_right,
-        }
+    pub const fn get_horizontal(&self) -> Line {
+        Line::new(
+            self.borders.horizontal,
+            self.borders.intersection,
+            self.borders.horizontal_left,
+            self.borders.horizontal_right,
+        )
     }
 
     /// Sets a top border.
@@ -663,7 +666,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// Any corners and intersections which were set will be overridden.
     pub fn left(mut self, c: char) -> Style<T, B, On, R, H, V, Lines>
     where
-        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line<char>)>,
+        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line)>,
     {
         self.borders.vertical_left = Some(c);
 
@@ -680,7 +683,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
         }
 
         for (_, line) in &mut self.lines {
-            line.left = Some(c);
+            line.0.left = Some(c);
         }
 
         Style::new(self.borders, self.lines)
@@ -691,7 +694,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// Any corners and intersections which were set will be overridden.
     pub fn right(mut self, c: char) -> Style<T, B, L, On, H, V, Lines>
     where
-        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line<char>)>,
+        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line)>,
     {
         self.borders.vertical_right = Some(c);
 
@@ -708,7 +711,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
         }
 
         for (_, line) in &mut self.lines {
-            line.right = Some(c);
+            line.0.right = Some(c);
         }
 
         Style::new(self.borders, self.lines)
@@ -740,7 +743,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// Any corners and intersections which were set will be overridden.
     pub fn vertical(mut self, c: char) -> Style<T, B, L, R, H, On, Lines>
     where
-        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line<char>)>,
+        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line)>,
     {
         self.borders.vertical_intersection = Some(c);
 
@@ -757,7 +760,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
         }
 
         for (_, line) in &mut self.lines {
-            line.intersection = Some(c);
+            line.0.intersection = Some(c);
         }
 
         Style::new(self.borders, self.lines)
@@ -793,7 +796,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// ```
     pub fn lines<NewLines>(self, lines: NewLines) -> Style<T, B, L, R, H, V, NewLines>
     where
-        NewLines: IntoIterator<Item = (usize, Line<char>)> + Clone,
+        NewLines: IntoIterator<Item = (usize, Line)> + Clone,
     {
         Style::new(self.borders, lines)
     }
@@ -914,7 +917,7 @@ impl<T, B, R, H, V, Lines> Style<T, B, On, R, H, V, Lines> {
     /// Removes left border.
     pub fn off_left(mut self) -> Style<T, B, (), R, H, V, BorderLinesIntoIter<Lines>>
     where
-        Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
+        Lines: IntoIterator<Item = (usize, Line)> + Clone,
     {
         self.borders.vertical_left = None;
         self.borders.horizontal_left = None;
@@ -930,7 +933,7 @@ impl<T, B, L, H, V, Lines> Style<T, B, L, On, H, V, Lines> {
     /// Removes right border.
     pub fn off_right(mut self) -> Style<T, B, L, (), H, V, BorderLinesIntoIter<Lines>>
     where
-        Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
+        Lines: IntoIterator<Item = (usize, Line)> + Clone,
     {
         self.borders.vertical_right = None;
         self.borders.horizontal_right = None;
@@ -960,7 +963,7 @@ impl<T, B, L, R, H, Lines> Style<T, B, L, R, H, On, Lines> {
     /// Removes vertical split lines.
     pub fn off_vertical(mut self) -> Style<T, B, L, R, H, (), BorderLinesIntoIter<Lines>>
     where
-        Lines: IntoIterator<Item = (usize, Line<char>)> + Clone,
+        Lines: IntoIterator<Item = (usize, Line)> + Clone,
     {
         self.borders.vertical_intersection = None;
         self.borders.top_intersection = None;
@@ -974,7 +977,7 @@ impl<T, B, L, R, H, Lines> Style<T, B, L, R, H, On, Lines> {
 
 impl<T, B, L, R, H, V, Lines> TableOption for Style<T, B, L, R, H, V, Lines>
 where
-    Lines: IntoIterator<Item = (usize, Line<char>)> + Clone + std::fmt::Debug,
+    Lines: IntoIterator<Item = (usize, Line)> + Clone + std::fmt::Debug,
 {
     fn change(&mut self, grid: &mut Grid) {
         grid.clear_theme();
@@ -982,7 +985,7 @@ where
 
         if grid.count_rows() > 1 {
             for (row, line) in self.lines.clone() {
-                grid.set_split_line(row, line.clone());
+                grid.set_split_line(row, line.clone().into());
             }
         }
     }
@@ -990,7 +993,7 @@ where
 
 impl<T, B, L, R, H, V, Lines> From<Style<T, B, L, R, H, V, Lines>> for RawStyle
 where
-    Lines: IntoIterator<Item = (usize, Line<char>)>,
+    Lines: IntoIterator<Item = (usize, Line)>,
 {
     fn from(style: Style<T, B, L, R, H, V, Lines>) -> Self {
         Self {
@@ -1006,7 +1009,7 @@ where
 #[derive(Debug, Clone)]
 pub struct RawStyle {
     borders: Borders<char>,
-    lines: HashMap<usize, Line<char>>,
+    lines: HashMap<usize, Line>,
 }
 
 impl RawStyle {
@@ -1133,7 +1136,7 @@ impl RawStyle {
     ///     ),
     /// )
     /// ```
-    pub fn set_lines(&mut self, lines: HashMap<usize, Line<char>>) -> &mut Self {
+    pub fn set_lines(&mut self, lines: HashMap<usize, Line>) -> &mut Self {
         self.lines = lines;
         self
     }
@@ -1167,7 +1170,7 @@ impl TableOption for RawStyle {
 
         if grid.count_rows() > 1 {
             for (&row, line) in &self.lines {
-                grid.set_split_line(row, line.clone());
+                grid.set_split_line(row, line.clone().into());
             }
         }
     }
@@ -1385,8 +1388,6 @@ impl CellOption for Border {
         }
     }
 }
-
-pub use papergrid::Line;
 
 /// A correctnes function of style for [`Table`] which has [`Span`]s.
 ///
@@ -1810,9 +1811,9 @@ impl<I> BorderLinesIntoIter<I> {
 
 impl<I> IntoIterator for BorderLinesIntoIter<I>
 where
-    I: IntoIterator<Item = (usize, Line<char>)>,
+    I: IntoIterator<Item = (usize, Line)>,
 {
-    type Item = (usize, Line<char>);
+    type Item = (usize, Line);
     type IntoIter = BorderLinesIter<I::IntoIter>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -1847,37 +1848,101 @@ impl<I> BorderLinesIter<I> {
 
 impl<I> Iterator for BorderLinesIter<I>
 where
-    I: Iterator<Item = (usize, Line<char>)>,
+    I: Iterator<Item = (usize, Line)>,
 {
-    type Item = (usize, Line<char>);
+    type Item = (usize, Line);
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut line = self.iter.next()?;
 
         if self.intersection {
-            line.1.intersection = None;
+            line.1 = line.1.intersection(None);
         }
 
         if self.left {
-            line.1.left = None;
+            line.1 = line.1.left(None);
         }
 
         if self.right {
-            line.1.right = None;
+            line.1 = line.1.right(None);
         }
 
         Some(line)
     }
 }
 
-// impl<I> IntoIterator for BorderLinesIter<I>
-// where
-//     I: Iterator<Item = (usize, Line<char>)>,
-// {
-//     type Item = (usize, Line<char>);
-//     type IntoIter: Self;
+/// Line is a horizontal line which can be used when setting style in [`Style::lines`].
+#[derive(Debug, Clone, Default)]
+pub struct Line(papergrid::Line<char>);
 
-//     fn into_iter(self) -> Self::IntoIter {
-//         self
-//     }
-// }
+impl Line {
+    /// Creates a new [`Line`].
+    pub const fn new(
+        horizontal: Option<char>,
+        intersection: Option<char>,
+        left: Option<char>,
+        right: Option<char>,
+    ) -> Self {
+        Self(papergrid::Line {
+            horizontal,
+            intersection,
+            left,
+            right,
+        })
+    }
+
+    /// Creates a new [`Line`] with horinzontal, left, right and vertical intersection be set on.
+    pub const fn full(horizontal: char, intersection: char, left: char, right: char) -> Self {
+        Self::new(
+            Some(horizontal),
+            Some(intersection),
+            Some(left),
+            Some(right),
+        )
+    }
+
+    /// Creates a new [`Line`] with horinzontal, left, right and vertical intersection set to the given character.
+    pub const fn filled(c: char) -> Self {
+        Self::full(c, c, c, c)
+    }
+
+    /// Creates a new empty [`Line`].
+    pub const fn empty() -> Self {
+        Self(papergrid::Line {
+            horizontal: None,
+            intersection: None,
+            left: None,
+            right: None,
+        })
+    }
+
+    /// Sets a horizontal character.
+    pub const fn horizontal(mut self, c: Option<char>) -> Self {
+        self.0.horizontal = c;
+        self
+    }
+
+    /// Sets a vertical intersection character.
+    pub const fn intersection(mut self, c: Option<char>) -> Self {
+        self.0.intersection = c;
+        self
+    }
+
+    /// Sets a left character.
+    pub const fn left(mut self, c: Option<char>) -> Self {
+        self.0.left = c;
+        self
+    }
+
+    /// Sets a right character.
+    pub const fn right(mut self, c: Option<char>) -> Self {
+        self.0.right = c;
+        self
+    }
+}
+
+impl From<Line> for papergrid::Line<char> {
+    fn from(line: Line) -> Self {
+        line.0
+    }
+}

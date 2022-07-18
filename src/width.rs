@@ -144,6 +144,8 @@ impl Width {
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Truncate::new(3)));
 /// ```
+///
+/// [`Padding`]: crate::Padding
 #[derive(Debug)]
 pub struct Truncate<'a, W = usize, P = PriorityNone> {
     width: W,
@@ -365,6 +367,8 @@ where
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Wrap::new(3)));
 /// ```
+///
+/// [`Padding`]: crate::Padding
 #[derive(Debug, Clone)]
 pub struct Wrap<W = usize, P = PriorityNone> {
     width: W,
@@ -394,6 +398,8 @@ impl<W, P> Wrap<W, P> {
     /// - [`PriorityMin`] cuts the lowest columns first.
     /// Be aware that it doesn't consider padding.
     /// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
+    ///
+    /// [`Padding`]: crate::Padding
     pub fn priority<PP>(self) -> Wrap<W, PP> {
         Wrap {
             width: self.width,

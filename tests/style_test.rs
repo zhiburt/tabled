@@ -2,11 +2,10 @@ use std::iter::FromIterator;
 
 use crate::util::{create_vector, static_table, test_table};
 
-use papergrid::Line;
 use tabled::{
     builder::Builder,
     object::{Cell, Columns, Rows, Segment},
-    style::{Border, BorderText, RawStyle},
+    style::{Border, BorderText, Line, RawStyle},
     Highlight, Modify, Padding, Span, Style, Table, TableIteratorExt,
 };
 
