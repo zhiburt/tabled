@@ -73,6 +73,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [ANSI escape codes](#ansi-escape-codes)
   - [Emoji](#emoji)
   - [Semver](#semver)
+  - [Comparison](#comparison)
 
 ## Usage
 
@@ -932,12 +933,13 @@ Beside `#[tabled(rename = "")]` you can change a format of a column name using
 use tabled::Tabled;
 
 #[derive(Tabled)]
+#[tabled(rename_all = "CamelCase")]
 struct Person {
-   id: u8,
-   #[tabled(rename_all = "CamelCase")]
-   number: &'static str,
-   #[tabled(rename_all = "snake_case")]
-   name: &'static str,
+    id: u8,
+    number: &'static str,
+    name: &'static str,
+    #[tabled(rename_all = "snake_case")]
+    middle_name: &'static str,
 }
 ```
 
@@ -1306,3 +1308,24 @@ We still do it.
 We often do break change on minor version bump.
 So you probably shall not depend on minor version (like `0.7`).
 It's likely better to depend on constant version e.g. `0.8.0`
+
+### Comparison
+
+Nowadays there's a few libraries for pretty tables.
+Some may wonder why `tabled` is better or worse than others libraries?
+
+I hope `tabled` does it's job good, but at the end of the day you probably need to decide it yourself.
+If you have any ideas for an enhancement or have a question about `tabled` please file an issue.
+
+Bellow you will find a list of crates which do simmilar things or do something which `tabled` doesn't.
+You can find performance Comparison benchmarks for some of them [here](https://github.com/zhiburt/tabled/tree/comparision-libs-bench). 
+
+The description is taken from the author's quotes.
+
+* *[`cli-table`](https://github.com/devashishdxt/cli-table/) tends to keep the compile time and crate size low and support all the platforms. It has an optional `csv` support.*
+
+* *[`comfy-table`](https://github.com/Nukesor/comfy-table) focuses on providing a minimalistic, but rock-solid library for building text-based tables with focus on safety and dynamic-length content arrangement.*
+
+* *[`term-table-rs`](https://github.com/RyanBluth/term-table-rs) main focus is on a good set of tools for rendering CLI tables, while allowing users to bring their own tools for things like colors. It has an ability to have different number of columns in each row of the table.*
+
+Please if you feel about some crate being worth menthioned open an issue.
