@@ -1,4 +1,4 @@
-use papergrid::{Entity, Settings};
+use papergrid::{Border, Borders, Entity, Settings};
 
 mod util;
 
@@ -47,4 +47,21 @@ fn global_styles_overrides_everything_2x2() {
          |  y  |yyyyyyyyyy|\n\
          +-----+----------+",
     );
+}
+
+#[test]
+fn remove_border_test() {
+    let mut grid = util::new_grid::<2, 2>();
+    grid.set_borders(Borders::default());
+
+    grid.set(
+        Entity::Cell(0, 0),
+        Settings::new().border(Border::default().top('x').bottom('o').left('q')),
+    );
+
+    // assert_eq!(grid.to_string(), " xxx   \nq0-00-1\n ooo   \n 1-01-1");
+
+    grid.remove_border(Entity::Cell(0, 0));
+
+    assert_eq!(grid.to_string(), "0-00-1\n1-01-1 ");
 }
