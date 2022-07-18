@@ -985,7 +985,11 @@ where
 
         if grid.count_rows() > 1 {
             for (row, line) in self.lines.clone() {
-                grid.set_split_line(row, line.clone().into());
+                if line.is_empty() {
+                    grid.remove_split_line(row);
+                } else {
+                    grid.set_split_line(row, line.clone().into());
+                }
             }
         }
     }
@@ -1170,7 +1174,11 @@ impl TableOption for RawStyle {
 
         if grid.count_rows() > 1 {
             for (&row, line) in &self.lines {
-                grid.set_split_line(row, line.clone().into());
+                if line.is_empty() {
+                    grid.remove_split_line(row);
+                } else {
+                    grid.set_split_line(row, line.clone().into());
+                }
             }
         }
     }
@@ -1938,6 +1946,10 @@ impl Line {
     pub const fn right(mut self, c: Option<char>) -> Self {
         self.0.right = c;
         self
+    }
+
+    fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 }
 

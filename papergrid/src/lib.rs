@@ -277,6 +277,14 @@ impl Grid {
         self.borders.insert_line(row, line);
     }
 
+    /// Sets off the border line by row index if any were set
+    ///
+    /// Row `0` means the top row.
+    /// Row `grid.count_rows()` means the bottom row.
+    pub fn remove_split_line(&mut self, row: usize) {
+        self.borders.remove_line(row);
+    }
+
     /// This function returns a settings of a cell
     pub fn get_settings(&self, row: usize, col: usize) -> Settings {
         let style = self.style(Entity::Cell(row, col));
@@ -1948,10 +1956,6 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
     }
 
     fn insert_line(&mut self, row: usize, line: Line<T>) {
-        if line.is_empty() {
-            return;
-        }
-
         if line.left.is_some() {
             self.layout.vertical_left = true;
         }
@@ -1966,6 +1970,10 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
 
         self.lines.insert(row, line);
         self.layout.horizontal.insert(row);
+    }
+
+    fn remove_line(&mut self, row: usize) {
+        self.lines.remove(&row);
     }
 
     fn set_borders(&mut self, borders: Borders<T>) {
