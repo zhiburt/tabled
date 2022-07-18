@@ -20,38 +20,49 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 - [Settings](#settings)
   - [Style](#style)
     - [Themes](#themes)
-      - [ASCII](#ascii)
-      - [Psql](#psql)
-      - [Github Markdown](#github-markdown)
-      - [Modern](#modern)
-      - [Rounded](#rounded)
-      - [ReStructuredText](#restructuredtext)
-      - [Extended](#extended)
-      - [Dots](#dots)
-      - [Blank](#blank)
-      - [Custom](#custom)
+      - [ascii](#ascii)
+      - [modern](#modern)
+      - [rounded](#rounded)
+      - [extended](#extended)
+      - [psql](#psql)
+      - [markdown](#markdown)
+      - [re\_structured\_text](#re_structured_text)
+      - [dots](#dots)
+      - [ascii\_rounded](#ascii_rounded)
+      - [blank](#blank)
+      - [empty](#empty)
+    - [Customization](#customization)
     - [Cell Border](#cell-border)
-    - [Text in a top border](#text-in-a-top-border)
+    - [Text on borders](#text-on-borders)
+    - [Colorize borders](#colorize-borders)
   - [Alignment](#alignment)
   - [Format](#format)
   - [Padding](#padding)
   - [Margin](#margin)
-  - [Max width](#max-width)
-  - [Min width](#min-width)
-  - [Justify](#justify)
+  - [Width](#width)
+    - [Truncate](#truncate)
+    - [Wrapping](#wrapping)
+    - [Increaase width](#increaase-width)
+    - [Justify](#justify)
+    - [Priority](#priority)
+    - [Percent](#percent)
   - [Rotate](#rotate)
   - [Disable](#disable)
   - [Extract](#extract)
     - [Refinishing](#refinishing)
-  - [Header and Footer](#header-and-footer)
+  - [Header and Footer and Panel](#header-and-footer-and-panel)
   - [Concat](#concat)
   - [Highlight](#highlight)
   - [Column span](#column-span)
 - [Derive](#derive)
-  - [Column name override](#column-name-override)
+  - [Override a column name](#override-a-column-name)
   - [Hide a column](#hide-a-column)
-  - [Custom field formatting](#custom-field-formatting)
+  - [Set column order](#set-column-order)
+  - [Format fields](#format-fields)
+  - [Format headers](#format-headers)
   - [Inline](#inline)
+- [Dynamic table](#dynamic-table)
+  - [Build index](#build-index)
 - [Features](#features)
   - [Color](#color)
   - [Tuple combination](#tuple-combination)
@@ -60,9 +71,8 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Expanded display](#expanded-display)
 - [Notes](#notes)
   - [ANSI escape codes](#ansi-escape-codes)
-  - [Dynamic table](#dynamic-table)
-  - [Index](#index)
   - [Emoji](#emoji)
+  - [Semver](#semver)
 
 ## Usage
 
@@ -106,7 +116,7 @@ let expected = "+------+----------------+---------------+\n\
                 | Rust | Graydon Hoare  |     2010      |\n\
                 +------+----------------+---------------+\n\
                 |  Go  |    Rob Pike    |     2009      |\n\
-                +------+----------------+---------------+\n";
+                +------+----------------+---------------+";
 
 assert_eq!(table, expected);
 ```
@@ -122,6 +132,7 @@ let table = some_numbers.table();
 ## Settings
 
 This section lists the set of settings you can apply to your table.
+Most of the settings are used by `.with` method of `Table`.
 
 ### Style
 
@@ -129,10 +140,9 @@ This section lists the set of settings you can apply to your table.
 
 There are a list of ready to use styles.
 Each style can be customized.
-
 A custom style also can be created from scratch.
 
-A style can be used by passing it to the `.with` method of `Table`.
+A style can be used like this.
 
 ```rust
 use tabled::{Table, Style};
@@ -145,9 +155,9 @@ Below is a rendered list of the preconfigured styles.
 If you think that there's some valuable style to be added,
 please open an issue.
 
-##### ASCII
+##### ascii
 
-```
+```text
 +------+----------------+---------------+
 | name |  designed_by   | invented_year |
 +------+----------------+---------------+
@@ -159,29 +169,9 @@ please open an issue.
 +------+----------------+---------------+
 ```
 
-##### Psql
+##### modern
 
-```
- name |  designed_by   | invented_year 
-------+----------------+---------------
-  C   | Dennis Ritchie |     1972      
- Rust | Graydon Hoare  |     2010      
-  Go  |    Rob Pike    |     2009      
-```
-
-##### Github Markdown
-
-```
-| name |  designed_by   | invented_year |
-|------+----------------+---------------|
-|  C   | Dennis Ritchie |     1972      |
-| Rust | Graydon Hoare  |     2010      |
-|  Go  |    Rob Pike    |     2009      |
-```
-
-##### Modern
-
-```
+```text
 ┌──────┬────────────────┬───────────────┐
 │ name │  designed_by   │ invented_year │
 ├──────┼────────────────┼───────────────┤
@@ -193,34 +183,23 @@ please open an issue.
 └──────┴────────────────┴───────────────┘
 ```
 
-##### Rounded
+##### rounded
 
-```
+```text
 ╭──────┬────────────────┬───────────────╮
 │ name │  designed_by   │ invented_year │
 ├──────┼────────────────┼───────────────┤
 │  C   │ Dennis Ritchie │     1972      │
 ├──────┼────────────────┼───────────────┤
 │ Rust │ Graydon Hoare  │     2010      │
+├──────┼────────────────┼───────────────┤
 │  Go  │    Rob Pike    │     2009      │
 ╰──────┴────────────────┴───────────────╯
 ```
 
-##### ReStructuredText
+##### extended
 
-```
-====== ================ ===============
- name    designed_by     invented_year 
-====== ================ ===============
-  C     Dennis Ritchie       1972      
- Rust   Graydon Hoare        2010      
-  Go       Rob Pike          2009      
-====== ================ ===============
-```
-
-##### Extended
-
-```
+```text
 ╔══════╦════════════════╦═══════════════╗
 ║ name ║  designed_by   ║ invented_year ║
 ╠══════╬════════════════╬═══════════════╣
@@ -232,9 +211,41 @@ please open an issue.
 ╚══════╩════════════════╩═══════════════╝
 ```
 
-##### Dots
+##### psql
 
+```text
+ name |  designed_by   | invented_year 
+------+----------------+---------------
+  C   | Dennis Ritchie |     1972      
+ Rust | Graydon Hoare  |     2010      
+  Go  |    Rob Pike    |     2009      
 ```
+
+##### markdown
+
+```text
+| name |  designed_by   | invented_year |
+|------|----------------|---------------|
+|  C   | Dennis Ritchie |     1972      |
+| Rust | Graydon Hoare  |     2010      |
+|  Go  |    Rob Pike    |     2009      |
+```
+
+##### re_structured_text
+
+```text
+====== ================ ===============
+ name    designed_by     invented_year 
+====== ================ ===============
+  C     Dennis Ritchie       1972      
+ Rust   Graydon Hoare        2010      
+  Go       Rob Pike          2009      
+====== ================ ===============
+```
+
+##### dots
+
+```text
 .........................................
 : name :  designed_by   : invented_year :
 :......:................:...............:
@@ -244,21 +255,41 @@ please open an issue.
 :......:................:...............:
 ```
 
-##### Blank
+##### ascii_rounded
 
+```text
+.---------------------------------------.
+| name |  designed_by   | invented_year |
+|  C   | Dennis Ritchie |     1972      |
+| Rust | Graydon Hoare  |     2010      |
+|  Go  |    Rob Pike    |     2009      |
+'---------------------------------------'
 ```
+
+##### blank
+
+```text
  name    designed_by     invented_year 
   C     Dennis Ritchie       1972      
   Rust   Graydon Hoare       2010      
   Go       Rob Pike          2009      
 ```
 
-##### Custom
+##### empty
+
+```text
+ name   designed_by    invented_year 
+  C    Dennis Ritchie      1972      
+  Rust  Graydon Hoare      2010      
+  Go      Rob Pike         2009      
+```
+
+#### Customization
 
 You can modify existing styles to fit your needs.
 
 ```rust
-let style = tabled::Style::modern().header_off().horizontal_off();
+let style = tabled::Style::modern().off_horizontal();
 ```
 
 The style will look like the following.
@@ -272,7 +303,28 @@ The style will look like the following.
 └──────┴────────────────┴───────────────┘
 ```
 
-Check the [documentation](https://docs.rs/tabled/latest/tabled/style/struct.CustomStyle.html) for
+You can change the existing styles.
+
+```rust
+use tabled::Style;
+let style = Style::modern()
+    .off_horizontal()
+    .lines([(1, Style::modern().get_horizontal().horizontal(Some('═')))]);
+```
+
+The style will look like the following.
+
+```rust
+┌──────┬────────────────┬───────────────┐
+│ name │  designed_by   │ invented_year │
+├══════┼════════════════┼═══════════════┤
+│  C   │ Dennis Ritchie │     1972      │
+│ Rust │ Graydon Hoare  │     2010      │
+│  Go  │    Rob Pike    │     2009      │
+└──────┴────────────────┴───────────────┘
+```
+
+Check the [documentation](https://docs.rs/tabled/latest/tabled/style/struct.Style.html) for
 more customization options.
 
 #### Cell Border
@@ -289,7 +341,7 @@ let data = [["123", "456"], ["789", "000"]];
 
 let table = data.table()
     .with(Style::ascii())
-    .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
+    .with(Modify::new(Rows::first()).with(Border::default().top('x')));
 
 let expected = "+xxxxx+xxxxx+\n\
                 |  0  |  1  |\n\
@@ -302,9 +354,9 @@ let expected = "+xxxxx+xxxxx+\n\
 assert_eq!(table.to_string(), expected);
 ```
 
-#### Text in a top border
+#### Text on borders
 
-You can also have custom text as part of the top border of the table.
+You can set a string to a horizontal border line.
 
 ```rust
 use tabled::{Table, style::BorderText};
@@ -320,6 +372,24 @@ assert_eq!(
      | Hello World |\n\
      +-------------+\n"
 );
+```
+
+#### Colorize borders
+
+You can set a colors of all borders using `BorderColor`.
+
+```rust
+// ... build table
+let color = BorderColor::try_from(" ".magenta().to_string()).unwrap();
+table.with(color)
+```
+
+You can also set a color border of intividial cell by using `ColoredBorder`.
+
+```rust
+// set a top border of each cell in second column to red '=' character.
+let c = Symbol::ansi("═".red().to_string()).unwrap();
+table.with(Modify::new(Columns::single(2)).with(ColoredBorder::default().top(c)))
 ```
 
 ### Alignment
@@ -374,7 +444,6 @@ Table::new(&data)
 
 ### Margin
 
-
 `Margin` sets extra space around the border (top, bottom, left, right).
 
 ```rust
@@ -386,7 +455,7 @@ Table::new(&data)
 
 An output would depend on the `data`. But it could look like the following.
 
-```
+```text
 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 >>>┌───────────┬───────────┐<<<<
 >>>│  feature  │  released │<<<<
@@ -396,59 +465,96 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ```
 
-### Max width
+### Width
 
-`MaxWidth` sets a maximum width of an object. This preserves the text color
-correctly.
+Using the following structures you can configure a width of a table and a single cell.
+But be aware that it doesn't often consider `Padding`.
+
+The functions preserves the text color.
+
+#### Truncate
+
+`Truncate` sets a maximum width of a cell by truncating its content.
 
 ```rust
-use tabled::{TableIteratorExt, Modify, MaxWidth, object::Rows};
+use tabled::{TableIteratorExt, Modify, Width, object::Rows};
 
-// Truncating content to 10 chars in all rows except a header.
+// Truncating content to 10 chars in case it's bigger than that
+// in a first row.
 data.table()
-    .with(Modify::new(Rows::new(1..)).with(MaxWidth::truncating(10).suffix("...")));
+    .with(Modify::new(Rows::first()).with(Width::truncate(10)));
 
-// Wrapping content by new lines after 10 chars in a last row.
+// Truncating content to 7 chars and puts a suffix '...' after it
+// in all rows except a first.
 data.table()
-    .with(Modify::new(Rows::last()).with(MaxWidth::wrapping(10)));
+    .with(Modify::new(Rows::new(1..)).with(Width::truncate(10).suffix("...")));
 ```
 
-`MaxWidth` also can be used to set a maximum width of a whole table.
+`Trucate` also can be used to set a maximum width of a whole table.
 
 ```rust
-use tabled::{TableIteratorExt, MaxWidth};
+use tabled::{TableIteratorExt, Width};
 
-data.table().with(MaxWidth::wrapping(10));
+/// Tries to set table width to 22, in case it's bigger than that.
+data.table().with(Width::truncate(22));
 ```
 
-It can be used in combination with `MinWidth`.
+It can be used in combination with `MinWidth` to set an exact table size.
 
-### Min width
+#### Wrapping
 
-`MinWidth` sets a minimal width of an object. This preserves the text color
-correctly.
+`Wrap` sets a maximum width of a cell by wrapping its content to new lines.
 
 ```rust
-use tabled::{TableIteratorExt, Modify, MinWidth, object::Rows};
+use tabled::{TableIteratorExt, Modify, Width, object::Rows};
 
+// Wrap content to 10 chars in case it's bigger than that
+// in a first row.
 data.table()
-    .with(Modify::new(Rows::new(1..)).with(MinWidth::new(10)));
+    .with(Modify::new(Rows::first()).with(Width::wrap(10)));
+
+// Use a strategy where we try to keep words not splited (where possible).
+data.table()
+    .with(Modify::new(Rows::new(1..)).with(Width::wrap(10).keep_words()));
+```
+
+`Wrap` also can be used to set a maximum width of a whole table.
+
+```rust
+use tabled::{TableIteratorExt, Width};
+
+/// Tries to set table width to 22, in case it's bigger than that.
+data.table().with(Width::wrap(22));
+```
+
+It can be used in combination with `MinWidth` to set an exact table size.
+
+#### Increaase width
+
+`MinWidth` sets a minimal width of an object.
+
+```rust
+use tabled::{TableIteratorExt, Modify, Width, object::Rows};
+
+/// increase the space used by cells in all rows except the header to be at least 10
+data.table()
+    .with(Modify::new(Rows::new(1..)).with(Width::increase(10)));
 ```
 
 `MinWidth` also can be used to set a minimum width of a whole table.
 
 ```rust
-use tabled::{TableIteratorExt, MinWidth};
+use tabled::{TableIteratorExt, Width};
 
-data.table().with(MinWidth::new(10));
+// increase width of a table in case it was lower than 10.
+data.table().with(Width::increase(10));
 ```
 
-It can be used in combination with `MaxWidth`.
+It can be used in combination with `Truncate` and `Wrap` to set an exact table size.
 
-### Justify
+#### Justify
 
 You can set a constant width for all columns using `Justify`.
-But be aware that it doesn't consider `Padding`.
 
 ```rust
 use tabled::{TableIteratorExt, Justify};
@@ -456,11 +562,32 @@ use tabled::{TableIteratorExt, Justify};
 data.table().with(Justify::new(10);
 ```
 
+#### Priority
+
+You can tweak `Truncate`, `Wrap`, `MinWidth` logic by setting a priority by which a trim/inc be done.
+
+```rust
+use tabled::{TableIteratorExt, Justify};
+
+data.table().with(Width::truncate(10).priority::<PriorityMax>());
+```
+
+#### Percent
+
+By default you use `usize` int to set width settings,
+but you could do it also with `tabled::width::Percent`.
+
+```rust
+use tabled::width::{Percent, Width};
+
+let table = table.with(Width::wrap(Percent(75)));
+```
+
 ### Rotate
 
 You can rotate table using `tabled::Rotate`.
 
-Imagine you have a table already. And the output may look like this.
+Imagine you have a table already which output may look like this.
 
 ```text
 ┌────┬──────────────┬───────────────────────────┐
@@ -509,10 +636,8 @@ You can `Extract` segments of a table to focus on a reduced number of rows and c
 ```rust
 use tabled::{Table, Extract};
 
-let rows = 1..3;
-let columns = 1..;
 Table::new(&data)
-    .with(Extract::segment(rows, columns));
+    .with(Extract::segment(1..3, 1..));
 ```
 
 ```text
@@ -536,10 +661,8 @@ For styles with unique corner and edge textures it is possible to reapply a tabl
 ```rust
 use tabled::{Table, Extract, Style};
 
-let rows = 1..3;
-let columns = 1..;
 Table::new(&data)
-    .with(Extract::segment(rows, columns))
+    .with(Extract::segment(1..3, 1..))
     .with(Style::modern());
 ```
 
@@ -559,8 +682,7 @@ Refinished extract
 └───────────────────────────┴──────────────────┴───────────────┘
 ```
 
-
-### Header and Footer
+### Header and Footer and Panel
 
 You can add a `Header` and `Footer` to display some information.
 
@@ -587,6 +709,12 @@ but it may look something like this:
 
 You can also add a full row on any line using `tabled::Panel`.
 
+```rust
+use tabled::{Table, Panel};
+
+Table::new(&data).with(Panel("A panel on 2nd row", 2));
+```
+
 ### Concat
 
 You can concatanate 2 tables using `Concat`.
@@ -596,7 +724,11 @@ It will stick 2 tables together either vertically or horizontally.
 let t1: Table = ...;
 let t2: Table = ...;
 
+// vertical concat
 let t3: Table = t1.with(Concat::vertical(t2));
+
+// horizontal concat
+let t3: Table = t1.with(Concat::horizontal(t2));
 ```
 
 ### Highlight
@@ -640,7 +772,7 @@ The resulting table would be the following.
 
 It's possible to have a horizontal (column) span of a cell.
 
-The code example and the resulting table.
+An example for span usage.
 
 ```rust
 use tabled::{object::Cell, Modify, Span, TableIteratorExt};
@@ -686,7 +818,10 @@ struct SomeType {
 struct SomeOtherType;
 ```
 
-### Column name override
+The `Tabled` macros available when `derive` feature in turned on.
+And it is by default.
+
+### Override a column name
 
 You can use a `#[tabled(rename = "")]` attribute to override a column name.
 
@@ -720,20 +855,32 @@ struct Person {
 }
 ```
 
-### Custom field formatting
+### Set column order
 
-`#[derive(Tabled)]` is possible only when all fields implement a `Display` trait.
+You can change the order in which they will be displayed in table.
 
-However, this may be often not the case for example when a field uses the `Option` type.
+```rust
+use tabled::Tabled;
 
-There's 2 common ways how to solve this:
+#[derive(Tabled)]
+struct Person {
+   id: u8,
+   #[tabled(order = 0)]
+   number: &'static str,
+   #[tabled(order = 1)]
+   name: &'static str,
+}
+```
 
-* Implement `Tabled` trait manually for a type.
-* Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and implement a Display trait for
-it.
+### Format fields
 
-Alternatively, use the `#[tabled(display_with = "func")]` attribute for the field to specify a
-custom display function.
+As was said already, using `#[derive(Tabled)]` is possible only when all fields implement a `Display` trait.
+However, this may be often not the case for example when a field uses the `Option` type. There's 2 common ways how to solve this:
+
+- Implement `Tabled` trait manually for a type.
+- Wrap `Option` to something like `DisplayedOption<T>(Option<T>)` and implement a Display trait for it.
+
+Alternatively, you can use the `#[tabled(display_with = "func")]` attribute for the field to specify a display function.
 
 ```rust
 use tabled::Tabled;
@@ -753,11 +900,51 @@ fn display_option(o: &Option<bool>) -> String {
 }
 ```
 
+It's also possible to change function argument to be `&self`,
+using `#[tabled(display_with("some_function", args))]`
+
+```rust
+use tabled::Tabled;
+
+#[derive(Tabled)]
+pub struct MyRecord {
+    pub id: i64,
+    #[tabled(display_with("Self::display_valid", args))]
+    pub valid: Option<bool>
+}
+
+impl MyRecord {
+    fn display_valid(&self) -> String {
+        match self.valid {
+            Some(s) => format!("is valid thing = {}", s),
+            None => format!("is not valid"),
+        }
+    }
+}
+```
+
+### Format headers
+
+Beside `#[tabled(rename = "")]` you can change a format of a column name using
+`#[tabled(rename_all = "UPPERCASE")]`.
+
+```rust
+use tabled::Tabled;
+
+#[derive(Tabled)]
+struct Person {
+   id: u8,
+   #[tabled(rename_all = "CamelCase")]
+   number: &'static str,
+   #[tabled(rename_all = "snake_case")]
+   name: &'static str,
+}
+```
+
 ### Inline
 
-It's possible to inline internal data if it implements the `Tabled` trait.
-Use `#[tabled(inline)]` for it.
-You can also set a prefix which will be used for all inlined elements by using `#[tabled(inline("prefix>>"))]`.
+It's possible to inline internal data if it implements the `Tabled` trait using `#[tabled(inline)]`.
+You can also set a prefix which will be used for all inlined elements by `#[tabled(inline("prefix>>"))]`.
 
 ```rust
 use tabled::Tabled;
@@ -790,7 +977,10 @@ enum Vehicle {
         engine: &'static str,
     },
     #[tabled(inline)]
-    Bikecycle(#[tabled(rename = "name")] &'static str, #[tabled(inline)] Bike),
+    Bikecycle(
+        &'static str,
+        #[tabled(inline)] Bike,
+    ),
 }
 
 #[derive(Tabled)]
@@ -798,6 +988,108 @@ struct Bike {
     brand: &'static str,
     price: f32,
 }
+```
+
+## Dynamic table
+
+Often you can't say what type of data you are going to deal with (like parsing `csv`).
+In such it's may be handy to build table dynamically.
+
+```rust
+use tabled::{builder::Builder, Style};
+
+fn main() {
+    let song = r#"
+And the cat's in the cradle and the silver spoon
+Little boy blue and the man on the moon
+When you comin' home dad?
+I don't know when, but we'll get together then son
+You know we'll have a good time then
+"#;
+
+    let mut builder = Builder::default();
+    let mut max_words = 0;
+    for line in song.lines().filter(|l| !l.is_empty()) {
+        let words: Vec<_> = line.split_terminator(' ').collect();
+        max_words = std::cmp::max(max_words, words.len());
+        builder.add_record(words);
+    }
+
+    let columns = (0..max_words).map(|i| i.to_string()).collect::<Vec<_>>();
+    builder.set_columns(columns);
+
+    let table = builder.build().with(Style::ascii_rounded());
+
+    println!("{}", table);
+}
+```
+
+```text
+.------------------------------------------------------------------------------------.
+|   0    |   1   |   2    |   3   |  4   |   5    |  6   |    7     |   8    |   9   |
+|  And   |  the  | cat's  |  in   | the  | cradle | and  |   the    | silver | spoon |
+| Little |  boy  |  blue  |  and  | the  |  man   |  on  |   the    |  moon  |       |
+|  When  |  you  | comin' | home  | dad? |        |      |          |        |       |
+|   I    | don't |  know  | when, | but  | we'll  | get  | together |  then  |  son  |
+|  You   | know  | we'll  | have  |  a   |  good  | time |   then   |        |       |
+'------------------------------------------------------------------------------------'
+```
+
+### Build index
+
+You can change a table layout by `Builder`.
+
+```rust
+// previos example
+// ...
+
+let mut builder = builder.index();
+builder.transpose();
+```
+
+```text
+.-------------------------------------------------.
+|   |   0    |   1    |   2    |    3     |   4   |
+| 0 |  And   | Little |  When  |    I     |  You  |
+| 1 |  the   |  boy   |  you   |  don't   | know  |
+| 2 | cat's  |  blue  | comin' |   know   | we'll |
+| 3 |   in   |  and   |  home  |  when,   | have  |
+| 4 |  the   |  the   |  dad?  |   but    |   a   |
+| 5 | cradle |  man   |        |  we'll   | good  |
+| 6 |  and   |   on   |        |   get    | time  |
+| 7 |  the   |  the   |        | together | then  |
+| 8 | silver |  moon  |        |   then   |       |
+| 9 | spoon  |        |        |   son    |       |
+'-------------------------------------------------'
+```
+
+You can use `Builder::index` to make a particular column an index, which will stay on the left.
+
+```rust
+use tabled::{builder::Builder, Style};
+
+fn main() {
+    let table = Builder::default()
+        .set_columns(["Index", "Language", "Status"])
+        .add_record(["1", "English", "In progress"])
+        .add_record(["2", "Deutsch", "Not ready"])
+        .index()
+        .set_index(1)
+        .set_name(None)
+        .build()
+        .with(Style::rounded());
+
+    println!("{}", table);
+}
+```
+
+```text
+╭─────────┬───────┬─────────────╮
+│         │ Index │   Status    │
+├─────────┼───────┼─────────────┤
+│ English │   1   │ In progress │
+│ Deutsch │   2   │  Not ready  │
+╰─────────┴───────┴─────────────╯
 ```
 
 ## Features
@@ -827,15 +1119,15 @@ You also can combine objects which implements `Tabled` by means of tuples, you w
 use tabled::{Tabled, Table, Style};
 
 #[derive(Tabled)]
+struct Developer(#[tabled("name")] &'static str);
+
+#[derive(Tabled)]
 enum Domain {
     Security,
     Embeded,
     Frontend,
     Unknown,
 }
-
-#[derive(Tabled)]
-struct Developer(#[tabled("name")] &'static str);
 
 let data = vec![
     (Developer("Terri Kshlerin"), Domain::Embeded),
@@ -946,8 +1238,6 @@ To enable this support, add the `color` feature to your `Cargo.toml`
 tabled = { version = "*", features = ["color"] }
 ```
 
-### Dynamic table
-
 It might be hard to build a table using `Tabled` trait if you have a data set which structure is determined at runtime.
 In such situation you can use a `Builder`.
 
@@ -964,37 +1254,6 @@ fn main() {
 
     println!("{}", table);
 }**
-```
-
-### Index
-
-You can use `Builder::index` to make a particular column an index, which will stay on the left.
-
-```rust
-use tabled::{builder::Builder, Style};
-
-fn main() {
-    let table = Builder::default()
-        .set_columns(["Index", "Language", "Status"])
-        .add_record(["1", "English", "In progress"])
-        .add_record(["2", "Deutsch", "Not ready"])
-        .index()
-        .set_index(1)
-        .set_name(None)
-        .build()
-        .with(Style::rounded());
-
-    println!("{}", table);
-}
-```
-
-```
-╭─────────┬───────┬─────────────╮
-│         │ Index │   Status    │
-├─────────┼───────┼─────────────┤
-│ English │   1   │ In progress │
-│ Deutsch │   2   │  Not ready  │
-╰─────────┴───────┴─────────────╯
 ```
 
 ### Emoji
@@ -1038,3 +1297,12 @@ Let's add emojies to an example from a [Usage](#Usage) section.
 |  Go 🧋  |    Rob Pike    |     2009      |
 +---------+----------------+---------------+
 ```
+
+### Semver
+
+> When you need to release a breaking change—any breaking change—you do it in a major version. Period. No excuses.
+
+We still do it.
+We often do break change on minor version bump.
+So you probably shall not depend on minor version (like `0.7`).
+It's likely better to depend on constant version e.g. `0.8.0`
