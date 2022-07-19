@@ -13,7 +13,6 @@ categories = ["text-processing", "visualization"]
 readme = "README.md"
 
 [badges]
-travis-ci = { repository = "https://github.com/zhiburt/tabled", branch = "master" }
 coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master", service = "github" }
 maintenance = { status = "actively-developed" }
 
@@ -34,22 +33,13 @@ color = ["papergrid/color", "ansi-str"]
 [dependencies]
 tabled_derive = { path = "./tabled_derive", optional = true }
 papergrid = { path = "./papergrid" }
-ansi-str = { git = "https://github.com/zhiburt/ansi-str", branch = "master", optional = true }
+ansi-str = { version = "0.3.0", optional = true }
 unicode-width = "0.1.9"
 
 [dev-dependencies]
 owo-colors = "3.4.0"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
-
-[package.metadata.docs.rs]
-# To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
-#
-# RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
-features = ["unstable-doc"]
-cargo-args = ["-Zunstable-options"]
-rustdoc-args = ["--cfg", "docsrs"]
-rustc-args = ["--cfg", "docsrs"]
 
 [[example]]
 name = "colored_borders"
@@ -148,3 +138,12 @@ required-features = ["derive"]
 name = "nested_table_3"
 path = "examples/nested_table_3.rs"
 required-features = ["derive"]
+
+# To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
+#
+# RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
+[package.metadata.docs.rs]
+features = ["unstable-doc"]
+cargo-args = ["-Zunstable-options"]
+rustdoc-args = ["--cfg", "docsrs"]
+rustc-args = ["--cfg", "docsrs"]

@@ -1288,16 +1288,14 @@ fn cells_content(grid: &Grid) -> Vec<Vec<CellContent<'_>>> {
 
             let text = &grid.cells[row][col];
 
-            let count_lines = count_lines(text);
-
-            let mut lines = vec![Cow::Borrowed(""); count_lines];
-            let mut widths = vec![0; count_lines];
             let mut max_width = 0;
-
-            for (i, line) in get_lines(text).enumerate() {
-                widths[i] = string_width_tab(&line, grid.config.tab_width);
-                lines[i] = line;
-                max_width = cmp::max(max_width, widths[i]);
+            let mut lines = vec![];
+            let mut widths = vec![];
+            for line in get_lines(text) {
+                let width = string_width_tab(&line, grid.config.tab_width);
+                max_width = cmp::max(max_width, width);
+                widths.push(width);
+                lines.push(line);
             }
 
             *cell = CellContent {
