@@ -285,6 +285,14 @@ impl Grid {
         self.borders.remove_line(row);
     }
 
+    /// Gets a overriden line.
+    ///
+    /// Row `0` means the top row.
+    /// Row `grid.count_rows()` means the bottom row.
+    pub fn get_split_line(&self, row: usize) -> Option<&Line<char>> {
+        self.borders.get_line(row)
+    }
+
     /// This function returns a settings of a cell
     pub fn get_settings(&self, row: usize, col: usize) -> Settings {
         let style = self.style(Entity::Cell(row, col));
@@ -1968,6 +1976,10 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
 
         self.lines.insert(row, line);
         self.layout.horizontal.insert(row);
+    }
+
+    fn get_line(&self, row: usize) -> Option<&Line<T>> {
+        self.lines.get(&row)
     }
 
     fn remove_line(&mut self, row: usize) {
