@@ -163,7 +163,7 @@ pub enum AlignmentStrategy {
 
 impl CellOption for AlignmentStrategy {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        let mut formatting = grid.style(entity).formatting;
+        let mut formatting = *grid.get_formatting(entity);
         match &self {
             AlignmentStrategy::PerCell => formatting.allow_lines_alignement = false,
             AlignmentStrategy::PerLine => formatting.allow_lines_alignement = true,
@@ -250,7 +250,7 @@ pub enum TrimStrategy {
 
 impl CellOption for TrimStrategy {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        let mut formatting = grid.style(entity).formatting;
+        let mut formatting = *grid.get_formatting(entity);
 
         match self {
             TrimStrategy::Vertical => {

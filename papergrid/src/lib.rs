@@ -277,23 +277,17 @@ impl Grid {
 
     /// This function returns a settings of a cell
     pub fn get_settings(&self, row: usize, col: usize) -> Settings {
-        let style = self.style(Entity::Cell(row, col));
         let content = &self.cells[row][col];
         let border = self.get_border((row, col));
         let span = self.get_column_span((row, col));
 
         Settings {
             text: Some(content.clone()),
-            padding: Some(Padding {
-                left: style.padding.left,
-                right: style.padding.right,
-                top: style.padding.top,
-                bottom: style.padding.bottom,
-            }),
+            padding: Some(*self.get_padding(Entity::Cell(row, col))),
             border: Some(border),
-            alignment_horizontal: Some(style.alignment_horizontal),
-            alignment_vertical: Some(style.alignment_vertical),
-            limits: style.limits,
+            alignment_horizontal: Some(*self.get_alignment_horizontal(Entity::Cell(row, col))),
+            alignment_vertical: Some(*self.get_alignment_vertical(Entity::Cell(row, col))),
+            limits: None,
             formatting: None,
             span,
         }
@@ -498,9 +492,19 @@ impl Grid {
         self.config.padding.set(entity, padding);
     }
 
+    /// Get a padding for a given [Entity].
+    pub fn get_padding(&self, entity: Entity) -> &Padding {
+        self.config.padding.lookup(entity)
+    }
+
     /// Set a formatting to a given cells.
     pub fn set_formatting(&mut self, entity: Entity, formatting: Formatting) {
         self.config.formatting.set(entity, formatting);
+    }
+
+    /// Get a formatting settings for a given [Entity].
+    pub fn get_formatting(&self, entity: Entity) -> &Formatting {
+        self.config.formatting.lookup(entity)
     }
 
     /// Set a vertical alignment to a given cells.
@@ -508,9 +512,19 @@ impl Grid {
         self.config.alignment_v.set(entity, alignment);
     }
 
+    /// Get a vertical alignment for a given [Entity].
+    pub fn get_alignment_vertical(&self, entity: Entity) -> &AlignmentVertical {
+        self.config.alignment_v.lookup(entity)
+    }
+
     /// Set a horizontal alignment to a given cells.
     pub fn set_alignment_horizontal(&mut self, entity: Entity, alignment: AlignmentHorizontal) {
         self.config.alignment_h.set(entity, alignment);
+    }
+
+    /// Get a horizontal alignment for a given [Entity].
+    pub fn get_alignment_horizontal(&self, entity: Entity) -> &AlignmentHorizontal {
+        self.config.alignment_h.lookup(entity)
     }
 
     fn set_cell_span(&mut self, (row, mut col): Position, mut span: usize) {
@@ -1427,8 +1441,8 @@ fn get_cell_width(grid: &Grid, (row, col): Position) -> usize {
 }
 
 fn get_cell_padding(grid: &Grid, (row, col): Position) -> usize {
-    let style = grid.style(Entity::Cell(row, col));
-    style.padding.left.size + style.padding.right.size
+    let padding = grid.get_padding(Entity::Cell(row, col));
+    padding.left.size + padding.right.size
 }
 
 fn get_cell_width_cells(
@@ -1436,8 +1450,7 @@ fn get_cell_width_cells(
     cells: &[Vec<CellContent<'_>>],
     (row, col): Position,
 ) -> usize {
-    let style = grid.style(Entity::Cell(row, col));
-    cells[row][col].width + style.padding.left.size + style.padding.right.size
+    cells[row][col].width + get_cell_padding(grid, (row, col))
 }
 
 fn range_width(grid: &Grid, start: usize, end: usize, widths: &[usize]) -> usize {
@@ -1527,8 +1540,8 @@ fn cell_height(grid: &Grid, cells: &[Vec<CellContent<'_>>], pos: Position) -> us
         cells[pos.0][pos.1].lines.len()
     };
 
-    let style = grid.style(Entity::Cell(pos.0, pos.1));
-    count_lines + style.padding.top.size + style.padding.bottom.size
+    let padding = grid.get_padding(Entity::Cell(pos.0, pos.1));
+    count_lines + padding.top.size + padding.bottom.size
 }
 
 fn replace_tab(text: &str, n: usize) -> String {
