@@ -287,7 +287,6 @@ impl Grid {
             border: Some(border),
             alignment_horizontal: Some(*self.get_alignment_horizontal(Entity::Cell(row, col))),
             alignment_vertical: Some(*self.get_alignment_vertical(Entity::Cell(row, col))),
-            limits: None,
             formatting: None,
             span,
         }
@@ -358,7 +357,6 @@ impl Grid {
             alignment_vertical,
             alignment_horizontal,
             formatting,
-            limits: None,
         }
     }
 
@@ -783,7 +781,6 @@ pub struct Settings {
     alignment_horizontal: Option<AlignmentHorizontal>,
     alignment_vertical: Option<AlignmentVertical>,
     formatting: Option<Formatting>,
-    limits: Option<Limits>,
 }
 
 impl Settings {
@@ -842,14 +839,6 @@ impl Settings {
     /// It overades them even if any were not set.
     pub fn formatting(mut self, formatting: Formatting) -> Self {
         self.formatting = Some(formatting);
-        self
-    }
-
-    /// Set a formatting settings.
-    ///
-    /// It overades them even if any were not set.
-    pub fn width(mut self, value: usize, fill: char) -> Self {
-        self.limits = Some(Limits { fill, width: value });
         self
     }
 }
@@ -973,7 +962,6 @@ pub struct Style {
     pub alignment_horizontal: AlignmentHorizontal,
     pub alignment_vertical: AlignmentVertical,
     pub formatting: Formatting,
-    pub limits: Option<Limits>,
 }
 
 /// Formatting represent a logic of formatting of a cell.
@@ -982,12 +970,6 @@ pub struct Formatting {
     pub horizontal_trim: bool,
     pub vertical_trim: bool,
     pub allow_lines_alignement: bool,
-}
-
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub struct Limits {
-    pub width: usize,
-    pub fill: char,
 }
 
 /// Margin represent a 4 indents of table as a whole.
