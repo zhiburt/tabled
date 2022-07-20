@@ -26,6 +26,8 @@
 //!
 //! [`Table`]: crate::Table
 
+// todo: Refactoring Disable to relay on Object instead
+
 use std::ops::RangeBounds;
 
 use papergrid::{Entity, Grid};

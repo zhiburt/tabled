@@ -64,36 +64,35 @@ const DEFAULT_INDENT_FILL_CHAR: char = ' ';
 pub struct Grid {
     size: (usize, usize),
     cells: Vec<Vec<String>>,
-    margin: Margin,
-    borders: BordersConfig<char>,
-    override_split_lines: HashMap<usize, String>,
-    spans: HashMap<Position, usize>,
     config: GridConfig,
+    spans: HashMap<Position, usize>,
+    borders: BordersConfig<char>,
     #[cfg(feature = "color")]
     border_colors: BordersConfig<BorderColor>,
+    override_split_lines: HashMap<usize, String>,
 }
 
 #[derive(Debug, Clone)]
 struct GridConfig {
     tab_width: usize,
-    styles: StyleConfig,
+    margin: Margin,
+    padding: EntityMap<Padding>,
+    alignment_h: EntityMap<AlignmentHorizontal>,
+    alignment_v: EntityMap<AlignmentVertical>,
+    formatting: EntityMap<Formatting>,
 }
 
-#[derive(Debug, Clone)]
-struct StyleConfig {
-    global: StyleMap,
-    padding: HashMap<Entity, Padding>,
-    alignment_horizontal: HashMap<Entity, AlignmentHorizontal>,
-    alignment_vertical: HashMap<Entity, AlignmentVertical>,
-    formatting: HashMap<Entity, Formatting>,
-}
-
-#[derive(Debug, Clone)]
-struct StyleMap {
-    padding: Padding,
-    alignment_horizontal: AlignmentHorizontal,
-    alignment_vertical: AlignmentVertical,
-    formatting: Formatting,
+impl Default for GridConfig {
+    fn default() -> Self {
+        Self {
+            tab_width: 4,
+            margin: Margin::default(),
+            padding: EntityMap::default(),
+            formatting: EntityMap::default(),
+            alignment_h: EntityMap::new(AlignmentHorizontal::Left, HashMap::default()),
+            alignment_v: EntityMap::new(AlignmentVertical::Top, HashMap::default()),
+        }
+    }
 }
 
 impl Grid {
@@ -136,28 +135,11 @@ impl Grid {
     /// assert_eq!(grid.to_string(), "");
     /// ```
     pub fn new(rows: usize, columns: usize) -> Self {
-        let config = GridConfig {
-            tab_width: 4,
-            styles: StyleConfig {
-                global: StyleMap {
-                    alignment_horizontal: AlignmentHorizontal::Left,
-                    alignment_vertical: AlignmentVertical::Top,
-                    padding: Padding::default(),
-                    formatting: Formatting::default(),
-                },
-                alignment_horizontal: HashMap::new(),
-                alignment_vertical: HashMap::new(),
-                formatting: HashMap::new(),
-                padding: HashMap::new(),
-            },
-        };
-
         Grid {
             size: (rows, columns),
             cells: vec![vec![String::new(); columns]; rows],
-            margin: Margin::default(),
             spans: HashMap::new(),
-            config,
+            config: GridConfig::default(),
             override_split_lines: HashMap::new(),
             borders: BordersConfig::default(),
             #[cfg(feature = "color")]
@@ -223,12 +205,12 @@ impl Grid {
 
     /// Set a [`Margin`] value.
     pub fn margin(&mut self, margin: Margin) {
-        self.margin = margin;
+        self.config.margin = margin;
     }
 
     /// Returns a [`Margin`] value currently set.
     pub fn get_margin(&self) -> &Margin {
-        &self.margin
+        &self.config.margin
     }
 
     /// Clears all theme changes.
@@ -372,19 +354,10 @@ impl Grid {
     }
 
     pub fn style(&self, entity: Entity) -> Style {
-        let styles = &self.config.styles;
-        let padding = lookup_entity_value(&styles.padding, styles.global.padding, entity);
-        let formatting = lookup_entity_value(&styles.formatting, styles.global.formatting, entity);
-        let alignment_horizontal = lookup_entity_value(
-            &styles.alignment_horizontal,
-            styles.global.alignment_horizontal,
-            entity,
-        );
-        let alignment_vertical = lookup_entity_value(
-            &styles.alignment_vertical,
-            styles.global.alignment_vertical,
-            entity,
-        );
+        let padding = *self.config.padding.lookup(entity);
+        let formatting = *self.config.formatting.lookup(entity);
+        let alignment_horizontal = *self.config.alignment_h.lookup(entity);
+        let alignment_vertical = *self.config.alignment_v.lookup(entity);
 
         Style {
             padding,
@@ -429,14 +402,16 @@ impl Grid {
     /// Creates a new Grid from original,
     /// Coping the things like styles and borders.
     ///
-    /// It doesn't copy specifics of cells.
+    /// It doesn't copy styles which were set for specific [Entity].
     pub fn resize(&self, count_rows: usize, count_cols: usize) -> Self {
         let mut new = Self::new(count_rows, count_cols);
         new.borders.borders = self.borders.borders.clone();
         new.borders.global = self.borders.global;
-        new.margin = self.margin;
-        new.config.tab_width = self.config.tab_width;
-        new.config.styles.global = self.config.styles.global.clone();
+        new.config = self.config.clone();
+        new.config.padding.invalidate(Entity::Global);
+        new.config.formatting.invalidate(Entity::Global);
+        new.config.alignment_h.invalidate(Entity::Global);
+        new.config.alignment_v.invalidate(Entity::Global);
 
         #[cfg(feature = "color")]
         {
@@ -456,7 +431,7 @@ impl Grid {
         let cells = cells_content(self);
         let widths = columns_width(self, &cells);
 
-        total_width(self, &widths, &self.margin)
+        total_width(self, &widths, &self.config.margin)
     }
 
     /// Override the split line with a custom text.
@@ -475,7 +450,7 @@ impl Grid {
     // hide it by feature?
     // 'private'
     pub fn estimate_total_width(&self, widths: &[usize]) -> usize {
-        total_width(self, widths, &self.margin)
+        total_width(self, widths, &self.config.margin)
     }
 
     // hide it by feature?
@@ -520,42 +495,22 @@ impl Grid {
 
     /// Set a padding to a given cells.
     pub fn set_padding(&mut self, entity: Entity, padding: Padding) {
-        set_entity_value(
-            &mut self.config.styles.padding,
-            &mut self.config.styles.global.padding,
-            entity,
-            padding,
-        );
+        self.config.padding.set(entity, padding);
     }
 
     /// Set a formatting to a given cells.
     pub fn set_formatting(&mut self, entity: Entity, formatting: Formatting) {
-        set_entity_value(
-            &mut self.config.styles.formatting,
-            &mut self.config.styles.global.formatting,
-            entity,
-            formatting,
-        );
+        self.config.formatting.set(entity, formatting);
     }
 
     /// Set a vertical alignment to a given cells.
     pub fn set_alignment_vertical(&mut self, entity: Entity, alignment: AlignmentVertical) {
-        set_entity_value(
-            &mut self.config.styles.alignment_vertical,
-            &mut self.config.styles.global.alignment_vertical,
-            entity,
-            alignment,
-        );
+        self.config.alignment_v.set(entity, alignment);
     }
 
     /// Set a horizontal alignment to a given cells.
     pub fn set_alignment_horizontal(&mut self, entity: Entity, alignment: AlignmentHorizontal) {
-        set_entity_value(
-            &mut self.config.styles.alignment_horizontal,
-            &mut self.config.styles.global.alignment_horizontal,
-            entity,
-            alignment,
-        );
+        self.config.alignment_h.set(entity, alignment);
     }
 
     fn set_cell_span(&mut self, (row, mut col): Position, mut span: usize) {
@@ -2169,19 +2124,20 @@ fn print_grid(
     cells: &[Vec<CellContent<'_>>],
 ) -> fmt::Result {
     let table_width = row_width_grid(grid, widths);
+    let margin = grid.config.margin;
 
-    if grid.margin.top.size > 0 {
-        let width = table_width + grid.margin.left.size + grid.margin.right.size;
-        repeat_lines(f, grid.margin.top.size, width, grid.margin.top.fill)?;
+    if margin.top.size > 0 {
+        let width = table_width + margin.left.size + margin.right.size;
+        repeat_lines(f, margin.top.size, width, margin.top.fill)?;
         f.write_char('\n')?;
     }
 
     #[allow(clippy::needless_range_loop)]
     for row in 0..grid.count_rows() {
         if has_horizontal(grid, row) {
-            repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
+            repeat_char(f, margin.left.fill, margin.left.size)?;
             print_split_line(f, grid, widths, table_width, row)?;
-            repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
+            repeat_char(f, margin.right.fill, margin.right.size)?;
             f.write_char('\n')?;
         }
 
@@ -2190,7 +2146,7 @@ fn print_grid(
         let is_last_row = row + 1 == grid.count_rows();
 
         for i in 0..height {
-            repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
+            repeat_char(f, margin.left.fill, margin.left.size)?;
 
             for col in 0..grid.count_columns() {
                 if is_cell_visible(grid, (row, col)) {
@@ -2222,7 +2178,7 @@ fn print_grid(
                 }
             }
 
-            repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
+            repeat_char(f, margin.right.fill, margin.right.size)?;
 
             let is_last_line = i + 1 == height;
             if !(is_last_line && is_last_row) {
@@ -2233,15 +2189,15 @@ fn print_grid(
 
     if has_horizontal(grid, grid.count_rows()) {
         f.write_char('\n')?;
-        repeat_char(f, grid.margin.left.fill, grid.margin.left.size)?;
+        repeat_char(f, margin.left.fill, margin.left.size)?;
         print_split_line(f, grid, widths, table_width, grid.count_rows())?;
-        repeat_char(f, grid.margin.right.fill, grid.margin.right.size)?;
+        repeat_char(f, margin.right.fill, margin.right.size)?;
     }
 
-    if grid.margin.bottom.size > 0 {
+    if margin.bottom.size > 0 {
         f.write_char('\n')?;
-        let width = table_width + grid.margin.left.size + grid.margin.right.size;
-        repeat_lines(f, grid.margin.bottom.size, width, grid.margin.bottom.fill)?;
+        let width = table_width + margin.left.size + margin.right.size;
+        repeat_lines(f, margin.bottom.size, width, margin.bottom.fill)?;
     }
 
     Ok(())
@@ -2447,60 +2403,59 @@ pub fn count_lines(s: &str) -> usize {
     bytecount::count(s.as_bytes(), b'\n') + 1
 }
 
-fn lookup_entity_value<T>(map: &HashMap<Entity, T>, global: T, entity: Entity) -> T
-where
-    T: Copy,
-{
-    match entity {
-        Entity::Column(col) => map.get(&Entity::Column(col)).copied(),
-        Entity::Row(row) => map.get(&Entity::Row(row)).copied(),
-        Entity::Cell(row, col) => map
-            .get(&Entity::Cell(row, col))
-            .or_else(|| map.get(&Entity::Column(col)))
-            .or_else(|| map.get(&Entity::Row(row)))
-            .copied(),
-        Entity::Global => return global,
-    }
-    .unwrap_or(global)
+#[derive(Debug, Clone, Default)]
+struct EntityMap<T> {
+    // we have a global type to allocate in on stack.
+    // because most of the time no changes are made to the [EntityMap].
+    global: T,
+    map: HashMap<Entity, T>,
 }
 
-fn set_entity_value<T>(map: &mut HashMap<Entity, T>, global: &mut T, entity: Entity, value: T) {
-    match entity {
-        Entity::Global => {
-            *global = value;
-        }
-        _ => {
-            map.insert(entity, value);
-        }
+impl<T> EntityMap<T> {
+    fn new(global: T, map: HashMap<Entity, T>) -> Self {
+        Self { global, map }
     }
 
-    invalidate_entity(map, entity);
-}
+    fn lookup(&self, entity: Entity) -> &T {
+        match entity {
+            Entity::Column(col) => self.map.get(&Entity::Column(col)),
+            Entity::Row(row) => self.map.get(&Entity::Row(row)),
+            Entity::Cell(row, col) => self
+                .map
+                .get(&Entity::Cell(row, col))
+                .or_else(|| self.map.get(&Entity::Column(col)))
+                .or_else(|| self.map.get(&Entity::Row(row))),
+            Entity::Global => None,
+        }
+        .unwrap_or(&self.global)
+    }
 
-fn invalidate_entity<T>(map: &mut HashMap<Entity, T>, entity: Entity) {
-    match entity {
-        Entity::Global => {
-            map.clear();
-        }
-        Entity::Column(col) => {
-            while let Some(o) = map
-                .keys()
-                .find(|entity| matches!(entity, Entity::Cell(c, _) if *c == col))
-                .copied()
-            {
-                map.remove(&o);
+    fn set(&mut self, entity: Entity, value: T) {
+        match entity {
+            Entity::Global => {
+                self.global = value;
+            }
+            _ => {
+                self.map.insert(entity, value);
             }
         }
-        Entity::Row(row) => {
-            while let Some(o) = map
-                .keys()
-                .find(|entity| matches!(entity, Entity::Cell(_, r) if *r == row))
-                .copied()
-            {
-                map.remove(&o);
+
+        self.invalidate(entity);
+    }
+
+    fn invalidate(&mut self, entity: Entity) {
+        match entity {
+            Entity::Global => {
+                self.map.clear();
             }
+            Entity::Column(col) => self
+                .map
+                .retain(|entity, _| !matches!(entity, Entity::Cell(c, _) if *c == col)),
+            Entity::Row(row) => self
+                .map
+                .retain(|entity, _| !matches!(entity, Entity::Cell(_, r) if *r == row)),
+            Entity::Cell(_, _) => (),
         }
-        Entity::Cell(_, _) => (),
     }
 }
 
