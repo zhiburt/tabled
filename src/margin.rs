@@ -31,12 +31,15 @@ use papergrid::{Grid, Indent};
 
 use crate::TableOption;
 
+#[cfg(feature = "color")]
+use crate::style::BorderColor;
+
 /// Margin is responsible for a left/right/top/bottom outer indent of a grid.
 ///
 /// ```rust,no_run
 /// # use tabled::{Margin, Table};
 /// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data).with(Margin::new(0, 0, 0, 0).set_fill('>', '<', 'V', '^'));
+/// let table = Table::new(&data).with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'));
 /// ```
 #[derive(Debug)]
 pub struct Margin(papergrid::Margin);
@@ -67,6 +70,53 @@ impl Margin {
 
 impl TableOption for Margin {
     fn change(&mut self, grid: &mut Grid) {
-        grid.margin(self.0);
+        grid.set_margin(self.0);
+    }
+}
+
+/// MarginColor can be used to set a color for a [Margin].
+///
+/// ```rust,no_run
+/// # use tabled::{margin::{Margin, MarginColor}, style::BorderColor, Table};
+/// # let data: Vec<&'static str> = Vec::new();
+/// let table = Table::new(&data)
+///     .with(Margin::new(1, 1, 1, 1))
+///     .with(BorderColor::new(
+///         BorderColor::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
+///         BorderColor::default(),
+///         BorderColor::default(),
+///         BorderColor::default(),
+///     ));
+/// ```
+#[cfg(feature = "color")]
+#[derive(Debug, Clone, Default)]
+pub struct MarginColor {
+    inner: papergrid::MarginColor,
+}
+
+#[cfg(feature = "color")]
+impl MarginColor {
+    /// Creates a new [MarginColor] with colors set for all sides.
+    pub fn new(
+        top: BorderColor,
+        bottom: BorderColor,
+        left: BorderColor,
+        right: BorderColor,
+    ) -> Self {
+        Self {
+            inner: papergrid::MarginColor {
+                bottom,
+                left,
+                right,
+                top,
+            },
+        }
+    }
+}
+
+#[cfg(feature = "color")]
+impl TableOption for MarginColor {
+    fn change(&mut self, grid: &mut Grid) {
+        grid.set_margin_color(self.inner.clone());
     }
 }

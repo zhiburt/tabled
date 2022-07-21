@@ -80,6 +80,8 @@ struct GridConfig {
     alignment_h: EntityMap<AlignmentHorizontal>,
     alignment_v: EntityMap<AlignmentVertical>,
     formatting: EntityMap<Formatting>,
+    #[cfg(feature = "color")]
+    margin_color: MarginColor,
 }
 
 impl Default for GridConfig {
@@ -91,6 +93,8 @@ impl Default for GridConfig {
             formatting: EntityMap::default(),
             alignment_h: EntityMap::new(AlignmentHorizontal::Left, HashMap::default()),
             alignment_v: EntityMap::new(AlignmentVertical::Top, HashMap::default()),
+            #[cfg(feature = "color")]
+            margin_color: MarginColor::default(),
         }
     }
 }
@@ -204,13 +208,19 @@ impl Grid {
     }
 
     /// Set a [`Margin`] value.
-    pub fn margin(&mut self, margin: Margin) {
+    pub fn set_margin(&mut self, margin: Margin) {
         self.config.margin = margin;
     }
 
     /// Returns a [`Margin`] value currently set.
     pub fn get_margin(&self) -> &Margin {
         &self.config.margin
+    }
+
+    /// Set colors for a [`Margin`] value.
+    #[cfg(feature = "color")]
+    pub fn set_margin_color(&mut self, color: MarginColor) {
+        self.config.margin_color = color;
     }
 
     /// Clears all theme changes.
@@ -881,6 +891,8 @@ impl<T> Border<T> {
         }
     }
 
+    // todo: remove the methods
+
     /// Set a top border character.
     pub fn top(mut self, c: T) -> Self {
         self.top = Some(c);
@@ -1027,6 +1039,16 @@ pub enum AlignmentHorizontal {
     Center,
     Left,
     Right,
+}
+
+/// Margin represent a 4 indents of table as a whole.
+#[cfg(feature = "color")]
+#[derive(Default, Debug, Clone)]
+pub struct MarginColor {
+    pub top: BorderColor,
+    pub bottom: BorderColor,
+    pub left: BorderColor,
+    pub right: BorderColor,
 }
 
 fn print_text_formated(
@@ -2119,20 +2141,19 @@ fn print_grid(
     cells: &[Vec<CellContent<'_>>],
 ) -> fmt::Result {
     let table_width = row_width_grid(grid, widths);
-    let margin = grid.config.margin;
+    let total_width = table_width + grid.config.margin.left.size + grid.config.margin.right.size;
 
-    if margin.top.size > 0 {
-        let width = table_width + margin.left.size + margin.right.size;
-        repeat_lines(f, margin.top.size, width, margin.top.fill)?;
+    if grid.config.margin.top.size > 0 {
+        print_margin_top(f, grid, total_width)?;
         f.write_char('\n')?;
     }
 
     #[allow(clippy::needless_range_loop)]
     for row in 0..grid.count_rows() {
         if has_horizontal(grid, row) {
-            repeat_char(f, margin.left.fill, margin.left.size)?;
+            print_margin_left(f, grid)?;
             print_split_line(f, grid, widths, table_width, row)?;
-            repeat_char(f, margin.right.fill, margin.right.size)?;
+            print_margin_right(f, grid)?;
             f.write_char('\n')?;
         }
 
@@ -2141,7 +2162,7 @@ fn print_grid(
         let is_last_row = row + 1 == grid.count_rows();
 
         for i in 0..height {
-            repeat_char(f, margin.left.fill, margin.left.size)?;
+            print_margin_left(f, grid)?;
 
             for col in 0..grid.count_columns() {
                 if is_cell_visible(grid, (row, col)) {
@@ -2173,7 +2194,7 @@ fn print_grid(
                 }
             }
 
-            repeat_char(f, margin.right.fill, margin.right.size)?;
+            print_margin_right(f, grid)?;
 
             let is_last_line = i + 1 == height;
             if !(is_last_line && is_last_row) {
@@ -2184,16 +2205,73 @@ fn print_grid(
 
     if has_horizontal(grid, grid.count_rows()) {
         f.write_char('\n')?;
-        repeat_char(f, margin.left.fill, margin.left.size)?;
+        print_margin_left(f, grid)?;
         print_split_line(f, grid, widths, table_width, grid.count_rows())?;
-        repeat_char(f, margin.right.fill, margin.right.size)?;
+        print_margin_right(f, grid)?;
     }
 
-    if margin.bottom.size > 0 {
+    if grid.config.margin.bottom.size > 0 {
         f.write_char('\n')?;
-        let width = table_width + margin.left.size + margin.right.size;
-        repeat_lines(f, margin.bottom.size, width, margin.bottom.fill)?;
+        print_margin_bottom(f, grid, total_width)?;
     }
+
+    Ok(())
+}
+
+fn print_margin_top(f: &mut fmt::Formatter<'_>, grid: &Grid, width: usize) -> fmt::Result {
+    for i in 0..grid.config.margin.top.size {
+        #[cfg(feature = "color")]
+        grid.config.margin_color.top.0.fmt(f)?;
+
+        repeat_char(f, grid.config.margin.top.fill, width)?;
+
+        #[cfg(feature = "color")]
+        grid.config.margin_color.top.1.fmt(f)?;
+
+        if i + 1 != grid.config.margin.top.size {
+            f.write_char('\n')?;
+        }
+    }
+
+    Ok(())
+}
+
+fn print_margin_bottom(f: &mut fmt::Formatter<'_>, grid: &Grid, width: usize) -> fmt::Result {
+    for i in 0..grid.config.margin.bottom.size {
+        #[cfg(feature = "color")]
+        grid.config.margin_color.bottom.0.fmt(f)?;
+
+        repeat_char(f, grid.config.margin.bottom.fill, width)?;
+
+        #[cfg(feature = "color")]
+        grid.config.margin_color.bottom.1.fmt(f)?;
+
+        if i + 1 != grid.config.margin.bottom.size {
+            f.write_char('\n')?;
+        }
+    }
+
+    Ok(())
+}
+
+fn print_margin_left(f: &mut fmt::Formatter<'_>, grid: &Grid) -> fmt::Result {
+    #[cfg(feature = "color")]
+    grid.config.margin_color.left.0.fmt(f)?;
+    let margin = &grid.config.margin;
+    repeat_char(f, margin.left.fill, margin.left.size)?;
+    #[cfg(feature = "color")]
+    grid.config.margin_color.left.1.fmt(f)?;
+
+    Ok(())
+}
+
+fn print_margin_right(f: &mut fmt::Formatter<'_>, grid: &Grid) -> fmt::Result {
+    #[cfg(feature = "color")]
+    grid.config.margin_color.right.0.fmt(f)?;
+    let margin = &grid.config.margin;
+    repeat_char(f, margin.right.fill, margin.right.size)?;
+    #[cfg(feature = "color")]
+    grid.config.margin_color.right.1.fmt(f)?;
 
     Ok(())
 }
@@ -2204,18 +2282,6 @@ fn grid_cell_width(grid: &Grid, widths: &[usize], pos: Position) -> usize {
         Some(span) => range_width(grid, pos.1, pos.1 + span, widths),
         None => widths[pos.1],
     }
-}
-
-fn repeat_lines(f: &mut fmt::Formatter<'_>, size: usize, width: usize, fill: char) -> fmt::Result {
-    for i in 0..size {
-        repeat_char(f, fill, width)?;
-
-        if i + 1 != size {
-            f.write_char('\n')?;
-        }
-    }
-
-    Ok(())
 }
 
 fn print_split_line(
@@ -2453,6 +2519,8 @@ impl<T> EntityMap<T> {
         }
     }
 }
+
+// todo: rename
 
 #[cfg(feature = "color")]
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
