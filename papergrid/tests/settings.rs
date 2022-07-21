@@ -56,7 +56,12 @@ fn remove_border_test() {
 
     grid.set(
         Entity::Cell(0, 0),
-        Settings::new().border(Border::default().top('x').bottom('o').left('q')),
+        Settings::new().border(Border {
+            top: Some('x'),
+            bottom: Some('o'),
+            left: Some('q'),
+            ..Default::default()
+        }),
     );
 
     // assert_eq!(grid.to_string(), " xxx   \nq0-00-1\n ooo   \n 1-01-1");

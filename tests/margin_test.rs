@@ -152,16 +152,16 @@ fn table_0_spanned_with_width() {
 fn margin_color_test() {
     use owo_colors::OwoColorize;
     use std::convert::TryFrom;
-    use tabled::{margin::MarginColor, style::BorderColor};
+    use tabled::{margin::MarginColor, style::Color};
 
     let table = Table::new(&create_vector::<3, 3>())
         .with(Style::psql())
         .with(Margin::new(2, 2, 2, 2).set_fill('>', '<', 'V', '^'))
         .with(MarginColor::new(
-            BorderColor::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
-            BorderColor::try_from(" ".on_yellow().blue().to_string()).unwrap(),
-            BorderColor::try_from(" ".red().bold().to_string()).unwrap(),
-            BorderColor::try_from(" ".green().to_string()).unwrap(),
+            Color::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
+            Color::try_from(" ".on_yellow().blue().to_string()).unwrap(),
+            Color::try_from(" ".red().bold().to_string()).unwrap(),
+            Color::try_from(" ".green().to_string()).unwrap(),
         ))
         .to_string();
 

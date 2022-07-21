@@ -68,7 +68,7 @@ pub struct Grid {
     spans: HashMap<Position, usize>,
     borders: BordersConfig<char>,
     #[cfg(feature = "color")]
-    border_colors: BordersConfig<BorderColor>,
+    border_colors: BordersConfig<Color>,
     override_split_lines: HashMap<usize, String>,
 }
 
@@ -116,7 +116,15 @@ impl Grid {
     ///
     /// let mut grid = Grid::new(2, 2);
     ///
-    /// grid.set(Entity::Global, Settings::new().text("Hello World").border(Border::default().right(' ')));
+    /// grid.set(
+    ///     Entity::Global,
+    ///     Settings::new()
+    ///         .text("Hello World")
+    ///         .border(Border {
+    ///             right: Some(' '),
+    ///             ..Default::default()
+    ///         })
+    /// );
     ///
     /// assert_eq!(
     ///     grid.to_string(),
@@ -603,7 +611,7 @@ impl Grid {
 
 #[cfg(feature = "color")]
 impl Grid {
-    pub fn get_color_borders(&self) -> &Borders<BorderColor> {
+    pub fn get_color_borders(&self) -> &Borders<Color> {
         &self.border_colors.borders
     }
 
@@ -633,12 +641,12 @@ impl Grid {
         }
     }
 
-    pub fn set_border_color(&mut self, clr: BorderColor) {
+    pub fn set_border_color(&mut self, clr: Color) {
         self.border_colors = BordersConfig::default();
         self.border_colors.global = Some(clr);
     }
 
-    pub fn set_borders_color(&mut self, clrs: Borders<BorderColor>) {
+    pub fn set_borders_color(&mut self, clrs: Borders<Color>) {
         self.border_colors.borders = clrs;
     }
 
@@ -650,7 +658,7 @@ impl Grid {
         self.set_border_color_(entity, border);
     }
 
-    fn set_border_color_(&mut self, entity: Entity, border: Border<BorderColor>) {
+    fn set_border_color_(&mut self, entity: Entity, border: Border<Color>) {
         entity
             .iter(self.count_rows(), self.count_columns())
             .for_each(|pos| self.border_colors.insert_border(pos, border.clone()))
@@ -672,7 +680,7 @@ fn symbol_border_into_border(border: &Border<Symbol>) -> Border {
 }
 
 #[cfg(feature = "color")]
-fn symbol_border_into_color_border(border: Border<Symbol>) -> Border<BorderColor> {
+fn symbol_border_into_color_border(border: Border<Symbol>) -> Border<Color> {
     Border {
         top: border.top.and_then(|s| s.ansi_sequences),
         bottom: border.bottom.and_then(|s| s.ansi_sequences),
@@ -907,56 +915,6 @@ impl<T> Border<T> {
             left_top_corner: Some(top_left),
         }
     }
-
-    // todo: remove the methods
-
-    /// Set a top border character.
-    pub fn top(mut self, c: T) -> Self {
-        self.top = Some(c);
-        self
-    }
-
-    /// Set a bottom border character.
-    pub fn bottom(mut self, c: T) -> Self {
-        self.bottom = Some(c);
-        self
-    }
-
-    /// Set a left border character.
-    pub fn left(mut self, c: T) -> Self {
-        self.left = Some(c);
-        self
-    }
-
-    /// Set a right border character.
-    pub fn right(mut self, c: T) -> Self {
-        self.right = Some(c);
-        self
-    }
-
-    /// Set a top left intersection character.
-    pub fn top_left_corner(mut self, c: T) -> Self {
-        self.left_top_corner = Some(c);
-        self
-    }
-
-    /// Set a top right intersection character.
-    pub fn top_right_corner(mut self, c: T) -> Self {
-        self.right_top_corner = Some(c);
-        self
-    }
-
-    /// Set a bottom left intersection character.
-    pub fn bottom_left_corner(mut self, c: T) -> Self {
-        self.left_bottom_corner = Some(c);
-        self
-    }
-
-    /// Set a bottom right intersection character.
-    pub fn bottom_right_corner(mut self, c: T) -> Self {
-        self.right_bottom_corner = Some(c);
-        self
-    }
 }
 
 impl<T: Copy> Border<T> {
@@ -1062,20 +1020,20 @@ pub enum AlignmentHorizontal {
 /// Margin represent a 4 indents of table as a whole.
 #[derive(Default, Debug, Clone)]
 pub struct MarginColor {
-    pub top: BorderColor,
-    pub bottom: BorderColor,
-    pub left: BorderColor,
-    pub right: BorderColor,
+    pub top: Color,
+    pub bottom: Color,
+    pub left: Color,
+    pub right: Color,
 }
 
 #[cfg(feature = "color")]
 /// PaddingColor represent a 4 indents of a cell.
 #[derive(Default, Debug, Clone)]
 pub struct PaddingColor {
-    pub top: BorderColor,
-    pub bottom: BorderColor,
-    pub left: BorderColor,
-    pub right: BorderColor,
+    pub top: Color,
+    pub bottom: Color,
+    pub left: Color,
+    pub right: Color,
 }
 
 fn print_text_formated(
@@ -2329,7 +2287,7 @@ fn print_indent_lines(
     f: &mut fmt::Formatter<'_>,
     indent: &Indent,
     width: usize,
-    #[cfg(feature = "color")] color: &BorderColor,
+    #[cfg(feature = "color")] color: &Color,
 ) -> fmt::Result {
     for i in 0..indent.size {
         print_indent(
@@ -2352,13 +2310,13 @@ fn print_indent(
     f: &mut fmt::Formatter<'_>,
     c: char,
     n: usize,
-    #[cfg(feature = "color")] color: &BorderColor,
+    #[cfg(feature = "color")] color: &Color,
 ) -> fmt::Result {
     #[cfg(feature = "color")]
-    color.0.fmt(f)?;
+    color.write_prefix(f)?;
     repeat_char(f, c, n)?;
     #[cfg(feature = "color")]
-    color.1.fmt(f)?;
+    color.write_suffix(f)?;
 
     Ok(())
 }
@@ -2400,7 +2358,7 @@ fn print_split_line(
                     #[cfg(feature = "color")]
                     {
                         if let Some(clr) = get_intersection_color(grid, (row, col)) {
-                            clr.write_begin_sequence(f)?;
+                            clr.write_prefix(f)?;
                             used_color = Some(clr);
                         }
                     }
@@ -2453,7 +2411,7 @@ fn print_split_line(
 
     #[cfg(feature = "color")]
     if let Some(clr) = used_color.take() {
-        clr.write_end_sequence(f)?;
+        clr.write_suffix(f)?;
     }
 
     Ok(())
@@ -2462,25 +2420,25 @@ fn print_split_line(
 #[cfg(feature = "color")]
 fn prepare_coloring<'a>(
     f: &mut fmt::Formatter<'_>,
-    clr: Option<&'a BorderColor>,
-    used_color: &mut Option<&'a BorderColor>,
+    clr: Option<&'a Color>,
+    used_color: &mut Option<&'a Color>,
 ) -> fmt::Result {
     match clr {
         Some(clr) => match used_color.as_mut() {
             Some(used_clr) => {
                 if **used_clr != *clr {
-                    used_clr.write_end_sequence(f)?;
-                    clr.write_begin_sequence(f)?;
+                    used_clr.write_suffix(f)?;
+                    clr.write_prefix(f)?;
                     *used_clr = clr;
                 }
             }
             None => {
-                clr.write_begin_sequence(f)?;
+                clr.write_prefix(f)?;
                 *used_color = Some(clr);
             }
         },
         None => match used_color.take() {
-            Some(clr) => clr.write_end_sequence(f)?,
+            Some(clr) => clr.write_suffix(f)?,
             None => (),
         },
     }
@@ -2492,12 +2450,12 @@ fn prepare_coloring<'a>(
 fn write_colored(
     f: &mut fmt::Formatter<'_>,
     c: impl fmt::Display,
-    clr: Option<&BorderColor>,
+    clr: Option<&Color>,
 ) -> fmt::Result {
     if let Some(clr) = &clr {
-        clr.write_begin_sequence(f)?;
+        clr.write_prefix(f)?;
         c.fmt(f)?;
-        clr.write_end_sequence(f)?;
+        clr.write_suffix(f)?;
     } else {
         c.fmt(f)?;
     }
@@ -2506,18 +2464,18 @@ fn write_colored(
 }
 
 #[cfg(feature = "color")]
-fn get_intersection_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
+fn get_intersection_color(grid: &Grid, pos: Position) -> Option<&Color> {
     grid.border_colors
         .get_intersection(pos, grid.count_rows(), grid.count_columns())
 }
 
 #[cfg(feature = "color")]
-fn get_horizontal_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
+fn get_horizontal_color(grid: &Grid, pos: Position) -> Option<&Color> {
     grid.border_colors.get_horizontal(pos, grid.count_rows())
 }
 
 #[cfg(feature = "color")]
-fn get_vertical_color(grid: &Grid, pos: Position) -> Option<&BorderColor> {
+fn get_vertical_color(grid: &Grid, pos: Position) -> Option<&Color> {
     grid.border_colors.get_vertical(pos, grid.count_columns())
 }
 
@@ -2611,25 +2569,28 @@ impl<T> EntityMap<T> {
 
 #[cfg(feature = "color")]
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
-pub struct BorderColor(String, String);
+pub struct Color {
+    prefix: String,
+    suffix: String,
+}
 
 #[cfg(feature = "color")]
-impl BorderColor {
-    pub fn new(start: String, end: String) -> Self {
-        BorderColor(start, end)
+impl Color {
+    pub fn new(prefix: String, suffix: String) -> Self {
+        Color { prefix, suffix }
     }
 
-    fn write_begin_sequence(&self, f: &mut impl fmt::Write) -> fmt::Result {
-        f.write_str(&self.0)
+    fn write_prefix(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.prefix.fmt(f)
     }
 
-    fn write_end_sequence(&self, f: &mut impl fmt::Write) -> fmt::Result {
-        f.write_str(&self.1)
+    fn write_suffix(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.suffix.fmt(f)
     }
 }
 
 #[cfg(feature = "color")]
-impl std::convert::TryFrom<&str> for BorderColor {
+impl std::convert::TryFrom<&str> for Color {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
@@ -2641,7 +2602,7 @@ impl std::convert::TryFrom<&str> for BorderColor {
 }
 
 #[cfg(feature = "color")]
-impl std::convert::TryFrom<String> for BorderColor {
+impl std::convert::TryFrom<String> for Color {
     type Error = ();
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -2652,37 +2613,37 @@ impl std::convert::TryFrom<String> for BorderColor {
 #[cfg(feature = "color")]
 #[derive(Debug, Clone, Default)]
 pub struct BordersColors {
-    pub top: Option<BorderColor>,
-    pub top_left: Option<BorderColor>,
-    pub top_right: Option<BorderColor>,
-    pub top_intersection: Option<BorderColor>,
+    pub top: Option<Color>,
+    pub top_left: Option<Color>,
+    pub top_right: Option<Color>,
+    pub top_intersection: Option<Color>,
 
-    pub bottom: Option<BorderColor>,
-    pub bottom_left: Option<BorderColor>,
-    pub bottom_right: Option<BorderColor>,
-    pub bottom_intersection: Option<BorderColor>,
+    pub bottom: Option<Color>,
+    pub bottom_left: Option<Color>,
+    pub bottom_right: Option<Color>,
+    pub bottom_intersection: Option<Color>,
 
-    pub horizontal: Option<BorderColor>,
-    pub horizontal_left: Option<BorderColor>,
-    pub horizontal_right: Option<BorderColor>,
+    pub horizontal: Option<Color>,
+    pub horizontal_left: Option<Color>,
+    pub horizontal_right: Option<Color>,
 
-    pub vertical_left: Option<BorderColor>,
-    pub vertical_intersection: Option<BorderColor>,
-    pub vertical_right: Option<BorderColor>,
+    pub vertical_left: Option<Color>,
+    pub vertical_intersection: Option<Color>,
+    pub vertical_right: Option<Color>,
 
-    pub intersection: Option<BorderColor>,
+    pub intersection: Option<Color>,
 }
 
 #[cfg(feature = "color")]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Symbol {
     c: char,
-    ansi_sequences: Option<BorderColor>,
+    ansi_sequences: Option<Color>,
 }
 
 #[cfg(feature = "color")]
 impl Symbol {
-    const fn new(c: char, ansi_sequences: Option<BorderColor>) -> Self {
+    const fn new(c: char, ansi_sequences: Option<Color>) -> Self {
         Self { c, ansi_sequences }
     }
 
@@ -2711,7 +2672,7 @@ impl Symbol {
             return Some(Self::new(c, None));
         }
 
-        Some(Self::new(c, Some(BorderColor(start, end))))
+        Some(Self::new(c, Some(Color::new(start, end))))
     }
 
     /// A function which create a [`Symbol`] from [`char`].
@@ -2725,7 +2686,7 @@ impl Symbol {
     }
 
     /// A function which returns a used [`char`].
-    pub fn color(self) -> Option<BorderColor> {
+    pub fn color(self) -> Option<Color> {
         self.ansi_sequences
     }
 }

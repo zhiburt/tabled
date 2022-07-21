@@ -278,83 +278,83 @@ where
     let mut cell_border = papergrid::Border::default();
     if let Some(c) = border.top.clone() {
         if !cell_has_top_neighbor {
-            cell_border = cell_border.top(c.clone());
+            cell_border.top = Some(c.clone());
 
             if cell_has_right_neighbor && !this_has_right_top_neighbor {
-                cell_border = cell_border.top_right_corner(c);
+                cell_border.right_top_corner = Some(c);
             }
         }
     }
     if let Some(c) = border.bottom.clone() {
         if !cell_has_bottom_neighbor {
-            cell_border = cell_border.bottom(c.clone());
+            cell_border.bottom = Some(c.clone());
 
             if cell_has_right_neighbor && !this_has_right_bottom_neighbor {
-                cell_border = cell_border.bottom_right_corner(c);
+                cell_border.right_bottom_corner = Some(c);
             }
         }
     }
     if let Some(c) = border.left.clone() {
         if !cell_has_left_neighbor {
-            cell_border = cell_border.left(c.clone());
+            cell_border.left = Some(c.clone());
 
             if cell_has_bottom_neighbor && !this_has_left_bottom_neighbor {
-                cell_border = cell_border.bottom_left_corner(c);
+                cell_border.left_bottom_corner = Some(c);
             }
         }
     }
     if let Some(c) = border.right.clone() {
         if !cell_has_right_neighbor {
-            cell_border = cell_border.right(c.clone());
+            cell_border.right = Some(c.clone());
 
             if cell_has_bottom_neighbor && !this_has_right_bottom_neighbor {
-                cell_border = cell_border.bottom_right_corner(c);
+                cell_border.right_bottom_corner = Some(c);
             }
         }
     }
     if let Some(c) = border.left_top_corner.clone() {
         if !cell_has_left_neighbor && !cell_has_top_neighbor {
-            cell_border = cell_border.top_left_corner(c);
+            cell_border.left_top_corner = Some(c);
         }
     }
     if let Some(c) = border.left_bottom_corner.clone() {
         if !cell_has_left_neighbor && !cell_has_bottom_neighbor {
-            cell_border = cell_border.bottom_left_corner(c);
+            cell_border.left_bottom_corner = Some(c);
         }
     }
     if let Some(c) = border.right_top_corner.clone() {
         if !cell_has_right_neighbor && !cell_has_top_neighbor {
-            cell_border = cell_border.top_right_corner(c);
+            cell_border.right_top_corner = Some(c);
         }
     }
     if let Some(c) = border.right_bottom_corner.clone() {
         if !cell_has_right_neighbor && !cell_has_bottom_neighbor {
-            cell_border = cell_border.bottom_right_corner(c);
+            cell_border.right_bottom_corner = Some(c);
         }
     }
     {
         if !cell_has_bottom_neighbor {
             if !cell_has_left_neighbor && this_has_left_top_neighbor {
                 if let Some(c) = border.right_top_corner.clone() {
-                    cell_border = cell_border.top_left_corner(c);
+                    cell_border.left_top_corner = Some(c);
                 }
             }
 
             if cell_has_left_neighbor && this_has_left_bottom_neighbor {
                 if let Some(c) = border.left_top_corner.clone() {
-                    cell_border = cell_border.bottom_left_corner(c);
+                    cell_border.left_bottom_corner = Some(c);
                 }
             }
 
             if !cell_has_right_neighbor && this_has_right_top_neighbor {
                 if let Some(c) = border.left_top_corner.clone() {
-                    cell_border = cell_border.top_right_corner(c);
+                    cell_border.right_top_corner = Some(c);
                 }
             }
 
             if cell_has_right_neighbor && this_has_right_bottom_neighbor {
                 if let Some(c) = border.right_top_corner.clone() {
-                    cell_border = cell_border.bottom_right_corner(c);
+                    cell_border.right_bottom_corner = Some(c);
                 }
             }
         }
@@ -362,25 +362,25 @@ where
         if !cell_has_top_neighbor {
             if !cell_has_left_neighbor && this_has_left_bottom_neighbor {
                 if let Some(c) = border.right_bottom_corner.clone() {
-                    cell_border = cell_border.bottom_left_corner(c);
+                    cell_border.left_bottom_corner = Some(c);
                 }
             }
 
             if cell_has_left_neighbor && this_has_left_top_neighbor {
                 if let Some(c) = border.left_bottom_corner.clone() {
-                    cell_border = cell_border.top_left_corner(c);
+                    cell_border.left_top_corner = Some(c);
                 }
             }
 
             if !cell_has_right_neighbor && this_has_right_bottom_neighbor {
                 if let Some(c) = border.left_bottom_corner.clone() {
-                    cell_border = cell_border.bottom_right_corner(c);
+                    cell_border.right_bottom_corner = Some(c);
                 }
             }
 
             if cell_has_right_neighbor && this_has_right_top_neighbor {
                 if let Some(c) = border.right_bottom_corner.clone() {
-                    cell_border = cell_border.top_right_corner(c);
+                    cell_border.right_top_corner = Some(c);
                 }
             }
         }

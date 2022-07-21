@@ -232,14 +232,14 @@ fn grid_2x2_custom_border_test() {
 
     grid.set(
         Entity::Cell(0, 0),
-        Settings::new().border(
-            Border::default()
-                .top('*')
-                .bottom('-')
-                .left('$')
-                .top_left_corner(' ')
-                .bottom_left_corner('+'),
-        ),
+        Settings::default().border(Border {
+            bottom: Some('-'),
+            top: Some('*'),
+            left: Some('$'),
+            left_top_corner: Some(' '),
+            left_bottom_corner: Some('+'),
+            ..Default::default()
+        }),
     );
     grid.set(
         Entity::Cell(0, 1),
@@ -247,26 +247,26 @@ fn grid_2x2_custom_border_test() {
     );
     grid.set(
         Entity::Cell(1, 0),
-        Settings::new().border(
-            Border::default()
-                .bottom('*')
-                .left('#')
-                .top_left_corner('+')
-                .bottom_left_corner('\u{0020}'),
-        ),
+        Settings::default().border(Border {
+            bottom: Some('*'),
+            left: Some('#'),
+            left_top_corner: Some('+'),
+            left_bottom_corner: Some('\u{0020}'),
+            ..Default::default()
+        }),
     );
     grid.set(
         Entity::Cell(1, 1),
-        Settings::new().border(
-            Border::default()
-                .bottom('*')
-                .left('^')
-                .top_left_corner('+')
-                .bottom_left_corner(' ')
-                .right('!')
-                .top_right_corner('+')
-                .bottom_right_corner(' '),
-        ),
+        Settings::default().border(Border {
+            bottom: Some('*'),
+            left: Some('^'),
+            left_top_corner: Some('+'),
+            right_top_corner: Some('+'),
+            right: Some('!'),
+            left_bottom_corner: Some(' '),
+            right_bottom_corner: Some(' '),
+            ..Default::default()
+        }),
     );
 
     let str = grid.to_string();
@@ -329,13 +329,13 @@ fn grid_2x2_ansi_global_set_test() {
     use std::convert::TryFrom;
 
     use owo_colors::OwoColorize;
-    use papergrid::BorderColor;
+    use papergrid::Color;
 
     let color = " ".on_blue().red().bold().to_string();
 
     let mut grid = util::new_grid::<2, 2>();
 
-    grid.set_border_color(BorderColor::try_from(color).unwrap());
+    grid.set_border_color(Color::try_from(color).unwrap());
 
     assert_eq!(
         grid.to_string(),
@@ -374,7 +374,10 @@ fn when_border_is_not_complet_default_char_is_used_test() {
     });
     grid.set(
         Entity::Cell(1, 1),
-        Settings::default().border(Border::default().top('*')),
+        Settings::default().border(Border {
+            top: Some('*'),
+            ..Default::default()
+        }),
     );
 
     assert_eq!(
@@ -389,7 +392,10 @@ fn when_1_vertical_is_set_second_must_use_default_test() {
     grid.set_borders(Borders::default());
     grid.set(
         Entity::Cell(1, 0),
-        Settings::default().border(Border::default().right('*')),
+        Settings::default().border(Border {
+            right: Some('*'),
+            ..Default::default()
+        }),
     );
 
     assert_eq!(

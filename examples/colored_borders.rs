@@ -9,7 +9,7 @@ use owo_colors::OwoColorize;
 
 use tabled::{
     object::Segment,
-    style::{BorderColor, ColoredBorder, Style, Symbol},
+    style::{Color, ColoredBorder, Style, Symbol},
     Alignment, Highlight, Modify, Table, Tabled,
 };
 
@@ -42,7 +42,7 @@ fn main() {
     let table = Table::new(&data)
         .with(Style::extended())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(BorderColor::try_from(" ".magenta().to_string()).unwrap())
+        .with(Color::try_from(" ".magenta().to_string()).unwrap())
         .with(Highlight::colored(
             Segment::all(),
             ColoredBorder::default()

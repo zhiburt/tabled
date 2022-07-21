@@ -101,13 +101,13 @@ test_table!(
     {
         use std::convert::TryFrom;
         use owo_colors::OwoColorize;
-        use tabled::{padding::PaddingColor, style::BorderColor};
+        use tabled::{padding::PaddingColor, style::Color};
 
         let padding_color = PaddingColor::new(
-            BorderColor::try_from(' '.on_red().to_string()).unwrap(),
-            BorderColor::try_from(' '.on_green().to_string()).unwrap(),
-            BorderColor::try_from(' '.on_yellow().to_string()).unwrap(),
-            BorderColor::try_from(' '.on_blue().to_string()).unwrap()
+            Color::try_from(' '.on_red().to_string()).unwrap(),
+            Color::try_from(' '.on_green().to_string()).unwrap(),
+            Color::try_from(' '.on_yellow().to_string()).unwrap(),
+            Color::try_from(' '.on_blue().to_string()).unwrap()
         );
 
         Table::new(create_vector::<3, 3>())

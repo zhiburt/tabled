@@ -32,7 +32,7 @@ use papergrid::{Grid, Indent};
 use crate::TableOption;
 
 #[cfg(feature = "color")]
-use crate::style::BorderColor;
+use crate::style::Color;
 
 /// Margin is responsible for a left/right/top/bottom outer indent of a grid.
 ///
@@ -77,20 +77,21 @@ impl TableOption for Margin {
 /// List of colors for [Margin].
 ///
 /// ```rust,no_run
-/// # use tabled::{margin::{Margin, MarginColor}, style::BorderColor, Table};
+/// # use tabled::{margin::{Margin, MarginColor}, style::Color, Table};
 /// # use owo_colors::OwoColorize;
 /// # use std::convert::TryFrom;
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Margin::new(1, 1, 1, 1))
 ///     .with(MarginColor::new(
-///         BorderColor::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
-///         BorderColor::default(),
-///         BorderColor::default(),
-///         BorderColor::default(),
+///         Color::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
+///         Color::default(),
+///         Color::default(),
+///         Color::default(),
 ///     ));
 /// ```
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default)]
 pub struct MarginColor {
     inner: papergrid::MarginColor,
@@ -99,12 +100,7 @@ pub struct MarginColor {
 #[cfg(feature = "color")]
 impl MarginColor {
     /// Creates a new [MarginColor] with colors set for all sides.
-    pub fn new(
-        top: BorderColor,
-        bottom: BorderColor,
-        left: BorderColor,
-        right: BorderColor,
-    ) -> Self {
+    pub fn new(top: Color, bottom: Color, left: Color, right: Color) -> Self {
         Self {
             inner: papergrid::MarginColor {
                 bottom,
