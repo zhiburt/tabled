@@ -38,7 +38,9 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Alignment](#alignment)
   - [Format](#format)
   - [Padding](#padding)
+    - [Padding Color](#padding-color)
   - [Margin](#margin)
+    - [Margin Color](#margin-color)
   - [Width](#width)
     - [Truncate](#truncate)
     - [Wrapping](#wrapping)
@@ -377,11 +379,11 @@ assert_eq!(
 
 #### Colorize borders
 
-You can set a colors of all borders using `BorderColor`.
+You can set a colors of all borders using `Color`.
 
 ```rust
 // ... build table
-let color = BorderColor::try_from(" ".magenta().to_string()).unwrap();
+let color = Color::try_from(" ".magenta().to_string()).unwrap();
 table.with(color)
 ```
 
@@ -443,12 +445,31 @@ Table::new(&data)
     .with(Modify::new(Cell(0, 3)).with(Padding::new(1, 1, 0, 2).set_fill('>', '<', '^', 'V')));
 ```
 
+### Padding Color
+
+You can set a color for padding characters.
+
+BE AWARE: It only works with `color` feature.
+
+```rust
+use std::convert::TryFrom;
+use owo_colors::OwoColorize;
+use tabled::{Table, Modify, padding::{Padding, PaddingColor}, style::Color, object::Segment};
+
+let on_red = Color::try_from(' '.on_red().to_string()).unwrap();
+let padding = Modify::new(Segment::all())
+    .with(Padding::new(1, 1, 0, 2))
+    .with(PaddingColor::new(on_red.clone(), on_red.clone(), on_red.clone(), on_red));
+
+Table::new(&data).with(padding);
+```
+
 ### Margin
 
 `Margin` sets extra space around the border (top, bottom, left, right).
 
 ```rust
-use tabled::{Table, Modify, Padding, object::Cell};
+use tabled::{Table, Margin};
 
 Table::new(&data)
     .with(Margin::new(3, 4, 1, 2).set_fill('>', '<', 'v', '^'));
@@ -465,6 +486,25 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ```
+
+### Margin Color
+
+You can set a color for padding characters.
+
+BE AWARE: It only works with `color` feature.
+
+```rust
+use std::convert::TryFrom;
+use owo_colors::OwoColorize;
+use tabled::{Table, style::Color, margin::{Margin, MarginColor}};
+
+let on_red = Color::try_from(' '.on_red().to_string()).unwrap();
+
+Table::new(&data)
+    .with(Margin::new(3, 4, 1, 2))
+    .with(MarginColor::new(on_red.clone(), on_red.clone(), on_red.clone(), on_red));
+```
+
 
 ### Width
 
