@@ -2580,6 +2580,14 @@ impl Color {
         Color { prefix, suffix }
     }
 
+    pub fn get_prefix(&self) -> &str {
+        &self.prefix
+    }
+
+    pub fn get_suffix(&self) -> &str {
+        &self.suffix
+    }
+
     fn write_prefix(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.prefix.fmt(f)
     }

@@ -1554,6 +1554,24 @@ impl TableOption for Color {
     }
 }
 
+#[cfg(feature = "color")]
+impl CellOption for Color {
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
+            let text = grid.get_cell_content(row, col);
+
+            let prefix = self.get_prefix();
+            let suffix = self.get_suffix();
+            let mut colored = String::with_capacity(text.len() + prefix.len() + suffix.len());
+            colored.push_str(prefix);
+            colored.push_str(text);
+            colored.push_str(suffix);
+
+            grid.set_text((row, col).into(), &colored);
+        }
+    }
+}
+
 /// A colored [`StyleConfig`] versions.
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
