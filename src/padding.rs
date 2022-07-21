@@ -40,6 +40,9 @@ use papergrid::{Entity, Grid, Indent};
 
 use crate::CellOption;
 
+#[cfg(feature = "color")]
+use crate::style::Color;
+
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///
 /// ```rust,no_run
@@ -91,5 +94,49 @@ impl Padding {
 impl CellOption for Padding {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
         grid.set_padding(entity, self.0);
+    }
+}
+
+/// List of colors for a [Padding].
+///
+/// ```rust,no_run
+/// # use tabled::{padding::PaddingColor, style::Color, Table, Modify, object::Segment};
+/// # use owo_colors::OwoColorize;
+/// # use std::convert::TryFrom;
+/// # let data: Vec<&'static str> = Vec::new();
+/// let table = Table::new(&data)
+///     .with(Modify::new(Segment::all()).with(PaddingColor::new(
+///         Color::try_from(" ".on_blue().red().to_string()).unwrap(),
+///         Color::try_from(" ".red().to_string()).unwrap(),
+///         Color::try_from(" ".on_blue().red().to_string()).unwrap(),
+///         Color::try_from(" ".on_green().to_string()).unwrap(),
+///     )));
+/// ```
+#[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
+#[derive(Debug, Clone, Default)]
+pub struct PaddingColor {
+    inner: papergrid::PaddingColor,
+}
+
+#[cfg(feature = "color")]
+impl PaddingColor {
+    /// Creates a new [PaddingColor] with colors set for all sides.
+    pub fn new(top: Color, bottom: Color, left: Color, right: Color) -> Self {
+        Self {
+            inner: papergrid::PaddingColor {
+                bottom,
+                left,
+                right,
+                top,
+            },
+        }
+    }
+}
+
+#[cfg(feature = "color")]
+impl CellOption for PaddingColor {
+    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+        grid.set_padding_color(entity, self.inner.clone());
     }
 }

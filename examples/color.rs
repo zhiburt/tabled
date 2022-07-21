@@ -9,7 +9,7 @@ use owo_colors::OwoColorize;
 
 use tabled::{
     object::{Columns, Rows},
-    style::{BorderColor, ColoredBorder, Style, Symbol},
+    style::{Color, ColoredBorder, Style, Symbol},
     ModifyObject, Table, Tabled,
 };
 
@@ -42,11 +42,9 @@ fn main() {
     let red = |s: &str| s.red().on_bright_white().to_string();
     let blue = |s: &str| s.blue().to_string();
     let green = |s: &str| s.green().to_string();
-
     let red_split = |c: char| Symbol::ansi(c.red().to_string()).unwrap();
     let purple_split = |c: char| Symbol::ansi(c.purple().to_string()).unwrap();
-
-    let yellow_color = BorderColor::try_from(' '.yellow().to_string()).unwrap();
+    let yellow_color = Color::try_from(' '.yellow().to_string()).unwrap();
 
     let first_row_style = Rows::first().modify().with(
         ColoredBorder::default()

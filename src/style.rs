@@ -1433,43 +1433,51 @@ pub struct ColoredBorder(pub(crate) papergrid::Border<Symbol>);
 #[cfg(feature = "color")]
 impl ColoredBorder {
     /// Set a top border character.
-    pub fn top(self, c: Symbol) -> Self {
-        Self(self.0.top(c))
+    pub fn top(mut self, c: Symbol) -> Self {
+        self.0.top = Some(c);
+        self
     }
 
     /// Set a bottom border character.
-    pub fn bottom(self, c: Symbol) -> Self {
-        Self(self.0.bottom(c))
+    pub fn bottom(mut self, c: Symbol) -> Self {
+        self.0.bottom = Some(c);
+        self
     }
 
     /// Set a left border character.
-    pub fn left(self, c: Symbol) -> Self {
-        Self(self.0.left(c))
+    pub fn left(mut self, c: Symbol) -> Self {
+        self.0.left = Some(c);
+        self
     }
 
     /// Set a right border character.
-    pub fn right(self, c: Symbol) -> Self {
-        Self(self.0.right(c))
+    pub fn right(mut self, c: Symbol) -> Self {
+        self.0.right = Some(c);
+        self
     }
 
     /// Set a top left intersection character.
-    pub fn top_left_corner(self, c: Symbol) -> Self {
-        Self(self.0.top_left_corner(c))
+    pub fn top_left_corner(mut self, c: Symbol) -> Self {
+        self.0.left_top_corner = Some(c);
+        self
     }
 
     /// Set a top right intersection character.
-    pub fn top_right_corner(self, c: Symbol) -> Self {
-        Self(self.0.top_right_corner(c))
+    pub fn top_right_corner(mut self, c: Symbol) -> Self {
+        self.0.right_top_corner = Some(c);
+        self
     }
 
     /// Set a bottom left intersection character.
-    pub fn bottom_left_corner(self, c: Symbol) -> Self {
-        Self(self.0.bottom_left_corner(c))
+    pub fn bottom_left_corner(mut self, c: Symbol) -> Self {
+        self.0.left_bottom_corner = Some(c);
+        self
     }
 
     /// Set a bottom right intersection character.
-    pub fn bottom_right_corner(self, c: Symbol) -> Self {
-        Self(self.0.bottom_right_corner(c))
+    pub fn bottom_right_corner(mut self, c: Symbol) -> Self {
+        self.0.right_bottom_corner = Some(c);
+        self
     }
 
     /// This function constructs a cell borders with all sides's char set to a given character.
@@ -1513,32 +1521,34 @@ impl CellOption for ColoredBorder {
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub use papergrid::Symbol;
 
-/// BorderColor represents a color which can be set to a Border.
+/// Color represents a color which can be set to things like [`Border`], [`Padding`] and [`Margin`].
 ///
 /// # Example
 ///
 /// ```
 /// use std::convert::TryFrom;
 /// use owo_colors::OwoColorize;
-/// use tabled::{style::BorderColor, TableIteratorExt};
+/// use tabled::{style::Color, TableIteratorExt};
 ///
 /// let data = [
 ///     (0u8, "Hello"),
 ///     (1u8, "World"),
 /// ];
 ///
-/// let color = BorderColor::try_from(" ".red().to_string()).unwrap();
-///
-/// let table = data.table().with(color);
+/// let table = data.table()
+///     .with(Color::try_from(" ".red().to_string()).unwrap());
 ///
 /// println!("{}", table);
 /// ```
+///
+/// [`Padding`]: crate::Padding
+/// [`Margin`]: crate::Margin
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-pub use papergrid::BorderColor;
+pub use papergrid::Color;
 
 #[cfg(feature = "color")]
-impl TableOption for BorderColor {
+impl TableOption for Color {
     fn change(&mut self, grid: &mut Grid) {
         grid.set_border_color(self.clone());
     }
@@ -1550,7 +1560,7 @@ impl TableOption for BorderColor {
 #[derive(Debug, Clone)]
 pub struct RawStyleColored {
     style: RawStyle,
-    colors: Borders<BorderColor>,
+    colors: Borders<Color>,
 }
 
 #[cfg(feature = "color")]

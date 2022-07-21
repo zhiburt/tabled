@@ -146,3 +146,37 @@ fn table_0_spanned_with_width() {
 
     assert_eq!(table, "++\n|\n++\n");
 }
+
+#[cfg(feature = "color")]
+#[test]
+fn margin_color_test() {
+    use owo_colors::OwoColorize;
+    use std::convert::TryFrom;
+    use tabled::{margin::MarginColor, style::Color};
+
+    let table = Table::new(&create_vector::<3, 3>())
+        .with(Style::psql())
+        .with(Margin::new(2, 2, 2, 2).set_fill('>', '<', 'V', '^'))
+        .with(MarginColor::new(
+            Color::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
+            Color::try_from(" ".on_yellow().blue().to_string()).unwrap(),
+            Color::try_from(" ".red().bold().to_string()).unwrap(),
+            Color::try_from(" ".green().to_string()).unwrap(),
+        ))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "\u{1b}[1m\u{1b}[31m\u{1b}[44mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[22m\u{1b}[39m\u{1b}[49m"
+            "\u{1b}[1m\u{1b}[31m\u{1b}[44mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[22m\u{1b}[39m\u{1b}[49m"
+            "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m N | column 0 | column 1 | column 2 \u{1b}[32m<<\u{1b}[39m"
+            "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m---+----------+----------+----------\u{1b}[32m<<\u{1b}[39m"
+            "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 0 |   0-0    |   0-1    |   0-2    \u{1b}[32m<<\u{1b}[39m"
+            "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 1 |   1-0    |   1-1    |   1-2    \u{1b}[32m<<\u{1b}[39m"
+            "\u{1b}[1m\u{1b}[31m>>\u{1b}[22m\u{1b}[39m 2 |   2-0    |   2-1    |   2-2    \u{1b}[32m<<\u{1b}[39m"
+            "\u{1b}[34m\u{1b}[43m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[39m\u{1b}[49m"
+            "\u{1b}[34m\u{1b}[43m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[39m\u{1b}[49m"
+        )
+    );
+}

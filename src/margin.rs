@@ -31,12 +31,15 @@ use papergrid::{Grid, Indent};
 
 use crate::TableOption;
 
+#[cfg(feature = "color")]
+use crate::style::Color;
+
 /// Margin is responsible for a left/right/top/bottom outer indent of a grid.
 ///
 /// ```rust,no_run
 /// # use tabled::{Margin, Table};
 /// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data).with(Margin::new(0, 0, 0, 0).set_fill('>', '<', 'V', '^'));
+/// let table = Table::new(&data).with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'));
 /// ```
 #[derive(Debug)]
 pub struct Margin(papergrid::Margin);
@@ -67,6 +70,51 @@ impl Margin {
 
 impl TableOption for Margin {
     fn change(&mut self, grid: &mut Grid) {
-        grid.margin(self.0);
+        grid.set_margin(self.0);
+    }
+}
+
+/// List of colors for [Margin].
+///
+/// ```rust,no_run
+/// # use tabled::{margin::{Margin, MarginColor}, style::Color, Table};
+/// # use owo_colors::OwoColorize;
+/// # use std::convert::TryFrom;
+/// # let data: Vec<&'static str> = Vec::new();
+/// let table = Table::new(&data)
+///     .with(Margin::new(1, 1, 1, 1))
+///     .with(MarginColor::new(
+///         Color::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
+///         Color::default(),
+///         Color::default(),
+///         Color::default(),
+///     ));
+/// ```
+#[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
+#[derive(Debug, Clone, Default)]
+pub struct MarginColor {
+    inner: papergrid::MarginColor,
+}
+
+#[cfg(feature = "color")]
+impl MarginColor {
+    /// Creates a new [MarginColor] with colors set for all sides.
+    pub fn new(top: Color, bottom: Color, left: Color, right: Color) -> Self {
+        Self {
+            inner: papergrid::MarginColor {
+                bottom,
+                left,
+                right,
+                top,
+            },
+        }
+    }
+}
+
+#[cfg(feature = "color")]
+impl TableOption for MarginColor {
+    fn change(&mut self, grid: &mut Grid) {
+        grid.set_margin_color(self.inner.clone());
     }
 }

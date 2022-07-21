@@ -211,9 +211,7 @@ mod concat;
 mod disable;
 mod extract;
 mod formating;
-mod margin;
 mod modify;
-mod padding;
 mod panel;
 mod rotate;
 mod span;
@@ -223,7 +221,9 @@ pub mod builder;
 pub mod display;
 pub mod formatting_settings;
 pub mod highlight;
+pub mod margin;
 pub mod object;
+pub mod padding;
 pub mod style;
 pub mod width;
 
@@ -236,8 +236,9 @@ pub use tabled_derive::Tabled;
 pub use papergrid;
 
 pub use crate::{
-    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::Highlight, margin::*,
-    modify::*, padding::*, panel::*, rotate::*, span::*, style::Style, table::*, width::Width,
+    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::Highlight,
+    margin::Margin, modify::*, padding::Padding, panel::*, rotate::*, span::*, style::Style,
+    table::*, width::Width,
 };
 
 /// Tabled a trait responsible for providing a header fields and a row fields.

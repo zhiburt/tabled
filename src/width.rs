@@ -1009,9 +1009,8 @@ where
                 };
 
                 if width >= width_min {
-                    let style = grid.style(Entity::Cell(row, col));
-                    let width =
-                        width.saturating_sub(style.padding.left.size + style.padding.right.size);
+                    let padding = grid.get_padding(Entity::Cell(row, col));
+                    let width = width.saturating_sub(padding.left.size + padding.right.size);
 
                     points.push(((row, col), width));
                 }
@@ -1063,8 +1062,8 @@ where
                 }
             };
 
-            let style = grid.style(Entity::Cell(row, this_col));
-            let width = width.saturating_sub(style.padding.left.size + style.padding.right.size);
+            let padding = grid.get_padding(Entity::Cell(row, this_col));
+            let width = width.saturating_sub(padding.left.size + padding.right.size);
 
             points.insert((row, this_col), width);
         }
