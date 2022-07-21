@@ -9,7 +9,7 @@ use owo_colors::OwoColorize;
 
 use tabled::{
     object::{Columns, Rows},
-    style::{Color, ColoredBorder, Style, Symbol},
+    style::{BorderColored, Color, Style, Symbol},
     ModifyObject, Table, Tabled,
 };
 
@@ -47,7 +47,7 @@ fn main() {
     let yellow_color = Color::try_from(' '.yellow().to_string()).unwrap();
 
     let first_row_style = Rows::first().modify().with(
-        ColoredBorder::default()
+        BorderColored::default()
             .bottom(red_split('-'))
             .bottom_left_corner(purple_split('+'))
             .bottom_right_corner(purple_split('+')),

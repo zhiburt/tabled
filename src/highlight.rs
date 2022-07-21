@@ -102,7 +102,7 @@ impl<O> Highlight<O> {
     /// Build a new instance of [`HighlightColored`]
     #[cfg(feature = "color")]
     #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-    pub fn colored(target: O, border: crate::style::ColoredBorder) -> HighlightColored<O> {
+    pub fn colored(target: O, border: crate::style::BorderColored) -> HighlightColored<O> {
         HighlightColored { target, border }
     }
 }
@@ -121,15 +121,15 @@ where
     }
 }
 
-/// A [`Highlight`] object which works with a [`ColoredBorder`]
+/// A [`Highlight`] object which works with a [`BorderColored`]
 ///
-/// [`ColoredBorder`]: crate::style::ColoredBorder
+/// [`BorderColored`]: crate::style::BorderColored
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug)]
 pub struct HighlightColored<O> {
     target: O,
-    border: crate::style::ColoredBorder,
+    border: crate::style::BorderColored,
 }
 
 #[cfg(feature = "color")]
@@ -151,7 +151,7 @@ where
 fn set_border_colored(
     grid: &mut Grid,
     sector: HashSet<(usize, usize)>,
-    border: crate::style::ColoredBorder,
+    border: crate::style::BorderColored,
 ) {
     if sector.is_empty() {
         return;

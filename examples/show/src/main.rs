@@ -24,7 +24,7 @@ use crossterm::{
 use tabled::{
     formatting_settings::TrimStrategy,
     object::{Columns, Object, Rows},
-    style::{BorderText, ColoredBorder, Symbol},
+    style::{BorderColored, BorderText, Symbol},
     Alignment, Disable, Header, Highlight, Margin, Modify, Style, Table, Tabled, Width,
 };
 
@@ -193,8 +193,8 @@ fn run(movies: &[Movie], debug: bool) {
 
     #[rustfmt::skip]
     let border_colors_actions: Vec<Action> = vec![
-        action(|t| t.with(Highlight::colored(Rows::first(), ColoredBorder::default().bottom(Symbol::ansi("━".yellow().to_string()).unwrap())))),
-        action(|t| t.with(Highlight::colored(Rows::last(), ColoredBorder::default().top(Symbol::ansi("━".yellow().to_string()).unwrap())))),
+        action(|t| t.with(Highlight::colored(Rows::first(), BorderColored::default().bottom(Symbol::ansi("━".yellow().to_string()).unwrap())))),
+        action(|t| t.with(Highlight::colored(Rows::last(), BorderColored::default().top(Symbol::ansi("━".yellow().to_string()).unwrap())))),
     ];
 
     #[rustfmt::skip]

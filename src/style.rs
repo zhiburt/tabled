@@ -1412,26 +1412,26 @@ impl TableOption for StyleCorrectSpan {
     }
 }
 
-/// ColoredBorder represents a colored border of a Cell.
+/// BorderColored represents a colored border of a Cell.
 ///
 /// ```rust,no_run
 /// # use owo_colors::OwoColorize;
-/// # use tabled::{style::{Style, Symbol, ColoredBorder}, object::Rows, Table, Modify};
+/// # use tabled::{style::{Style, Symbol, BorderColored}, object::Rows, Table, Modify};
 /// #
 /// # let data: Vec<&'static str> = Vec::new();
 /// #
 /// let c = Symbol::ansi("#".red().to_string()).unwrap();
 /// let table = Table::new(&data)
 ///     .with(Style::ascii())
-///     .with(Modify::new(Rows::single(0)).with(ColoredBorder::default().top(c)));
+///     .with(Modify::new(Rows::single(0)).with(BorderColored::default().top(c)));
 /// ```
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct ColoredBorder(pub(crate) papergrid::Border<Symbol>);
+pub struct BorderColored(pub(crate) papergrid::Border<Symbol>);
 
 #[cfg(feature = "color")]
-impl ColoredBorder {
+impl BorderColored {
     /// Set a top border character.
     pub fn top(mut self, c: Symbol) -> Self {
         self.0.top = Some(c);
@@ -1497,7 +1497,7 @@ impl ColoredBorder {
 }
 
 #[cfg(feature = "color")]
-impl CellOption for ColoredBorder {
+impl CellOption for BorderColored {
     fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
         grid.set_colored_border(entity, self.0.clone());
     }
@@ -1509,13 +1509,13 @@ impl CellOption for ColoredBorder {
 ///
 /// ```rust,no_run
 /// # use owo_colors::OwoColorize;
-/// # use tabled::{style::{ColoredBorder, Symbol}, object::Rows, TableIteratorExt, Modify};
+/// # use tabled::{style::{BorderColored, Symbol}, object::Rows, TableIteratorExt, Modify};
 /// #
 /// # let data: Vec<&'static str> = Vec::new();
 /// #
 /// let colored_char = "#".red().to_string();
 /// let table = data.table()
-///     .with(Modify::new(Rows::single(0)).with(ColoredBorder::filled(Symbol::ansi(colored_char).unwrap())));
+///     .with(Modify::new(Rows::single(0)).with(BorderColored::filled(Symbol::ansi(colored_char).unwrap())));
 /// ```
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]

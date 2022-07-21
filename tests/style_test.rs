@@ -1900,14 +1900,14 @@ fn test_default_border_usage() {
 #[test]
 fn border_colored_test() {
     use owo_colors::OwoColorize;
-    use tabled::style::{ColoredBorder, Symbol};
+    use tabled::style::{BorderColored, Symbol};
 
     let data = create_vector::<2, 2>();
     let table = Table::new(&data)
         .with(Style::ascii())
         .with(
             Modify::new(Rows::single(1)).with(
-                ColoredBorder::filled(Symbol::ansi('*'.blue().to_string()).unwrap())
+                BorderColored::filled(Symbol::ansi('*'.blue().to_string()).unwrap())
                     .top(Symbol::ansi('#'.truecolor(12, 220, 100).to_string()).unwrap()),
             ),
         )
@@ -1943,7 +1943,7 @@ fn border_colored_test() {
         .with(Style::empty())
         .with(
             Modify::new(Rows::single(1)).with(
-                ColoredBorder::filled(Symbol::ansi('*'.blue().to_string()).unwrap())
+                BorderColored::filled(Symbol::ansi('*'.blue().to_string()).unwrap())
                     .top(Symbol::ansi('#'.truecolor(12, 220, 100).to_string()).unwrap()),
             ),
         )

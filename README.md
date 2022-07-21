@@ -387,12 +387,12 @@ let color = Color::try_from(" ".magenta().to_string()).unwrap();
 table.with(color)
 ```
 
-You can also set a color border of intividial cell by using `ColoredBorder`.
+You can also set a color border of intividial cell by using `BorderColored`.
 
 ```rust
 // set a top border of each cell in second column to red '=' character.
 let c = Symbol::ansi("═".red().to_string()).unwrap();
-table.with(Modify::new(Columns::single(2)).with(ColoredBorder::default().top(c)))
+table.with(Modify::new(Columns::single(2)).with(BorderColored::default().top(c)))
 ```
 
 ### Alignment

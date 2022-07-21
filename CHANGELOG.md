@@ -16,11 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created `Object::intersect` method.
 - Created `Object::inverse` method.
 - Created `width::Percent` to set width not in absolute values.
+- Created `PaddingColor` to colorize `Padding`.
+- Created `MarginColor` to colorize `Margin`.
 - Added `Priority` strategy for `Width`.
 - Added `Style::correct_spans` functions to correct borders when used with spans..
 - Added `HighlightColored` a version of `Highlight` which supports coloring.
 - Added `ModifyObject` trait to be like `Modify::new`.
-- Added `ColoredBorder` and `RawStyleColored` to colorize borders more effectively.
+- Added `BorderColored` and `RawStyleColored` to colorize borders more effectively.
 - Added `Style::lines` setter so you it's possible to override not only header.
 
 ### Changed
