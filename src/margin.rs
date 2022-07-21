@@ -74,14 +74,16 @@ impl TableOption for Margin {
     }
 }
 
-/// MarginColor can be used to set a color for a [Margin].
+/// List of colors for [Margin].
 ///
 /// ```rust,no_run
 /// # use tabled::{margin::{Margin, MarginColor}, style::BorderColor, Table};
+/// # use owo_colors::OwoColorize;
+/// # use std::convert::TryFrom;
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Margin::new(1, 1, 1, 1))
-///     .with(BorderColor::new(
+///     .with(MarginColor::new(
 ///         BorderColor::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
 ///         BorderColor::default(),
 ///         BorderColor::default(),

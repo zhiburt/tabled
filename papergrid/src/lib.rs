@@ -82,6 +82,8 @@ struct GridConfig {
     formatting: EntityMap<Formatting>,
     #[cfg(feature = "color")]
     margin_color: MarginColor,
+    #[cfg(feature = "color")]
+    padding_color: EntityMap<PaddingColor>,
 }
 
 impl Default for GridConfig {
@@ -95,6 +97,8 @@ impl Default for GridConfig {
             alignment_v: EntityMap::new(AlignmentVertical::Top, HashMap::default()),
             #[cfg(feature = "color")]
             margin_color: MarginColor::default(),
+            #[cfg(feature = "color")]
+            padding_color: EntityMap::default(),
         }
     }
 }
@@ -288,15 +292,16 @@ impl Grid {
     /// This function returns a settings of a cell
     pub fn get_settings(&self, row: usize, col: usize) -> Settings {
         let content = &self.cells[row][col];
-        let border = self.get_border((row, col));
-        let span = self.get_column_span((row, col));
+        let pos = (row, col);
+        let border = self.get_border(pos);
+        let span = self.get_column_span(pos);
 
         Settings {
             text: Some(content.clone()),
-            padding: Some(*self.get_padding(Entity::Cell(row, col))),
+            padding: Some(*self.get_padding(pos.into())),
             border: Some(border),
-            alignment_horizontal: Some(*self.get_alignment_horizontal(Entity::Cell(row, col))),
-            alignment_vertical: Some(*self.get_alignment_vertical(Entity::Cell(row, col))),
+            alignment_horizontal: Some(*self.get_alignment_horizontal(pos.into())),
+            alignment_vertical: Some(*self.get_alignment_vertical(pos.into())),
             formatting: None,
             span,
         }
@@ -503,6 +508,12 @@ impl Grid {
     /// Get a padding for a given [Entity].
     pub fn get_padding(&self, entity: Entity) -> &Padding {
         self.config.padding.lookup(entity)
+    }
+
+    #[cfg(feature = "color")]
+    /// Set a padding to a given cells.
+    pub fn set_padding_color(&mut self, entity: Entity, color: PaddingColor) {
+        self.config.padding_color.set(entity, color);
     }
 
     /// Set a formatting to a given cells.
@@ -712,6 +723,12 @@ impl Entity {
             i: 0,
             j: 0,
         }
+    }
+}
+
+impl From<Position> for Entity {
+    fn from((row, col): Position) -> Self {
+        Self::Cell(row, col)
     }
 }
 
@@ -1041,10 +1058,20 @@ pub enum AlignmentHorizontal {
     Right,
 }
 
-/// Margin represent a 4 indents of table as a whole.
 #[cfg(feature = "color")]
+/// Margin represent a 4 indents of table as a whole.
 #[derive(Default, Debug, Clone)]
 pub struct MarginColor {
+    pub top: BorderColor,
+    pub bottom: BorderColor,
+    pub left: BorderColor,
+    pub right: BorderColor,
+}
+
+#[cfg(feature = "color")]
+/// PaddingColor represent a 4 indents of a cell.
+#[derive(Default, Debug, Clone)]
+pub struct PaddingColor {
     pub top: BorderColor,
     pub bottom: BorderColor,
     pub left: BorderColor,
@@ -1055,7 +1082,7 @@ fn print_text_formated(
     f: &mut fmt::Formatter<'_>,
     text: &str,
     text_width: usize,
-    alignment: AlignmentHorizontal,
+    alignment: &AlignmentHorizontal,
     available: usize,
     tab_width: usize,
 ) -> fmt::Result {
@@ -1099,7 +1126,7 @@ pub enum AlignmentVertical {
     Bottom,
 }
 
-fn indent_from_top(alignment: AlignmentVertical, height: usize, real_height: usize) -> usize {
+fn indent_from_top(alignment: &AlignmentVertical, height: usize, real_height: usize) -> usize {
     match alignment {
         AlignmentVertical::Top => 0,
         AlignmentVertical::Bottom => height - real_height,
@@ -1109,59 +1136,93 @@ fn indent_from_top(alignment: AlignmentVertical, height: usize, real_height: usi
 
 fn build_cell_line(
     f: &mut fmt::Formatter<'_>,
+    grid: &Grid,
     cell: &CellContent<'_>,
     line: usize,
     width: usize,
     height: usize,
-    style: &Style,
-    tab_width: usize,
+    pos: Position,
 ) -> fmt::Result {
-    let original_cell_height = cell.lines.len();
-    let mut cell_height = original_cell_height;
-
-    if style.formatting.vertical_trim {
+    let pos = pos.into();
+    let formatting = grid.get_formatting(pos);
+    let mut cell_height = cell.lines.len();
+    if formatting.vertical_trim {
         cell_height -= count_empty_lines_on_ends(&cell.lines);
     }
 
-    let skip_lines = top_indent(style, cell_height, height);
-    if skip_lines > line {
-        return repeat_char(f, style.padding.top.fill, width);
+    #[cfg(feature = "color")]
+    let padding_color = grid.config.padding_color.lookup(pos);
+
+    let padding = grid.get_padding(pos);
+    let alignment = grid.get_alignment_vertical(pos);
+    let indent = top_indent(padding, alignment, cell_height, height);
+    if indent > line {
+        return print_indent(
+            f,
+            padding.top.fill,
+            width,
+            #[cfg(feature = "color")]
+            &padding_color.top,
+        );
     }
 
-    let mut index = line - skip_lines;
+    let mut index = line - indent;
     let cell_has_this_line = cell_height > index;
-    // happens when other cells have bigger height
     if !cell_has_this_line {
-        return repeat_char(f, style.padding.bottom.fill, width);
+        // happens when other cells have bigger height
+        //
+        // todo: I think usage of bottom padding is not always applicable
+        return print_indent(
+            f,
+            padding.bottom.fill,
+            width,
+            #[cfg(feature = "color")]
+            &padding_color.bottom,
+        );
     }
 
-    if style.formatting.vertical_trim {
+    if formatting.vertical_trim {
         let empty_lines = count_empty_lines_at_start(&cell.lines);
         index += empty_lines;
 
-        if index > original_cell_height {
-            return repeat_char(f, style.padding.top.fill, width);
+        if index > cell.lines.len() {
+            return print_indent(
+                f,
+                padding.top.fill,
+                width,
+                #[cfg(feature = "color")]
+                &padding_color.top,
+            );
         }
     }
 
-    let width = width - style.padding.left.size - style.padding.right.size;
-    repeat_char(f, style.padding.left.fill, style.padding.left.size)?;
-
-    let text = cell.lines.get(index).unwrap_or(&Cow::Borrowed(""));
-
-    build_format_line(
+    print_indent(
         f,
-        index,
-        text,
-        cell,
-        width,
-        style.alignment_horizontal,
-        style.formatting.horizontal_trim,
-        style.formatting.allow_lines_alignement,
-        tab_width,
+        padding.left.fill,
+        padding.left.size,
+        #[cfg(feature = "color")]
+        &padding_color.left,
     )?;
 
-    repeat_char(f, style.padding.right.fill, style.padding.right.size)?;
+    let alignment = grid.get_alignment_horizontal(pos);
+    let width = width - padding.left.size - padding.right.size;
+    build_format_line(
+        f,
+        cell,
+        index,
+        alignment,
+        formatting,
+        grid.config.tab_width,
+        width,
+    )?;
+
+    print_indent(
+        f,
+        padding.right.fill,
+        padding.right.size,
+        #[cfg(feature = "color")]
+        &padding_color.right,
+    )?;
 
     Ok(())
 }
@@ -1169,32 +1230,31 @@ fn build_cell_line(
 #[allow(clippy::too_many_arguments)]
 fn build_format_line(
     f: &mut fmt::Formatter<'_>,
-    index: usize,
-    line: &str,
     cell: &CellContent<'_>,
-    width: usize,
-    alignment: AlignmentHorizontal,
-    line_trim: bool,
-    line_alignement: bool,
+    index: usize,
+    alignment: &AlignmentHorizontal,
+    formatting: &Formatting,
     tab_width: usize,
+    width: usize,
 ) -> Result<(), fmt::Error> {
-    let text = if line_trim {
+    let line = cell.lines.get(index).unwrap_or(&Cow::Borrowed(""));
+    let text = if formatting.horizontal_trim && !line.is_empty() {
         string_trim(line)
     } else {
-        Cow::Borrowed(line)
+        Cow::Borrowed(line.as_ref())
     };
 
-    let line_width = if line_trim {
+    let line_width = if formatting.horizontal_trim {
         string_width_tab(&text, tab_width)
     } else {
         cell.lines_width.get(index).copied().unwrap_or(0)
     };
 
-    if line_alignement {
+    if formatting.allow_lines_alignement {
         return print_text_formated(f, &text, line_width, alignment, width, tab_width);
     }
 
-    let cell_width = if line_trim {
+    let cell_width = if formatting.horizontal_trim {
         cell.lines
             .iter()
             .map(|line| string_width_tab(line.trim(), tab_width))
@@ -1226,11 +1286,16 @@ fn count_empty_lines_at_start(lines: &[Cow<'_, str>]) -> usize {
     lines.iter().take_while(|s| s.trim().is_empty()).count()
 }
 
-fn top_indent(style: &Style, cell_height: usize, height: usize) -> usize {
-    let height = height - style.padding.top.size;
-    let indent = indent_from_top(style.alignment_vertical, height, cell_height);
+fn top_indent(
+    padding: &Padding,
+    alignment: &AlignmentVertical,
+    cell_height: usize,
+    height: usize,
+) -> usize {
+    let height = height - padding.top.size;
+    let indent = indent_from_top(alignment, height, cell_height);
 
-    indent + style.padding.top.size
+    indent + padding.top.size
 }
 
 fn repeat_symbol(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
@@ -1444,8 +1509,8 @@ fn get_cell_width(grid: &Grid, (row, col): Position) -> usize {
     grid.get_string_width(row, col) + get_cell_padding(grid, (row, col))
 }
 
-fn get_cell_padding(grid: &Grid, (row, col): Position) -> usize {
-    let padding = grid.get_padding(Entity::Cell(row, col));
+fn get_cell_padding(grid: &Grid, pos: Position) -> usize {
+    let padding = grid.get_padding(pos.into());
     padding.left.size + padding.right.size
 }
 
@@ -2166,31 +2231,16 @@ fn print_grid(
 
             for col in 0..grid.count_columns() {
                 if is_cell_visible(grid, (row, col)) {
-                    let left = get_vertical(grid, (row, col));
-                    if let Some(c) = left {
-                        #[cfg(feature = "color")]
-                        write_colored(f, c, get_vertical_color(grid, (row, col)))?;
+                    print_vertical_char(f, grid, (row, col))?;
 
-                        #[cfg(not(feature = "color"))]
-                        c.fmt(f)?;
-                    }
-
-                    let style = grid.style(Entity::Cell(row, col));
                     let cell = &cells[row][col];
                     let width = grid_cell_width(grid, widths, (row, col));
-                    build_cell_line(f, cell, i, width, height, &style, grid.config.tab_width)?;
+                    build_cell_line(f, grid, cell, i, width, height, (row, col))?;
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();
                 if is_last_column {
-                    let right = get_vertical(grid, (row, col + 1));
-                    if let Some(c) = right {
-                        #[cfg(feature = "color")]
-                        write_colored(f, c, get_vertical_color(grid, (row, col + 1)))?;
-
-                        #[cfg(not(feature = "color"))]
-                        c.fmt(f)?;
-                    }
+                    print_vertical_char(f, grid, (row, col + 1))?;
                 }
             }
 
@@ -2218,35 +2268,79 @@ fn print_grid(
     Ok(())
 }
 
-fn print_margin_top(f: &mut fmt::Formatter<'_>, grid: &Grid, width: usize) -> fmt::Result {
-    for i in 0..grid.config.margin.top.size {
+fn print_vertical_char(
+    f: &mut fmt::Formatter<'_>,
+    grid: &Grid,
+    pos: Position,
+) -> Result<(), fmt::Error> {
+    let left = get_vertical(grid, pos);
+    if let Some(c) = left {
         #[cfg(feature = "color")]
-        grid.config.margin_color.top.0.fmt(f)?;
+        write_colored(f, c, get_vertical_color(grid, pos))?;
 
-        repeat_char(f, grid.config.margin.top.fill, width)?;
-
-        #[cfg(feature = "color")]
-        grid.config.margin_color.top.1.fmt(f)?;
-
-        if i + 1 != grid.config.margin.top.size {
-            f.write_char('\n')?;
-        }
+        #[cfg(not(feature = "color"))]
+        c.fmt(f)?;
     }
 
     Ok(())
+}
+
+fn print_margin_top(f: &mut fmt::Formatter<'_>, grid: &Grid, width: usize) -> fmt::Result {
+    print_indent_lines(
+        f,
+        &grid.config.margin.top,
+        width,
+        #[cfg(feature = "color")]
+        &grid.config.margin_color.top,
+    )
 }
 
 fn print_margin_bottom(f: &mut fmt::Formatter<'_>, grid: &Grid, width: usize) -> fmt::Result {
-    for i in 0..grid.config.margin.bottom.size {
+    print_indent_lines(
+        f,
+        &grid.config.margin.bottom,
+        width,
         #[cfg(feature = "color")]
-        grid.config.margin_color.bottom.0.fmt(f)?;
+        &grid.config.margin_color.bottom,
+    )
+}
 
-        repeat_char(f, grid.config.margin.bottom.fill, width)?;
-
+fn print_margin_left(f: &mut fmt::Formatter<'_>, grid: &Grid) -> fmt::Result {
+    print_indent(
+        f,
+        grid.config.margin.left.fill,
+        grid.config.margin.left.size,
         #[cfg(feature = "color")]
-        grid.config.margin_color.bottom.1.fmt(f)?;
+        &grid.config.margin_color.left,
+    )
+}
 
-        if i + 1 != grid.config.margin.bottom.size {
+fn print_margin_right(f: &mut fmt::Formatter<'_>, grid: &Grid) -> fmt::Result {
+    print_indent(
+        f,
+        grid.config.margin.right.fill,
+        grid.config.margin.right.size,
+        #[cfg(feature = "color")]
+        &grid.config.margin_color.right,
+    )
+}
+
+fn print_indent_lines(
+    f: &mut fmt::Formatter<'_>,
+    indent: &Indent,
+    width: usize,
+    #[cfg(feature = "color")] color: &BorderColor,
+) -> fmt::Result {
+    for i in 0..indent.size {
+        print_indent(
+            f,
+            indent.fill,
+            width,
+            #[cfg(feature = "color")]
+            color,
+        )?;
+
+        if i + 1 != indent.size {
             f.write_char('\n')?;
         }
     }
@@ -2254,24 +2348,17 @@ fn print_margin_bottom(f: &mut fmt::Formatter<'_>, grid: &Grid, width: usize) ->
     Ok(())
 }
 
-fn print_margin_left(f: &mut fmt::Formatter<'_>, grid: &Grid) -> fmt::Result {
+fn print_indent(
+    f: &mut fmt::Formatter<'_>,
+    c: char,
+    n: usize,
+    #[cfg(feature = "color")] color: &BorderColor,
+) -> fmt::Result {
     #[cfg(feature = "color")]
-    grid.config.margin_color.left.0.fmt(f)?;
-    let margin = &grid.config.margin;
-    repeat_char(f, margin.left.fill, margin.left.size)?;
+    color.0.fmt(f)?;
+    repeat_char(f, c, n)?;
     #[cfg(feature = "color")]
-    grid.config.margin_color.left.1.fmt(f)?;
-
-    Ok(())
-}
-
-fn print_margin_right(f: &mut fmt::Formatter<'_>, grid: &Grid) -> fmt::Result {
-    #[cfg(feature = "color")]
-    grid.config.margin_color.right.0.fmt(f)?;
-    let margin = &grid.config.margin;
-    repeat_char(f, margin.right.fill, margin.right.size)?;
-    #[cfg(feature = "color")]
-    grid.config.margin_color.right.1.fmt(f)?;
+    color.1.fmt(f)?;
 
     Ok(())
 }
@@ -2707,7 +2794,7 @@ mod tests {
         impl fmt::Display for F<'_> {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 let width = string_width(self.0);
-                print_text_formated(f, self.0, width, self.1, self.2, 0)
+                print_text_formated(f, self.0, width, &self.1, self.2, 0)
             }
         }
 
@@ -2732,13 +2819,13 @@ mod tests {
     fn vertical_aligment_test() {
         use AlignmentVertical::*;
 
-        assert_eq!(indent_from_top(Bottom, 1, 1), 0);
-        assert_eq!(indent_from_top(Top, 1, 1), 0);
-        assert_eq!(indent_from_top(Center, 1, 1), 0);
-        assert_eq!(indent_from_top(Bottom, 3, 1), 2);
-        assert_eq!(indent_from_top(Top, 3, 1), 0);
-        assert_eq!(indent_from_top(Center, 3, 1), 1);
-        assert_eq!(indent_from_top(Center, 4, 1), 1);
+        assert_eq!(indent_from_top(&Bottom, 1, 1), 0);
+        assert_eq!(indent_from_top(&Top, 1, 1), 0);
+        assert_eq!(indent_from_top(&Center, 1, 1), 0);
+        assert_eq!(indent_from_top(&Bottom, 3, 1), 2);
+        assert_eq!(indent_from_top(&Top, 3, 1), 0);
+        assert_eq!(indent_from_top(&Center, 3, 1), 1);
+        assert_eq!(indent_from_top(&Center, 4, 1), 1);
     }
 
     #[cfg(feature = "color")]
