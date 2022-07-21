@@ -445,7 +445,7 @@ Table::new(&data)
     .with(Modify::new(Cell(0, 3)).with(Padding::new(1, 1, 0, 2).set_fill('>', '<', '^', 'V')));
 ```
 
-### Padding Color
+#### Padding Color
 
 You can set a color for padding characters.
 
@@ -487,7 +487,7 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ```
 
-### Margin Color
+#### Margin Color
 
 You can set a color for padding characters.
 
