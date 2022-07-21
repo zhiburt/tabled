@@ -139,6 +139,11 @@ name = "nested_table_3"
 path = "examples/nested_table_3.rs"
 required-features = ["derive"]
 
+[[example]]
+name = "padding_color"
+path = "examples/padding_color.rs"
+required-features = ["color", "derive"]
+
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #
 # RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
