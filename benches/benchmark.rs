@@ -5,7 +5,7 @@ macro_rules! bench_lib {
         pub fn $name(c: &mut Criterion) {
             let mut group = c.benchmark_group(stringify!($name));
 
-            for size in [1, 4, 8, 64, 512, 1024] {
+            for size in [1024] {
                 let (columns, data) = $data_fn(size);
 
                 $({
@@ -27,9 +27,6 @@ macro_rules! bench_lib {
             group.finish();
         }
     };
-    ($name:ident, $table:expr) => {
-        table_bench! { $name, $table, }
-    };
 }
 
 macro_rules! create_bench {
@@ -39,11 +36,11 @@ macro_rules! create_bench {
             $table,
             { "tabled", benchs::tabled::build, benchs::tabled::print, },
             { "tabled_color", benchs::tabled_color::build, benchs::tabled_color::print, },
-            { "nu-table", benchs::nu_table::build, benchs::nu_table::print, },
             { "cli_table", benchs::cli_table::build, benchs::cli_table::print, },
             { "comfy_table", benchs::comfy_table::build, benchs::comfy_table::print, },
             { "term_table", benchs::term_table::build, benchs::term_table::print, },
-            { "prettytable_rs", benchs::prettytable_rs::build, benchs::prettytable_rs::print, },
+            // { "nu-table", benchs::nu_table::build, benchs::nu_table::print, },
+            // { "prettytable_rs", benchs::prettytable_rs::build, benchs::prettytable_rs::print, },
         );
     };
 }
@@ -63,14 +60,6 @@ create_bench!(test_multiline_table, |size| build_cost_table(
     "H\ne\nl\nlo\nWo\nr\nld",
     "Hello\n111\n111\ni\n!"
 ));
-
-create_bench!(test_colored_table, |size| {
-    use owo_colors::OwoColorize;
-
-    let header = "Hello World".red().on_blue().to_string();
-    let cell = "He\nll\no W\nor\nld".green().on_blue().to_string();
-    build_cost_table(size, header, cell)
-});
 
 criterion_group!(
     benches,
@@ -93,21 +82,19 @@ where
 }
 
 fn build_dynamic_table(size: usize) -> (Vec<String>, Vec<Vec<String>>) {
-    let columns = build_row(size, |n| format!("{}", n));
-
-    let mut side = false;
     let mut data = Vec::with_capacity(size);
-    for _ in 0..size {
+    for i in 0..size {
         let mut row = build_row(size, |n| format!("{}", n));
-        if side {
-            row = row.into_iter().rev().collect();
-            side = false;
-        } else {
-            side = true;
+
+        // just make things more complex
+        if i % 2 == 0 {
+            row.sort_by(|a, b| b.cmp(a));
         }
 
         data.push(row);
     }
+
+    let columns = build_row(size, |n| format!("{}", n));
 
     (columns, data)
 }
