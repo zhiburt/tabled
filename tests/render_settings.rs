@@ -1,16 +1,16 @@
 use tabled::{
     formatting_settings::{AlignmentStrategy, TabSize, TrimStrategy},
     object::{Cell, Segment},
-    Alignment, Modify, Span, Style, Table,
+    Alignment, Modify, Span, Style,
 };
 
-use crate::util::{create_vector, test_table};
+use crate::util::{create_vector, new_table, test_table};
 
 mod util;
 
 test_table!(
     alignment_per_line,
-    Table::new(multiline_data1())
+    new_table(multiline_data1())
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::right()).with(AlignmentStrategy::PerLine)),
     "         N | column 0 | column 1 | column 2 "
@@ -32,7 +32,7 @@ test_table!(
 
 test_table!(
     alignment_per_line_with_trim_0,
-    Table::new(multiline_data1())
+    new_table(multiline_data1())
         .with(Style::psql())
         .with(Modify::new(Segment::all())
             .with(Alignment::right())
@@ -57,7 +57,7 @@ test_table!(
 
 test_table!(
     alignment_per_line_with_trim_1,
-    Table::new(multiline_data2())
+    new_table(multiline_data2())
         .with(Style::psql())
         .with(Modify::new(Segment::all())
             .with(Alignment::center_vertical())
@@ -85,7 +85,7 @@ test_table!(
 
 test_table!(
     tab_size_test,
-    Table::new(tab_data1()).with(Style::psql()),
+    new_table(tab_data1()).with(Style::psql()),
     "          N           | column 0 |   column 1   | column 2 "
     "----------------------+----------+--------------+----------"
     "          0           |   0-0    |     0-1      |   0-2    "
@@ -100,7 +100,7 @@ test_table!(
 
 test_table!(
     tab_size_test_0,
-    Table::new(tab_data1()).with(Style::psql()),
+    new_table(tab_data1()).with(Style::psql()),
     "          N           | column 0 |   column 1   | column 2 "
     "----------------------+----------+--------------+----------"
     "          0           |   0-0    |     0-1      |   0-2    "
@@ -115,7 +115,7 @@ test_table!(
 
 test_table!(
     tab_size_test_1,
-    Table::new(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(TabSize(2)),
+    new_table(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(TabSize(2)),
     "                N | column 0 |   column 1 | column 2 "
     "------------------+----------+------------+----------"
     "                0 |      0-0 |        0-1 |      0-2 "
@@ -130,7 +130,7 @@ test_table!(
 
 test_table!(
     tab_size_test_2,
-    Table::new(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(TabSize(0)),
+    new_table(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(TabSize(0)),
     "            N | column 0 | column 1 | column 2 "
     "--------------+----------+----------+----------"
     "            0 |      0-0 |      0-1 |      0-2 "
@@ -145,7 +145,7 @@ test_table!(
 
 test_table!(
     tab_size_span_test,
-    Table::new(tab_data2())
+    new_table(tab_data2())
         .with(Style::psql())
         .with(Modify::new(Cell(0, 0)).with(Span::column(3)))
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
@@ -164,7 +164,7 @@ test_table!(
 
 test_table!(
     test_top_alignment_and_vertical_trim_1,
-    Table::new(&["   \n\n\n    Hello World"])
+    new_table(&["   \n\n\n    Hello World"])
         .with(Style::modern())
         .with(Modify::new(Segment::all()).with(Alignment::top()).with(TrimStrategy::Vertical)),
     "┌─────────────────┐"
@@ -180,7 +180,7 @@ test_table!(
 #[cfg(feature = "color")]
 test_table!(
     trim_colored_string_test_2,
-    Table::new(colored_data())
+    new_table(colored_data())
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::right()).with(TrimStrategy::None)),
     "         N | column 0 | column 1 | column 2 "
@@ -203,7 +203,7 @@ test_table!(
 #[cfg(feature = "color")]
 test_table!(
     trim_colored_string_test_1,
-    Table::new(colored_data())
+    new_table(colored_data())
         .with(Style::psql())
         .with(
             Modify::new(Segment::all())
@@ -230,7 +230,7 @@ test_table!(
 #[cfg(feature = "color")]
 test_table!(
     trim_colored_string_test_0,
-    Table::new(colored_data())
+    new_table(colored_data())
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::right()).with(TrimStrategy::Horizontal)),
     "         N | column 0 | column 1 | column 2 "

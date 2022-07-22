@@ -218,6 +218,7 @@ impl CellOption for AlignmentStrategy {
 ///     .with(Style::modern())
 ///     .with(
 ///         Modify::new(Segment::all())
+///             .with(Alignment::center())
 ///             .with(Alignment::top())
 ///             .with(TrimStrategy::Vertical)
 ///     );

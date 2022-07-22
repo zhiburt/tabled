@@ -47,13 +47,13 @@
 //!         "┌──────────┬─────────┬───────┐\n",
 //!         "│          │ Algebra │ Apolo │\n",
 //!         "├──────────┼─────────┼───────┤\n",
-//!         "│ Complete │         │   +   │\n",
+//!         "│ Complete │         │ +     │\n",
 //!         "├──────────┼─────────┼───────┤\n",
 //!         "│ Started  │         │       │\n",
 //!         "├──────────┼─────────┼───────┤\n",
-//!         "│  Ready   │         │       │\n",
+//!         "│ Ready    │         │       │\n",
 //!         "├──────────┼─────────┼───────┤\n",
-//!         "│ Unknown  │    +    │       │\n",
+//!         "│ Unknown  │ +       │       │\n",
 //!         "└──────────┴─────────┴───────┘",
 //!    ),
 //! )
@@ -100,9 +100,9 @@
 //!         "┌───────────────────┬────────────────────┬─────────┐\n",
 //!         "│ started_timestamp │ finihsed_timestamp │ Unknown │\n",
 //!         "├───────────────────┼────────────────────┼─────────┤\n",
-//!         "│                   │                    │    +    │\n",
+//!         "│                   │                    │ +       │\n",
 //!         "├───────────────────┼────────────────────┼─────────┤\n",
-//!         "│        123        │        234         │         │\n",
+//!         "│ 123               │ 234                │         │\n",
 //!         "└───────────────────┴────────────────────┴─────────┘",
 //!    ),
 //! )
@@ -110,7 +110,7 @@
 
 use std::{fmt::Display, iter::FromIterator};
 
-use papergrid::{AlignmentHorizontal, Entity, Formatting, Grid, Indent, Settings};
+use papergrid::{AlignmentHorizontal, Entity, Formatting, Grid, Indent, Padding, Settings};
 
 use crate::{Style, Table};
 
@@ -306,7 +306,7 @@ impl Builder {
     ///      +---+-------+\n\
     ///      | 1 | World |\n\
     ///      +---+-------+\n\
-    ///      | 2 |   !   |\n\
+    ///      | 2 | !     |\n\
     ///      +---+-------+"
     /// )
     /// ```
@@ -513,31 +513,32 @@ fn build_grid(
     grid
 }
 
-fn create_table_from_grid(grid: Grid) -> Table {
-    let mut table = Table { grid };
+fn create_table_from_grid(mut grid: Grid) -> Table {
+    configure_grid(&mut grid);
 
-    // it's crusial to set a global setting rather than a setting for an each cell
-    // as it will be hard to override that since how Grid::style method works
-    table.grid.set(Entity::Global, default_cell_style());
-    table.grid.set_tab_width(4);
-
+    let table = Table { grid };
     table.with(Style::ascii())
 }
 
-fn default_cell_style() -> Settings {
-    Settings::new()
-        .padding(
-            Indent::spaced(1),
-            Indent::spaced(1),
-            Indent::spaced(0),
-            Indent::spaced(0),
-        )
-        .alignment(AlignmentHorizontal::Center)
-        .formatting(Formatting {
+fn configure_grid(grid: &mut Grid) {
+    grid.set_tab_width(4);
+    grid.set_padding(
+        Entity::Global,
+        Padding {
+            left: Indent::spaced(1),
+            right: Indent::spaced(1),
+            ..Default::default()
+        },
+    );
+    grid.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Left);
+    grid.set_formatting(
+        Entity::Global,
+        Formatting {
             horizontal_trim: false,
             allow_lines_alignement: false,
             vertical_trim: false,
-        })
+        },
+    );
 }
 
 fn append_vec(v: &mut Vec<String>, n: usize, value: &str) {
@@ -596,7 +597,7 @@ impl IndexBuilder {
     /// assert_eq!(
     ///     table.to_string(),
     ///     "+---+---+---------+---------+\n\
-    ///      |   | i |  col-1  |  col-2  |\n\
+    ///      |   | i | col-1   | col-2   |\n\
     ///      +---+---+---------+---------+\n\
     ///      | 0 | 0 | value-1 | value-2 |\n\
     ///      +---+---+---------+---------+"
@@ -638,7 +639,7 @@ impl IndexBuilder {
     /// assert_eq!(
     ///     table.to_string(),
     ///     "+---+---------+---------+\n\
-    ///      | i |  col-1  |  col-2  |\n\
+    ///      | i | col-1   | col-2   |\n\
     ///      +---+---------+---------+\n\
     ///      | 0 | value-1 | value-2 |\n\
     ///      +---+---------+---------+\n\
@@ -736,7 +737,7 @@ impl IndexBuilder {
     ///     "+----------+---------+---------+---------+\n\
     ///      | column-1 | value-1 | value-4 | value-7 |\n\
     ///      +----------+---------+---------+---------+\n\
-    ///      |    i     |    0    |    1    |    2    |\n\
+    ///      | i        | 0       | 1       | 2       |\n\
     ///      +----------+---------+---------+---------+\n\
     ///      | column-2 | value-2 | value-5 | value-8 |\n\
     ///      +----------+---------+---------+---------+\n\

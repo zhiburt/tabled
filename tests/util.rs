@@ -4,7 +4,49 @@
 
 use std::ops::{Index, IndexMut};
 
-use tabled::{papergrid::string_width_multiline, Tabled};
+use papergrid::Position;
+use tabled::{
+    object::SegmentAll, papergrid::string_width_multiline, Alignment, ModifyObject, Table, Tabled,
+};
+
+/// A helper table factory.
+///
+/// It uses center alignment by default, because it's more complex and may spot more issues.
+pub fn create_table<const ROWS: usize, const COLUMNS: usize>() -> Table {
+    init_table::<ROWS, COLUMNS, _, &str>(std::iter::empty())
+}
+
+pub fn init_table<const ROWS: usize, const COLUMNS: usize, I, S>(init: I) -> Table
+where
+    I: IntoIterator<Item = (Position, S)>,
+    S: Into<String>,
+{
+    let mut data = create_vector::<ROWS, COLUMNS>();
+    for (pos, value) in init {
+        data[pos.0][pos.1] = value.into();
+    }
+
+    new_table(data)
+}
+
+pub fn new_table<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Table {
+    Table::new(iter).with(SegmentAll.modify().with(Alignment::center()))
+}
+
+pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUMNS>> {
+    let mut arr = Vec::with_capacity(ROWS);
+    for row in 0..ROWS {
+        let mut data = Vec::with_capacity(COLUMNS);
+        for column in 0..COLUMNS {
+            let text = format!("{}-{}", row, column);
+            data.push(text);
+        }
+
+        arr.push(Obj::new(row, data));
+    }
+
+    arr
+}
 
 #[derive(Debug)]
 pub struct Obj<const N: usize> {
@@ -45,21 +87,6 @@ impl<const N: usize> Tabled for Obj<N> {
             .chain((0..N).map(|n| format!("column {}", n)))
             .collect()
     }
-}
-
-pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUMNS>> {
-    let mut arr = Vec::with_capacity(ROWS);
-    for row in 0..ROWS {
-        let mut data = Vec::with_capacity(COLUMNS);
-        for column in 0..COLUMNS {
-            let text = format!("{}-{}", row, column);
-            data.push(text);
-        }
-
-        arr.push(Obj::new(row, data));
-    }
-
-    arr
 }
 
 pub fn is_lines_equal(s: &str, width: usize) -> bool {

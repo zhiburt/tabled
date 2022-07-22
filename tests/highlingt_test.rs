@@ -2,16 +2,16 @@ use tabled::{
     builder::Builder,
     object::{Cell, Columns, Frame, Object, Rows, Segment},
     style::Border,
-    Highlight, Style, Table,
+    Highlight, Style,
 };
 
-use crate::util::{create_vector, static_table, test_table};
+use crate::util::{create_table, static_table, test_table};
 
 mod util;
 
 test_table!(
     highlingt_object_exceeds_bounderies,
-    Table::new(create_vector::<3, 3>()).with(Style::modern()).with(Highlight::new(Cell(1000, 0), Border::filled('+'))),
+    create_table::<3, 3>().with(Style::modern()).with(Highlight::new(Cell(1000, 0), Border::filled('+'))),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -33,7 +33,7 @@ test_table!(
 
 test_table!(
     highlingt_cell,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::modern())
         .with(Highlight::new(Cell(0, 0), Border::filled('+')))
         .with(Highlight::new(Cell(1, 1), Border::filled('*'))),
@@ -50,7 +50,7 @@ test_table!(
 
 test_table!(
     highlingt_row,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::modern())
         .with(Highlight::new(Rows::single(0), Border::filled('+')))
         .with(Highlight::new(Rows::single(3), Border::filled('*'))),
@@ -67,7 +67,7 @@ test_table!(
 
 test_table!(
     highlingt_column,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::modern())
         .with(Highlight::new(Columns::single(0), Border::filled('+')))
         .with(Highlight::new(Columns::single(2), Border::filled('*'))),
@@ -84,7 +84,7 @@ test_table!(
 
 test_table!(
     highlingt_row_range,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::modern())
         .with(Highlight::new(Rows::new(1..3), Border::filled('+'))),
     "┌───┬──────────┬──────────┬──────────┐"
@@ -100,7 +100,7 @@ test_table!(
 
 test_table!(
     highlingt_column_range,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::modern())
         .with(Highlight::new(Columns::new(..2), Border::filled('+'))),
     "++++++++++++++++──────────┬──────────┐"
@@ -116,7 +116,7 @@ test_table!(
 
 test_table!(
     highlingt_frame,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::modern())
         .with(Highlight::new(
             Frame,
@@ -139,7 +139,7 @@ test_table!(
 
 test_table!(
     highlingt_full,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::modern())
         .with(Highlight::new(
             Segment::all(),
@@ -162,7 +162,7 @@ test_table!(
 
 test_table!(
     highlingt_single_column,
-    Table::new(create_vector::<3, 0>())
+    create_table::<3, 0>()
         .with(Style::modern())
         .with(Highlight::new(Cell(0, 0), Border::default().left('*').top('x')))
         .with(Highlight::new(Rows::new(1..3), Border::default().left('n'))),
@@ -179,7 +179,7 @@ test_table!(
 
 test_table!(
     highlingt_several_times,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::modern())
         .with(Highlight::new(Frame, Border::filled('*')))
         .with(Highlight::new(Cell(1, 1), Border::filled('#')))
@@ -224,14 +224,13 @@ test_table!(
 fn highlingt_complex_figures() {
     macro_rules! test_highlight {
         ($object:expr, $expected:expr,) => {
-            let data = create_vector::<3, 3>();
             let border = Border::filled('+')
                 .top_left_corner('*')
                 .top_right_corner('#')
                 .bottom_left_corner('@')
                 .bottom_right_corner('.');
 
-            let table = Table::new(&data)
+            let table = create_table::<3, 3>()
                 .with(Style::modern())
                 .with(Highlight::new($object, border))
                 .to_string();

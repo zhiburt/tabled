@@ -3,16 +3,16 @@
 use tabled::{
     object::{Cell, Rows},
     style::Border,
-    Highlight, Rotate, Table,
+    Highlight, Rotate,
 };
 
-use crate::util::test_table;
+use crate::util::{new_table, test_table};
 
 mod util;
 
 #[test]
 fn test_rotate() {
-    let table = || Table::new([(123, 456, 789), (234, 567, 891)]);
+    let table = || new_table([(123, 456, 789), (234, 567, 891)]);
 
     assert_eq!(
         table()
@@ -59,7 +59,7 @@ fn test_rotate() {
 
 test_table!(
     test_3x3_box_0,
-    Table::new([(123, 456, 789), (234, 567, 891)]).with(Rotate::Left),
+    new_table([(123, 456, 789), (234, 567, 891)]).with(Rotate::Left),
     "+-----+-----+-----+"
     "| i32 | 789 | 891 |"
     "+-----+-----+-----+"
@@ -71,7 +71,7 @@ test_table!(
 
 test_table!(
     test_3x3_box_1,
-    Table::new([(123, 456, 789), (234, 567, 891)]).with(Rotate::Left).with(Rotate::Right).with(Rotate::Right),
+    new_table([(123, 456, 789), (234, 567, 891)]).with(Rotate::Left).with(Rotate::Right).with(Rotate::Right),
     "+-----+-----+-----+"
     "| 234 | 123 | i32 |"
     "+-----+-----+-----+"
@@ -83,7 +83,7 @@ test_table!(
 
 test_table!(
     test_left_rotate,
-    Table::new([(123, 456, 789), (234, 567, 891), (111, 222, 333)]).with(Rotate::Left),
+    new_table([(123, 456, 789), (234, 567, 891), (111, 222, 333)]).with(Rotate::Left),
     "+-----+-----+-----+-----+"
     "| i32 | 789 | 891 | 333 |"
     "+-----+-----+-----+-----+"
@@ -95,7 +95,7 @@ test_table!(
 
 test_table!(
     test_right_rotate,
-    Table::new([(123, 456, 789), (234, 567, 891), (111, 222, 333)]).with(Rotate::Right),
+    new_table([(123, 456, 789), (234, 567, 891), (111, 222, 333)]).with(Rotate::Right),
     "+-----+-----+-----+-----+"
     "| 111 | 234 | 123 | i32 |"
     "+-----+-----+-----+-----+"
@@ -107,7 +107,7 @@ test_table!(
 
 test_table!(
     test_bottom_rotate,
-    Table::new([(123, 456, 789), (234, 567, 891), (111, 222, 333)]).with(Rotate::Bottom),
+    new_table([(123, 456, 789), (234, 567, 891), (111, 222, 333)]).with(Rotate::Bottom),
     "+-----+-----+-----+"
     "| 111 | 222 | 333 |"
     "+-----+-----+-----+"
@@ -121,7 +121,7 @@ test_table!(
 
 test_table!(
     test_top_rotate,
-    Table::new([(123, 456, 789), (234, 567, 891), (111, 222, 333)]).with(Rotate::Top),
+    new_table([(123, 456, 789), (234, 567, 891), (111, 222, 333)]).with(Rotate::Top),
     "+-----+-----+-----+"
     "| 111 | 222 | 333 |"
     "+-----+-----+-----+"
@@ -135,7 +135,7 @@ test_table!(
 
 test_table!(
     rotate_preserve_border_styles_test_0,
-    Table::new([(123, 456, 789), (234, 567, 891), (111, 222, 333)])
+    new_table([(123, 456, 789), (234, 567, 891), (111, 222, 333)])
         .with(Highlight::new(Rows::single(0), Border::default().top('*')))
         .with(Rotate::Left),
     "******+-----+-----+-----+"
@@ -153,7 +153,7 @@ test_table!(
 // todo: determine if it's correct
 test_table!(
     rotate_preserve_border_styles_test_1,
-    Table::new([(123, 456, 789), (234, 567, 891), (111, 222, 333)])
+    new_table([(123, 456, 789), (234, 567, 891), (111, 222, 333)])
         .with(Highlight::new(Cell(0, 2), Border::default().bottom('*')))
         .with(Rotate::Left),
     "+-----+*****+-----+-----+"

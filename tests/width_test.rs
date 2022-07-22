@@ -4,17 +4,16 @@ use tabled::{
     papergrid::string_width_multiline,
     width::{Justify, MinWidth, Width},
     width::{PriorityMax, PriorityMin, SuffixLimit},
-    Alignment, Modify, Padding, Panel, Span, Style, Table,
+    Alignment, Modify, Padding, Panel, Span, Style,
 };
 
-use crate::util::{create_vector, is_lines_equal, static_table};
+use crate::util::{create_table, init_table, is_lines_equal, new_table, static_table};
 
 mod util;
 
 #[test]
 fn max_width() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(1)))
         .to_string();
@@ -33,8 +32,7 @@ fn max_width() {
 
 #[test]
 fn max_width_with_suffix() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(
             Modify::new(Columns::new(1..).not(Rows::single(0)))
@@ -56,8 +54,7 @@ fn max_width_with_suffix() {
 
 #[test]
 fn max_width_doesnt_icrease_width_if_it_is_smaller() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(50)))
         .to_string();
@@ -76,8 +73,7 @@ fn max_width_doesnt_icrease_width_if_it_is_smaller() {
 
 #[test]
 fn max_width_wrapped() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(2)))
         .to_string();
@@ -99,8 +95,7 @@ fn max_width_wrapped() {
 
 #[test]
 fn max_width_wrapped_does_nothing_if_str_is_smaller() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(100)))
         .to_string();
@@ -121,7 +116,7 @@ fn max_width_wrapped_does_nothing_if_str_is_smaller() {
 #[test]
 fn max_width_wrapped_keep_words() {
     let data = vec!["this is a long sentence"];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -139,7 +134,7 @@ fn max_width_wrapped_keep_words() {
     assert!(is_lines_equal(&table, 17 + 2 + 2));
 
     let data = vec!["this is a long  sentence"];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -157,7 +152,7 @@ fn max_width_wrapped_keep_words() {
     assert!(is_lines_equal(&table, 17 + 2 + 2));
 
     let data = vec!["this is a long   sentence"];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -174,7 +169,7 @@ fn max_width_wrapped_keep_words() {
     );
 
     let data = vec!["this is a long    sentence"];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -193,7 +188,7 @@ fn max_width_wrapped_keep_words() {
     assert!(is_lines_equal(&table, 17 + 2 + 2));
 
     let data = vec!["this"];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
         .to_string();
@@ -215,7 +210,7 @@ fn max_width_wrapped_keep_words_color() {
     use owo_colors::OwoColorize;
 
     let data = vec!["this is a long sentence".on_black().green().to_string()];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -242,7 +237,7 @@ fn max_width_wrapped_keep_words_color() {
     );
 
     let data = vec!["this is a long  sentence".on_black().green().to_string()];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -269,7 +264,7 @@ fn max_width_wrapped_keep_words_color() {
     );
 
     let data = vec!["this is a long   sentence".on_black().green().to_string()];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -291,7 +286,7 @@ fn max_width_wrapped_keep_words_color() {
     );
 
     let data = vec!["this is a long    sentence".on_black().green().to_string()];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -318,7 +313,7 @@ fn max_width_wrapped_keep_words_color() {
     );
 
     let data = vec!["this".on_black().green().to_string()];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
         .to_string();
@@ -345,7 +340,7 @@ fn max_width_wrapped_keep_words_color() {
 #[test]
 fn max_width_wrapped_keep_words_long_word() {
     let data = vec!["this is a long sentencesentencesentence"];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -372,7 +367,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
         .on_black()
         .green()
         .to_string()];
-    let table = Table::new(&data)
+    let table = new_table(&data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -412,7 +407,7 @@ fn max_width_wrapped_collored() {
         "asdasd".on_black().green().to_string(),
     ];
 
-    let table = Table::new(data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::wrap(2)))
         .to_string();
@@ -425,8 +420,7 @@ fn max_width_wrapped_collored() {
 
 #[test]
 fn dont_change_content_if_width_is_less_then_max_width() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::truncate(1000).suffix("...")))
         .to_string();
@@ -447,7 +441,7 @@ fn dont_change_content_if_width_is_less_then_max_width() {
 fn max_width_with_emoji() {
     let data = &["🤠", "😳🥵🥶😱😨", "🚴🏻‍♀️🚴🏻🚴🏻‍♂️🚵🏻‍♀️🚵🏻🚵🏻‍♂️"];
 
-    let table = Table::new(data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::truncate(6).suffix("...")))
         .to_string();
@@ -475,7 +469,7 @@ fn color_chars_are_stripped() {
         "asdasd".on_black().green().to_string(),
     ];
 
-    let table = Table::new(data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::truncate(4).suffix("...")))
         .to_string();
@@ -499,8 +493,7 @@ fn color_chars_are_stripped() {
 
 #[test]
 fn min_width() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(12)));
 
@@ -531,8 +524,7 @@ fn min_width() {
 
 #[test]
 fn min_width_with_filler() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(12).fill_with('.')))
         .to_string();
@@ -551,8 +543,7 @@ fn min_width_with_filler() {
 
 #[test]
 fn min_width_one_column() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Cell(0, 0)).with(MinWidth::new(5)));
 
@@ -583,21 +574,18 @@ fn min_width_one_column() {
 
 #[test]
 fn min_width_on_smaller_content() {
-    let data = create_vector::<3, 3>();
-
     assert_eq!(
-        Table::new(&data)
+        create_table::<3, 3>()
             .with(Style::markdown())
             .with(Modify::new(Rows::single(0)).with(MinWidth::new(1)))
             .to_string(),
-        Table::new(&data).with(Style::markdown()).to_string()
+        create_table::<3, 3>().with(Style::markdown()).to_string()
     );
 }
 
 #[test]
 fn min_with_max_width() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
         .with(Modify::new(Rows::single(0)).with(Width::truncate(3)));
@@ -629,8 +617,7 @@ fn min_with_max_width() {
 
 #[test]
 fn min_with_max_width_truncate_suffix() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
         .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("...")));
@@ -662,8 +649,7 @@ fn min_with_max_width_truncate_suffix() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_replace() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::markdown()).with(
+    let table = create_table::<3, 3>().with(Style::markdown()).with(
         Modify::new(Rows::single(0)).with(
             Width::truncate(3)
                 .suffix("...")
@@ -685,8 +671,7 @@ fn min_with_max_width_truncate_suffix_limit_replace() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_cut() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::markdown()).with(
+    let table = create_table::<3, 3>().with(Style::markdown()).with(
         Modify::new(Rows::single(0)).with(
             Width::truncate(3)
                 .suffix("qwert")
@@ -708,8 +693,7 @@ fn min_with_max_width_truncate_suffix_limit_cut() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_ignore() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(Style::markdown()).with(
+    let table = create_table::<3, 3>().with(Style::markdown()).with(
         Modify::new(Rows::single(0)).with(
             Width::truncate(3)
                 .suffix("qwert")
@@ -740,7 +724,7 @@ fn min_with_max_width_truncate_suffix_try_color() {
         "asdasd".on_black().green().to_string(),
     ];
 
-    let table = Table::new(data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Width::truncate(7).suffix("..").suffix_try_color(true));
 
@@ -767,7 +751,7 @@ fn min_width_color() {
         "asdasd".on_black().green().to_string(),
     ];
 
-    let table = Table::new(data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(MinWidth::new(10)))
         .to_string();
@@ -801,17 +785,16 @@ fn min_width_color_with_smaller_then_width() {
     ];
 
     assert_eq!(
-        Table::new(data)
+        new_table(data)
             .with(Modify::new(Segment::all()).with(MinWidth::new(1)))
             .to_string(),
-        Table::new(data).to_string()
+        new_table(data).to_string()
     );
 }
 
 #[test]
 fn total_width_big() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Width::truncate(80))
         .with(MinWidth::new(80))
@@ -829,7 +812,7 @@ fn total_width_big() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Width::truncate(80))
         .with(MinWidth::new(80))
@@ -851,8 +834,7 @@ fn total_width_big() {
 
 #[test]
 fn total_width_big_with_panel() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Panel("Hello World", 0))
         .with(
             Modify::new(Segment::all())
@@ -880,8 +862,7 @@ fn total_width_big_with_panel() {
 
 #[test]
 fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
-    let data = create_vector::<3, 3>();
-    let table1 = Table::new(&data)
+    let table1 = create_table::<3, 3>()
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -889,7 +870,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
         .with(MinWidth::new(80))
         .to_string();
 
-    let table2 = Table::new(&data)
+    let table2 = create_table::<3, 3>()
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -902,8 +883,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
 
 #[test]
 fn total_width_small() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Width::truncate(14))
         .with(MinWidth::new(14))
@@ -924,8 +904,7 @@ fn total_width_small() {
 
 #[test]
 fn total_width_smaller_then_content() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Width::truncate(8))
         .with(MinWidth::new(8))
@@ -945,9 +924,7 @@ fn total_width_smaller_then_content() {
 
 #[test]
 fn total_width_small_with_panel() {
-    let data = create_vector::<3, 3>();
-
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
@@ -966,7 +943,7 @@ fn total_width_small_with_panel() {
     );
     assert!(is_lines_equal(&table, 20));
 
-    let table = Table::new(Vec::<usize>::new())
+    let table = new_table(Vec::<usize>::new())
         .with(Panel("Hello World", 0))
         .with(
             Modify::new(Segment::all())
@@ -983,7 +960,7 @@ fn total_width_small_with_panel() {
     );
     assert!(is_lines_equal(&table, 5));
 
-    let table = Table::new(&create_vector::<1, 2>())
+    let table = create_table::<1, 2>()
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1002,7 +979,7 @@ fn total_width_small_with_panel() {
     );
     assert!(is_lines_equal(&table, 20));
 
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1023,7 +1000,7 @@ fn total_width_small_with_panel() {
     );
     assert!(is_lines_equal(&table, 20));
 
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1044,7 +1021,7 @@ fn total_width_small_with_panel() {
     );
     assert!(is_lines_equal(&table, 13));
 
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1065,7 +1042,7 @@ fn total_width_small_with_panel() {
     );
     assert!(is_lines_equal(&table, 14));
 
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Panel("Hello World 123", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1090,8 +1067,7 @@ fn total_width_small_with_panel() {
 #[cfg(feature = "color")]
 #[test]
 fn total_width_wrapping() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(20))
@@ -1116,9 +1092,7 @@ fn total_width_wrapping() {
     );
     assert!(is_lines_equal(&table, 20));
 
-    let mut data = create_vector::<3, 3>();
-    data[2][2] = "some loong string".to_owned();
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((2, 2), "some loong string")])
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(20).keep_words())
@@ -1143,8 +1117,7 @@ fn total_width_wrapping() {
 
 #[test]
 fn total_width_small_with_panel_using_wrapping() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1171,7 +1144,7 @@ fn total_width_small_with_panel_using_wrapping() {
     );
     assert!(is_lines_equal(&table, 20));
 
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Panel("Hello World", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1206,7 +1179,7 @@ fn total_width_small_with_panel_using_wrapping() {
     );
     assert!(is_lines_equal(&table, 14));
 
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Panel("Hello World 123", 0))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1244,10 +1217,7 @@ fn total_width_small_with_panel_using_wrapping() {
 
 #[test]
 fn max_width_with_span() {
-    let mut data = create_vector::<3, 3>();
-    data[0][1] = "a long string".to_string();
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((0, 1), "a long string")])
         .with(Style::psql())
         .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 2)).with(Span::column(2)));
@@ -1308,7 +1278,7 @@ fn min_width_works_with_right_alignment() {
     }
     "#;
 
-    let table = Table::new([json])
+    let table = new_table([json])
         .with(Style::markdown())
         .with(MinWidth::new(50))
         .with(
@@ -1378,7 +1348,7 @@ fn min_width_works_with_right_alignment() {
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    let table = Table::new([json])
+    let table = new_table([json])
         .with(Style::markdown())
         .with(MinWidth::new(50))
         .with(
@@ -1457,7 +1427,7 @@ fn min_width_with_span_1() {
         ["2", "3"],
     ];
 
-    let table = Table::new(data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(MinWidth::new(100))
@@ -1484,7 +1454,7 @@ fn min_width_with_span_2() {
         ["2", "3"],
     ];
 
-    let table = Table::new(data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
         .with(MinWidth::new(100))
@@ -1505,8 +1475,7 @@ fn min_width_with_span_2() {
 
 #[test]
 fn justify_width_constant_test() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Justify::new(3))
         .to_string();
@@ -1525,14 +1494,11 @@ fn justify_width_constant_test() {
 
 #[test]
 fn justify_width_constant_different_sizes_test() {
-    let mut data = create_vector::<3, 3>();
-    data[0][1] = "Hello World".to_owned();
-    data[2][2] = "multi\nline string\n".to_owned();
-
-    let table = Table::new(&data)
-        .with(Style::markdown())
-        .with(Justify::new(3))
-        .to_string();
+    let table =
+        init_table::<3, 3, _, _>([((0, 1), "Hello World"), ((2, 2), "multi\nline string\n")])
+            .with(Style::markdown())
+            .with(Justify::new(3))
+            .to_string();
 
     assert_eq!(
         table,
@@ -1548,8 +1514,7 @@ fn justify_width_constant_different_sizes_test() {
 
 #[test]
 fn justify_width_constant_0_test() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Justify::new(0))
         .to_string();
@@ -1568,11 +1533,9 @@ fn justify_width_constant_0_test() {
 
 #[test]
 fn justify_width_min_test() {
-    let data = create_vector::<3, 3>();
-    let m = Justify::min();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
-        .with(m)
+        .with(Justify::min())
         .to_string();
 
     assert_eq!(
@@ -1589,8 +1552,7 @@ fn justify_width_min_test() {
 
 #[test]
 fn justify_width_max_test() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(Justify::max())
         .to_string();
@@ -1609,10 +1571,7 @@ fn justify_width_max_test() {
 
 #[test]
 fn max_width_when_cell_has_tabs() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("\tHello\tWorld\t");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "\tHello\tWorld\t")])
         .with(Style::markdown())
         .with(Modify::new(Columns::new(..)).with(Width::truncate(1)))
         .to_string();
@@ -1631,10 +1590,7 @@ fn max_width_when_cell_has_tabs() {
 
 #[test]
 fn max_width_table_when_cell_has_tabs() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("\tHello\tWorld\t");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "\tHello\tWorld\t")])
         .with(Style::markdown())
         .with(Width::truncate(15))
         .to_string();
@@ -1665,10 +1621,7 @@ fn max_width_table_when_cell_has_tabs() {
 
 #[test]
 fn max_width_truncate_with_big_span() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line; Here we gooooooo");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line; Here we gooooooo")])
         .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
         .with(Width::truncate(40))
@@ -1686,15 +1639,14 @@ fn max_width_truncate_with_big_span() {
         )
     );
 
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line; Here we gooooooo");
-    data[2][2] = String::from("Hello World With Big Line; Here");
-
-    let table = Table::new(&data)
-        .with(Style::markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
-        .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
-        .to_string();
+    let table = init_table::<3, 3, _, _>([
+        ((1, 1), "Hello World With Big Line; Here we gooooooo"),
+        ((2, 2), "Hello World With Big Line; Here"),
+    ])
+    .with(Style::markdown())
+    .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
+    .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+    .to_string();
 
     assert_eq!(
         table,
@@ -1707,12 +1659,15 @@ fn max_width_truncate_with_big_span() {
         )
     );
 
-    let table = Table::new(&data)
-        .with(Style::markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
-        .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
-        .with(Width::truncate(40))
-        .to_string();
+    let table = init_table::<3, 3, _, _>([
+        ((1, 1), "Hello World With Big Line; Here we gooooooo"),
+        ((2, 2), "Hello World With Big Line; Here"),
+    ])
+    .with(Style::markdown())
+    .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
+    .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+    .with(Width::truncate(40))
+    .to_string();
 
     assert_eq!(
         table,
@@ -1726,16 +1681,15 @@ fn max_width_truncate_with_big_span() {
     );
     assert_eq!(string_width_multiline(&table), 40);
 
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line; Here we gooooooo");
-    data[2][2] = String::from("Hello World With Big Line; Here");
-
-    let table = Table::new(&data)
-        .with(Style::markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
-        .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
-        .with(Width::truncate(40))
-        .to_string();
+    let table = init_table::<3, 3, _, _>([
+        ((1, 1), "Hello World With Big Line; Here we gooooooo"),
+        ((2, 2), "Hello World With Big Line; Here"),
+    ])
+    .with(Style::markdown())
+    .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+    .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+    .with(Width::truncate(40))
+    .to_string();
 
     assert_eq!(string_width_multiline(&table), 40);
     assert_eq!(
@@ -1749,15 +1703,14 @@ fn max_width_truncate_with_big_span() {
         )
     );
 
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line; Here w");
-    data[2][2] = String::from("Hello World With Big L");
-
-    let table = Table::new(&data)
-        .with(Style::markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
-        .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
-        .to_string();
+    let table = init_table::<3, 3, _, _>([
+        ((1, 1), "Hello World With Big Line; Here w"),
+        ((2, 2), "Hello World With Big L"),
+    ])
+    .with(Style::markdown())
+    .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
+    .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+    .to_string();
 
     assert_eq!(
         table,
@@ -1773,10 +1726,7 @@ fn max_width_truncate_with_big_span() {
 
 #[test]
 fn max_width_truncate_priority_max() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::truncate(35).priority::<PriorityMax>())
         .to_string();
@@ -1793,7 +1743,7 @@ fn max_width_truncate_priority_max() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::truncate(20).priority::<PriorityMax>())
         .to_string();
@@ -1810,7 +1760,7 @@ fn max_width_truncate_priority_max() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::truncate(0).priority::<PriorityMax>())
         .to_string();
@@ -1830,10 +1780,7 @@ fn max_width_truncate_priority_max() {
 
 #[test]
 fn max_width_truncate_priority_max_with_span() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Width::truncate(15).priority::<PriorityMax>())
@@ -1854,10 +1801,7 @@ fn max_width_truncate_priority_max_with_span() {
 
 #[test]
 fn max_width_wrap_priority_max() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::wrap(35).priority::<PriorityMax>())
         .to_string();
@@ -1878,7 +1822,7 @@ fn max_width_wrap_priority_max() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::wrap(20).priority::<PriorityMax>())
         .to_string();
@@ -1912,7 +1856,7 @@ fn max_width_wrap_priority_max() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::wrap(0).priority::<PriorityMax>())
         .to_string();
@@ -1932,10 +1876,7 @@ fn max_width_wrap_priority_max() {
 
 #[test]
 fn max_width_wrap_priority_max_with_span() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Width::wrap(15).priority::<PriorityMax>())
@@ -1973,10 +1914,7 @@ fn max_width_wrap_priority_max_with_span() {
 
 #[test]
 fn max_width_truncate_priority_min() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::truncate(35).priority::<PriorityMin>())
         .to_string();
@@ -1993,7 +1931,7 @@ fn max_width_truncate_priority_min() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::truncate(20).priority::<PriorityMin>())
         .to_string();
@@ -2010,7 +1948,7 @@ fn max_width_truncate_priority_min() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::truncate(0).priority::<PriorityMin>())
         .to_string();
@@ -2030,10 +1968,7 @@ fn max_width_truncate_priority_min() {
 
 #[test]
 fn max_width_truncate_priority_min_with_span() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Width::truncate(15).priority::<PriorityMin>())
@@ -2051,7 +1986,7 @@ fn max_width_truncate_priority_min_with_span() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Width::truncate(17).priority::<PriorityMin>())
@@ -2072,10 +2007,7 @@ fn max_width_truncate_priority_min_with_span() {
 
 #[test]
 fn max_width_wrap_priority_min() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::wrap(35).priority::<PriorityMin>())
         .to_string();
@@ -2093,7 +2025,7 @@ fn max_width_wrap_priority_min() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::wrap(20).priority::<PriorityMin>())
         .to_string();
@@ -2114,7 +2046,7 @@ fn max_width_wrap_priority_min() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Width::wrap(0).priority::<PriorityMin>())
         .to_string();
@@ -2134,10 +2066,7 @@ fn max_width_wrap_priority_min() {
 
 #[test]
 fn max_width_wrap_priority_min_with_span() {
-    let mut data = create_vector::<3, 3>();
-    data[1][1] = String::from("Hello World With Big Line");
-
-    let table = Table::new(&data)
+    let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
         .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
         .with(Width::wrap(15).priority::<PriorityMin>())
@@ -2167,8 +2096,7 @@ fn max_width_wrap_priority_min_with_span() {
 
 #[test]
 fn min_width_priority_max() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(MinWidth::new(60).priority::<PriorityMax>());
 
@@ -2186,8 +2114,7 @@ fn min_width_priority_max() {
 
 #[test]
 fn min_width_priority_min() {
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(MinWidth::new(60).priority::<PriorityMin>());
 
@@ -2206,7 +2133,7 @@ fn min_width_priority_min() {
 #[test]
 fn max_width_tab_0() {
     let table =
-        Table::new(&["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
+        new_table(&["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
             .with(Style::markdown())
             .with(Width::wrap(60))
             .to_string();
@@ -2245,7 +2172,7 @@ mod derived {
             D("0.1.4", "2021-06-07", "false", "display_with attribute"),
         ];
 
-        let table = Table::new(&data)
+        let table = new_table(&data)
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::wrap(57))
@@ -2268,7 +2195,7 @@ mod derived {
         );
         assert!(is_lines_equal(&table, 57));
 
-        let table = Table::new(&data)
+        let table = new_table(&data)
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::wrap(57).keep_words())
@@ -2332,7 +2259,7 @@ mod derived {
             ),
         ];
 
-        let table = Table::new(&data)
+        let table = new_table(&data)
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::wrap(57))
@@ -2355,7 +2282,7 @@ mod derived {
         );
         assert!(is_lines_equal(&table, 57));
 
-        let table = Table::new(&data)
+        let table = new_table(&data)
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::wrap(57).keep_words())
@@ -2419,7 +2346,7 @@ mod derived {
             ),
         ];
 
-        let table = Table::new(&data)
+        let table = new_table(&data)
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::truncate(57))

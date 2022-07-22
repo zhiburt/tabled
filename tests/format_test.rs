@@ -1,15 +1,15 @@
 use tabled::{
     object::{Cell, Columns, Object, Rows, Segment},
-    Alignment, Format, Modify, Padding, Style, Table,
+    Alignment, Format, Modify, Padding, Style,
 };
 
-use crate::util::{create_vector, test_table};
+use crate::util::{create_table, init_table, test_table};
 
 mod util;
 
 test_table!(
     formatting_full_test,
-    Table::new(create_vector::<3, 3>()).with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s)))),
+    create_table::<3, 3>().with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s)))),
     "+-----+------------+------------+------------+"
     "| [N] | [column 0] | [column 1] | [column 2] |"
     "+-----+------------+------------+------------+"
@@ -23,7 +23,7 @@ test_table!(
 
 test_table!(
     formatting_head_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(Format::new(|s| format!(":{}", s)))),
     "| :N | :column 0 | :column 1 | :column 2 |"
@@ -35,7 +35,7 @@ test_table!(
 
 test_table!(
     formatting_row_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Rows::new(1..)).with(Format::new(|s| format!("<{}>", s)))),
     "  N  | column 0 | column 1 | column 2 "
@@ -47,7 +47,7 @@ test_table!(
 
 test_table!(
     formatting_column_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Columns::single(0)).with(Format::new(|s| format!("(x) {}", s)))),
     " (x) N | column 0 | column 1 | column 2 "
@@ -59,15 +59,13 @@ test_table!(
 
 test_table!(
     formatting_multiline_test,
-    Table::new({
-            let mut data = create_vector::<3, 3>();
-            data[1][2] = String::from("E\nnde\navou\nros");
-            data[2][2] = String::from("Red\nHat");
-            data[2][3] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
-            data
-        })
-        .with(Style::psql())
-        .with(Modify::new(Segment::all()).with(Format::multiline(|s| format!("(x) {}", s)))),
+    init_table::<3, 3, _, _>([
+        ((1, 2), "E\nnde\navou\nros"),
+        ((2, 2), "Red\nHat"),
+        ((2, 3), "https://\nwww\n.\nredhat\n.com\n/en"),
+    ])
+    .with(Style::psql())
+    .with(Modify::new(Segment::all()).with(Format::multiline(|s| format!("(x) {}", s)))),
     " (x) N | (x) column 0 | (x) column 1 | (x) column 2 "
     "-------+--------------+--------------+--------------"
     " (x) 0 |   (x) 0-0    |   (x) 0-1    |   (x) 0-2    "
@@ -85,7 +83,7 @@ test_table!(
 
 test_table!(
     formatting_cell_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Cell(0, 0)).with(Format::new(|s| format!("(x) {}", s))))
         .with(Modify::new(Cell(0, 1)).with(Format::new(|s| format!("(x) {}", s))))
@@ -99,7 +97,7 @@ test_table!(
 
 test_table!(
     formatting_combination_and_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(
             Modify::new(Columns::single(0).and(Rows::single(0)))
@@ -114,7 +112,7 @@ test_table!(
 
 test_table!(
     formatting_combination_not_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(
             Modify::new(Columns::single(0).and(Rows::single(0)).not(Cell(0, 0)))
@@ -129,7 +127,7 @@ test_table!(
 
 test_table!(
     formatting_combination_inverse_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Columns::single(0).inverse()).with(Format::new(|s| format!("(x) {}", s)))),
     " N | (x) column 0 | (x) column 1 | (x) column 2 "
@@ -141,7 +139,7 @@ test_table!(
 
 test_table!(
     formatting_combination_intersect_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(
             Modify::new(Columns::new(1..3).intersect(Rows::new(1..3)))
@@ -156,7 +154,7 @@ test_table!(
 
 test_table!(
     formatting_using_lambda_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(|s: &str| format!(":{}", s))),
     "| :N | :column 0 | :column 1 | :column 2 |"
@@ -168,7 +166,7 @@ test_table!(
 
 test_table!(
     formatting_using_function_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(str::to_uppercase)),
     "| N | COLUMN 0 | COLUMN 1 | COLUMN 2 |"
@@ -180,7 +178,7 @@ test_table!(
 
 test_table!(
     format_with_index,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(Format::with_index(|a, (b, c)| match (b, c) {
             (0, 0) => "(0, 0)".to_string(),
@@ -197,7 +195,7 @@ test_table!(
 
 test_table!(
     format_doesnt_change_padding,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s)))),
@@ -219,7 +217,7 @@ mod color {
 
     test_table!(
         color_test,
-        Table::new(create_vector::<3, 3>())
+        create_table::<3, 3>()
             .with(Style::psql())
             .with(
                 Modify::new(Columns::new(..1).and(Columns::new(2..)))
@@ -235,17 +233,15 @@ mod color {
 
     test_table!(
         color_multiline_test,
-        Table::new({
-            let mut data = create_vector::<3, 3>();
-                data[1][2] = String::from("E\nnde\navou\nros");
-                data[2][2] = String::from("Red\nHat");
-                data[2][3] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
-                data
-            })
-            .with(Style::psql())
-            .with(Modify::new(Columns::new(..1)).with(Format::multiline(|s| s.red().to_string())))
-            .with(Modify::new(Columns::new(1..2)).with(Format::multiline(|s| s.blue().to_string())))
-            .with(Modify::new(Columns::new(2..)).with(Format::multiline(|s| s.green().to_string()))),
+        init_table::<3, 3, _, _>([
+            ((1, 2), "E\nnde\navou\nros"),
+            ((2, 2), "Red\nHat"),
+            ((2, 3), "https://\nwww\n.\nredhat\n.com\n/en"),
+        ])
+        .with(Style::psql())
+        .with(Modify::new(Columns::new(..1)).with(Format::multiline(|s| s.red().to_string())))
+        .with(Modify::new(Columns::new(1..2)).with(Format::multiline(|s| s.blue().to_string())))
+        .with(Modify::new(Columns::new(2..)).with(Format::multiline(|s| s.green().to_string()))),
         " \u{1b}[31mN\u{1b}[39m | \u{1b}[34mcolumn 0\u{1b}[39m | \u{1b}[32mcolumn 1\u{1b}[39m | \u{1b}[32mcolumn 2\u{1b}[39m "
         "---+----------+----------+----------\n \u{1b}[31m0\u{1b}[39m |   \u{1b}[34m0-0\u{1b}[39m    |   \u{1b}[32m0-1\u{1b}[39m    |   \u{1b}[32m0-2\u{1b}[39m    "
         " \u{1b}[31m1\u{1b}[39m |   \u{1b}[34m1-0\u{1b}[39m    |   \u{1b}[32mE\u{1b}[39m      |   \u{1b}[32m1-2\u{1b}[39m    "

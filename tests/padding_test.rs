@@ -1,15 +1,15 @@
 use tabled::{
     object::{Rows, Segment},
-    Alignment, Modify, Padding, Style, Table,
+    Alignment, Modify, Padding, Style,
 };
 
-use crate::util::{create_vector, test_table};
+use crate::util::{create_table, test_table};
 
 mod util;
 
 test_table!(
     padding,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 0, 2))),
@@ -28,7 +28,7 @@ test_table!(
 
 test_table!(
     padding_with_set_characters,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Padding::new(1, 2, 1, 1).set_fill('>', '<', 'V', '^'))),
     "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV"
@@ -48,7 +48,7 @@ test_table!(
 
 test_table!(
     padding_with_set_characters_and_zero_ident,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Padding::zero().set_fill('>', '<', '^', 'V'))),
     "N|column 0|column 1|column 2"
@@ -60,7 +60,7 @@ test_table!(
 
 test_table!(
     padding_multiline,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 1, 1))),
     " N | column 0 | column 1 | column 2 "
@@ -78,7 +78,7 @@ test_table!(
 
 test_table!(
     padding_multiline_with_vertical_alignment,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::center()).with(Alignment::center_vertical()))
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 1, 1))),
@@ -110,7 +110,7 @@ test_table!(
             Color::try_from(' '.on_blue().to_string()).unwrap()
         );
 
-        Table::new(create_vector::<3, 3>())
+        create_table::<3, 3>()
             .with(Style::psql())
             .with(Modify::new(Rows::new(1..)).with(Padding::new(2, 2, 2, 2)).with(padding_color))
     },
