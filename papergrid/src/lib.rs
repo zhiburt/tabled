@@ -93,8 +93,8 @@ impl Default for GridConfig {
             margin: Margin::default(),
             padding: EntityMap::default(),
             formatting: EntityMap::default(),
-            alignment_h: EntityMap::new(AlignmentHorizontal::Left, HashMap::default()),
-            alignment_v: EntityMap::new(AlignmentVertical::Top, HashMap::default()),
+            alignment_h: EntityMap::new(AlignmentHorizontal::Left),
+            alignment_v: EntityMap::new(AlignmentVertical::Top),
             #[cfg(feature = "color")]
             margin_color: MarginColor::default(),
             #[cfg(feature = "color")]
@@ -2514,53 +2514,76 @@ struct EntityMap<T> {
     // we have a global type to allocate in on stack.
     // because most of the time no changes are made to the [EntityMap].
     global: T,
-    map: HashMap<Entity, T>,
+    columns: fnv::FnvHashMap<usize, T>,
+    rows: fnv::FnvHashMap<usize, T>,
+    cells: fnv::FnvHashMap<Position, T>,
 }
 
 impl<T> EntityMap<T> {
-    fn new(global: T, map: HashMap<Entity, T>) -> Self {
-        Self { global, map }
+    fn new(global: T) -> Self {
+        Self {
+            global,
+            rows: fnv::FnvHashMap::default(),
+            columns: fnv::FnvHashMap::default(),
+            cells: fnv::FnvHashMap::default(),
+        }
     }
 
     fn lookup(&self, entity: Entity) -> &T {
+        if self.rows.is_empty() && self.columns.is_empty() && self.cells.is_empty() {
+            return &self.global;
+        }
+
         match entity {
-            Entity::Column(col) => self.map.get(&Entity::Column(col)),
-            Entity::Row(row) => self.map.get(&Entity::Row(row)),
+            Entity::Column(col) => self.columns.get(&col).unwrap_or(&self.global),
+            Entity::Row(row) => self.rows.get(&row).unwrap_or(&self.global),
             Entity::Cell(row, col) => self
-                .map
-                .get(&Entity::Cell(row, col))
-                .or_else(|| self.map.get(&Entity::Column(col)))
-                .or_else(|| self.map.get(&Entity::Row(row))),
-            Entity::Global => None,
+                .cells
+                .get(&(row, col))
+                .or_else(|| self.columns.get(&col))
+                .or_else(|| self.rows.get(&row))
+                .unwrap_or(&self.global),
+            Entity::Global => &self.global,
         }
-        .unwrap_or(&self.global)
-    }
-
-    fn set(&mut self, entity: Entity, value: T) {
-        match entity {
-            Entity::Global => {
-                self.global = value;
-            }
-            _ => {
-                self.map.insert(entity, value);
-            }
-        }
-
-        self.invalidate(entity);
     }
 
     fn invalidate(&mut self, entity: Entity) {
         match entity {
             Entity::Global => {
-                self.map.clear();
+                self.cells.clear();
+                self.rows.clear();
+                self.columns.clear();
             }
-            Entity::Column(col) => self
-                .map
-                .retain(|entity, _| !matches!(entity, Entity::Cell(c, _) if *c == col)),
-            Entity::Row(row) => self
-                .map
-                .retain(|entity, _| !matches!(entity, Entity::Cell(_, r) if *r == row)),
+            Entity::Column(col) => self.cells.retain(|&(_, c), _| c != col),
+            Entity::Row(row) => self.cells.retain(|&(r, _), _| r != row),
             Entity::Cell(_, _) => (),
+        }
+    }
+}
+
+impl<T: Clone> EntityMap<T> {
+    fn set(&mut self, entity: Entity, value: T) {
+        self.invalidate(entity);
+
+        match entity {
+            Entity::Column(col) => {
+                for &row in self.rows.keys() {
+                    self.cells.insert((row, col), value.clone());
+                }
+
+                self.columns.insert(col, value);
+            }
+            Entity::Row(row) => {
+                for &col in self.columns.keys() {
+                    self.cells.insert((row, col), value.clone());
+                }
+
+                self.rows.insert(row, value);
+            }
+            Entity::Cell(row, col) => {
+                self.cells.insert((row, col), value);
+            }
+            Entity::Global => self.global = value,
         }
     }
 }

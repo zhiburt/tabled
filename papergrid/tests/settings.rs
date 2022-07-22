@@ -1,4 +1,4 @@
-use papergrid::{Border, Borders, Entity, Settings};
+use papergrid::{Border, Borders, Entity, Indent, Padding, Settings};
 
 mod util;
 
@@ -69,4 +69,65 @@ fn remove_border_test() {
     grid.remove_border(Entity::Cell(0, 0));
 
     assert_eq!(grid.to_string(), "0-00-1\n1-01-1");
+}
+
+#[test]
+fn entity_row_overrides_column_intersection() {
+    let mut grid = util::new_grid::<2, 2>();
+    grid.set_borders(Borders::default());
+
+    grid.set_padding(
+        Entity::Column(0),
+        Padding {
+            bottom: Indent::new(3, '$'),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        "0-00-1\n$$$   \n$$$   \n$$$   \n1-01-1\n$$$   \n$$$   \n$$$   "
+    );
+
+    grid.set_padding(
+        Entity::Row(1),
+        Padding {
+            bottom: Indent::new(2, '#'),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        "0-00-1\n$$$   \n$$$   \n$$$   \n1-01-1\n######\n######"
+    );
+}
+
+#[test]
+fn entity_column_overrides_row_intersection() {
+    let mut grid = util::new_grid::<2, 2>();
+    grid.set_borders(Borders::default());
+
+    grid.set_padding(
+        Entity::Row(0),
+        Padding {
+            bottom: Indent::new(3, '$'),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(grid.to_string(), "0-00-1\n$$$$$$\n$$$$$$\n$$$$$$\n1-01-1");
+
+    grid.set_padding(
+        Entity::Column(1),
+        Padding {
+            bottom: Indent::new(2, '#'),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        grid.to_string(),
+        "0-00-1\n$$$###\n$$$###\n$$$###\n1-01-1\n   ###\n   ###"
+    );
 }
