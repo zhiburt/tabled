@@ -137,6 +137,8 @@ let table = some_numbers.table();
 This section lists the set of settings you can apply to your table.
 Most of the settings are used by `.with` method of `Table`.
 
+You can fine a list of show cases in **[examples folder](/examples/README.md)**.
+
 ### Style
 
 #### Themes
