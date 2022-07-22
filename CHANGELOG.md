@@ -22,15 +22,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `Style::correct_spans` functions to correct borders when used with spans..
 - Added `HighlightColored` a version of `Highlight` which supports coloring.
 - Added `ModifyObject` trait to be like `Modify::new`.
-- Added `BorderColored` and `RawStyleColored` to colorize borders more effectively.
+- Added `Color`, `BorderColored` and `RawStyleColored` to colorize borders more effectively.
 - Added `Style::lines` setter so you it's possible to override not only header.
 
 ### Changed
 
 - Performance was improved overall.
-- Changed `Modify`; it must be more effitient when used without `Object` methods.
 - Removed a trailing `\n` from `fmt::Display` output.
+- Changed default horizontal alignment from `Center` to `Left`. (generally because it's more effitient in basic case)
 - Changed a definition of `CellChange` trait.
+- Changed `Modify`; it must be more effitient when used without `Object` methods.
 - Changed public methods of `Builder` to use `&mut self` intestead of `self`.
 - Changed logic of `Wrap::keep_words`.
 - Changed logic of `Truncate::suffix`.
