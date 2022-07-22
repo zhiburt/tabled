@@ -2547,23 +2547,6 @@ impl<T> EntityMap<T> {
         }
     }
 
-    fn set(&mut self, entity: Entity, value: T) {
-        match entity {
-            Entity::Column(col) => {
-                self.columns.insert(col, value);
-            }
-            Entity::Row(row) => {
-                self.rows.insert(row, value);
-            }
-            Entity::Cell(row, col) => {
-                self.cells.insert((row, col), value);
-            }
-            Entity::Global => self.global = value,
-        }
-
-        self.invalidate(entity);
-    }
-
     fn invalidate(&mut self, entity: Entity) {
         match entity {
             Entity::Global => {
@@ -2574,6 +2557,33 @@ impl<T> EntityMap<T> {
             Entity::Column(col) => self.cells.retain(|&(_, c), _| c != col),
             Entity::Row(row) => self.cells.retain(|&(r, _), _| r != row),
             Entity::Cell(_, _) => (),
+        }
+    }
+}
+
+impl<T: Clone> EntityMap<T> {
+    fn set(&mut self, entity: Entity, value: T) {
+        self.invalidate(entity);
+
+        match entity {
+            Entity::Column(col) => {
+                for &row in self.rows.keys() {
+                    self.cells.insert((row, col), value.clone());
+                }
+
+                self.columns.insert(col, value);
+            }
+            Entity::Row(row) => {
+                for &col in self.columns.keys() {
+                    self.cells.insert((row, col), value.clone());
+                }
+
+                self.rows.insert(row, value);
+            }
+            Entity::Cell(row, col) => {
+                self.cells.insert((row, col), value);
+            }
+            Entity::Global => self.global = value,
         }
     }
 }
