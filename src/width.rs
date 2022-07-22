@@ -164,7 +164,7 @@ struct TruncateSuffix<'a> {
 impl Default for TruncateSuffix<'_> {
     fn default() -> Self {
         Self {
-            text: Default::default(),
+            text: Cow::default(),
             limit: SuffixLimit::Cut,
             #[cfg(feature = "color")]
             try_color: false,
@@ -1195,6 +1195,8 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 
 #[cfg(not(feature = "color"))]
 fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
+    const REPLACEMENT: char = '\u{FFFD}';
+
     let mut lines = Vec::new();
     let mut line = String::with_capacity(width);
     let mut line_width = 0;
@@ -1249,7 +1251,6 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                 line_width += unicode_width::UnicodeWidthStr::width(lhs) + unknowns;
 
                 line.push_str(lhs);
-                const REPLACEMENT: char = '\u{FFFD}';
                 line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
 
                 if line_width == width {

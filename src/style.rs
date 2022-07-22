@@ -626,15 +626,15 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
         self.borders.top = Some(c);
 
         if self.borders.has_left() {
-            self.borders.top_left = Some(c)
+            self.borders.top_left = Some(c);
         }
 
         if self.borders.has_right() {
-            self.borders.top_right = Some(c)
+            self.borders.top_right = Some(c);
         }
 
         if self.borders.has_vertical() {
-            self.borders.top_intersection = Some(c)
+            self.borders.top_intersection = Some(c);
         }
 
         Style::new(self.borders, self.lines)

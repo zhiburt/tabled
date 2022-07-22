@@ -377,8 +377,8 @@ impl Grid {
 
         Style {
             padding,
-            alignment_vertical,
             alignment_horizontal,
+            alignment_vertical,
             formatting,
         }
     }
@@ -1040,7 +1040,7 @@ fn print_text_formated(
     f: &mut fmt::Formatter<'_>,
     text: &str,
     text_width: usize,
-    alignment: &AlignmentHorizontal,
+    alignment: AlignmentHorizontal,
     available: usize,
     tab_width: usize,
 ) -> fmt::Result {
@@ -1084,7 +1084,7 @@ pub enum AlignmentVertical {
     Bottom,
 }
 
-fn indent_from_top(alignment: &AlignmentVertical, height: usize, real_height: usize) -> usize {
+fn indent_from_top(alignment: AlignmentVertical, height: usize, real_height: usize) -> usize {
     match alignment {
         AlignmentVertical::Top => 0,
         AlignmentVertical::Bottom => height - real_height,
@@ -1102,7 +1102,7 @@ fn build_cell_line(
     pos: Position,
 ) -> fmt::Result {
     let pos = pos.into();
-    let formatting = grid.get_formatting(pos);
+    let formatting = *grid.get_formatting(pos);
     let mut cell_height = cell.lines.len();
     if formatting.vertical_trim {
         cell_height -= count_empty_lines_on_ends(&cell.lines);
@@ -1113,7 +1113,7 @@ fn build_cell_line(
 
     let padding = grid.get_padding(pos);
     let alignment = grid.get_alignment_vertical(pos);
-    let indent = top_indent(padding, alignment, cell_height, height);
+    let indent = top_indent(*padding, *alignment, cell_height, height);
     if indent > line {
         return print_indent(
             f,
@@ -1162,7 +1162,7 @@ fn build_cell_line(
         &padding_color.left,
     )?;
 
-    let alignment = grid.get_alignment_horizontal(pos);
+    let alignment = *grid.get_alignment_horizontal(pos);
     let width = width - padding.left.size - padding.right.size;
     build_format_line(
         f,
@@ -1190,8 +1190,8 @@ fn build_format_line(
     f: &mut fmt::Formatter<'_>,
     cell: &CellContent<'_>,
     index: usize,
-    alignment: &AlignmentHorizontal,
-    formatting: &Formatting,
+    alignment: AlignmentHorizontal,
+    formatting: Formatting,
     tab_width: usize,
     width: usize,
 ) -> Result<(), fmt::Error> {
@@ -1245,8 +1245,8 @@ fn count_empty_lines_at_start(lines: &[Cow<'_, str>]) -> usize {
 }
 
 fn top_indent(
-    padding: &Padding,
-    alignment: &AlignmentVertical,
+    padding: Padding,
+    alignment: AlignmentVertical,
     cell_height: usize,
     height: usize,
 ) -> usize {
@@ -2786,7 +2786,7 @@ mod tests {
         impl fmt::Display for F<'_> {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 let width = string_width(self.0);
-                print_text_formated(f, self.0, width, &self.1, self.2, 0)
+                print_text_formated(f, self.0, width, self.1, self.2, 0)
             }
         }
 
@@ -2811,13 +2811,13 @@ mod tests {
     fn vertical_aligment_test() {
         use AlignmentVertical::*;
 
-        assert_eq!(indent_from_top(&Bottom, 1, 1), 0);
-        assert_eq!(indent_from_top(&Top, 1, 1), 0);
-        assert_eq!(indent_from_top(&Center, 1, 1), 0);
-        assert_eq!(indent_from_top(&Bottom, 3, 1), 2);
-        assert_eq!(indent_from_top(&Top, 3, 1), 0);
-        assert_eq!(indent_from_top(&Center, 3, 1), 1);
-        assert_eq!(indent_from_top(&Center, 4, 1), 1);
+        assert_eq!(indent_from_top(Bottom, 1, 1), 0);
+        assert_eq!(indent_from_top(Top, 1, 1), 0);
+        assert_eq!(indent_from_top(Center, 1, 1), 0);
+        assert_eq!(indent_from_top(Bottom, 3, 1), 2);
+        assert_eq!(indent_from_top(Top, 3, 1), 0);
+        assert_eq!(indent_from_top(Center, 3, 1), 1);
+        assert_eq!(indent_from_top(Center, 4, 1), 1);
     }
 
     #[cfg(feature = "color")]
