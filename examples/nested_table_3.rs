@@ -48,6 +48,7 @@ fn main() {
     .table()
     .with(Extract::rows(1..))
     .with(Style::ascii().off_horizontal())
+    .with(Modify::new(Segment::all()).with(Alignment::center()))
     .with(Highlight::new(Cell(0, 0), Border::filled('*')));
 
     println!("{}", a_welcome_table);

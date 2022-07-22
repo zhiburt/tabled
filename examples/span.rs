@@ -3,7 +3,10 @@
 //!
 //! The table from the example originally inspired https://github.com/vdmeer/asciitable#column-span/
 
-use tabled::{object::Cell, ModifyObject, Span, Style, TableIteratorExt};
+use tabled::{
+    object::{Cell, Segment},
+    Alignment, ModifyObject, Span, Style, TableIteratorExt,
+};
 
 fn main() {
     let data = [["just 1 column"; 5]; 5];
@@ -17,6 +20,7 @@ fn main() {
 
     let table = data
         .table()
+        .with(Segment::all().modify().with(Alignment::center()))
         .with(span_cell(0, 0, 5, "span all 5 columns"))
         .with(span_cell(1, 0, 4, "span 4 columns"))
         .with(span_cell(2, 0, 3, "span 3 columns"))

@@ -33,7 +33,11 @@ fn main() {
     ])
     .build()
     .with(Style::ascii().off_horizontal())
-    .with(Modify::new(Segment::all()).with(Padding::new(5, 5, 0, 0)));
+    .with(
+        Modify::new(Segment::all())
+            .with(Padding::new(5, 5, 0, 0))
+            .with(Alignment::center()),
+    );
 
     println!("{}", t);
 }

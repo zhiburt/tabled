@@ -7,7 +7,7 @@ fn main() {
     let readme_text = include_str!("../CHANGELOG.md");
     let lines = readme_text.lines().filter(|s| !s.is_empty()).enumerate();
 
-    let table = lines.table().with(Style::ascii().off_horizontal()).with(
+    let table = lines.table().with(Style::ascii_rounded()).with(
         Segment::all()
             .modify()
             .with(Width::wrap(30).keep_words())

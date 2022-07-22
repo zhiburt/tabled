@@ -9,7 +9,7 @@ Bellow there's a list of results of running some examples.
 ## basic
 
 ```
-|  name   | based_on | is_active | is_cool |
+| name    | based_on | is_active | is_cool |
 |---------|----------|-----------|---------|
 | Manjaro | Arch     | true      | true    |
 | Arch    |          | true      | true    |
@@ -17,7 +17,6 @@ Bellow there's a list of results of running some examples.
 ```
 
 ## border_text
-
 
 ```
  Numbers ─┬────┬────┬────┐
@@ -34,11 +33,11 @@ Bellow there's a list of results of running some examples.
 ┌───────────┬─────────┬──────┬────────┐
 │           │ Manjaro │ Arch │ Debian │
 ├───────────┼─────────┼──────┼────────┤
-│ based_on  │  Arch   │ None │  None  │
+│ based_on  │ Arch    │ None │ None   │
 ├───────────┼─────────┼──────┼────────┤
-│ is_active │  true   │ true │  true  │
+│ is_active │ true    │ true │ true   │
 ├───────────┼─────────┼──────┼────────┤
-│  is_cool  │  true   │ true │  true  │
+│ is_cool   │ true    │ true │ true   │
 └───────────┴─────────┴──────┴────────┘
 ```
 
@@ -53,25 +52,25 @@ Bellow there's a list of results of running some examples.
 | ter covering the majority of the Ea |
 | rth's surface                       |
 | =================================== |
-|       #       |        Ocean        |
-|       0       |      Atlantic       |
-|       1       |       Pacific       |
-|       2       |       Indian        |
-|       3       |      Southern       |
-|       4       |       Arctic        |
+| #             | Ocean               |
+| 0             | Atlantic            |
+| 1             | Pacific             |
+| 2             | Indian              |
+| 3             | Southern            |
+| 4             | Arctic              |
 ```
 ## color
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/color-example-1-dark.png">
-  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/color-example-1-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-color-1-dark.png">
+  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-color-1-light.png">
 </picture>
 
 ## colored_borders
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/color-example-2-dark.png">
-  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/color-example-2-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-colored_borders-1-dark.png">
+  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-colored_borders-1-light.png">
 </picture>
 
 ## concat
@@ -89,7 +88,7 @@ Bellow there's a list of results of running some examples.
 ```
 ┌─────────────────────────────────────────────────────┐
 │ name                first_release  developer        │
-│                                                     │
+├─────────────────────────────────────────────────────┤
 │ Sublime Text 3      2008           Sublime HQ       │
 │ Visual Studio Code  2015           Microsoft        │
 │ Notepad++           2003           Don Ho           │
@@ -147,18 +146,18 @@ is_cool   | true
 ## format
 
 ```
-                      0                      |               1                |            2            
+ 0                                           | 1                              | 2                       
 ---------------------------------------------+--------------------------------+-------------------------
- 8ae4e8957caeaa467acbce963701e227af00a1c7... | bypass open-source transmitter |   index neural panel    
- 48c76de71bd685486d97dc8f4f05aa6fcc0c3f86... |      program online alarm      |   copy bluetooth card   
- 6ffc2a2796229fc7bf59471ad907f58b897005d0... |              CSV               | reboot mobile capacitor 
+ 8ae4e8957caeaa467acbce963701e227af00a1c7... | bypass open-source transmitter | index neural panel      
+ 48c76de71bd685486d97dc8f4f05aa6fcc0c3f86... | program online alarm           | copy bluetooth card     
+ 6ffc2a2796229fc7bf59471ad907f58b897005d0... | CSV                            | reboot mobile capacitor 
 ```
 
 ## formatting_settings
 
 ```
 ╭───────────────────╮
-│       &str        │
+│ &str              │
 ├───────────────────┤
 │                   │
 │ [                 │
@@ -174,34 +173,34 @@ is_cool   | true
 ╰───────────────────╯
 
 ╭───────────────────╮
-│       &str        │
+│ &str              │
 ├───────────────────┤
 │                   │
-│         [         │
-│        "foo",     │
-│           {       │
+│ [                 │
+│     "foo",        │
+│     {             │
 │         "bar": 1, │
 │         "baz": [  │
-│              2,   │
-│               3   │
-│             ]     │
-│           }       │
+│             2,    │
+│             3     │
 │         ]         │
+│     }             │
+│ ]                 │
 ╰───────────────────╯
 
 ╭───────────────────╮
-│       &str        │
+│ &str              │
 ├───────────────────┤
-│     [             │
-│     "foo",        │
-│     {             │
-│     "bar": 1,     │
-│     "baz": [      │
-│     2,            │
-│     3             │
-│     ]             │
-│     }             │
-│     ]             │
+│ [                 │
+│ "foo",            │
+│ {                 │
+│ "bar": 1,         │
+│ "baz": [          │
+│ 2,                │
+│ 3                 │
+│ ]                 │
+│ }                 │
+│ ]                 │
 │                   │
 ╰───────────────────╯
 ```
@@ -272,24 +271,24 @@ vvvvvvvvvvvvvvvvvv
 
 ```
 ┌───────┬─────────────────────────────────────────────────┬──────────────────────────────────────────────┐
-│ name  │                     main_os                     │                  switch_os                   │
+│ name  │ main_os                                         │ switch_os                                    │
 ├───────┼─────────────────────────────────────────────────┼──────────────────────────────────────────────┤
 │ Azure │ ╔═════════╦═════════════╦═══════════╦═════════╗ │ ╔═════════╦══════════╦═══════════╦═════════╗ │
-│       │ ║  name   ║  based_on   ║ is_active ║ is_cool ║ │ ║  name   ║ based_on ║ is_active ║ is_cool ║ │
+│       │ ║ name    ║ based_on    ║ is_active ║ is_cool ║ │ ║ name    ║ based_on ║ is_active ║ is_cool ║ │
 │       │ ╠═════════╬═════════════╬═══════════╬═════════╣ │ ╠═════════╬══════════╬═══════════╬═════════╣ │
-│       │ ║ Windows ║ Independent ║   true    ║  true   ║ │ ║ Manjaro ║   Arch   ║   true    ║  true   ║ │
+│       │ ║ Windows ║ Independent ║ true      ║ true    ║ │ ║ Manjaro ║ Arch     ║ true      ║ true    ║ │
 │       │ ╚═════════╩═════════════╩═══════════╩═════════╝ │ ╚═════════╩══════════╩═══════════╩═════════╝ │
 ├───────┼─────────────────────────────────────────────────┼──────────────────────────────────────────────┤
-│  AWS  │ ╔════════╦═════════════╦═══════════╦═════════╗  │ ╔══════╦═════════════╦═══════════╦═════════╗ │
-│       │ ║  name  ║  based_on   ║ is_active ║ is_cool ║  │ ║ name ║  based_on   ║ is_active ║ is_cool ║ │
+│ AWS   │ ╔════════╦═════════════╦═══════════╦═════════╗  │ ╔══════╦═════════════╦═══════════╦═════════╗ │
+│       │ ║ name   ║ based_on    ║ is_active ║ is_cool ║  │ ║ name ║ based_on    ║ is_active ║ is_cool ║ │
 │       │ ╠════════╬═════════════╬═══════════╬═════════╣  │ ╠══════╬═════════════╬═══════════╬═════════╣ │
-│       │ ║ Debian ║ Independent ║   true    ║  true   ║  │ ║ Arch ║ Independent ║   true    ║  true   ║ │
+│       │ ║ Debian ║ Independent ║ true      ║ true    ║  │ ║ Arch ║ Independent ║ true      ║ true    ║ │
 │       │ ╚════════╩═════════════╩═══════════╩═════════╝  │ ╚══════╩═════════════╩═══════════╩═════════╝ │
 ├───────┼─────────────────────────────────────────────────┼──────────────────────────────────────────────┤
-│  GCP  │ ╔════════╦═════════════╦═══════════╦═════════╗  │ ╔══════╦═════════════╦═══════════╦═════════╗ │
-│       │ ║  name  ║  based_on   ║ is_active ║ is_cool ║  │ ║ name ║  based_on   ║ is_active ║ is_cool ║ │
+│ GCP   │ ╔════════╦═════════════╦═══════════╦═════════╗  │ ╔══════╦═════════════╦═══════════╦═════════╗ │
+│       │ ║ name   ║ based_on    ║ is_active ║ is_cool ║  │ ║ name ║ based_on    ║ is_active ║ is_cool ║ │
 │       │ ╠════════╬═════════════╬═══════════╬═════════╣  │ ╠══════╬═════════════╬═══════════╬═════════╣ │
-│       │ ║ Debian ║ Independent ║   true    ║  true   ║  │ ║ Arch ║ Independent ║   true    ║  true   ║ │
+│       │ ║ Debian ║ Independent ║ true      ║ true    ║  │ ║ Arch ║ Independent ║ true      ║ true    ║ │
 │       │ ╚════════╩═════════════╩═══════════╩═════════╝  │ ╚══════╩═════════════╩═══════════╩═════════╝ │
 └───────┴─────────────────────────────────────────────────┴──────────────────────────────────────────────┘
 ```
@@ -318,6 +317,13 @@ vvvvvvvvvvvvvvvvvv
 |  +-----------+-----------------------------+  |
 +-----------------------------------------------+
 ```
+
+## padding_color
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-padding_color-1-dark.png">
+  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-padding_color-1-light.png">
+</picture>
 
 ## panel
 
@@ -369,11 +375,11 @@ vvvvvvvvvvvvvvvvvv
 
 ```
 +--------------+------------------------+---------------------------+--------------------------+
-|     link     | https://getfedora.org/ | https://www.opensuse.org/ | https://endeavouros.com/ |
+| link         | https://getfedora.org/ | https://www.opensuse.org/ | https://endeavouros.com/ |
 +--------------+------------------------+---------------------------+--------------------------+
-| destribution |         Fedora         |         OpenSUSE          |       Endeavouros        |
+| destribution | Fedora                 | OpenSUSE                  | Endeavouros              |
 +--------------+------------------------+---------------------------+--------------------------+
-|      id      |           0            |             2             |            3             |
+| id           | 0                      | 2                         | 3                        |
 +--------------+------------------------+---------------------------+--------------------------+
 ```
 
@@ -406,70 +412,58 @@ vvvvvvvvvvvvvvvvvv
 | Bonjour le monde |           |
 | Ciao mondo       |           |
 
-| 0             | 1      |
-|---------------|--------|
-| Hello Worl... | 3.3... |
-| Guten Morg... | 1.1... |
-| Добры веча... | 127... |
-| Bonjour le... |        |
-| Ciao mondo    |        |
+| 0          | 1   |
+|------------|-----|
+| Hello W... | ... |
+| Guten M... | ... |
+| Добры в... | ... |
+| Bonjour... |     |
+| Ciao mondo |     |
 
-| 0     | 1     |
-|-------|-------|
-| Hello | 3.3.. |
-|  Worl | .     |
-| ...   |       |
-| Guten | 1.1.. |
-|  Morg | .     |
-| ...   |       |
-| Добры | 127.. |
-|  веча | .     |
-| ...   |       |
-| Bonjo |       |
-| ur le |       |
-| ...   |       |
-| Ciao  |       |
-| mondo |       |
+| 0     | 1   |
+|-------|-----|
+| Hello | ... |
+|  W... |     |
+| Guten | ... |
+|  M... |     |
+| Добры | ... |
+|  в... |     |
+| Bonjo |     |
+| ur... |     |
+| Ciao  |     |
+| mondo |     |
 
-| 0              | 1             |
-|----------------|---------------|
-| Hello          | 3.3..         |
-|  Worl          | .             |
-| ...            |               |
-| Guten          | 1.1..         |
-|  Morg          | .             |
-| ...            |               |
-| Добры          | 127..         |
-|  веча          | .             |
-| ...            |               |
-| Bonjo          |               |
-| ur le          |               |
-| ...            |               |
-| Ciao           |               |
-| mondo          |               |
+| 0             | 1          |
+|---------------|------------|
+| Hello         | ...        |
+|  W...         |            |
+| Guten         | ...        |
+|  M...         |            |
+| Добры         | ...        |
+|  в...         |            |
+| Bonjo         |            |
+| ur...         |            |
+| Ciao          |            |
+| mondo         |            |
 ```
 
 ## table_width_2
 
 ```
-+-------+--------------------------------+
+.----------------------------------------.
 | usize | &str                           |
-+-------+--------------------------------+
 | 0     | # Changelog                    |
 | 1     | All notable changes to this    |
-|       | project will be documented in  |
-|       | this file.                     |
+|       | projectwill be documented in   |
+|       | thisfile.                      |
 | 2     | The format is based on [Keep a |
-|       |                                |
 |       | Changelog](https://keepachange |
 |       | log.com/en/1.0.0/),            |
 | 3     | and this project adheres to    |
-|       | [Semantic                      |
-|       | Versioning](https://semver.org |
-|       | /spec/v2.0.0.html).            |
+|       | [SemanticVersioning](https://s |
+|       | emver.org/spec/v2.0.0.html).   |
 | 4     | ## Unreleased                  |
-....
-+-------+--------------------------------+
+'-------+--------------------------------'
 ```
 
 

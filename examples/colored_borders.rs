@@ -3,14 +3,12 @@
 //!
 //! This example requires a `color` feature.
 
-use std::convert::TryFrom;
-
 use owo_colors::OwoColorize;
 
 use tabled::{
     object::Segment,
-    style::{BorderColored, Color, Style, Symbol},
-    Alignment, Highlight, Modify, Table, Tabled,
+    style::{BorderColored, RawStyle, Style, Symbol},
+    Highlight, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -39,22 +37,22 @@ fn main() {
         CodeEditor::new("Neovim", "2015", "Vim community"),
     ];
 
-    let table = Table::new(&data)
-        .with(Style::extended())
-        .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Color::try_from(" ".magenta().to_string()).unwrap())
-        .with(Highlight::colored(
-            Segment::all(),
-            BorderColored::default()
-                .top(Symbol::ansi("═".red().to_string()).unwrap())
-                .bottom(Symbol::ansi("═".blue().to_string()).unwrap())
-                .left(Symbol::ansi("║".green().to_string()).unwrap())
-                .right(Symbol::ansi("║".yellow().to_string()).unwrap())
-                .top_left_corner(Symbol::ansi("╔".red().to_string()).unwrap())
-                .top_right_corner(Symbol::ansi("╗".red().to_string()).unwrap())
-                .bottom_left_corner(Symbol::ansi("╚".blue().to_string()).unwrap())
-                .bottom_right_corner(Symbol::ansi("╝".blue().to_string()).unwrap()),
-        ));
+    let mut style = RawStyle::from(Style::extended()).colored();
+    style.set_horizontal(Some(Symbol::ansi("═".magenta().to_string()).unwrap()));
+    style.set_vertical(Some(Symbol::ansi("║".cyan().to_string()).unwrap()));
+
+    let table = Table::new(&data).with(style).with(Highlight::colored(
+        Segment::all(),
+        BorderColored::default()
+            .top(Symbol::ansi("═".red().to_string()).unwrap())
+            .bottom(Symbol::ansi("═".blue().to_string()).unwrap())
+            .left(Symbol::ansi("║".green().to_string()).unwrap())
+            .right(Symbol::ansi("║".yellow().to_string()).unwrap())
+            .top_left_corner(Symbol::ansi("╔".red().to_string()).unwrap())
+            .top_right_corner(Symbol::ansi("╗".red().to_string()).unwrap())
+            .bottom_left_corner(Symbol::ansi("╚".blue().to_string()).unwrap())
+            .bottom_right_corner(Symbol::ansi("╝".blue().to_string()).unwrap()),
+    ));
 
     println!("{}", table);
 }
