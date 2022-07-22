@@ -5,7 +5,7 @@ macro_rules! bench_lib {
         pub fn $name(c: &mut Criterion) {
             let mut group = c.benchmark_group(stringify!($name));
 
-            for size in [1024] {
+            for size in [512] {
                 let (columns, data) = $data_fn(size);
 
                 $({
