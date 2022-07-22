@@ -112,13 +112,13 @@ let languages = vec![
 let table = Table::new(languages).to_string();
 
 let expected = "+------+----------------+---------------+\n\
-                | name |  designed_by   | invented_year |\n\
+                | name | designed_by    | invented_year |\n\
                 +------+----------------+---------------+\n\
-                |  C   | Dennis Ritchie |     1972      |\n\
+                | C    | Dennis Ritchie | 1972          |\n\
                 +------+----------------+---------------+\n\
-                | Rust | Graydon Hoare  |     2010      |\n\
+                | Rust | Graydon Hoare  | 2010          |\n\
                 +------+----------------+---------------+\n\
-                |  Go  |    Rob Pike    |     2009      |\n\
+                | Go   | Rob Pike       | 2009          |\n\
                 +------+----------------+---------------+";
 
 assert_eq!(table, expected);
@@ -162,13 +162,13 @@ please open an issue.
 
 ```text
 +------+----------------+---------------+
-| name |  designed_by   | invented_year |
+| name | designed_by    | invented_year |
 +------+----------------+---------------+
-|  C   | Dennis Ritchie |     1972      |
+| C    | Dennis Ritchie | 1972          |
 +------+----------------+---------------+
-| Rust | Graydon Hoare  |     2010      |
+| Rust | Graydon Hoare  | 2010          |
 +------+----------------+---------------+
-|  Go  |    Rob Pike    |     2009      |
+| Go   | Rob Pike       | 2009          |
 +------+----------------+---------------+
 ```
 
@@ -176,13 +176,13 @@ please open an issue.
 
 ```text
 ┌──────┬────────────────┬───────────────┐
-│ name │  designed_by   │ invented_year │
+│ name │ designed_by    │ invented_year │
 ├──────┼────────────────┼───────────────┤
-│  C   │ Dennis Ritchie │     1972      │
+│ C    │ Dennis Ritchie │ 1972          │
 ├──────┼────────────────┼───────────────┤
-│ Rust │ Graydon Hoare  │     2010      │
+│ Rust │ Graydon Hoare  │ 2010          │
 ├──────┼────────────────┼───────────────┤
-│  Go  │    Rob Pike    │     2009      │
+│ Go   │ Rob Pike       │ 2009          │
 └──────┴────────────────┴───────────────┘
 ```
 
@@ -190,13 +190,13 @@ please open an issue.
 
 ```text
 ╭──────┬────────────────┬───────────────╮
-│ name │  designed_by   │ invented_year │
+│ name │ designed_by    │ invented_year │
 ├──────┼────────────────┼───────────────┤
-│  C   │ Dennis Ritchie │     1972      │
+│ C    │ Dennis Ritchie │ 1972          │
 ├──────┼────────────────┼───────────────┤
-│ Rust │ Graydon Hoare  │     2010      │
+│ Rust │ Graydon Hoare  │ 2010          │
 ├──────┼────────────────┼───────────────┤
-│  Go  │    Rob Pike    │     2009      │
+│ Go   │ Rob Pike       │ 2009          │
 ╰──────┴────────────────┴───────────────╯
 ```
 
@@ -204,45 +204,45 @@ please open an issue.
 
 ```text
 ╔══════╦════════════════╦═══════════════╗
-║ name ║  designed_by   ║ invented_year ║
+║ name ║ designed_by    ║ invented_year ║
 ╠══════╬════════════════╬═══════════════╣
-║  C   ║ Dennis Ritchie ║     1972      ║
+║ C    ║ Dennis Ritchie ║ 1972          ║
 ╠══════╬════════════════╬═══════════════╣
-║ Rust ║ Graydon Hoare  ║     2010      ║
+║ Rust ║ Graydon Hoare  ║ 2010          ║
 ╠══════╬════════════════╬═══════════════╣
-║  Go  ║    Rob Pike    ║     2009      ║
+║ Go   ║ Rob Pike       ║ 2009          ║
 ╚══════╩════════════════╩═══════════════╝
 ```
 
 ##### psql
 
 ```text
- name |  designed_by   | invented_year 
+ name | designed_by    | invented_year 
 ------+----------------+---------------
-  C   | Dennis Ritchie |     1972      
- Rust | Graydon Hoare  |     2010      
-  Go  |    Rob Pike    |     2009      
+ C    | Dennis Ritchie | 1972          
+ Rust | Graydon Hoare  | 2010          
+ Go   | Rob Pike       | 2009          
 ```
 
 ##### markdown
 
 ```text
-| name |  designed_by   | invented_year |
+| name | designed_by    | invented_year |
 |------|----------------|---------------|
-|  C   | Dennis Ritchie |     1972      |
-| Rust | Graydon Hoare  |     2010      |
-|  Go  |    Rob Pike    |     2009      |
+| C    | Dennis Ritchie | 1972          |
+| Rust | Graydon Hoare  | 2010          |
+| Go   | Rob Pike       | 2009          |
 ```
 
 ##### re_structured_text
 
 ```text
 ====== ================ ===============
- name    designed_by     invented_year 
+ name   designed_by     invented_year 
 ====== ================ ===============
-  C     Dennis Ritchie       1972      
- Rust   Graydon Hoare        2010      
-  Go       Rob Pike          2009      
+ C      Dennis Ritchie   1972          
+ Rust   Graydon Hoare    2010          
+ Go     Rob Pike         2009          
 ====== ================ ===============
 ```
 
@@ -250,11 +250,11 @@ please open an issue.
 
 ```text
 .........................................
-: name :  designed_by   : invented_year :
+: name : designed_by    : invented_year :
 :......:................:...............:
-:  C   : Dennis Ritchie :     1972      :
-: Rust : Graydon Hoare  :     2010      :
-:  Go  :    Rob Pike    :     2009      :
+: C    : Dennis Ritchie : 1972          :
+: Rust : Graydon Hoare  : 2010          :
+: Go   : Rob Pike       : 2009          :
 :......:................:...............:
 ```
 
@@ -262,29 +262,29 @@ please open an issue.
 
 ```text
 .---------------------------------------.
-| name |  designed_by   | invented_year |
-|  C   | Dennis Ritchie |     1972      |
-| Rust | Graydon Hoare  |     2010      |
-|  Go  |    Rob Pike    |     2009      |
+| name | designed_by    | invented_year |
+| C    | Dennis Ritchie | 1972          |
+| Rust | Graydon Hoare  | 2010          |
+| Go   | Rob Pike       | 2009          |
 '---------------------------------------'
 ```
 
 ##### blank
 
 ```text
- name    designed_by     invented_year 
-  C     Dennis Ritchie       1972      
-  Rust   Graydon Hoare       2010      
-  Go       Rob Pike          2009      
+ name   designed_by      invented_year 
+ C      Dennis Ritchie   1972          
+ Rust   Graydon Hoare    2010          
+ Go     Rob Pike         2009                 
 ```
 
 ##### empty
 
 ```text
- name   designed_by    invented_year 
-  C    Dennis Ritchie      1972      
-  Rust  Graydon Hoare      2010      
-  Go      Rob Pike         2009      
+name designed_by    invented_year
+C    Dennis Ritchie 1972         
+Rust Graydon Hoare  2010         
+Go   Rob Pike       2009         
 ```
 
 #### Customization
@@ -299,10 +299,10 @@ The style will look like the following.
 
 ```rust
 ┌──────┬────────────────┬───────────────┐
-│ name │  designed_by   │ invented_year │
-│  C   │ Dennis Ritchie │     1972      │
-│ Rust │ Graydon Hoare  │     2010      │
-│  Go  │    Rob Pike    │     2009      │
+│ name │ designed_by    │ invented_year │
+│ C    │ Dennis Ritchie │ 1972          │
+│ Rust │ Graydon Hoare  │ 2010          │
+│ Go   │ Rob Pike       │ 2009          │
 └──────┴────────────────┴───────────────┘
 ```
 
@@ -319,11 +319,11 @@ The style will look like the following.
 
 ```rust
 ┌──────┬────────────────┬───────────────┐
-│ name │  designed_by   │ invented_year │
+│ name │ designed_by    │ invented_year │
 ├══════┼════════════════┼═══════════════┤
-│  C   │ Dennis Ritchie │     1972      │
-│ Rust │ Graydon Hoare  │     2010      │
-│  Go  │    Rob Pike    │     2009      │
+│ C    │ Dennis Ritchie │ 1972          │
+│ Rust │ Graydon Hoare  │ 2010          │
+│ Go   │ Rob Pike       │ 2009          │
 └──────┴────────────────┴───────────────┘
 ```
 
@@ -347,12 +347,12 @@ let table = data.table()
     .with(Modify::new(Rows::first()).with(Border::default().top('x')));
 
 let expected = "+xxxxx+xxxxx+\n\
-                |  0  |  1  |\n\
+                | 0   | 1   |\n\
                 +-----+-----+\n\
                 | 123 | 456 |\n\
                 +-----+-----+\n\
                 | 789 | 000 |\n\
-                +-----+-----+\n";
+                +-----+-----+";
 
 assert_eq!(table.to_string(), expected);
 ```
@@ -364,16 +364,15 @@ You can set a string to a horizontal border line.
 ```rust
 use tabled::{Table, style::BorderText};
 
-let table = Table::new(["Hello World"])
-    .with(BorderText::new(0, "+-.table"));
+let table = Table::new(["Hello World"]).with(BorderText::new(0, "+-.table"));
 
 assert_eq!(
     table.to_string(),
     "+-.table------+\n\
-     |    &str     |\n\
+     | &str        |\n\
      +-------------+\n\
      | Hello World |\n\
-     +-------------+\n"
+     +-------------+"
 );
 ```
 
@@ -478,13 +477,13 @@ Table::new(&data)
 An output would depend on the `data`. But it could look like the following.
 
 ```text
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>>┌───────────┬───────────┐<<<<
->>>│  feature  │  released │<<<<
->>>│  margin   │   0.6.0   │<<<<
->>>└───────────┴───────────┘<<<<
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+>>>┌─────────┬──────────┐<<<<
+>>>│ feature │ released │<<<<
+>>>│ margin  │ 0.6.0    │<<<<
+>>>└─────────┴──────────┘<<<<
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ```
 
 #### Margin Color
@@ -650,11 +649,11 @@ table.with(Rotate::Left)
 
 ```text
 ┌──────────────┬────────────────────────┬───────────────────────────┬──────────────────────────┐
-│     link     │ https://getfedora.org/ │ https://www.opensuse.org/ │ https://endeavouros.com/ │
+│ link         │ https://getfedora.org/ │ https://www.opensuse.org/ │ https://endeavouros.com/ │
 ├──────────────┼────────────────────────┼───────────────────────────┼──────────────────────────┤
-│ destribution │         Fedora         │         OpenSUSE          │       Endeavouros        │
+│ destribution │ Fedora                 │ OpenSUSE                  │ Endeavouros              │
 ├──────────────┼────────────────────────┼───────────────────────────┼──────────────────────────┤
-│      id      │           0            │             2             │            3             │
+│ id           │ 0                      │ 2                         │ 3                        │
 └──────────────┴────────────────────────┴───────────────────────────┴──────────────────────────┘
 ```
 
@@ -816,20 +815,17 @@ It's possible to have a horizontal (column) span of a cell.
 An example for span usage.
 
 ```rust
-use tabled::{object::Cell, Modify, Span, TableIteratorExt};
+use tabled::{object::Cell, object::Segment, Alignment, Modify, Span, TableIteratorExt};
 
-fn main() {
-    let data = vec![
-        ["A", "B", "C"],
-        ["D", "E", "F"],
-    ];
+let data = vec![["A", "B", "C"], ["D", "E", "F"]];
 
-    let table = data
-        .table()
-        .with(Modify::new(Cell(0, 0)).with(Span::column(3)))
-        .with(Modify::new(Cell(1, 0)).with(Span::column(2)));
+let table = data
+    .table()
+    .with(Modify::new(Cell(0, 0)).with(Span::column(3)))
+    .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
+    .with(Modify::new(Segment::all()).with(Alignment::center()));
 
-    println!("{}", table);
+println!("{}", table);
 ```
 
 ```text
@@ -1034,14 +1030,13 @@ struct Bike {
 
 ## Dynamic table
 
-Often you can't say what type of data you are going to deal with (like parsing `csv`).
-In such it's may be handy to build table dynamically.
+Sometimes you can't say what type of data you are going to deal with (like parsing `csv`).
+In such cases it may be handy to build table dynamically.
 
 ```rust
 use tabled::{builder::Builder, Style};
 
-fn main() {
-    let song = r#"
+let song = r#"
 And the cat's in the cradle and the silver spoon
 Little boy blue and the man on the moon
 When you comin' home dad?
@@ -1049,31 +1044,34 @@ I don't know when, but we'll get together then son
 You know we'll have a good time then
 "#;
 
-    let mut builder = Builder::default();
-    let mut max_words = 0;
-    for line in song.lines().filter(|l| !l.is_empty()) {
-        let words: Vec<_> = line.split_terminator(' ').collect();
-        max_words = std::cmp::max(max_words, words.len());
-        builder.add_record(words);
+let mut builder = Builder::default();
+let mut max_words = 0;
+for line in song.lines() {
+    if line.is_empty() {
+        continue;
     }
 
-    let columns = (0..max_words).map(|i| i.to_string()).collect::<Vec<_>>();
-    builder.set_columns(columns);
-
-    let table = builder.build().with(Style::ascii_rounded());
-
-    println!("{}", table);
+    let words: Vec<_> = line.split_terminator(' ').collect();
+    max_words = std::cmp::max(max_words, words.len());
+    builder.add_record(words);
 }
+
+let columns = (0..max_words).map(|i| i.to_string()).collect::<Vec<_>>();
+builder.set_columns(columns);
+
+let table = builder.build().with(Style::ascii_rounded());
+
+println!("{}", table);
 ```
 
 ```text
 .------------------------------------------------------------------------------------.
-|   0    |   1   |   2    |   3   |  4   |   5    |  6   |    7     |   8    |   9   |
-|  And   |  the  | cat's  |  in   | the  | cradle | and  |   the    | silver | spoon |
-| Little |  boy  |  blue  |  and  | the  |  man   |  on  |   the    |  moon  |       |
-|  When  |  you  | comin' | home  | dad? |        |      |          |        |       |
-|   I    | don't |  know  | when, | but  | we'll  | get  | together |  then  |  son  |
-|  You   | know  | we'll  | have  |  a   |  good  | time |   then   |        |       |
+| 0      | 1     | 2      | 3     | 4    | 5      | 6    | 7        | 8      | 9     |
+| And    | the   | cat's  | in    | the  | cradle | and  | the      | silver | spoon |
+| Little | boy   | blue   | and   | the  | man    | on   | the      | moon   |       |
+| When   | you   | comin' | home  | dad? |        |      |          |        |       |
+| I      | don't | know   | when, | but  | we'll  | get  | together | then   | son   |
+| You    | know  | we'll  | have  | a    | good   | time | then     |        |       |
 '------------------------------------------------------------------------------------'
 ```
 
@@ -1091,17 +1089,17 @@ builder.transpose();
 
 ```text
 .-------------------------------------------------.
-|   |   0    |   1    |   2    |    3     |   4   |
-| 0 |  And   | Little |  When  |    I     |  You  |
-| 1 |  the   |  boy   |  you   |  don't   | know  |
-| 2 | cat's  |  blue  | comin' |   know   | we'll |
-| 3 |   in   |  and   |  home  |  when,   | have  |
-| 4 |  the   |  the   |  dad?  |   but    |   a   |
-| 5 | cradle |  man   |        |  we'll   | good  |
-| 6 |  and   |   on   |        |   get    | time  |
-| 7 |  the   |  the   |        | together | then  |
-| 8 | silver |  moon  |        |   then   |       |
-| 9 | spoon  |        |        |   son    |       |
+|   | 0      | 1      | 2      | 3        | 4     |
+| 0 | And    | Little | When   | I        | You   |
+| 1 | the    | boy    | you    | don't    | know  |
+| 2 | cat's  | blue   | comin' | know     | we'll |
+| 3 | in     | and    | home   | when,    | have  |
+| 4 | the    | the    | dad?   | but      | a     |
+| 5 | cradle | man    |        | we'll    | good  |
+| 6 | and    | on     |        | get      | time  |
+| 7 | the    | the    |        | together | then  |
+| 8 | silver | moon   |        | then     |       |
+| 9 | spoon  |        |        | son      |       |
 '-------------------------------------------------'
 ```
 
@@ -1110,27 +1108,25 @@ You can use `Builder::index` to make a particular column an index, which will st
 ```rust
 use tabled::{builder::Builder, Style};
 
-fn main() {
-    let table = Builder::default()
-        .set_columns(["Index", "Language", "Status"])
-        .add_record(["1", "English", "In progress"])
-        .add_record(["2", "Deutsch", "Not ready"])
-        .index()
-        .set_index(1)
-        .set_name(None)
-        .build()
-        .with(Style::rounded());
+let table = Builder::default()
+    .set_columns(["Index", "Language", "Status"])
+    .add_record(["1", "English", "In progress"])
+    .add_record(["2", "Deutsch", "Not ready"])
+    .index()
+    .set_index(1)
+    .set_name(None)
+    .build()
+    .with(Style::rounded());
 
-    println!("{}", table);
-}
+println!("{}", table);
 ```
 
 ```text
 ╭─────────┬───────┬─────────────╮
-│         │ Index │   Status    │
+│         │ Index │ Status      │
 ├─────────┼───────┼─────────────┤
-│ English │   1   │ In progress │
-│ Deutsch │   2   │  Not ready  │
+│ English │ 1     │ In progress │
+│ Deutsch │ 2     │ Not ready   │
 ╰─────────┴───────┴─────────────╯
 ```
 
@@ -1158,10 +1154,10 @@ Table::new(&data)
 You also can combine objects which implements `Tabled` by means of tuples, you will get a combined columns of them.
 
 ```rust
-use tabled::{Tabled, Table, Style};
+use tabled::{object::Segment, Alignment, ModifyObject, Style, Table, Tabled};
 
 #[derive(Tabled)]
-struct Developer(#[tabled("name")] &'static str);
+struct Developer(#[tabled(rename = "name")] &'static str);
 
 #[derive(Tabled)]
 enum Domain {
@@ -1178,7 +1174,10 @@ let data = vec![
     (Developer("Maxim Zhiburt"), Domain::Unknown),
 ];
 
-let table = Table::new(data).with(Style::psql()).to_string();
+let table = Table::new(data)
+    .with(Style::psql())
+    .with(Segment::all().modify().with(Alignment::center()))
+    .to_string();
 
 assert_eq!(
     table,
@@ -1188,7 +1187,7 @@ assert_eq!(
         " Terri Kshlerin  |          |    +    |          |         \n",
         " Catalina Dicki  |    +     |         |          |         \n",
         " Jennie Schmeler |          |         |    +     |         \n",
-        "  Maxim Zhiburt  |          |         |          |    +    \n"
+        "  Maxim Zhiburt  |          |         |          |    +    ",
     )
 );
 ```
@@ -1225,29 +1224,27 @@ struct Distribution {
     is_cool: bool,
 }
 
-fn main() {
-    let data = [
-        Distribution {
-            name: "Manjaro",
-            is_cool: true,
-            is_active: true,
-        },
-        Distribution {
-            name: "Debian",
-            is_cool: true,
-            is_active: true,
-        },
-        Distribution {
-            name: "Debian",
-            is_cool: true,
-            is_active: true,
-        },
-    ];
+let data = [
+    Distribution {
+        name: "Manjaro",
+        is_cool: true,
+        is_active: true,
+    },
+    Distribution {
+        name: "Debian",
+        is_cool: true,
+        is_active: true,
+    },
+    Distribution {
+        name: "Debian",
+        is_cool: true,
+        is_active: true,
+    },
+];
 
-    let table = ExpandedDisplay::new(&data);
+let table = ExpandedDisplay::new(&data);
 
-    println!("{}", table);
-}
+println!("{}", table);
 ```
 
 You'll see the following.
@@ -1280,24 +1277,6 @@ To enable this support, add the `color` feature to your `Cargo.toml`
 tabled = { version = "*", features = ["color"] }
 ```
 
-It might be hard to build a table using `Tabled` trait if you have a data set which structure is determined at runtime.
-In such situation you can use a `Builder`.
-
-```rust
-use tabled::{builder::Builder, Style};
-
-fn main() {
-    let table = Builder::default()
-        .set_columns(["Index", "Language"])
-        .add_record(["1", "English"])
-        .add_record(["2", "Deutsch"])
-        .build()
-        .with(Style::psql());
-
-    println!("{}", table);
-}**
-```
-
 ### Emoji
 
 The library support emojies out of the box but be aware that some of the terminals and editors may not render them as you would expect.
@@ -1305,38 +1284,37 @@ The library support emojies out of the box but be aware that some of the termina
 Let's add emojies to an example from a [Usage](#Usage) section.
 
 ```rust
- let languages = vec![
-     Language {
-         name: "C 💕",
-         designed_by: "Dennis Ritchie",
-         invented_year: 1972,
-     },
-     Language {
-         name: "Rust 👍",
-         designed_by: "Graydon Hoare",
-         invented_year: 2010,
-     },
-     Language {
-         name: "Go 🧋",
-         designed_by: "Rob Pike",
-         invented_year: 2009,
-     },
- ];
- ```
+let languages = vec![
+    Language {
+        name: "C 💕",
+        designed_by: "Dennis Ritchie",
+        invented_year: 1972,
+    },
+    Language {
+        name: "Rust 👍",
+        designed_by: "Graydon Hoare",
+        invented_year: 2010,
+    },
+    Language {
+        name: "Go 🧋",
+        designed_by: "Rob Pike",
+        invented_year: 2009,
+    },
+];
+```
 
- The resultant table will look like the following.
-
- As you can see Github tricks a bit a return table, but `GNOME terminal` and `Alacritty` terminal handles it correctly.
+The resultant table will look like the following.
+As you can see Github tricks a bit a return table, but `GNOME terminal` and `Alacritty` terminal handles it correctly.
 
  ```rust
 +---------+----------------+---------------+
-|  name   |  designed_by   | invented_year |
+| name    | designed_by    | invented_year |
 +---------+----------------+---------------+
-|  C 💕   | Dennis Ritchie |     1972      |
+| C 💕    | Dennis Ritchie | 1972          |
 +---------+----------------+---------------+
-| Rust 👍 | Graydon Hoare  |     2010      |
+| Rust 👍 | Graydon Hoare  | 2010          |
 +---------+----------------+---------------+
-|  Go 🧋  |    Rob Pike    |     2009      |
+| Go 🧋   | Rob Pike       | 2009          |
 +---------+----------------+---------------+
 ```
 
