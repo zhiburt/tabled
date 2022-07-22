@@ -87,7 +87,7 @@ impl Table {
     ///
     #[cfg_attr(feature = "derive", doc = "```")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{Table, Tabled};
+    /// use tabled::{Table, Tabled, object::Segment, ModifyObject, Alignment};
     ///
     /// #[derive(Tabled)]
     /// struct User {
@@ -112,14 +112,14 @@ impl Table {
     /// builder.set_index(0);
     /// builder.transpose();
     ///
-    /// let table = builder.build().to_string();
+    /// let table = builder.build().with(Segment::new(1.., 1..).modify().with(Alignment::center())).to_string();
     ///
     /// assert_eq!(
     ///     table,
     ///     "+----------------+------+---------+------+\n\
-    ///      |      name      | Vlad | Dimitry | John |\n\
+    ///      | name           | Vlad | Dimitry | John |\n\
     ///      +----------------+------+---------+------+\n\
-    ///      |   device::PC   |      |    +    |  +   |\n\
+    ///      | device::PC     |      |    +    |  +   |\n\
     ///      +----------------+------+---------+------+\n\
     ///      | device::Mobile |  +   |         |      |\n\
     ///      +----------------+------+---------+------+"

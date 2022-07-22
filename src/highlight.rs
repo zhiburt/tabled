@@ -33,11 +33,11 @@ use crate::{object::Object, style::Border, TableOption};
 ///     table,
 ///     concat!(
 ///         " ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ \n",
-///         "| usize | &str  |           &str            | bool  |\n",
+///         "| usize | &str  | &str                      | bool  |\n",
 ///         "|-------|-------|---------------------------|-------|\n",
-///         "|   0   |  ELF  | Extensible Linking Format | true  |\n",
-///         "|   1   | DWARF |                           | true  |\n",
-///         "|   2   |  PE   |    Portable Executable    | false |\n",
+///         "| 0     | ELF   | Extensible Linking Format | true  |\n",
+///         "| 1     | DWARF |                           | true  |\n",
+///         "| 2     | PE    | Portable Executable       | false |\n",
 ///         " vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv ",
 ///     ),
 /// );
@@ -67,13 +67,13 @@ use crate::{object::Object, style::Border, TableOption};
 ///     table,
 ///     concat!(
 ///         "                *****************************        \n",
-///         "| usize | &str  *           &str            * bool  |\n",
+///         "| usize | &str  * &str                      * bool  |\n",
 ///         "|-------*********---------------------------*********\n",
-///         "|   0   *  ELF  | Extensible Linking Format | true  *\n",
+///         "| 0     * ELF   | Extensible Linking Format | true  *\n",
 ///         "*********                                           *\n",
-///         "*   1   | DWARF |                           | true  *\n",
+///         "* 1     | DWARF |                           | true  *\n",
 ///         "*                                                   *\n",
-///         "*   2   |  PE   |    Portable Executable    | false *\n",
+///         "* 2     | PE    | Portable Executable       | false *\n",
 ///         "*****************************************************",
 ///     ),
 /// );

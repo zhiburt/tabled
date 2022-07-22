@@ -52,13 +52,13 @@
 //! let table = Table::new(languages).to_string();
 //!
 //! let expected = "+------+----------------+---------------+\n\
-//!                 | name |  designed_by   | invented_year |\n\
+//!                 | name | designed_by    | invented_year |\n\
 //!                 +------+----------------+---------------+\n\
-//!                 |  C   | Dennis Ritchie |     1972      |\n\
+//!                 | C    | Dennis Ritchie | 1972          |\n\
 //!                 +------+----------------+---------------+\n\
-//!                 | Rust | Graydon Hoare  |     2010      |\n\
+//!                 | Rust | Graydon Hoare  | 2010          |\n\
 //!                 +------+----------------+---------------+\n\
-//!                 |  Go  |    Rob Pike    |     2009      |\n\
+//!                 | Go   | Rob Pike       | 2009          |\n\
 //!                 +------+----------------+---------------+";
 //!
 //! assert_eq!(table, expected);
@@ -100,11 +100,11 @@
 //! # let expected = "+-----+\n\
 //! #                 | i32 |\n\
 //! #                 +-----+\n\
-//! #                 |  1  |\n\
+//! #                 | 1   |\n\
 //! #                 +-----+\n\
-//! #                 |  2  |\n\
+//! #                 | 2   |\n\
 //! #                 +-----+\n\
-//! #                 |  3  |\n\
+//! #                 | 3   |\n\
 //! #                 +-----+";
 //! # assert_eq!(table.to_string(), expected);
 //! ```
@@ -120,7 +120,7 @@
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Tabled, Table, Style};
+//! use tabled::{Tabled, Table, Style, Alignment, ModifyObject, object::{Rows, Columns, Object}};
 //!
 //! #[derive(Tabled)]
 //! enum Domain {
@@ -140,17 +140,20 @@
 //!     (Developer("Maxim Zhiburt"), Domain::Unknown),
 //! ];
 //!     
-//! let table = Table::new(data).with(Style::psql()).to_string();
+//! let table = Table::new(data)
+//!     .with(Style::psql())
+//!     .with(Rows::new(1..).not(Columns::first()).modify().with(Alignment::center()))
+//!     .to_string();
 //!
 //! assert_eq!(
 //!     table,
 //!     concat!(
-//!         "      name       | Security | Embeded | Frontend | Unknown \n",
+//!         " name            | Security | Embeded | Frontend | Unknown \n",
 //!         "-----------------+----------+---------+----------+---------\n",
 //!         " Terri Kshlerin  |          |    +    |          |         \n",
 //!         " Catalina Dicki  |    +     |         |          |         \n",
 //!         " Jennie Schmeler |          |         |    +     |         \n",
-//!         "  Maxim Zhiburt  |          |         |          |    +    "
+//!         " Maxim Zhiburt   |          |         |          |    +    "
 //!     )
 //! );
 //! ```

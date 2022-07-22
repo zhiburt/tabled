@@ -1,14 +1,14 @@
 use tabled::{
-    builder::Builder, object::Segment, Alignment, Disable, Extract, Format, Modify, Padding, Table,
+    builder::Builder, object::Segment, Alignment, Disable, Extract, Format, Modify, Padding,
 };
 
-use crate::util::{create_vector, test_table};
+use crate::util::{create_table, test_table};
 
 mod util;
 
 test_table!(
     extract_segment_full_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
@@ -26,7 +26,7 @@ test_table!(
 
 test_table!(
     extract_segment_skip_top_row_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
@@ -42,7 +42,7 @@ test_table!(
 
 test_table!(
     extract_segment_skip_column_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
@@ -60,7 +60,7 @@ test_table!(
 
 test_table!(
     extract_segment_bottom_right_square_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
@@ -74,7 +74,7 @@ test_table!(
 
 test_table!(
     extract_segment_middle_section_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
@@ -88,13 +88,13 @@ test_table!(
 
 test_table!(
     extract_segment_empty_test,
-    Table::new(create_vector::<3, 3>()).with(Extract::segment(1..1, 1..1)),
+    create_table::<3, 3>().with(Extract::segment(1..1, 1..1)),
     ""
 );
 
 test_table!(
     extract_rows_full_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
@@ -112,13 +112,13 @@ test_table!(
 
 test_table!(
     extract_rows_empty_test,
-    Table::new(create_vector::<3, 3>()).with(Extract::rows(0..0)),
+    create_table::<3, 3>().with(Extract::rows(0..0)),
     ""
 );
 
 test_table!(
     extract_rows_partial_view_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
@@ -134,7 +134,7 @@ test_table!(
 
 test_table!(
     extract_columns_full_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
@@ -152,13 +152,13 @@ test_table!(
 
 test_table!(
     extract_columns_empty_test,
-    Table::new(create_vector::<3, 3>()).with(Extract::columns(0..0)),
+    create_table::<3, 3>().with(Extract::columns(0..0)),
     ""
 );
 
 test_table!(
     extract_columns_partial_view_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
@@ -176,7 +176,7 @@ test_table!(
 
 test_table!(
     extract_inside_test,
-    Table::new(create_vector::<3, 3>()).with(Disable::Row(..1)).with(Extract::segment(1..2, 1..2)),
+    create_table::<3, 3>().with(Disable::Row(..1)).with(Extract::segment(1..2, 1..2)),
     "+-----+"
     "| 1-0 |"
     "+-----+"
@@ -184,7 +184,7 @@ test_table!(
 
 test_table!(
     extract_left_test,
-    Table::new(create_vector::<3, 3>()).with(Disable::Row(..1)).with(Extract::segment(.., ..1)),
+    create_table::<3, 3>().with(Disable::Row(..1)).with(Extract::segment(.., ..1)),
     "+---+"
     "| 0 |"
     "+---+"
@@ -196,7 +196,7 @@ test_table!(
 
 test_table!(
     extract_right_test,
-    Table::new(create_vector::<3, 3>()).with(Disable::Row(..1)).with(Extract::segment(.., 2..)),
+    create_table::<3, 3>().with(Disable::Row(..1)).with(Extract::segment(.., 2..)),
     "+-----+-----+"
     "| 0-1 | 0-2 |"
     "+-----+-----+"
@@ -208,7 +208,7 @@ test_table!(
 
 test_table!(
     extract_top_test,
-    Table::new(create_vector::<3, 3>()).with(Disable::Row(..1)).with(Extract::segment(..1, ..)),
+    create_table::<3, 3>().with(Disable::Row(..1)).with(Extract::segment(..1, ..)),
     "+---+-----+-----+-----+"
     "| 0 | 0-0 | 0-1 | 0-2 |"
     "+---+-----+-----+-----+"
@@ -216,7 +216,7 @@ test_table!(
 
 test_table!(
     extract_bottom_test,
-    Table::new(create_vector::<3, 3>()).with(Disable::Row(..1)).with(Extract::segment(2.., ..)),
+    create_table::<3, 3>().with(Disable::Row(..1)).with(Extract::segment(2.., ..)),
     "+---+-----+-----+-----+"
     "| 2 | 2-0 | 2-1 | 2-2 |"
     "+---+-----+-----+-----+"
@@ -224,7 +224,7 @@ test_table!(
 
 test_table!(
     extract_all_test,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Disable::Row(..1))
         .with(Extract::segment(3.., 3..)),
     ""

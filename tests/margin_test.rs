@@ -1,16 +1,16 @@
 use tabled::{
     object::Cell,
     style::{Border, Style},
-    Highlight, Margin, Modify, Span, Table, Width,
+    Highlight, Margin, Modify, Span, Width,
 };
 
-use crate::util::{create_vector, is_lines_equal, static_table, test_table};
+use crate::util::{create_table, init_table, is_lines_equal, static_table, test_table};
 
 mod util;
 
 test_table!(
     margin_with_table_based_on_grid_borders,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::extended())
         .with(Highlight::new(Cell(0, 0), Border::filled('+')))
         .with(Highlight::new(Cell(1, 1), Border::filled('*')))
@@ -31,11 +31,7 @@ test_table!(
 
 test_table!(
     margin_without_table_based_on_grid_borders,
-    Table::new({
-            let mut data = create_vector::<3, 3>();
-            data[2][2] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
-            data
-        })
+    init_table::<3, 3, _, _>([((2, 2), "https://\nwww\n.\nredhat\n.com\n/en")])
         .with(Style::psql())
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^')),
@@ -55,11 +51,7 @@ test_table!(
 
 test_table!(
     table_with_empty_margin,
-    Table::new({
-            let mut data = create_vector::<3, 3>();
-            data[2][2] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
-            data
-        })
+    init_table::<3, 3, _, _>([((2, 2), "https://\nwww\n.\nredhat\n.com\n/en")])
         .with(Style::psql())
         .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
         .with(Margin::new(0, 0, 0, 0).set_fill('>', '<', 'V', '^')),
@@ -77,9 +69,7 @@ test_table!(
 
 #[test]
 fn table_with_margin_and_min_width() {
-    let data = create_vector::<3, 3>();
-
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'))
@@ -103,9 +93,7 @@ fn table_with_margin_and_min_width() {
 
 #[test]
 fn table_with_margin_and_max_width() {
-    let data = create_vector::<3, 3>();
-
-    let table = Table::new(&data)
+    let table = create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'))
@@ -130,16 +118,14 @@ fn table_with_margin_and_max_width() {
 #[test]
 #[ignore = "It's not yet clear what to do with such spans"]
 fn table_0_spanned_with_width() {
-    let data = create_vector::<0, 0>();
-
-    let table = Table::new(&data)
+    let table = create_table::<0, 0>()
         .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
         .with(Width::increase(50))
         .to_string();
 
     assert_eq!(table, "++\n|\n++\n");
 
-    let table = Table::new(&data)
+    let table = create_table::<0, 0>()
         .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
         .with(Width::truncate(50))
         .to_string();
@@ -154,7 +140,7 @@ fn margin_color_test() {
     use std::convert::TryFrom;
     use tabled::{margin::MarginColor, style::Color};
 
-    let table = Table::new(&create_vector::<3, 3>())
+    let table = create_table::<3, 3>()
         .with(Style::psql())
         .with(Margin::new(2, 2, 2, 2).set_fill('>', '<', 'V', '^'))
         .with(MarginColor::new(

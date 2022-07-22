@@ -1,15 +1,15 @@
 use tabled::{
     object::{Columns, Rows, Segment},
-    Alignment, Modify, Padding, Style, Table,
+    Alignment, Modify, Padding, Style,
 };
 
-use crate::util::{create_vector, test_table};
+use crate::util::{create_table, init_table, test_table};
 
 mod util;
 
 test_table!(
     full_alignment,
-    Table::new(create_vector::<3, 3>()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::left())),
+    create_table::<3, 3>().with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::left())),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 | 0-0      | 0-1      | 0-2      "
@@ -19,7 +19,7 @@ test_table!(
 
 test_table!(
     head_and_data_alignment,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Modify::new(Rows::first()).with(Alignment::left()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::right())),
     "+---+----------+----------+----------+"
@@ -35,11 +35,7 @@ test_table!(
 
 test_table!(
     full_alignment_multiline,
-    Table::new({
-            let mut data = create_vector::<3, 3>();
-            data[2][2] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
-            data
-        })
+    init_table::<3, 3, _, _>([((2, 2), "https://\nwww\n.\nredhat\n.com\n/en")])
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left())),
     " N | column 0 | column 1 | column 2 "
@@ -56,15 +52,13 @@ test_table!(
 
 test_table!(
     vertical_alignment_test,
-    Table::new({
-            let mut data = create_vector::<3, 3>();
-            data[1][2] = String::from("E\nnde\navou\nros");
-            data[2][2] = String::from("Red\nHat");
-            data[2][3] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
-            data
-        })
-        .with(Style::psql())
-        .with(Modify::new(Columns::new(1..)).with(Alignment::bottom())),
+    init_table::<3, 3, _, _>([
+        ((1, 2), "E\nnde\navou\nros"),
+        ((2, 2), "Red\nHat"),
+        ((2, 3), "https://\nwww\n.\nredhat\n.com\n/en"),
+    ])
+    .with(Style::psql())
+    .with(Modify::new(Columns::new(1..)).with(Alignment::bottom())),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    "
@@ -82,7 +76,7 @@ test_table!(
 
 test_table!(
     alignment_doesnt_change_padding,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Padding::new(3, 0, 0, 0)))
         .with(Modify::new(Segment::all()).with(Alignment::left())),

@@ -1,19 +1,19 @@
 use std::iter::FromIterator;
 
-use crate::util::{create_vector, static_table, test_table};
+use crate::util::{create_table, init_table, static_table, test_table};
 
 use tabled::{
     builder::Builder,
     object::{Cell, Columns, Rows, Segment},
     style::{Border, BorderText, Line, RawStyle},
-    Highlight, Modify, Padding, Span, Style, Table, TableIteratorExt,
+    Highlight, Modify, Padding, Span, Style,
 };
 
 mod util;
 
 test_table!(
     default_style,
-    Table::new(create_vector::<3, 3>()).with(Style::ascii()),
+    create_table::<3, 3>().with(Style::ascii()),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -27,7 +27,7 @@ test_table!(
 
 test_table!(
     psql_style,
-    Table::new(create_vector::<3, 3>()).with(Style::psql()),
+    create_table::<3, 3>().with(Style::psql()),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    "
@@ -37,7 +37,7 @@ test_table!(
 
 test_table!(
     markdown_style,
-    Table::new(create_vector::<3, 3>()).with(Style::markdown()),
+    create_table::<3, 3>().with(Style::markdown()),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
     "| 0 |   0-0    |   0-1    |   0-2    |"
@@ -47,7 +47,7 @@ test_table!(
 
 test_table!(
     modern_style,
-    Table::new(create_vector::<3, 3>()).with(Style::modern()),
+    create_table::<3, 3>().with(Style::modern()),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -61,7 +61,7 @@ test_table!(
 
 test_table!(
     rounded_style,
-    Table::new(create_vector::<3, 3>()).with(Style::rounded()),
+    create_table::<3, 3>().with(Style::rounded()),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -73,7 +73,7 @@ test_table!(
 
 test_table!(
     modern_clean_style,
-    Table::new(create_vector::<3, 3>()).with(Style::modern().off_horizontal().lines(vec![(1, Style::modern().get_horizontal())])),
+    create_table::<3, 3>().with(Style::modern().off_horizontal().lines(vec![(1, Style::modern().get_horizontal())])),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -85,7 +85,7 @@ test_table!(
 
 test_table!(
     blank_style,
-    Table::new(create_vector::<3, 3>()).with(Style::blank()),
+    create_table::<3, 3>().with(Style::blank()),
     " N   column 0   column 1   column 2 "
     " 0     0-0        0-1        0-2    "
     " 1     1-0        1-1        1-2    "
@@ -94,7 +94,7 @@ test_table!(
 
 test_table!(
     extended_style,
-    Table::new(create_vector::<3, 3>()).with(Style::extended()),
+    create_table::<3, 3>().with(Style::extended()),
     "╔═══╦══════════╦══════════╦══════════╗"
     "║ N ║ column 0 ║ column 1 ║ column 2 ║"
     "╠═══╬══════════╬══════════╬══════════╣"
@@ -108,7 +108,7 @@ test_table!(
 
 test_table!(
     ascii_dots_style,
-    Table::new(create_vector::<3, 3>()).with(Style::dots()),
+    create_table::<3, 3>().with(Style::dots()),
     "......................................"
     ": N : column 0 : column 1 : column 2 :"
     ":...:..........:..........:..........:"
@@ -122,7 +122,7 @@ test_table!(
 
 test_table!(
     re_structured_text_style,
-    Table::new(create_vector::<3, 3>()).with(Style::re_structured_text()),
+    create_table::<3, 3>().with(Style::re_structured_text()),
     "=== ========== ========== =========="
     " N   column 0   column 1   column 2 "
     "=== ========== ========== =========="
@@ -134,7 +134,7 @@ test_table!(
 
 test_table!(
     ascii_rounded_style,
-    Table::new(create_vector::<3, 3>()).with(Style::ascii_rounded()),
+    create_table::<3, 3>().with(Style::ascii_rounded()),
     ".------------------------------------."
     "| N | column 0 | column 1 | column 2 |"
     "| 0 |   0-0    |   0-1    |   0-2    |"
@@ -145,7 +145,7 @@ test_table!(
 
 test_table!(
     style_head_changes,
-    Table::new(create_vector::<3, 3>()).with(Style::modern().off_horizontal()),
+    create_table::<3, 3>().with(Style::modern().off_horizontal()),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
@@ -156,7 +156,7 @@ test_table!(
 
 test_table!(
     style_frame_changes,
-    Table::new(create_vector::<3, 3>()).with(Style::modern().off_top().off_bottom().off_horizontal()),
+    create_table::<3, 3>().with(Style::modern().off_top().off_bottom().off_horizontal()),
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
     "│ 1 │   1-0    │   1-1    │   1-2    │"
@@ -165,7 +165,7 @@ test_table!(
 
 test_table!(
     custom_style,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::blank()
             .bottom('*')
             .bottom_intersection('\'')
@@ -185,7 +185,7 @@ test_table!(
 
 test_table!(
     style_single_cell_0,
-    Table::new(create_vector::<0, 0>()),
+    create_table::<0, 0>(),
     "+---+"
     "| N |"
     "+---+"
@@ -193,13 +193,13 @@ test_table!(
 
 test_table!(
     style_single_cell_1,
-    Table::new(create_vector::<0, 0>()).with(Style::blank()),
+    create_table::<0, 0>().with(Style::blank()),
     " N "
 );
 
 test_table!(
     top_border_override_first_test,
-    Table::new(create_vector::<2, 2>()).with(BorderText::first("-Table")),
+    create_table::<2, 2>().with(BorderText::first("-Table")),
     "-Table---------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -211,7 +211,7 @@ test_table!(
 
 test_table!(
     top_border_override_last_test,
-    Table::new(create_vector::<2, 2>()).with(BorderText::last("-Table")),
+    create_table::<2, 2>().with(BorderText::last("-Table")),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -223,7 +223,7 @@ test_table!(
 
 test_table!(
     top_border_override_new_test,
-    Table::new(create_vector::<2, 2>())
+    create_table::<2, 2>()
         .with(BorderText::new(1, "-Table"))
         .with(BorderText::new(2, "-Table")),
     "+---+----------+----------+"
@@ -237,7 +237,7 @@ test_table!(
 
 test_table!(
     top_border_override_new_doesnt_panic_when_index_is_invalid,
-    Table::new(create_vector::<2, 2>()).with(BorderText::new(100, "-Table")),
+    create_table::<2, 2>().with(BorderText::new(100, "-Table")),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -249,7 +249,7 @@ test_table!(
 
 test_table!(
     top_override_doesnt_work_with_style_with_no_top_border_test,
-    Table::new(create_vector::<2, 2>())
+    create_table::<2, 2>()
         .with(Style::psql())
         .with(BorderText::first("-Table")),
     " N | column 0 | column 1 "
@@ -260,7 +260,7 @@ test_table!(
 
 test_table!(
     top_border_override_cleared_after_restyling_test,
-    Table::new(create_vector::<2, 2>())
+    create_table::<2, 2>()
         .with(BorderText::first("-Table"))
         .with(Style::ascii()),
     "+---+----------+----------+"
@@ -274,7 +274,7 @@ test_table!(
 
 test_table!(
     top_border_override_with_big_string_test,
-    Table::new(create_vector::<2, 2>())
+    create_table::<2, 2>()
         .with(BorderText::first("-Tableeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1231")),
     "-Tableeeeeeeeeeeeeeeeeeeeee"
     "| N | column 0 | column 1 |"
@@ -287,7 +287,7 @@ test_table!(
 
 test_table!(
     empty_style,
-    Table::new(create_vector::<3, 3>())
+    create_table::<3, 3>()
         .with(Style::empty())
         .with(Modify::new(Segment::all()).with(Padding::zero())),
     "Ncolumn 0column 1column 2"
@@ -298,7 +298,7 @@ test_table!(
 
 test_table!(
     single_column_style_0,
-    Table::new(create_vector::<2, 0>()).with(Style::modern()),
+    create_table::<2, 0>().with(Style::modern()),
     "┌───┐"
     "│ N │"
     "├───┤"
@@ -310,7 +310,7 @@ test_table!(
 
 test_table!(
     single_column_style_1,
-    Table::new(create_vector::<2, 0>()).with(Style::blank()),
+    create_table::<2, 0>().with(Style::blank()),
     " N "
     " 0 "
     " 1 "
@@ -318,7 +318,7 @@ test_table!(
 
 test_table!(
     single_column_last_row_style,
-    Table::new(create_vector::<3, 0>()).with(Style::re_structured_text()),
+    create_table::<3, 0>().with(Style::re_structured_text()),
     "==="
     " N "
     "==="
@@ -338,7 +338,7 @@ test_table!(
 
 test_table!(
     border_test_0,
-    Table::new(create_vector::<2, 2>()).with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#'))),
+    create_table::<2, 2>().with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#'))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "*###*##########*##########*"
@@ -350,7 +350,7 @@ test_table!(
 
 test_table!(
     border_test_1,
-    Table::new(create_vector::<2, 2>())
+    create_table::<2, 2>()
         .with(Style::empty())
         .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#'))),
     "  N   column 0   column 1  "
@@ -362,7 +362,7 @@ test_table!(
 
 test_table!(
     style_frame_test_0,
-    Table::new(create_vector::<2, 2>()).with(Highlight::new(Rows::single(1), Style::modern().frame())),
+    create_table::<2, 2>().with(Highlight::new(Rows::single(1), Style::modern().frame())),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "┌─────────────────────────┐"
@@ -374,7 +374,7 @@ test_table!(
 
 test_table!(
     style_frame_test_1,
-    Table::new(create_vector::<2, 2>())
+    create_table::<2, 2>()
         .with(Style::blank())
         .with(Highlight::new(Rows::single(0), Style::extended().frame()))
         .with(Highlight::new(Rows::single(2), Style::extended().frame())),
@@ -389,7 +389,7 @@ test_table!(
 
 test_table!(
     single_column_off_horizontal_test,
-    Table::new(create_vector::<3, 0>()).with(Style::ascii().off_horizontal().off_vertical()),
+    create_table::<3, 0>().with(Style::ascii().off_horizontal().off_vertical()),
     "+---+"
     "| N |"
     "| 0 |"
@@ -400,7 +400,7 @@ test_table!(
 
 test_table!(
     single_row_test,
-    Table::new(create_vector::<0, 3>()).with(Style::modern()),
+    create_table::<0, 3>().with(Style::modern()),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "└───┴──────────┴──────────┴──────────┘"
@@ -408,7 +408,7 @@ test_table!(
 
 test_table!(
     empty_border_text_doesnt_panic_test,
-    Table::new(create_vector::<2, 2>()).with(BorderText::first("")),
+    create_table::<2, 2>().with(BorderText::first("")),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -420,7 +420,7 @@ test_table!(
 
 test_table!(
     span_correct_test_0,
-    Table::new(create_vector::<6, 4>())
+    create_table::<6, 4>()
         .with(Modify::new(Cell(0, 3)).with(Span::column(2)))
         .with(Modify::new(Cell(1, 0)).with(Span::column(3)))
         .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
@@ -449,7 +449,7 @@ test_table!(
 
 test_table!(
     span_correct_test_1,
-    Table::new(create_vector::<6, 4>())
+    create_table::<6, 4>()
         .with(Modify::new(Cell(0, 0)).with(Span::column(5)))
         .with(Modify::new(Cell(1, 0)).with(Span::column(3)))
         .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
@@ -478,11 +478,7 @@ test_table!(
 
 test_table!(
     style_settings_usage_test_0,
-    Table::new({
-            let mut data = create_vector::<3, 3>();
-            data[0][1] = "a longer string".to_owned();
-            data
-        })
+    init_table::<3, 3, _, _>([((0, 1), "a longer string")])
         .with({
             let mut style: RawStyle = Style::modern().into();
             style
@@ -508,11 +504,8 @@ test_table!(
 
 test_table!(
     style_settings_usage_test_1,
-    Table::new({
-        let mut data = create_vector::<3, 3>();
-        data[0][1] = "a longer string".to_owned();
-        data
-        }).with({
+    init_table::<3, 3, _, _>([((0, 1), "a longer string")])
+        .with({
             let mut style: RawStyle = Style::modern().into();
             style.set_bottom(None);
             style
@@ -530,11 +523,8 @@ test_table!(
 
 test_table!(
     style_settings_usage_test_2,
-    Table::new({
-        let mut data = create_vector::<3, 3>();
-        data[0][1] = "a longer string".to_owned();
-        data
-    }).with({
+    init_table::<3, 3, _, _>([((0, 1), "a longer string")])
+        .with({
             let mut style: RawStyle = Style::modern().into();
             style.set_bottom(None);
             style
@@ -553,7 +543,7 @@ test_table!(
 
 test_table!(
     border_none_test_0,
-    Table::new(create_vector::<2, 2>())
+    create_table::<2, 2>()
         .with(Style::ascii())
         .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
         .with(Modify::new(Rows::single(1)).with(Border::none())),
@@ -568,7 +558,7 @@ test_table!(
 
 test_table!(
     border_none_test_1,
-    Table::new(create_vector::<2, 2>())
+    create_table::<2, 2>()
         .with(Style::empty())
         .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
         .with(Modify::new(Columns::single(1)).with(Border::none())),
@@ -583,8 +573,7 @@ test_table!(
 fn custom_style_test() {
     macro_rules! test_style {
         ($style:expr, $expected:expr $(,)*) => {
-            let data = create_vector::<3, 3>();
-            let table = data.table().with($style).to_string();
+            let table = create_table::<3, 3>().with($style).to_string();
             assert_eq!(table, $expected);
         };
     }
@@ -1424,10 +1413,7 @@ fn custom_style_test() {
 fn test_default_border_usage() {
     macro_rules! test_border {
         ($modify:expr, $expected:expr) => {
-            let mut data = create_vector::<3, 3>();
-            data[0][1] = "a longer string".to_owned();
-
-            let table = Table::new(&data)
+            let table = init_table::<3, 3, _, _>([((0, 1), "a longer string")])
                 .with(Style::empty())
                 .with($modify)
                 .to_string();
@@ -1902,8 +1888,7 @@ fn border_colored_test() {
     use owo_colors::OwoColorize;
     use tabled::style::{BorderColored, Symbol};
 
-    let data = create_vector::<2, 2>();
-    let table = Table::new(&data)
+    let table = create_table::<2, 2>()
         .with(Style::ascii())
         .with(
             Modify::new(Rows::single(1)).with(
@@ -1939,7 +1924,7 @@ fn border_colored_test() {
         )
     );
 
-    let table = Table::new(&data)
+    let table = create_table::<2, 2>()
         .with(Style::empty())
         .with(
             Modify::new(Rows::single(1)).with(
@@ -1982,8 +1967,7 @@ fn style_with_color_test() {
         .set_vertical(Some(Symbol::ansi('|'.yellow().to_string()).unwrap()))
         .set_internal(Some(Symbol::ansi('+'.purple().to_string()).unwrap()));
 
-    let data = create_vector::<3, 3>();
-    let table = Table::new(&data).with(style).to_string();
+    let table = create_table::<3, 3>().with(style).to_string();
 
     assert_eq!(
         ansi_str::AnsiStr::ansi_strip(&table),
@@ -2005,7 +1989,7 @@ fn style_with_color_test() {
 
 test_table!(
     empty_line_clears_lines,
-    Table::new(create_vector::<3, 3>()).with(Style::rounded().lines(vec![(1, Line::empty())])),
+    create_table::<3, 3>().with(Style::rounded().lines(vec![(1, Line::empty())])),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
@@ -2024,7 +2008,7 @@ test_table!(
 
         let color = Color::try_from(' '.on_green().to_string()).unwrap();
 
-        Table::new(create_vector::<3, 3>()).with(Style::psql()).with(color)
+        create_table::<3, 3>().with(Style::psql()).with(color)
     },
     " N \u{1b}[42m|\u{1b}[49m column 0 \u{1b}[42m|\u{1b}[49m column 1 \u{1b}[42m|\u{1b}[49m column 2 \n\u{1b}[42m---+----------+----------+----------\u{1b}[49m\n 0 \u{1b}[42m|\u{1b}[49m   0-0    \u{1b}[42m|\u{1b}[49m   0-1    \u{1b}[42m|\u{1b}[49m   0-2    \n 1 \u{1b}[42m|\u{1b}[49m   1-0    \u{1b}[42m|\u{1b}[49m   1-1    \u{1b}[42m|\u{1b}[49m   1-2    \n 2 \u{1b}[42m|\u{1b}[49m   2-0    \u{1b}[42m|\u{1b}[49m   2-1    \u{1b}[42m|\u{1b}[49m   2-2    "
 );
@@ -2039,7 +2023,7 @@ test_table!(
 
         let color = Color::try_from(' '.on_green().to_string()).unwrap();
 
-        Table::new(create_vector::<3, 3>()).with(Style::psql()).with(Modify::new(Segment::all()).with(color))
+        create_table::<3, 3>().with(Style::psql()).with(Modify::new(Segment::all()).with(color))
     },
     " \u{1b}[42mN\u{1b}[49m | \u{1b}[42mcolumn 0\u{1b}[49m | \u{1b}[42mcolumn 1\u{1b}[49m | \u{1b}[42mcolumn 2\u{1b}[49m \n---+----------+----------+----------\n \u{1b}[42m0\u{1b}[49m |   \u{1b}[42m0-0\u{1b}[49m    |   \u{1b}[42m0-1\u{1b}[49m    |   \u{1b}[42m0-2\u{1b}[49m    \n \u{1b}[42m1\u{1b}[49m |   \u{1b}[42m1-0\u{1b}[49m    |   \u{1b}[42m1-1\u{1b}[49m    |   \u{1b}[42m1-2\u{1b}[49m    \n \u{1b}[42m2\u{1b}[49m |   \u{1b}[42m2-0\u{1b}[49m    |   \u{1b}[42m2-1\u{1b}[49m    |   \u{1b}[42m2-2\u{1b}[49m    "
 );
