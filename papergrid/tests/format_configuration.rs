@@ -1,4 +1,4 @@
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Formatting, Settings};
+use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Formatting};
 
 mod util;
 
@@ -8,11 +8,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
+            Formatting::new(false, false, true),
             "+-------------+----------+\n\
              |A long string|          |\n\
              |             |          |\n\
@@ -38,11 +34,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
+            Formatting::new(true, false, true),
             "+-------------+----------+\n\
              |A long string|          |\n\
              |             |          |\n\
@@ -68,11 +60,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
+            Formatting::new(true, true, true),
             "+-------------+----------+\n\
              |A long string|A         |\n\
              |             |string    |\n\
@@ -99,11 +87,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
+            Formatting::new(false, false, true),
             "+-------------+----------+\n\
              |A long string|          |\n\
              |             |          |\n\
@@ -129,11 +113,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
+            Formatting::new(true, false, true),
             "+-------------+----------+\n\
              |A long string|          |\n\
              |             |          |\n\
@@ -159,11 +139,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
+            Formatting::new(true, true, true),
             "+-------------+----------+\n\
              |A long string|    A     |\n\
              |             |  string  |\n\
@@ -190,11 +166,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
+            Formatting::new(false, false, true),
             "+-------------+----------+\n\
              |A long string|          |\n\
              |             |          |\n\
@@ -220,11 +192,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
+            Formatting::new(true, false, true),
             "+-------------+----------+\n\
              |A long string|          |\n\
              |             |          |\n\
@@ -250,11 +218,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
+            Formatting::new(true, true, true),
             "+-------------+----------+\n\
              |A long string|         A|\n\
              |             |    string|\n\
@@ -281,11 +245,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
+            Formatting::new(false, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -311,11 +271,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
+            Formatting::new(true, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -341,11 +297,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
+            Formatting::new(true, true, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -372,11 +324,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
+            Formatting::new(false, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -402,11 +350,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
+            Formatting::new(true, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -432,11 +376,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
+            Formatting::new(true, true, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -463,11 +403,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
+            Formatting::new(false, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -493,11 +429,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
+            Formatting::new(true, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -523,11 +455,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
+            Formatting::new(true, true, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -555,11 +483,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
+            Formatting::new(false, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -585,11 +509,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
+            Formatting::new(true, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -615,11 +535,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
+            Formatting::new(true, true, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -646,11 +562,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
+            Formatting::new(false, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -676,11 +588,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
+            Formatting::new(true, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -706,11 +614,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
+            Formatting::new(true, true, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -737,11 +641,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
+            Formatting::new(false, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -767,11 +667,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
+            Formatting::new(true, false, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -797,11 +693,7 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
+            Formatting::new(true, true, true),
             "+-------------+----------+\n\
              |             |          |\n\
              |             |          |\n\
@@ -826,28 +718,19 @@ fn formatting_test() {
         ),
     ];
 
-    let mut grid = util::new_grid::<3, 2>();
-    grid.set(Entity::Cell(0, 0), Settings::new().text("A long string"));
-    grid.set(
-        Entity::Cell(0, 1),
-        Settings::new().text("\n\n\nA\n    string\nwith\n new\nline\n\n\n"),
-    );
-    grid.set(
-        Entity::Cell(2, 0),
-        Settings::new().text("A one more\n    string\nwith\n new\nline"),
-    );
-    grid.set(Entity::Cell(2, 1), Settings::new().text("..."));
+    let mut grid = util::grid_with_data::<3, 2>(&[
+        ((0, 0), "A long string"),
+        ((0, 1), "\n\n\nA\n    string\nwith\n new\nline\n\n\n"),
+        ((2, 0), "A one more\n    string\nwith\n new\nline"),
+        ((2, 1), "..."),
+    ]);
 
     for (i, test) in tests.iter().enumerate() {
         let expected = test.3;
 
-        grid.set(
-            Entity::Global,
-            Settings::new()
-                .alignment(test.0)
-                .vertical_alignment(test.1)
-                .formatting(test.2),
-        );
+        grid.set_alignment_horizontal(Entity::Global, test.0);
+        grid.set_alignment_vertical(Entity::Global, test.1);
+        grid.set_formatting(Entity::Global, test.2);
 
         assert_eq!(grid.to_string(), expected, "test case #{:?} failed", i,);
     }
@@ -855,39 +738,20 @@ fn formatting_test() {
 
 #[test]
 fn formatting_empty_test() {
-    let mut grid = util::new_grid::<0, 0>();
-    grid.set(
-        Entity::Global,
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: true,
-            vertical_trim: true,
-        }),
-    );
+    let formatting = Formatting::new(true, true, true);
+
+    let mut grid = util::grid::<0, 0>();
+    grid.set_formatting(Entity::Global, formatting);
 
     assert_eq!(grid.to_string(), "");
 
-    let mut grid = util::new_grid::<4, 0>();
-    grid.set(
-        Entity::Global,
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: true,
-            vertical_trim: true,
-        }),
-    );
+    let mut grid = util::grid::<4, 0>();
+    grid.set_formatting(Entity::Global, formatting);
 
     assert_eq!(grid.to_string(), "");
 
-    let mut grid = util::new_grid::<0, 4>();
-    grid.set(
-        Entity::Global,
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: true,
-            vertical_trim: true,
-        }),
-    );
+    let mut grid = util::grid::<0, 4>();
+    grid.set_formatting(Entity::Global, formatting);
 
     assert_eq!(grid.to_string(), "");
 }
@@ -908,13 +772,8 @@ fn formatting_1x1_test() {
     ]
 }"#;
 
-    let mut grid = util::new_grid::<1, 1>();
-    grid.set(
-        Entity::Cell(0, 0),
-        Settings::new()
-            .text(json)
-            .alignment(AlignmentHorizontal::Left),
-    );
+    let mut grid = util::grid_with_data::<1, 1>(&[((0, 0), json)]);
+    grid.set_alignment_horizontal(Entity::Cell(0, 0), AlignmentHorizontal::Left);
 
     assert_eq!(
         grid.to_string(),
@@ -938,14 +797,7 @@ fn formatting_1x1_test() {
         .join("\n")
     );
 
-    grid.set(
-        Entity::Cell(0, 0),
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: false,
-            vertical_trim: false,
-        }),
-    );
+    grid.set_formatting(Entity::Global, Formatting::new(false, false, true));
 
     assert_eq!(
         grid.to_string(),
@@ -969,14 +821,7 @@ fn formatting_1x1_test() {
         .join("\n")
     );
 
-    grid.set(
-        Entity::Cell(0, 0),
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: true,
-            vertical_trim: false,
-        }),
-    );
+    grid.set_formatting(Entity::Global, Formatting::new(true, false, true));
 
     assert_eq!(
         grid.to_string(),
@@ -1000,14 +845,7 @@ fn formatting_1x1_test() {
         .join("\n")
     );
 
-    grid.set(
-        Entity::Cell(0, 0),
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: true,
-            vertical_trim: true,
-        }),
-    );
+    grid.set_formatting(Entity::Global, Formatting::new(true, true, true));
 
     assert_eq!(
         grid.to_string(),
@@ -1043,8 +881,7 @@ fn tab_size_test() {
 \t\t ]
 }";
 
-    let mut grid = util::new_grid::<1, 1>();
-    grid.set(Entity::Cell(0, 0), Settings::new().text(json));
+    let mut grid = util::grid_with_data::<1, 1>(&[((0, 0), json)]);
 
     assert_eq!(
         grid.to_string(),

@@ -1,43 +1,28 @@
-use papergrid::{Border, Borders, Entity, Indent, Padding, Settings};
+use papergrid::{AlignmentHorizontal, Border, Borders, Entity, Indent, Padding};
 
 mod util;
 
 #[test]
-fn set_global_text_2x2() {
-    let mut grid = util::new_grid::<2, 2>();
-    grid.set(Entity::Global, Settings::new().text("asd"));
-    let str = grid.to_string();
-    assert_eq!(
-        str,
-        "+---+---+\n\
-         |asd|asd|\n\
-         +---+---+\n\
-         |asd|asd|\n\
-         +---+---+",
-    )
-}
+fn override_by_global_alignment() {
+    let mut grid = util::grid_with_data::<2, 2>(&[
+        ((0, 0), "xxxxx"),
+        ((0, 1), "xx"),
+        ((1, 0), "y"),
+        ((1, 1), "yyyyyyyyyy"),
+    ]);
 
-#[test]
-fn global_styles_overrides_everything_2x2() {
-    let mut grid = util::new_grid::<2, 2>();
-    grid.set(Entity::Cell(0, 0), Settings::new().text("xxxxx"));
-    grid.set(Entity::Cell(0, 1), Settings::new().text("xx"));
-    grid.set(Entity::Cell(1, 0), Settings::new().text("y"));
-    grid.set(Entity::Cell(1, 1), Settings::new().text("yyyyyyyyyy"));
+    grid.set_alignment_horizontal(Entity::Cell(0, 1), AlignmentHorizontal::Right);
 
     assert_eq!(
         grid.to_string(),
         "+-----+----------+\n\
-         |xxxxx|xx        |\n\
+         |xxxxx|        xx|\n\
          +-----+----------+\n\
          |y    |yyyyyyyyyy|\n\
          +-----+----------+",
     );
 
-    grid.set(
-        Entity::Global,
-        Settings::new().alignment(papergrid::AlignmentHorizontal::Center),
-    );
+    grid.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Center);
 
     assert_eq!(
         grid.to_string(),
@@ -51,20 +36,18 @@ fn global_styles_overrides_everything_2x2() {
 
 #[test]
 fn remove_border_test() {
-    let mut grid = util::new_grid::<2, 2>();
+    let mut grid = util::grid::<2, 2>();
     grid.set_borders(Borders::default());
 
-    grid.set(
+    grid.set_border(
         Entity::Cell(0, 0),
-        Settings::new().border(Border {
+        Border {
             top: Some('x'),
             bottom: Some('o'),
             left: Some('q'),
             ..Default::default()
-        }),
+        },
     );
-
-    // assert_eq!(grid.to_string(), " xxx   \nq0-00-1\n ooo   \n 1-01-1");
 
     grid.remove_border(Entity::Cell(0, 0));
 
@@ -73,7 +56,7 @@ fn remove_border_test() {
 
 #[test]
 fn entity_row_overrides_column_intersection() {
-    let mut grid = util::new_grid::<2, 2>();
+    let mut grid = util::grid::<2, 2>();
     grid.set_borders(Borders::default());
 
     grid.set_padding(
@@ -105,7 +88,7 @@ fn entity_row_overrides_column_intersection() {
 
 #[test]
 fn entity_column_overrides_row_intersection() {
-    let mut grid = util::new_grid::<2, 2>();
+    let mut grid = util::grid::<2, 2>();
     grid.set_borders(Borders::default());
 
     grid.set_padding(

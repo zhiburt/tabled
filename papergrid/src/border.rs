@@ -1,4 +1,3 @@
-
 /// Border is a representation of a cells's borders (left, right, top, bottom, and the corners)
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Border<T = char> {
@@ -46,12 +45,10 @@ impl<T: Copy> Border<T> {
     }
 }
 
-// !!!!!: rename to copied
-
 impl<T: Copy> Border<&T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
     /// It behaives like [`Border::new`] with the same character set to each side.
-    pub fn cloned(&self) -> Border<T> {
+    pub fn copied(&self) -> Border<T> {
         Border {
             top: self.top.copied(),
             bottom: self.bottom.copied(),

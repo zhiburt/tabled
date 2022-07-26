@@ -1,4 +1,4 @@
-use papergrid::{Borders, Entity, Grid, Settings};
+use papergrid::{Borders, Grid, Position};
 
 pub const DEFAULT_BORDERS: Borders = Borders {
     top: Some('-'),
@@ -22,16 +22,66 @@ pub const DEFAULT_BORDERS: Borders = Borders {
     intersection: Some('+'),
 };
 
-pub fn new_grid<const N_ROWS: usize, const N_COLUMNS: usize>() -> Grid {
-    let mut grid = Grid::new(N_ROWS, N_COLUMNS);
-    for row in 0..N_ROWS {
-        for column in 0..N_COLUMNS {
-            let text = format!("{}-{}", row, column);
-            grid.set(Entity::Cell(row, column), Settings::new().text(text));
-        }
-    }
-
+pub fn grid<const ROWS: usize, const COLS: usize>() -> Grid {
+    let mut grid = Grid::new(records(ROWS, COLS), ROWS, COLS);
     grid.set_borders(DEFAULT_BORDERS);
 
     grid
+}
+
+#[allow(unused)]
+pub fn grid_from<const ROWS: usize, const COLS: usize>(data: [[&str; COLS]; ROWS]) -> Grid {
+    let records = data
+        .iter()
+        .map(|row| row.iter().map(|text| text.to_string()).collect())
+        .collect();
+
+    let mut grid = Grid::new(records, ROWS, COLS);
+    grid.set_borders(DEFAULT_BORDERS);
+
+    grid
+}
+
+#[allow(unused)]
+pub fn grid_with_data<const ROWS: usize, const COLS: usize>(
+    data: &[(Position, &'static str)],
+) -> Grid {
+    let mut records = records(ROWS, COLS);
+
+    for &((row, col), text) in data {
+        records[row][col] = text.to_owned();
+    }
+
+    let mut grid = Grid::new(records, ROWS, COLS);
+    grid.set_borders(DEFAULT_BORDERS);
+
+    grid
+}
+
+#[allow(unused)]
+pub fn grid_const<const ROWS: usize, const COLS: usize>(text: &'static str) -> Grid {
+    grid_with_data::<ROWS, COLS>(&build_array::<ROWS, COLS>(text))
+}
+
+fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {
+    let mut records = vec![vec![String::new(); cols]; rows];
+    (0..rows).for_each(|row| {
+        (0..cols).for_each(|col| {
+            let text = format!("{}-{}", row, col);
+            records[row][col] = text;
+        });
+    });
+
+    records
+}
+
+fn build_array<const ROWS: usize, const COLS: usize>(text: &str) -> Vec<(Position, &str)> {
+    let mut records = Vec::with_capacity(ROWS * COLS);
+    for row in 0..ROWS {
+        for col in 0..COLS {
+            records.push(((row, col), text));
+        }
+    }
+
+    records
 }

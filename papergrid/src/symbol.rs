@@ -1,5 +1,5 @@
-use crate::Color;
 use crate::util::string_width;
+use crate::Color;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Symbol {

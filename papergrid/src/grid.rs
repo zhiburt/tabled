@@ -18,6 +18,9 @@ const DEFAULT_BORDER_VERTICAL_SYMBOL_REF: &char = &DEFAULT_BORDER_VERTICAL_SYMBO
 const DEFAULT_BORDER_INTERSECTION_SYMBOL_REF: &char = &DEFAULT_BORDER_VERTICAL_SYMBOL;
 const DEFAULT_INDENT_FILL_CHAR: char = ' ';
 
+// todo: Grid is just a collection of methods with no actuall state
+//       Grid::new takes size, config and records.
+
 /// Grid provides a set of methods for building a text-based table
 #[derive(Debug, Clone)]
 pub struct Grid {
@@ -72,19 +75,16 @@ impl Grid {
     /// # Example
     ///
     /// ```
-    /// use papergrid::{Grid, Entity, Settings, Border};
+    /// use papergrid::{Grid, Entity, Border};
     ///
+    /// let mut grid = Grid::new(vec![vec![String::from("Hello World"); 2]; 2], 2, 2);
     ///
-    /// let mut grid = Grid::new(2, 2);
-    ///
-    /// grid.set(
+    /// grid.set_border(
     ///     Entity::Global,
-    ///     Settings::new()
-    ///         .text("Hello World")
-    ///         .border(Border {
-    ///             right: Some(' '),
-    ///             ..Default::default()
-    ///         })
+    ///     Border {
+    ///         right: Some(' '),
+    ///         ..Default::default()
+    ///     }
     /// );
     ///
     /// assert_eq!(
@@ -99,7 +99,7 @@ impl Grid {
     /// ```rust
     /// use papergrid::Grid;
     ///
-    /// let mut grid = Grid::new(2, 2);
+    /// let mut grid = Grid::new(vec![vec![String::from(""); 2]; 2], 2, 2);
     /// assert_eq!(grid.to_string(), "\n");
     /// ```
     ///
@@ -108,75 +108,19 @@ impl Grid {
     /// ```rust
     /// use papergrid::Grid;
     ///
-    /// let mut grid = Grid::new(0, 0);
+    /// let mut grid = Grid::new(vec![], 0, 0);
     /// assert_eq!(grid.to_string(), "");
     /// ```
-    pub fn new(rows: usize, columns: usize) -> Self {
+    pub fn new(cells: Vec<Vec<String>>, rows: usize, columns: usize) -> Self {
         Grid {
             size: (rows, columns),
-            cells: vec![vec![String::new(); columns]; rows],
+            cells,
             spans: HashMap::new(),
             config: GridConfig::default(),
             override_split_lines: HashMap::new(),
             borders: BordersConfig::default(),
             #[cfg(feature = "color")]
             border_colors: BordersConfig::default(),
-        }
-    }
-
-    /// Set method is responsible for modification of cell/row/column.
-    ///
-    /// The method panics if incorrect cell/row/column index is given.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use papergrid::{Grid, Entity, Settings, Borders};
-    ///
-    /// let mut grid = Grid::new(2, 2);
-    ///
-    /// grid.set_borders(Borders {
-    ///     vertical_intersection: Some('|'),
-    ///     horizontal: Some('-'),
-    ///     ..Default::default()
-    /// });
-    ///
-    /// grid.set(Entity::Row(0), Settings::new().text("row 1"));
-    /// grid.set(Entity::Row(1), Settings::new().text("row 2"));
-    /// assert_eq!(
-    ///      grid.to_string(),
-    ///      "row 1|row 1\n\
-    ///       ----- -----\n\
-    ///       row 2|row 2"
-    /// )
-    /// ```
-    pub fn set(&mut self, entity: Entity, settings: Settings) {
-        if let Some(padding) = settings.padding {
-            self.set_padding(entity, padding);
-        }
-
-        if let Some(alignment) = settings.alignment_horizontal {
-            self.set_alignment_horizontal(entity, alignment);
-        }
-
-        if let Some(alignment) = settings.alignment_vertical {
-            self.set_alignment_vertical(entity, alignment);
-        }
-
-        if let Some(formatting) = settings.formatting {
-            self.set_formatting(entity, formatting);
-        }
-
-        if let Some(text) = settings.text {
-            self.set_text(entity, &text);
-        }
-
-        if let Some(border) = settings.border {
-            self.set_border(entity, border);
-        }
-
-        if let Some(span) = settings.span {
-            self.set_span(entity, span);
         }
     }
 
@@ -258,30 +202,12 @@ impl Grid {
         self.borders.get_line(row)
     }
 
-    /// This function returns a settings of a cell
-    pub fn get_settings(&self, row: usize, col: usize) -> Settings {
-        let content = &self.cells[row][col];
-        let pos = (row, col);
-        let border = self.get_border(pos);
-        let span = self.get_column_span(pos);
-
-        Settings {
-            text: Some(content.clone()),
-            padding: Some(*self.get_padding(pos.into())),
-            border: Some(border),
-            alignment_horizontal: Some(*self.get_alignment_horizontal(pos.into())),
-            alignment_vertical: Some(*self.get_alignment_vertical(pos.into())),
-            formatting: None,
-            span,
-        }
-    }
-
     /// Returns a border of a cell.
     pub fn get_border(&self, (row, col): Position) -> Border<char> {
         let mut border = self
             .borders
             .get_border((row, col), self.count_rows(), self.count_columns())
-            .cloned();
+            .copied();
 
         // make sure that there's no user defined lines
         // in which case we use spaces.
@@ -330,20 +256,6 @@ impl Grid {
         border
     }
 
-    pub fn style(&self, entity: Entity) -> Style {
-        let padding = *self.config.padding.lookup(entity);
-        let formatting = *self.config.formatting.lookup(entity);
-        let alignment_horizontal = *self.config.alignment_h.lookup(entity);
-        let alignment_vertical = *self.config.alignment_v.lookup(entity);
-
-        Style {
-            padding,
-            alignment_horizontal,
-            alignment_vertical,
-            formatting,
-        }
-    }
-
     /// This function returns content without any style changes
     pub fn get_cell_content(&self, row: usize, column: usize) -> &str {
         self.cells[row][column].as_str()
@@ -370,17 +282,12 @@ impl Grid {
         self.size.1
     }
 
-    /// Set text value to all cells in [`Entity`].
-    pub fn set_text(&mut self, entity: Entity, text: &str) {
-        self._set_text(entity, text);
-    }
-
     /// Creates a new Grid from original,
     /// Coping the things like styles and borders.
     ///
     /// It doesn't copy styles which were set for specific [Entity].
-    pub fn resize(&self, count_rows: usize, count_cols: usize) -> Self {
-        let mut new = Self::new(count_rows, count_cols);
+    pub fn resize(&self, rows: usize, columns: usize) -> Self {
+        let mut new = Self::new(vec![vec![String::new(); columns]; rows], rows, columns);
         new.config = self.config.clone();
         new.config.padding.invalidate(Entity::Global);
         new.config.formatting.invalidate(Entity::Global);
@@ -674,87 +581,13 @@ impl fmt::Display for Grid {
     }
 }
 
-// !!!!!: remove
-
-/// Settings represent setting of a particular cell
-#[derive(Debug, Clone, Default)]
-pub struct Settings {
-    text: Option<String>,
-    padding: Option<Padding>,
-    border: Option<Border>,
-    span: Option<usize>,
-    alignment_horizontal: Option<AlignmentHorizontal>,
-    alignment_vertical: Option<AlignmentVertical>,
-    formatting: Option<Formatting>,
-}
-
-impl Settings {
-    /// New method constructs an instance of settings
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Text method sets content for a cell
-    pub fn text<S: Into<String>>(mut self, text: S) -> Self {
-        self.text = Some(text.into());
-        self
-    }
-
-    /// padding method sets padding for a cell
-    pub fn padding(mut self, left: Indent, right: Indent, top: Indent, bottom: Indent) -> Self {
-        self.padding = Some(Padding {
-            top,
-            bottom,
-            left,
-            right,
-        });
-        self
-    }
-
-    /// Alignment method sets horizontal alignment for a cell
-    pub fn alignment(mut self, alignment: AlignmentHorizontal) -> Self {
-        self.alignment_horizontal = Some(alignment);
-        self
-    }
-
-    /// Alignment method sets horizontal alignment for a cell
-    pub fn vertical_alignment(mut self, alignment: AlignmentVertical) -> Self {
-        self.alignment_vertical = Some(alignment);
-        self
-    }
-
-    /// Set the settings's span.
-    pub fn span(mut self, span: usize) -> Self {
-        self.span = Some(span);
-        self
-    }
-
-    /// Set the settings's border.
-    ///
-    /// The border setting is in a restrictive manner, by default.
-    /// So if there was no split line but border relies on it
-    /// a error will be issued.
-    pub fn border(mut self, border: Border) -> Self {
-        self.border = Some(border);
-        self
-    }
-
-    /// Set a formatting settings.
-    ///
-    /// It overades them even if any were not set.
-    pub fn formatting(mut self, formatting: Formatting) -> Self {
-        self.formatting = Some(formatting);
-        self
-    }
-}
-
 /// Style represent a style of a cell on a grid.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Style {
-    pub padding: Padding,
-    pub alignment_horizontal: AlignmentHorizontal,
-    pub alignment_vertical: AlignmentVertical,
-    pub formatting: Formatting,
+struct Style {
+    padding: Padding,
+    alignment_horizontal: AlignmentHorizontal,
+    alignment_vertical: AlignmentVertical,
+    formatting: Formatting,
 }
 
 /// Formatting represent a logic of formatting of a cell.
@@ -763,6 +596,16 @@ pub struct Formatting {
     pub horizontal_trim: bool,
     pub vertical_trim: bool,
     pub allow_lines_alignement: bool,
+}
+
+impl Formatting {
+    pub fn new(horizontal_trim: bool, vertical_trim: bool, allow_lines_alignement: bool) -> Self {
+        Self {
+            horizontal_trim,
+            vertical_trim,
+            allow_lines_alignement,
+        }
+    }
 }
 
 /// Margin represent a 4 indents of table as a whole.
@@ -781,6 +624,17 @@ pub struct Padding {
     pub bottom: Indent,
     pub left: Indent,
     pub right: Indent,
+}
+
+impl Padding {
+    pub fn new(left: Indent, right: Indent, top: Indent, bottom: Indent) -> Self {
+        Self {
+            top,
+            bottom,
+            left,
+            right,
+        }
+    }
 }
 
 /// Indent represent a filled space.

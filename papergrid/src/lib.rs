@@ -4,10 +4,15 @@
 //! Papergrid is a library for generating text-based tables for display
 //!
 //! # Example
-//! ```rust
-//! use papergrid::{Grid, Entity, Borders, Settings};
+//! ```
+//! use papergrid::{Grid, Entity, Borders};
 //!
-//! let mut grid = Grid::new(2, 2);
+//! let data = vec![
+//!     vec![String::from("0-0"), String::from("0-1")],
+//!     vec![String::from("1-0"), String::from("1-1")],
+//! ];
+//!
+//! let mut grid = Grid::new(data, 2, 2);
 //! grid.set_borders(Borders {
 //!     top: Some('-'),
 //!     top_left: Some('+'),
@@ -25,11 +30,6 @@
 //!     vertical_intersection: Some('|'),
 //!     intersection: Some('+'),
 //! });
-//!
-//! grid.set(Entity::Cell(0, 0), Settings::new().text("0-0"));
-//! grid.set(Entity::Cell(0, 1), Settings::new().text("0-1"));
-//! grid.set(Entity::Cell(1, 0), Settings::new().text("1-0"));
-//! grid.set(Entity::Cell(1, 1), Settings::new().text("1-1"));
 //!
 //! assert_eq!(
 //!     grid.to_string(),
@@ -56,7 +56,6 @@ pub use borders::{Borders, Line};
 pub use entity::{Entity, EntityIterator};
 pub use grid::{
     AlignmentHorizontal, AlignmentVertical, Formatting, Grid, Indent, Margin, Padding, Position,
-    Settings, Style,
 };
 
 #[cfg(feature = "color")]

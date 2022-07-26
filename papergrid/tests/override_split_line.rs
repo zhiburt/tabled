@@ -2,7 +2,7 @@ mod util;
 
 #[test]
 fn override_top_test() {
-    let mut grid = util::new_grid::<2, 2>();
+    let mut grid = util::grid::<2, 2>();
 
     grid.override_split_line(0, "T");
 
@@ -85,7 +85,7 @@ fn override_top_test() {
 
 #[test]
 fn override_bottom_test() {
-    let mut grid = util::new_grid::<2, 2>();
+    let mut grid = util::grid::<2, 2>();
 
     grid.override_split_line(2, "T");
 
