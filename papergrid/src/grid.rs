@@ -8,7 +8,7 @@ use std::{
 use crate::{borders::BordersConfig, entity_map::EntityMap, Border, Borders, Entity, Line};
 
 #[cfg(feature = "color")]
-use crate::Symbol;
+use crate::{AnsiColor, Color, Symbol};
 
 const DEFAULT_BORDER_HORIZONTAL_CHAR: char = ' ';
 const DEFAULT_BORDER_HORIZONTAL_SYMBOL: char = ' ';
@@ -30,7 +30,7 @@ pub struct Grid {
     spans: HashMap<Position, usize>,
     borders: BordersConfig<char>,
     #[cfg(feature = "color")]
-    border_colors: BordersConfig<Color>,
+    border_colors: BordersConfig<AnsiColor>,
     override_split_lines: HashMap<usize, String>,
 }
 
@@ -484,8 +484,8 @@ impl Grid {
 
 #[cfg(feature = "color")]
 impl Grid {
-    pub fn get_color_borders(&self) -> &Borders<Color> {
-        &self.border_colors.get_borders()
+    pub fn get_color_borders(&self) -> &Borders<AnsiColor> {
+        self.border_colors.get_borders()
     }
 
     pub fn get_colored_border(&self, pos: Position) -> Border<Symbol> {
@@ -514,12 +514,12 @@ impl Grid {
         }
     }
 
-    pub fn set_border_color(&mut self, clr: Color) {
+    pub fn set_border_color(&mut self, clr: AnsiColor) {
         self.border_colors = BordersConfig::default();
         self.border_colors.set_global(clr);
     }
 
-    pub fn set_borders_color(&mut self, clrs: Borders<Color>) {
+    pub fn set_borders_color(&mut self, clrs: Borders<AnsiColor>) {
         self.border_colors.set_borders(clrs);
     }
 
@@ -531,7 +531,7 @@ impl Grid {
         self.set_border_color_(entity, border);
     }
 
-    fn set_border_color_(&mut self, entity: Entity, border: Border<Color>) {
+    fn set_border_color_(&mut self, entity: Entity, border: Border<AnsiColor>) {
         entity
             .iter(self.count_rows(), self.count_columns())
             .for_each(|pos| self.border_colors.insert_border(pos, border.clone()))
@@ -553,7 +553,7 @@ fn symbol_border_into_border(border: &Border<Symbol>) -> Border {
 }
 
 #[cfg(feature = "color")]
-fn symbol_border_into_color_border(border: Border<Symbol>) -> Border<Color> {
+fn symbol_border_into_color_border(border: Border<Symbol>) -> Border<AnsiColor> {
     Border {
         top: border.top.and_then(Symbol::color),
         bottom: border.bottom.and_then(Symbol::color),
@@ -609,33 +609,18 @@ impl Formatting {
 }
 
 /// Margin represent a 4 indents of table as a whole.
-#[derive(Default, Debug, Clone, Copy)]
-pub struct Margin {
-    pub top: Indent,
-    pub bottom: Indent,
-    pub left: Indent,
-    pub right: Indent,
-}
+pub type Margin = Sides<Indent>;
 
 /// Padding represent a 4 indents of cell.
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Padding {
-    pub top: Indent,
-    pub bottom: Indent,
-    pub left: Indent,
-    pub right: Indent,
-}
+pub type Padding = Sides<Indent>;
 
-impl Padding {
-    pub fn new(left: Indent, right: Indent, top: Indent, bottom: Indent) -> Self {
-        Self {
-            top,
-            bottom,
-            left,
-            right,
-        }
-    }
-}
+#[cfg(feature = "color")]
+/// Margin represent a 4 indents of table as a whole.
+pub type MarginColor = Sides<AnsiColor>;
+
+#[cfg(feature = "color")]
+/// PaddingColor represent a 4 indents of a cell.
+pub type PaddingColor = Sides<AnsiColor>;
 
 /// Indent represent a filled space.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -676,24 +661,23 @@ pub enum AlignmentHorizontal {
     Right,
 }
 
-#[cfg(feature = "color")]
-/// Margin represent a 4 indents of table as a whole.
-#[derive(Default, Debug, Clone)]
-pub struct MarginColor {
-    pub top: Color,
-    pub bottom: Color,
-    pub left: Color,
-    pub right: Color,
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Sides<T> {
+    pub top: T,
+    pub bottom: T,
+    pub left: T,
+    pub right: T,
 }
 
-#[cfg(feature = "color")]
-/// PaddingColor represent a 4 indents of a cell.
-#[derive(Default, Debug, Clone)]
-pub struct PaddingColor {
-    pub top: Color,
-    pub bottom: Color,
-    pub left: Color,
-    pub right: Color,
+impl<T> Sides<T> {
+    pub fn new(left: T, right: T, top: T, bottom: T) -> Self {
+        Self {
+            top,
+            bottom,
+            left,
+            right,
+        }
+    }
 }
 
 fn print_text_formated(
@@ -1584,7 +1568,7 @@ fn print_indent_lines(
     f: &mut fmt::Formatter<'_>,
     indent: &Indent,
     width: usize,
-    #[cfg(feature = "color")] color: &Color,
+    #[cfg(feature = "color")] color: &AnsiColor,
 ) -> fmt::Result {
     for i in 0..indent.size {
         print_indent(
@@ -1607,13 +1591,13 @@ fn print_indent(
     f: &mut fmt::Formatter<'_>,
     c: char,
     n: usize,
-    #[cfg(feature = "color")] color: &Color,
+    #[cfg(feature = "color")] color: &AnsiColor,
 ) -> fmt::Result {
     #[cfg(feature = "color")]
-    color.write_prefix(f)?;
+    color.prefix(f)?;
     repeat_char(f, c, n)?;
     #[cfg(feature = "color")]
-    color.write_suffix(f)?;
+    color.suffix(f)?;
 
     Ok(())
 }
@@ -1655,7 +1639,7 @@ fn print_split_line(
                     #[cfg(feature = "color")]
                     {
                         if let Some(clr) = get_intersection_color(grid, (row, col)) {
-                            clr.write_prefix(f)?;
+                            clr.prefix(f)?;
                             used_color = Some(clr);
                         }
                     }
@@ -1708,7 +1692,7 @@ fn print_split_line(
 
     #[cfg(feature = "color")]
     if let Some(clr) = used_color.take() {
-        clr.write_suffix(f)?;
+        clr.suffix(f)?;
     }
 
     Ok(())
@@ -1717,25 +1701,25 @@ fn print_split_line(
 #[cfg(feature = "color")]
 fn prepare_coloring<'a>(
     f: &mut fmt::Formatter<'_>,
-    clr: Option<&'a Color>,
-    used_color: &mut Option<&'a Color>,
+    clr: Option<&'a AnsiColor>,
+    used_color: &mut Option<&'a AnsiColor>,
 ) -> fmt::Result {
     match clr {
         Some(clr) => match used_color.as_mut() {
             Some(used_clr) => {
                 if **used_clr != *clr {
-                    used_clr.write_suffix(f)?;
-                    clr.write_prefix(f)?;
+                    used_clr.suffix(f)?;
+                    clr.prefix(f)?;
                     *used_clr = clr;
                 }
             }
             None => {
-                clr.write_prefix(f)?;
+                clr.prefix(f)?;
                 *used_color = Some(clr);
             }
         },
         None => match used_color.take() {
-            Some(clr) => clr.write_suffix(f)?,
+            Some(clr) => clr.suffix(f)?,
             None => (),
         },
     }
@@ -1747,12 +1731,12 @@ fn prepare_coloring<'a>(
 fn write_colored(
     f: &mut fmt::Formatter<'_>,
     c: impl fmt::Display,
-    clr: Option<&Color>,
+    clr: Option<&AnsiColor>,
 ) -> fmt::Result {
     if let Some(clr) = &clr {
-        clr.write_prefix(f)?;
+        clr.prefix(f)?;
         c.fmt(f)?;
-        clr.write_suffix(f)?;
+        clr.suffix(f)?;
     } else {
         c.fmt(f)?;
     }
@@ -1761,18 +1745,18 @@ fn write_colored(
 }
 
 #[cfg(feature = "color")]
-fn get_intersection_color(grid: &Grid, pos: Position) -> Option<&Color> {
+fn get_intersection_color(grid: &Grid, pos: Position) -> Option<&AnsiColor> {
     grid.border_colors
         .get_intersection(pos, grid.count_rows(), grid.count_columns())
 }
 
 #[cfg(feature = "color")]
-fn get_horizontal_color(grid: &Grid, pos: Position) -> Option<&Color> {
+fn get_horizontal_color(grid: &Grid, pos: Position) -> Option<&AnsiColor> {
     grid.border_colors.get_horizontal(pos, grid.count_rows())
 }
 
 #[cfg(feature = "color")]
-fn get_vertical_color(grid: &Grid, pos: Position) -> Option<&Color> {
+fn get_vertical_color(grid: &Grid, pos: Position) -> Option<&AnsiColor> {
     grid.border_colors.get_vertical(pos, grid.count_columns())
 }
 
@@ -1804,72 +1788,6 @@ pub fn count_lines(s: &str) -> usize {
     }
 
     bytecount::count(s.as_bytes(), b'\n') + 1
-}
-
-// todo: rename
-
-#[cfg(feature = "color")]
-#[derive(Debug, Clone, Eq, PartialEq, Default)]
-pub struct Color {
-    prefix: String,
-    suffix: String,
-}
-
-#[cfg(feature = "color")]
-impl Color {
-    pub fn new(prefix: String, suffix: String) -> Self {
-        Color { prefix, suffix }
-    }
-
-    pub fn get_prefix(&self) -> &str {
-        &self.prefix
-    }
-
-    pub fn get_suffix(&self) -> &str {
-        &self.suffix
-    }
-
-    fn write_prefix(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.prefix.fmt(f)
-    }
-
-    fn write_suffix(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.suffix.fmt(f)
-    }
-}
-
-#[cfg(feature = "color")]
-impl std::convert::TryFrom<&str> for Color {
-    type Error = ();
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        match get_ansi_secuences(value) {
-            Some((_, start, end)) => Ok(Self::new(start, end)),
-            None => Err(()),
-        }
-    }
-}
-
-#[cfg(feature = "color")]
-fn get_ansi_secuences(s: &str) -> Option<(char, String, String)> {
-    let mut original = ansi_str::get_blocks(s);
-    let block = original.next()?;
-
-    let c = block.text().chars().next()?;
-
-    let start = block.start().to_string();
-    let end = block.end().to_string();
-
-    Some((c, start, end))
-}
-
-#[cfg(feature = "color")]
-impl std::convert::TryFrom<String> for Color {
-    type Error = ();
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        Self::try_from(value.as_str())
-    }
 }
 
 #[cfg(test)]

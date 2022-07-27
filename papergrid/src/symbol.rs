@@ -1,14 +1,14 @@
 use crate::util::string_width;
-use crate::Color;
+use crate::AnsiColor;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Symbol {
     c: char,
-    color: Option<Color>,
+    color: Option<AnsiColor>,
 }
 
 impl Symbol {
-    pub const fn new(c: char, color: Option<Color>) -> Self {
+    pub const fn new(c: char, color: Option<AnsiColor>) -> Self {
         Self { c, color }
     }
 
@@ -37,7 +37,7 @@ impl Symbol {
             return Some(Self::new(c, None));
         }
 
-        Some(Self::new(c, Some(Color::new(start, end))))
+        Some(Self::new(c, Some(AnsiColor::new(start, end))))
     }
 
     /// A function which create a [`Symbol`] from [`char`].
@@ -51,7 +51,7 @@ impl Symbol {
     }
 
     /// A function which returns a used [`char`].
-    pub fn color(self) -> Option<Color> {
+    pub fn color(self) -> Option<AnsiColor> {
         self.color
     }
 }

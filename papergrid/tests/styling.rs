@@ -350,13 +350,13 @@ fn grid_2x2_ansi_global_set_test() {
     use std::convert::TryFrom;
 
     use owo_colors::OwoColorize;
-    use papergrid::Color;
+    use papergrid::AnsiColor;
 
     let color = " ".on_blue().red().bold().to_string();
 
     let mut grid = util::grid::<2, 2>();
 
-    grid.set_border_color(Color::try_from(color).unwrap());
+    grid.set_border_color(AnsiColor::try_from(color).unwrap());
 
     assert_eq!(
         grid.to_string(),

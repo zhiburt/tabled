@@ -48,6 +48,9 @@ mod borders;
 mod entity;
 mod entity_map;
 mod grid;
+
+#[cfg(feature = "color")]
+mod ansi_color;
 #[cfg(feature = "color")]
 mod symbol;
 
@@ -59,9 +62,11 @@ pub use grid::{
 };
 
 #[cfg(feature = "color")]
-pub use grid::Color;
-#[cfg(feature = "color")]
-pub use symbol::Symbol;
+pub use crate::{
+    ansi_color::{AnsiColor, Color},
+    grid::{MarginColor, PaddingColor},
+    symbol::Symbol,
+};
 
 pub mod util {
     pub use crate::grid::{
