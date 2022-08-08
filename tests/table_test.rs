@@ -34,6 +34,18 @@ mod default_types {
     );
 
     test_table!(
+        table_link_vec,
+        Table::new(vec![
+            "\u{1b}]8;;http://www.google.com\u{1b}\\google\u{1b}]8;;\u{1b}\\"
+        ]),
+        "+--------+"
+        "| &str   |"
+        "+--------+"
+        "| \u{1b}]8;;http://www.google.com\u{1b}\\google\u{1b}]8;;\u{1b}\\ |"
+        "+--------+"
+    );
+
+    test_table!(
         table_bool_vec,
         Table::new(vec![true, false, true]),
         "+-------+"

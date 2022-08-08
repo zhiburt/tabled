@@ -51,6 +51,8 @@ use std::{
     hash::Hash,
 };
 
+use regex::Regex;
+
 const DEFAULT_BORDER_HORIZONTAL_CHAR: char = ' ';
 const DEFAULT_BORDER_HORIZONTAL_SYMBOL: char = ' ';
 const DEFAULT_BORDER_VERTICAL_SYMBOL: char = ' ';
@@ -1685,7 +1687,13 @@ pub fn string_split_at_length(s: &str, width: usize) -> (usize, usize, usize) {
 /// Returns a string width.
 #[cfg(not(feature = "color"))]
 pub fn string_width(text: &str) -> usize {
-    unicode_width::UnicodeWidthStr::width(text)
+    let mut temp = text;
+    let re = Regex::new(r"\\(.*)]8;;").unwrap();
+    let first_group = re.captures_iter(text).next();
+    if let Some(txt) = first_group {
+        temp = txt.get(1).map_or(temp, |m| m.as_str());
+    }
+    unicode_width::UnicodeWidthStr::width(temp)
 }
 
 /// Returns a string width.
