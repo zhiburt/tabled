@@ -9,7 +9,8 @@ homepage = "https://github.com/zhiburt/tabled"
 license = "MIT"
 
 [dependencies]
-tabled = { git = "https://github.com/zhiburt/tabled/", rev = "0f5bb6e21d674cba0b1bcc662cd2fe4eebb55acd", default-features = false }
+tabled = { git = "https://github.com/zhiburt/tabled/", rev = "9a859e313a6f5ac77d64e0ff71ff88353e2de134", default-features = false, package = "tabled" }
+tabled_master = { version = "0.8.0", default-features = false, package = "tabled" }
 
 tabled_color = { path = "./tabled_color" }
 

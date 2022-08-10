@@ -1,25 +1,20 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, BatchSize};
 
 macro_rules! bench_lib {
-    ($name:ident, $data_fn:expr, $({ $lib_name:expr, $lib_table:expr, $lib_print:expr, }),* $(,)?) => {
+    ($name:ident, $data_fn:expr, $({ $lib_name:expr, $lib_table:expr }),* $(,)?) => {
         pub fn $name(c: &mut Criterion) {
             let mut group = c.benchmark_group(stringify!($name));
 
-            for size in [512] {
+            for size in [1, 8, 32, 128, 512, 1024] {
                 let (columns, data) = $data_fn(size);
 
                 $({
-                    let mut table = $lib_table(columns.clone(), data.clone());
                     group.bench_with_input(BenchmarkId::new($lib_name, size), &size, |b, _size| {
-                        b.iter(|| {
-                            let ptr: *mut _ = &mut table;
-                            black_box(ptr);
-
-                            let _ = black_box($lib_print(&table));
-
-                            let ptr: *mut _ = &mut table;
-                            black_box(ptr);
-                        });
+                        b.iter_batched(
+                            || (columns.clone(), data.clone()),
+                            |(columns, data)| { let _ = black_box($lib_table(columns, data)); },
+                            BatchSize::SmallInput
+                        );
                     });
                 })*
             }
@@ -34,13 +29,14 @@ macro_rules! create_bench {
         bench_lib!(
             $name,
             $table,
-            { "tabled", benchs::tabled::build, benchs::tabled::print, },
-            { "tabled_color", benchs::tabled_color::build, benchs::tabled_color::print, },
-            { "cli_table", benchs::cli_table::build, benchs::cli_table::print, },
-            { "comfy_table", benchs::comfy_table::build, benchs::comfy_table::print, },
-            { "term_table", benchs::term_table::build, benchs::term_table::print, },
-            // { "nu-table", benchs::nu_table::build, benchs::nu_table::print, },
-            // { "prettytable_rs", benchs::prettytable_rs::build, benchs::prettytable_rs::print, },
+            { "tabled", benchs::tabled::build },
+            { "tabled_master", benchs::tabled_master::build },
+            // { "tabled_color", benchs::tabled_color::build },
+            // { "cli_table", benchs::cli_table::build  },
+            // { "comfy_table", benchs::comfy_table::build },
+            // { "term_table", benchs::term_table::build  },
+            // { "nu-table", benchs::nu_table::build  },
+            // { "prettytable_rs", benchs::prettytable_rs::build },
         );
     };
 }

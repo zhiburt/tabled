@@ -1,32 +1,38 @@
 pub mod tabled {
-    use tabled::{builder::Builder, object::Segment, Alignment, Modify, Table};
+    use tabled::builder::Builder;
 
     #[inline]
-    pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> Table {
+    pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
         let mut b = Builder::from(data);
         b.set_columns(columns);
-        b.build()
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-    }
+        let table = b.build();
 
-    #[inline]
-    pub fn print(table: &Table) -> String {
         table.to_string()
     }
 }
 
 pub mod tabled_color {
-    use tabled_color::{builder::Builder, object::Segment, Alignment, Modify, Table};
-
-    pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> Table {
-        let mut b = Builder::from(data);
-        b.set_columns(columns);
-        b.build()
-            .with(Modify::new(Segment::all()).with(Alignment::left()))
-    }
+    use tabled_color::builder::Builder;
 
     #[inline]
-    pub fn print(table: &Table) -> String {
+    pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
+        let mut b = Builder::from(data);
+        b.set_columns(columns);
+        let table = b.build();
+
+        table.to_string()
+    }
+}
+
+pub mod tabled_master {
+    use tabled_master::builder::Builder;
+
+    #[inline]
+    pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
+        let mut b = Builder::from(data);
+        b.set_columns(columns);
+        let table = b.build();
+
         table.to_string()
     }
 }
@@ -34,14 +40,11 @@ pub mod tabled_color {
 pub mod nu_table {
     use std::collections::HashMap;
 
-    use nu_ansi_term::Style;
     use nu_protocol::Config;
     use nu_table::{draw_table, StyledString, Table, TableTheme, TextStyle};
 
-    pub type NuTableType = (Table, HashMap<String, Style>, Config);
-
     #[inline]
-    pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> NuTableType {
+    pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
         let columns = columns
             .into_iter()
             .map(|c| StyledString::new(c, TextStyle::default()))
@@ -57,26 +60,19 @@ pub mod nu_table {
             .collect();
 
         let table = Table::new(columns, data, TableTheme::basic());
-        (table, HashMap::new(), Config::default())
-    }
 
-    #[inline]
-    pub fn print((table, color_hm, config): &NuTableType) -> String {
-        draw_table(table, 1000000000, color_hm, config)
+        draw_table(&table, 1000000000, &HashMap::new(), &Config::default())
     }
 }
 
 pub mod cli_table {
-    use cli_table::{Table, TableStruct};
+    use cli_table::Table;
 
     #[inline]
-    pub fn build(columns: Vec<String>, mut data: Vec<Vec<String>>) -> TableStruct {
+    pub fn build(columns: Vec<String>, mut data: Vec<Vec<String>>) -> String {
         data.insert(0, columns);
-        <Vec<Vec<String>> as Table>::table(data)
-    }
+        let table = <Vec<Vec<String>> as Table>::table(data);
 
-    #[inline]
-    pub fn print(table: &TableStruct) -> String {
         // here's a conversion and Vec<u8> cache which is something need to be aware of.
         table.display().unwrap().to_string()
     }
@@ -86,7 +82,7 @@ pub mod comfy_table {
     use comfy_table::{Row, Table};
 
     #[inline]
-    pub fn build(columns: Vec<String>, mut data: Vec<Vec<String>>) -> Table {
+    pub fn build(columns: Vec<String>, mut data: Vec<Vec<String>>) -> String {
         data.insert(0, columns);
 
         let mut t = Table::new();
@@ -95,12 +91,7 @@ pub mod comfy_table {
             t.add_row(Row::from(row));
         }
 
-        t
-    }
-
-    #[inline]
-    pub fn print(table: &Table) -> String {
-        table.to_string()
+        t.to_string()
     }
 }
 
@@ -108,7 +99,7 @@ pub mod term_table {
     use term_table::{row::Row, Table};
 
     #[inline]
-    pub fn build(columns: Vec<String>, mut data: Vec<Vec<String>>) -> Table<'static> {
+    pub fn build(columns: Vec<String>, mut data: Vec<Vec<String>>) -> String {
         data.insert(0, columns);
 
         let mut t = Table::new();
@@ -116,12 +107,7 @@ pub mod term_table {
             t.add_row(Row::new(row));
         }
 
-        t
-    }
-
-    #[inline]
-    pub fn print(table: &Table<'static>) -> String {
-        table.render()
+        t.render()
     }
 }
 
@@ -129,7 +115,7 @@ pub mod prettytable_rs {
     use prettytable::{Row, Table};
 
     #[inline]
-    pub fn build(columns: Vec<String>, mut data: Vec<Vec<String>>) -> Table {
+    pub fn build(columns: Vec<String>, mut data: Vec<Vec<String>>) -> String {
         data.insert(0, columns);
 
         let mut t = Table::new();
@@ -138,11 +124,6 @@ pub mod prettytable_rs {
             t.add_row(Row::from(row));
         }
 
-        t
-    }
-
-    #[inline]
-    pub fn print(table: &Table) -> String {
-        table.to_string()
+        t.to_string()
     }
 }
