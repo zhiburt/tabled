@@ -146,10 +146,6 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
         self.global = Some(value);
     }
 
-    pub(crate) fn get_global(&self) -> Option<&T> {
-        self.global.as_ref()
-    }
-
     pub(crate) fn get_vertical(&self, pos: Position, count_cols: usize) -> Option<&T> {
         self.cells
             .vertical
@@ -361,7 +357,7 @@ pub struct Line<T> {
 }
 
 impl<T> Line<T> {
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.horizontal.is_none()
             && self.horizontal.is_none()
             && self.left.is_none()

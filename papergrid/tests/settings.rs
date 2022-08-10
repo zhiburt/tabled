@@ -2,115 +2,146 @@ use papergrid::{AlignmentHorizontal, Border, Borders, Entity, Indent, Padding};
 
 mod util;
 
-#[test]
-fn override_by_global_alignment() {
-    let mut grid = util::grid_with_data::<2, 2>(&[
-        ((0, 0), "xxxxx"),
-        ((0, 1), "xx"),
-        ((1, 0), "y"),
-        ((1, 1), "yyyyyyyyyy"),
-    ]);
+use util::{grid, test_table};
 
-    grid.set_alignment_horizontal(Entity::Cell(0, 1), AlignmentHorizontal::Right);
+test_table!(
+    override_by_global_alignment_0,
+    grid(2, 2)
+        .data([["xxxxx", "xx"], ["y", "yyyyyyyyyy"]])
+        .config(|cfg| cfg.set_alignment_horizontal(Entity::Cell(0, 1), AlignmentHorizontal::Right))
+        .build(),
+    "+-----+----------+"
+    "|xxxxx|        xx|"
+    "+-----+----------+"
+    "|y    |yyyyyyyyyy|"
+    "+-----+----------+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        "+-----+----------+\n\
-         |xxxxx|        xx|\n\
-         +-----+----------+\n\
-         |y    |yyyyyyyyyy|\n\
-         +-----+----------+",
-    );
+test_table!(
+    override_by_global_alignment_1,
+    grid(2, 2)
+        .data([["xxxxx", "xx"], ["y", "yyyyyyyyyy"]])
+        .config(|cfg| cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Center))
+        .build(),
+    "+-----+----------+"
+    "|xxxxx|    xx    |"
+    "+-----+----------+"
+    "|  y  |yyyyyyyyyy|"
+    "+-----+----------+"
+);
 
-    grid.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Center);
+test_table!(
+    remove_border_test,
+    grid(2, 2)
+        .config(|cfg| {
+            cfg.set_borders(Borders::default());
+            cfg.set_border(
+                (0, 0),
+                Border {
+                    top: Some('x'),
+                    bottom: Some('o'),
+                    left: Some('q'),
+                    ..Default::default()
+                },
+            );
 
-    assert_eq!(
-        grid.to_string(),
-        "+-----+----------+\n\
-         |xxxxx|    xx    |\n\
-         +-----+----------+\n\
-         |  y  |yyyyyyyyyy|\n\
-         +-----+----------+",
-    );
-}
+            cfg.remove_border((0, 0), 2);
+        })
+        .build(),
+    "0-00-1\n1-01-1"
+);
 
-#[test]
-fn remove_border_test() {
-    let mut grid = util::grid::<2, 2>();
-    grid.set_borders(Borders::default());
+test_table!(
+    entity_row_overrides_column_intersection_0,
+    grid(2, 2)
+        .config(|cfg| {
+            cfg.set_borders(Borders::default());
+            cfg.set_padding(
+                Entity::Column(0),
+                Padding {
+                    bottom: Indent::new(3, '$'),
+                    ..Default::default()
+                },
+            );
+        })
+        .build(),
+        "0-00-1"
+        "$$$   "
+        "$$$   "
+        "$$$   "
+        "1-01-1"
+        "$$$   "
+        "$$$   "
+        "$$$   "
+);
 
-    grid.set_border(
-        Entity::Cell(0, 0),
-        Border {
-            top: Some('x'),
-            bottom: Some('o'),
-            left: Some('q'),
-            ..Default::default()
-        },
-    );
+test_table!(
+    entity_row_overrides_column_intersection_1,
+    grid(2, 2)
+        .config(|cfg| {
+            cfg.set_borders(Borders::default());
+            cfg.set_padding(
+                Entity::Column(0),
+                Padding {
+                    bottom: Indent::new(3, '$'),
+                    ..Default::default()
+                },
+            );
+            cfg.set_padding(
+                Entity::Row(1),
+                Padding {
+                    bottom: Indent::new(2, '#'),
+                    ..Default::default()
+                },
+            );
+        })
+        .build(),
+        "0-00-1"
+        "$$$   "
+        "$$$   "
+        "$$$   "
+        "1-01-1"
+        "######"
+        "######"
+);
 
-    grid.remove_border(Entity::Cell(0, 0));
+test_table!(
+    entity_column_overrides_row_intersection_0,
+    grid(2, 2)
+        .config(|cfg| {
+            cfg.set_borders(Borders::default());
+            cfg.set_padding(
+                Entity::Row(0),
+                Padding {
+                    bottom: Indent::new(3, '$'),
+                    ..Default::default()
+                },
+            );
+        })
+        .build(),
+    "0-00-1\n$$$$$$\n$$$$$$\n$$$$$$\n1-01-1"
+);
 
-    assert_eq!(grid.to_string(), "0-00-1\n1-01-1");
-}
-
-#[test]
-fn entity_row_overrides_column_intersection() {
-    let mut grid = util::grid::<2, 2>();
-    grid.set_borders(Borders::default());
-
-    grid.set_padding(
-        Entity::Column(0),
-        Padding {
-            bottom: Indent::new(3, '$'),
-            ..Default::default()
-        },
-    );
-
-    assert_eq!(
-        grid.to_string(),
-        "0-00-1\n$$$   \n$$$   \n$$$   \n1-01-1\n$$$   \n$$$   \n$$$   "
-    );
-
-    grid.set_padding(
-        Entity::Row(1),
-        Padding {
-            bottom: Indent::new(2, '#'),
-            ..Default::default()
-        },
-    );
-
-    assert_eq!(
-        grid.to_string(),
-        "0-00-1\n$$$   \n$$$   \n$$$   \n1-01-1\n######\n######"
-    );
-}
-
-#[test]
-fn entity_column_overrides_row_intersection() {
-    let mut grid = util::grid::<2, 2>();
-    grid.set_borders(Borders::default());
-
-    grid.set_padding(
-        Entity::Row(0),
-        Padding {
-            bottom: Indent::new(3, '$'),
-            ..Default::default()
-        },
-    );
-
-    assert_eq!(grid.to_string(), "0-00-1\n$$$$$$\n$$$$$$\n$$$$$$\n1-01-1");
-
-    grid.set_padding(
-        Entity::Column(1),
-        Padding {
-            bottom: Indent::new(2, '#'),
-            ..Default::default()
-        },
-    );
-
-    assert_eq!(
-        grid.to_string(),
-        "0-00-1\n$$$###\n$$$###\n$$$###\n1-01-1\n   ###\n   ###"
-    );
-}
+test_table!(
+    entity_column_overrides_row_intersection_1,
+    grid(2, 2)
+        .config(|cfg| {
+            cfg.set_borders(Borders::default());
+            cfg.set_padding(
+                Entity::Row(0),
+                Padding {
+                    bottom: Indent::new(3, '$'),
+                    ..Default::default()
+                },
+            );
+            cfg.set_padding(
+                Entity::Column(1),
+                Padding {
+                    bottom: Indent::new(2, '#'),
+                    ..Default::default()
+                },
+            );
+        })
+        .build(),
+    "0-00-1\n$$$###\n$$$###\n$$$###\n1-01-1\n   ###\n   ###"
+);

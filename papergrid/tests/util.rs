@@ -1,6 +1,132 @@
-use papergrid::{Borders, Grid, Position};
+#![allow(dead_code, unused_macros, unused_imports)]
 
-pub const DEFAULT_BORDERS: Borders = Borders {
+use std::collections::HashMap;
+
+use papergrid::{
+    height::HeightEstimator, records::records_info::RecordsInfo, width::WidthEstimator, Borders,
+    Estimate, Grid, GridConfig, Position,
+};
+
+pub fn grid(rows: usize, cols: usize) -> GridBuilder {
+    GridBuilder::new(rows, cols)
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct GridBuilder {
+    size: (usize, usize),
+    cfg: GridConfig,
+    data: HashMap<Position, String>,
+}
+
+impl GridBuilder {
+    pub fn new(rows: usize, cols: usize) -> Self {
+        let mut cfg = GridConfig::default();
+        cfg.set_borders(DEFAULT_BORDERS);
+
+        Self {
+            size: (rows, cols),
+            cfg,
+            ..Default::default()
+        }
+    }
+
+    pub fn config(mut self, mut f: impl FnMut(&mut GridConfig)) -> Self {
+        f(&mut self.cfg);
+        self
+    }
+
+    pub fn data(
+        mut self,
+        data: impl IntoIterator<Item = impl IntoIterator<Item = impl Into<String>>>,
+    ) -> Self {
+        for (i, rows) in data.into_iter().enumerate() {
+            for (j, text) in rows.into_iter().enumerate() {
+                let text = text.into();
+                self.data.insert((i, j), text);
+            }
+        }
+
+        self
+    }
+
+    pub fn change_cell(mut self, pos: Position, text: impl Into<String>) -> Self {
+        self.data.insert(pos, text.into());
+        self
+    }
+
+    pub fn build(self) -> String {
+        let mut data = records(self.size.0, self.size.1);
+        for ((row, col), text) in self.data {
+            data[row][col] = text;
+        }
+
+        let grid = build_grid(self.size.0, self.size.1, self.cfg, data);
+
+        grid.to_string()
+    }
+}
+
+fn build_grid(
+    rows: usize,
+    cols: usize,
+    cfg: GridConfig,
+    data: Vec<Vec<String>>,
+) -> Grid<'static, &'static RecordsInfo<'static>, WidthEstimator, HeightEstimator> {
+    let cfg = Box::leak(Box::new(cfg));
+
+    let records = data;
+    let records = Box::leak(records.into_boxed_slice());
+    let records = RecordsInfo::new(records, (rows, cols), cfg);
+    let records = Box::leak(Box::new(records));
+
+    let mut width = WidthEstimator::default();
+    width.estimate(&*records, cfg);
+    let mut height = HeightEstimator::default();
+    height.estimate(&*records, cfg);
+
+    let grid = Grid::new(&*records, cfg, width, height);
+
+    grid.to_string();
+
+    grid
+}
+
+fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {
+    let mut records = vec![vec![String::new(); cols]; rows];
+    (0..rows).for_each(|row| {
+        (0..cols).for_each(|col| {
+            let text = format!("{}-{}", row, col);
+            records[row][col] = text;
+        });
+    });
+
+    records
+}
+
+macro_rules! static_table {
+    ($($line:expr)*) => {
+        concat!(
+            $($line, "\n",)*
+        )
+        .trim_end_matches('\n')
+    };
+}
+
+pub(crate) use static_table;
+
+macro_rules! test_table {
+    ($test:ident, $table:expr, $($line:expr)*) => {
+        #[test]
+        fn $test() {
+            let table = $table.to_string();
+            assert_eq!(table, crate::util::static_table!($($line)*));
+        }
+    };
+}
+
+pub(crate) use test_table;
+
+const DEFAULT_BORDERS: Borders = Borders {
     top: Some('-'),
     top_left: Some('+'),
     top_right: Some('+'),
@@ -21,67 +147,3 @@ pub const DEFAULT_BORDERS: Borders = Borders {
 
     intersection: Some('+'),
 };
-
-pub fn grid<const ROWS: usize, const COLS: usize>() -> Grid {
-    let mut grid = Grid::new(records(ROWS, COLS), ROWS, COLS);
-    grid.set_borders(DEFAULT_BORDERS);
-
-    grid
-}
-
-#[allow(unused)]
-pub fn grid_from<const ROWS: usize, const COLS: usize>(data: [[&str; COLS]; ROWS]) -> Grid {
-    let records = data
-        .iter()
-        .map(|row| row.iter().map(|text| text.to_string()).collect())
-        .collect();
-
-    let mut grid = Grid::new(records, ROWS, COLS);
-    grid.set_borders(DEFAULT_BORDERS);
-
-    grid
-}
-
-#[allow(unused)]
-pub fn grid_with_data<const ROWS: usize, const COLS: usize>(
-    data: &[(Position, &'static str)],
-) -> Grid {
-    let mut records = records(ROWS, COLS);
-
-    for &((row, col), text) in data {
-        records[row][col] = text.to_owned();
-    }
-
-    let mut grid = Grid::new(records, ROWS, COLS);
-    grid.set_borders(DEFAULT_BORDERS);
-
-    grid
-}
-
-#[allow(unused)]
-pub fn grid_const<const ROWS: usize, const COLS: usize>(text: &'static str) -> Grid {
-    grid_with_data::<ROWS, COLS>(&build_array::<ROWS, COLS>(text))
-}
-
-fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {
-    let mut records = vec![vec![String::new(); cols]; rows];
-    (0..rows).for_each(|row| {
-        (0..cols).for_each(|col| {
-            let text = format!("{}-{}", row, col);
-            records[row][col] = text;
-        });
-    });
-
-    records
-}
-
-fn build_array<const ROWS: usize, const COLS: usize>(text: &str) -> Vec<(Position, &str)> {
-    let mut records = Vec::with_capacity(ROWS * COLS);
-    for row in 0..ROWS {
-        for col in 0..COLS {
-            records.push(((row, col), text));
-        }
-    }
-
-    records
-}
