@@ -8,12 +8,18 @@ use std::convert::TryFrom;
 
 use owo_colors::OwoColorize;
 
+use papergrid::{
+    records::{Cell, Records},
+    Estimate,
+};
 use tabled::{
-    margin::MarginColor,
+    color::Color,
+    format::Format,
+    margin_color::MarginColor,
     object::{Columns, Object, Rows, Segment},
-    padding::PaddingColor,
-    style::{Color, Style},
-    Alignment, CellOption, Format, Margin, ModifyObject, Padding, Table, Tabled,
+    padding_color::PaddingColor,
+    style::Style,
+    Alignment, CellOption, Margin, ModifyObject, Padding, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -135,23 +141,34 @@ fn main() {
 
 struct MakeMaxPadding;
 
-impl CellOption for MakeMaxPadding {
-    fn change_cell(&mut self, grid: &mut papergrid::Grid, entity: papergrid::Entity) {
-        let widths = grid.build_widths();
-        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let width = grid.get_string_width(row, col);
+impl<R> CellOption<R> for MakeMaxPadding
+where
+    for<'a> &'a R: Records,
+    for<'a> <&'a R as Records>::Cell: Cell,
+{
+    fn change_cell(&mut self, table: &mut Table<R>, entity: papergrid::Entity) {
+        let mut ctrl = papergrid::width::WidthEstimator::default();
+        ctrl.estimate(table.get_records(), table.get_config());
+        let widths: Vec<usize> = ctrl.into();
+
+        let ctrl = papergrid::width::CfgWidthFunction::new(table.get_config());
+
+        let (count_rows, count_cols) = table.shape();
+        for (row, col) in entity.iter(count_rows, count_cols) {
             let column_width = widths[col];
+            let width = table.get_records().get((row, col)).width(&ctrl);
 
             if width < column_width {
                 let available_width = column_width - width;
                 let left = available_width / 2;
                 let right = available_width - left;
 
-                let mut padding = *grid.get_padding((row, col).into());
+                let pos = (row, col).into();
+                let mut padding = *table.get_config().get_padding(pos);
                 padding.left.size = left;
                 padding.right.size = right;
 
-                grid.set_padding((row, col).into(), padding);
+                table.get_config_mut().set_padding(pos, padding);
             }
         }
     }

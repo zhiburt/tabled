@@ -50,9 +50,9 @@
 
 use std::fmt;
 
-use papergrid::{cut_str, string_width_multiline};
+use papergrid::util::{cut_str, string_width_multiline};
 
-use crate::{width::wrap_text, Tabled};
+use crate::{wrap::wrap_text, Tabled};
 
 /// `ExpandedDisplay` display data in a 'expanded display mode' from postgresql.
 /// It may be useful for a large data sets with a lot of fields.

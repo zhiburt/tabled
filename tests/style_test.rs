@@ -5,8 +5,9 @@ use crate::util::{create_table, init_table, static_table, test_table};
 use tabled::{
     builder::Builder,
     object::{Cell, Columns, Rows, Segment},
-    style::{Border, BorderText, Line, RawStyle},
-    Highlight, Modify, Padding, Span, Style,
+    raw_style::RawStyle,
+    style::Line,
+    Border, BorderText, Highlight, Modify, Padding, Span, Style,
 };
 
 mod util;
@@ -546,7 +547,7 @@ test_table!(
     create_table::<2, 2>()
         .with(Style::ascii())
         .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
-        .with(Modify::new(Rows::single(1)).with(Border::none())),
+        .with(Modify::new(Rows::single(1)).with(Border::empty())),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -561,7 +562,7 @@ test_table!(
     create_table::<2, 2>()
         .with(Style::empty())
         .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
-        .with(Modify::new(Columns::single(1)).with(Border::none())),
+        .with(Modify::new(Columns::single(1)).with(Border::empty())),
     "  N  column 0  column 1  "
     "*###          ##########*"
     "* 0    0-0       0-1    *"
@@ -1886,7 +1887,7 @@ fn test_default_border_usage() {
 #[test]
 fn border_colored_test() {
     use owo_colors::OwoColorize;
-    use tabled::style::{BorderColored, Symbol};
+    use tabled::{border_colored::BorderColored, symbol::Symbol};
 
     let table = create_table::<2, 2>()
         .with(Style::ascii())
@@ -1955,7 +1956,7 @@ fn border_colored_test() {
 #[test]
 fn style_with_color_test() {
     use owo_colors::OwoColorize;
-    use tabled::style::Symbol;
+    use tabled::symbol::Symbol;
 
     let style: RawStyle = Style::ascii().into();
     let mut style = style.colored();
@@ -2004,7 +2005,7 @@ test_table!(
     {
         use std::convert::TryFrom;
         use owo_colors::OwoColorize;
-        use tabled::{style::Color};
+        use tabled::color::Color;
 
         let color = Color::try_from(' '.on_green().to_string()).unwrap();
 
@@ -2019,11 +2020,11 @@ test_table!(
     {
         use std::convert::TryFrom;
         use owo_colors::OwoColorize;
-        use tabled::{style::Color};
+        use tabled::color::Color;
 
         let color = Color::try_from(' '.on_green().to_string()).unwrap();
 
         create_table::<3, 3>().with(Style::psql()).with(Modify::new(Segment::all()).with(color))
     },
-    " \u{1b}[42mN\u{1b}[49m | \u{1b}[42mcolumn 0\u{1b}[49m | \u{1b}[42mcolumn 1\u{1b}[49m | \u{1b}[42mcolumn 2\u{1b}[49m \n---+----------+----------+----------\n \u{1b}[42m0\u{1b}[49m |   \u{1b}[42m0-0\u{1b}[49m    |   \u{1b}[42m0-1\u{1b}[49m    |   \u{1b}[42m0-2\u{1b}[49m    \n \u{1b}[42m1\u{1b}[49m |   \u{1b}[42m1-0\u{1b}[49m    |   \u{1b}[42m1-1\u{1b}[49m    |   \u{1b}[42m1-2\u{1b}[49m    \n \u{1b}[42m2\u{1b}[49m |   \u{1b}[42m2-0\u{1b}[49m    |   \u{1b}[42m2-1\u{1b}[49m    |   \u{1b}[42m2-2\u{1b}[49m    "
+    " N \u{1b}[42m|\u{1b}[49m column 0 \u{1b}[42m|\u{1b}[49m column 1 \u{1b}[42m|\u{1b}[49m column 2 \n\u{1b}[42m---+----------+----------+----------\u{1b}[49m\n 0 \u{1b}[42m|\u{1b}[49m   0-0    \u{1b}[42m|\u{1b}[49m   0-1    \u{1b}[42m|\u{1b}[49m   0-2    \n 1 \u{1b}[42m|\u{1b}[49m   1-0    \u{1b}[42m|\u{1b}[49m   1-1    \u{1b}[42m|\u{1b}[49m   1-2    \n 2 \u{1b}[42m|\u{1b}[49m   2-0    \u{1b}[42m|\u{1b}[49m   2-1    \u{1b}[42m|\u{1b}[49m   2-2    "
 );

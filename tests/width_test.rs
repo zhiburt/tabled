@@ -1,9 +1,11 @@
 use tabled::{
-    formatting_settings::TrimStrategy,
+    formatting::TrimStrategy,
+    justify::Justify,
+    min_width::MinWidth,
     object::{Cell, Columns, Object, Rows, Segment},
-    papergrid::string_width_multiline,
-    width::{Justify, MinWidth, Width},
-    width::{PriorityMax, PriorityMin, SuffixLimit},
+    papergrid::util::string_width_multiline,
+    truncate::SuffixLimit,
+    width::{PriorityMax, PriorityMin, Width},
     Alignment, Modify, Padding, Panel, Span, Style,
 };
 

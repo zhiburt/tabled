@@ -29,9 +29,9 @@
 //! [`Table`]: crate::Table
 //! [`Builder::index`]: crate::builder::Builder::index
 
-use papergrid::{Entity, Grid};
+use papergrid::records::{Records, Resizable};
 
-use crate::TableOption;
+use crate::{Table, TableOption};
 
 /// Rotate can be used to rotate a table by 90 degrees.
 #[derive(Debug)]
@@ -58,51 +58,94 @@ pub enum Rotate {
     Bottom,
 }
 
-impl TableOption for Rotate {
-    fn change(&mut self, grid: &mut Grid) {
+impl<R> TableOption<R> for Rotate
+where
+    R: Resizable,
+    for<'a> &'a R: Records,
+{
+    fn change(&mut self, table: &mut Table<R>) {
+        let (count_rows, count_cols) = table.shape();
+        let records = table.get_records_mut();
         match self {
             Self::Left => {
-                let mut new = Grid::new(grid.count_columns(), grid.count_rows());
-                new.set_borders(grid.get_borders().clone());
-                for row in 0..grid.count_rows() {
-                    for (lhs_column, rhs_column) in
-                        (0..grid.count_columns()).zip((0..grid.count_columns()).rev())
-                    {
-                        let settings = grid.get_settings(row, lhs_column);
-                        new.set(Entity::Cell(rhs_column, row), settings);
+                {
+                    let n = std::cmp::max(count_rows, count_cols);
+                    for _ in count_rows..n {
+                        records.push_row();
+                    }
+
+                    for _ in count_cols..n {
+                        records.push_column();
                     }
                 }
 
-                *grid = new;
+                for col in 0..count_cols {
+                    for row in col..count_rows {
+                        records.swap((col, row), (row, col));
+                    }
+                }
+
+                for row in 0..count_cols / 2 {
+                    records.swap_row(row, count_cols - row - 1);
+                }
+
+                {
+                    let n = std::cmp::max(count_rows, count_cols);
+                    for (shift, row) in (count_rows..n).enumerate() {
+                        let row = row - shift;
+                        records.remove_column(row);
+                    }
+
+                    for (shift, col) in (count_cols..n).enumerate() {
+                        let col = col - shift;
+                        records.remove_row(col);
+                    }
+                }
             }
             Self::Right => {
-                let mut new = Grid::new(grid.count_columns(), grid.count_rows());
-                new.set_borders(grid.get_borders().clone());
-                let mut last_row = grid.count_rows();
-                for row in 0..grid.count_rows() {
-                    last_row -= 1;
-                    for column in 0..grid.count_columns() {
-                        let border = grid.get_settings(row, column);
-                        new.set(Entity::Cell(column, last_row), border);
+                {
+                    let n = std::cmp::max(count_rows, count_cols);
+                    for _ in count_rows..n {
+                        records.push_row();
+                    }
+
+                    for _ in count_cols..n {
+                        records.push_column();
                     }
                 }
 
-                *grid = new;
+                for col in 0..count_cols {
+                    for row in col..count_rows {
+                        records.swap((col, row), (row, col));
+                    }
+                }
+
+                for col in 0..count_rows / 2 {
+                    records.swap_column(col, count_rows - col - 1);
+                }
+
+                {
+                    let n = std::cmp::max(count_rows, count_cols);
+                    for (shift, row) in (count_rows..n).enumerate() {
+                        let row = row - shift;
+                        records.remove_column(row);
+                    }
+
+                    for (shift, col) in (count_cols..n).enumerate() {
+                        let col = col - shift;
+                        records.remove_row(col);
+                    }
+                }
             }
             Self::Bottom => {
-                let mut new = Grid::new(grid.count_rows(), grid.count_columns());
-                new.set_borders(grid.get_borders().clone());
-                for column in 0..grid.count_columns() {
-                    for row in 0..grid.count_rows() {
-                        let last_row = grid.count_rows() - 1 - row;
-                        let border = grid.get_settings(row, column);
-                        new.set(Entity::Cell(last_row, column), border);
+                for row in 0..count_rows / 2 {
+                    for col in 0..count_cols {
+                        let last_row = count_rows - row - 1;
+                        records.swap((last_row, col), (row, col));
                     }
                 }
-
-                *grid = new;
             }
-            Self::Top => Self::Bottom.change(grid),
+            Self::Top => Self::Bottom.change(table),
         }
     }
 }

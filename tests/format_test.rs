@@ -1,6 +1,7 @@
 use tabled::{
+    format::Format,
     object::{Cell, Columns, Object, Rows, Segment},
-    Alignment, Format, Modify, Padding, Style,
+    Alignment, Modify, Padding, Style,
 };
 
 use crate::util::{create_table, init_table, test_table};

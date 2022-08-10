@@ -30,9 +30,9 @@
 
 use std::ops::RangeBounds;
 
-use papergrid::{Entity, Grid};
+use papergrid::records::{Records, Resizable};
 
-use crate::{object::bounds_to_usize, TableOption};
+use crate::{object::bounds_to_usize, Table, TableOption};
 
 /// Disable removes particular rows/columns from a [`Table`].
 ///
@@ -58,59 +58,35 @@ pub enum Disable<R: RangeBounds<usize>> {
     Row(R),
 }
 
-impl<R: RangeBounds<usize>> TableOption for Disable<R> {
-    fn change(&mut self, grid: &mut Grid) {
+impl<R, D> TableOption<D> for Disable<R>
+where
+    R: RangeBounds<usize>,
+    D: Resizable,
+    for<'a> &'a D: Records,
+{
+    fn change(&mut self, table: &mut Table<D>) {
+        let (count_rows, count_cols) = table.shape();
+
         match self {
             Self::Column(range) => {
-                let (x, y) =
-                    bounds_to_usize(range.start_bound(), range.end_bound(), grid.count_columns());
+                let (x, y) = bounds_to_usize(range.start_bound(), range.end_bound(), count_cols);
 
-                let removal_size = y - x;
-                let new_column_size = grid.count_columns() - removal_size;
-                let mut new_grid = Grid::new(grid.count_rows(), new_column_size);
-                new_grid.set_borders(grid.get_borders().clone());
-
-                for row in 0..grid.count_rows() {
-                    let mut new_column_index = 0;
-                    for column in 0..grid.count_columns() {
-                        let is_column_deleted = column >= x && column < y;
-                        if is_column_deleted {
-                            continue;
-                        }
-
-                        let cell_settings = grid.get_settings(row, column);
-                        new_grid.set(Entity::Cell(row, new_column_index), cell_settings);
-                        new_column_index += 1;
-                    }
+                let records = table.get_records_mut();
+                for col in (x..y).enumerate().map(|(shift, col)| col - shift) {
+                    records.remove_column(col);
                 }
-
-                *grid = new_grid;
             }
             Self::Row(range) => {
-                let (x, y) =
-                    bounds_to_usize(range.start_bound(), range.end_bound(), grid.count_rows());
+                let (x, y) = bounds_to_usize(range.start_bound(), range.end_bound(), count_rows);
 
-                let removal_size = y - x;
-                let new_row_size = grid.count_rows() - removal_size;
-                let mut new_grid = Grid::new(new_row_size, grid.count_columns());
-                new_grid.set_borders(grid.get_borders().clone());
-
-                for column in 0..grid.count_columns() {
-                    let mut new_row_index = 0;
-                    for row in 0..grid.count_rows() {
-                        let is_row_deleted = row >= x && row < y;
-                        if is_row_deleted {
-                            continue;
-                        }
-
-                        let cell_settings = grid.get_settings(row, column);
-                        new_grid.set(Entity::Cell(new_row_index, column), cell_settings);
-                        new_row_index += 1;
-                    }
+                let records = table.get_records_mut();
+                for row in (x..y).enumerate().map(|(shift, col)| col - shift) {
+                    records.remove_row(row);
                 }
-
-                *grid = new_grid;
             }
         }
+
+        // fixme: I am pretty sure that we violate span constrains by removing rows/cols
+        //        Because span may be bigger then the max number of rows/cols
     }
 }

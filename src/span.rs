@@ -27,9 +27,9 @@
 //! )
 //! ```
 
-use papergrid::{Entity, Grid};
+use papergrid::{records::Records, Entity};
 
-use crate::CellOption;
+use crate::{CellOption, Table};
 
 /// Span represent a horizontal/column span setting for any cell on a [`Table`].
 ///
@@ -53,8 +53,14 @@ impl Span {
     }
 }
 
-impl CellOption for Span {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        grid.set_span(entity, self.size);
+impl<R> CellOption<R> for Span
+where
+    for<'a> &'a R: Records,
+{
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        let (count_rows, count_cols) = table.shape();
+        for pos in entity.iter(count_rows, count_cols) {
+            table.get_config_mut().set_span(pos, self.size);
+        }
     }
 }

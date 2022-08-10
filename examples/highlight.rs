@@ -3,8 +3,7 @@
 
 use tabled::{
     object::{Columns, Object, Rows},
-    style::{Border, Style},
-    Highlight, TableIteratorExt,
+    Border, Highlight, Style, TableIteratorExt,
 };
 
 fn main() {

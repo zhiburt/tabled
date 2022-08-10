@@ -1,5 +1,5 @@
 use tabled::{
-    builder::Builder, object::Segment, Alignment, Disable, Extract, Format, Modify, Padding,
+    builder::Builder, format::Format, object::Segment, Alignment, Disable, Extract, Modify, Padding,
 };
 
 use crate::util::{create_table, test_table};
@@ -79,11 +79,11 @@ test_table!(
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
         .with(Extract::segment(1..3, 1..)),
-    "+---------+---------+---------+"
-    "|   [0-0] |   [0-1] |   [0-2] |"
-    "+---------+---------+---------+"
-    "|   [1-0] |   [1-1] |   [1-2] |"
-    "+---------+---------+---------+"
+        "+---------+---------+---------+"
+        "|   [0-0] |   [0-1] |   [0-2] |"
+        "+---------+---------+---------+"
+        "|   [1-0] |   [1-1] |   [1-2] |"
+        "+---------+---------+---------+"
 );
 
 test_table!(

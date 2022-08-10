@@ -2,9 +2,13 @@
 //!
 //! [`Table`]: crate::Table
 
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{
+    records::{Records, RecordsMut},
+    width::CfgWidthFunction,
+    Entity,
+};
 
-use crate::CellOption;
+use crate::{CellOption, Table};
 
 /// A formatting function of particular cells on a [`Table`].
 ///
@@ -122,16 +126,23 @@ impl Format<()> {
     }
 }
 
-impl<F> CellOption for Format<F>
+impl<F, R> CellOption<R> for Format<F>
 where
     F: FnMut(&str) -> String,
+    R: RecordsMut,
+    for<'a> &'a R: Records,
 {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let content = grid.get_cell_content(row, col);
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        let width_fn = CfgWidthFunction::new(table.get_config());
+        let (count_rows, count_cols) = table.shape();
+        for pos in entity.iter(count_rows, count_cols) {
+            let records = table.get_records();
+            let content = records.get_text(pos);
             let content = (self.f)(content);
-            grid.set(Entity::Cell(row, col), Settings::new().text(content));
+            table.get_records_mut().set_text(pos, content, &width_fn);
         }
+
+        table.destroy_width_cache();
     }
 }
 
@@ -152,28 +163,33 @@ where
     }
 }
 
-impl<F> CellOption for FormatWithIndex<F>
+impl<F, R> CellOption<R> for FormatWithIndex<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
+    R: RecordsMut,
+    for<'a> &'a R: Records,
 {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let content = grid.get_cell_content(row, col);
-            let content = (self.f)(content, (row, col));
-            grid.set(Entity::Cell(row, col), Settings::new().text(content));
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        let width_fn = CfgWidthFunction::new(table.get_config());
+        let (count_rows, count_cols) = table.shape();
+        for pos in entity.iter(count_rows, count_cols) {
+            let records = table.get_records();
+            let content = records.get_text(pos);
+            let content = (self.f)(content, pos);
+            table.get_records_mut().set_text(pos, content, &width_fn);
         }
+
+        table.destroy_width_cache();
     }
 }
 
-impl<F> CellOption for F
+impl<F, R> CellOption<R> for F
 where
     F: FnMut(&str) -> String,
+    R: RecordsMut,
+    for<'a> &'a R: Records,
 {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let content = grid.get_cell_content(row, col);
-            let content = (self)(content);
-            grid.set(Entity::Cell(row, col), Settings::new().text(content));
-        }
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        Format::new(self).change_cell(table, entity);
     }
 }

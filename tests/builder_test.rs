@@ -768,7 +768,7 @@ fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
     let lines = table.lines().collect::<Vec<_>>();
     let lines_has_the_same_length = lines
         .iter()
-        .map(|line| papergrid::string_width(line))
+        .map(|line| papergrid::util::string_width(line))
         .all(|line_width| line_width == lines[0].len());
     lines_has_the_same_length
 }

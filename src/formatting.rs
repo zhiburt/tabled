@@ -6,9 +6,12 @@
 //!
 //! [`Alignment`]: crate::Alignment
 
-use papergrid::{Entity, Grid};
+use papergrid::{
+    records::{Records, RecordsMut},
+    Entity,
+};
 
-use crate::{CellOption, TableOption};
+use crate::{CellOption, Table, TableOption};
 
 /// Set a tab size.
 ///
@@ -21,9 +24,14 @@ use crate::{CellOption, TableOption};
 #[derive(Debug, Default, Clone)]
 pub struct TabSize(pub usize);
 
-impl TableOption for TabSize {
-    fn change(&mut self, grid: &mut Grid) {
-        grid.set_tab_width(self.0);
+impl<R> TableOption<R> for TabSize
+where
+    R: RecordsMut,
+    for<'a> &'a R: Records,
+{
+    fn change(&mut self, table: &mut Table<R>) {
+        table.get_config_mut().set_tab_width(self.0);
+        table.update_records();
     }
 }
 
@@ -161,15 +169,15 @@ pub enum AlignmentStrategy {
     PerLine,
 }
 
-impl CellOption for AlignmentStrategy {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        let mut formatting = *grid.get_formatting(entity);
+impl<R> CellOption<R> for AlignmentStrategy {
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        let mut formatting = *table.get_config().get_formatting(entity);
         match &self {
             AlignmentStrategy::PerCell => formatting.allow_lines_alignement = false,
             AlignmentStrategy::PerLine => formatting.allow_lines_alignement = true,
         }
 
-        grid.set_formatting(entity, formatting);
+        table.get_config_mut().set_formatting(entity, formatting);
     }
 }
 
@@ -249,10 +257,11 @@ pub enum TrimStrategy {
     None,
 }
 
-impl CellOption for TrimStrategy {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        let mut formatting = *grid.get_formatting(entity);
+impl<R> CellOption<R> for TrimStrategy {
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        let mut formatting = *table.get_config().get_formatting(entity);
 
+        // todo: could be changed to be a struct an enum like consts in `impl` block.
         match self {
             TrimStrategy::Vertical => {
                 formatting.vertical_trim = true;
@@ -270,6 +279,6 @@ impl CellOption for TrimStrategy {
             }
         }
 
-        grid.set_formatting(entity, formatting);
+        table.get_config_mut().set_formatting(entity, formatting);
     }
 }

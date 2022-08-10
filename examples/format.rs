@@ -4,8 +4,9 @@
 //! The example shows a usage of [`tabled::Format`]/[`tabled::FormatWithIndex`].
 
 use tabled::{
+    format::Format,
     object::{Columns, Object, Rows},
-    Format, ModifyObject, Style, Table, Tabled,
+    ModifyObject, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]

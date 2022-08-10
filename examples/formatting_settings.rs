@@ -2,7 +2,7 @@
 //! `cargo run --example formatting_settings`
 
 use tabled::{
-    formatting_settings::{AlignmentStrategy, TrimStrategy},
+    formatting::{AlignmentStrategy, TrimStrategy},
     object::Segment,
     Modify, Style, TableIteratorExt,
 };

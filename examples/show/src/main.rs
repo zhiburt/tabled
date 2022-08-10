@@ -22,15 +22,16 @@ use crossterm::{
     terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use tabled::{
-    formatting_settings::TrimStrategy,
+    border_colored::BorderColored,
+    formatting::TrimStrategy,
     object::{Columns, Object, Rows},
-    style::{BorderColored, BorderText, Symbol},
-    Alignment, Disable, Header, Highlight, Margin, Modify, Style, Table, Tabled, Width,
+    symbol::Symbol,
+    Alignment, BorderText, Disable, Header, Highlight, Margin, Modify, Style, Table, Tabled, Width,
 };
 
 mod config;
 
-#[derive(Tabled)]
+#[derive(Tabled, Debug, Clone)]
 struct Movie {
     #[tabled(rename = "Release Date")]
     release_date: &'static str,
@@ -284,10 +285,13 @@ struct Context {
     ignore_table: bool,
 }
 
-fn detached_action<F: Fn(Table, &[Movie]) -> Table + 'static>(f: F) -> Action {
+fn detached_action<F>(f: F) -> Action
+where
+    F: Fn(Table, Vec<Movie>) -> Table + 'static,
+{
     Box::new(move |table, m, ctx| {
         ctx.ignore_table = true;
-        f(table, m)
+        f(table, m.to_vec())
     })
 }
 
@@ -303,7 +307,7 @@ impl<'a> Runner<'a> {
     fn new(movies: &'a [Movie]) -> Self {
         Self {
             movies,
-            last_table: Table::new(movies),
+            last_table: Table::new(movies.to_vec()),
         }
     }
 

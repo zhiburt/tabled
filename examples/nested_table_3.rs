@@ -3,8 +3,7 @@
 
 use tabled::{
     object::{Cell, Segment},
-    style::{Border, Style},
-    Alignment, Extract, Header, Highlight, Modify, TableIteratorExt, Tabled,
+    Alignment, Border, Extract, Header, Highlight, Modify, Style, TableIteratorExt, Tabled,
 };
 
 #[derive(Tabled)]

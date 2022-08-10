@@ -48,9 +48,9 @@
 //! [`Table`]: crate::Table
 //! [`AlignmentStrategy`]: crate::formatting_settings::AlignmentStrategy
 
-use papergrid::{Entity, Grid};
+use papergrid::Entity;
 
-use crate::CellOption;
+use crate::{CellOption, Table};
 
 pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 
@@ -129,11 +129,11 @@ impl Alignment {
     }
 }
 
-impl CellOption for Alignment {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
+impl<R> CellOption<R> for Alignment {
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         match *self {
-            Self::Horizontal(a) => grid.set_alignment_horizontal(entity, a),
-            Self::Vertical(a) => grid.set_alignment_vertical(entity, a),
+            Self::Horizontal(a) => table.get_config_mut().set_alignment_horizontal(entity, a),
+            Self::Vertical(a) => table.get_config_mut().set_alignment_vertical(entity, a),
         };
     }
 }

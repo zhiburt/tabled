@@ -24,7 +24,12 @@ impl Distribution {
 
 fn main() {
     let data = [
-        Distribution::new("Manjaro", "Arch", true, true),
+        Distribution::new(
+            "\u{1b}]8;;http://www.google.com\u{1b}\\google\u{1b}]8;;\u{1b}\\",
+            "Arch",
+            true,
+            true,
+        ),
         Distribution::new("Arch", "", true, true),
         Distribution::new("Debian", "", true, true),
     ];

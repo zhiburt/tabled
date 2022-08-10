@@ -110,7 +110,10 @@
 
 use std::{fmt::Display, iter::FromIterator};
 
-use papergrid::{AlignmentHorizontal, Entity, Formatting, Grid, Indent, Padding, Settings};
+use papergrid::{
+    records::{records_info::RecordsInfo, Records},
+    AlignmentHorizontal, Entity, Formatting, GridConfig, Indent, Padding,
+};
 
 use crate::{Style, Table};
 
@@ -281,7 +284,7 @@ impl Builder {
     /// builder.set_columns(["i", "column1", "column2"]);
     /// builder.add_record(["0", "value1", "value2"]);
     /// ```
-    pub fn build(mut self) -> Table {
+    pub fn build(mut self) -> Table<RecordsInfo<'static>> {
         self.fix_rows();
         build_table(self.columns, self.records, self.size)
     }
@@ -341,6 +344,10 @@ impl Builder {
         self.clean_columns();
         self.clean_rows();
         self
+    }
+
+    pub fn custom<R>(records: R) -> CustomRecords<R> {
+        CustomRecords::new(records)
     }
 
     fn clean_columns(&mut self) {
@@ -469,69 +476,53 @@ fn build_table(
     columns: Option<Vec<String>>,
     records: Vec<Vec<String>>,
     count_columns: usize,
-) -> Table {
-    let grid = build_grid(records, columns, count_columns);
-    create_table_from_grid(grid)
+) -> Table<RecordsInfo<'static>> {
+    let mut cfg = GridConfig::default();
+    configure_grid(&mut cfg);
+    let records = build_grid(records, columns, count_columns, &cfg);
+    create_table(records, cfg)
 }
 
 /// Building [`Grid`] from ordinary data.
 fn build_grid(
-    records: Vec<Vec<String>>,
+    mut records: Vec<Vec<String>>,
     columns: Option<Vec<String>>,
     count_columns: usize,
-) -> Grid {
+    cfg: &GridConfig,
+) -> RecordsInfo<'static> {
     let mut count_rows = records.len();
-
     if columns.is_some() {
         count_rows += 1;
     }
 
-    let mut grid = Grid::new(count_rows, count_columns);
-
-    let mut row = 0;
-    if let Some(headers) = columns {
-        for (i, text) in headers.into_iter().enumerate() {
-            grid.set(Entity::Cell(0, i), Settings::new().text(text));
-        }
-
-        row = 1;
+    if let Some(columns) = columns {
+        records.insert(0, columns);
     }
 
-    for fields in records {
-        // don't show off a empty data array
-        if fields.is_empty() {
-            continue;
-        }
-
-        for (column, field) in fields.into_iter().enumerate() {
-            grid.set(Entity::Cell(row, column), Settings::new().text(field));
-        }
-
-        row += 1;
-    }
-
-    grid
+    RecordsInfo::new(records, (count_rows, count_columns), cfg)
 }
 
-fn create_table_from_grid(mut grid: Grid) -> Table {
-    configure_grid(&mut grid);
-
-    let table = Table { grid };
+fn create_table<R>(records: R, cfg: GridConfig) -> Table<R>
+where
+    for<'a> &'a R: Records,
+{
+    let table = Table::new_raw(records, cfg);
     table.with(Style::ascii())
 }
 
-fn configure_grid(grid: &mut Grid) {
-    grid.set_tab_width(4);
-    grid.set_padding(
+fn configure_grid(cfg: &mut GridConfig) {
+    cfg.set_tab_width(4);
+    cfg.set_padding(
         Entity::Global,
         Padding {
             left: Indent::spaced(1),
             right: Indent::spaced(1),
-            ..Default::default()
+            top: Indent::default(),
+            bottom: Indent::default(),
         },
     );
-    grid.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Left);
-    grid.set_formatting(
+    cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Left);
+    cfg.set_formatting(
         Entity::Global,
         Formatting {
             horizontal_trim: false,
@@ -761,7 +752,7 @@ impl IndexBuilder {
     }
 
     /// Builds a table.
-    pub fn build(self) -> Table {
+    pub fn build(self) -> Table<RecordsInfo<'static>> {
         build_index(self).build()
     }
 }
@@ -835,4 +826,26 @@ fn remove_or_default<T: Default>(v: &mut Vec<T>, i: usize) -> T {
 
 fn build_range_index(n: usize) -> Vec<String> {
     (0..n).map(|i| i.to_string()).collect()
+}
+
+pub struct CustomRecords<R> {
+    records: R,
+}
+
+impl<R> CustomRecords<R> {
+    fn new(records: R) -> Self {
+        Self { records }
+    }
+}
+
+impl<R> CustomRecords<R>
+where
+    for<'a> &'a R: Records,
+{
+    pub fn build(self) -> Table<R> {
+        let mut cfg = GridConfig::default();
+        configure_grid(&mut cfg);
+        let table = Table::new_raw(self.records, cfg);
+        table.with(Style::ascii())
+    }
 }
