@@ -56,6 +56,8 @@ where
             let cell = create_cell_info(text.clone(), &ctrl);
             row.push(cell);
         }
+
+        self.size.1 += 1;
     }
 }
 
