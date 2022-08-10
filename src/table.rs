@@ -81,7 +81,6 @@ pub struct Table<R = RecordsInfo<'static>> {
     records: R,
     cfg: GridConfig,
     widths: Option<Vec<usize>>,
-    heights: Option<Vec<usize>>,
 }
 
 impl<R> Table<R> {
@@ -90,7 +89,6 @@ impl<R> Table<R> {
             records,
             cfg,
             widths: None,
-            heights: None,
         }
     }
 }

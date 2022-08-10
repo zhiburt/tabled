@@ -48,6 +48,21 @@ impl<'a, TT> RecordsInfo<'a, TT> {
 
 impl<'a, TT> RecordsInfo<'a, TT>
 where
+    TT: Clone,
+{
+    pub fn duplicate_row(&mut self, row: usize) {
+        if row >= self.size.0 {
+            return;
+        }
+
+        let row = self.records[row].clone();
+        self.records.push(row);
+        self.size.0 += 1;
+    }
+}
+
+impl<'a, TT> RecordsInfo<'a, TT>
+where
     TT: Default,
 {
     pub fn push(&mut self, text: String, cfg: &GridConfig) {
