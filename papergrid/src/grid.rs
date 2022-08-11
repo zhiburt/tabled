@@ -905,21 +905,11 @@ fn top_indent(
     indent + padding.top.size
 }
 
-fn repeat_symbol(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
-    if n > 0 {
-        for _ in 0..n {
-            c.fmt(f)?;
-        }
-    }
-    Ok(())
-}
-
 fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
-    if n > 0 {
-        for _ in 0..n {
-            f.write_char(c)?;
-        }
+    for _ in 0..n {
+        c.fmt(f)?;
     }
+
     Ok(())
 }
 
@@ -1223,7 +1213,7 @@ where
                     prepare_coloring(f, grid.get_horizontal_color((row, col)), &mut used_color)?;
                 }
 
-                repeat_symbol(f, *c, width)?;
+                repeat_char(f, *c, width)?;
             }
             None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
         }

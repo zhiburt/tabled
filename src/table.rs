@@ -83,16 +83,6 @@ pub struct Table<R = RecordsInfo<'static>> {
     widths: Option<Vec<usize>>,
 }
 
-impl<R> Table<R> {
-    pub(crate) fn new_raw(records: R, cfg: GridConfig) -> Self {
-        Self {
-            records,
-            cfg,
-            widths: None,
-        }
-    }
-}
-
 impl<'a> Table<RecordsInfo<'a>> {
     /// New creates a Table instance.
     pub fn new<I, T>(iter: I) -> Self
@@ -100,7 +90,7 @@ impl<'a> Table<RecordsInfo<'a>> {
         I: IntoIterator<Item = T> + 'a,
         T: Tabled,
     {
-        Self::from_iter(iter)
+        Self::builder(iter).build()
     }
 
     /// Creates a builder from a data set given.
@@ -153,9 +143,15 @@ impl<'a> Table<RecordsInfo<'a>> {
         T: Tabled,
         I: IntoIterator<Item = T>,
     {
-        let mut b = iter.into_iter().map(|t| t.fields()).collect::<Builder>();
+        let mut b = Builder::new();
         b.hint_column_size(T::LENGTH);
         b.set_columns(T::headers());
+
+        for c in iter {
+            let fields = c.fields();
+            b.add_record(fields);
+        }
+
         b
     }
 }
@@ -207,6 +203,16 @@ where
     pub fn is_empty(&self) -> bool {
         let (count_rows, count_cols) = self.shape();
         count_rows == 0 || count_cols == 0
+    }
+}
+
+impl<R> Table<R> {
+    pub(crate) fn new_raw(records: R, cfg: GridConfig) -> Self {
+        Self {
+            records,
+            cfg,
+            widths: None,
+        }
     }
 }
 

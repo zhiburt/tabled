@@ -431,14 +431,14 @@ impl Builder {
                 if !self.records.is_empty() {
                     self.different_column_sizes_used = true;
                 }
-            },
+            }
             std::cmp::Ordering::Greater => {
                 self.size = size;
 
                 if !self.records.is_empty() {
                     self.different_column_sizes_used = true;
                 }
-            },
+            }
             std::cmp::Ordering::Equal => (),
         }
     }

@@ -86,13 +86,7 @@ pub fn string_width_multiline(text: &str) -> usize {
 /// Returns a max string width of a line.
 #[cfg(feature = "color")]
 pub fn string_width_multiline(text: &str) -> usize {
-    let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
-    let s = std::str::from_utf8(&b).unwrap();
-
-    s.lines()
-        .map(unicode_width::UnicodeWidthStr::width)
-        .max()
-        .unwrap_or(0)
+    text.lines().map(string_width).max().unwrap_or(0)
 }
 
 pub fn count_lines(s: &str) -> usize {

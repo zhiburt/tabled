@@ -92,6 +92,7 @@ impl<'a, 'b, T> Records for &'a RecordsInfo<'b, T> {
         &self.records[row][col].text
     }
 }
+
 impl<'b, T> RecordsMut for RecordsInfo<'b, T>
 where
     T: Default,
