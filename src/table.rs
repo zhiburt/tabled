@@ -216,7 +216,7 @@ where
     for<'a> &'a R: Records,
 {
     pub(crate) fn update_records(&mut self) {
-        let ctrl = CfgWidthFunction::new(self.get_config());
+        let ctrl = CfgWidthFunction::from_cfg(self.get_config());
 
         let (count_rows, count_cols) = self.get_records().size();
         for row in 0..count_rows {

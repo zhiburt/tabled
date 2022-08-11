@@ -308,7 +308,7 @@ where
     for<'a> &'a R: Records,
     for<'a> <&'a R as Records>::Cell: Cell,
 {
-    let ctrl = CfgWidthFunction::new(table.get_config());
+    let ctrl = CfgWidthFunction::from_cfg(table.get_config());
     value.width(table.get_records(), table.get_config(), ctrl)
 }
 

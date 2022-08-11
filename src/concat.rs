@@ -114,7 +114,7 @@ where
 {
     fn change(&mut self, lhs: &mut Table<R>) {
         let (count_rows, count_cols) = lhs.shape();
-        let ctrl = CfgWidthFunction::new(lhs.get_config());
+        let ctrl = CfgWidthFunction::from_cfg(lhs.get_config());
         let rhs = &self.table;
         match self.mode {
             ConcatMode::Horizontal => {

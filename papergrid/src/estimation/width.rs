@@ -68,9 +68,13 @@ pub struct CfgWidthFunction {
 }
 
 impl CfgWidthFunction {
-    pub fn new(cfg: &GridConfig) -> Self {
+    pub fn from_cfg(cfg: &GridConfig) -> Self {
+        Self::new(cfg.get_tab_width())
+    }
+
+    pub fn new(tab_size: usize) -> Self {
         Self {
-            tab_width: cfg.get_tab_width(),
+            tab_width: tab_size,
         }
     }
 }
@@ -181,7 +185,7 @@ where
     R: Records,
     R::Cell: Cell,
 {
-    let width = records.get(pos).width(CfgWidthFunction::new(cfg));
+    let width = records.get(pos).width(CfgWidthFunction::from_cfg(cfg));
     let padding = get_cell_padding(cfg, pos);
     width + padding
 }

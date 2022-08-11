@@ -21,7 +21,7 @@ impl<'a> RecordsInfo<'a> {
         T: IntoIterator<Item = S> + 'a,
         S: AsRef<str> + 'a,
     {
-        let width_fn = CfgWidthFunction::new(cfg);
+        let width_fn = CfgWidthFunction::from_cfg(cfg);
         let records = create_records(records, &mut size.0, size.1, width_fn);
         Self { records, size }
     }
@@ -164,12 +164,12 @@ impl Resizable for RecordsInfo<'_> {
 #[derive(Debug, Clone, Default)]
 pub struct CellInfo<'a> {
     text: Cow<'a, str>,
-    lines: Vec<StringWithWidth>,
+    lines: Vec<StrWithWidth<'a>>,
     width: usize,
 }
 
 impl<'a> CellInfo<'a> {
-    pub fn new(text: Cow<'a, str>, lines: Vec<StringWithWidth>, width: usize) -> Self {
+    pub fn new(text: Cow<'a, str>, lines: Vec<StrWithWidth<'a>>, width: usize) -> Self {
         Self { text, lines, width }
     }
 
@@ -188,7 +188,7 @@ impl<'a> CellInfo<'a> {
 }
 
 impl<'a, 'b> Cell for &'a CellInfo<'b> {
-    type Text = StringWithWidth;
+    type Text = StrWithWidth<'a>;
     type Lines = CellInfoLines<'a>;
 
     fn lines(&self) -> Self::Lines {
@@ -196,7 +196,9 @@ impl<'a, 'b> Cell for &'a CellInfo<'b> {
     }
 
     fn get_line(&self, i: usize) -> Option<Self::Text> {
-        self.lines.get(i).cloned()
+        self.lines
+            .get(i)
+            .map(|s| StrWithWidth::new(Cow::Borrowed(&s.text), s.width))
     }
 
     fn count_lines(&self) -> usize {
@@ -224,31 +226,33 @@ impl crate::Color for CellInfo<'_> {
 
 #[derive(Debug)]
 pub struct CellInfoLines<'a> {
-    lines: std::slice::Iter<'a, StringWithWidth>,
+    lines: std::slice::Iter<'a, StrWithWidth<'a>>,
 }
 
 impl<'a> CellInfoLines<'a> {
-    pub fn new(lines: std::slice::Iter<'a, StringWithWidth>) -> Self {
+    pub fn new(lines: std::slice::Iter<'a, StrWithWidth<'a>>) -> Self {
         Self { lines }
     }
 }
 
 impl<'a> Iterator for CellInfoLines<'a> {
-    type Item = StringWithWidth;
+    type Item = StrWithWidth<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.lines.next().cloned()
+        self.lines
+            .next()
+            .map(|s| StrWithWidth::new(Cow::Borrowed(s.text.as_ref()), s.width))
     }
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct StringWithWidth {
-    text: String,
-    width: usize,
+pub struct StrWithWidth<'a> {
+    pub(crate) text: Cow<'a, str>,
+    pub(crate) width: usize,
 }
 
-impl StringWithWidth {
-    pub fn new(text: String, width: usize) -> Self {
+impl<'a> StrWithWidth<'a> {
+    pub fn new(text: Cow<'a, str>, width: usize) -> Self {
         Self { text, width }
     }
 
@@ -257,13 +261,13 @@ impl StringWithWidth {
     }
 }
 
-impl AsRef<str> for StringWithWidth {
+impl AsRef<str> for StrWithWidth<'_> {
     fn as_ref(&self) -> &str {
         &self.text
     }
 }
 
-impl Text for StringWithWidth {
+impl Text for StrWithWidth<'_> {
     fn as_str(&self) -> &str {
         &self.text
     }
@@ -276,7 +280,7 @@ impl Text for StringWithWidth {
     }
 }
 
-impl fmt::Display for StringWithWidth {
+impl fmt::Display for StrWithWidth<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.text.fmt(f)
     }
@@ -323,7 +327,7 @@ where
     info.text = Cow::Owned(text);
     for line in get_lines(info.text.as_ref()) {
         let width = width_fn.width(line.as_ref());
-        let line = StringWithWidth::new(line.to_string(), width);
+        let line = StrWithWidth::new(line.to_string().into(), width);
         info.width = max(info.width, width);
         info.lines.push(line);
     }

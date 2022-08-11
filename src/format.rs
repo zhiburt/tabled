@@ -133,7 +133,7 @@ where
     for<'a> &'a R: Records,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
-        let width_fn = CfgWidthFunction::new(table.get_config());
+        let width_fn = CfgWidthFunction::from_cfg(table.get_config());
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
             let records = table.get_records();
@@ -170,7 +170,7 @@ where
     for<'a> &'a R: Records,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
-        let width_fn = CfgWidthFunction::new(table.get_config());
+        let width_fn = CfgWidthFunction::from_cfg(table.get_config());
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
             let records = table.get_records();

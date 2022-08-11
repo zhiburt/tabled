@@ -6,16 +6,13 @@ use std::{
 };
 
 use crate::{
-    records::{
-        records_info::{CellInfoLines, StringWithWidth},
-        Cell, Records,
-    },
+    records::{records_info::CellInfoLines, Cell, Records},
     util::get_lines,
     width::{CfgWidthFunction, WidthFunc},
     Color, GridConfig, Position,
 };
 
-use super::RecordsMut;
+use super::{records_info::StrWithWidth, RecordsMut};
 
 #[derive(Debug, Default, Clone)]
 pub struct RecordsInfo<'a, T> {
@@ -31,8 +28,12 @@ impl<'a, TT> RecordsInfo<'a, TT> {
         S: AsRef<str> + 'a,
         TT: Default + Clone + 'a,
     {
-        let width_fn = CfgWidthFunction::new(cfg);
+        let width_fn = CfgWidthFunction::from_cfg(cfg);
         let records = create_records(records, &mut size.0, size.1, width_fn);
+        Self { records, size }
+    }
+
+    pub fn from_vec(records: Vec<Vec<CellInfo<'a, TT>>>, size: (usize, usize)) -> Self {
         Self { records, size }
     }
 
@@ -66,9 +67,9 @@ where
     TT: Default,
 {
     pub fn push(&mut self, text: String, cfg: &GridConfig) {
-        let ctrl = CfgWidthFunction::new(cfg);
+        let ctrl = CfgWidthFunction::from_cfg(cfg);
         for row in &mut self.records {
-            let cell = create_cell_info(text.clone(), &ctrl);
+            let cell = create_cell_info(text.clone(), TT::default(), &ctrl);
             row.push(cell);
         }
 
@@ -99,7 +100,7 @@ where
     where
         W: WidthFunc,
     {
-        self.records[row][col] = create_cell_info(text, width_fn);
+        self.records[row][col] = create_cell_info(text, T::default(), width_fn);
     }
 
     fn update<W>(&mut self, (row, col): Position, width: W)
@@ -133,13 +134,13 @@ impl<T> IndexMut<Position> for RecordsInfo<'_, T> {
 #[derive(Debug, Clone, Default)]
 pub struct CellInfo<'a, T> {
     text: Cow<'a, str>,
-    lines: Vec<StringWithWidth>,
+    lines: Vec<StrWithWidth<'a>>,
     width: usize,
     data: T,
 }
 
 impl<'a, T> CellInfo<'a, T> {
-    pub fn new(text: Cow<'a, str>, lines: Vec<StringWithWidth>, width: usize, data: T) -> Self {
+    pub fn new(text: Cow<'a, str>, lines: Vec<StrWithWidth<'a>>, width: usize, data: T) -> Self {
         Self {
             text,
             lines,
@@ -147,10 +148,21 @@ impl<'a, T> CellInfo<'a, T> {
             data,
         }
     }
+
+    pub fn from_str<W>(text: String, data: T, width_ctrl: W) -> Self
+    where
+        W: WidthFunc,
+    {
+        create_cell_info(text, data, width_ctrl)
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.text
+    }
 }
 
 impl<'a, 'b, T> Cell for &'a CellInfo<'b, T> {
-    type Text = StringWithWidth;
+    type Text = StrWithWidth<'a>;
     type Lines = CellInfoLines<'a>;
 
     fn lines(&self) -> Self::Lines {
@@ -158,7 +170,9 @@ impl<'a, 'b, T> Cell for &'a CellInfo<'b, T> {
     }
 
     fn get_line(&self, i: usize) -> Option<Self::Text> {
-        self.lines.get(i).cloned()
+        self.lines
+            .get(i)
+            .map(|s| StrWithWidth::new(Cow::Borrowed(&s.text), s.width))
     }
 
     fn count_lines(&self) -> usize {
@@ -223,7 +237,7 @@ where
                 continue;
             }
 
-            cells[row][col] = create_cell_info(text, &width_fn);
+            cells[row][col] = create_cell_info(text, TT::default(), &width_fn);
             cells[row][col].data = clr;
         }
     }
@@ -231,15 +245,20 @@ where
     cells
 }
 
-fn create_cell_info<W: WidthFunc, T: Default>(text: String, width_fn: W) -> CellInfo<'static, T> {
+fn create_cell_info<W, T>(text: String, data: T, width_fn: W) -> CellInfo<'static, T>
+where
+    W: WidthFunc,
+{
     let mut info = CellInfo {
         text: Cow::Owned(text),
-        ..Default::default()
+        data,
+        lines: vec![],
+        width: 0,
     };
 
     for line in get_lines(info.text.as_ref()) {
         let width = width_fn.width(line.as_ref());
-        let line = StringWithWidth::new(line.to_string(), width);
+        let line = StrWithWidth::new(Cow::Owned(line.to_string()), width);
         info.width = max(info.width, width);
         info.lines.push(line);
     }

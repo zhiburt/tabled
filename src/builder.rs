@@ -188,7 +188,7 @@ impl Builder {
         H: IntoIterator<Item = T>,
         T: Display,
     {
-        let ctrl = CfgWidthFunction::new(&GridConfig::default());
+        let ctrl = CfgWidthFunction::new(4);
         let columns: Vec<_> = columns
             .into_iter()
             .map(|t| CellInfo::from_str(t.to_string(), &ctrl))
@@ -260,7 +260,7 @@ impl Builder {
         R: IntoIterator<Item = T>,
         T: Display,
     {
-        let ctrl = CfgWidthFunction::new(&GridConfig::default());
+        let ctrl = CfgWidthFunction::new(4);
         let row: Vec<_> = record
             .into_iter()
             .map(|t| CellInfo::from_str(t.to_string(), &ctrl))
@@ -430,7 +430,7 @@ impl Builder {
     }
 
     fn fix_rows(&mut self) {
-        let ctrl = CfgWidthFunction::new(&GridConfig::default());
+        let ctrl = CfgWidthFunction::new(4);
         let text = self.empty_cell_text.clone().unwrap_or_default();
         let empty_cell_text = CellInfo::from_str(text, &ctrl);
 
@@ -663,7 +663,7 @@ impl IndexBuilder {
     /// When [`None`] the name won't be used.
     pub fn set_name(&mut self, name: Option<String>) -> &mut Self {
         self.name = name.map(|s| {
-            let ctrl = CfgWidthFunction::new(&GridConfig::default());
+            let ctrl = CfgWidthFunction::new(4);
             CellInfo::from_str(s, ctrl)
         });
         self
@@ -843,7 +843,7 @@ fn remove_or_default<T: Default>(v: &mut Vec<T>, i: usize) -> T {
 }
 
 fn build_range_index(n: usize) -> Vec<CellInfo<'static>> {
-    let ctrl = CfgWidthFunction::new(&GridConfig::default());
+    let ctrl = CfgWidthFunction::new(4);
     (0..n)
         .map(|i| CellInfo::from_str(i.to_string(), &ctrl))
         .collect()

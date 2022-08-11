@@ -91,7 +91,7 @@ where
     for<'a> <&'a R as Records>::Cell: Cell,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
-        let width_ctrl = CfgWidthFunction::new(table.get_config());
+        let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
         let width = self
             .width
             .width(table.get_records(), table.get_config(), &width_ctrl);

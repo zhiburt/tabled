@@ -710,11 +710,12 @@ fn indent_from_top(alignment: AlignmentVertical, height: usize, real_height: usi
     }
 }
 
-fn build_cell_line<R, W, H>(
+fn build_cell_line<R, W, H, WF>(
     grid: &Grid<'_, R, W, H>,
     line: usize,
     height: usize,
     pos: Position,
+    width_ctrl: WF,
     f: &mut fmt::Formatter<'_>,
 ) -> fmt::Result
 where
@@ -724,6 +725,7 @@ where
     <R::Cell as Cell>::Lines: Iterator,
     <<R::Cell as Cell>::Lines as Iterator>::Item: Text + Default,
     W: Estimate<R>,
+    WF: WidthFunc,
 {
     let cell = grid.records.get(pos);
     let width = grid_cell_width(grid, pos);
@@ -790,7 +792,6 @@ where
 
     let alignment = *grid.config.get_alignment_horizontal(pos.into());
     let width = width - padding.left.size - padding.right.size;
-    let width_ctrl = CfgWidthFunction::new(grid.config);
     build_format_line(
         f,
         cell,
@@ -832,7 +833,6 @@ where
     W: WidthFunc,
 {
     let line = cell.get_line(index).unwrap_or_default();
-    let line_width = line.width(width_ctrl);
     let line = line.as_str();
     let line = if formatting.horizontal_trim && !line.is_empty() {
         string_trim(line)
@@ -843,7 +843,7 @@ where
     let line_width = if formatting.horizontal_trim {
         width_ctrl.width(&line)
     } else {
-        line_width
+        line.width(width_ctrl)
     };
 
     if formatting.allow_lines_alignement {
@@ -959,6 +959,7 @@ where
     <R::Cell as Cell>::Lines: Iterator,
     <<R::Cell as Cell>::Lines as Iterator>::Item: Text + Default,
 {
+    let width_ctrl = CfgWidthFunction::from_cfg(grid.config);
     let total_width = grid.total_width();
 
     if grid.config.margin.top.size > 0 {
@@ -985,7 +986,7 @@ where
             for col in 0..grid.count_columns() {
                 if grid.config.is_cell_visible((row, col)) {
                     print_vertical_char(grid, (row, col), f)?;
-                    build_cell_line(grid, i, height, (row, col), f)?;
+                    build_cell_line(grid, i, height, (row, col), &width_ctrl, f)?;
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();

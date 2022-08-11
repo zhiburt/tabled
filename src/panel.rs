@@ -82,7 +82,7 @@ where
             }
         }
 
-        let ctrl = CfgWidthFunction::new(table.get_config());
+        let ctrl = CfgWidthFunction::from_cfg(table.get_config());
         let pos = (self.1, 0);
         let text = self.0.as_ref().to_owned();
         table.get_records_mut().set_text(pos, text, ctrl);
