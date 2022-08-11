@@ -161,6 +161,7 @@ pub struct Builder {
     columns: Option<Vec<CellInfo<'static>>>,
     /// A number of columns.
     size: usize,
+    different_column_sizes_used: bool,
     /// A content of cells which are created in case rows has different length.
     empty_cell_text: Option<String>,
 }
@@ -169,6 +170,10 @@ impl Builder {
     /// Creates a [`Builder`] instance.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub(crate) fn hint_column_size(&mut self, size: usize) {
+        self.size = size;
     }
 
     /// Sets a [`Table`] header.
@@ -189,12 +194,14 @@ impl Builder {
         T: Display,
     {
         let ctrl = CfgWidthFunction::new(4);
-        let columns: Vec<_> = columns
-            .into_iter()
-            .map(|t| CellInfo::from_str(t.to_string(), &ctrl))
-            .collect();
-        self.update_size(columns.len());
-        self.columns = Some(columns);
+        let mut list = Vec::with_capacity(self.size);
+        for c in columns {
+            let info = CellInfo::from_str(c.to_string(), &ctrl);
+            list.push(info);
+        }
+
+        self.update_size(list.len());
+        self.columns = Some(list);
 
         self
     }
@@ -255,18 +262,20 @@ impl Builder {
     /// builder.add_record(0..3);
     /// builder.add_record(["i", "surname", "lastname"]);
     /// ```
-    pub fn add_record<R, T>(&mut self, record: R) -> &mut Self
+    pub fn add_record<R, T>(&mut self, row: R) -> &mut Self
     where
         R: IntoIterator<Item = T>,
-        T: Display,
+        T: Display, // fixme: Change to Into<String>
     {
         let ctrl = CfgWidthFunction::new(4);
-        let row: Vec<_> = record
-            .into_iter()
-            .map(|t| CellInfo::from_str(t.to_string(), &ctrl))
-            .collect();
-        self.update_size(row.len());
-        self.records.push(row);
+        let mut list = Vec::with_capacity(self.size);
+        for c in row {
+            let info = CellInfo::from_str(c.to_string(), &ctrl);
+            list.push(info);
+        }
+
+        self.update_size(list.len());
+        self.records.push(list);
 
         self
     }
@@ -297,7 +306,10 @@ impl Builder {
     /// builder.add_record(["0", "value1", "value2"]);
     /// ```
     pub fn build(mut self) -> Table<RecordsInfo<'static>> {
-        self.fix_rows();
+        if self.different_column_sizes_used {
+            self.fix_rows();
+        }
+
         build_table(self.columns, self.records, self.size)
     }
 
@@ -414,8 +426,20 @@ impl Builder {
     }
 
     fn update_size(&mut self, size: usize) {
-        if size > self.size {
-            self.size = size;
+        match size.cmp(&self.size) {
+            std::cmp::Ordering::Less => {
+                if !self.records.is_empty() {
+                    self.different_column_sizes_used = true;
+                }
+            },
+            std::cmp::Ordering::Greater => {
+                self.size = size;
+
+                if !self.records.is_empty() {
+                    self.different_column_sizes_used = true;
+                }
+            },
+            std::cmp::Ordering::Equal => (),
         }
     }
 
@@ -771,7 +795,12 @@ impl IndexBuilder {
 
     /// Builds a table.
     pub fn build(self) -> Table<RecordsInfo<'static>> {
-        build_index(self).build()
+        let mut b = build_index(self);
+        // fixme: we don't update builder size internally
+        b.fix_rows();
+        b.different_column_sizes_used = false;
+
+        b.build()
     }
 }
 

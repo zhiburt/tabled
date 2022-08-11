@@ -153,8 +153,8 @@ impl<'a> Table<RecordsInfo<'a>> {
         T: Tabled,
         I: IntoIterator<Item = T>,
     {
-        let rows = iter.into_iter().map(|t| t.fields());
-        let mut b = rows.collect::<Builder>();
+        let mut b = iter.into_iter().map(|t| t.fields()).collect::<Builder>();
+        b.hint_column_size(T::LENGTH);
         b.set_columns(T::headers());
         b
     }

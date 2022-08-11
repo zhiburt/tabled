@@ -64,9 +64,14 @@ pub fn string_width(text: &str) -> usize {
 /// Returns a string width.
 #[cfg(feature = "color")]
 pub fn string_width(text: &str) -> usize {
-    let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
-    let s = std::str::from_utf8(&b).unwrap();
-    unicode_width::UnicodeWidthStr::width(s)
+    let mut width = 0;
+    for token in ansitok::parse_ansi(text) {
+        if let ansitok::Output::Text(text) = token {
+            width += unicode_width::UnicodeWidthStr::width(text);
+        }
+    }
+
+    width
 }
 
 /// Returns a max string width of a line.

@@ -241,7 +241,7 @@ impl<'a> Iterator for CellInfoLines<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.lines
             .next()
-            .map(|s| StrWithWidth::new(Cow::Borrowed(s.text.as_ref()), s.width))
+            .map(|s| StrWithWidth::new(Cow::Borrowed(&s.text), s.width))
     }
 }
 
@@ -327,7 +327,7 @@ where
     info.text = Cow::Owned(text);
     for line in get_lines(info.text.as_ref()) {
         let width = width_fn.width(line.as_ref());
-        let line = StrWithWidth::new(line.to_string().into(), width);
+        let line = StrWithWidth::new(Cow::Owned(line.to_string()), width);
         info.width = max(info.width, width);
         info.lines.push(line);
     }
