@@ -94,6 +94,7 @@ pub trait Resizable {
     fn push_column(&mut self);
     fn remove_row(&mut self, row: usize);
     fn remove_column(&mut self, column: usize);
+    fn insert_row(&mut self, row: usize);
 }
 
 impl<'a, R> Resizable for &'a mut R
@@ -126,6 +127,10 @@ where
 
     fn remove_column(&mut self, column: usize) {
         R::remove_column(self, column)
+    }
+
+    fn insert_row(&mut self, row: usize) {
+        R::insert_row(self, row)
     }
 }
 

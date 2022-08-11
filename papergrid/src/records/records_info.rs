@@ -25,6 +25,22 @@ impl<'a> RecordsInfo<'a> {
         let records = create_records(records, &mut size.0, size.1, width_fn);
         Self { records, size }
     }
+
+    pub fn from_vec(records: Vec<Vec<CellInfo<'a>>>, size: (usize, usize)) -> Self {
+        Self { records, size }
+    }
+
+    pub fn size(&self) -> (usize, usize) {
+        self.size
+    }
+
+    pub fn count_rows(&self) -> usize {
+        self.size.0
+    }
+
+    pub fn count_columns(&self) -> usize {
+        self.size.1
+    }
 }
 
 impl<'a, 'b> Records for &'a RecordsInfo<'b> {
@@ -138,6 +154,11 @@ impl Resizable for RecordsInfo<'_> {
         }
         self.size.1 -= 1;
     }
+
+    fn insert_row(&mut self, row: usize) {
+        self.records
+            .insert(row, vec![CellInfo::default(); self.size.1]);
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -150,6 +171,19 @@ pub struct CellInfo<'a> {
 impl<'a> CellInfo<'a> {
     pub fn new(text: Cow<'a, str>, lines: Vec<StringWithWidth>, width: usize) -> Self {
         Self { text, lines, width }
+    }
+
+    pub fn from_str<W>(text: String, width_ctrl: W) -> Self
+    where
+        W: WidthFunc,
+    {
+        let mut info = CellInfo::default();
+        create_cell_info(&mut info, text, width_ctrl);
+        info
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.text.is_empty()
     }
 }
 
@@ -282,7 +316,10 @@ where
     cells
 }
 
-fn create_cell_info<W: WidthFunc>(info: &mut CellInfo<'_>, text: String, width_fn: W) {
+fn create_cell_info<W>(info: &mut CellInfo<'_>, text: String, width_fn: W)
+where
+    W: WidthFunc,
+{
     info.text = Cow::Owned(text);
     for line in get_lines(info.text.as_ref()) {
         let width = width_fn.width(line.as_ref());
