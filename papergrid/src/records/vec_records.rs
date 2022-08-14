@@ -282,12 +282,12 @@ where
         }
 
         for (col, text) in rows.into_iter().enumerate().take(hint_count_cols) {
-            let text = text.as_ref().to_owned();
+            let text = text.as_ref();
             if text.is_empty() {
                 continue;
             }
 
-            cells[row][col] = CellInfo::new(text, &width_ctrl);
+            cells[row][col] = CellInfo::new(text.to_owned(), &width_ctrl);
         }
     }
 

@@ -63,7 +63,6 @@ where
 
     fn fmt_text_prefix(&self, f: &mut std::fmt::Formatter<'_>, pos: Position) -> std::fmt::Result {
         R::fmt_text_prefix(self, f, pos)
-
     }
 
     fn fmt_text_suffix(&self, f: &mut std::fmt::Formatter<'_>, pos: Position) -> std::fmt::Result {
