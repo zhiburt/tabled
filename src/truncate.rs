@@ -1,7 +1,7 @@
 use std::{borrow::Cow, marker::PhantomData};
 
 use papergrid::{
-    records::{empty::EmptyRecords, Cell, Records, RecordsMut},
+    records::{empty::EmptyRecords, Records, RecordsMut},
     util::cut_str,
     width::{CfgWidthFunction, WidthFunc},
     Entity, GridConfig,
@@ -148,9 +148,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
 impl<W, P, R> CellOption<R> for Truncate<'_, W, P>
 where
     W: WidthValue,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
@@ -184,7 +182,7 @@ where
 
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
-            let cell_width = table.get_records().get(pos).width(&width_ctrl);
+            let cell_width = table.get_records().get_width(pos, &width_ctrl);
             if set_width >= cell_width {
                 continue;
             }
@@ -209,8 +207,7 @@ where
                 .into_owned();
 
             let records = table.get_records_mut();
-            records.set_text(pos, text, &width_ctrl);
-            records.update(pos, &width_ctrl)
+            records.set(pos, text, &width_ctrl);
         }
 
         table.destroy_width_cache();
@@ -221,9 +218,7 @@ impl<W, P, R> TableOption<R> for Truncate<'_, W, P>
 where
     W: WidthValue,
     P: ColumnPeaker,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records + RecordsMut<String>,
 {
     fn change(&mut self, table: &mut Table<R>) {
         if table.is_empty() {
@@ -382,9 +377,7 @@ fn truncate_total_width<P, R>(
     priority: P,
 ) where
     P: ColumnPeaker,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records + RecordsMut<String>,
 {
     let (count_rows, count_cols) = table.shape();
     let cfg = table.get_config();

@@ -142,6 +142,7 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
         &self.borders
     }
 
+    #[allow(unused)]
     pub(crate) fn set_global(&mut self, value: T) {
         self.global = Some(value);
     }

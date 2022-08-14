@@ -129,8 +129,7 @@ impl Format<()> {
 impl<F, R> CellOption<R> for Format<F>
 where
     F: FnMut(&str) -> String,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
+    R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_fn = CfgWidthFunction::from_cfg(table.get_config());
@@ -139,7 +138,7 @@ where
             let records = table.get_records();
             let content = records.get_text(pos);
             let content = (self.f)(content);
-            table.get_records_mut().set_text(pos, content, &width_fn);
+            table.get_records_mut().set(pos, content, &width_fn);
         }
 
         table.destroy_width_cache();
@@ -166,8 +165,7 @@ where
 impl<F, R> CellOption<R> for FormatWithIndex<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
+    R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_fn = CfgWidthFunction::from_cfg(table.get_config());
@@ -176,7 +174,7 @@ where
             let records = table.get_records();
             let content = records.get_text(pos);
             let content = (self.f)(content, pos);
-            table.get_records_mut().set_text(pos, content, &width_fn);
+            table.get_records_mut().set(pos, content, &width_fn);
         }
 
         table.destroy_width_cache();
@@ -186,8 +184,7 @@ where
 impl<F, R> CellOption<R> for F
 where
     F: FnMut(&str) -> String,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
+    R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         Format::new(self).change_cell(table, entity);

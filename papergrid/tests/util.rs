@@ -3,8 +3,10 @@
 use std::collections::HashMap;
 
 use papergrid::{
-    height::HeightEstimator, records::records_info::RecordsInfo, width::WidthEstimator, Borders,
-    Estimate, Grid, GridConfig, Position,
+    height::HeightEstimator,
+    records::{cell_info::CellInfo, vec_records::VecRecords},
+    width::{CfgWidthFunction, WidthEstimator},
+    Borders, Estimate, Grid, GridConfig, Position,
 };
 
 pub fn grid(rows: usize, cols: usize) -> GridBuilder {
@@ -71,12 +73,12 @@ fn build_grid(
     cols: usize,
     cfg: GridConfig,
     data: Vec<Vec<String>>,
-) -> Grid<'static, &'static RecordsInfo<'static>, WidthEstimator, HeightEstimator> {
+) -> Grid<'static, &'static VecRecords<CellInfo<'static>>, WidthEstimator, HeightEstimator> {
     let cfg = Box::leak(Box::new(cfg));
 
     let records = data;
     let records = Box::leak(records.into_boxed_slice());
-    let records = RecordsInfo::new(records, (rows, cols), cfg);
+    let records = VecRecords::new(records, (rows, cols), CfgWidthFunction::from_cfg(cfg));
     let records = Box::leak(Box::new(records));
 
     let mut width = WidthEstimator::default();

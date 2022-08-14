@@ -1,7 +1,7 @@
 use std::{collections::HashMap, marker::PhantomData};
 
 use papergrid::{
-    records::{Cell, Records, RecordsMut},
+    records::{Records, RecordsMut},
     width::CfgWidthFunction,
     Entity, GridConfig,
 };
@@ -92,9 +92,7 @@ impl<W, P> MinWidth<W, P> {
 impl<W, R> CellOption<R> for MinWidth<W>
 where
     W: WidthValue,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
@@ -105,7 +103,7 @@ where
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
             let records = table.get_records();
-            let cell_width = records.get(pos).width(&width_ctrl);
+            let cell_width = records.get_width(pos, &width_ctrl);
             if cell_width >= width {
                 continue;
             }
@@ -113,7 +111,7 @@ where
             let content = records.get_text(pos);
             let content = increase_width(content, width, self.fill);
             let records = table.get_records_mut();
-            records.set_text(pos, content, &width_ctrl);
+            records.set(pos, content, &width_ctrl);
         }
     }
 }
@@ -122,9 +120,7 @@ impl<W, P, R> TableOption<R> for MinWidth<W, P>
 where
     W: WidthValue,
     P: ColumnPeaker,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records + RecordsMut<String>,
 {
     fn change(&mut self, table: &mut Table<R>) {
         if table.is_empty() {
@@ -191,9 +187,7 @@ fn increase_total_width<P, R>(
     priority: P,
 ) where
     P: ColumnPeaker,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records + RecordsMut<String>,
 {
     let records = table.get_records();
     let cfg = table.get_config();
@@ -227,7 +221,7 @@ where
         width += 1;
     }
 
-    let (count_rows, count_cols) = records.size();
+    let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
     let mut points = HashMap::new();
     #[allow(clippy::needless_range_loop)]
     for row in 0..count_rows {

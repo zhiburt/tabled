@@ -4,7 +4,9 @@ use owo_colors::{
 };
 
 use papergrid::{
-    height::HeightEstimator, records::records_info_colored::RecordsInfo, width::WidthEstimator,
+    height::HeightEstimator,
+    records::{cell_info::CellInfo, tcell::TCell, vec_records::VecRecords},
+    width::{CfgWidthFunction, WidthEstimator},
     Borders, Color, Estimate, Grid, GridConfig,
 };
 
@@ -30,13 +32,22 @@ fn main() {
     });
     cfg.set_borders_missing('+');
 
+    let width_ctrl = CfgWidthFunction::from_cfg(&cfg);
+
     let records = vec![
-        vec![("Hello", Style::default()), ("World", Style::default())],
-        vec![("Hi", Style::default()), ("World", Style::default())],
+        vec![
+            TCell::from(CellInfo::new("Hello", &width_ctrl)),
+            TCell::from(CellInfo::new("World", &width_ctrl)),
+        ],
+        vec![
+            TCell::from(CellInfo::new("Hi", &width_ctrl)),
+            TCell::from(CellInfo::new("World", &width_ctrl)),
+        ],
     ];
-    let mut records = RecordsInfo::new(records, (3, 5), &cfg);
-    records[(0, 0)] = Style(OStyle::default().bg::<Red>().fg::<Black>());
-    records[(1, 1)] = Style(OStyle::default().bg::<Blue>());
+
+    let mut records = VecRecords::from(records);
+    *records[(0, 0)].get_data_mut() = Style(OStyle::default().bg::<Red>().fg::<Black>());
+    *records[(1, 1)].get_data_mut() = Style(OStyle::default().bg::<Blue>());
 
     let mut width = WidthEstimator::default();
     width.estimate(&records, &cfg);

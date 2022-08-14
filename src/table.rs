@@ -4,13 +4,10 @@ use std::{fmt, iter::FromIterator};
 
 use papergrid::{
     height::HeightEstimator,
-    records::{records_info::RecordsInfo, Cell, Records, RecordsMut, Text},
+    records::{cell_info::CellInfo, vec_records::VecRecords, Records, RecordsMut},
     width::{CfgWidthFunction, WidthEstimator},
     Estimate, Grid, GridConfig,
 };
-
-#[cfg(feature = "color")]
-use papergrid::Color;
 
 use crate::{builder::Builder, object::Entity, Tabled};
 
@@ -77,13 +74,13 @@ pub trait CellOption<R> {
 /// [`Style`]: crate::Style
 /// [`Style::ascii`]: crate::Style::ascii
 #[derive(Debug, Clone)]
-pub struct Table<R = RecordsInfo<'static>> {
+pub struct Table<R = VecRecords<CellInfo<'static>>> {
     records: R,
     cfg: GridConfig,
     widths: Option<Vec<usize>>,
 }
 
-impl<'a> Table<RecordsInfo<'a>> {
+impl<'a> Table<VecRecords<CellInfo<'static>>> {
     /// New creates a Table instance.
     pub fn new<I, T>(iter: I) -> Self
     where
@@ -195,8 +192,10 @@ where
 {
     /// Returns a table shape (count rows, count columns).
     pub fn shape(&self) -> (usize, usize) {
-        let (count_rows, count_cols) = self.get_records().size();
-        (count_rows, count_cols)
+        (
+            self.get_records().count_rows(),
+            self.get_records().count_columns(),
+        )
     }
 
     /// Returns a table shape (count rows, count columns).
@@ -218,15 +217,14 @@ impl<R> Table<R> {
 
 impl<R> Table<R>
 where
-    R: RecordsMut,
+    R: RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     pub(crate) fn update_records(&mut self) {
         let ctrl = CfgWidthFunction::from_cfg(self.get_config());
 
-        let (count_rows, count_cols) = self.get_records().size();
-        for row in 0..count_rows {
-            for col in 0..count_cols {
+        for row in 0..self.get_records().count_rows() {
+            for col in 0..self.get_records().count_columns() {
                 let records = self.get_records_mut();
                 records.update((row, col), &ctrl);
             }
@@ -242,25 +240,9 @@ where
     }
 }
 
-#[cfg(feature = "color")]
-trait RecordsCell: Cell + Color {}
-
-#[cfg(feature = "color")]
-impl<C> RecordsCell for C where C: Cell + Color {}
-
-#[cfg(not(feature = "color"))]
-trait RecordsCell: Cell {}
-
-#[cfg(not(feature = "color"))]
-impl<C> RecordsCell for C where C: Cell {}
-
 impl<R> fmt::Display for Table<R>
 where
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: RecordsCell,
-    for<'a> <<&'a R as Records>::Cell as Cell>::Text: Text + Default,
-    for<'a> <<&'a R as Records>::Cell as Cell>::Lines: Iterator,
-    for<'a> <<<&'a R as Records>::Cell as Cell>::Lines as Iterator>::Item: Text + Default,
+    R: Records,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // check if we have cached widths values.
@@ -282,7 +264,7 @@ where
     }
 }
 
-impl<'a, D> FromIterator<D> for Table<RecordsInfo<'a>>
+impl<D> FromIterator<D> for Table<VecRecords<CellInfo<'static>>>
 where
     D: Tabled,
 {
@@ -308,7 +290,7 @@ where
 /// ```
 pub trait TableIteratorExt<'a> {
     /// Returns a [`Table`] instance from a given type
-    fn table(self) -> Table<RecordsInfo<'a>>;
+    fn table(self) -> Table<VecRecords<CellInfo<'a>>>;
 }
 
 impl<'a, T, U> TableIteratorExt<'a> for U
@@ -316,7 +298,7 @@ where
     T: Tabled,
     U: IntoIterator<Item = T> + 'a,
 {
-    fn table(self) -> Table<RecordsInfo<'a>> {
+    fn table(self) -> Table<VecRecords<CellInfo<'a>>> {
         Table::new(self)
     }
 }

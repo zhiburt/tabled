@@ -8,10 +8,7 @@ use std::convert::TryFrom;
 
 use owo_colors::OwoColorize;
 
-use papergrid::{
-    records::{Cell, Records},
-    Estimate,
-};
+use papergrid::{records::Records, Estimate};
 use tabled::{
     color::Color,
     format::Format,
@@ -143,8 +140,7 @@ struct MakeMaxPadding;
 
 impl<R> CellOption<R> for MakeMaxPadding
 where
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: papergrid::Entity) {
         let mut ctrl = papergrid::width::WidthEstimator::default();
@@ -156,7 +152,7 @@ where
         let (count_rows, count_cols) = table.shape();
         for (row, col) in entity.iter(count_rows, count_cols) {
             let column_width = widths[col];
-            let width = table.get_records().get((row, col)).width(&ctrl);
+            let width = table.get_records().get_width((row, col), &ctrl);
 
             if width < column_width {
                 let available_width = column_width - width;

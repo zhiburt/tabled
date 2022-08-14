@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use papergrid::{
-    records::{empty::EmptyRecords, Cell, Records, RecordsMut},
+    records::{empty::EmptyRecords, Records, RecordsMut},
     util::string_width_multiline,
     width::CfgWidthFunction,
     Entity,
@@ -86,9 +86,7 @@ impl<W, P> Wrap<W, P> {
 impl<W, P, R> CellOption<R> for Wrap<W, P>
 where
     W: WidthValue,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
@@ -99,7 +97,7 @@ where
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
             let records = table.get_records();
-            let cell_width = records.get(pos).width(&width_ctrl);
+            let cell_width = records.get_width(pos, &width_ctrl);
             if cell_width <= width {
                 continue;
             }
@@ -120,7 +118,7 @@ where
             );
 
             let records = table.get_records_mut();
-            records.set_text(pos, wrapped, &width_ctrl);
+            records.set(pos, wrapped, &width_ctrl);
         }
 
         table.destroy_width_cache();
@@ -131,9 +129,7 @@ impl<W, P, R> TableOption<R> for Wrap<W, P>
 where
     W: WidthValue,
     P: ColumnPeaker,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records + RecordsMut<String>,
 {
     fn change(&mut self, table: &mut Table<R>) {
         if table.is_empty() {
@@ -162,9 +158,7 @@ fn wrap_total_width<R, P>(
     priority: P,
 ) where
     P: ColumnPeaker,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records + RecordsMut<String>,
 {
     let (count_rows, count_cols) = table.shape();
     let cfg = table.get_config();

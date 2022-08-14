@@ -108,9 +108,8 @@ impl<T> Concat<T> {
 
 impl<T, R> TableOption<R> for Concat<T>
 where
-    R: Resizable + RecordsMut,
-    for<'a> &'a T: Records,
-    for<'a> &'a R: Records,
+    R: Records + Resizable + RecordsMut<String>,
+    T: Records,
 {
     fn change(&mut self, lhs: &mut Table<R>) {
         let (count_rows, count_cols) = lhs.shape();
@@ -118,19 +117,16 @@ where
         let rhs = &self.table;
         match self.mode {
             ConcatMode::Horizontal => {
-                for _ in 0..rhs.shape().1 {
+                for _ in 0..rhs.get_records().count_columns() {
                     lhs.get_records_mut().push_column();
                 }
 
                 for row in count_rows..rhs.shape().0 {
                     lhs.get_records_mut().push_row();
 
-                    for col in 0..lhs.shape().1 {
-                        lhs.get_records_mut().set_text(
-                            (row, col),
-                            self.default_cell.clone(),
-                            &ctrl,
-                        );
+                    for col in 0..lhs.get_records().count_columns() {
+                        lhs.get_records_mut()
+                            .set((row, col), self.default_cell.clone(), &ctrl);
                     }
                 }
 
@@ -138,7 +134,7 @@ where
                     for col in 0..rhs.shape().1 {
                         let text = rhs.get_records().get_text((row, col)).to_owned();
                         let col = col + count_cols;
-                        lhs.get_records_mut().set_text((row, col), text, &ctrl);
+                        lhs.get_records_mut().set((row, col), text, &ctrl);
                     }
                 }
             }
@@ -151,11 +147,8 @@ where
                     lhs.get_records_mut().push_column();
 
                     for row in 0..lhs.shape().0 {
-                        lhs.get_records_mut().set_text(
-                            (row, col),
-                            self.default_cell.clone(),
-                            &ctrl,
-                        );
+                        lhs.get_records_mut()
+                            .set((row, col), self.default_cell.clone(), &ctrl);
                     }
                 }
 
@@ -163,7 +156,7 @@ where
                     for col in 0..rhs.shape().1 {
                         let text = rhs.get_records().get_text((row, col)).to_owned();
                         let row = row + count_rows;
-                        lhs.get_records_mut().set_text((row, col), text, &ctrl);
+                        lhs.get_records_mut().set((row, col), text, &ctrl);
                     }
                 }
             }

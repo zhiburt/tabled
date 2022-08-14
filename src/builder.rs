@@ -111,10 +111,7 @@
 use std::{fmt::Display, iter::FromIterator};
 
 use papergrid::{
-    records::{
-        records_info::{CellInfo, RecordsInfo},
-        Records,
-    },
+    records::{cell_info::CellInfo, vec_records::VecRecords, Records},
     width::CfgWidthFunction,
     AlignmentHorizontal, Entity, Formatting, GridConfig, Indent, Padding,
 };
@@ -196,7 +193,7 @@ impl Builder {
         let ctrl = CfgWidthFunction::new(4);
         let mut list = Vec::with_capacity(self.size);
         for c in columns {
-            let info = CellInfo::from_str(c.to_string(), &ctrl);
+            let info = CellInfo::new(c.to_string(), &ctrl);
             list.push(info);
         }
 
@@ -270,7 +267,7 @@ impl Builder {
         let ctrl = CfgWidthFunction::new(4);
         let mut list = Vec::with_capacity(self.size);
         for c in row {
-            let info = CellInfo::from_str(c.to_string(), &ctrl);
+            let info = CellInfo::new(c.to_string(), &ctrl);
             list.push(info);
         }
 
@@ -305,7 +302,7 @@ impl Builder {
     /// builder.set_columns(["i", "column1", "column2"]);
     /// builder.add_record(["0", "value1", "value2"]);
     /// ```
-    pub fn build(mut self) -> Table<RecordsInfo<'static>> {
+    pub fn build(mut self) -> Table<VecRecords<CellInfo<'static>>> {
         if self.different_column_sizes_used {
             self.fix_rows();
         }
@@ -456,7 +453,7 @@ impl Builder {
     fn fix_rows(&mut self) {
         let ctrl = CfgWidthFunction::new(4);
         let text = self.empty_cell_text.clone().unwrap_or_default();
-        let empty_cell_text = CellInfo::from_str(text, &ctrl);
+        let empty_cell_text = CellInfo::new(text, &ctrl);
 
         if let Some(header) = self.columns.as_mut() {
             if self.size > header.len() {
@@ -516,7 +513,7 @@ fn build_table(
     columns: Option<Vec<CellInfo<'static>>>,
     records: Vec<Vec<CellInfo<'static>>>,
     count_columns: usize,
-) -> Table<RecordsInfo<'static>> {
+) -> Table<VecRecords<CellInfo<'static>>> {
     let mut cfg = GridConfig::default();
     configure_grid(&mut cfg);
     let records = build_grid(records, columns, count_columns);
@@ -528,17 +525,12 @@ fn build_grid(
     mut records: Vec<Vec<CellInfo<'static>>>,
     columns: Option<Vec<CellInfo<'static>>>,
     count_columns: usize,
-) -> RecordsInfo<'static> {
-    let mut count_rows = records.len();
-    if columns.is_some() {
-        count_rows += 1;
-    }
-
+) -> VecRecords<CellInfo<'static>> {
     if let Some(columns) = columns {
         records.insert(0, columns);
     }
 
-    RecordsInfo::from_vec(records, (count_rows, count_columns))
+    VecRecords::with_hint(records, count_columns)
 }
 
 fn create_table<R>(records: R, cfg: GridConfig) -> Table<R>
@@ -637,7 +629,7 @@ impl IndexBuilder {
         let index = build_range_index(b.records.len());
 
         if b.columns.is_none() {
-            b.columns = Some(index.clone());
+            b.columns = Some(build_range_index(b.size));
         }
 
         Self {
@@ -688,7 +680,7 @@ impl IndexBuilder {
     pub fn set_name(&mut self, name: Option<String>) -> &mut Self {
         self.name = name.map(|s| {
             let ctrl = CfgWidthFunction::new(4);
-            CellInfo::from_str(s, ctrl)
+            CellInfo::new(s, ctrl)
         });
         self
     }
@@ -794,9 +786,10 @@ impl IndexBuilder {
     }
 
     /// Builds a table.
-    pub fn build(self) -> Table<RecordsInfo<'static>> {
+    pub fn build(self) -> Table<VecRecords<CellInfo<'static>>> {
         let mut b = build_index(self);
         // fixme: we don't update builder size internally
+
         b.fix_rows();
         b.different_column_sizes_used = false;
 
@@ -825,7 +818,9 @@ fn build_index(mut b: IndexBuilder) -> Builder {
 
     let records = &mut b.b.records;
 
+    // it's guaranted to be set
     let columns = b.b.columns.take().unwrap();
+
     records.insert(0, columns);
 
     // add index column
@@ -874,7 +869,7 @@ fn remove_or_default<T: Default>(v: &mut Vec<T>, i: usize) -> T {
 fn build_range_index(n: usize) -> Vec<CellInfo<'static>> {
     let ctrl = CfgWidthFunction::new(4);
     (0..n)
-        .map(|i| CellInfo::from_str(i.to_string(), &ctrl))
+        .map(|i| CellInfo::new(i.to_string(), &ctrl))
         .collect()
 }
 

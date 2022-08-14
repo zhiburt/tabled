@@ -56,8 +56,7 @@ where
 impl<S, R> TableOption<R> for Panel<S>
 where
     S: AsRef<str>,
-    R: Resizable + RecordsMut,
-    for<'a> &'a R: Records,
+    R: Records + RecordsMut<String> + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
         let (count_rows, count_cols) = table.shape();
@@ -85,7 +84,7 @@ where
         let ctrl = CfgWidthFunction::from_cfg(table.get_config());
         let pos = (self.1, 0);
         let text = self.0.as_ref().to_owned();
-        table.get_records_mut().set_text(pos, text, ctrl);
+        table.get_records_mut().set(pos, text, ctrl);
         table.get_config_mut().set_span(pos, count_cols);
     }
 }
@@ -98,8 +97,7 @@ pub struct Header<S: AsRef<str>>(pub S);
 impl<S, R> TableOption<R> for Header<S>
 where
     S: AsRef<str>,
-    R: Resizable + RecordsMut,
-    for<'a> &'a R: Records,
+    R: Records + RecordsMut<String> + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
         Panel(self.0.as_ref(), 0).change(table);
@@ -114,8 +112,7 @@ pub struct Footer<S: AsRef<str>>(pub S);
 impl<S, R> TableOption<R> for Footer<S>
 where
     S: AsRef<str>,
-    R: Resizable + RecordsMut,
-    for<'a> &'a R: Records,
+    R: Records + RecordsMut<String> + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
         Panel(self.0.as_ref(), table.shape().0).change(table);

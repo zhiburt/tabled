@@ -1,4 +1,4 @@
-use papergrid::records::{Cell, Records, RecordsMut};
+use papergrid::records::{Records, RecordsMut};
 
 use crate::{
     width::{get_width_value, Max, Min, WidthValue},
@@ -72,9 +72,7 @@ impl Justify<Min> {
 impl<W, R> TableOption<R> for Justify<W>
 where
     W: WidthValue,
-    R: RecordsMut,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records + RecordsMut<String>,
 {
     fn change(&mut self, table: &mut Table<R>) {
         let width = get_width_value(&self.width, table);

@@ -33,7 +33,7 @@
 //! ```
 
 use papergrid::{
-    records::{Cell, Records},
+    records::Records,
     width::{CfgWidthFunction, WidthEstimator, WidthFunc},
     Estimate, GridConfig,
 };
@@ -136,8 +136,7 @@ pub trait WidthValue {
     fn width<R, W>(&self, records: R, cfg: &GridConfig, ctrl: W) -> usize
     where
         W: WidthFunc,
-        R: Records,
-        R::Cell: Cell;
+        R: Records;
 }
 
 impl WidthValue for usize {
@@ -188,8 +187,7 @@ impl WidthValue for Percent {
     fn width<R, W>(&self, records: R, cfg: &GridConfig, _: W) -> usize
     where
         W: WidthFunc,
-        for<'a> &'a R: Records,
-        for<'a> <&'a R as Records>::Cell: Cell,
+        R: Records,
     {
         let (_, total) = get_table_widths_with_total(&records, cfg);
         (total * self.0) / 100
@@ -283,7 +281,6 @@ impl ColumnPeaker for PriorityMin {
 pub(crate) fn get_table_widths<R>(records: R, cfg: &GridConfig) -> Vec<usize>
 where
     R: Records,
-    R::Cell: Cell,
 {
     let mut evaluator = WidthEstimator::default();
     evaluator.estimate(records, cfg);
@@ -293,7 +290,6 @@ where
 pub(crate) fn get_table_widths_with_total<R>(records: R, cfg: &GridConfig) -> (Vec<usize>, usize)
 where
     R: Records,
-    R::Cell: Cell,
 {
     let mut evaluator = WidthEstimator::default();
     evaluator.estimate(&records, cfg);
@@ -305,8 +301,7 @@ where
 pub(crate) fn get_width_value<R, W>(value: &W, table: &Table<R>) -> usize
 where
     W: WidthValue,
-    for<'a> &'a R: Records,
-    for<'a> <&'a R as Records>::Cell: Cell,
+    R: Records,
 {
     let ctrl = CfgWidthFunction::from_cfg(table.get_config());
     value.width(table.get_records(), table.get_config(), ctrl)
@@ -318,7 +313,7 @@ where
     R: Records,
 {
     ctrl.total()
-        + cfg.count_vertical(records.size().1)
+        + cfg.count_vertical(records.count_columns())
         + cfg.get_margin().left.size
         + cfg.get_margin().right.size
 }
@@ -343,7 +338,7 @@ where
     W: WidthFunc,
     for<'b> &'b R: Records,
 {
-    let (count_rows, count_cols) = records.size();
+    let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
     (0..count_rows).map(move |row| {
         (0..count_cols).map(move |col| width_ctrl.width_multiline(records.get_text((row, col))))
     })

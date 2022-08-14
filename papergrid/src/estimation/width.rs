@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use crate::{
     grid::GridConfig,
-    records::{Cell, Records},
+    records::Records,
     util::{string_width_multiline_tab, string_width_tab},
     Position,
 };
@@ -17,7 +17,6 @@ pub struct WidthEstimator {
 impl<R> Estimate<R> for WidthEstimator
 where
     R: Records,
-    R::Cell: Cell,
 {
     fn estimate(&mut self, records: R, cfg: &GridConfig) {
         self.widths = build_widths(&records, cfg);
@@ -92,11 +91,10 @@ impl WidthFunc for CfgWidthFunction {
 fn build_widths<R>(records: &R, cfg: &GridConfig) -> Vec<usize>
 where
     R: Records,
-    R::Cell: Cell,
 {
-    let mut widths = vec![0; records.size().1];
+    let mut widths = vec![0; records.count_columns()];
     for (col, column) in widths.iter_mut().enumerate() {
-        let max = (0..records.size().0)
+        let max = (0..records.count_rows())
             .filter(|&row| is_simple_cell(cfg, (row, col)))
             .map(|row| get_cell_width(cfg, records, (row, col)))
             .max()
@@ -113,7 +111,6 @@ where
 fn adjust_spans<R>(cfg: &GridConfig, records: &R, widths: &mut [usize])
 where
     R: Records,
-    R::Cell: Cell,
 {
     if !cfg.has_column_spans() {
         return;
@@ -143,7 +140,6 @@ fn adjust_range<R>(
     widths: &mut [usize],
 ) where
     R: Records,
-    R::Cell: Cell,
 {
     let max_span_width = get_cell_width(cfg, records, (row, start));
     let range_width = range_width(cfg, start, end, widths);
@@ -183,9 +179,8 @@ fn is_simple_cell(cfg: &GridConfig, pos: Position) -> bool {
 fn get_cell_width<R>(cfg: &GridConfig, records: &R, pos: Position) -> usize
 where
     R: Records,
-    R::Cell: Cell,
 {
-    let width = records.get(pos).width(CfgWidthFunction::from_cfg(cfg));
+    let width = records.get_width(pos, CfgWidthFunction::from_cfg(cfg));
     let padding = get_cell_padding(cfg, pos);
     width + padding
 }

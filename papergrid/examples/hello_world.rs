@@ -1,6 +1,8 @@
 use papergrid::{
-    height::HeightEstimator, records::records_info::RecordsInfo, width::WidthEstimator, Borders,
-    Estimate, Grid, GridConfig,
+    height::HeightEstimator,
+    records::vec_records::VecRecords,
+    width::{CfgWidthFunction, WidthEstimator},
+    Borders, Estimate, Grid, GridConfig,
 };
 
 fn main() {
@@ -17,7 +19,7 @@ fn main() {
     cfg.set_borders_missing('+');
 
     let records = vec![vec!["Hello", "World"], vec!["Hi", "World"]];
-    let records = RecordsInfo::new(&records, (3, 5), &cfg);
+    let records = VecRecords::new(&records, (3, 5), CfgWidthFunction::from_cfg(&cfg));
 
     let mut width = WidthEstimator::default();
     width.estimate(&records, &cfg);

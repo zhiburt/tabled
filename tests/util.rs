@@ -4,7 +4,10 @@
 
 use std::ops::{Index, IndexMut};
 
-use papergrid::{records::records_info::RecordsInfo, Position};
+use papergrid::{
+    records::{cell_info::CellInfo, vec_records::VecRecords},
+    Position,
+};
 use tabled::{
     object::SegmentAll, papergrid::util::string_width_multiline, Alignment, ModifyObject, Table,
     Tabled,
@@ -30,7 +33,9 @@ where
     new_table(data)
 }
 
-pub fn new_table<'a, T: Tabled>(iter: impl IntoIterator<Item = T> + 'a) -> Table<RecordsInfo<'a>> {
+pub fn new_table<'a, T: Tabled>(
+    iter: impl IntoIterator<Item = T> + 'a,
+) -> Table<VecRecords<CellInfo<'a>>> {
     Table::new(iter).with(SegmentAll.modify().with(Alignment::center()))
 }
 
@@ -110,6 +115,9 @@ macro_rules! test_table {
         #[test]
         fn $test() {
             let table = $table.to_string();
+
+            println!("{table}");
+
             assert_eq!(table, crate::util::static_table!($($line)*));
         }
     };

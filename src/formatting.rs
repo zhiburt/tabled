@@ -26,7 +26,7 @@ pub struct TabSize(pub usize);
 
 impl<R> TableOption<R> for TabSize
 where
-    R: RecordsMut,
+    R: RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {

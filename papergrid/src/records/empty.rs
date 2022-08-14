@@ -1,8 +1,4 @@
-use std::iter;
-
-use crate::{width::WidthFunc, Position};
-
-use super::{Cell, Records, Text};
+use crate::{records::Records, Position};
 
 #[derive(Debug, Default, Clone)]
 pub struct EmptyRecords {
@@ -17,49 +13,39 @@ impl EmptyRecords {
 }
 
 impl Records for EmptyRecords {
-    type Cell = ();
-
-    fn size(&self) -> (usize, usize) {
-        (self.rows, self.cols)
+    fn count_rows(&self) -> usize {
+        self.rows
     }
 
-    fn get(&self, _: Position) -> Self::Cell {}
+    fn count_columns(&self) -> usize {
+        self.cols
+    }
 
     fn get_text(&self, _: Position) -> &str {
         ""
     }
-}
 
-impl Cell for () {
-    type Text = ();
-    type Lines = iter::Empty<()>;
-
-    fn lines(&self) -> Self::Lines {
-        iter::empty()
-    }
-
-    fn get_line(&self, _: usize) -> Option<Self::Text> {
-        Some(())
-    }
-
-    fn count_lines(&self) -> usize {
-        1
-    }
-
-    fn width<W>(&self, _: W) -> usize {
-        0
-    }
-}
-
-impl Text for () {
-    fn as_str(&self) -> &str {
+    fn get_line(&self, _: Position, _: usize) -> &str {
         ""
     }
 
-    fn width<W>(&self, _: W) -> usize
-    where
-        W: WidthFunc,
-    {
+    fn get_width<W>(&self, _: Position, _: W) -> usize {
         0
+    }
+
+    fn get_line_width<W>(&self, _: Position, _: usize, _: W) -> usize {
+        0
+    }
+
+    fn count_lines(&self, _: Position) -> usize {
+        1
+    }
+
+    fn fmt_text_prefix(&self, _: &mut std::fmt::Formatter<'_>, _: Position) -> std::fmt::Result {
+        Ok(())
+    }
+
+    fn fmt_text_suffix(&self, _: &mut std::fmt::Formatter<'_>, _: Position) -> std::fmt::Result {
+        Ok(())
     }
 }

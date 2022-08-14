@@ -56,8 +56,7 @@ mod entity_map;
 mod estimation;
 mod grid;
 
-#[cfg(feature = "color")]
-mod ansi_color;
+mod color;
 
 pub mod records;
 
@@ -75,7 +74,7 @@ pub use grid::{
 
 #[cfg(feature = "color")]
 pub use crate::{
-    ansi_color::{AnsiColor, Color},
+    color::{ansi_color::AnsiColor, Color},
     grid::{MarginColor, PaddingColor},
 };
 
