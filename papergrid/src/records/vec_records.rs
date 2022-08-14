@@ -156,8 +156,7 @@ where
     where
         W: WidthFunc,
     {
-        self.records[row][col].set(text);
-        self.records[row][col].update(width_ctrl);
+        self.records[row][col].set(text, width_ctrl);
     }
 
     fn update<W>(&mut self, (row, col): Position, width_ctrl: W)
@@ -312,7 +311,9 @@ pub trait Cell: AsRef<str> {
 }
 
 pub trait CellMut<T> {
-    fn set(&mut self, text: T);
+    fn set<W>(&mut self, text: T, width_ctrl: W)
+    where
+        W: WidthFunc;
     fn update<W>(&mut self, width_ctrl: W)
     where
         W: WidthFunc;

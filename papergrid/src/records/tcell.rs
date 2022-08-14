@@ -81,8 +81,11 @@ impl<T, C, Q> CellMut<Q> for TCell<T, C>
 where
     T: CellMut<Q>,
 {
-    fn set(&mut self, text: Q) {
-        self.cell.set(text);
+    fn set<W>(&mut self, text: Q, width_ctrl: W)
+    where
+        W: WidthFunc,
+    {
+        self.cell.set(text, width_ctrl);
     }
 
     fn update<W>(&mut self, width_ctrl: W)

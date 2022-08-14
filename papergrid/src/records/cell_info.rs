@@ -1,4 +1,4 @@
-use std::{borrow::Cow, cmp::max, fmt::Result};
+use std::{borrow::Cow, cmp::max};
 
 use crate::{
     records::vec_records::{Cell, CellMut},
@@ -67,13 +67,15 @@ where
     where
         W: WidthFunc,
     {
-        self.lines.clear();
         self.width = 0;
         update_cell_info(self, width_ctrl);
     }
 
-    fn set(&mut self, text: T) {
-        self.text = text.into();
+    fn set<W>(&mut self, text: T, width_ctrl: W)
+    where
+        W: WidthFunc,
+    {
+        *self = create_cell_info(text.into(), width_ctrl);
     }
 }
 
@@ -104,22 +106,24 @@ where
         ..Default::default()
     };
 
-    update_cell_info(&mut info, width_fn);
+    let text = info.text.as_ref();
 
-    info
-}
+    // We want to mitigate additional allocations whereas possible.
+    //
+    // # Safety
+    //
+    // It must be save
+    let text = unsafe {
+        std::str::from_utf8_unchecked(std::slice::from_raw_parts(text.as_ptr(), text.len()))
+    };
 
-fn update_cell_info<W>(info: &mut CellInfo<'_>, width_fn: W)
-where
-    W: WidthFunc,
-{
-    let mut lines = get_lines(info.text.as_ref());
+    let mut lines = get_lines(text);
 
     // optimize for a general case where we have only 1 line.
     // to not make any allocations
     let first_line = lines.next();
     if first_line.is_none() {
-        return;
+        return info;
     }
 
     let first_line = first_line.unwrap();
@@ -128,27 +132,44 @@ where
 
     let second_line = lines.next();
     if second_line.is_none() {
-        return;
+        return info;
     }
 
-    info.lines.push(StrWithWidth::new(
-        Cow::Owned(first_line.to_string()),
-        first_width,
-    ));
+    info.lines.push(StrWithWidth::new(first_line, first_width));
 
     let second_line = second_line.unwrap();
     let second_width = width_fn.width(second_line.as_ref());
-    info.lines.push(StrWithWidth::new(
-        Cow::Owned(second_line.to_string()),
-        second_width,
-    ));
+    info.lines
+        .push(StrWithWidth::new(second_line, second_width));
 
     info.width = max(info.width, second_width);
 
     for line in lines {
         let width = width_fn.width(line.as_ref());
-        let line = StrWithWidth::new(Cow::Owned(line.to_string()), width);
         info.width = max(info.width, width);
+
+        let line = StrWithWidth::new(Cow::Owned(line.to_string()), width);
         info.lines.push(line);
+    }
+
+    info
+}
+
+fn update_cell_info<W>(info: &mut CellInfo<'_>, width_fn: W)
+where
+    W: WidthFunc,
+{
+    if info.text.is_empty() {
+        return;
+    }
+
+    if info.lines.is_empty() && !info.text.is_empty() {
+        info.width = width_fn.width(&info.text);
+        return;
+    }
+
+    for line in info.lines.iter_mut() {
+        line.width = width_fn.width(&line.text);
+        info.width = max(info.width, line.width);
     }
 }
