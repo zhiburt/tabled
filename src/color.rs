@@ -1,3 +1,7 @@
+//! This module contains a configuration of a [`Border`] or a [`Table`] to set its borders color via [`Color`].
+//!
+//! [`Border`]: crate::Border
+
 use std::convert::TryFrom;
 
 use papergrid::{records::Records, AnsiColor, Entity};
@@ -11,7 +15,7 @@ use crate::{CellOption, Table, TableOption};
 /// ```
 /// use std::convert::TryFrom;
 /// use owo_colors::OwoColorize;
-/// use tabled::{style::Color, TableIteratorExt};
+/// use tabled::{color::Color, TableIteratorExt};
 ///
 /// let data = [
 ///     (0u8, "Hello"),
@@ -26,11 +30,14 @@ use crate::{CellOption, Table, TableOption};
 ///
 /// [`Padding`]: crate::Padding
 /// [`Margin`]: crate::Margin
+/// [`Border`]: crate::Border
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Color(AnsiColor);
 
 impl Color {
+    /// Creates a new [`Color`]` instance, with ANSI prefix and ANSI suffix.
+    /// You can use [`TryFrom`] to construct it from [`String`].
     pub fn new(prefix: String, suffix: String) -> Self {
         Self(AnsiColor::new(prefix, suffix))
     }
@@ -73,7 +80,7 @@ impl<R> TableOption<R> for Color {
 
 impl<R> CellOption<R> for Color
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let border = border_color(self);
@@ -87,7 +94,7 @@ where
 
 impl<'b, R> CellOption<R> for &'b Color
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let border = border_color(self);
@@ -100,7 +107,7 @@ where
 }
 
 fn border_color(color: &Color) -> papergrid::Border<AnsiColor> {
-    papergrid::Border::new(
+    papergrid::Border::full(
         color.0.clone(),
         color.0.clone(),
         color.0.clone(),

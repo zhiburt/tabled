@@ -9,7 +9,7 @@ use crate::{Table, TableOption};
 /// # Example
 ///
 /// ```rust
-/// use tabled::{Table, style::BorderText};
+/// use tabled::{Table, BorderText};
 ///
 /// let table = Table::new(["Hello World"])
 ///     .with(BorderText::first("+-.table"));
@@ -78,7 +78,7 @@ impl<'a> BorderText<'a> {
 
 impl<'a, R> TableOption<R> for BorderText<'a>
 where
-    for<'b> &'b R: Records,
+    R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {
         let row = match self.row {

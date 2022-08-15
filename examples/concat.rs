@@ -9,15 +9,6 @@ struct Weather {
     wind_ms: f64,
 }
 
-impl Weather {
-    fn new(temperature_c: f64, wind_ms: f64) -> Self {
-        Self {
-            temperature_c,
-            wind_ms,
-        }
-    }
-}
-
 #[derive(Debug, Tabled)]
 struct Location(
     #[tabled(rename = "latitude")] f64,
@@ -26,10 +17,21 @@ struct Location(
 
 fn main() {
     let weather_data = [
-        Weather::new(16.0, 3000.0),
-        Weather::new(-20.0, 300.0),
-        Weather::new(40.0, 100.0),
+        Weather {
+            temperature_c: 1.0,
+            wind_ms: 3.0,
+        },
+        Weather {
+            temperature_c: -20.0,
+            wind_ms: 30.0,
+        },
+        Weather {
+            temperature_c: 40.0,
+            wind_ms: 100.0,
+        },
     ];
+
+    let weather_table = Table::new(weather_data);
 
     let location_data = [
         Location(111.111, 333.333),
@@ -38,7 +40,6 @@ fn main() {
         Location(0.0, 0.0),
     ];
 
-    let weather_table = Table::new(weather_data);
     let location_table = Table::new(location_data);
 
     let data_table = weather_table

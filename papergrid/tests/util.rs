@@ -81,16 +81,12 @@ fn build_grid(
     let records = VecRecords::new(records, (rows, cols), CfgWidthFunction::from_cfg(cfg));
     let records = Box::leak(Box::new(records));
 
-    let mut width = WidthEstimator::default();
+    let width = Box::leak(Box::new(WidthEstimator::default()));
     width.estimate(&*records, cfg);
-    let mut height = HeightEstimator::default();
+    let height = Box::leak(Box::new(HeightEstimator::default()));
     height.estimate(&*records, cfg);
 
-    let grid = Grid::new(&*records, cfg, width, height);
-
-    grid.to_string();
-
-    grid
+    Grid::new(&*records, cfg, &*width, &*height)
 }
 
 fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {
@@ -121,6 +117,7 @@ macro_rules! test_table {
         #[test]
         fn $test() {
             let table = $table.to_string();
+            println!("{table}");
             assert_eq!(table, crate::util::static_table!($($line)*));
         }
     };
@@ -145,7 +142,7 @@ const DEFAULT_BORDERS: Borders = Borders {
 
     vertical_left: Some('|'),
     vertical_right: Some('|'),
-    vertical_intersection: Some('|'),
+    vertical: Some('|'),
 
     intersection: Some('+'),
 };

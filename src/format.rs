@@ -25,7 +25,7 @@ impl Format<()> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, Format, object::Rows, Modify};
+    /// use tabled::{Table, format::Format, object::Rows, Modify};
     ///
     /// let data = vec![
     ///     (0, "Grodno", true),
@@ -66,7 +66,7 @@ impl Format<()> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, Format, object::Rows, Modify};
+    /// use tabled::{Table, format::Format, object::Rows, Modify};
     ///
     /// let data = vec![
     ///     (0, "Grodno", true),
@@ -102,7 +102,7 @@ impl Format<()> {
     /// Using this formatting applied for all rows not to a string as a whole.
     ///
     /// ```rust,no_run
-    /// use tabled::{Table, Format, object::Segment, Modify};
+    /// use tabled::{Table, format::Format, object::Segment, Modify};
     ///
     /// let data: Vec<&'static str> = Vec::new();
     /// let table = Table::new(&data)

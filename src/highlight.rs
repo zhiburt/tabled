@@ -17,7 +17,7 @@ use crate::border_colored::BorderColored;
 /// # Example
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::Segment};
+/// use tabled::{TableIteratorExt, Highlight, Border, Style, object::Segment};
 ///
 /// let data = [
 ///     ("ELF", "Extensible Linking Format", true),
@@ -49,7 +49,7 @@ use crate::border_colored::BorderColored;
 /// It's possible to use [`Highlight`] for many kinds of figures.
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::{Segment, Cell, Object}};
+/// use tabled::{TableIteratorExt, Highlight, Border, Style, object::{Segment, Cell, Object}};
 ///
 /// let data = [
 ///     ("ELF", "Extensible Linking Format", true),
@@ -113,7 +113,7 @@ impl<O> Highlight<O> {
 impl<O, R> TableOption<R> for Highlight<O>
 where
     O: Object,
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {
         let (count_rows, count_cols) = table.shape();
@@ -141,7 +141,7 @@ pub struct HighlightColored<O> {
 impl<O, R> TableOption<R> for HighlightColored<O>
 where
     O: Object,
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {
         let (count_rows, count_cols) = table.shape();

@@ -1,3 +1,5 @@
+//! This module contains [`Justify`] structure, used to set an exact width to each column.
+
 use papergrid::records::{Records, RecordsMut};
 
 use crate::{
@@ -13,7 +15,7 @@ use crate::{
 /// ## Examples
 ///
 /// ```
-/// use tabled::{width::Justify, Style, Modify, object::Segment, Padding, Table};
+/// use tabled::{justify::Justify, Style, Modify, object::Segment, Padding, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -26,7 +28,7 @@ use crate::{
 /// [`Max`] usage to justify by a max column width.
 ///
 /// ```
-/// use tabled::{width::Justify, Style, Table};
+/// use tabled::{justify::Justify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///

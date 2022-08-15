@@ -1,14 +1,20 @@
+//! The module contains a [`WidthEstimator`] for [`Grid`] width estimation.
+//!
+//! [`Grid`]: crate::Grid
+
 use std::cmp::Ordering;
 
 use crate::{
-    grid::GridConfig,
     records::Records,
     util::{string_width_multiline_tab, string_width_tab},
-    Position,
+    GridConfig, Position,
 };
 
 use super::Estimate;
 
+/// A [`Estimate`]or of a width for a [`Grid`].
+///
+/// [`Grid`]: crate::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct WidthEstimator {
     widths: Vec<usize>,
@@ -43,8 +49,11 @@ impl From<WidthEstimator> for Vec<usize> {
     }
 }
 
+/// A width function.
 pub trait WidthFunc {
+    /// Calculates a width of a string.
     fn width(&self, text: &str) -> usize;
+    /// Calculates a width of a multiline string.
     fn width_multiline(&self, text: &str) -> usize;
 }
 
@@ -61,16 +70,21 @@ where
     }
 }
 
+/// A [`WidthFunc`] implementation which is used by [`Grid`].
+///
+/// [`Grid`]: crate::Grid
 #[derive(Debug, Default, Clone)]
 pub struct CfgWidthFunction {
     tab_width: usize,
 }
 
 impl CfgWidthFunction {
+    /// Creates a [`CfgWidthFunction`] from [`GridConfig`].
     pub fn from_cfg(cfg: &GridConfig) -> Self {
         Self::new(cfg.get_tab_width())
     }
 
+    /// Creates a [`CfgWidthFunction`] with a tab size.
     pub fn new(tab_size: usize) -> Self {
         Self {
             tab_width: tab_size,

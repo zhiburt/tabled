@@ -71,7 +71,7 @@ impl<O, M, R> TableOption<R> for ModifyList<O, M>
 where
     O: Object,
     M: CellOption<R>,
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {
         let (count_rows, count_cols) = table.shape();

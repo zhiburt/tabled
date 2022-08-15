@@ -367,6 +367,9 @@ impl Builder {
         self
     }
 
+    /// Creates a Builder from a built [`Records`]
+    ///
+    /// [`Records`]: papergrid::records::Records
     pub fn custom<R>(records: R) -> CustomRecords<R> {
         CustomRecords::new(records)
     }
@@ -535,7 +538,7 @@ fn build_grid(
 
 fn create_table<R>(records: R, cfg: GridConfig) -> Table<R>
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     let table = Table::new_raw(records, cfg);
     table.with(Style::ascii())
@@ -873,6 +876,10 @@ fn build_range_index(n: usize) -> Vec<CellInfo<'static>> {
         .collect()
 }
 
+/// A builder which wraps [`Records`] and builds [`Table`] out of it.
+///
+/// [`Records`]: papergrid::records::Records
+#[derive(Debug, Clone)]
 pub struct CustomRecords<R> {
     records: R,
 }
@@ -885,8 +892,11 @@ impl<R> CustomRecords<R> {
 
 impl<R> CustomRecords<R>
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
+    /// Builds a [`Table`] from [`Records`].
+    ///
+    /// [`Records`]: papergrid::records::Records
     pub fn build(self) -> Table<R> {
         let mut cfg = GridConfig::default();
         configure_grid(&mut cfg);

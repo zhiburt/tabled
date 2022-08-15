@@ -6,9 +6,9 @@
 //!
 //! ```
 //! use tabled::{
-//!     formatting_settings::AlignmentStrategy,
+//!     formatting::AlignmentStrategy,
 //!     object::Segment,
-//!     Alignment, AlignmentHorizontal, Modify, Style, Table,
+//!     Alignment, Modify, Style, Table,
 //! };
 //!
 //! let data = [

@@ -55,7 +55,7 @@ impl Span {
 
 impl<R> CellOption<R> for Span
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let (count_rows, count_cols) = table.shape();

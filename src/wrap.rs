@@ -1,3 +1,6 @@
+//! This module contains [`Wrap`] structure, used to decrease width of a [`Table`]s or a cell on a [`Table`] by wrapping it's content
+//! to a new line.
+
 use std::marker::PhantomData;
 
 use papergrid::{
@@ -27,7 +30,7 @@ use crate::{
 /// ## Example
 ///
 /// ```
-/// use tabled::{object::Segment, width::Wrap, Modify, Table};
+/// use tabled::{object::Segment, wrap::Wrap, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Wrap::new(3)));
@@ -472,9 +475,9 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 }
 
 fn split_string_at(text: &str, at: usize) -> (&str, &str, (usize, usize)) {
-    use papergrid::util::string_split_at_length;
+    use papergrid::util::split_at_pos;
 
-    let (length, count_unknowns, split_char_size) = string_split_at_length(text, at);
+    let (length, count_unknowns, split_char_size) = split_at_pos(text, at);
     let (lhs, rhs) = text.split_at(length);
 
     (lhs, rhs, (count_unknowns, split_char_size))

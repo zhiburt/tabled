@@ -7,7 +7,7 @@ use crate::{color::Color, CellOption, Table};
 /// Color settings for a [Padding].
 ///
 /// ```rust,no_run
-/// # use tabled::{padding::PaddingColor, style::Color, Table, Modify, object::Segment};
+/// # use tabled::{padding_color::PaddingColor, color::Color, Table, Modify, object::Segment};
 /// # use owo_colors::OwoColorize;
 /// # use std::convert::TryFrom;
 /// # let data: Vec<&'static str> = Vec::new();

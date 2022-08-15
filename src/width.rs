@@ -336,7 +336,7 @@ fn grid_widths<'a, R, W>(
 ) -> impl Iterator<Item = impl Iterator<Item = usize> + 'a> + 'a
 where
     W: WidthFunc,
-    for<'b> &'b R: Records,
+    R: Records,
 {
     let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
     (0..count_rows).map(move |row| {

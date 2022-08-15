@@ -1,3 +1,9 @@
+//! This module contains a style configuration just like [`RawStyle`] but with [`Color`] by using [`Symbol`].
+//!
+//! [`Color`]: crate::Color
+//! [`Symbol`]: crate::Symbol
+//! [`RawStyle`]: crate::RawStyle
+
 use papergrid::{records::Records, AnsiColor, Borders};
 
 use crate::{raw_style::RawStyle, symbol::Symbol, Table, TableOption};
@@ -116,7 +122,7 @@ impl RawStyleColored {
         let color = s.and_then(|s| s.color().cloned().map(|c| c.into()));
 
         self.style.set_vertical(c);
-        self.colors.vertical_intersection = color;
+        self.colors.vertical = color;
 
         self
     }
@@ -179,7 +185,7 @@ impl RawStyleColored {
 
 impl<R> TableOption<R> for RawStyleColored
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {
         self.style.change(table);

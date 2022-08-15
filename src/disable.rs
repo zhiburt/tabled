@@ -61,8 +61,7 @@ pub enum Disable<R: RangeBounds<usize>> {
 impl<R, D> TableOption<D> for Disable<R>
 where
     R: RangeBounds<usize>,
-    D: Resizable,
-    for<'a> &'a D: Records,
+    D: Records + Resizable,
 {
     fn change(&mut self, table: &mut Table<D>) {
         let (count_rows, count_cols) = table.shape();

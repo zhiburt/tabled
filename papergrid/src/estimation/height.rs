@@ -1,9 +1,16 @@
+//! The module contains a [`HeightEstimator`] for [`Grid`] height estimation.
+//!
+//! [`Grid`]: crate::Grid
+
 use std::cmp::max;
 
-use crate::{grid::GridConfig, records::Records, Entity, Position};
+use crate::{records::Records, Entity, GridConfig, Position};
 
 use super::Estimate;
 
+/// A [`Estimate`]or of a height for a [`Grid`].
+///
+/// [`Grid`]: crate::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct HeightEstimator {
     heights: Vec<usize>,

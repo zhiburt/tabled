@@ -31,7 +31,7 @@
 //! ### Example
 //!
 //! ```
-//! use tabled::{Table, style::{BorderText, Style}};
+//! use tabled::{Table, BorderText, Style};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
@@ -452,7 +452,7 @@ impl Style<(), (), (), (), (), ()> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{TableIteratorExt, Style, Modify, Format, Span, object::Cell};
+    /// use tabled::{TableIteratorExt, Style, Modify, format::Format, Span, object::Cell};
     ///
     /// let data = vec![
     ///     ("09", "June", "2022"),
@@ -524,7 +524,7 @@ const fn create_borders(
         intersection: horizontal.0.intersection,
         vertical_left: left,
         vertical_right: right,
-        vertical_intersection: vertical,
+        vertical,
     }
 }
 
@@ -744,7 +744,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     where
         for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line)>,
     {
-        self.borders.vertical_intersection = Some(c);
+        self.borders.vertical = Some(c);
 
         if self.borders.has_horizontal() {
             self.borders.intersection = Some(c);
@@ -964,7 +964,7 @@ impl<T, B, L, R, H, Lines> Style<T, B, L, R, H, On, Lines> {
     where
         Lines: IntoIterator<Item = (usize, Line)> + Clone,
     {
-        self.borders.vertical_intersection = None;
+        self.borders.vertical = None;
         self.borders.top_intersection = None;
         self.borders.bottom_intersection = None;
         self.borders.intersection = None;
@@ -977,7 +977,7 @@ impl<T, B, L, R, H, Lines> Style<T, B, L, R, H, On, Lines> {
 impl<T, B, L, R, H, V, Lines, I> TableOption<I> for Style<T, B, L, R, H, V, Lines>
 where
     Lines: IntoIterator<Item = (usize, Line)> + Clone,
-    for<'a> &'a I: Records,
+    I: Records,
 {
     fn change(&mut self, table: &mut Table<I>) {
         table.get_config_mut().clear_theme();
@@ -1148,6 +1148,7 @@ impl Line {
         self
     }
 
+    /// Checks if it's an empty line.
     pub const fn is_empty(&self) -> bool {
         self.0.is_empty()
     }

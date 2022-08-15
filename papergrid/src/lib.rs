@@ -3,23 +3,25 @@
     rust_2018_compatibility,
     rust_2021_compatibility,
     missing_debug_implementations,
-    unreachable_pub
+    unreachable_pub,
+    missing_docs
 )]
 #![deny(unused_must_use)]
 
-//! Papergrid is a library for generating text-based tables for display
+//! Papergrid is a library for generating text-based tables.
 //!
 //! # Example
+//!
 //! ```
-//! use papergrid::{Grid, Entity, Borders};
+//! use papergrid::{
+//!     height::HeightEstimator,
+//!     records::vec_records::VecRecords,
+//!     width::{CfgWidthFunction, WidthEstimator},
+//!     Borders, Estimate, Grid, GridConfig,
+//! };
 //!
-//! let data = vec![
-//!     vec![String::from("0-0"), String::from("0-1")],
-//!     vec![String::from("1-0"), String::from("1-1")],
-//! ];
-//!
-//! let mut grid = Grid::new(data, 2, 2);
-//! grid.set_borders(Borders {
+//! // Creating a borders structure of a grid.
+//! let borders = Borders {
 //!     top: Some('-'),
 //!     top_left: Some('+'),
 //!     top_right: Some('+'),
@@ -31,51 +33,62 @@
 //!     horizontal: Some('-'),
 //!     horizontal_left: Some('+'),
 //!     horizontal_right: Some('+'),
+//!     vertical: Some('|'),
 //!     vertical_left: Some('|'),
 //!     vertical_right: Some('|'),
-//!     vertical_intersection: Some('|'),
 //!     intersection: Some('+'),
-//! });
+//! };
+//!
+//! // Creating a grid config.
+//! let mut cfg = GridConfig::default();
+//! cfg.set_borders(borders);
+//!
+//! // Creating an actual data for grid.
+//! let records = vec![vec!["Hello", "World"], vec!["Hi", "World"]];
+//! let records = VecRecords::new(&records, (2, 2), CfgWidthFunction::from_cfg(&cfg));
+//!
+//! // Estimate width space for rendering.
+//! let mut width = WidthEstimator::default();
+//! width.estimate(&records, &cfg);
+//!
+//! // Estimate height space for rendering.
+//! let mut height = HeightEstimator::default();
+//! height.estimate(&records, &cfg);
+//!
+//! // Creating a grid.
+//! let grid = Grid::new(&records, &cfg, &width, &height).to_string();
 //!
 //! assert_eq!(
-//!     grid.to_string(),
+//!     grid,
 //!     concat!(
-//!         "+---+---+\n",
-//!         "|0-0|0-1|\n",
-//!         "+---+---+\n",
-//!         "|1-0|1-1|\n",
-//!         "+---+---+",
-//!     )
+//!         "+-----+-----+\n",
+//!         "|Hello|World|\n",
+//!         "+-----+-----+\n",
+//!         "|Hi   |World|\n",
+//!         "+-----+-----+",
+//!     ),
 //! );
 //! ```
 
-mod border;
-mod borders;
-mod entity;
-mod entity_map;
+mod color;
+mod config;
 mod estimation;
 mod grid;
 
-mod color;
-
 pub mod records;
+pub mod util;
 
-pub use estimation::height;
-pub use estimation::width;
-pub use estimation::Estimate;
-
-pub use border::Border;
-pub use borders::{Borders, Line};
-pub use entity::{Entity, EntityIterator};
-pub use grid::{
-    AlignmentHorizontal, AlignmentVertical, Formatting, Grid, GridConfig, Indent, Margin, Padding,
-    Position,
+pub use self::{
+    config::{
+        AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, EntityIterator,
+        Formatting, GridConfig, Indent, Line, Margin, Padding, Position,
+    },
+    estimation::{height, width, Estimate},
+    grid::Grid,
 };
 
 #[cfg(feature = "color")]
 pub use crate::{
-    color::{ansi_color::AnsiColor, Color},
-    grid::{MarginColor, PaddingColor},
+    color::{AnsiColor, Color},
+    config::{MarginColor, PaddingColor},
 };
-
-pub mod util;

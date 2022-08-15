@@ -1,20 +1,28 @@
 /// Border is a representation of a cells's borders (left, right, top, bottom, and the corners)
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Border<T = char> {
+    /// A character for a top.
     pub top: Option<T>,
+    /// A character for a bottom.
     pub bottom: Option<T>,
+    /// A character for a left.
     pub left: Option<T>,
+    /// A character for a right.
     pub right: Option<T>,
+    /// A character for a left top corner.
     pub left_top_corner: Option<T>,
+    /// A character for a left bottom corner.
     pub left_bottom_corner: Option<T>,
+    /// A character for a right top corner.
     pub right_top_corner: Option<T>,
+    /// A character for a right bottom corner.
     pub right_bottom_corner: Option<T>,
 }
 
 impl<T> Border<T> {
     /// This function constructs a cell borders with all sides set.
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
+    pub fn full(
         top: T,
         bottom: T,
         left: T,
@@ -39,15 +47,17 @@ impl<T> Border<T> {
 
 impl<T: Copy> Border<T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [`Border::new`] with the same character set to each side.
+    ///
+    /// It behaives like [`Border::full`] with the same character set to each side.
     pub fn filled(c: T) -> Self {
-        Self::new(c, c, c, c, c, c, c, c)
+        Self::full(c, c, c, c, c, c, c, c)
     }
 }
 
 impl<T: Copy> Border<&T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [`Border::new`] with the same character set to each side.
+    ///
+    /// It behaives like [`Border::full`] with the same character set to each side.
     pub fn copied(&self) -> Border<T> {
         Border {
             top: self.top.copied(),

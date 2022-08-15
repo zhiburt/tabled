@@ -1,3 +1,5 @@
+//! This module contains [`Truncate`] structure, used to decrease width of a [`Table`]s or a cell on a [`Table`] by truncating the width.
+
 use std::{borrow::Cow, marker::PhantomData};
 
 use papergrid::{
@@ -26,7 +28,7 @@ use crate::{
 /// ## Example
 ///
 /// ```
-/// use tabled::{object::Segment, width::Truncate, Modify, Table};
+/// use tabled::{object::Segment, truncate::Truncate, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Truncate::new(3)));
@@ -288,7 +290,7 @@ fn truncate_text<'a>(
             #[cfg(not(feature = "color"))]
             {
                 let mut content = content.into_owned();
-                content.push_str(&suffix);
+                content.push_str(suffix);
                 Cow::Owned(content)
             }
         }

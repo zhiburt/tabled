@@ -12,7 +12,7 @@ fn main() {
         bottom: Some('-'),
         vertical_left: Some('|'),
         vertical_right: Some('|'),
-        vertical_intersection: Some('|'),
+        vertical: Some('|'),
         horizontal: Some('-'),
         ..Default::default()
     });
@@ -27,7 +27,7 @@ fn main() {
     let mut height = HeightEstimator::default();
     height.estimate(&records, &cfg);
 
-    let grid = Grid::new(&records, &cfg, width, height);
+    let grid = Grid::new(&records, &cfg, &width, &height);
 
     println!("{}", grid);
 }

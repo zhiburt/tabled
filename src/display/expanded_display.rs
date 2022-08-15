@@ -80,10 +80,12 @@ use crate::{wrap::wrap_text, Tabled};
 /// ```
 pub struct ExpandedDisplay {
     format_record_splitter: Option<fn(usize) -> String>,
-    format_value: Option<Box<dyn Fn(&str) -> String>>,
+    format_value: Option<FormatFn>,
     fields: Vec<String>,
     records: Vec<Vec<String>>,
 }
+
+type FormatFn = Box<dyn Fn(&str) -> String>;
 
 impl ExpandedDisplay {
     /// Creates a new instance of `ExpandedDisplay`

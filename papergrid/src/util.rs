@@ -1,15 +1,21 @@
+//! This module contains a different functions which are used by the [`Grid`].
+//!
+//! You should use it if you want to comply with how [`Grid`] works.
+//!
+//! [`Grid`]: crate::Grid
+
 use std::borrow::Cow;
 
-/// strip cuts the string to a specific width.
+/// The function cuts the string to a specific width.
 ///
-/// Width is expected to be in bytes.
+/// BE AWARE: width is expected to be in bytes.
 pub fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
     const REPLACEMENT: char = '\u{FFFD}';
 
     #[cfg(feature = "color")]
     {
         let stripped = ansi_str::AnsiStr::ansi_strip(s);
-        let (length, count_unknowns, _) = string_split_at_length(&stripped, width);
+        let (length, count_unknowns, _) = split_at_pos(&stripped, width);
 
         let mut buf = ansi_str::AnsiStr::ansi_cut(s, ..length);
         buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
@@ -18,7 +24,7 @@ pub fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
     }
     #[cfg(not(feature = "color"))]
     {
-        let (length, count_unknowns, _) = string_split_at_length(s, width);
+        let (length, count_unknowns, _) = split_at_pos(s, width);
         let buf = &s[..length];
         if count_unknowns == 0 {
             return Cow::Borrowed(buf);
@@ -31,11 +37,16 @@ pub fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
     }
 }
 
-pub fn string_split_at_length(s: &str, width: usize) -> (usize, usize, usize) {
+/// The function splits a string in the position and
+/// returns a exact number of bytes before the position and in case of a split in an unicode grapheme
+/// a width of a character which was tried to be splited in.
+///
+/// BE AWARE: pos is expected to be in bytes.
+pub fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
     let mut length = 0;
     let mut i = 0;
     for c in s.chars() {
-        if i == width {
+        if i == pos {
             break;
         };
 
@@ -43,8 +54,8 @@ pub fn string_split_at_length(s: &str, width: usize) -> (usize, usize, usize) {
 
         // We cut the chars which takes more then 1 symbol to display,
         // in order to archive the necessary width.
-        if i + c_width > width {
-            let count = width - i;
+        if i + c_width > pos {
+            let count = pos - i;
             return (length, count, c.len_utf8());
         }
 
@@ -89,6 +100,7 @@ pub fn string_width_multiline(text: &str) -> usize {
     text.lines().map(string_width).max().unwrap_or(0)
 }
 
+/// Calculates a number of lines.
 pub fn count_lines(s: &str) -> usize {
     if s.is_empty() {
         return 1;
@@ -97,6 +109,7 @@ pub fn count_lines(s: &str) -> usize {
     bytecount::count(s.as_bytes(), b'\n') + 1
 }
 
+/// Returns a string width with correction to tab width.
 pub fn string_width_tab(text: &str, tab_width: usize) -> usize {
     let width = string_width(text);
     let count_tabs = count_tabs(text);
@@ -104,6 +117,7 @@ pub fn string_width_tab(text: &str, tab_width: usize) -> usize {
     width + count_tabs * tab_width
 }
 
+/// Returns a max per line string width with correction to tab width.
 pub fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
     text.lines()
         .map(|line| string_width_tab(line, tab_width))
@@ -111,31 +125,37 @@ pub fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
         .unwrap_or(0)
 }
 
+/// Trims a string.
 #[cfg(not(feature = "color"))]
 pub fn string_trim(text: &str) -> Cow<'_, str> {
     text.trim().into()
 }
 
+/// Trims a string.
 #[cfg(feature = "color")]
 pub fn string_trim(text: &str) -> Cow<'_, str> {
     ansi_str::AnsiStr::ansi_trim(text).into()
 }
 
+/// Returns a list of tabs (`\t`) in a string..
 pub fn count_tabs(s: &str) -> usize {
     bytecount::count(s.as_bytes(), b'\t')
 }
 
+/// Splits the string by lines.
 #[cfg(not(feature = "color"))]
 pub fn get_lines(text: &str) -> impl Iterator<Item = Cow<'_, str>> {
     // we call split but not `lines()` in order to match colored implementation
     text.split('\n').map(Cow::Borrowed)
 }
 
+/// Splits the string by lines.
 #[cfg(feature = "color")]
 pub fn get_lines(text: &str) -> impl Iterator<Item = Cow<'_, str>> {
     ansi_str::AnsiStr::ansi_split(text, "\n")
 }
 
+/// Replaces tabs in a string with a given width of spaces.
 pub fn replace_tab(text: &str, n: usize) -> String {
     // it's a general case which probably must be faster?
     if n == 4 {

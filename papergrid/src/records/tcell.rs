@@ -1,3 +1,5 @@
+//! A [`Cell`] wrapper to be used with custom [Color]s.
+
 use std::{
     fmt::Formatter,
     ops::{Deref, DerefMut},
@@ -7,6 +9,7 @@ use crate::{width::WidthFunc, Color};
 
 use super::vec_records::{Cell, CellMut};
 
+/// This structure is a decorator of any [Cell] to be used with some [Color].
 #[derive(Debug, Clone, Default)]
 pub struct TCell<T, C> {
     cell: T,
@@ -14,14 +17,17 @@ pub struct TCell<T, C> {
 }
 
 impl<T, C> TCell<T, C> {
+    /// Creates a new instance of a structure.
     pub fn new(cell: T, color: C) -> Self {
         Self { cell, color }
     }
 
+    /// Returns a reference to the color.
     pub fn get_data(&self) -> &C {
         &self.color
     }
 
+    /// Returns a mut reference to the color.
     pub fn get_data_mut(&mut self) -> &mut C {
         &mut self.color
     }

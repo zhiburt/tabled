@@ -1,9 +1,13 @@
+//! This module contains a configuration of a color for [`Margin`].
+//!
+//! [`Margin`]: crate::Margin
+
 use crate::{color::Color, Table, TableOption};
 
 /// List of colors for [Margin].
 ///
 /// ```rust,no_run
-/// # use tabled::{margin::{Margin, MarginColor}, style::Color, Table};
+/// # use tabled::{Margin, margin_color::MarginColor, color::Color, Table};
 /// # use owo_colors::OwoColorize;
 /// # use std::convert::TryFrom;
 /// # let data: Vec<&'static str> = Vec::new();

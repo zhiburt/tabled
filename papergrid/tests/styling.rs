@@ -1,6 +1,7 @@
-use std::convert::TryFrom;
-
 use papergrid::{AlignmentHorizontal, Border, Borders, Entity, Indent, Padding};
+
+#[cfg(feature = "color")]
+use std::convert::TryFrom;
 
 mod util;
 
@@ -9,7 +10,7 @@ use util::{grid, test_table};
 test_table!(
     grid_2x2_custom_frame_test,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|r| (0..2).for_each(|c| cfg.set_border((r, c), Border::new('*', '*', '|', '|', '#', '#', '#', '#')))))
+        .config(|cfg| (0..2).for_each(|r| (0..2).for_each(|c| cfg.set_border((r, c), Border::full('*', '*', '|', '|', '#', '#', '#', '#')))))
         .build(),
     "#***#***#"
     "|0-0|0-1|"
@@ -21,7 +22,7 @@ test_table!(
 test_table!(
     grid_2x2_custom_column_test_0,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|r| cfg.set_border((r, 1), Border::new('*', '*', '|', '|', '#', '#', '#', '#'))))
+        .config(|cfg| (0..2).for_each(|r| cfg.set_border((r, 1), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
         .build(),
     "+---#***#"
     "|0-0|0-1|"
@@ -33,7 +34,7 @@ test_table!(
 test_table!(
     grid_2x2_custom_column_test_1,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|r| cfg.set_border((r, 0), Border::new('*', '*', '|', '|', '#', '#', '#', '#'))))
+        .config(|cfg| (0..2).for_each(|r| cfg.set_border((r, 0), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
         .build(),
     "#***#---+"
     "|0-0|0-1|"
@@ -45,7 +46,7 @@ test_table!(
 test_table!(
     grid_2x2_custom_row_test_0,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|c| cfg.set_border((0, c), Border::new('*', '*', '|', '|', '#', '#', '#', '#'))))
+        .config(|cfg| (0..2).for_each(|c| cfg.set_border((0, c), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
         .build(),
     "#***#***#"
     "|0-0|0-1|"
@@ -57,7 +58,7 @@ test_table!(
 test_table!(
     grid_2x2_custom_row_test_1,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|c| cfg.set_border((1, c), Border::new('*', '*', '|', '|', '#', '#', '#', '#'))))
+        .config(|cfg| (0..2).for_each(|c| cfg.set_border((1, c), Border::full('*', '*', '|', '|', '#', '#', '#', '#'))))
         .build(),
     "+---+---+"
     "|0-0|0-1|"
@@ -69,7 +70,7 @@ test_table!(
 test_table!(
     grid_2x2_change_cell_border_test_0,
     grid(2, 2)
-        .config(|cfg| (0..2).for_each(|_| cfg.set_border((0, 1), Border::new('*', '^', '@', '#', '~', '!', '%', '&'))))
+        .config(|cfg| (0..2).for_each(|_| cfg.set_border((0, 1), Border::full('*', '^', '@', '#', '~', '!', '%', '&'))))
         .build(),
     "+---~***!"
     "|0-0@0-1#"
@@ -153,7 +154,7 @@ test_table!(
     grid(2, 2)
         .config(|cfg| {
             cfg.set_borders(Borders {
-                vertical_intersection: Some(' '),
+                vertical: Some(' '),
                 ..Default::default()
             });
         })
@@ -167,7 +168,7 @@ test_table!(
     grid(2, 2)
         .config(|cfg| {
             cfg.set_borders(Borders {
-                vertical_intersection: Some(' '),
+                vertical: Some(' '),
                 horizontal: Some(' '),
                 intersection: Some(' '),
                 ..Default::default()
@@ -196,7 +197,7 @@ test_table!(
             );
             cfg.set_border(
                 (0, 1),
-                Border::new('*', '-', '@', '%', ' ', ' ', '+', '+'),
+                Border::full('*', '-', '@', '%', ' ', ' ', '+', '+'),
             );
             cfg.set_border(
                 (1, 0),
@@ -235,7 +236,7 @@ test_table!(
     grid(2, 2)
         .config(|cfg| {
             cfg.set_borders(Borders {
-                vertical_intersection: Some(' '),
+                vertical: Some(' '),
                 ..Default::default()
             });
             cfg.set_border(
@@ -288,8 +289,8 @@ test_table!(
                 let bl = AnsiColor::try_from(" ".yellow().to_string()).unwrap();
                 let br = AnsiColor::try_from(" ".on_yellow().to_string()).unwrap();
 
-                cfg.set_border((r, c), Border::new('*', '#', '~', '!', '@', '$', '%', '^'));
-                cfg.set_border_color((r, c), Border::new(top, bottom, left, right, tl, tr, bl, br));
+                cfg.set_border((r, c), Border::full('*', '#', '~', '!', '@', '$', '%', '^'));
+                cfg.set_border_color((r, c), Border::full(top, bottom, left, right, tl, tr, bl, br));
             }))
         })
         .build(),

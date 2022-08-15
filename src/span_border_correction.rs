@@ -1,3 +1,8 @@
+//! This module contains [`StyleCorrectSpan`] structure, which can be usefull when [`Span`] is used, and
+//! you wan't to fix the intersections symbols which are left intact by default.
+//!
+//! [`Span`]: crate::Span
+
 use papergrid::{records::Records, Position};
 
 use crate::{Table, TableOption};
@@ -13,7 +18,7 @@ pub struct StyleCorrectSpan;
 
 impl<R> TableOption<R> for StyleCorrectSpan
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {
         correct_span_styles(table);
@@ -22,7 +27,7 @@ where
 
 fn correct_span_styles<R>(table: &mut Table<R>)
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     let spans = table.get_config().iter_column_spans().collect::<Vec<_>>();
 
@@ -72,7 +77,7 @@ where
 
 fn has_vertical<R>(grid: &Table<R>, spans: &[(Position, usize)], pos: Position) -> bool
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     if is_in_span_range(spans, pos) {
         return spans.iter().any(|&(p, _)| p == pos);

@@ -17,7 +17,7 @@ use crate::{object::bounds_to_usize, Table, TableOption};
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, Format, object::Rows, Modify, Extract};
+/// use tabled::{Table, format::Format, object::Rows, Modify, Extract};
 ///
 /// let data = vec![
 ///     (0, "Grodno", true),
@@ -150,8 +150,7 @@ impl<R, C, RR> TableOption<RR> for Extract<R, C>
 where
     R: RangeBounds<usize> + Clone,
     C: RangeBounds<usize> + Clone,
-    RR: Resizable,
-    for<'a> &'a RR: Records,
+    RR: Records + Resizable,
 {
     fn change(&mut self, table: &mut Table<RR>) {
         let shape = table.shape();
@@ -209,25 +208,25 @@ fn extract<R>(
 {
     for (i, row) in (0..start_row).enumerate() {
         let row = row - i;
-        records.remove_row(row)
+        records.remove_row(row);
     }
 
     let count_rows = count_rows - start_row;
     let end_row = end_row - start_row;
     for (i, row) in (end_row..count_rows).enumerate() {
         let row = row - i;
-        records.remove_row(row)
+        records.remove_row(row);
     }
 
     for (i, col) in (0..start_col).enumerate() {
         let col = col - i;
-        records.remove_column(col)
+        records.remove_column(col);
     }
 
     let count_cols = count_cols - start_col;
     let end_col = end_col - start_col;
     for (i, col) in (end_col..count_cols).enumerate() {
         let col = col - i;
-        records.remove_column(col)
+        records.remove_column(col);
     }
 }

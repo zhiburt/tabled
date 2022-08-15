@@ -2,6 +2,7 @@ use std::fmt::{self, Display, Formatter};
 
 use super::Color;
 
+/// The structure represents a ANSI color by suffix and prefix.
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
 pub struct AnsiColor {
     prefix: String,
@@ -9,14 +10,20 @@ pub struct AnsiColor {
 }
 
 impl AnsiColor {
+    /// Constructs a new instance with suffix and prefix.
+    ///
+    /// They are not checked so you should make sure you provide correct ANSI.
+    /// Otherwise you may want to use [`TryFrom`].
     pub fn new(prefix: String, suffix: String) -> Self {
         Self { prefix, suffix }
     }
 
+    /// Gets a reference to a prefix.
     pub fn get_prefix(&self) -> &str {
         &self.prefix
     }
 
+    /// Gets a reference to a suffix.
     pub fn get_suffix(&self) -> &str {
         &self.suffix
     }

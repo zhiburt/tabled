@@ -60,8 +60,7 @@ pub enum Rotate {
 
 impl<R> TableOption<R> for Rotate
 where
-    R: Resizable,
-    for<'a> &'a R: Records,
+    R: Records + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
         let (count_rows, count_cols) = table.shape();

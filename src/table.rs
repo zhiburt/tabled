@@ -188,7 +188,7 @@ impl<R> Table<R> {
 
 impl<R> Table<R>
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     /// Returns a table shape (count rows, count columns).
     pub fn shape(&self) -> (usize, usize) {
@@ -217,8 +217,7 @@ impl<R> Table<R> {
 
 impl<R> Table<R>
 where
-    R: RecordsMut<String>,
-    for<'a> &'a R: Records,
+    R: Records + RecordsMut<String>,
 {
     pub(crate) fn update_records(&mut self) {
         let ctrl = CfgWidthFunction::from_cfg(self.get_config());
@@ -258,7 +257,7 @@ where
         let mut height = HeightEstimator::default();
         height.estimate(&self.records, &self.cfg);
 
-        let grid = Grid::new(&self.records, &self.cfg, width, height);
+        let grid = Grid::new(&self.records, &self.cfg, &width, &height);
 
         write!(f, "{}", grid)
     }

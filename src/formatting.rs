@@ -26,8 +26,7 @@ pub struct TabSize(pub usize);
 
 impl<R> TableOption<R> for TabSize
 where
-    R: RecordsMut<String>,
-    for<'a> &'a R: Records,
+    R: Records + RecordsMut<String>,
 {
     fn change(&mut self, table: &mut Table<R>) {
         table.get_config_mut().set_tab_width(self.0);
@@ -43,7 +42,7 @@ where
 /// ```
 /// use tabled::{
 ///     Table, Style, Modify, Alignment, object::Segment,
-///     formatting_settings::{AlignmentStrategy, TrimStrategy}
+///     formatting::{AlignmentStrategy, TrimStrategy}
 /// };
 ///
 /// // sample_from: https://opensource.adobe.com/Spry/samples/data_region/JSONDataSetSample.html
@@ -188,7 +187,7 @@ impl<R> CellOption<R> for AlignmentStrategy {
 /// ```
 /// use tabled::{
 ///     Table, Style, Modify, Alignment, object::Segment,
-///     formatting_settings::{TrimStrategy, AlignmentStrategy}
+///     formatting::{TrimStrategy, AlignmentStrategy}
 /// };
 ///
 /// let table = Table::new(&["   Hello World"])

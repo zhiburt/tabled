@@ -1,3 +1,6 @@
+//! This module contains [`RawStyle`] structure, which is analogues to [`Style`] but not generic,
+//! so sometimes it can be used more conviently.
+
 use std::collections::HashMap;
 
 use papergrid::{records::Records, Borders};
@@ -70,7 +73,7 @@ impl RawStyle {
 
     /// Set a vertical character.
     pub fn set_vertical(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.vertical_intersection = s;
+        self.borders.vertical = s;
         self
     }
 
@@ -110,7 +113,7 @@ impl RawStyle {
     ///
     /// ```
     /// use std::collections::HashMap;
-    /// use tabled::{style::{Style, Line, RawStyle}, TableIteratorExt};
+    /// use tabled::{style::{Style, Line}, raw_style::RawStyle, TableIteratorExt};
     ///
     /// let mut style = RawStyle::from(Style::re_structured_text());
     ///
@@ -163,7 +166,7 @@ impl RawStyle {
 
 impl<R> TableOption<R> for RawStyle
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {
         table.get_config_mut().clear_theme();

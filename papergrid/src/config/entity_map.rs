@@ -1,6 +1,6 @@
 use fnv::FnvHashMap;
 
-use crate::{Entity, Position};
+use super::{Entity, Position};
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct EntityMap<T> {

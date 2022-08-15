@@ -1,3 +1,5 @@
+//! The module contains a [`VecRecords`] implementation of [`Records`].
+
 use std::{
     fmt::{self, Formatter},
     ops::{Index, IndexMut},
@@ -6,6 +8,7 @@ use std::{
 use super::{cell_info::CellInfo, Records, RecordsMut, Resizable};
 use crate::{width::WidthFunc, Position};
 
+/// The structure represents a [`Records`] implementation as an pre built vector of cells.
 #[derive(Debug, Default, Clone)]
 pub struct VecRecords<T> {
     records: Vec<Vec<T>>,
@@ -13,6 +16,7 @@ pub struct VecRecords<T> {
 }
 
 impl<'a> VecRecords<CellInfo<'a>> {
+    /// Builds a structure instance from an iterator.
     pub fn new<R, C, T, W>(records: R, size: (usize, usize), width_ctrl: W) -> Self
     where
         R: IntoIterator<Item = C> + 'a,
@@ -26,6 +30,7 @@ impl<'a> VecRecords<CellInfo<'a>> {
 }
 
 impl<T> VecRecords<T> {
+    /// Builds a structure instance with using an exact columns length.
     pub fn with_hint(records: Vec<Vec<T>>, count_columns: usize) -> Self {
         let count_rows = records.len();
         let size = (count_rows, count_columns);
@@ -33,18 +38,22 @@ impl<T> VecRecords<T> {
         Self { records, size }
     }
 
+    /// Returns a shape of [`Records`].
     pub fn size(&self) -> (usize, usize) {
         self.size
     }
 
+    /// Returns a count of rows.
     pub fn count_rows(&self) -> usize {
         self.size.0
     }
 
+    /// Returns a count of columns.
     pub fn count_columns(&self) -> usize {
         self.size.1
     }
 
+    /// Truncates columns to the given length.
     pub fn truncate(&mut self, len: usize) {
         if self.size.1 > len {
             self.size.1 = len;
@@ -59,6 +68,9 @@ impl<T> VecRecords<T>
 where
     T: Clone,
 {
+    /// Creates a column with a given cell.
+    ///
+    /// The cell will be cloned.
     pub fn push(&mut self, cell: T) {
         for row in &mut self.records {
             row.push(cell.clone());
@@ -71,7 +83,7 @@ where
 impl<T> From<Vec<Vec<T>>> for VecRecords<T> {
     fn from(records: Vec<Vec<T>>) -> Self {
         let count_rows = records.len();
-        let count_cols = records.get(0).map_or(0, |r| r.len());
+        let count_cols = records.get(0).map_or(0, Vec::len);
         let size = (count_rows, count_cols);
 
         Self { records, size }
@@ -82,6 +94,7 @@ impl<T> VecRecords<T>
 where
     T: Clone,
 {
+    /// Takes a row index and pushes the cloned row to the end.
     pub fn duplicate_row(&mut self, row: usize) {
         if row >= self.size.0 {
             return;
@@ -293,27 +306,49 @@ where
     cells
 }
 
+/// Cell imlementation which can be used with [`VecRecords`].
 pub trait Cell: AsRef<str> {
+    /// Gets a line by index.
     fn get_line(&self, i: usize) -> &str;
+
+    /// Returns a number of lines cell has.
     fn count_lines(&self) -> usize;
+
+    /// Returns a width of cell.
     fn width<W>(&self, width_ctrl: W) -> usize
     where
         W: WidthFunc;
+
+    /// Returns a width of cell line.
     fn line_width<W>(&self, i: usize, width_ctrl: W) -> usize
     where
         W: WidthFunc;
+
+    /// Prints a prefix.
+    ///
+    /// It might be usefull when used for ANSI prefix.
     fn fmt_prefix(&self, _: &mut Formatter<'_>) -> fmt::Result {
         Ok(())
     }
+
+    /// Prints a suffix.
+    ///
+    /// It might be usefull when used for ANSI suffix.
     fn fmt_suffix(&self, _: &mut Formatter<'_>) -> fmt::Result {
         Ok(())
     }
 }
 
+/// Cell representation of [`VecRecords`] which can be modified.
 pub trait CellMut<T> {
+    /// Sets a text to a cell.
     fn set<W>(&mut self, text: T, width_ctrl: W)
     where
         W: WidthFunc;
+
+    /// Trigers an update a cell.
+    ///
+    /// It may be caused if width function was changed.
     fn update<W>(&mut self, width_ctrl: W)
     where
         W: WidthFunc;

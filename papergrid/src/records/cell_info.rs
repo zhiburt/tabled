@@ -1,3 +1,7 @@
+//! A [`Cell`] implementation for [`VecRecords`].
+//!
+//! [`VecRecords`]: crate::records::vec_records::VecRecords
+
 use std::{borrow::Cow, cmp::max};
 
 use crate::{
@@ -6,6 +10,7 @@ use crate::{
     width::WidthFunc,
 };
 
+/// The struct is a [Cell] implementation which keeps width information pre allocated.
 #[derive(Debug, Clone, Default)]
 pub struct CellInfo<'a> {
     text: Cow<'a, str>,
@@ -14,6 +19,7 @@ pub struct CellInfo<'a> {
 }
 
 impl<'a> CellInfo<'a> {
+    /// Creates a new instance of the structure.
     pub fn new<S, W>(text: S, width_ctrl: W) -> Self
     where
         S: Into<Cow<'a, str>>,
@@ -22,6 +28,7 @@ impl<'a> CellInfo<'a> {
         create_cell_info(text.into(), width_ctrl)
     }
 
+    /// Checks if the containing string is empty.
     pub fn is_empty(&self) -> bool {
         self.text.is_empty()
     }
@@ -168,7 +175,7 @@ where
         return;
     }
 
-    for line in info.lines.iter_mut() {
+    for line in &mut info.lines {
         line.width = width_fn.width(&line.text);
         info.width = max(info.width, line.width);
     }

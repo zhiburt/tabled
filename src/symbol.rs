@@ -1,3 +1,5 @@
+//! This module contains a colored representation of a char which we call [`Symbol`].
+
 use crate::color::Color;
 use crate::papergrid::util::string_width;
 
@@ -7,7 +9,7 @@ use crate::papergrid::util::string_width;
 ///
 /// ```rust,no_run
 /// # use owo_colors::OwoColorize;
-/// # use tabled::{style::{BorderColored, Symbol}, object::Rows, TableIteratorExt, Modify};
+/// # use tabled::{symbol::Symbol, border_colored::BorderColored, object::Rows, TableIteratorExt, Modify};
 /// #
 /// # let data: Vec<&'static str> = Vec::new();
 /// #
@@ -23,6 +25,7 @@ pub struct Symbol {
 }
 
 impl Symbol {
+    /// Creates a new [Symbol] which represents a colored char.
     pub const fn new(c: char, color: Option<Color>) -> Self {
         Self { c, color }
     }

@@ -5,7 +5,7 @@ use crate::{CellOption, Table};
 /// Border represents a border of a Cell.
 ///
 /// ```rust,no_run
-/// # use tabled::{style::{Style, Border}, object::Rows, Table, Modify};
+/// # use tabled::{Style, Border, object::Rows, Table, Modify};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Style::ascii())
@@ -25,7 +25,7 @@ impl Border {
 impl Border {
     /// This function constructs a cell borders with all sides set.
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
+    pub fn full(
         top: char,
         bottom: char,
         left: char,
@@ -35,7 +35,7 @@ impl Border {
         bottom_left: char,
         bottom_right: char,
     ) -> Self {
-        Self::from(papergrid::Border::new(
+        Self::from(papergrid::Border::full(
             top,
             bottom,
             left,
@@ -45,6 +45,17 @@ impl Border {
             bottom_left,
             bottom_right,
         ))
+    }
+
+    /// Using this function you deconstruct the existing borders.
+    pub fn empty() -> Self {
+        Self { border: None }
+    }
+
+    /// This function constructs a cell borders with all sides's char set to a given character.
+    /// It behaives like [`Border::new`] with the same character set to each side.
+    pub fn filled(c: char) -> Self {
+        Self::full(c, c, c, c, c, c, c, c)
     }
 
     /// Set a top border character.
@@ -102,22 +113,11 @@ impl Border {
         b.right_bottom_corner = Some(c);
         Self::from(b)
     }
-
-    /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [`Border::new`] with the same character set to each side.
-    pub fn filled(c: char) -> Self {
-        Self::new(c, c, c, c, c, c, c, c)
-    }
-
-    /// Using this function you deconstruct the existing borders.
-    pub fn empty() -> Self {
-        Self { border: None }
-    }
 }
 
 impl<R> CellOption<R> for Border
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let (count_rows, count_cols) = table.shape();

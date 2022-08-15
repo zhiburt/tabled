@@ -1,5 +1,8 @@
+//! An empty [`Records`] implementation.
+
 use crate::{records::Records, Position};
 
+/// Empty representation of [`Records`].
 #[derive(Debug, Default, Clone)]
 pub struct EmptyRecords {
     rows: usize,
@@ -7,6 +10,7 @@ pub struct EmptyRecords {
 }
 
 impl EmptyRecords {
+    /// Constracts an empty representation of [`Records`] with a given shape.
     pub fn new(rows: usize, cols: usize) -> Self {
         Self { rows, cols }
     }

@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::{Border, Position};
+use super::{Border, Position};
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct BordersConfig<T> {
@@ -142,7 +142,10 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
         &self.borders
     }
 
-    #[allow(unused)]
+    pub(crate) fn get_global(&self) -> Option<&T> {
+        self.global.as_ref()
+    }
+
     pub(crate) fn set_global(&mut self, value: T) {
         self.global = Some(value);
     }
@@ -157,7 +160,7 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
                 } else if pos.1 == 0 {
                     self.borders.vertical_left.as_ref()
                 } else {
-                    self.borders.vertical_intersection.as_ref()
+                    self.borders.vertical.as_ref()
                 }
             })
             .or(self.global.as_ref())
@@ -282,30 +285,47 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
     }
 }
 
+/// Borders represents a Table frame with horizontal and vertical split lines.
 #[derive(Debug, Clone, Default)]
 pub struct Borders<T = char> {
+    /// A top horizontal on the frame.
     pub top: Option<T>,
+    /// A top left on the frame.
     pub top_left: Option<T>,
+    /// A top right on the frame.
     pub top_right: Option<T>,
+    /// A top horizontal intersection on the frame.
     pub top_intersection: Option<T>,
 
+    /// A bottom horizontal on the frame.
     pub bottom: Option<T>,
+    /// A bottom left on the frame.
     pub bottom_left: Option<T>,
+    /// A bottom right on the frame.
     pub bottom_right: Option<T>,
+    /// A bottom horizontal intersection on the frame.
     pub bottom_intersection: Option<T>,
 
+    /// A horizontal split.
     pub horizontal: Option<T>,
+    /// A horizontal split on the left frame line.
     pub horizontal_left: Option<T>,
+    /// A horizontal split on the right frame line.
     pub horizontal_right: Option<T>,
 
+    /// A vertical split.
+    pub vertical: Option<T>,
+    /// A vertical split on the left frame line.
     pub vertical_left: Option<T>,
-    pub vertical_intersection: Option<T>, // todo: rename to vertical
+    /// A vertical split on the right frame line.
     pub vertical_right: Option<T>,
 
+    /// A top left charcter on the frame.
     pub intersection: Option<T>,
 }
 
 impl<T> Borders<T> {
+    /// Verifies if borders has left line set on the frame.
     pub const fn has_left(&self) -> bool {
         self.vertical_left.is_some()
             || self.horizontal_left.is_some()
@@ -313,6 +333,7 @@ impl<T> Borders<T> {
             || self.bottom_left.is_some()
     }
 
+    /// Verifies if borders has right line set on the frame.
     pub const fn has_right(&self) -> bool {
         self.vertical_right.is_some()
             || self.horizontal_right.is_some()
@@ -320,6 +341,7 @@ impl<T> Borders<T> {
             || self.bottom_right.is_some()
     }
 
+    /// Verifies if borders has top line set on the frame.
     pub const fn has_top(&self) -> bool {
         self.top.is_some()
             || self.top_intersection.is_some()
@@ -327,6 +349,7 @@ impl<T> Borders<T> {
             || self.top_right.is_some()
     }
 
+    /// Verifies if borders has bottom line set on the frame.
     pub const fn has_bottom(&self) -> bool {
         self.bottom.is_some()
             || self.bottom_intersection.is_some()
@@ -334,6 +357,7 @@ impl<T> Borders<T> {
             || self.bottom_right.is_some()
     }
 
+    /// Verifies if borders has horizontal lines set.
     pub const fn has_horizontal(&self) -> bool {
         self.horizontal.is_some()
             || self.horizontal_left.is_some()
@@ -341,23 +365,30 @@ impl<T> Borders<T> {
             || self.intersection.is_some()
     }
 
+    /// Verifies if borders has vertical lines set.
     pub const fn has_vertical(&self) -> bool {
         self.intersection.is_some()
-            || self.vertical_intersection.is_some()
+            || self.vertical.is_some()
             || self.top_intersection.is_some()
             || self.bottom_intersection.is_some()
     }
 }
 
+/// A structre for a custom horizontal/vertical line.
 #[derive(Debug, Clone, Default)]
 pub struct Line<T> {
+    /// Line character.
     pub horizontal: Option<T>,
+    /// Line intersection character.
     pub intersection: Option<T>,
+    /// Left intersection character.
     pub left: Option<T>,
+    /// Right intersection character.
     pub right: Option<T>,
 }
 
 impl<T> Line<T> {
+    /// Verifies if the line has any setting set.
     pub const fn is_empty(&self) -> bool {
         self.horizontal.is_none()
             && self.horizontal.is_none()

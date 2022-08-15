@@ -1,5 +1,3 @@
-use crate::Position;
-
 /// Entity a structure which represent a set of cells.
 #[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
 pub enum Entity {
@@ -25,6 +23,9 @@ impl Entity {
         }
     }
 }
+
+/// Position is a (row, col) position on a Grid.
+pub type Position = (usize, usize);
 
 impl From<Position> for Entity {
     fn from((row, col): Position) -> Self {

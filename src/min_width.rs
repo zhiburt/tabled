@@ -1,3 +1,5 @@
+//! This module contains [`MinWidth`] structure, used to increase width of a [`Table`]s or a cell on a [`Table`].
+
 use std::{collections::HashMap, marker::PhantomData};
 
 use papergrid::{
@@ -29,7 +31,7 @@ use crate::{
 /// Cell change
 ///
 /// ```
-/// use tabled::{object::Segment, width::MinWidth, Modify, Style, Table};
+/// use tabled::{object::Segment, min_width::MinWidth, Modify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -40,7 +42,7 @@ use crate::{
 /// Table change
 ///
 /// ```
-/// use tabled::{width::MinWidth, Table};
+/// use tabled::{min_width::MinWidth, Table};
 ///
 /// let table = Table::new(&["Hello World!"]).with(MinWidth::new(5));
 /// ```

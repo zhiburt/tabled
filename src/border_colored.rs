@@ -1,3 +1,5 @@
+//! This module contains a configuration of a Border to set its color via [`BorderColored`].
+
 use papergrid::{records::Records, AnsiColor, Border, Entity};
 
 use crate::{symbol::Symbol, CellOption, Table};
@@ -6,7 +8,7 @@ use crate::{symbol::Symbol, CellOption, Table};
 ///
 /// ```rust,no_run
 /// # use owo_colors::OwoColorize;
-/// # use tabled::{style::{Style, Symbol, BorderColored}, object::Rows, Table, Modify};
+/// # use tabled::{Style, symbol::Symbol, border_colored::BorderColored, object::Rows, Table, Modify};
 /// #
 /// # let data: Vec<&'static str> = Vec::new();
 /// #
@@ -86,7 +88,7 @@ impl BorderColored {
 
 impl<R> CellOption<R> for BorderColored
 where
-    for<'a> &'a R: Records,
+    R: Records,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let (border, color) = split_border_colored(self);

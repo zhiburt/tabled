@@ -69,7 +69,7 @@ where
         let shift_count = count_rows - self.1;
         for i in 0..shift_count {
             let row = count_rows - i;
-            table.get_records_mut().swap_row(row, row - 1)
+            table.get_records_mut().swap_row(row, row - 1);
         }
 
         // move existing spans
