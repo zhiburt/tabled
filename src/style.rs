@@ -31,7 +31,7 @@
 //! ### Example
 //!
 //! ```
-//! use tabled::{Table, style::{BorderText, Style}};
+//! use tabled::{Table, BorderText, Style};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
@@ -90,12 +90,13 @@
 //! [`Table`]: crate::Table
 //! [`Symbol`]: crate::style::Symbol
 
-use std::collections::HashMap;
-use std::{borrow::Cow, marker::PhantomData};
+use std::marker::PhantomData;
 
-use papergrid::{Borders, Entity, Grid, Position};
+use papergrid::{records::Records, Borders};
 
-use crate::{CellOption, TableOption};
+use crate::border::Border;
+use crate::span_border_correction::StyleCorrectSpan;
+use crate::table::{Table, TableOption};
 
 /// Style is represents a theme of a [`Table`].
 ///
@@ -122,8 +123,8 @@ use crate::{CellOption, TableOption};
 /// [`Table`]: crate::Table
 #[derive(Debug, Clone)]
 pub struct Style<T, B, L, R, H, V, Lines = ConstLines<0>> {
-    borders: Borders<char>,
-    lines: Lines,
+    pub(crate) borders: Borders<char>,
+    pub(crate) lines: Lines,
     _top: PhantomData<T>,
     _bottom: PhantomData<B>,
     _left: PhantomData<L>,
@@ -451,7 +452,7 @@ impl Style<(), (), (), (), (), ()> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{TableIteratorExt, Style, Modify, Format, Span, object::Cell};
+    /// use tabled::{TableIteratorExt, Style, Modify, format::Format, Span, object::Cell};
     ///
     /// let data = vec![
     ///     ("09", "June", "2022"),
@@ -523,7 +524,7 @@ const fn create_borders(
         intersection: horizontal.0.intersection,
         vertical_left: left,
         vertical_right: right,
-        vertical_intersection: vertical,
+        vertical,
     }
 }
 
@@ -568,18 +569,16 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// );
     /// ```
     pub const fn frame(&self) -> Border {
-        Border {
-            border: Some(papergrid::Border {
-                top: self.borders.top,
-                bottom: self.borders.bottom,
-                left: self.borders.vertical_left,
-                right: self.borders.vertical_right,
-                left_top_corner: self.borders.top_left,
-                right_top_corner: self.borders.top_right,
-                left_bottom_corner: self.borders.bottom_left,
-                right_bottom_corner: self.borders.bottom_right,
-            }),
-        }
+        Border::new_raw(Some(papergrid::Border {
+            top: self.borders.top,
+            bottom: self.borders.bottom,
+            left: self.borders.vertical_left,
+            right: self.borders.vertical_right,
+            left_top_corner: self.borders.top_left,
+            right_top_corner: self.borders.top_right,
+            left_bottom_corner: self.borders.bottom_left,
+            right_bottom_corner: self.borders.bottom_right,
+        }))
     }
 
     /// Get a [`Style`]'s default horizontal line.
@@ -745,7 +744,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     where
         for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line)>,
     {
-        self.borders.vertical_intersection = Some(c);
+        self.borders.vertical = Some(c);
 
         if self.borders.has_horizontal() {
             self.borders.intersection = Some(c);
@@ -965,7 +964,7 @@ impl<T, B, L, R, H, Lines> Style<T, B, L, R, H, On, Lines> {
     where
         Lines: IntoIterator<Item = (usize, Line)> + Clone,
     {
-        self.borders.vertical_intersection = None;
+        self.borders.vertical = None;
         self.borders.top_intersection = None;
         self.borders.bottom_intersection = None;
         self.borders.intersection = None;
@@ -975,854 +974,27 @@ impl<T, B, L, R, H, Lines> Style<T, B, L, R, H, On, Lines> {
     }
 }
 
-impl<T, B, L, R, H, V, Lines> TableOption for Style<T, B, L, R, H, V, Lines>
+impl<T, B, L, R, H, V, Lines, I> TableOption<I> for Style<T, B, L, R, H, V, Lines>
 where
-    Lines: IntoIterator<Item = (usize, Line)> + Clone + std::fmt::Debug,
+    Lines: IntoIterator<Item = (usize, Line)> + Clone,
+    I: Records,
 {
-    fn change(&mut self, grid: &mut Grid) {
-        grid.clear_theme();
-        grid.set_borders(self.borders.clone());
+    fn change(&mut self, table: &mut Table<I>) {
+        table.get_config_mut().clear_theme();
+        table.get_config_mut().set_borders(self.borders.clone());
 
-        if grid.count_rows() > 1 {
+        if table.shape().0 > 1 {
             for (row, line) in self.lines.clone() {
                 if line.is_empty() {
-                    grid.remove_split_line(row);
+                    table.get_config_mut().remove_split_line(row);
                 } else {
-                    grid.set_split_line(row, line.clone().into());
+                    table
+                        .get_config_mut()
+                        .set_split_line(row, line.clone().into());
                 }
             }
         }
     }
-}
-
-impl<T, B, L, R, H, V, Lines> From<Style<T, B, L, R, H, V, Lines>> for RawStyle
-where
-    Lines: IntoIterator<Item = (usize, Line)>,
-{
-    fn from(style: Style<T, B, L, R, H, V, Lines>) -> Self {
-        Self {
-            borders: style.borders,
-            lines: style.lines.into_iter().collect(),
-        }
-    }
-}
-
-/// A raw style data, which can be produced safely from [`Style`].
-///
-/// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
-#[derive(Debug, Clone)]
-pub struct RawStyle {
-    borders: Borders<char>,
-    lines: HashMap<usize, Line>,
-}
-
-impl RawStyle {
-    /// Set a top border character.
-    pub fn set_top(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.top = s;
-        self
-    }
-
-    /// Set a bottom border character.
-    pub fn set_bottom(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.bottom = s;
-        self
-    }
-
-    /// Set a left border character.
-    pub fn set_left(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.vertical_left = s;
-        self
-    }
-
-    /// Set a right border character.
-    pub fn set_right(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.vertical_right = s;
-        self
-    }
-
-    /// Set a top split border character.
-    pub fn set_top_split(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.top_intersection = s;
-        self
-    }
-
-    /// Set a bottom split character.
-    pub fn set_bottom_split(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.bottom_intersection = s;
-        self
-    }
-
-    /// Set a left split character.
-    pub fn set_left_split(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.horizontal_left = s;
-        self
-    }
-
-    /// Set a right split character.
-    pub fn set_right_split(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.horizontal_right = s;
-        self
-    }
-
-    /// Set an internal character.
-    pub fn set_internal_split(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.intersection = s;
-        self
-    }
-
-    /// Set a vertical character.
-    pub fn set_vertical(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.vertical_intersection = s;
-        self
-    }
-
-    /// Set a horizontal character.
-    pub fn set_horizontal(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.horizontal = s;
-        self
-    }
-
-    /// Set a character for a top left corner.
-    pub fn set_top_left(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.top_left = s;
-        self
-    }
-
-    /// Set a character for a top right corner.
-    pub fn set_top_right(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.top_right = s;
-        self
-    }
-
-    /// Set a character for a bottom left corner.
-    pub fn set_bottom_left(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.bottom_left = s;
-        self
-    }
-
-    /// Set a character for a bottom right corner.
-    pub fn set_bottom_right(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.bottom_right = s;
-        self
-    }
-
-    /// Set border lines.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use std::collections::HashMap;
-    /// use tabled::{style::{Style, Line, RawStyle}, TableIteratorExt};
-    ///
-    /// let mut style = RawStyle::from(Style::re_structured_text());
-    ///
-    /// let mut lines = HashMap::new();
-    /// lines.insert(1, Style::extended().get_horizontal());
-    /// style.set_lines(lines);
-    ///
-    /// let table = (0..3)
-    ///    .map(|i| ("Hello", i))
-    ///    .table()
-    ///    .with(style)
-    ///    .to_string();
-    ///
-    /// assert_eq!(
-    ///     table,
-    ///     concat!(
-    ///         " ======= ===== \n",
-    ///         "  &str    i32  \n",
-    ///         "╠═══════╬═════╣\n",
-    ///         "  Hello   0    \n",
-    ///         "  Hello   1    \n",
-    ///         "  Hello   2    \n",
-    ///         " ======= ===== ",
-    ///     ),
-    /// )
-    /// ```
-    pub fn set_lines(&mut self, lines: HashMap<usize, Line>) -> &mut Self {
-        self.lines = lines;
-        self
-    }
-}
-
-impl From<Borders<char>> for RawStyle {
-    fn from(borders: Borders<char>) -> Self {
-        Self {
-            borders,
-            lines: HashMap::new(),
-        }
-    }
-}
-
-impl RawStyle {
-    /// Returns a [`RawStyle`] version which can set colors.
-    #[cfg(feature = "color")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-    pub fn colored(self) -> RawStyleColored {
-        RawStyleColored {
-            style: self,
-            colors: Borders::default(),
-        }
-    }
-}
-
-impl TableOption for RawStyle {
-    fn change(&mut self, grid: &mut Grid) {
-        grid.clear_theme();
-        grid.set_borders(self.borders.clone());
-
-        if grid.count_rows() > 1 {
-            for (&row, line) in &self.lines {
-                if line.is_empty() {
-                    grid.remove_split_line(row);
-                } else {
-                    grid.set_split_line(row, line.clone().into());
-                }
-            }
-        }
-    }
-}
-
-/// [`BorderText`] writes a custom text on a border.
-///
-/// # Example
-///
-/// ```rust
-/// use tabled::{Table, style::BorderText};
-///
-/// let table = Table::new(["Hello World"])
-///     .with(BorderText::first("+-.table"));
-///
-/// assert_eq!(
-///     table.to_string(),
-///     "+-.table------+\n\
-///      | &str        |\n\
-///      +-------------+\n\
-///      | Hello World |\n\
-///      +-------------+"
-/// );
-/// ```
-#[derive(Debug)]
-pub struct BorderText<'a> {
-    // todo: offset from which we start overriding border
-    // offset: usize,
-    text: Cow<'a, str>,
-    row: SplitLineIndex,
-}
-
-#[derive(Debug)]
-enum SplitLineIndex {
-    First,
-    Last,
-    Line(usize),
-}
-
-impl<'a> BorderText<'a> {
-    /// Creates a [`BorderText`] instance.
-    ///
-    /// Lines are numbered from 0 to the `count_rows` included
-    /// (`line >= 0 && line <= count_rows`).
-    pub fn new<S: Into<Cow<'a, str>>>(line: usize, text: S) -> Self {
-        Self {
-            text: text.into(),
-            row: SplitLineIndex::Line(line),
-        }
-    }
-
-    /// Creates a [`BorderText`] instance for a top line.
-    pub fn first<S: Into<Cow<'a, str>>>(text: S) -> Self {
-        Self {
-            text: text.into(),
-            row: SplitLineIndex::First,
-        }
-    }
-
-    /// Creates a [`BorderText`] instance for a bottom line.
-    pub fn last<S: Into<Cow<'a, str>>>(text: S) -> Self {
-        Self {
-            text: text.into(),
-            row: SplitLineIndex::Last,
-        }
-    }
-}
-
-impl<'a> TableOption for BorderText<'a> {
-    fn change(&mut self, grid: &mut Grid) {
-        let row = match self.row {
-            SplitLineIndex::First => 0,
-            SplitLineIndex::Last => grid.count_rows(),
-            SplitLineIndex::Line(row) => {
-                if row > grid.count_rows() {
-                    return;
-                }
-
-                row
-            }
-        };
-
-        grid.override_split_line(row, self.text.as_ref());
-    }
-}
-
-/// Border represents a border of a Cell.
-///
-/// ```rust,no_run
-/// # use tabled::{style::{Style, Border}, object::Rows, Table, Modify};
-/// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data)
-///     .with(Style::ascii())
-///     .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
-/// ```
-#[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct Border {
-    border: Option<papergrid::Border>,
-}
-
-impl Border {
-    /// This function constructs a cell borders with all sides set.
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        top: char,
-        bottom: char,
-        left: char,
-        right: char,
-        top_left: char,
-        top_right: char,
-        bottom_left: char,
-        bottom_right: char,
-    ) -> Self {
-        Self::from(papergrid::Border::new(
-            top,
-            bottom,
-            left,
-            right,
-            top_left,
-            top_right,
-            bottom_left,
-            bottom_right,
-        ))
-    }
-
-    /// Set a top border character.
-    pub fn top(self, c: char) -> Self {
-        let mut b = self.border.unwrap_or_default();
-        b.top = Some(c);
-        Self::from(b)
-    }
-
-    /// Set a bottom border character.
-    pub fn bottom(self, c: char) -> Self {
-        let mut b = self.border.unwrap_or_default();
-        b.bottom = Some(c);
-        Self::from(b)
-    }
-
-    /// Set a left border character.
-    pub fn left(self, c: char) -> Self {
-        let mut b = self.border.unwrap_or_default();
-        b.left = Some(c);
-        Self::from(b)
-    }
-
-    /// Set a right border character.
-    pub fn right(self, c: char) -> Self {
-        let mut b = self.border.unwrap_or_default();
-        b.right = Some(c);
-        Self::from(b)
-    }
-
-    /// Set a top left intersection character.
-    pub fn top_left_corner(self, c: char) -> Self {
-        let mut b = self.border.unwrap_or_default();
-        b.left_top_corner = Some(c);
-        Self::from(b)
-    }
-
-    /// Set a top right intersection character.
-    pub fn top_right_corner(self, c: char) -> Self {
-        let mut b = self.border.unwrap_or_default();
-        b.right_top_corner = Some(c);
-        Self::from(b)
-    }
-
-    /// Set a bottom left intersection character.
-    pub fn bottom_left_corner(self, c: char) -> Self {
-        let mut b = self.border.unwrap_or_default();
-        b.left_bottom_corner = Some(c);
-        Self::from(b)
-    }
-
-    /// Set a bottom right intersection character.
-    pub fn bottom_right_corner(self, c: char) -> Self {
-        let mut b = self.border.unwrap_or_default();
-        b.right_bottom_corner = Some(c);
-        Self::from(b)
-    }
-
-    /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [`Border::new`] with the same character set to each side.
-    pub fn filled(c: char) -> Self {
-        Self::new(c, c, c, c, c, c, c, c)
-    }
-
-    /// Using this function you deconstruct the existing borders.
-    pub fn none() -> Self {
-        Self { border: None }
-    }
-}
-
-impl From<papergrid::Border> for Border {
-    fn from(b: papergrid::Border) -> Border {
-        Border { border: Some(b) }
-    }
-}
-
-impl From<Border> for Option<papergrid::Border> {
-    fn from(val: Border) -> Self {
-        val.border
-    }
-}
-
-impl CellOption for Border {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        match &self.border {
-            Some(border) => {
-                grid.set_border(entity, border.clone());
-            }
-            None => {
-                grid.remove_border(entity);
-            }
-        }
-    }
-}
-
-/// A correctnes function of style for [`Table`] which has [`Span`]s.
-///
-/// See [`Style::correct_spans`].
-///
-/// [`Table`]: crate::Table
-/// [`Span`]: crate::Span
-#[derive(Debug)]
-pub struct StyleCorrectSpan;
-
-impl TableOption for StyleCorrectSpan {
-    fn change(&mut self, grid: &mut Grid) {
-        correct_span_styles(grid);
-    }
-}
-
-/// BorderColored represents a colored border of a Cell.
-///
-/// ```rust,no_run
-/// # use owo_colors::OwoColorize;
-/// # use tabled::{style::{Style, Symbol, BorderColored}, object::Rows, Table, Modify};
-/// #
-/// # let data: Vec<&'static str> = Vec::new();
-/// #
-/// let c = Symbol::ansi("#".red().to_string()).unwrap();
-/// let table = Table::new(&data)
-///     .with(Style::ascii())
-///     .with(Modify::new(Rows::single(0)).with(BorderColored::default().top(c)));
-/// ```
-#[cfg(feature = "color")]
-#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-#[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct BorderColored(pub(crate) papergrid::Border<Symbol>);
-
-#[cfg(feature = "color")]
-impl BorderColored {
-    /// Set a top border character.
-    pub fn top(mut self, c: Symbol) -> Self {
-        self.0.top = Some(c);
-        self
-    }
-
-    /// Set a bottom border character.
-    pub fn bottom(mut self, c: Symbol) -> Self {
-        self.0.bottom = Some(c);
-        self
-    }
-
-    /// Set a left border character.
-    pub fn left(mut self, c: Symbol) -> Self {
-        self.0.left = Some(c);
-        self
-    }
-
-    /// Set a right border character.
-    pub fn right(mut self, c: Symbol) -> Self {
-        self.0.right = Some(c);
-        self
-    }
-
-    /// Set a top left intersection character.
-    pub fn top_left_corner(mut self, c: Symbol) -> Self {
-        self.0.left_top_corner = Some(c);
-        self
-    }
-
-    /// Set a top right intersection character.
-    pub fn top_right_corner(mut self, c: Symbol) -> Self {
-        self.0.right_top_corner = Some(c);
-        self
-    }
-
-    /// Set a bottom left intersection character.
-    pub fn bottom_left_corner(mut self, c: Symbol) -> Self {
-        self.0.left_bottom_corner = Some(c);
-        self
-    }
-
-    /// Set a bottom right intersection character.
-    pub fn bottom_right_corner(mut self, c: Symbol) -> Self {
-        self.0.right_bottom_corner = Some(c);
-        self
-    }
-
-    /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [Border::new] with the same character set to each side.
-    pub fn filled(c: Symbol) -> Self {
-        Self(papergrid::Border {
-            top: Some(c.clone()),
-            bottom: Some(c.clone()),
-            left: Some(c.clone()),
-            right: Some(c.clone()),
-            left_bottom_corner: Some(c.clone()),
-            left_top_corner: Some(c.clone()),
-            right_bottom_corner: Some(c.clone()),
-            right_top_corner: Some(c),
-        })
-    }
-}
-
-#[cfg(feature = "color")]
-impl CellOption for BorderColored {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        grid.set_colored_border(entity, self.0.clone());
-    }
-}
-
-/// Symbol represents a character of a border.
-///
-/// It's only needed when used with `color` feature flag.
-///
-/// ```rust,no_run
-/// # use owo_colors::OwoColorize;
-/// # use tabled::{style::{BorderColored, Symbol}, object::Rows, TableIteratorExt, Modify};
-/// #
-/// # let data: Vec<&'static str> = Vec::new();
-/// #
-/// let colored_char = "#".red().to_string();
-/// let table = data.table()
-///     .with(Modify::new(Rows::single(0)).with(BorderColored::filled(Symbol::ansi(colored_char).unwrap())));
-/// ```
-#[cfg(feature = "color")]
-#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-pub use papergrid::Symbol;
-
-/// Color represents a color which can be set to things like [`Border`], [`Padding`] and [`Margin`].
-///
-/// # Example
-///
-/// ```
-/// use std::convert::TryFrom;
-/// use owo_colors::OwoColorize;
-/// use tabled::{style::Color, TableIteratorExt};
-///
-/// let data = [
-///     (0u8, "Hello"),
-///     (1u8, "World"),
-/// ];
-///
-/// let table = data.table()
-///     .with(Color::try_from(" ".red().to_string()).unwrap());
-///
-/// println!("{}", table);
-/// ```
-///
-/// [`Padding`]: crate::Padding
-/// [`Margin`]: crate::Margin
-#[cfg(feature = "color")]
-#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-pub use papergrid::Color;
-
-#[cfg(feature = "color")]
-impl TableOption for Color {
-    fn change(&mut self, grid: &mut Grid) {
-        grid.set_border_color(self.clone());
-    }
-}
-
-#[cfg(feature = "color")]
-impl CellOption for Color {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let text = grid.get_cell_content(row, col);
-
-            let prefix = self.get_prefix();
-            let suffix = self.get_suffix();
-            let mut colored = String::with_capacity(text.len() + prefix.len() + suffix.len());
-            colored.push_str(prefix);
-            colored.push_str(text);
-            colored.push_str(suffix);
-
-            grid.set_text((row, col).into(), &colored);
-        }
-    }
-}
-
-/// A colored [`StyleConfig`] versions.
-#[cfg(feature = "color")]
-#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-#[derive(Debug, Clone)]
-pub struct RawStyleColored {
-    style: RawStyle,
-    colors: Borders<Color>,
-}
-
-#[cfg(feature = "color")]
-impl RawStyleColored {
-    /// Set a top border character.
-    pub fn set_top(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_top(c);
-        self.colors.top = color;
-
-        self
-    }
-
-    /// Set a bottom border character.
-    pub fn set_bottom(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_bottom(c);
-        self.colors.bottom = color;
-
-        self
-    }
-
-    /// Set a left border character.
-    pub fn set_left(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_left(c);
-        self.colors.vertical_left = color;
-
-        self
-    }
-
-    /// Set a right border character.
-    pub fn set_right(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_right(c);
-        self.colors.vertical_right = color;
-
-        self
-    }
-
-    /// Set a top split border character.
-    pub fn set_top_split(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_top_split(c);
-        self.colors.top_intersection = color;
-
-        self
-    }
-
-    /// Set a bottom split character.
-    pub fn set_bottom_split(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_bottom_split(c);
-        self.colors.bottom_intersection = color;
-
-        self
-    }
-
-    /// Set a left split character.
-    pub fn set_left_split(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_left_split(c);
-        self.colors.horizontal_left = color;
-
-        self
-    }
-
-    /// Set a right split character.
-    pub fn set_right_split(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_right_split(c);
-        self.colors.horizontal_right = color;
-
-        self
-    }
-
-    /// Set an internal character.
-    pub fn set_internal(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_internal_split(c);
-        self.colors.intersection = color;
-
-        self
-    }
-
-    /// Set a vertical character.
-    pub fn set_vertical(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_vertical(c);
-        self.colors.vertical_intersection = color;
-
-        self
-    }
-
-    /// Set a horizontal character.
-    pub fn set_horizontal(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_horizontal(c);
-        self.colors.horizontal = color;
-
-        self
-    }
-
-    /// Set a character for a top left corner.
-    pub fn set_top_left(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_top_left(c);
-        self.colors.top_left = color;
-
-        self
-    }
-
-    /// Set a character for a top right corner.
-    pub fn set_top_right(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_top_right(c);
-        self.colors.top_right = color;
-
-        self
-    }
-
-    /// Set a character for a bottom left corner.
-    pub fn set_bottom_left(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_bottom_left(c);
-        self.colors.bottom_left = color;
-
-        self
-    }
-
-    /// Set a character for a bottom right corner.
-    pub fn set_bottom_right(&mut self, s: Option<Symbol>) -> &mut Self {
-        let c = s.as_ref().map(|s| s.c());
-        let color = s.and_then(|s| s.color());
-
-        self.style.set_bottom_right(c);
-        self.colors.bottom_right = color;
-
-        self
-    }
-}
-
-#[cfg(feature = "color")]
-impl TableOption for RawStyleColored {
-    fn change(&mut self, grid: &mut Grid) {
-        self.style.change(grid);
-        grid.set_borders_color(self.colors.clone());
-    }
-}
-
-fn correct_span_styles(grid: &mut Grid) {
-    let spans = grid.iter_column_spans().collect::<Vec<_>>();
-
-    for &((row, c), span) in &spans {
-        for col in c..c + span {
-            if col == 0 {
-                continue;
-            }
-
-            let is_first = col == c;
-            let has_up = row > 0 && has_vertical(grid, &spans, (row - 1, col));
-            let has_down =
-                row + 1 < grid.count_rows() && has_vertical(grid, &spans, (row + 1, col));
-
-            let mut border = grid.get_border((row, col));
-
-            let has_top_border = border.left_top_corner.is_some() && border.top.is_some();
-            if has_top_border {
-                if has_up && is_first {
-                    border.left_top_corner = grid.get_borders().intersection;
-                } else if has_up {
-                    border.left_top_corner = grid.get_borders().bottom_intersection;
-                } else if is_first {
-                    border.left_top_corner = grid.get_borders().top_intersection;
-                } else {
-                    border.left_top_corner = border.top;
-                }
-            }
-
-            let has_bottom_border = border.left_bottom_corner.is_some() && border.bottom.is_some();
-            if has_bottom_border {
-                if has_down && is_first {
-                    border.left_bottom_corner = grid.get_borders().intersection;
-                } else if has_down {
-                    border.left_bottom_corner = grid.get_borders().top_intersection;
-                } else if is_first {
-                    border.left_bottom_corner = grid.get_borders().bottom_intersection;
-                } else {
-                    border.left_bottom_corner = border.bottom;
-                }
-            }
-
-            grid.set_border(Entity::Cell(row, col), border);
-        }
-    }
-}
-
-fn has_vertical(grid: &Grid, spans: &[(Position, usize)], pos: Position) -> bool {
-    if is_in_span_range(spans, pos) {
-        return spans.iter().any(|&(p, _)| p == pos);
-    }
-
-    if grid.is_cell_visible(pos) {
-        let border = grid.get_border(pos);
-        return border.left.is_some()
-            || border.left_top_corner.is_some()
-            || border.left_bottom_corner.is_some();
-    }
-
-    false
-}
-
-fn is_in_span_range(spans: &[(Position, usize)], pos: Position) -> bool {
-    spans
-        .iter()
-        .any(|&((row, col), span)| row == pos.0 && pos.1 > col && pos.1 < col + span)
 }
 
 /// An helper for a [`BorderLinesIter`].
@@ -1976,7 +1148,8 @@ impl Line {
         self
     }
 
-    fn is_empty(&self) -> bool {
+    /// Checks if it's an empty line.
+    pub const fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 }

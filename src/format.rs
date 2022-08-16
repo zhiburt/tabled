@@ -2,9 +2,13 @@
 //!
 //! [`Table`]: crate::Table
 
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{
+    records::{Records, RecordsMut},
+    width::CfgWidthFunction,
+    Entity,
+};
 
-use crate::CellOption;
+use crate::{CellOption, Table};
 
 /// A formatting function of particular cells on a [`Table`].
 ///
@@ -21,7 +25,7 @@ impl Format<()> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, Format, object::Rows, Modify};
+    /// use tabled::{Table, format::Format, object::Rows, Modify};
     ///
     /// let data = vec![
     ///     (0, "Grodno", true),
@@ -62,7 +66,7 @@ impl Format<()> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, Format, object::Rows, Modify};
+    /// use tabled::{Table, format::Format, object::Rows, Modify};
     ///
     /// let data = vec![
     ///     (0, "Grodno", true),
@@ -98,7 +102,7 @@ impl Format<()> {
     /// Using this formatting applied for all rows not to a string as a whole.
     ///
     /// ```rust,no_run
-    /// use tabled::{Table, Format, object::Segment, Modify};
+    /// use tabled::{Table, format::Format, object::Segment, Modify};
     ///
     /// let data: Vec<&'static str> = Vec::new();
     /// let table = Table::new(&data)
@@ -122,16 +126,22 @@ impl Format<()> {
     }
 }
 
-impl<F> CellOption for Format<F>
+impl<F, R> CellOption<R> for Format<F>
 where
     F: FnMut(&str) -> String,
+    R: Records + RecordsMut<String>,
 {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let content = grid.get_cell_content(row, col);
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        let width_fn = CfgWidthFunction::from_cfg(table.get_config());
+        let (count_rows, count_cols) = table.shape();
+        for pos in entity.iter(count_rows, count_cols) {
+            let records = table.get_records();
+            let content = records.get_text(pos);
             let content = (self.f)(content);
-            grid.set(Entity::Cell(row, col), Settings::new().text(content));
+            table.get_records_mut().set(pos, content, &width_fn);
         }
+
+        table.destroy_width_cache();
     }
 }
 
@@ -152,28 +162,31 @@ where
     }
 }
 
-impl<F> CellOption for FormatWithIndex<F>
+impl<F, R> CellOption<R> for FormatWithIndex<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
+    R: Records + RecordsMut<String>,
 {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let content = grid.get_cell_content(row, col);
-            let content = (self.f)(content, (row, col));
-            grid.set(Entity::Cell(row, col), Settings::new().text(content));
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        let width_fn = CfgWidthFunction::from_cfg(table.get_config());
+        let (count_rows, count_cols) = table.shape();
+        for pos in entity.iter(count_rows, count_cols) {
+            let records = table.get_records();
+            let content = records.get_text(pos);
+            let content = (self.f)(content, pos);
+            table.get_records_mut().set(pos, content, &width_fn);
         }
+
+        table.destroy_width_cache();
     }
 }
 
-impl<F> CellOption for F
+impl<F, R> CellOption<R> for F
 where
     F: FnMut(&str) -> String,
+    R: Records + RecordsMut<String>,
 {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        for (row, col) in entity.iter(grid.count_rows(), grid.count_columns()) {
-            let content = grid.get_cell_content(row, col);
-            let content = (self)(content);
-            grid.set(Entity::Cell(row, col), Settings::new().text(content));
-        }
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        Format::new(self).change_cell(table, entity);
     }
 }

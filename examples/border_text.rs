@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example border_text`
 
-use tabled::{object::Segment, style::BorderText, Alignment, ModifyObject, Style, Table};
+use tabled::{object::Segment, Alignment, BorderText, ModifyObject, Style, Table};
 
 fn main() {
     let data = [[5, 6, 7, 8, 9], [10, 11, 12, 13, 14]];

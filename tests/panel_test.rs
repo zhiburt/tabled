@@ -1,7 +1,6 @@
 use tabled::{
     object::{Cell, Object, Rows, Segment},
-    style::{Border, Style},
-    Alignment, Footer, Header, Highlight, Modify, Panel,
+    Alignment, Border, Footer, Header, Highlight, Modify, Panel, Style,
 };
 
 use crate::util::{create_table, new_table, test_table};
@@ -12,8 +11,8 @@ test_table!(
     panel_has_no_style_by_default,
     create_table::<3, 3>().with(Style::psql()).with(Panel("Linux Distributions", 0)),
     "        Linux Distributions         "
-    " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
+    " N | column 0 | column 1 | column 2 "
     " 0 |   0-0    |   0-1    |   0-2    "
     " 1 |   1-0    |   1-1    |   1-2    "
     " 2 |   2-0    |   2-1    |   2-2    "

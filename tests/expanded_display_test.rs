@@ -87,42 +87,6 @@ fn display_empty_2() {
     assert_expanded_display!(&[EmptyType], "-[ RECORD 0 ]-");
 }
 
-#[cfg(feature = "color")]
-#[test]
-fn display_colored() {
-    let mut data = create_vector::<3, 3>();
-    data[0][2] = "https://getfedora.org/"
-        .red()
-        .on_color(AnsiColors::Blue)
-        .to_string();
-    data[1][2] = "https://www.opensuse.org/"
-        .green()
-        .on_color(AnsiColors::Black)
-        .to_string();
-    data[2][2] = "https://endeavouros.com/".blue().underline().to_string();
-
-    assert_expanded_display!(
-        data,
-        static_table!(
-            "-[ RECORD 0 ]-----------------------"
-            "N        | 0"
-            "column 0 | 0-0"
-            "column 1 | \u{1b}[31;44mhttps://getfedora.org/\u{1b}[0m"
-            "column 2 | 0-2"
-            "-[ RECORD 1 ]-----------------------"
-            "N        | 1"
-            "column 0 | 1-0"
-            "column 1 | \u{1b}[32;40mhttps://www.opensuse.org/\u{1b}[0m"
-            "column 2 | 1-2"
-            "-[ RECORD 2 ]-----------------------"
-            "N        | 2"
-            "column 0 | 2-0"
-            "column 1 | \u{1b}[4m\u{1b}[34mhttps://endeavouros.com/\u{1b}[39m\u{1b}[0m"
-            "column 2 | 2-2"
-        )
-    );
-}
-
 #[test]
 fn display_dynamic_header_template() {
     {
@@ -268,189 +232,235 @@ fn display_multiline_record_value() {
     assert_expanded_display!(
         data,
         static_table!(
-            "-[ RECORD 0 ]---"
-            "N        | Hello"
-            "         | World"
-            "column 0 | 123"
-            "column 1 | asd"
-            "column 2 | 0-2"
-            "-[ RECORD 1 ]---"
-            "N        | 1"
-            "column 0 | 1-0"
-            "column 1 | 1-1"
-            "column 2 | 1-2"
-        )
-    );
-}
-
-#[test]
-fn display_with_header_template() {
-    let data = create_vector::<2, 3>();
-    let table = ExpandedDisplay::new(&data)
-        .header_template(|i| format!("=== Record => {}", i))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "=== Record => 0"
-            "N        | 0"
-            "column 0 | 0-0"
-            "column 1 | 0-1"
-            "column 2 | 0-2"
-            "=== Record => 1"
-            "N        | 1"
-            "column 0 | 1-0"
-            "column 1 | 1-1"
-            "column 2 | 1-2"
-        )
-    );
-}
-
-#[test]
-fn display_with_formatter() {
-    let mut data = create_vector::<2, 3>();
-    data[0][1] = "123\n456".to_owned();
-
-    let table = ExpandedDisplay::new(&data)
-        .formatter(|s| format!("{}!\n\n", s))
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
-            "-[ RECORD 0 ]--"
-            "N        | 0!"
-            "         | "
-            "column 0 | 123"
-            "         | 456!"
-            "         | "
-            "column 1 | 0-1!"
-            "         | "
-            "column 2 | 0-2!"
-            "         | "
-            "-[ RECORD 1 ]--"
-            "N        | 1!"
-            "         | "
-            "column 0 | 1-0!"
-            "         | "
-            "column 1 | 1-1!"
-            "         | "
-            "column 2 | 1-2!"
-            "         | "
-        )
-    );
-}
-
-#[test]
-fn display_with_one_line_formatter() {
-    let mut data = create_vector::<1, 3>();
-    data[0][0] = "Hello\nWorld".to_string();
-    data[0][1] = "123".to_string();
-    data[0][2] = "asd".to_string();
-
-    let table = ExpandedDisplay::new(&data)
-        .formatter(|s| s.escape_debug().to_string())
-        .to_string();
-
-    assert_eq!(
-        table,
-        static_table!(
             "-[ RECORD 0 ]----------"
             "N        | Hello\\nWorld"
             "column 0 | 123"
             "column 1 | asd"
             "column 2 | 0-2"
+            "-[ RECORD 1 ]----------"
+            "N        | 1"
+            "column 0 | 1-0"
+            "column 1 | 1-1"
+            "column 2 | 1-2"
         )
     );
 }
 
 #[test]
 fn display_with_truncate() {
-    let data = create_vector::<3, 3>();
-    let table = ExpandedDisplay::new(&data).truncate(2, "").to_string();
+    let mut data = create_vector::<3, 3>();
+    data[0][0] = String::from("a long string");
+
+    let mut table = ExpandedDisplay::new(&data);
+    table.truncate(14, "");
+    let table = table.to_string();
 
     assert_eq!(
         table,
         static_table!(
             "-[ RECORD 0 ]-"
-            "N        | 0"
-            "column 0 | 0-"
-            "column 1 | 0-"
-            "column 2 | 0-"
+            "N        | a l"
+            "column 0 | 0-0"
+            "column 1 | 0-1"
+            "column 2 | 0-2"
             "-[ RECORD 1 ]-"
             "N        | 1"
-            "column 0 | 1-"
-            "column 1 | 1-"
-            "column 2 | 1-"
+            "column 0 | 1-0"
+            "column 1 | 1-1"
+            "column 2 | 1-2"
             "-[ RECORD 2 ]-"
             "N        | 2"
-            "column 0 | 2-"
-            "column 1 | 2-"
-            "column 2 | 2-"
+            "column 0 | 2-0"
+            "column 1 | 2-1"
+            "column 2 | 2-2"
         )
     );
 }
 
 #[test]
-fn display_with_truncate_with_tail() {
-    let data = create_vector::<2, 3>();
-    let table = ExpandedDisplay::new(&data).truncate(2, "...").to_string();
+fn truncate_with_suffix() {
+    let mut data = create_vector::<3, 3>();
+    data[0][0] = String::from("a long string");
 
-    assert_eq!(
-        table,
-        static_table!(
-            "-[ RECORD 0 ]---"
-            "N        | 0"
-            "column 0 | 0-..."
-            "column 1 | 0-..."
-            "column 2 | 0-..."
-            "-[ RECORD 1 ]---"
-            "N        | 1"
-            "column 0 | 1-..."
-            "column 1 | 1-..."
-            "column 2 | 1-..."
-        )
-    );
-}
-
-#[test]
-fn display_with_wrap() {
-    let data = create_vector::<2, 3>();
-    let table = ExpandedDisplay::new(&data).wrap(1).to_string();
+    let mut table = ExpandedDisplay::new(&data);
+    table.truncate(15, "..");
+    let table = table.to_string();
 
     assert_eq!(
         table,
         static_table!(
             "-[ RECORD 0 ]-"
-            "N        | 0"
-            "column 0 | 0"
-            "         | -"
-            "         | 0"
-            "column 1 | 0"
-            "         | -"
-            "         | 1"
-            "column 2 | 0"
-            "         | -"
-            "         | 2"
+            "N        | .."
+            "column 0 | .."
+            "column 1 | .."
+            "column 2 | .."
             "-[ RECORD 1 ]-"
+            "N        | .."
+            "column 0 | .."
+            "column 1 | .."
+            "column 2 | .."
+            "-[ RECORD 2 ]-"
+            "N        | .."
+            "column 0 | .."
+            "column 1 | .."
+            "column 2 | .."
+        )
+    );
+}
+
+#[test]
+fn truncate_big_fields() {
+    build_tabled_type!(
+        TestType,
+        3,
+        ["1", "2", "3"],
+        ["A quite big field", "123", "asd"]
+    );
+    let data: Vec<TestType> = vec![TestType, TestType];
+
+    let mut table = ExpandedDisplay::new(&data);
+    table.truncate(14, "..");
+    let table = table.to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "-[ RECORD 0 ]-"
+            "A quite.. | .."
+            "123       | .."
+            "asd       | .."
+            "-[ RECORD 1 ]-"
+            "A quite.. | .."
+            "123       | .."
+            "asd       | .."
+        )
+    );
+
+    let mut table = ExpandedDisplay::new(&data);
+    table.truncate(15, "..");
+    let table = table.to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "-[ RECORD 0 ]--"
+            "A quite .. | .."
+            "123        | .."
+            "asd        | .."
+            "-[ RECORD 1 ]--"
+            "A quite .. | .."
+            "123        | .."
+            "asd        | .."
+        )
+    );
+
+    let mut table = ExpandedDisplay::new(&data);
+    table.truncate(0, "..");
+    let table = table.to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "-[ RECORD 0 ]-----+--"
+            "A quite big field | 1"
+            "123               | 2"
+            "asd               | 3"
+            "-[ RECORD 1 ]-----+--"
+            "A quite big field | 1"
+            "123               | 2"
+            "asd               | 3"
+        )
+    );
+
+    let mut table = ExpandedDisplay::new(&data);
+    table.truncate(20, "......");
+    let table = table.to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "-[ RECORD 0 ]-------"
+            "A qui...... | ......"
+            "123         | ......"
+            "asd         | ......"
+            "-[ RECORD 1 ]-------"
+            "A qui...... | ......"
+            "123         | ......"
+            "asd         | ......"
+        )
+    );
+}
+
+#[test]
+fn truncate_too_small() {
+    let mut data = create_vector::<3, 3>();
+    data[0][0] = String::from("a long string");
+
+    let mut table = ExpandedDisplay::new(&data);
+    let success = table.truncate(2, "");
+    assert!(!success);
+
+    assert_eq!(
+        table.to_string(),
+        static_table!(
+            "-[ RECORD 0 ]-----------"
+            "N        | a long string"
+            "column 0 | 0-0"
+            "column 1 | 0-1"
+            "column 2 | 0-2"
+            "-[ RECORD 1 ]-----------"
             "N        | 1"
-            "column 0 | 1"
-            "         | -"
-            "         | 0"
-            "column 1 | 1"
-            "         | -"
-            "         | 1"
-            "column 2 | 1"
-            "         | -"
-            "         | 2"
+            "column 0 | 1-0"
+            "column 1 | 1-1"
+            "column 2 | 1-2"
+            "-[ RECORD 2 ]-----------"
+            "N        | 2"
+            "column 0 | 2-0"
+            "column 1 | 2-1"
+            "column 2 | 2-2"
         )
     );
 }
 
 #[cfg(feature = "color")]
 #[test]
-fn display_with_wrap_colored() {
+fn display_colored() {
+    let mut data = create_vector::<3, 3>();
+    data[0][2] = "https://getfedora.org/"
+        .red()
+        .on_color(AnsiColors::Blue)
+        .to_string();
+    data[1][2] = "https://www.opensuse.org/"
+        .green()
+        .on_color(AnsiColors::Black)
+        .to_string();
+    data[2][2] = "https://endeavouros.com/".blue().underline().to_string();
+
+    assert_expanded_display!(
+        data,
+        static_table!(
+            "-[ RECORD 0 ]------------------------------------------------------------"
+            "N        | 0"
+            "column 0 | 0-0"
+            "column 1 | \\u{1b}[31;44mhttps://getfedora.org/\\u{1b}[0m"
+            "column 2 | 0-2"
+            "-[ RECORD 1 ]------------------------------------------------------------"
+            "N        | 1"
+            "column 0 | 1-0"
+            "column 1 | \\u{1b}[32;40mhttps://www.opensuse.org/\\u{1b}[0m"
+            "column 2 | 1-2"
+            "-[ RECORD 2 ]------------------------------------------------------------"
+            "N        | 2"
+            "column 0 | 2-0"
+            "column 1 | \\u{1b}[4m\\u{1b}[34mhttps://endeavouros.com/\\u{1b}[39m\\u{1b}[0m"
+            "column 2 | 2-2"
+        )
+    );
+}
+
+#[cfg(feature = "color")]
+#[test]
+fn display_with_truncate_colored() {
     let mut data = create_vector::<2, 3>();
     data[0][2] = "https://getfedora.org/".red().to_string();
     data[1][1] = "https://endeavouros.com/"
@@ -459,57 +469,23 @@ fn display_with_wrap_colored() {
         .to_string();
     data[1][2] = "https://www.opensuse.org/".to_string();
 
-    let table = ExpandedDisplay::new(&data).wrap(2).to_string();
+    let mut table = ExpandedDisplay::new(&data);
+    table.truncate(20, "");
+    let table = table.to_string();
 
     assert_eq!(
         table,
         static_table!(
-            "-[ RECORD 0 ]-"
+            "-[ RECORD 0 ]-------"
             "N        | 0"
-            "column 0 | 0-"
-            "         | 0"
-            "column 1 | \u{1b}[31mht\u{1b}[39m"
-            "         | \u{1b}[31mtp\u{1b}[39m"
-            "         | \u{1b}[31ms:\u{1b}[39m"
-            "         | \u{1b}[31m//\u{1b}[39m"
-            "         | \u{1b}[31mge\u{1b}[39m"
-            "         | \u{1b}[31mtf\u{1b}[39m"
-            "         | \u{1b}[31med\u{1b}[39m"
-            "         | \u{1b}[31mor\u{1b}[39m"
-            "         | \u{1b}[31ma.\u{1b}[39m"
-            "         | \u{1b}[31mor\u{1b}[39m"
-            "         | \u{1b}[31mg/\u{1b}[39m"
-            "column 2 | 0-"
-            "         | 2"
-            "-[ RECORD 1 ]-"
+            "column 0 | 0-0"
+            "column 1 | \\u{1b}[31"
+            "column 2 | 0-2"
+            "-[ RECORD 1 ]-------"
             "N        | 1"
-            "column 0 | \u{1b}[37m\u{1b}[40mht\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40mtp\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40ms:\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40m//\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40men\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40mde\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40mav\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40mou\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40mro\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40ms.\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40mco\u{1b}[39m\u{1b}[49m"
-            "         | \u{1b}[37m\u{1b}[40mm/\u{1b}[39m\u{1b}[49m"
-            "column 1 | ht"
-            "         | tp"
-            "         | s:"
-            "         | //"
-            "         | ww"
-            "         | w."
-            "         | op"
-            "         | en"
-            "         | su"
-            "         | se"
-            "         | .o"
-            "         | rg"
-            "         | /"
-            "column 2 | 1-"
-            "         | 2"
+            "column 0 | \\u{1b}[37"
+            "column 1 | https://w"
+            "column 2 | 1-2"
         )
     );
 }

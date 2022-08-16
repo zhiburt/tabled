@@ -1,167 +1,123 @@
 mod util;
 
-#[test]
-fn override_top_test() {
-    let mut grid = util::new_grid::<2, 2>();
+use util::{grid, test_table};
 
-    grid.override_split_line(0, "T");
+test_table!(
+    override_top_test_0,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "T")).build(),
+    "T---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "T---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
+test_table!(
+    override_top_test_1,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, " Tab")).build(),
+    " Tab+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    grid.override_split_line(0, " Tab");
+test_table!(
+    override_top_test_2,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Table")).build(),
+    "Table---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            " Tab+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
+test_table!(
+    override_top_test_3,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Table T")).build(),
+    "Table T-+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    grid.override_split_line(0, "Table");
+test_table!(
+    override_top_test_4,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Table TES")).build(),
+    "Table TES"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "Table---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
+test_table!(
+    override_top_test_5,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Table LONGER THEN LINE")).build(),
+    "Table LON"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    grid.override_split_line(0, "Table T");
+test_table!(
+    override_bottom_test_0,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, "T")).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "T---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "Table T-+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
+test_table!(
+    override_bottom_test_1,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, " Tab")).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    " Tab+---+"
+);
 
-    grid.override_split_line(0, "Table TES");
+test_table!(
+    override_bottom_test_2,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, "Table")).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "Table---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "Table TES\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
+test_table!(
+    override_bottom_test_3,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, "Table T")).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "Table T-+"
+);
 
-    grid.override_split_line(0, "Table LONGER THEN LINE");
+test_table!(
+    override_bottom_test_4,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, "Table TES")).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "Table TES"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "Table LON\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
-}
-
-#[test]
-fn override_bottom_test() {
-    let mut grid = util::new_grid::<2, 2>();
-
-    grid.override_split_line(2, "T");
-
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "T---+---+",
-        )
-    );
-
-    grid.override_split_line(2, " Tab");
-
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            " Tab+---+",
-        )
-    );
-
-    grid.override_split_line(2, "Table");
-
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "Table---+",
-        )
-    );
-
-    grid.override_split_line(2, "Table T");
-
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "Table T-+",
-        )
-    );
-
-    grid.override_split_line(2, "Table TES");
-
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "Table TES",
-        )
-    );
-
-    grid.override_split_line(2, "Table LONGER THEN LINE");
-
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "Table LON",
-        )
-    );
-}
+test_table!(
+    override_bottom_test_5,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, "Table LONGER THEN LINE")).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "Table LON"
+);

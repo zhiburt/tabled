@@ -1,8 +1,7 @@
 use tabled::{
     builder::Builder,
     object::{Cell, Columns, Frame, Object, Rows, Segment},
-    style::Border,
-    Highlight, Style,
+    Border, Highlight, Style,
 };
 
 use crate::util::{create_table, static_table, test_table};
@@ -214,8 +213,6 @@ test_table!(
 //         "───                       ──────────"
 //         " 2 │   2-0    │   2-1    │   2-2    "
 //     );
-
-//     println!("{}", table);
 
 //     assert_eq!(table, expected);
 // }

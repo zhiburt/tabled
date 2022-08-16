@@ -8,16 +8,16 @@
 
 use std::ops::{RangeBounds, RangeFull};
 
-use papergrid::{Entity, Grid};
+use papergrid::records::{Records, Resizable};
 
-use crate::{object::bounds_to_usize, TableOption};
+use crate::{object::bounds_to_usize, Table, TableOption};
 
 /// Returns a new [`Table`] that reflects a segment of the referenced [`Table`]
 ///
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, Format, object::Rows, Modify, Extract};
+/// use tabled::{Table, format::Format, object::Rows, Modify, Extract};
 ///
 /// let data = vec![
 ///     (0, "Grodno", true),
@@ -146,24 +146,28 @@ where
     }
 }
 
-impl<R, C> TableOption for Extract<R, C>
+impl<R, C, RR> TableOption<RR> for Extract<R, C>
 where
     R: RangeBounds<usize> + Clone,
     C: RangeBounds<usize> + Clone,
+    RR: Records + Resizable,
 {
-    fn change(&mut self, grid: &mut Grid) {
-        let row_bounds = bounds_to_usize(
-            self.rows.start_bound(),
-            self.rows.end_bound(),
-            grid.count_rows(),
-        );
-        let col_bounds = bounds_to_usize(
+    fn change(&mut self, table: &mut Table<RR>) {
+        let shape = table.shape();
+        let mut rows = bounds_to_usize(self.rows.start_bound(), self.rows.end_bound(), shape.0);
+        let mut cols = bounds_to_usize(
             self.columns.start_bound(),
             self.columns.end_bound(),
-            grid.count_columns(),
+            shape.1,
         );
 
-        *grid = extract(grid, row_bounds, col_bounds);
+        // Cleanup table in case if boundries are exeeded.
+        //
+        // todo: can be optimized by adding a clear() method to Resizable
+        rows.0 = std::cmp::min(rows.0, shape.0);
+        cols.0 = std::cmp::min(cols.0, shape.1);
+
+        extract(table.get_records_mut(), shape, rows, cols);
     }
 }
 
@@ -194,27 +198,35 @@ where
 /// |2-0|
 /// +---+
 /// ```
-fn extract(
-    grid: &Grid,
+fn extract<R>(
+    records: &mut R,
+    (count_rows, count_cols): (usize, usize),
     (start_row, end_row): (usize, usize),
     (start_col, end_col): (usize, usize),
-) -> Grid {
-    let new_count_rows = end_row - start_row;
-    let new_count_columns = end_col - start_col;
-    let mut new = grid.resize(new_count_rows, new_count_columns);
-
-    for (new_row, row) in (start_row..end_row).enumerate() {
-        for (new_col, col) in (start_col..end_col).enumerate() {
-            let settings = grid.get_settings(row, col);
-            new.set(Entity::Cell(new_row, new_col), settings);
-
-            #[cfg(feature = "color")]
-            {
-                let colored_border = grid.get_colored_border((row, col));
-                new.set_colored_border(Entity::Cell(new_row, new_col), colored_border);
-            }
-        }
+) where
+    R: Resizable,
+{
+    for (i, row) in (0..start_row).enumerate() {
+        let row = row - i;
+        records.remove_row(row);
     }
 
-    new
+    let count_rows = count_rows - start_row;
+    let end_row = end_row - start_row;
+    for (i, row) in (end_row..count_rows).enumerate() {
+        let row = row - i;
+        records.remove_row(row);
+    }
+
+    for (i, col) in (0..start_col).enumerate() {
+        let col = col - i;
+        records.remove_column(col);
+    }
+
+    let count_cols = count_cols - start_col;
+    let end_col = end_col - start_col;
+    for (i, col) in (end_col..count_cols).enumerate() {
+        let col = col - i;
+        records.remove_column(col);
+    }
 }

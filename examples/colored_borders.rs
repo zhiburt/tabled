@@ -6,9 +6,8 @@
 use owo_colors::OwoColorize;
 
 use tabled::{
-    object::Segment,
-    style::{BorderColored, RawStyle, Style, Symbol},
-    Highlight, Table, Tabled,
+    border_colored::BorderColored, object::Segment, raw_style::RawStyle, style::Style,
+    symbol::Symbol, Highlight, Table, Tabled,
 };
 
 #[derive(Tabled)]

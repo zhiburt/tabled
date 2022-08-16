@@ -2,22 +2,29 @@
 
 use std::{fmt, iter::FromIterator};
 
-use papergrid::Grid;
+use papergrid::{
+    height::HeightEstimator,
+    records::{cell_info::CellInfo, vec_records::VecRecords, Records, RecordsMut},
+    width::{CfgWidthFunction, WidthEstimator},
+    Estimate, Grid, GridConfig,
+};
 
 use crate::{builder::Builder, object::Entity, Tabled};
 
+// todo: rename TableOption/CellOption
+
 /// A trait which is responsilbe for configuration of a [`Table`].
-pub trait TableOption {
+pub trait TableOption<R> {
     /// The function modifies a [`Grid`] object.
-    fn change(&mut self, grid: &mut Grid);
+    fn change(&mut self, table: &mut Table<R>);
 }
 
-impl<T> TableOption for &mut T
+impl<T, R> TableOption<R> for &mut T
 where
-    T: TableOption + ?Sized,
+    T: TableOption<R> + ?Sized,
 {
-    fn change(&mut self, grid: &mut Grid) {
-        T::change(self, grid);
+    fn change(&mut self, table: &mut Table<R>) {
+        T::change(self, table);
     }
 }
 
@@ -27,9 +34,9 @@ where
 /// A cell can be targeted by [`Cell`].
 ///
 /// [`Cell`]: crate::object::Cell
-pub trait CellOption {
+pub trait CellOption<R> {
     /// Modification function of a single cell.
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity);
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity);
 }
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
@@ -67,17 +74,20 @@ pub trait CellOption {
 /// [`Style`]: crate::Style
 /// [`Style::ascii`]: crate::Style::ascii
 #[derive(Debug, Clone)]
-pub struct Table {
-    pub(crate) grid: Grid,
+pub struct Table<R = VecRecords<CellInfo<'static>>> {
+    records: R,
+    cfg: GridConfig,
+    widths: Option<Vec<usize>>,
 }
 
-impl Table {
+impl<'a> Table<VecRecords<CellInfo<'static>>> {
     /// New creates a Table instance.
-    pub fn new<T>(iter: impl IntoIterator<Item = T>) -> Self
+    pub fn new<I, T>(iter: I) -> Self
     where
+        I: IntoIterator<Item = T> + 'a,
         T: Tabled,
     {
-        Self::from_iter(iter)
+        Self::builder(iter).build()
     }
 
     /// Creates a builder from a data set given.
@@ -130,15 +140,38 @@ impl Table {
         T: Tabled,
         I: IntoIterator<Item = T>,
     {
-        let rows = iter.into_iter().map(|t| t.fields());
-        let mut b = rows.collect::<Builder>();
+        let mut b = Builder::new();
+        b.hint_column_size(T::LENGTH);
         b.set_columns(T::headers());
+
+        for c in iter {
+            let fields = c.fields();
+            b.add_record(fields);
+        }
+
         b
     }
+}
 
-    /// Returns a table shape (count rows, count columns).
-    pub fn shape(&self) -> (usize, usize) {
-        (self.grid.count_rows(), self.grid.count_columns())
+impl<R> Table<R> {
+    /// Get a reference to the table's cfg.
+    pub fn get_config(&self) -> &GridConfig {
+        &self.cfg
+    }
+
+    /// Get a reference to the table's cfg.
+    pub fn get_config_mut(&mut self) -> &mut GridConfig {
+        &mut self.cfg
+    }
+
+    /// Get a reference to the table's records.
+    pub fn get_records(&self) -> &R {
+        &self.records
+    }
+
+    /// Get a reference to the table's records.
+    pub fn get_records_mut(&mut self) -> &mut R {
+        &mut self.records
     }
 
     /// With is a generic function which applies options to the [`Table`].
@@ -146,20 +179,91 @@ impl Table {
     /// It applies settings immediately.
     pub fn with<O>(mut self, mut option: O) -> Self
     where
-        O: TableOption,
+        O: TableOption<R>,
     {
-        option.change(&mut self.grid);
+        option.change(&mut self);
         self
     }
 }
 
-impl fmt::Display for Table {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.grid)
+impl<R> Table<R>
+where
+    R: Records,
+{
+    /// Returns a table shape (count rows, count columns).
+    pub fn shape(&self) -> (usize, usize) {
+        (
+            self.get_records().count_rows(),
+            self.get_records().count_columns(),
+        )
+    }
+
+    /// Returns a table shape (count rows, count columns).
+    pub fn is_empty(&self) -> bool {
+        let (count_rows, count_cols) = self.shape();
+        count_rows == 0 || count_cols == 0
     }
 }
 
-impl<D> FromIterator<D> for Table
+impl<R> Table<R> {
+    pub(crate) fn new_raw(records: R, cfg: GridConfig) -> Self {
+        Self {
+            records,
+            cfg,
+            widths: None,
+        }
+    }
+}
+
+impl<R> Table<R>
+where
+    R: Records + RecordsMut<String>,
+{
+    pub(crate) fn update_records(&mut self) {
+        let ctrl = CfgWidthFunction::from_cfg(self.get_config());
+
+        for row in 0..self.get_records().count_rows() {
+            for col in 0..self.get_records().count_columns() {
+                let records = self.get_records_mut();
+                records.update((row, col), &ctrl);
+            }
+        }
+    }
+
+    pub(crate) fn cache_width(&mut self, widths: Vec<usize>) {
+        self.widths = Some(widths);
+    }
+
+    pub(crate) fn destroy_width_cache(&mut self) {
+        self.widths = None;
+    }
+}
+
+impl<R> fmt::Display for Table<R>
+where
+    R: Records,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // check if we have cached widths values.
+        let width = match &self.widths {
+            Some(widths) => WidthEstimator::from(widths.clone()),
+            None => {
+                let mut w = WidthEstimator::default();
+                w.estimate(&self.records, &self.cfg);
+                w
+            }
+        };
+
+        let mut height = HeightEstimator::default();
+        height.estimate(&self.records, &self.cfg);
+
+        let grid = Grid::new(&self.records, &self.cfg, &width, &height);
+
+        write!(f, "{}", grid)
+    }
+}
+
+impl<D> FromIterator<D> for Table<VecRecords<CellInfo<'static>>>
 where
     D: Tabled,
 {
@@ -183,17 +287,17 @@ where
 ///
 /// println!("{}", table);
 /// ```
-pub trait TableIteratorExt {
+pub trait TableIteratorExt<'a> {
     /// Returns a [`Table`] instance from a given type
-    fn table(self) -> Table;
+    fn table(self) -> Table<VecRecords<CellInfo<'a>>>;
 }
 
-impl<T, U> TableIteratorExt for U
+impl<'a, T, U> TableIteratorExt<'a> for U
 where
     T: Tabled,
-    U: IntoIterator<Item = T>,
+    U: IntoIterator<Item = T> + 'a,
 {
-    fn table(self) -> Table {
+    fn table(self) -> Table<VecRecords<CellInfo<'a>>> {
         Table::new(self)
     }
 }

@@ -46,9 +46,10 @@
 //! )
 //! ```
 
-use std::cmp;
-
-use papergrid::{Border, Entity, Grid};
+use papergrid::{
+    records::{Records, RecordsMut, Resizable},
+    width::CfgWidthFunction,
+};
 
 use crate::{Table, TableOption};
 
@@ -68,8 +69,8 @@ use crate::{Table, TableOption};
 /// let table3 = table1.with(Concat::horizontal(table2));
 /// ```
 #[derive(Debug)]
-pub struct Concat {
-    table: Table,
+pub struct Concat<T> {
+    table: Table<T>,
     mode: ConcatMode,
     default_cell: String,
 }
@@ -79,8 +80,8 @@ enum ConcatMode {
     Horizontal,
 }
 
-impl Concat {
-    fn new(table: Table, mode: ConcatMode) -> Self {
+impl<T> Concat<T> {
+    fn new(table: Table<T>, mode: ConcatMode) -> Self {
         Self {
             table,
             mode,
@@ -89,12 +90,12 @@ impl Concat {
     }
 
     /// Concatenate 2 tables horizontally (along axis=0)
-    pub fn vertical(table: Table) -> Self {
+    pub fn vertical(table: Table<T>) -> Self {
         Self::new(table, ConcatMode::Vertical)
     }
 
     /// Concatenate 2 tables vertically (along axis=1)
-    pub fn horizontal(table: Table) -> Self {
+    pub fn horizontal(table: Table<T>) -> Self {
         Self::new(table, ConcatMode::Horizontal)
     }
 
@@ -105,70 +106,59 @@ impl Concat {
     }
 }
 
-impl TableOption for Concat {
-    fn change(&mut self, lhs: &mut Grid) {
-        let rhs = &self.table.grid;
-
-        match &mut self.mode {
-            ConcatMode::Vertical => {
-                let new_row_size = lhs.count_rows() + rhs.count_rows();
-                let new_column_size = cmp::max(lhs.count_columns(), rhs.count_columns());
-                let mut new_grid = Grid::new(new_row_size, new_column_size);
-                new_grid.set_borders(lhs.get_borders().clone());
-
-                for row in 0..new_grid.count_rows() {
-                    for column in 0..new_grid.count_columns() {
-                        let is_lhs_side = row < lhs.count_rows();
-                        let is_rhs_side = row >= lhs.count_rows();
-
-                        let is_new_to_lhs = column >= rhs.count_columns() && is_rhs_side;
-                        let is_new_to_rhs = column >= lhs.count_columns() && is_lhs_side;
-                        let is_new_cell = is_new_to_lhs || is_new_to_rhs;
-
-                        let settings = if is_new_cell {
-                            new_grid.get_settings(row, column).text(&self.default_cell)
-                        } else if is_lhs_side {
-                            lhs.get_settings(row, column)
-                        } else {
-                            rhs.get_settings(row - lhs.count_rows(), column)
-                                .border(Border::default())
-                        };
-
-                        new_grid.set(Entity::Cell(row, column), settings);
-                    }
-                }
-
-                *lhs = new_grid;
-            }
+impl<T, R> TableOption<R> for Concat<T>
+where
+    R: Records + Resizable + RecordsMut<String>,
+    T: Records,
+{
+    fn change(&mut self, lhs: &mut Table<R>) {
+        let (count_rows, count_cols) = lhs.shape();
+        let ctrl = CfgWidthFunction::from_cfg(lhs.get_config());
+        let rhs = &self.table;
+        match self.mode {
             ConcatMode::Horizontal => {
-                let new_row_size = cmp::max(lhs.count_rows(), rhs.count_rows());
-                let new_column_size = lhs.count_columns() + rhs.count_columns();
-                let mut new_grid = Grid::new(new_row_size, new_column_size);
-                new_grid.set_borders(lhs.get_borders().clone());
+                for _ in 0..rhs.get_records().count_columns() {
+                    lhs.get_records_mut().push_column();
+                }
 
-                for row in 0..new_grid.count_rows() {
-                    for column in 0..new_grid.count_columns() {
-                        let is_lhs_side = column < lhs.count_columns();
-                        let is_rhs_side = column >= lhs.count_columns();
+                for row in count_rows..rhs.shape().0 {
+                    lhs.get_records_mut().push_row();
 
-                        let is_new_to_lhs = row >= rhs.count_rows() && is_rhs_side;
-                        let is_new_to_rhs = row >= lhs.count_rows() && is_lhs_side;
-                        let is_new_cell = is_new_to_lhs || is_new_to_rhs;
-
-                        let settings = if is_new_cell {
-                            new_grid.get_settings(row, column).text(&self.default_cell)
-                        } else if is_lhs_side {
-                            lhs.get_settings(row, column)
-                        } else {
-                            rhs.get_settings(row, column - lhs.count_columns())
-                                .border(Border::default())
-                        };
-
-                        new_grid.set(Entity::Cell(row, column), settings);
+                    for col in 0..lhs.get_records().count_columns() {
+                        lhs.get_records_mut()
+                            .set((row, col), self.default_cell.clone(), &ctrl);
                     }
                 }
 
-                *lhs = new_grid;
+                for row in 0..rhs.shape().0 {
+                    for col in 0..rhs.shape().1 {
+                        let text = rhs.get_records().get_text((row, col)).to_owned();
+                        let col = col + count_cols;
+                        lhs.get_records_mut().set((row, col), text, &ctrl);
+                    }
+                }
+            }
+            ConcatMode::Vertical => {
+                for _ in 0..rhs.shape().0 {
+                    lhs.get_records_mut().push_row();
+                }
+
+                for col in count_cols..rhs.shape().1 {
+                    lhs.get_records_mut().push_column();
+
+                    for row in 0..lhs.shape().0 {
+                        lhs.get_records_mut()
+                            .set((row, col), self.default_cell.clone(), &ctrl);
+                    }
+                }
+
+                for row in 0..rhs.shape().0 {
+                    for col in 0..rhs.shape().1 {
+                        let text = rhs.get_records().get_text((row, col)).to_owned();
+                        let row = row + count_rows;
+                        lhs.get_records_mut().set((row, col), text, &ctrl);
+                    }
+                }
             }
         }
     }

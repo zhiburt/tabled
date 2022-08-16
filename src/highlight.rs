@@ -5,16 +5,19 @@
 
 use std::collections::HashSet;
 
-use papergrid::{Entity, Grid, Position, Settings};
+use papergrid::{records::Records, Entity, GridConfig, Position};
 
-use crate::{object::Object, style::Border, TableOption};
+use crate::{object::Object, Border, Table, TableOption};
+
+#[cfg(feature = "color")]
+use crate::border_colored::BorderColored;
 
 /// Highlight modifies a table style by changing a border of a target [`Table`] segment.
 ///
 /// # Example
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::Segment};
+/// use tabled::{TableIteratorExt, Highlight, Border, Style, object::Segment};
 ///
 /// let data = [
 ///     ("ELF", "Extensible Linking Format", true),
@@ -46,7 +49,7 @@ use crate::{object::Object, style::Border, TableOption};
 /// It's possible to use [`Highlight`] for many kinds of figures.
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Highlight, style::{Border, Style}, object::{Segment, Cell, Object}};
+/// use tabled::{TableIteratorExt, Highlight, Border, Style, object::{Segment, Cell, Object}};
 ///
 /// let data = [
 ///     ("ELF", "Extensible Linking Format", true),
@@ -102,21 +105,23 @@ impl<O> Highlight<O> {
     /// Build a new instance of [`HighlightColored`]
     #[cfg(feature = "color")]
     #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-    pub fn colored(target: O, border: crate::style::BorderColored) -> HighlightColored<O> {
+    pub fn colored(target: O, border: BorderColored) -> HighlightColored<O> {
         HighlightColored { target, border }
     }
 }
 
-impl<O> TableOption for Highlight<O>
+impl<O, R> TableOption<R> for Highlight<O>
 where
     O: Object,
+    R: Records,
 {
-    fn change(&mut self, grid: &mut Grid) {
-        let cells = self.target.cells(grid.count_rows(), grid.count_columns());
-        let segments = split_segments(cells, grid.count_rows(), grid.count_columns());
+    fn change(&mut self, table: &mut Table<R>) {
+        let (count_rows, count_cols) = table.shape();
+        let cells = self.target.cells(count_rows, count_cols);
+        let segments = split_segments(cells, count_rows, count_cols);
 
         for sector in segments {
-            set_border(grid, &sector, self.border.clone());
+            set_border(table.get_config_mut(), &sector, self.border.clone());
         }
     }
 }
@@ -129,37 +134,40 @@ where
 #[derive(Debug)]
 pub struct HighlightColored<O> {
     target: O,
-    border: crate::style::BorderColored,
+    border: BorderColored,
 }
 
 #[cfg(feature = "color")]
-impl<O> TableOption for HighlightColored<O>
+impl<O, R> TableOption<R> for HighlightColored<O>
 where
     O: Object,
+    R: Records,
 {
-    fn change(&mut self, grid: &mut Grid) {
-        let cells = self.target.cells(grid.count_rows(), grid.count_columns());
-        let segments = split_segments(cells, grid.count_rows(), grid.count_columns());
+    fn change(&mut self, table: &mut Table<R>) {
+        let (count_rows, count_cols) = table.shape();
+        let cells = self.target.cells(count_rows, count_cols);
+        let segments = split_segments(cells, count_rows, count_cols);
 
         for sector in segments {
-            set_border_colored(grid, sector, self.border.clone());
+            set_border_colored(table.get_config_mut(), sector, self.border.clone());
         }
     }
 }
 
 #[cfg(feature = "color")]
 fn set_border_colored(
-    grid: &mut Grid,
+    cfg: &mut GridConfig,
     sector: HashSet<(usize, usize)>,
-    border: crate::style::BorderColored,
+    border: BorderColored,
 ) {
     if sector.is_empty() {
         return;
     }
 
+    let color = border.into();
     for &(row, col) in &sector {
-        let border = build_cell_border(&sector, (row, col), &border.0);
-        grid.set_colored_border(Entity::Cell(row, col), border);
+        let border = build_cell_border(&sector, (row, col), &color);
+        cfg.set_border_color((row, col), border);
     }
 }
 
@@ -243,16 +251,15 @@ fn is_segment_connected(
     false
 }
 
-fn set_border(grid: &mut Grid, sector: &HashSet<(usize, usize)>, border: Border) {
+fn set_border(cfg: &mut GridConfig, sector: &HashSet<(usize, usize)>, border: Border) {
     if sector.is_empty() {
         return;
     }
 
     if let Some(border) = border.into() {
-        for &(row, col) in sector {
-            let border = build_cell_border(sector, (row, col), &border);
-
-            grid.set(Entity::Cell(row, col), Settings::default().border(border));
+        for &pos in sector {
+            let border = build_cell_border(sector, pos, &border);
+            cfg.set_border(pos, border);
         }
     }
 }

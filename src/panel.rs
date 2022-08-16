@@ -36,9 +36,12 @@
 //! [`Table`]: crate::Table
 //! [`Span`]: crate::Span
 
-use papergrid::{Entity, Grid, Settings};
+use papergrid::{
+    records::{Records, RecordsMut, Resizable},
+    width::CfgWidthFunction,
+};
 
-use crate::TableOption;
+use crate::{Table, TableOption};
 
 /// Panel allows to add a Row which has 1 continues Cell to a [`Table`].
 ///
@@ -46,40 +49,43 @@ use crate::TableOption;
 ///
 /// [`Table`]: crate::Table
 #[derive(Debug)]
-pub struct Panel<S: AsRef<str>>(pub S, pub usize);
+pub struct Panel<S>(pub S, pub usize)
+where
+    S: AsRef<str>;
 
-impl<S: AsRef<str>> TableOption for Panel<S> {
-    fn change(&mut self, grid: &mut Grid) {
-        let mut new = grid.resize(grid.count_rows() + 1, grid.count_columns());
-        for row in 0..grid.count_rows() {
-            for column in 0..grid.count_columns() {
-                let cell_settings = grid.get_settings(row, column);
-                if row >= self.1 {
-                    new.set(Entity::Cell(row + 1, column), cell_settings);
-                } else {
-                    new.set(Entity::Cell(row, column), cell_settings);
-                }
+impl<S, R> TableOption<R> for Panel<S>
+where
+    S: AsRef<str>,
+    R: Records + RecordsMut<String> + Resizable,
+{
+    fn change(&mut self, table: &mut Table<R>) {
+        let (count_rows, count_cols) = table.shape();
+        if self.1 > count_rows {
+            return;
+        }
 
-                #[cfg(feature = "color")]
-                {
-                    let colored = grid.get_colored_border((row, column));
-                    if row >= self.1 {
-                        new.set_colored_border(Entity::Cell(row + 1, column), colored);
-                    } else {
-                        new.set_colored_border(Entity::Cell(row, column), colored);
-                    }
-                }
+        table.get_records_mut().push_row();
+
+        let shift_count = count_rows - self.1;
+        for i in 0..shift_count {
+            let row = count_rows - i;
+            table.get_records_mut().swap_row(row, row - 1);
+        }
+
+        // move existing spans
+        let spans = table.get_config().iter_column_spans().collect::<Vec<_>>();
+        for ((row, col), span) in spans {
+            if row >= self.1 {
+                table.get_config_mut().set_span((row, col), 1);
+                table.get_config_mut().set_span((row + 1, col), span);
             }
         }
 
-        new.set(
-            Entity::Cell(self.1, 0),
-            Settings::new()
-                .text(self.0.as_ref().to_owned())
-                .span(new.count_columns()),
-        );
-
-        *grid = new;
+        let ctrl = CfgWidthFunction::from_cfg(table.get_config());
+        let pos = (self.1, 0);
+        let text = self.0.as_ref().to_owned();
+        table.get_records_mut().set(pos, text, ctrl);
+        table.get_config_mut().set_span(pos, count_cols);
     }
 }
 
@@ -88,9 +94,13 @@ impl<S: AsRef<str>> TableOption for Panel<S> {
 #[derive(Debug)]
 pub struct Header<S: AsRef<str>>(pub S);
 
-impl<S: AsRef<str>> TableOption for Header<S> {
-    fn change(&mut self, grid: &mut Grid) {
-        Panel(self.0.as_ref(), 0).change(grid);
+impl<S, R> TableOption<R> for Header<S>
+where
+    S: AsRef<str>,
+    R: Records + RecordsMut<String> + Resizable,
+{
+    fn change(&mut self, table: &mut Table<R>) {
+        Panel(self.0.as_ref(), 0).change(table);
     }
 }
 
@@ -99,8 +109,12 @@ impl<S: AsRef<str>> TableOption for Header<S> {
 #[derive(Debug)]
 pub struct Footer<S: AsRef<str>>(pub S);
 
-impl<S: AsRef<str>> TableOption for Footer<S> {
-    fn change(&mut self, grid: &mut Grid) {
-        Panel(self.0.as_ref(), grid.count_rows()).change(grid);
+impl<S, R> TableOption<R> for Footer<S>
+where
+    S: AsRef<str>,
+    R: Records + RecordsMut<String> + Resizable,
+{
+    fn change(&mut self, table: &mut Table<R>) {
+        Panel(self.0.as_ref(), table.shape().0).change(table);
     }
 }

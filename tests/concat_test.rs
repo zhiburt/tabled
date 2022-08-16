@@ -50,7 +50,7 @@ test_table!(
         table2.with(Concat::horizontal(table1))
     },
     " N | column 0 | column 1 | column 2 | N | column 0 | column 1 | column 2 "
-    "---+----------+----------+----------                                     "
+    "---+----------+----------+----------+---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    | 0 |   0-0    |   0-1    |   0-2    "
     " 1 |   1-0    |   1-1    |   1-2    | 1 |   1-0    |   1-1    |   1-2    "
 );
@@ -79,7 +79,7 @@ test_table!(
         table1.with(Concat::vertical(table2))
     },
     " N | column 0 | column 1 |          "
-    "---+----------+----------           "
+    "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |          "
     " 1 |   1-0    |   1-1    |          "
     " N | column 0 | column 1 | column 2 "
@@ -95,7 +95,7 @@ test_table!(
         table1.with(Concat::horizontal(table2))
     },
     " N | column 0 | column 1 | column 2 | N | column 0 | column 1 | column 2 "
-    "---+----------+----------+----------                                     "
+    "---+----------+----------+----------+---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    | 0 |   0-0    |   0-1    |   0-2    "
     " 1 |   1-0    |   1-1    |   1-2    | 1 |   1-0    |   1-1    |   1-2    "
     "   |          |          |          | 2 |   2-0    |   2-1    |   2-2    "
@@ -108,11 +108,11 @@ test_table!(
         let table2 = create_table::<3, 3>().with(Style::psql());
         table1.with(Concat::horizontal(table2).default_cell("NaN"))
     },
-    " N | column 0 | column 1 | column 2 | N | column 0 | column 1 | column 2 "
-    "---+----------+----------+----------                                     "
-    " 0 |   0-0    |   0-1    |   0-2    | 0 |   0-0    |   0-1    |   0-2    "
-    " 1 |   1-0    |   1-1    |   1-2    | 1 |   1-0    |   1-1    |   1-2    "
-    "NaN|NaN       |NaN       |NaN       | 2 |   2-0    |   2-1    |   2-2    "
+    "  N  | column 0 | column 1 | column 2 | N | column 0 | column 1 | column 2 "
+    "-----+----------+----------+----------+---+----------+----------+----------"
+    "  0  |   0-0    |   0-1    |   0-2    | 0 |   0-0    |   0-1    |   0-2    "
+    "  1  |   1-0    |   1-1    |   1-2    | 1 |   1-0    |   1-1    |   1-2    "
+    " NaN |   NaN    |   NaN    |   NaN    | 2 |   2-0    |   2-1    |   2-2    "
 );
 
 test_table!(
@@ -122,10 +122,10 @@ test_table!(
         let table2 = create_table::<2, 3>().with(Style::psql());
         table1.with(Concat::vertical(table2).default_cell("NaN"))
     },
-    " N | column 0 | column 1 |NaN       "
-    "---+----------+----------           "
-    " 0 |   0-0    |   0-1    |NaN       "
-    " 1 |   1-0    |   1-1    |NaN       "
+    " N | column 0 | column 1 |   NaN    "
+    "---+----------+----------+----------"
+    " 0 |   0-0    |   0-1    |   NaN    "
+    " 1 |   1-0    |   1-1    |   NaN    "
     " N | column 0 | column 1 | column 2 "
     " 0 |   0-0    |   0-1    |   0-2    "
     " 1 |   1-0    |   1-1    |   1-2    "

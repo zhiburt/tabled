@@ -209,39 +209,76 @@
     html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
 )]
 
-mod alignment;
-mod concat;
-mod disable;
-mod extract;
-mod formating;
+// todo: Move all modifiers to its own folder.
+
+pub mod alignment;
+mod border;
+mod border_text;
 mod modify;
 mod panel;
 mod rotate;
 mod span;
 mod table;
 
+pub mod concat;
+pub mod disable;
+pub mod extract;
+pub mod justify;
+pub mod min_width;
+pub mod truncate;
+pub mod wrap;
+
 pub mod builder;
 pub mod display;
-pub mod formatting_settings;
+pub mod format;
+pub mod formatting;
 pub mod highlight;
 pub mod margin;
 pub mod object;
 pub mod padding;
+pub mod raw_style;
+pub mod span_border_correction;
 pub mod style;
 pub mod width;
 
-use std::fmt;
+#[cfg(feature = "color")]
+pub mod border_colored;
+#[cfg(feature = "color")]
+pub mod color;
+#[cfg(feature = "color")]
+pub mod margin_color;
+#[cfg(feature = "color")]
+pub mod padding_color;
+#[cfg(feature = "color")]
+pub mod raw_style_colored;
+#[cfg(feature = "color")]
+pub mod symbol;
 
-#[cfg(feature = "derive")]
-#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-pub use tabled_derive::Tabled;
+use std::fmt;
 
 pub use papergrid;
 
+#[cfg(feature = "derive")]
+#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
+pub use tabled_derive::Tabled;
+
 pub use crate::{
-    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::Highlight,
-    margin::Margin, modify::*, padding::Padding, panel::*, rotate::*, span::*, style::Style,
-    table::*, width::Width,
+    alignment::Alignment,
+    border::Border,
+    border_text::BorderText,
+    concat::Concat,
+    disable::Disable,
+    extract::Extract,
+    highlight::Highlight,
+    margin::Margin,
+    modify::{CellSettingsList, Modify, ModifyList, ModifyObject},
+    padding::Padding,
+    panel::{Footer, Header, Panel},
+    rotate::Rotate,
+    span::Span,
+    style::Style,
+    table::{CellOption, Table, TableIteratorExt, TableOption},
+    width::Width,
 };
 
 /// Tabled a trait responsible for providing a header fields and a row fields.

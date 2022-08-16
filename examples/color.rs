@@ -8,8 +8,11 @@ use std::convert::TryFrom;
 use owo_colors::OwoColorize;
 
 use tabled::{
+    border_colored::BorderColored,
+    color::Color,
     object::{Columns, Rows},
-    style::{BorderColored, Color, Style, Symbol},
+    style::Style,
+    symbol::Symbol,
     ModifyObject, Table, Tabled,
 };
 

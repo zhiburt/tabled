@@ -110,7 +110,11 @@
 
 use std::{fmt::Display, iter::FromIterator};
 
-use papergrid::{AlignmentHorizontal, Entity, Formatting, Grid, Indent, Padding, Settings};
+use papergrid::{
+    records::{cell_info::CellInfo, vec_records::VecRecords, Records},
+    width::CfgWidthFunction,
+    AlignmentHorizontal, Entity, Formatting, GridConfig, Indent, Padding,
+};
 
 use crate::{Style, Table};
 
@@ -149,11 +153,12 @@ use crate::{Style, Table};
 #[derive(Debug, Default, Clone)]
 pub struct Builder {
     /// A list of rows.
-    records: Vec<Vec<String>>,
+    records: Vec<Vec<CellInfo<'static>>>,
     /// A columns row.
-    columns: Option<Vec<String>>,
+    columns: Option<Vec<CellInfo<'static>>>,
     /// A number of columns.
     size: usize,
+    different_column_sizes_used: bool,
     /// A content of cells which are created in case rows has different length.
     empty_cell_text: Option<String>,
 }
@@ -162,6 +167,10 @@ impl Builder {
     /// Creates a [`Builder`] instance.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub(crate) fn hint_column_size(&mut self, size: usize) {
+        self.size = size;
     }
 
     /// Sets a [`Table`] header.
@@ -181,9 +190,15 @@ impl Builder {
         H: IntoIterator<Item = T>,
         T: Display,
     {
-        let columns: Vec<String> = columns.into_iter().map(|t| t.to_string()).collect();
-        self.update_size(columns.len());
-        self.columns = Some(columns);
+        let ctrl = CfgWidthFunction::new(4);
+        let mut list = Vec::with_capacity(self.size);
+        for c in columns {
+            let info = CellInfo::new(c.to_string(), &ctrl);
+            list.push(info);
+        }
+
+        self.update_size(list.len());
+        self.columns = Some(list);
 
         self
     }
@@ -244,14 +259,20 @@ impl Builder {
     /// builder.add_record(0..3);
     /// builder.add_record(["i", "surname", "lastname"]);
     /// ```
-    pub fn add_record<R, T>(&mut self, record: R) -> &mut Self
+    pub fn add_record<R, T>(&mut self, row: R) -> &mut Self
     where
         R: IntoIterator<Item = T>,
-        T: Display,
+        T: Display, // fixme: Change to Into<String>
     {
-        let row: Vec<String> = record.into_iter().map(|t| t.to_string()).collect();
-        self.update_size(row.len());
-        self.records.push(row);
+        let ctrl = CfgWidthFunction::new(4);
+        let mut list = Vec::with_capacity(self.size);
+        for c in row {
+            let info = CellInfo::new(c.to_string(), &ctrl);
+            list.push(info);
+        }
+
+        self.update_size(list.len());
+        self.records.push(list);
 
         self
     }
@@ -281,8 +302,11 @@ impl Builder {
     /// builder.set_columns(["i", "column1", "column2"]);
     /// builder.add_record(["0", "value1", "value2"]);
     /// ```
-    pub fn build(mut self) -> Table {
-        self.fix_rows();
+    pub fn build(mut self) -> Table<VecRecords<CellInfo<'static>>> {
+        if self.different_column_sizes_used {
+            self.fix_rows();
+        }
+
         build_table(self.columns, self.records, self.size)
     }
 
@@ -343,6 +367,13 @@ impl Builder {
         self
     }
 
+    /// Creates a Builder from a built [`Records`]
+    ///
+    /// [`Records`]: papergrid::records::Records
+    pub fn custom<R>(records: R) -> CustomRecords<R> {
+        CustomRecords::new(records)
+    }
+
     fn clean_columns(&mut self) {
         let mut i = 0;
         for col in 0..self.size {
@@ -395,8 +426,20 @@ impl Builder {
     }
 
     fn update_size(&mut self, size: usize) {
-        if size > self.size {
-            self.size = size;
+        match size.cmp(&self.size) {
+            std::cmp::Ordering::Less => {
+                if !self.records.is_empty() {
+                    self.different_column_sizes_used = true;
+                }
+            }
+            std::cmp::Ordering::Greater => {
+                self.size = size;
+
+                if !self.records.is_empty() {
+                    self.different_column_sizes_used = true;
+                }
+            }
+            std::cmp::Ordering::Equal => (),
         }
     }
 
@@ -411,7 +454,9 @@ impl Builder {
     }
 
     fn fix_rows(&mut self) {
-        let empty_cell_text = self.empty_cell_text.clone().unwrap_or_default();
+        let ctrl = CfgWidthFunction::new(4);
+        let text = self.empty_cell_text.clone().unwrap_or_default();
+        let empty_cell_text = CellInfo::new(text, &ctrl);
 
         if let Some(header) = self.columns.as_mut() {
             if self.size > header.len() {
@@ -447,91 +492,71 @@ where
     D: Display,
 {
     fn extend<T: IntoIterator<Item = D>>(&mut self, iter: T) {
-        let row: Vec<String> = iter.into_iter().map(|t| t.to_string()).collect();
-        self.update_size(row.len());
-        self.records.push(row);
+        self.add_record(iter);
     }
 }
 
 impl From<Vec<Vec<String>>> for Builder {
-    fn from(records: Vec<Vec<String>>) -> Self {
-        let max_row_length = records.iter().map(Vec::len).max().unwrap_or(0);
-        Self {
-            records,
-            size: max_row_length,
+    fn from(strings: Vec<Vec<String>>) -> Self {
+        let mut b = Self {
+            records: Vec::with_capacity(strings.len()),
             ..Default::default()
+        };
+
+        for row in strings {
+            b.extend(row);
         }
+
+        b
     }
 }
 
 /// Building [`Table`] from ordinary data.
 fn build_table(
-    columns: Option<Vec<String>>,
-    records: Vec<Vec<String>>,
+    columns: Option<Vec<CellInfo<'static>>>,
+    records: Vec<Vec<CellInfo<'static>>>,
     count_columns: usize,
-) -> Table {
-    let grid = build_grid(records, columns, count_columns);
-    create_table_from_grid(grid)
+) -> Table<VecRecords<CellInfo<'static>>> {
+    let mut cfg = GridConfig::default();
+    configure_grid(&mut cfg);
+    let records = build_grid(records, columns, count_columns);
+    create_table(records, cfg)
 }
 
 /// Building [`Grid`] from ordinary data.
 fn build_grid(
-    records: Vec<Vec<String>>,
-    columns: Option<Vec<String>>,
+    mut records: Vec<Vec<CellInfo<'static>>>,
+    columns: Option<Vec<CellInfo<'static>>>,
     count_columns: usize,
-) -> Grid {
-    let mut count_rows = records.len();
-
-    if columns.is_some() {
-        count_rows += 1;
+) -> VecRecords<CellInfo<'static>> {
+    if let Some(columns) = columns {
+        records.insert(0, columns);
     }
 
-    let mut grid = Grid::new(count_rows, count_columns);
-
-    let mut row = 0;
-    if let Some(headers) = columns {
-        for (i, text) in headers.into_iter().enumerate() {
-            grid.set(Entity::Cell(0, i), Settings::new().text(text));
-        }
-
-        row = 1;
-    }
-
-    for fields in records {
-        // don't show off a empty data array
-        if fields.is_empty() {
-            continue;
-        }
-
-        for (column, field) in fields.into_iter().enumerate() {
-            grid.set(Entity::Cell(row, column), Settings::new().text(field));
-        }
-
-        row += 1;
-    }
-
-    grid
+    VecRecords::with_hint(records, count_columns)
 }
 
-fn create_table_from_grid(mut grid: Grid) -> Table {
-    configure_grid(&mut grid);
-
-    let table = Table { grid };
+fn create_table<R>(records: R, cfg: GridConfig) -> Table<R>
+where
+    R: Records,
+{
+    let table = Table::new_raw(records, cfg);
     table.with(Style::ascii())
 }
 
-fn configure_grid(grid: &mut Grid) {
-    grid.set_tab_width(4);
-    grid.set_padding(
+fn configure_grid(cfg: &mut GridConfig) {
+    cfg.set_tab_width(4);
+    cfg.set_padding(
         Entity::Global,
         Padding {
             left: Indent::spaced(1),
             right: Indent::spaced(1),
-            ..Default::default()
+            top: Indent::default(),
+            bottom: Indent::default(),
         },
     );
-    grid.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Left);
-    grid.set_formatting(
+    cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Left);
+    cfg.set_formatting(
         Entity::Global,
         Formatting {
             horizontal_trim: false,
@@ -541,8 +566,8 @@ fn configure_grid(grid: &mut Grid) {
     );
 }
 
-fn append_vec(v: &mut Vec<String>, n: usize, value: &str) {
-    v.extend((0..n).map(|_| value.to_owned()));
+fn append_vec(v: &mut Vec<CellInfo<'static>>, n: usize, value: &CellInfo<'static>) {
+    v.extend((0..n).map(|_| value.clone()));
 }
 
 /// [`IndexBuilder`] helps to add an index to the table.
@@ -564,9 +589,9 @@ fn append_vec(v: &mut Vec<String>, n: usize, value: &str) {
 pub struct IndexBuilder {
     /// Index is an index data.
     /// It's always set.
-    index: Vec<String>,
+    index: Vec<CellInfo<'static>>,
     /// Name of an index
-    name: Option<String>,
+    name: Option<CellInfo<'static>>,
     /// A flag which checks if we need to actually use index.
     ///
     /// It might happen when it's only necessary to [Self::transpose] table.
@@ -656,7 +681,10 @@ impl IndexBuilder {
     ///
     /// When [`None`] the name won't be used.
     pub fn set_name(&mut self, name: Option<String>) -> &mut Self {
-        self.name = name;
+        self.name = name.map(|s| {
+            let ctrl = CfgWidthFunction::new(4);
+            CellInfo::new(s, ctrl)
+        });
         self
     }
 
@@ -761,12 +789,18 @@ impl IndexBuilder {
     }
 
     /// Builds a table.
-    pub fn build(self) -> Table {
-        build_index(self).build()
+    pub fn build(self) -> Table<VecRecords<CellInfo<'static>>> {
+        let mut b = build_index(self);
+        // fixme: we don't update builder size internally
+
+        b.fix_rows();
+        b.different_column_sizes_used = false;
+
+        b.build()
     }
 }
 
-fn make_rows_columns(v: &mut Vec<Vec<String>>, count_columns: usize) {
+fn make_rows_columns(v: &mut Vec<Vec<CellInfo<'static>>>, count_columns: usize) {
     let mut columns = Vec::with_capacity(count_columns);
     for _ in 0..count_columns {
         let column = get_column(v, 0);
@@ -787,13 +821,15 @@ fn build_index(mut b: IndexBuilder) -> Builder {
 
     let records = &mut b.b.records;
 
+    // it's guaranted to be set
     let columns = b.b.columns.take().unwrap();
+
     records.insert(0, columns);
 
     // add index column
     if b.print_index {
         b.b.size += 1;
-        b.index.insert(0, String::new());
+        b.index.insert(0, CellInfo::default());
         insert_column(records, b.index, 0);
     }
 
@@ -815,7 +851,7 @@ fn insert_column<T: Default>(v: &mut [Vec<T>], mut column: Vec<T>, col: usize) {
     }
 }
 
-fn get_column(v: &mut [Vec<String>], col: usize) -> Vec<String> {
+fn get_column(v: &mut [Vec<CellInfo<'static>>], col: usize) -> Vec<CellInfo<'static>> {
     let mut column = Vec::with_capacity(v.len());
     for row in v.iter_mut() {
         let value = remove_or_default(row, col);
@@ -833,6 +869,38 @@ fn remove_or_default<T: Default>(v: &mut Vec<T>, i: usize) -> T {
     }
 }
 
-fn build_range_index(n: usize) -> Vec<String> {
-    (0..n).map(|i| i.to_string()).collect()
+fn build_range_index(n: usize) -> Vec<CellInfo<'static>> {
+    let ctrl = CfgWidthFunction::new(4);
+    (0..n)
+        .map(|i| CellInfo::new(i.to_string(), &ctrl))
+        .collect()
+}
+
+/// A builder which wraps [`Records`] and builds [`Table`] out of it.
+///
+/// [`Records`]: papergrid::records::Records
+#[derive(Debug, Clone)]
+pub struct CustomRecords<R> {
+    records: R,
+}
+
+impl<R> CustomRecords<R> {
+    fn new(records: R) -> Self {
+        Self { records }
+    }
+}
+
+impl<R> CustomRecords<R>
+where
+    R: Records,
+{
+    /// Builds a [`Table`] from [`Records`].
+    ///
+    /// [`Records`]: papergrid::records::Records
+    pub fn build(self) -> Table<R> {
+        let mut cfg = GridConfig::default();
+        configure_grid(&mut cfg);
+        let table = Table::new_raw(self.records, cfg);
+        table.with(Style::ascii())
+    }
 }
