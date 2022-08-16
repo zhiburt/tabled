@@ -4,13 +4,11 @@
 
 use std::cmp::Ordering;
 
-use crate::{
-    records::Records,
-    util::{string_width_multiline_tab, string_width_tab},
-    GridConfig, Position,
-};
+use crate::{records::Records, GridConfig, Position};
 
 use super::Estimate;
+
+pub use super::width_func::{CfgWidthFunction, WidthFunc};
 
 /// A [`Estimate`]or of a width for a [`Grid`].
 ///
@@ -25,7 +23,8 @@ where
     R: Records,
 {
     fn estimate(&mut self, records: R, cfg: &GridConfig) {
-        self.widths = build_widths(&records, cfg);
+        let width_ctrl = CfgWidthFunction::from_cfg(cfg);
+        self.widths = build_widths(&records, cfg, &width_ctrl);
     }
 
     fn get(&self, column: usize) -> Option<usize> {
@@ -49,60 +48,7 @@ impl From<WidthEstimator> for Vec<usize> {
     }
 }
 
-/// A width function.
-pub trait WidthFunc {
-    /// Calculates a width of a string.
-    fn width(&self, text: &str) -> usize;
-    /// Calculates a width of a multiline string.
-    fn width_multiline(&self, text: &str) -> usize;
-}
-
-impl<W> WidthFunc for &W
-where
-    W: WidthFunc,
-{
-    fn width(&self, text: &str) -> usize {
-        W::width(self, text)
-    }
-
-    fn width_multiline(&self, text: &str) -> usize {
-        W::width_multiline(self, text)
-    }
-}
-
-/// A [`WidthFunc`] implementation which is used by [`Grid`].
-///
-/// [`Grid`]: crate::Grid
-#[derive(Debug, Default, Clone)]
-pub struct CfgWidthFunction {
-    tab_width: usize,
-}
-
-impl CfgWidthFunction {
-    /// Creates a [`CfgWidthFunction`] from [`GridConfig`].
-    pub fn from_cfg(cfg: &GridConfig) -> Self {
-        Self::new(cfg.get_tab_width())
-    }
-
-    /// Creates a [`CfgWidthFunction`] with a tab size.
-    pub fn new(tab_size: usize) -> Self {
-        Self {
-            tab_width: tab_size,
-        }
-    }
-}
-
-impl WidthFunc for CfgWidthFunction {
-    fn width(&self, text: &str) -> usize {
-        string_width_tab(text, self.tab_width)
-    }
-
-    fn width_multiline(&self, text: &str) -> usize {
-        string_width_multiline_tab(text, self.tab_width)
-    }
-}
-
-fn build_widths<R>(records: &R, cfg: &GridConfig) -> Vec<usize>
+fn build_widths<R>(records: &R, cfg: &GridConfig, width_ctrl: &CfgWidthFunction) -> Vec<usize>
 where
     R: Records,
 {
@@ -110,20 +56,24 @@ where
     for (col, column) in widths.iter_mut().enumerate() {
         let max = (0..records.count_rows())
             .filter(|&row| is_simple_cell(cfg, (row, col)))
-            .map(|row| get_cell_width(cfg, records, (row, col)))
+            .map(|row| get_cell_width(cfg, records, (row, col), width_ctrl))
             .max()
             .unwrap_or(0);
 
         *column = max;
     }
 
-    adjust_spans(cfg, records, &mut widths);
+    adjust_spans(cfg, width_ctrl, records, &mut widths);
 
     widths
 }
 
-fn adjust_spans<R>(cfg: &GridConfig, records: &R, widths: &mut [usize])
-where
+fn adjust_spans<R>(
+    cfg: &GridConfig,
+    width_ctrl: &CfgWidthFunction,
+    records: &R,
+    widths: &mut [usize],
+) where
     R: Records,
 {
     if !cfg.has_column_spans() {
@@ -141,12 +91,13 @@ where
 
     // todo: the order is matter here; we need to figure out what is correct.
     for ((row, col), span) in spans {
-        adjust_range(cfg, records, row, col, col + span, widths);
+        adjust_range(cfg, width_ctrl, records, row, col, col + span, widths);
     }
 }
 
 fn adjust_range<R>(
     cfg: &GridConfig,
+    width_ctrl: &CfgWidthFunction,
     records: &R,
     row: usize,
     start: usize,
@@ -155,7 +106,7 @@ fn adjust_range<R>(
 ) where
     R: Records,
 {
-    let max_span_width = get_cell_width(cfg, records, (row, start));
+    let max_span_width = get_cell_width(cfg, records, (row, start), width_ctrl);
     let range_width = range_width(cfg, start, end, widths);
 
     if range_width >= max_span_width {
@@ -190,11 +141,16 @@ fn is_simple_cell(cfg: &GridConfig, pos: Position) -> bool {
     cfg.is_cell_visible(pos) && matches!(cfg.get_column_span(pos), None | Some(1))
 }
 
-fn get_cell_width<R>(cfg: &GridConfig, records: &R, pos: Position) -> usize
+fn get_cell_width<R>(
+    cfg: &GridConfig,
+    records: &R,
+    pos: Position,
+    width_ctrl: &CfgWidthFunction,
+) -> usize
 where
     R: Records,
 {
-    let width = records.get_width(pos, CfgWidthFunction::from_cfg(cfg));
+    let width = records.get_width(pos, width_ctrl);
     let padding = get_cell_padding(cfg, pos);
     width + padding
 }

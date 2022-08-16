@@ -115,19 +115,24 @@ where
 
     let text = info.text.as_ref();
 
-    // We want to mitigate additional allocations whereas possible.
+    // In case `Cow::Borrowed` we want to not allocate a String.
+    // It's currerently not possible due to a lifetime issues. (It's known as self-referential struct)
+    //
+    // Here we change the lifetime of text.
     //
     // # Safety
     //
-    // It must be save
+    // It must be safe because the referenced string and the references are dropped at the same time.
+    // And the referenced String is guaranted to not be changed.
     let text = unsafe {
         std::str::from_utf8_unchecked(std::slice::from_raw_parts(text.as_ptr(), text.len()))
     };
 
+    // Here we do a small optimization.
+    // We check if there's only 1 line in which case we don't allocate lines Vec
+
     let mut lines = get_lines(text);
 
-    // optimize for a general case where we have only 1 line.
-    // to not make any allocations
     let first_line = lines.next();
     if first_line.is_none() {
         return info;

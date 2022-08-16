@@ -3,6 +3,7 @@ use crate::GridConfig;
 
 pub mod height;
 pub mod width;
+mod width_func;
 
 /// An Evaluator of an metric of a [`Grid`]
 ///
