@@ -1,3 +1,10 @@
+# papergrid
+
+Is a pretty print table backend.
+
+## Usage
+
+```rust
 use papergrid::{
     height::HeightEstimator,
     records::vec_records::VecRecords,
@@ -42,7 +49,7 @@ fn main() {
     );
 
     let data = [
-        ["Papergrid", "is a library", "for print tables", "!"],
+        ["Papergrid", "is a library", "to print tables", "!"],
         ["Just like this", "", "", ""],
     ];
 
@@ -58,3 +65,16 @@ fn main() {
 
     println!("{}", grid);
 }
+```
+
+Running the example you must see.
+
+```text
++-----------------+------------+---------------+-+
+|                 |            |               | |
+|    Papergrid    |is a library|to print tables|!|
+|                 |            |               | |
++-----------------+------------+---------------+-+
+|                 Just like this                 |
++-----------------+------------+---------------+-+
+```
