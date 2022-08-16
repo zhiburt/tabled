@@ -10,10 +10,10 @@ use std::borrow::Cow;
 ///
 /// BE AWARE: width is expected to be in bytes.
 pub fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
-    const REPLACEMENT: char = '\u{FFFD}';
-
     #[cfg(feature = "color")]
     {
+        const REPLACEMENT: char = '\u{FFFD}';
+
         let stripped = ansi_str::AnsiStr::ansi_strip(s);
         let (length, count_unknowns, _) = split_at_pos(&stripped, width);
 
@@ -24,17 +24,26 @@ pub fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
     }
     #[cfg(not(feature = "color"))]
     {
-        let (length, count_unknowns, _) = split_at_pos(s, width);
-        let buf = &s[..length];
-        if count_unknowns == 0 {
-            return Cow::Borrowed(buf);
-        }
-
-        let mut buf = buf.to_owned();
-        buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
-
-        Cow::Owned(buf)
+        cut_str_basic(s, width)
     }
+}
+
+/// The function cuts the string to a specific width.
+///
+/// BE AWARE: width is expected to be in bytes.
+pub fn cut_str_basic(s: &str, width: usize) -> Cow<'_, str> {
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    let (length, count_unknowns, _) = split_at_pos(s, width);
+    let buf = &s[..length];
+    if count_unknowns == 0 {
+        return Cow::Borrowed(buf);
+    }
+
+    let mut buf = buf.to_owned();
+    buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+
+    Cow::Owned(buf)
 }
 
 /// The function splits a string in the position and

@@ -149,7 +149,5 @@ required-features = ["color", "derive"]
 #
 # RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
 [package.metadata.docs.rs]
-features = ["unstable-doc"]
-cargo-args = ["-Zunstable-options"]
+all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
-rustc-args = ["--cfg", "docsrs"]

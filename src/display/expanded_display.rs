@@ -48,11 +48,9 @@
 //! assert_eq!(table, expected);
 //! ```
 
-use std::fmt;
+use papergrid::util::{cut_str_basic, string_width};
 
-use papergrid::util::{cut_str, string_width_multiline};
-
-use crate::{wrap::wrap_text, Tabled};
+use crate::Tabled;
 
 /// `ExpandedDisplay` display data in a 'expanded display mode' from postgresql.
 /// It may be useful for a large data sets with a lot of fields.
@@ -60,7 +58,7 @@ use crate::{wrap::wrap_text, Tabled};
 /// See 'Examples' in <https://www.postgresql.org/docs/current/app-psql.html.>.
 ///
 /// It escapes strings to resolve a multi-line ones.
-/// Because of that `colors` may not be rendered.
+/// Because of that ANSI sequences will be not be rendered too so colores will not be showed.
 ///
 /// ```
 /// use tabled::{display::ExpandedDisplay};
@@ -78,67 +76,90 @@ use crate::{wrap::wrap_text, Tabled};
 ///     )
 /// );
 /// ```
+#[derive(Debug, Clone)]
 pub struct ExpandedDisplay {
-    format_record_splitter: Option<fn(usize) -> String>,
-    format_value: Option<FormatFn>,
     fields: Vec<String>,
     records: Vec<Vec<String>>,
 }
 
-type FormatFn = Box<dyn Fn(&str) -> String>;
-
 impl ExpandedDisplay {
     /// Creates a new instance of `ExpandedDisplay`
-    pub fn new<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Self {
-        let data = iter.into_iter().map(|i| i.fields()).collect();
-        let header = T::headers();
+    pub fn new<T>(iter: impl IntoIterator<Item = T>) -> Self
+    where
+        T: Tabled,
+    {
+        let data = iter
+            .into_iter()
+            .map(|i| {
+                i.fields()
+                    .into_iter()
+                    .map(|s| s.escape_debug().to_string())
+                    .collect()
+            })
+            .collect();
+        let header = T::headers()
+            .into_iter()
+            .map(|s| s.escape_debug().to_string())
+            .collect();
 
         Self {
             records: data,
             fields: header,
-            format_record_splitter: None,
-            format_value: None,
         }
     }
 
-    /// Sets a line format which will be used to split records.
+    /// Truncates table to a set width value for a table.
+    /// It returns a success inticator, where `false` means it's not possible to set the table width,
+    /// because of the given arguments.
     ///
-    /// Default formatting is "-[ RECORD {} ]-".
+    /// It tries to not affect fields, but if there's no enough space all records will be deleted and fields will be cut.
     ///
-    /// At least one '\n' char will be printed at the end regardless if you set it or not.
-    pub fn header_template(&mut self, f: fn(usize) -> String) -> &mut Self {
-        self.format_record_splitter = Some(f);
-        self
-    }
+    /// The minimum width is 14.
+    pub fn truncate(&mut self, max: usize, suffix: &str) -> bool {
+        // -[ RECORD 0 ]-
+        let teplate_width = self.records.len().to_string().len() + 13;
+        let min_width = teplate_width;
+        if max < min_width {
+            return false;
+        }
 
-    /// Sets a value formatter.
-    ///
-    /// This method overrides others formatters like [`ExpandedDisplay::truncate`] and [`ExpandedDisplay::wrap`].
-    pub fn formatter(&mut self, f: impl Fn(&str) -> String + 'static) -> &mut Self {
-        self.format_value = Some(Box::new(f));
-        self
-    }
+        let suffix_width = string_width(suffix);
+        if max < suffix_width {
+            return false;
+        }
 
-    /// Sets max width of value.
-    /// The rest will be trunceted.
-    pub fn truncate(&mut self, max: usize, tail: impl AsRef<str>) -> &mut Self {
-        let tail = tail.as_ref().to_string();
-        self.format_value = Some(Box::new(move |s| {
-            let mut trucated = truncate(s, max);
-            if trucated.len() < s.len() {
-                trucated.push_str(&tail);
+        let max = max - suffix_width;
+
+        let fields_max_width = self
+            .fields
+            .iter()
+            .map(|s| string_width(s))
+            .max()
+            .unwrap_or_default();
+
+        // 3 is a space for ' | '
+        let fields_affected = max < fields_max_width + 3;
+        if fields_affected {
+            if max < 3 {
+                return false;
             }
 
-            trucated
-        }));
-        self
-    }
+            let max = max - 3;
 
-    /// Sets max width of value,
-    /// when limit is reached next chars will be placed on the next line.
-    pub fn wrap(&mut self, max: usize) -> &mut Self {
-        self.format_value = Some(Box::new(move |s| wrap(s, max)));
-        self
+            if max < suffix_width {
+                return false;
+            }
+
+            let max = max - suffix_width;
+
+            truncate_fields(&mut self.fields, max, suffix);
+            truncate_records(&mut self.records, 0, suffix);
+        } else {
+            let max = max - fields_max_width - 3 - suffix_width;
+            truncate_records(&mut self.records, max, suffix);
+        }
+
+        true
     }
 }
 
@@ -148,66 +169,33 @@ impl std::fmt::Display for ExpandedDisplay {
             return Ok(());
         }
 
-        let format_value = |value: &String| match &self.format_value {
-            Some(f) => (f)(value),
-            None => value.to_string(),
-        };
-
         // It's possible that field|header can be a multiline string so
         // we escape it and trim \" chars.
-        let fields = self
-            .fields
-            .iter()
-            .map(|f| {
-                let escaped = format!("{:?}", f);
-                escaped
-                    .chars()
-                    .skip(1)
-                    .take(escaped.len() - 1 - 1)
-                    .collect::<String>()
-            })
-            .collect::<Vec<_>>();
+        let fields = self.fields.iter().collect::<Vec<_>>();
 
         let max_field_width = fields
             .iter()
-            .map(|f| string_width_multiline(f))
+            .map(|s| string_width(s))
             .max()
             .unwrap_or_default();
 
-        let values = self
+        let max_values_length = self
             .records
             .iter()
-            .map(|record| {
-                assert_eq!(record.len(), fields.len());
-
-                record.iter().map(format_value).collect::<Vec<_>>()
-            })
-            .collect::<Vec<_>>();
-
-        let max_values_length = values
-            .iter()
-            .map(|record| record.iter().map(|v| string_width_multiline(v)).max())
+            .map(|record| record.iter().map(|s| string_width(s)).max())
             .max()
             .unwrap_or_default()
             .unwrap_or_default();
 
-        for (i, records) in values.iter().enumerate() {
-            match self.format_record_splitter {
-                Some(f_header) => {
-                    let header = (f_header)(i);
-                    write!(f, "{}", header)?;
-                }
-                None => {
-                    write_header_template(f, i, max_field_width, max_values_length)?;
-                }
-            }
+        for (i, records) in self.records.iter().enumerate() {
+            write_header_template(f, i, max_field_width, max_values_length)?;
 
             for (value, field) in records.iter().zip(fields.iter()) {
                 writeln!(f)?;
                 write_record(f, field, value, max_field_width)?;
             }
 
-            let is_last_record = i + 1 == values.len();
+            let is_last_record = i + 1 == self.records.len();
             if !is_last_record {
                 writeln!(f)?;
             }
@@ -217,14 +205,15 @@ impl std::fmt::Display for ExpandedDisplay {
     }
 }
 
-impl fmt::Debug for ExpandedDisplay {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("ExpandedDisplay")
-            .field("format_record_splitter", &self.format_record_splitter)
-            .field("format_value", &self.format_value.is_some())
-            .field("fields", &self.fields)
-            .field("records", &self.records)
-            .finish()
+fn truncate_records(records: &mut Vec<Vec<String>>, max_width: usize, suffix: &str) {
+    for fields in records {
+        truncate_fields(fields, max_width, suffix);
+    }
+}
+
+fn truncate_fields(records: &mut Vec<String>, max_width: usize, suffix: &str) {
+    for text in records {
+        truncate(text, max_width, suffix);
     }
 }
 
@@ -271,27 +260,20 @@ fn write_record(
     value: &str,
     max_field_width: usize,
 ) -> std::fmt::Result {
-    if value.is_empty() {
-        write!(f, "{:width$} | {}", field, value, width = max_field_width)?;
-        return Ok(());
-    }
-
-    for (i, line) in value.lines().enumerate() {
-        if i > 0 {
-            writeln!(f)?;
-        }
-
-        let field = if i == 0 { field } else { "" };
-        write!(f, "{:width$} | {}", field, line, width = max_field_width)?;
-    }
-
-    Ok(())
+    write!(f, "{:width$} | {}", field, value, width = max_field_width)
 }
 
-fn truncate(s: &str, max: usize) -> String {
-    cut_str(s, max).into_owned()
-}
+fn truncate(text: &mut String, max: usize, suffix: &str) {
+    let original_len = text.len();
 
-fn wrap(s: &str, max: usize) -> String {
-    wrap_text(s, max, false)
+    if max == 0 || text.is_empty() {
+        *text = String::new();
+    } else {
+        *text = cut_str_basic(text, max).into_owned();
+    }
+
+    let cut_was_done = text.len() < original_len;
+    if !suffix.is_empty() && cut_was_done {
+        text.push_str(suffix);
+    }
 }
