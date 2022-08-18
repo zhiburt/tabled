@@ -142,7 +142,7 @@ test_table!(
     render_row_span,
     grid(2, 2)
         .config(|cfg|{
-            cfg.set_span((0, 0), 2);
+            cfg.set_column_span((0, 0), 2);
             cfg.set_alignment_horizontal(Entity::Cell(0, 0), AlignmentHorizontal::Center);
         })
         .build(),
@@ -158,7 +158,7 @@ test_table!(
     grid(2, 2)
         .change_cell((0, 0), "0-0\n0-1")
         .config(|cfg|{
-            cfg.set_span((0, 0), 2);
+            cfg.set_column_span((0, 0), 2);
             cfg.set_alignment_horizontal(Entity::Cell(0, 0), AlignmentHorizontal::Center);
         })
         .build(),
@@ -180,8 +180,8 @@ test_table!(
             ["full last line", "", ""],
         ])
         .config(|cfg|{
-            cfg.set_span((0, 0), 2);
-            cfg.set_span((3, 0), 3);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((3, 0), 3);
         })
         .build(),
     "+-----+----+----+"
@@ -199,7 +199,7 @@ test_table!(
     render_row_span_with_horizontal_ident,
     grid(3, 2)
         .config(|cfg| {
-            cfg.set_span((0, 0), 2);
+            cfg.set_column_span((0, 0), 2);
             cfg.set_padding(
                 Entity::Cell(1, 0),
                 Padding::new(
@@ -224,9 +224,9 @@ test_table!(
     render_row_span_3x3_with_horizontal_ident,
     grid(3, 3)
         .config(|cfg| {
-            cfg.set_span((0, 0), 3);
-            cfg.set_span((1, 0), 2);
-            cfg.set_span((2, 0), 2);
+            cfg.set_column_span((0, 0), 3);
+            cfg.set_column_span((1, 0), 2);
+            cfg.set_column_span((2, 0), 2);
         })
         .build(),
     "+-+-+---+"
@@ -243,8 +243,8 @@ test_table!(
     grid(3, 3)
         .change_cell((0, 0), "0-0xxxxxxx")
         .config(|cfg| {
-            cfg.set_span((0, 0), 2);
-            cfg.set_span((1, 1), 2);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((1, 1), 2);
         })
         .build(),
     "+-----+----+---+"
@@ -261,8 +261,8 @@ test_table!(
     grid(3, 3)
         .change_cell((1, 1), "1-1xxxxxxx")
         .config(|cfg| {
-            cfg.set_span((0, 0), 2);
-            cfg.set_span((1, 1), 2);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((1, 1), 2);
         })
         .build(),
     "+---+-----+----+"
@@ -280,8 +280,8 @@ test_table!(
         .change_cell((1, 1), "1-1xxxxxxx")
         .change_cell((2, 0), "2-0xxxxxxxxxxxxx")
         .config(|cfg| {
-            cfg.set_span((0, 0), 2);
-            cfg.set_span((1, 1), 2);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((1, 1), 2);
         })
         .build(),
     "+----------------+-----+----+"
@@ -298,8 +298,8 @@ test_table!(
     grid(3, 3)
         .change_cell((2, 1), "2-1xxxxxxxxxxxxx")
         .config(|cfg| {
-            cfg.set_span((0, 0), 2);
-            cfg.set_span((1, 1), 2);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((1, 1), 2);
         })
         .build(),
     "+---+----------------+---+"
@@ -316,8 +316,8 @@ test_table!(
     grid(3, 3)
         .change_cell((0, 2), "0-2xxxxxxxxxxxxx")
         .config(|cfg| {
-            cfg.set_span((0, 0), 2);
-            cfg.set_span((1, 1), 2);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((1, 1), 2);
         })
         .build(),
     "+---+---+----------------+"
@@ -333,7 +333,7 @@ test_table!(
     render_spaned_column_in_first_cell_3x3,
     grid(3, 3)
         .change_cell((0, 0), "0-0xxxxxxx")
-        .config(|cfg| cfg.set_span((0, 0), 2))
+        .config(|cfg| cfg.set_column_span((0, 0), 2))
         .build(),
     "+-----+----+---+"
     "|0-0xxxxxxx|0-2|"
@@ -349,8 +349,8 @@ test_table!(
     grid(3, 2)
         .data([["first row", ""], ["0", "1"], ["a longer second row", ""]])
         .config(|cfg| {
-            cfg.set_span((0, 0), 2);
-            cfg.set_span((2, 0), 2);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((2, 0), 2);
         })
         .build(),
     "+---------+---------+"
@@ -366,7 +366,7 @@ test_table!(
     render_row_span_with_odd_length,
     grid(2, 2)
         .data([["3   ", ""], ["2", "4"]])
-        .config(|cfg| cfg.set_span((0, 0), 2))
+        .config(|cfg| cfg.set_column_span((0, 0), 2))
         .build(),
     "+--+-+"
     "|3   |"
@@ -379,9 +379,9 @@ test_table!(
     render_only_row_spaned,
     grid(3, 2)
         .config(|cfg| {
-            cfg.set_span((0, 0), 2);
-            cfg.set_span((1, 0), 2);
-            cfg.set_span((2, 0), 2);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((1, 0), 2);
+            cfg.set_column_span((2, 0), 2);
         })
         .build(),
     "+-+-+"
@@ -397,7 +397,7 @@ test_table!(
     grid_2x2_span_test,
     grid(2, 2)
         .data([["123", ""], ["asd", "asd"]])
-        .config(|cfg| cfg.set_span((0, 0), 2))
+        .config(|cfg| cfg.set_column_span((0, 0), 2))
         .build(),
     "+---+---+"
     "|123    |"
@@ -411,8 +411,8 @@ test_table!(
     grid(2, 2)
         .data([["1234", ""], ["asdw", ""]])
         .config(|cfg| {
-            cfg.set_span((0, 0), 2);
-            cfg.set_span((1, 0), 2);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((1, 0), 2);
         })
         .build(),
     "+--+-+"
@@ -427,8 +427,8 @@ test_table!(
     grid(2, 2)
         .data([["1", ""], ["a", ""]])
         .config(|cfg| {
-            cfg.set_span((0, 0), 2);
-            cfg.set_span((1, 0), 2);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((1, 0), 2);
         })
         .build(),
     "+++"
@@ -443,7 +443,7 @@ test_table!(
     grid(2, 2)
         .config(|cfg| {
             cfg.set_borders(Borders::default());
-            cfg.set_span((0, 0), 2);
+            cfg.set_column_span((0, 0), 2);
             cfg.set_alignment_horizontal(Entity::Cell(0, 0), AlignmentHorizontal::Center);
         })
         .build(),
@@ -454,7 +454,7 @@ test_table!(
 test_table!(
     render_2x3_zero_span_between_cells_0,
     grid(2, 3)
-        .config(|cfg| cfg.set_span((0, 1), 0))
+        .config(|cfg| cfg.set_column_span((0, 1), 0))
         .build(),
     "+---+---+---+"
     "|0-0    |0-2|"
@@ -467,8 +467,8 @@ test_table!(
     render_2x3_zero_span_between_cells_1,
     grid(2, 3)
         .config(|cfg| {
-            cfg.set_span((0, 1), 0);
-            cfg.set_span((1, 1), 0);
+            cfg.set_column_span((0, 1), 0);
+            cfg.set_column_span((1, 1), 0);
         })
         .build(),
     "+-+-+---+"
@@ -482,8 +482,8 @@ test_table!(
     render_2x3_zero_span_at_the_end_0,
     grid(2, 3)
         .config(|cfg| {
-            cfg.set_span((0, 1), 0);
-            cfg.set_span((0, 2), 0);
+            cfg.set_column_span((0, 1), 0);
+            cfg.set_column_span((0, 2), 0);
         })
         .build(),
     "+---+---+---+"
@@ -497,10 +497,10 @@ test_table!(
     render_2x3_zero_span_at_the_end_1,
     grid(2, 3)
         .config(|cfg| {
-            cfg.set_span((0, 1), 0);
-            cfg.set_span((0, 2), 0);
-            cfg.set_span((1, 1), 0);
-            cfg.set_span((1, 2), 0);
+            cfg.set_column_span((0, 1), 0);
+            cfg.set_column_span((0, 2), 0);
+            cfg.set_column_span((1, 1), 0);
+            cfg.set_column_span((1, 2), 0);
         })
         .build(),
     "+-+++"
@@ -516,10 +516,10 @@ test_table!(
     grid(2, 2)
         .data([["123", ""], ["asd", "asd"]])
         .config(|cfg| {
-            cfg.set_span((0, 0), 0);
-            cfg.set_span((0, 1), 0);
-            cfg.set_span((1, 0), 0);
-            cfg.set_span((1, 1), 0);
+            cfg.set_column_span((0, 0), 0);
+            cfg.set_column_span((0, 1), 0);
+            cfg.set_column_span((1, 0), 0);
+            cfg.set_column_span((1, 1), 0);
         })
         .build(),
     "+-+-+"

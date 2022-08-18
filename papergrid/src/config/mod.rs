@@ -33,7 +33,8 @@ pub struct GridConfig {
     alignment_h: EntityMap<AlignmentHorizontal>,
     alignment_v: EntityMap<AlignmentVertical>,
     formatting: EntityMap<Formatting>,
-    spans: HashMap<Position, usize>,
+    span_columns: HashMap<Position, usize>,
+    span_rows: HashMap<Position, usize>,
     borders: BordersConfig<char>,
     borders_missing_char: char,
     override_split_lines: HashMap<usize, String>,
@@ -46,19 +47,44 @@ pub struct GridConfig {
 }
 
 impl GridConfig {
+    /// Set a column span to a given cells.
+    pub fn set_column_span(&mut self, pos: Position, span: usize) {
+        set_cell_column_span(self, pos, span);
+    }
+
     /// Get a span value of the cell, if any is set.
-    pub fn get_column_span(&self, (row, col): Position) -> Option<usize> {
-        self.spans.get(&(row, col)).copied()
+    pub fn get_column_span(&self, pos: Position) -> Option<usize> {
+        self.span_columns.get(&pos).copied()
     }
 
     /// Verifies if there's any spans set.
     pub fn has_column_spans(&self) -> bool {
-        !self.spans.is_empty()
+        !self.span_columns.is_empty()
     }
 
     /// Get a span value of the cell, if any is set.
     pub fn iter_column_spans(&self) -> impl Iterator<Item = (Position, usize)> + '_ {
-        self.spans.iter().map(|(&pos, &span)| (pos, span))
+        self.span_columns.iter().map(|(&pos, &span)| (pos, span))
+    }
+
+    /// Set a column span to a given cells.
+    pub fn set_row_span(&mut self, pos: Position, span: usize) {
+        set_cell_row_span(self, pos, span);
+    }
+
+    /// Get a span value of the cell, if any is set.
+    pub fn get_row_span(&self, pos: Position) -> Option<usize> {
+        self.span_rows.get(&pos).copied()
+    }
+
+    /// Verifies if there's any spans set.
+    pub fn has_row_spans(&self) -> bool {
+        !self.span_rows.is_empty()
+    }
+
+    /// Get a span value of the cell, if any is set.
+    pub fn iter_row_spans(&self) -> impl Iterator<Item = (Position, usize)> + '_ {
+        self.span_rows.iter().map(|(&pos, &span)| (pos, span))
     }
 
     /// Set a [`Margin`] value.
@@ -146,11 +172,6 @@ impl GridConfig {
         self.override_split_lines.get(&row).map(String::as_str)
     }
 
-    /// Set a column span to a given cells.
-    pub fn set_span(&mut self, pos: Position, span: usize) {
-        self.set_cell_span(pos, span);
-    }
-
     /// Set a padding to a given cells.
     pub fn set_padding(&mut self, entity: Entity, padding: Padding) {
         self.padding.set(entity, padding);
@@ -191,32 +212,29 @@ impl GridConfig {
         self.alignment_h.lookup(entity)
     }
 
-    fn set_cell_span(&mut self, (row, mut col): Position, mut span: usize) {
-        // It's a default span so we can do nothing.
-        if span == 1 || (col == 0 && span == 0) {
-            return;
-        }
-
-        if span == 0 && col > 0 {
-            match closest_visible(self, (row, col - 1)) {
-                Some(c) => {
-                    span += 1 + col - c;
-                    col = c;
-                }
-                None => return,
-            }
-        }
-
-        self.spans.insert((row, col), span);
-    }
-
-    /// The function returns whether the cells will be rendered or it will be hidden by a cell with a span.
+    /// The function returns whether the cells will be rendered or it will be hidden because of a span.
     pub fn is_cell_visible(&self, pos: Position) -> bool {
-        let is_cell_overriden = self.is_cell_overriden(pos);
-        !is_cell_overriden
+        !(self.is_cell_covered_by_column_span(pos)
+            || self.is_cell_covered_by_row_span(pos)
+            || self.is_cell_covered_by_both_spans(pos))
     }
 
-    // todo: more to Grid as static methods
+    /// The function checks if a cell is hidden because of a row span.
+    pub fn is_cell_covered_by_row_span(&self, pos: Position) -> bool {
+        is_cell_covered_by_row_span(self, pos)
+    }
+
+    /// The function checks if a cell is hidden because of a column span.
+    pub fn is_cell_covered_by_column_span(&self, pos: Position) -> bool {
+        is_cell_covered_by_column_span(self, pos)
+    }
+
+    /// The function checks if a cell is hidden indirectly because of a row and column span combination.
+    pub fn is_cell_covered_by_both_spans(&self, pos: Position) -> bool {
+        is_cell_covered_by_both_spans(self, pos)
+    }
+
+    // todo: move to Grid as static methods
 
     /// Checks if [`Grid`] would have a vertical border with the current configuration.
     ///
@@ -312,12 +330,6 @@ impl GridConfig {
 
         None
     }
-
-    fn is_cell_overriden(&self, pos: Position) -> bool {
-        self.spans
-            .iter()
-            .any(|(&(row, col), span)| pos.1 > col && pos.1 < col + span && row == pos.0)
-    }
 }
 
 #[cfg(feature = "color")]
@@ -399,7 +411,8 @@ impl Default for GridConfig {
             alignment_v: EntityMap::new(AlignmentVertical::Top),
             borders: BordersConfig::default(),
             borders_missing_char: ' ',
-            spans: HashMap::default(),
+            span_columns: HashMap::default(),
+            span_rows: HashMap::default(),
             override_split_lines: HashMap::default(),
             #[cfg(feature = "color")]
             margin_color: MarginColor::default(),
@@ -425,7 +438,59 @@ pub type MarginColor = Sides<AnsiColor>;
 /// PaddingColor represent a 4 indents of a cell.
 pub type PaddingColor = Sides<AnsiColor>;
 
-fn closest_visible(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
+fn set_cell_row_span(cfg: &mut GridConfig, (mut row, col): Position, mut span: usize) {
+    // It's a default span so we can do nothing.
+    if span == 1 || (row == 0 && span == 0) {
+        return;
+    }
+
+    if span == 0 && row > 0 {
+        match closest_visible_row(cfg, (row - 1, col)) {
+            Some(c) => {
+                span += 1 + row - c;
+                row = c;
+            }
+            None => return,
+        }
+    }
+
+    cfg.span_rows.insert((row, col), span);
+}
+
+fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
+    loop {
+        if cfg.is_cell_visible(pos) {
+            return Some(pos.0);
+        }
+
+        if pos.0 == 0 {
+            return None;
+        }
+
+        pos.0 -= 1;
+    }
+}
+
+fn set_cell_column_span(cfg: &mut GridConfig, (row, mut col): Position, mut span: usize) {
+    // It's a default span so we can do nothing.
+    if span == 1 || (col == 0 && span == 0) {
+        return;
+    }
+
+    if span == 0 && col > 0 {
+        match closest_visible_column(cfg, (row, col - 1)) {
+            Some(c) => {
+                span += 1 + col - c;
+                col = c;
+            }
+            None => return,
+        }
+    }
+
+    cfg.span_columns.insert((row, col), span);
+}
+
+fn closest_visible_column(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
     loop {
         if cfg.is_cell_visible(pos) {
             return Some(pos.1);
@@ -437,4 +502,27 @@ fn closest_visible(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
 
         pos.1 -= 1;
     }
+}
+
+fn is_cell_covered_by_column_span(cfg: &GridConfig, pos: Position) -> bool {
+    cfg.span_columns
+        .iter()
+        .any(|(&(row, col), span)| pos.1 > col && pos.1 < col + span && row == pos.0)
+}
+
+fn is_cell_covered_by_row_span(cfg: &GridConfig, pos: Position) -> bool {
+    cfg.span_rows
+        .iter()
+        .any(|(&(row, col), span)| pos.0 > row && pos.0 < row + span && col == pos.1)
+}
+
+fn is_cell_covered_by_both_spans(grid: &GridConfig, pos: Position) -> bool {
+    grid.span_rows.iter().any(|(p1, row_span)| {
+        grid.span_columns
+            .iter()
+            .filter(|(p2, _)| &p1 == p2)
+            .any(|(_, col_span)| {
+                pos.0 > p1.0 && pos.0 < p1.0 + row_span && pos.1 > p1.1 && pos.1 < p1.1 + col_span
+            })
+    })
 }

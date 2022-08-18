@@ -76,8 +76,8 @@ where
         let spans = table.get_config().iter_column_spans().collect::<Vec<_>>();
         for ((row, col), span) in spans {
             if row >= self.1 {
-                table.get_config_mut().set_span((row, col), 1);
-                table.get_config_mut().set_span((row + 1, col), span);
+                table.get_config_mut().set_column_span((row, col), 1);
+                table.get_config_mut().set_column_span((row + 1, col), span);
             }
         }
 
@@ -85,7 +85,7 @@ where
         let pos = (self.1, 0);
         let text = self.0.as_ref().to_owned();
         table.get_records_mut().set(pos, text, ctrl);
-        table.get_config_mut().set_span(pos, count_cols);
+        table.get_config_mut().set_column_span(pos, count_cols);
     }
 }
 

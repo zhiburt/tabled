@@ -144,20 +144,22 @@ fn indent_from_top(alignment: AlignmentVertical, available: usize, real: usize) 
     }
 }
 
-fn print_cell_line<R, W, H, F>(
+fn print_cell_line<R, W, H>(
     f: &mut fmt::Formatter<'_>,
     grid: &Grid<'_, R, W, H>,
     pos: Position,
     line: usize,
-    height: usize,
-    width_ctrl: F,
 ) -> fmt::Result
 where
     R: Records,
     W: Estimate<R>,
-    F: WidthFunc,
+    H: Estimate<R>,
 {
     let width = grid_cell_width(grid, pos);
+    let height = grid_cell_height(grid, pos);
+
+    let width_ctrl = CfgWidthFunction::from_cfg(grid.config);
+
     let mut cell_height = grid.records.count_lines(pos);
     let formatting = *grid.config.get_formatting(pos.into());
     if formatting.vertical_trim {
@@ -381,7 +383,6 @@ where
     H: Estimate<R>,
     R: Records,
 {
-    let width_ctrl = CfgWidthFunction::from_cfg(grid.config);
     let total_width = grid.total_width();
 
     if grid.config.get_margin().top.size > 0 {
@@ -389,26 +390,57 @@ where
         f.write_char('\n')?;
     }
 
-    #[allow(clippy::needless_range_loop)]
+    let mut prev_empty_horizontal = false;
     for row in 0..grid.count_rows() {
+        let height = grid.height.get(row).unwrap();
+
         if grid.has_horizontal(row) {
+            if prev_empty_horizontal {
+                '\n'.fmt(f)?;
+            }
+
             print_margin_left(grid, f)?;
             print_split_line(grid, total_width, row, f)?;
             print_margin_right(grid, f)?;
-            f.write_char('\n')?;
+
+            if height > 0 {
+                '\n'.fmt(f)?;
+                prev_empty_horizontal = false;
+            } else {
+                prev_empty_horizontal = true;
+            }
+        } else if height > 0 && prev_empty_horizontal {
+            '\n'.fmt(f)?;
+            prev_empty_horizontal = false;
         }
-
-        let height = grid.height.get(row).unwrap();
-
-        let is_last_row = row + 1 == grid.count_rows();
 
         for i in 0..height {
             print_margin_left(grid, f)?;
 
             for col in 0..grid.count_columns() {
-                if grid.config.is_cell_visible((row, col)) {
-                    print_vertical_char(grid, (row, col), f)?;
-                    print_cell_line(f, grid, (row, col), i, height, &width_ctrl)?;
+                if !grid.config.is_cell_covered_by_both_spans((row, col)) {
+                    if grid.config.is_cell_covered_by_row_span((row, col)) {
+                        print_vertical_char(grid, (row, col), f)?;
+
+                        // means it's part of other a spanned cell
+                        // so. we just need to use line from other cell.
+                        let original_row = closest_visible_row(grid.config, (row, col)).unwrap();
+
+                        // considering that the content will be printed instead horizontal lines so we can skip some lines.
+                        let mut skip_lines = (original_row..row)
+                            .map(|i| grid.height.get(i).unwrap())
+                            .sum::<usize>();
+
+                        skip_lines += (original_row..row)
+                            .map(|row| grid.has_horizontal(row) as usize)
+                            .sum::<usize>();
+
+                        let line = i + skip_lines;
+                        print_cell_line(f, grid, (original_row, col), line)?;
+                    } else if !grid.config.is_cell_covered_by_column_span((row, col)) {
+                        print_vertical_char(grid, (row, col), f)?;
+                        print_cell_line(f, grid, (row, col), i)?;
+                    }
                 }
 
                 let is_last_column = col + 1 == grid.count_columns();
@@ -420,8 +452,9 @@ where
             print_margin_right(grid, f)?;
 
             let is_last_line = i + 1 == height;
+            let is_last_row = row + 1 == grid.count_rows();
             if !(is_last_line && is_last_row) {
-                f.write_char('\n')?;
+                '\n'.fmt(f)?;
             }
         }
     }
@@ -555,8 +588,7 @@ where
     R: Records,
     W: Estimate<R>,
 {
-    let span = grid.config.get_column_span(pos);
-    match span {
+    match grid.config.get_column_span(pos) {
         Some(span) => range_width(grid, pos.1, pos.1 + span),
         None => grid.width.get(pos.1).unwrap(),
     }
@@ -587,6 +619,43 @@ fn count_borders_in_range(
         .count()
 }
 
+fn grid_cell_height<R, W, H>(grid: &Grid<'_, R, W, H>, pos: Position) -> usize
+where
+    R: Records,
+    H: Estimate<R>,
+{
+    match grid.config.get_row_span(pos) {
+        Some(span) => range_height(grid, pos.0, pos.0 + span),
+        None => grid.height.get(pos.0).unwrap(),
+    }
+}
+
+fn range_height<R, W, H>(grid: &Grid<'_, R, W, H>, start: usize, end: usize) -> usize
+where
+    R: Records,
+    H: Estimate<R>,
+{
+    let count_borders =
+        count_horizontal_borders_in_range(grid.config, start, end, grid.records.count_rows());
+    let range_width = (start..end)
+        .map(|col| grid.height.get(col).unwrap())
+        .sum::<usize>();
+
+    count_borders + range_width
+}
+
+fn count_horizontal_borders_in_range(
+    cfg: &GridConfig,
+    start: usize,
+    end: usize,
+    count_rows: usize,
+) -> usize {
+    (start..end)
+        .skip(1)
+        .filter(|&i| cfg.has_horizontal(i, count_rows))
+        .count()
+}
+
 fn print_split_line<R, W, H>(
     grid: &Grid<'_, R, W, H>,
     total_width: usize,
@@ -595,8 +664,10 @@ fn print_split_line<R, W, H>(
 ) -> fmt::Result
 where
     W: Estimate<R>,
+    H: Estimate<R>,
     R: Records,
 {
+    // fixme: an override text may break row span.
     let mut char_skip = 0;
     let override_text = grid.config.get_split_line_text(row);
     if let Some(text) = override_text {
@@ -638,17 +709,54 @@ where
             char_skip -= sub;
         }
 
-        let main = grid.get_horizontal((row, col));
-        match main {
-            Some(c) => {
-                #[cfg(feature = "color")]
-                {
-                    prepare_coloring(f, grid.get_horizontal_color((row, col)), &mut used_color)?;
-                }
+        if grid.config.is_cell_covered_by_both_spans((row, col)) {
+            continue;
+        }
 
-                repeat_char(f, *c, width)?;
+        let mut col = col;
+        if grid.config.is_cell_covered_by_row_span((row, col)) {
+            // means it's part of other a spanned cell
+            // so. we just need to use line from other cell.
+
+            let original_row = closest_visible_row(grid.config, (row, col)).unwrap();
+
+            // considering that the content will be printed instead horizontal lines so we can skip some lines.
+            let mut skip_lines = (original_row..row)
+                .map(|i| grid.height.get(i).unwrap())
+                .sum::<usize>();
+
+            // skip horizontal lines
+            if row > 0 {
+                skip_lines += (original_row..row - 1)
+                    .map(|row| grid.has_horizontal(row) as usize)
+                    .sum::<usize>();
             }
-            None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+
+            let line = skip_lines;
+            print_cell_line(f, grid, (original_row, col), line)?;
+
+            // We need to use a correct right split char.
+            if let Some(span) = grid.config.get_column_span((original_row, col)) {
+                col += span - 1;
+            }
+        } else {
+            // general case
+            let main = grid.get_horizontal((row, col));
+            match main {
+                Some(c) => {
+                    #[cfg(feature = "color")]
+                    {
+                        prepare_coloring(
+                            f,
+                            grid.get_horizontal_color((row, col)),
+                            &mut used_color,
+                        )?;
+                    }
+
+                    repeat_char(f, *c, width)?;
+                }
+                None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+            }
         }
 
         let right = grid.get_intersection((row, col + 1));
@@ -738,6 +846,20 @@ fn calculate_indent(
             let rest = diff - left;
             (left, rest)
         }
+    }
+}
+
+fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
+    loop {
+        if cfg.is_cell_visible(pos) {
+            return Some(pos.0);
+        }
+
+        if pos.0 == 0 {
+            return None;
+        }
+
+        pos.0 -= 1;
     }
 }
 

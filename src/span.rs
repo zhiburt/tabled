@@ -42,14 +42,23 @@ use crate::{CellOption, Table};
 ///
 /// [`Table`]: crate::Table
 #[derive(Debug)]
-pub struct Span {
-    size: usize,
+pub struct Span(SpanType);
+
+#[derive(Debug)]
+enum SpanType {
+    Column(usize),
+    Row(usize),
 }
 
 impl Span {
     /// New constructs a horizontal/column [`Span`].
     pub fn column(size: usize) -> Self {
-        Self { size }
+        Self(SpanType::Column(size))
+    }
+
+    /// New constructs a vertical/row [`Span`].
+    pub fn row(size: usize) -> Self {
+        Self(SpanType::Row(size))
     }
 }
 
@@ -60,7 +69,14 @@ where
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
-            table.get_config_mut().set_span(pos, self.size);
+            match self.0 {
+                SpanType::Column(size) => {
+                    table.get_config_mut().set_column_span(pos, size);
+                }
+                SpanType::Row(size) => {
+                    table.get_config_mut().set_row_span(pos, size);
+                }
+            }
         }
     }
 }

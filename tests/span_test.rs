@@ -1,6 +1,6 @@
 use tabled::{
     object::{Cell, Columns, Segment},
-    Alignment, Modify, Padding, Panel, Span, Style,
+    Alignment, Border, Highlight, Modify, Padding, Panel, Span, Style, Table,
 };
 
 use crate::util::{create_table, init_table, new_table, static_table, test_table};
@@ -570,4 +570,469 @@ fn span_all_table_to_zero_test() {
 
     // todo: determine whether it's correct
     assert_eq!(table, static_table!("\n++\n\n\n"));
+}
+
+mod row {
+    use tabled::object::Rows;
+
+    use super::*;
+
+    #[test]
+    fn span_row_test() {
+        let table = create_table::<3, 3>();
+        {
+            // let table_str = table
+            //     .clone()
+            //     .with(Style::ascii())
+            //     .with(Modify::new(Segment::all()).with(Alignment::left()))
+            //     .with(Modify::new(Rows::single(0)).with(Span::row(2)))
+            //     .to_string();
+
+            // assert_eq!(
+            //     table_str,
+            //     static_table!(
+            //         "+---+----------+----------+----------+"
+            //         "+ N + column 0 + column 1 + column 2 +"
+            //         "+---+----------+----------+----------+"
+            //         "| 1 | 1-0      | 1-1      | 1-2      |"
+            //         "+---+----------+----------+----------+"
+            //         "| 2 | 2-0      | 2-1      | 2-2      |"
+            //         "+---+----------+----------+----------+"
+            //     )
+            // );
+
+            let table = table
+                .clone()
+                .with(Style::psql())
+                .with(Modify::new(Segment::all()).with(Alignment::left()))
+                .with(Modify::new(Rows::single(0)).with(Span::row(2)))
+                .to_string();
+
+            assert_eq!(
+                table,
+                static_table!(
+                    " N + column 0 + column 1 + column 2 "
+                    " 1 | 1-0      | 1-1      | 1-2      "
+                    " 2 | 2-0      | 2-1      | 2-2      "
+                )
+            );
+        }
+        {
+            let table = table
+                .clone()
+                .with(Style::psql())
+                .with(Modify::new(Segment::all()).with(Alignment::left()))
+                .with(Modify::new(Rows::new(1..2)).with(Span::row(2)))
+                .to_string();
+
+            assert_eq!(
+                table,
+                static_table!(
+                    " N | column 0 | column 1 | column 2 "
+                    "---+----------+----------+----------"
+                    " 0 | 0-0      | 0-1      | 0-2      "
+                    " 2 | 2-0      | 2-1      | 2-2      "
+                )
+            );
+        }
+        {
+            let table = table
+                .clone()
+                .with(Style::psql())
+                .with(Modify::new(Segment::all()).with(Alignment::left()))
+                .with(Modify::new(Rows::single(0)).with(Span::row(4)))
+                .to_string();
+
+            assert_eq!(table, " N + column 0 + column 1 + column 2 ");
+        }
+    }
+
+    #[test]
+    fn cell_span_test() {
+        let table = create_table::<3, 3>();
+        {
+            // first column cells row span = 2
+
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Segment::all()).with(Alignment::left()))
+                    .with(Modify::new(Cell(0, 0)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "   +----------+----------+----------"
+                        "   | 0-0      | 0-1      | 0-2      "
+                        " 1 | 1-0      | 1-1      | 1-2      "
+                        " 2 | 2-0      | 2-1      | 2-2      "
+                    )
+                );
+            }
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Segment::all()).with(Alignment::left()))
+                    .with(Modify::new(Cell(1, 0)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+----------+----------+----------"
+                        " 0 | 0-0      | 0-1      | 0-2      "
+                        "   | 1-0      | 1-1      | 1-2      "
+                        " 2 | 2-0      | 2-1      | 2-2      "
+                    )
+                );
+            }
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Cell(2, 0)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+----------+----------+----------"
+                        " 0 |   0-0    |   0-1    |   0-2    "
+                        " 1 |   1-0    |   1-1    |   1-2    "
+                        "   |   2-0    |   2-1    |   2-2    "
+                    )
+                );
+            }
+        }
+
+        {
+            // first row cells row span = 2
+
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Segment::all()).with(Alignment::left()))
+                    .with(Modify::new(Cell(0, 1)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+          +----------+----------"
+                        " 0 |          | 0-1      | 0-2      "
+                        " 1 | 1-0      | 1-1      | 1-2      "
+                        " 2 | 2-0      | 2-1      | 2-2      "
+                    )
+                );
+            }
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Segment::all()).with(Alignment::left()))
+                    .with(Modify::new(Cell(0, 2)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+----------+          +----------"
+                        " 0 | 0-0      |          | 0-2      "
+                        " 1 | 1-0      | 1-1      | 1-2      "
+                        " 2 | 2-0      | 2-1      | 2-2      "
+                    )
+                );
+            }
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Cell(0, 3)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+----------+----------+          "
+                        " 0 |   0-0    |   0-1    |          "
+                        " 1 |   1-0    |   1-1    |   1-2    "
+                        " 2 |   2-0    |   2-1    |   2-2    "
+                    )
+                );
+            }
+        }
+
+        {
+            // second column span=2
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Segment::all()).with(Alignment::left()))
+                    .with(Modify::new(Cell(1, 1)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+----------+----------+----------"
+                        " 0 | 0-0      | 0-1      | 0-2      "
+                        " 1 |          | 1-1      | 1-2      "
+                        " 2 | 2-0      | 2-1      | 2-2      "
+                    )
+                );
+            }
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Segment::all()).with(Alignment::left()))
+                    .with(Modify::new(Cell(2, 1)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+----------+----------+----------"
+                        " 0 | 0-0      | 0-1      | 0-2      "
+                        " 1 | 1-0      | 1-1      | 1-2      "
+                        " 2 |          | 2-1      | 2-2      "
+                    )
+                );
+            }
+        }
+        {
+            // 3rd column span=2
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Segment::all()).with(Alignment::left()))
+                    .with(Modify::new(Cell(1, 2)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+----------+----------+----------"
+                        " 0 | 0-0      | 0-1      | 0-2      "
+                        " 1 | 1-0      |          | 1-2      "
+                        " 2 | 2-0      | 2-1      | 2-2      "
+                    )
+                );
+            }
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Segment::all()).with(Alignment::left()))
+                    .with(Modify::new(Cell(2, 2)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+----------+----------+----------"
+                        " 0 | 0-0      | 0-1      | 0-2      "
+                        " 1 | 1-0      | 1-1      | 1-2      "
+                        " 2 | 2-0      |          | 2-2      "
+                    )
+                );
+            }
+        }
+        {
+            // 4th column span=2
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Segment::all()).with(Alignment::left()))
+                    .with(Modify::new(Cell(1, 3)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+----------+----------+----------"
+                        " 0 | 0-0      | 0-1      | 0-2      "
+                        " 1 | 1-0      | 1-1      |          "
+                        " 2 | 2-0      | 2-1      | 2-2      "
+                    )
+                );
+            }
+            {
+                let table = table
+                    .clone()
+                    .with(Style::psql())
+                    .with(Modify::new(Segment::all()).with(Alignment::left()))
+                    .with(Modify::new(Cell(2, 3)).with(Span::row(2)))
+                    .to_string();
+
+                assert_eq!(
+                    table,
+                    static_table!(
+                        " N | column 0 | column 1 | column 2 "
+                        "---+----------+----------+----------"
+                        " 0 | 0-0      | 0-1      | 0-2      "
+                        " 1 | 1-0      | 1-1      | 1-2      "
+                        " 2 | 2-0      | 2-1      |          "
+                    )
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn span_with_panel_with_correction_test() {
+        let data = [[1, 2, 3]];
+        let table = Table::new(data)
+            .with(Modify::new(Cell(0, 0)).with(Span::row(2)))
+            .with(Style::ascii())
+            .with(Style::correct_spans())
+            .to_string();
+
+        assert_eq!(
+            table,
+            static_table!(
+                "+---+---+---+"
+                "| 0 | 1 | 2 |"
+                "+   +---+---+"
+                "|   | 2 | 3 |"
+                "+---+---+---+"
+            )
+        );
+
+        let data = [[1, 2, 3], [4, 5, 6]];
+        let table = Table::new(data)
+            .with(Modify::new(Cell(1, 0)).with(Span::row(2)))
+            .with(Modify::new(Cell(0, 2)).with(Span::row(3)))
+            .with(Style::ascii())
+            .with(Style::correct_spans())
+            .to_string();
+
+        println!("{table}");
+
+        assert_eq!(
+            table,
+            static_table!(
+                "+---+---+---+"
+                "| 0 | 1 | 2 |"
+                "+---+---+   +"
+                "| 1 | 2 |   |"
+                "+   +---+   +"
+                "|   | 5 |   |"
+                "+---+---+---+"
+            )
+        );
+
+        let data = [[1, 2, 3], [4, 5, 6]];
+        let table = Table::new(data)
+            .with(Modify::new(Cell(1, 0)).with(Span::row(2)))
+            .with(Modify::new(Cell(0, 2)).with(Span::row(3)))
+            .with(Modify::new(Cell(0, 1)).with(Span::row(2)))
+            .with(Style::ascii())
+            .with(Style::correct_spans())
+            .to_string();
+
+        println!("{table}");
+
+        assert_eq!(
+            table,
+            static_table!(
+                "+---+---+---+"
+                "| 0 | 1 | 2 |"
+                "+---+   +   +"
+                "+ 1 +---+   +"
+                "|   | 5 |   |"
+                "+---+---+---+"
+            )
+        );
+    }
+
+    #[test]
+    fn highlight_row_span_test() {
+        let data = [
+            ["1", "2\n2\n2\n2\n2\n2\n2\n2", "3"],
+            ["4", "5", "6"],
+            ["7", "8", "9"],
+        ];
+        let table = Table::new(data)
+            .with(Modify::new(Cell(1, 1)).with(Span::row(3)))
+            .with(Style::modern())
+            .with(Highlight::new(Columns::single(1), Border::filled('*')))
+            .to_string();
+
+        println!("{table}");
+
+        assert_eq!(
+            table,
+            static_table!(
+                "┌───*****───┐"
+                "│ 0 * 1 * 2 │"
+                "├───*───*───┤"
+                "│ 1 * 2 * 3 │"
+                "│   * 2 *   │"
+                "├───* 2 *───┤"
+                "│ 4 * 2 * 6 │"
+                "│   * 2 *   │"
+                "├───* 2 *───┤"
+                "│ 7 * 2 * 9 │"
+                "│   * 2 *   │"
+                "└───*****───┘"
+            )
+        );
+    }
+}
+
+#[test]
+fn highlight_row_col_span_test() {
+    let data = [
+        ["1", "2\n2\n2\n2\n2\n2\n2\n2", "3", "0"],
+        ["4", "5", "6", "0"],
+        ["7", "8", "9", "0"],
+    ];
+    let table = Table::new(data)
+        .with(
+            Modify::new(Cell(1, 1))
+                .with(Span::row(3))
+                .with(Span::column(2)),
+        )
+        .with(Style::modern())
+        .with(Highlight::new(Columns::new(1..3), Border::filled('*')))
+        .to_string();
+
+    println!("{table}");
+
+    assert_eq!(
+        table,
+        static_table!(
+            "┌───*********───┐"
+            "│ 0 * 1 │ 2 * 3 │"
+            "├───*───┼───*───┤"
+            "│ 1 * 2     * 0 │"
+            "│   * 2     *   │"
+            "├───* 2     *───┤"
+            "│ 4 * 2     * 0 │"
+            "│   * 2     *   │"
+            "├───* 2     *───┤"
+            "│ 7 * 2     * 0 │"
+            "│   * 2     *   │"
+            "└───*********───┘"
+        )
+    );
 }
