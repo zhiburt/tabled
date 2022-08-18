@@ -9,7 +9,7 @@ use std::{
 use crate::{
     estimation::Estimate,
     records::Records,
-    util::{cut_str, string_trim, string_width},
+    util::{get_lines, spplit_str_at, string_trim},
     width::{CfgWidthFunction, WidthFunc},
     AlignmentHorizontal, AlignmentVertical, Formatting, GridConfig, Indent, Padding, Position,
 };
@@ -74,10 +74,8 @@ where
     // if cfg.has_column_spans() || cfg.has_row_spans() {
     // }
 
-    // todo: make it lazy?
-    let total_width = total_width(cfg, records, width);
-
     if cfg.get_margin().top.size > 0 {
+        let total_width = total_width(cfg, records, width);
         print_margin_top(f, cfg, total_width)?;
         f.write_char('\n')?;
     }
@@ -92,7 +90,7 @@ where
             }
 
             print_margin_left(f, cfg)?;
-            print_split_line(f, cfg, records, width, height, total_width, row)?;
+            print_split_line(f, cfg, records, width, height, row)?;
             print_margin_right(f, cfg)?;
 
             if count_lines > 0 {
@@ -154,20 +152,13 @@ where
     if has_horizontal(cfg, records, records.count_rows()) {
         f.write_char('\n')?;
         print_margin_left(f, cfg)?;
-        print_split_line(
-            f,
-            cfg,
-            records,
-            width,
-            height,
-            total_width,
-            records.count_rows(),
-        )?;
+        print_split_line(f, cfg, records, width, height, records.count_rows())?;
         print_margin_right(f, cfg)?;
     }
 
     if cfg.get_margin().bottom.size > 0 {
         f.write_char('\n')?;
+        let total_width = total_width(cfg, records, width);
         print_margin_bottom(f, cfg, total_width)?;
     }
 
@@ -375,7 +366,6 @@ fn print_split_line<R, W, H>(
     records: &R,
     width_ctrl: &W,
     height_ctrl: &H,
-    total_width: usize,
     row: usize,
 ) -> fmt::Result
 where
@@ -383,19 +373,11 @@ where
     H: Estimate<R>,
     R: Records,
 {
-    // fixme: an override text may break row span.
-    // todo: do it per column in which case we don't need total_width
-    //       `color`ed version may would get slower because of get() calls but it's OK
-    let mut char_skip = 0;
-    let override_text = cfg.get_split_line_text(row);
-    if let Some(text) = override_text {
-        if !text.is_empty() {
-            let text = cut_str(text, total_width);
-            let line = text.lines().next().unwrap();
-            char_skip = string_width(line);
-            f.write_str(line)?;
-        }
-    }
+    let mut override_text = cfg
+        .get_split_line_text(row)
+        .and_then(|text| get_lines(text).next())
+        .map(|text| text.into_owned())
+        .unwrap_or_default();
 
     #[cfg(feature = "color")]
     let mut used_color = None;
@@ -405,34 +387,42 @@ where
             let left =
                 cfg.get_intersection((row, col), (records.count_rows(), records.count_columns()));
             if let Some(c) = left {
-                if char_skip == 0 {
+                if !override_text.is_empty() {
+                    let (c, rest) = spplit_str_at(&override_text, 1);
+                    c.fmt(f)?;
+                    override_text = rest.into_owned();
+                } else {
                     #[cfg(feature = "color")]
                     {
-                        if let Some(clr) = cfg.get_intersection_color(
+                        let clr = cfg.get_intersection_color(
                             (row, col),
                             (records.count_rows(), records.count_columns()),
-                        ) {
+                        );
+                        if let Some(clr) = clr {
                             clr.fmt_prefix(f)?;
                             used_color = Some(clr);
                         }
                     }
 
                     c.fmt(f)?;
-                } else {
-                    char_skip -= 1;
                 }
             }
         }
 
         let mut width = width_ctrl.get(col).unwrap();
-        if char_skip > 0 {
-            let sub = cmp::min(width, char_skip);
-            width -= sub;
-            char_skip -= sub;
-        }
-
         if cfg.is_cell_covered_by_both_spans((row, col)) {
             continue;
+        }
+
+        if !override_text.is_empty() {
+            let width_ctrl = CfgWidthFunction::from_cfg(cfg);
+            let text_width = width_ctrl.width(&override_text);
+            let print_width = cmp::min(text_width, width);
+            let (c, rest) = spplit_str_at(&override_text, print_width);
+            c.fmt(f)?;
+            override_text = rest.into_owned();
+
+            width -= print_width;
         }
 
         let mut col = col;
@@ -491,7 +481,11 @@ where
 
         let right = get_intersection(cfg, records, (row, col + 1));
         if let Some(c) = right {
-            if char_skip == 0 {
+            if !override_text.is_empty() {
+                let (c, rest) = spplit_str_at(&override_text, 1);
+                c.fmt(f)?;
+                override_text = rest.into_owned();
+            } else {
                 #[cfg(feature = "color")]
                 {
                     prepare_coloring(
@@ -502,8 +496,6 @@ where
                 }
 
                 c.fmt(f)?;
-            } else {
-                char_skip -= 1;
             }
         }
     }

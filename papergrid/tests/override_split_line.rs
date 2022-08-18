@@ -1,6 +1,6 @@
 mod util;
 
-use util::{grid, test_table};
+use util::{grid, test_table, DEFAULT_BORDERS};
 
 test_table!(
     override_top_test_0,
@@ -120,4 +120,33 @@ test_table!(
     "+---+---+"
     "|1-0|1-1|"
     "Table LON"
+);
+
+test_table!(
+    line_is_not_showed_if_there_no_border_line_0,
+    grid(2, 2).config(|cfg| {
+        let mut borders = DEFAULT_BORDERS;
+        borders.bottom = None;
+        borders.bottom_intersection = None;
+        borders.bottom_left = None;
+        borders.bottom_right = None;
+        cfg.set_borders(borders);
+        cfg.override_split_line(2, "Table LONGER THEN LINE");
+    }).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+);
+
+test_table!(
+    string_which_starts_from_emojie,
+    grid(2, 2).config(|cfg| {
+        cfg.override_split_line(2, "🇻🇬🇻🇬🇻🇬🇻🇬🇻🇬🇻🇬🇻🇬");
+    }).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "🇻🇬🇻🇬🇻🇬🇻🇬🇻"
 );

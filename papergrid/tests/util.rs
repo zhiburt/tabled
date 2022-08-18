@@ -125,7 +125,7 @@ macro_rules! test_table {
 
 pub(crate) use test_table;
 
-const DEFAULT_BORDERS: Borders = Borders {
+pub const DEFAULT_BORDERS: Borders = Borders {
     top: Some('-'),
     top_left: Some('+'),
     top_right: Some('+'),
