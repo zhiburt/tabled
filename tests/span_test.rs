@@ -911,7 +911,7 @@ mod row {
             static_table!(
                 "+---+---+---+"
                 "| 0 | 1 | 2 |"
-                "+   +---+---+"
+                "|   +---+---+"
                 "|   | 2 | 3 |"
                 "+---+---+---+"
             )
@@ -925,16 +925,14 @@ mod row {
             .with(Style::correct_spans())
             .to_string();
 
-        println!("{table}");
-
         assert_eq!(
             table,
             static_table!(
                 "+---+---+---+"
                 "| 0 | 1 | 2 |"
-                "+---+---+   +"
+                "+---+---+   |"
                 "| 1 | 2 |   |"
-                "+   +---+   +"
+                "|   +---+   |"
                 "|   | 5 |   |"
                 "+---+---+---+"
             )
@@ -949,19 +947,82 @@ mod row {
             .with(Style::correct_spans())
             .to_string();
 
-        println!("{table}");
-
         assert_eq!(
             table,
             static_table!(
                 "+---+---+---+"
                 "| 0 | 1 | 2 |"
-                "+---+   +   +"
-                "+ 1 +---+   +"
+                "+---+   |   |"
+                "| 1 +---+   |"
                 "|   | 5 |   |"
                 "+---+---+---+"
             )
         );
+
+        let data = [[1, 2, 3], [4, 5, 6]];
+        let table = Table::new(data)
+            .with(Modify::new(Cell(1, 0)).with(Span::row(2)))
+            .with(
+                Modify::new(Cell(0, 1))
+                    .with(Span::row(2))
+                    .with(Span::column(2)),
+            )
+            .with(Style::ascii())
+            .with(Style::correct_spans())
+            .to_string();
+
+        assert_eq!(
+            table,
+            static_table!(
+                "+---+-------+"
+                "| 0 | 1     |"
+                "+---+       +"
+                "| 1 +---+---+"
+                "|   | 5 | 6 |"
+                "+---+---+---+"
+            )
+        );
+    }
+
+    #[test]
+    fn span_example_test() {
+        let data = [["just 1 column"; 5]; 5];
+
+        let h_span = |r, c, span| Modify::new(Cell(r, c)).with(Span::column(span));
+        let v_span = |r, c, span| Modify::new(Cell(r, c)).with(Span::row(span));
+
+        let table = Table::new(data)
+            .with(h_span(0, 0, 5).with(String::from("span all 5 columns")))
+            .with(h_span(1, 0, 4).with(String::from("span 4 columns")))
+            .with(h_span(2, 0, 2).with(String::from("span 2 columns")))
+            .with(v_span(2, 4, 4).with(String::from("just 1 column\nspan\n4\ncolumns")))
+            .with(v_span(3, 1, 2).with(String::from("span 2 columns\nspan\n2\ncolumns")))
+            .with(v_span(2, 3, 3).with(String::from("just 1 column\nspan\n3\ncolumns")))
+            .with(h_span(3, 1, 2))
+            .with(Style::modern())
+            .with(Style::correct_spans())
+            .with(Modify::new(Segment::all()).with(Alignment::center_vertical()))
+            .to_string();
+
+        assert_eq!(
+            table,
+            static_table!(
+                "┌───────────────────────────────────────────────────────────────────────────────┐"
+                "│ span all 5 columns                                                            │"
+                "├───────────────────────────────────────────────────────────────┬───────────────┤"
+                "│ span 4 columns                                                │ just 1 column │"
+                "├───────────────────────────────┬───────────────┬───────────────┼───────────────┤"
+                "│ span 2 columns                │ just 1 column │               │               │"
+                "├───────────────┬───────────────┴───────────────┤ just 1 column │               │"
+                "│ just 1 column │ span 2 columns                │ span          │ just 1 column │"
+                "│               │ span                          │ 3             │ span          │"
+                "├───────────────┤ 2                             │ columns       │ 4             │"
+                "│ just 1 column │ columns                       │               │ columns       │"
+                "├───────────────┼───────────────┬───────────────┼───────────────┤               │"
+                "│ just 1 column │ just 1 column │ just 1 column │ just 1 column │               │"
+                "└───────────────┴───────────────┴───────────────┴───────────────┴───────────────┘"
+            )
+        )
     }
 
     #[test]
@@ -976,8 +1037,6 @@ mod row {
             .with(Style::modern())
             .with(Highlight::new(Columns::single(1), Border::filled('*')))
             .to_string();
-
-        println!("{table}");
 
         assert_eq!(
             table,
@@ -1015,8 +1074,6 @@ fn highlight_row_col_span_test() {
         .with(Style::modern())
         .with(Highlight::new(Columns::new(1..3), Border::filled('*')))
         .to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,
