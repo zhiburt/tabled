@@ -806,11 +806,11 @@ fn total_width_big() {
     assert_eq!(
         table,
         static_table!(
-            "| N            | column 0            | column 1           | column 2           |"
+            "|      N       |      column 0       |      column 1      |      column 2      |"
             "|--------------|---------------------|--------------------|--------------------|"
-            "| 0            | 0-0                 | 0-1                | 0-2                |"
-            "| 1            | 1-0                 | 1-1                | 1-2                |"
-            "| 2            | 2-0                 | 2-1                | 2-2                |"
+            "|      0       |         0-0         |        0-1         |        0-2         |"
+            "|      1       |         1-0         |        1-1         |        1-2         |"
+            "|      2       |         2-0         |        2-1         |        2-2         |"
         )
     );
 
@@ -825,11 +825,11 @@ fn total_width_big() {
     assert_eq!(
         table,
         static_table!(
-            "| N            | column 0            | column 1           | column 2           |"
+            "|      N       |      column 0       |      column 1      |      column 2      |"
             "|--------------|---------------------|--------------------|--------------------|"
-            "| 0            | 0-0                 | 0-1                | 0-2                |"
-            "| 1            | 1-0                 | 1-1                | 1-2                |"
-            "| 2            | 2-0                 | 2-1                | 2-2                |"
+            "|      0       |         0-0         |        0-1         |        0-2         |"
+            "|      1       |         1-0         |        1-1         |        1-2         |"
+            "|      2       |         2-0         |        2-1         |        2-2         |"
         )
     );
 }
@@ -852,12 +852,12 @@ fn total_width_big_with_panel() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World                                                                   |"
+            "|                                 Hello World                                  |"
             "|--------------|---------------------|--------------------|--------------------|"
-            "|N             |column 0             |column 1            |column 2            |"
-            "|0             |0-0                  |0-1                 |0-2                 |"
-            "|1             |1-0                  |1-1                 |1-2                 |"
-            "|2             |2-0                  |2-1                 |2-2                 |"
+            "|      N       |      column 0       |      column 1      |      column 2      |"
+            "|      0       |         0-0         |        0-1         |        0-2         |"
+            "|      1       |         1-0         |        1-1         |        1-2         |"
+            "|      2       |         2-0         |        2-1         |        2-2         |"
         )
     );
 }
@@ -1290,23 +1290,26 @@ fn min_width_works_with_right_alignment() {
         );
 
     assert_eq!(
+        papergrid::util::string_width_multiline(&table.to_string()),
+        50
+    );
+    assert_eq!(
         table.to_string(),
         static_table!(
-            "| &str                                           |"
+            "|                                           &str |"
             "|------------------------------------------------|"
             "|                                                |"
-            "|     {                                          |"
-            "|         \"some\": \"random\",                      |"
-            "|         \"json\": [                              |"
-            "|             { \"1\": \"2\" },                      |"
-            "|             { \"1\": \"2\" },                      |"
-            "|             { \"1\": \"2\" }                       |"
-            "|         ]                                      |"
-            "|     }                                          |"
+            "|                          {                     |"
+            "|                              \"some\": \"random\", |"
+            "|                              \"json\": [         |"
+            "|                                  { \"1\": \"2\" }, |"
+            "|                                  { \"1\": \"2\" }, |"
+            "|                                  { \"1\": \"2\" }  |"
+            "|                              ]                 |"
+            "|                          }                     |"
             "|                                                |"
         )
     );
-    assert!(is_lines_equal(&table.to_string(), 50));
 
     let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
 
@@ -1362,17 +1365,17 @@ fn min_width_works_with_right_alignment() {
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| &str                                           |"
+            "|                      &str                      |"
             "|------------------------------------------------|"
             "|                                                |"
-            "|     {                                          |"
-            "|         \"some\": \"random\",                      |"
-            "|         \"json\": [                              |"
-            "|             { \"1\": \"2\" },                      |"
-            "|             { \"1\": \"2\" },                      |"
-            "|             { \"1\": \"2\" }                       |"
-            "|         ]                                      |"
-            "|     }                                          |"
+            "|               {                                |"
+            "|                   \"some\": \"random\",            |"
+            "|                   \"json\": [                    |"
+            "|                       { \"1\": \"2\" },            |"
+            "|                       { \"1\": \"2\" },            |"
+            "|                       { \"1\": \"2\" }             |"
+            "|                   ]                            |"
+            "|               }                                |"
             "|                                                |"
         )
     );
@@ -1435,14 +1438,15 @@ fn min_width_with_span_1() {
         .with(MinWidth::new(100))
         .to_string();
 
+    assert_eq!(papergrid::util::string_width_multiline(&table), 100);
     assert_eq!(
         table,
         static_table!(
-            "| 0                                                                      | 1                       |"
+            "|                                   0                                    |            1            |"
             "|------------------------------------------------------------------------|-------------------------|"
-            "| 0                                                                                                |"
-            "| a long string which will affect min width logic                        |                         |"
-            "| 2                                                                      | 3                       |"
+            "|                                                0                                                 |"
+            "|            a long string which will affect min width logic             |                         |"
+            "|                                   2                                    |            3            |"
         )
     );
     assert!(is_lines_equal(&table, 100));
@@ -1462,17 +1466,17 @@ fn min_width_with_span_2() {
         .with(MinWidth::new(100))
         .to_string();
 
+    assert_eq!(papergrid::util::string_width_multiline(&table), 100);
     assert_eq!(
         table,
         static_table!(
-            "| 0                                               | 1                                              |"
+            "|                        0                        |                       1                        |"
             "|-------------------------------------------------|------------------------------------------------|"
-            "| 0                                               | 1                                              |"
-            "| a long string which will affect min width logic                                                  |"
-            "| 2                                               | 3                                              |"
+            "|                        0                        |                       1                        |"
+            "|                         a long string which will affect min width logic                          |"
+            "|                        2                        |                       3                        |"
         )
     );
-    assert!(is_lines_equal(&table, 100));
 }
 
 #[test]
@@ -2100,16 +2104,18 @@ fn max_width_wrap_priority_min_with_span() {
 fn min_width_priority_max() {
     let table = create_table::<3, 3>()
         .with(Style::markdown())
-        .with(MinWidth::new(60).priority::<PriorityMax>());
+        .with(MinWidth::new(60).priority::<PriorityMax>())
+        .to_string();
 
+    assert_eq!(papergrid::util::string_width_multiline(&table), 60);
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
-            "| N | column 0 | column 1 | column 2                       |"
+            "| N | column 0 | column 1 |            column 2            |"
             "|---|----------|----------|--------------------------------|"
-            "| 0 | 0-0      | 0-1      | 0-2                            |"
-            "| 1 | 1-0      | 1-1      | 1-2                            |"
-            "| 2 | 2-0      | 2-1      | 2-2                            |"
+            "| 0 |   0-0    |   0-1    |              0-2               |"
+            "| 1 |   1-0    |   1-1    |              1-2               |"
+            "| 2 |   2-0    |   2-1    |              2-2               |"
         ),
     );
 }
@@ -2118,16 +2124,18 @@ fn min_width_priority_max() {
 fn min_width_priority_min() {
     let table = create_table::<3, 3>()
         .with(Style::markdown())
-        .with(MinWidth::new(60).priority::<PriorityMin>());
+        .with(MinWidth::new(60).priority::<PriorityMin>())
+        .to_string();
 
+    assert_eq!(papergrid::util::string_width_multiline(&table), 60);
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
-            "| N            | column 0     | column 1     | column 2    |"
+            "|      N       |   column 0   |   column 1   |  column 2   |"
             "|--------------|--------------|--------------|-------------|"
-            "| 0            | 0-0          | 0-1          | 0-2         |"
-            "| 1            | 1-0          | 1-1          | 1-2         |"
-            "| 2            | 2-0          | 2-1          | 2-2         |"
+            "|      0       |     0-0      |     0-1      |     0-2     |"
+            "|      1       |     1-0      |     1-1      |     1-2     |"
+            "|      2       |     2-0      |     2-1      |     2-2     |"
         ),
     );
 }
