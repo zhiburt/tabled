@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example panel`
 
-use tabled::{object::Segment, Alignment, Footer, Header, Modify, Table, Tabled};
+use tabled::{object::Segment, Alignment, Modify, Panel, Table, Tabled};
 
 #[derive(Tabled)]
 struct Release {
@@ -35,8 +35,10 @@ const DATA: [Release; 3] = [
 
 fn main() {
     let table = Table::new(DATA)
-        .with(Header("Tabled Releases"))
-        .with(Footer(format!("N - {}", DATA.len())))
+        .with(Panel::header("Tabled Releases"))
+        .with(Panel::footer(format!("N - {}", DATA.len())))
+        .with(Panel::vertical(0).text("Some text goes here").text_width(1))
+        .with(Panel::vertical(5).text("Some text goes here").text_width(1))
         .with(Modify::new(Segment::all()).with(Alignment::center()));
 
     println!("{}", table);

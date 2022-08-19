@@ -1,8 +1,3 @@
-//! The example can be run by this command
-//! `cargo run --example span`
-//!
-//! The table from the example originally inspired https://github.com/vdmeer/asciitable#column-span/
-
 use tabled::{
     object::{Cell, Segment},
     Alignment, ModifyObject, Span, Style, TableIteratorExt,
@@ -11,25 +6,21 @@ use tabled::{
 fn main() {
     let data = [["just 1 column"; 5]; 5];
 
-    let span_cell = |r, c, span, text: &'static str| {
-        Cell(r, c)
-            .modify()
-            .with(Span::column(span))
-            .with(move |_: &str| text.to_string())
-    };
+    let h_span = |r, c, span| Cell(r, c).modify().with(Span::column(span));
+    let v_span = |r, c, span| Cell(r, c).modify().with(Span::row(span));
 
     let table = data
         .table()
-        .with(Segment::all().modify().with(Alignment::center()))
-        .with(span_cell(0, 0, 5, "span all 5 columns"))
-        .with(span_cell(1, 0, 4, "span 4 columns"))
-        .with(span_cell(2, 0, 3, "span 3 columns"))
-        .with(span_cell(2, 3, 2, "span 2 columns"))
-        .with(span_cell(3, 0, 2, "span 2 columns"))
-        .with(span_cell(3, 2, 3, "span 3 columns"))
-        .with(span_cell(4, 1, 4, "span 4 columns"))
+        .with(h_span(0, 0, 5).with(|_: &str| "span all 5 columns".to_string()))
+        .with(h_span(1, 0, 4).with(|_: &str| "span 4 columns".to_string()))
+        .with(h_span(2, 0, 2).with(|_: &str| "span 2 columns".to_string()))
+        .with(v_span(2, 4, 4).with(|_: &str| "just 1 column\nspan\n4\ncolumns".to_string()))
+        .with(v_span(3, 1, 2).with(|_: &str| "span 2 columns\nspan\n2\ncolumns".to_string()))
+        .with(h_span(3, 1, 2))
+        .with(v_span(2, 3, 3).with(|_: &str| "just 1 column\nspan\n3\ncolumns".to_string()))
         .with(Style::modern())
-        .with(Style::correct_spans());
+        .with(Style::correct_spans())
+        .with(Segment::all().modify().with(Alignment::center_vertical()));
 
     println!("{}", table);
 }

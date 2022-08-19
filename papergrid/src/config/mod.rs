@@ -439,8 +439,15 @@ pub type MarginColor = Sides<AnsiColor>;
 pub type PaddingColor = Sides<AnsiColor>;
 
 fn set_cell_row_span(cfg: &mut GridConfig, (mut row, col): Position, mut span: usize) {
+    // such spans aren't supported
+    if row == 0 && span == 0 {
+        return;
+    }
+
     // It's a default span so we can do nothing.
-    if span == 1 || (row == 0 && span == 0) {
+    // but we check if it's an override of a span.
+    if span == 1 {
+        cfg.span_rows.remove(&(row, col));
         return;
     }
 
@@ -472,8 +479,15 @@ fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
 }
 
 fn set_cell_column_span(cfg: &mut GridConfig, (row, mut col): Position, mut span: usize) {
+    // such spans aren't supported
+    if col == 0 && span == 0 {
+        return;
+    }
+
     // It's a default span so we can do nothing.
-    if span == 1 || (col == 0 && span == 0) {
+    // but we check if it's an override of a span.
+    if span == 1 {
+        cfg.span_columns.remove(&(row, col));
         return;
     }
 

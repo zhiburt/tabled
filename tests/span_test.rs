@@ -286,7 +286,7 @@ test_table!(
 test_table!(
     span_with_panel_test_0,
     new_table([[1, 2, 3]])
-        .with(Panel("Tabled Releases", 0))
+        .with(Panel::horizontal(0).text("Tabled Releases"))
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(Style::ascii()),
     "+-----+-----+-----+"
@@ -301,7 +301,7 @@ test_table!(
 test_table!(
     span_with_panel_test_1,
     new_table([[1, 2, 3], [4, 5, 6]])
-        .with(Panel("Tabled Releases", 0))
+        .with(Panel::horizontal(0).text("Tabled Releases"))
         .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
         .with(Style::ascii()),
     "+-----+-----+-----+"
@@ -318,7 +318,7 @@ test_table!(
 test_table!(
     span_with_panel_test_2,
     new_table([[1, 2, 3], [4, 5, 6]])
-        .with(Panel("Tabled Releases", 0))
+        .with(Panel::horizontal(0).text("Tabled Releases"))
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
         .with(Style::ascii()),
@@ -336,7 +336,7 @@ test_table!(
 test_table!(
     span_with_panel_with_correction_test_0,
     new_table([[1, 2, 3]])
-        .with(Panel("Tabled Releases", 0))
+        .with(Panel::horizontal(0).text("Tabled Releases"))
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(Style::ascii())
         .with(Style::correct_spans()),
@@ -352,7 +352,7 @@ test_table!(
 test_table!(
     span_with_panel_with_correction_test_1,
     new_table([[1, 2, 3], [4, 5, 6]])
-        .with(Panel("Tabled Releases", 0))
+        .with(Panel::horizontal(0).text("Tabled Releases"))
         .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
         .with(Style::ascii())
         .with(Style::correct_spans()),
@@ -370,7 +370,7 @@ test_table!(
 test_table!(
     span_with_panel_with_correction_test_2,
     new_table([[1, 2, 3], [4, 5, 6]])
-        .with(Panel("Tabled Releases", 0))
+        .with(Panel::horizontal(0).text("Tabled Releases"))
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
         .with(Style::ascii())

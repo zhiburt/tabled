@@ -862,38 +862,39 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::{records::empty::EmptyRecords, util::string_width};
+
     use super::*;
 
-    // #[test]
-    // fn horizontal_aligment_test() {
-    //     use std::fmt;
+    #[test]
+    fn horizontal_aligment_test() {
+        use std::fmt;
 
-    //     struct F<'a>(&'a str, AlignmentHorizontal, usize);
+        struct F<'a>(&'a str, AlignmentHorizontal, usize);
 
-    //     impl fmt::Display for F<'_> {
-    //         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    //             let width = string_width(self.0);
-    //             print_text_formated(f, &EmptyRecords::default(), (0, 0), self.0, 4, self.1, self.2, 0)
-    //             Ok(())
-    //         }
-    //     }
+        impl fmt::Display for F<'_> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                let (left, right) = calculate_indent(self.1, string_width(self.0), self.2);
+                print_text_formated(f, &EmptyRecords::default(), (0, 0), self.0, 4, left, right)
+            }
+        }
 
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Right, 4).to_string(), " AAA");
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Left, 4).to_string(), "AAA ");
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Center, 4).to_string(), "AAA ");
-    //     assert_eq!(F("🎩", AlignmentHorizontal::Center, 4).to_string(), " 🎩 ");
-    //     assert_eq!(F("🎩", AlignmentHorizontal::Center, 3).to_string(), "🎩 ");
+        assert_eq!(F("AAA", AlignmentHorizontal::Right, 4).to_string(), " AAA");
+        assert_eq!(F("AAA", AlignmentHorizontal::Left, 4).to_string(), "AAA ");
+        assert_eq!(F("AAA", AlignmentHorizontal::Center, 4).to_string(), "AAA ");
+        assert_eq!(F("🎩", AlignmentHorizontal::Center, 4).to_string(), " 🎩 ");
+        assert_eq!(F("🎩", AlignmentHorizontal::Center, 3).to_string(), "🎩 ");
 
-    //     #[cfg(feature = "color")]
-    //     {
-    //         use owo_colors::OwoColorize;
-    //         let text = "Colored Text".red().to_string();
-    //         assert_eq!(
-    //             F(&text, AlignmentHorizontal::Center, 15).to_string(),
-    //             format!(" {}  ", text)
-    //         );
-    //     }
-    // }
+        #[cfg(feature = "color")]
+        {
+            use owo_colors::OwoColorize;
+            let text = "Colored Text".red().to_string();
+            assert_eq!(
+                F(&text, AlignmentHorizontal::Center, 15).to_string(),
+                format!(" {}  ", text)
+            );
+        }
+    }
 
     #[test]
     fn vertical_aligment_test() {

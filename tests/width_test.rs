@@ -837,7 +837,7 @@ fn total_width_big() {
 #[test]
 fn total_width_big_with_panel() {
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(
             Modify::new(Segment::all())
                 .with(Alignment::center())
@@ -865,7 +865,7 @@ fn total_width_big_with_panel() {
 #[test]
 fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
     let table1 = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(80))
@@ -873,7 +873,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
         .to_string();
 
     let table2 = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(80))
@@ -946,7 +946,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 20));
 
     let table = new_table(Vec::<usize>::new())
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(
             Modify::new(Segment::all())
                 .with(Alignment::center())
@@ -963,7 +963,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 5));
 
     let table = create_table::<1, 2>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
@@ -982,7 +982,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 20));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
@@ -1003,7 +1003,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 20));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(6))
@@ -1024,7 +1024,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 13));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(14))
@@ -1045,7 +1045,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 14));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World 123", 0))
+        .with(Panel::horizontal(0).text("Hello World 123"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(14))
@@ -1120,7 +1120,7 @@ fn total_width_wrapping() {
 #[test]
 fn total_width_small_with_panel_using_wrapping() {
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(20))
@@ -1147,7 +1147,7 @@ fn total_width_small_with_panel_using_wrapping() {
     assert!(is_lines_equal(&table, 20));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(14))
@@ -1182,7 +1182,7 @@ fn total_width_small_with_panel_using_wrapping() {
     assert!(is_lines_equal(&table, 14));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World 123", 0))
+        .with(Panel::horizontal(0).text("Hello World 123"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(14))

@@ -26,7 +26,7 @@ use tabled::{
     formatting::TrimStrategy,
     object::{Columns, Object, Rows},
     symbol::Symbol,
-    Alignment, BorderText, Disable, Header, Highlight, Margin, Modify, Style, Table, Tabled, Width,
+    Alignment, BorderText, Disable, Highlight, Margin, Modify, Panel, Style, Table, Tabled, Width,
 };
 
 mod config;
@@ -200,7 +200,7 @@ fn run(movies: &[Movie], debug: bool) {
 
     #[rustfmt::skip]
     let panel_actions: Vec<Action> = vec![
-        action(|t| t.with(Header("Star Wars Movies")).with(Modify::new(Rows::first()).with(Alignment::center()))),
+        action(|t| t.with(Panel::header("Star Wars Movies")).with(Modify::new(Rows::first()).with(Alignment::center()))),
         full_action(|t, m, _| {
             let c = "━".yellow();
             let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
