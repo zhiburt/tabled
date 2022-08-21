@@ -33,6 +33,11 @@ use crate::{CellOption, Table};
 
 /// Span represent a horizontal/column span setting for any cell on a [`Table`].
 ///
+/// It will be ignored if:
+///  - cell position is out of scope
+///  - size is bigger then the total number of columns.
+///  - size is bigger then the total number of rows.
+///
 /// ```rust,no_run
 /// # use tabled::{Style, Span, Modify, object::Columns, Table};
 /// # let data: Vec<&'static str> = Vec::new();
@@ -52,11 +57,15 @@ enum SpanType {
 
 impl Span {
     /// New constructs a horizontal/column [`Span`].
+    ///
+    /// If size is bigger then the total number of columns it will be ignored.
     pub fn column(size: usize) -> Self {
         Self(SpanType::Column(size))
     }
 
     /// New constructs a vertical/row [`Span`].
+    ///
+    /// If size is bigger then the total number of rows it will be ignored.
     pub fn row(size: usize) -> Self {
         Self(SpanType::Row(size))
     }

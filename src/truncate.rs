@@ -306,17 +306,18 @@ pub(crate) fn get_decrease_cell_list(
     let mut points = Vec::new();
     (0..count_cols).for_each(|col| {
         (0..count_rows)
-            .filter(|&row| cfg.is_cell_visible((row, col)))
+            .filter(|&row| cfg.is_cell_visible((row, col), (count_rows, count_cols)))
             .for_each(|row| {
-                let (width, width_min) = match cfg.get_column_span((row, col)) {
-                    Some(span) => {
-                        let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
-                        let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
-                        let count_borders = count_borders(cfg, col, col + span, count_cols);
-                        (width + count_borders, min_width + count_borders)
-                    }
-                    None => (widths[col], min_widths[col]),
-                };
+                let (width, width_min) =
+                    match cfg.get_column_span((row, col), (count_rows, count_cols)) {
+                        Some(span) => {
+                            let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
+                            let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
+                            let count_borders = count_borders(cfg, col, col + span, count_cols);
+                            (width + count_borders, min_width + count_borders)
+                        }
+                        None => (widths[col], min_widths[col]),
+                    };
 
                 if width >= width_min {
                     let padding = cfg.get_padding((row, col).into());

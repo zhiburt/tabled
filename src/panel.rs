@@ -187,7 +187,10 @@ where
 
         // move existing spans
         {
-            let spans = table.get_config().iter_column_spans().collect::<Vec<_>>();
+            let spans = table
+                .get_config()
+                .iter_column_spans(table.shape())
+                .collect::<Vec<_>>();
             for ((row, col), span) in spans {
                 if col >= self.pos.1 {
                     table.get_config_mut().set_column_span((row, col), 1);
@@ -195,7 +198,10 @@ where
                 }
             }
 
-            let spans = table.get_config().iter_row_spans().collect::<Vec<_>>();
+            let spans = table
+                .get_config()
+                .iter_row_spans(table.shape())
+                .collect::<Vec<_>>();
             for ((row, col), span) in spans {
                 if col >= self.pos.1 {
                     table.get_config_mut().set_row_span((row, col), 1);
@@ -263,14 +269,20 @@ where
         {
             // move existing spans
 
-            let spans = table.get_config().iter_column_spans().collect::<Vec<_>>();
+            let spans = table
+                .get_config()
+                .iter_column_spans(table.shape())
+                .collect::<Vec<_>>();
             for ((row, col), span) in spans {
                 if row >= self.pos.0 {
                     table.get_config_mut().set_column_span((row, col), 1);
                     table.get_config_mut().set_column_span((row + 1, col), span);
                 }
             }
-            let spans = table.get_config().iter_row_spans().collect::<Vec<_>>();
+            let spans = table
+                .get_config()
+                .iter_row_spans(table.shape())
+                .collect::<Vec<_>>();
             for ((row, col), span) in spans {
                 if row >= self.pos.0 {
                     table.get_config_mut().set_row_span((row, col), 1);

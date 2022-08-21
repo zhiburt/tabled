@@ -49,10 +49,11 @@ fn build_heights<R>(records: &R, cfg: &GridConfig) -> Vec<usize>
 where
     R: Records,
 {
+    let shape = (records.count_rows(), records.count_columns());
     let mut heights = vec![0; records.count_rows()];
     for (row, height) in heights.iter_mut().enumerate() {
         let max = (0..records.count_columns())
-            .filter(|&col| is_simple_cell(cfg, (row, col)))
+            .filter(|&col| is_simple_cell(cfg, (row, col), shape))
             .map(|col| cell_height(records, cfg, (row, col)))
             .max()
             .unwrap_or(0);
@@ -76,7 +77,9 @@ where
     // The overall height disctribution will be different depend on the order.
     //
     // We sort spans in order to prioritize the smaller spans first.
-    let mut spans = cfg.iter_row_spans().collect::<Vec<_>>();
+    let mut spans = cfg
+        .iter_row_spans((records.count_rows(), records.count_columns()))
+        .collect::<Vec<_>>();
     spans.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
         Ordering::Equal => acol.cmp(bcol),
         ord => ord,
@@ -108,8 +111,8 @@ fn adjust_range<R>(
     inc_range_height(heights, max_span_height - range_height, start, end);
 }
 
-fn is_simple_cell(cfg: &GridConfig, pos: Position) -> bool {
-    cfg.is_cell_visible(pos) && matches!(cfg.get_row_span(pos), None | Some(1))
+fn is_simple_cell(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+    cfg.is_cell_visible(pos, shape) && matches!(cfg.get_row_span(pos, shape), None | Some(1))
 }
 
 fn range_height(grid: &GridConfig, start: usize, end: usize, heights: &[usize]) -> usize {

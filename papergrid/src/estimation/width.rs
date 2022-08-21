@@ -52,10 +52,11 @@ fn build_widths<R>(records: &R, cfg: &GridConfig, width_ctrl: &CfgWidthFunction)
 where
     R: Records,
 {
+    let shape = (records.count_rows(), records.count_columns());
     let mut widths = vec![0; records.count_columns()];
     for (col, column) in widths.iter_mut().enumerate() {
         let max = (0..records.count_rows())
-            .filter(|&row| is_simple_cell(cfg, (row, col)))
+            .filter(|&row| is_simple_cell(cfg, (row, col), shape))
             .map(|row| get_cell_width(cfg, records, (row, col), width_ctrl))
             .max()
             .unwrap_or(0);
@@ -83,7 +84,9 @@ fn adjust_spans<R>(
     // The overall width disctribution will be different depend on the order.
     //
     // We sort spans in order to prioritize the smaller spans first.
-    let mut spans = cfg.iter_column_spans().collect::<Vec<_>>();
+    let mut spans = cfg
+        .iter_column_spans((records.count_rows(), records.count_columns()))
+        .collect::<Vec<_>>();
     spans.sort_unstable_by(|a, b| match a.1.cmp(&b.1) {
         Ordering::Equal => a.0.cmp(&b.0),
         o => o,
@@ -137,8 +140,8 @@ fn inc_range_width(widths: &mut [usize], size: usize, start: usize, end: usize) 
     }
 }
 
-fn is_simple_cell(cfg: &GridConfig, pos: Position) -> bool {
-    cfg.is_cell_visible(pos) && matches!(cfg.get_column_span(pos), None | Some(1))
+fn is_simple_cell(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+    cfg.is_cell_visible(pos, shape) && matches!(cfg.get_column_span(pos, shape), None | Some(1))
 }
 
 fn get_cell_width<R>(

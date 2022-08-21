@@ -74,6 +74,8 @@ where
     // if cfg.has_column_spans() || cfg.has_row_spans() {
     // }
 
+    let shape = (records.count_rows(), records.count_columns());
+
     if cfg.get_margin().top.size > 0 {
         let total_width = total_width(cfg, records, width);
         print_margin_top(f, cfg, total_width)?;
@@ -108,13 +110,13 @@ where
             print_margin_left(f, cfg)?;
 
             for col in 0..records.count_columns() {
-                if !cfg.is_cell_covered_by_both_spans((row, col)) {
-                    if cfg.is_cell_covered_by_row_span((row, col)) {
+                if !cfg.is_cell_covered_by_both_spans((row, col), shape) {
+                    if cfg.is_cell_covered_by_row_span((row, col), shape) {
                         print_vertical_char(f, cfg, records, (row, col))?;
 
                         // means it's part of other a spanned cell
                         // so. we just need to use line from other cell.
-                        let original_row = closest_visible_row(cfg, (row, col)).unwrap();
+                        let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
 
                         // considering that the content will be printed instead horizontal lines so we can skip some lines.
                         let mut skip_lines = (original_row..row)
@@ -127,7 +129,7 @@ where
 
                         let line = i + skip_lines;
                         print_cell_line(f, cfg, records, width, height, (original_row, col), line)?;
-                    } else if !cfg.is_cell_covered_by_column_span((row, col)) {
+                    } else if !cfg.is_cell_covered_by_column_span((row, col), shape) {
                         print_vertical_char(f, cfg, records, (row, col))?;
                         print_cell_line(f, cfg, records, width, height, (row, col), i)?;
                     }
@@ -373,6 +375,8 @@ where
     H: Estimate<R>,
     R: Records,
 {
+    let shape = (records.count_rows(), records.count_columns());
+
     let mut override_text = cfg
         .get_split_line_text(row)
         .and_then(|text| get_lines(text).next())
@@ -384,8 +388,7 @@ where
 
     for col in 0..records.count_columns() {
         if col == 0 {
-            let left =
-                cfg.get_intersection((row, col), (records.count_rows(), records.count_columns()));
+            let left = cfg.get_intersection((row, col), shape);
             if let Some(c) = left {
                 if !override_text.is_empty() {
                     let (c, rest) = spplit_str_at(&override_text, 1);
@@ -394,10 +397,7 @@ where
                 } else {
                     #[cfg(feature = "color")]
                     {
-                        let clr = cfg.get_intersection_color(
-                            (row, col),
-                            (records.count_rows(), records.count_columns()),
-                        );
+                        let clr = cfg.get_intersection_color((row, col), shape);
                         if let Some(clr) = clr {
                             clr.fmt_prefix(f)?;
                             used_color = Some(clr);
@@ -410,7 +410,7 @@ where
         }
 
         let mut width = width_ctrl.get(col).unwrap();
-        if cfg.is_cell_covered_by_both_spans((row, col)) {
+        if cfg.is_cell_covered_by_both_spans((row, col), shape) {
             continue;
         }
 
@@ -426,11 +426,11 @@ where
         }
 
         let mut col = col;
-        if cfg.is_cell_covered_by_row_span((row, col)) {
+        if cfg.is_cell_covered_by_row_span((row, col), shape) {
             // means it's part of other a spanned cell
             // so. we just need to use line from other cell.
 
-            let original_row = closest_visible_row(cfg, (row, col)).unwrap();
+            let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
 
             // considering that the content will be printed instead horizontal lines so we can skip some lines.
             let mut skip_lines = (original_row..row)
@@ -456,7 +456,7 @@ where
             )?;
 
             // We need to use a correct right split char.
-            if let Some(span) = cfg.get_column_span((original_row, col)) {
+            if let Some(span) = cfg.get_column_span((original_row, col), shape) {
                 col += span - 1;
             }
         } else {
@@ -728,7 +728,7 @@ where
     R: Records,
     W: Estimate<R>,
 {
-    match cfg.get_column_span(pos) {
+    match cfg.get_column_span(pos, (records.count_rows(), records.count_columns())) {
         Some(span) => range_width(cfg, records, width, pos.1, pos.1 + span),
         None => width.get(pos.1).unwrap(),
     }
@@ -763,7 +763,7 @@ where
     R: Records,
     H: Estimate<R>,
 {
-    match cfg.get_row_span(pos) {
+    match cfg.get_row_span(pos, (records.count_rows(), records.count_columns())) {
         Some(span) => range_height(cfg, records, height, pos.0, pos.0 + span),
         None => height.get(pos.0).unwrap(),
     }
@@ -794,9 +794,13 @@ fn count_horizontal_borders_in_range(
         .count()
 }
 
-fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
+fn closest_visible_row(
+    cfg: &GridConfig,
+    mut pos: Position,
+    shape: (usize, usize),
+) -> Option<usize> {
     loop {
-        if cfg.is_cell_visible(pos) {
+        if cfg.is_cell_visible(pos, shape) {
             return Some(pos.0);
         }
 

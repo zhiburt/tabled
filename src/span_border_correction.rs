@@ -29,7 +29,10 @@ fn correct_span_styles<R>(table: &mut Table<R>)
 where
     R: Records,
 {
-    let spans = table.get_config().iter_column_spans().collect::<Vec<_>>();
+    let spans = table
+        .get_config()
+        .iter_column_spans(table.shape())
+        .collect::<Vec<_>>();
     for &((row, c), span) in &spans {
         for col in c..c + span {
             if col == 0 {
@@ -73,7 +76,10 @@ where
         }
     }
 
-    let spans = table.get_config().iter_row_spans().collect::<Vec<_>>();
+    let spans = table
+        .get_config()
+        .iter_row_spans(table.shape())
+        .collect::<Vec<_>>();
     for &((r, col), span) in &spans {
         for row in r + 1..r + span {
             let mut border = table.get_config().get_border((row, col), table.shape());
@@ -132,7 +138,9 @@ where
     R: Records,
 {
     let cfg = table.get_config();
-    if cfg.is_cell_covered_by_both_spans(pos) || cfg.is_cell_covered_by_column_span(pos) {
+    if cfg.is_cell_covered_by_both_spans(pos, table.shape())
+        || cfg.is_cell_covered_by_column_span(pos, table.shape())
+    {
         return false;
     }
 
@@ -145,7 +153,9 @@ where
     R: Records,
 {
     let cfg = table.get_config();
-    if cfg.is_cell_covered_by_both_spans(pos) || cfg.is_cell_covered_by_row_span(pos) {
+    if cfg.is_cell_covered_by_both_spans(pos, table.shape())
+        || cfg.is_cell_covered_by_row_span(pos, table.shape())
+    {
         return false;
     }
 
@@ -162,6 +172,10 @@ where
     (0..count_rows).flat_map(move |row| {
         (0..count_cols)
             .map(move |col| (row, col))
-            .filter(move |&p| table.get_config().is_cell_covered_by_both_spans(p))
+            .filter(move |&p| {
+                table
+                    .get_config()
+                    .is_cell_covered_by_both_spans(p, (count_rows, count_cols))
+            })
     })
 }

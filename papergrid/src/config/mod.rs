@@ -53,8 +53,11 @@ impl GridConfig {
     }
 
     /// Get a span value of the cell, if any is set.
-    pub fn get_column_span(&self, pos: Position) -> Option<usize> {
-        self.span_columns.get(&pos).copied()
+    pub fn get_column_span(&self, pos: Position, shape: (usize, usize)) -> Option<usize> {
+        match self.span_columns.get(&pos) {
+            Some(&span) if is_column_span_valid(pos, span, shape) => Some(span),
+            _ => None,
+        }
     }
 
     /// Verifies if there's any spans set.
@@ -63,8 +66,14 @@ impl GridConfig {
     }
 
     /// Get a span value of the cell, if any is set.
-    pub fn iter_column_spans(&self) -> impl Iterator<Item = (Position, usize)> + '_ {
-        self.span_columns.iter().map(|(&pos, &span)| (pos, span))
+    pub fn iter_column_spans(
+        &self,
+        shape: (usize, usize),
+    ) -> impl Iterator<Item = (Position, usize)> + '_ {
+        self.span_columns
+            .iter()
+            .map(|(&pos, &span)| (pos, span))
+            .filter(move |&(pos, span)| is_column_span_valid(pos, span, shape))
     }
 
     /// Set a column span to a given cells.
@@ -73,8 +82,11 @@ impl GridConfig {
     }
 
     /// Get a span value of the cell, if any is set.
-    pub fn get_row_span(&self, pos: Position) -> Option<usize> {
-        self.span_rows.get(&pos).copied()
+    pub fn get_row_span(&self, pos: Position, shape: (usize, usize)) -> Option<usize> {
+        match self.span_rows.get(&pos) {
+            Some(&span) if is_row_span_valid(pos, span, shape) => Some(span),
+            _ => None,
+        }
     }
 
     /// Verifies if there's any spans set.
@@ -83,8 +95,14 @@ impl GridConfig {
     }
 
     /// Get a span value of the cell, if any is set.
-    pub fn iter_row_spans(&self) -> impl Iterator<Item = (Position, usize)> + '_ {
-        self.span_rows.iter().map(|(&pos, &span)| (pos, span))
+    pub fn iter_row_spans(
+        &self,
+        shape: (usize, usize),
+    ) -> impl Iterator<Item = (Position, usize)> + '_ {
+        self.span_rows
+            .iter()
+            .map(|(&pos, &span)| (pos, span))
+            .filter(move |&(pos, span)| is_row_span_valid(pos, span, shape))
     }
 
     /// Set a [`Margin`] value.
@@ -213,25 +231,25 @@ impl GridConfig {
     }
 
     /// The function returns whether the cells will be rendered or it will be hidden because of a span.
-    pub fn is_cell_visible(&self, pos: Position) -> bool {
-        !(self.is_cell_covered_by_column_span(pos)
-            || self.is_cell_covered_by_row_span(pos)
-            || self.is_cell_covered_by_both_spans(pos))
+    pub fn is_cell_visible(&self, pos: Position, shape: (usize, usize)) -> bool {
+        !(self.is_cell_covered_by_column_span(pos, shape)
+            || self.is_cell_covered_by_row_span(pos, shape)
+            || self.is_cell_covered_by_both_spans(pos, shape))
     }
 
     /// The function checks if a cell is hidden because of a row span.
-    pub fn is_cell_covered_by_row_span(&self, pos: Position) -> bool {
-        is_cell_covered_by_row_span(self, pos)
+    pub fn is_cell_covered_by_row_span(&self, pos: Position, shape: (usize, usize)) -> bool {
+        is_cell_covered_by_row_span(self, pos, shape)
     }
 
     /// The function checks if a cell is hidden because of a column span.
-    pub fn is_cell_covered_by_column_span(&self, pos: Position) -> bool {
-        is_cell_covered_by_column_span(self, pos)
+    pub fn is_cell_covered_by_column_span(&self, pos: Position, shape: (usize, usize)) -> bool {
+        is_cell_covered_by_column_span(self, pos, shape)
     }
 
     /// The function checks if a cell is hidden indirectly because of a row and column span combination.
-    pub fn is_cell_covered_by_both_spans(&self, pos: Position) -> bool {
-        is_cell_covered_by_both_spans(self, pos)
+    pub fn is_cell_covered_by_both_spans(&self, pos: Position, shape: (usize, usize)) -> bool {
+        is_cell_covered_by_both_spans(self, pos, shape)
     }
 
     // todo: move to Grid as static methods
@@ -466,7 +484,7 @@ fn set_cell_row_span(cfg: &mut GridConfig, (mut row, col): Position, mut span: u
 
 fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
     loop {
-        if cfg.is_cell_visible(pos) {
+        if cfg.is_cell_visible(pos, (std::usize::MAX, std::usize::MAX)) {
             return Some(pos.0);
         }
 
@@ -506,7 +524,7 @@ fn set_cell_column_span(cfg: &mut GridConfig, (row, mut col): Position, mut span
 
 fn closest_visible_column(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
     loop {
-        if cfg.is_cell_visible(pos) {
+        if cfg.is_cell_visible(pos, (std::usize::MAX, std::usize::MAX)) {
             return Some(pos.1);
         }
 
@@ -518,25 +536,56 @@ fn closest_visible_column(cfg: &GridConfig, mut pos: Position) -> Option<usize> 
     }
 }
 
-fn is_cell_covered_by_column_span(cfg: &GridConfig, pos: Position) -> bool {
+fn is_cell_covered_by_column_span(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
     cfg.span_columns
         .iter()
+        .filter(|(&pos, &span)| is_column_span_valid(pos, span, shape))
         .any(|(&(row, col), span)| pos.1 > col && pos.1 < col + span && row == pos.0)
 }
 
-fn is_cell_covered_by_row_span(cfg: &GridConfig, pos: Position) -> bool {
+fn is_cell_covered_by_row_span(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
     cfg.span_rows
         .iter()
+        .filter(|(&pos, &span)| is_row_span_valid(pos, span, shape))
         .any(|(&(row, col), span)| pos.0 > row && pos.0 < row + span && col == pos.1)
 }
 
-fn is_cell_covered_by_both_spans(grid: &GridConfig, pos: Position) -> bool {
-    grid.span_rows.iter().any(|(p1, row_span)| {
-        grid.span_columns
-            .iter()
-            .filter(|(p2, _)| &p1 == p2)
-            .any(|(_, col_span)| {
-                pos.0 > p1.0 && pos.0 < p1.0 + row_span && pos.1 > p1.1 && pos.1 < p1.1 + col_span
-            })
-    })
+fn is_cell_covered_by_both_spans(grid: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+    grid.span_rows
+        .iter()
+        .filter(|(&pos, &span)| is_row_span_valid(pos, span, shape))
+        .any(|(p1, row_span)| {
+            grid.span_columns
+                .iter()
+                .filter(|(&pos, &span)| is_column_span_valid(pos, span, shape))
+                .filter(|(p2, _)| &p1 == p2)
+                .any(|(_, col_span)| {
+                    pos.0 > p1.0
+                        && pos.0 < p1.0 + row_span
+                        && pos.1 > p1.1
+                        && pos.1 < p1.1 + col_span
+                })
+        })
+}
+
+fn is_column_span_valid(
+    pos: Position,
+    span: usize,
+    (count_rows, count_cols): (usize, usize),
+) -> bool {
+    // ignore spans which are invlid
+    let pos_correct = pos.1 < count_cols && pos.0 < count_rows;
+    // ignore a span range wich begger then count rows
+    let span_correct = span + pos.1 <= count_cols;
+
+    pos_correct && span_correct
+}
+
+fn is_row_span_valid(pos: Position, span: usize, (count_rows, count_cols): (usize, usize)) -> bool {
+    // ignore spans which are invlid
+    let pos_correct = pos.1 < count_cols && pos.0 < count_rows;
+    // ignore a span range wich begger then count columns
+    let span_correct = span + pos.0 <= count_rows;
+
+    pos_correct && span_correct
 }
