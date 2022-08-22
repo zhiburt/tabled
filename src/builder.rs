@@ -108,7 +108,7 @@
 //! )
 //! ```
 
-use std::{fmt::Display, iter::FromIterator};
+use std::{borrow::Cow, fmt::Display, iter::FromIterator};
 
 use papergrid::{
     records::{cell_info::CellInfo, vec_records::VecRecords, Records},
@@ -256,18 +256,18 @@ impl Builder {
     /// use tabled::builder::Builder;
     ///
     /// let mut builder = Builder::default();
-    /// builder.add_record(0..3);
+    /// builder.add_record((0..3).map(|i| i.to_string()));
     /// builder.add_record(["i", "surname", "lastname"]);
     /// ```
     pub fn add_record<R, T>(&mut self, row: R) -> &mut Self
     where
         R: IntoIterator<Item = T>,
-        T: Display, // fixme: Change to Into<String>
+        T: Into<Cow<'static, str>>,
     {
         let ctrl = CfgWidthFunction::new(4);
         let mut list = Vec::with_capacity(self.size);
         for c in row {
-            let info = CellInfo::new(c.to_string(), &ctrl);
+            let info = CellInfo::new(c, &ctrl);
             list.push(info);
         }
 
@@ -475,7 +475,7 @@ impl Builder {
 impl<R, V> FromIterator<R> for Builder
 where
     R: IntoIterator<Item = V>,
-    V: Display,
+    V: Into<Cow<'static, str>>,
 {
     fn from_iter<T: IntoIterator<Item = R>>(iter: T) -> Self {
         let mut builder = Self::default();
@@ -489,7 +489,7 @@ where
 
 impl<D> Extend<D> for Builder
 where
-    D: Display,
+    D: Into<Cow<'static, str>>,
 {
     fn extend<T: IntoIterator<Item = D>>(&mut self, iter: T) {
         self.add_record(iter);
