@@ -6,7 +6,7 @@ use std::{borrow::Cow, cmp::max};
 
 use crate::{
     records::vec_records::{Cell, CellMut},
-    util::get_lines,
+    util::{count_lines, get_lines},
     width::WidthFunc,
 };
 
@@ -14,8 +14,9 @@ use crate::{
 #[derive(Debug, Clone, Default)]
 pub struct CellInfo<'a> {
     text: Cow<'a, str>,
-    lines: Vec<StrWithWidth<'a>>,
     width: usize,
+    lines: Vec<StrWithWidth<'a>>,
+    count_lines: usize,
 }
 
 impl<'a> CellInfo<'a> {
@@ -44,7 +45,7 @@ impl Cell for CellInfo<'_> {
     }
 
     fn count_lines(&self) -> usize {
-        max(self.lines.len(), 1)
+        self.count_lines
     }
 
     fn width<W>(&self, _: W) -> usize
@@ -110,10 +111,17 @@ where
 {
     let mut info = CellInfo {
         text,
+        count_lines: 1,
         ..Default::default()
     };
 
-    let text = info.text.as_ref();
+    // Here we do a small optimization.
+    // We check if there's only 1 line in which case we don't allocate lines Vec
+    let count_lines = count_lines(&info.text);
+    if count_lines < 2 {
+        info.width = width_fn.width(&info.text);
+        return info;
+    }
 
     // In case `Cow::Borrowed` we want to not allocate a String.
     // It's currerently not possible due to a lifetime issues. (It's known as self-referential struct)
@@ -125,43 +133,19 @@ where
     // It must be safe because the referenced string and the references are dropped at the same time.
     // And the referenced String is guaranted to not be changed.
     let text = unsafe {
-        std::str::from_utf8_unchecked(std::slice::from_raw_parts(text.as_ptr(), text.len()))
+        std::str::from_utf8_unchecked(std::slice::from_raw_parts(
+            info.text.as_ptr(),
+            info.text.len(),
+        ))
     };
 
-    // Here we do a small optimization.
-    // We check if there's only 1 line in which case we don't allocate lines Vec
-
-    let mut lines = get_lines(text);
-
-    let first_line = lines.next();
-    if first_line.is_none() {
-        return info;
-    }
-
-    let first_line = first_line.unwrap();
-    let first_width = width_fn.width(first_line.as_ref());
-    info.width = first_width;
-
-    let second_line = lines.next();
-    if second_line.is_none() {
-        return info;
-    }
-
-    info.lines.push(StrWithWidth::new(first_line, first_width));
-
-    let second_line = second_line.unwrap();
-    let second_width = width_fn.width(second_line.as_ref());
-    info.lines
-        .push(StrWithWidth::new(second_line, second_width));
-
-    info.width = max(info.width, second_width);
-
-    for line in lines {
+    info.count_lines = count_lines;
+    info.lines = vec![StrWithWidth::new(Cow::Borrowed(""), 0); count_lines];
+    for (line, i) in get_lines(text).zip(info.lines.iter_mut()) {
         let width = width_fn.width(line.as_ref());
         info.width = max(info.width, width);
-
-        let line = StrWithWidth::new(Cow::Owned(line.to_string()), width);
-        info.lines.push(line);
+        i.text = line;
+        i.width = width;
     }
 
     info

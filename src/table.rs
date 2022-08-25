@@ -4,7 +4,11 @@ use std::{fmt, iter::FromIterator};
 
 use papergrid::{
     height::HeightEstimator,
-    records::{cell_info::CellInfo, vec_records::VecRecords, Records, RecordsMut},
+    records::{
+        cell_info::CellInfo,
+        vec_records::{CellMut, VecRecords},
+        Records, RecordsMut,
+    },
     width::{CfgWidthFunction, WidthEstimator},
     Estimate, Grid, GridConfig,
 };
@@ -87,7 +91,24 @@ impl<'a> Table<VecRecords<CellInfo<'static>>> {
         I: IntoIterator<Item = T> + 'a,
         T: Tabled,
     {
-        Self::builder(iter).build()
+        let ctrl = CfgWidthFunction::new(4);
+
+        let mut header = vec![CellInfo::default(); T::LENGTH];
+        for (text, cell) in T::headers().into_iter().zip(header.iter_mut()) {
+            CellMut::set(cell, text, &ctrl);
+        }
+
+        let mut records = vec![header];
+        for row in iter.into_iter() {
+            let mut list = vec![CellInfo::default(); T::LENGTH];
+            for (text, cell) in row.fields().into_iter().zip(list.iter_mut()) {
+                CellMut::set(cell, text, &ctrl);
+            }
+
+            records.push(list);
+        }
+
+        Builder::custom(VecRecords::from(records)).build()
     }
 
     /// Creates a builder from a data set given.
@@ -135,19 +156,25 @@ impl<'a> Table<VecRecords<CellInfo<'static>>> {
     ///      +----------------+------+---------+------+"
     /// )
     /// ```
-    pub fn builder<I, T>(iter: I) -> Builder
+    pub fn builder<I, T>(iter: I) -> Builder<'static>
     where
         T: Tabled,
         I: IntoIterator<Item = T>,
     {
-        let mut b = Builder::new();
+        let ctrl = CfgWidthFunction::new(4);
+        let mut records = Vec::new();
+        for row in iter {
+            let mut list = vec![CellInfo::default(); T::LENGTH];
+            for (text, cell) in row.fields().into_iter().zip(list.iter_mut()) {
+                CellMut::set(cell, text, &ctrl);
+            }
+
+            records.push(list);
+        }
+
+        let mut b = Builder::from(records);
         b.hint_column_size(T::LENGTH);
         b.set_columns(T::headers());
-
-        for c in iter {
-            let fields = c.fields();
-            b.add_record(fields);
-        }
 
         b
     }
@@ -205,11 +232,14 @@ where
     }
 }
 
-impl<R> Table<R> {
-    pub(crate) fn new_raw(records: R, cfg: GridConfig) -> Self {
+impl<R> From<R> for Table<R>
+where
+    R: Records,
+{
+    fn from(records: R) -> Self {
         Self {
             records,
-            cfg,
+            cfg: GridConfig::default(),
             widths: None,
         }
     }
@@ -244,18 +274,20 @@ where
     R: Records,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // check if we have cached widths values.
-        let width = match &self.widths {
-            Some(widths) => WidthEstimator::from(widths.clone()),
-            None => {
-                let mut w = WidthEstimator::default();
-                w.estimate(&self.records, &self.cfg);
-                w
-            }
-        };
-
         let mut height = HeightEstimator::default();
         height.estimate(&self.records, &self.cfg);
+
+        // check if we have cached widths values.
+        let width = {
+            match &self.widths {
+                Some(widths) => WidthCtrl::Cached(widths),
+                None => {
+                    let mut w = WidthEstimator::default();
+                    w.estimate(&self.records, &self.cfg);
+                    WidthCtrl::Ctrl(w)
+                }
+            }
+        };
 
         let grid = Grid::new(&self.records, &self.cfg, &width, &height);
 
@@ -299,5 +331,31 @@ where
 {
     fn table(self) -> Table<VecRecords<CellInfo<'a>>> {
         Table::new(self)
+    }
+}
+
+enum WidthCtrl<'a> {
+    Cached(&'a [usize]),
+    Ctrl(WidthEstimator),
+}
+
+impl<R> Estimate<R> for WidthCtrl<'_>
+where
+    R: Records,
+{
+    fn estimate(&mut self, _: R, _: &GridConfig) {}
+
+    fn get(&self, i: usize) -> Option<usize> {
+        match self {
+            WidthCtrl::Cached(list) => list.get(i).copied(),
+            WidthCtrl::Ctrl(e) => Estimate::<R>::get(e, i),
+        }
+    }
+
+    fn total(&self) -> usize {
+        match self {
+            WidthCtrl::Cached(list) => list.iter().sum(),
+            WidthCtrl::Ctrl(e) => Estimate::<R>::total(e),
+        }
     }
 }
