@@ -5,9 +5,9 @@
 /// group! allows several tables to be displayed in parallel, or as a greater table to maximize data visualization.
 ///
 /// ### Parallel Display
-/// 
+///
 /// Easily compare multiple tables by grouping them together.
-/// 
+///
 /// ```rust,no_run
 /// println!("{}", group!(table_a, table_b));
 /// /*
@@ -24,11 +24,11 @@
 /// +------------------------+------------------------+
 /// */
 /// ```
-/// 
+///
 /// ### Table Duplication
-/// 
+///
 /// Akin to the `vec![T; N]` pattern for repetition.
-/// 
+///
 /// ```rust,no_run
 /// println!("{}", group!(table_a; 3));
 /// /*
@@ -42,14 +42,14 @@
 /// +------------------------+------------------------+------------------------+
 /// */
 /// ```
-/// 
+///
 /// ### Rows
-/// 
+///
 /// - Each rows height is calculated separately.
 /// - Each columns width is calculated separately.
-/// - Rows are chunked by the defined increment. 
+/// - Rows are chunked by the defined increment.
 /// - Empty cells default to blank.
-/// 
+///
 ///  ```rust,no_run
 /// println!("{}", group!(table_a, table_b, table_c; 2));
 /// /*
@@ -76,12 +76,12 @@
 /// +-------------------------------------+------------------------+
 /// */
 /// ```
-/// 
+///
 /// ### Clean Display
-/// 
+///
 /// The `@` identifier is recognized by all patterns to produce
 /// a [String] directly without parent styling.
-/// 
+///
 ///  ```rust,no_run
 /// let output: String = group!(@ table_a, table_b);
 /// println!("{output}");
@@ -90,14 +90,14 @@
 /// │ temperature_c │ wind_ms │ latitude │ longitude │  │ temperature_c │ wind_ms │ latitude │ longitude │
 /// ├───────────────┼─────────┼──────────┼───────────┤  ├───────────────┼─────────┼──────────┼───────────┤
 /// │      16       │  3000   │ 111.111  │  333.333  │  │      16       │  3000   │ 111.111  │  333.333  │
-/// │      -20      │   300   │  5.111   │  7282.1   │  │      -20      │   300   │  5.111   │  7282.1   │ 
+/// │      -20      │   300   │  5.111   │  7282.1   │  │      -20      │   300   │  5.111   │  7282.1   │
 /// │      40       │   100   │    0     │     0     │  │      40       │   100   │    0     │     0     │
 /// └───────────────┴─────────┴──────────┴───────────┘  └───────────────┴─────────┴──────────┴───────────┘                       
 /// */
 /// ```
 #[macro_export]
 macro_rules! group {
-    // SET A    
+    // SET A
     ( $($table:expr), * ) => {{
         let mut builder = Table::builder([( $($table.to_string(),)*) ]);
         builder.remove_columns();
