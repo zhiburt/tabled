@@ -69,6 +69,4 @@ fn main() {
     println!("{}", group!(table_c; 3));
     println!("\n\n");
     println!("{}", group!(table_a, table_b, table_c; 2));
-    println!("\n\n");
-    println!("{}", group!(@ table_b, table_b));
 }
