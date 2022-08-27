@@ -71,6 +71,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Object](#object)
 - [Views](#views)
   - [Expanded display](#expanded-display)
+  - [Group](#group)
 - [Notes](#notes)
   - [ANSI escape codes](#ansi-escape-codes)
   - [Emoji](#emoji)
@@ -1264,6 +1265,90 @@ is_cool   | true
 name      | Debian
 is_active | true
 is_cool   | true
+```
+
+### Group
+
+`tabled::group` empowers flexible table visualizations with three recognized patterns.
+
+#### Parallel Displays
+
+Comma delimited [`std::fmt::Display`] arguments are collected into a parent `Table`. All items are in one row.
+
+```rust
+println!("{}", group!(table_a, table_b));
+```
+```text
++------------------------+------------------------+
+| .--------------------. | ┌─────────┬──────────┐ |
+| | name    | based_on | | │ name    │ based_on │ |
+| | Debian  |          | | ├─────────┼──────────┤ |
+| | Arch    |          | | │ Debian  │          │ |
+| | Manjaro | Arch     | | ├─────────┼──────────┤ |
+| '--------------------' | │ Arch    │          │ |
+|                        | ├─────────┼──────────┤ |
+|                        | │ Manjaro │ Arch     │ |
+|                        | └─────────┴──────────┘ |
++------------------------+------------------------+
+```
+
+#### Table Duplication
+
+A single [`std::fmt::Display`] argument followed by a semicolon and `usize`.
+
+The single argument is duplicated by the specified number. All duplications are in one row.
+
+```rust
+println!("{}", group!(table_a; 3));
+```
+```text
++------------------------+------------------------+------------------------+
+| .--------------------. | .--------------------. | .--------------------. |
+| | name    | based_on | | | name    | based_on | | | name    | based_on | |
+| | Debian  |          | | | Debian  |          | | | Debian  |          | |
+| | Arch    |          | | | Arch    |          | | | Arch    |          | |
+| | Manjaro | Arch     | | | Manjaro | Arch     | | | Manjaro | Arch     | |
+| '--------------------' | '--------------------' | '--------------------' |
++------------------------+------------------------+------------------------+
+```
+
+#### Rows
+
+Comma delimited [`std::fmt::Display`] arguments are collected into a parent `Table`.
+
+The addition of a semicolon following a list of arguments greater than one will result in a row count pattern.
+
+- Each rows height is calculated separately.
+- Each columns width is calculated separately.
+- Rows are chunked by the defined increment.
+- Empty cells default to blank.
+
+```rust
+println!("{}", group!(table_a, table_b, table_c; 2));
+```
+
+```text
++-------------------------------------+------------------------+
+| .--------------------.              | ┌─────────┬──────────┐ |
+| | name    | based_on |              | │ name    │ based_on │ |
+| | Debian  |          |              | ├─────────┼──────────┤ |
+| | Arch    |          |              | │ Debian  │          │ |
+| | Manjaro | Arch     |              | ├─────────┼──────────┤ |
+| '--------------------'              | │ Arch    │          │ |
+|                                     | ├─────────┼──────────┤ |
+|                                     | │ Manjaro │ Arch     │ |
+|                                     | └─────────┴──────────┘ |
++-------------------------------------+------------------------+
+| | name                 | based_on | |                        |
+| |----------------------|----------| |                        |
+| | Super Long Name Here |          | |                        |
+| | Arch                 |          | |                        |
+| | Manjaro              | Arch     | |                        |
+|                                     |                        |
+|                                     |                        |
+|                                     |                        |
+|                                     |                        |
++-------------------------------------+------------------------+
 ```
 
 ## Notes
