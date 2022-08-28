@@ -64,9 +64,9 @@ fn main() {
     let table_b = Table::new(&data_b).with(Style::modern());
     let table_c = Table::new(&data_c).with(Style::ascii_rounded());
 
-    println!("{}", group!(table_c, table_b));
-    println!("\n\n");
-    println!("{}", group!(table_c; 3));
-    println!("\n\n");
-    println!("{}", group!(table_a, table_b, table_c; 2));
+    println!("{}", group![table_c, table_b,]);
+    println!();
+    println!("{}", group![table_c; 3]);
+    println!();
+    println!("{}", group![table_a, table_b, table_c; 2]);
 }

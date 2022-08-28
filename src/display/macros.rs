@@ -85,7 +85,7 @@
 #[macro_export]
 macro_rules! group {
     // Parallel Display
-    ( $($table:expr), * ) => {{
+    ( $($table:expr), * $(,)? ) => {{
         let mut builder = Table::builder([( $($table.to_string(),)*) ]);
         builder.remove_columns();
         builder.build()
