@@ -71,7 +71,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Object](#object)
 - [Views](#views)
   - [Expanded display](#expanded-display)
-  - [Group](#group)
+  - [Col and Row](#col-and-row)
 - [Notes](#notes)
   - [ANSI escape codes](#ansi-escape-codes)
   - [Emoji](#emoji)
@@ -1267,88 +1267,93 @@ is_active | true
 is_cool   | true
 ```
 
-### Group
+### Col and Row
 
-`tabled::group` empowers flexible table visualizations with three recognized patterns.
-
-#### Parallel Displays
-
-Comma delimited [`std::fmt::Display`] arguments are collected into a parent `Table`. All items are in one row.
+Combine `tabled::col!` and `tabled::row!` to create flexible table visualizations.
 
 ```rust
-println!("{}", group!(table_a, table_b));
-```
-```text
-+------------------------+------------------------+
-| .--------------------. | ┌─────────┬──────────┐ |
-| | name    | based_on | | │ name    │ based_on │ |
-| | Debian  |          | | ├─────────┼──────────┤ |
-| | Arch    |          | | │ Debian  │          │ |
-| | Manjaro | Arch     | | ├─────────┼──────────┤ |
-| '--------------------' | │ Arch    │          │ |
-|                        | ├─────────┼──────────┤ |
-|                        | │ Manjaro │ Arch     │ |
-|                        | └─────────┴──────────┘ |
-+------------------------+------------------------+
-```
-
-#### Table Duplication
-
-A single [`std::fmt::Display`] argument followed by a semicolon and `usize`.
-
-The single argument is duplicated by the specified number. All duplications are in one row.
-
-```rust
-println!("{}", group!(table_a; 3));
-```
-```text
-+------------------------+------------------------+------------------------+
-| .--------------------. | .--------------------. | .--------------------. |
-| | name    | based_on | | | name    | based_on | | | name    | based_on | |
-| | Debian  |          | | | Debian  |          | | | Debian  |          | |
-| | Arch    |          | | | Arch    |          | | | Arch    |          | |
-| | Manjaro | Arch     | | | Manjaro | Arch     | | | Manjaro | Arch     | |
-| '--------------------' | '--------------------' | '--------------------' |
-+------------------------+------------------------+------------------------+
-```
-
-#### Rows
-
-Comma delimited [`std::fmt::Display`] arguments are collected into a parent `Table`.
-
-The addition of a semicolon following a list of arguments greater than one will result in a row count pattern.
-
-- Each rows height is calculated separately.
-- Each columns width is calculated separately.
-- Rows are chunked by the defined increment.
-- Empty cells default to blank.
-
-```rust
-println!("{}", group!(table_a, table_b, table_c; 2));
+row![table1, table2,];
 ```
 
 ```text
-+-------------------------------------+------------------------+
-| .--------------------.              | ┌─────────┬──────────┐ |
-| | name    | based_on |              | │ name    │ based_on │ |
-| | Debian  |          |              | ├─────────┼──────────┤ |
-| | Arch    |          |              | │ Debian  │          │ |
-| | Manjaro | Arch     |              | ├─────────┼──────────┤ |
-| '--------------------'              | │ Arch    │          │ |
-|                                     | ├─────────┼──────────┤ |
-|                                     | │ Manjaro │ Arch     │ |
-|                                     | └─────────┴──────────┘ |
-+-------------------------------------+------------------------+
-| | name                 | based_on | |                        |
-| |----------------------|----------| |                        |
-| | Super Long Name Here |          | |                        |
-| | Arch                 |          | |                        |
-| | Manjaro              | Arch     | |                        |
-|                                     |                        |
-|                                     |                        |
-|                                     |                        |
-|                                     |                        |
-+-------------------------------------+------------------------+
++-------------------------------------------+---------------------------------------------+
+| .---------------------------------------. | ┌────────────────────┬─────┬──────────────┐ |
+| | name             | age | is_validated | | │ name               │ age │ is_validated │ |
+| | Jon Doe          | 255 | false        | | ├────────────────────┼─────┼──────────────┤ |
+| | Mark Nelson      | 13  | true         | | │ Jack Black         │ 51  │ false        │ |
+| | Terminal Monitor | 0   | false        | | ├────────────────────┼─────┼──────────────┤ |
+| | Adam Blend       | 17  | true         | | │ Michelle Goldstein │ 44  │ true         │ |
+| '---------------------------------------' | └────────────────────┴─────┴──────────────┘ |
++-------------------------------------------+---------------------------------------------+
+```
+
+```rust
+col![table1, table2,];
+```
+
+```text
++---------------------------------------------+
+| .---------------------------------------.   |
+| | name             | age | is_validated |   |
+| | Jon Doe          | 255 | false        |   |
+| | Mark Nelson      | 13  | true         |   |
+| | Terminal Monitor | 0   | false        |   |
+| | Adam Blend       | 17  | true         |   |
+| '---------------------------------------'   |
++---------------------------------------------+
+| ┌────────────────────┬─────┬──────────────┐ |
+| │ name               │ age │ is_validated │ |
+| ├────────────────────┼─────┼──────────────┤ |
+| │ Jack Black         │ 51  │ false        │ |
+| ├────────────────────┼─────┼──────────────┤ |
+| │ Michelle Goldstein │ 44  │ true         │ |
+| └────────────────────┴─────┴──────────────┘ |
++---------------------------------------------+
+```
+
+```rust
+row![table1; 3];
+```
+
+```text
++-------------------------------------------+-------------------------------------------+-------------------------------------------+
+| .---------------------------------------. | .---------------------------------------. | .---------------------------------------. |
+| | name             | age | is_validated | | | name             | age | is_validated | | | name             | age | is_validated | |
+| | Jon Doe          | 255 | false        | | | Jon Doe          | 255 | false        | | | Jon Doe          | 255 | false        | |
+| | Mark Nelson      | 13  | true         | | | Mark Nelson      | 13  | true         | | | Mark Nelson      | 13  | true         | |
+| | Terminal Monitor | 0   | false        | | | Terminal Monitor | 0   | false        | | | Terminal Monitor | 0   | false        | |
+| | Adam Blend       | 17  | true         | | | Adam Blend       | 17  | true         | | | Adam Blend       | 17  | true         | |
+| '---------------------------------------' | '---------------------------------------' | '---------------------------------------' |
++-------------------------------------------+-------------------------------------------+-------------------------------------------+
+```
+
+```rust
+col![
+    row!(table_a, table_b), 
+    table_c
+]
+```
+
+```text
++----------------------------------------------------------------------------------+
+| +--------------------------------+---------------------------------------------+ |
+| | +-------+-----+--------------+ | ┌────────────────────┬─────┬──────────────┐ | |
+| | | name  | age | is_validated | | │ name               │ age │ is_validated │ | |
+| | +-------+-----+--------------+ | ├────────────────────┼─────┼──────────────┤ | |
+| | | Sam   | 31  | true         | | │ Jack Black         │ 51  │ false        │ | |
+| | +-------+-----+--------------+ | ├────────────────────┼─────┼──────────────┤ | |
+| | | Sarah | 26  | true         | | │ Michelle Goldstein │ 44  │ true         │ | |
+| | +-------+-----+--------------+ | └────────────────────┴─────┴──────────────┘ | |
+| +--------------------------------+---------------------------------------------+ |
++----------------------------------------------------------------------------------+
+| .---------------------------------------.                                        |
+| | name             | age | is_validated |                                        |
+| | Jon Doe          | 255 | false        |                                        |
+| | Mark Nelson      | 13  | true         |                                        |
+| | Terminal Monitor | 0   | false        |                                        |
+| | Adam Blend       | 17  | true         |                                        |
+| '---------------------------------------'                                        |
++----------------------------------------------------------------------------------+
 ```
 
 ## Notes
