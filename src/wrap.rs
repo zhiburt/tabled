@@ -112,6 +112,8 @@ where
             let text = papergrid::util::replace_tab(text, table.get_config().get_tab_width());
             let wrapped = wrap_text(&text, width, self.keep_words);
 
+            println!("wrapp: \n{:?}\n{:?}", text, wrapped);
+
             debug_assert!(
                 width >= string_width_multiline(&wrapped),
                 "width={:?}\n\n content={:?}\n\n wrap={:?}\n",
@@ -389,25 +391,22 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
     let mut line = String::with_capacity(width);
     let mut line_width = 0;
 
-    let mut is_first_word = true;
-
     for b in ansi_str::get_blocks(s) {
         if b.text().is_empty() {
             continue;
         }
 
-        let _ = write!(&mut line, "{}", b.start());
+        let mut first_word = true;
         for word in b.text().split(' ') {
-            if !is_first_word {
+            if !first_word {
                 let line_has_space = line_width < width;
                 if line_has_space {
                     line.push(' ');
                     line_width += 1;
-                    is_first_word = false;
                 }
-            }
-            if is_first_word {
-                is_first_word = false;
+            } else {
+                let _ = write!(&mut line, "{}", b.start());
+                first_word = false;
             }
 
             let word_width = unicode_width::UnicodeWidthStr::width(word);
@@ -431,7 +430,6 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                 let _ = write!(&mut line, "{}", b.start());
                 line.push_str(word);
                 line_width = word_width;
-                is_first_word = false;
             } else {
                 // the word is too long any way so we split it
 
@@ -454,7 +452,6 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                         lines.push(line);
                         line = String::with_capacity(width);
                         line_width = 0;
-                        is_first_word = true;
                         let _ = write!(&mut line, "{}", b.start());
                     }
                 }
