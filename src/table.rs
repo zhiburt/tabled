@@ -11,8 +11,6 @@ use papergrid::{
 
 use crate::{builder::Builder, object::Entity, Tabled};
 
-// todo: rename TableOption/CellOption
-
 /// A trait which is responsilbe for configuration of a [`Table`].
 pub trait TableOption<R> {
     /// The function modifies a [`Grid`] object.

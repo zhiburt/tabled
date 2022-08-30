@@ -27,7 +27,7 @@ members = [
 ]
 
 [features]
-default = ["derive"]
+default = ["derive", "macros"]
 derive = ["tabled_derive"]
 color = ["papergrid/color", "ansi-str"]
 macros = []
@@ -147,8 +147,8 @@ path = "examples/padding_color.rs"
 required-features = ["color", "derive"]
 
 [[example]]
-name = "col_row"
-path = "examples/col_row.rs"
+name = "col_row_macros"
+path = "examples/col_row_macros.rs"
 required-features = ["macros"]
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.

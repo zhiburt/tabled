@@ -82,6 +82,9 @@ impl<W, P> MinWidth<W, P> {
     /// - [`PriorityNone`] which inc the columns one after another.
     /// - [`PriorityMax`] inc the biggest columns first.
     /// - [`PriorityMin`] inc the lowest columns first.
+    ///
+    /// [`PriorityMax`]: crate::width::PriorityMax
+    /// [`PriorityMin`]: crate::width::PriorityMin
     pub fn priority<PP: ColumnPeaker>(self) -> MinWidth<W, PP> {
         MinWidth {
             fill: self.fill,

@@ -1,4 +1,4 @@
-//! A module which contains a [WidthFunc] trait and it's implementation [CfgWidthFunction]
+//! A module which contains a [`WidthFunc`] trait and it's implementation [`CfgWidthFunction`]
 
 use crate::{
     util::{string_width_multiline_tab, string_width_tab},

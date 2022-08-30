@@ -46,7 +46,7 @@
 //! ```
 //!
 //! [`Table`]: crate::Table
-//! [`AlignmentStrategy`]: crate::formatting_settings::AlignmentStrategy
+//! [`AlignmentStrategy`]: crate::formatting::AlignmentStrategy
 
 use papergrid::Entity;
 
@@ -84,8 +84,8 @@ impl Alignment {
     /// When you use [`MinWidth`] the alignment might not work as you expected.
     /// You could try to apply [`TrimStrategy`] which may help.
     ///
-    /// [`MinWidth`]: crate::width::MinWidth
-    /// [`TrimStrategy`]: crate::formatting_settings::TrimStrategy
+    /// [`MinWidth`]: crate::min_width::MinWidth
+    /// [`TrimStrategy`]: crate::formatting::TrimStrategy
     pub fn right() -> Self {
         Self::horizontal(AlignmentHorizontal::Right)
     }
@@ -97,8 +97,8 @@ impl Alignment {
     /// When you use [`MinWidth`] the alignment might not work as you expected.
     /// You could try to apply [`TrimStrategy`] which may help.
     ///
-    /// [`MinWidth`]: crate::width::MinWidth
-    /// [`TrimStrategy`]: crate::formatting_settings::TrimStrategy
+    /// [`MinWidth`]: crate::min_width::MinWidth
+    /// [`TrimStrategy`]: crate::formatting::TrimStrategy
     pub fn center() -> Self {
         Self::horizontal(AlignmentHorizontal::Center)
     }

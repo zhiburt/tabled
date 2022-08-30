@@ -1,6 +1,6 @@
 #![cfg(feature = "macros")]
 
-use tabled::{col, format::Format, object::Segment, row, Alignment, Modify, Padding, Table};
+use tabled::{col, format::Format, object::Segment, row, Alignment, Modify, Padding};
 
 use crate::util::{create_table, test_table};
 

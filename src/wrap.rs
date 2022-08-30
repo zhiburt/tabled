@@ -64,10 +64,13 @@ impl<W, P> Wrap<W, P> {
     /// - [`PriorityNone`] which cuts the columns one after another.
     /// - [`PriorityMax`] cuts the biggest columns first.
     /// - [`PriorityMin`] cuts the lowest columns first.
+    ///
     /// Be aware that it doesn't consider padding.
     /// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
     ///
     /// [`Padding`]: crate::Padding
+    /// [`PriorityMax`]: crate::width::PriorityMax
+    /// [`PriorityMin`]: crate::width::PriorityMin
     pub fn priority<PP>(self) -> Wrap<W, PP> {
         Wrap {
             width: self.width,

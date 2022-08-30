@@ -55,7 +55,6 @@
 //! [`Border`] can be used to modify cell's borders.
 //!
 //! It's possible to set a collored border when `color` feature is on.
-//! See [`Symbol`].
 //!
 //! ### Example
 //!
@@ -88,7 +87,8 @@
 //! It also contains a list of types to support colors.
 //!
 //! [`Table`]: crate::Table
-//! [`Symbol`]: crate::style::Symbol
+//! [`BorderText`]: crate::border_text::BorderText
+//! [`RawStyle`]: crate::raw_style::RawStyle
 
 use std::marker::PhantomData;
 
@@ -121,6 +121,7 @@ use crate::table::{Table, TableOption};
 /// ```
 ///
 /// [`Table`]: crate::Table
+/// [`RawStyle`]: crate::raw_style::RawStyle
 #[derive(Debug, Clone)]
 pub struct Style<T, B, L, R, H, V, Lines = ConstLines<0>> {
     pub(crate) borders: Borders<char>,

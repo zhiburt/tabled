@@ -13,6 +13,7 @@ use crate::{Table, TableOption};
 ///
 /// [`Table`]: crate::Table
 /// [`Span`]: crate::Span
+/// [`Style::correct_spans`]: crate::Style::correct_spans
 #[derive(Debug)]
 pub struct StyleCorrectSpan;
 

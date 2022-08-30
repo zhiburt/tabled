@@ -200,6 +200,34 @@
 //! );
 //! ```
 //!
+//! ### Build table using [`row`] and [`col`].
+//!
+#![cfg_attr(feature = "macros", doc = "```")]
+#![cfg_attr(not(feature = "macros"), doc = "```ignore")]
+//! use tabled::{row, col};
+//!
+//! let table = row![
+//!     col!["Hello", "World", "!"],
+//!     col!["Hello"; 3],
+//!     col!["World"; 3],
+//! ].to_string();
+//!
+//! assert_eq!(
+//!     table,
+//!     concat!(
+//!         "+-----------+-----------+-----------+\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "| | Hello | | | Hello | | | World | |\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "| | World | | | Hello | | | World | |\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "| | !     | | | Hello | | | World | |\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "+-----------+-----------+-----------+",
+//!     )
+//! );
+//! ```
+//!
 //! ## Settings
 //!
 //! You can find more examples of settings and attributes in
@@ -242,19 +270,27 @@ pub mod style;
 pub mod width;
 
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod border_colored;
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod color;
-#[cfg(feature = "macros")]
-pub mod macros;
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod margin_color;
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod padding_color;
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod raw_style_colored;
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod symbol;
+
+#[cfg(feature = "macros")]
+#[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
+pub mod macros;
 
 use std::fmt;
 

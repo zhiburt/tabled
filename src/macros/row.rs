@@ -1,6 +1,6 @@
-/// Creates a parent [`Table`] with [`std::fmt::Display`] arguments nested within.
+/// Creates a [`Table`] with [`Display`] arguments nested within.
 ///
-/// row! allows several tables to be displayed horizontally.
+/// The macros allows several tables to be displayed horizontally.
 ///
 /// Companion to [`col!`].
 ///
@@ -15,11 +15,16 @@
 ///     col![table2, table3]
 /// ];
 /// ```
+///
+/// [`col!`]: crate::col
+/// [`Table`]: crate::Table
+/// [`Display`]: std::fmt::Display
 #[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
 macro_rules! row {
     // Horizontal Display
     ( $($table:expr), * $(,)? ) => {{
-        let mut builder = tabled::builder::Builder::default();
+        let mut builder = $crate::builder::Builder::default();
 
         builder.add_record([ $($table.to_string(),)* ]);
 
@@ -28,10 +33,9 @@ macro_rules! row {
 
     // Duplicate single item
     ( $table:expr; $N:expr) => {{
+        let mut builder = $crate::builder::Builder::default();
+
         let duplicates = vec![$table.to_string(); $N];
-
-        let mut builder = tabled::builder::Builder::default();
-
         builder.add_record(duplicates);
 
         builder.build()

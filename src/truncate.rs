@@ -138,6 +138,9 @@ impl<'a, W, P> Truncate<'a, W, P> {
     /// - [`PriorityNone`] which cuts the columns one after another.
     /// - [`PriorityMax`] cuts the biggest columns first.
     /// - [`PriorityMin`] cuts the lowest columns first.
+    ///
+    /// [`PriorityMax`]: crate::width::PriorityMax
+    /// [`PriorityMin`]: crate::width::PriorityMin
     pub fn priority<PP: ColumnPeaker>(self) -> Truncate<'a, W, PP> {
         Truncate {
             width: self.width,

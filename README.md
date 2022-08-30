@@ -1214,10 +1214,10 @@ Utilities for dynamic `Table` displays.
 
 #### Col and Row
 
-Combine `tabled::col!` and `tabled::row!` to create flexible table visualizations.
+Combine `col!` and `row!` to create flexible table visualizations.
 
 ```rust
-row![table1, table2,];
+row![table1, table2];
 ```
 
 ```text
@@ -1233,7 +1233,7 @@ row![table1, table2,];
 ```
 
 ```rust
-col![table1, table2,];
+col![table1, table2];
 ```
 
 ```text
@@ -1274,7 +1274,7 @@ row![table1; 3];
 
 ```rust
 col![
-    row!(table_a, table_b), 
+    row![table_a, table_b], 
     table_c
 ]
 ```
