@@ -69,9 +69,10 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Color](#color)
   - [Tuple combination](#tuple-combination)
   - [Object](#object)
+  - [Macros](#macros)
+    - [Col and Row](#col-and-row)
 - [Views](#views)
   - [Expanded display](#expanded-display)
-  - [Col and Row](#col-and-row)
 - [Notes](#notes)
   - [ANSI escape codes](#ansi-escape-codes)
   - [Emoji](#emoji)
@@ -1207,67 +1208,11 @@ Columns::first().and(Columns::last()) // select cells from first and last column
 Rows::first().and(Columns::single(0)).not(Cell(0, 0)) // select the header and first column except the (0, 0) cell.
 ```
 
-## Views
+### Macros
 
-`Tabled` supports not only Table view!
+Utilities for dynamic `Table` displays.
 
-### Expanded display
-
-You can use `ExpanedDisplay` if your data structure has a lot of fields.
-
-Here's an example.
-
-```rust
-use tabled::{display::ExpandedDisplay, Tabled};
-
-#[derive(Tabled)]
-struct Distribution {
-    name: &'static str,
-    is_active: bool,
-    is_cool: bool,
-}
-
-let data = [
-    Distribution {
-        name: "Manjaro",
-        is_cool: true,
-        is_active: true,
-    },
-    Distribution {
-        name: "Debian",
-        is_cool: true,
-        is_active: true,
-    },
-    Distribution {
-        name: "Debian",
-        is_cool: true,
-        is_active: true,
-    },
-];
-
-let table = ExpandedDisplay::new(&data);
-
-println!("{}", table);
-```
-
-You'll see the following.
-
-```text
--[ RECORD 0 ]------
-name      | Manjaro
-is_active | true
-is_cool   | true
--[ RECORD 1 ]------
-name      | Debian
-is_active | true
-is_cool   | true
--[ RECORD 2 ]------
-name      | Debian
-is_active | true
-is_cool   | true
-```
-
-### Col and Row
+#### Col and Row
 
 Combine `tabled::col!` and `tabled::row!` to create flexible table visualizations.
 
@@ -1354,6 +1299,66 @@ col![
 | | Adam Blend       | 17  | true         |                                        |
 | '---------------------------------------'                                        |
 +----------------------------------------------------------------------------------+
+```
+
+## Views
+
+`Tabled` supports not only Table view!
+
+### Expanded display
+
+You can use `ExpanedDisplay` if your data structure has a lot of fields.
+
+Here's an example.
+
+```rust
+use tabled::{display::ExpandedDisplay, Tabled};
+
+#[derive(Tabled)]
+struct Distribution {
+    name: &'static str,
+    is_active: bool,
+    is_cool: bool,
+}
+
+let data = [
+    Distribution {
+        name: "Manjaro",
+        is_cool: true,
+        is_active: true,
+    },
+    Distribution {
+        name: "Debian",
+        is_cool: true,
+        is_active: true,
+    },
+    Distribution {
+        name: "Debian",
+        is_cool: true,
+        is_active: true,
+    },
+];
+
+let table = ExpandedDisplay::new(&data);
+
+println!("{}", table);
+```
+
+You'll see the following.
+
+```text
+-[ RECORD 0 ]------
+name      | Manjaro
+is_active | true
+is_cool   | true
+-[ RECORD 1 ]------
+name      | Debian
+is_active | true
+is_cool   | true
+-[ RECORD 2 ]------
+name      | Debian
+is_active | true
+is_cool   | true
 ```
 
 ## Notes
