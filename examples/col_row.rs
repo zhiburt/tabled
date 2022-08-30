@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example col_row`
+//! `cargo run --example col_row --features="macros"`
 
 use tabled::{col, row, Style, Table, Tabled};
 
