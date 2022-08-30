@@ -19,8 +19,12 @@
 macro_rules! col {
     // Vertical
     ( $($table:expr), * $(,)? ) => {{
-        let mut builder = Table::builder([ $($table.to_string(),)* ]);
-        builder.remove_columns();
+        let mut builder = tabled::builder::Builder::default();
+
+        $(
+            builder.add_record([$table.to_string()]);
+        )*
+
         builder.build()
     }};
 
