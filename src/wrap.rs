@@ -112,8 +112,6 @@ where
             let text = papergrid::util::replace_tab(text, table.get_config().get_tab_width());
             let wrapped = wrap_text(&text, width, self.keep_words);
 
-            println!("wrapp: \n{:?}\n{:?}", text, wrapped);
-
             debug_assert!(
                 width >= string_width_multiline(&wrapped),
                 "width={:?}\n\n content={:?}\n\n wrap={:?}\n",
