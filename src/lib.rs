@@ -245,6 +245,8 @@ pub mod width;
 pub mod border_colored;
 #[cfg(feature = "color")]
 pub mod color;
+#[cfg(feature = "macros")]
+pub mod macros;
 #[cfg(feature = "color")]
 pub mod margin_color;
 #[cfg(feature = "color")]
