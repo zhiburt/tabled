@@ -82,7 +82,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --no-fail-fast --target ${{ matrix.target }} --features ${{ matrix.features }}
+          args: --workspace --no-fail-fast --target ${{ matrix.target }} --features=${{ matrix.features }}
 
   test_quickcheck:
     name: A quickcheck test suite
