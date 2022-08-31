@@ -537,6 +537,10 @@ fn closest_visible_column(cfg: &GridConfig, mut pos: Position) -> Option<usize> 
 }
 
 fn is_cell_covered_by_column_span(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+    if cfg.span_columns.is_empty() {
+        return false;
+    }
+
     cfg.span_columns
         .iter()
         .filter(|(&pos, &span)| is_column_span_valid(pos, span, shape))
@@ -544,18 +548,26 @@ fn is_cell_covered_by_column_span(cfg: &GridConfig, pos: Position, shape: (usize
 }
 
 fn is_cell_covered_by_row_span(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+    if cfg.span_rows.is_empty() {
+        return false;
+    }
+
     cfg.span_rows
         .iter()
         .filter(|(&pos, &span)| is_row_span_valid(pos, span, shape))
         .any(|(&(row, col), span)| pos.0 > row && pos.0 < row + span && col == pos.1)
 }
 
-fn is_cell_covered_by_both_spans(grid: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
-    grid.span_rows
+fn is_cell_covered_by_both_spans(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+    if cfg.span_rows.is_empty() || cfg.span_columns.is_empty() {
+        return false;
+    }
+
+    cfg.span_rows
         .iter()
         .filter(|(&pos, &span)| is_row_span_valid(pos, span, shape))
         .any(|(p1, row_span)| {
-            grid.span_columns
+            cfg.span_columns
                 .iter()
                 .filter(|(&pos, &span)| is_column_span_valid(pos, span, shape))
                 .filter(|(p2, _)| &p1 == p2)

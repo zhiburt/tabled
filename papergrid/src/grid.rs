@@ -3,7 +3,7 @@
 use std::{
     borrow::Cow,
     cmp,
-    fmt::{self, Display, Write},
+    fmt::{self, Write},
 };
 
 use crate::{
@@ -88,7 +88,7 @@ where
 
         if has_horizontal(cfg, records, row) {
             if prev_empty_horizontal {
-                '\n'.fmt(f)?;
+                f.write_char('\n')?;
             }
 
             print_margin_left(f, cfg)?;
@@ -96,13 +96,13 @@ where
             print_margin_right(f, cfg)?;
 
             if count_lines > 0 {
-                '\n'.fmt(f)?;
+                f.write_char('\n')?;
                 prev_empty_horizontal = false;
             } else {
                 prev_empty_horizontal = true;
             }
         } else if count_lines > 0 && prev_empty_horizontal {
-            '\n'.fmt(f)?;
+            f.write_char('\n')?;
             prev_empty_horizontal = false;
         }
 
@@ -146,7 +146,7 @@ where
             let is_last_line = i + 1 == count_lines;
             let is_last_row = row + 1 == records.count_rows();
             if !(is_last_line && is_last_row) {
-                '\n'.fmt(f)?;
+                f.write_char('\n')?;
             }
         }
     }
@@ -392,7 +392,7 @@ where
             if let Some(c) = left {
                 if !override_text.is_empty() {
                     let (c, rest) = spplit_str_at(&override_text, 1);
-                    c.fmt(f)?;
+                    f.write_str(&c)?;
                     override_text = rest.into_owned();
                 } else {
                     #[cfg(feature = "color")]
@@ -404,7 +404,7 @@ where
                         }
                     }
 
-                    c.fmt(f)?;
+                    f.write_char(*c)?;
                 }
             }
         }
@@ -419,7 +419,7 @@ where
             let text_width = width_ctrl.width(&override_text);
             let print_width = cmp::min(text_width, width);
             let (c, rest) = spplit_str_at(&override_text, print_width);
-            c.fmt(f)?;
+            f.write_str(&c)?;
             override_text = rest.into_owned();
 
             width -= print_width;
@@ -483,7 +483,7 @@ where
         if let Some(c) = right {
             if !override_text.is_empty() {
                 let (c, rest) = spplit_str_at(&override_text, 1);
-                c.fmt(f)?;
+                f.write_str(&c)?;
                 override_text = rest.into_owned();
             } else {
                 #[cfg(feature = "color")]
@@ -495,7 +495,7 @@ where
                     )?;
                 }
 
-                c.fmt(f)?;
+                f.write_char(*c)?;
             }
         }
     }
@@ -597,7 +597,7 @@ where
 
 fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
     for _ in 0..n {
-        c.fmt(f)?;
+        f.write_char(c)?;
     }
 
     Ok(())
@@ -631,15 +631,15 @@ where
         {
             if let Some(clr) = get_vertical_color(cfg, records, pos) {
                 clr.fmt_prefix(f)?;
-                c.fmt(f)?;
+                f.write_char(*c)?;
                 clr.fmt_suffix(f)?;
             } else {
-                c.fmt(f)?;
+                f.write_char(*c)?;
             }
         }
 
         #[cfg(not(feature = "color"))]
-        c.fmt(f)?;
+        f.write_char(*c)?;
     }
 
     Ok(())
