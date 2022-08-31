@@ -18,11 +18,16 @@ pub fn spplit_str_at(text: &str, at: usize) -> (Cow<'_, str>, Cow<'_, str>) {
         let (length, count_unknowns, _) = split_at_pos(&stripped, at);
 
         let mut buf = ansi_str::AnsiStr::ansi_cut(text, ..length);
-        buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+
+        if count_unknowns > 0 {
+            let mut b = buf.into_owned();
+            b.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            buf = Cow::Owned(b);
+        }
 
         let rest = ansi_str::AnsiStr::ansi_cut(text, length..);
 
-        (Cow::Owned(buf), Cow::Owned(rest))
+        (buf, rest)
     }
     #[cfg(not(feature = "color"))]
     {
@@ -54,9 +59,13 @@ pub fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
         let (length, count_unknowns, _) = split_at_pos(&stripped, width);
 
         let mut buf = ansi_str::AnsiStr::ansi_cut(s, ..length);
-        buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+        if count_unknowns > 0 {
+            let mut b = buf.into_owned();
+            b.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            buf = Cow::Owned(b);
+        }
 
-        Cow::Owned(buf)
+        buf
     }
     #[cfg(not(feature = "color"))]
     {
@@ -179,7 +188,7 @@ pub fn string_trim(text: &str) -> Cow<'_, str> {
 /// Trims a string.
 #[cfg(feature = "color")]
 pub fn string_trim(text: &str) -> Cow<'_, str> {
-    ansi_str::AnsiStr::ansi_trim(text).into()
+    ansi_str::AnsiStr::ansi_trim(text)
 }
 
 /// Returns a list of tabs (`\t`) in a string..

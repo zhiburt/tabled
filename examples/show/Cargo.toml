@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 tabled = { path = "../..", features = ["color", "derive"] }
-crossterm = "0.23.2"
-owo-colors = "1"
-clap = { version = "3.1.18", features = ["cargo"] }
+crossterm = "0.25.0"
+owo-colors = "3.5.0"
+clap = { version = "3.2.19", features = ["cargo"] }
