@@ -1253,7 +1253,6 @@ You can apply settings to subgroup of cells using `and` and `not` methods for an
 
 ```rust
 use tabled::object::{Object, Segment, Cell, Rows, Columns};
-
 Segment::all().not(Rows::first()); // select all cells except header.
 Columns::first().and(Columns::last()); // select cells from first and last columns.
 Rows::first().and(Columns::single(0)).not(Cell(0, 0)); // select the header and first column except the (0, 0) cell.
