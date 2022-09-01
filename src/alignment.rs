@@ -50,7 +50,7 @@
 
 use papergrid::Entity;
 
-use crate::{CellOption, Table};
+use crate::{CellOption, Table, TableOption};
 
 pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 
@@ -135,5 +135,15 @@ impl<R> CellOption<R> for Alignment {
             Self::Horizontal(a) => table.get_config_mut().set_alignment_horizontal(entity, a),
             Self::Vertical(a) => table.get_config_mut().set_alignment_vertical(entity, a),
         };
+    }
+}
+
+impl<R> TableOption<R> for Alignment {
+    fn change(&mut self, table: &mut Table<R>) {
+        let cfg = table.get_config_mut();
+        match self {
+            Alignment::Horizontal(a) => cfg.set_alignment_horizontal(Entity::Global, *a),
+            Alignment::Vertical(a) => cfg.set_alignment_vertical(Entity::Global, *a),
+        }
     }
 }

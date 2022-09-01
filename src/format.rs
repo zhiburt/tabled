@@ -190,3 +190,19 @@ where
         Format::new(self).change_cell(table, entity);
     }
 }
+
+impl<R> CellOption<R> for String
+where
+    R: Records + RecordsMut<String>,
+{
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        let width_fn = CfgWidthFunction::from_cfg(table.get_config());
+        let (count_rows, count_cols) = table.shape();
+        for pos in entity.iter(count_rows, count_cols) {
+            let text = self.clone();
+            table.get_records_mut().set(pos, text, &width_fn);
+        }
+
+        table.destroy_width_cache();
+    }
+}

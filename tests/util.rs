@@ -82,7 +82,7 @@ impl<const N: usize> IndexMut<usize> for Obj<N> {
 }
 
 impl<const N: usize> Tabled for Obj<N> {
-    const LENGTH: usize = N;
+    const LENGTH: usize = N + 1;
 
     fn fields(&self) -> Vec<String> {
         self.data.clone()
@@ -115,9 +115,6 @@ macro_rules! test_table {
         #[test]
         fn $test() {
             let table = $table.to_string();
-
-            println!("{table}");
-
             assert_eq!(table, crate::util::static_table!($($line)*));
         }
     };

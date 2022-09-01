@@ -3,7 +3,7 @@
 
 use tabled::{
     object::{Cell, Segment},
-    Alignment, Border, Extract, Header, Highlight, Modify, Style, TableIteratorExt, Tabled,
+    Alignment, Border, Extract, Highlight, Modify, Panel, Style, TableIteratorExt, Tabled,
 };
 
 #[derive(Tabled)]
@@ -31,12 +31,12 @@ fn main() {
 
     let commiters_table = commiters
         .table()
-        .with(Header("Contributors"))
+        .with(Panel::header("Contributors"))
         .with(Modify::new(Segment::all()).with(Alignment::center()));
 
     let issues_table = issuers
         .table()
-        .with(Header("Issuers"))
+        .with(Panel::header("Issuers"))
         .with(Modify::new(Segment::all()).with(Alignment::center()));
 
     let a_welcome_table = [

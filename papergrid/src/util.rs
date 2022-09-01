@@ -6,6 +6,47 @@
 
 use std::borrow::Cow;
 
+/// Get string at
+///
+/// BE AWARE: width is expected to be in bytes.
+pub fn spplit_str_at(text: &str, at: usize) -> (Cow<'_, str>, Cow<'_, str>) {
+    #[cfg(feature = "color")]
+    {
+        const REPLACEMENT: char = '\u{FFFD}';
+
+        let stripped = ansi_str::AnsiStr::ansi_strip(text);
+        let (length, count_unknowns, _) = split_at_pos(&stripped, at);
+
+        let mut buf = ansi_str::AnsiStr::ansi_cut(text, ..length);
+
+        if count_unknowns > 0 {
+            let mut b = buf.into_owned();
+            b.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            buf = Cow::Owned(b);
+        }
+
+        let rest = ansi_str::AnsiStr::ansi_cut(text, length..);
+
+        (buf, rest)
+    }
+    #[cfg(not(feature = "color"))]
+    {
+        const REPLACEMENT: char = '\u{FFFD}';
+
+        let (length, count_unknowns, _) = split_at_pos(text, at);
+        let buf = &text[..length];
+        let rest = &text[length..];
+        if count_unknowns == 0 {
+            return (Cow::Borrowed(buf), Cow::Borrowed(rest));
+        }
+
+        let mut buf = buf.to_owned();
+        buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+
+        return (Cow::Owned(buf), Cow::Borrowed(rest));
+    }
+}
+
 /// The function cuts the string to a specific width.
 ///
 /// BE AWARE: width is expected to be in bytes.
@@ -18,9 +59,13 @@ pub fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
         let (length, count_unknowns, _) = split_at_pos(&stripped, width);
 
         let mut buf = ansi_str::AnsiStr::ansi_cut(s, ..length);
-        buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+        if count_unknowns > 0 {
+            let mut b = buf.into_owned();
+            b.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            buf = Cow::Owned(b);
+        }
 
-        Cow::Owned(buf)
+        buf
     }
     #[cfg(not(feature = "color"))]
     {
@@ -143,7 +188,7 @@ pub fn string_trim(text: &str) -> Cow<'_, str> {
 /// Trims a string.
 #[cfg(feature = "color")]
 pub fn string_trim(text: &str) -> Cow<'_, str> {
-    ansi_str::AnsiStr::ansi_trim(text).into()
+    ansi_str::AnsiStr::ansi_trim(text)
 }
 
 /// Returns a list of tabs (`\t`) in a string..

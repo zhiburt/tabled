@@ -331,7 +331,7 @@ test_table!(
 
 test_table!(
     single_cell_style,
-    Builder::from_iter(&[[""]]).build().with(Style::modern()),
+    Builder::from_iter([[""]]).build().with(Style::modern()),
     "┌──┐"
     "│  │"
     "└──┘"
