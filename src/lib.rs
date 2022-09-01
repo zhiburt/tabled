@@ -361,13 +361,13 @@ macro_rules! tuple_table {
             fn fields(&self) -> Vec<String> {
                 #![allow(non_snake_case)]
                 let ($($name,)+) = self;
-                let mut fields = Vec::new();
+                let mut fields = Vec::with_capacity(Self::LENGTH);
                 $(fields.append(&mut $name.fields());)+
                 fields
             }
 
             fn headers() -> Vec<String> {
-                let mut fields = Vec::new();
+                let mut fields = Vec::with_capacity(Self::LENGTH);
                 $(fields.append(&mut $name::headers());)+
                 fields
             }

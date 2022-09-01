@@ -27,7 +27,7 @@ fn main() {
         Linux::new(3, "Endeavouros", "https://endeavouros.com/"),
     ];
 
-    let table = Table::new(&data).with(Rotate::Bottom);
+    let table = Table::new(&data).with(Rotate::Left);
 
     println!("{}", table);
 }

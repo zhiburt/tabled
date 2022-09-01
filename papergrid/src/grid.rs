@@ -3,13 +3,13 @@
 use std::{
     borrow::Cow,
     cmp,
-    fmt::{self, Display, Write},
+    fmt::{self, Write},
 };
 
 use crate::{
     estimation::Estimate,
     records::Records,
-    util::{cut_str, string_trim, string_width},
+    util::{get_lines, spplit_str_at, string_trim},
     width::{CfgWidthFunction, WidthFunc},
     AlignmentHorizontal, AlignmentVertical, Formatting, GridConfig, Indent, Padding, Position,
 };
@@ -41,72 +41,6 @@ impl<'a, R, W, H> Grid<'a, R, W, H> {
     }
 }
 
-impl<R, W, H> Grid<'_, R, W, H>
-where
-    R: Records,
-{
-    /// This function returns an amount of rows on the grid
-    fn count_rows(&self) -> usize {
-        self.records.count_rows()
-    }
-
-    /// This function returns an amount of columns on the grid
-    fn count_columns(&self) -> usize {
-        self.records.count_columns()
-    }
-
-    fn get_vertical(&self, pos: Position) -> Option<&char> {
-        self.config.get_vertical(pos, self.count_columns())
-    }
-
-    fn get_horizontal(&self, pos: Position) -> Option<&char> {
-        self.config.get_horizontal(pos, self.count_rows())
-    }
-
-    fn get_intersection(&self, pos: Position) -> Option<&char> {
-        self.config
-            .get_intersection(pos, (self.count_rows(), self.count_columns()))
-    }
-
-    fn has_horizontal(&self, row: usize) -> bool {
-        self.config.has_horizontal(row, self.count_rows())
-    }
-}
-
-impl<R, W, H> Grid<'_, R, W, H>
-where
-    R: Records,
-    W: Estimate<R>,
-{
-    /// Returns a total width of table, including split lines.
-    fn total_width(&self) -> usize {
-        if self.count_rows() == 0 || self.count_columns() == 0 {
-            return 0;
-        }
-
-        total_width(self)
-    }
-}
-
-#[cfg(feature = "color")]
-impl<R, W, H> Grid<'_, R, W, H>
-where
-    R: Records,
-{
-    fn get_intersection_color(&self, pos: Position) -> Option<&AnsiColor> {
-        self.config
-            .get_intersection_color(pos, (self.count_rows(), self.count_columns()))
-    }
-
-    fn get_horizontal_color(&self, pos: Position) -> Option<&AnsiColor> {
-        self.config.get_horizontal_color(pos, self.count_rows())
-    }
-
-    fn get_vertical_color(&self, pos: Position) -> Option<&AnsiColor> {
-        self.config.get_vertical_color(pos, self.count_columns())
-    }
-}
-
 impl<'a, R, W, H> fmt::Display for Grid<'a, R, W, H>
 where
     R: Records,
@@ -114,62 +48,154 @@ where
     H: Estimate<R>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.count_rows() == 0 || self.count_columns() == 0 {
+        if self.records.count_rows() == 0 || self.records.count_columns() == 0 {
             return Ok(());
         }
 
-        print_grid(self, f)
+        print_grid(f, self.config, &self.records, self.width, self.height)
     }
 }
 
-fn print_text(f: &mut fmt::Formatter<'_>, text: &str, tab_width: usize) -> fmt::Result {
-    // So to not use replace_tab we are printing by char;
-    // Hopefully it's more affective as it reduceses a number of allocations.
-    for c in text.chars() {
-        match c {
-            '\r' => (),
-            '\t' => repeat_char(f, ' ', tab_width)?,
-            c => f.write_char(c)?,
+fn print_grid<R, W, H>(
+    f: &mut fmt::Formatter<'_>,
+    cfg: &GridConfig,
+    records: &R,
+    width: &W,
+    height: &H,
+) -> fmt::Result
+where
+    W: Estimate<R>,
+    H: Estimate<R>,
+    R: Records,
+{
+    // // todo:
+    // // Spans requires a few additional `if` compared to the flow without it.
+    // // It also makes the logic a bit more
+    // if cfg.has_column_spans() || cfg.has_row_spans() {
+    // }
+
+    let shape = (records.count_rows(), records.count_columns());
+
+    if cfg.get_margin().top.size > 0 {
+        let total_width = total_width(cfg, records, width);
+        print_margin_top(f, cfg, total_width)?;
+        f.write_char('\n')?;
+    }
+
+    let mut prev_empty_horizontal = false;
+    for row in 0..records.count_rows() {
+        let count_lines = height.get(row).unwrap();
+
+        if has_horizontal(cfg, records, row) {
+            if prev_empty_horizontal {
+                f.write_char('\n')?;
+            }
+
+            print_margin_left(f, cfg)?;
+            print_split_line(f, cfg, records, width, height, row)?;
+            print_margin_right(f, cfg)?;
+
+            if count_lines > 0 {
+                f.write_char('\n')?;
+                prev_empty_horizontal = false;
+            } else {
+                prev_empty_horizontal = true;
+            }
+        } else if count_lines > 0 && prev_empty_horizontal {
+            f.write_char('\n')?;
+            prev_empty_horizontal = false;
         }
+
+        for i in 0..count_lines {
+            print_margin_left(f, cfg)?;
+
+            for col in 0..records.count_columns() {
+                if !cfg.is_cell_covered_by_both_spans((row, col), shape) {
+                    if cfg.is_cell_covered_by_row_span((row, col), shape) {
+                        print_vertical_char(f, cfg, records, (row, col))?;
+
+                        // means it's part of other a spanned cell
+                        // so. we just need to use line from other cell.
+                        let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
+
+                        // considering that the content will be printed instead horizontal lines so we can skip some lines.
+                        let mut skip_lines = (original_row..row)
+                            .map(|i| height.get(i).unwrap())
+                            .sum::<usize>();
+
+                        skip_lines += (original_row..row)
+                            .map(|row| has_horizontal(cfg, records, row) as usize)
+                            .sum::<usize>();
+
+                        let line = i + skip_lines;
+                        print_cell_line(f, cfg, records, width, height, (original_row, col), line)?;
+                    } else if !cfg.is_cell_covered_by_column_span((row, col), shape) {
+                        print_vertical_char(f, cfg, records, (row, col))?;
+                        print_cell_line(f, cfg, records, width, height, (row, col), i)?;
+                    }
+                }
+
+                let is_last_column = col + 1 == records.count_columns();
+                if is_last_column {
+                    print_vertical_char(f, cfg, records, (row, col + 1))?;
+                }
+            }
+
+            print_margin_right(f, cfg)?;
+
+            let is_last_line = i + 1 == count_lines;
+            let is_last_row = row + 1 == records.count_rows();
+            if !(is_last_line && is_last_row) {
+                f.write_char('\n')?;
+            }
+        }
+    }
+
+    if has_horizontal(cfg, records, records.count_rows()) {
+        f.write_char('\n')?;
+        print_margin_left(f, cfg)?;
+        print_split_line(f, cfg, records, width, height, records.count_rows())?;
+        print_margin_right(f, cfg)?;
+    }
+
+    if cfg.get_margin().bottom.size > 0 {
+        f.write_char('\n')?;
+        let total_width = total_width(cfg, records, width);
+        print_margin_bottom(f, cfg, total_width)?;
     }
 
     Ok(())
 }
 
-fn indent_from_top(alignment: AlignmentVertical, available: usize, real: usize) -> usize {
-    match alignment {
-        AlignmentVertical::Top => 0,
-        AlignmentVertical::Bottom => available - real,
-        AlignmentVertical::Center => (available - real) / 2,
-    }
-}
-
-fn print_cell_line<R, W, H, F>(
+fn print_cell_line<R, W, H>(
     f: &mut fmt::Formatter<'_>,
-    grid: &Grid<'_, R, W, H>,
+    cfg: &GridConfig,
+    records: &R,
+    width: &W,
+    height: &H,
     pos: Position,
     line: usize,
-    height: usize,
-    width_ctrl: F,
 ) -> fmt::Result
 where
     R: Records,
     W: Estimate<R>,
-    F: WidthFunc,
+    H: Estimate<R>,
 {
-    let width = grid_cell_width(grid, pos);
-    let mut cell_height = grid.records.count_lines(pos);
-    let formatting = *grid.config.get_formatting(pos.into());
+    let width = grid_cell_width(cfg, records, width, pos);
+    let height = grid_cell_height(cfg, records, height, pos);
+
+    let mut cell_height = records.count_lines(pos);
+    let formatting = *cfg.get_formatting(pos.into());
     if formatting.vertical_trim {
-        cell_height -= count_empty_lines_at_start(&grid.records, pos)
-            + count_empty_lines_at_end(&grid.records, pos);
+        cell_height -=
+            count_empty_lines_at_start(&records, pos) + count_empty_lines_at_end(&records, pos);
     }
 
     #[cfg(feature = "color")]
-    let padding_color = grid.config.get_padding_color(pos.into());
+    let padding_color = cfg.get_padding_color(pos.into());
 
-    let padding = grid.config.get_padding(pos.into());
-    let alignment = grid.config.get_alignment_vertical(pos.into());
+    let padding = cfg.get_padding(pos.into());
+    let alignment = cfg.get_alignment_vertical(pos.into());
     let indent = top_indent(*padding, *alignment, cell_height, height);
     if indent > line {
         return print_indent(
@@ -195,10 +221,10 @@ where
     }
 
     if formatting.vertical_trim {
-        let empty_lines = count_empty_lines_at_start(&grid.records, pos);
+        let empty_lines = count_empty_lines_at_start(&records, pos);
         index += empty_lines;
 
-        if index > grid.records.count_lines(pos) {
+        if index > records.count_lines(pos) {
             return print_indent(
                 f,
                 padding.top.fill,
@@ -218,16 +244,17 @@ where
     )?;
 
     let width = width - padding.left.size - padding.right.size;
-    let alignment = *grid.config.get_alignment_horizontal(pos.into());
+    let alignment = *cfg.get_alignment_horizontal(pos.into());
+    let width_ctrl = CfgWidthFunction::from_cfg(cfg);
     print_line_aligned(
         f,
-        &grid.records,
+        &records,
         pos,
         index,
         alignment,
         formatting,
         width,
-        grid.config.get_tab_width(),
+        cfg.get_tab_width(),
         &width_ctrl,
     )?;
 
@@ -321,351 +348,154 @@ where
     Ok(())
 }
 
-fn top_indent(
-    padding: Padding,
-    alignment: AlignmentVertical,
-    cell_height: usize,
-    height: usize,
-) -> usize {
-    let height = height - padding.top.size;
-    let indent = indent_from_top(alignment, height, cell_height);
-
-    indent + padding.top.size
-}
-
-fn count_empty_lines_at_end<R>(records: R, pos: Position) -> usize
-where
-    R: Records,
-{
-    (0..records.count_lines(pos))
-        .map(|i| records.get_line(pos, i))
-        .rev()
-        .take_while(|l| l.trim().is_empty())
-        .count()
-}
-
-fn count_empty_lines_at_start<R>(records: R, pos: Position) -> usize
-where
-    R: Records,
-{
-    (0..records.count_lines(pos))
-        .map(|i| records.get_line(pos, i))
-        .take_while(|s| s.trim().is_empty())
-        .count()
-}
-
-fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
-    for _ in 0..n {
-        c.fmt(f)?;
+fn print_text(f: &mut fmt::Formatter<'_>, text: &str, tab_width: usize) -> fmt::Result {
+    // So to not use replace_tab we are printing by char;
+    // Hopefully it's more affective as it reduceses a number of allocations.
+    for c in text.chars() {
+        match c {
+            '\r' => (),
+            '\t' => repeat_char(f, ' ', tab_width)?,
+            c => f.write_char(c)?,
+        }
     }
 
     Ok(())
 }
 
-// only valid to call for stabilized widths.
-fn total_width<R, W, H>(grid: &Grid<'_, R, W, H>) -> usize
-where
-    W: Estimate<R>,
-    R: Records,
-{
-    let content_width = grid.width.total();
-    let count_borders = grid.config.count_vertical(grid.count_columns());
-    let margin = grid.config.get_margin();
-
-    content_width + count_borders + margin.left.size + margin.right.size
-}
-
-fn print_grid<R, W, H>(grid: &Grid<'_, R, W, H>, f: &mut fmt::Formatter<'_>) -> fmt::Result
+fn print_split_line<R, W, H>(
+    f: &mut fmt::Formatter<'_>,
+    cfg: &GridConfig,
+    records: &R,
+    width_ctrl: &W,
+    height_ctrl: &H,
+    row: usize,
+) -> fmt::Result
 where
     W: Estimate<R>,
     H: Estimate<R>,
     R: Records,
 {
-    let width_ctrl = CfgWidthFunction::from_cfg(grid.config);
-    let total_width = grid.total_width();
+    let shape = (records.count_rows(), records.count_columns());
 
-    if grid.config.get_margin().top.size > 0 {
-        print_margin_top(grid, total_width, f)?;
-        f.write_char('\n')?;
-    }
-
-    #[allow(clippy::needless_range_loop)]
-    for row in 0..grid.count_rows() {
-        if grid.has_horizontal(row) {
-            print_margin_left(grid, f)?;
-            print_split_line(grid, total_width, row, f)?;
-            print_margin_right(grid, f)?;
-            f.write_char('\n')?;
-        }
-
-        let height = grid.height.get(row).unwrap();
-
-        let is_last_row = row + 1 == grid.count_rows();
-
-        for i in 0..height {
-            print_margin_left(grid, f)?;
-
-            for col in 0..grid.count_columns() {
-                if grid.config.is_cell_visible((row, col)) {
-                    print_vertical_char(grid, (row, col), f)?;
-                    print_cell_line(f, grid, (row, col), i, height, &width_ctrl)?;
-                }
-
-                let is_last_column = col + 1 == grid.count_columns();
-                if is_last_column {
-                    print_vertical_char(grid, (row, col + 1), f)?;
-                }
-            }
-
-            print_margin_right(grid, f)?;
-
-            let is_last_line = i + 1 == height;
-            if !(is_last_line && is_last_row) {
-                f.write_char('\n')?;
-            }
-        }
-    }
-
-    if grid.has_horizontal(grid.count_rows()) {
-        f.write_char('\n')?;
-        print_margin_left(grid, f)?;
-        print_split_line(grid, total_width, grid.count_rows(), f)?;
-        print_margin_right(grid, f)?;
-    }
-
-    if grid.config.get_margin().bottom.size > 0 {
-        f.write_char('\n')?;
-        print_margin_bottom(grid, total_width, f)?;
-    }
-
-    Ok(())
-}
-
-fn print_vertical_char<R, W, H>(
-    grid: &Grid<'_, R, W, H>,
-    pos: Position,
-    f: &mut fmt::Formatter<'_>,
-) -> Result<(), fmt::Error>
-where
-    R: Records,
-{
-    let left = grid.get_vertical(pos);
-    if let Some(c) = left {
-        #[cfg(feature = "color")]
-        write_colored(f, c, grid.get_vertical_color(pos))?;
-
-        #[cfg(not(feature = "color"))]
-        c.fmt(f)?;
-    }
-
-    Ok(())
-}
-
-fn print_margin_top<R, W, H>(
-    grid: &Grid<'_, R, W, H>,
-    width: usize,
-    f: &mut fmt::Formatter<'_>,
-) -> fmt::Result {
-    print_indent_lines(
-        f,
-        &grid.config.get_margin().top,
-        width,
-        #[cfg(feature = "color")]
-        &grid.config.get_margin_color().top,
-    )
-}
-
-fn print_margin_bottom<R, W, H>(
-    grid: &Grid<'_, R, W, H>,
-    width: usize,
-    f: &mut fmt::Formatter<'_>,
-) -> fmt::Result {
-    print_indent_lines(
-        f,
-        &grid.config.get_margin().bottom,
-        width,
-        #[cfg(feature = "color")]
-        &grid.config.get_margin_color().bottom,
-    )
-}
-
-fn print_margin_left<R, W, H>(grid: &Grid<'_, R, W, H>, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    print_indent(
-        f,
-        grid.config.get_margin().left.fill,
-        grid.config.get_margin().left.size,
-        #[cfg(feature = "color")]
-        &grid.config.get_margin_color().left,
-    )
-}
-
-fn print_margin_right<R, W, H>(
-    grid: &Grid<'_, R, W, H>,
-    f: &mut fmt::Formatter<'_>,
-) -> fmt::Result {
-    print_indent(
-        f,
-        grid.config.get_margin().right.fill,
-        grid.config.get_margin().right.size,
-        #[cfg(feature = "color")]
-        &grid.config.get_margin_color().right,
-    )
-}
-
-fn print_indent_lines(
-    f: &mut fmt::Formatter<'_>,
-    indent: &Indent,
-    width: usize,
-    #[cfg(feature = "color")] color: &AnsiColor,
-) -> fmt::Result {
-    for i in 0..indent.size {
-        print_indent(
-            f,
-            indent.fill,
-            width,
-            #[cfg(feature = "color")]
-            color,
-        )?;
-
-        if i + 1 != indent.size {
-            f.write_char('\n')?;
-        }
-    }
-
-    Ok(())
-}
-
-fn print_indent(
-    f: &mut fmt::Formatter<'_>,
-    c: char,
-    n: usize,
-    #[cfg(feature = "color")] color: &AnsiColor,
-) -> fmt::Result {
-    #[cfg(feature = "color")]
-    color.fmt_prefix(f)?;
-    repeat_char(f, c, n)?;
-    #[cfg(feature = "color")]
-    color.fmt_suffix(f)?;
-
-    Ok(())
-}
-
-fn grid_cell_width<R, W, H>(grid: &Grid<'_, R, W, H>, pos: Position) -> usize
-where
-    R: Records,
-    W: Estimate<R>,
-{
-    let span = grid.config.get_column_span(pos);
-    match span {
-        Some(span) => range_width(grid, pos.1, pos.1 + span),
-        None => grid.width.get(pos.1).unwrap(),
-    }
-}
-
-fn range_width<R, W, H>(grid: &Grid<'_, R, W, H>, start: usize, end: usize) -> usize
-where
-    R: Records,
-    W: Estimate<R>,
-{
-    let count_borders =
-        count_borders_in_range(grid.config, start, end, grid.records.count_columns());
-    let range_width = (start..end)
-        .map(|col| grid.width.get(col).unwrap())
-        .sum::<usize>();
-    count_borders + range_width
-}
-
-fn count_borders_in_range(
-    cfg: &GridConfig,
-    start: usize,
-    end: usize,
-    count_columns: usize,
-) -> usize {
-    (start..end)
-        .skip(1)
-        .filter(|&i| cfg.has_vertical(i, count_columns))
-        .count()
-}
-
-fn print_split_line<R, W, H>(
-    grid: &Grid<'_, R, W, H>,
-    total_width: usize,
-    row: usize,
-    f: &mut fmt::Formatter<'_>,
-) -> fmt::Result
-where
-    W: Estimate<R>,
-    R: Records,
-{
-    let mut char_skip = 0;
-    let override_text = grid.config.get_split_line_text(row);
-    if let Some(text) = override_text {
-        if !text.is_empty() {
-            let text = cut_str(text, total_width);
-            let line = text.lines().next().unwrap();
-            char_skip = string_width(line);
-            f.write_str(line)?;
-        }
-    }
+    let mut override_text = cfg
+        .get_split_line_text(row)
+        .and_then(|text| get_lines(text).next())
+        .map(|text| text.into_owned())
+        .unwrap_or_default();
 
     #[cfg(feature = "color")]
     let mut used_color = None;
 
-    for col in 0..grid.count_columns() {
+    for col in 0..records.count_columns() {
         if col == 0 {
-            let left = grid.get_intersection((row, col));
+            let left = cfg.get_intersection((row, col), shape);
             if let Some(c) = left {
-                if char_skip == 0 {
+                if !override_text.is_empty() {
+                    let (c, rest) = spplit_str_at(&override_text, 1);
+                    f.write_str(&c)?;
+                    override_text = rest.into_owned();
+                } else {
                     #[cfg(feature = "color")]
                     {
-                        if let Some(clr) = grid.get_intersection_color((row, col)) {
+                        let clr = cfg.get_intersection_color((row, col), shape);
+                        if let Some(clr) = clr {
                             clr.fmt_prefix(f)?;
                             used_color = Some(clr);
                         }
                     }
 
-                    c.fmt(f)?;
-                } else {
-                    char_skip -= 1;
+                    f.write_char(*c)?;
                 }
             }
         }
 
-        let mut width = grid.width.get(col).unwrap();
-        if char_skip > 0 {
-            let sub = cmp::min(width, char_skip);
-            width -= sub;
-            char_skip -= sub;
+        let mut width = width_ctrl.get(col).unwrap();
+        if cfg.is_cell_covered_by_both_spans((row, col), shape) {
+            continue;
         }
 
-        let main = grid.get_horizontal((row, col));
-        match main {
-            Some(c) => {
-                #[cfg(feature = "color")]
-                {
-                    prepare_coloring(f, grid.get_horizontal_color((row, col)), &mut used_color)?;
-                }
+        if !override_text.is_empty() {
+            let width_ctrl = CfgWidthFunction::from_cfg(cfg);
+            let text_width = width_ctrl.width(&override_text);
+            let print_width = cmp::min(text_width, width);
+            let (c, rest) = spplit_str_at(&override_text, print_width);
+            f.write_str(&c)?;
+            override_text = rest.into_owned();
 
-                repeat_char(f, *c, width)?;
+            width -= print_width;
+        }
+
+        let mut col = col;
+        if cfg.is_cell_covered_by_row_span((row, col), shape) {
+            // means it's part of other a spanned cell
+            // so. we just need to use line from other cell.
+
+            let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
+
+            // considering that the content will be printed instead horizontal lines so we can skip some lines.
+            let mut skip_lines = (original_row..row)
+                .map(|i| height_ctrl.get(i).unwrap())
+                .sum::<usize>();
+
+            // skip horizontal lines
+            if row > 0 {
+                skip_lines += (original_row..row - 1)
+                    .map(|row| cfg.has_horizontal(row, records.count_rows()) as usize)
+                    .sum::<usize>();
             }
-            None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+
+            let line = skip_lines;
+            print_cell_line(
+                f,
+                cfg,
+                records,
+                width_ctrl,
+                height_ctrl,
+                (original_row, col),
+                line,
+            )?;
+
+            // We need to use a correct right split char.
+            if let Some(span) = cfg.get_column_span((original_row, col), shape) {
+                col += span - 1;
+            }
+        } else {
+            // general case
+            let main = get_horizontal(cfg, records, (row, col));
+            match main {
+                Some(c) => {
+                    #[cfg(feature = "color")]
+                    {
+                        prepare_coloring(
+                            f,
+                            get_horizontal_color(cfg, records, (row, col)),
+                            &mut used_color,
+                        )?;
+                    }
+
+                    repeat_char(f, *c, width)?;
+                }
+                None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+            }
         }
 
-        let right = grid.get_intersection((row, col + 1));
+        let right = get_intersection(cfg, records, (row, col + 1));
         if let Some(c) = right {
-            if char_skip == 0 {
+            if !override_text.is_empty() {
+                let (c, rest) = spplit_str_at(&override_text, 1);
+                f.write_str(&c)?;
+                override_text = rest.into_owned();
+            } else {
                 #[cfg(feature = "color")]
                 {
                     prepare_coloring(
                         f,
-                        grid.get_intersection_color((row, col + 1)),
+                        get_intersection_color(cfg, records, (row, col + 1)),
                         &mut used_color,
                     )?;
                 }
 
-                c.fmt(f)?;
-            } else {
-                char_skip -= 1;
+                f.write_char(*c)?;
             }
         }
     }
@@ -707,21 +537,24 @@ fn prepare_coloring<'a>(
     Ok(())
 }
 
-#[cfg(feature = "color")]
-fn write_colored(
-    f: &mut fmt::Formatter<'_>,
-    c: impl fmt::Display,
-    clr: Option<&AnsiColor>,
-) -> fmt::Result {
-    if let Some(clr) = &clr {
-        clr.fmt_prefix(f)?;
-        c.fmt(f)?;
-        clr.fmt_suffix(f)?;
-    } else {
-        c.fmt(f)?;
-    }
+fn top_indent(
+    padding: Padding,
+    alignment: AlignmentVertical,
+    cell_height: usize,
+    height: usize,
+) -> usize {
+    let height = height - padding.top.size;
+    let indent = indent_from_top(alignment, height, cell_height);
 
-    Ok(())
+    indent + padding.top.size
+}
+
+fn indent_from_top(alignment: AlignmentVertical, available: usize, real: usize) -> usize {
+    match alignment {
+        AlignmentVertical::Top => 0,
+        AlignmentVertical::Bottom => available - real,
+        AlignmentVertical::Center => (available - real) / 2,
+    }
 }
 
 fn calculate_indent(
@@ -741,40 +574,331 @@ fn calculate_indent(
     }
 }
 
+fn count_empty_lines_at_end<R>(records: R, pos: Position) -> usize
+where
+    R: Records,
+{
+    (0..records.count_lines(pos))
+        .map(|i| records.get_line(pos, i))
+        .rev()
+        .take_while(|l| l.trim().is_empty())
+        .count()
+}
+
+fn count_empty_lines_at_start<R>(records: R, pos: Position) -> usize
+where
+    R: Records,
+{
+    (0..records.count_lines(pos))
+        .map(|i| records.get_line(pos, i))
+        .take_while(|s| s.trim().is_empty())
+        .count()
+}
+
+fn repeat_char(f: &mut fmt::Formatter<'_>, c: char, n: usize) -> fmt::Result {
+    for _ in 0..n {
+        f.write_char(c)?;
+    }
+
+    Ok(())
+}
+
+// only valid to call for stabilized widths.
+fn total_width<R, W>(cfg: &GridConfig, records: &R, width: &W) -> usize
+where
+    W: Estimate<R>,
+    R: Records,
+{
+    let content_width = width.total();
+    let count_borders = cfg.count_vertical(records.count_columns());
+    let margin = cfg.get_margin();
+
+    content_width + count_borders + margin.left.size + margin.right.size
+}
+
+fn print_vertical_char<R>(
+    f: &mut fmt::Formatter<'_>,
+    cfg: &GridConfig,
+    records: &R,
+    pos: Position,
+) -> fmt::Result
+where
+    R: Records,
+{
+    let left = get_vertical(cfg, records, pos);
+    if let Some(c) = left {
+        #[cfg(feature = "color")]
+        {
+            if let Some(clr) = get_vertical_color(cfg, records, pos) {
+                clr.fmt_prefix(f)?;
+                f.write_char(*c)?;
+                clr.fmt_suffix(f)?;
+            } else {
+                f.write_char(*c)?;
+            }
+        }
+
+        #[cfg(not(feature = "color"))]
+        f.write_char(*c)?;
+    }
+
+    Ok(())
+}
+
+fn print_margin_top(f: &mut fmt::Formatter<'_>, cfg: &GridConfig, width: usize) -> fmt::Result {
+    print_indent_lines(
+        f,
+        &cfg.get_margin().top,
+        width,
+        #[cfg(feature = "color")]
+        &cfg.get_margin_color().top,
+    )
+}
+
+fn print_margin_bottom(f: &mut fmt::Formatter<'_>, cfg: &GridConfig, width: usize) -> fmt::Result {
+    print_indent_lines(
+        f,
+        &cfg.get_margin().bottom,
+        width,
+        #[cfg(feature = "color")]
+        &cfg.get_margin_color().bottom,
+    )
+}
+
+fn print_margin_left(f: &mut fmt::Formatter<'_>, cfg: &GridConfig) -> fmt::Result {
+    print_indent(
+        f,
+        cfg.get_margin().left.fill,
+        cfg.get_margin().left.size,
+        #[cfg(feature = "color")]
+        &cfg.get_margin_color().left,
+    )
+}
+
+fn print_margin_right(f: &mut fmt::Formatter<'_>, cfg: &GridConfig) -> fmt::Result {
+    print_indent(
+        f,
+        cfg.get_margin().right.fill,
+        cfg.get_margin().right.size,
+        #[cfg(feature = "color")]
+        &cfg.get_margin_color().right,
+    )
+}
+
+fn print_indent_lines(
+    f: &mut fmt::Formatter<'_>,
+    indent: &Indent,
+    width: usize,
+    #[cfg(feature = "color")] color: &AnsiColor,
+) -> fmt::Result {
+    for i in 0..indent.size {
+        print_indent(
+            f,
+            indent.fill,
+            width,
+            #[cfg(feature = "color")]
+            color,
+        )?;
+
+        if i + 1 != indent.size {
+            f.write_char('\n')?;
+        }
+    }
+
+    Ok(())
+}
+
+fn print_indent(
+    f: &mut fmt::Formatter<'_>,
+    c: char,
+    n: usize,
+    #[cfg(feature = "color")] color: &AnsiColor,
+) -> fmt::Result {
+    #[cfg(feature = "color")]
+    color.fmt_prefix(f)?;
+    repeat_char(f, c, n)?;
+    #[cfg(feature = "color")]
+    color.fmt_suffix(f)?;
+
+    Ok(())
+}
+
+fn grid_cell_width<R, W>(cfg: &GridConfig, records: &R, width: &W, pos: Position) -> usize
+where
+    R: Records,
+    W: Estimate<R>,
+{
+    match cfg.get_column_span(pos, (records.count_rows(), records.count_columns())) {
+        Some(span) => range_width(cfg, records, width, pos.1, pos.1 + span),
+        None => width.get(pos.1).unwrap(),
+    }
+}
+
+fn range_width<R, W>(cfg: &GridConfig, records: &R, width: &W, start: usize, end: usize) -> usize
+where
+    R: Records,
+    W: Estimate<R>,
+{
+    let count_borders = count_borders_in_range(cfg, start, end, records.count_columns());
+    let range_width = (start..end)
+        .map(|col| width.get(col).unwrap())
+        .sum::<usize>();
+    count_borders + range_width
+}
+
+fn count_borders_in_range(
+    cfg: &GridConfig,
+    start: usize,
+    end: usize,
+    count_columns: usize,
+) -> usize {
+    (start..end)
+        .skip(1)
+        .filter(|&i| cfg.has_vertical(i, count_columns))
+        .count()
+}
+
+fn grid_cell_height<R, H>(cfg: &GridConfig, records: &R, height: &H, pos: Position) -> usize
+where
+    R: Records,
+    H: Estimate<R>,
+{
+    match cfg.get_row_span(pos, (records.count_rows(), records.count_columns())) {
+        Some(span) => range_height(cfg, records, height, pos.0, pos.0 + span),
+        None => height.get(pos.0).unwrap(),
+    }
+}
+
+fn range_height<R, H>(cfg: &GridConfig, records: &R, height: &H, start: usize, end: usize) -> usize
+where
+    R: Records,
+    H: Estimate<R>,
+{
+    let count_borders = count_horizontal_borders_in_range(cfg, start, end, records.count_rows());
+    let range_width = (start..end)
+        .map(|col| height.get(col).unwrap())
+        .sum::<usize>();
+
+    count_borders + range_width
+}
+
+fn count_horizontal_borders_in_range(
+    cfg: &GridConfig,
+    start: usize,
+    end: usize,
+    count_rows: usize,
+) -> usize {
+    (start..end)
+        .skip(1)
+        .filter(|&i| cfg.has_horizontal(i, count_rows))
+        .count()
+}
+
+fn closest_visible_row(
+    cfg: &GridConfig,
+    mut pos: Position,
+    shape: (usize, usize),
+) -> Option<usize> {
+    loop {
+        if cfg.is_cell_visible(pos, shape) {
+            return Some(pos.0);
+        }
+
+        if pos.0 == 0 {
+            return None;
+        }
+
+        pos.0 -= 1;
+    }
+}
+
+fn get_vertical<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&char>
+where
+    R: Records,
+{
+    cfg.get_vertical(pos, records.count_columns())
+}
+
+fn get_horizontal<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&char>
+where
+    R: Records,
+{
+    cfg.get_horizontal(pos, records.count_rows())
+}
+
+fn get_intersection<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&char>
+where
+    R: Records,
+{
+    cfg.get_intersection(pos, (records.count_rows(), records.count_columns()))
+}
+
+fn has_horizontal<R>(cfg: &GridConfig, records: R, row: usize) -> bool
+where
+    R: Records,
+{
+    cfg.has_horizontal(row, records.count_rows())
+}
+
+#[cfg(feature = "color")]
+fn get_intersection_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor>
+where
+    R: Records,
+{
+    cfg.get_intersection_color(pos, (records.count_rows(), records.count_columns()))
+}
+
+#[cfg(feature = "color")]
+fn get_vertical_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor>
+where
+    R: Records,
+{
+    cfg.get_vertical_color(pos, records.count_columns())
+}
+
+#[cfg(feature = "color")]
+fn get_horizontal_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor>
+where
+    R: Records,
+{
+    cfg.get_horizontal_color(pos, records.count_rows())
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::{records::empty::EmptyRecords, util::string_width};
+
     use super::*;
 
-    // #[test]
-    // fn horizontal_aligment_test() {
-    //     use std::fmt;
+    #[test]
+    fn horizontal_aligment_test() {
+        use std::fmt;
 
-    //     struct F<'a>(&'a str, AlignmentHorizontal, usize);
+        struct F<'a>(&'a str, AlignmentHorizontal, usize);
 
-    //     impl fmt::Display for F<'_> {
-    //         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    //             let width = string_width(self.0);
-    //             print_text_formated(f, &EmptyRecords::default(), (0, 0), self.0, 4, self.1, self.2, 0)
-    //             Ok(())
-    //         }
-    //     }
+        impl fmt::Display for F<'_> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                let (left, right) = calculate_indent(self.1, string_width(self.0), self.2);
+                print_text_formated(f, &EmptyRecords::default(), (0, 0), self.0, 4, left, right)
+            }
+        }
 
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Right, 4).to_string(), " AAA");
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Left, 4).to_string(), "AAA ");
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Center, 4).to_string(), "AAA ");
-    //     assert_eq!(F("🎩", AlignmentHorizontal::Center, 4).to_string(), " 🎩 ");
-    //     assert_eq!(F("🎩", AlignmentHorizontal::Center, 3).to_string(), "🎩 ");
+        assert_eq!(F("AAA", AlignmentHorizontal::Right, 4).to_string(), " AAA");
+        assert_eq!(F("AAA", AlignmentHorizontal::Left, 4).to_string(), "AAA ");
+        assert_eq!(F("AAA", AlignmentHorizontal::Center, 4).to_string(), "AAA ");
+        assert_eq!(F("🎩", AlignmentHorizontal::Center, 4).to_string(), " 🎩 ");
+        assert_eq!(F("🎩", AlignmentHorizontal::Center, 3).to_string(), "🎩 ");
 
-    //     #[cfg(feature = "color")]
-    //     {
-    //         use owo_colors::OwoColorize;
-    //         let text = "Colored Text".red().to_string();
-    //         assert_eq!(
-    //             F(&text, AlignmentHorizontal::Center, 15).to_string(),
-    //             format!(" {}  ", text)
-    //         );
-    //     }
-    // }
+        #[cfg(feature = "color")]
+        {
+            use owo_colors::OwoColorize;
+            let text = "Colored Text".red().to_string();
+            assert_eq!(
+                F(&text, AlignmentHorizontal::Center, 15).to_string(),
+                format!(" {}  ", text)
+            );
+        }
+    }
 
     #[test]
     fn vertical_aligment_test() {

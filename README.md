@@ -1250,11 +1250,104 @@ assert_eq!(
 You can apply settings to subgroup of cells using `and` and `not` methods for an object.
 
 ```rust
-use tabled::object::{Object, Segment, Cell, Rows, Columns};
+use tabled::object::{Segment, Cell, Rows, Columns};
 
-Segment::all().not(Rows::first()); // select all cells except header.
-Columns::first().and(Columns::last()); // select cells from first and last columns.
-Rows::first().and(Columns::single(0)).not(Cell(0, 0)); // select the header and first column except the (0, 0) cell.
+Segment::all().not(Rows::first()) // select all cells except header.
+Columns::first().and(Columns::last()) // select cells from first and last columns.
+Rows::first().and(Columns::single(0)).not(Cell(0, 0)) // select the header and first column except the (0, 0) cell.
+```
+
+### Macros
+
+Utilities for dynamic `Table` displays.
+
+#### Col and Row
+
+Combine `col!` and `row!` to create flexible table visualizations.
+
+```rust
+row![table1, table2];
+```
+
+```text
++-------------------------------------------+---------------------------------------------+
+| .---------------------------------------. | ┌────────────────────┬─────┬──────────────┐ |
+| | name             | age | is_validated | | │ name               │ age │ is_validated │ |
+| | Jon Doe          | 255 | false        | | ├────────────────────┼─────┼──────────────┤ |
+| | Mark Nelson      | 13  | true         | | │ Jack Black         │ 51  │ false        │ |
+| | Terminal Monitor | 0   | false        | | ├────────────────────┼─────┼──────────────┤ |
+| | Adam Blend       | 17  | true         | | │ Michelle Goldstein │ 44  │ true         │ |
+| '---------------------------------------' | └────────────────────┴─────┴──────────────┘ |
++-------------------------------------------+---------------------------------------------+
+```
+
+```rust
+col![table1, table2];
+```
+
+```text
++---------------------------------------------+
+| .---------------------------------------.   |
+| | name             | age | is_validated |   |
+| | Jon Doe          | 255 | false        |   |
+| | Mark Nelson      | 13  | true         |   |
+| | Terminal Monitor | 0   | false        |   |
+| | Adam Blend       | 17  | true         |   |
+| '---------------------------------------'   |
++---------------------------------------------+
+| ┌────────────────────┬─────┬──────────────┐ |
+| │ name               │ age │ is_validated │ |
+| ├────────────────────┼─────┼──────────────┤ |
+| │ Jack Black         │ 51  │ false        │ |
+| ├────────────────────┼─────┼──────────────┤ |
+| │ Michelle Goldstein │ 44  │ true         │ |
+| └────────────────────┴─────┴──────────────┘ |
++---------------------------------------------+
+```
+
+```rust
+row![table1; 3];
+```
+
+```text
++-------------------------------------------+-------------------------------------------+-------------------------------------------+
+| .---------------------------------------. | .---------------------------------------. | .---------------------------------------. |
+| | name             | age | is_validated | | | name             | age | is_validated | | | name             | age | is_validated | |
+| | Jon Doe          | 255 | false        | | | Jon Doe          | 255 | false        | | | Jon Doe          | 255 | false        | |
+| | Mark Nelson      | 13  | true         | | | Mark Nelson      | 13  | true         | | | Mark Nelson      | 13  | true         | |
+| | Terminal Monitor | 0   | false        | | | Terminal Monitor | 0   | false        | | | Terminal Monitor | 0   | false        | |
+| | Adam Blend       | 17  | true         | | | Adam Blend       | 17  | true         | | | Adam Blend       | 17  | true         | |
+| '---------------------------------------' | '---------------------------------------' | '---------------------------------------' |
++-------------------------------------------+-------------------------------------------+-------------------------------------------+
+```
+
+```rust
+col![
+    row![table_a, table_b], 
+    table_c
+]
+```
+
+```text
++----------------------------------------------------------------------------------+
+| +--------------------------------+---------------------------------------------+ |
+| | +-------+-----+--------------+ | ┌────────────────────┬─────┬──────────────┐ | |
+| | | name  | age | is_validated | | │ name               │ age │ is_validated │ | |
+| | +-------+-----+--------------+ | ├────────────────────┼─────┼──────────────┤ | |
+| | | Sam   | 31  | true         | | │ Jack Black         │ 51  │ false        │ | |
+| | +-------+-----+--------------+ | ├────────────────────┼─────┼──────────────┤ | |
+| | | Sarah | 26  | true         | | │ Michelle Goldstein │ 44  │ true         │ | |
+| | +-------+-----+--------------+ | └────────────────────┴─────┴──────────────┘ | |
+| +--------------------------------+---------------------------------------------+ |
++----------------------------------------------------------------------------------+
+| .---------------------------------------.                                        |
+| | name             | age | is_validated |                                        |
+| | Jon Doe          | 255 | false        |                                        |
+| | Mark Nelson      | 13  | true         |                                        |
+| | Terminal Monitor | 0   | false        |                                        |
+| | Adam Blend       | 17  | true         |                                        |
+| '---------------------------------------'                                        |
++----------------------------------------------------------------------------------+
 ```
 
 ## Views

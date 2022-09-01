@@ -63,7 +63,7 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
     builder
         .add_record([table_fields.to_string()])
         .add_record([table_methods.to_string()])
-        .set_columns([name]);
+        .set_columns([name.to_string()]);
     builder
         .build()
         .with(

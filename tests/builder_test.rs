@@ -24,23 +24,6 @@ test_table!(
 );
 
 test_table!(
-    add_record_can_has_different_types,
-    Builder::default()
-        .add_record([1, 2, 3])
-        .add_record(["a", "b", "c"])
-        .add_record(['d', 'e', 'f'])
-        .clone()
-        .build(),
-    "+---+---+---+"
-    "| 1 | 2 | 3 |"
-    "+---+---+---+"
-    "| a | b | c |"
-    "+---+---+---+"
-    "| d | e | f |"
-    "+---+---+---+"
-);
-
-test_table!(
     set_columns,
     Builder::default()
         .add_record(["a", "b", "c"])
@@ -177,8 +160,8 @@ test_table!(
     extend,
     {
         let mut b = Builder::default();
-        b.extend([1, 2, 3]);
-        b.extend(['a', 'b', 'c']);
+        b.extend(["1", "2", "3"]);
+        b.extend(["a", "b", "c"]);
         b.extend(["d", "e", "f"]);
         b.build()
     },
@@ -615,13 +598,13 @@ test_table!(
 
 test_table!(
     clean_empty_0,
-    Builder::from_iter([[0; 0]; 0]).clean().clone().build(),
+    Builder::from_iter([[""; 0]; 0]).clean().clone().build(),
     ""
 );
 
 test_table!(
     clean_empty_1,
-    Builder::from_iter([[0; 0]; 10]).clean().clone().build(),
+    Builder::from_iter([[""; 0]; 10]).clean().clone().build(),
     ""
 );
 
@@ -760,6 +743,7 @@ test_table!(
 fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
     let mut builder = Builder::default();
     for row in data {
+        let row = row.into_iter().map(|i| i.to_string()).collect::<Vec<_>>();
         builder.add_record(row);
     }
 
