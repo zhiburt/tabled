@@ -11,7 +11,7 @@ use crate::{
 };
 
 /// The struct is a [Cell] implementation which keeps width information pre allocated.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct CellInfo<'a> {
     text: Cow<'a, str>,
     width: usize,
@@ -83,13 +83,57 @@ where
     where
         W: WidthFunc,
     {
-        *self = create_cell_info(text.into(), width_ctrl);
+        let text = text.into();
+        *self = create_cell_info(text, width_ctrl);
     }
 }
 
 impl AsRef<str> for CellInfo<'_> {
     fn as_ref(&self) -> &str {
         &self.text
+    }
+}
+
+impl Clone for CellInfo<'_> {
+    fn clone(&self) -> Self {
+        let mut cell = Self {
+            text: self.text.clone(),
+            width: self.width,
+            lines: vec![StrWithWidth::default(); self.lines.len()],
+            count_lines: self.count_lines,
+        };
+
+        for (i, line) in self.lines.iter().enumerate() {
+            cell.lines[i].width = line.width;
+
+            cell.lines[i].text = match &line.text {
+                Cow::Owned(line) => Cow::Owned(line.clone()),
+                Cow::Borrowed(s) => {
+                    // We need to redirect pointers to the original string.
+                    //
+                    // # Safety
+                    //
+                    // It must be safe because the referenced string and the references are dropped at the same time.
+                    // And the referenced String is guaranted to not be changed.
+                    let text = unsafe {
+                        let text_ptr = self.text.as_ptr();
+                        let line_ptr = s.as_ptr();
+                        let text_shift = line_ptr as isize - text_ptr as isize;
+
+                        let new_text_shifted_ptr = cell.text.as_ptr().offset(text_shift);
+
+                        std::str::from_utf8_unchecked(std::slice::from_raw_parts(
+                            new_text_shifted_ptr,
+                            s.len(),
+                        ))
+                    };
+
+                    Cow::Borrowed(text)
+                }
+            }
+        }
+
+        cell
     }
 }
 
