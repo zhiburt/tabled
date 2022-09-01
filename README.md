@@ -53,6 +53,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Extract](#extract)
     - [Refinishing](#refinishing)
   - [Header and Footer and Panel](#header-and-footer-and-panel)
+  - [Merge](#merge)
   - [Concat](#concat)
   - [Highlight](#highlight)
   - [Span](#span)
@@ -775,6 +776,35 @@ use tabled::{Table, Panel};
 Table::new(&data)
     .with(Panel::vertical(2).text("A panel on 2nd row"))
     .with(Panel::horizontal(0).text("A panel on 1st column"));
+```
+
+### Merge
+
+It's possible to create `"Panel"`s by combining the duplicates using `Merge`.
+
+```rust
+use tabled::{merge::Merge, TableIteratorExt};
+
+let data = [['A', 'B', 'B'], ['A', 'W', 'E'], ['Z', 'Z', 'Z']];
+
+let table = data
+    .table()
+    .with(Merge::horizontal())
+    .with(Merge::vertical());
+
+println!("{}", table);
+```
+
+```
++---+---+---+
+| 0 | 1 | 2 |
++---+---+---+
+| A | B     |
++   +---+---+
+|   | W | E |
++---+---+---+
+| Z         |
++---+---+---+
 ```
 
 ### Concat
