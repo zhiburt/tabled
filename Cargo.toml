@@ -151,6 +151,16 @@ name = "col_row_macros"
 path = "examples/col_row_macros.rs"
 required-features = ["macros"]
 
+[[example]]
+name = "merge_duplicates1"
+path = "examples/merge_duplicates1.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "merge_duplicates2"
+path = "examples/merge_duplicates2.rs"
+required-features = ["derive"]
+
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #
 # RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open

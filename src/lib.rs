@@ -248,26 +248,26 @@ mod rotate;
 mod span;
 mod table;
 
+pub mod builder;
 pub mod concat;
 pub mod disable;
-pub mod extract;
-pub mod justify;
-pub mod min_width;
-pub mod truncate;
-pub mod wrap;
-pub mod merge;
-pub mod builder;
 pub mod display;
+pub mod extract;
 pub mod format;
 pub mod formatting;
 pub mod highlight;
+pub mod justify;
 pub mod margin;
+pub mod merge;
+pub mod min_width;
 pub mod object;
 pub mod padding;
 pub mod raw_style;
 pub mod span_border_correction;
 pub mod style;
+pub mod truncate;
 pub mod width;
+pub mod wrap;
 
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]

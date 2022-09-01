@@ -71,6 +71,8 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Color](#color)
   - [Tuple combination](#tuple-combination)
   - [Object](#object)
+  - [Macros](#macros)
+    - [Col and Row](#col-and-row)
 - [Views](#views)
   - [Expanded display](#expanded-display)
 - [Notes](#notes)
@@ -1250,11 +1252,10 @@ assert_eq!(
 You can apply settings to subgroup of cells using `and` and `not` methods for an object.
 
 ```rust
-use tabled::object::{Segment, Cell, Rows, Columns};
-
-Segment::all().not(Rows::first()) // select all cells except header.
-Columns::first().and(Columns::last()) // select cells from first and last columns.
-Rows::first().and(Columns::single(0)).not(Cell(0, 0)) // select the header and first column except the (0, 0) cell.
+use tabled::object::{Object, Segment, Cell, Rows, Columns};
+Segment::all().not(Rows::first()); // select all cells except header.
+Columns::first().and(Columns::last()); // select cells from first and last columns.
+Rows::first().and(Columns::single(0)).not(Cell(0, 0)); // select the header and first column except the (0, 0) cell.
 ```
 
 ### Macros
