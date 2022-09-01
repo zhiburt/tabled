@@ -10,7 +10,7 @@ use crate::{style::Line, Style, Table, TableOption};
 /// A raw style data, which can be produced safely from [`Style`].
 ///
 /// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct RawStyle {
     borders: Borders<char>,
     lines: HashMap<usize, Line>,
@@ -183,6 +183,8 @@ where
                 }
             }
         }
+
+        table.destroy_width_cache();
     }
 }
 

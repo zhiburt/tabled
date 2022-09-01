@@ -128,6 +128,8 @@ where
                 None => cfg.remove_border(pos, count_cols),
             }
         }
+
+        table.destroy_width_cache();
     }
 }
 

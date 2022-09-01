@@ -257,7 +257,9 @@ where
             }
         }
     }
+}
 
+impl<R> Table<R> {
     pub(crate) fn cache_width(&mut self, widths: Vec<usize>) {
         self.widths = Some(widths);
     }

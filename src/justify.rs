@@ -87,5 +87,7 @@ where
                 Width::truncate(width).change_cell(table, pos);
             }
         }
+
+        table.cache_width(vec![width; table.shape().1]);
     }
 }

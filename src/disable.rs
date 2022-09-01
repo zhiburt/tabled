@@ -85,6 +85,8 @@ where
             }
         }
 
+        table.destroy_width_cache();
+
         // fixme: I am pretty sure that we violate span constrains by removing rows/cols
         //        Because span may be bigger then the max number of rows/cols
     }

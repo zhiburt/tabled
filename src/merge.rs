@@ -110,6 +110,8 @@ where
                     .set_row_span((0, column), repeat_length);
             }
         }
+
+        table.destroy_width_cache();
     }
 }
 
@@ -201,5 +203,7 @@ where
                     .set_column_span((row, 0), repeat_length);
             }
         }
+
+        table.destroy_width_cache();
     }
 }

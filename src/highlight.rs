@@ -123,6 +123,8 @@ where
         for sector in segments {
             set_border(table.get_config_mut(), &sector, self.border.clone());
         }
+
+        table.destroy_width_cache();
     }
 }
 
@@ -149,8 +151,10 @@ where
         let segments = split_segments(cells, count_rows, count_cols);
 
         for sector in segments {
-            set_border_colored(table.get_config_mut(), sector, self.border.clone());
+            set_border_colored(table.get_config_mut(), sector, &self.border);
         }
+
+        table.destroy_width_cache();
     }
 }
 
@@ -158,13 +162,19 @@ where
 fn set_border_colored(
     cfg: &mut GridConfig,
     sector: HashSet<(usize, usize)>,
-    border: BorderColored,
+    border: &BorderColored,
 ) {
     if sector.is_empty() {
         return;
     }
 
-    let color = border.into();
+    let color = border.clone().into();
+    for &(row, col) in &sector {
+        let border = build_cell_border(&sector, (row, col), &color);
+        cfg.set_border((row, col), border);
+    }
+
+    let color = border.clone().into();
     for &(row, col) in &sector {
         let border = build_cell_border(&sector, (row, col), &color);
         cfg.set_border_color((row, col), border);

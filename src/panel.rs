@@ -219,6 +219,8 @@ where
         table.get_records_mut().set(self.pos, text, ctrl);
         let length = count_rows.checked_sub(self.pos.0).unwrap_or(1);
         table.get_config_mut().set_row_span(self.pos, length);
+    
+        table.destroy_width_cache();
     }
 }
 
@@ -297,6 +299,8 @@ where
         table.get_records_mut().set(self.pos, text, ctrl);
         let length = count_cols.checked_sub(self.pos.1).unwrap_or(1);
         table.get_config_mut().set_column_span(self.pos, length);
+
+        table.destroy_width_cache();
     }
 }
 
