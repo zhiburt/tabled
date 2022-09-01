@@ -55,7 +55,9 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Header and Footer and Panel](#header-and-footer-and-panel)
   - [Concat](#concat)
   - [Highlight](#highlight)
-  - [Column span](#column-span)
+  - [Span](#span)
+    - [Horizontal span](#horizontal-span)
+    - [Vertical span](#vertical-span)
 - [Derive](#derive)
   - [Override a column name](#override-a-column-name)
   - [Hide a column](#hide-a-column)
@@ -69,8 +71,6 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Color](#color)
   - [Tuple combination](#tuple-combination)
   - [Object](#object)
-  - [Macros](#macros)
-    - [Col and Row](#col-and-row)
 - [Views](#views)
   - [Expanded display](#expanded-display)
 - [Notes](#notes)
@@ -314,6 +314,7 @@ You can change the existing styles.
 
 ```rust
 use tabled::Style;
+
 let style = Style::modern()
     .off_horizontal()
     .lines([(1, Style::modern().get_horizontal().horizontal(Some('═')))]);
@@ -342,13 +343,15 @@ Sometimes it's nesessary to change a border of a particular cell.
 For this purpose you can use `Border`.
 
 ```rust
-use tabled::{TableIteratorExt, Modify, Border, object::Rows};
+use tabled::{object::Rows, Border, Modify, Style, TableIteratorExt};
 
 let data = [["123", "456"], ["789", "000"]];
 
-let table = data.table()
+let table = data
+    .table()
     .with(Style::ascii())
-    .with(Modify::new(Rows::first()).with(Border::default().top('x')));
+    .with(Modify::new(Rows::first()).with(Border::default().top('x')))
+    .to_string();
 
 let expected = "+xxxxx+xxxxx+\n\
                 | 0   | 1   |\n\
@@ -358,7 +361,7 @@ let expected = "+xxxxx+xxxxx+\n\
                 | 789 | 000 |\n\
                 +-----+-----+";
 
-assert_eq!(table.to_string(), expected);
+assert_eq!(table, expected);
 ```
 
 #### Text on borders
@@ -366,7 +369,7 @@ assert_eq!(table.to_string(), expected);
 You can set a string to a horizontal border line.
 
 ```rust
-use tabled::{Table, style::BorderText};
+use tabled::{Table, BorderText};
 
 let table = Table::new(["Hello World"]).with(BorderText::new(0, "+-.table"));
 
@@ -385,16 +388,21 @@ assert_eq!(
 You can set a colors of all borders using `Color`.
 
 ```rust
-// ... build table
+use tabled::color::Color;
+
 let color = Color::try_from(" ".magenta().to_string()).unwrap();
+
 table.with(color)
 ```
 
 You can also set a color border of intividial cell by using `BorderColored`.
 
 ```rust
+use tabled::{Modify, symbol::Symbol, border_colored::BorderColored, object::Columns};
+
 // set a top border of each cell in second column to red '=' character.
-let c = Symbol::ansi("═".red().to_string()).unwrap();
+let b = Symbol::ansi("═".red().to_string()).unwrap();
+
 table.with(Modify::new(Columns::single(2)).with(BorderColored::default().top(c)))
 ```
 
@@ -414,7 +422,7 @@ data.table()
 The `Format` function provides an interface for a modification of cells.
 
 ```rust
-use tabled::{Table, Modify, Format, object::{Rows, Columns}};
+use tabled::{Table, Modify, format::Format, object::{Rows, Columns}};
 
 Table::new(&data)
     .with(Modify::new(Rows::first()).with(Format::new(|s| format!("Head {}", s))))
@@ -457,7 +465,10 @@ BE AWARE: It only works with `color` feature.
 ```rust
 use std::convert::TryFrom;
 use owo_colors::OwoColorize;
-use tabled::{Table, Modify, padding::{Padding, PaddingColor}, style::Color, object::Segment};
+use tabled::{
+    color::Color, object::Segment, padding_color::PaddingColor, Modify, Padding, Table,
+};
+
 
 let on_red = Color::try_from(' '.on_red().to_string()).unwrap();
 let padding = Modify::new(Segment::all())
@@ -499,7 +510,7 @@ BE AWARE: It only works with `color` feature.
 ```rust
 use std::convert::TryFrom;
 use owo_colors::OwoColorize;
-use tabled::{Table, style::Color, margin::{Margin, MarginColor}};
+use tabled::{color::Color, margin_color::MarginColor, Margin, Table};
 
 let on_red = Color::try_from(' '.on_red().to_string()).unwrap();
 
@@ -539,7 +550,7 @@ data.table()
 ```rust
 use tabled::{TableIteratorExt, Width};
 
-/// Tries to set table width to 22, in case it's bigger than that.
+// Tries to set table width to 22, in case it's bigger than that.
 data.table().with(Width::truncate(22));
 ```
 
@@ -567,7 +578,7 @@ data.table()
 ```rust
 use tabled::{TableIteratorExt, Width};
 
-/// Tries to set table width to 22, in case it's bigger than that.
+// Tries to set table width to 22, in case it's bigger than that.
 data.table().with(Width::wrap(22));
 ```
 
@@ -580,7 +591,7 @@ It can be used in combination with `MinWidth` to set an exact table size.
 ```rust
 use tabled::{TableIteratorExt, Modify, Width, object::Rows};
 
-/// increase the space used by cells in all rows except the header to be at least 10
+// increase the space used by cells in all rows except the header to be at least 10
 data.table()
     .with(Modify::new(Rows::new(1..)).with(Width::increase(10)));
 ```
@@ -601,9 +612,9 @@ It can be used in combination with `Truncate` and `Wrap` to set an exact table s
 You can set a constant width for all columns using `Justify`.
 
 ```rust
-use tabled::{TableIteratorExt, Justify};
+use tabled::{TableIteratorExt, Width};
 
-data.table().with(Justify::new(10);
+data.table().with(Width::justify(10));
 ```
 
 #### Priority
@@ -611,9 +622,10 @@ data.table().with(Justify::new(10);
 You can tweak `Truncate`, `Wrap`, `MinWidth` logic by setting a priority by which a trim/inc be done.
 
 ```rust
-use tabled::{TableIteratorExt, Justify};
+use tabled::{TableIteratorExt, Width, width::PriorityMax};
 
-data.table().with(Width::truncate(10).priority::<PriorityMax>());
+data.table()
+    .with(Width::truncate(10).priority::<PriorityMax>());
 ```
 
 #### Percent
@@ -648,6 +660,8 @@ Imagine you have a table already which output may look like this.
 Now we will add the following modificator and the output will be;
 
 ```rust
+use tabled::Rotate;
+
 table.with(Rotate::Left)
 ```
 
@@ -731,11 +745,11 @@ Refinished extract
 You can add a `Header` and `Footer` to display some information.
 
 ```rust
-use tabled::{Table, Header, Footer};
+use tabled::{Table, Panel};
 
 Table::new(&data)
-    .with(Header("Tabled Name"))
-    .with(Footer(format!("{} elements", data.len())))
+    .with(Panel::header("Tabled Name"))
+    .with(Panel::footer(format!("{} elements", data.len())))
 ```
 
 The look will depend on the style you choose
@@ -751,12 +765,14 @@ but it may look something like this:
 └────────────────────────────────────────────────────────────┘
 ```
 
-You can also add a full row on any line using `tabled::Panel`.
+You can also add a full row/column using `tabled::Panel`.
 
 ```rust
 use tabled::{Table, Panel};
 
-Table::new(&data).with(Panel("A panel on 2nd row", 2));
+Table::new(&data)
+    .with(Panel::vertical(2).text("A panel on 2nd row"))
+    .with(Panel::horizontal(0).text("A panel on 1st column"));
 ```
 
 ### Concat
@@ -765,8 +781,10 @@ You can concatanate 2 tables using `Concat`.
 It will stick 2 tables together either vertically or horizontally.
 
 ```rust
-let t1: Table = ...;
-let t2: Table = ...;
+use tabled::Concat;
+
+// let t1: Table = ...;
+// let t2: Table = ...;
 
 // vertical concat
 let t3: Table = t1.with(Concat::vertical(t2));
@@ -782,9 +800,8 @@ Here's an example.
 
 ```rust
 use tabled::{
-    object::{Columns, Object, Rows},
-    style::{Border, Style},
-    Highlight, TableIteratorExt,
+    object::{Cell, Columns, Object, Rows},
+    Border, Highlight, Style, TableIteratorExt,
 };
 
 let data = vec![
@@ -812,16 +829,19 @@ The resulting table would be the following.
 └───┴───*****
 ```
 
-### Column span
+### Span
 
-It's possible to have a horizontal (column) span of a cell.
+It's possible to set a horizontal(column) span and vertical(row) span to a cell.
 
-An example for span usage.
+#### Horizontal span
 
 ```rust
 use tabled::{object::Cell, object::Segment, Alignment, Modify, Span, TableIteratorExt};
 
-let data = vec![["A", "B", "C"], ["D", "E", "F"]];
+let data = vec![
+    ["A", "B", "C"],
+    ["D", "E", "F"],
+];
 
 let table = data
     .table()
@@ -839,6 +859,34 @@ println!("{}", table);
 |   A   | C |
 +---+---+---+
 | D | E | F |
++---+---+---+
+```
+
+#### Vertical span
+
+```rust
+use tabled::{object::Cell, object::Segment, Alignment, Modify, Span, TableIteratorExt};
+
+let data = vec![
+    ["A", "B", "C"],
+    ["D", "E", "F"],
+];
+
+let table = data
+    .table()
+    .with(Modify::new(Cell(0, 1)).with(Span::row(3)))
+    .with(Modify::new(Segment::all()).with(Alignment::center()));
+
+println!("{}", table);
+```
+
+```text
++---+---+---+
+| 0 |   | 2 |
++---+   +---+
+| A | 1 | C |
++---+   +---+
+| D |   | F |
 +---+---+---+
 ```
 
@@ -1112,15 +1160,16 @@ You can use `Builder::index` to make a particular column an index, which will st
 ```rust
 use tabled::{builder::Builder, Style};
 
-let table = Builder::default()
+let mut builder = Builder::default();
+builder
     .set_columns(["Index", "Language", "Status"])
     .add_record(["1", "English", "In progress"])
-    .add_record(["2", "Deutsch", "Not ready"])
-    .index()
-    .set_index(1)
-    .set_name(None)
-    .build()
-    .with(Style::rounded());
+    .add_record(["2", "Deutsch", "Not ready"]);
+
+let mut builder = builder.index();
+builder.set_index(1).set_name(None);
+
+let table = builder.build().with(Style::rounded());
 
 println!("{}", table);
 ```
@@ -1142,7 +1191,7 @@ The library doesn't bind you in usage of any color library but to be able to wor
 add the `color` feature of `tabled` to your `Cargo.toml`
 
 ```rust
-use tabled::{Table, Modify, Style, Format, object::Columns};
+use tabled::{format::Format, object::Columns, Modify, Style, Table};
 
 Table::new(&data)
     .with(Style::psql())
@@ -1201,104 +1250,11 @@ assert_eq!(
 You can apply settings to subgroup of cells using `and` and `not` methods for an object.
 
 ```rust
-use tabled::object::{Segment, Cell, Rows, Columns};
+use tabled::object::{Object, Segment, Cell, Rows, Columns};
 
-Segment::all().not(Rows::first()) // select all cells except header.
-Columns::first().and(Columns::last()) // select cells from first and last columns.
-Rows::first().and(Columns::single(0)).not(Cell(0, 0)) // select the header and first column except the (0, 0) cell.
-```
-
-### Macros
-
-Utilities for dynamic `Table` displays.
-
-#### Col and Row
-
-Combine `col!` and `row!` to create flexible table visualizations.
-
-```rust
-row![table1, table2];
-```
-
-```text
-+-------------------------------------------+---------------------------------------------+
-| .---------------------------------------. | ┌────────────────────┬─────┬──────────────┐ |
-| | name             | age | is_validated | | │ name               │ age │ is_validated │ |
-| | Jon Doe          | 255 | false        | | ├────────────────────┼─────┼──────────────┤ |
-| | Mark Nelson      | 13  | true         | | │ Jack Black         │ 51  │ false        │ |
-| | Terminal Monitor | 0   | false        | | ├────────────────────┼─────┼──────────────┤ |
-| | Adam Blend       | 17  | true         | | │ Michelle Goldstein │ 44  │ true         │ |
-| '---------------------------------------' | └────────────────────┴─────┴──────────────┘ |
-+-------------------------------------------+---------------------------------------------+
-```
-
-```rust
-col![table1, table2];
-```
-
-```text
-+---------------------------------------------+
-| .---------------------------------------.   |
-| | name             | age | is_validated |   |
-| | Jon Doe          | 255 | false        |   |
-| | Mark Nelson      | 13  | true         |   |
-| | Terminal Monitor | 0   | false        |   |
-| | Adam Blend       | 17  | true         |   |
-| '---------------------------------------'   |
-+---------------------------------------------+
-| ┌────────────────────┬─────┬──────────────┐ |
-| │ name               │ age │ is_validated │ |
-| ├────────────────────┼─────┼──────────────┤ |
-| │ Jack Black         │ 51  │ false        │ |
-| ├────────────────────┼─────┼──────────────┤ |
-| │ Michelle Goldstein │ 44  │ true         │ |
-| └────────────────────┴─────┴──────────────┘ |
-+---------------------------------------------+
-```
-
-```rust
-row![table1; 3];
-```
-
-```text
-+-------------------------------------------+-------------------------------------------+-------------------------------------------+
-| .---------------------------------------. | .---------------------------------------. | .---------------------------------------. |
-| | name             | age | is_validated | | | name             | age | is_validated | | | name             | age | is_validated | |
-| | Jon Doe          | 255 | false        | | | Jon Doe          | 255 | false        | | | Jon Doe          | 255 | false        | |
-| | Mark Nelson      | 13  | true         | | | Mark Nelson      | 13  | true         | | | Mark Nelson      | 13  | true         | |
-| | Terminal Monitor | 0   | false        | | | Terminal Monitor | 0   | false        | | | Terminal Monitor | 0   | false        | |
-| | Adam Blend       | 17  | true         | | | Adam Blend       | 17  | true         | | | Adam Blend       | 17  | true         | |
-| '---------------------------------------' | '---------------------------------------' | '---------------------------------------' |
-+-------------------------------------------+-------------------------------------------+-------------------------------------------+
-```
-
-```rust
-col![
-    row![table_a, table_b], 
-    table_c
-]
-```
-
-```text
-+----------------------------------------------------------------------------------+
-| +--------------------------------+---------------------------------------------+ |
-| | +-------+-----+--------------+ | ┌────────────────────┬─────┬──────────────┐ | |
-| | | name  | age | is_validated | | │ name               │ age │ is_validated │ | |
-| | +-------+-----+--------------+ | ├────────────────────┼─────┼──────────────┤ | |
-| | | Sam   | 31  | true         | | │ Jack Black         │ 51  │ false        │ | |
-| | +-------+-----+--------------+ | ├────────────────────┼─────┼──────────────┤ | |
-| | | Sarah | 26  | true         | | │ Michelle Goldstein │ 44  │ true         │ | |
-| | +-------+-----+--------------+ | └────────────────────┴─────┴──────────────┘ | |
-| +--------------------------------+---------------------------------------------+ |
-+----------------------------------------------------------------------------------+
-| .---------------------------------------.                                        |
-| | name             | age | is_validated |                                        |
-| | Jon Doe          | 255 | false        |                                        |
-| | Mark Nelson      | 13  | true         |                                        |
-| | Terminal Monitor | 0   | false        |                                        |
-| | Adam Blend       | 17  | true         |                                        |
-| '---------------------------------------'                                        |
-+----------------------------------------------------------------------------------+
+Segment::all().not(Rows::first()); // select all cells except header.
+Columns::first().and(Columns::last()); // select cells from first and last columns.
+Rows::first().and(Columns::single(0)).not(Cell(0, 0)); // select the header and first column except the (0, 0) cell.
 ```
 
 ## Views

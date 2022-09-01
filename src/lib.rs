@@ -255,7 +255,7 @@ pub mod justify;
 pub mod min_width;
 pub mod truncate;
 pub mod wrap;
-
+pub mod merge;
 pub mod builder;
 pub mod display;
 pub mod format;
