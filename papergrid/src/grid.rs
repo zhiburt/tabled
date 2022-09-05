@@ -9,7 +9,7 @@ use std::{
 use crate::{
     estimation::Estimate,
     records::Records,
-    util::{get_lines, spplit_str_at, string_trim},
+    util::{get_lines, spplit_str_at, string_trim, string_width},
     width::{CfgWidthFunction, WidthFunc},
     AlignmentHorizontal, AlignmentVertical, Formatting, GridConfig, Indent, Padding, Position,
 };
@@ -68,11 +68,11 @@ where
     H: Estimate<R>,
     R: Records,
 {
-    // // todo:
-    // // Spans requires a few additional `if` compared to the flow without it.
-    // // It also makes the logic a bit more
-    // if cfg.has_column_spans() || cfg.has_row_spans() {
-    // }
+    // todo:
+    // Spans requires a few additional `if` compared to the flow without it.
+    // It also makes the logic a lot more complex.
+    //
+    // We could create 2 different print_grid functions to not pay the cost of the ifs in case of implementation with spans.
 
     let shape = (records.count_rows(), records.count_columns());
 
@@ -123,7 +123,7 @@ where
                             .map(|i| height.get(i).unwrap())
                             .sum::<usize>();
 
-                        skip_lines += (original_row..row)
+                        skip_lines += (original_row + 1..=row)
                             .map(|row| has_horizontal(cfg, records, row) as usize)
                             .sum::<usize>();
 
@@ -380,8 +380,8 @@ where
     let mut override_text = cfg
         .get_split_line_text(row)
         .and_then(|text| get_lines(text).next())
-        .map(|text| text.into_owned())
-        .unwrap_or_default();
+        .unwrap_or_default()
+        .into_owned();
 
     #[cfg(feature = "color")]
     let mut used_color = None;
@@ -394,6 +394,9 @@ where
                     let (c, rest) = spplit_str_at(&override_text, 1);
                     f.write_str(&c)?;
                     override_text = rest.into_owned();
+                    if string_width(&override_text) == 0 {
+                        override_text = String::new()
+                    }
                 } else {
                     #[cfg(feature = "color")]
                     {
@@ -409,24 +412,29 @@ where
             }
         }
 
-        let mut width = width_ctrl.get(col).unwrap();
         if cfg.is_cell_covered_by_both_spans((row, col), shape) {
             continue;
         }
 
-        if !override_text.is_empty() {
+        let is_spanned_split_line_part = cfg.is_cell_covered_by_row_span((row, col), shape);
+
+        let mut width = width_ctrl.get(col).unwrap();
+        if !override_text.is_empty() && !is_spanned_split_line_part {
             let width_ctrl = CfgWidthFunction::from_cfg(cfg);
             let text_width = width_ctrl.width(&override_text);
             let print_width = cmp::min(text_width, width);
             let (c, rest) = spplit_str_at(&override_text, print_width);
             f.write_str(&c)?;
             override_text = rest.into_owned();
+            if string_width(&override_text) == 0 {
+                override_text = String::new()
+            }
 
             width -= print_width;
         }
 
         let mut col = col;
-        if cfg.is_cell_covered_by_row_span((row, col), shape) {
+        if is_spanned_split_line_part {
             // means it's part of other a spanned cell
             // so. we just need to use line from other cell.
 
@@ -440,7 +448,7 @@ where
             // skip horizontal lines
             if row > 0 {
                 skip_lines += (original_row..row - 1)
-                    .map(|row| cfg.has_horizontal(row, records.count_rows()) as usize)
+                    .map(|row| cfg.has_horizontal(row + 1, records.count_rows()) as usize)
                     .sum::<usize>();
             }
 
@@ -485,6 +493,9 @@ where
                 let (c, rest) = spplit_str_at(&override_text, 1);
                 f.write_str(&c)?;
                 override_text = rest.into_owned();
+                if string_width(&override_text) == 0 {
+                    override_text = String::new()
+                }
             } else {
                 #[cfg(feature = "color")]
                 {

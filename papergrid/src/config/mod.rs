@@ -183,11 +183,14 @@ impl GridConfig {
         self.override_split_lines.insert(row, line.into());
     }
 
-    /// Override the split line with a custom text.
-    ///
-    /// If borders are not set the string won't be rendered.
+    /// Gets a set text to a border line by index
     pub fn get_split_line_text(&self, row: usize) -> Option<&str> {
         self.override_split_lines.get(&row).map(String::as_str)
+    }
+
+    /// Removes a split line text if any set.
+    pub fn remove_split_line_text(&mut self, row: usize) -> Option<String> {
+        self.override_split_lines.remove(&row)
     }
 
     /// Set a padding to a given cells.
@@ -376,6 +379,16 @@ impl GridConfig {
     /// Sets a color of border of a cell on the [`Grid`].
     pub fn set_border_color(&mut self, pos: Position, border: Border<AnsiColor>) {
         self.border_colors.insert_border(pos, border)
+    }
+
+    /// Gets a color of border of a cell on the [`Grid`].
+    pub fn get_border_color(&self, pos: Position, shape: (usize, usize)) -> Border<&AnsiColor> {
+        self.border_colors.get_border(pos, shape.0, shape.1)
+    }
+
+    /// Gets a color of border of a cell on the [`Grid`].
+    pub fn remove_border_color(&mut self, pos: Position, shape: (usize, usize)) {
+        self.border_colors.remove_border(pos, shape.1);
     }
 
     /// Get colors for a [`Margin`] value.
