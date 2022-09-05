@@ -182,8 +182,6 @@ impl<'a> Builder<'a> {
 
     /// Sets a [`Table`] header.
     ///
-    /// If not set a first row will be considered a header.
-    ///
     /// ```rust
     /// use tabled::builder::Builder;
     ///
@@ -206,9 +204,9 @@ impl<'a> Builder<'a> {
         self
     }
 
-    /// Sets a [`Table`] header.
+    /// Sets off a [`Table`] header.
     ///
-    /// If not set a first row will be considered a header.
+    /// If not set its a nop.
     ///
     /// ```rust
     /// use tabled::Table;
@@ -749,13 +747,19 @@ impl<'a> IndexBuilder<'a> {
 
     /// Builds a table.
     pub fn build(self) -> Table<VecRecords<CellInfo<'a>>> {
-        let mut b = build_index(self);
-        // fixme: we don't update builder size internally
+        Builder::from(self).build()
+    }
+}
 
+impl<'a> From<IndexBuilder<'a>> for Builder<'a> {
+    fn from(index_builder: IndexBuilder<'a>) -> Self {
+        let mut b = build_index(index_builder);
+
+        // fixme: we don't update builder size internally
         b.fix_rows();
         b.different_column_sizes_used = false;
 
-        b.build()
+        b
     }
 }
 

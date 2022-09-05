@@ -1,7 +1,9 @@
 //! The example can be run by this command
 //! `cargo run --example border_text`
 
-use tabled::{object::Segment, Alignment, BorderText, ModifyObject, Style, Table};
+use tabled::{
+    object::Segment, style::HorizontalLine, Alignment, BorderText, ModifyObject, Style, Table,
+};
 
 fn main() {
     let data = [[5, 6, 7, 8, 9], [10, 11, 12, 13, 14]];
@@ -10,7 +12,7 @@ fn main() {
         .with(
             Style::modern()
                 .off_horizontal()
-                .lines([(1, Style::modern().get_horizontal())]),
+                .lines([HorizontalLine::new(1, Style::modern().get_horizontal())]),
         )
         .with(BorderText::first(" Numbers "))
         .with(BorderText::new(1, " More numbers "))

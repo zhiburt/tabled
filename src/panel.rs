@@ -143,7 +143,7 @@ impl<S> VerticalPanel<S> {
     /// Set a text for a panel.
     pub fn text<T>(self, text: T) -> VerticalPanel<T>
     where
-        T: Into<String> + Clone,
+        T: AsRef<str> + Clone,
     {
         VerticalPanel {
             pos: self.pos,
@@ -164,11 +164,23 @@ impl<S> VerticalPanel<S> {
         self.text_width = width;
         self
     }
+
+    fn get_text(&self) -> String
+    where
+        S: AsRef<str>,
+    {
+        let text = if self.text_width > 0 {
+            wrap_text(self.text.as_ref(), self.text_width, false)
+        } else {
+            self.text.as_ref().to_owned()
+        };
+        text
+    }
 }
 
 impl<S, R> TableOption<R> for VerticalPanel<S>
 where
-    S: Into<String> + Clone,
+    S: AsRef<str> + Clone,
     R: Records + RecordsMut<String> + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
@@ -177,49 +189,18 @@ where
             return;
         }
 
-        table.get_records_mut().push_column();
+        move_columns_aside(table, self.pos.1);
+        move_column_spans(table, self.pos.1);
+        // move_right_borders(table, self.pos.0, self.pos.1);
+        // #[cfg(feature = "color")]
+        // move_right_border_colors(table, self.pos.0, self.pos.1);
 
-        let shift_count = count_cols - self.pos.1;
-        for i in 0..shift_count {
-            let col = count_cols - i;
-            table.get_records_mut().swap_column(col, col - 1);
-        }
+        let text = self.get_text();
+        set_text(table, self.pos, text);
 
-        // move existing spans
-        {
-            let spans = table
-                .get_config()
-                .iter_column_spans(table.shape())
-                .collect::<Vec<_>>();
-            for ((row, col), span) in spans {
-                if col >= self.pos.1 {
-                    table.get_config_mut().set_column_span((row, col), 1);
-                    table.get_config_mut().set_column_span((row, col + 1), span);
-                }
-            }
-
-            let spans = table
-                .get_config()
-                .iter_row_spans(table.shape())
-                .collect::<Vec<_>>();
-            for ((row, col), span) in spans {
-                if col >= self.pos.1 {
-                    table.get_config_mut().set_row_span((row, col), 1);
-                    table.get_config_mut().set_row_span((row, col + 1), span);
-                }
-            }
-        }
-
-        let ctrl = CfgWidthFunction::from_cfg(table.get_config());
-        let mut text = self.text.clone().into();
-        if self.text_width > 0 {
-            text = wrap_text(&text, self.text_width, false);
-        }
-
-        table.get_records_mut().set(self.pos, text, ctrl);
         let length = count_rows.checked_sub(self.pos.0).unwrap_or(1);
         table.get_config_mut().set_row_span(self.pos, length);
-    
+
         table.destroy_width_cache();
     }
 }
@@ -235,7 +216,7 @@ impl<S> HorizontalPanel<S> {
     /// Sets a text value.
     pub fn text<T>(self, text: T) -> HorizontalPanel<T>
     where
-        T: Into<String> + Clone,
+        T: AsRef<str> + Clone,
     {
         HorizontalPanel {
             pos: self.pos,
@@ -251,7 +232,7 @@ impl<S> HorizontalPanel<S> {
 
 impl<S, R> TableOption<R> for HorizontalPanel<S>
 where
-    S: Into<String> + Clone,
+    S: AsRef<str> + Clone,
     R: Records + RecordsMut<String> + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
@@ -260,43 +241,16 @@ where
             return;
         }
 
-        table.get_records_mut().push_row();
+        move_rows_aside(table, self.pos.0);
+        move_row_spans(table, self.pos.0);
+        // move_lines_aside(table, self.pos.0);
+        // move_text_on_lines_aside(table, self.pos.0);
+        // move_aside_borders(table, self.pos.0);
+        // #[cfg(feature = "color")]
+        // move_aside_border_colors(table, self.pos.0);
 
-        let shift_count = count_rows - self.pos.0;
-        for i in 0..shift_count {
-            let row = count_rows - i;
-            table.get_records_mut().swap_row(row, row - 1);
-        }
+        set_text(table, self.pos, self.text.as_ref().to_owned());
 
-        {
-            // move existing spans
-
-            let spans = table
-                .get_config()
-                .iter_column_spans(table.shape())
-                .collect::<Vec<_>>();
-            for ((row, col), span) in spans {
-                if row >= self.pos.0 {
-                    table.get_config_mut().set_column_span((row, col), 1);
-                    table.get_config_mut().set_column_span((row + 1, col), span);
-                }
-            }
-            let spans = table
-                .get_config()
-                .iter_row_spans(table.shape())
-                .collect::<Vec<_>>();
-            for ((row, col), span) in spans {
-                if row >= self.pos.0 {
-                    table.get_config_mut().set_row_span((row, col), 1);
-                    table.get_config_mut().set_row_span((row + 1, col), span);
-                }
-            }
-        }
-
-        let ctrl = CfgWidthFunction::from_cfg(table.get_config());
-        let text = self.text.clone().into();
-
-        table.get_records_mut().set(self.pos, text, ctrl);
         let length = count_cols.checked_sub(self.pos.1).unwrap_or(1);
         table.get_config_mut().set_column_span(self.pos, length);
 
@@ -311,13 +265,13 @@ pub struct Header<S>(S);
 
 impl<S, R> TableOption<R> for Header<S>
 where
-    S: Into<String> + Clone,
+    S: AsRef<str>,
     R: Records + RecordsMut<String> + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
         HorizontalPanel {
             pos: (0, 0),
-            text: self.0.clone().into(),
+            text: self.0.as_ref(),
         }
         .change(table);
     }
@@ -330,14 +284,293 @@ pub struct Footer<S>(S);
 
 impl<S, R> TableOption<R> for Footer<S>
 where
-    S: Into<String> + Clone,
+    S: AsRef<str> + Clone,
     R: Records + RecordsMut<String> + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
         HorizontalPanel {
             pos: (table.shape().0, 0),
-            text: self.0.clone().into(),
+            text: self.0.as_ref(),
         }
         .change(table);
     }
 }
+
+fn move_rows_aside<R>(table: &mut Table<R>, row: usize)
+where
+    R: Records + Resizable,
+{
+    table.get_records_mut().push_row();
+
+    let count_rows = table.get_records().count_rows();
+    let shift_count = count_rows - row;
+    for i in 0..shift_count {
+        let row = count_rows - i;
+        table.get_records_mut().swap_row(row, row - 1);
+    }
+}
+
+fn move_columns_aside<R>(table: &mut Table<R>, column: usize)
+where
+    R: Records + Resizable,
+{
+    table.get_records_mut().push_column();
+
+    let count_columns = table.get_records().count_columns();
+    let shift_count = count_columns - column;
+    for i in 0..shift_count {
+        let col = count_columns - i;
+        table.get_records_mut().swap_column(col, col - 1);
+    }
+}
+
+fn move_row_spans<R>(table: &mut Table<R>, target_row: usize)
+where
+    R: Records,
+{
+    let spans = table
+        .get_config()
+        .iter_column_spans(table.shape())
+        .collect::<Vec<_>>();
+    for ((row, col), span) in spans {
+        if row >= target_row {
+            table.get_config_mut().set_column_span((row, col), 1);
+            table.get_config_mut().set_column_span((row + 1, col), span);
+        }
+    }
+
+    let spans = table
+        .get_config()
+        .iter_row_spans(table.shape())
+        .collect::<Vec<_>>();
+    for ((row, col), span) in spans {
+        if row >= target_row {
+            table.get_config_mut().set_row_span((row, col), 1);
+            table.get_config_mut().set_row_span((row + 1, col), span);
+        } else {
+            // let span_covers_row = target_row <= row + span;
+            // if span_covers_row {
+            //     table.get_config_mut().set_row_span((row, col), span + 1);
+            // }
+        }
+    }
+}
+
+fn move_column_spans<R>(table: &mut Table<R>, target_column: usize)
+where
+    R: Records,
+{
+    let spans = table
+        .get_config()
+        .iter_column_spans(table.shape())
+        .collect::<Vec<_>>();
+    for ((row, col), span) in spans {
+        if col >= target_column {
+            table.get_config_mut().set_column_span((row, col), 1);
+            table.get_config_mut().set_column_span((row, col + 1), span);
+        } else {
+            // let span_covers_column = target_column <= col + span;
+            // if span_covers_column {
+            //     table.get_config_mut().set_column_span((row, col), span + 1);
+            // }
+        }
+    }
+
+    let spans = table
+        .get_config()
+        .iter_row_spans(table.shape())
+        .collect::<Vec<_>>();
+    for ((row, col), span) in spans {
+        if col >= target_column {
+            table.get_config_mut().set_row_span((row, col), 1);
+            table.get_config_mut().set_row_span((row, col + 1), span);
+        }
+    }
+}
+
+fn set_text<R>(table: &mut Table<R>, pos: Position, text: String)
+where
+    R: RecordsMut<String>,
+{
+    let ctrl = CfgWidthFunction::from_cfg(table.get_config());
+    table.get_records_mut().set(pos, text, ctrl);
+}
+
+// fn move_lines_aside<R>(table: &mut Table<R>, row: usize)
+// where
+//     R: Records,
+// {
+//     let count_rows = table.get_records().count_rows();
+//     if count_rows < 2 {
+//         return;
+//     }
+
+//     for i in (row..count_rows - 1).rev() {
+//         if let Some(line) = table.get_config().get_split_line(i).cloned() {
+//             table.get_config_mut().remove_split_line(i);
+//             table.get_config_mut().set_split_line(i + 1, line);
+//         }
+//     }
+// }
+
+// fn move_text_on_lines_aside<R>(table: &mut Table<R>, row: usize)
+// where
+//     R: Records,
+// {
+//     let count_rows = table.get_records().count_rows();
+//     if count_rows < 2 {
+//         return;
+//     }
+
+//     for i in (row..count_rows - 1).rev() {
+//         if let Some(line) = table.get_config_mut().remove_split_line_text(i) {
+//             table.get_config_mut().override_split_line(i + 1, line);
+//         }
+//     }
+// }
+
+// fn move_aside_borders<R>(table: &mut Table<R>, row: usize)
+// where
+//     R: Records,
+// {
+//     let count_rows = table.get_records().count_rows();
+//     if count_rows < 2 {
+//         return;
+//     }
+
+//     let count_columns = table.get_records().count_columns();
+
+//     for i in (row + 1..count_rows).rev() {
+//         for col in 0..count_columns {
+//             let mut border = table
+//                 .get_config()
+//                 .get_border((i - 1, col), (count_rows, count_columns));
+
+//             if border.is_empty() {
+//                 continue;
+//             }
+
+//             if col > 0 {
+//                 // because we delete border and we set borders column by column we need to do this swap.
+
+//                 border.left_top_corner = border.left_bottom_corner;
+//                 border.left_bottom_corner = None;
+//             }
+
+//             table
+//                 .get_config_mut()
+//                 .remove_border((i - 1, col), count_columns);
+//             table.get_config_mut().set_border((i, col), border);
+//         }
+//     }
+// }
+
+// #[cfg(feature = "color")]
+// fn move_aside_border_colors<R>(table: &mut Table<R>, row: usize)
+// where
+//     R: Records,
+// {
+//     let count_rows = table.get_records().count_rows();
+//     if count_rows < 2 {
+//         return;
+//     }
+
+//     let count_columns = table.get_records().count_columns();
+
+//     for i in (row + 1..count_rows).rev() {
+//         for col in 0..count_columns {
+//             let mut border = table
+//                 .get_config()
+//                 .get_border_color((i - 1, col), (count_rows, count_columns))
+//                 .cloned();
+
+//             if border.is_empty() {
+//                 continue;
+//             }
+
+//             if col > 0 {
+//                 // because we delete border and we set borders column by column we need to do this swap.
+
+//                 border.left_top_corner = border.left_bottom_corner;
+//                 border.left_bottom_corner = None;
+//             }
+
+//             table
+//                 .get_config_mut()
+//                 .remove_border_color((i - 1, col), (count_rows, count_columns));
+//             table.get_config_mut().set_border_color((i, col), border);
+//         }
+//     }
+// }
+
+// fn move_right_borders<R>(table: &mut Table<R>, row: usize, col: usize)
+// where
+//     R: Records,
+// {
+//     let count_columns = table.get_records().count_columns();
+//     let count_rows = table.get_records().count_rows();
+//     if count_columns < 2 {
+//         return;
+//     }
+
+//     for col in (col + 1..count_columns).rev() {
+//         for row in row..count_rows {
+//             let mut border = table
+//                 .get_config()
+//                 .get_border((row, col - 1), (count_rows, count_columns));
+
+//             if border.is_empty() {
+//                 continue;
+//             }
+
+//             if row > 0 {
+//                 // because we delete border and we set borders column by column we need to do this swap.
+
+//                 border.left_top_corner = border.right_top_corner;
+//                 border.right_top_corner = None;
+//             }
+
+//             table
+//                 .get_config_mut()
+//                 .remove_border((row, col - 1), count_columns);
+//             table.get_config_mut().set_border((row, col), border);
+//         }
+//     }
+// }
+
+// #[cfg(feature = "color")]
+// fn move_right_border_colors<R>(table: &mut Table<R>, init_row: usize, col: usize)
+// where
+//     R: Records,
+// {
+//     let count_columns = table.get_records().count_columns();
+//     let count_rows = table.get_records().count_rows();
+//     if count_columns < 2 {
+//         return;
+//     }
+
+//     for col in (col + 1..count_columns).rev() {
+//         for row in init_row..count_rows {
+//             let mut border = table
+//                 .get_config()
+//                 .get_border_color((row, col - 1), (count_rows, count_columns))
+//                 .cloned();
+
+//             if border.is_empty() {
+//                 continue;
+//             }
+
+//             if row > 0 {
+//                 // because we delete border and we set borders column by column we need to do this swap.
+
+//                 border.left_top_corner = border.right_top_corner;
+//                 border.right_top_corner = None;
+//             }
+
+//             table
+//                 .get_config_mut()
+//                 .remove_border_color((row, col - 1), (count_rows, count_columns));
+//             table.get_config_mut().set_border_color((row, col), border);
+//         }
+//     }
+// }

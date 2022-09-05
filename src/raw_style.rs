@@ -5,7 +5,10 @@ use std::collections::HashMap;
 
 use papergrid::{records::Records, Borders};
 
-use crate::{style::Line, Style, Table, TableOption};
+use crate::{
+    style::{HorizontalLine, Line},
+    Style, Table, TableOption,
+};
 
 /// A raw style data, which can be produced safely from [`Style`].
 ///
@@ -190,12 +193,19 @@ where
 
 impl<T, B, L, R, H, V, Lines> From<Style<T, B, L, R, H, V, Lines>> for RawStyle
 where
-    Lines: IntoIterator<Item = (usize, Line)>,
+    Lines: IntoIterator<Item = HorizontalLine>,
 {
     fn from(style: Style<T, B, L, R, H, V, Lines>) -> Self {
         Self {
             borders: style.borders,
-            lines: style.lines.into_iter().collect(),
+            lines: style
+                .lines
+                .into_iter()
+                .flat_map(|hr| {
+                    let index = hr.index;
+                    hr.line.map(|line| (index, line))
+                })
+                .collect(),
         }
     }
 }
