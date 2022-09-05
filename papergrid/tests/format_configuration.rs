@@ -828,60 +828,53 @@ fn formatting_1x1_test() {
 
     let grid = util::grid(1, 1).data([[json]]);
 
-    // assert_eq!(
-    //     grid.clone()
-    //         .config(
-    //             |cfg| cfg.set_alignment_horizontal(Entity::Cell(0, 0), AlignmentHorizontal::Left)
-    //         )
-    //         .build(),
-    //     static_table!(
-    //         r#"+--------------------------------------------------+"#
-    //         r#"|                                                  |"#
-    //         r#"|{                                                 |"#
-    //         r#"|    "id": "0001",                                 |"#
-    //         r#"|    "batters": {                                  |"#
-    //         r#"|        "batter": [                               |"#
-    //         r#"|            { "id": "1002", "type": "Chocolate" },|"#
-    //         r#"|        ]                                         |"#
-    //         r#"|    },                                            |"#
-    //         r#"|    "topping": [                                  |"#
-    //         r#"|        { "id": "5003", "type": "Chocolate" },    |"#
-    //         r#"|        { "id": "5004", "type": "Maple" }         |"#
-    //         r#"|    ]                                             |"#
-    //         r#"|}                                                 |"#
-    //         r#"+--------------------------------------------------+"#
-    //     ),
-    // );
+    assert_eq!(
+        grid.clone()
+            .config(
+                |cfg| cfg.set_alignment_horizontal(Entity::Cell(0, 0), AlignmentHorizontal::Left)
+            )
+            .build(),
+        static_table!(
+            r#"+--------------------------------------------------+"#
+            r#"|                                                  |"#
+            r#"|{                                                 |"#
+            r#"|    "id": "0001",                                 |"#
+            r#"|    "batters": {                                  |"#
+            r#"|        "batter": [                               |"#
+            r#"|            { "id": "1002", "type": "Chocolate" },|"#
+            r#"|        ]                                         |"#
+            r#"|    },                                            |"#
+            r#"|    "topping": [                                  |"#
+            r#"|        { "id": "5003", "type": "Chocolate" },    |"#
+            r#"|        { "id": "5004", "type": "Maple" }         |"#
+            r#"|    ]                                             |"#
+            r#"|}                                                 |"#
+            r#"+--------------------------------------------------+"#
+        ),
+    );
 
-    // assert_eq!(
-    //     grid.clone()
-    //         .config(|cfg| cfg.set_formatting(Entity::Global, Formatting::new(false, false, true)))
-    //         .build(),
-    //     static_table!(
-    //         r#"+--------------------------------------------------+"#
-    //         r#"|                                                  |"#
-    //         r#"|{                                                 |"#
-    //         r#"|    "id": "0001",                                 |"#
-    //         r#"|    "batters": {                                  |"#
-    //         r#"|        "batter": [                               |"#
-    //         r#"|            { "id": "1002", "type": "Chocolate" },|"#
-    //         r#"|        ]                                         |"#
-    //         r#"|    },                                            |"#
-    //         r#"|    "topping": [                                  |"#
-    //         r#"|        { "id": "5003", "type": "Chocolate" },    |"#
-    //         r#"|        { "id": "5004", "type": "Maple" }         |"#
-    //         r#"|    ]                                             |"#
-    //         r#"|}                                                 |"#
-    //         r#"+--------------------------------------------------+"#
-    //     ),
-    // );
-
-    // println!(
-    //     "{}",
-    //     grid.clone()
-    //         .config(|cfg| cfg.set_formatting(Entity::Global, Formatting::new(true, false, true)))
-    //         .build()
-    // );
+    assert_eq!(
+        grid.clone()
+            .config(|cfg| cfg.set_formatting(Entity::Global, Formatting::new(false, false, true)))
+            .build(),
+        static_table!(
+            r#"+--------------------------------------------------+"#
+            r#"|                                                  |"#
+            r#"|{                                                 |"#
+            r#"|    "id": "0001",                                 |"#
+            r#"|    "batters": {                                  |"#
+            r#"|        "batter": [                               |"#
+            r#"|            { "id": "1002", "type": "Chocolate" },|"#
+            r#"|        ]                                         |"#
+            r#"|    },                                            |"#
+            r#"|    "topping": [                                  |"#
+            r#"|        { "id": "5003", "type": "Chocolate" },    |"#
+            r#"|        { "id": "5004", "type": "Maple" }         |"#
+            r#"|    ]                                             |"#
+            r#"|}                                                 |"#
+            r#"+--------------------------------------------------+"#
+        ),
+    );
 
     assert_eq!(
         grid.clone()
