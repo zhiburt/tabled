@@ -186,10 +186,9 @@ where
     info.count_lines = count_lines;
     info.lines = vec![StrWithWidth::new(Cow::Borrowed(""), 0); count_lines];
     for (line, i) in get_lines(text).zip(info.lines.iter_mut()) {
-        let width = width_fn.width(line.as_ref());
-        info.width = max(info.width, width);
+        i.width = width_fn.width(line.as_ref());
         i.text = line;
-        i.width = width;
+        info.width = max(info.width, i.width);
     }
 
     info

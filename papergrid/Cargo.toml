@@ -16,6 +16,7 @@ bytecount = "0.6.3"
 fnv = "1.0.7"
 ansi-str = { git = "https://github.com/zhiburt/ansi-str", branch = "master", optional = true }
 ansitok = { version = "0.1.0", optional = true }
+strip-ansi-escapes = "0.1.1"
 
 [dev-dependencies]
 owo-colors = "3.4.0"

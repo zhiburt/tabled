@@ -334,6 +334,7 @@ where
     }
 }
 
+#[derive(Debug)]
 enum WidthCtrl<'a> {
     Cached(&'a [usize]),
     Ctrl(WidthEstimator),
