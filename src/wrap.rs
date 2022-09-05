@@ -174,15 +174,15 @@ fn wrap_total_width<R, P>(
 
     let points = get_decrease_cell_list(cfg, &widths, &min_widths, (count_rows, count_cols));
 
-    table.destroy_width_cache();
-    table.cache_width(widths);
-
     let mut wrap = Wrap::new(0);
     wrap.keep_words = keep_words;
     for ((row, col), width) in points {
         wrap.width = width;
         wrap.change_cell(table, (row, col).into());
     }
+
+    table.destroy_width_cache();
+    table.cache_width(widths);
 }
 
 pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {

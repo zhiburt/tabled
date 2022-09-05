@@ -393,15 +393,15 @@ fn truncate_total_width<P, R>(
 
     let points = get_decrease_cell_list(cfg, &widths, &min_widths, (count_rows, count_cols));
 
-    table.destroy_width_cache();
-    table.cache_width(widths);
-
     let mut truncate = Truncate::new(0);
     truncate.suffix = suffix;
     for ((row, col), width) in points {
         truncate.width = width;
         truncate.change_cell(table, (row, col).into());
     }
+
+    table.destroy_width_cache();
+    table.cache_width(widths);
 }
 
 #[cfg(feature = "color")]

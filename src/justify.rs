@@ -87,5 +87,9 @@ where
                 Width::truncate(width).change_cell(table, pos);
             }
         }
+
+        // we can't cache the widths because it doesn't consider padding
+        // table.cache_width(vec![width; table.shape().1]);
+        table.destroy_width_cache();
     }
 }

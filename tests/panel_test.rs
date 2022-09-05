@@ -1,5 +1,6 @@
 use tabled::{
     object::{Cell, Object, Rows, Segment},
+    style::HorizontalLine,
     Alignment, Border, Highlight, Modify, Panel, Style,
 };
 
@@ -139,7 +140,7 @@ test_table!(
     panel_style_change,
     new_table(&[(0, 1)])
         .with(Panel::horizontal(0).text("Numbers"))
-        .with(Style::modern().top_intersection('─').lines([(1, Style::modern().get_horizontal().intersection(Some('┬')))]))
+        .with(Style::modern().top_intersection('─').lines([HorizontalLine::new(1, Style::modern().get_horizontal().intersection(Some('┬')))]))
         .with(Modify::new(Cell(0, 0)).with(Alignment::center())),
     "┌───────────┐"
     "│  Numbers  │"
@@ -169,7 +170,7 @@ test_table!(
     panel_style_change_corect,
     new_table(&[(0, 1)])
         .with(Panel::horizontal(0).text("Numbers"))
-        .with(Style::modern().top_intersection('─').lines([(1, Style::modern().get_horizontal().intersection(Some('┬')))]))
+        .with(Style::modern().top_intersection('─').lines([HorizontalLine::new(1, Style::modern().get_horizontal().intersection(Some('┬')))]))
         .with(Style::correct_spans())
         .with(Modify::new(Cell(0, 0)).with(Alignment::center())),
     "┌───────────┐"
@@ -230,7 +231,7 @@ test_table!(
     " ux  |   |          |          |          "
     " Dis |   |          |          |          "
     " tri +---+----------+----------+----------"
-    " tri | 0 |   0-0    |   0-1    |   0-2    "
+    " but | 0 |   0-0    |   0-1    |   0-2    "
     " ion | 1 |   1-0    |   1-1    |   1-2    "
     " s   | 2 |   2-0    |   2-1    |   2-2    "
 );

@@ -43,6 +43,18 @@ impl<T> Border<T> {
             left_top_corner: Some(top_left),
         }
     }
+
+    /// Checks whether any side is set.
+    pub fn is_empty(&self) -> bool {
+        self.top.is_none()
+            && self.left_top_corner.is_none()
+            && self.right_top_corner.is_none()
+            && self.bottom.is_none()
+            && self.left_bottom_corner.is_none()
+            && self.left_top_corner.is_none()
+            && self.left.is_none()
+            && self.right.is_none()
+    }
 }
 
 impl<T: Copy> Border<T> {
@@ -68,6 +80,24 @@ impl<T: Copy> Border<&T> {
             left_top_corner: self.left_top_corner.copied(),
             right_bottom_corner: self.right_bottom_corner.copied(),
             right_top_corner: self.right_top_corner.copied(),
+        }
+    }
+}
+
+impl<T: Clone> Border<&T> {
+    /// This function constructs a cell borders with all sides's char set to a given character.
+    ///
+    /// It behaives like [`Border::full`] with the same character set to each side.
+    pub fn cloned(&self) -> Border<T> {
+        Border {
+            top: self.top.cloned(),
+            bottom: self.bottom.cloned(),
+            left: self.left.cloned(),
+            right: self.right.cloned(),
+            left_bottom_corner: self.left_bottom_corner.cloned(),
+            left_top_corner: self.left_top_corner.cloned(),
+            right_bottom_corner: self.right_bottom_corner.cloned(),
+            right_top_corner: self.right_top_corner.cloned(),
         }
     }
 }

@@ -117,6 +117,8 @@ where
             let records = table.get_records_mut();
             records.set(pos, content, &width_ctrl);
         }
+
+        table.destroy_width_cache();
     }
 }
 
