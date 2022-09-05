@@ -8,6 +8,7 @@ use std::iter::FromIterator;
 use tabled::{
     builder::Builder,
     object::{Rows, Segment},
+    style::HorizontalLine,
     Alignment, Modify, Padding, Style, Table, Width,
 };
 
@@ -63,12 +64,12 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
     builder
         .add_record([table_fields.to_string()])
         .add_record([table_methods.to_string()])
-        .set_columns([name]);
+        .set_columns([name.to_string()]);
     builder
         .build()
         .with(
             Style::ascii()
-                .lines([(1, Style::ascii().get_horizontal())])
+                .lines([HorizontalLine::new(1, Style::ascii().get_horizontal())])
                 .off_horizontal()
                 .off_vertical(),
         )

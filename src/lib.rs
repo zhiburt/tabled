@@ -200,6 +200,34 @@
 //! );
 //! ```
 //!
+//! ### Build table using [`row`] and [`col`].
+//!
+#![cfg_attr(feature = "macros", doc = "```")]
+#![cfg_attr(not(feature = "macros"), doc = "```ignore")]
+//! use tabled::{row, col};
+//!
+//! let table = row![
+//!     col!["Hello", "World", "!"],
+//!     col!["Hello"; 3],
+//!     col!["World"; 3],
+//! ].to_string();
+//!
+//! assert_eq!(
+//!     table,
+//!     concat!(
+//!         "+-----------+-----------+-----------+\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "| | Hello | | | Hello | | | World | |\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "| | World | | | Hello | | | World | |\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "| | !     | | | Hello | | | World | |\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "+-----------+-----------+-----------+",
+//!     )
+//! );
+//! ```
+//!
 //! ## Settings
 //!
 //! You can find more examples of settings and attributes in
@@ -220,39 +248,49 @@ mod rotate;
 mod span;
 mod table;
 
+pub mod builder;
 pub mod concat;
 pub mod disable;
-pub mod extract;
-pub mod justify;
-pub mod min_width;
-pub mod truncate;
-pub mod wrap;
-
-pub mod builder;
 pub mod display;
+pub mod extract;
 pub mod format;
 pub mod formatting;
 pub mod highlight;
+pub mod justify;
 pub mod margin;
+pub mod merge;
+pub mod min_width;
 pub mod object;
 pub mod padding;
 pub mod raw_style;
 pub mod span_border_correction;
 pub mod style;
+pub mod truncate;
 pub mod width;
+pub mod wrap;
 
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod border_colored;
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod color;
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod margin_color;
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod padding_color;
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod raw_style_colored;
 #[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 pub mod symbol;
+
+#[cfg(feature = "macros")]
+#[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
+pub mod macros;
 
 use std::fmt;
 
@@ -323,13 +361,13 @@ macro_rules! tuple_table {
             fn fields(&self) -> Vec<String> {
                 #![allow(non_snake_case)]
                 let ($($name,)+) = self;
-                let mut fields = Vec::new();
+                let mut fields = Vec::with_capacity(Self::LENGTH);
                 $(fields.append(&mut $name.fields());)+
                 fields
             }
 
             fn headers() -> Vec<String> {
-                let mut fields = Vec::new();
+                let mut fields = Vec::with_capacity(Self::LENGTH);
                 $(fields.append(&mut $name::headers());)+
                 fields
             }

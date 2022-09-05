@@ -116,8 +116,8 @@ macro_rules! test_table {
     ($test:ident, $table:expr, $($line:expr)*) => {
         #[test]
         fn $test() {
+            println!("{}", $table);
             let table = $table.to_string();
-            println!("{table}");
             assert_eq!(table, crate::util::static_table!($($line)*));
         }
     };
@@ -125,7 +125,7 @@ macro_rules! test_table {
 
 pub(crate) use test_table;
 
-const DEFAULT_BORDERS: Borders = Borders {
+pub const DEFAULT_BORDERS: Borders = Borders {
     top: Some('-'),
     top_left: Some('+'),
     top_right: Some('+'),

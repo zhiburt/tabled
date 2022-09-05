@@ -375,7 +375,7 @@ impl<T> Borders<T> {
 }
 
 /// A structre for a custom horizontal/vertical line.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Line<T> {
     /// Line character.
     pub horizontal: Option<T>,

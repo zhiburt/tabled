@@ -99,6 +99,48 @@ where
             cfg.set_border_color(pos, color.clone());
             cfg.set_border(pos, border.clone());
         }
+
+        table.destroy_width_cache();
+    }
+}
+
+impl From<BorderColored> for Border<char> {
+    fn from(val: BorderColored) -> Self {
+        let border = val;
+        let mut b = Border::default();
+        if let Some(s) = &border.0.left {
+            b.left = Some(s.c());
+        }
+
+        if let Some(s) = &border.0.right {
+            b.right = Some(s.c());
+        }
+
+        if let Some(s) = &border.0.top {
+            b.top = Some(s.c());
+        }
+
+        if let Some(s) = &border.0.bottom {
+            b.bottom = Some(s.c());
+        }
+
+        if let Some(s) = &border.0.left_top_corner {
+            b.left_top_corner = Some(s.c());
+        }
+
+        if let Some(s) = &border.0.right_top_corner {
+            b.right_top_corner = Some(s.c());
+        }
+
+        if let Some(s) = &border.0.left_bottom_corner {
+            b.left_bottom_corner = Some(s.c());
+        }
+
+        if let Some(s) = &border.0.right_bottom_corner {
+            b.right_bottom_corner = Some(s.c());
+        }
+
+        b
     }
 }
 

@@ -53,7 +53,7 @@ impl Border {
     }
 
     /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [`Border::new`] with the same character set to each side.
+    /// It behaives like [`Border::full`] with the same character set to each side.
     pub fn filled(c: char) -> Self {
         Self::full(c, c, c, c, c, c, c, c)
     }
@@ -128,6 +128,8 @@ where
                 None => cfg.remove_border(pos, count_cols),
             }
         }
+
+        table.destroy_width_cache();
     }
 }
 

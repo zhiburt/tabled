@@ -13,6 +13,7 @@ use crate::{Table, TableOption};
 ///
 /// [`Table`]: crate::Table
 /// [`Span`]: crate::Span
+/// [`Style::correct_spans`]: crate::Style::correct_spans
 #[derive(Debug)]
 pub struct StyleCorrectSpan;
 
@@ -29,8 +30,10 @@ fn correct_span_styles<R>(table: &mut Table<R>)
 where
     R: Records,
 {
-    let spans = table.get_config().iter_column_spans().collect::<Vec<_>>();
-
+    let spans = table
+        .get_config()
+        .iter_column_spans(table.shape())
+        .collect::<Vec<_>>();
     for &((row, c), span) in &spans {
         for col in c..c + span {
             if col == 0 {
@@ -38,8 +41,8 @@ where
             }
 
             let is_first = col == c;
-            let has_up = row > 0 && has_vertical(table, &spans, (row - 1, col));
-            let has_down = row + 1 < table.shape().0 && has_vertical(table, &spans, (row + 1, col));
+            let has_up = row > 0 && has_left(table, (row - 1, col));
+            let has_down = row + 1 < table.shape().0 && has_left(table, (row + 1, col));
 
             let mut border = table.get_config().get_border((row, col), table.shape());
             let borders = table.get_config().get_borders();
@@ -73,28 +76,107 @@ where
             table.get_config_mut().set_border((row, col), border);
         }
     }
+
+    let spans = table
+        .get_config()
+        .iter_row_spans(table.shape())
+        .collect::<Vec<_>>();
+    for &((r, col), span) in &spans {
+        for row in r + 1..r + span {
+            let mut border = table.get_config().get_border((row, col), table.shape());
+            let borders = table.get_config().get_borders();
+
+            let has_left_border = border.left_top_corner.is_some();
+            if has_left_border {
+                let has_left = col > 0 && has_top(table, (row, col - 1));
+                if has_left {
+                    border.left_top_corner = borders.horizontal_right;
+                } else {
+                    border.left_top_corner = borders.vertical;
+                }
+            }
+
+            let has_right_border = border.right_top_corner.is_some();
+            if has_right_border {
+                let has_right = col + 1 < table.shape().1 && has_top(table, (row, col + 1));
+                if has_right {
+                    border.right_top_corner = borders.horizontal_left;
+                } else {
+                    border.right_top_corner = borders.vertical;
+                }
+            }
+
+            table.get_config_mut().set_border((row, col), border);
+        }
+    }
+
+    let cells = iter_totaly_spanned_cells(table).collect::<Vec<_>>();
+    for (row, col) in cells {
+        if row == 0 {
+            continue;
+        }
+
+        let mut border = table.get_config().get_border((row, col), table.shape());
+        let borders = table.get_config().get_borders();
+
+        let has_right = col + 1 < table.shape().1 && has_top(table, (row, col + 1));
+        let has_up = has_left(table, (row - 1, col));
+        if has_up && !has_right {
+            border.right_top_corner = borders.horizontal_right;
+        }
+
+        let has_down = row + 1 < table.shape().0 && has_left(table, (row + 1, col));
+        if has_down {
+            border.left_bottom_corner = borders.top_intersection;
+        }
+
+        table.get_config_mut().set_border((row, col), border);
+    }
 }
 
-fn has_vertical<R>(grid: &Table<R>, spans: &[(Position, usize)], pos: Position) -> bool
+fn has_left<R>(table: &Table<R>, pos: Position) -> bool
 where
     R: Records,
 {
-    if is_in_span_range(spans, pos) {
-        return spans.iter().any(|&(p, _)| p == pos);
+    let cfg = table.get_config();
+    if cfg.is_cell_covered_by_both_spans(pos, table.shape())
+        || cfg.is_cell_covered_by_column_span(pos, table.shape())
+    {
+        return false;
     }
 
-    if grid.get_config().is_cell_visible(pos) {
-        let border = grid.get_config().get_border(pos, grid.shape());
-        return border.left.is_some()
-            || border.left_top_corner.is_some()
-            || border.left_bottom_corner.is_some();
-    }
-
-    false
+    let border = cfg.get_border(pos, table.shape());
+    border.left.is_some() || border.left_top_corner.is_some() || border.left_bottom_corner.is_some()
 }
 
-fn is_in_span_range(spans: &[(Position, usize)], pos: Position) -> bool {
-    spans
-        .iter()
-        .any(|&((row, col), span)| row == pos.0 && pos.1 > col && pos.1 < col + span)
+fn has_top<R>(table: &Table<R>, pos: Position) -> bool
+where
+    R: Records,
+{
+    let cfg = table.get_config();
+    if cfg.is_cell_covered_by_both_spans(pos, table.shape())
+        || cfg.is_cell_covered_by_row_span(pos, table.shape())
+    {
+        return false;
+    }
+
+    let border = cfg.get_border(pos, table.shape());
+    border.top.is_some() || border.left_top_corner.is_some() || border.right_top_corner.is_some()
+}
+
+fn iter_totaly_spanned_cells<R>(table: &Table<R>) -> impl Iterator<Item = Position> + '_
+where
+    R: Records,
+{
+    // todo: can be optimized
+    let (count_rows, count_cols) = table.shape();
+    (0..count_rows).flat_map(move |row| {
+        (0..count_cols)
+            .map(move |col| (row, col))
+            .filter(move |&p| {
+                table
+                    .get_config()
+                    .is_cell_covered_by_both_spans(p, (count_rows, count_cols))
+            })
+    })
 }

@@ -1,7 +1,9 @@
 //! The example can be run by this command
 //! `cargo run --example custom_style`
 
-use tabled::{object::Segment, Alignment, ModifyObject, Style, Table, Tabled};
+use tabled::{
+    object::Segment, style::HorizontalLine, Alignment, ModifyObject, Style, Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct CodeEditor {
@@ -33,7 +35,7 @@ fn main() {
         .left_intersection('│')
         .right_intersection('│')
         .off_horizontal()
-        .lines([(1, Style::modern().get_horizontal())])
+        .lines([HorizontalLine::new(1, Style::modern().get_horizontal())])
         .off_vertical();
 
     let table = Table::new(&data)

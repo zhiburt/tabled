@@ -6,7 +6,7 @@ use tabled::{
     builder::Builder,
     object::{Cell, Columns, Rows, Segment},
     raw_style::RawStyle,
-    style::Line,
+    style::{HorizontalLine, Line},
     Border, BorderText, Highlight, Modify, Padding, Span, Style,
 };
 
@@ -74,7 +74,7 @@ test_table!(
 
 test_table!(
     modern_clean_style,
-    create_table::<3, 3>().with(Style::modern().off_horizontal().lines(vec![(1, Style::modern().get_horizontal())])),
+    create_table::<3, 3>().with(Style::modern().off_horizontal().lines(vec![HorizontalLine::new(1, Style::modern().get_horizontal())])),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -173,7 +173,7 @@ test_table!(
             .vertical('\'')
             .horizontal('`')
             .inner_intersection('\'')
-            .lines(vec![(1, Line::full('x', '*', 'q', 'w'))])),
+            .lines(vec![HorizontalLine::new(1, Line::full('x', '*', 'q', 'w'))])),
     "  N ' column 0 ' column 1 ' column 2  "
     "qxxx*xxxxxxxxxx*xxxxxxxxxx*xxxxxxxxxxw"
     "  0 '   0-0    '   0-1    '   0-2     "
@@ -287,6 +287,37 @@ test_table!(
 );
 
 test_table!(
+    border_text_0,
+    create_table::<2, 2>()
+        .with(Style::empty())
+        .with(Modify::new(Rows::first()).with(Border::default().bottom('-')))
+        .with(BorderText::new(1, "-Table")),
+    " N  column 0  column 1 "
+    "-Table-----------------"
+    " 0    0-0       0-1    "
+    " 1    1-0       1-1    "
+);
+
+#[cfg(feature = "color")]
+test_table!(
+    border_text_colored,
+    {
+        use owo_colors::OwoColorize;
+
+        create_table::<2, 2>()
+            .with(BorderText::new(1, "-Table".red().to_string()))
+            .with(BorderText::new(2, "-Table213123".blue().on_green().to_string()))
+    },
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "\u{1b}[31m-\u{1b}[39m\u{1b}[31mTab\u{1b}[39m\u{1b}[31ml\u{1b}[39m\u{1b}[31me\u{1b}[39m---------+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "\u{1b}[34;42m-\u{1b}[39m\u{1b}[49m\u{1b}[34;42mTab\u{1b}[39m\u{1b}[49m\u{1b}[34;42ml\u{1b}[39m\u{1b}[49m\u{1b}[34;42me213123\u{1b}[0m---+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
     empty_style,
     create_table::<3, 3>()
         .with(Style::empty())
@@ -331,7 +362,7 @@ test_table!(
 
 test_table!(
     single_cell_style,
-    Builder::from_iter(&[[""]]).build().with(Style::modern()),
+    Builder::from_iter([[""]]).build().with(Style::modern()),
     "┌──┐"
     "│  │"
     "└──┘"
@@ -632,7 +663,10 @@ fn custom_style_test() {
         ),
     );
     test_style!(
-        Style::empty().lines([(1, Line::default().horizontal(Some('-')))]),
+        Style::empty().lines(vec![HorizontalLine::new(
+            1,
+            Line::default().horizontal(Some('-'))
+        )]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -708,9 +742,10 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
-            .top('-')
-            .lines([(1, Line::default().horizontal(Some('+')))]),
+        Style::empty().top('-').lines(vec![HorizontalLine::new(
+            1,
+            Line::default().horizontal(Some('+'))
+        )]),
         static_table!(
             "---------------------------------"
             " N  column 0  column 1  column 2 "
@@ -776,9 +811,10 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
-            .bottom('-')
-            .lines([(1, Line::default().horizontal(Some('+')))]),
+        Style::empty().bottom('-').lines(vec![HorizontalLine::new(
+            1,
+            Line::default().horizontal(Some('+'))
+        )]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "+++++++++++++++++++++++++++++++++"
@@ -840,9 +876,10 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
-            .left('-')
-            .lines([(1, Line::default().horizontal(Some('+')))]),
+        Style::empty().left('-').lines(vec![HorizontalLine::new(
+            1,
+            Line::default().horizontal(Some('+'))
+        )]),
         static_table!(
             "- N  column 0  column 1  column 2 "
             " +++++++++++++++++++++++++++++++++"
@@ -903,9 +940,10 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
-            .right('-')
-            .lines([(1, Line::default().horizontal(Some('+')))]),
+        Style::empty().right('-').lines(vec![HorizontalLine::new(
+            1,
+            Line::default().horizontal(Some('+'))
+        )]),
         static_table!(
             " N  column 0  column 1  column 2 -"
             "+++++++++++++++++++++++++++++++++ "
@@ -966,9 +1004,10 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
-            .vertical('-')
-            .lines([(1, Line::default().horizontal(Some('+')))]),
+        Style::empty().vertical('-').lines(vec![HorizontalLine::new(
+            1,
+            Line::default().horizontal(Some('+'))
+        )]),
         static_table!(
             " N - column 0 - column 1 - column 2 "
             "+++ ++++++++++ ++++++++++ ++++++++++"
@@ -1043,7 +1082,10 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .horizontal('-')
-            .lines([(1, Line::default().horizontal(Some('+')))]),
+            .lines(vec![HorizontalLine::new(
+                1,
+                Line::default().horizontal(Some('+'))
+            )]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "+++++++++++++++++++++++++++++++++"
@@ -1057,7 +1099,10 @@ fn custom_style_test() {
 
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal(Some('-')))])
+            .lines(vec![HorizontalLine::new(
+                1,
+                Line::default().horizontal(Some('-'))
+            )])
             .top('+'),
         static_table!(
             "+++++++++++++++++++++++++++++++++"
@@ -1070,7 +1115,10 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal(Some('-')))])
+            .lines(vec![HorizontalLine::new(
+                1,
+                Line::default().horizontal(Some('-'))
+            )])
             .bottom('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
@@ -1083,7 +1131,10 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal(Some('-')))])
+            .lines(vec![HorizontalLine::new(
+                1,
+                Line::default().horizontal(Some('-'))
+            )])
             .left('+'),
         static_table!(
             "+ N  column 0  column 1  column 2 "
@@ -1095,7 +1146,10 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal(Some('-')))])
+            .lines(vec![HorizontalLine::new(
+                1,
+                Line::default().horizontal(Some('-'))
+            )])
             .right('+'),
         static_table!(
             " N  column 0  column 1  column 2 +"
@@ -1107,7 +1161,10 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal(Some('-')))])
+            .lines(vec![HorizontalLine::new(
+                1,
+                Line::default().horizontal(Some('-'))
+            )])
             .vertical('+'),
         static_table!(
             " N + column 0 + column 1 + column 2 "
@@ -1119,7 +1176,10 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .lines([(1, Line::default().horizontal(Some('-')))])
+            .lines(vec![HorizontalLine::new(
+                1,
+                Line::default().horizontal(Some('-'))
+            )])
             .horizontal('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
@@ -1141,7 +1201,7 @@ fn custom_style_test() {
             .left('|')
             .right('*')
             .horizontal('x')
-            .lines([(1, Line::filled('z'))])
+            .lines(vec![HorizontalLine::new(1, Line::filled('z'))])
             .vertical('#'),
         static_table!(
             "|---#----------#----------#----------*"
@@ -1162,7 +1222,7 @@ fn custom_style_test() {
         .left('|')
         .right('*')
         .horizontal('x')
-        .lines([(1, Line::filled(','))])
+        .lines(vec![HorizontalLine::new(1, Line::filled(','))])
         .vertical('#')
         .bottom_intersection('@')
         .top_intersection('!')
@@ -1275,7 +1335,9 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        full_style.clone().lines([(1, Line::filled('q'))]),
+        full_style
+            .clone()
+            .lines(vec![HorizontalLine::new(1, Line::filled('q'))]),
         static_table!(
             ";---!----------!----------!----------."
             "| N # column 0 # column 1 # column 2 *"
@@ -1304,7 +1366,10 @@ fn custom_style_test() {
     test_style!(Style::empty().horizontal('-').off_horizontal(), empty_table);
     test_style!(Style::empty().vertical('-').off_vertical(), empty_table);
     test_style!(
-        Style::empty().lines([(1, Line::default().horizontal(Some('-')))]),
+        Style::empty().lines(vec![HorizontalLine::new(
+            1,
+            Line::default().horizontal(Some('-'))
+        )]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -1990,7 +2055,19 @@ fn style_with_color_test() {
 
 test_table!(
     empty_line_clears_lines,
-    create_table::<3, 3>().with(Style::rounded().lines(vec![(1, Line::empty())])),
+    create_table::<3, 3>().with(Style::rounded().lines(vec![HorizontalLine::new(1, Line::empty())])),
+    "╭───┬──────────┬──────────┬──────────╮"
+    "│ N │ column 0 │ column 1 │ column 2 │"
+    "                                      "
+    "│ 0 │   0-0    │   0-1    │   0-2    │"
+    "│ 1 │   1-0    │   1-1    │   1-2    │"
+    "│ 2 │   2-0    │   2-1    │   2-2    │"
+    "╰───┴──────────┴──────────┴──────────╯"
+);
+
+test_table!(
+    empty_line_clears_lines_1,
+    create_table::<3, 3>().with(Style::rounded().lines(vec![HorizontalLine::empty(1)])),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"

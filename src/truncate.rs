@@ -138,6 +138,9 @@ impl<'a, W, P> Truncate<'a, W, P> {
     /// - [`PriorityNone`] which cuts the columns one after another.
     /// - [`PriorityMax`] cuts the biggest columns first.
     /// - [`PriorityMin`] cuts the lowest columns first.
+    ///
+    /// [`PriorityMax`]: crate::width::PriorityMax
+    /// [`PriorityMin`]: crate::width::PriorityMin
     pub fn priority<PP: ColumnPeaker>(self) -> Truncate<'a, W, PP> {
         Truncate {
             width: self.width,
@@ -306,17 +309,18 @@ pub(crate) fn get_decrease_cell_list(
     let mut points = Vec::new();
     (0..count_cols).for_each(|col| {
         (0..count_rows)
-            .filter(|&row| cfg.is_cell_visible((row, col)))
+            .filter(|&row| cfg.is_cell_visible((row, col), (count_rows, count_cols)))
             .for_each(|row| {
-                let (width, width_min) = match cfg.get_column_span((row, col)) {
-                    Some(span) => {
-                        let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
-                        let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
-                        let count_borders = count_borders(cfg, col, col + span, count_cols);
-                        (width + count_borders, min_width + count_borders)
-                    }
-                    None => (widths[col], min_widths[col]),
-                };
+                let (width, width_min) =
+                    match cfg.get_column_span((row, col), (count_rows, count_cols)) {
+                        Some(span) => {
+                            let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
+                            let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();
+                            let count_borders = count_borders(cfg, col, col + span, count_cols);
+                            (width + count_borders, min_width + count_borders)
+                        }
+                        None => (widths[col], min_widths[col]),
+                    };
 
                 if width >= width_min {
                     let padding = cfg.get_padding((row, col).into());
@@ -389,15 +393,15 @@ fn truncate_total_width<P, R>(
 
     let points = get_decrease_cell_list(cfg, &widths, &min_widths, (count_rows, count_cols));
 
-    table.destroy_width_cache();
-    table.cache_width(widths);
-
     let mut truncate = Truncate::new(0);
     truncate.suffix = suffix;
     for ((row, col), width) in points {
         truncate.width = width;
         truncate.change_cell(table, (row, col).into());
     }
+
+    table.destroy_width_cache();
+    table.cache_width(widths);
 }
 
 #[cfg(feature = "color")]

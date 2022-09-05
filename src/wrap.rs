@@ -64,10 +64,13 @@ impl<W, P> Wrap<W, P> {
     /// - [`PriorityNone`] which cuts the columns one after another.
     /// - [`PriorityMax`] cuts the biggest columns first.
     /// - [`PriorityMin`] cuts the lowest columns first.
+    ///
     /// Be aware that it doesn't consider padding.
     /// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
     ///
     /// [`Padding`]: crate::Padding
+    /// [`PriorityMax`]: crate::width::PriorityMax
+    /// [`PriorityMin`]: crate::width::PriorityMin
     pub fn priority<PP>(self) -> Wrap<W, PP> {
         Wrap {
             width: self.width,
@@ -171,15 +174,15 @@ fn wrap_total_width<R, P>(
 
     let points = get_decrease_cell_list(cfg, &widths, &min_widths, (count_rows, count_cols));
 
-    table.destroy_width_cache();
-    table.cache_width(widths);
-
     let mut wrap = Wrap::new(0);
     wrap.keep_words = keep_words;
     for ((row, col), width) in points {
         wrap.width = width;
         wrap.change_cell(table, (row, col).into());
     }
+
+    table.destroy_width_cache();
+    table.cache_width(widths);
 }
 
 pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {

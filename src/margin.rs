@@ -68,5 +68,6 @@ impl Margin {
 impl<R> TableOption<R> for Margin {
     fn change(&mut self, table: &mut Table<R>) {
         table.get_config_mut().set_margin(self.0);
+        table.destroy_width_cache();
     }
 }

@@ -46,11 +46,11 @@
 //! ```
 //!
 //! [`Table`]: crate::Table
-//! [`AlignmentStrategy`]: crate::formatting_settings::AlignmentStrategy
+//! [`AlignmentStrategy`]: crate::formatting::AlignmentStrategy
 
 use papergrid::Entity;
 
-use crate::{CellOption, Table};
+use crate::{CellOption, Table, TableOption};
 
 pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 
@@ -84,8 +84,8 @@ impl Alignment {
     /// When you use [`MinWidth`] the alignment might not work as you expected.
     /// You could try to apply [`TrimStrategy`] which may help.
     ///
-    /// [`MinWidth`]: crate::width::MinWidth
-    /// [`TrimStrategy`]: crate::formatting_settings::TrimStrategy
+    /// [`MinWidth`]: crate::min_width::MinWidth
+    /// [`TrimStrategy`]: crate::formatting::TrimStrategy
     pub fn right() -> Self {
         Self::horizontal(AlignmentHorizontal::Right)
     }
@@ -97,8 +97,8 @@ impl Alignment {
     /// When you use [`MinWidth`] the alignment might not work as you expected.
     /// You could try to apply [`TrimStrategy`] which may help.
     ///
-    /// [`MinWidth`]: crate::width::MinWidth
-    /// [`TrimStrategy`]: crate::formatting_settings::TrimStrategy
+    /// [`MinWidth`]: crate::min_width::MinWidth
+    /// [`TrimStrategy`]: crate::formatting::TrimStrategy
     pub fn center() -> Self {
         Self::horizontal(AlignmentHorizontal::Center)
     }
@@ -135,5 +135,15 @@ impl<R> CellOption<R> for Alignment {
             Self::Horizontal(a) => table.get_config_mut().set_alignment_horizontal(entity, a),
             Self::Vertical(a) => table.get_config_mut().set_alignment_vertical(entity, a),
         };
+    }
+}
+
+impl<R> TableOption<R> for Alignment {
+    fn change(&mut self, table: &mut Table<R>) {
+        let cfg = table.get_config_mut();
+        match self {
+            Alignment::Horizontal(a) => cfg.set_alignment_horizontal(Entity::Global, *a),
+            Alignment::Vertical(a) => cfg.set_alignment_vertical(Entity::Global, *a),
+        }
     }
 }

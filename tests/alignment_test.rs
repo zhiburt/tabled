@@ -86,3 +86,13 @@ test_table!(
     "   1|   1-0     |   1-1     |   1-2     "
     "   2|   2-0     |   2-1     |   2-2     "
 );
+
+test_table!(
+    alignment_global,
+    create_table::<3, 3>().with(Style::psql()).with(Alignment::right()),
+    " N | column 0 | column 1 | column 2 "
+    "---+----------+----------+----------"
+    " 0 |      0-0 |      0-1 |      0-2 "
+    " 1 |      1-0 |      1-1 |      1-2 "
+    " 2 |      2-0 |      2-1 |      2-2 "
+);

@@ -1,18 +1,15 @@
 //! This module contains [`MinWidth`] structure, used to increase width of a [`Table`]s or a cell on a [`Table`].
 
-use std::{collections::HashMap, marker::PhantomData};
+use std::marker::PhantomData;
 
 use papergrid::{
     records::{Records, RecordsMut},
     width::CfgWidthFunction,
-    Entity, GridConfig,
+    Entity,
 };
 
 use crate::{
-    width::{
-        count_borders, get_table_widths_with_total, get_width_value, ColumnPeaker, PriorityNone,
-        WidthValue,
-    },
+    width::{get_table_widths_with_total, get_width_value, ColumnPeaker, PriorityNone, WidthValue},
     CellOption, Table, TableOption,
 };
 
@@ -72,6 +69,8 @@ where
 impl<W, P> MinWidth<W, P> {
     /// Set's a fill character which will be used to fill the space
     /// when increasing the length of the string to the set boundary.
+    ///
+    /// Used only if chaning cells.
     pub fn fill_with(mut self, c: char) -> Self {
         self.fill = c;
         self
@@ -82,6 +81,9 @@ impl<W, P> MinWidth<W, P> {
     /// - [`PriorityNone`] which inc the columns one after another.
     /// - [`PriorityMax`] inc the biggest columns first.
     /// - [`PriorityMin`] inc the lowest columns first.
+    ///
+    /// [`PriorityMax`]: crate::width::PriorityMax
+    /// [`PriorityMin`]: crate::width::PriorityMin
     pub fn priority<PP: ColumnPeaker>(self) -> MinWidth<W, PP> {
         MinWidth {
             fill: self.fill,
@@ -115,6 +117,8 @@ where
             let records = table.get_records_mut();
             records.set(pos, content, &width_ctrl);
         }
+
+        table.destroy_width_cache();
     }
 }
 
@@ -191,27 +195,18 @@ fn increase_total_width<P, R>(
     P: ColumnPeaker,
     R: Records + RecordsMut<String>,
 {
-    let records = table.get_records();
-    let cfg = table.get_config();
-    let increase_list =
-        get_increase_total_width_list(records, cfg, widths, expected_width, total_width, priority);
-
-    for ((row, col), width) in increase_list {
-        MinWidth::new(width).change_cell(table, (row, col).into());
-    }
+    let increase_list = get_increase_list(widths, expected_width, total_width, priority);
+    table.cache_width(increase_list);
 }
 
-fn get_increase_total_width_list<F, R>(
-    records: R,
-    cfg: &GridConfig,
+fn get_increase_list<F>(
     mut widths: Vec<usize>,
     total_width: usize,
     mut width: usize,
     mut peaker: F,
-) -> HashMap<(usize, usize), usize>
+) -> Vec<usize>
 where
     F: ColumnPeaker,
-    R: Records,
 {
     while width != total_width {
         let col = match peaker.peak(&[], &widths) {
@@ -223,35 +218,5 @@ where
         width += 1;
     }
 
-    let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
-    let mut points = HashMap::new();
-    #[allow(clippy::needless_range_loop)]
-    for row in 0..count_rows {
-        let mut col = 0;
-        while col < widths.len() {
-            let this_col = col;
-            let width = match cfg.get_column_span((row, col)) {
-                Some(span) => {
-                    let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
-                    let count_borders = count_borders(cfg, col, col + span, count_cols);
-                    let width = width + count_borders;
-
-                    col += span;
-
-                    width
-                }
-                None => {
-                    col += 1;
-                    widths[this_col]
-                }
-            };
-
-            let padding = cfg.get_padding((row, this_col).into());
-            let width = width.saturating_sub(padding.left.size + padding.right.size);
-
-            points.insert((row, this_col), width);
-        }
-    }
-
-    points
+    widths
 }

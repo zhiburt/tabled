@@ -8,8 +8,8 @@
 //! ```
 //!
 //! A conversion to gif is done via https://dstein64.github.io/gifcast/
-
-// todo: add --frames argument
+//!
+//! Credit for data: https://www.boxofficemojo.com/
 
 use std::{
     io::{stdout, Stdout, StdoutLock, Write},
@@ -21,12 +21,13 @@ use crossterm::{
     style::Stylize,
     terminal::{Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
+
 use tabled::{
     border_colored::BorderColored,
     formatting::TrimStrategy,
     object::{Columns, Object, Rows},
     symbol::Symbol,
-    Alignment, BorderText, Disable, Header, Highlight, Margin, Modify, Style, Table, Tabled, Width,
+    Alignment, BorderText, Disable, Highlight, Margin, Modify, Panel, Style, Table, Tabled, Width,
 };
 
 mod config;
@@ -37,6 +38,10 @@ struct Movie {
     release_date: &'static str,
     #[tabled(rename = "Title")]
     title: &'static str,
+    #[tabled(rename = "Directed by")]
+    #[tabled(skip)]
+    #[allow(dead_code)]
+    director: &'static str,
     #[tabled(rename = "Budget")]
     budget: &'static str,
     #[tabled(rename = "Opening Weekend")]
@@ -45,91 +50,61 @@ struct Movie {
     box_office: &'static str,
 }
 
+const MOVIES: &[Movie] = &[
+    Movie {
+        title: "The Lord of the Rings: The Fellowship of the Ring",
+        release_date: "December 19, 2001",
+        budget: "$93,000,000",
+        opening_weekend: "$47,211,490",
+        box_office: "$898,094,742",
+        director: "Peter Jackson",
+    },
+    Movie {
+        title: "The Lord of the Rings: The Two Towers",
+        release_date: "December 18, 2002",
+        budget: "$94,000,000",
+        opening_weekend: "$62,007,528",
+        box_office: "$947,896,241",
+        director: "Peter Jackson",
+    },
+    Movie {
+        title: "The Lord of the Rings: The Return of the King",
+        release_date: "December 17, 2003",
+        budget: "$94,000,000",
+        opening_weekend: "$72,629,713",
+        box_office: "$1,146,436,214",
+        director: "Peter Jackson",
+    },
+    Movie {
+        title: "The Hobbit: An Unexpected Journey",
+        release_date: "December 14, 2012",
+        budget: "unknown",
+        opening_weekend: "$84,617,303",
+        box_office: "$1,017,030,651",
+        director: "Peter Jackson",
+    },
+    Movie {
+        title: "The Hobbit: The Desolation of Smaug",
+        release_date: "December 13, 2013",
+        budget: "unknown",
+        opening_weekend: "$73,645,197",
+        box_office: "$959,027,992",
+        director: "Peter Jackson",
+    },
+    Movie {
+        title: "The Hobbit: The Battle of the Five Armies",
+        release_date: "December 17, 2014",
+        budget: "unknown",
+        opening_weekend: "$54,724,334",
+        box_office: "$962,201,338",
+        director: "Peter Jackson",
+    },
+];
+
 fn main() {
     let cfg = config::parse();
 
-    // Credit for data: https://www.boxofficemojo.com/
-    let movies = [
-        Movie {
-            title: "Star Wars: Episode IV — A New Hope",
-            release_date: "May 25, 1977",
-            budget: "$11,000,000",
-            opening_weekend: "$1,554,475",
-            box_office: "$775,398,007",
-        },
-        Movie {
-            title: "Star Wars: Episode V — The Empire Strikes Back",
-            release_date: "May 21, 1980",
-            budget: "$18,000,000",
-            opening_weekend: "$4,910,483",
-            box_office: "$538,375,067",
-        },
-        Movie {
-            title: "Star Wars: Episode VI — Return of the Jedi",
-            release_date: "May 25, 1983",
-            budget: "$32,500,000",
-            opening_weekend: "$23,019,618",
-            box_office: "$475,106,177",
-        },
-        Movie {
-            title: "Star Wars: Episode I — The Phantom Menace",
-            release_date: "May 19, 1999",
-            budget: "$115,000,000",
-            opening_weekend: "$64,820,970",
-            box_office: "$1,027,082,707",
-        },
-        Movie {
-            title: "Star Wars: Episode II — Attack of the Clones",
-            release_date: "May 16, 2002",
-            budget: "$115,000,000",
-            opening_weekend: "$80,027,814",
-            box_office: "$653,779,970",
-        },
-        Movie {
-            title: "Star Wars: Episode III — Revenge of the Sith",
-            release_date: "May 18, 2005",
-            budget: "$113,000,000",
-            opening_weekend: "$108,435,841",
-            box_office: "$868,390,560",
-        },
-        Movie {
-            title: "Star Wars: The Force Awakens",
-            release_date: "December 16, 2015",
-            budget: "$245,000,000",
-            opening_weekend: "$247,966,675",
-            box_office: "$2,069,521,700",
-        },
-        Movie {
-            title: "Rogue One: A Star Wars Story",
-            release_date: "December 14, 2016",
-            budget: "$200,000,000",
-            opening_weekend: "$155,081,681",
-            box_office: "$1,056,057,720",
-        },
-        Movie {
-            title: "Star Wars: The Last Jedi",
-            release_date: "December 13, 2017",
-            budget: "$317,000,000",
-            opening_weekend: "$220,009,584",
-            box_office: "$1,332,698,830",
-        },
-        Movie {
-            title: "Solo: A Star Wars Story",
-            release_date: "May 23, 2018",
-            budget: "$275,000,000",
-            opening_weekend: "$84,420,489",
-            box_office: "$392,924,807",
-        },
-        Movie {
-            title: "Star Wars: The Rise of Skywalker",
-            release_date: "December 18, 2019",
-            budget: "$275,000,000",
-            opening_weekend: "$177,383,864",
-            box_office: "$1,074,149,279",
-        },
-    ];
-
-    run(&movies, cfg.debug);
+    run(MOVIES, cfg.debug);
 }
 
 fn run(movies: &[Movie], debug: bool) {
@@ -160,9 +135,9 @@ fn run(movies: &[Movie], debug: bool) {
     #[rustfmt::skip]
     let add_summary_actions: Vec<Action> = vec![
         full_action(|_, m, _| Table::builder(m).add_record(["", "", "", "", ""]).clone().build().with(Style::modern())),
-        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..2)).not(Columns::new(3..))).with(|_: &str| String::from("$1,716,500,000")))),
-        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..3)).not(Columns::new(4..))).with(|_: &str| String::from("$1,190,650,976")))),
-        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..4)).not(Columns::new(5..))).with(|_: &str| String::from("$10,263,484,824")))),
+        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..2)).not(Columns::new(3..))).with(|_: &str| String::from(">= $281,000,000")))),
+        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..3)).not(Columns::new(4..))).with(|_: &str| String::from("$394,835,565")))),
+        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..4)).not(Columns::new(5..))).with(|_: &str| String::from("$5,930,687,178")))),
     ];
 
     #[rustfmt::skip]
@@ -189,23 +164,26 @@ fn run(movies: &[Movie], debug: bool) {
         action(|t| t.with(Style::rounded())),
         action(|t| t.with(Style::psql())),
         action(|t| t.with(Style::markdown())),
+        action(|t| t.with(Style::ascii_rounded())),
         action(|t| t.with(Style::blank())),
     ];
 
-    #[rustfmt::skip]
-    let border_colors_actions: Vec<Action> = vec![
-        action(|t| t.with(Highlight::colored(Rows::first(), BorderColored::default().bottom(Symbol::ansi("━".yellow().to_string()).unwrap())))),
-        action(|t| t.with(Highlight::colored(Rows::last(), BorderColored::default().top(Symbol::ansi("━".yellow().to_string()).unwrap())))),
-    ];
+    let border_colors_actions: Vec<Action> = vec![];
 
     #[rustfmt::skip]
     let panel_actions: Vec<Action> = vec![
-        action(|t| t.with(Header("Star Wars Movies")).with(Modify::new(Rows::first()).with(Alignment::center()))),
+        action(|t| t.with(Panel::header("The Lord of the Rings")).with(Modify::new(Rows::first()).with(Alignment::center()))),
+        action(|t| t.with(Highlight::colored(Rows::single(2), BorderColored::default().top(Symbol::ansi("━".yellow().to_string()).unwrap())))),
+        action(|t| t.with(Highlight::colored(Rows::last(), BorderColored::default().top(Symbol::ansi("━".yellow().to_string()).unwrap())))),
         full_action(|t, m, _| {
             let c = "━".yellow();
             let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
             t.with(BorderText::new(m.len()+2, statistics_text))
         }),
+    ];
+
+    #[rustfmt::skip]
+    let colorization_actions: Vec<Action> = vec![
         action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(|s: &str| s.white().bold().to_string()))),
         action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..1)).not(Columns::new(2..))).with(|s: &str| s.white().bold().to_string()))),
         action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..2)).not(Columns::new(3..))).with(|s: &str| s.red().bold().to_string()))),
@@ -223,7 +201,6 @@ fn run(movies: &[Movie], debug: bool) {
         detached_action(|t, _| t.with(Width::wrap(90).keep_words())),
         detached_action(|t, _| t.with(Width::wrap(80).keep_words())),
         //
-        detached_action(|t, _| t.with(Width::wrap(80).keep_words())),
         detached_action(|t, _| t.with(Width::wrap(90).keep_words())),
         detached_action(|t, _| t.with(Width::wrap(95).keep_words())),
         detached_action(|t, _| t.with(Width::wrap(100).keep_words())),
@@ -237,7 +214,6 @@ fn run(movies: &[Movie], debug: bool) {
         detached_action(|t, _| t.with(Width::increase(135)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
         detached_action(|t, _| t.with(Width::increase(140)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
         detached_action(|t, _| t.with(Width::increase(145)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
-        detached_action(|t, _| t.with(Width::increase(150)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
     ];
 
     let mut runner = Runner::new(movies);
@@ -255,6 +231,7 @@ fn run(movies: &[Movie], debug: bool) {
         p.print(650, runner.build_frames(style_actions));
         p.print(500, runner.build_frames(border_colors_actions));
         p.print(600, runner.build_frames(panel_actions));
+        p.print(400, runner.build_frames(colorization_actions));
         p.print(190, runner.build_frames(resize_actions));
 
         p.stop();
@@ -268,6 +245,7 @@ fn run(movies: &[Movie], debug: bool) {
         p.print(650, runner.build_frames(style_actions));
         p.print(500, runner.build_frames(border_colors_actions));
         p.print(600, runner.build_frames(panel_actions));
+        p.print(400, runner.build_frames(colorization_actions));
         p.print(190, runner.build_frames(resize_actions));
 
         p.stop();
@@ -377,12 +355,12 @@ impl Printer for BasicPrinter<'_> {
     where
         I: IntoIterator<Item = Table>,
     {
-        let left_padding = |t: Table| t.with(Margin::new(20, 0, 0, 0));
+        let left_padding = |t: Table| t.with(Margin::new(10, 0, 0, 0));
 
         for frame in frames {
             let frame = left_padding(frame);
 
-            queue!(self.stdout, Clear(ClearType::All), cursor::MoveTo(0, 3)).unwrap();
+            queue!(self.stdout, Clear(ClearType::All), cursor::MoveTo(0, 5)).unwrap();
 
             self.stdout.write_all(frame.to_string().as_bytes()).unwrap();
             self.stdout.flush().unwrap();

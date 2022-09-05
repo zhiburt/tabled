@@ -55,7 +55,6 @@
 //! [`Border`] can be used to modify cell's borders.
 //!
 //! It's possible to set a collored border when `color` feature is on.
-//! See [`Symbol`].
 //!
 //! ### Example
 //!
@@ -88,7 +87,8 @@
 //! It also contains a list of types to support colors.
 //!
 //! [`Table`]: crate::Table
-//! [`Symbol`]: crate::style::Symbol
+//! [`BorderText`]: crate::border_text::BorderText
+//! [`RawStyle`]: crate::raw_style::RawStyle
 
 use std::marker::PhantomData;
 
@@ -121,6 +121,7 @@ use crate::table::{Table, TableOption};
 /// ```
 ///
 /// [`Table`]: crate::Table
+/// [`RawStyle`]: crate::raw_style::RawStyle
 #[derive(Debug, Clone)]
 pub struct Style<T, B, L, R, H, V, Lines = ConstLines<0>> {
     pub(crate) borders: Borders<char>,
@@ -133,7 +134,7 @@ pub struct Style<T, B, L, R, H, V, Lines = ConstLines<0>> {
     _vertical: PhantomData<V>,
 }
 
-type ConstLines<const N: usize> = [(usize, Line); N];
+type ConstLines<const N: usize> = [HorizontalLine; N];
 
 /// A marker struct which is used in [`Style`].
 #[derive(Debug, Clone)]
@@ -249,7 +250,7 @@ impl Style<(), (), (), (), (), ()> {
                 None,
                 Some('|'),
             ),
-            [(
+            [HorizontalLine::new(
                 1,
                 Line::empty().horizontal(Some('-')).intersection(Some('+')),
             )],
@@ -275,7 +276,7 @@ impl Style<(), (), (), (), (), ()> {
                 Some('|'),
                 Some('|'),
             ),
-            [(1, Line::full('-', '|', '|', '|'))],
+            [HorizontalLine::new(1, Line::full('-', '|', '|', '|'))],
         )
     }
 
@@ -331,7 +332,7 @@ impl Style<(), (), (), (), (), ()> {
                 Some('│'),
                 Some('│'),
             ),
-            [(1, Line::full('─', '┼', '├', '┤'))],
+            [HorizontalLine::new(1, Line::full('─', '┼', '├', '┤'))],
         )
     }
 
@@ -413,7 +414,10 @@ impl Style<(), (), (), (), (), ()> {
                 None,
                 Some(' '),
             ),
-            [(1, Line::new(Some('='), Some(' '), None, None))],
+            [HorizontalLine::new(
+                1,
+                Line::new(Some('='), Some(' '), None, None),
+            )],
         )
     }
 
@@ -588,12 +592,12 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{style::{Style, Line}, TableIteratorExt};
+    /// use tabled::{style::{Style, HorizontalLine, Line}, TableIteratorExt};
     ///
     /// let table = (0..3)
     ///    .map(|i| ("Hello", "World", i))
     ///    .table()
-    ///    .with(Style::ascii().off_horizontal().lines([(1, Style::modern().get_horizontal())]))
+    ///    .with(Style::ascii().off_horizontal().lines([HorizontalLine::new(1, Style::modern().get_horizontal())]))
     ///    .to_string();
     ///
     /// assert_eq!(
@@ -665,7 +669,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// Any corners and intersections which were set will be overridden.
     pub fn left(mut self, c: char) -> Style<T, B, On, R, H, V, Lines>
     where
-        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line)>,
+        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut HorizontalLine>,
     {
         self.borders.vertical_left = Some(c);
 
@@ -681,8 +685,10 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
             self.borders.horizontal_left = Some(c);
         }
 
-        for (_, line) in &mut self.lines {
-            line.0.left = Some(c);
+        for hl in &mut self.lines {
+            if let Some(line) = &mut hl.line {
+                line.0.left = Some(c);
+            }
         }
 
         Style::new(self.borders, self.lines)
@@ -693,7 +699,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// Any corners and intersections which were set will be overridden.
     pub fn right(mut self, c: char) -> Style<T, B, L, On, H, V, Lines>
     where
-        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line)>,
+        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut HorizontalLine>,
     {
         self.borders.vertical_right = Some(c);
 
@@ -709,8 +715,10 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
             self.borders.horizontal_right = Some(c);
         }
 
-        for (_, line) in &mut self.lines {
-            line.0.right = Some(c);
+        for hl in &mut self.lines {
+            if let Some(line) = &mut hl.line {
+                line.0.right = Some(c);
+            }
         }
 
         Style::new(self.borders, self.lines)
@@ -742,7 +750,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// Any corners and intersections which were set will be overridden.
     pub fn vertical(mut self, c: char) -> Style<T, B, L, R, H, On, Lines>
     where
-        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut (usize, Line)>,
+        for<'a> &'a mut Lines: IntoIterator<Item = &'a mut HorizontalLine>,
     {
         self.borders.vertical = Some(c);
 
@@ -758,8 +766,10 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
             self.borders.bottom_intersection = Some(c);
         }
 
-        for (_, line) in &mut self.lines {
-            line.0.intersection = Some(c);
+        for hl in &mut self.lines {
+            if let Some(line) = &mut hl.line {
+                line.0.intersection = Some(c);
+            }
         }
 
         Style::new(self.borders, self.lines)
@@ -770,12 +780,12 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{style::{Style, Line}, TableIteratorExt};
+    /// use tabled::{style::{Style, HorizontalLine, Line}, TableIteratorExt};
     ///
     /// let table = (0..3)
     ///    .map(|i| ("Hello", i))
     ///    .table()
-    ///    .with(Style::rounded().lines((1..4).map(|i| (i, Line::filled('#')))))
+    ///    .with(Style::rounded().lines((1..4).map(|i| HorizontalLine::new(i, Line::filled('#')))))
     ///    .to_string();
     ///
     /// assert_eq!(
@@ -795,7 +805,7 @@ impl<T, B, L, R, H, V, Lines> Style<T, B, L, R, H, V, Lines> {
     /// ```
     pub fn lines<NewLines>(self, lines: NewLines) -> Style<T, B, L, R, H, V, NewLines>
     where
-        NewLines: IntoIterator<Item = (usize, Line)> + Clone,
+        NewLines: IntoIterator<Item = HorizontalLine> + Clone,
     {
         Style::new(self.borders, lines)
     }
@@ -916,7 +926,7 @@ impl<T, B, R, H, V, Lines> Style<T, B, On, R, H, V, Lines> {
     /// Removes left border.
     pub fn off_left(mut self) -> Style<T, B, (), R, H, V, BorderLinesIntoIter<Lines>>
     where
-        Lines: IntoIterator<Item = (usize, Line)> + Clone,
+        Lines: IntoIterator<Item = HorizontalLine> + Clone,
     {
         self.borders.vertical_left = None;
         self.borders.horizontal_left = None;
@@ -932,7 +942,7 @@ impl<T, B, L, H, V, Lines> Style<T, B, L, On, H, V, Lines> {
     /// Removes right border.
     pub fn off_right(mut self) -> Style<T, B, L, (), H, V, BorderLinesIntoIter<Lines>>
     where
-        Lines: IntoIterator<Item = (usize, Line)> + Clone,
+        Lines: IntoIterator<Item = HorizontalLine> + Clone,
     {
         self.borders.vertical_right = None;
         self.borders.horizontal_right = None;
@@ -962,7 +972,7 @@ impl<T, B, L, R, H, Lines> Style<T, B, L, R, H, On, Lines> {
     /// Removes vertical split lines.
     pub fn off_vertical(mut self) -> Style<T, B, L, R, H, (), BorderLinesIntoIter<Lines>>
     where
-        Lines: IntoIterator<Item = (usize, Line)> + Clone,
+        Lines: IntoIterator<Item = HorizontalLine> + Clone,
     {
         self.borders.vertical = None;
         self.borders.top_intersection = None;
@@ -976,7 +986,7 @@ impl<T, B, L, R, H, Lines> Style<T, B, L, R, H, On, Lines> {
 
 impl<T, B, L, R, H, V, Lines, I> TableOption<I> for Style<T, B, L, R, H, V, Lines>
 where
-    Lines: IntoIterator<Item = (usize, Line)> + Clone,
+    Lines: IntoIterator<Item = HorizontalLine> + Clone,
     I: Records,
 {
     fn change(&mut self, table: &mut Table<I>) {
@@ -984,16 +994,17 @@ where
         table.get_config_mut().set_borders(self.borders.clone());
 
         if table.shape().0 > 1 {
-            for (row, line) in self.lines.clone() {
-                if line.is_empty() {
-                    table.get_config_mut().remove_split_line(row);
-                } else {
-                    table
-                        .get_config_mut()
-                        .set_split_line(row, line.clone().into());
+            for hl in self.lines.clone() {
+                match hl.line {
+                    Some(line) => {
+                        table.get_config_mut().set_split_line(hl.index, line.0);
+                    }
+                    None => table.get_config_mut().remove_split_line(hl.index),
                 }
             }
         }
+
+        table.destroy_width_cache()
     }
 }
 
@@ -1019,9 +1030,9 @@ impl<I> BorderLinesIntoIter<I> {
 
 impl<I> IntoIterator for BorderLinesIntoIter<I>
 where
-    I: IntoIterator<Item = (usize, Line)>,
+    I: IntoIterator<Item = HorizontalLine>,
 {
-    type Item = (usize, Line);
+    type Item = HorizontalLine;
     type IntoIter = BorderLinesIter<I::IntoIter>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -1056,26 +1067,30 @@ impl<I> BorderLinesIter<I> {
 
 impl<I> Iterator for BorderLinesIter<I>
 where
-    I: Iterator<Item = (usize, Line)>,
+    I: Iterator<Item = HorizontalLine>,
 {
-    type Item = (usize, Line);
+    type Item = HorizontalLine;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut line = self.iter.next()?;
+        let mut hl = self.iter.next()?;
 
-        if self.intersection {
-            line.1 = line.1.intersection(None);
+        if let Some(mut line) = hl.line {
+            if self.intersection {
+                line = line.intersection(None);
+            }
+
+            if self.left {
+                line = line.left(None);
+            }
+
+            if self.right {
+                line = line.right(None);
+            }
+
+            hl.line = Some(line);
         }
 
-        if self.left {
-            line.1 = line.1.left(None);
-        }
-
-        if self.right {
-            line.1 = line.1.right(None);
-        }
-
-        Some(line)
+        Some(hl)
     }
 }
 
@@ -1159,3 +1174,45 @@ impl From<Line> for papergrid::Line<char> {
         line.0
     }
 }
+
+/// A horizontal split line which can be used to set a border.
+///
+/// ```rust
+/// ```
+#[derive(Debug, Clone)]
+pub struct HorizontalLine {
+    pub(crate) index: usize,
+    pub(crate) line: Option<Line>,
+}
+
+impl HorizontalLine {
+    /// Creates a new horizontal split line.
+    pub const fn new(index: usize, line: Line) -> Self {
+        Self {
+            index,
+            line: Some(line),
+        }
+    }
+
+    /// Removes an existing split line by index.
+    ///
+    /// It not present or in case of index bigger than the count of columns it has no affect.
+    pub fn empty(index: usize) -> Self {
+        Self { index, line: None }
+    }
+}
+
+impl<R> TableOption<R> for HorizontalLine {
+    fn change(&mut self, table: &mut Table<R>) {
+        match &self.line {
+            Some(line) => {
+                table.get_config_mut().set_split_line(self.index, line.0);
+            }
+            None => {
+                table.get_config_mut().remove_split_line(self.index);
+            }
+        }
+    }
+}
+
+// todo: Rename TableOption -> TableChange; CellOption -> CellChange

@@ -31,6 +31,7 @@ where
     fn change(&mut self, table: &mut Table<R>) {
         table.get_config_mut().set_tab_width(self.0);
         table.update_records();
+        table.destroy_width_cache();
     }
 }
 

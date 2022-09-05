@@ -28,7 +28,8 @@ const STYLE: Borders = Borders {
 fn main() {
     let mut cfg = GridConfig::default();
     cfg.set_borders(STYLE);
-    cfg.set_span((1, 0), 4);
+    cfg.set_column_span((1, 1), 3);
+    cfg.set_row_span((0, 0), 2);
     cfg.set_alignment_horizontal((1, 0).into(), AlignmentHorizontal::Center);
     cfg.set_alignment_vertical(Global, papergrid::AlignmentVertical::Center);
     cfg.set_padding(
@@ -43,7 +44,7 @@ fn main() {
 
     let data = [
         ["Papergrid", "is a library", "for print tables", "!"],
-        ["Just like this", "", "", ""],
+        ["", "Just like this", "", ""],
     ];
 
     let records = VecRecords::new(&data, (2, 4), CfgWidthFunction::from_cfg(&cfg));
