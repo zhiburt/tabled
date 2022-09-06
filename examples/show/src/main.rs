@@ -110,26 +110,26 @@ fn main() {
 fn run(movies: &[Movie], debug: bool) {
     #[rustfmt::skip]
     let create_titles_actions: Vec<Action> = vec![
-        detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(1..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(2..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(3..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(4..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(1..)).with(Disable::Column(5..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(1..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(2..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(3..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(4..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(5..))).with(Style::modern())),
     ];
 
     #[rustfmt::skip]
     let add_movies_actions: Vec<Action> = vec![
-        detached_action(|_, m| Table::new(m).with(Disable::Row(2..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(3..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(4..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(5..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(6..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(7..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(8..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(9..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(10..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(11..)).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::Row(12..)).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(2..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(3..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(4..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(5..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(6..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(7..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(8..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(9..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(10..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(11..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(12..))).with(Style::modern())),
     ];
 
     #[rustfmt::skip]

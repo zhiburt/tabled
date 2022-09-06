@@ -35,7 +35,7 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::markdown())
-        .with(Rows::new(1..).modify().with(Alignment::left()));
+        .with(Rows::new(1..).modify().with(Alignment::center()));
 
     println!("{}", table);
 }

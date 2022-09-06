@@ -278,7 +278,7 @@ impl Sub<usize> for LastRow {
 }
 
 /// A row which is located by an offset from the first row.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Row {
     index: usize,
 }
@@ -296,6 +296,12 @@ impl Object for Row {
         }
 
         EntityOnce::new(Some(Entity::Row(self.index)))
+    }
+}
+
+impl From<Row> for usize {
+    fn from(val: Row) -> Self {
+        val.index
     }
 }
 
@@ -331,15 +337,19 @@ pub struct Rows<R> {
     range: R,
 }
 
-impl<R> Rows<R>
-where
-    R: RangeBounds<usize>,
-{
+impl<R> Rows<R> {
     /// Returns a new instance of [`Rows`] for a range of rows.
     ///
     /// If the boundaries are exceeded it may panic.
-    pub fn new(range: R) -> Self {
+    pub fn new(range: R) -> Self
+    where
+        R: RangeBounds<usize>,
+    {
         Self { range }
+    }
+
+    pub(crate) fn get_range(&self) -> &R {
+        &self.range
     }
 }
 
@@ -396,6 +406,10 @@ where
     /// If the boundaries are exceeded it may panic.
     pub fn new(range: R) -> Self {
         Self { range }
+    }
+
+    pub(crate) fn get_range(&self) -> &R {
+        &self.range
     }
 }
 
@@ -484,7 +498,7 @@ impl Sub<usize> for LastColumn {
 }
 
 /// Column represents a single column on a grid.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Column(usize);
 
 impl Object for Column {
@@ -501,6 +515,18 @@ impl Object for Column {
         }
 
         EntityOnce::new(Some(Entity::Column(col)))
+    }
+}
+
+impl From<usize> for Column {
+    fn from(i: usize) -> Self {
+        Self(i)
+    }
+}
+
+impl From<Column> for usize {
+    fn from(val: Column) -> Self {
+        val.0
     }
 }
 
