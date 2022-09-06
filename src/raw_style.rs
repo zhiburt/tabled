@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use papergrid::{records::Records, Borders};
 
 use crate::{
-    style::{HorizontalLine, Line},
+    style::{HorizontalLine, Line, VerticalLine},
     Style, Table, TableOption,
 };
 
@@ -16,7 +16,8 @@ use crate::{
 #[derive(Default, Debug, Clone)]
 pub struct RawStyle {
     borders: Borders<char>,
-    lines: HashMap<usize, Line>,
+    horizontals: HashMap<usize, Line>,
+    verticals: HashMap<usize, Line>,
 }
 
 impl RawStyle {
@@ -110,7 +111,7 @@ impl RawStyle {
         self
     }
 
-    /// Set border lines.
+    /// Set horizontal border lines.
     ///
     /// # Example
     ///
@@ -122,7 +123,7 @@ impl RawStyle {
     ///
     /// let mut lines = HashMap::new();
     /// lines.insert(1, Style::extended().get_horizontal());
-    /// style.set_lines(lines);
+    /// style.set_horizontals(lines);
     ///
     /// let table = (0..3)
     ///    .map(|i| ("Hello", i))
@@ -143,9 +144,54 @@ impl RawStyle {
     ///     ),
     /// )
     /// ```
-    pub fn set_lines(&mut self, lines: HashMap<usize, Line>) -> &mut Self {
-        self.lines = lines;
+    pub fn set_horizontals(&mut self, lines: HashMap<usize, Line>) -> &mut Self {
+        self.horizontals = lines;
         self
+    }
+
+    /// Set vertical border lines.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use tabled::{style::{Style, Line}, raw_style::RawStyle, TableIteratorExt};
+    ///
+    /// let mut style = RawStyle::from(Style::re_structured_text());
+    ///
+    /// let mut lines = HashMap::new();
+    /// lines.insert(1, Style::extended().get_horizontal());
+    /// style.set_verticals(lines);
+    ///
+    /// let table = (0..3)
+    ///    .map(|i| ("Hello", i))
+    ///    .table()
+    ///    .with(style)
+    ///    .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "=======╠=====\n",
+    ///         " &str  ═ i32 \n",
+    ///         "======= =====\n",
+    ///         " Hello ═ 0   \n",
+    ///         " Hello ═ 1   \n",
+    ///         " Hello ═ 2   \n",
+    ///         "=======╣=====",
+    ///     ),
+    /// )
+    /// ```
+    pub fn set_verticals(&mut self, lines: HashMap<usize, Line>) -> &mut Self {
+        self.verticals = lines;
+        self
+    }
+
+    /// Returns a [`RawStyle`] version which can set colors.
+    #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
+    #[cfg(feature = "color")]
+    pub fn colored(self) -> crate::raw_style_colored::RawStyleColored {
+        crate::raw_style_colored::RawStyleColored::from(self)
     }
 }
 
@@ -153,17 +199,9 @@ impl From<Borders<char>> for RawStyle {
     fn from(borders: Borders<char>) -> Self {
         Self {
             borders,
-            lines: HashMap::new(),
+            horizontals: HashMap::new(),
+            verticals: HashMap::new(),
         }
-    }
-}
-
-#[cfg(feature = "color")]
-impl RawStyle {
-    /// Returns a [`RawStyle`] version which can set colors.
-    #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-    pub fn colored(self) -> crate::raw_style_colored::RawStyleColored {
-        crate::raw_style_colored::RawStyleColored::from(self)
     }
 }
 
@@ -172,40 +210,68 @@ where
     R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {
-        table.get_config_mut().clear_theme();
-        table.get_config_mut().set_borders(self.borders.clone());
+        if table.is_empty() {
+            return;
+        }
 
-        if table.shape().0 > 1 {
-            for (&row, line) in &self.lines {
+        let (count_rows, count_cols) = table.shape();
+
+        let cfg = table.get_config_mut();
+        cfg.clear_theme();
+        cfg.set_borders(self.borders.clone());
+
+        if count_rows > 1 {
+            for (&row, line) in &self.horizontals {
                 if line.is_empty() {
-                    table.get_config_mut().remove_split_line(row);
+                    cfg.remove_horizontal_line(row);
                 } else {
-                    table
-                        .get_config_mut()
-                        .set_split_line(row, line.clone().into());
+                    cfg.set_horizontal_line(row, papergrid::HorizontalLine::from(*line));
                 }
             }
         }
 
+        if count_cols > 1 {
+            for (&col, line) in &self.verticals {
+                if line.is_empty() {
+                    cfg.remove_vertical_line(col);
+                } else {
+                    cfg.set_vertical_line(col, papergrid::VerticalLine::from(*line));
+                }
+            }
+        }
+        
         table.destroy_width_cache();
     }
 }
 
-impl<T, B, L, R, H, V, Lines> From<Style<T, B, L, R, H, V, Lines>> for RawStyle
+impl<T, B, L, R, H, V, HLines, VLines> From<Style<T, B, L, R, H, V, HLines, VLines>> for RawStyle
 where
-    Lines: IntoIterator<Item = HorizontalLine>,
+    HLines: IntoIterator<Item = HorizontalLine>,
+    VLines: IntoIterator<Item = VerticalLine>,
 {
-    fn from(style: Style<T, B, L, R, H, V, Lines>) -> Self {
+    fn from(style: Style<T, B, L, R, H, V, HLines, VLines>) -> Self {
+        let horizontals = style
+            .horizontals
+            .into_iter()
+            .flat_map(|hr| {
+                let index = hr.index;
+                hr.line.map(|line| (index, line))
+            })
+            .collect();
+
+        let verticals = style
+            .verticals
+            .into_iter()
+            .flat_map(|hr| {
+                let index = hr.index;
+                hr.line.map(|line| (index, line))
+            })
+            .collect();
+
         Self {
             borders: style.borders,
-            lines: style
-                .lines
-                .into_iter()
-                .flat_map(|hr| {
-                    let index = hr.index;
-                    hr.line.map(|line| (index, line))
-                })
-                .collect(),
+            horizontals,
+            verticals,
         }
     }
 }
