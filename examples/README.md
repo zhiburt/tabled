@@ -154,6 +154,20 @@ Bellow there's a list of results of running some examples.
 └─────────────────────────────────────────────────────┘
 ```
 
+## disable
+
+```
+###########                     
+# name    # based_on | is_cool |
+###########----------|---------|
+# Debian  #          | true    |
+###########                     
+# Arch    #          | true    |
+###########                     
+# Manjaro # Arch     | true    |
+###########                     
+```
+
 ## expanded_display
 
 ```
