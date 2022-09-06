@@ -239,7 +239,7 @@ where
                 }
             }
         }
-        
+
         table.destroy_width_cache();
     }
 }
