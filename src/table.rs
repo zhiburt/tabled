@@ -223,6 +223,16 @@ where
         )
     }
 
+    /// Returns an amount of rows in the table.
+    pub fn count_rows(&self) -> usize {
+        self.get_records().count_rows()
+    }
+
+    /// Returns an amount of columns in the table.
+    pub fn count_columns(&self) -> usize {
+        self.get_records().count_columns()
+    }
+
     /// Returns a table shape (count rows, count columns).
     pub fn is_empty(&self) -> bool {
         let (count_rows, count_cols) = self.shape();

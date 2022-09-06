@@ -35,11 +35,15 @@ use std::{
     ops::{Range, RangeBounds},
 };
 
-use papergrid::records::{Records, Resizable};
+use papergrid::{
+    records::{Records, Resizable},
+    Entity,
+};
 
 use crate::{
     object::{
-        bounds_to_usize, Column, Columns, FirstColumn, FirstRow, LastColumn, LastRow, Row, Rows,
+        bounds_to_usize, Column, Columns, FirstColumn, FirstRow, LastColumn, LastRow, Object, Row,
+        Rows,
     },
     Table, TableOption,
 };
@@ -375,5 +379,23 @@ where
         (0..records.count_columns())
             .filter(|col| records.get_text((0, *col)) == self.0.as_ref())
             .collect::<Vec<_>>()
+    }
+}
+
+impl<S> Object for ByColumnName<S>
+where
+    S: AsRef<str>,
+{
+    type Iter = std::vec::IntoIter<Entity>;
+
+    fn cells<R>(&self, table: &Table<R>) -> Self::Iter
+    where
+        R: Records,
+    {
+        (0..table.count_columns())
+            .filter(|col| table.get_records().get_text((0, *col)) == self.0.as_ref())
+            .map(Entity::Column)
+            .collect::<Vec<_>>()
+            .into_iter()
     }
 }

@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example basic`
 
-use tabled::{disable::ByColumnName, Disable, Style, Table, Tabled};
+use tabled::{disable::ByColumnName, Border, Disable, ModifyObject, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {
@@ -31,7 +31,8 @@ fn main() {
 
     let table = Table::new(&data)
         .with(Style::markdown())
-        .with(Disable::column(ByColumnName::new("is_active")));
+        .with(Disable::column(ByColumnName::new("is_active")))
+        .with(ByColumnName::new("name").modify().with(Border::filled('#')));
 
     println!("{}", table);
 }
