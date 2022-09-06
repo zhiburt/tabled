@@ -74,8 +74,7 @@ where
     R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {
-        let (count_rows, count_cols) = table.shape();
-        for entity in self.obj.cells(count_rows, count_cols) {
+        for entity in self.obj.cells(table) {
             self.modifiers.change_cell(table, entity);
         }
     }

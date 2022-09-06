@@ -117,7 +117,7 @@ where
 {
     fn change(&mut self, table: &mut Table<R>) {
         let (count_rows, count_cols) = table.shape();
-        let cells = self.target.cells(count_rows, count_cols);
+        let cells = self.target.cells(table);
         let segments = split_segments(cells, count_rows, count_cols);
 
         for sector in segments {
@@ -147,7 +147,7 @@ where
 {
     fn change(&mut self, table: &mut Table<R>) {
         let (count_rows, count_cols) = table.shape();
-        let cells = self.target.cells(count_rows, count_cols);
+        let cells = self.target.cells(table);
         let segments = split_segments(cells, count_rows, count_cols);
 
         for sector in segments {

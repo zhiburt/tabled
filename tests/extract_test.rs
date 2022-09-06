@@ -1,5 +1,8 @@
 use tabled::{
-    builder::Builder, format::Format, object::Segment, Alignment, Disable, Extract, Modify, Padding,
+    builder::Builder,
+    format::Format,
+    object::{Rows, Segment},
+    Alignment, Disable, Extract, Modify, Padding,
 };
 
 use crate::util::{create_table, test_table};
@@ -176,7 +179,7 @@ test_table!(
 
 test_table!(
     extract_inside_test,
-    create_table::<3, 3>().with(Disable::Row(..1)).with(Extract::segment(1..2, 1..2)),
+    create_table::<3, 3>().with(Disable::row(Rows::first())).with(Extract::segment(1..2, 1..2)),
     "+-----+"
     "| 1-0 |"
     "+-----+"
@@ -184,7 +187,7 @@ test_table!(
 
 test_table!(
     extract_left_test,
-    create_table::<3, 3>().with(Disable::Row(..1)).with(Extract::segment(.., ..1)),
+    create_table::<3, 3>().with(Disable::row(Rows::first())).with(Extract::segment(.., ..1)),
     "+---+"
     "| 0 |"
     "+---+"
@@ -196,7 +199,7 @@ test_table!(
 
 test_table!(
     extract_right_test,
-    create_table::<3, 3>().with(Disable::Row(..1)).with(Extract::segment(.., 2..)),
+    create_table::<3, 3>().with(Disable::row(Rows::first())).with(Extract::segment(.., 2..)),
     "+-----+-----+"
     "| 0-1 | 0-2 |"
     "+-----+-----+"
@@ -208,7 +211,7 @@ test_table!(
 
 test_table!(
     extract_top_test,
-    create_table::<3, 3>().with(Disable::Row(..1)).with(Extract::segment(..1, ..)),
+    create_table::<3, 3>().with(Disable::row(Rows::first())).with(Extract::segment(..1, ..)),
     "+---+-----+-----+-----+"
     "| 0 | 0-0 | 0-1 | 0-2 |"
     "+---+-----+-----+-----+"
@@ -216,7 +219,7 @@ test_table!(
 
 test_table!(
     extract_bottom_test,
-    create_table::<3, 3>().with(Disable::Row(..1)).with(Extract::segment(2.., ..)),
+    create_table::<3, 3>().with(Disable::row(Rows::first())).with(Extract::segment(2.., ..)),
     "+---+-----+-----+-----+"
     "| 2 | 2-0 | 2-1 | 2-2 |"
     "+---+-----+-----+-----+"
@@ -225,7 +228,7 @@ test_table!(
 test_table!(
     extract_all_test,
     create_table::<3, 3>()
-        .with(Disable::Row(..1))
+        .with(Disable::row(Rows::first()))
         .with(Extract::segment(3.., 3..)),
     ""
 );

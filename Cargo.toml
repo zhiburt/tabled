@@ -52,6 +52,10 @@ name = "color"
 required-features = ["color", "derive"]
 
 [[example]]
+name = "disable"
+required-features = ["derive"]
+
+[[example]]
 name = "rename_all"
 path = "examples/derive/rename_all.rs"
 required-features = ["derive"]
