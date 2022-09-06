@@ -69,7 +69,7 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
         .build()
         .with(
             Style::ascii()
-                .lines([HorizontalLine::new(1, Style::ascii().get_horizontal())])
+                .horizontals([HorizontalLine::new(1, Style::ascii().get_horizontal())])
                 .off_horizontal()
                 .off_vertical(),
         )

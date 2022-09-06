@@ -125,7 +125,7 @@ where
         for pos in entity.iter(count_rows, count_cols) {
             match &self.border {
                 Some(border) => cfg.set_border(pos, border.clone()),
-                None => cfg.remove_border(pos, count_cols),
+                None => cfg.remove_border(pos, (count_rows, count_cols)),
             }
         }
 

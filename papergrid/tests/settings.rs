@@ -45,7 +45,7 @@ test_table!(
                 },
             );
 
-            cfg.remove_border((0, 0), 2);
+            cfg.remove_border((0, 0), (2, 2));
         })
         .build(),
     "0-00-1\n1-01-1"

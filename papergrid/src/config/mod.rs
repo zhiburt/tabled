@@ -11,7 +11,7 @@ use std::collections::HashMap;
 pub use self::{
     alignment::{AlignmentHorizontal, AlignmentVertical},
     border::Border,
-    borders::{Borders, Line},
+    borders::{Borders, HorizontalLine, VerticalLine},
     entity::{Entity, EntityIterator, Position},
     formatting::Formatting,
     sides::Indent,
@@ -156,24 +156,48 @@ impl GridConfig {
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
-    pub fn set_split_line(&mut self, row: usize, line: Line<char>) {
-        self.borders.insert_line(row, line);
+    pub fn set_horizontal_line(&mut self, row: usize, line: HorizontalLine<char>) {
+        self.borders.insert_horizontal_line(row, line);
     }
 
     /// Sets off the border line by row index if any were set
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
-    pub fn remove_split_line(&mut self, row: usize) {
-        self.borders.remove_line(row);
+    pub fn remove_horizontal_line(&mut self, row: usize) {
+        self.borders.remove_horizontal_line(row);
+    }
+
+    /// Gets a overriden vertical line.
+    ///
+    /// Row `0` means the top row.
+    /// Row `grid.count_rows()` means the bottom row.
+    pub fn get_vertical_line(&self, row: usize) -> Option<&VerticalLine<char>> {
+        self.borders.get_vertical_line(row)
+    }
+
+    /// Set the border line by column index.
+    ///
+    /// Row `0` means the top row.
+    /// Row `grid.count_rows()` means the bottom row.
+    pub fn set_vertical_line(&mut self, row: usize, line: VerticalLine<char>) {
+        self.borders.insert_vertical_line(row, line);
+    }
+
+    /// Sets off the border line by row index if any were set
+    ///
+    /// Row `0` means the top row.
+    /// Row `grid.count_rows()` means the bottom row.
+    pub fn remove_vertical_line(&mut self, row: usize) {
+        self.borders.remove_vertical_line(row);
     }
 
     /// Gets a overriden line.
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
-    pub fn get_split_line(&self, row: usize) -> Option<&Line<char>> {
-        self.borders.get_line(row)
+    pub fn get_horizontal_line(&self, row: usize) -> Option<&HorizontalLine<char>> {
+        self.borders.get_horizontal_line(row)
     }
 
     /// Override the split line with a custom text.
@@ -279,8 +303,8 @@ impl GridConfig {
     /// Sets off all borders possible on the [`Entity`].
     ///
     /// It doesn't changes globaly set borders through [`GridConfig::set_borders`].
-    pub fn remove_border(&mut self, pos: Position, count_columns: usize) {
-        self.borders.remove_border(pos, count_columns);
+    pub fn remove_border(&mut self, pos: Position, shape: (usize, usize)) {
+        self.borders.remove_border(pos, shape);
     }
 
     /// Set a character wich will be used in case any missconfiguration of borders.
@@ -388,7 +412,7 @@ impl GridConfig {
 
     /// Gets a color of border of a cell on the [`Grid`].
     pub fn remove_border_color(&mut self, pos: Position, shape: (usize, usize)) {
-        self.border_colors.remove_border(pos, shape.1);
+        self.border_colors.remove_border(pos, shape);
     }
 
     /// Get colors for a [`Margin`] value.

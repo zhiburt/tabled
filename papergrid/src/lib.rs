@@ -81,7 +81,7 @@ pub mod util;
 pub use self::{
     config::{
         AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, EntityIterator,
-        Formatting, GridConfig, Indent, Line, Margin, Padding, Position,
+        Formatting, GridConfig, HorizontalLine, Indent, Margin, Padding, Position, VerticalLine,
     },
     estimation::{height, width, Estimate},
     grid::Grid,

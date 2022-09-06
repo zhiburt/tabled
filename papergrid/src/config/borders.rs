@@ -7,7 +7,8 @@ pub(crate) struct BordersConfig<T> {
     global: Option<T>,
     borders: Borders<T>,
     cells: BordersMap<T>,
-    lines: HashMap<usize, Line<T>>,
+    horizontals: HashMap<usize, HorizontalLine<T>>,
+    verticals: HashMap<usize, VerticalLine<T>>,
     layout: BordersLayout,
 }
 
@@ -15,50 +16,52 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
     pub(crate) fn insert_border(&mut self, pos: Position, border: Border<T>) {
         if let Some(c) = border.top {
             self.cells.horizontal.insert(pos, c);
-            self.layout.horizontal.insert(pos.0);
+            self.layout.horizontals.insert(pos.0);
         }
 
         if let Some(c) = border.bottom {
             self.cells.horizontal.insert((pos.0 + 1, pos.1), c);
-            self.layout.horizontal.insert(pos.0 + 1);
+            self.layout.horizontals.insert(pos.0 + 1);
         }
 
         if let Some(c) = border.left {
             self.cells.vertical.insert(pos, c);
-            self.layout.vertical.insert(pos.1);
+            self.layout.verticals.insert(pos.1);
         }
 
         if let Some(c) = border.right {
             self.cells.vertical.insert((pos.0, pos.1 + 1), c);
-            self.layout.vertical.insert(pos.1 + 1);
+            self.layout.verticals.insert(pos.1 + 1);
         }
 
         if let Some(c) = border.left_top_corner {
             self.cells.intersection.insert((pos.0, pos.1), c);
-            self.layout.horizontal.insert(pos.0);
-            self.layout.vertical.insert(pos.1);
+            self.layout.horizontals.insert(pos.0);
+            self.layout.verticals.insert(pos.1);
         }
 
         if let Some(c) = border.right_top_corner {
             self.cells.intersection.insert((pos.0, pos.1 + 1), c);
-            self.layout.horizontal.insert(pos.0);
-            self.layout.vertical.insert(pos.1 + 1);
+            self.layout.horizontals.insert(pos.0);
+            self.layout.verticals.insert(pos.1 + 1);
         }
 
         if let Some(c) = border.left_bottom_corner {
             self.cells.intersection.insert((pos.0 + 1, pos.1), c);
-            self.layout.horizontal.insert(pos.0 + 1);
-            self.layout.vertical.insert(pos.1);
+            self.layout.horizontals.insert(pos.0 + 1);
+            self.layout.verticals.insert(pos.1);
         }
 
         if let Some(c) = border.right_bottom_corner {
             self.cells.intersection.insert((pos.0 + 1, pos.1 + 1), c);
-            self.layout.horizontal.insert(pos.0 + 1);
-            self.layout.vertical.insert(pos.1 + 1);
+            self.layout.horizontals.insert(pos.0 + 1);
+            self.layout.verticals.insert(pos.1 + 1);
         }
     }
 
-    pub(crate) fn remove_border(&mut self, pos: Position, count_cols: usize) {
+    pub(crate) fn remove_border(&mut self, pos: Position, shape: (usize, usize)) {
+        let (count_rows, count_cols) = shape;
+
         self.cells.horizontal.remove(&pos);
         self.cells.horizontal.remove(&(pos.0 + 1, pos.1));
         self.cells.vertical.remove(&pos);
@@ -70,20 +73,20 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
 
         // clean up the layout.
 
-        if !self.check_is_horizontal_set(pos.0) {
-            self.layout.horizontal.remove(&pos.0);
+        if !self.check_is_horizontal_set(pos.0, count_rows) {
+            self.layout.horizontals.remove(&pos.0);
         }
 
-        if !self.check_is_horizontal_set(pos.0 + 1) {
-            self.layout.horizontal.remove(&(pos.0 + 1));
+        if !self.check_is_horizontal_set(pos.0 + 1, count_rows) {
+            self.layout.horizontals.remove(&(pos.0 + 1));
         }
 
         if !self.check_is_vertical_set(pos.1, count_cols) {
-            self.layout.vertical.remove(&pos.1);
+            self.layout.verticals.remove(&pos.1);
         }
 
         if !self.check_is_vertical_set(pos.1 + 1, count_cols) {
-            self.layout.vertical.remove(&(pos.1 + 1));
+            self.layout.verticals.remove(&(pos.1 + 1));
         }
     }
 
@@ -109,29 +112,50 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
         }
     }
 
-    pub(crate) fn insert_line(&mut self, row: usize, line: Line<T>) {
+    pub(crate) fn insert_horizontal_line(&mut self, row: usize, line: HorizontalLine<T>) {
         if line.left.is_some() {
-            self.layout.vertical_left = true;
+            self.layout.left = true;
         }
 
         if line.right.is_some() {
-            self.layout.vertical_right = true;
+            self.layout.right = true;
         }
 
         if line.intersection.is_some() {
-            self.layout.vertical_mid = true;
+            self.layout.inner_verticals = true;
         }
 
-        self.lines.insert(row, line);
-        self.layout.horizontal.insert(row);
+        self.horizontals.insert(row, line);
+        self.layout.horizontals.insert(row);
     }
 
-    pub(crate) fn get_line(&self, row: usize) -> Option<&Line<T>> {
-        self.lines.get(&row)
+    pub(crate) fn get_horizontal_line(&self, row: usize) -> Option<&HorizontalLine<T>> {
+        self.horizontals.get(&row)
     }
 
-    pub(crate) fn remove_line(&mut self, row: usize) {
-        self.lines.remove(&row);
+    pub(crate) fn remove_horizontal_line(&mut self, row: usize) {
+        self.horizontals.remove(&row);
+    }
+
+    pub(crate) fn insert_vertical_line(&mut self, row: usize, line: VerticalLine<T>) {
+        if line.top.is_some() {
+            self.layout.top = true;
+        }
+
+        if line.bottom.is_some() {
+            self.layout.bottom = true;
+        }
+
+        self.verticals.insert(row, line);
+        self.layout.verticals.insert(row);
+    }
+
+    pub(crate) fn get_vertical_line(&self, row: usize) -> Option<&VerticalLine<T>> {
+        self.verticals.get(&row)
+    }
+
+    pub(crate) fn remove_vertical_line(&mut self, row: usize) {
+        self.verticals.remove(&row);
     }
 
     pub(crate) fn set_borders(&mut self, borders: Borders<T>) {
@@ -154,6 +178,7 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
         self.cells
             .vertical
             .get(&pos)
+            .or_else(|| self.verticals.get(&pos.1).and_then(|l| l.main.as_ref()))
             .or({
                 if pos.1 == count_cols {
                     self.borders.vertical_right.as_ref()
@@ -170,7 +195,7 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
         self.cells
             .horizontal
             .get(&pos)
-            .or_else(|| self.lines.get(&pos.0).and_then(|l| l.horizontal.as_ref()))
+            .or_else(|| self.horizontals.get(&pos.0).and_then(|l| l.main.as_ref()))
             .or({
                 if pos.0 == 0 {
                     self.borders.top.as_ref()
@@ -194,44 +219,69 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
         let use_left = pos.1 == 0;
         let use_right = pos.1 == count_cols;
 
-        self.cells
-            .intersection
-            .get(&pos)
-            .or_else(|| {
-                self.lines.get(&pos.0).and_then(|l| {
-                    if use_left && l.left.is_some() {
-                        l.left.as_ref()
-                    } else if use_right && l.right.is_some() {
-                        l.right.as_ref()
-                    } else if !use_right && !use_left && l.intersection.is_some() {
-                        l.intersection.as_ref()
-                    } else {
-                        None
-                    }
-                })
-            })
-            .or({
-                if use_top && use_left {
-                    self.borders.top_left.as_ref()
-                } else if use_top && use_right {
-                    self.borders.top_right.as_ref()
-                } else if use_bottom && use_left {
-                    self.borders.bottom_left.as_ref()
-                } else if use_bottom && use_right {
-                    self.borders.bottom_right.as_ref()
-                } else if use_top {
-                    self.borders.top_intersection.as_ref()
-                } else if use_bottom {
-                    self.borders.bottom_intersection.as_ref()
-                } else if use_left {
-                    self.borders.horizontal_left.as_ref()
-                } else if use_right {
-                    self.borders.horizontal_right.as_ref()
-                } else {
-                    self.borders.intersection.as_ref()
-                }
-            })
-            .or(self.global.as_ref())
+        if let Some(c) = self.cells.intersection.get(&pos) {
+            return Some(c);
+        }
+
+        let hl_c = self.horizontals.get(&pos.0).and_then(|l| {
+            if use_left && l.left.is_some() {
+                l.left.as_ref()
+            } else if use_right && l.right.is_some() {
+                l.right.as_ref()
+            } else if !use_right && !use_left && l.intersection.is_some() {
+                l.intersection.as_ref()
+            } else {
+                None
+            }
+        });
+
+        if let Some(c) = hl_c {
+            return Some(c);
+        }
+
+        let vl_c = self.verticals.get(&pos.1).and_then(|l| {
+            if use_top && l.top.is_some() {
+                l.top.as_ref()
+            } else if use_bottom && l.bottom.is_some() {
+                l.bottom.as_ref()
+            } else if !use_top && !use_bottom && l.intersection.is_some() {
+                l.intersection.as_ref()
+            } else {
+                None
+            }
+        });
+
+        if let Some(c) = vl_c {
+            return Some(c);
+        }
+
+        let borders_c = {
+            if use_top && use_left {
+                self.borders.top_left.as_ref()
+            } else if use_top && use_right {
+                self.borders.top_right.as_ref()
+            } else if use_bottom && use_left {
+                self.borders.bottom_left.as_ref()
+            } else if use_bottom && use_right {
+                self.borders.bottom_right.as_ref()
+            } else if use_top {
+                self.borders.top_intersection.as_ref()
+            } else if use_bottom {
+                self.borders.bottom_intersection.as_ref()
+            } else if use_left {
+                self.borders.horizontal_left.as_ref()
+            } else if use_right {
+                self.borders.horizontal_right.as_ref()
+            } else {
+                self.borders.intersection.as_ref()
+            }
+        };
+
+        if let Some(c) = borders_c {
+            return Some(c);
+        }
+
+        self.global.as_ref()
     }
 
     pub(crate) fn has_horizontal(&self, row: usize, count_rows: usize) -> bool {
@@ -239,7 +289,7 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
             || (row == 0 && self.borders.has_top())
             || (row == count_rows && self.borders.has_bottom())
             || (row > 0 && row < count_rows && self.borders.has_horizontal())
-            || self.is_horizontal_set(row)
+            || self.is_horizontal_set(row, count_rows)
     }
 
     pub(crate) fn has_vertical(&self, col: usize, count_cols: usize) -> bool {
@@ -250,36 +300,32 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
             || self.is_vertical_set(col, count_cols)
     }
 
-    fn is_line_defined(&self, row: usize) -> bool {
-        self.lines.get(&row).map_or(false, |l| {
-            l.left.is_some()
-                || l.right.is_some()
-                || l.intersection.is_some()
-                || l.horizontal.is_some()
-        })
-    }
-
-    fn is_horizontal_set(&self, row: usize) -> bool {
-        self.layout.horizontal.contains(&row)
+    fn is_horizontal_set(&self, row: usize, count_rows: usize) -> bool {
+        (row == 0 && self.layout.top)
+            || (row == count_rows && self.layout.bottom)
+            || (row > 0 && row < count_rows && self.layout.inner_horizontals)
+            || self.layout.horizontals.contains(&row)
     }
 
     fn is_vertical_set(&self, col: usize, count_cols: usize) -> bool {
-        (col == 0 && self.layout.vertical_left)
-            || (col == count_cols && self.layout.vertical_right)
-            || (col > 0 && col < count_cols && self.layout.vertical_mid)
-            || self.layout.vertical.contains(&col)
+        (col == 0 && self.layout.left)
+            || (col == count_cols && self.layout.right)
+            || (col > 0 && col < count_cols && self.layout.inner_verticals)
+            || self.layout.verticals.contains(&col)
     }
 
-    fn check_is_horizontal_set(&self, row: usize) -> bool {
-        self.is_line_defined(row)
+    fn check_is_horizontal_set(&self, row: usize, count_rows: usize) -> bool {
+        (row == 0 && self.layout.top)
+            || (row == count_rows && self.layout.bottom)
+            || (row > 0 && row < count_rows && self.layout.inner_horizontals)
             || self.cells.horizontal.keys().any(|&p| p.0 == row)
             || self.cells.intersection.keys().any(|&p| p.0 == row)
     }
 
     fn check_is_vertical_set(&self, col: usize, count_cols: usize) -> bool {
-        (col == 0 && self.layout.vertical_left)
-            || (col == count_cols && self.layout.vertical_right)
-            || (col > 0 && col < count_cols && self.layout.vertical_mid)
+        (col == 0 && self.layout.left)
+            || (col == count_cols && self.layout.right)
+            || (col > 0 && col < count_cols && self.layout.inner_verticals)
             || self.cells.vertical.keys().any(|&p| p.1 == col)
             || self.cells.intersection.keys().any(|&p| p.1 == col)
     }
@@ -374,29 +420,6 @@ impl<T> Borders<T> {
     }
 }
 
-/// A structre for a custom horizontal/vertical line.
-#[derive(Debug, Clone, Copy, Default)]
-pub struct Line<T> {
-    /// Line character.
-    pub horizontal: Option<T>,
-    /// Line intersection character.
-    pub intersection: Option<T>,
-    /// Left intersection character.
-    pub left: Option<T>,
-    /// Right intersection character.
-    pub right: Option<T>,
-}
-
-impl<T> Line<T> {
-    /// Verifies if the line has any setting set.
-    pub const fn is_empty(&self) -> bool {
-        self.horizontal.is_none()
-            && self.horizontal.is_none()
-            && self.left.is_none()
-            && self.right.is_none()
-    }
-}
-
 #[derive(Debug, Clone, Default)]
 pub(crate) struct BordersMap<T> {
     vertical: HashMap<Position, T>,
@@ -406,9 +429,58 @@ pub(crate) struct BordersMap<T> {
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct BordersLayout {
-    horizontal: HashSet<usize>,
-    vertical: HashSet<usize>,
-    vertical_mid: bool,
-    vertical_left: bool,
-    vertical_right: bool,
+    left: bool,
+    right: bool,
+    top: bool,
+    bottom: bool,
+    inner_verticals: bool,
+    inner_horizontals: bool,
+    horizontals: HashSet<usize>,
+    verticals: HashSet<usize>,
+}
+
+/// A structre for a custom horizontal line.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct HorizontalLine<T> {
+    /// Line character.
+    pub main: Option<T>,
+    /// Line intersection character.
+    pub intersection: Option<T>,
+    /// Left intersection character.
+    pub left: Option<T>,
+    /// Right intersection character.
+    pub right: Option<T>,
+}
+
+impl<T> HorizontalLine<T> {
+    /// Verifies if the line has any setting set.
+    pub const fn is_empty(&self) -> bool {
+        self.main.is_none()
+            && self.intersection.is_none()
+            && self.left.is_none()
+            && self.right.is_none()
+    }
+}
+
+/// A structre for a vertical line.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct VerticalLine<T> {
+    /// Line character.
+    pub main: Option<T>,
+    /// Line intersection character.
+    pub intersection: Option<T>,
+    /// Left intersection character.
+    pub top: Option<T>,
+    /// Right intersection character.
+    pub bottom: Option<T>,
+}
+
+impl<T> VerticalLine<T> {
+    /// Verifies if the line has any setting set.
+    pub const fn is_empty(&self) -> bool {
+        self.main.is_none()
+            && self.intersection.is_none()
+            && self.top.is_none()
+            && self.bottom.is_none()
+    }
 }
