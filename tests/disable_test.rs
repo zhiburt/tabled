@@ -1,4 +1,5 @@
 use tabled::{
+    disable::ByColumnName,
     object::{Columns, Rows, Segment},
     style::HorizontalLine,
     Alignment, Disable, Modify, Style,
@@ -57,6 +58,18 @@ test_table!(
     "   0-0    |   0-1    |   0-2    "
     "   1-0    |   1-1    |   1-2    "
     "   2-0    |   2-1    |   2-2    "
+);
+
+test_table!(
+    disable_column_by_name,
+    create_table::<3, 3>().with(Style::psql())
+        .with(Disable::column(ByColumnName::new("column 1")))
+        .with(Disable::column(ByColumnName::new("column 3"))),
+    " N | column 0 | column 2 "
+    "---+----------+----------"
+    " 0 |   0-0    |   0-2    "
+    " 1 |   1-0    |   1-2    "
+    " 2 |   2-0    |   2-2    "
 );
 
 test_table!(
