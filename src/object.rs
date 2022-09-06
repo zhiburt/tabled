@@ -1139,10 +1139,7 @@ mod tests {
         assert_eq!(vec_cells(Columns::new(2..3), 2, 3), [Entity::Column(2)]);
         assert_eq!(vec_cells(Columns::new(..), 0, 0), []);
         assert_eq!(vec_cells(Columns::new(..), 2, 0), []);
-        assert_eq!(
-            vec_cells(Columns::new(..), 0, 3),
-            [Entity::Column(0), Entity::Column(1), Entity::Column(2)]
-        );
+        assert_eq!(vec_cells(Columns::new(..), 0, 3), []);
     }
 
     #[test]
@@ -1192,10 +1189,7 @@ mod tests {
         assert_eq!(vec_cells(Rows::new(1..2), 2, 3), [Entity::Row(1)],);
         assert_eq!(vec_cells(Rows::new(..), 0, 0), []);
         assert_eq!(vec_cells(Rows::new(..), 0, 3), []);
-        assert_eq!(
-            vec_cells(Rows::new(..), 2, 0),
-            [Entity::Row(0), Entity::Row(1)]
-        );
+        assert_eq!(vec_cells(Rows::new(..), 2, 0), []);
     }
 
     #[test]
