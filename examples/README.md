@@ -143,15 +143,15 @@ Bellow there's a list of results of running some examples.
 ## custom_style
 
 ```
-┌─────────────────────────────────────────────────────┐
-│ name                first_release  developer        │
-├─────────────────────────────────────────────────────┤
-│ Sublime Text 3      2008           Sublime HQ       │
-│ Visual Studio Code  2015           Microsoft        │
-│ Notepad++           2003           Don Ho           │
-│ GNU Emacs           1984           Richard Stallman │
-│ Neovim              2015           Vim community    │
-└─────────────────────────────────────────────────────┘
+┌────────────────────┬─────────────────────────────────┐
+│ name               │ first_release  developer        │
+├────────────────────┼─────────────────────────────────┤
+│ Sublime Text 3     │ 2008           Sublime HQ       │
+│ Visual Studio Code │ 2015           Microsoft        │
+│ Notepad++          │ 2003           Don Ho           │
+│ GNU Emacs          │ 1984           Richard Stallman │
+│ Neovim             │ 2015           Vim community    │
+└────────────────────┴─────────────────────────────────┘
 ```
 
 ## disable
