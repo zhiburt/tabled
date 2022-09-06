@@ -11,12 +11,13 @@ use papergrid::{
 };
 
 use crate::{
-    truncate::{decrease_widths, get_decrease_cell_list},
-    width::{
-        get_table_widths, get_table_widths_with_total, get_width_value, ColumnPeaker, PriorityNone,
-        WidthValue,
-    },
+    width::{ColumnPeaker, PriorityNone, WidthValue},
     CellOption, Table, TableOption,
+};
+
+use super::{
+    get_table_widths, get_table_widths_with_total, get_width_value,
+    truncate::{decrease_widths, get_decrease_cell_list},
 };
 
 /// Wrap wraps a string to a new line in case it exceeds the provided max boundary.
@@ -30,10 +31,10 @@ use crate::{
 /// ## Example
 ///
 /// ```
-/// use tabled::{object::Segment, wrap::Wrap, Modify, Table};
+/// use tabled::{object::Segment, Width, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
-///     .with(Modify::new(Segment::all()).with(Wrap::new(3)));
+///     .with(Modify::new(Segment::all()).with(Width::wrap(3)));
 /// ```
 ///
 /// [`Padding`]: crate::Padding

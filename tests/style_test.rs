@@ -5,8 +5,7 @@ use crate::util::{create_table, init_table, static_table, test_table};
 use tabled::{
     builder::Builder,
     object::{Cell, Columns, Rows, Segment},
-    raw_style::RawStyle,
-    style::{HorizontalLine, Line, VerticalLine},
+    style::{HorizontalLine, Line, RawStyle, VerticalLine},
     Border, BorderText, Highlight, Modify, Padding, Span, Style,
 };
 
@@ -1923,7 +1922,7 @@ fn test_default_border_usage() {
 #[test]
 fn border_colored_test() {
     use owo_colors::OwoColorize;
-    use tabled::{border_colored::BorderColored, symbol::Symbol};
+    use tabled::{border_colored::BorderColored, style::Symbol};
 
     let table = create_table::<2, 2>()
         .with(Style::ascii())
@@ -1992,7 +1991,7 @@ fn border_colored_test() {
 #[test]
 fn style_with_color_test() {
     use owo_colors::OwoColorize;
-    use tabled::symbol::Symbol;
+    use tabled::style::Symbol;
 
     let style: RawStyle = Style::ascii().into();
     let mut style = style.colored();

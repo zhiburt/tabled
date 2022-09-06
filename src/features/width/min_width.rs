@@ -28,20 +28,20 @@ use crate::{
 /// Cell change
 ///
 /// ```
-/// use tabled::{object::Segment, min_width::MinWidth, Modify, Style, Table};
+/// use tabled::{object::Segment, Width, Modify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::markdown())
-///     .with(Modify::new(Segment::all()).with(MinWidth::new(10)));
+///     .with(Modify::new(Segment::all()).with(Width::increase(10)));
 /// ```
 /// Table change
 ///
 /// ```
-/// use tabled::{min_width::MinWidth, Table};
+/// use tabled::{Width, Table};
 ///
-/// let table = Table::new(&["Hello World!"]).with(MinWidth::new(5));
+/// let table = Table::new(&["Hello World!"]).with(Width::increase(5));
 /// ```
 ///
 /// [`Padding`]: crate::Padding

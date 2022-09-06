@@ -1,5 +1,5 @@
 use tabled::{
-    disable::ByColumnName,
+    locator::ByColumnName,
     object::{Columns, Rows, Segment},
     Alignment, Modify, Padding, Style,
 };

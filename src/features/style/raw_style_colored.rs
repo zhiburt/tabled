@@ -6,7 +6,10 @@
 
 use papergrid::{records::Records, AnsiColor, Borders};
 
-use crate::{raw_style::RawStyle, symbol::Symbol, Table, TableOption};
+use crate::{
+    style::{RawStyle, Symbol},
+    Table, TableOption,
+};
 
 /// A colored [`StyleConfig`] versions.
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]

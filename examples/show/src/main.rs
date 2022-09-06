@@ -26,7 +26,7 @@ use tabled::{
     border_colored::BorderColored,
     formatting::TrimStrategy,
     object::{Columns, Object, Rows},
-    symbol::Symbol,
+    style::Symbol,
     Alignment, BorderText, Disable, Highlight, Margin, Modify, Panel, Style, Table, Tabled, Width,
 };
 

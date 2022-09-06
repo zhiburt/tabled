@@ -117,7 +117,7 @@ impl RawStyle {
     ///
     /// ```
     /// use std::collections::HashMap;
-    /// use tabled::{style::{Style, Line}, raw_style::RawStyle, TableIteratorExt};
+    /// use tabled::{style::{Style, Line, RawStyle}, TableIteratorExt};
     ///
     /// let mut style = RawStyle::from(Style::re_structured_text());
     ///
@@ -155,7 +155,7 @@ impl RawStyle {
     ///
     /// ```
     /// use std::collections::HashMap;
-    /// use tabled::{style::{Style, Line}, raw_style::RawStyle, TableIteratorExt};
+    /// use tabled::{style::{Style, Line, RawStyle}, TableIteratorExt};
     ///
     /// let mut style = RawStyle::from(Style::re_structured_text());
     ///
@@ -190,8 +190,8 @@ impl RawStyle {
     /// Returns a [`RawStyle`] version which can set colors.
     #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
     #[cfg(feature = "color")]
-    pub fn colored(self) -> crate::raw_style_colored::RawStyleColored {
-        crate::raw_style_colored::RawStyleColored::from(self)
+    pub fn colored(self) -> crate::style::RawStyleColored {
+        crate::style::RawStyleColored::from(self)
     }
 }
 

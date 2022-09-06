@@ -28,10 +28,10 @@ use crate::{
 /// ## Example
 ///
 /// ```
-/// use tabled::{object::Segment, truncate::Truncate, Modify, Table};
+/// use tabled::{object::Segment, Width, Modify, Table};
 ///
 /// let table = Table::new(&["Hello World!"])
-///     .with(Modify::new(Segment::all()).with(Truncate::new(3)));
+///     .with(Modify::new(Segment::all()).with(Width::truncate(3)));
 /// ```
 ///
 /// [`Padding`]: crate::Padding

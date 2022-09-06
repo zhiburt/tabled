@@ -90,15 +90,11 @@
 //! [`BorderText`]: crate::border_text::BorderText
 //! [`RawStyle`]: crate::raw_style::RawStyle
 
-// todo: Rename TableOption -> TableChange; CellOption -> CellChange
-
 use std::marker::PhantomData;
 
 use papergrid::{records::Records, Borders};
 
-use crate::border::Border;
-use crate::span_border_correction::StyleCorrectSpan;
-use crate::table::{Table, TableOption};
+use crate::{style::StyleCorrectSpan, Border, Table, TableOption};
 
 /// Style is represents a theme of a [`Table`].
 ///

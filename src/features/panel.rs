@@ -42,7 +42,7 @@ use papergrid::{
     Position,
 };
 
-use crate::{wrap::wrap_text, Table, TableOption};
+use crate::{width::wrap_text, Table, TableOption};
 
 /// Panel allows to add a Row which has 1 continues Cell to a [`Table`].
 ///

@@ -2,13 +2,13 @@
 
 use papergrid::{records::Records, AnsiColor, Border, Entity};
 
-use crate::{symbol::Symbol, CellOption, Table};
+use crate::{style::Symbol, CellOption, Table};
 
 /// BorderColored represents a colored border of a Cell.
 ///
 /// ```rust,no_run
 /// # use owo_colors::OwoColorize;
-/// # use tabled::{Style, symbol::Symbol, border_colored::BorderColored, object::Rows, Table, Modify};
+/// # use tabled::{style::{Symbol, Style}, border_colored::BorderColored, object::Rows, Table, Modify};
 /// #
 /// # let data: Vec<&'static str> = Vec::new();
 /// #

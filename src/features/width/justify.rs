@@ -3,9 +3,11 @@
 use papergrid::records::{Records, RecordsMut};
 
 use crate::{
-    width::{get_width_value, Max, Min, WidthValue},
+    width::{Max, Min, WidthValue},
     CellOption, Table, TableOption, Width,
 };
+
+use super::get_width_value;
 
 /// Justify sets all columns widths to the set value.
 ///
@@ -15,7 +17,7 @@ use crate::{
 /// ## Examples
 ///
 /// ```
-/// use tabled::{justify::Justify, Style, Modify, object::Segment, Padding, Table};
+/// use tabled::{width::Justify, Style, Modify, object::Segment, Padding, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -28,7 +30,7 @@ use crate::{
 /// [`Max`] usage to justify by a max column width.
 ///
 /// ```
-/// use tabled::{justify::Justify, Style, Table};
+/// use tabled::{width::Justify, Style, Table};
 ///
 /// let data = ["Hello", "World", "!"];
 ///

@@ -1,7 +1,6 @@
 //! This module contains a colored representation of a char which we call [`Symbol`].
 
-use crate::color::Color;
-use crate::papergrid::util::string_width;
+use crate::{color::Color, papergrid::util::string_width};
 
 /// Symbol represents a character of a border.
 ///
@@ -9,7 +8,7 @@ use crate::papergrid::util::string_width;
 ///
 /// ```rust,no_run
 /// # use owo_colors::OwoColorize;
-/// # use tabled::{symbol::Symbol, border_colored::BorderColored, object::Rows, TableIteratorExt, Modify};
+/// # use tabled::{style::Symbol, border_colored::BorderColored, object::Rows, TableIteratorExt, Modify};
 /// #
 /// # let data: Vec<&'static str> = Vec::new();
 /// #
