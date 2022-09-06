@@ -12,7 +12,7 @@ fn main() {
         .with(
             Style::modern()
                 .off_horizontal()
-                .lines([HorizontalLine::new(1, Style::modern().get_horizontal())]),
+                .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]),
         )
         .with(BorderText::first(" Numbers "))
         .with(BorderText::new(1, " More numbers "))

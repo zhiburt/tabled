@@ -2,7 +2,9 @@
 //! `cargo run --example custom_style`
 
 use tabled::{
-    object::Segment, style::HorizontalLine, Alignment, ModifyObject, Style, Table, Tabled,
+    object::Segment,
+    style::{HorizontalLine, VerticalLine},
+    Alignment, ModifyObject, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -32,11 +34,10 @@ fn main() {
     ];
 
     let theme = Style::modern()
-        .left_intersection('│')
-        .right_intersection('│')
         .off_horizontal()
-        .lines([HorizontalLine::new(1, Style::modern().get_horizontal())])
-        .off_vertical();
+        .off_vertical()
+        .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(None)])
+        .verticals([VerticalLine::new(1, Style::modern().get_vertical())]);
 
     let table = Table::new(&data)
         .with(theme)
