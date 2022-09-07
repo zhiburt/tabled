@@ -1,5 +1,7 @@
 extern crate proc_macro;
 
+mod attributes;
+mod casing_style;
 mod error;
 mod parse;
 
@@ -8,10 +10,11 @@ use proc_macro_error::proc_macro_error;
 use quote::{quote, ToTokens, TokenStreamExt};
 use std::{collections::HashMap, str};
 use syn::{
-    parse_macro_input, token, Attribute, Data, DataEnum, DataStruct, DeriveInput, Field, Fields,
-    Ident, Index, LitInt, Type, Variant,
+    parse_macro_input, token, Data, DataEnum, DataStruct, DeriveInput, Field, Fields, Ident, Index,
+    Type, Variant,
 };
 
+use attributes::{Attributes, ObjectAttributes};
 use error::Error;
 
 #[proc_macro_derive(Tabled, attributes(tabled))]
@@ -512,154 +515,8 @@ fn field_header_name(f: &Field, attr: &Attributes, index: usize) -> String {
     }
 }
 
-#[derive(Debug, Default)]
-struct Attributes {
-    is_ignored: bool,
-    inline: bool,
-    inline_prefix: Option<String>,
-    rename: Option<String>,
-    rename_all: Option<CasingStyle>,
-    display_with: Option<String>,
-    display_with_use_self: bool,
-    order: Option<usize>,
-}
-
-impl Attributes {
-    fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
-        let mut attributes = Self::default();
-        attributes.fill_attributes(attrs)?;
-
-        Ok(attributes)
-    }
-
-    fn fill_attributes(&mut self, attrs: &[Attribute]) -> Result<(), Error> {
-        for attrs in parse::parse_attributes(attrs) {
-            let attrs = attrs?;
-            for attr in attrs {
-                self.insert_attribute(attr)?;
-            }
-        }
-
-        Ok(())
-    }
-
-    fn insert_attribute(&mut self, attr: parse::TabledAttr) -> Result<(), Error> {
-        match attr.kind {
-            parse::TabledAttrKind::Skip(b) => {
-                if b.value {
-                    self.is_ignored = true;
-                }
-            }
-            parse::TabledAttrKind::Inline(b, prefix) => {
-                if b.value {
-                    self.inline = true;
-                }
-
-                if let Some(prefix) = prefix {
-                    self.inline_prefix = Some(prefix.value());
-                }
-            }
-            parse::TabledAttrKind::Rename(value) => self.rename = Some(value.value()),
-            parse::TabledAttrKind::RenameAll(lit) => {
-                self.rename_all = Some(CasingStyle::from_lit(&lit)?);
-            }
-            parse::TabledAttrKind::DisplayWith(path, use_self) => {
-                self.display_with = Some(path.value());
-                self.display_with_use_self = use_self;
-            }
-            parse::TabledAttrKind::Order(value) => self.order = Some(lit_int_to_usize(&value)?),
-        }
-
-        Ok(())
-    }
-
-    fn is_ignored(&self) -> bool {
-        self.is_ignored
-    }
-}
-
-fn lit_int_to_usize(value: &LitInt) -> Result<usize, Error> {
-    value.base10_parse::<usize>().map_err(|e| {
-        Error::new(
-            format!("Failed to parse {:?} as usize; {}", value.to_string(), e),
-            value.span(),
-            None,
-        )
-    })
-}
-
-struct ObjectAttributes {
-    rename_all: Option<CasingStyle>,
-}
-
-impl ObjectAttributes {
-    fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
-        let attrs = Attributes::parse(attrs)?;
-        Ok(Self {
-            rename_all: attrs.rename_all,
-        })
-    }
-}
-
 fn merge_attributes(attr: &mut Attributes, global_attr: &ObjectAttributes) {
     if attr.rename_all.is_none() {
         attr.rename_all = global_attr.rename_all;
-    }
-}
-
-/// Defines the casing for the attributes long representation.
-#[derive(Copy, Clone, Debug, PartialEq)]
-enum CasingStyle {
-    /// Indicate word boundaries with uppercase letter, excluding the first word.
-    Camel,
-    /// Keep all letters lowercase and indicate word boundaries with hyphens.
-    Kebab,
-    /// Indicate word boundaries with uppercase letter, including the first word.
-    Pascal,
-    /// Keep all letters uppercase and indicate word boundaries with underscores.
-    ScreamingSnake,
-    /// Keep all letters lowercase and indicate word boundaries with underscores.
-    Snake,
-    /// Keep all letters lowercase and remove word boundaries.
-    Lower,
-    /// Keep all letters uppercase and remove word boundaries.
-    Upper,
-    /// Use the original attribute name defined in the code.
-    Verbatim,
-}
-
-impl CasingStyle {
-    fn from_lit(name: &syn::LitStr) -> Result<Self, Error> {
-        use self::CasingStyle::*;
-        use heck::ToUpperCamelCase;
-
-        let normalized = name.value().to_upper_camel_case().to_lowercase();
-
-        match normalized.as_ref() {
-            "camel" | "camelcase" => Ok(Camel),
-            "kebab" | "kebabcase" => Ok(Kebab),
-            "pascal" | "pascalcase" => Ok(Pascal),
-            "screamingsnake" | "screamingsnakecase" => Ok(ScreamingSnake),
-            "snake" | "snakecase" => Ok(Snake),
-            "lower" | "lowercase" => Ok(Lower),
-            "upper" | "uppercase" => Ok(Upper),
-            "verbatim" | "verbatimcase" => Ok(Verbatim),
-            _ => Err(Error::new(format!("unsupported casing: `{:?}`", name.value()), name.span(), Some("supperted values are ['camelCase', 'kebab-case', 'PascalCase', 'SCREAMING_SNAKE_CASE', 'snake_case', 'lowercase', 'UPPERCASE', 'verbatim']".to_owned())))
-        }
-    }
-
-    fn cast(self, s: String) -> String {
-        use CasingStyle::*;
-
-        match self {
-            Pascal => heck::ToUpperCamelCase::to_upper_camel_case(s.as_str()),
-            Camel => heck::ToLowerCamelCase::to_lower_camel_case(s.as_str()),
-            Kebab => heck::ToKebabCase::to_kebab_case(s.as_str()),
-            Snake => heck::ToSnakeCase::to_snake_case(s.as_str()),
-            ScreamingSnake => heck::ToShoutySnakeCase::to_shouty_snake_case(s.as_str()),
-            Lower => heck::ToSnakeCase::to_snake_case(s.as_str()).replace('_', ""),
-            Upper => heck::ToShoutySnakeCase::to_shouty_snake_case(s.as_str()).replace('_', ""),
-            Verbatim => s,
-        }
     }
 }
