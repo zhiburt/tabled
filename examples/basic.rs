@@ -1,6 +1,8 @@
 //! The example can be run by this command
 //! `cargo run --example basic`
 
+use std::iter::FromIterator;
+
 use tabled::{object::Rows, Alignment, ModifyObject, Style, Table, Tabled};
 
 #[derive(Tabled)]
@@ -33,9 +35,9 @@ fn main() {
         },
     ];
 
-    let table = Table::new(&data)
+    let table = Table::from_iter(&data)
         .with(Style::markdown())
-        .with(Rows::new(1..).modify().with(Alignment::center()));
+        .with(Rows::first().modify().with(Alignment::center()));
 
     println!("{}", table);
 }

@@ -38,11 +38,11 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
         impl #impl_generics Tabled for #name #ty_generics #where_clause {
             const LENGTH: usize = #length;
 
-            fn fields(&self) -> Vec<String> {
+            fn fields(&self) -> Vec<std::borrow::Cow<'_, str>> {
                 #fields
             }
 
-            fn headers() -> Vec<String> {
+            fn headers() -> Vec<std::borrow::Cow<'static, str>> {
                 #headers
             }
         }
@@ -253,9 +253,10 @@ fn field_headers(
 
     let header_name = field_header_name(field, attributes, index);
     if prefix.is_empty() {
-        quote!(vec![String::from(#header_name)])
+        quote!(vec![::std::borrow::Cow::Borrowed(#header_name)])
     } else {
-        quote!(vec![format!("{}{}", #prefix, #header_name)])
+        let name = format!("{}{}", prefix, header_name);
+        quote!(vec![::std::borrow::Cow::Borrowed(#name)])
     }
 }
 
@@ -306,9 +307,9 @@ fn info_from_variant(
     let value = "+";
 
     // we need exactly string because of it must be inlined as string
-    let headers = quote! {vec![#variant_name.to_string()]};
+    let headers = quote! { vec![::std::borrow::Cow::Borrowed(#variant_name)] };
     // we need exactly string because of it must be inlined as string
-    let values = quote! {vec![#value.to_string()]};
+    let values = quote! { vec![::std::borrow::Cow::Borrowed(#value)] };
 
     Ok(Impl { headers, values })
 }
@@ -324,7 +325,10 @@ fn get_type_headers(field_type: &Type, inline_prefix: &str, prefix: &str) -> Tok
     } else {
         quote! {
             <#field_type as Tabled>::headers().into_iter()
-                .map(|header| format!("{}{}{}", #prefix, #inline_prefix, header))
+                .map(|header| {
+                    let header = format!("{}{}{}", #prefix, #inline_prefix, header);
+                    ::std::borrow::Cow::Owned(header)
+                })
                 .collect::<Vec<_>>()
         }
     }
@@ -341,10 +345,10 @@ fn get_field_fields(field: &TokenStream, attr: &Attributes) -> TokenStream {
             false => use_function_for(field, func),
         };
 
-        return quote!(vec![#func_call]);
+        return quote!(vec![::std::borrow::Cow::from(#func_call)]);
     }
 
-    quote!(vec![format!("{}", #field)])
+    quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
 }
 
 fn use_function_for(field: &TokenStream, function: &str) -> TokenStream {
@@ -408,7 +412,7 @@ fn values_for_enum(
         let branch = quote! {
             Self::#branch => {
                 let offset = offsets[#i];
-                let fields: Vec<String> = #fields;
+                let fields: Vec<::std::borrow::Cow<'_, str>> = #fields;
 
                 for (i, field) in fields.into_iter().enumerate() {
                     out_vec[i+offset] = field;
@@ -433,7 +437,7 @@ fn values_for_enum(
         }
 
         let size = <Self as Tabled>::LENGTH;
-        let mut out_vec: Vec<String> = vec![String::new(); size];
+        let mut out_vec = vec![::std::borrow::Cow::Borrowed(""); size];
 
         #[allow(unused_variables)]
         match &self {
@@ -508,7 +512,6 @@ fn field_header_name(f: &Field, attr: &Attributes, index: usize) -> String {
     }
 }
 
-// todo: make String a &static str
 #[derive(Debug, Default)]
 struct Attributes {
     is_ignored: bool,

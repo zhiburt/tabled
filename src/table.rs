@@ -82,11 +82,11 @@ pub struct Table<R = VecRecords<CellInfo<'static>>> {
     widths: Option<Vec<usize>>,
 }
 
-impl<'a> Table<VecRecords<CellInfo<'static>>> {
+impl Table<VecRecords<CellInfo<'static>>> {
     /// New creates a Table instance.
     pub fn new<I, T>(iter: I) -> Self
     where
-        I: IntoIterator<Item = T> + 'a,
+        I: IntoIterator<Item = T>,
         T: Tabled,
     {
         let ctrl = CfgWidthFunction::new(4);
@@ -100,7 +100,7 @@ impl<'a> Table<VecRecords<CellInfo<'static>>> {
         for row in iter.into_iter() {
             let mut list = vec![CellInfo::default(); T::LENGTH];
             for (text, cell) in row.fields().into_iter().zip(list.iter_mut()) {
-                CellMut::set(cell, text, &ctrl);
+                CellMut::set(cell, text.into_owned(), &ctrl);
             }
 
             records.push(list);
@@ -108,7 +108,9 @@ impl<'a> Table<VecRecords<CellInfo<'static>>> {
 
         Builder::custom(VecRecords::from(records)).build()
     }
+}
 
+impl Table<()> {
     /// Creates a builder from a data set given.
     ///
     /// # Example
@@ -164,7 +166,7 @@ impl<'a> Table<VecRecords<CellInfo<'static>>> {
         for row in iter {
             let mut list = vec![CellInfo::default(); T::LENGTH];
             for (text, cell) in row.fields().into_iter().zip(list.iter_mut()) {
-                CellMut::set(cell, text, &ctrl);
+                CellMut::set(cell, text.into_owned(), &ctrl);
             }
 
             records.push(list);
@@ -209,6 +211,14 @@ impl<R> Table<R> {
         option.change(&mut self);
         self
     }
+
+    pub(crate) fn cache_width(&mut self, widths: Vec<usize>) {
+        self.widths = Some(widths);
+    }
+
+    pub(crate) fn destroy_width_cache(&mut self) {
+        self.widths = None;
+    }
 }
 
 impl<R> Table<R>
@@ -240,19 +250,6 @@ where
     }
 }
 
-impl<R> From<R> for Table<R>
-where
-    R: Records,
-{
-    fn from(records: R) -> Self {
-        Self {
-            records,
-            cfg: GridConfig::default(),
-            widths: None,
-        }
-    }
-}
-
 impl<R> Table<R>
 where
     R: Records + RecordsMut<String>,
@@ -269,13 +266,45 @@ where
     }
 }
 
-impl<R> Table<R> {
-    pub(crate) fn cache_width(&mut self, widths: Vec<usize>) {
-        self.widths = Some(widths);
+impl<R> From<R> for Table<R>
+where
+    R: Records,
+{
+    fn from(records: R) -> Self {
+        Self {
+            records,
+            cfg: GridConfig::default(),
+            widths: None,
+        }
     }
+}
 
-    pub(crate) fn destroy_width_cache(&mut self) {
-        self.widths = None;
+impl<'a, T> FromIterator<&'a T> for Table<VecRecords<CellInfo<'a>>>
+where
+    T: Tabled + 'a,
+{
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = &'a T>,
+    {
+        let ctrl = CfgWidthFunction::new(4);
+
+        let mut header = vec![CellInfo::default(); T::LENGTH];
+        for (text, cell) in T::headers().into_iter().zip(header.iter_mut()) {
+            CellMut::set(cell, text, &ctrl);
+        }
+
+        let mut records = vec![header];
+        for row in iter.into_iter() {
+            let mut list = vec![CellInfo::default(); T::LENGTH];
+            for (text, cell) in row.fields().into_iter().zip(list.iter_mut()) {
+                CellMut::set(cell, text.into_owned(), &ctrl);
+            }
+
+            records.push(list);
+        }
+
+        Builder::custom(VecRecords::from(records)).build()
     }
 }
 
@@ -305,18 +334,6 @@ where
     }
 }
 
-impl<D> FromIterator<D> for Table<VecRecords<CellInfo<'static>>>
-where
-    D: Tabled,
-{
-    fn from_iter<T>(iter: T) -> Self
-    where
-        T: IntoIterator<Item = D>,
-    {
-        Self::builder(iter).build()
-    }
-}
-
 /// A trait for [`IntoIterator`] whose Item type is bound to [`Tabled`].
 /// Any type implements [`IntoIterator`] can call this function directly
 ///
@@ -329,17 +346,22 @@ where
 ///
 /// println!("{}", table);
 /// ```
-pub trait TableIteratorExt<'a> {
+pub trait TableIteratorExt {
+    /// A underline [`Records`],
+    type Records;
+
     /// Returns a [`Table`] instance from a given type
-    fn table(self) -> Table<VecRecords<CellInfo<'a>>>;
+    fn table(self) -> Table<Self::Records>;
 }
 
-impl<'a, T, U> TableIteratorExt<'a> for U
+impl<I, T> TableIteratorExt for I
 where
+    I: IntoIterator<Item = T>,
     T: Tabled,
-    U: IntoIterator<Item = T> + 'a,
 {
-    fn table(self) -> Table<VecRecords<CellInfo<'a>>> {
+    type Records = VecRecords<CellInfo<'static>>;
+
+    fn table(self) -> Table<Self::Records> {
         Table::new(self)
     }
 }
