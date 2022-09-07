@@ -138,12 +138,10 @@ impl<L> Disable<L, TargetRow> {
 
 /// A marker struct for [`Disable`].
 #[derive(Debug)]
-#[doc(hidden)]
 pub struct TargetRow;
 
 /// A marker struct for [`Disable`].
 #[derive(Debug)]
-#[doc(hidden)]
 pub struct TargetColumn;
 
 impl<L, D> TableOption<D> for Disable<L, TargetColumn>

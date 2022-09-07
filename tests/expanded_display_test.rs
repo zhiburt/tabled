@@ -21,12 +21,12 @@ macro_rules! build_tabled_type {
         impl Tabled for $name {
             const LENGTH: usize = $length;
 
-            fn fields(&self) -> Vec<String> {
-                $fields.iter().map(|s| s.to_string()).collect()
+            fn fields(&self) -> Vec<std::borrow::Cow<'_, str>> {
+                $fields.iter().map(|s| s.to_string().into()).collect()
             }
 
-            fn headers() -> Vec<String> {
-                $headers.iter().map(|s| s.to_string()).collect()
+            fn headers() -> Vec<std::borrow::Cow<'static, str>> {
+                $headers.iter().map(|s| s.to_string().into()).collect()
             }
         }
     };
