@@ -240,6 +240,7 @@
 mod features;
 mod modify;
 mod table;
+mod table_iterator_ext;
 mod tabled;
 
 pub mod builder;
@@ -273,7 +274,8 @@ pub use crate::{
         width::{self, Width},
     },
     modify::{CellSettingsList, Modify, ModifyList, ModifyObject},
-    table::{CellOption, Table, TableIteratorExt, TableOption},
+    table::{CellOption, Table, TableOption},
+    table_iterator_ext::TableIteratorExt,
     tabled::Tabled,
 };
 

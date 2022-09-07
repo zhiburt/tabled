@@ -266,6 +266,32 @@ where
     }
 }
 
+impl<R> fmt::Display for Table<R>
+where
+    R: Records,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut height = HeightEstimator::default();
+        height.estimate(&self.records, &self.cfg);
+
+        // check if we have cached widths values.
+        let width = {
+            match &self.widths {
+                Some(widths) => WidthCtrl::Cached(widths),
+                None => {
+                    let mut w = WidthEstimator::default();
+                    w.estimate(&self.records, &self.cfg);
+                    WidthCtrl::Ctrl(w)
+                }
+            }
+        };
+
+        let grid = Grid::new(&self.records, &self.cfg, &width, &height);
+
+        write!(f, "{}", grid)
+    }
+}
+
 impl<R> From<R> for Table<R>
 where
     R: Records,
@@ -298,71 +324,13 @@ where
         for row in iter.into_iter() {
             let mut list = vec![CellInfo::default(); T::LENGTH];
             for (text, cell) in row.fields().into_iter().zip(list.iter_mut()) {
-                CellMut::set(cell, text.into_owned(), &ctrl);
+                CellMut::set(cell, text, &ctrl);
             }
 
             records.push(list);
         }
 
         Builder::custom(VecRecords::from(records)).build()
-    }
-}
-
-impl<R> fmt::Display for Table<R>
-where
-    R: Records,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut height = HeightEstimator::default();
-        height.estimate(&self.records, &self.cfg);
-
-        // check if we have cached widths values.
-        let width = {
-            match &self.widths {
-                Some(widths) => WidthCtrl::Cached(widths),
-                None => {
-                    let mut w = WidthEstimator::default();
-                    w.estimate(&self.records, &self.cfg);
-                    WidthCtrl::Ctrl(w)
-                }
-            }
-        };
-
-        let grid = Grid::new(&self.records, &self.cfg, &width, &height);
-
-        write!(f, "{}", grid)
-    }
-}
-
-/// A trait for [`IntoIterator`] whose Item type is bound to [`Tabled`].
-/// Any type implements [`IntoIterator`] can call this function directly
-///
-/// ```rust
-/// use tabled::{TableIteratorExt, Style};
-///
-/// let strings: &[&str] = &["Hello", "World"];
-///
-/// let table = strings.table().with(Style::psql());
-///
-/// println!("{}", table);
-/// ```
-pub trait TableIteratorExt {
-    /// A underline [`Records`],
-    type Records;
-
-    /// Returns a [`Table`] instance from a given type
-    fn table(self) -> Table<Self::Records>;
-}
-
-impl<I, T> TableIteratorExt for I
-where
-    I: IntoIterator<Item = T>,
-    T: Tabled,
-{
-    type Records = VecRecords<CellInfo<'static>>;
-
-    fn table(self) -> Table<Self::Records> {
-        Table::new(self)
     }
 }
 
