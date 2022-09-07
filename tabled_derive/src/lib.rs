@@ -38,11 +38,11 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
         impl #impl_generics Tabled for #name #ty_generics #where_clause {
             const LENGTH: usize = #length;
 
-            fn fields(&self) -> Vec<std::borrow::Cow<'_, str>> {
+            fn fields(&self) -> Vec<::std::borrow::Cow<'_, str>> {
                 #fields
             }
 
-            fn headers() -> Vec<std::borrow::Cow<'static, str>> {
+            fn headers() -> Vec<::std::borrow::Cow<'static, str>> {
                 #headers
             }
         }
