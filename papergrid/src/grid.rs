@@ -68,122 +68,514 @@ where
     H: Estimate<R>,
     R: Records,
 {
-    // todo:
-    // Spans requires a few additional `if` compared to the flow without it.
-    // It also makes the logic a lot more complex.
-    //
-    // We could create 2 different print_grid functions to not pay the cost of the ifs in case of implementation with spans.
-
-    let shape = (records.count_rows(), records.count_columns());
-
-    if cfg.get_margin().top.size > 0 {
-        let total_width = total_width(cfg, records, width);
-        print_margin_top(f, cfg, total_width)?;
-        f.write_char('\n')?;
+    // spanned version is a bit more complex and 'supposedly' slower,
+    // because spans are considered to be not a general case we are having 2 versions
+    if cfg.has_column_spans() || cfg.has_row_spans() {
+        print_spanned::print_grid(f, cfg, records, width, height)
+    } else {
+        print_general::print_grid(f, cfg, records, width, height)
     }
+}
 
-    let mut prev_empty_horizontal = false;
-    for row in 0..records.count_rows() {
-        let count_lines = height.get(row).unwrap();
+mod print_general {
+    use super::*;
 
-        if has_horizontal(cfg, records, row) {
-            if prev_empty_horizontal {
-                f.write_char('\n')?;
-            }
-
-            print_margin_left(f, cfg)?;
-            print_split_line(f, cfg, records, width, height, row)?;
-            print_margin_right(f, cfg)?;
-
-            if count_lines > 0 {
-                f.write_char('\n')?;
-                prev_empty_horizontal = false;
-            } else {
-                prev_empty_horizontal = true;
-            }
-        } else if count_lines > 0 && prev_empty_horizontal {
+    pub(super) fn print_grid<R, W, H>(
+        f: &mut fmt::Formatter<'_>,
+        cfg: &GridConfig,
+        records: &R,
+        width: &W,
+        height: &H,
+    ) -> fmt::Result
+    where
+        W: Estimate<R>,
+        H: Estimate<R>,
+        R: Records,
+    {
+        if cfg.get_margin().top.size > 0 {
+            let total_width = total_width(cfg, records, width);
+            print_margin_top(f, cfg, total_width)?;
             f.write_char('\n')?;
-            prev_empty_horizontal = false;
         }
 
-        for i in 0..count_lines {
-            print_margin_left(f, cfg)?;
+        let mut prev_empty_horizontal = false;
+        for row in 0..records.count_rows() {
+            let count_lines = height.get(row).unwrap();
 
-            for col in 0..records.count_columns() {
-                if !cfg.is_cell_covered_by_both_spans((row, col), shape) {
-                    if cfg.is_cell_covered_by_row_span((row, col), shape) {
-                        print_vertical_char(f, cfg, records, (row, col))?;
+            if has_horizontal(cfg, records, row) {
+                if prev_empty_horizontal {
+                    f.write_char('\n')?;
+                }
 
-                        // means it's part of other a spanned cell
-                        // so. we just need to use line from other cell.
-                        let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
+                print_margin_left(f, cfg)?;
+                print_split_line(f, cfg, records, width, row)?;
+                print_margin_right(f, cfg)?;
 
-                        // considering that the content will be printed instead horizontal lines so we can skip some lines.
-                        let mut skip_lines = (original_row..row)
-                            .map(|i| height.get(i).unwrap())
-                            .sum::<usize>();
+                if count_lines > 0 {
+                    f.write_char('\n')?;
+                    prev_empty_horizontal = false;
+                } else {
+                    prev_empty_horizontal = true;
+                }
+            } else if count_lines > 0 && prev_empty_horizontal {
+                f.write_char('\n')?;
+                prev_empty_horizontal = false;
+            }
 
-                        skip_lines += (original_row + 1..=row)
-                            .map(|row| has_horizontal(cfg, records, row) as usize)
-                            .sum::<usize>();
+            for i in 0..count_lines {
+                print_margin_left(f, cfg)?;
 
-                        let line = i + skip_lines;
-                        print_cell_line(f, cfg, records, width, height, (original_row, col), line)?;
-                    } else if !cfg.is_cell_covered_by_column_span((row, col), shape) {
-                        print_vertical_char(f, cfg, records, (row, col))?;
-                        print_cell_line(f, cfg, records, width, height, (row, col), i)?;
+                for col in 0..records.count_columns() {
+                    print_vertical_char(f, cfg, records, (row, col))?;
+
+                    let width = width.get(col).unwrap();
+                    let height = height.get(row).unwrap();
+                    print_cell_line(f, cfg, records, width, height, (row, col), i)?;
+
+                    let is_last_column = col + 1 == records.count_columns();
+                    if is_last_column {
+                        print_vertical_char(f, cfg, records, (row, col + 1))?;
                     }
                 }
 
-                let is_last_column = col + 1 == records.count_columns();
-                if is_last_column {
-                    print_vertical_char(f, cfg, records, (row, col + 1))?;
+                print_margin_right(f, cfg)?;
+
+                let is_last_line = i + 1 == count_lines;
+                let is_last_row = row + 1 == records.count_rows();
+                if !(is_last_line && is_last_row) {
+                    f.write_char('\n')?;
+                }
+            }
+        }
+
+        if has_horizontal(cfg, records, records.count_rows()) {
+            f.write_char('\n')?;
+            print_margin_left(f, cfg)?;
+            print_split_line(f, cfg, records, width, records.count_rows())?;
+            print_margin_right(f, cfg)?;
+        }
+
+        if cfg.get_margin().bottom.size > 0 {
+            f.write_char('\n')?;
+            let total_width = total_width(cfg, records, width);
+            print_margin_bottom(f, cfg, total_width)?;
+        }
+
+        Ok(())
+    }
+
+    fn print_split_line<R, W>(
+        f: &mut fmt::Formatter<'_>,
+        cfg: &GridConfig,
+        records: &R,
+        width_ctrl: &W,
+        row: usize,
+    ) -> fmt::Result
+    where
+        W: Estimate<R>,
+        R: Records,
+    {
+        let shape = (records.count_rows(), records.count_columns());
+
+        let mut override_text = cfg
+            .get_split_line_text(row)
+            .and_then(|text| get_lines(text).next())
+            .unwrap_or_default()
+            .into_owned();
+
+        #[cfg(feature = "color")]
+        let mut used_color = None;
+
+        for col in 0..records.count_columns() {
+            if col == 0 {
+                let left = cfg.get_intersection((row, col), shape);
+                if let Some(c) = left {
+                    if !override_text.is_empty() {
+                        let (c, rest) = spplit_str_at(&override_text, 1);
+                        f.write_str(&c)?;
+                        override_text = rest.into_owned();
+                        if string_width(&override_text) == 0 {
+                            override_text = String::new()
+                        }
+                    } else {
+                        #[cfg(feature = "color")]
+                        {
+                            let clr = cfg.get_intersection_color((row, col), shape);
+                            if let Some(clr) = clr {
+                                clr.fmt_prefix(f)?;
+                                used_color = Some(clr);
+                            }
+                        }
+
+                        f.write_char(*c)?;
+                    }
                 }
             }
 
-            print_margin_right(f, cfg)?;
+            let mut width = width_ctrl.get(col).unwrap();
+            if !override_text.is_empty() {
+                let width_ctrl = CfgWidthFunction::from_cfg(cfg);
+                let text_width = width_ctrl.width(&override_text);
+                let print_width = cmp::min(text_width, width);
+                let (c, rest) = spplit_str_at(&override_text, print_width);
+                f.write_str(&c)?;
+                override_text = rest.into_owned();
+                if string_width(&override_text) == 0 {
+                    override_text = String::new()
+                }
 
-            let is_last_line = i + 1 == count_lines;
-            let is_last_row = row + 1 == records.count_rows();
-            if !(is_last_line && is_last_row) {
-                f.write_char('\n')?;
+                width -= print_width;
+            }
+
+            // general case
+            let main = get_horizontal(cfg, records, (row, col));
+            match main {
+                Some(c) => {
+                    #[cfg(feature = "color")]
+                    {
+                        prepare_coloring(
+                            f,
+                            get_horizontal_color(cfg, records, (row, col)),
+                            &mut used_color,
+                        )?;
+                    }
+
+                    repeat_char(f, *c, width)?;
+                }
+                None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+            }
+
+            let right = get_intersection(cfg, records, (row, col + 1));
+            if let Some(c) = right {
+                if !override_text.is_empty() {
+                    let (c, rest) = spplit_str_at(&override_text, 1);
+                    f.write_str(&c)?;
+                    override_text = rest.into_owned();
+                    if string_width(&override_text) == 0 {
+                        override_text = String::new()
+                    }
+                } else {
+                    #[cfg(feature = "color")]
+                    {
+                        prepare_coloring(
+                            f,
+                            get_intersection_color(cfg, records, (row, col + 1)),
+                            &mut used_color,
+                        )?;
+                    }
+
+                    f.write_char(*c)?;
+                }
             }
         }
-    }
 
-    if has_horizontal(cfg, records, records.count_rows()) {
-        f.write_char('\n')?;
-        print_margin_left(f, cfg)?;
-        print_split_line(f, cfg, records, width, height, records.count_rows())?;
-        print_margin_right(f, cfg)?;
-    }
+        #[cfg(feature = "color")]
+        if let Some(clr) = used_color.take() {
+            clr.fmt_suffix(f)?;
+        }
 
-    if cfg.get_margin().bottom.size > 0 {
-        f.write_char('\n')?;
-        let total_width = total_width(cfg, records, width);
-        print_margin_bottom(f, cfg, total_width)?;
+        Ok(())
     }
-
-    Ok(())
 }
 
-fn print_cell_line<R, W, H>(
+mod print_spanned {
+    use super::*;
+
+    pub(super) fn print_grid<R, W, H>(
+        f: &mut fmt::Formatter<'_>,
+        cfg: &GridConfig,
+        records: &R,
+        width: &W,
+        height: &H,
+    ) -> fmt::Result
+    where
+        W: Estimate<R>,
+        H: Estimate<R>,
+        R: Records,
+    {
+        let shape = (records.count_rows(), records.count_columns());
+
+        if cfg.get_margin().top.size > 0 {
+            let total_width = total_width(cfg, records, width);
+            print_margin_top(f, cfg, total_width)?;
+            f.write_char('\n')?;
+        }
+
+        let mut prev_empty_horizontal = false;
+        for row in 0..records.count_rows() {
+            let count_lines = height.get(row).unwrap();
+
+            if has_horizontal(cfg, records, row) {
+                if prev_empty_horizontal {
+                    f.write_char('\n')?;
+                }
+
+                print_margin_left(f, cfg)?;
+                print_split_line(f, cfg, records, width, height, row)?;
+                print_margin_right(f, cfg)?;
+
+                if count_lines > 0 {
+                    f.write_char('\n')?;
+                    prev_empty_horizontal = false;
+                } else {
+                    prev_empty_horizontal = true;
+                }
+            } else if count_lines > 0 && prev_empty_horizontal {
+                f.write_char('\n')?;
+                prev_empty_horizontal = false;
+            }
+
+            for i in 0..count_lines {
+                print_margin_left(f, cfg)?;
+
+                for col in 0..records.count_columns() {
+                    if !cfg.is_cell_covered_by_both_spans((row, col), shape) {
+                        if cfg.is_cell_covered_by_row_span((row, col), shape) {
+                            print_vertical_char(f, cfg, records, (row, col))?;
+
+                            // means it's part of other a spanned cell
+                            // so. we just need to use line from other cell.
+                            let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
+
+                            // considering that the content will be printed instead horizontal lines so we can skip some lines.
+                            let mut skip_lines = (original_row..row)
+                                .map(|i| height.get(i).unwrap())
+                                .sum::<usize>();
+
+                            skip_lines += (original_row + 1..=row)
+                                .map(|row| has_horizontal(cfg, records, row) as usize)
+                                .sum::<usize>();
+
+                            let line = i + skip_lines;
+                            print_cell_line(
+                                f,
+                                cfg,
+                                records,
+                                width,
+                                height,
+                                (original_row, col),
+                                line,
+                            )?;
+                        } else if !cfg.is_cell_covered_by_column_span((row, col), shape) {
+                            print_vertical_char(f, cfg, records, (row, col))?;
+                            print_cell_line(f, cfg, records, width, height, (row, col), i)?;
+                        }
+                    }
+
+                    let is_last_column = col + 1 == records.count_columns();
+                    if is_last_column {
+                        print_vertical_char(f, cfg, records, (row, col + 1))?;
+                    }
+                }
+
+                print_margin_right(f, cfg)?;
+
+                let is_last_line = i + 1 == count_lines;
+                let is_last_row = row + 1 == records.count_rows();
+                if !(is_last_line && is_last_row) {
+                    f.write_char('\n')?;
+                }
+            }
+        }
+
+        if has_horizontal(cfg, records, records.count_rows()) {
+            f.write_char('\n')?;
+            print_margin_left(f, cfg)?;
+            print_split_line(f, cfg, records, width, height, records.count_rows())?;
+            print_margin_right(f, cfg)?;
+        }
+
+        if cfg.get_margin().bottom.size > 0 {
+            f.write_char('\n')?;
+            let total_width = total_width(cfg, records, width);
+            print_margin_bottom(f, cfg, total_width)?;
+        }
+
+        Ok(())
+    }
+
+    fn print_split_line<R, W, H>(
+        f: &mut fmt::Formatter<'_>,
+        cfg: &GridConfig,
+        records: &R,
+        width_ctrl: &W,
+        height_ctrl: &H,
+        row: usize,
+    ) -> fmt::Result
+    where
+        W: Estimate<R>,
+        H: Estimate<R>,
+        R: Records,
+    {
+        let shape = (records.count_rows(), records.count_columns());
+
+        let mut override_text = cfg
+            .get_split_line_text(row)
+            .and_then(|text| get_lines(text).next())
+            .unwrap_or_default()
+            .into_owned();
+
+        #[cfg(feature = "color")]
+        let mut used_color = None;
+
+        for col in 0..records.count_columns() {
+            if col == 0 {
+                let left = cfg.get_intersection((row, col), shape);
+                if let Some(c) = left {
+                    if !override_text.is_empty() {
+                        let (c, rest) = spplit_str_at(&override_text, 1);
+                        f.write_str(&c)?;
+                        override_text = rest.into_owned();
+                        if string_width(&override_text) == 0 {
+                            override_text = String::new()
+                        }
+                    } else {
+                        #[cfg(feature = "color")]
+                        {
+                            let clr = cfg.get_intersection_color((row, col), shape);
+                            if let Some(clr) = clr {
+                                clr.fmt_prefix(f)?;
+                                used_color = Some(clr);
+                            }
+                        }
+
+                        f.write_char(*c)?;
+                    }
+                }
+            }
+
+            if cfg.is_cell_covered_by_both_spans((row, col), shape) {
+                continue;
+            }
+
+            let is_spanned_split_line_part = cfg.is_cell_covered_by_row_span((row, col), shape);
+
+            let mut width = width_ctrl.get(col).unwrap();
+            if !override_text.is_empty() && !is_spanned_split_line_part {
+                let width_ctrl = CfgWidthFunction::from_cfg(cfg);
+                let text_width = width_ctrl.width(&override_text);
+                let print_width = cmp::min(text_width, width);
+                let (c, rest) = spplit_str_at(&override_text, print_width);
+                f.write_str(&c)?;
+                override_text = rest.into_owned();
+                if string_width(&override_text) == 0 {
+                    override_text = String::new()
+                }
+
+                width -= print_width;
+            }
+
+            let mut col = col;
+            if is_spanned_split_line_part {
+                // means it's part of other a spanned cell
+                // so. we just need to use line from other cell.
+
+                let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
+
+                // considering that the content will be printed instead horizontal lines so we can skip some lines.
+                let mut skip_lines = (original_row..row)
+                    .map(|i| height_ctrl.get(i).unwrap())
+                    .sum::<usize>();
+
+                // skip horizontal lines
+                if row > 0 {
+                    skip_lines += (original_row..row - 1)
+                        .map(|row| cfg.has_horizontal(row + 1, records.count_rows()) as usize)
+                        .sum::<usize>();
+                }
+
+                let line = skip_lines;
+                let pos = (original_row, col);
+                print_cell_line(f, cfg, records, width_ctrl, height_ctrl, pos, line)?;
+
+                // We need to use a correct right split char.
+                if let Some(span) = cfg.get_column_span((original_row, col), shape) {
+                    col += span - 1;
+                }
+            } else {
+                // general case
+                let main = get_horizontal(cfg, records, (row, col));
+                match main {
+                    Some(c) => {
+                        #[cfg(feature = "color")]
+                        {
+                            prepare_coloring(
+                                f,
+                                get_horizontal_color(cfg, records, (row, col)),
+                                &mut used_color,
+                            )?;
+                        }
+
+                        repeat_char(f, *c, width)?;
+                    }
+                    None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+                }
+            }
+
+            let right = get_intersection(cfg, records, (row, col + 1));
+            if let Some(c) = right {
+                if !override_text.is_empty() {
+                    let (c, rest) = spplit_str_at(&override_text, 1);
+                    f.write_str(&c)?;
+                    override_text = rest.into_owned();
+                    if string_width(&override_text) == 0 {
+                        override_text = String::new()
+                    }
+                } else {
+                    #[cfg(feature = "color")]
+                    {
+                        prepare_coloring(
+                            f,
+                            get_intersection_color(cfg, records, (row, col + 1)),
+                            &mut used_color,
+                        )?;
+                    }
+
+                    f.write_char(*c)?;
+                }
+            }
+        }
+
+        #[cfg(feature = "color")]
+        if let Some(clr) = used_color.take() {
+            clr.fmt_suffix(f)?;
+        }
+
+        Ok(())
+    }
+
+    fn print_cell_line<R, W, H>(
+        f: &mut fmt::Formatter<'_>,
+        cfg: &GridConfig,
+        records: &R,
+        width: &W,
+        height: &H,
+        pos: Position,
+        line: usize,
+    ) -> fmt::Result
+    where
+        R: Records,
+        W: Estimate<R>,
+        H: Estimate<R>,
+    {
+        let width = grid_cell_width(cfg, records, width, pos);
+        let height = grid_cell_height(cfg, records, height, pos);
+        super::print_cell_line(f, cfg, records, width, height, pos, line)
+    }
+}
+
+fn print_cell_line<R>(
     f: &mut fmt::Formatter<'_>,
     cfg: &GridConfig,
     records: &R,
-    width: &W,
-    height: &H,
+    width: usize,
+    height: usize,
     pos: Position,
     line: usize,
 ) -> fmt::Result
 where
     R: Records,
-    W: Estimate<R>,
-    H: Estimate<R>,
 {
-    let width = grid_cell_width(cfg, records, width, pos);
-    let height = grid_cell_height(cfg, records, height, pos);
-
     let mut cell_height = records.count_lines(pos);
     let formatting = *cfg.get_formatting(pos.into());
     if formatting.vertical_trim {
@@ -357,163 +749,6 @@ fn print_text(f: &mut fmt::Formatter<'_>, text: &str, tab_width: usize) -> fmt::
             '\t' => repeat_char(f, ' ', tab_width)?,
             c => f.write_char(c)?,
         }
-    }
-
-    Ok(())
-}
-
-fn print_split_line<R, W, H>(
-    f: &mut fmt::Formatter<'_>,
-    cfg: &GridConfig,
-    records: &R,
-    width_ctrl: &W,
-    height_ctrl: &H,
-    row: usize,
-) -> fmt::Result
-where
-    W: Estimate<R>,
-    H: Estimate<R>,
-    R: Records,
-{
-    let shape = (records.count_rows(), records.count_columns());
-
-    let mut override_text = cfg
-        .get_split_line_text(row)
-        .and_then(|text| get_lines(text).next())
-        .unwrap_or_default()
-        .into_owned();
-
-    #[cfg(feature = "color")]
-    let mut used_color = None;
-
-    for col in 0..records.count_columns() {
-        if col == 0 {
-            let left = cfg.get_intersection((row, col), shape);
-            if let Some(c) = left {
-                if !override_text.is_empty() {
-                    let (c, rest) = spplit_str_at(&override_text, 1);
-                    f.write_str(&c)?;
-                    override_text = rest.into_owned();
-                    if string_width(&override_text) == 0 {
-                        override_text = String::new()
-                    }
-                } else {
-                    #[cfg(feature = "color")]
-                    {
-                        let clr = cfg.get_intersection_color((row, col), shape);
-                        if let Some(clr) = clr {
-                            clr.fmt_prefix(f)?;
-                            used_color = Some(clr);
-                        }
-                    }
-
-                    f.write_char(*c)?;
-                }
-            }
-        }
-
-        if cfg.is_cell_covered_by_both_spans((row, col), shape) {
-            continue;
-        }
-
-        let is_spanned_split_line_part = cfg.is_cell_covered_by_row_span((row, col), shape);
-
-        let mut width = width_ctrl.get(col).unwrap();
-        if !override_text.is_empty() && !is_spanned_split_line_part {
-            let width_ctrl = CfgWidthFunction::from_cfg(cfg);
-            let text_width = width_ctrl.width(&override_text);
-            let print_width = cmp::min(text_width, width);
-            let (c, rest) = spplit_str_at(&override_text, print_width);
-            f.write_str(&c)?;
-            override_text = rest.into_owned();
-            if string_width(&override_text) == 0 {
-                override_text = String::new()
-            }
-
-            width -= print_width;
-        }
-
-        let mut col = col;
-        if is_spanned_split_line_part {
-            // means it's part of other a spanned cell
-            // so. we just need to use line from other cell.
-
-            let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
-
-            // considering that the content will be printed instead horizontal lines so we can skip some lines.
-            let mut skip_lines = (original_row..row)
-                .map(|i| height_ctrl.get(i).unwrap())
-                .sum::<usize>();
-
-            // skip horizontal lines
-            if row > 0 {
-                skip_lines += (original_row..row - 1)
-                    .map(|row| cfg.has_horizontal(row + 1, records.count_rows()) as usize)
-                    .sum::<usize>();
-            }
-
-            let line = skip_lines;
-            print_cell_line(
-                f,
-                cfg,
-                records,
-                width_ctrl,
-                height_ctrl,
-                (original_row, col),
-                line,
-            )?;
-
-            // We need to use a correct right split char.
-            if let Some(span) = cfg.get_column_span((original_row, col), shape) {
-                col += span - 1;
-            }
-        } else {
-            // general case
-            let main = get_horizontal(cfg, records, (row, col));
-            match main {
-                Some(c) => {
-                    #[cfg(feature = "color")]
-                    {
-                        prepare_coloring(
-                            f,
-                            get_horizontal_color(cfg, records, (row, col)),
-                            &mut used_color,
-                        )?;
-                    }
-
-                    repeat_char(f, *c, width)?;
-                }
-                None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
-            }
-        }
-
-        let right = get_intersection(cfg, records, (row, col + 1));
-        if let Some(c) = right {
-            if !override_text.is_empty() {
-                let (c, rest) = spplit_str_at(&override_text, 1);
-                f.write_str(&c)?;
-                override_text = rest.into_owned();
-                if string_width(&override_text) == 0 {
-                    override_text = String::new()
-                }
-            } else {
-                #[cfg(feature = "color")]
-                {
-                    prepare_coloring(
-                        f,
-                        get_intersection_color(cfg, records, (row, col + 1)),
-                        &mut used_color,
-                    )?;
-                }
-
-                f.write_char(*c)?;
-            }
-        }
-    }
-
-    #[cfg(feature = "color")]
-    if let Some(clr) = used_color.take() {
-        clr.fmt_suffix(f)?;
     }
 
     Ok(())
