@@ -24,7 +24,6 @@ use crossterm::{
 
 use tabled::{
     border_colored::BorderColored,
-    formatting::TrimStrategy,
     object::{Columns, Object, Rows},
     style::Symbol,
     Alignment, BorderText, Disable, Highlight, Margin, Modify, Panel, Style, Table, Tabled, Width,
@@ -108,6 +107,20 @@ fn main() {
 }
 
 fn run(movies: &[Movie], debug: bool) {
+    let printer = PrinterCtrl::new();
+
+    if debug {
+        let mut p = printer.start_debug();
+        print_movies(&mut p, movies);
+        p.stop();
+    } else {
+        let mut p = printer.start();
+        print_movies(&mut p, movies);
+        p.stop();
+    };
+}
+
+fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
     #[rustfmt::skip]
     let create_titles_actions: Vec<Action> = vec![
         detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(1..))).with(Style::modern())),
@@ -209,47 +222,24 @@ fn run(movies: &[Movie], debug: bool) {
         detached_action(|t, _| t.with(Width::wrap(115).keep_words())),
         detached_action(|t, _| t.with(Width::wrap(120).keep_words())),
         //
-        detached_action(|t, _| t.with(Width::increase(125)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
-        detached_action(|t, _| t.with(Width::increase(130)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
-        detached_action(|t, _| t.with(Width::increase(135)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
-        detached_action(|t, _| t.with(Width::increase(140)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
-        detached_action(|t, _| t.with(Width::increase(145)).with(Modify::new(Rows::first()).with(TrimStrategy::Horizontal))),
+        detached_action(|t, _| t.with(Width::increase(125))),
+        detached_action(|t, _| t.with(Width::increase(130))),
+        detached_action(|t, _| t.with(Width::increase(135))),
+        detached_action(|t, _| t.with(Width::increase(140))),
+        detached_action(|t, _| t.with(Width::increase(145))),
+        detached_action(|t, _| t.with(Width::increase(150))),
     ];
 
     let mut runner = Runner::new(movies);
-
-    let printer = PrinterCtrl::new();
-
-    // fixme: I didn't figured out how to make it work with Box<dyn Printer>.
-    if debug {
-        let mut p = printer.start_debug();
-
-        p.print(450, runner.build_frames(create_titles_actions));
-        p.print(200, runner.build_frames(add_movies_actions));
-        p.print(450, runner.build_frames(add_summary_actions));
-        p.print(350, runner.build_frames(formatting_actions));
-        p.print(650, runner.build_frames(style_actions));
-        p.print(500, runner.build_frames(border_colors_actions));
-        p.print(600, runner.build_frames(panel_actions));
-        p.print(400, runner.build_frames(colorization_actions));
-        p.print(190, runner.build_frames(resize_actions));
-
-        p.stop();
-    } else {
-        let mut p = printer.start();
-
-        p.print(450, runner.build_frames(create_titles_actions));
-        p.print(200, runner.build_frames(add_movies_actions));
-        p.print(450, runner.build_frames(add_summary_actions));
-        p.print(350, runner.build_frames(formatting_actions));
-        p.print(650, runner.build_frames(style_actions));
-        p.print(500, runner.build_frames(border_colors_actions));
-        p.print(600, runner.build_frames(panel_actions));
-        p.print(400, runner.build_frames(colorization_actions));
-        p.print(190, runner.build_frames(resize_actions));
-
-        p.stop();
-    };
+    p.print(450, runner.build_frames(create_titles_actions));
+    p.print(200, runner.build_frames(add_movies_actions));
+    p.print(450, runner.build_frames(add_summary_actions));
+    p.print(350, runner.build_frames(formatting_actions));
+    p.print(650, runner.build_frames(style_actions));
+    p.print(500, runner.build_frames(border_colors_actions));
+    p.print(600, runner.build_frames(panel_actions));
+    p.print(400, runner.build_frames(colorization_actions));
+    p.print(190, runner.build_frames(resize_actions));
 }
 
 struct Runner<'a> {
@@ -357,10 +347,12 @@ impl Printer for BasicPrinter<'_> {
     {
         let left_padding = |t: Table| t.with(Margin::new(10, 0, 0, 0));
 
-        for frame in frames {
+        for (_i, frame) in frames.into_iter().enumerate() {
             let frame = left_padding(frame);
 
-            queue!(self.stdout, Clear(ClearType::All), cursor::MoveTo(0, 5)).unwrap();
+            queue!(self.stdout, Clear(ClearType::All), cursor::MoveTo(0, 7)).unwrap();
+
+            // writeln!(&mut self.stdout, "i={}", _i).unwrap();
 
             self.stdout.write_all(frame.to_string().as_bytes()).unwrap();
             self.stdout.flush().unwrap();
