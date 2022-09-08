@@ -316,6 +316,27 @@ test_table!(
     "+---+----------+----------+"
 );
 
+#[cfg(feature = "color")]
+test_table!(
+    border_text_colored_1,
+    {
+        use owo_colors::OwoColorize;
+        use tabled::style::Symbol;
+        use tabled::border_colored::BorderColored;
+
+        create_table::<2, 2>()
+            .with(BorderText::new(2, "-Table213123".blue().on_green().to_string()))
+            .with(Modify::new(Rows::single(1)).with(BorderColored::default().bottom(Symbol::ansi("_".red().to_string()).unwrap())))
+    },
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+----------+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "\u{1b}[34;42m-\u{1b}[39m\u{1b}[49m\u{1b}[34;42mTab\u{1b}[39m\u{1b}[49m\u{1b}[34;42ml\u{1b}[39m\u{1b}[49m\u{1b}[34;42me213123\u{1b}[0m\u{1b}[31m___\u{1b}[39m+\u{1b}[31m__________\u{1b}[39m+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
 test_table!(
     empty_style,
     create_table::<3, 3>()

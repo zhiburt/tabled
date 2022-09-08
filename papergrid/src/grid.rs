@@ -228,21 +228,23 @@ mod print_general {
             }
 
             // general case
-            let main = get_horizontal(cfg, records, (row, col));
-            match main {
-                Some(c) => {
-                    #[cfg(feature = "color")]
-                    {
-                        prepare_coloring(
-                            f,
-                            get_horizontal_color(cfg, records, (row, col)),
-                            &mut used_color,
-                        )?;
-                    }
+            if width > 0 {
+                let main = get_horizontal(cfg, records, (row, col));
+                match main {
+                    Some(c) => {
+                        #[cfg(feature = "color")]
+                        {
+                            prepare_coloring(
+                                f,
+                                get_horizontal_color(cfg, records, (row, col)),
+                                &mut used_color,
+                            )?;
+                        }
 
-                    repeat_char(f, *c, width)?;
+                        repeat_char(f, *c, width)?;
+                    }
+                    None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
                 }
-                None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
             }
 
             let right = get_intersection(cfg, records, (row, col + 1));
@@ -492,7 +494,7 @@ mod print_spanned {
                 if let Some(span) = cfg.get_column_span((original_row, col), shape) {
                     col += span - 1;
                 }
-            } else {
+            } else if width > 0 {
                 // general case
                 let main = get_horizontal(cfg, records, (row, col));
                 match main {
