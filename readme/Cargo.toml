@@ -1,0 +1,9 @@
+[package]
+name = "readme"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tabled = { git = "https://github.com/zhiburt/tabled/", rev = "308cdca66ad2dac07f83ab3eba9e289819d5782c", default-features = false, package = "tabled" }
