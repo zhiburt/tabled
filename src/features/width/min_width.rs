@@ -18,7 +18,7 @@ use crate::{
 /// It can be applied to a whole table.
 ///
 /// It does nothing in case if the content's length is bigger then the boundary.
-/// 
+///
 /// Be aware that further changes of the table may cause the width being not set.
 /// For example applying [`Padding`] after applying [`MinWidth`] will make the former have no affect.
 /// (You should use [`Padding`] first).

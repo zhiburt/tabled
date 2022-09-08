@@ -84,7 +84,7 @@ pub struct Table<R = VecRecords<CellInfo<'static>>> {
 
 impl Table<VecRecords<CellInfo<'static>>> {
     /// New creates a Table instance.
-    /// 
+    ///
     /// If you use a reference iterator you'd better use [`FromIterator`] instead.
     /// As it has a different lifetime constraints and make less copies therefore.
     pub fn new<I, T>(iter: I) -> Self
