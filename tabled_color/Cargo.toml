@@ -6,4 +6,4 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tabled = { git = "https://github.com/zhiburt/tabled/", rev = "9a859e313a6f5ac77d64e0ff71ff88353e2de134", features = ["color"] }
+tabled = { git = "https://github.com/zhiburt/tabled/", rev = "308cdca66ad2dac07f83ab3eba9e289819d5782c", features = ["color"], default-features = false, package = "tabled" }

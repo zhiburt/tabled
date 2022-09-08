@@ -5,7 +5,7 @@ macro_rules! bench_lib {
         pub fn $name(c: &mut Criterion) {
             let mut group = c.benchmark_group(stringify!($name));
 
-            for size in [1, 8, 32, 128, 512, 1024] {
+            for size in [1, 8, 32, 128, 512] {
                 let (columns, data) = $data_fn(size);
 
                 $({
@@ -30,11 +30,11 @@ macro_rules! create_bench {
             $name,
             $table,
             { "tabled", benchs::tabled::build },
-            { "tabled_master", benchs::tabled_master::build },
-            // { "tabled_color", benchs::tabled_color::build },
-            // { "cli_table", benchs::cli_table::build  },
-            // { "comfy_table", benchs::comfy_table::build },
-            // { "term_table", benchs::term_table::build  },
+            // { "tabled_master", benchs::tabled_master::build },
+            { "tabled_color", benchs::tabled_color::build },
+            { "cli_table", benchs::cli_table::build  },
+            { "comfy_table", benchs::comfy_table::build },
+            { "term_table", benchs::term_table::build  },
             // { "nu-table", benchs::nu_table::build  },
             // { "prettytable_rs", benchs::prettytable_rs::build },
         );

@@ -9,7 +9,7 @@ homepage = "https://github.com/zhiburt/tabled"
 license = "MIT"
 
 [dependencies]
-tabled = { git = "https://github.com/zhiburt/tabled/", rev = "9a859e313a6f5ac77d64e0ff71ff88353e2de134", default-features = false, package = "tabled" }
+tabled = { git = "https://github.com/zhiburt/tabled/", rev = "308cdca66ad2dac07f83ab3eba9e289819d5782c", default-features = false, package = "tabled" }
 tabled_master = { version = "0.8.0", default-features = false, package = "tabled" }
 
 tabled_color = { path = "./tabled_color" }
@@ -20,7 +20,7 @@ nu-ansi-term = "0.45.1"
 
 cli-table = "0.4.7"
 
-comfy-table = "5.0.1"
+comfy-table = "6.1.0"
 
 term-table = "1.3.2"
 
