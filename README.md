@@ -316,23 +316,27 @@ The style will look like the following.
 You can change the existing styles.
 
 ```rust
-use tabled::Style;
+use tabled::style::{Style, HorizontalLine, VerticalLine};
 
 let style = Style::modern()
     .off_horizontal()
-    .lines([(1, Style::modern().get_horizontal().horizontal(Some('═')))]);
+    .off_vertical()
+    .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())
+        .main(Some('═'))
+        .intersection(None)])
+    .verticals([VerticalLine::new(1, Style::modern().get_vertical())]);
 ```
 
 The style will look like the following.
 
 ```rust
-┌──────┬────────────────┬───────────────┐
-│ name │ designed_by    │ invented_year │
-├══════┼════════════════┼═══════════════┤
-│ C    │ Dennis Ritchie │ 1972          │
-│ Rust │ Graydon Hoare  │ 2010          │
-│ Go   │ Rob Pike       │ 2009          │
-└──────┴────────────────┴───────────────┘
+┌──────┬───────────────────────────────┐
+│ name │ designed_by     invented_year │
+├══════┼═══════════════════════════════┤
+│ C    │ Dennis Ritchie  1972          │
+│ Rust │ Graydon Hoare   2010          │
+│ Go   │ Rob Pike        2009          │
+└──────┴───────────────────────────────┘
 ```
 
 Check the [documentation](https://docs.rs/tabled/latest/tabled/style/struct.Style.html) for
@@ -401,7 +405,7 @@ table.with(color)
 You can also set a color border of intividial cell by using `BorderColored`.
 
 ```rust
-use tabled::{Modify, symbol::Symbol, border_colored::BorderColored, object::Columns};
+use tabled::{Modify, style::{Symbol, BorderColored}, object::Columns};
 
 // set a top border of each cell in second column to red '=' character.
 let b = Symbol::ansi("═".red().to_string()).unwrap();

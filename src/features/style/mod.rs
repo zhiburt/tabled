@@ -2,22 +2,28 @@
 //!
 //! [`Table`]: crate::Table
 
-pub mod raw_style;
-pub mod span_border_correction;
-
+mod border;
+mod border_text;
+mod raw_style;
+mod span_border_correction;
 #[allow(clippy::module_inception)]
-pub mod style;
+mod style;
 
 #[cfg(feature = "color")]
-pub mod raw_style_colored;
+mod border_colored;
 #[cfg(feature = "color")]
-pub mod symbol;
+mod raw_style_colored;
+#[cfg(feature = "color")]
+mod symbol;
 
 pub use self::{
+    border::Border,
+    border_text::BorderText,
     raw_style::RawStyle,
     span_border_correction::StyleCorrectSpan,
     style::{HorizontalLine, Line, Style, VerticalLine},
 };
 
 #[cfg(feature = "color")]
-pub use self::{raw_style_colored::RawStyleColored, symbol::Symbol};
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
+pub use self::{border_colored::BorderColored, raw_style_colored::RawStyleColored, symbol::Symbol};

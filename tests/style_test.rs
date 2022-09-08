@@ -321,8 +321,7 @@ test_table!(
     border_text_colored_1,
     {
         use owo_colors::OwoColorize;
-        use tabled::style::Symbol;
-        use tabled::border_colored::BorderColored;
+        use tabled::style::{Symbol, BorderColored};
 
         create_table::<2, 2>()
             .with(BorderText::new(2, "-Table213123".blue().on_green().to_string()))
@@ -1943,7 +1942,7 @@ fn test_default_border_usage() {
 #[test]
 fn border_colored_test() {
     use owo_colors::OwoColorize;
-    use tabled::{border_colored::BorderColored, style::Symbol};
+    use tabled::style::{BorderColored, Symbol};
 
     let table = create_table::<2, 2>()
         .with(Style::ascii())

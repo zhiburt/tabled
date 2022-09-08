@@ -23,9 +23,8 @@ use crossterm::{
 };
 
 use tabled::{
-    border_colored::BorderColored,
     object::{Columns, Object, Rows},
-    style::Symbol,
+    style::{BorderColored, Symbol},
     Alignment, BorderText, Disable, Highlight, Margin, Modify, Panel, Style, Table, Tabled, Width,
 };
 

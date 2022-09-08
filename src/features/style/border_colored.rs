@@ -8,7 +8,7 @@ use crate::{style::Symbol, CellOption, Table};
 ///
 /// ```rust,no_run
 /// # use owo_colors::OwoColorize;
-/// # use tabled::{style::{Symbol, Style}, border_colored::BorderColored, object::Rows, Table, Modify};
+/// # use tabled::{style::{Symbol, Style, BorderColored}, object::Rows, Table, Modify};
 /// #
 /// # let data: Vec<&'static str> = Vec::new();
 /// #

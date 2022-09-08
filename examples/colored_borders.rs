@@ -6,10 +6,9 @@
 use owo_colors::OwoColorize;
 
 use tabled::{
-    border_colored::BorderColored,
     object::Segment,
     style::Style,
-    style::{RawStyle, Symbol},
+    style::{BorderColored, RawStyle, Symbol},
     Highlight, Table, Tabled,
 };
 

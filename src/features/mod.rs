@@ -8,16 +8,12 @@ pub mod style;
 pub mod width;
 
 #[cfg(feature = "color")]
-pub mod border_colored;
-#[cfg(feature = "color")]
 pub mod color;
 #[cfg(feature = "color")]
 pub mod margin_color;
 #[cfg(feature = "color")]
 pub mod padding_color;
 
-pub(crate) mod border;
-pub(crate) mod border_text;
 pub(crate) mod concat;
 pub(crate) mod disable;
 pub(crate) mod extract;

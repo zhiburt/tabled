@@ -8,7 +8,7 @@ use crate::{color::Color, papergrid::util::string_width};
 ///
 /// ```rust,no_run
 /// # use owo_colors::OwoColorize;
-/// # use tabled::{style::Symbol, border_colored::BorderColored, object::Rows, TableIteratorExt, Modify};
+/// # use tabled::{style::{Symbol, BorderColored}, object::Rows, TableIteratorExt, Modify};
 /// #
 /// # let data: Vec<&'static str> = Vec::new();
 /// #

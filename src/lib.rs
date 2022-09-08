@@ -256,8 +256,6 @@ pub use papergrid;
 pub use crate::{
     features::{
         alignment::{self, Alignment},
-        border::Border,
-        border_text::BorderText,
         concat::Concat,
         disable::Disable,
         extract::Extract,
@@ -270,7 +268,7 @@ pub use crate::{
         panel::{Footer, Header, Panel},
         rotate::Rotate,
         span::Span,
-        style::{self, Style},
+        style::{self, Border, BorderText, Style},
         width::{self, Width},
     },
     modify::{CellSettingsList, Modify, ModifyList, ModifyObject},
@@ -281,7 +279,7 @@ pub use crate::{
 
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-pub use crate::features::{border_colored, color, highlight, margin_color, padding_color};
+pub use crate::features::{color, highlight, margin_color, padding_color};
 
 #[cfg(feature = "derive")]
 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]

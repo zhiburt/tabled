@@ -10,7 +10,7 @@ use papergrid::{records::Records, Entity, GridConfig, Position};
 use crate::{object::Object, Border, Table, TableOption};
 
 #[cfg(feature = "color")]
-use crate::border_colored::BorderColored;
+use crate::style::BorderColored;
 
 /// Highlight modifies a table style by changing a border of a target [`Table`] segment.
 ///
