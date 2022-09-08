@@ -4,7 +4,7 @@ use tabled::{
     papergrid::util::string_width_multiline,
     width::{Justify, MinWidth, SuffixLimit},
     width::{PriorityMax, PriorityMin, Width},
-    Alignment, Modify, Padding, Panel, Span, Style,
+    Alignment, Margin, Modify, Padding, Panel, Span, Style,
 };
 
 use crate::util::{create_table, init_table, is_lines_equal, new_table, static_table};
@@ -2147,6 +2147,50 @@ fn max_width_tab_0() {
             "|         Tigre Ecuador    OMYA Andina    3824909999    Ca |"
             "| lcium carbonate    Colombia                              |"
         )
+    );
+}
+
+#[test]
+fn min_width_is_not_used_after_padding() {
+    let table = create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(MinWidth::new(60))
+        .with(Modify::new(Cell(0, 0)).with(Padding::new(2, 2, 0, 0)))
+        .to_string();
+
+    assert_eq!(papergrid::util::string_width_multiline(&table), 40);
+    assert_eq!(
+        table,
+        static_table!(
+            "|  N  | column 0 | column 1 | column 2 |"
+            "|-----|----------|----------|----------|"
+            "|  0  |   0-0    |   0-1    |   0-2    |"
+            "|  1  |   1-0    |   1-1    |   1-2    |"
+            "|  2  |   2-0    |   2-1    |   2-2    |"
+        ),
+    );
+}
+
+#[test]
+fn min_width_is_used_after_margin() {
+    let table = create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(MinWidth::new(60))
+        .with(Margin::new(1, 1, 1, 1))
+        .to_string();
+
+    assert_eq!(papergrid::util::string_width_multiline(&table), 62);
+    assert_eq!(
+        table,
+        static_table!(
+            "                                                              "
+            " |    N    |    column 0    |   column 1    |   column 2    | "
+            " |---------|----------------|---------------|---------------| "
+            " |    0    |      0-0       |      0-1      |      0-2      | "
+            " |    1    |      1-0       |      1-1      |      1-2      | "
+            " |    2    |      2-0       |      2-1      |      2-2      | "
+            "                                                              "
+        ),
     );
 }
 
