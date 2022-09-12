@@ -202,6 +202,7 @@ where
         table.get_config_mut().set_row_span(self.pos, length);
 
         table.destroy_width_cache();
+        table.destroy_height_cache();
     }
 }
 
@@ -255,6 +256,7 @@ where
         table.get_config_mut().set_column_span(self.pos, length);
 
         table.destroy_width_cache();
+        table.destroy_height_cache();
     }
 }
 

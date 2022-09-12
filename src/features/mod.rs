@@ -1,9 +1,12 @@
 pub mod alignment;
 pub mod format;
 pub mod formatting;
+pub mod height;
 #[allow(unreachable_pub)]
 pub mod highlight;
 pub mod locator;
+pub mod measurment;
+pub mod peaker;
 pub mod style;
 pub mod width;
 

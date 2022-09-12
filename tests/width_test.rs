@@ -2,8 +2,8 @@ use tabled::{
     formatting::TrimStrategy,
     object::{Cell, Columns, Object, Rows, Segment},
     papergrid::util::string_width_multiline,
-    width::{Justify, MinWidth, SuffixLimit},
-    width::{PriorityMax, PriorityMin, Width},
+    peaker::{PriorityMax, PriorityMin},
+    width::{Justify, MinWidth, SuffixLimit, Width},
     Alignment, Margin, Modify, Padding, Panel, Span, Style,
 };
 

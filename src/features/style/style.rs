@@ -119,7 +119,7 @@ use crate::{style::StyleCorrectSpan, Border, Table, TableOption};
 /// ```
 ///
 /// [`Table`]: crate::Table
-/// [`RawStyle`]: crate::raw_style::RawStyle
+/// [`RawStyle`]: crate::style::RawStyle
 #[derive(Debug, Clone)]
 pub struct Style<T, B, L, R, H, V, HLines = HLineArray<0>, VLines = VLineArray<0>> {
     pub(crate) borders: Borders<char>,
@@ -599,7 +599,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
 
     /// Get a [`Style`]'s default horizontal line.
     ///
-    /// It doesn't return an overloaded line via [`Style::lines`].
+    /// It doesn't return an overloaded line via [`Style::horizontals`].
     ///
     /// # Example
     ///
@@ -636,7 +636,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
 
     /// Get a [`Style`]'s default horizontal line.
     ///
-    /// It doesn't return an overloaded line via [`Style::lines`].
+    /// It doesn't return an overloaded line via [`Style::verticals`].
     ///
     /// # Example
     ///
@@ -1135,14 +1135,12 @@ where
             }
         }
 
-        table.destroy_width_cache()
+        table.destroy_width_cache();
+        table.destroy_height_cache();
     }
 }
 
 /// A horizontal split line which can be used to set a border.
-///
-/// ```rust
-/// ```
 #[derive(Debug, Clone)]
 pub struct HorizontalLine {
     pub(crate) index: usize,
@@ -1238,9 +1236,6 @@ impl<R> TableOption<R> for HorizontalLine {
 }
 
 /// A horizontal split line which can be used to set a border.
-///
-/// ```rust
-/// ```
 #[derive(Debug, Clone)]
 pub struct VerticalLine {
     pub(crate) index: usize,

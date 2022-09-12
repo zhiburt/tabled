@@ -4,7 +4,7 @@ use papergrid::Entity;
 
 use crate::{color::Color, CellOption, Table};
 
-/// Color settings for a [Padding].
+/// Color settings for a [`Padding`].
 ///
 /// ```rust,no_run
 /// # use tabled::{padding_color::PaddingColor, color::Color, Table, Modify, object::Segment};
@@ -19,6 +19,8 @@ use crate::{color::Color, CellOption, Table};
 ///         Color::try_from(" ".on_green().to_string()).unwrap(),
 ///     )));
 /// ```
+///
+/// [`Padding`]: crate::Padding
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default)]
 pub struct PaddingColor {

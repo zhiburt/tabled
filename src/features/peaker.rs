@@ -1,6 +1,11 @@
+//! The module contains [`Peaker`] trait and its implementations to be used in [`Height`] and [`Width`].
+//!
+//! [`Width`]: crate::Width
+//! [`Height`]: crate::Height
+
 /// A strategy of width function.
 /// It determines the order how the function is applied.
-pub trait ColumnPeaker {
+pub trait Peaker {
     /// Creates a new instance.
     fn create() -> Self;
     /// This function returns a column index which will be changed.
@@ -9,22 +14,28 @@ pub trait ColumnPeaker {
 }
 
 /// A Peaker which goes over column 1 by 1.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone)]
 pub struct PriorityNone {
     i: usize,
 }
 
-impl ColumnPeaker for PriorityNone {
+impl Peaker for PriorityNone {
     fn create() -> Self {
         Self { i: 0 }
     }
 
     fn peak(&mut self, _: &[usize], widths: &[usize]) -> Option<usize> {
         let mut i = self.i;
+        let mut count_empty = 0;
         while widths[i] == 0 {
             i += 1;
             if i >= widths.len() {
                 i = 0;
+            }
+
+            count_empty += 1;
+            if count_empty == widths.len() {
+                return None;
             }
         }
 
@@ -42,10 +53,10 @@ impl ColumnPeaker for PriorityNone {
 }
 
 /// A Peaker which goes over the biggest column first.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone)]
 pub struct PriorityMax;
 
-impl ColumnPeaker for PriorityMax {
+impl Peaker for PriorityMax {
     fn create() -> Self {
         Self
     }
@@ -61,10 +72,10 @@ impl ColumnPeaker for PriorityMax {
 }
 
 /// A Peaker which goes over the smallest column first.
-#[derive(Debug)]
+#[derive(Debug, Default, Clone)]
 pub struct PriorityMin;
 
-impl ColumnPeaker for PriorityMin {
+impl Peaker for PriorityMin {
     fn create() -> Self {
         Self
     }

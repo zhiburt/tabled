@@ -22,9 +22,9 @@ use crate::AnsiColor;
 
 use self::{borders::BordersConfig, entity_map::EntityMap, sides::Sides};
 
-/// This structure represents a settings of a [`Grid`].
+/// This structure represents a settings of a grid.
 ///
-/// [`Grid`]: crate::Grid.
+/// grid: crate::Grid.
 #[derive(Debug, Clone)]
 pub struct GridConfig {
     tab_width: usize,
@@ -281,16 +281,16 @@ impl GridConfig {
 
     // todo: move to Grid as static methods
 
-    /// Checks if [`Grid`] would have a vertical border with the current configuration.
+    /// Checks if grid would have a vertical border with the current configuration.
     ///
-    /// [`Grid`]: crate::Grid
+    /// grid: crate::Grid
     pub fn has_vertical(&self, col: usize, count_columns: usize) -> bool {
         self.borders.has_vertical(col, count_columns)
     }
 
-    /// Checks if [`Grid`] would have a horizontal border with the current configuration.
+    /// Checks if grid would have a horizontal border with the current configuration.
     ///
-    /// [`Grid`]: crate::Grid
+    /// grid: crate::Grid
     pub fn has_horizontal(&self, row: usize, count_rows: usize) -> bool {
         self.borders.has_horizontal(row, count_rows)
     }
@@ -314,12 +314,21 @@ impl GridConfig {
         self.borders_missing_char = c;
     }
 
-    /// Calculates an amount of vertical lines would present on the [`Grid`].
+    /// Calculates an amount of vertical lines would present on the grid.
     ///
-    /// [`Grid`]: crate::Grid
+    /// grid: crate::Grid
     pub fn count_vertical(&self, count_columns: usize) -> usize {
         (0..=count_columns)
             .filter(|&col| self.has_vertical(col, count_columns))
+            .count()
+    }
+
+    /// Calculates an amount of horizontal lines would present on the grid.
+    ///
+    /// grid: crate::Grid
+    pub fn count_horizontal(&self, count_rows: usize) -> usize {
+        (0..=count_rows)
+            .filter(|&row| self.has_horizontal(row, count_rows))
             .count()
     }
 
@@ -328,9 +337,9 @@ impl GridConfig {
         self.borders.get_border(pos, shape.0, shape.1).copied()
     }
 
-    /// Gets a vertical character which would be rendered on the [`Grid`].
+    /// Gets a vertical character which would be rendered on the grid.
     ///
-    /// [`Grid`]: crate::Grid
+    /// grid: crate::Grid
     pub fn get_vertical(&self, pos: Position, count_columns: usize) -> Option<&char> {
         let c = self.borders.get_vertical(pos, count_columns);
         if c.is_some() {
@@ -344,9 +353,9 @@ impl GridConfig {
         None
     }
 
-    /// Gets a horizontal character which would be rendered on the [`Grid`].
+    /// Gets a horizontal character which would be rendered on the grid.
     ///
-    /// [`Grid`]: crate::Grid
+    /// grid: crate::Grid
     pub fn get_horizontal(&self, pos: Position, count_rows: usize) -> Option<&char> {
         let c = self.borders.get_horizontal(pos, count_rows);
         if c.is_some() {
@@ -360,9 +369,9 @@ impl GridConfig {
         None
     }
 
-    /// Gets an intersection character which would be rendered on the [`Grid`].
+    /// Gets an intersection character which would be rendered on the grid.
     ///
-    /// [`Grid`]: crate::Grid
+    /// grid: crate::Grid
     pub fn get_intersection(&self, pos: Position, shape: (usize, usize)) -> Option<&char> {
         let c = self.borders.get_intersection(pos, shape.0, shape.1);
         if c.is_some() {
@@ -379,38 +388,38 @@ impl GridConfig {
 
 #[cfg(feature = "color")]
 impl GridConfig {
-    /// Gets a color of all borders on the [`Grid`].
+    /// Gets a color of all borders on the grid.
     pub fn get_border_color_global(&self) -> Option<&AnsiColor> {
         self.border_colors.get_global()
     }
 
-    /// Sets a color of all borders on the [`Grid`].
+    /// Sets a color of all borders on the grid.
     pub fn set_border_color_global(&mut self, clr: AnsiColor) {
         self.border_colors = BordersConfig::default();
         self.border_colors.set_global(clr);
     }
 
-    /// Gets colors of a borders carcass on the [`Grid`].
+    /// Gets colors of a borders carcass on the grid.
     pub fn get_color_borders(&self) -> &Borders<AnsiColor> {
         self.border_colors.get_borders()
     }
 
-    /// Sets colors of border carcass on the [`Grid`].
+    /// Sets colors of border carcass on the grid.
     pub fn set_borders_color(&mut self, clrs: Borders<AnsiColor>) {
         self.border_colors.set_borders(clrs);
     }
 
-    /// Sets a color of border of a cell on the [`Grid`].
+    /// Sets a color of border of a cell on the grid.
     pub fn set_border_color(&mut self, pos: Position, border: Border<AnsiColor>) {
         self.border_colors.insert_border(pos, border)
     }
 
-    /// Gets a color of border of a cell on the [`Grid`].
+    /// Gets a color of border of a cell on the grid.
     pub fn get_border_color(&self, pos: Position, shape: (usize, usize)) -> Border<&AnsiColor> {
         self.border_colors.get_border(pos, shape.0, shape.1)
     }
 
-    /// Gets a color of border of a cell on the [`Grid`].
+    /// Gets a color of border of a cell on the grid.
     pub fn remove_border_color(&mut self, pos: Position, shape: (usize, usize)) {
         self.border_colors.remove_border(pos, shape);
     }

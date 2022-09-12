@@ -210,6 +210,15 @@ where
     R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {
+        (&*self).change(table)
+    }
+}
+
+impl<R> TableOption<R> for &RawStyle
+where
+    R: Records,
+{
+    fn change(&mut self, table: &mut Table<R>) {
         if table.is_empty() {
             return;
         }
@@ -241,6 +250,7 @@ where
         }
 
         table.destroy_width_cache();
+        table.destroy_height_cache();
     }
 }
 

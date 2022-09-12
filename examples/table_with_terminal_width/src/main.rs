@@ -1,6 +1,6 @@
 //! The example shows how we could spread a table to the size of a terminal.
 
-use tabled::{Style, TableIteratorExt, Tabled, Width};
+use tabled::{Height, Style, TableIteratorExt, Tabled, Width};
 
 #[derive(Tabled)]
 struct Release {
@@ -33,13 +33,55 @@ const DATA: [Release; 3] = [
 ];
 
 fn main() {
-    let (terminal_size::Width(width), _) = terminal_size::terminal_size().unwrap();
+    let (use_width, use_height) = parse_args();
 
-    let table = DATA
-        .table()
-        .with(Style::extended())
-        .with(Width::wrap(width as usize))
-        .with(Width::increase(width as usize));
+    let (terminal_size::Width(width), terminal_size::Height(height)) =
+        terminal_size::terminal_size().unwrap();
+
+    let mut table = DATA.table().with(Style::extended());
+    if use_width {
+        table = table
+            .with(Width::wrap(width as usize))
+            .with(Width::increase(width as usize));
+    }
+
+    if use_height {
+        table = table
+            .with(Height::increase(height as usize))
+            .with(Height::limit(height as usize));
+    }
 
     println!("{}", table);
+}
+
+fn parse_args() -> (bool, bool) {
+    let mut args = std::env::args().skip(1);
+    let a1 = args.next();
+    let a2 = args.next();
+
+    match (a1, a2) {
+        (None, None) => (true, true),
+        (Some(param), None) => match param.as_str() {
+            "--width" => (true, false),
+            "--height" => (false, true),
+            _ => panic!(
+                "unexpected argument {:?}, expected '--width' or '--height'",
+                param
+            ),
+        },
+        (Some(param1), Some(param2)) => {
+            if param1 != "--height" || param1 != "--width" {
+                panic!(
+                    "unexpected argument {:?}, expected '--width' or '--height'",
+                    param1
+                )
+            }
+
+            let use_height = param1 == "--height" || param2 == "--height";
+            let use_width = param1 == "--width" || param2 == "--width";
+
+            (use_height, use_width)
+        }
+        (None, Some(_)) => unreachable!(),
+    }
 }
