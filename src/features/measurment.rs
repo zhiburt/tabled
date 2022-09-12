@@ -6,13 +6,13 @@ use papergrid::{
     GridConfig,
 };
 
-use crate::{width::get_table_widths_with_total, Height, Width};
+use crate::{height::get_table_total_height, width::get_table_widths_with_total, Height, Width};
 
 /// A width value which can be obtained on behalf of [`Table`].
 ///
 /// [`Table`]: crate::Table
 pub trait Measurment<Attribute> {
-    /// Returns a width value.
+    /// Returns a measurment value.
     fn measure<R>(&self, records: R, cfg: &GridConfig) -> usize
     where
         R: Records;
@@ -101,7 +101,7 @@ impl Measurment<Height> for Percent {
     where
         R: Records,
     {
-        let (_, total) = get_table_widths_with_total(&records, cfg);
+        let total = get_table_total_height(&records, cfg);
         (total * self.0) / 100
     }
 }
