@@ -13,7 +13,10 @@ use papergrid::{
     Estimate, Grid, GridConfig,
 };
 
-use crate::{builder::Builder, object::Entity, Tabled};
+use crate::{
+    builder::Builder, height::get_table_total_height, object::Entity, width::get_table_total_width,
+    Tabled,
+};
 
 /// A trait which is responsilbe for configuration of a [`Table`].
 pub trait TableOption<R> {
@@ -80,6 +83,7 @@ pub struct Table<R = VecRecords<CellInfo<'static>>> {
     records: R,
     cfg: GridConfig,
     widths: Option<Vec<usize>>,
+    heights: Option<Vec<usize>>,
 }
 
 impl Table<VecRecords<CellInfo<'static>>> {
@@ -222,6 +226,14 @@ impl<R> Table<R> {
     pub(crate) fn destroy_width_cache(&mut self) {
         self.widths = None;
     }
+
+    pub(crate) fn cache_height(&mut self, widths: Vec<usize>) {
+        self.heights = Some(widths);
+    }
+
+    pub(crate) fn destroy_height_cache(&mut self) {
+        self.heights = None;
+    }
 }
 
 impl<R> Table<R>
@@ -230,10 +242,8 @@ where
 {
     /// Returns a table shape (count rows, count columns).
     pub fn shape(&self) -> (usize, usize) {
-        (
-            self.get_records().count_rows(),
-            self.get_records().count_columns(),
-        )
+        let records = self.get_records();
+        (records.count_rows(), records.count_columns())
     }
 
     /// Returns an amount of rows in the table.
@@ -250,6 +260,38 @@ where
     pub fn is_empty(&self) -> bool {
         let (count_rows, count_cols) = self.shape();
         count_rows == 0 || count_cols == 0
+    }
+
+    /// Returns total widths of a table, including margin and vertical lines.
+    pub fn total_width(&self) -> usize {
+        get_table_total_width(&self.records, &self.cfg)
+    }
+
+    /// Returns total widths of a table, including margin and horizontal lines.
+    pub fn total_height(&self) -> usize {
+        get_table_total_height(&self.records, &self.cfg)
+    }
+
+    fn get_width_ctrl(&self) -> CachedEstimator<'_, WidthEstimator> {
+        match &self.widths {
+            Some(widths) => CachedEstimator::Cached(widths),
+            None => {
+                let mut w = WidthEstimator::default();
+                w.estimate(&self.records, &self.cfg);
+                CachedEstimator::Ctrl(w)
+            }
+        }
+    }
+
+    fn get_height_ctrl(&self) -> CachedEstimator<'_, HeightEstimator> {
+        match &self.heights {
+            Some(heights) => CachedEstimator::Cached(heights),
+            None => {
+                let mut w = HeightEstimator::default();
+                w.estimate(&self.records, &self.cfg);
+                CachedEstimator::Ctrl(w)
+            }
+        }
     }
 }
 
@@ -274,20 +316,8 @@ where
     R: Records,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut height = HeightEstimator::default();
-        height.estimate(&self.records, &self.cfg);
-
-        // check if we have cached widths values.
-        let width = {
-            match &self.widths {
-                Some(widths) => WidthCtrl::Cached(widths),
-                None => {
-                    let mut w = WidthEstimator::default();
-                    w.estimate(&self.records, &self.cfg);
-                    WidthCtrl::Ctrl(w)
-                }
-            }
-        };
+        let width = self.get_width_ctrl();
+        let height = self.get_height_ctrl();
 
         let grid = Grid::new(&self.records, &self.cfg, &width, &height);
 
@@ -304,6 +334,7 @@ where
             records,
             cfg: GridConfig::default(),
             widths: None,
+            heights: None,
         }
     }
 }
@@ -338,28 +369,29 @@ where
 }
 
 #[derive(Debug)]
-enum WidthCtrl<'a> {
+enum CachedEstimator<'a, E> {
     Cached(&'a [usize]),
-    Ctrl(WidthEstimator),
+    Ctrl(E),
 }
 
-impl<R> Estimate<R> for WidthCtrl<'_>
+impl<R, E> Estimate<R> for CachedEstimator<'_, E>
 where
     R: Records,
+    E: Estimate<R>,
 {
     fn estimate(&mut self, _: R, _: &GridConfig) {}
 
     fn get(&self, i: usize) -> Option<usize> {
         match self {
-            WidthCtrl::Cached(list) => list.get(i).copied(),
-            WidthCtrl::Ctrl(e) => Estimate::<R>::get(e, i),
+            Self::Cached(list) => list.get(i).copied(),
+            Self::Ctrl(e) => Estimate::<R>::get(e, i),
         }
     }
 
     fn total(&self) -> usize {
         match self {
-            WidthCtrl::Cached(list) => list.iter().sum(),
-            WidthCtrl::Ctrl(e) => Estimate::<R>::total(e),
+            Self::Cached(list) => list.iter().sum(),
+            Self::Ctrl(e) => Estimate::<R>::total(e),
         }
     }
 }

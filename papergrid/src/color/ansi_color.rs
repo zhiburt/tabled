@@ -14,6 +14,8 @@ impl AnsiColor {
     ///
     /// They are not checked so you should make sure you provide correct ANSI.
     /// Otherwise you may want to use [`TryFrom`].
+    ///
+    /// [`TryFrom`]: std::convert::TryFrom
     pub fn new(prefix: String, suffix: String) -> Self {
         Self { prefix, suffix }
     }

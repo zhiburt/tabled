@@ -585,6 +585,11 @@ where
             count_empty_lines_at_start(&records, pos) + count_empty_lines_at_end(&records, pos);
     }
 
+    if cell_height > height {
+        // it may happen if the height estimation decide so
+        cell_height = height;
+    }
+
     #[cfg(feature = "color")]
     let padding_color = cfg.get_padding_color(pos.into());
 

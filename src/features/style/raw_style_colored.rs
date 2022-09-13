@@ -1,8 +1,8 @@
 //! This module contains a style configuration just like [`RawStyle`] but with [`Color`] by using [`Symbol`].
 //!
-//! [`Color`]: crate::Color
-//! [`Symbol`]: crate::Symbol
-//! [`RawStyle`]: crate::RawStyle
+//! [`Color`]: crate::color::Color
+//! [`Symbol`]: crate::style::Symbol
+//! [`RawStyle`]: crate::style::RawStyle
 
 use papergrid::{records::Records, AnsiColor, Borders};
 
@@ -11,7 +11,7 @@ use crate::{
     Table, TableOption,
 };
 
-/// A colored [`StyleConfig`] versions.
+/// A colored [`RawStyle`] versions.
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone)]
 pub struct RawStyleColored {

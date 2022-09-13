@@ -10,11 +10,9 @@ use papergrid::{
 };
 
 use crate::{
-    width::{
-        count_borders, get_table_widths, get_table_widths_with_total, get_width_value,
-        ColumnPeaker, PriorityNone, WidthValue,
-    },
-    CellOption, Table, TableOption,
+    peaker::{Peaker, PriorityNone},
+    width::{count_borders, get_table_widths, get_table_widths_with_total, Measurment},
+    CellOption, Table, TableOption, Width,
 };
 
 /// Truncate cut the string to a given width if its length exceeds it.
@@ -74,7 +72,7 @@ pub enum SuffixLimit {
 
 impl<W> Truncate<'static, W>
 where
-    W: WidthValue,
+    W: Measurment<Width>,
 {
     /// Creates a [`Truncate`] object
     pub fn new(width: W) -> Truncate<'static, W> {
@@ -139,9 +137,9 @@ impl<'a, W, P> Truncate<'a, W, P> {
     /// - [`PriorityMax`] cuts the biggest columns first.
     /// - [`PriorityMin`] cuts the lowest columns first.
     ///
-    /// [`PriorityMax`]: crate::width::PriorityMax
-    /// [`PriorityMin`]: crate::width::PriorityMin
-    pub fn priority<PP: ColumnPeaker>(self) -> Truncate<'a, W, PP> {
+    /// [`PriorityMax`]: crate::peaker::PriorityMax
+    /// [`PriorityMin`]: crate::peaker::PriorityMin
+    pub fn priority<PP: Peaker>(self) -> Truncate<'a, W, PP> {
         Truncate {
             width: self.width,
             suffix: self.suffix,
@@ -152,14 +150,12 @@ impl<'a, W, P> Truncate<'a, W, P> {
 
 impl<W, P, R> CellOption<R> for Truncate<'_, W, P>
 where
-    W: WidthValue,
+    W: Measurment<Width>,
     R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
-        let set_width = self
-            .width
-            .width(table.get_records(), table.get_config(), &width_ctrl);
+        let set_width = self.width.measure(table.get_records(), table.get_config());
 
         let mut width = set_width;
         let suffix = match self.suffix.as_ref() {
@@ -221,8 +217,8 @@ where
 
 impl<W, P, R> TableOption<R> for Truncate<'_, W, P>
 where
-    W: WidthValue,
-    P: ColumnPeaker,
+    W: Measurment<Width>,
+    P: Peaker,
     R: Records + RecordsMut<String>,
 {
     fn change(&mut self, table: &mut Table<R>) {
@@ -230,7 +226,7 @@ where
             return;
         }
 
-        let width = get_width_value(&self.width, table);
+        let width = self.width.measure(table.get_records(), table.get_config());
         let (widths, total_width) =
             get_table_widths_with_total(table.get_records(), table.get_config());
         if total_width <= width {
@@ -341,7 +337,7 @@ pub(crate) fn decrease_widths<F>(
     mut width: usize,
     mut peeaker: F,
 ) where
-    F: ColumnPeaker,
+    F: Peaker,
 {
     let mut empty_list = 0;
     for col in 0..widths.len() {
@@ -382,7 +378,7 @@ fn truncate_total_width<P, R>(
     suffix: Option<TruncateSuffix<'_>>,
     priority: P,
 ) where
-    P: ColumnPeaker,
+    P: Peaker,
     R: Records + RecordsMut<String>,
 {
     let (count_rows, count_cols) = table.shape();
@@ -401,6 +397,7 @@ fn truncate_total_width<P, R>(
     }
 
     table.destroy_width_cache();
+    table.destroy_height_cache();
     table.cache_width(widths);
 }
 

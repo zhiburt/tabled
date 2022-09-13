@@ -4,7 +4,7 @@
 
 use crate::{color::Color, Table, TableOption};
 
-/// List of colors for [Margin].
+/// List of colors for [`Margin`].
 ///
 /// ```rust,no_run
 /// # use tabled::{Margin, margin_color::MarginColor, color::Color, Table};
@@ -20,6 +20,8 @@ use crate::{color::Color, Table, TableOption};
 ///         Color::default(),
 ///     ));
 /// ```
+///
+/// [`Margin`]: crate::Margin
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default)]
 pub struct MarginColor {

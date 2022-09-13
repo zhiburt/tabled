@@ -85,6 +85,12 @@ impl<L> Disable<L, TargetColumn> {
     ///      +-------+-------+"
     /// );
     /// ```
+    ///
+    /// [`Columns`]: crate::object::Columns
+    /// [`Column`]: crate::object::Column
+    /// [`FirstColumn`]: crate::object::FirstColumn
+    /// [`LastColumn`]: crate::object::LastColumn
+    /// [`ByColumnName`]: crate::locator::ByColumnName
     pub fn column(locator: L) -> Self
     where
         L: Locator<Coordinate = usize>,
@@ -125,6 +131,11 @@ impl<L> Disable<L, TargetRow> {
     ///      +-------+-------+---+"
     /// );
     /// ```
+    ///
+    /// [`Rows`]: crate::object::Rows
+    /// [`Row`]: crate::object::Row
+    /// [`FirstRow`]: crate::object::FirstRow
+    /// [`LastRow`]: crate::object::LastRow
     pub fn row(locator: L) -> Self
     where
         L: Locator<Coordinate = usize>,
@@ -163,6 +174,7 @@ where
         }
 
         table.destroy_width_cache();
+        table.destroy_height_cache();
 
         // fixme: I am pretty sure that we violate span constrains by removing rows/cols
         //        Because span may be bigger then the max number of rows/cols
@@ -188,6 +200,7 @@ where
         }
 
         table.destroy_width_cache();
+        table.destroy_height_cache();
 
         // fixme: I am pretty sure that we violate span constrains by removing rows/cols
         //        Because span may be bigger then the max number of rows/cols

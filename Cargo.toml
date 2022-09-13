@@ -21,7 +21,7 @@ members = [
     "papergrid",
     "papergrid/examples/colored_backend",
     "tabled_derive",
-    "examples/table_with_terminal_width",
+    "examples/terminal_size",
     "examples/show",
     "benches",
 ]

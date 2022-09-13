@@ -3,11 +3,9 @@
 use papergrid::records::{Records, RecordsMut};
 
 use crate::{
-    width::{Max, Min, WidthValue},
+    measurment::{Max, Measurment, Min},
     CellOption, Table, TableOption, Width,
 };
-
-use super::get_width_value;
 
 /// Justify sets all columns widths to the set value.
 ///
@@ -47,7 +45,7 @@ pub struct Justify<W> {
 
 impl<W> Justify<W>
 where
-    W: WidthValue,
+    W: Measurment<Width>,
 {
     /// Creates a new [`Justify`] instance.
     ///
@@ -75,11 +73,11 @@ impl Justify<Min> {
 
 impl<W, R> TableOption<R> for Justify<W>
 where
-    W: WidthValue,
+    W: Measurment<Width>,
     R: Records + RecordsMut<String>,
 {
     fn change(&mut self, table: &mut Table<R>) {
-        let width = get_width_value(&self.width, table);
+        let width = self.width.measure(table.get_records(), table.get_config());
 
         let (count_rows, count_cols) = table.shape();
         for row in 0..count_rows {
@@ -93,5 +91,6 @@ where
         // we can't cache the widths because it doesn't consider padding
         // table.cache_width(vec![width; table.shape().1]);
         table.destroy_width_cache();
+        table.destroy_height_cache();
     }
 }

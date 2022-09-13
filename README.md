@@ -48,6 +48,9 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     - [Justify](#justify)
     - [Priority](#priority)
     - [Percent](#percent)
+  - [Height](#height)
+    - [Height Increase](#height-increase)
+    - [Height Limit](#height-limit)
   - [Rotate](#rotate)
   - [Disable](#disable)
   - [Extract](#extract)
@@ -644,6 +647,34 @@ but you could do it also with `tabled::width::Percent`.
 use tabled::width::{Percent, Width};
 
 let table = table.with(Width::wrap(Percent(75)));
+```
+
+### Height
+
+You can increase a table or a specific cell height using `Height` motifier.
+
+#### Height increase
+
+```rust
+use tabled::{TableIteratorExt, Height, Modify, Rows};
+
+// increase height of a table in case it was lower than 10.
+data.table().with(Height::increase(10));
+
+// increase height of cells in the last row on a table in case if some of them has it lower than 10.
+data.table().with(Modify::new(Rows::last()).with(Height::increase(10)));
+```
+
+#### Height limit
+
+```rust
+use tabled::{TableIteratorExt, Height, Modify, Rows};
+
+// decrease height of a table to 10 in case it was bigger than that.
+data.table().with(Height::limit(10));
+
+// decrease height of cells in the last row on a table to 10 in case if some of them has it bigger than that.
+data.table().with(Modify::new(Rows::last()).with(Height::limit(10)));
 ```
 
 ### Rotate

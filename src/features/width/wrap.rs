@@ -11,12 +11,13 @@ use papergrid::{
 };
 
 use crate::{
-    width::{ColumnPeaker, PriorityNone, WidthValue},
-    CellOption, Table, TableOption,
+    measurment::Measurment,
+    peaker::{Peaker, PriorityNone},
+    CellOption, Table, TableOption, Width,
 };
 
 use super::{
-    get_table_widths, get_table_widths_with_total, get_width_value,
+    get_table_widths, get_table_widths_with_total,
     truncate::{decrease_widths, get_decrease_cell_list},
 };
 
@@ -47,7 +48,7 @@ pub struct Wrap<W = usize, P = PriorityNone> {
 
 impl<W> Wrap<W>
 where
-    W: WidthValue,
+    W: Measurment<Width>,
 {
     /// Creates a [`Wrap`] object
     pub fn new(width: W) -> Self {
@@ -70,8 +71,8 @@ impl<W, P> Wrap<W, P> {
     /// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
     ///
     /// [`Padding`]: crate::Padding
-    /// [`PriorityMax`]: crate::width::PriorityMax
-    /// [`PriorityMin`]: crate::width::PriorityMin
+    /// [`PriorityMax`]: crate::peaker::PriorityMax
+    /// [`PriorityMin`]: crate::peaker::PriorityMin
     pub fn priority<PP>(self) -> Wrap<W, PP> {
         Wrap {
             width: self.width,
@@ -92,14 +93,12 @@ impl<W, P> Wrap<W, P> {
 
 impl<W, P, R> CellOption<R> for Wrap<W, P>
 where
-    W: WidthValue,
+    W: Measurment<Width>,
     R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
-        let width = self
-            .width
-            .width(table.get_records(), table.get_config(), &width_ctrl);
+        let width = self.width.measure(table.get_records(), table.get_config());
 
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
@@ -134,8 +133,8 @@ where
 
 impl<W, P, R> TableOption<R> for Wrap<W, P>
 where
-    W: WidthValue,
-    P: ColumnPeaker,
+    W: Measurment<Width>,
+    P: Peaker,
     R: Records + RecordsMut<String>,
 {
     fn change(&mut self, table: &mut Table<R>) {
@@ -143,7 +142,7 @@ where
             return;
         }
 
-        let width = get_width_value(&self.width, table);
+        let width = self.width.measure(table.get_records(), table.get_config());
         let (widths, total_width) =
             get_table_widths_with_total(table.get_records(), table.get_config());
         if width >= total_width {
@@ -164,7 +163,7 @@ fn wrap_total_width<R, P>(
     keep_words: bool,
     priority: P,
 ) where
-    P: ColumnPeaker,
+    P: Peaker,
     R: Records + RecordsMut<String>,
 {
     let (count_rows, count_cols) = table.shape();
@@ -182,6 +181,7 @@ fn wrap_total_width<R, P>(
         wrap.change_cell(table, (row, col).into());
     }
 
+    table.destroy_height_cache();
     table.destroy_width_cache();
     table.cache_width(widths);
 }

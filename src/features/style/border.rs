@@ -130,6 +130,7 @@ where
         }
 
         table.destroy_width_cache();
+        table.destroy_height_cache();
     }
 }
 

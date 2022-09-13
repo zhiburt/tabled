@@ -15,7 +15,9 @@ use crate::{Table, Tabled};
 /// println!("{}", table);
 /// ```
 pub trait TableIteratorExt {
-    /// A underline [`Records`],
+    /// A underline [`Records`]
+    ///
+    /// [`Records`]: crate::papergrid::records::Records
     type Records;
 
     /// Returns a [`Table`] instance from a given type

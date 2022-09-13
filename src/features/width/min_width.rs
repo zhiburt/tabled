@@ -9,9 +9,12 @@ use papergrid::{
 };
 
 use crate::{
-    width::{get_table_widths_with_total, get_width_value, ColumnPeaker, PriorityNone, WidthValue},
-    CellOption, Table, TableOption,
+    measurment::Measurment,
+    peaker::{Peaker, PriorityNone},
+    CellOption, Table, TableOption, Width,
 };
+
+use super::get_table_widths_with_total;
 
 /// [`MinWidth`] changes a content in case if it's length is lower then the boundary.
 ///
@@ -57,7 +60,7 @@ pub struct MinWidth<W = usize, P = PriorityNone> {
 
 impl<W> MinWidth<W>
 where
-    W: WidthValue,
+    W: Measurment<Width>,
 {
     /// Creates a new instance of [`MinWidth`].
     pub fn new(width: W) -> Self {
@@ -85,9 +88,9 @@ impl<W, P> MinWidth<W, P> {
     /// - [`PriorityMax`] inc the biggest columns first.
     /// - [`PriorityMin`] inc the lowest columns first.
     ///
-    /// [`PriorityMax`]: crate::width::PriorityMax
-    /// [`PriorityMin`]: crate::width::PriorityMin
-    pub fn priority<PP: ColumnPeaker>(self) -> MinWidth<W, PP> {
+    /// [`PriorityMax`]: crate::peaker::PriorityMax
+    /// [`PriorityMin`]: crate::peaker::PriorityMin
+    pub fn priority<PP: Peaker>(self) -> MinWidth<W, PP> {
         MinWidth {
             fill: self.fill,
             width: self.width,
@@ -98,14 +101,12 @@ impl<W, P> MinWidth<W, P> {
 
 impl<W, R> CellOption<R> for MinWidth<W>
 where
-    W: WidthValue,
+    W: Measurment<Width>,
     R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
-        let width = self
-            .width
-            .width(table.get_records(), table.get_config(), &width_ctrl);
+        let width = self.width.measure(table.get_records(), table.get_config());
 
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
@@ -127,8 +128,8 @@ where
 
 impl<W, P, R> TableOption<R> for MinWidth<W, P>
 where
-    W: WidthValue,
-    P: ColumnPeaker,
+    W: Measurment<Width>,
+    P: Peaker,
     R: Records + RecordsMut<String>,
 {
     fn change(&mut self, table: &mut Table<R>) {
@@ -136,7 +137,7 @@ where
             return;
         }
 
-        let width = get_width_value(&self.width, table);
+        let width = self.width.measure(table.get_records(), table.get_config());
         let (widths, total_width) =
             get_table_widths_with_total(table.get_records(), table.get_config());
         if total_width >= width {
@@ -195,7 +196,7 @@ fn increase_total_width<P, R>(
     expected_width: usize,
     priority: P,
 ) where
-    P: ColumnPeaker,
+    P: Peaker,
     R: Records + RecordsMut<String>,
 {
     let increase_list = get_increase_list(widths, expected_width, total_width, priority);
@@ -209,7 +210,7 @@ fn get_increase_list<F>(
     mut peaker: F,
 ) -> Vec<usize>
 where
-    F: ColumnPeaker,
+    F: Peaker,
 {
     while width != total_width {
         let col = match peaker.peak(&[], &widths) {

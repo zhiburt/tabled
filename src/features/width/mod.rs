@@ -32,29 +32,21 @@
 //! );
 //! ```
 
-mod column_peaker;
 mod justify;
 mod min_width;
 mod truncate;
-mod width_value;
 mod wrap;
 
-use crate::Table;
+use crate::measurment::Measurment;
 
 pub use self::{
-    column_peaker::{ColumnPeaker, PriorityMax, PriorityMin, PriorityNone},
     justify::Justify,
     min_width::MinWidth,
     truncate::{SuffixLimit, Truncate},
-    width_value::{Max, Min, Percent, WidthValue},
     wrap::Wrap,
 };
 
-use papergrid::{
-    records::Records,
-    width::{CfgWidthFunction, WidthEstimator, WidthFunc},
-    Estimate, GridConfig,
-};
+use papergrid::{records::Records, width::WidthEstimator, Estimate, GridConfig};
 
 pub(crate) use wrap::wrap_text;
 
@@ -116,7 +108,7 @@ impl Width {
     /// Returns a [`Wrap`] structure.
     pub fn wrap<W>(width: W) -> Wrap<W>
     where
-        W: WidthValue,
+        W: Measurment<Width>,
     {
         Wrap::new(width)
     }
@@ -124,7 +116,7 @@ impl Width {
     /// Returns a [`Truncate`] structure.
     pub fn truncate<W>(width: W) -> Truncate<'static, W>
     where
-        W: WidthValue,
+        W: Measurment<Width>,
     {
         Truncate::new(width)
     }
@@ -132,7 +124,7 @@ impl Width {
     /// Returns a [`MinWidth`] structure.
     pub fn increase<W>(width: W) -> MinWidth<W>
     where
-        W: WidthValue,
+        W: Measurment<Width>,
     {
         MinWidth::new(width)
     }
@@ -140,7 +132,7 @@ impl Width {
     /// Returns a [`Justify`] structure.
     pub fn justify<W>(width: W) -> Justify<W>
     where
-        W: WidthValue,
+        W: Measurment<Width>,
     {
         Justify::new(width)
     }
@@ -155,37 +147,6 @@ where
     evaluator.into()
 }
 
-pub(crate) fn get_table_widths_with_total<R>(records: R, cfg: &GridConfig) -> (Vec<usize>, usize)
-where
-    R: Records,
-{
-    let mut evaluator = WidthEstimator::default();
-    evaluator.estimate(&records, cfg);
-    let total_width = get_total_width(&records, cfg, &evaluator);
-    let widths = evaluator.into();
-    (widths, total_width)
-}
-
-pub(crate) fn get_width_value<R, W>(value: &W, table: &Table<R>) -> usize
-where
-    W: WidthValue,
-    R: Records,
-{
-    let ctrl = CfgWidthFunction::from_cfg(table.get_config());
-    value.width(table.get_records(), table.get_config(), ctrl)
-}
-
-pub(crate) fn get_total_width<W, R>(records: R, cfg: &GridConfig, ctrl: &W) -> usize
-where
-    W: Estimate<R>,
-    R: Records,
-{
-    ctrl.total()
-        + cfg.count_vertical(records.count_columns())
-        + cfg.get_margin().left.size
-        + cfg.get_margin().right.size
-}
-
 pub(crate) fn count_borders(
     cfg: &GridConfig,
     start: usize,
@@ -198,16 +159,33 @@ pub(crate) fn count_borders(
         .count()
 }
 
-fn grid_widths<'a, R, W>(
-    records: &'a R,
-    width_ctrl: &'a W,
-) -> impl Iterator<Item = impl Iterator<Item = usize> + 'a> + 'a
+pub(crate) fn get_table_total_width<R>(records: R, cfg: &GridConfig) -> usize
 where
-    W: WidthFunc,
     R: Records,
 {
-    let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
-    (0..count_rows).map(move |row| {
-        (0..count_cols).map(move |col| width_ctrl.width_multiline(records.get_text((row, col))))
-    })
+    let mut evaluator = WidthEstimator::default();
+    evaluator.estimate(&records, cfg);
+    get_total_width(&records, cfg, &evaluator)
+}
+
+pub(crate) fn get_table_widths_with_total<R>(records: R, cfg: &GridConfig) -> (Vec<usize>, usize)
+where
+    R: Records,
+{
+    let mut evaluator = WidthEstimator::default();
+    evaluator.estimate(&records, cfg);
+    let total_width = get_total_width(&records, cfg, &evaluator);
+    let widths = evaluator.into();
+    (widths, total_width)
+}
+
+fn get_total_width<W, R>(records: R, cfg: &GridConfig, ctrl: &W) -> usize
+where
+    W: Estimate<R>,
+    R: Records,
+{
+    ctrl.total()
+        + cfg.count_vertical(records.count_columns())
+        + cfg.get_margin().left.size
+        + cfg.get_margin().right.size
 }
