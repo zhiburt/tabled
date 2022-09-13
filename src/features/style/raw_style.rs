@@ -7,7 +7,7 @@ use papergrid::{records::Records, Borders};
 
 use crate::{
     style::{HorizontalLine, Line, VerticalLine},
-    Style, Table, TableOption,
+    Border, Style, Table, TableOption,
 };
 
 /// A raw style data, which can be produced safely from [`Style`].
@@ -185,6 +185,20 @@ impl RawStyle {
     pub fn set_verticals(&mut self, lines: HashMap<usize, Line>) -> &mut Self {
         self.verticals = lines;
         self
+    }
+
+    /// Returns an outer border of the style.
+    pub fn frame(&self) -> Border {
+        Border::new_raw(Some(papergrid::Border {
+            top: self.borders.top,
+            bottom: self.borders.bottom,
+            left: self.borders.vertical_left,
+            right: self.borders.vertical_right,
+            left_top_corner: self.borders.top_left,
+            right_top_corner: self.borders.top_right,
+            left_bottom_corner: self.borders.bottom_left,
+            right_bottom_corner: self.borders.bottom_right,
+        }))
     }
 
     /// Returns a [`RawStyle`] version which can set colors.

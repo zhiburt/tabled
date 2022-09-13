@@ -21,7 +21,8 @@ members = [
     "papergrid",
     "papergrid/examples/colored_backend",
     "tabled_derive",
-    "examples/table_with_terminal_width",
+    "json_to_table",
+    "examples/terminal_size",
     "examples/show",
     "benches",
 ]
@@ -42,7 +43,6 @@ ansi-str = { git = "https://github.com/zhiburt/ansi-str", branch = "master", opt
 owo-colors = "3.5.0"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
-serde_json = "1.0.85"
 
 [[example]]
 name = "colored_borders"
