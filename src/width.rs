@@ -37,6 +37,7 @@ use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 use papergrid::{
     count_borders_in_range, cut_str, string_width, string_width_multiline, Grid, Settings,
 };
+use vte_ansi_iterator::strip_osc_codes;
 
 use crate::{object::Entity, CellOption, TableOption};
 
@@ -1076,9 +1077,9 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     if width == 0 {
         String::new()
     } else if keep_words {
-        split_keeping_words(text, width, "\n")
+        split_keeping_words(&strip_osc_codes(text), width, "\n")
     } else {
-        split(text, width, "\n")
+        split(&strip_osc_codes(text), width, "\n")
     }
 }
 
