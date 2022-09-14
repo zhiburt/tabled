@@ -37,7 +37,7 @@ use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 use papergrid::{
     count_borders_in_range, cut_str, string_width, string_width_multiline, Grid, Settings,
 };
-use vte_ansi_iterator::strip_osc_codes;
+use vte_ansi_iterator::osc_partition;
 
 use crate::{object::Entity, CellOption, TableOption};
 
@@ -1076,23 +1076,26 @@ where
 pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     if width == 0 {
         String::new()
-    } else if keep_words {
-        split_keeping_words(&strip_osc_codes(text), width, "\n")
     } else {
-        split(&strip_osc_codes(text), width, "\n")
+        let (prefix, text, suffix) = osc_partition(text).unwrap_or(("", text, ""));
+        if keep_words {
+            split_keeping_words(text, width, prefix, suffix, "\n")
+        } else {
+            split(text, width, prefix, suffix, "\n")
+        }
     }
 }
 
-fn split(s: &str, width: usize, sep: &str) -> String {
+fn split(s: &str, width: usize, prefix: &str, suffix: &str, sep: &str) -> String {
     if width == 0 {
         return String::new();
     }
 
-    chunks(s, width).join(sep)
+    chunks(s, width, prefix, suffix).join(sep)
 }
 
 #[cfg(not(feature = "color"))]
-fn chunks(s: &str, width: usize) -> Vec<String> {
+fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
     const REPLACEMENT: char = '\u{FFFD}';
 
     let mut buf = String::with_capacity(width);
@@ -1102,9 +1105,11 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
         let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
         if i + c_width > width {
             let count_unknowns = width - i;
+            buf.push_str(suffix);
             buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
             i += count_unknowns;
         } else {
+            buf.push_str(prefix);
             buf.push(c);
             i += c_width;
         }
@@ -1124,7 +1129,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 }
 
 #[cfg(feature = "color")]
-fn chunks(s: &str, width: usize) -> Vec<String> {
+fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
     use std::fmt::Write;
 
     if width == 0 {
@@ -1140,6 +1145,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
             continue;
         }
 
+        line.push_str(prefix);
         let _ = write!(&mut line, "{}", b.start());
 
         let mut part = b.text();
@@ -1153,8 +1159,10 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 
                 if line_width == available_space {
                     let _ = write!(&mut line, "{}", b.end());
+                    line.push_str(suffix);
                     list.push(line);
                     line = String::with_capacity(width);
+                    line.push_str(prefix);
                     line_width = 0;
                     let _ = write!(&mut line, "{}", b.start());
                 }
@@ -1170,13 +1178,16 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
             line_width += unicode_width::UnicodeWidthStr::width(lhs);
 
             const REPLACEMENT: char = '\u{FFFD}';
+            line.push_str(suffix);
             line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
             line_width += unknowns;
 
             if line_width == width {
                 let _ = write!(&mut line, "{}", b.end());
+                line.push_str(suffix);
                 list.push(line);
                 line = String::with_capacity(width);
+                line.push_str(prefix);
                 line_width = 0;
                 let _ = write!(&mut line, "{}", b.start());
             }
@@ -1188,6 +1199,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
     }
 
     if line_width > 0 {
+        line.push_str(suffix);
         list.push(line);
     }
 
@@ -1195,7 +1207,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
 }
 
 #[cfg(not(feature = "color"))]
-fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
+fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &str) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
     let mut lines = Vec::new();
@@ -1215,6 +1227,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
         }
 
         if is_first_word {
+            line.push_str(prefix);
             is_first_word = false;
         }
 
@@ -1230,12 +1243,14 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
         if word_width <= width {
             // the word can be fit to 'width' so we put it on new line
 
+            line.push_str(suffix);
             line.extend(std::iter::repeat(' ').take(width - line_width));
             lines.push(line);
 
             line = String::with_capacity(width);
             line_width = 0;
 
+            line.push_str(prefix);
             line.push_str(word);
             line_width += word_width;
             is_first_word = false;
@@ -1252,6 +1267,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                 line_width += unicode_width::UnicodeWidthStr::width(lhs) + unknowns;
 
                 line.push_str(lhs);
+                line.push_str(suffix);
                 line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
 
                 if line_width == width {
@@ -1265,6 +1281,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
     }
 
     if line_width > 0 {
+        line.push_str(suffix);
         line.extend(std::iter::repeat(' ').take(width - line_width));
         lines.push(line);
     }
@@ -1273,7 +1290,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 }
 
 #[cfg(feature = "color")]
-fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
+fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &str) -> String {
     use std::fmt::Write;
 
     let mut lines = Vec::new();
@@ -1298,6 +1315,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                 }
             }
             if is_first_word {
+                line.push_str(prefix);
                 is_first_word = false;
             }
 
@@ -1314,11 +1332,13 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                 // the word can be fit to 'width' so we put it on new line
 
                 let _ = write!(&mut line, "{}", b.end());
+                line.push_str(suffix);
                 line.extend(std::iter::repeat(' ').take(width - line_width));
                 lines.push(line);
 
                 line = String::with_capacity(width);
 
+                line.push_str(prefix);
                 let _ = write!(&mut line, "{}", b.start());
                 line.push_str(word);
                 line_width = word_width;
@@ -1336,6 +1356,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
                     line_width += unicode_width::UnicodeWidthStr::width(lhs) + unknowns;
 
                     let _ = write!(&mut line, "{}", lhs);
+                    line.push_str(suffix);
                     const REPLACEMENT: char = '\u{FFFD}';
                     line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
 
@@ -1344,6 +1365,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 
                         lines.push(line);
                         line = String::with_capacity(width);
+                        line.push_str(prefix);
                         line_width = 0;
                         is_first_word = true;
                         let _ = write!(&mut line, "{}", b.start());
@@ -1377,9 +1399,20 @@ fn split_string_at(text: &str, at: usize) -> (&str, &str, (usize, usize)) {
 #[cfg(feature = "color")]
 #[cfg(test)]
 mod tests {
-    use super::*;
     use owo_colors::{colors::Yellow, OwoColorize};
     use papergrid::cut_str;
+
+    fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
+        super::split_keeping_words(s, width, "", "", sep)
+    }
+
+    fn split(s: &str, width: usize, sep: &str) -> String {
+        super::split(s, width, "", "", sep)
+    }
+
+    fn chunks(s: &str, width: usize) -> Vec<String> {
+        super::chunks(s, width, "", "")
+    }
 
     #[test]
     fn test_color_strip() {
