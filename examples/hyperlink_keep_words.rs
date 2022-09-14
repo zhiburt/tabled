@@ -1,5 +1,5 @@
-//! The example can be run by this command
-//! `cargo run --example hyperlink`
+//! To run this example:
+//! `cargo run --features=color --example hyperlink`
 
 use std::iter::FromIterator;
 
@@ -22,6 +22,12 @@ fn format_osc8_hyperlink(url: &str, text: &str) -> String {
 }
 
 fn main() {
+    // Use cfg macro to check that 'color' feature is enabled
+    assert!(
+        cfg!(feature = "color"),
+        "This example requires the 'color' feature"
+    );
+
     let data = [
         Distribution {
             name: format_osc8_hyperlink("https://www.debian.org/", "Debian"),
