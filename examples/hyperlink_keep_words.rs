@@ -48,6 +48,14 @@ fn main() {
             is_hyperlink: true,
         },
         Distribution {
+            name: format!(
+                "{} 2 links in a string {}",
+                format_osc8_hyperlink("https://www.debian.org/", "Debian"),
+                format_osc8_hyperlink("https://www.wikipedia.org/", "Debian"),
+            ),
+            is_hyperlink: true,
+        },
+        Distribution {
             name: "Debian".into(),
             is_hyperlink: false,
         },
