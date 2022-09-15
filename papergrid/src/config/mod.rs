@@ -4,6 +4,7 @@ mod borders;
 mod entity;
 mod entity_map;
 mod formatting;
+mod offset;
 mod sides;
 
 use std::collections::HashMap;
@@ -14,6 +15,7 @@ pub use self::{
     borders::{Borders, HorizontalLine, VerticalLine},
     entity::{Entity, EntityIterator, Position},
     formatting::Formatting,
+    offset::Offset,
     sides::Indent,
 };
 
@@ -38,12 +40,38 @@ pub struct GridConfig {
     borders: BordersConfig<char>,
     borders_missing_char: char,
     override_split_lines: HashMap<usize, String>,
+    override_horizontal_borders: HashMap<Position, HashMap<Offset, char>>,
     #[cfg(feature = "color")]
     margin_color: MarginColor,
     #[cfg(feature = "color")]
     padding_color: EntityMap<PaddingColor>,
     #[cfg(feature = "color")]
     border_colors: BordersConfig<AnsiColor>,
+}
+
+impl Default for GridConfig {
+    fn default() -> Self {
+        Self {
+            tab_width: 4,
+            margin: Margin::default(),
+            padding: EntityMap::default(),
+            formatting: EntityMap::default(),
+            alignment_h: EntityMap::new(AlignmentHorizontal::Left),
+            alignment_v: EntityMap::new(AlignmentVertical::Top),
+            borders: BordersConfig::default(),
+            borders_missing_char: ' ',
+            span_columns: HashMap::default(),
+            span_rows: HashMap::default(),
+            override_split_lines: HashMap::default(),
+            override_horizontal_borders: HashMap::default(),
+            #[cfg(feature = "color")]
+            margin_color: MarginColor::default(),
+            #[cfg(feature = "color")]
+            padding_color: EntityMap::default(),
+            #[cfg(feature = "color")]
+            border_colors: BordersConfig::default(),
+        }
+    }
 }
 
 impl GridConfig {
@@ -120,6 +148,7 @@ impl GridConfig {
     pub fn clear_theme(&mut self) {
         self.borders = BordersConfig::default();
         self.override_split_lines.clear();
+        self.override_horizontal_borders.clear();
     }
 
     /// Set the [`Borders`] value as currect one.
@@ -215,6 +244,53 @@ impl GridConfig {
     /// Removes a split line text if any set.
     pub fn remove_split_line_text(&mut self, row: usize) -> Option<String> {
         self.override_split_lines.remove(&row)
+    }
+
+    /// Override the split line with a custom text.
+    ///
+    /// If borders are not set the string won't be rendered.
+    pub fn override_horizontal_border(&mut self, pos: Position, c: char, offset: Offset) {
+        let chars = self
+            .override_horizontal_borders
+            .entry(pos)
+            .or_insert_with(|| HashMap::with_capacity(1));
+
+        chars.insert(offset, c);
+    }
+
+    /// Get a list of overriden chars in a horizontal border.
+    pub fn lookup_overidden_horizontal(
+        &self,
+        pos: Position,
+        offset: usize,
+        end: usize,
+    ) -> Option<char> {
+        self.override_horizontal_borders
+            .get(&pos)
+            .and_then(|chars| {
+                chars.get(&Offset::Begin(offset)).or_else(|| {
+                    if end > offset {
+                        if end == 0 {
+                            chars.get(&Offset::End(0))
+                        } else {
+                            chars.get(&Offset::End(end - offset - 1))
+                        }
+                    } else {
+                        None
+                    }
+                })
+            })
+            .copied()
+    }
+
+    /// Checks if there any char in a horizontal border being overriden.
+    pub fn is_overidden_horizontal(&self, pos: Position) -> bool {
+        self.override_horizontal_borders.get(&pos).is_some()
+    }
+
+    /// Removes a list of overriden chars in a horizontal border.
+    pub fn remove_overidden_horizontal(&mut self, pos: Position) {
+        self.override_horizontal_borders.remove(&pos);
     }
 
     /// Set a padding to a given cells.
@@ -461,30 +537,6 @@ impl GridConfig {
         shape: (usize, usize),
     ) -> Option<&AnsiColor> {
         self.border_colors.get_intersection(pos, shape.0, shape.1)
-    }
-}
-
-impl Default for GridConfig {
-    fn default() -> Self {
-        Self {
-            tab_width: 4,
-            margin: Margin::default(),
-            padding: EntityMap::default(),
-            formatting: EntityMap::default(),
-            alignment_h: EntityMap::new(AlignmentHorizontal::Left),
-            alignment_v: EntityMap::new(AlignmentVertical::Top),
-            borders: BordersConfig::default(),
-            borders_missing_char: ' ',
-            span_columns: HashMap::default(),
-            span_rows: HashMap::default(),
-            override_split_lines: HashMap::default(),
-            #[cfg(feature = "color")]
-            margin_color: MarginColor::default(),
-            #[cfg(feature = "color")]
-            padding_color: EntityMap::default(),
-            #[cfg(feature = "color")]
-            border_colors: BordersConfig::default(),
-        }
     }
 }
 

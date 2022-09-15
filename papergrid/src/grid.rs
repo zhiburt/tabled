@@ -241,7 +241,7 @@ mod print_general {
                             )?;
                         }
 
-                        repeat_char(f, *c, width)?;
+                        print_horizontal_border(f, cfg, (row, col), width, *c)?;
                     }
                     None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
                 }
@@ -508,7 +508,7 @@ mod print_spanned {
                             )?;
                         }
 
-                        repeat_char(f, *c, width)?;
+                        print_horizontal_border(f, cfg, (row, col), width, *c)?;
                     }
                     None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
                 }
@@ -564,6 +564,26 @@ mod print_spanned {
         let height = grid_cell_height(cfg, records, height, pos);
         super::print_cell_line(f, cfg, records, width, height, pos, line)
     }
+}
+
+fn print_horizontal_border(
+    f: &mut fmt::Formatter<'_>,
+    cfg: &GridConfig,
+    pos: Position,
+    width: usize,
+    c: char,
+) -> fmt::Result {
+    if cfg.is_overidden_horizontal(pos) {
+        for i in 0..width {
+            let c = cfg.lookup_overidden_horizontal(pos, i, width).unwrap_or(c);
+
+            f.write_char(c)?;
+        }
+    } else {
+        repeat_char(f, c, width)?;
+    }
+
+    Ok(())
 }
 
 fn print_cell_line<R>(
