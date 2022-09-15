@@ -28,6 +28,20 @@ fn main() {
         "This example requires the 'color' feature"
     );
 
+    let multicolored_debian = "\x1b[30mDebian\x1b[0m\
+    \x1b[31mDebian\x1b[0m\
+    \x1b[32mDebian\x1b[0m\
+    \x1b[33mDebian\x1b[0m\
+    \x1b[34mDebian\x1b[0m\
+    \x1b[35mDebian\x1b[0m\
+    \x1b[36mDebian\x1b[0m\
+    \x1b[37mDebian\x1b[0m\
+    \x1b[40mDebian\x1b[0m\
+    \x1b[41mDebian\x1b[0m\
+    \x1b[42mDebian\x1b[0m\
+    \x1b[43mDebian\x1b[0m\
+    \x1b[44mDebian\x1b[0m";
+
     let data = [
         Distribution {
             name: format_osc8_hyperlink("https://www.debian.org/", "Debian"),
@@ -38,10 +52,7 @@ fn main() {
             is_hyperlink: false,
         },
         Distribution {
-            name: format_osc8_hyperlink(
-                "https://www.debian.org/",
-                "DebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebian",
-            ),
+            name: format_osc8_hyperlink("https://www.debian.org/", multicolored_debian),
             is_hyperlink: true,
         },
         Distribution {
