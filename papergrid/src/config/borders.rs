@@ -484,3 +484,90 @@ impl<T> VerticalLine<T> {
             && self.bottom.is_none()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_insert_border() {
+        let mut borders = BordersConfig::<char>::default();
+        borders.insert_border((0, 0), Border::filled('x'));
+
+        assert_eq!(borders.get_border((0, 0), 10, 10), Border::filled(&'x'));
+        assert_eq!(borders.get_border((0, 0), 0, 0), Border::filled(&'x'));
+
+        assert!(borders.is_horizontal_set(0, 10));
+        assert!(borders.is_horizontal_set(1, 10));
+        assert!(!borders.is_horizontal_set(2, 10));
+        assert!(borders.is_vertical_set(0, 10));
+        assert!(borders.is_vertical_set(1, 10));
+        assert!(!borders.is_vertical_set(2, 10));
+
+        assert!(borders.is_horizontal_set(0, 0));
+        assert!(borders.is_horizontal_set(1, 0));
+        assert!(!borders.is_horizontal_set(2, 0));
+        assert!(borders.is_vertical_set(0, 0));
+        assert!(borders.is_vertical_set(1, 0));
+        assert!(!borders.is_vertical_set(2, 0));
+    }
+
+    #[test]
+    fn test_insert_border_override() {
+        let mut borders = BordersConfig::<char>::default();
+        borders.insert_border((0, 0), Border::filled('x'));
+        borders.insert_border((1, 0), Border::filled('y'));
+        borders.insert_border((0, 1), Border::filled('w'));
+        borders.insert_border((1, 1), Border::filled('q'));
+
+        assert_eq!(
+            borders.get_border((0, 0), 10, 10).copied(),
+            Border::full('x', 'y', 'x', 'w', 'x', 'w', 'y', 'q')
+        );
+        assert_eq!(
+            borders.get_border((0, 1), 10, 10).copied(),
+            Border::full('w', 'q', 'w', 'w', 'w', 'w', 'q', 'q')
+        );
+        assert_eq!(
+            borders.get_border((1, 0), 10, 10).copied(),
+            Border::full('y', 'y', 'y', 'q', 'y', 'q', 'y', 'q')
+        );
+        assert_eq!(
+            borders.get_border((1, 1), 10, 10).copied(),
+            Border::filled('q')
+        );
+
+        assert!(borders.is_horizontal_set(0, 10));
+        assert!(borders.is_horizontal_set(1, 10));
+        assert!(borders.is_horizontal_set(2, 10));
+        assert!(!borders.is_horizontal_set(3, 10));
+        assert!(borders.is_vertical_set(0, 10));
+        assert!(borders.is_vertical_set(1, 10));
+        assert!(borders.is_vertical_set(2, 10));
+        assert!(!borders.is_vertical_set(3, 10));
+    }
+
+    #[test]
+    fn test_set_global() {
+        let mut borders = BordersConfig::<char>::default();
+        borders.insert_border((0, 0), Border::filled('x'));
+        borders.set_global('l');
+
+        assert_eq!(borders.get_border((0, 0), 10, 10), Border::filled(&'x'));
+        assert_eq!(borders.get_border((2, 0), 10, 10), Border::filled(&'l'));
+
+        assert!(borders.is_horizontal_set(0, 10));
+        assert!(borders.is_horizontal_set(1, 10));
+        assert!(!borders.is_horizontal_set(2, 10));
+        assert!(borders.is_vertical_set(0, 10));
+        assert!(borders.is_vertical_set(1, 10));
+        assert!(!borders.is_vertical_set(2, 10));
+
+        assert!(borders.is_horizontal_set(0, 0));
+        assert!(borders.is_horizontal_set(1, 0));
+        assert!(!borders.is_horizontal_set(2, 0));
+        assert!(borders.is_vertical_set(0, 0));
+        assert!(borders.is_vertical_set(1, 0));
+        assert!(!borders.is_vertical_set(2, 0));
+    }
+}

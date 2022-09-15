@@ -3,7 +3,9 @@
 //! [`Table`]: crate::Table
 
 mod border;
+mod border_char;
 mod border_text;
+mod offset;
 mod raw_style;
 mod span_border_correction;
 #[allow(clippy::module_inception)]
@@ -18,7 +20,9 @@ mod symbol;
 
 pub use self::{
     border::Border,
+    border_char::BorderChar,
     border_text::BorderText,
+    offset::Offset,
     raw_style::RawStyle,
     span_border_correction::StyleCorrectSpan,
     style::{HorizontalLine, Line, Style, VerticalLine},

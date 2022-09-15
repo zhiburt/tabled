@@ -372,4 +372,15 @@ mod tests {
         );
         assert_eq!(count_lines("now is the time for all good men\n"), 2);
     }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn string_width_multinline_for_link() {
+        assert_eq!(
+            string_width_multiline(
+                "\u{1b}]8;;file:///home/nushell/asd.zip\u{1b}\\asd.zip\u{1b}]8;;\u{1b}\\"
+            ),
+            7
+        );
+    }
 }
