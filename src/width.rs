@@ -39,7 +39,7 @@ use papergrid::{
 };
 
 #[cfg(feature = "color")]
-use vte_ansi_iterator::strip_osc;
+use vte_ansi_tools::strip_osc;
 
 use crate::{object::Entity, CellOption, TableOption};
 
