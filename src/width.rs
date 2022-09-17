@@ -37,7 +37,7 @@ use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 use papergrid::{
     count_borders_in_range, cut_str, string_width, string_width_multiline, Grid, Settings,
 };
-use vte_ansi_iterator::{osc_partition, strip_osc_codes};
+use vte_ansi_iterator::extract_osc8_hyperlink;
 
 use crate::{object::Entity, CellOption, TableOption};
 
@@ -1073,23 +1073,39 @@ where
     points
 }
 
+#[cfg(not(feature = "color"))]
+pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
+    if width == 0 {
+        String::new()
+    } else if keep_words {
+        split_keeping_words(text, width, "\n")
+    } else {
+        split(text, width, "\n")
+    }
+}
+
+#[cfg(feature = "color")]
 pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     if width == 0 {
         String::new()
     } else {
-        let (prefix, text, suffix) = if let Some((prefix, text, suffix)) = osc_partition(text) {
-            (prefix, Cow::from(text), suffix)
+        let (url, text) = extract_osc8_hyperlink(text);
+        let (prefix, suffix) = if let Some(url) = url {
+            let osc8 = "\x1b]8;;";
+            let st = "\x1b\\";
+            (format!("{osc8}{url}{st}"), format!("{osc8}{st}"))
         } else {
-            ("", Cow::from(strip_osc_codes(text)), "")
+            ("".to_string(), "".to_string())
         };
         if keep_words {
-            split_keeping_words(&text, width, prefix, suffix, "\n")
+            split_keeping_words(&text, width, &prefix, &suffix, "\n")
         } else {
-            split(&text, width, prefix, suffix, "\n")
+            split(&text, width, &prefix, &suffix, "\n")
         }
     }
 }
 
+#[cfg(feature = "color")]
 fn split(s: &str, width: usize, prefix: &str, suffix: &str, sep: &str) -> String {
     if width == 0 {
         return String::new();
@@ -1099,7 +1115,16 @@ fn split(s: &str, width: usize, prefix: &str, suffix: &str, sep: &str) -> String
 }
 
 #[cfg(not(feature = "color"))]
-fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
+fn split(s: &str, width: usize, sep: &str) -> String {
+    if width == 0 {
+        return String::new();
+    }
+
+    chunks(s, width).join(sep)
+}
+
+#[cfg(not(feature = "color"))]
+fn chunks(s: &str, width: usize) -> Vec<String> {
     const REPLACEMENT: char = '\u{FFFD}';
 
     let mut buf = String::with_capacity(width);
@@ -1109,11 +1134,9 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
         let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
         if i + c_width > width {
             let count_unknowns = width - i;
-            buf.push_str(suffix);
             buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
             i += count_unknowns;
         } else {
-            buf.push_str(prefix);
             buf.push(c);
             i += c_width;
         }
@@ -1182,13 +1205,12 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
             line_width += unicode_width::UnicodeWidthStr::width(lhs);
 
             const REPLACEMENT: char = '\u{FFFD}';
-            line.push_str(suffix);
             line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
+            line.push_str(suffix);
             line_width += unknowns;
 
             if line_width == width {
                 let _ = write!(&mut line, "{}", b.end());
-                line.push_str(suffix);
                 list.push(line);
                 line = String::with_capacity(width);
                 line.push_str(prefix);
@@ -1211,7 +1233,7 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
 }
 
 #[cfg(not(feature = "color"))]
-fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &str) -> String {
+fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
     const REPLACEMENT: char = '\u{FFFD}';
 
     let mut lines = Vec::new();
@@ -1231,7 +1253,6 @@ fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &
         }
 
         if is_first_word {
-            line.push_str(prefix);
             is_first_word = false;
         }
 
@@ -1247,14 +1268,12 @@ fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &
         if word_width <= width {
             // the word can be fit to 'width' so we put it on new line
 
-            line.push_str(suffix);
             line.extend(std::iter::repeat(' ').take(width - line_width));
             lines.push(line);
 
             line = String::with_capacity(width);
             line_width = 0;
 
-            line.push_str(prefix);
             line.push_str(word);
             line_width += word_width;
             is_first_word = false;
@@ -1271,7 +1290,6 @@ fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &
                 line_width += unicode_width::UnicodeWidthStr::width(lhs) + unknowns;
 
                 line.push_str(lhs);
-                line.push_str(suffix);
                 line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
 
                 if line_width == width {
@@ -1285,7 +1303,6 @@ fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &
     }
 
     if line_width > 0 {
-        line.push_str(suffix);
         line.extend(std::iter::repeat(' ').take(width - line_width));
         lines.push(line);
     }
@@ -1302,7 +1319,7 @@ fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &
     let mut line_width = 0;
 
     let mut is_first_word = true;
-
+    line.push_str(prefix);
     for b in ansi_str::get_blocks(s) {
         if b.text().is_empty() {
             continue;
@@ -1319,7 +1336,6 @@ fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &
                 }
             }
             if is_first_word {
-                line.push_str(prefix);
                 is_first_word = false;
             }
 
@@ -1360,13 +1376,12 @@ fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &
                     line_width += unicode_width::UnicodeWidthStr::width(lhs) + unknowns;
 
                     let _ = write!(&mut line, "{}", lhs);
-                    line.push_str(suffix);
                     const REPLACEMENT: char = '\u{FFFD}';
                     line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
 
                     if line_width == width {
                         let _ = write!(&mut line, "{}", b.end());
-
+                        line.push_str(suffix);
                         lines.push(line);
                         line = String::with_capacity(width);
                         line.push_str(prefix);
@@ -1384,6 +1399,7 @@ fn split_keeping_words(s: &str, width: usize, prefix: &str, suffix: &str, sep: &
     }
 
     if line_width > 0 {
+        line.push_str(suffix);
         line.extend(std::iter::repeat(' ').take(width - line_width));
         lines.push(line);
     }
@@ -1403,21 +1419,11 @@ fn split_string_at(text: &str, at: usize) -> (&str, &str, (usize, usize)) {
 #[cfg(feature = "color")]
 #[cfg(test)]
 mod tests {
+    use super::*;
     use owo_colors::{colors::Yellow, OwoColorize};
     use papergrid::cut_str;
 
-    fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
-        super::split_keeping_words(s, width, "", "", sep)
-    }
-
-    fn split(s: &str, width: usize, sep: &str) -> String {
-        super::split(s, width, "", "", sep)
-    }
-
-    fn chunks(s: &str, width: usize) -> Vec<String> {
-        super::chunks(s, width, "", "")
-    }
-
+    #[cfg(feature = "color")]
     #[test]
     fn test_color_strip() {
         let s = "Collored string"
@@ -1431,47 +1437,142 @@ mod tests {
         )
     }
 
+    #[cfg(feature = "color")]
     #[test]
     fn split_test() {
-        assert_eq!(split("123456", 0, "\n"), "");
+        assert_eq!(split("123456", 0, "", "", "\n"), "");
 
-        assert_eq!(split("123456", 1, "\n"), "1\n2\n3\n4\n5\n6");
-        assert_eq!(split("123456", 2, "\n"), "12\n34\n56");
-        assert_eq!(split("12345", 2, "\n"), "12\n34\n5");
-        assert_eq!(split("123456", 6, "\n"), "123456");
-        assert_eq!(split("123456", 10, "\n"), "123456");
+        assert_eq!(split("123456", 1, "", "", "\n"), "1\n2\n3\n4\n5\n6");
+        assert_eq!(split("123456", 2, "", "", "\n"), "12\n34\n56");
+        assert_eq!(split("12345", 2, "", "", "\n"), "12\n34\n5");
+        assert_eq!(split("123456", 6, "", "", "\n"), "123456");
+        assert_eq!(split("123456", 10, "", "", "\n"), "123456");
 
-        assert_eq!(split("😳😳😳😳😳", 1, "\n"), "�\n�\n�\n�\n�");
-        assert_eq!(split("😳😳😳😳😳", 2, "\n"), "😳\n😳\n😳\n😳\n😳");
-        assert_eq!(split("😳😳😳😳😳", 3, "\n"), "😳�\n😳�\n😳");
-        assert_eq!(split("😳😳😳😳😳", 6, "\n"), "😳😳😳\n😳😳");
-        assert_eq!(split("😳😳😳😳😳", 20, "\n"), "😳😳😳😳😳");
+        assert_eq!(split("😳😳😳😳😳", 1, "", "", "\n"), "�\n�\n�\n�\n�");
+        assert_eq!(split("😳😳😳😳😳", 2, "", "", "\n"), "😳\n😳\n😳\n😳\n😳");
+        assert_eq!(split("😳😳😳😳😳", 3, "", "", "\n"), "😳�\n😳�\n😳");
+        assert_eq!(split("😳😳😳😳😳", 6, "", "", "\n"), "😳😳😳\n😳😳");
+        assert_eq!(split("😳😳😳😳😳", 20, "", "", "\n"), "😳😳😳😳😳");
 
-        assert_eq!(split("😳123😳", 1, "\n"), "�\n1\n2\n3\n�");
-        assert_eq!(split("😳12😳3", 1, "\n"), "�\n1\n2\n�\n3");
+        assert_eq!(split("😳123😳", 1, "", "", "\n"), "�\n1\n2\n3\n�");
+        assert_eq!(split("😳12😳3", 1, "", "", "\n"), "�\n1\n2\n�\n3");
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn split_test_with_prefix_and_suffix() {
+        assert_eq!(split("123456", 0, "^", "$", "\n"), "");
+
+        assert_eq!(
+            split("123456", 1, "^", "$", "\n"),
+            "^1$\n^2$\n^3$\n^4$\n^5$\n^6$"
+        );
+        assert_eq!(split("123456", 2, "^", "$", "\n"), "^12$\n^34$\n^56$");
+        assert_eq!(split("12345", 2, "^", "$", "\n"), "^12$\n^34$\n^5$");
+        assert_eq!(split("123456", 6, "^", "$", "\n"), "^123456$");
+        assert_eq!(split("123456", 10, "^", "$", "\n"), "^123456$");
+
+        assert_eq!(
+            split("😳😳😳😳😳", 1, "^", "$", "\n"),
+            "^�$\n^�$\n^�$\n^�$\n^�$"
+        );
+        assert_eq!(
+            split("😳😳😳😳😳", 2, "^", "$", "\n"),
+            "^😳$\n^😳$\n^😳$\n^😳$\n^😳$"
+        );
+        assert_eq!(split("😳😳😳😳😳", 3, "^", "$", "\n"), "^😳�$\n^😳�$\n^😳$");
+        assert_eq!(split("😳😳😳😳😳", 6, "^", "$", "\n"), "^😳😳😳$\n^😳😳$");
+        assert_eq!(split("😳😳😳😳😳", 20, "^", "$", "\n"), "^😳😳😳😳😳$");
+
+        assert_eq!(
+            split("😳123😳", 1, "^", "$", "\n"),
+            "^�$\n^1$\n^2$\n^3$\n^�$"
+        );
+        assert_eq!(
+            split("😳12😳3", 1, "^", "$", "\n"),
+            "^�$\n^1$\n^2$\n^�$\n^3$"
+        );
     }
 
     #[cfg(feature = "color")]
     #[test]
     fn chunks_test() {
-        assert_eq!(chunks("123456", 0), [""; 0]);
+        assert_eq!(chunks("123456", 0, "", ""), [""; 0]);
 
-        assert_eq!(chunks("123456", 1), ["1", "2", "3", "4", "5", "6"]);
-        assert_eq!(chunks("123456", 2), ["12", "34", "56"]);
-        assert_eq!(chunks("12345", 2), ["12", "34", "5"]);
+        assert_eq!(chunks("123456", 1, "", ""), ["1", "2", "3", "4", "5", "6"]);
+        assert_eq!(chunks("123456", 2, "", ""), ["12", "34", "56"]);
+        assert_eq!(chunks("12345", 2, "", ""), ["12", "34", "5"]);
 
-        assert_eq!(chunks("😳😳😳😳😳", 1), ["�", "�", "�", "�", "�"]);
-        assert_eq!(chunks("😳😳😳😳😳", 2), ["😳", "😳", "😳", "😳", "😳"]);
-        assert_eq!(chunks("😳😳😳😳😳", 3), ["😳�", "😳�", "😳"]);
+        assert_eq!(chunks("😳😳😳😳😳", 1, "", ""), ["�", "�", "�", "�", "�"]);
+        assert_eq!(
+            chunks("😳😳😳😳😳", 2, "", ""),
+            ["😳", "😳", "😳", "😳", "😳"]
+        );
+        assert_eq!(chunks("😳😳😳😳😳", 3, "", ""), ["😳�", "😳�", "😳"]);
     }
 
+    #[cfg(feature = "color")]
+    #[test]
+    fn chunks_test_with_prefix_and_suffix() {
+        assert_eq!(chunks("123456", 0, "^", "$"), ["^$"; 0]);
+
+        assert_eq!(
+            chunks("123456", 1, "^", "$"),
+            ["^1$", "^2$", "^3$", "^4$", "^5$", "^6$"]
+        );
+        assert_eq!(chunks("123456", 2, "^", "$"), ["^12$", "^34$", "^56$"]);
+        assert_eq!(chunks("12345", 2, "^", "$"), ["^12$", "^34$", "^5$"]);
+
+        assert_eq!(
+            chunks("😳😳😳😳😳", 1, "^", "$"),
+            ["^�$", "^�$", "^�$", "^�$", "^�$"]
+        );
+        assert_eq!(
+            chunks("😳😳😳😳😳", 2, "^", "$"),
+            ["^😳$", "^😳$", "^😳$", "^😳$", "^😳$"]
+        );
+        assert_eq!(
+            chunks("😳😳😳😳😳", 3, "^", "$"),
+            ["^😳�$", "^😳�$", "^😳$"]
+        );
+    }
+
+    #[cfg(feature = "color")]
     #[test]
     fn split_by_line_keeping_words_test() {
-        assert_eq!(split_keeping_words("123456", 1, "\n"), "1\n2\n3\n4\n5\n6");
-        assert_eq!(split_keeping_words("123456", 2, "\n"), "12\n34\n56");
-        assert_eq!(split_keeping_words("12345", 2, "\n"), "12\n34\n5 ");
+        assert_eq!(
+            split_keeping_words("123456", 1, "", "", "\n"),
+            "1\n2\n3\n4\n5\n6"
+        );
+        assert_eq!(split_keeping_words("123456", 2, "", "", "\n"), "12\n34\n56");
+        assert_eq!(split_keeping_words("12345", 2, "", "", "\n"), "12\n34\n5 ");
 
-        assert_eq!(split_keeping_words("😳😳😳😳😳", 1, "\n"), "�\n�\n�\n�\n�");
+        assert_eq!(
+            split_keeping_words("😳😳😳😳😳", 1, "", "", "\n"),
+            "�\n�\n�\n�\n�"
+        );
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn split_by_line_keeping_words_test_with_prefix_and_suffix() {
+        assert_eq!(
+            split_keeping_words("123456", 1, "^", "$", "\n"),
+            "^1$\n^2$\n^3$\n^4$\n^5$\n^6$"
+        );
+        assert_eq!(
+            split_keeping_words("123456", 2, "^", "$", "\n"),
+            "^12$\n^34$\n^56$"
+        );
+        assert_eq!(
+            split_keeping_words("12345", 2, "^", "$", "\n"),
+            "^12$\n^34$\n^5$ "
+        );
+
+        assert_eq!(
+            split_keeping_words("😳😳😳😳😳", 1, "^", "$", "\n"),
+            "^�$\n^�$\n^�$\n^�$\n^�$"
+        );
     }
 
     #[cfg(feature = "color")]
@@ -1479,8 +1580,17 @@ mod tests {
     fn split_by_line_keeping_words_color_test() {
         let text = "\u{1b}[37mJapanese “vacancy” button\u{1b}[0m";
 
-        assert_eq!(split_keeping_words(text, 2, "\n"), "\u{1b}[37mJa\u{1b}[39m\n\u{1b}[37mpa\u{1b}[39m\n\u{1b}[37mne\u{1b}[39m\n\u{1b}[37mse\u{1b}[39m\n\u{1b}[37m“v\u{1b}[39m\n\u{1b}[37mac\u{1b}[39m\n\u{1b}[37man\u{1b}[39m\n\u{1b}[37mcy\u{1b}[39m\n\u{1b}[37m”b\u{1b}[39m\n\u{1b}[37mut\u{1b}[39m\n\u{1b}[37mto\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m ");
-        assert_eq!(split_keeping_words(text, 1, "\n"), "\u{1b}[37mJ\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mp\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37ms\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37m“\u{1b}[39m\n\u{1b}[37mv\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37my\u{1b}[39m\n\u{1b}[37m”\u{1b}[39m\n\u{1b}[37mb\u{1b}[39m\n\u{1b}[37mu\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mo\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m");
+        assert_eq!(split_keeping_words(text, 2, "", "", "\n"), "\u{1b}[37mJa\u{1b}[39m\n\u{1b}[37mpa\u{1b}[39m\n\u{1b}[37mne\u{1b}[39m\n\u{1b}[37mse\u{1b}[39m\n\u{1b}[37m“v\u{1b}[39m\n\u{1b}[37mac\u{1b}[39m\n\u{1b}[37man\u{1b}[39m\n\u{1b}[37mcy\u{1b}[39m\n\u{1b}[37m”b\u{1b}[39m\n\u{1b}[37mut\u{1b}[39m\n\u{1b}[37mto\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m ");
+        assert_eq!(split_keeping_words(text, 1, "", "", "\n"), "\u{1b}[37mJ\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mp\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37ms\u{1b}[39m\n\u{1b}[37me\u{1b}[39m\n\u{1b}[37m“\u{1b}[39m\n\u{1b}[37mv\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37ma\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m\n\u{1b}[37mc\u{1b}[39m\n\u{1b}[37my\u{1b}[39m\n\u{1b}[37m”\u{1b}[39m\n\u{1b}[37mb\u{1b}[39m\n\u{1b}[37mu\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mt\u{1b}[39m\n\u{1b}[37mo\u{1b}[39m\n\u{1b}[37mn\u{1b}[39m");
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn split_by_line_keeping_words_color_test_with_prefix_and_suffix() {
+        let text = "\u{1b}[37mJapanese “vacancy” button\u{1b}[0m";
+
+        assert_eq!(split_keeping_words(text, 2, "^", "$", "\n"), "^\u{1b}[37mJa\u{1b}[39m$\n^\u{1b}[37mpa\u{1b}[39m$\n^\u{1b}[37mne\u{1b}[39m$\n^\u{1b}[37mse\u{1b}[39m$\n^\u{1b}[37m“v\u{1b}[39m$\n^\u{1b}[37mac\u{1b}[39m$\n^\u{1b}[37man\u{1b}[39m$\n^\u{1b}[37mcy\u{1b}[39m$\n^\u{1b}[37m”b\u{1b}[39m$\n^\u{1b}[37mut\u{1b}[39m$\n^\u{1b}[37mto\u{1b}[39m$\n^\u{1b}[37mn\u{1b}[39m$ ");
+        assert_eq!(split_keeping_words(text, 1, "^", "$", "\n"), "^\u{1b}[37mJ\u{1b}[39m$\n^\u{1b}[37ma\u{1b}[39m$\n^\u{1b}[37mp\u{1b}[39m$\n^\u{1b}[37ma\u{1b}[39m$\n^\u{1b}[37mn\u{1b}[39m$\n^\u{1b}[37me\u{1b}[39m$\n^\u{1b}[37ms\u{1b}[39m$\n^\u{1b}[37me\u{1b}[39m$\n^\u{1b}[37m“\u{1b}[39m$\n^\u{1b}[37mv\u{1b}[39m$\n^\u{1b}[37ma\u{1b}[39m$\n^\u{1b}[37mc\u{1b}[39m$\n^\u{1b}[37ma\u{1b}[39m$\n^\u{1b}[37mn\u{1b}[39m$\n^\u{1b}[37mc\u{1b}[39m$\n^\u{1b}[37my\u{1b}[39m$\n^\u{1b}[37m”\u{1b}[39m$\n^\u{1b}[37mb\u{1b}[39m$\n^\u{1b}[37mu\u{1b}[39m$\n^\u{1b}[37mt\u{1b}[39m$\n^\u{1b}[37mt\u{1b}[39m$\n^\u{1b}[37mo\u{1b}[39m$\n^\u{1b}[37mn\u{1b}[39m$");
     }
 
     #[cfg(feature = "color")]
@@ -1491,7 +1601,7 @@ mod tests {
         let text = "\u{1b}[37mTigre Ecuador   OMYA Andina     3824909999      Calcium carbonate       Colombia\u{1b}[0m";
 
         assert_eq!(
-            split_keeping_words(text, 2, "\n")
+            split_keeping_words(text, 2, "", "", "\n")
                 .ansi_split("\n")
                 .collect::<Vec<_>>(),
             [
@@ -1531,7 +1641,7 @@ mod tests {
         );
 
         assert_eq!(
-            split_keeping_words(text, 1, "\n")
+            split_keeping_words(text, 1, "", "", "\n")
                 .ansi_split("\n")
                 .collect::<Vec<_>>(),
             [
@@ -1595,6 +1705,122 @@ mod tests {
                 "\u{1b}[37mb\u{1b}[39m",
                 "\u{1b}[37mi\u{1b}[39m",
                 "\u{1b}[37ma\u{1b}[39m",
+            ]
+        )
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn split_by_line_keeping_words_color_2_test_with_prefix_and_suffix() {
+        use ansi_str::AnsiStr;
+
+        let text = "\u{1b}[37mTigre Ecuador   OMYA Andina     3824909999      Calcium carbonate       Colombia\u{1b}[0m";
+
+        assert_eq!(
+            split_keeping_words(text, 2, "^", "$", "\n")
+                .ansi_split("\n")
+                .collect::<Vec<_>>(),
+            [
+                "^\u{1b}[37mTi\u{1b}[39m$",
+                "^\u{1b}[37mgr\u{1b}[39m$",
+                "^\u{1b}[37meE\u{1b}[39m$",
+                "^\u{1b}[37mcu\u{1b}[39m$",
+                "^\u{1b}[37mad\u{1b}[39m$",
+                "^\u{1b}[37mor\u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
+                "^\u{1b}[37mOM\u{1b}[39m$",
+                "^\u{1b}[37mYA\u{1b}[39m$",
+                "^\u{1b}[37mAn\u{1b}[39m$",
+                "^\u{1b}[37mdi\u{1b}[39m$",
+                "^\u{1b}[37mna\u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
+                "^\u{1b}[37m38\u{1b}[39m$",
+                "^\u{1b}[37m24\u{1b}[39m$",
+                "^\u{1b}[37m90\u{1b}[39m$",
+                "^\u{1b}[37m99\u{1b}[39m$",
+                "^\u{1b}[37m99\u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
+                "^\u{1b}[37mCa\u{1b}[39m$",
+                "^\u{1b}[37mlc\u{1b}[39m$",
+                "^\u{1b}[37miu\u{1b}[39m$",
+                "^\u{1b}[37mmc\u{1b}[39m$",
+                "^\u{1b}[37mar\u{1b}[39m$",
+                "^\u{1b}[37mbo\u{1b}[39m$",
+                "^\u{1b}[37mna\u{1b}[39m$",
+                "^\u{1b}[37mte\u{1b}[39m$",
+                "^\u{1b}[37m  \u{1b}[39m$",
+                "^\u{1b}[37mCo\u{1b}[39m$",
+                "^\u{1b}[37mlo\u{1b}[39m$",
+                "^\u{1b}[37mmb\u{1b}[39m$",
+                "^\u{1b}[37mia\u{1b}[39m$",
+            ]
+        );
+
+        assert_eq!(
+            split_keeping_words(text, 1, "^", "$", "\n")
+                .ansi_split("\n")
+                .collect::<Vec<_>>(),
+            [
+                "^\u{1b}[37mT\u{1b}[39m$",
+                "^\u{1b}[37mi\u{1b}[39m$",
+                "^\u{1b}[37mg\u{1b}[39m$",
+                "^\u{1b}[37mr\u{1b}[39m$",
+                "^\u{1b}[37me\u{1b}[39m$",
+                "^\u{1b}[37mE\u{1b}[39m$",
+                "^\u{1b}[37mc\u{1b}[39m$",
+                "^\u{1b}[37mu\u{1b}[39m$",
+                "^\u{1b}[37ma\u{1b}[39m$",
+                "^\u{1b}[37md\u{1b}[39m$",
+                "^\u{1b}[37mo\u{1b}[39m$",
+                "^\u{1b}[37mr\u{1b}[39m$",
+                "^\u{1b}[37m \u{1b}[39m$",
+                "^\u{1b}[37mO\u{1b}[39m$",
+                "^\u{1b}[37mM\u{1b}[39m$",
+                "^\u{1b}[37mY\u{1b}[39m$",
+                "^\u{1b}[37mA\u{1b}[39m$",
+                "^\u{1b}[37mA\u{1b}[39m$",
+                "^\u{1b}[37mn\u{1b}[39m$",
+                "^\u{1b}[37md\u{1b}[39m$",
+                "^\u{1b}[37mi\u{1b}[39m$",
+                "^\u{1b}[37mn\u{1b}[39m$",
+                "^\u{1b}[37ma\u{1b}[39m$",
+                "^\u{1b}[37m \u{1b}[39m$",
+                "^\u{1b}[37m3\u{1b}[39m$",
+                "^\u{1b}[37m8\u{1b}[39m$",
+                "^\u{1b}[37m2\u{1b}[39m$",
+                "^\u{1b}[37m4\u{1b}[39m$",
+                "^\u{1b}[37m9\u{1b}[39m$",
+                "^\u{1b}[37m0\u{1b}[39m$",
+                "^\u{1b}[37m9\u{1b}[39m$",
+                "^\u{1b}[37m9\u{1b}[39m$",
+                "^\u{1b}[37m9\u{1b}[39m$",
+                "^\u{1b}[37m9\u{1b}[39m$",
+                "^\u{1b}[37m \u{1b}[39m$",
+                "^\u{1b}[37mC\u{1b}[39m$",
+                "^\u{1b}[37ma\u{1b}[39m$",
+                "^\u{1b}[37ml\u{1b}[39m$",
+                "^\u{1b}[37mc\u{1b}[39m$",
+                "^\u{1b}[37mi\u{1b}[39m$",
+                "^\u{1b}[37mu\u{1b}[39m$",
+                "^\u{1b}[37mm\u{1b}[39m$",
+                "^\u{1b}[37mc\u{1b}[39m$",
+                "^\u{1b}[37ma\u{1b}[39m$",
+                "^\u{1b}[37mr\u{1b}[39m$",
+                "^\u{1b}[37mb\u{1b}[39m$",
+                "^\u{1b}[37mo\u{1b}[39m$",
+                "^\u{1b}[37mn\u{1b}[39m$",
+                "^\u{1b}[37ma\u{1b}[39m$",
+                "^\u{1b}[37mt\u{1b}[39m$",
+                "^\u{1b}[37me\u{1b}[39m$",
+                "^\u{1b}[37m \u{1b}[39m$",
+                "^\u{1b}[37mC\u{1b}[39m$",
+                "^\u{1b}[37mo\u{1b}[39m$",
+                "^\u{1b}[37ml\u{1b}[39m$",
+                "^\u{1b}[37mo\u{1b}[39m$",
+                "^\u{1b}[37mm\u{1b}[39m$",
+                "^\u{1b}[37mb\u{1b}[39m$",
+                "^\u{1b}[37mi\u{1b}[39m$",
+                "^\u{1b}[37ma\u{1b}[39m$",
             ]
         )
     }

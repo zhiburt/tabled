@@ -49,9 +49,23 @@ fn main() {
         },
         Distribution {
             name: format!(
-                "{} 2 links in a string {}",
+                "{}---- 1 link followed by text",
+                format_osc8_hyperlink("https://www.debian.org/", "Debian"),
+            ),
+            is_hyperlink: true,
+        },
+        Distribution {
+            name: format!(
+                "{} 2 links with intervening text {}",
                 format_osc8_hyperlink("https://www.debian.org/", "Debian"),
                 format_osc8_hyperlink("https://www.wikipedia.org/", "Debian"),
+            ),
+            is_hyperlink: true,
+        },
+        Distribution {
+            name: format!(
+                "a link surrounded {} by text",
+                format_osc8_hyperlink("https://www.debian.org/", "Debian"),
             ),
             is_hyperlink: true,
         },

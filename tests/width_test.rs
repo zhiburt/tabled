@@ -1,10 +1,11 @@
+use std::iter::FromIterator;
 use tabled::{
     formatting_settings::TrimStrategy,
     object::{Cell, Columns, Object, Rows, Segment},
     papergrid::string_width_multiline,
     width::{Justify, MinWidth, Width},
     width::{PriorityMax, PriorityMin, SuffixLimit},
-    Alignment, Modify, Padding, Panel, Span, Style,
+    Alignment, Modify, ModifyObject, Padding, Panel, Span, Style,
 };
 
 use crate::util::{create_table, init_table, is_lines_equal, new_table, static_table};
@@ -2368,5 +2369,68 @@ mod derived {
             "| ver | published_d | is_act | major_feature            |\n|-----|-------------|--------|--------------------------|\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)] attrib\u{1b}[39m\u{1b}[49m |\n| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |\n| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
         );
         assert!(is_lines_equal(&table, 57));
+    }
+
+    fn format_osc8_hyperlink(url: &str, text: &str) -> String {
+        format!(
+            "{osc}8;;{url}{st}{text}{osc}8;;{st}",
+            url = url,
+            text = text,
+            osc = "\x1b]",
+            st = "\x1b\\"
+        )
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn hyperlinks() {
+        #[derive(Tabled)]
+        struct Distribution {
+            name: String,
+            is_hyperlink: bool,
+        }
+
+        let table = |text: &str| {
+            let data = [Distribution {
+                name: text.to_owned(),
+                is_hyperlink: true,
+            }];
+            tabled::Table::from_iter(data)
+                .with(
+                    Segment::all()
+                        .modify()
+                        .with(Width::wrap(30).keep_words())
+                        .with(Alignment::left()),
+                )
+                .to_string()
+        };
+
+        let text = format!(
+            "{} :link",
+            format_osc8_hyperlink("https://www.debian.org/", "Debian"),
+        );
+        assert_eq!(
+            table(&text),
+            "+--------------------------------+--------------+\n\
+             | name                           | is_hyperlink |\n\
+             +--------------------------------+--------------+\n\
+             | Debian :link                   | true         |\n\
+             +--------------------------------+--------------+"
+        );
+
+        let text = format!(
+            "asd {} 2 links in a string {}",
+            format_osc8_hyperlink("https://www.debian.org/", "Debian"),
+            format_osc8_hyperlink("https://www.wikipedia.org/", "Debian"),
+        );
+        assert_eq!(
+            table(&text),
+            "+--------------------------------+--------------+\n\
+             | name                           | is_hyperlink |\n\
+             +--------------------------------+--------------+\n\
+             | asd Debian 2 links in a string | true         |\n\
+             | Debian                         |              |\n\
+             +--------------------------------+--------------+"
+        );
     }
 }
