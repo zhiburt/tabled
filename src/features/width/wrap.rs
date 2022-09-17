@@ -351,7 +351,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 
             line.push_str(word);
             line_width += word_width;
-            is_first_word = true;
+            is_first_word = false;
         } else {
             // the word is too long any way so we split it
 
