@@ -37,7 +37,7 @@ use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 use papergrid::{
     count_borders_in_range, cut_str, string_width, string_width_multiline, Grid, Settings,
 };
-use vte_ansi_iterator::extract_osc8_hyperlink;
+use vte_ansi_iterator::strip_osc;
 
 use crate::{object::Entity, CellOption, TableOption};
 
@@ -1089,8 +1089,9 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     if width == 0 {
         String::new()
     } else {
-        let (url, text) = extract_osc8_hyperlink(text);
+        let (text, url): (String, Option<String>) = strip_osc(text);
         let (prefix, suffix) = if let Some(url) = url {
+            // https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
             let osc8 = "\x1b]8;;";
             let st = "\x1b\\";
             (format!("{osc8}{url}{st}"), format!("{osc8}{st}"))
