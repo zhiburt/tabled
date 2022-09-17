@@ -37,6 +37,8 @@ use std::{borrow::Cow, collections::HashMap, marker::PhantomData};
 use papergrid::{
     count_borders_in_range, cut_str, string_width, string_width_multiline, Grid, Settings,
 };
+
+#[cfg(feature = "color")]
 use vte_ansi_iterator::strip_osc;
 
 use crate::{object::Entity, CellOption, TableOption};

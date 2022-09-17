@@ -1,11 +1,15 @@
+#[cfg(feature = "color")]
 use std::iter::FromIterator;
+#[cfg(feature = "color")]
+use tabled::ModifyObject;
+
 use tabled::{
     formatting_settings::TrimStrategy,
     object::{Cell, Columns, Object, Rows, Segment},
     papergrid::string_width_multiline,
     width::{Justify, MinWidth, Width},
     width::{PriorityMax, PriorityMin, SuffixLimit},
-    Alignment, Modify, ModifyObject, Padding, Panel, Span, Style,
+    Alignment, Modify, Padding, Panel, Span, Style,
 };
 
 use crate::util::{create_table, init_table, is_lines_equal, new_table, static_table};
@@ -2371,6 +2375,7 @@ mod derived {
         assert!(is_lines_equal(&table, 57));
     }
 
+    #[cfg(feature = "color")]
     fn format_osc8_hyperlink(url: &str, text: &str) -> String {
         format!(
             "{osc}8;;{url}{st}{text}{osc}8;;{st}",
