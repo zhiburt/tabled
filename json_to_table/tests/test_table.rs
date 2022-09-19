@@ -494,6 +494,8 @@ fn many_splits_bettween_map_entries_test() {
         .collapse()
         .to_string();
 
+    println!("{}", table);
+
     assert_eq!(
         table,
         concat!(
@@ -506,6 +508,38 @@ fn many_splits_bettween_map_entries_test() {
             "├───────┼────┼──────┼───┴──┬┴─┬──────┼───┬────┴───┬────┴────────────────────────────┤\n",
             "│ menu4 │ he │ asdd │ xxxx │  │ 3333 │ 2 │ header │ SVG Viewer                      │\n",
             "└───────┴────┴──────┴──────┴──┴──────┴───┴────────┴─────────────────────────────────┘",
+        )
+    );
+}
+
+#[test]
+fn array_split_test() {
+    let value = json!(
+        {
+            "menu2": [ { "header": { "header": "SVG Viewer" } }, { "header": { "header": "SVG Viewer" } } ],
+            "menu3": [ { "header": { "header": "SVG Viewer" } }, { "header": { "header": "SVG Viewer" } } ],
+        }
+    );
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌───────┬────────┬────────┬────────────┐\n",
+            "│ menu2 │ header │ header │ SVG Viewer │\n",
+            "│       ├────────┼────────┼────────────┤\n",
+            "│       │ header │ header │ SVG Viewer │\n",
+            "├───────┼────────┼────────┼────────────┤\n",
+            "│ menu3 │ header │ header │ SVG Viewer │\n",
+            "│       ├────────┼────────┼────────────┤\n",
+            "│       │ header │ header │ SVG Viewer │\n",
+            "└───────┴────────┴────────┴────────────┘",
         )
     );
 }

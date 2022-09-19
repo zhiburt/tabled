@@ -219,6 +219,9 @@ mod json_to_table {
                         find_top_intersection(value, style)
                     } else {
                         let mut splits = used_splits.to_owned();
+
+                        println!("after={:?}", splits);
+
                         if !splits.is_empty() {
                             let mut current_width = 0;
                             while !splits.is_empty() {
@@ -238,6 +241,8 @@ mod json_to_table {
                                 }
                             }
                         }
+
+                        println!("after={:?} {}", splits, was_intersection_touched);
 
                         splits
                     };
@@ -308,7 +313,7 @@ mod json_to_table {
                             key = key.with(BottomLeftChangeSplitToIntersection);
                         }
 
-                        if i + 1 == map_length && is_in_list && !is_last {
+                        if i + 1 == map_length && is_in_list && !is_last && !is_prev_row_last {
                             key = key.with(BottomLeftChangeSplit);
                         }
 
@@ -318,6 +323,15 @@ mod json_to_table {
 
                         if is_last && column != 0 {
                             key = key.with(BottomLeftChangeSplit3);
+                        }
+
+                        if i + 1 == map_length
+                            && !is_last
+                            && is_in_list
+                            && is_prev_row_last
+                            && column > 0
+                        {
+                            key = key.with(BottomLeftChangeSplitToIntersection);
                         }
 
                         if change_key_split {
