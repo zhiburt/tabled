@@ -23,6 +23,7 @@ members = [
     "tabled_derive",
     "examples/terminal_size",
     "examples/show",
+    "json_to_table",
     "benches",
 ]
 
