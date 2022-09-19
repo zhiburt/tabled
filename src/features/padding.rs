@@ -38,7 +38,10 @@
 
 use papergrid::{Entity, Indent};
 
-use crate::table::{CellOption, Table};
+use crate::{
+    table::{CellOption, Table},
+    TableOption,
+};
 
 // #[cfg(feature = "color")]
 // use crate::style::Color;
@@ -94,6 +97,13 @@ impl Padding {
 impl<R> CellOption<R> for Padding {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         table.get_config_mut().set_padding(entity, self.0);
+        table.destroy_width_cache();
+    }
+}
+
+impl<R> TableOption<R> for Padding {
+    fn change(&mut self, table: &mut Table<R>) {
+        table.get_config_mut().set_padding(Entity::Global, self.0);
         table.destroy_width_cache();
     }
 }
