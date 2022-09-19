@@ -72,50 +72,69 @@ mod json_to_table {
         if cfg.plain {
             json_to_table_f(value, &cfg.style, true)
         } else {
-            let t = json_to_table_r(value, &cfg.style, 0);
-            table_cell_to_table(t, &cfg.style, 0, 0, true, true, false, false, &[], None)
+            json_to_table_r(value, &cfg.style, 0, 0, true, true, false, false, &[], None)
         }
     }
 
-    fn json_to_table_r(v: &Value, style: &RawStyle, row: usize) -> TableCell {
+    fn json_to_table_f(v: &Value, style: &RawStyle, outer: bool) -> Table {
         match v {
-            Value::Null => TableCell::String(String::new()),
-            Value::Bool(b) => TableCell::String(b.to_string()),
-            Value::Number(n) => TableCell::String(n.to_string()),
-            Value::String(s) => TableCell::String(s.to_string()),
-            Value::Array(arr) => {
-                let tables = arr
-                    .iter()
-                    .enumerate()
-                    .map(|(i, value)| json_to_table_r(value, style, row + i))
-                    .collect();
+            Value::Null => {
+                let mut table = col![].with(style);
+                if !outer {
+                    table = table.with(Style::empty());
+                }
 
-                TableCell::List(tables)
+                table
+            }
+            Value::Bool(b) => {
+                let mut table = col![b].with(style);
+                if !outer {
+                    table = table.with(Style::empty());
+                }
+
+                table
+            }
+            Value::Number(n) => {
+                let mut table = col![n].with(style);
+                if !outer {
+                    table = table.with(Style::empty());
+                }
+
+                table
+            }
+            Value::String(s) => {
+                let mut table = col![s].with(style);
+                if !outer {
+                    table = table.with(Style::empty());
+                }
+
+                table
+            }
+            Value::Array(arr) => {
+                let mut b = Builder::new();
+                for value in arr {
+                    b.add_record([json_to_table_f(value, style, false).to_string()]);
+                }
+
+                b.build().with(style)
             }
             Value::Object(map) => {
-                let tables = map
-                    .into_iter()
-                    .enumerate()
-                    .map(|(i, (key, value))| {
-                        (key.to_owned(), json_to_table_r(value, style, row + i))
-                    })
-                    .collect();
+                let mut b = Builder::new();
+                for (key, value) in map {
+                    b.add_record([
+                        key.clone(),
+                        json_to_table_f(value, style, false).to_string(),
+                    ]);
+                }
 
-                TableCell::Map(tables)
+                b.build().with(style)
             }
         }
-    }
-
-    #[derive(Debug, Clone)]
-    enum TableCell {
-        String(String),
-        Map(Vec<(String, TableCell)>),
-        List(Vec<TableCell>),
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn table_cell_to_table(
-        table: TableCell,
+    fn json_to_table_r(
+        value: &Value,
         style: &RawStyle,
         row: usize,
         column: usize,
@@ -126,47 +145,77 @@ mod json_to_table {
         used_splits: &[usize],
         width: Option<usize>,
     ) -> Table {
-        match table {
-            TableCell::String(s) => {
-                let mut table = col![s]
-                    .with(style)
-                    .with(Width::increase(width.unwrap_or(0)));
+        match value {
+            Value::String(..) | Value::Bool(..) | Value::Number(..) | Value::Null => {
+                let mut table = match value {
+                    Value::String(s) => col![s],
+                    Value::Bool(b) => col![b],
+                    Value::Number(n) => col![n],
+                    Value::Null => col![""],
+                    _ => unreachable!(),
+                };
 
-                {
-                    table = table.with(SetBottomChars(used_splits));
-                }
+                table = table.with(style).with(Width::increase(width.unwrap_or(0)));
+                table = table.with(SetBottomChars(used_splits));
 
                 table
             }
-            TableCell::Map(m) => {
-                let map_length = m.len();
+            Value::Object(obj) => {
+                let map_length = obj.len();
 
-                let mut keys = Vec::new();
-                for (key, _) in m.iter() {
-                    let mut key = col![key];
+                // we build a table here to not make any assumptions about style.
+                // but we could to reduce allocations.
+                let max_keys_width = obj
+                    .iter()
+                    .map(|(key, _)| col![key].with(NoRightBorders))
+                    .map(|key| key.total_width())
+                    .max()
+                    .unwrap_or(0);
 
-                    key = key.with(style);
+                let width = match width {
+                    Some(width) => width,
+                    None => {
+                        // build dummy table
+                        let map = obj.iter().enumerate().map(|(i, (key, value))| {
+                            let is_last = is_last && i + 1 == map_length;
 
-                    if row != 0 {
-                        key = key.with(NoTopBorders);
+                            let key = col![key].with(NoRightBorders);
+                            let value = json_to_table_r(
+                                value,
+                                style,
+                                row,
+                                column + 2,
+                                is_last,
+                                i + 1 == map_length,
+                                false,
+                                false,
+                                &[],
+                                None,
+                            );
+
+                            (key, value)
+                        });
+
+                        // need to rebuild the values with a known width
+                        let width = map
+                            .into_iter()
+                            .map(|(_, value)| value.total_width())
+                            .max()
+                            .unwrap_or(0);
+
+                        width + max_keys_width
                     }
+                };
 
-                    key = key.with(NoRightBorders);
-
-                    keys.push(key);
-                }
-
-                let max_keys_width = keys.iter().map(|key| key.total_width()).max().unwrap_or(0);
-
-                let mut map = Vec::new();
-                for i in 0..map_length {
+                let mut builder = Builder::new();
+                let mut iter = obj.iter().enumerate().peekable();
+                while let Some((i, value)) = iter.next() {
                     let row = row + i;
-
-                    let (key, value) = &m[i];
+                    let (key, value) = value;
 
                     let mut was_intersection_touched = false;
                     let intersections = if i + 1 < map_length {
-                        let (_, value) = &m[i + 1];
+                        let (_, (_, value)) = iter.peek().unwrap();
                         find_top_intersection(value, style)
                     } else {
                         let mut splits = used_splits.to_owned();
@@ -193,12 +242,10 @@ mod json_to_table {
                         splits
                     };
 
-                    let width = width.map(|w| w - max_keys_width);
-
                     let is_last = is_last && i + 1 == map_length;
-
-                    let mut value = table_cell_to_table(
-                        value.clone(),
+                    let width = width - max_keys_width;
+                    let mut value = json_to_table_r(
+                        value,
                         style,
                         row,
                         column + 2,
@@ -207,7 +254,7 @@ mod json_to_table {
                         false,
                         was_intersection_touched,
                         &intersections,
-                        width,
+                        Some(width),
                     );
                     {
                         value = value.with(TopLeftChangeSplit);
@@ -278,64 +325,53 @@ mod json_to_table {
                         }
                     }
 
-                    map.push((key, value));
+                    {
+                        let value_height = value.total_height();
+
+                        key = key
+                            .with(Width::increase(max_keys_width))
+                            .with(Height::increase(value_height));
+                    }
+
+                    builder.add_record([key.to_string(), value.to_string()]);
                 }
 
-                match width {
-                    Some(width) => {
-                        let width = width - max_keys_width;
-
-                        map = map
-                            .into_iter()
-                            .map(|(key, mut value)| {
-                                value = value.with(Width::increase(width));
-
-                                (key, value)
-                            })
-                            .collect::<Vec<_>>();
-
-                        let mut b = Builder::new();
-                        for (mut key, value) in map {
-                            let value_height = value.total_height();
-
-                            key = key
-                                .with(Width::increase(max_keys_width))
-                                .with(Height::increase(value_height));
-
-                            b.add_record([key.to_string(), value.to_string()]);
-                        }
-
-                        let mut table = b.build();
-                        table = table.with(Style::empty()).with(Padding::zero());
-                        table
-                    }
-                    None => {
-                        // need to rebuild the values with a known width
-                        let width = map
-                            .into_iter()
-                            .map(|(_, value)| value.total_width())
-                            .max()
-                            .unwrap_or(0);
-
-                        table_cell_to_table(
-                            TableCell::Map(m),
-                            style,
-                            row,
-                            column,
-                            is_last,
-                            is_prev_row_last,
-                            false,
-                            change_key_split,
-                            used_splits,
-                            Some(width + max_keys_width),
-                        )
-                    }
-                }
+                let mut table = builder.build();
+                table = table.with(Style::empty()).with(Padding::zero());
+                table
             }
-            TableCell::List(list) => {
+            Value::Array(list) => {
+                let width = match width {
+                    Some(width) => width,
+                    None => {
+                        // build a dummy tables
+                        let list = list.iter().enumerate().map(|(i, value)| {
+                            let is_last = is_last && i + 1 == list.len();
+                            json_to_table_r(
+                                value,
+                                style,
+                                row,
+                                column,
+                                is_last,
+                                i + 1 == list.len(),
+                                true,
+                                false,
+                                &[],
+                                None,
+                            )
+                        });
+
+                        // need to rebuild the values with a known width
+                        list.into_iter()
+                            .map(|value| value.total_width())
+                            .max()
+                            .unwrap_or(0)
+                    }
+                };
+
                 let map_length = list.len();
-                let mut map = Vec::new();
-                for (i, value) in list.clone().into_iter().enumerate() {
+                let mut builder = Builder::new();
+                for (i, value) in list.iter().enumerate() {
                     let row = row + i;
 
                     let intersections = if i + 1 < map_length {
@@ -346,7 +382,7 @@ mod json_to_table {
                     };
 
                     let is_last = is_last && i + 1 == map_length;
-                    let mut value = table_cell_to_table(
+                    let mut value = json_to_table_r(
                         value,
                         style,
                         row,
@@ -356,7 +392,7 @@ mod json_to_table {
                         true,
                         false,
                         &intersections,
-                        width,
+                        Some(width),
                     );
 
                     if column != 0 {
@@ -383,60 +419,27 @@ mod json_to_table {
                         value = value.with(BottomLeftChangeSplit3);
                     }
 
-                    map.push(value);
+                    value = value.with(Width::increase(width));
+
+                    builder.add_record([value.to_string()]);
                 }
 
-                match width {
-                    Some(width) => {
-                        map = map
-                            .into_iter()
-                            .map(|value| value.with(Width::increase(width)))
-                            .collect();
-
-                        let mut b = Builder::new();
-                        for value in map {
-                            b.add_record([value.to_string()]);
-                        }
-
-                        b.build().with(Style::empty()).with(Padding::zero())
-                    }
-                    None => {
-                        // need to rebuild the values with a known width
-                        let width = map
-                            .into_iter()
-                            .map(|value| value.total_width())
-                            .max()
-                            .unwrap_or(0);
-
-                        table_cell_to_table(
-                            TableCell::List(list),
-                            style,
-                            row,
-                            column,
-                            is_last,
-                            is_prev_row_last,
-                            true,
-                            false,
-                            used_splits,
-                            Some(width),
-                        )
-                    }
-                }
+                builder.build().with(Style::empty()).with(Padding::zero())
             }
         }
     }
 
-    fn find_top_intersection(table: &TableCell, style: &RawStyle) -> Vec<usize> {
+    fn find_top_intersection(table: &Value, style: &RawStyle) -> Vec<usize> {
         let mut intersections = Vec::new();
         find_top_intersection_r(table, style, &mut intersections);
 
         intersections
     }
 
-    fn find_top_intersection_r(table: &TableCell, style: &RawStyle, chars: &mut Vec<usize>) {
+    fn find_top_intersection_r(table: &Value, style: &RawStyle, chars: &mut Vec<usize>) {
         match table {
-            TableCell::String(_) => (),
-            TableCell::Map(m) => {
+            Value::String(_) | Value::Bool(_) | Value::Number(_) | Value::Null => (),
+            Value::Object(m) => {
                 if m.is_empty() {
                     return;
                 }
@@ -452,80 +455,13 @@ mod json_to_table {
                 let (_, value) = m.iter().next().unwrap();
                 find_top_intersection_r(value, style, chars);
             }
-            TableCell::List(list) => {
+            Value::Array(list) => {
                 if let Some(value) = list.first() {
                     find_top_intersection_r(value, style, chars);
                 }
             }
         }
     }
-
-    fn json_to_table_f(v: &Value, style: &RawStyle, outer: bool) -> Table {
-        match v {
-            Value::Null => {
-                let mut table = col![].with(style);
-                if !outer {
-                    table = table.with(Style::empty());
-                }
-
-                table
-            }
-            Value::Bool(b) => {
-                let mut table = col![b].with(style);
-                if !outer {
-                    table = table.with(Style::empty());
-                }
-
-                table
-            }
-            Value::Number(n) => {
-                let mut table = col![n].with(style);
-                if !outer {
-                    table = table.with(Style::empty());
-                }
-
-                table
-            }
-            Value::String(s) => {
-                let mut table = col![s].with(style);
-                if !outer {
-                    table = table.with(Style::empty());
-                }
-
-                table
-            }
-            Value::Array(arr) => {
-                let mut b = Builder::new();
-                for value in arr {
-                    b.add_record([json_to_table_f(value, style, false).to_string()]);
-                }
-
-                b.build().with(style)
-            }
-            Value::Object(map) => {
-                let mut b = Builder::new();
-                for (key, value) in map {
-                    b.add_record([
-                        key.clone(),
-                        json_to_table_f(value, style, false).to_string(),
-                    ]);
-                }
-
-                b.build().with(style)
-            }
-        }
-    }
-
-    // fn json_table_length(value: &Value) -> usize {
-    //     match value {
-    //         Value::Null => 1,
-    //         Value::Bool(_) => 1,
-    //         Value::Number(_) => 1,
-    //         Value::String(_) => 1,
-    //         Value::Array(values) => values.iter().map(json_table_length).max().unwrap_or(1),
-    //         Value::Object(map) => 1 + map.values().map(json_table_length).max().unwrap_or(1),
-    //     }
-    // }
 
     struct NoOuterBorders;
 

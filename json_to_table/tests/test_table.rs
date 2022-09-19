@@ -1,3 +1,4 @@
+use json_to_table::json_to_table;
 use serde_json::json;
 use tabled::Style;
 
@@ -32,7 +33,7 @@ fn general_json_1_test() {
         }}
     );
 
-    let table = json_to_table::json_to_table(&value)
+    let table = json_to_table(&value)
         .set_style(Style::extended())
         .to_string();
 
@@ -87,7 +88,7 @@ fn general_json_1_test() {
         )
     );
 
-    let table = json_to_table::json_to_table(&value)
+    let table = json_to_table(&value)
         .set_style(Style::extended())
         .collapse()
         .to_string();
@@ -163,9 +164,7 @@ fn general_json_2_test() {
         }
     );
 
-    let table = json_to_table::json_to_table(&value)
-        .set_style(Style::modern())
-        .to_string();
+    let table = json_to_table(&value).set_style(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -208,7 +207,7 @@ fn general_json_2_test() {
         )
     );
 
-    let table = json_to_table::json_to_table(&value)
+    let table = json_to_table(&value)
         .set_style(Style::modern())
         .collapse()
         .to_string();
@@ -275,9 +274,7 @@ fn general_json_3_test() {
         }}
     );
 
-    let table = json_to_table::json_to_table(&value)
-        .set_style(Style::modern())
-        .to_string();
+    let table = json_to_table(&value).set_style(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -396,10 +393,12 @@ fn general_json_3_test() {
         )
     );
 
-    let table = json_to_table::json_to_table(&value)
+    let table = json_to_table(&value)
         .set_style(Style::modern())
         .collapse()
         .to_string();
+
+    println!("{}", table);
 
     assert_eq!(
         table,
@@ -490,7 +489,7 @@ fn many_splits_bettween_map_entries_test() {
         }
     );
 
-    let table = json_to_table::json_to_table(&value)
+    let table = json_to_table(&value)
         .set_style(Style::modern())
         .collapse()
         .to_string();
