@@ -9,6 +9,7 @@ documentation = "https://docs.rs/json_to_table"
 license = "MIT"
 keywords = ["table", "print", "pretty-table", "format", "json"]
 categories = ["text-processing", "visualization"]
+readme = "README.md"
 
 [dependencies]
 serde_json = "1.*"
