@@ -210,3 +210,27 @@ test_table!(
         "| \u{1b}[34m\u{1b}[42m2xxxx\u{1b}[39m\u{1b}[49m |          |          |          |"
         "| \u{1b}[34m\u{1b}[42mxxxx\u{1b}[39m\u{1b}[49m  |          |          |          |"
 );
+
+#[cfg(feature = "macros")]
+test_table!(
+    cell_height_1x1,
+    tabled::row![tabled::col!["SGML"].with(Height::increase(4))],
+    "+----------+"
+    "| +------+ |"
+    "| | SGML | |"
+    "| |      | |"
+    "| +------+ |"
+    "+----------+"
+);
+
+#[cfg(feature = "macros")]
+test_table!(
+    cell_height_1x1_no_top_border,
+    tabled::row![tabled::col!["SGML"].with(Style::ascii().off_top()).with(Height::increase(4))],
+    "+----------+"
+    "| | SGML | |"
+    "| |      | |"
+    "| |      | |"
+    "| +------+ |"
+    "+----------+"
+);

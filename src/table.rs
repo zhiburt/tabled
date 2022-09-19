@@ -264,12 +264,14 @@ where
 
     /// Returns total widths of a table, including margin and vertical lines.
     pub fn total_width(&self) -> usize {
-        get_table_total_width(&self.records, &self.cfg)
+        let ctrl = self.get_width_ctrl();
+        get_table_total_width(&self.records, &self.cfg, &ctrl)
     }
 
     /// Returns total widths of a table, including margin and horizontal lines.
     pub fn total_height(&self) -> usize {
-        get_table_total_height(&self.records, &self.cfg)
+        let ctrl = self.get_height_ctrl();
+        get_table_total_height(&self.records, &self.cfg, &ctrl)
     }
 
     fn get_width_ctrl(&self) -> CachedEstimator<'_, WidthEstimator> {

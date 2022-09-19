@@ -200,13 +200,12 @@ impl Height {
     }
 }
 
-pub(crate) fn get_table_total_height<R>(records: &R, cfg: &GridConfig) -> usize
+pub(crate) fn get_table_total_height<R, E>(records: &R, cfg: &GridConfig, ctrl: &E) -> usize
 where
     R: Records,
+    E: Estimate<R>,
 {
-    let mut ctrl = HeightEstimator::default();
-    ctrl.estimate(records, cfg);
-    <HeightEstimator as Estimate<R>>::total(&ctrl)
+    ctrl.total()
         + cfg.count_horizontal(records.count_rows())
         + cfg.get_margin().top.size
         + cfg.get_margin().bottom.size

@@ -1,6 +1,7 @@
 //! The module contains [`Measurment`] trait and its implementations to be used in [`Height`] and [`Width`].
 
 use papergrid::{
+    height::HeightEstimator,
     records::Records,
     width::{CfgWidthFunction, WidthFunc},
     GridConfig,
@@ -101,7 +102,7 @@ impl Measurment<Height> for Percent {
     where
         R: Records,
     {
-        let total = get_table_total_height(&records, cfg);
+        let total = get_table_total_height(&records, cfg, &HeightEstimator::default());
         (total * self.0) / 100
     }
 }
