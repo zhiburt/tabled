@@ -187,6 +187,13 @@ impl RawStyle {
         self
     }
 
+    /// Get a top intersection char.
+    pub fn get_top_intersection(&self) -> Option<char> {
+        self.borders.top_intersection
+    }
+
+    // todo: add more get_* tests
+
     /// Returns an outer border of the style.
     pub fn frame(&self) -> Border {
         Border::new_raw(Some(papergrid::Border {

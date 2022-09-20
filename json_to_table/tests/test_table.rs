@@ -543,3 +543,168 @@ fn array_split_test() {
         )
     );
 }
+
+#[test]
+fn array_split_2_test() {
+    let value = json!(
+        {
+            "menu2": [ { "header": { "header": "SVG Viewer" } }, { "header": { "header": "SVG Viewer" } } ],
+            "menu3": [ { "hea": { "header": "SVG Viewer" } }, { "header": { "header": "SVG Viewer" } } ],
+        }
+    );
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌───────┬────────┬────────┬────────────┐\n",
+            "│ menu2 │ header │ header │ SVG Viewer │\n",
+            "│       ├────────┼────────┼────────────┤\n",
+            "│       │ header │ header │ SVG Viewer │\n",
+            "├───────┼─────┬──┴─────┬──┴────────────┤\n",
+            "│ menu3 │ hea │ header │ SVG Viewer    │\n",
+            "│       ├─────┴──┬─────┴──┬────────────┤\n",
+            "│       │ header │ header │ SVG Viewer │\n",
+            "└───────┴────────┴────────┴────────────┘",
+        )
+    );
+}
+
+#[test]
+fn array_split_4_test() {
+    let value = json!(
+        {
+            "host": { "long_os_version": "", "uptime": 0.0 },
+            "men": { "available": 123123.22 },
+        }
+    );
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌──────┬─────────────────┬─────┐\n",
+            "│ host │ long_os_version │     │\n",
+            "│      ├─────────────────┼─────┤\n",
+            "│      │ uptime          │ 0.0 │\n",
+            "├──────┼───────────┬─────┴─────┤\n",
+            "│ men  │ available │ 123123.22 │\n",
+            "└──────┴───────────┴───────────┘",
+        )
+    );
+}
+
+#[test]
+fn array_split_3_test() {
+    let value = json!(
+        {
+            "key1": [
+                { "name": "groups" },
+                { "root": ["root"] },
+                { "git": ["git"]   },
+            ]
+        }
+    );
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌──────┬──────┬────────┐\n",
+            "│ key1 │ name │ groups │\n",
+            "│      ├──────┼────────┤\n",
+            "│      │ root │ root   │\n",
+            "│      ├─────┬┴────────┤\n",
+            "│      │ git │ git     │\n",
+            "└──────┴─────┴─────────┘",
+        )
+    );
+}
+
+#[test]
+fn array_split_with_inner_array_test() {
+    let value = json!(
+        {
+            "menu": [
+                [ { "key1": 123, "key2": "asd" } ],
+                [ { "key": 123, "ke": "asd" } ] ,
+            ],
+        }
+    );
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌──────┬──────┬─────┐\n",
+            "│ menu │ key1 │ 123 │\n",
+            "│      ├──────┼─────┤\n",
+            "│      │ key2 │ asd │\n",
+            "│      ├─────┬┴─────┤\n",
+            "│      │ ke  │ asd  │\n",
+            "│      ├─────┼──────┤\n",
+            "│      │ key │ 123  │\n",
+            "└──────┴─────┴──────┘",
+        )
+    );
+}
+
+#[test]
+fn array_split_with_inner_array_2_test() {
+    let value = json!(
+        [
+            [ [ { "key1": 123 } ], [ "asd", "asd" ] ],
+            [ [ { "k": 123 } ], [ "v", "z" ] ],
+        ]
+    );
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌──────┬─────┐\n",
+            "│ key1 │ 123 │\n",
+            "├──────┴─────┤\n",
+            "│ asd        │\n",
+            "├────────────┤\n",
+            "│ asd        │\n",
+            "├───┬────────┤\n",
+            "│ k │ 123    │\n",
+            "├───┴────────┤\n",
+            "│ v          │\n",
+            "├────────────┤\n",
+            "│ z          │\n",
+            "└────────────┘",
+        )
+    );
+}

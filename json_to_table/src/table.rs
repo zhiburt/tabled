@@ -156,7 +156,10 @@ mod json_to_table {
                 };
 
                 table = table.with(style).with(Width::increase(width.unwrap_or(0)));
-                table = table.with(SetBottomChars(used_splits));
+                table = table.with(SetBottomChars(
+                    used_splits,
+                    style.get_top_intersection().unwrap_or(' '),
+                ));
 
                 table
             }
@@ -220,7 +223,7 @@ mod json_to_table {
                     } else {
                         let mut splits = used_splits.to_owned();
 
-                        println!("after={:?}", splits);
+                        println!("splits={:?}", splits);
 
                         if !splits.is_empty() {
                             let mut current_width = 0;
@@ -242,10 +245,12 @@ mod json_to_table {
                             }
                         }
 
-                        println!("after={:?} {}", splits, was_intersection_touched);
+                        println!("splits aster={:?}", splits);
 
                         splits
                     };
+
+                    println!("intersections={:?}", intersections);
 
                     let is_last = is_last && i + 1 == map_length;
                     let width = width - max_keys_width;
@@ -287,14 +292,8 @@ mod json_to_table {
                     key = key.with(style);
 
                     {
-                        // set custom chars
-                        if i + 1 == map_length {
-                            // set for the key
-                            key = key.with(SetBottomChars(used_splits));
-                        }
-                    }
+                        key = key.with(NoRightBorders);
 
-                    {
                         if row != 0 {
                             key = key.with(NoTopBorders);
                         }
@@ -303,35 +302,26 @@ mod json_to_table {
                             key = key.with(TopLeftChangeSplit);
                         }
 
-                        key = key.with(NoRightBorders);
-
-                        if i + 1 < map_length {
+                        if column > 0 {
+                            if i + 1 == map_length {
+                                if is_in_list {
+                                    if is_last {
+                                        key = key.with(BottomLeftChangeSplit3);
+                                    } else if is_prev_row_last {
+                                        key = key.with(BottomLeftChangeSplitToIntersection);
+                                    } else {
+                                        key = key.with(BottomLeftChangeSplit);
+                                    }
+                                } else if is_prev_row_last {
+                                    key = key.with(BottomLeftChangeSplit3);
+                                } else {
+                                    key = key.with(BottomLeftChangeSplitToIntersection);
+                                }
+                            } else {
+                                key = key.with(BottomLeftChangeSplit);
+                            }
+                        } else if !is_last {
                             key = key.with(BottomLeftChangeSplit);
-                        }
-
-                        if i + 1 == map_length && !is_last {
-                            key = key.with(BottomLeftChangeSplitToIntersection);
-                        }
-
-                        if i + 1 == map_length && is_in_list && !is_last && !is_prev_row_last {
-                            key = key.with(BottomLeftChangeSplit);
-                        }
-
-                        if i + 1 == map_length && is_prev_row_last && column != 0 {
-                            key = key.with(BottomLeftChangeSplit3);
-                        }
-
-                        if is_last && column != 0 {
-                            key = key.with(BottomLeftChangeSplit3);
-                        }
-
-                        if i + 1 == map_length
-                            && !is_last
-                            && is_in_list
-                            && is_prev_row_last
-                            && column > 0
-                        {
-                            key = key.with(BottomLeftChangeSplitToIntersection);
                         }
 
                         if change_key_split {
@@ -345,6 +335,21 @@ mod json_to_table {
                         key = key
                             .with(Width::increase(max_keys_width))
                             .with(Height::increase(value_height));
+                    }
+
+                    {
+                        // set custom chars
+                        if i + 1 == map_length {
+                            // set for the key
+
+                            println!("{:?}", used_splits);
+                            println!("{}", key);
+
+                            key = key.with(SetBottomChars(
+                                used_splits,
+                                style.get_top_intersection().unwrap_or(' '),
+                            ));
+                        }
                     }
 
                     builder.add_record([key.to_string(), value.to_string()]);
@@ -396,13 +401,19 @@ mod json_to_table {
                     };
 
                     let is_last = is_last && i + 1 == map_length;
+
+                    let mut is_last_in_list = i + 1 == list.len();
+                    if is_in_list {
+                        is_last_in_list = is_last_in_list && is_prev_row_last;
+                    }
+
                     let mut value = json_to_table_r(
                         value,
                         style,
                         row,
                         column,
                         is_last,
-                        i + 1 == map_length,
+                        is_last_in_list,
                         true,
                         false,
                         &intersections,
@@ -427,6 +438,14 @@ mod json_to_table {
 
                     if i + 1 == map_length && !is_last {
                         value = value.with(BottomLeftChangeSplitToIntersection);
+                    }
+
+                    if i + 1 == map_length && !is_last && is_prev_row_last {
+                        value = value.with(BottomLeftChangeSplit3);
+                    }
+
+                    if column == 0 && !is_last {
+                        value = value.with(BottomLeftChangeSplit);
                     }
 
                     if is_last && column != 0 {
@@ -690,18 +709,14 @@ mod json_to_table {
         }
     }
 
-    struct SetBottomChars<'a>(&'a [usize]);
+    struct SetBottomChars<'a>(&'a [usize], char);
 
     impl<R> TableOption<R> for SetBottomChars<'_>
     where
         R: Records,
     {
         fn change(&mut self, table: &mut Table<R>) {
-            let split_char = table
-                .get_config()
-                .get_borders()
-                .top_intersection
-                .unwrap_or('@');
+            let split_char = self.1;
 
             let table_width = table.total_width();
             let mut current_width = 0;
