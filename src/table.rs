@@ -65,12 +65,11 @@ pub trait CellOption<R> {
 /// ### With settings
 ///
 /// ```rust,no_run
-/// use tabled::{Table, Style, Alignment, object::Segment, Modify};
+/// use tabled::{Table, Style, Alignment};
 ///
 /// let data = vec!["Hello", "2021"];
-/// let table = Table::new(&data)
-///                 .with(Style::psql())
-///                 .with(Modify::new(Segment::all()).with(Alignment::left()));
+/// let mut table = Table::new(&data);
+/// table.with(Style::psql()).with(Alignment::left());
 ///
 /// println!("{}", table);
 /// ```
@@ -150,7 +149,9 @@ impl Table<()> {
     /// builder.set_index(0);
     /// builder.transpose();
     ///
-    /// let table = builder.build().with(Segment::new(1.., 1..).modify().with(Alignment::center())).to_string();
+    /// let table = builder.build()
+    ///     .with(Segment::new(1.., 1..).modify().with(Alignment::center()))
+    ///     .to_string();
     ///
     /// assert_eq!(
     ///     table,
@@ -211,11 +212,11 @@ impl<R> Table<R> {
     /// With is a generic function which applies options to the [`Table`].
     ///
     /// It applies settings immediately.
-    pub fn with<O>(mut self, mut option: O) -> Self
+    pub fn with<O>(&mut self, mut option: O) -> &mut Self
     where
         O: TableOption<R>,
     {
-        option.change(&mut self);
+        option.change(self);
         self
     }
 

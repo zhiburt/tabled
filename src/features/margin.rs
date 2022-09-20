@@ -7,10 +7,8 @@
 //!
 //! let data = vec!["Hello", "World", "!"];
 //!
-//! let table = data
-//!     .table()
-//!     .with(Style::markdown())
-//!     .with(Margin::new(3, 3, 1, 0));
+//! let mut table = data.table();
+//! table.with(Style::markdown()).with(Margin::new(3, 3, 1, 0));
 //!
 //! assert_eq!(
 //!     table.to_string(),
@@ -38,7 +36,7 @@ use crate::{Table, TableOption};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data).with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'));
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Margin(papergrid::Margin);
 
 impl Margin {

@@ -79,55 +79,65 @@ mod json_to_table {
     fn json_to_table_f(v: &Value, style: &RawStyle, outer: bool) -> Table {
         match v {
             Value::Null => {
-                let mut table = col![].with(style);
+                let mut table = col![];
+                table.with(style);
                 if !outer {
-                    table = table.with(Style::empty());
+                    table.with(Style::empty());
                 }
 
                 table
             }
             Value::Bool(b) => {
-                let mut table = col![b].with(style);
+                let mut table = col![b];
+                table.with(style);
                 if !outer {
-                    table = table.with(Style::empty());
+                    table.with(Style::empty());
                 }
 
                 table
             }
             Value::Number(n) => {
-                let mut table = col![n].with(style);
+                let mut table = col![n];
+                table.with(style);
                 if !outer {
-                    table = table.with(Style::empty());
+                    table.with(Style::empty());
                 }
 
                 table
             }
             Value::String(s) => {
-                let mut table = col![s].with(style);
+                let mut table = col![s];
+                table.with(style);
                 if !outer {
-                    table = table.with(Style::empty());
+                    table.with(Style::empty());
                 }
 
                 table
             }
             Value::Array(arr) => {
-                let mut b = Builder::new();
+                let mut builder = Builder::new();
                 for value in arr {
-                    b.add_record([json_to_table_f(value, style, false).to_string()]);
+                    builder.add_record([json_to_table_f(value, style, false).to_string()]);
                 }
 
-                b.build().with(style)
+                let mut table = builder.build();
+                table.with(style);
+
+                table
             }
             Value::Object(map) => {
-                let mut b = Builder::new();
+                let mut builder = Builder::new();
                 for (key, value) in map {
-                    b.add_record([
+                    builder.add_record([
                         key.clone(),
                         json_to_table_f(value, style, false).to_string(),
                     ]);
                 }
 
-                b.build().with(style)
+                let mut table = builder.build();
+                table.with(style);
+
+                table
             }
         }
     }
@@ -155,8 +165,8 @@ mod json_to_table {
                     _ => unreachable!(),
                 };
 
-                table = table.with(style).with(Width::increase(width.unwrap_or(0)));
-                table = table.with(SetBottomChars(
+                table.with(style).with(Width::increase(width.unwrap_or(0)));
+                table.with(SetBottomChars(
                     used_splits,
                     style.get_top_intersection().unwrap_or(' '),
                 ));
@@ -170,8 +180,7 @@ mod json_to_table {
                 // but we could to reduce allocations.
                 let max_keys_width = obj
                     .iter()
-                    .map(|(key, _)| col![key].with(NoRightBorders))
-                    .map(|key| key.total_width())
+                    .map(|(key, _)| col![key].with(NoRightBorders).total_width())
                     .max()
                     .unwrap_or(0);
 
@@ -182,7 +191,9 @@ mod json_to_table {
                         let map = obj.iter().enumerate().map(|(i, (key, value))| {
                             let is_last = is_last && i + 1 == map_length;
 
-                            let key = col![key].with(NoRightBorders);
+                            let mut key = col![key];
+                            key.with(NoRightBorders);
+
                             let value = json_to_table_r(
                                 value,
                                 style,
@@ -260,73 +271,72 @@ mod json_to_table {
                         Some(width),
                     );
                     {
-                        value = value.with(TopLeftChangeSplit);
+                        value.with(TopLeftChangeSplit);
 
                         if row != 0 {
-                            value = value.with(NoTopBorders);
+                            value.with(NoTopBorders);
                         }
 
                         if !is_last {
-                            value = value.with(BottomRightChangeToRight);
+                            value.with(BottomRightChangeToRight);
                         }
 
                         if i + 1 == map_length {
-                            value = value.with(BottomLeftChangeToBottomIntersection);
+                            value.with(BottomLeftChangeToBottomIntersection);
                         } else {
-                            value = value.with(BottomLeftChangeSplitToIntersection);
+                            value.with(BottomLeftChangeSplitToIntersection);
                         }
 
                         if was_intersection_touched {
-                            value = value.with(BottomLeftChangeSplitToIntersection);
+                            value.with(BottomLeftChangeSplitToIntersection);
                         }
                     }
 
                     let mut key = col![key];
-                    key = key.with(style);
+                    key.with(style);
 
                     {
-                        key = key.with(NoRightBorders);
+                        key.with(NoRightBorders);
 
                         if row != 0 {
-                            key = key.with(NoTopBorders);
+                            key.with(NoTopBorders);
                         }
 
                         if row == 0 && column != 0 {
-                            key = key.with(TopLeftChangeSplit);
+                            key.with(TopLeftChangeSplit);
                         }
 
                         if column > 0 {
                             if i + 1 == map_length {
                                 if is_in_list {
                                     if is_last {
-                                        key = key.with(BottomLeftChangeToBottomIntersection);
+                                        key.with(BottomLeftChangeToBottomIntersection);
                                     } else if is_prev_row_last {
-                                        key = key.with(BottomLeftChangeSplitToIntersection);
+                                        key.with(BottomLeftChangeSplitToIntersection);
                                     } else {
-                                        key = key.with(BottomLeftChangeSplit);
+                                        key.with(BottomLeftChangeSplit);
                                     }
                                 } else if is_prev_row_last {
-                                    key = key.with(BottomLeftChangeToBottomIntersection);
+                                    key.with(BottomLeftChangeToBottomIntersection);
                                 } else {
-                                    key = key.with(BottomLeftChangeSplitToIntersection);
+                                    key.with(BottomLeftChangeSplitToIntersection);
                                 }
                             } else {
-                                key = key.with(BottomLeftChangeSplit);
+                                key.with(BottomLeftChangeSplit);
                             }
                         } else if !is_last {
-                            key = key.with(BottomLeftChangeSplit);
+                            key.with(BottomLeftChangeSplit);
                         }
 
                         if change_key_split {
-                            key = key.with(BottomLeftChangeSplitToIntersection);
+                            key.with(BottomLeftChangeSplitToIntersection);
                         }
                     }
 
                     {
                         let value_height = value.total_height();
 
-                        key = key
-                            .with(Width::increase(max_keys_width))
+                        key.with(Width::increase(max_keys_width))
                             .with(Height::increase(value_height));
                     }
 
@@ -334,7 +344,7 @@ mod json_to_table {
                         // set custom chars
                         if i + 1 == map_length {
                             // set for the key
-                            key = key.with(SetBottomChars(
+                            key.with(SetBottomChars(
                                 used_splits,
                                 style.get_top_intersection().unwrap_or(' '),
                             ));
@@ -345,7 +355,7 @@ mod json_to_table {
                 }
 
                 let mut table = builder.build();
-                table = table.with(Style::empty()).with(Padding::zero());
+                table.with(Style::empty()).with(Padding::zero());
                 table
             }
             Value::Array(list) => {
@@ -410,43 +420,45 @@ mod json_to_table {
                     );
 
                     if column != 0 {
-                        value = value.with(TopLeftChangeSplit);
+                        value.with(TopLeftChangeSplit);
                     }
 
                     if row > 0 {
-                        value = value.with(NoTopBorders);
+                        value.with(NoTopBorders);
                     }
 
                     if !is_last {
-                        value = value.with(BottomRightChangeToRight);
+                        value.with(BottomRightChangeToRight);
                     }
 
                     if i + 1 < map_length {
-                        value = value.with(BottomLeftChangeSplit);
+                        value.with(BottomLeftChangeSplit);
                     }
 
                     if i + 1 == map_length && !is_last {
-                        value = value.with(BottomLeftChangeSplitToIntersection);
+                        value.with(BottomLeftChangeSplitToIntersection);
                     }
 
                     if i + 1 == map_length && !is_last && is_prev_row_last {
-                        value = value.with(BottomLeftChangeToBottomIntersection);
+                        value.with(BottomLeftChangeToBottomIntersection);
                     }
 
                     if column == 0 && !is_last {
-                        value = value.with(BottomLeftChangeSplit);
+                        value.with(BottomLeftChangeSplit);
                     }
 
                     if is_last && column != 0 {
-                        value = value.with(BottomLeftChangeToBottomIntersection);
+                        value.with(BottomLeftChangeToBottomIntersection);
                     }
 
-                    value = value.with(Width::increase(width));
+                    value.with(Width::increase(width));
 
                     builder.add_record([value.to_string()]);
                 }
 
-                builder.build().with(Style::empty()).with(Padding::zero())
+                let mut table = builder.build();
+                table.with(Style::empty()).with(Padding::zero());
+                table
             }
         }
     }

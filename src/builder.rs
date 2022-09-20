@@ -37,7 +37,8 @@
 //!     .set_name(None)
 //!     .transpose();
 //!
-//! let table = builder.build().with(Style::modern());
+//! let mut table = builder.build();
+//! table.with(Style::modern());
 //!
 //! println!("{}", table);
 //!
@@ -895,7 +896,9 @@ fn build_table<R>(records: R) -> Table<R>
 where
     R: Records,
 {
-    let mut table = Table::from(records).with(Style::ascii());
+    let mut table = Table::from(records);
+    table.with(Style::ascii());
+
     configure_grid(table.get_config_mut());
     table
 }

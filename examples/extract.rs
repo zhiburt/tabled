@@ -66,7 +66,8 @@ fn main() {
 
     println!("Full");
 
-    let table = Table::new(&data)
+    let mut table = Table::new(&data);
+    table
         .with(Style::modern())
         .with(Modify::new(Rows::first()).with(Alignment::center()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()));

@@ -34,7 +34,8 @@ const DATA: [Release; 3] = [
 ];
 
 fn main() {
-    let table = Table::new(DATA)
+    let mut table = Table::new(DATA);
+    table
         .with(Panel::header("Tabled Releases"))
         .with(Panel::footer(format!("N - {}", DATA.len())))
         .with(Panel::vertical(0).text("Some text goes here").text_width(1))

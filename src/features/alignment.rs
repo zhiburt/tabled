@@ -17,9 +17,9 @@
 //!     ["4", "5", "6"],
 //! ];
 //!
-//! let table = Table::new(&data)
-//!     .with(Style::modern())
-//!     .with(
+//! let mut table = Table::new(&data);
+//! table.with(Style::modern())
+//!      .with(
 //!         Modify::new(Segment::all())
 //!             .with(Alignment::right())
 //!             .with(Alignment::center())
@@ -59,7 +59,8 @@ pub use papergrid::{AlignmentHorizontal, AlignmentVertical};
 /// ```rust,no_run
 /// # use tabled::{Alignment, Modify, object::Rows, Table};
 /// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Alignment::center()));
+/// let mut table = Table::new(&data);
+/// table.with(Modify::new(Rows::single(0)).with(Alignment::center()));
 /// ```
 ///
 /// [`Table`]: crate::Table

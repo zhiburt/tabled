@@ -9,7 +9,8 @@ fn main() {
     let table = data
         .table()
         .with(Style::re_structured_text())
-        .with(Margin::new(4, 3, 2, 1).set_fill('<', '>', 'v', '^'));
+        .with(Margin::new(4, 3, 2, 1).set_fill('<', '>', 'v', '^'))
+        .to_string();
 
     println!("{}", table);
 }

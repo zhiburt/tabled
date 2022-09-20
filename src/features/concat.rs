@@ -26,7 +26,8 @@
 //!     Department("R&D"),
 //! ];
 //!
-//! let table = Table::new(messages)
+//! let mut table = Table::new(messages);
+//! table
 //!     .with(Concat::horizontal(Table::new(departments)))
 //!     .with(Style::extended());
 //!
@@ -66,7 +67,8 @@ use crate::{Table, TableOption};
 /// let table1 = [0, 1, 2, 3].table();
 /// let table2 = ["A", "B", "C", "D"].table();
 ///
-/// let table3 = table1.with(Concat::horizontal(table2));
+/// let mut table3 = table1;
+/// table3.with(Concat::horizontal(table2));
 /// ```
 #[derive(Debug)]
 pub struct Concat<T> {

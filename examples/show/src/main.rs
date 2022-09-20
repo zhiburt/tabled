@@ -122,111 +122,111 @@ fn run(movies: &[Movie], debug: bool) {
 fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
     #[rustfmt::skip]
     let create_titles_actions: Vec<Action> = vec![
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(1..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(2..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(3..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(4..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(5..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(1..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(2..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(3..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(4..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(1..))).with(Disable::column(Columns::new(5..))).with(Style::modern()).clone()),
     ];
 
     #[rustfmt::skip]
     let add_movies_actions: Vec<Action> = vec![
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(2..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(3..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(4..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(5..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(6..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(7..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(8..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(9..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(10..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(11..))).with(Style::modern())),
-        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(12..))).with(Style::modern())),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(2..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(3..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(4..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(5..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(6..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(7..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(8..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(9..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(10..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(11..))).with(Style::modern()).clone()),
+        detached_action(|_, m| Table::new(m).with(Disable::row(Rows::new(12..))).with(Style::modern()).clone()),
     ];
 
     #[rustfmt::skip]
     let add_summary_actions: Vec<Action> = vec![
-        full_action(|_, m, _| Table::builder(m).add_record(["", "", "", "", ""]).clone().build().with(Style::modern())),
-        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..2)).not(Columns::new(3..))).with(|_: &str| String::from(">= $281,000,000")))),
-        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..3)).not(Columns::new(4..))).with(|_: &str| String::from("$394,835,565")))),
-        action(|t| t.with(Modify::new(Rows::last().not(Columns::new(..4)).not(Columns::new(5..))).with(|_: &str| String::from("$5,930,687,178")))),
+        full_action(|_, m, _| Table::builder(m).add_record(["", "", "", "", ""]).clone().build().with(Style::modern()).clone()),
+        action(|mut t| t.with(Modify::new(Rows::last().not(Columns::new(..2)).not(Columns::new(3..))).with(|_: &str| String::from(">= $281,000,000"))).clone()),
+        action(|mut t| t.with(Modify::new(Rows::last().not(Columns::new(..3)).not(Columns::new(4..))).with(|_: &str| String::from("$394,835,565"))).clone()),
+        action(|mut t| t.with(Modify::new(Rows::last().not(Columns::new(..4)).not(Columns::new(5..))).with(|_: &str| String::from("$5,930,687,178"))).clone()),
     ];
 
     #[rustfmt::skip]
     let formatting_actions: Vec<Action> = vec![
-        action(|t| t.with(Modify::new(Columns::single(0)).with(Alignment::right()))),
-        action(|t| t.with(Modify::new(Columns::single(1)).with(Alignment::right()))),
-        action(|t| t.with(Modify::new(Columns::single(2)).with(Alignment::right()))),
-        action(|t| t.with(Modify::new(Columns::single(3)).with(Alignment::right()))),
-        action(|t| t.with(Modify::new(Columns::single(4)).with(Alignment::right()))),
-        action(|t| t.with(Modify::new(Columns::single(5)).with(Alignment::right()))),
+        action(|mut t| t.with(Modify::new(Columns::single(0)).with(Alignment::right())).clone()),
+        action(|mut t| t.with(Modify::new(Columns::single(1)).with(Alignment::right())).clone()),
+        action(|mut t| t.with(Modify::new(Columns::single(2)).with(Alignment::right())).clone()),
+        action(|mut t| t.with(Modify::new(Columns::single(3)).with(Alignment::right())).clone()),
+        action(|mut t| t.with(Modify::new(Columns::single(4)).with(Alignment::right())).clone()),
+        action(|mut t| t.with(Modify::new(Columns::single(5)).with(Alignment::right())).clone()),
         //
-        action(|t| t.with(Modify::new(Columns::single(0)).with(Alignment::left()))),
-        action(|t| t.with(Modify::new(Columns::single(1)).with(Alignment::left()))),
-        action(|t| t.with(Modify::new(Columns::single(2)).with(Alignment::left()))),
-        action(|t| t.with(Modify::new(Columns::single(3)).with(Alignment::left()))),
-        action(|t| t.with(Modify::new(Columns::single(4)).with(Alignment::left()))),
-        action(|t| t.with(Modify::new(Columns::single(5)).with(Alignment::left()))),
+        action(|mut t| t.with(Modify::new(Columns::single(0)).with(Alignment::left())).clone()),
+        action(|mut t| t.with(Modify::new(Columns::single(1)).with(Alignment::left())).clone()),
+        action(|mut t| t.with(Modify::new(Columns::single(2)).with(Alignment::left())).clone()),
+        action(|mut t| t.with(Modify::new(Columns::single(3)).with(Alignment::left())).clone()),
+        action(|mut t| t.with(Modify::new(Columns::single(4)).with(Alignment::left())).clone()),
+        action(|mut t| t.with(Modify::new(Columns::single(5)).with(Alignment::left())).clone()),
     ];
 
     #[rustfmt::skip]
     let style_actions: Vec<Action> = vec![
-        action(|t| t.with(Style::extended())),
-        action(|t| t.with(Style::ascii())),
-        action(|t| t.with(Style::rounded())),
-        action(|t| t.with(Style::psql())),
-        action(|t| t.with(Style::markdown())),
-        action(|t| t.with(Style::ascii_rounded())),
-        action(|t| t.with(Style::blank())),
+        action(|mut t| t.with(Style::extended()).clone()),
+        action(|mut t| t.with(Style::ascii()).clone()),
+        action(|mut t| t.with(Style::rounded()).clone()),
+        action(|mut t| t.with(Style::psql()).clone()),
+        action(|mut t| t.with(Style::markdown()).clone()),
+        action(|mut t| t.with(Style::ascii_rounded()).clone()),
+        action(|mut t| t.with(Style::blank()).clone()),
     ];
 
     let border_colors_actions: Vec<Action> = vec![];
 
     #[rustfmt::skip]
     let panel_actions: Vec<Action> = vec![
-        action(|t| t.with(Panel::header("The Lord of the Rings")).with(Modify::new(Rows::first()).with(Alignment::center()))),
-        action(|t| t.with(Highlight::colored(Rows::single(2), BorderColored::default().top(Symbol::ansi("━".yellow().to_string()).unwrap())))),
-        action(|t| t.with(Highlight::colored(Rows::last(), BorderColored::default().top(Symbol::ansi("━".yellow().to_string()).unwrap())))),
-        full_action(|t, m, _| {
+        action(|mut t| t.with(Panel::header("The Lord of the Rings")).with(Modify::new(Rows::first()).with(Alignment::center())).clone()),
+        action(|mut t| t.with(Highlight::colored(Rows::single(2), BorderColored::default().top(Symbol::ansi("━".yellow().to_string()).unwrap()))).clone()),
+        action(|mut t| t.with(Highlight::colored(Rows::last(), BorderColored::default().top(Symbol::ansi("━".yellow().to_string()).unwrap()))).clone()),
+        full_action(|mut t, m, _| {
             let c = "━".yellow();
             let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
-            t.with(BorderText::new(m.len()+2, statistics_text))
+            t.with(BorderText::new(m.len()+2, statistics_text)).clone()
         }),
     ];
 
     #[rustfmt::skip]
     let colorization_actions: Vec<Action> = vec![
-        action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(|s: &str| s.white().bold().to_string()))),
-        action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..1)).not(Columns::new(2..))).with(|s: &str| s.white().bold().to_string()))),
-        action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..2)).not(Columns::new(3..))).with(|s: &str| s.red().bold().to_string()))),
-        action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..3)).not(Columns::new(4..))).with(|s: &str| s.green().bold().to_string()))),
-        action(|t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..4)).not(Columns::new(5..))).with(|s: &str| s.blue().bold().to_string()))),
+        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(|s: &str| s.white().bold().to_string())).clone()),
+        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..1)).not(Columns::new(2..))).with(|s: &str| s.white().bold().to_string())).clone()),
+        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..2)).not(Columns::new(3..))).with(|s: &str| s.red().bold().to_string())).clone()),
+        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..3)).not(Columns::new(4..))).with(|s: &str| s.green().bold().to_string())).clone()),
+        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..4)).not(Columns::new(5..))).with(|s: &str| s.blue().bold().to_string())).clone()),
     ];
 
     #[rustfmt::skip]
     let resize_actions: Vec<Action> = vec![
-        detached_action(|t, _| t.with(Width::wrap(115).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(110).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(105).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(100).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(95).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(90).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(80).keep_words())),
+        detached_action(|mut t, _| t.with(Width::wrap(115).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(110).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(105).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(100).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(95).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(90).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(80).keep_words()).clone()),
         //
-        detached_action(|t, _| t.with(Width::wrap(90).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(95).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(100).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(105).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(110).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(115).keep_words())),
-        detached_action(|t, _| t.with(Width::wrap(120).keep_words())),
+        detached_action(|mut t, _| t.with(Width::wrap(90).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(95).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(100).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(105).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(110).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(115).keep_words()).clone()),
+        detached_action(|mut t, _| t.with(Width::wrap(120).keep_words()).clone()),
         //
-        detached_action(|t, _| t.with(Width::increase(125))),
-        detached_action(|t, _| t.with(Width::increase(130))),
-        detached_action(|t, _| t.with(Width::increase(135))),
-        detached_action(|t, _| t.with(Width::increase(140))),
-        detached_action(|t, _| t.with(Width::increase(145))),
-        detached_action(|t, _| t.with(Width::increase(150))),
+        detached_action(|mut t, _| t.with(Width::increase(125)).clone()),
+        detached_action(|mut t, _| t.with(Width::increase(130)).clone()),
+        detached_action(|mut t, _| t.with(Width::increase(135)).clone()),
+        detached_action(|mut t, _| t.with(Width::increase(140)).clone()),
+        detached_action(|mut t, _| t.with(Width::increase(145)).clone()),
+        detached_action(|mut t, _| t.with(Width::increase(150)).clone()),
     ];
 
     let mut runner = Runner::new(movies);
@@ -344,10 +344,9 @@ impl Printer for BasicPrinter<'_> {
     where
         I: IntoIterator<Item = Table>,
     {
-        let left_padding = |t: Table| t.with(Margin::new(10, 0, 0, 0));
-
-        for (_i, frame) in frames.into_iter().enumerate() {
-            let frame = left_padding(frame);
+        let left_padding = Margin::new(10, 0, 0, 0);
+        for (_i, mut frame) in frames.into_iter().enumerate() {
+            frame.with(left_padding.clone());
 
             queue!(self.stdout, Clear(ClearType::All), cursor::MoveTo(0, 7)).unwrap();
 

@@ -3,6 +3,8 @@
 //!
 //! This example requires a `color` feature.
 
+use std::iter::FromIterator;
+
 use owo_colors::OwoColorize;
 
 use tabled::{
@@ -42,7 +44,8 @@ fn main() {
     style.set_horizontal(Some(Symbol::ansi("═".magenta().to_string()).unwrap()));
     style.set_vertical(Some(Symbol::ansi("║".cyan().to_string()).unwrap()));
 
-    let table = Table::new(&data).with(style).with(Highlight::colored(
+    let mut table = Table::from_iter(&data);
+    table.with(style).with(Highlight::colored(
         Segment::all(),
         BorderColored::default()
             .top(Symbol::ansi("═".red().to_string()).unwrap())

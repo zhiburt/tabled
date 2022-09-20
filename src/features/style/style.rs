@@ -11,10 +11,11 @@
 //! use tabled::{Table, Style};
 //!
 //! let data = vec!["Hello", "2022"];
-//! let table = Table::new(&data).with(Style::psql()).to_string();
+//! let mut table = Table::new(&data);
+//! table.with(Style::psql());
 //!
 //! assert_eq!(
-//!     table,
+//!     table.to_string(),
 //!     concat!(
 //!         " &str  \n",
 //!         "-------\n",
@@ -476,7 +477,8 @@ impl Style<(), (), (), (), (), (), (), ()> {
     ///     ("10", "July", "2022"),
     /// ];
     ///
-    /// let table = data.table()
+    /// let mut table = data.table();
+    /// table
     ///     .with(
     ///         Modify::new(Cell(0, 0))
     ///             .with(Format::new(|_| String::from("date")))
@@ -496,7 +498,7 @@ impl Style<(), (), (), (), (), (), (), ()> {
     ///     )
     /// );
     ///
-    /// let table = table.with(Style::correct_spans());
+    /// table.with(Style::correct_spans());
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -527,8 +529,8 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// use tabled::{Table, Style, Highlight, object::Rows};
     ///
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
-    /// let table = Table::new(data)
-    ///     .with(Highlight::new(Rows::first(), Style::modern().get_frame()));
+    /// let mut table = Table::new(data);
+    /// table.with(Highlight::new(Rows::first(), Style::modern().get_frame()));
     ///
     /// assert_eq!(
     ///     table.to_string(),

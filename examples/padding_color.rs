@@ -131,7 +131,8 @@ fn main() {
         .with(header_settings)
         .with(data_settings)
         .with(symbol_settings)
-        .with(unit_settings);
+        .with(unit_settings)
+        .to_string();
 
     println!("\n\n{}\n\n", table);
 }

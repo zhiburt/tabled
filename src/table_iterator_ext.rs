@@ -10,7 +10,8 @@ use crate::{Table, Tabled};
 ///
 /// let strings: &[&str] = &["Hello", "World"];
 ///
-/// let table = strings.table().with(Style::psql());
+/// let mut table = strings.table();
+/// table.with(Style::psql());
 ///
 /// println!("{}", table);
 /// ```

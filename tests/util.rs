@@ -39,7 +39,9 @@ where
 pub fn new_table<'a, T: Tabled>(
     iter: impl IntoIterator<Item = T> + 'a,
 ) -> Table<VecRecords<CellInfo<'a>>> {
-    Table::new(iter).with(SegmentAll.modify().with(Alignment::center()))
+    let mut table = Table::new(iter);
+    table.with(SegmentAll.modify().with(Alignment::center()));
+    table
 }
 
 pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUMNS>> {

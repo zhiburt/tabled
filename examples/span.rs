@@ -20,7 +20,8 @@ fn main() {
         .with(h_span(3, 1, 2))
         .with(Style::modern())
         .with(Style::correct_spans())
-        .with(Segment::all().modify().with(Alignment::center_vertical()));
+        .with(Segment::all().modify().with(Alignment::center_vertical()))
+        .to_string();
 
     println!("{}", table);
 }

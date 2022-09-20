@@ -12,22 +12,22 @@ fn main() {
         ["Ciao mondo", ""],
     ];
 
-    let table = Table::builder(data)
-        .build()
+    let mut table = Table::builder(data).build();
+    table
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()));
 
     println!("Original table\n{}", table);
 
-    let table = table.with(Width::truncate(20).suffix("..."));
+    table.with(Width::truncate(20).suffix("..."));
 
     println!("Truncated table\n{}", table);
 
-    let table = table.with(Modify::new(Segment::all()).with(Width::wrap(5)));
+    table.with(Modify::new(Segment::all()).with(Width::wrap(5)));
 
     println!("Wrapped table\n{}", table);
 
-    let table = table.with(Width::increase(Percent(200)));
+    table.with(Width::increase(Percent(200)));
 
     println!("Widen table\n{}", table);
 }
