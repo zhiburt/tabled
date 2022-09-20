@@ -57,7 +57,7 @@ impl From<JsonTable<'_>> for Table {
 }
 
 mod json_to_table {
-    use std::{cmp, collections::HashMap};
+    use std::cmp;
 
     use tabled::{
         builder::Builder,
@@ -222,9 +222,6 @@ mod json_to_table {
                         find_top_intersection(value, style)
                     } else {
                         let mut splits = used_splits.to_owned();
-
-                        println!("splits={:?}", splits);
-
                         if !splits.is_empty() {
                             let mut current_width = 0;
                             while !splits.is_empty() {
@@ -245,12 +242,8 @@ mod json_to_table {
                             }
                         }
 
-                        println!("splits aster={:?}", splits);
-
                         splits
                     };
-
-                    println!("intersections={:?}", intersections);
 
                     let is_last = is_last && i + 1 == map_length;
                     let width = width - max_keys_width;
@@ -274,11 +267,11 @@ mod json_to_table {
                         }
 
                         if !is_last {
-                            value = value.with(BottomRightChangeSplit2);
+                            value = value.with(BottomRightChangeToRight);
                         }
 
                         if i + 1 == map_length {
-                            value = value.with(BottomLeftChangeSplit3);
+                            value = value.with(BottomLeftChangeToBottomIntersection);
                         } else {
                             value = value.with(BottomLeftChangeSplitToIntersection);
                         }
@@ -306,14 +299,14 @@ mod json_to_table {
                             if i + 1 == map_length {
                                 if is_in_list {
                                     if is_last {
-                                        key = key.with(BottomLeftChangeSplit3);
+                                        key = key.with(BottomLeftChangeToBottomIntersection);
                                     } else if is_prev_row_last {
                                         key = key.with(BottomLeftChangeSplitToIntersection);
                                     } else {
                                         key = key.with(BottomLeftChangeSplit);
                                     }
                                 } else if is_prev_row_last {
-                                    key = key.with(BottomLeftChangeSplit3);
+                                    key = key.with(BottomLeftChangeToBottomIntersection);
                                 } else {
                                     key = key.with(BottomLeftChangeSplitToIntersection);
                                 }
@@ -341,10 +334,6 @@ mod json_to_table {
                         // set custom chars
                         if i + 1 == map_length {
                             // set for the key
-
-                            println!("{:?}", used_splits);
-                            println!("{}", key);
-
                             key = key.with(SetBottomChars(
                                 used_splits,
                                 style.get_top_intersection().unwrap_or(' '),
@@ -429,7 +418,7 @@ mod json_to_table {
                     }
 
                     if !is_last {
-                        value = value.with(BottomRightChangeSplit2);
+                        value = value.with(BottomRightChangeToRight);
                     }
 
                     if i + 1 < map_length {
@@ -441,7 +430,7 @@ mod json_to_table {
                     }
 
                     if i + 1 == map_length && !is_last && is_prev_row_last {
-                        value = value.with(BottomLeftChangeSplit3);
+                        value = value.with(BottomLeftChangeToBottomIntersection);
                     }
 
                     if column == 0 && !is_last {
@@ -449,7 +438,7 @@ mod json_to_table {
                     }
 
                     if is_last && column != 0 {
-                        value = value.with(BottomLeftChangeSplit3);
+                        value = value.with(BottomLeftChangeToBottomIntersection);
                     }
 
                     value = value.with(Width::increase(width));
@@ -496,51 +485,6 @@ mod json_to_table {
         }
     }
 
-    struct NoOuterBorders;
-
-    impl<R> TableOption<R> for NoOuterBorders {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
-            borders.bottom = None;
-            borders.bottom_intersection = None;
-            borders.bottom_left = None;
-            borders.bottom_right = None;
-            borders.top = None;
-            borders.top_intersection = None;
-            borders.top_left = None;
-            borders.top_right = None;
-            borders.horizontal_left = None;
-            borders.vertical_left = None;
-            borders.horizontal_right = None;
-            borders.vertical_right = None;
-
-            table.get_config_mut().set_borders(borders);
-        }
-    }
-
-    struct NoInnerBorders;
-
-    impl<R> TableOption<R> for NoInnerBorders {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
-            borders.bottom_left = None;
-            borders.bottom_right = None;
-            borders.bottom_intersection = None;
-            borders.top_intersection = None;
-            borders.top_left = None;
-            borders.top_right = None;
-            borders.vertical = None;
-            borders.horizontal = None;
-            borders.intersection = None;
-            borders.vertical_left = None;
-            borders.vertical_right = None;
-            borders.horizontal_left = None;
-            borders.horizontal_right = None;
-
-            table.get_config_mut().set_borders(borders);
-        }
-    }
-
     struct NoTopBorders;
 
     impl<R> TableOption<R> for NoTopBorders {
@@ -555,20 +499,6 @@ mod json_to_table {
         }
     }
 
-    struct NoLeftBorders;
-
-    impl<R> TableOption<R> for NoLeftBorders {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
-            borders.top_left = None;
-            borders.bottom_left = None;
-            borders.vertical_left = None;
-            borders.horizontal_left = None;
-
-            table.get_config_mut().set_borders(borders);
-        }
-    }
-
     struct NoRightBorders;
 
     impl<R> TableOption<R> for NoRightBorders {
@@ -578,43 +508,6 @@ mod json_to_table {
             borders.bottom_right = None;
             borders.vertical_right = None;
             borders.horizontal_right = None;
-
-            table.get_config_mut().set_borders(borders);
-        }
-    }
-
-    struct NoBottomBorders;
-
-    impl<R> TableOption<R> for NoBottomBorders {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
-            borders.bottom = None;
-            borders.bottom_intersection = None;
-            borders.bottom_left = None;
-            borders.bottom_right = None;
-
-            table.get_config_mut().set_borders(borders);
-        }
-    }
-
-    struct BottomSplitChange;
-
-    impl<R> TableOption<R> for BottomSplitChange {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
-            borders.bottom_left = borders.horizontal_left;
-            borders.bottom_right = borders.intersection;
-
-            table.get_config_mut().set_borders(borders);
-        }
-    }
-
-    struct TopRightChangeSplit;
-
-    impl<R> TableOption<R> for TopRightChangeSplit {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
-            borders.top_right = borders.top_intersection;
 
             table.get_config_mut().set_borders(borders);
         }
@@ -653,20 +546,9 @@ mod json_to_table {
         }
     }
 
-    struct BottomRightChangeSplit;
+    struct BottomRightChangeToRight;
 
-    impl<R> TableOption<R> for BottomRightChangeSplit {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
-            borders.bottom_right = borders.bottom_intersection;
-
-            table.get_config_mut().set_borders(borders);
-        }
-    }
-
-    struct BottomRightChangeSplit2;
-
-    impl<R> TableOption<R> for BottomRightChangeSplit2 {
+    impl<R> TableOption<R> for BottomRightChangeToRight {
         fn change(&mut self, table: &mut Table<R>) {
             let mut borders = table.get_config().get_borders().clone();
             borders.bottom_right = borders.horizontal_right;
@@ -675,37 +557,14 @@ mod json_to_table {
         }
     }
 
-    struct BottomLeftChangeSplit3;
+    struct BottomLeftChangeToBottomIntersection;
 
-    impl<R> TableOption<R> for BottomLeftChangeSplit3 {
+    impl<R> TableOption<R> for BottomLeftChangeToBottomIntersection {
         fn change(&mut self, table: &mut Table<R>) {
             let mut borders = table.get_config().get_borders().clone();
             borders.bottom_left = borders.bottom_intersection;
 
             table.get_config_mut().set_borders(borders);
-        }
-    }
-
-    struct ConvertStyleToBorders;
-
-    impl<R> TableOption<R> for ConvertStyleToBorders
-    where
-        R: Records,
-    {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = HashMap::with_capacity(table.count_rows() * table.count_columns());
-            for row in 0..table.count_rows() {
-                for col in 0..table.count_columns() {
-                    let border = table.get_config().get_border((row, col), table.shape());
-                    borders.insert((row, col), border);
-                }
-            }
-
-            table.get_config_mut().clear_theme();
-
-            for (pos, border) in borders {
-                table.get_config_mut().set_border(pos, border);
-            }
         }
     }
 

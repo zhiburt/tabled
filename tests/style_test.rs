@@ -413,7 +413,7 @@ test_table!(
 
 test_table!(
     style_frame_test_0,
-    create_table::<2, 2>().with(Highlight::new(Rows::single(1), Style::modern().frame())),
+    create_table::<2, 2>().with(Highlight::new(Rows::single(1), Style::modern().get_frame())),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "┌─────────────────────────┐"
@@ -427,8 +427,8 @@ test_table!(
     style_frame_test_1,
     create_table::<2, 2>()
         .with(Style::blank())
-        .with(Highlight::new(Rows::single(0), Style::extended().frame()))
-        .with(Highlight::new(Rows::single(2), Style::extended().frame())),
+        .with(Highlight::new(Rows::single(0), Style::extended().get_frame()))
+        .with(Highlight::new(Rows::single(2), Style::extended().get_frame())),
     "╔═════════════════════════╗"
     "║ N   column 0   column 1 ║"
     "╚═════════════════════════╝"

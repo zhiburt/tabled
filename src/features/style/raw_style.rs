@@ -187,15 +187,68 @@ impl RawStyle {
         self
     }
 
+    /// Get a left char.
+    pub fn get_left(&self) -> Option<char> {
+        self.borders.vertical_left
+    }
+
+    /// Get a left intersection char.
+    pub fn get_left_intersection(&self) -> Option<char> {
+        self.borders.horizontal_left
+    }
+
+    /// Get a right char.
+    pub fn get_right(&self) -> Option<char> {
+        self.borders.vertical_right
+    }
+
+    /// Get a right intersection char.
+    pub fn get_right_intersection(&self) -> Option<char> {
+        self.borders.horizontal_right
+    }
+
+    /// Get a top char.
+    pub fn get_top(&self) -> Option<char> {
+        self.borders.top
+    }
+
+    /// Get a top left char.
+    pub fn get_top_left(&self) -> Option<char> {
+        self.borders.top_left
+    }
+
+    /// Get a top right char.
+    pub fn get_top_right(&self) -> Option<char> {
+        self.borders.top_right
+    }
+
     /// Get a top intersection char.
     pub fn get_top_intersection(&self) -> Option<char> {
         self.borders.top_intersection
     }
 
-    // todo: add more get_* tests
+    /// Get a bottom intersection char.
+    pub fn get_bottom(&self) -> Option<char> {
+        self.borders.bottom
+    }
+
+    /// Get a bottom intersection char.
+    pub fn get_bottom_left(&self) -> Option<char> {
+        self.borders.bottom_left
+    }
+
+    /// Get a bottom intersection char.
+    pub fn get_bottom_right(&self) -> Option<char> {
+        self.borders.bottom_right
+    }
+
+    /// Get a bottom intersection char.
+    pub fn get_bottom_intersection(&self) -> Option<char> {
+        self.borders.bottom_intersection
+    }
 
     /// Returns an outer border of the style.
-    pub fn frame(&self) -> Border {
+    pub fn get_frame(&self) -> Border {
         Border::new_raw(Some(papergrid::Border {
             top: self.borders.top,
             bottom: self.borders.bottom,
