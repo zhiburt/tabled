@@ -79,6 +79,8 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     - [Col and Row](#col-and-row)
 - [Views](#views)
   - [Expanded display](#expanded-display)
+- [Formats](#formats)
+  - [`json` format](#json-format)
 - [Notes](#notes)
   - [ANSI escape codes](#ansi-escape-codes)
   - [Emoji](#emoji)
@@ -160,7 +162,8 @@ A style can be used like this.
 ```rust
 use tabled::{Table, Style};
 
-let table = Table::new(&data).with(Style::psql());
+let mut table = Table::new(&data);
+table.with(Style::psql());
 ```
 
 Below is a rendered list of the preconfigured styles.
@@ -381,7 +384,8 @@ You can set a string to a horizontal border line.
 ```rust
 use tabled::{Table, BorderText};
 
-let table = Table::new(["Hello World"]).with(BorderText::new(0, "+-.table"));
+let mut table = Table::new(["Hello World"]);
+table.with(BorderText::new(0, "+-.table"));
 
 assert_eq!(
     table.to_string(),
@@ -423,7 +427,8 @@ You can set a horizontal and vertical alignment for any `Object` (e.g `Columns`,
 ```rust
 use tabled::{TableIteratorExt, Modify, Alignment, object::Segment};
 
-data.table()
+let mut table = data.table();
+table
     .with(Modify::new(Segment::all()).with(Alignment::left()).with(Alignment::top()));
 ```
 
@@ -434,7 +439,8 @@ The `Format` function provides an interface for a modification of cells.
 ```rust
 use tabled::{Table, Modify, format::Format, object::{Rows, Columns}};
 
-Table::new(&data)
+let mut table = Table::new(&data);
+table
     .with(Modify::new(Rows::first()).with(Format::new(|s| format!("Head {}", s))))
     .with(Modify::new(Columns::new(1..=2)).with(Format::new(|s| format!("<< {} >>", s))));
 ```
@@ -444,7 +450,8 @@ It's also possible to use functions with signature `Fn(&str) -> String` as a for
 ```rust
 use tabled::{Table, Modify, object::{Rows, Columns}};
 
-Table::new(&data)
+let mut table = Table::new(&data);
+table
     .with(Modify::new(Columns::single(3)).with(|s: &str| format!("<< {} >>", s)))
     .with(Modify::new(Rows::first()).with(str::to_lowercase));
 ```
@@ -458,12 +465,12 @@ The `Padding` structure provides an interface for a left, right, top and bottom 
 ```rust
 use tabled::{Table, Modify, Padding, object::Cell};
 
-Table::new(&data)
-    .with(Modify::new(Cell(0, 3)).with(Padding::new(1, 1, 0, 2)));
+let mut table = Table::new(&data);
+table.with(Modify::new(Cell(0, 3)).with(Padding::new(1, 1, 0, 2)));
 
 // It's possible to set a fill char for padding.
-Table::new(&data)
-    .with(Modify::new(Cell(0, 3)).with(Padding::new(1, 1, 0, 2).set_fill('>', '<', '^', 'V')));
+let mut table = Table::new(&data)
+table.with(Modify::new(Cell(0, 3)).with(Padding::new(1, 1, 0, 2).set_fill('>', '<', '^', 'V')));
 ```
 
 #### Padding Color
@@ -479,13 +486,14 @@ use tabled::{
     color::Color, object::Segment, padding_color::PaddingColor, Modify, Padding, Table,
 };
 
+let mut table = Table::new(&data);
 
 let on_red = Color::try_from(' '.on_red().to_string()).unwrap();
 let padding = Modify::new(Segment::all())
     .with(Padding::new(1, 1, 0, 2))
     .with(PaddingColor::new(on_red.clone(), on_red.clone(), on_red.clone(), on_red));
 
-Table::new(&data).with(padding);
+table.with(padding);
 ```
 
 ### Margin
@@ -495,8 +503,8 @@ Table::new(&data).with(padding);
 ```rust
 use tabled::{Table, Margin};
 
-Table::new(&data)
-    .with(Margin::new(3, 4, 1, 2).set_fill('>', '<', 'v', '^'));
+let mut table = Table::new(&data);
+table.with(Margin::new(3, 4, 1, 2).set_fill('>', '<', 'v', '^'));
 ```
 
 An output would depend on the `data`. But it could look like the following.
@@ -524,7 +532,8 @@ use tabled::{color::Color, margin_color::MarginColor, Margin, Table};
 
 let on_red = Color::try_from(' '.on_red().to_string()).unwrap();
 
-Table::new(&data)
+let mut table = Table::new(&data);
+table
     .with(Margin::new(3, 4, 1, 2))
     .with(MarginColor::new(on_red.clone(), on_red.clone(), on_red.clone(), on_red));
 ```
@@ -544,15 +553,15 @@ The functions preserves the text color.
 ```rust
 use tabled::{TableIteratorExt, Modify, Width, object::Rows};
 
+let mut table = data.table();
+
 // Truncating content to 10 chars in case it's bigger than that
 // in a first row.
-data.table()
-    .with(Modify::new(Rows::first()).with(Width::truncate(10)));
+table.with(Modify::new(Rows::first()).with(Width::truncate(10)));
 
 // Truncating content to 7 chars and puts a suffix '...' after it
 // in all rows except a first.
-data.table()
-    .with(Modify::new(Rows::new(1..)).with(Width::truncate(10).suffix("...")));
+table.with(Modify::new(Rows::new(1..)).with(Width::truncate(10).suffix("...")));
 ```
 
 `Trucate` also can be used to set a maximum width of a whole table.
@@ -560,8 +569,10 @@ data.table()
 ```rust
 use tabled::{TableIteratorExt, Width};
 
+let mut table = data.table();
+
 // Tries to set table width to 22, in case it's bigger than that.
-data.table().with(Width::truncate(22));
+table.with(Width::truncate(22));
 ```
 
 It can be used in combination with `MinWidth` to set an exact table size.
@@ -573,14 +584,14 @@ It can be used in combination with `MinWidth` to set an exact table size.
 ```rust
 use tabled::{TableIteratorExt, Modify, Width, object::Rows};
 
+let mut table = data.table();
+
 // Wrap content to 10 chars in case it's bigger than that
 // in a first row.
-data.table()
-    .with(Modify::new(Rows::first()).with(Width::wrap(10)));
+table.with(Modify::new(Rows::first()).with(Width::wrap(10)));
 
 // Use a strategy where we try to keep words not splited (where possible).
-data.table()
-    .with(Modify::new(Rows::new(1..)).with(Width::wrap(10).keep_words()));
+table.with(Modify::new(Rows::new(1..)).with(Width::wrap(10).keep_words()));
 ```
 
 `Wrap` also can be used to set a maximum width of a whole table.
@@ -588,8 +599,10 @@ data.table()
 ```rust
 use tabled::{TableIteratorExt, Width};
 
+let mut table = data.table();
+
 // Tries to set table width to 22, in case it's bigger than that.
-data.table().with(Width::wrap(22));
+table.with(Width::wrap(22));
 ```
 
 It can be used in combination with `MinWidth` to set an exact table size.
@@ -601,9 +614,10 @@ It can be used in combination with `MinWidth` to set an exact table size.
 ```rust
 use tabled::{TableIteratorExt, Modify, Width, object::Rows};
 
+let mut table = data.table();
+
 // increase the space used by cells in all rows except the header to be at least 10
-data.table()
-    .with(Modify::new(Rows::new(1..)).with(Width::increase(10)));
+table.with(Modify::new(Rows::new(1..)).with(Width::increase(10)));
 ```
 
 `MinWidth` also can be used to set a minimum width of a whole table.
@@ -611,8 +625,10 @@ data.table()
 ```rust
 use tabled::{TableIteratorExt, Width};
 
+let mut table = data.table();
+
 // increase width of a table in case it was lower than 10.
-data.table().with(Width::increase(10));
+table.with(Width::increase(10));
 ```
 
 It can be used in combination with `Truncate` and `Wrap` to set an exact table size.
@@ -624,7 +640,8 @@ You can set a constant width for all columns using `Justify`.
 ```rust
 use tabled::{TableIteratorExt, Width};
 
-data.table().with(Width::justify(10));
+let mut table = data.table();
+table.with(Width::justify(10));
 ```
 
 #### Priority
@@ -634,8 +651,8 @@ You can tweak `Truncate`, `Wrap`, `MinWidth` logic by setting a priority by whic
 ```rust
 use tabled::{TableIteratorExt, Width, width::PriorityMax};
 
-data.table()
-    .with(Width::truncate(10).priority::<PriorityMax>());
+let mut table = data.table();
+table.with(Width::truncate(10).priority::<PriorityMax>());
 ```
 
 #### Percent
@@ -644,9 +661,10 @@ By default you use `usize` int to set width settings,
 but you could do it also with `tabled::width::Percent`.
 
 ```rust
-use tabled::width::{Percent, Width};
+use tabled::width::{TableIteratorExt, Percent, Width};
 
-let table = table.with(Width::wrap(Percent(75)));
+let mut table = data.table();
+table.with(Width::wrap(Percent(75)));
 ```
 
 ### Height
@@ -658,11 +676,13 @@ You can increase a table or a specific cell height using `Height` motifier.
 ```rust
 use tabled::{TableIteratorExt, Height, Modify, Rows};
 
+let mut table = data.table();
+
 // increase height of a table in case it was lower than 10.
-data.table().with(Height::increase(10));
+table.with(Height::increase(10));
 
 // increase height of cells in the last row on a table in case if some of them has it lower than 10.
-data.table().with(Modify::new(Rows::last()).with(Height::increase(10)));
+table.with(Modify::new(Rows::last()).with(Height::increase(10)));
 ```
 
 #### Height limit
@@ -670,11 +690,13 @@ data.table().with(Modify::new(Rows::last()).with(Height::increase(10)));
 ```rust
 use tabled::{TableIteratorExt, Height, Modify, Rows};
 
+let mut table = data.table();
+
 // decrease height of a table to 10 in case it was bigger than that.
-data.table().with(Height::limit(10));
+table.with(Height::limit(10));
 
 // decrease height of cells in the last row on a table to 10 in case if some of them has it bigger than that.
-data.table().with(Modify::new(Rows::last()).with(Height::limit(10)));
+table.with(Modify::new(Rows::last()).with(Height::limit(10)));
 ```
 
 ### Rotate
@@ -720,7 +742,8 @@ You can remove certain rows or columns from the table.
 ```rust
 use tabled::{TableIteratorExt, Disable};
 
-data.table()
+let mut table = data.table();
+table
     .with(Disable::Row(..1))
     .with(Disable::Column(3..4));
 ```
@@ -732,8 +755,8 @@ You can `Extract` segments of a table to focus on a reduced number of rows and c
 ```rust
 use tabled::{Table, Extract};
 
-Table::new(&data)
-    .with(Extract::segment(1..3, 1..));
+let mut table = Table::new(&data);
+table.with(Extract::segment(1..3, 1..));
 ```
 
 ```text
@@ -757,7 +780,8 @@ For styles with unique corner and edge textures it is possible to reapply a tabl
 ```rust
 use tabled::{Table, Extract, Style};
 
-Table::new(&data)
+let mut table = Table::new(&data);
+table
     .with(Extract::segment(1..3, 1..))
     .with(Style::modern());
 ```
@@ -785,7 +809,8 @@ You can add a `Header` and `Footer` to display some information.
 ```rust
 use tabled::{Table, Panel};
 
-Table::new(&data)
+let mut table = Table::new(&data);
+table
     .with(Panel::header("Tabled Name"))
     .with(Panel::footer(format!("{} elements", data.len())))
 ```
@@ -808,7 +833,8 @@ You can also add a full row/column using `tabled::Panel`.
 ```rust
 use tabled::{Table, Panel};
 
-Table::new(&data)
+let mut table = Table::new(&data);
+table
     .with(Panel::vertical(2).text("A panel on 2nd row"))
     .with(Panel::horizontal(0).text("A panel on 1st column"));
 ```
@@ -822,8 +848,8 @@ use tabled::{merge::Merge, TableIteratorExt};
 
 let data = [['A', 'B', 'B'], ['A', 'W', 'E'], ['Z', 'Z', 'Z']];
 
-let table = data
-    .table()
+let mut table = data.table();
+table
     .with(Merge::horizontal())
     .with(Merge::vertical());
 
@@ -854,10 +880,10 @@ use tabled::Concat;
 // let t2: Table = ...;
 
 // vertical concat
-let t3: Table = t1.with(Concat::vertical(t2));
+t1.with(Concat::vertical(t2));
 
 // horizontal concat
-let t3: Table = t1.with(Concat::horizontal(t2));
+t1.with(Concat::horizontal(t2));
 ```
 
 ### Highlight
@@ -876,7 +902,8 @@ let data = vec![
     ["D", "E", "F"]
 ];
 
-let table = data.table()
+let mut table = data.table();
+table
     .with(Style::modern())
     .with(Highlight::new(
         Rows::first().and(Columns::single(2).and(Cell(1, 1))),
@@ -910,8 +937,8 @@ let data = vec![
     ["D", "E", "F"],
 ];
 
-let table = data
-    .table()
+let mut table = data.table();
+table
     .with(Modify::new(Cell(0, 0)).with(Span::column(3)))
     .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
     .with(Modify::new(Segment::all()).with(Alignment::center()));
@@ -939,8 +966,8 @@ let data = vec![
     ["D", "E", "F"],
 ];
 
-let table = data
-    .table()
+let mut table = data.table();
+table
     .with(Modify::new(Cell(0, 1)).with(Span::row(3)))
     .with(Modify::new(Segment::all()).with(Alignment::center()));
 
@@ -1178,7 +1205,8 @@ for line in song.lines() {
 let columns = (0..max_words).map(|i| i.to_string()).collect::<Vec<_>>();
 builder.set_columns(columns);
 
-let table = builder.build().with(Style::ascii_rounded());
+let mut table = builder.build();
+table.with(Style::ascii_rounded());
 
 println!("{}", table);
 ```
@@ -1236,7 +1264,8 @@ builder
 let mut builder = builder.index();
 builder.set_index(1).set_name(None);
 
-let table = builder.build().with(Style::rounded());
+let mut table = builder.build();
+table.with(Style::rounded());
 
 println!("{}", table);
 ```
@@ -1260,7 +1289,8 @@ add the `color` feature of `tabled` to your `Cargo.toml`
 ```rust
 use tabled::{format::Format, object::Columns, Modify, Style, Table};
 
-Table::new(&data)
+let mut table = Table::new(&data);
+table
     .with(Style::psql())
     .with(Modify::new(Columns::single(0)).with(Format::new(|s| s.red().to_string())))
     .with(Modify::new(Columns::single(1)).with(Format::new(|s| s.blue().to_string())))
@@ -1475,6 +1505,15 @@ name      | Debian
 is_active | true
 is_cool   | true
 ```
+
+## Formats
+
+You can convert some formats to a `Table`.
+
+### `json` format
+
+You can convert arbitrary `json` to a `Table` using [`json_to_table`](/json_to_table/README.md) library.
+See the **[example](/json_to_table/README.md)**.
 
 ## Notes
 
