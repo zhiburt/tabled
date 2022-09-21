@@ -53,6 +53,57 @@ fn config_from_table_test() {
     );
 }
 
+#[test]
+fn config_from_table_general_test() {
+    let value = json!(
+        {
+            "key1": 123,
+            "234": ["123", "234", "456"],
+            "key22": {
+                "k1": 1,
+                "k2": 2,
+            }
+        }
+    );
+
+    let cfg = Table::new([""])
+        .with(Padding::zero())
+        .with(Alignment::center())
+        .with(Alignment::center_vertical())
+        .get_config()
+        .clone();
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .set_config(cfg)
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌─────┬──────┐\n",
+            "│     │┌───┐ │\n",
+            "│     ││123│ │\n",
+            "│     │├───┤ │\n",
+            "│ 234 ││234│ │\n",
+            "│     │├───┤ │\n",
+            "│     ││456│ │\n",
+            "│     │└───┘ │\n",
+            "├─────┼──────┤\n",
+            "│key1 │ 123  │\n",
+            "├─────┼──────┤\n",
+            "│     │┌──┬─┐│\n",
+            "│     ││k1│1││\n",
+            "│key22│├──┼─┤│\n",
+            "│     ││k2│2││\n",
+            "│     │└──┴─┘│\n",
+            "└─────┴──────┘",
+        )
+    );
+}
+
 #[cfg(feature = "color")]
 #[test]
 fn color_test() {
