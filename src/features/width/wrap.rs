@@ -351,7 +351,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 
             line.push_str(word);
             line_width += word_width;
-            is_first_word = true;
+            is_first_word = false;
         } else {
             // the word is too long any way so we split it
 
@@ -504,7 +504,6 @@ fn split_string_at_colored(text: &str, at: usize) -> (String, String, (usize, us
     )
 }
 
-#[cfg(feature = "color")]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -550,6 +549,11 @@ mod tests {
         assert_eq!(split_keeping_words("12345", 2, "\n"), "12\n34\n5 ");
 
         assert_eq!(split_keeping_words("😳😳😳😳😳", 1, "\n"), "�\n�\n�\n�\n�");
+
+        assert_eq!(
+            split_keeping_words("111 234 1", 4, "\n"),
+            "111 \n234 \n1   "
+        );
     }
 
     #[cfg(feature = "color")]
