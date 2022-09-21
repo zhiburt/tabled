@@ -11,6 +11,9 @@ keywords = ["table", "print", "pretty-table", "format", "json"]
 categories = ["text-processing", "visualization"]
 readme = "README.md"
 
+[features]
+color = ["tabled/color"]
+
 [dependencies]
 serde_json = "1.*"
 tabled = { path = "../" }

@@ -1,7 +1,7 @@
 use core::fmt::{self, Display};
 
 use serde_json::Value;
-use tabled::{style::RawStyle, Style, Table};
+use tabled::{papergrid::GridConfig, style::RawStyle, Style, Table};
 
 /// Converter of [`Value`] to a table,
 /// with a set of configurations.
@@ -14,7 +14,8 @@ pub struct JsonTable<'a> {
 #[derive(Debug, Clone, Default)]
 struct Config {
     plain: bool,
-    style: RawStyle,
+    style: Option<RawStyle>,
+    cfg: Option<GridConfig>,
 }
 
 impl JsonTable<'_> {
@@ -24,7 +25,8 @@ impl JsonTable<'_> {
             value,
             cfg: Config {
                 plain: true,
-                style: Style::ascii().into(),
+                style: None,
+                cfg: None,
             },
         }
     }
@@ -32,13 +34,73 @@ impl JsonTable<'_> {
     /// Set a style which will be used,
     /// default is [`Style::ascii`].
     pub fn set_style(&mut self, style: impl Into<RawStyle>) -> &mut Self {
-        self.cfg.style = style.into();
+        self.cfg.style = Some(style.into());
         self
     }
 
     /// Collapse tables out instead of tables within tables.
     pub fn collapse(&mut self) -> &mut Self {
         self.cfg.plain = false;
+        self
+    }
+
+    /// Set a config which will be used.
+    ///
+    /// You can obtain a config from a [`Table`].
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use json_to_table::json_to_table;
+    /// use serde_json::json;
+    /// use tabled::{Alignment, Padding, Style, Table};
+    ///
+    /// let value = json!({
+    ///     "key1": 123,
+    ///     "234": ["123", "234", "456"],
+    ///     "key22": {
+    ///         "k1": 1,
+    ///         "k2": 2,
+    ///     }
+    /// });
+    ///
+    /// let cfg = Table::new([""])
+    ///     .with(Padding::zero())
+    ///     .with(Alignment::right())
+    ///     .with(Style::extended())
+    ///     .get_config()
+    ///     .clone();
+    ///
+    /// let table = json_to_table(&value)
+    ///     .set_config(cfg)
+    ///     .collapse()
+    ///     .to_string();
+    ///
+    /// println!("{}", table);
+    ///
+    ///    assert_eq!(
+    ///        table,
+    ///        concat!(
+    ///             "╔═══════╦══════╗\n",  
+    ///             "║    234║   123║\n",  
+    ///             "║       ╠══════╣\n",  
+    ///             "║       ║   234║\n",  
+    ///             "║       ╠══════╣\n",  
+    ///             "║       ║   456║\n",  
+    ///             "╠═══════╬══════╣\n",  
+    ///             "║   key1║   123║\n",  
+    ///             "╠═══════╬════╦═╣\n",  
+    ///             "║  key22║  k1║1║\n",  
+    ///             "║       ╠════╬═╣\n",  
+    ///             "║       ║  k2║2║\n",  
+    ///             "╚═══════╩════╩═╝",
+    ///        ),
+    ///    );
+    /// ```
+    ///
+    /// [`Table`]: tabled::Table
+    pub fn set_config(&mut self, cfg: GridConfig) -> &mut Self {
+        self.cfg.cfg = Some(cfg);
         self
     }
 }
@@ -70,17 +132,35 @@ mod json_to_table {
 
     pub(super) fn json_to_table(value: &Value, cfg: &Config) -> Table {
         if cfg.plain {
-            json_to_table_f(value, &cfg.style, true)
+            json_to_table_f(value, cfg.style.as_ref(), cfg.cfg.as_ref(), true)
         } else {
-            json_to_table_r(value, &cfg.style, 0, 0, true, true, false, false, &[], None)
+            json_to_table_r(
+                value,
+                cfg.style.as_ref(),
+                cfg.cfg.as_ref(),
+                0,
+                0,
+                true,
+                true,
+                false,
+                false,
+                &[],
+                None,
+            )
         }
     }
 
-    fn json_to_table_f(v: &Value, style: &RawStyle, outer: bool) -> Table {
+    fn json_to_table_f(
+        v: &Value,
+        style: Option<&RawStyle>,
+        cfg: Option<&GridConfig>,
+        outer: bool,
+    ) -> Table {
         match v {
             Value::Null => {
                 let mut table = col![];
-                table.with(style);
+                set_table_style(&mut table, style, cfg);
+
                 if !outer {
                     table.with(Style::empty());
                 }
@@ -89,7 +169,8 @@ mod json_to_table {
             }
             Value::Bool(b) => {
                 let mut table = col![b];
-                table.with(style);
+                set_table_style(&mut table, style, cfg);
+
                 if !outer {
                     table.with(Style::empty());
                 }
@@ -98,7 +179,8 @@ mod json_to_table {
             }
             Value::Number(n) => {
                 let mut table = col![n];
-                table.with(style);
+                set_table_style(&mut table, style, cfg);
+
                 if !outer {
                     table.with(Style::empty());
                 }
@@ -107,7 +189,8 @@ mod json_to_table {
             }
             Value::String(s) => {
                 let mut table = col![s];
-                table.with(style);
+                set_table_style(&mut table, style, cfg);
+
                 if !outer {
                     table.with(Style::empty());
                 }
@@ -117,25 +200,24 @@ mod json_to_table {
             Value::Array(arr) => {
                 let mut builder = Builder::new();
                 for value in arr {
-                    builder.add_record([json_to_table_f(value, style, false).to_string()]);
+                    let val = json_to_table_f(value, style, cfg, false).to_string();
+                    builder.add_record([val]);
                 }
 
                 let mut table = builder.build();
-                table.with(style);
+                set_table_style(&mut table, style, cfg);
 
                 table
             }
             Value::Object(map) => {
                 let mut builder = Builder::new();
                 for (key, value) in map {
-                    builder.add_record([
-                        key.clone(),
-                        json_to_table_f(value, style, false).to_string(),
-                    ]);
+                    let val = json_to_table_f(value, style, cfg, false).to_string();
+                    builder.add_record([key.clone(), val]);
                 }
 
                 let mut table = builder.build();
-                table.with(style);
+                set_table_style(&mut table, style, cfg);
 
                 table
             }
@@ -145,7 +227,8 @@ mod json_to_table {
     #[allow(clippy::too_many_arguments)]
     fn json_to_table_r(
         value: &Value,
-        style: &RawStyle,
+        style: Option<&RawStyle>,
+        cfg: Option<&GridConfig>,
         row: usize,
         column: usize,
         is_last: bool,
@@ -165,10 +248,16 @@ mod json_to_table {
                     _ => unreachable!(),
                 };
 
-                table.with(style).with(Width::increase(width.unwrap_or(0)));
+                set_table_style(&mut table, style, cfg);
+
+                table.with(Width::increase(width.unwrap_or(0)));
                 table.with(SetBottomChars(
                     used_splits,
-                    style.get_top_intersection().unwrap_or(' '),
+                    table
+                        .get_config()
+                        .get_borders()
+                        .top_intersection
+                        .unwrap_or(' '),
                 ));
 
                 table
@@ -197,6 +286,7 @@ mod json_to_table {
                             let value = json_to_table_r(
                                 value,
                                 style,
+                                cfg,
                                 row,
                                 column + 2,
                                 is_last,
@@ -230,7 +320,7 @@ mod json_to_table {
                     let mut was_intersection_touched = false;
                     let intersections = if i + 1 < map_length {
                         let (_, (_, value)) = iter.peek().unwrap();
-                        find_top_intersection(value, style)
+                        find_top_intersection(value)
                     } else {
                         let mut splits = used_splits.to_owned();
                         if !splits.is_empty() {
@@ -261,6 +351,7 @@ mod json_to_table {
                     let mut value = json_to_table_r(
                         value,
                         style,
+                        cfg,
                         row,
                         column + 2,
                         is_last,
@@ -293,7 +384,13 @@ mod json_to_table {
                     }
 
                     let mut key = col![key];
-                    key.with(style);
+                    set_table_style(&mut key, style, cfg);
+
+                    let top_intersection = key
+                        .get_config()
+                        .get_borders()
+                        .top_intersection
+                        .unwrap_or(' ');
 
                     {
                         key.with(NoRightBorders);
@@ -344,10 +441,7 @@ mod json_to_table {
                         // set custom chars
                         if i + 1 == map_length {
                             // set for the key
-                            key.with(SetBottomChars(
-                                used_splits,
-                                style.get_top_intersection().unwrap_or(' '),
-                            ));
+                            key.with(SetBottomChars(used_splits, top_intersection));
                         }
                     }
 
@@ -368,6 +462,7 @@ mod json_to_table {
                             json_to_table_r(
                                 value,
                                 style,
+                                cfg,
                                 row,
                                 column,
                                 is_last,
@@ -394,7 +489,7 @@ mod json_to_table {
 
                     let intersections = if i + 1 < map_length {
                         let value = &list[i + 1];
-                        find_top_intersection(value, style)
+                        find_top_intersection(value)
                     } else {
                         used_splits.to_owned()
                     };
@@ -409,6 +504,7 @@ mod json_to_table {
                     let mut value = json_to_table_r(
                         value,
                         style,
+                        cfg,
                         row,
                         column,
                         is_last,
@@ -463,14 +559,14 @@ mod json_to_table {
         }
     }
 
-    fn find_top_intersection(table: &Value, style: &RawStyle) -> Vec<usize> {
+    fn find_top_intersection(table: &Value) -> Vec<usize> {
         let mut intersections = Vec::new();
-        find_top_intersection_r(table, style, &mut intersections);
+        find_top_intersection_r(table, &mut intersections);
 
         intersections
     }
 
-    fn find_top_intersection_r(table: &Value, style: &RawStyle, chars: &mut Vec<usize>) {
+    fn find_top_intersection_r(table: &Value, chars: &mut Vec<usize>) {
         match table {
             Value::String(_) | Value::Bool(_) | Value::Number(_) | Value::Null => (),
             Value::Object(m) => {
@@ -487,13 +583,23 @@ mod json_to_table {
                 chars.push(max_keys_width);
 
                 let (_, value) = m.iter().next().unwrap();
-                find_top_intersection_r(value, style, chars);
+                find_top_intersection_r(value, chars);
             }
             Value::Array(list) => {
                 if let Some(value) = list.first() {
-                    find_top_intersection_r(value, style, chars);
+                    find_top_intersection_r(value, chars);
                 }
             }
+        }
+    }
+
+    fn set_table_style(table: &mut Table, style: Option<&RawStyle>, cfg: Option<&GridConfig>) {
+        if let Some(cfg) = cfg {
+            *table.get_config_mut() = cfg.clone();
+        }
+
+        if let Some(style) = style {
+            table.with(style);
         }
     }
 
