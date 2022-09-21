@@ -31,8 +31,6 @@ fn main() {
         },
     ];
 
-    let weather_table = Table::new(weather_data);
-
     let location_data = [
         Location(111.111, 333.333),
         Location(5.111, 7282.1),
@@ -42,10 +40,11 @@ fn main() {
 
     let location_table = Table::new(location_data);
 
-    let data_table = weather_table
+    let mut weather_table = Table::new(weather_data);
+    weather_table
         .with(Concat::horizontal(location_table))
         .with(Style::empty())
         .with(Segment::all().modify().with(Alignment::left()));
 
-    println!("{}", data_table);
+    println!("{}", weather_table);
 }

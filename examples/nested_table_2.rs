@@ -79,7 +79,7 @@ fn main() {
         ),
     ];
 
-    let table = Table::new(&data).with(Style::modern());
+    let table = Table::new(&data).with(Style::modern()).to_string();
 
     println!("{}", table);
 }

@@ -13,7 +13,7 @@ macro_rules! table_bench {
                     #[allow(unused_mut)]
                     let mut table = data.table();
 
-                    $(table = table.with($modificator);)*
+                    $(table.with($modificator);)*
 
                     b.iter(|| {
                         let _ = black_box(table.to_string());

@@ -37,7 +37,8 @@ fn main() {
         .table()
         .with(Merge::vertical())
         .with(Style::modern())
-        .with(Style::correct_spans());
+        .with(Style::correct_spans())
+        .to_string();
 
     println!("{}", table);
 }

@@ -11,7 +11,8 @@ use crate::{Table, TableOption};
 /// ```rust
 /// use tabled::{Table, BorderText};
 ///
-/// let table = Table::new(["Hello World"])
+/// let mut table = Table::new(["Hello World"]);
+/// table
 ///     .with(BorderText::first("+-.table"));
 ///
 /// assert_eq!(

@@ -25,38 +25,37 @@ fn main() {
         &["swim", "quack"],
     );
 
-    let t = Builder::from_iter([
+    let mut table = Builder::from_iter([
         [animal.to_string()],
         [String::from("▲")],
         [String::from("|")],
         [String::from("|")],
         [duck.to_string()],
     ])
-    .build()
-    .with(Style::ascii().off_horizontal())
-    .with(
+    .build();
+    table.with(Style::ascii().off_horizontal()).with(
         Modify::new(Segment::all())
             .with(Padding::new(5, 5, 0, 0))
             .with(Alignment::center()),
     );
 
-    println!("{}", t);
+    println!("{}", table);
 }
 
 fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> Table {
-    let table_fields = Builder::from_iter(fields.iter().map(|(field, t, d)| {
+    let mut table_fields = Builder::from_iter(fields.iter().map(|(field, t, d)| {
         if d.is_empty() {
             [format!("+{}: {}", field, t)]
         } else {
             [format!("+{}: {} = {:?}", field, t, d)]
         }
     }))
-    .build()
-    .with(Style::ascii().off_horizontal().off_vertical());
+    .build();
+    table_fields.with(Style::ascii().off_horizontal().off_vertical());
 
-    let table_methods = Builder::from_iter(methods.iter().map(|method| [format!("+{}()", method)]))
-        .build()
-        .with(Style::ascii().off_horizontal().off_vertical());
+    let mut table_methods =
+        Builder::from_iter(methods.iter().map(|method| [format!("+{}()", method)])).build();
+    table_methods.with(Style::ascii().off_horizontal().off_vertical());
 
     let (table_fields, table_methods) = make_equal_width(table_fields, table_methods);
 
@@ -65,8 +64,9 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
         .add_record([table_fields.to_string()])
         .add_record([table_methods.to_string()])
         .set_columns([name.to_string()]);
-    builder
-        .build()
+
+    let mut table = builder.build();
+    table
         .with(
             Style::ascii()
                 .horizontals([HorizontalLine::new(1, Style::ascii().get_horizontal())])
@@ -74,7 +74,9 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
                 .off_vertical(),
         )
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Rows::first()).with(Alignment::center()))
+        .with(Modify::new(Rows::first()).with(Alignment::center()));
+
+    table
 }
 
 fn make_equal_width(mut table1: Table, mut table2: Table) -> (Table, Table) {
@@ -86,8 +88,12 @@ fn make_equal_width(mut table1: Table, mut table2: Table) -> (Table, Table) {
     let table1_width = table1.to_string().lines().next().unwrap().len();
     let table2_width = table2.to_string().lines().next().unwrap().len();
     match table1_width.cmp(&table2_width) {
-        std::cmp::Ordering::Less => table1 = table1.with(Width::increase(table2_width)),
-        std::cmp::Ordering::Greater => table2 = table2.with(Width::increase(table1_width)),
+        std::cmp::Ordering::Less => {
+            table1.with(Width::increase(table2_width));
+        }
+        std::cmp::Ordering::Greater => {
+            table2.with(Width::increase(table1_width));
+        }
         std::cmp::Ordering::Equal => (),
     }
 

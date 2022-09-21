@@ -11,10 +11,11 @@
 //! use tabled::{Table, Style};
 //!
 //! let data = vec!["Hello", "2022"];
-//! let table = Table::new(&data).with(Style::psql()).to_string();
+//! let mut table = Table::new(&data);
+//! table.with(Style::psql());
 //!
 //! assert_eq!(
-//!     table,
+//!     table.to_string(),
 //!     concat!(
 //!         " &str  \n",
 //!         "-------\n",
@@ -64,7 +65,7 @@
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
 //!     .with(Style::psql())
-//!     .with(Modify::new(Cell(0, 0)).with(Style::modern().frame()))
+//!     .with(Modify::new(Cell(0, 0)).with(Style::modern().get_frame()))
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -95,6 +96,8 @@ use std::marker::PhantomData;
 use papergrid::{records::Records, Borders};
 
 use crate::{style::StyleCorrectSpan, Border, Table, TableOption};
+
+use super::{HorizontalLine, Line, VerticalLine};
 
 /// Style is represents a theme of a [`Table`].
 ///
@@ -474,7 +477,8 @@ impl Style<(), (), (), (), (), (), (), ()> {
     ///     ("10", "July", "2022"),
     /// ];
     ///
-    /// let table = data.table()
+    /// let mut table = data.table();
+    /// table
     ///     .with(
     ///         Modify::new(Cell(0, 0))
     ///             .with(Format::new(|_| String::from("date")))
@@ -494,7 +498,7 @@ impl Style<(), (), (), (), (), (), (), ()> {
     ///     )
     /// );
     ///
-    /// let table = table.with(Style::correct_spans());
+    /// table.with(Style::correct_spans());
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -516,49 +520,6 @@ impl Style<(), (), (), (), (), (), (), ()> {
     }
 }
 
-const fn create_borders(
-    top: Line,
-    bottom: Line,
-    horizontal: Line,
-    left: Option<char>,
-    right: Option<char>,
-    vertical: Option<char>,
-) -> Borders {
-    Borders {
-        top: top.main,
-        bottom: bottom.main,
-        top_left: top.connector1,
-        top_right: top.connector2,
-        bottom_left: bottom.connector1,
-        bottom_right: bottom.connector2,
-        top_intersection: top.intersection,
-        bottom_intersection: bottom.intersection,
-        horizontal_left: horizontal.connector1,
-        horizontal_right: horizontal.connector2,
-        horizontal: horizontal.main,
-        intersection: horizontal.intersection,
-        vertical_left: left,
-        vertical_right: right,
-        vertical,
-    }
-}
-
-impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
-    const fn new(borders: Borders, horizontals: HLines, verticals: VLines) -> Self {
-        Self {
-            borders,
-            horizontals,
-            verticals,
-            _top: PhantomData,
-            _bottom: PhantomData,
-            _left: PhantomData,
-            _right: PhantomData,
-            _horizontal: PhantomData,
-            _vertical: PhantomData,
-        }
-    }
-}
-
 impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// Frame function returns a frame as a border.
     ///
@@ -568,8 +529,8 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// use tabled::{Table, Style, Highlight, object::Rows};
     ///
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
-    /// let table = Table::new(data)
-    ///     .with(Highlight::new(Rows::first(), Style::modern().frame()));
+    /// let mut table = Table::new(data);
+    /// table.with(Highlight::new(Rows::first(), Style::modern().get_frame()));
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -584,7 +545,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     ///     )
     /// );
     /// ```
-    pub const fn frame(&self) -> Border {
+    pub const fn get_frame(&self) -> Border {
         Border::new_raw(Some(papergrid::Border {
             top: self.borders.top,
             bottom: self.borders.bottom,
@@ -1013,7 +974,7 @@ impl<T, B, L, R, HLines, VLines> Style<T, B, L, R, On, On, HLines, VLines> {
 
 impl<B, L, R, H, V, HLines, VLines> Style<On, B, L, R, H, V, HLines, VLines> {
     /// Removes top border.
-    pub fn off_top(mut self) -> Style<(), B, L, R, H, V, HLines, VerticalLineIntoIter<VLines>>
+    pub fn off_top(mut self) -> Style<(), B, L, R, H, V, HLines, VerticalLineIter<VLines::IntoIter>>
     where
         VLines: IntoIterator<Item = VerticalLine> + Clone,
     {
@@ -1022,14 +983,16 @@ impl<B, L, R, H, V, HLines, VLines> Style<On, B, L, R, H, V, HLines, VLines> {
         self.borders.top_left = None;
         self.borders.top_right = None;
 
-        let iter = VerticalLineIntoIter::new(self.verticals, false, true, false);
+        let iter = VerticalLineIter::new(self.verticals.into_iter(), false, true, false);
         Style::new(self.borders, self.horizontals, iter)
     }
 }
 
 impl<T, L, R, H, V, HLines, VLines> Style<T, On, L, R, H, V, HLines, VLines> {
     /// Removes bottom border.
-    pub fn off_bottom(mut self) -> Style<T, (), L, R, H, V, HLines, VerticalLineIntoIter<VLines>>
+    pub fn off_bottom(
+        mut self,
+    ) -> Style<T, (), L, R, H, V, HLines, VerticalLineIter<VLines::IntoIter>>
     where
         VLines: IntoIterator<Item = VerticalLine> + Clone,
     {
@@ -1038,14 +1001,16 @@ impl<T, L, R, H, V, HLines, VLines> Style<T, On, L, R, H, V, HLines, VLines> {
         self.borders.bottom_left = None;
         self.borders.bottom_right = None;
 
-        let iter = VerticalLineIntoIter::new(self.verticals, false, false, true);
+        let iter = VerticalLineIter::new(self.verticals.into_iter(), false, false, true);
         Style::new(self.borders, self.horizontals, iter)
     }
 }
 
 impl<T, B, R, H, V, HLines, VLines> Style<T, B, On, R, H, V, HLines, VLines> {
     /// Removes left border.
-    pub fn off_left(mut self) -> Style<T, B, (), R, H, V, HorizontalLineIntoIter<HLines>, VLines>
+    pub fn off_left(
+        mut self,
+    ) -> Style<T, B, (), R, H, V, HorizontalLineIter<HLines::IntoIter>, VLines>
     where
         HLines: IntoIterator<Item = HorizontalLine> + Clone,
     {
@@ -1054,14 +1019,16 @@ impl<T, B, R, H, V, HLines, VLines> Style<T, B, On, R, H, V, HLines, VLines> {
         self.borders.top_left = None;
         self.borders.bottom_left = None;
 
-        let iter = HorizontalLineIntoIter::new(self.horizontals, false, true, false);
+        let iter = HorizontalLineIter::new(self.horizontals.into_iter(), false, true, false);
         Style::new(self.borders, iter, self.verticals)
     }
 }
 
 impl<T, B, L, H, V, HLines, VLines> Style<T, B, L, On, H, V, HLines, VLines> {
     /// Removes right border.
-    pub fn off_right(mut self) -> Style<T, B, L, (), H, V, HorizontalLineIntoIter<HLines>, VLines>
+    pub fn off_right(
+        mut self,
+    ) -> Style<T, B, L, (), H, V, HorizontalLineIter<HLines::IntoIter>, VLines>
     where
         HLines: IntoIterator<Item = HorizontalLine> + Clone,
     {
@@ -1070,7 +1037,7 @@ impl<T, B, L, H, V, HLines, VLines> Style<T, B, L, On, H, V, HLines, VLines> {
         self.borders.top_right = None;
         self.borders.bottom_right = None;
 
-        let iter = HorizontalLineIntoIter::new(self.horizontals, false, false, true);
+        let iter = HorizontalLineIter::new(self.horizontals.into_iter(), false, false, true);
         Style::new(self.borders, iter, self.verticals)
     }
 }
@@ -1081,7 +1048,7 @@ impl<T, B, L, R, V, HLines, VLines> Style<T, B, L, R, On, V, HLines, VLines> {
     /// Not including custom split lines.
     pub fn off_horizontal(
         mut self,
-    ) -> Style<T, B, L, R, (), V, HLines, VerticalLineIntoIter<VLines>>
+    ) -> Style<T, B, L, R, (), V, HLines, VerticalLineIter<VLines::IntoIter>>
     where
         VLines: IntoIterator<Item = VerticalLine> + Clone,
     {
@@ -1090,7 +1057,7 @@ impl<T, B, L, R, V, HLines, VLines> Style<T, B, L, R, On, V, HLines, VLines> {
         self.borders.horizontal_right = None;
         self.borders.intersection = None;
 
-        let iter = VerticalLineIntoIter::new(self.verticals, true, false, false);
+        let iter = VerticalLineIter::new(self.verticals.into_iter(), true, false, false);
         Style::new(self.borders, self.horizontals, iter)
     }
 }
@@ -1099,7 +1066,7 @@ impl<T, B, L, R, H, HLines, VLines> Style<T, B, L, R, H, On, HLines, VLines> {
     /// Removes vertical split lines.
     pub fn off_vertical(
         mut self,
-    ) -> Style<T, B, L, R, H, (), HorizontalLineIntoIter<HLines>, VLines>
+    ) -> Style<T, B, L, R, H, (), HorizontalLineIter<HLines::IntoIter>, VLines>
     where
         HLines: IntoIterator<Item = HorizontalLine> + Clone,
     {
@@ -1108,8 +1075,24 @@ impl<T, B, L, R, H, HLines, VLines> Style<T, B, L, R, H, On, HLines, VLines> {
         self.borders.bottom_intersection = None;
         self.borders.intersection = None;
 
-        let iter = HorizontalLineIntoIter::new(self.horizontals, true, false, false);
+        let iter = HorizontalLineIter::new(self.horizontals.into_iter(), true, false, false);
         Style::new(self.borders, iter, self.verticals)
+    }
+}
+
+impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
+    const fn new(borders: Borders, horizontals: HLines, verticals: VLines) -> Self {
+        Self {
+            borders,
+            horizontals,
+            verticals,
+            _top: PhantomData,
+            _bottom: PhantomData,
+            _left: PhantomData,
+            _right: PhantomData,
+            _horizontal: PhantomData,
+            _vertical: PhantomData,
+        }
     }
 }
 
@@ -1140,306 +1123,30 @@ where
     }
 }
 
-/// A horizontal split line which can be used to set a border.
-#[derive(Debug, Clone)]
-pub struct HorizontalLine {
-    pub(crate) index: usize,
-    pub(crate) line: Option<Line>,
-}
-
-impl HorizontalLine {
-    /// Creates a new horizontal split line.
-    pub const fn new(index: usize, line: Line) -> Self {
-        Self {
-            index,
-            line: Some(line),
-        }
-    }
-
-    /// Removes an existing split line by index.
-    ///
-    /// It not present or in case of index bigger than the count of columns it has no affect.
-    pub fn empty(index: usize) -> Self {
-        Self { index, line: None }
-    }
-
-    /// Sets a horizontal character.
-    pub const fn main(mut self, c: Option<char>) -> Self {
-        let mut line = match self.line {
-            Some(line) => line,
-            None => Line::empty(),
-        };
-
-        line.main = c;
-        self.line = Some(line);
-
-        self
-    }
-
-    /// Sets a vertical intersection character.
-    pub const fn intersection(mut self, c: Option<char>) -> Self {
-        let mut line = match self.line {
-            Some(line) => line,
-            None => Line::empty(),
-        };
-
-        line.intersection = c;
-        self.line = Some(line);
-
-        self
-    }
-
-    /// Sets a left character.
-    pub const fn left(mut self, c: Option<char>) -> Self {
-        let mut line = match self.line {
-            Some(line) => line,
-            None => Line::empty(),
-        };
-
-        line.connector1 = c;
-        self.line = Some(line);
-
-        self
-    }
-
-    /// Sets a right character.
-    pub const fn right(mut self, c: Option<char>) -> Self {
-        let mut line = match self.line {
-            Some(line) => line,
-            None => Line::empty(),
-        };
-
-        line.connector2 = c;
-        self.line = Some(line);
-
-        self
-    }
-
-    /// Checks if it's an empty line.
-    pub const fn is_empty(&self) -> bool {
-        match &self.line {
-            Some(l) => l.is_empty(),
-            None => true,
-        }
-    }
-}
-
-impl<R> TableOption<R> for HorizontalLine {
-    fn change(&mut self, table: &mut Table<R>) {
-        match &self.line {
-            Some(line) => table
-                .get_config_mut()
-                .set_horizontal_line(self.index, papergrid::HorizontalLine::from(*line)),
-            None => table.get_config_mut().remove_horizontal_line(self.index),
-        }
-    }
-}
-
-/// A horizontal split line which can be used to set a border.
-#[derive(Debug, Clone)]
-pub struct VerticalLine {
-    pub(crate) index: usize,
-    pub(crate) line: Option<Line>,
-}
-
-impl VerticalLine {
-    /// Creates a new horizontal split line.
-    pub const fn new(index: usize, line: Line) -> Self {
-        Self {
-            index,
-            line: Some(line),
-        }
-    }
-
-    /// Removes an existing split line by index.
-    ///
-    /// It not present or in case of index bigger than the count of columns it has no affect.
-    pub fn empty(index: usize) -> Self {
-        Self { index, line: None }
-    }
-
-    /// Sets a horizontal character.
-    pub const fn main(mut self, c: Option<char>) -> Self {
-        let mut line = match self.line {
-            Some(line) => line,
-            None => Line::empty(),
-        };
-
-        line.main = c;
-        self.line = Some(line);
-
-        self
-    }
-
-    /// Sets a vertical intersection character.
-    pub const fn intersection(mut self, c: Option<char>) -> Self {
-        let mut line = match self.line {
-            Some(line) => line,
-            None => Line::empty(),
-        };
-
-        line.intersection = c;
-        self.line = Some(line);
-
-        self
-    }
-
-    /// Sets a top character.
-    pub const fn top(mut self, c: Option<char>) -> Self {
-        let mut line = match self.line {
-            Some(line) => line,
-            None => Line::empty(),
-        };
-
-        line.connector1 = c;
-        self.line = Some(line);
-
-        self
-    }
-
-    /// Sets a bottom character.
-    pub const fn bottom(mut self, c: Option<char>) -> Self {
-        let mut line = match self.line {
-            Some(line) => line,
-            None => Line::empty(),
-        };
-
-        line.connector2 = c;
-        self.line = Some(line);
-
-        self
-    }
-
-    /// Checks if it's an empty line.
-    pub const fn is_empty(&self) -> bool {
-        match &self.line {
-            Some(l) => l.is_empty(),
-            None => true,
-        }
-    }
-}
-
-impl<R> TableOption<R> for VerticalLine {
-    fn change(&mut self, table: &mut Table<R>) {
-        match &self.line {
-            Some(line) => table
-                .get_config_mut()
-                .set_vertical_line(self.index, papergrid::VerticalLine::from(*line)),
-            None => table.get_config_mut().remove_vertical_line(self.index),
-        }
-    }
-}
-
-/// The structure represent a vertical or horizontal line.
-#[derive(Debug, Default, Clone, Copy)]
-pub struct Line {
-    main: Option<char>,
-    intersection: Option<char>,
-    connector1: Option<char>,
-    connector2: Option<char>,
-}
-
-impl Line {
-    /// Creates a new [`Line`] object.
-    pub const fn new(
-        main: Option<char>,
-        intersection: Option<char>,
-        connector1: Option<char>,
-        connector2: Option<char>,
-    ) -> Self {
-        Self {
-            main,
-            intersection,
-            connector1,
-            connector2,
-        }
-    }
-
-    /// Creates a new [`Line`] object with all chars set.
-    pub const fn full(main: char, intersection: char, connector1: char, connector2: char) -> Self {
-        Self::new(
-            Some(main),
-            Some(intersection),
-            Some(connector1),
-            Some(connector2),
-        )
-    }
-
-    /// Creates a new [`Line`] object with all chars set to the provided one.
-    pub const fn filled(c: char) -> Self {
-        Self::full(c, c, c, c)
-    }
-
-    /// Creates a new [`Line`] object with all chars not set.
-    pub const fn empty() -> Self {
-        Self::new(None, None, None, None)
-    }
-
-    /// Checks if the line has nothing set.
-    pub const fn is_empty(&self) -> bool {
-        self.main.is_none()
-            && self.intersection.is_none()
-            && self.connector1.is_none()
-            && self.connector2.is_none()
-    }
-}
-
-impl From<Line> for papergrid::HorizontalLine<char> {
-    fn from(l: Line) -> Self {
-        Self {
-            main: l.main,
-            intersection: l.intersection,
-            left: l.connector1,
-            right: l.connector2,
-        }
-    }
-}
-
-impl From<Line> for papergrid::VerticalLine<char> {
-    fn from(l: Line) -> Self {
-        Self {
-            main: l.main,
-            intersection: l.intersection,
-            top: l.connector1,
-            bottom: l.connector2,
-        }
-    }
-}
-
-/// An helper for a [`HorizonBorderLinesItertalLineIter`].
-#[derive(Debug, Clone)]
-pub struct HorizontalLineIntoIter<I> {
-    iter: I,
-    intersection: bool,
-    left: bool,
-    right: bool,
-}
-
-impl<I> HorizontalLineIntoIter<I> {
-    const fn new(iter: I, intersection: bool, left: bool, right: bool) -> Self {
-        Self {
-            iter,
-            intersection,
-            left,
-            right,
-        }
-    }
-}
-
-impl<I> IntoIterator for HorizontalLineIntoIter<I>
-where
-    I: IntoIterator<Item = HorizontalLine>,
-{
-    type Item = HorizontalLine;
-    type IntoIter = HorizontalLineIter<I::IntoIter>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        HorizontalLineIter::new(
-            self.iter.into_iter(),
-            self.intersection,
-            self.left,
-            self.right,
-        )
+const fn create_borders(
+    top: Line,
+    bottom: Line,
+    horizontal: Line,
+    left: Option<char>,
+    right: Option<char>,
+    vertical: Option<char>,
+) -> Borders {
+    Borders {
+        top: top.main,
+        bottom: bottom.main,
+        top_left: top.connector1,
+        top_right: top.connector2,
+        bottom_left: bottom.connector1,
+        bottom_right: bottom.connector2,
+        top_intersection: top.intersection,
+        bottom_intersection: bottom.intersection,
+        horizontal_left: horizontal.connector1,
+        horizontal_right: horizontal.connector2,
+        horizontal: horizontal.main,
+        intersection: horizontal.intersection,
+        vertical_left: left,
+        vertical_right: right,
+        vertical,
     }
 }
 
@@ -1489,43 +1196,6 @@ where
         }
 
         Some(hl)
-    }
-}
-
-/// An helper for a [`VerticalLineIter`].
-#[derive(Debug, Clone)]
-pub struct VerticalLineIntoIter<I> {
-    iter: I,
-    intersection: bool,
-    top: bool,
-    bottom: bool,
-}
-
-impl<I> VerticalLineIntoIter<I> {
-    const fn new(iter: I, intersection: bool, top: bool, bottom: bool) -> Self {
-        Self {
-            iter,
-            intersection,
-            top,
-            bottom,
-        }
-    }
-}
-
-impl<I> IntoIterator for VerticalLineIntoIter<I>
-where
-    I: IntoIterator<Item = VerticalLine>,
-{
-    type Item = VerticalLine;
-    type IntoIter = VerticalLineIter<I::IntoIter>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        VerticalLineIter::new(
-            self.iter.into_iter(),
-            self.intersection,
-            self.top,
-            self.bottom,
-        )
     }
 }
 

@@ -35,7 +35,8 @@ fn main() {
         },
     ];
 
-    let table = Table::from_iter(&data)
+    let mut table = Table::from_iter(&data);
+    table
         .with(Style::markdown())
         .with(Rows::first().modify().with(Alignment::center()));
 

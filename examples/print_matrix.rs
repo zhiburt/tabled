@@ -18,7 +18,7 @@ fn matrix<const N: usize>() -> [[usize; N]; N] {
 
 fn main() {
     let data = matrix::<10>();
-    let table = Table::new(&data).with(Style::modern());
+    let table = Table::new(&data).with(Style::modern()).to_string();
 
     println!("{}", table);
 }

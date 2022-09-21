@@ -54,7 +54,8 @@ fn main() {
             .bottom_right_corner(purple_split('+')),
     );
 
-    let table = Table::new(&data)
+    let mut table = Table::new(&data);
+    table
         .with(Style::psql())
         .with(yellow_color)
         .with(first_row_style)

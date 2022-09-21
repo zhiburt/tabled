@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example col_row_macros --features="macros"`
 
-use tabled::{col, object::Segment, row, Alignment, Modify, Style, Table, Tabled};
+use tabled::{col, row, Alignment, Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Person {
@@ -35,17 +35,18 @@ fn main() {
         Person::new("Adam Blend", 17, true),
     ];
 
-    let table_a = Table::new(&validated).with(Style::ascii());
-    let table_b = Table::new(&not_validated).with(Style::modern());
-    let table_c = Table::new(&unsure).with(Style::ascii_rounded());
+    let table_a = Table::new(&validated).with(Style::ascii()).to_string();
+    let table_b = Table::new(&not_validated).with(Style::modern()).to_string();
+    let table_c = Table::new(&unsure).with(Style::ascii_rounded()).to_string();
 
-    println!("{}", row![table_c, table_b]);
+    let row_t = row![table_c, table_b];
+    let col_t = col![table_c; 3];
+    let mut row_col_t = col![row![table_a, table_b].with(Style::empty()), table_c];
+    row_col_t.with(Alignment::center());
+
+    println!("{}", row_t);
     println!();
-    println!("{}", col![table_c; 3]);
+    println!("{}", col_t);
     println!();
-    println!(
-        "{}",
-        col![row![table_a, table_b].with(Style::empty()), table_c]
-            .with(Modify::new(Segment::all()).with(Alignment::center()))
-    );
+    println!("{}", row_col_t);
 }

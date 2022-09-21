@@ -159,27 +159,7 @@ pub(crate) fn count_borders(
         .count()
 }
 
-pub(crate) fn get_table_total_width<R>(records: R, cfg: &GridConfig) -> usize
-where
-    R: Records,
-{
-    let mut evaluator = WidthEstimator::default();
-    evaluator.estimate(&records, cfg);
-    get_total_width(&records, cfg, &evaluator)
-}
-
-pub(crate) fn get_table_widths_with_total<R>(records: R, cfg: &GridConfig) -> (Vec<usize>, usize)
-where
-    R: Records,
-{
-    let mut evaluator = WidthEstimator::default();
-    evaluator.estimate(&records, cfg);
-    let total_width = get_total_width(&records, cfg, &evaluator);
-    let widths = evaluator.into();
-    (widths, total_width)
-}
-
-fn get_total_width<W, R>(records: R, cfg: &GridConfig, ctrl: &W) -> usize
+pub(crate) fn get_table_total_width<W, R>(records: R, cfg: &GridConfig, ctrl: &W) -> usize
 where
     W: Estimate<R>,
     R: Records,
@@ -188,4 +168,15 @@ where
         + cfg.count_vertical(records.count_columns())
         + cfg.get_margin().left.size
         + cfg.get_margin().right.size
+}
+
+pub(crate) fn get_table_widths_with_total<R>(records: R, cfg: &GridConfig) -> (Vec<usize>, usize)
+where
+    R: Records,
+{
+    let mut evaluator = WidthEstimator::default();
+    evaluator.estimate(&records, cfg);
+    let total_width = get_table_total_width(&records, cfg, &evaluator);
+    let widths = evaluator.into();
+    (widths, total_width)
 }

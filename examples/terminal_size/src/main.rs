@@ -38,15 +38,17 @@ fn main() {
     let (terminal_size::Width(width), terminal_size::Height(height)) =
         terminal_size::terminal_size().unwrap();
 
-    let mut table = DATA.table().with(Style::extended());
+    let mut table = DATA.table();
+    table.with(Style::extended());
+
     if use_width {
-        table = table
+        table
             .with(Width::wrap(width as usize))
             .with(Width::increase(width as usize));
     }
 
     if use_height {
-        table = table
+        table
             .with(Height::increase(height as usize))
             .with(Height::limit(height as usize));
     }

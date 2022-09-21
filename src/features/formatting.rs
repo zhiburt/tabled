@@ -67,7 +67,8 @@ where
 ///     ]
 /// }"#;
 ///
-/// let table = Table::new(&[json])
+/// let mut table = Table::new(&[json]);
+/// table
 ///     .with(Style::modern())
 ///     .with(Modify::new(Segment::all()).with(Alignment::right()))
 ///     .with(Modify::new(Segment::all()).with(TrimStrategy::None));
@@ -101,7 +102,7 @@ where
 /// │ }                                                             │
 /// └───────────────────────────────────────────────────────────────┘"#);
 ///
-/// let table = table
+/// table
 ///     .with(Modify::new(Segment::all()).with(AlignmentStrategy::PerCell))
 ///     .with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
 ///
@@ -132,7 +133,7 @@ where
 /// │         }                                                     │
 /// └───────────────────────────────────────────────────────────────┘"#);
 ///
-/// let table = table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
+/// table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
 ///
 /// assert_eq!(
 ///     format!("\n{}", table),
@@ -191,7 +192,8 @@ impl<R> CellOption<R> for AlignmentStrategy {
 ///     formatting::{TrimStrategy, AlignmentStrategy}
 /// };
 ///
-/// let table = Table::new(&["   Hello World"])
+/// let mut table = Table::new(&["   Hello World"]);
+/// table
 ///     .with(Style::modern())
 ///     .with(
 ///         Modify::new(Segment::all())
@@ -211,7 +213,7 @@ impl<R> CellOption<R> for AlignmentStrategy {
 /// );
 ///
 /// // To trim lines you would need also set [`AlignmentStrategy`].
-/// let table = table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
+/// table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -222,7 +224,8 @@ impl<R> CellOption<R> for AlignmentStrategy {
 ///      └────────────────┘"
 /// );
 ///
-/// let table = Table::new(&["   \n\n\n    Hello World"])
+/// let mut table = Table::new(&["   \n\n\n    Hello World"]);
+/// table
 ///     .with(Style::modern())
 ///     .with(
 ///         Modify::new(Segment::all())

@@ -35,7 +35,7 @@ fn main() {
         },
     ];
 
-    let table = Table::new(&data)
+    let table = Table::new(data)
         .with(Style::psql())
         .with(
             Rows::first()
@@ -47,7 +47,8 @@ fn main() {
                 .not(Rows::first())
                 .modify()
                 .with(|s: &str| format!("{}...", s)),
-        );
+        )
+        .to_string();
 
     println!("{}", table);
 }

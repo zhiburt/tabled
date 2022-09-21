@@ -23,7 +23,8 @@ use crate::{CellOption, Table, TableOption};
 /// ];
 ///
 /// let table = data.table()
-///     .with(Color::try_from(" ".red().to_string()).unwrap());
+///     .with(Color::try_from(" ".red().to_string()).unwrap())
+///     .to_string();
 ///
 /// println!("{}", table);
 /// ```

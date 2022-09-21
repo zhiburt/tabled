@@ -65,12 +65,11 @@ pub trait CellOption<R> {
 /// ### With settings
 ///
 /// ```rust,no_run
-/// use tabled::{Table, Style, Alignment, object::Segment, Modify};
+/// use tabled::{Table, Style, Alignment};
 ///
 /// let data = vec!["Hello", "2021"];
-/// let table = Table::new(&data)
-///                 .with(Style::psql())
-///                 .with(Modify::new(Segment::all()).with(Alignment::left()));
+/// let mut table = Table::new(&data);
+/// table.with(Style::psql()).with(Alignment::left());
 ///
 /// println!("{}", table);
 /// ```
@@ -150,7 +149,9 @@ impl Table<()> {
     /// builder.set_index(0);
     /// builder.transpose();
     ///
-    /// let table = builder.build().with(Segment::new(1.., 1..).modify().with(Alignment::center())).to_string();
+    /// let table = builder.build()
+    ///     .with(Segment::new(1.., 1..).modify().with(Alignment::center()))
+    ///     .to_string();
     ///
     /// assert_eq!(
     ///     table,
@@ -211,11 +212,11 @@ impl<R> Table<R> {
     /// With is a generic function which applies options to the [`Table`].
     ///
     /// It applies settings immediately.
-    pub fn with<O>(mut self, mut option: O) -> Self
+    pub fn with<O>(&mut self, mut option: O) -> &mut Self
     where
         O: TableOption<R>,
     {
-        option.change(&mut self);
+        option.change(self);
         self
     }
 
@@ -264,12 +265,14 @@ where
 
     /// Returns total widths of a table, including margin and vertical lines.
     pub fn total_width(&self) -> usize {
-        get_table_total_width(&self.records, &self.cfg)
+        let ctrl = self.get_width_ctrl();
+        get_table_total_width(&self.records, &self.cfg, &ctrl)
     }
 
     /// Returns total widths of a table, including margin and horizontal lines.
     pub fn total_height(&self) -> usize {
-        get_table_total_height(&self.records, &self.cfg)
+        let ctrl = self.get_height_ctrl();
+        get_table_total_height(&self.records, &self.cfg, &ctrl)
     }
 
     fn get_width_ctrl(&self) -> CachedEstimator<'_, WidthEstimator> {

@@ -9,7 +9,8 @@ use crate::{style::Offset, CellOption, Table};
 /// ```rust
 /// use tabled::{Table, style::{Style, BorderChar, Offset}, Modify, object::Rows};
 ///
-/// let table = Table::new(["Hello World"])
+/// let mut table = Table::new(["Hello World"]);
+/// table
 ///     .with(Style::markdown())
 ///     .with(Modify::new(Rows::single(1))
 ///         .with(BorderChar::new(':', Offset::Begin(0)))

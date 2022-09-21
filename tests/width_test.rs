@@ -485,7 +485,8 @@ fn color_chars_are_stripped() {
 
 #[test]
 fn min_width() {
-    let table = create_table::<3, 3>()
+    let mut table = create_table::<3, 3>();
+    table
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(12)));
 
@@ -500,7 +501,7 @@ fn min_width() {
         ),
     );
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
 
     assert_eq!(
         table.to_string(),
@@ -535,7 +536,8 @@ fn min_width_with_filler() {
 
 #[test]
 fn min_width_one_column() {
-    let table = create_table::<3, 3>()
+    let mut table = create_table::<3, 3>();
+    table
         .with(Style::markdown())
         .with(Modify::new(Cell(0, 0)).with(MinWidth::new(5)));
 
@@ -550,7 +552,7 @@ fn min_width_one_column() {
         )
     );
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
 
     assert_eq!(
         table.to_string(),
@@ -577,7 +579,8 @@ fn min_width_on_smaller_content() {
 
 #[test]
 fn min_with_max_width() {
-    let table = create_table::<3, 3>()
+    let mut table = create_table::<3, 3>();
+    table
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
         .with(Modify::new(Rows::single(0)).with(Width::truncate(3)));
@@ -593,7 +596,7 @@ fn min_with_max_width() {
         )
     );
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
 
     assert_eq!(
         table.to_string(),
@@ -609,7 +612,8 @@ fn min_with_max_width() {
 
 #[test]
 fn min_with_max_width_truncate_suffix() {
-    let table = create_table::<3, 3>()
+    let mut table = create_table::<3, 3>();
+    table
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
         .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("...")));
@@ -625,7 +629,7 @@ fn min_with_max_width_truncate_suffix() {
         )
     );
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
 
     assert_eq!(
         table.to_string(),
@@ -641,16 +645,19 @@ fn min_with_max_width_truncate_suffix() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_replace() {
-    let table = create_table::<3, 3>().with(Style::markdown()).with(
-        Modify::new(Rows::single(0)).with(
-            Width::truncate(3)
-                .suffix("...")
-                .suffix_limit(SuffixLimit::Replace('x')),
-        ),
-    );
+    let table = create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(
+            Modify::new(Rows::single(0)).with(
+                Width::truncate(3)
+                    .suffix("...")
+                    .suffix_limit(SuffixLimit::Replace('x')),
+            ),
+        )
+        .to_string();
 
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
             "| N | xxx | xxx | xxx |"
             "|---|-----|-----|-----|"
@@ -663,16 +670,19 @@ fn min_with_max_width_truncate_suffix_limit_replace() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_cut() {
-    let table = create_table::<3, 3>().with(Style::markdown()).with(
-        Modify::new(Rows::single(0)).with(
-            Width::truncate(3)
-                .suffix("qwert")
-                .suffix_limit(SuffixLimit::Cut),
-        ),
-    );
+    let table = create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(
+            Modify::new(Rows::single(0)).with(
+                Width::truncate(3)
+                    .suffix("qwert")
+                    .suffix_limit(SuffixLimit::Cut),
+            ),
+        )
+        .to_string();
 
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
             "| N | qwe | qwe | qwe |"
             "|---|-----|-----|-----|"
@@ -685,16 +695,19 @@ fn min_with_max_width_truncate_suffix_limit_cut() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_ignore() {
-    let table = create_table::<3, 3>().with(Style::markdown()).with(
-        Modify::new(Rows::single(0)).with(
-            Width::truncate(3)
-                .suffix("qwert")
-                .suffix_limit(SuffixLimit::Ignore),
-        ),
-    );
+    let table = create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(
+            Modify::new(Rows::single(0)).with(
+                Width::truncate(3)
+                    .suffix("qwert")
+                    .suffix_limit(SuffixLimit::Ignore),
+            ),
+        )
+        .to_string();
 
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
             "| N | col | col | col |"
             "|---|-----|-----|-----|"
@@ -718,10 +731,11 @@ fn min_with_max_width_truncate_suffix_try_color() {
 
     let table = new_table(data)
         .with(Style::markdown())
-        .with(Width::truncate(7).suffix("..").suffix_try_color(true));
+        .with(Width::truncate(7).suffix("..").suffix_try_color(true))
+        .to_string();
 
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
             "| S.. |"
             "|-----|"
@@ -1209,12 +1223,13 @@ fn total_width_small_with_panel_using_wrapping() {
 
 #[test]
 fn max_width_with_span() {
-    let table = init_table::<3, 3, _, _>([((0, 1), "a long string")])
+    let mut table = init_table::<3, 3, _, _>([((0, 1), "a long string")]);
+    table
         .with(Style::psql())
         .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 2)).with(Span::column(2)));
 
-    let table = table.with(Width::truncate(40));
+    table.with(Width::truncate(40));
 
     assert_eq!(
         table.to_string(),
@@ -1228,7 +1243,7 @@ fn max_width_with_span() {
     );
     assert!(is_lines_equal(&table.to_string(), 36));
 
-    let table = table.with(Width::truncate(20));
+    table.with(Width::truncate(20));
 
     assert_eq!(
         table.to_string(),
@@ -1242,7 +1257,7 @@ fn max_width_with_span() {
     );
     assert!(is_lines_equal(&table.to_string(), 20));
 
-    let table = table.with(Width::truncate(10));
+    table.with(Width::truncate(10));
 
     assert_eq!(
         table.to_string(),
@@ -1270,14 +1285,12 @@ fn min_width_works_with_right_alignment() {
     }
     "#;
 
-    let table = new_table([json])
-        .with(Style::markdown())
-        .with(MinWidth::new(50))
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::right())
-                .with(TrimStrategy::None),
-        );
+    let mut table = new_table([json]);
+    table.with(Style::markdown()).with(MinWidth::new(50)).with(
+        Modify::new(Segment::all())
+            .with(Alignment::right())
+            .with(TrimStrategy::None),
+    );
 
     assert_eq!(
         papergrid::util::string_width_multiline(&table.to_string()),
@@ -1301,7 +1314,7 @@ fn min_width_works_with_right_alignment() {
         )
     );
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
 
     assert_eq!(
         table.to_string(),
@@ -1322,7 +1335,7 @@ fn min_width_works_with_right_alignment() {
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
 
     assert_eq!(
         table.to_string(),
@@ -1343,14 +1356,12 @@ fn min_width_works_with_right_alignment() {
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    let table = new_table([json])
-        .with(Style::markdown())
-        .with(MinWidth::new(50))
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::center())
-                .with(TrimStrategy::None),
-        );
+    let mut table = new_table([json]);
+    table.with(Style::markdown()).with(MinWidth::new(50)).with(
+        Modify::new(Segment::all())
+            .with(Alignment::center())
+            .with(TrimStrategy::None),
+    );
 
     assert_eq!(
         table.to_string(),
@@ -1371,7 +1382,7 @@ fn min_width_works_with_right_alignment() {
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
 
     assert_eq!(
         table.to_string(),
@@ -1392,7 +1403,7 @@ fn min_width_works_with_right_alignment() {
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
 
     assert_eq!(
         table.to_string(),

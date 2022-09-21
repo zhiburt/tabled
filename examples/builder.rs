@@ -21,7 +21,8 @@ fn main() {
         .with(Panel::header(link))
         .with(Panel::horizontal(2).text("=".repeat(link.len())))
         .with(Modify::new(Rows::single(1)).with(Width::wrap(link.len())))
-        .with(Style::markdown());
+        .with(Style::markdown())
+        .to_string();
 
     println!("{}", table);
 }

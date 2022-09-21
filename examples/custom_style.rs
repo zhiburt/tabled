@@ -2,9 +2,8 @@
 //! `cargo run --example custom_style`
 
 use tabled::{
-    object::Segment,
     style::{HorizontalLine, VerticalLine},
-    Alignment, ModifyObject, Style, Table, Tabled,
+    Alignment, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -39,9 +38,8 @@ fn main() {
         .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(None)])
         .verticals([VerticalLine::new(1, Style::modern().get_vertical())]);
 
-    let table = Table::new(&data)
-        .with(theme)
-        .with(Segment::all().modify().with(Alignment::left()));
+    let mut table = Table::new(&data);
+    table.with(theme).with(Alignment::left());
 
     println!("{}", table);
 }

@@ -33,18 +33,8 @@ impl DatabaseTable {
 }
 
 fn main() {
-    let data = [
-        DatabaseTable::new("database_1", "database_1", "table_1", 10712),
-        DatabaseTable::new("database_1", "database_1", "table_2", 57),
-        DatabaseTable::new("database_1", "database_1", "table_3", 57),
-        DatabaseTable::new("database_2", "", "table_1", 72),
-        DatabaseTable::new("database_2", "", "table_2", 75),
-        DatabaseTable::new("database_3", "database_3", "table_1", 20),
-        DatabaseTable::new("database_3", "", "table_2", 21339),
-        DatabaseTable::new("database_3", "", "table_3", 141723),
-    ];
-
-    let theme = |table: Table| {
+    // todo: implement table option for such lambda
+    let theme = |table: &mut Table| {
         // we make 1 vertical line
         table
             .with(Style::rounded().off_vertical())
@@ -59,16 +49,26 @@ fn main() {
             .with(
                 Modify::new(Columns::first().intersect(Rows::last()))
                     .with(Border::default().bottom_right_corner('┴')),
-            )
+            );
     };
+
+    let data = [
+        DatabaseTable::new("database_1", "database_1", "table_1", 10712),
+        DatabaseTable::new("database_1", "database_1", "table_2", 57),
+        DatabaseTable::new("database_1", "database_1", "table_3", 57),
+        DatabaseTable::new("database_2", "", "table_1", 72),
+        DatabaseTable::new("database_2", "", "table_2", 75),
+        DatabaseTable::new("database_3", "database_3", "table_1", 20),
+        DatabaseTable::new("database_3", "", "table_2", 21339),
+        DatabaseTable::new("database_3", "", "table_3", 141723),
+    ];
 
     let mut builder = tabled::Table::builder(data).index();
     builder.transpose();
 
-    let table = builder.build();
-    let table = theme(table)
-        .with(Style::correct_spans())
-        .with(Merge::horizontal());
+    let mut table = builder.build();
+    theme(&mut table);
+    table.with(Style::correct_spans()).with(Merge::horizontal());
 
     println!("{}", table);
 }
