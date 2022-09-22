@@ -4,6 +4,8 @@ use papergrid::records::Records;
 
 use crate::{Table, TableOption};
 
+use super::Offset;
+
 /// [`BorderText`] writes a custom text on a border.
 ///
 /// # Example
@@ -30,6 +32,7 @@ pub struct BorderText<'a> {
     // offset: usize,
     text: Cow<'a, str>,
     row: SplitLineIndex,
+    offset: Offset,
 }
 
 #[derive(Debug)]
@@ -51,6 +54,7 @@ impl<'a> BorderText<'a> {
         Self {
             text: text.into(),
             row: SplitLineIndex::Line(line),
+            offset: Offset::Begin(0),
         }
     }
 
@@ -62,6 +66,7 @@ impl<'a> BorderText<'a> {
         Self {
             text: text.into(),
             row: SplitLineIndex::First,
+            offset: Offset::Begin(0),
         }
     }
 
@@ -73,7 +78,14 @@ impl<'a> BorderText<'a> {
         Self {
             text: text.into(),
             row: SplitLineIndex::Last,
+            offset: Offset::Begin(0),
         }
+    }
+
+    /// Set an offset from which the text will be started.
+    pub fn offset(mut self, offset: Offset) -> Self {
+        self.offset = offset;
+        self
     }
 }
 
@@ -96,6 +108,6 @@ where
 
         table
             .get_config_mut()
-            .override_split_line(row, self.text.as_ref());
+            .override_split_line(row, self.text.as_ref(), self.offset.into());
     }
 }
