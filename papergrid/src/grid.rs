@@ -11,7 +11,8 @@ use crate::{
     records::Records,
     util::{get_lines, spplit_str_at, string_trim, string_width},
     width::{CfgWidthFunction, WidthFunc},
-    AlignmentHorizontal, AlignmentVertical, Formatting, GridConfig, Indent, Padding, Position,
+    AlignmentHorizontal, AlignmentVertical, Formatting, GridConfig, Indent, Offset, Padding,
+    Position,
 };
 
 #[cfg(feature = "color")]
@@ -92,9 +93,12 @@ mod print_general {
         H: Estimate<R>,
         R: Records,
     {
+        let total_width = total_width(cfg, records, width);
+        let total_width_with_margin =
+            total_width + cfg.get_margin().left.size + cfg.get_margin().right.size;
+
         if cfg.get_margin().top.size > 0 {
-            let total_width = total_width(cfg, records, width);
-            print_margin_top(f, cfg, total_width)?;
+            print_margin_top(f, cfg, total_width_with_margin)?;
             f.write_char('\n')?;
         }
 
@@ -108,7 +112,7 @@ mod print_general {
                 }
 
                 print_margin_left(f, cfg)?;
-                print_split_line(f, cfg, records, width, row)?;
+                print_split_line(f, cfg, records, width, row, total_width)?;
                 print_margin_right(f, cfg)?;
 
                 if count_lines > 0 {
@@ -151,14 +155,13 @@ mod print_general {
         if has_horizontal(cfg, records, records.count_rows()) {
             f.write_char('\n')?;
             print_margin_left(f, cfg)?;
-            print_split_line(f, cfg, records, width, records.count_rows())?;
+            print_split_line(f, cfg, records, width, records.count_rows(), total_width)?;
             print_margin_right(f, cfg)?;
         }
 
         if cfg.get_margin().bottom.size > 0 {
             f.write_char('\n')?;
-            let total_width = total_width(cfg, records, width);
-            print_margin_bottom(f, cfg, total_width)?;
+            print_margin_bottom(f, cfg, total_width_with_margin)?;
         }
 
         Ok(())
@@ -170,6 +173,7 @@ mod print_general {
         records: &R,
         width_ctrl: &W,
         row: usize,
+        total_width: usize,
     ) -> fmt::Result
     where
         W: Estimate<R>,
@@ -182,15 +186,18 @@ mod print_general {
             .and_then(|text| get_lines(text).next())
             .unwrap_or_default()
             .into_owned();
+        let override_text_offset = cfg.get_split_line_offset(row).unwrap_or(Offset::Begin(0));
+        let override_text_pos = offset_start_pos(override_text_offset, total_width);
 
         #[cfg(feature = "color")]
         let mut used_color = None;
 
+        let mut i = 0;
         for col in 0..records.count_columns() {
             if col == 0 {
                 let left = cfg.get_intersection((row, col), shape);
                 if let Some(c) = left {
-                    if !override_text.is_empty() {
+                    if i >= override_text_pos && !override_text.is_empty() {
                         let (c, rest) = spplit_str_at(&override_text, 1);
                         f.write_str(&c)?;
                         override_text = rest.into_owned();
@@ -208,12 +215,39 @@ mod print_general {
                         }
 
                         f.write_char(*c)?;
+                        i += 1;
                     }
                 }
             }
 
             let mut width = width_ctrl.get(col).unwrap();
-            if !override_text.is_empty() {
+
+            // a situation when need to partially print split
+            if i < override_text_pos && i + width >= override_text_pos {
+                let available = override_text_pos - i;
+                width -= available;
+                i += available;
+                let width = available;
+
+                let main = get_horizontal(cfg, records, (row, col));
+                match main {
+                    Some(c) => {
+                        #[cfg(feature = "color")]
+                        {
+                            prepare_coloring(
+                                f,
+                                get_horizontal_color(cfg, records, (row, col)),
+                                &mut used_color,
+                            )?;
+                        }
+
+                        print_horizontal_border(f, cfg, (row, col), width, *c)?;
+                    }
+                    None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+                }
+            }
+
+            if i >= override_text_pos && !override_text.is_empty() {
                 let width_ctrl = CfgWidthFunction::from_cfg(cfg);
                 let text_width = width_ctrl.width(&override_text);
                 let print_width = cmp::min(text_width, width);
@@ -245,11 +279,13 @@ mod print_general {
                     }
                     None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
                 }
+
+                i += width;
             }
 
             let right = get_intersection(cfg, records, (row, col + 1));
             if let Some(c) = right {
-                if !override_text.is_empty() {
+                if i >= override_text_pos && !override_text.is_empty() {
                     let (c, rest) = spplit_str_at(&override_text, 1);
                     f.write_str(&c)?;
                     override_text = rest.into_owned();
@@ -267,6 +303,7 @@ mod print_general {
                     }
 
                     f.write_char(*c)?;
+                    i += 1;
                 }
             }
         }
@@ -281,6 +318,8 @@ mod print_general {
 }
 
 mod print_spanned {
+    use crate::Offset;
+
     use super::*;
 
     pub(super) fn print_grid<R, W, H>(
@@ -297,9 +336,12 @@ mod print_spanned {
     {
         let shape = (records.count_rows(), records.count_columns());
 
+        let total_width = total_width(cfg, records, width);
+        let total_width_with_margin =
+            total_width + cfg.get_margin().left.size + cfg.get_margin().right.size;
+
         if cfg.get_margin().top.size > 0 {
-            let total_width = total_width(cfg, records, width);
-            print_margin_top(f, cfg, total_width)?;
+            print_margin_top(f, cfg, total_width_with_margin)?;
             f.write_char('\n')?;
         }
 
@@ -313,7 +355,7 @@ mod print_spanned {
                 }
 
                 print_margin_left(f, cfg)?;
-                print_split_line(f, cfg, records, width, height, row)?;
+                print_split_line(f, cfg, records, width, height, row, total_width)?;
                 print_margin_right(f, cfg)?;
 
                 if count_lines > 0 {
@@ -383,14 +425,14 @@ mod print_spanned {
         if has_horizontal(cfg, records, records.count_rows()) {
             f.write_char('\n')?;
             print_margin_left(f, cfg)?;
-            print_split_line(f, cfg, records, width, height, records.count_rows())?;
+            let row = records.count_rows();
+            print_split_line(f, cfg, records, width, height, row, total_width)?;
             print_margin_right(f, cfg)?;
         }
 
         if cfg.get_margin().bottom.size > 0 {
             f.write_char('\n')?;
-            let total_width = total_width(cfg, records, width);
-            print_margin_bottom(f, cfg, total_width)?;
+            print_margin_bottom(f, cfg, total_width_with_margin)?;
         }
 
         Ok(())
@@ -403,6 +445,7 @@ mod print_spanned {
         width_ctrl: &W,
         height_ctrl: &H,
         row: usize,
+        total_width: usize,
     ) -> fmt::Result
     where
         W: Estimate<R>,
@@ -416,15 +459,18 @@ mod print_spanned {
             .and_then(|text| get_lines(text).next())
             .unwrap_or_default()
             .into_owned();
+        let override_text_offset = cfg.get_split_line_offset(row).unwrap_or(Offset::Begin(0));
+        let override_text_pos = offset_start_pos(override_text_offset, total_width);
 
         #[cfg(feature = "color")]
         let mut used_color = None;
 
+        let mut i = 0;
         for col in 0..records.count_columns() {
             if col == 0 {
                 let left = cfg.get_intersection((row, col), shape);
                 if let Some(c) = left {
-                    if !override_text.is_empty() {
+                    if i >= override_text_pos && !override_text.is_empty() {
                         let (c, rest) = spplit_str_at(&override_text, 1);
                         f.write_str(&c)?;
                         override_text = rest.into_owned();
@@ -442,6 +488,7 @@ mod print_spanned {
                         }
 
                         f.write_char(*c)?;
+                        i += 1;
                     }
                 }
             }
@@ -453,20 +500,6 @@ mod print_spanned {
             let is_spanned_split_line_part = cfg.is_cell_covered_by_row_span((row, col), shape);
 
             let mut width = width_ctrl.get(col).unwrap();
-            if !override_text.is_empty() && !is_spanned_split_line_part {
-                let width_ctrl = CfgWidthFunction::from_cfg(cfg);
-                let text_width = width_ctrl.width(&override_text);
-                let print_width = cmp::min(text_width, width);
-                let (c, rest) = spplit_str_at(&override_text, print_width);
-                f.write_str(&c)?;
-                override_text = rest.into_owned();
-                if string_width(&override_text) == 0 {
-                    override_text = String::new()
-                }
-
-                width -= print_width;
-            }
-
             let mut col = col;
             if is_spanned_split_line_part {
                 // means it's part of other a spanned cell
@@ -495,6 +528,45 @@ mod print_spanned {
                     col += span - 1;
                 }
             } else if width > 0 {
+                // a situation when need to partially print split
+                if i < override_text_pos && i + width >= override_text_pos {
+                    let available = override_text_pos - i;
+                    width -= available;
+                    i += available;
+                    let width = available;
+
+                    let main = get_horizontal(cfg, records, (row, col));
+                    match main {
+                        Some(c) => {
+                            #[cfg(feature = "color")]
+                            {
+                                prepare_coloring(
+                                    f,
+                                    get_horizontal_color(cfg, records, (row, col)),
+                                    &mut used_color,
+                                )?;
+                            }
+
+                            print_horizontal_border(f, cfg, (row, col), width, *c)?;
+                        }
+                        None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+                    }
+                }
+
+                if i >= override_text_pos && !override_text.is_empty() {
+                    let width_ctrl = CfgWidthFunction::from_cfg(cfg);
+                    let text_width = width_ctrl.width(&override_text);
+                    let print_width = cmp::min(text_width, width);
+                    let (c, rest) = spplit_str_at(&override_text, print_width);
+                    f.write_str(&c)?;
+                    override_text = rest.into_owned();
+                    if string_width(&override_text) == 0 {
+                        override_text = String::new()
+                    }
+
+                    width -= print_width;
+                }
+
                 // general case
                 let main = get_horizontal(cfg, records, (row, col));
                 match main {
@@ -512,11 +584,13 @@ mod print_spanned {
                     }
                     None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
                 }
+
+                i += width;
             }
 
             let right = get_intersection(cfg, records, (row, col + 1));
             if let Some(c) = right {
-                if !override_text.is_empty() {
+                if i >= override_text_pos && !override_text.is_empty() {
                     let (c, rest) = spplit_str_at(&override_text, 1);
                     f.write_str(&c)?;
                     override_text = rest.into_owned();
@@ -534,6 +608,7 @@ mod print_spanned {
                     }
 
                     f.write_char(*c)?;
+                    i += 1;
                 }
             }
         }
@@ -884,9 +959,8 @@ where
 {
     let content_width = width.total();
     let count_borders = cfg.count_vertical(records.count_columns());
-    let margin = cfg.get_margin();
 
-    content_width + count_borders + margin.left.size + margin.right.size
+    content_width + count_borders
 }
 
 fn print_vertical_char<R>(
@@ -1135,6 +1209,19 @@ where
     R: Records,
 {
     cfg.get_horizontal_color(pos, records.count_rows())
+}
+
+fn offset_start_pos(offset: Offset, length: usize) -> usize {
+    match offset {
+        Offset::Begin(o) => o,
+        Offset::End(o) => {
+            if o > length {
+                length
+            } else {
+                length - o
+            }
+        }
+    }
 }
 
 #[cfg(test)]

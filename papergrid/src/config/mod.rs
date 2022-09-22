@@ -39,7 +39,7 @@ pub struct GridConfig {
     span_rows: HashMap<Position, usize>,
     borders: BordersConfig<char>,
     borders_missing_char: char,
-    override_split_lines: HashMap<usize, String>,
+    override_split_lines: HashMap<usize, (String, Offset)>,
     override_horizontal_borders: HashMap<Position, HashMap<Offset, char>>,
     #[cfg(feature = "color")]
     margin_color: MarginColor,
@@ -232,17 +232,25 @@ impl GridConfig {
     /// Override the split line with a custom text.
     ///
     /// If borders are not set the string won't be rendered.
-    pub fn override_split_line(&mut self, row: usize, line: impl Into<String>) {
-        self.override_split_lines.insert(row, line.into());
+    pub fn override_split_line(&mut self, row: usize, line: impl Into<String>, offset: Offset) {
+        self.override_split_lines.insert(row, (line.into(), offset));
     }
 
     /// Gets a set text to a border line by index
     pub fn get_split_line_text(&self, row: usize) -> Option<&str> {
-        self.override_split_lines.get(&row).map(String::as_str)
+        self.override_split_lines.get(&row).map(|(s, _)| s.as_str())
+    }
+
+    /// Gets a set text to a border line by index
+    pub fn get_split_line_offset(&self, row: usize) -> Option<Offset> {
+        self.override_split_lines
+            .get(&row)
+            .map(|(_, offset)| offset)
+            .copied()
     }
 
     /// Removes a split line text if any set.
-    pub fn remove_split_line_text(&mut self, row: usize) -> Option<String> {
+    pub fn remove_split_line_text(&mut self, row: usize) -> Option<(String, Offset)> {
         self.override_split_lines.remove(&row)
     }
 

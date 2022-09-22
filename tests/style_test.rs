@@ -337,6 +337,90 @@ test_table!(
 );
 
 test_table!(
+    border_text_offset_test_0,
+    create_table::<2, 2>().with(BorderText::new(1, "-Table").offset(Offset::Begin(5))),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+-Table----+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_offset_test_1,
+    create_table::<2, 2>().with(BorderText::new(1, "-Table").offset(Offset::Begin(15))),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+-----------Table-----+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_offset_test_2,
+    create_table::<2, 2>().with(BorderText::new(1, "Table").offset(Offset::End(5))),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+----------+------Table"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_offset_test_3,
+    create_table::<2, 2>().with(BorderText::new(1, "Table").offset(Offset::End(15))),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+-------Table---------+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_offset_test_4,
+    create_table::<2, 2>().with(BorderText::new(1, "Table").offset(Offset::End(21))),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+-Table----+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_offset_test_5,
+    create_table::<2, 2>().with(BorderText::new(1, "Table").offset(Offset::End(25))),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+-Table--------+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_offset_test_6,
+    create_table::<2, 2>().with(BorderText::new(1, "-Table").offset(Offset::Begin(21))),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+----------+------Table"
+    "| 0 |   0-0    |   0-1    |"
+    "+---+----------+----------+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
     empty_style,
     create_table::<3, 3>()
         .with(Style::empty())
