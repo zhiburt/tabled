@@ -876,10 +876,11 @@ fn prepare_coloring<'a>(
                 *used_color = Some(clr);
             }
         },
-        None => match used_color.take() {
-            Some(clr) => clr.fmt_suffix(f)?,
-            None => (),
-        },
+        None => {
+            if let Some(clr) = used_color.take() {
+                clr.fmt_suffix(f)?
+            }
+        }
     }
 
     Ok(())
