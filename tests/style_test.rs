@@ -6,7 +6,7 @@ use tabled::{
     builder::Builder,
     object::{Cell, Columns, Rows, Segment},
     style::{BorderChar, HorizontalLine, Line, Offset, RawStyle, VerticalLine},
-    Border, BorderText, Highlight, Modify, Padding, Span, Style,
+    Border, BorderText, Highlight, Modify, Padding, Span, Style, Table,
 };
 
 mod util;
@@ -2369,4 +2369,46 @@ test_table!(
     "[:[:[:[[y[[x[[:[:[[y[[x[[:[:[[y[[x[[:["
     "[ 2 [   2-0    [   2-1    [   2-2    ["
     "[:[:[:[[y[[x[[:[:[[y[[x[[:[:[[y[[x[[:["
+);
+
+test_table!(
+    table_format_alignment_left_test,
+    format!("{:<}", Table::new(vec!["hello", "world", "!"])),
+    "+-------+"
+    "| &str  |"
+    "+-------+"
+    "| hello |"
+    "+-------+"
+    "| world |"
+    "+-------+"
+    "| !     |"
+    "+-------+"
+);
+
+test_table!(
+    table_format_alignment_right_test,
+    format!("{:>}", Table::new(vec!["hello", "world", "!"])),
+    "+-------+"
+    "|  &str |"
+    "+-------+"
+    "| hello |"
+    "+-------+"
+    "| world |"
+    "+-------+"
+    "|     ! |"
+    "+-------+"
+);
+
+test_table!(
+    table_format_alignment_center_test,
+    format!("{:^}", Table::new(vec!["hello", "world", "!"])),
+    "+-------+"
+    "| &str  |"
+    "+-------+"
+    "| hello |"
+    "+-------+"
+    "| world |"
+    "+-------+"
+    "|   !   |"
+    "+-------+"
 );

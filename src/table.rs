@@ -1,6 +1,6 @@
 //! This module contains a main table representation of this crate [`Table`].
 
-use std::{fmt, iter::FromIterator};
+use std::{borrow::Cow, fmt, iter::FromIterator};
 
 use papergrid::{
     height::HeightEstimator,
@@ -319,12 +319,36 @@ where
     R: Records,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut cfg = Cow::Borrowed(&self.cfg);
+        align_table(f, &mut cfg);
+
         let width = self.get_width_ctrl();
         let height = self.get_height_ctrl();
 
-        let grid = Grid::new(&self.records, &self.cfg, &width, &height);
+        let grid = Grid::new(&self.records, &cfg, &width, &height);
 
         write!(f, "{}", grid)
+    }
+}
+
+fn align_table(f: &fmt::Formatter<'_>, cfg: &mut Cow<'_, GridConfig>) {
+    if let Some(a) = f.align() {
+        let alignment = match a {
+            fmt::Alignment::Left => papergrid::AlignmentHorizontal::Left,
+            fmt::Alignment::Right => papergrid::AlignmentHorizontal::Right,
+            fmt::Alignment::Center => papergrid::AlignmentHorizontal::Center,
+        };
+
+        match cfg {
+            Cow::Borrowed(c) => {
+                let mut new = c.clone();
+                new.set_alignment_horizontal(Entity::Global, alignment);
+                *cfg = Cow::Owned(new);
+            }
+            Cow::Owned(cfg) => {
+                cfg.set_alignment_horizontal(Entity::Global, alignment);
+            }
+        }
     }
 }
 
