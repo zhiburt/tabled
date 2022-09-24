@@ -2412,3 +2412,87 @@ test_table!(
     "|   !   |"
     "+-------+"
 );
+
+test_table!(
+    table_format_width_0_test,
+    format!("{:<13}", Table::new(vec!["hello", "world", "!"])),
+    "    +-------+"
+    "    | &str  |"
+    "    +-------+"
+    "    | hello |"
+    "    +-------+"
+    "    | world |"
+    "    +-------+"
+    "    | !     |"
+    "    +-------+"
+);
+
+test_table!(
+    table_format_width_1_test,
+    format!("{:>13}", Table::new(vec!["hello", "world", "!"])),
+    "+-------+    "
+    "|  &str |    "
+    "+-------+    "
+    "| hello |    "
+    "+-------+    "
+    "| world |    "
+    "+-------+    "
+    "|     ! |    "
+    "+-------+    "
+);
+
+test_table!(
+    table_format_width_2_test,
+    format!("{:^13}", Table::new(vec!["hello", "world", "!"])),
+    "  +-------+  "
+    "  | &str  |  "
+    "  +-------+  "
+    "  | hello |  "
+    "  +-------+  "
+    "  | world |  "
+    "  +-------+  "
+    "  |   !   |  "
+    "  +-------+  "
+);
+
+test_table!(
+    table_format_width_3_test,
+    format!("{:x^13}", Table::new(vec!["hello", "world", "!"])),
+    "xx+-------+xx"
+    "xx| &str  |xx"
+    "xx+-------+xx"
+    "xx| hello |xx"
+    "xx+-------+xx"
+    "xx| world |xx"
+    "xx+-------+xx"
+    "xx|   !   |xx"
+    "xx+-------+xx"
+);
+
+test_table!(
+    table_format_width_4_test,
+    format!("{:x<13}", Table::new(vec!["hello", "world", "!"])),
+    "xxxx+-------+"
+    "xxxx| &str  |"
+    "xxxx+-------+"
+    "xxxx| hello |"
+    "xxxx+-------+"
+    "xxxx| world |"
+    "xxxx+-------+"
+    "xxxx| !     |"
+    "xxxx+-------+"
+);
+
+test_table!(
+    table_format_width_5_test,
+    format!("{:x>13}", Table::new(vec!["hello", "world", "!"])),
+    "+-------+xxxx"
+    "|  &str |xxxx"
+    "+-------+xxxx"
+    "| hello |xxxx"
+    "+-------+xxxx"
+    "| world |xxxx"
+    "+-------+xxxx"
+    "|     ! |xxxx"
+    "+-------+xxxx"
+);
