@@ -136,10 +136,15 @@ assert_eq!(table, expected);
 
 Most of the default types implement the trait out of the box.
 
+You can also use some of the formatting(`std::fmt::*`) options.
+
 ```rust
 use tabled::TableIteratorExt;
-let some_numbers = [1, 2, 3];
-let table = some_numbers.table();
+
+let numbers = [1, 2, 3];
+let table = numbers.table();
+    
+println!("{:#^10}", table);
 ```
 
 ## Settings
