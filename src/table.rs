@@ -1,6 +1,6 @@
 //! This module contains a main table representation of this crate [`Table`].
 
-use std::{fmt, iter::FromIterator};
+use std::{borrow::Cow, fmt, iter::FromIterator};
 
 use papergrid::{
     height::HeightEstimator,
@@ -319,10 +319,14 @@ where
     R: Records,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut cfg = Cow::Borrowed(&self.cfg);
+        set_align_table(f, &mut cfg);
+        set_width_table(f, &mut cfg, self);
+
         let width = self.get_width_ctrl();
         let height = self.get_height_ctrl();
 
-        let grid = Grid::new(&self.records, &self.cfg, &width, &height);
+        let grid = Grid::new(&self.records, &cfg, &width, &height);
 
         write!(f, "{}", grid)
     }
@@ -395,6 +399,88 @@ where
         match self {
             Self::Cached(list) => list.iter().sum(),
             Self::Ctrl(e) => Estimate::<R>::total(e),
+        }
+    }
+}
+
+fn set_align_table(f: &fmt::Formatter<'_>, cfg: &mut Cow<'_, GridConfig>) {
+    if let Some(alignment) = f.align() {
+        let alignment = convert_fmt_alignment(alignment);
+
+        match cfg {
+            Cow::Borrowed(c) => {
+                let mut new = c.clone();
+                new.set_alignment_horizontal(Entity::Global, alignment);
+                *cfg = Cow::Owned(new);
+            }
+            Cow::Owned(cfg) => {
+                cfg.set_alignment_horizontal(Entity::Global, alignment);
+            }
+        }
+    }
+}
+
+fn set_width_table<R>(f: &fmt::Formatter<'_>, cfg: &mut Cow<'_, GridConfig>, table: &Table<R>)
+where
+    R: Records,
+{
+    if let Some(width) = f.width() {
+        let total_width = table.total_width();
+        if total_width >= width {
+            return;
+        }
+
+        let mut fill = f.fill();
+        if fill == char::default() {
+            fill = ' ';
+        }
+
+        let available = width - total_width;
+        let alignment = f.align().unwrap_or(fmt::Alignment::Left);
+        let (left, right) = table_padding(alignment, available);
+
+        let mut margin = *cfg.get_margin();
+        margin.left.size += left;
+        margin.right.size += right;
+
+        if (margin.left.size > 0 && margin.left.fill == char::default()) || fill != char::default()
+        {
+            margin.left.fill = fill;
+        }
+
+        if (margin.right.size > 0 && margin.right.fill == char::default())
+            || fill != char::default()
+        {
+            margin.right.fill = fill;
+        }
+
+        match cfg {
+            Cow::Borrowed(c) => {
+                let mut new = c.clone();
+                new.set_margin(margin);
+                *cfg = Cow::Owned(new);
+            }
+            Cow::Owned(cfg) => cfg.set_margin(margin),
+        }
+    }
+}
+
+fn convert_fmt_alignment(alignment: fmt::Alignment) -> papergrid::AlignmentHorizontal {
+    match alignment {
+        fmt::Alignment::Left => papergrid::AlignmentHorizontal::Left,
+        fmt::Alignment::Right => papergrid::AlignmentHorizontal::Right,
+        fmt::Alignment::Center => papergrid::AlignmentHorizontal::Center,
+    }
+}
+
+fn table_padding(alignment: fmt::Alignment, available: usize) -> (usize, usize) {
+    match alignment {
+        fmt::Alignment::Left => (available, 0),
+        fmt::Alignment::Right => (0, available),
+        fmt::Alignment::Center => {
+            let left = available / 2;
+            let right = available - left;
+            (left, right)
         }
     }
 }
