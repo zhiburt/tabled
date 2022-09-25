@@ -90,6 +90,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 ## Usage
 
 To print a list of structs or enums as a table your types should implement the the `Tabled` trait or derive it with a `#[derive(Tabled)]` macro.
+Most of the default types implement the trait out of the box.
 
 ```rust
 use tabled::{Tabled, Table};
@@ -133,8 +134,6 @@ let expected = "+------+----------------+---------------+\n\
 
 assert_eq!(table, expected);
 ```
-
-Most of the default types implement the trait out of the box.
 
 You can also use some of the formatting(`std::fmt::*`) options.
 
