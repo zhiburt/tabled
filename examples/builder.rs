@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example builder`
 
-use tabled::{builder::Builder, object::Rows, Header, Modify, Panel, Style, Width};
+use tabled::{builder::Builder, object::Rows, Modify, Panel, Style, Width};
 
 fn main() {
     let message = r#"The terms "the ocean" or "the sea" used without specification refer to the interconnected body of salt water covering the majority of the Earth's surface"#;
@@ -17,11 +17,12 @@ fn main() {
 
     let table = builder
         .build()
-        .with(Header(message))
-        .with(Header(link))
-        .with(Panel("=".repeat(link.len()), 2))
+        .with(Panel::header(message))
+        .with(Panel::header(link))
+        .with(Panel::horizontal(2).text("=".repeat(link.len())))
         .with(Modify::new(Rows::single(1)).with(Width::wrap(link.len())))
-        .with(Style::markdown());
+        .with(Style::markdown())
+        .to_string();
 
     println!("{}", table);
 }

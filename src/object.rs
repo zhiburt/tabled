@@ -8,7 +8,10 @@ use std::{
     ops::{Add, Bound, RangeBounds, RangeFull, Sub},
 };
 
+use papergrid::records::Records;
 pub use papergrid::{Entity, EntityIterator};
+
+use crate::Table;
 
 /// Object helps to locate a necessary part of a [`Table`].
 ///
@@ -18,7 +21,9 @@ pub trait Object: Sized {
     type Iter: Iterator<Item = Entity>;
 
     /// Cells returns a set of coordinates of cells
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter;
+    fn cells<R>(&self, table: &Table<R>) -> Self::Iter
+    where
+        R: Records;
 
     /// Combines cells.
     /// It doesn't repeat cells.
@@ -69,11 +74,14 @@ where
 {
     type Iter = UnionIter<L::Iter, R::Iter>;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let lhs = self.lhs.cells(count_rows, count_columns);
-        let rhs = self.rhs.cells(count_rows, count_columns);
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        let lhs = self.lhs.cells(table);
+        let rhs = self.rhs.cells(table);
 
-        UnionIter::new(lhs, rhs, count_rows, count_columns)
+        UnionIter::new(lhs, rhs, table.count_rows(), table.count_columns())
     }
 }
 
@@ -93,11 +101,14 @@ where
 {
     type Iter = DiffIter<L::Iter>;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let lhs = self.lhs.cells(count_rows, count_columns);
-        let rhs = self.rhs.cells(count_rows, count_columns);
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        let lhs = self.lhs.cells(table);
+        let rhs = self.rhs.cells(table);
 
-        DiffIter::new(lhs, rhs, count_rows, count_columns)
+        DiffIter::new(lhs, rhs, table.count_rows(), table.count_columns())
     }
 }
 
@@ -117,12 +128,14 @@ where
     R: Object,
 {
     type Iter = IntersectIter<L::Iter>;
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        let lhs = self.lhs.cells(table);
+        let rhs = self.rhs.cells(table);
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let lhs = self.lhs.cells(count_rows, count_columns);
-        let rhs = self.rhs.cells(count_rows, count_columns);
-
-        IntersectIter::new(lhs, rhs, count_rows, count_columns)
+        IntersectIter::new(lhs, rhs, table.count_rows(), table.count_columns())
     }
 }
 
@@ -141,10 +154,13 @@ where
 {
     type Iter = InversionIter;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let obj = self.obj.cells(count_rows, count_columns);
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        let obj = self.obj.cells(table);
 
-        InversionIter::new(obj, count_rows, count_columns)
+        InversionIter::new(obj, table.count_rows(), table.count_columns())
     }
 }
 
@@ -182,14 +198,20 @@ where
 {
     type Iter = SectorIter;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        let (rows_start, rows_end) =
-            bounds_to_usize(self.rows.start_bound(), self.rows.end_bound(), count_rows);
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        let (rows_start, rows_end) = bounds_to_usize(
+            self.rows.start_bound(),
+            self.rows.end_bound(),
+            table.count_rows(),
+        );
 
         let (cols_start, cols_end) = bounds_to_usize(
             self.columns.start_bound(),
             self.columns.end_bound(),
-            count_columns,
+            table.count_columns(),
         );
 
         SectorIter::new(rows_start, rows_end, cols_start, cols_end)
@@ -204,8 +226,10 @@ pub struct SegmentAll;
 
 impl Object for SegmentAll {
     type Iter = EntityOnce;
-
-    fn cells(&self, _: usize, _: usize) -> Self::Iter {
+    fn cells<T>(&self, _: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
         EntityOnce::new(Some(Entity::Global))
     }
 }
@@ -218,8 +242,11 @@ pub struct Frame;
 impl Object for Frame {
     type Iter = FrameIter;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        FrameIter::new(count_rows, count_columns)
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        FrameIter::new(table.count_rows(), table.count_columns())
     }
 }
 
@@ -233,8 +260,11 @@ pub struct FirstRow;
 impl Object for FirstRow {
     type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
-        if count_rows == 0 || count_cols == 0 {
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        if table.is_empty() {
             return EntityOnce::new(None);
         }
 
@@ -259,11 +289,15 @@ pub struct LastRow;
 impl Object for LastRow {
     type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
-        if count_rows == 0 || count_cols == 0 {
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        if table.is_empty() {
             return EntityOnce::new(None);
         }
 
+        let count_rows = table.count_rows();
         let row = if count_rows == 0 { 0 } else { count_rows - 1 };
         EntityOnce::new(Some(Entity::Row(row)))
     }
@@ -278,7 +312,7 @@ impl Sub<usize> for LastRow {
 }
 
 /// A row which is located by an offset from the first row.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Row {
     index: usize,
 }
@@ -286,16 +320,25 @@ pub struct Row {
 impl Object for Row {
     type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
-        if count_rows == 0 || count_cols == 0 {
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        if table.is_empty() {
             return EntityOnce::new(None);
         }
 
-        if self.index >= count_rows {
+        if self.index >= table.count_rows() {
             return EntityOnce::new(None);
         }
 
         EntityOnce::new(Some(Entity::Row(self.index)))
+    }
+}
+
+impl From<Row> for usize {
+    fn from(val: Row) -> Self {
+        val.index
     }
 }
 
@@ -308,11 +351,15 @@ pub struct LastRowOffset {
 impl Object for LastRowOffset {
     type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
-        if count_rows == 0 || count_cols == 0 {
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        if table.is_empty() {
             return EntityOnce::new(None);
         }
 
+        let count_rows = table.count_rows();
         let row = if count_rows == 0 { 0 } else { count_rows - 1 };
         if self.offset > row {
             return EntityOnce::new(None);
@@ -331,15 +378,19 @@ pub struct Rows<R> {
     range: R,
 }
 
-impl<R> Rows<R>
-where
-    R: RangeBounds<usize>,
-{
+impl<R> Rows<R> {
     /// Returns a new instance of [`Rows`] for a range of rows.
     ///
     /// If the boundaries are exceeded it may panic.
-    pub fn new(range: R) -> Self {
+    pub fn new(range: R) -> Self
+    where
+        R: RangeBounds<usize>,
+    {
         Self { range }
+    }
+
+    pub(crate) fn get_range(&self) -> &R {
+        &self.range
     }
 }
 
@@ -372,8 +423,15 @@ where
 {
     type Iter = RowsIter;
 
-    fn cells(&self, count_rows: usize, _: usize) -> Self::Iter {
-        let (x, y) = bounds_to_usize(self.range.start_bound(), self.range.end_bound(), count_rows);
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        let (x, y) = bounds_to_usize(
+            self.range.start_bound(),
+            self.range.end_bound(),
+            table.count_rows(),
+        );
 
         RowsIter::new(x, y)
     }
@@ -396,6 +454,10 @@ where
     /// If the boundaries are exceeded it may panic.
     pub fn new(range: R) -> Self {
         Self { range }
+    }
+
+    pub(crate) fn get_range(&self) -> &R {
+        &self.range
     }
 }
 
@@ -428,8 +490,15 @@ where
 {
     type Iter = ColumnsIter;
 
-    fn cells(&self, _: usize, count_cols: usize) -> Self::Iter {
-        let (x, y) = bounds_to_usize(self.range.start_bound(), self.range.end_bound(), count_cols);
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        let (x, y) = bounds_to_usize(
+            self.range.start_bound(),
+            self.range.end_bound(),
+            table.count_columns(),
+        );
         ColumnsIter::new(x, y)
     }
 }
@@ -441,8 +510,11 @@ pub struct FirstColumn;
 impl Object for FirstColumn {
     type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
-        if count_rows == 0 || count_cols == 0 {
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        if table.is_empty() {
             return EntityOnce::new(None);
         }
 
@@ -465,12 +537,15 @@ pub struct LastColumn;
 impl Object for LastColumn {
     type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_cols: usize) -> Self::Iter {
-        if count_rows == 0 || count_cols == 0 {
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        if table.is_empty() {
             return EntityOnce::new(None);
         }
 
-        let col = count_cols.saturating_sub(1);
+        let col = table.count_columns().saturating_sub(1);
         EntityOnce::new(Some(Entity::Column(col)))
     }
 }
@@ -484,23 +559,38 @@ impl Sub<usize> for LastColumn {
 }
 
 /// Column represents a single column on a grid.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Column(usize);
 
 impl Object for Column {
     type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        if count_rows == 0 || count_columns == 0 {
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        if table.is_empty() {
             return EntityOnce::new(None);
         }
 
         let col = self.0;
-        if col >= count_columns {
+        if col >= table.count_columns() {
             return EntityOnce::new(None);
         }
 
         EntityOnce::new(Some(Entity::Column(col)))
+    }
+}
+
+impl From<usize> for Column {
+    fn from(i: usize) -> Self {
+        Self(i)
+    }
+}
+
+impl From<Column> for usize {
+    fn from(val: Column) -> Self {
+        val.0
     }
 }
 
@@ -513,12 +603,15 @@ pub struct LastColumnOffset {
 impl Object for LastColumnOffset {
     type Iter = EntityOnce;
 
-    fn cells(&self, count_rows: usize, count_columns: usize) -> Self::Iter {
-        if count_rows == 0 || count_columns == 0 {
+    fn cells<T>(&self, table: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
+        if table.is_empty() {
             return EntityOnce::new(None);
         }
 
-        let col = count_columns.saturating_sub(1);
+        let col = table.count_columns().saturating_sub(1);
         if self.offset > col {
             return EntityOnce::new(None);
         }
@@ -537,7 +630,10 @@ pub struct Cell(pub usize, pub usize);
 impl Object for Cell {
     type Iter = EntityOnce;
 
-    fn cells(&self, _: usize, _: usize) -> Self::Iter {
+    fn cells<T>(&self, _: &Table<T>) -> Self::Iter
+    where
+        T: Records,
+    {
         EntityOnce::new(Some(Entity::Cell(self.0, self.1)))
     }
 }
@@ -1043,10 +1139,7 @@ mod tests {
         assert_eq!(vec_cells(Columns::new(2..3), 2, 3), [Entity::Column(2)]);
         assert_eq!(vec_cells(Columns::new(..), 0, 0), []);
         assert_eq!(vec_cells(Columns::new(..), 2, 0), []);
-        assert_eq!(
-            vec_cells(Columns::new(..), 0, 3),
-            [Entity::Column(0), Entity::Column(1), Entity::Column(2)]
-        );
+        assert_eq!(vec_cells(Columns::new(..), 0, 3), []);
     }
 
     #[test]
@@ -1096,10 +1189,7 @@ mod tests {
         assert_eq!(vec_cells(Rows::new(1..2), 2, 3), [Entity::Row(1)],);
         assert_eq!(vec_cells(Rows::new(..), 0, 0), []);
         assert_eq!(vec_cells(Rows::new(..), 0, 3), []);
-        assert_eq!(
-            vec_cells(Rows::new(..), 2, 0),
-            [Entity::Row(0), Entity::Row(1)]
-        );
+        assert_eq!(vec_cells(Rows::new(..), 2, 0), []);
     }
 
     #[test]
@@ -1275,6 +1365,8 @@ mod tests {
     }
 
     fn vec_cells<O: Object>(o: O, count_rows: usize, count_cols: usize) -> Vec<Entity> {
-        o.cells(count_rows, count_cols).collect::<Vec<_>>()
+        let data = vec![vec![String::default(); count_cols]; count_rows];
+        let table = crate::builder::Builder::from(data).build();
+        o.cells(&table).collect::<Vec<_>>()
     }
 }

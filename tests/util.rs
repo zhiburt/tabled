@@ -2,11 +2,18 @@
 #![allow(unused_macros)]
 #![allow(unused_imports)]
 
-use std::ops::{Index, IndexMut};
+use std::{
+    borrow::Cow,
+    ops::{Index, IndexMut},
+};
 
-use papergrid::Position;
+use papergrid::{
+    records::{cell_info::CellInfo, vec_records::VecRecords},
+    Position,
+};
 use tabled::{
-    object::SegmentAll, papergrid::string_width_multiline, Alignment, ModifyObject, Table, Tabled,
+    object::SegmentAll, papergrid::util::string_width_multiline, Alignment, ModifyObject, Table,
+    Tabled,
 };
 
 /// A helper table factory.
@@ -29,8 +36,12 @@ where
     new_table(data)
 }
 
-pub fn new_table<T: Tabled>(iter: impl IntoIterator<Item = T>) -> Table {
-    Table::new(iter).with(SegmentAll.modify().with(Alignment::center()))
+pub fn new_table<'a, T: Tabled>(
+    iter: impl IntoIterator<Item = T> + 'a,
+) -> Table<VecRecords<CellInfo<'a>>> {
+    let mut table = Table::new(iter);
+    table.with(SegmentAll.modify().with(Alignment::center()));
+    table
 }
 
 pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUMNS>> {
@@ -76,15 +87,16 @@ impl<const N: usize> IndexMut<usize> for Obj<N> {
 }
 
 impl<const N: usize> Tabled for Obj<N> {
-    const LENGTH: usize = N;
+    const LENGTH: usize = N + 1;
 
-    fn fields(&self) -> Vec<String> {
-        self.data.clone()
+    fn fields(&self) -> Vec<Cow<'_, str>> {
+        self.data.iter().cloned().map(Cow::Owned).collect()
     }
 
-    fn headers() -> Vec<String> {
+    fn headers() -> Vec<Cow<'static, str>> {
         std::iter::once("N".to_owned())
             .chain((0..N).map(|n| format!("column {}", n)))
+            .map(Cow::Owned)
             .collect()
     }
 }
@@ -109,6 +121,7 @@ macro_rules! test_table {
         #[test]
         fn $test() {
             let table = $table.to_string();
+            println!("{}", table);
             assert_eq!(table, crate::util::static_table!($($line)*));
         }
     };

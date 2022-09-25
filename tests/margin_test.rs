@@ -1,8 +1,4 @@
-use tabled::{
-    object::Cell,
-    style::{Border, Style},
-    Highlight, Margin, Modify, Span, Width,
-};
+use tabled::{object::Cell, Border, Highlight, Margin, Modify, Span, Style, Width};
 
 use crate::util::{create_table, init_table, is_lines_equal, static_table, test_table};
 
@@ -100,16 +96,16 @@ fn table_with_margin_and_max_width() {
         .with(Width::increase(50))
         .to_string();
 
-    assert_eq!(papergrid::string_width_multiline(&table), 50);
+    assert_eq!(papergrid::util::string_width_multiline(&table), 50);
     assert_eq!(
         table,
         static_table!(
             "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
-            "> N    | column 0    | column 1    | column 2    <"
+            ">  N   |  column 0   |  column 1   |  column 2   <"
             ">------+-------------+-------------+-------------<"
-            "> 0    | 0-0                       | 0-2         <"
-            "> 1    | 1-0         | 1-1         | 1-2         <"
-            "> 2    | 2-0         | 2-1         | 2-2         <"
+            ">  0   |            0-0            |     0-2     <"
+            ">  1   |     1-0     |     1-1     |     1-2     <"
+            ">  2   |     2-0     |     2-1     |     2-2     <"
             "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
         )
     );
@@ -138,7 +134,7 @@ fn table_0_spanned_with_width() {
 fn margin_color_test() {
     use owo_colors::OwoColorize;
     use std::convert::TryFrom;
-    use tabled::{margin::MarginColor, style::Color};
+    use tabled::{color::Color, margin_color::MarginColor};
 
     let table = create_table::<3, 3>()
         .with(Style::psql())

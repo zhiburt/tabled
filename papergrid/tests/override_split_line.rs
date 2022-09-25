@@ -1,167 +1,233 @@
 mod util;
 
-#[test]
-fn override_top_test() {
-    let mut grid = util::new_grid::<2, 2>();
+use papergrid::Offset;
+use util::{grid, test_table, DEFAULT_BORDERS};
 
-    grid.override_split_line(0, "T");
+test_table!(
+    override_top_test_0,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "T", Offset::Begin(0))).build(),
+    "T---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "T---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
+test_table!(
+    override_top_test_1,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, " Tab", Offset::Begin(0))).build(),
+    " Tab+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    grid.override_split_line(0, " Tab");
+test_table!(
+    override_top_test_2,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Table", Offset::Begin(0))).build(),
+    "Table---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            " Tab+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
+test_table!(
+    override_top_test_3,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Table T", Offset::Begin(0))).build(),
+    "Table T-+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    grid.override_split_line(0, "Table");
+test_table!(
+    override_top_test_4,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Table TES", Offset::Begin(0))).build(),
+    "Table TES"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "Table---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
+test_table!(
+    override_top_test_5,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Table LONGER THEN LINE", Offset::Begin(0))).build(),
+    "Table LON"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    grid.override_split_line(0, "Table T");
+test_table!(
+    override_bottom_test_0,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, "T", Offset::Begin(0))).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "T---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "Table T-+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
+test_table!(
+    override_bottom_test_1,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, " Tab", Offset::Begin(0))).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    " Tab+---+"
+);
 
-    grid.override_split_line(0, "Table TES");
+test_table!(
+    override_bottom_test_2,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, "Table", Offset::Begin(0))).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "Table---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "Table TES\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
+test_table!(
+    override_bottom_test_3,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, "Table T", Offset::Begin(0))).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "Table T-+"
+);
 
-    grid.override_split_line(0, "Table LONGER THEN LINE");
+test_table!(
+    override_bottom_test_4,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, "Table TES", Offset::Begin(0))).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "Table TES"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "Table LON\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "+---+---+",
-        )
-    );
-}
+test_table!(
+    override_bottom_test_5,
+    grid(2, 2).config(|cfg| cfg.override_split_line(2, "Table LONGER THEN LINE", Offset::Begin(0))).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "Table LON"
+);
 
-#[test]
-fn override_bottom_test() {
-    let mut grid = util::new_grid::<2, 2>();
+test_table!(
+    line_is_not_showed_if_there_no_border_line_0,
+    grid(2, 2).config(|cfg| {
+        let mut borders = DEFAULT_BORDERS;
+        borders.bottom = None;
+        borders.bottom_intersection = None;
+        borders.bottom_left = None;
+        borders.bottom_right = None;
+        cfg.set_borders(borders);
+        cfg.override_split_line(2, "Table LONGER THEN LINE", Offset::Begin(0));
+    }).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+);
 
-    grid.override_split_line(2, "T");
+test_table!(
+    string_which_starts_from_emojie,
+    grid(2, 2).config(|cfg| {
+        cfg.override_split_line(2, "🇻🇬🇻🇬🇻🇬🇻🇬🇻🇬🇻🇬🇻🇬", Offset::Begin(0));
+    }).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "🇻🇬🇻🇬🇻🇬🇻🇬🇻"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "T---+---+",
-        )
-    );
+test_table!(
+    offset_test_1,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "T", Offset::Begin(1))).build(),
+    "+T--+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    grid.override_split_line(2, " Tab");
+test_table!(
+    offset_test_2,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "T", Offset::Begin(4))).build(),
+    "+---T---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            " Tab+---+",
-        )
-    );
+test_table!(
+    offset_test_3,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "T", Offset::Begin(8))).build(),
+    "+---+---T"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    grid.override_split_line(2, "Table");
+test_table!(
+    offset_test_4,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "T", Offset::Begin(100))).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "Table---+",
-        )
-    );
+test_table!(
+    offset_end_test_1,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Test", Offset::End(0))).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    grid.override_split_line(2, "Table T");
+test_table!(
+    offset_end_test_2,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Test", Offset::End(1))).build(),
+    "+---+---T"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "Table T-+",
-        )
-    );
+test_table!(
+    offset_end_test_3,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "Test", Offset::End(9))).build(),
+    "Test+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);
 
-    grid.override_split_line(2, "Table TES");
-
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "Table TES",
-        )
-    );
-
-    grid.override_split_line(2, "Table LONGER THEN LINE");
-
-    assert_eq!(
-        grid.to_string(),
-        concat!(
-            "+---+---+\n",
-            "|0-0|0-1|\n",
-            "+---+---+\n",
-            "|1-0|1-1|\n",
-            "Table LON",
-        )
-    );
-}
+test_table!(
+    offset_end_test_4,
+    grid(2, 2).config(|cfg| cfg.override_split_line(0, "T", Offset::End(100))).build(),
+    "+---+---+"
+    "|0-0|0-1|"
+    "+---+---+"
+    "|1-0|1-1|"
+    "+---+---+"
+);

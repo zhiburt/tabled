@@ -1,4 +1,5 @@
 use tabled::{
+    locator::ByColumnName,
     object::{Columns, Rows, Segment},
     Alignment, Modify, Padding, Style,
 };
@@ -85,4 +86,53 @@ test_table!(
     "   0|   0-0     |   0-1     |   0-2     "
     "   1|   1-0     |   1-1     |   1-2     "
     "   2|   2-0     |   2-1     |   2-2     "
+);
+
+test_table!(
+    alignment_global,
+    create_table::<3, 3>().with(Style::psql()).with(Alignment::right()),
+    " N | column 0 | column 1 | column 2 "
+    "---+----------+----------+----------"
+    " 0 |      0-0 |      0-1 |      0-2 "
+    " 1 |      1-0 |      1-1 |      1-2 "
+    " 2 |      2-0 |      2-1 |      2-2 "
+);
+
+test_table!(
+    padding_by_column_name,
+    create_table::<3, 3>()
+        .with(Style::psql())
+        .with(Modify::new(ByColumnName::new("column 0")).with(Padding::new(3, 3, 0, 0)))
+        .with(Modify::new(Segment::all()).with(Alignment::center())),
+        " N |   column 0   | column 1 | column 2 "
+        "---+--------------+----------+----------"
+        " 0 |     0-0      |   0-1    |   0-2    "
+        " 1 |     1-0      |   1-1    |   1-2    "
+        " 2 |     2-0      |   2-1    |   2-2    "
+);
+
+test_table!(
+    padding_by_column_name_not_first_row,
+    create_table::<3, 3>()
+        .with(Style::psql())
+        .with(Modify::new(ByColumnName::new("0-2")).with(Padding::new(3, 3, 0, 0)))
+        .with(Modify::new(Segment::all()).with(Alignment::center())),
+        " N | column 0 | column 1 | column 2 "
+        "---+----------+----------+----------"
+        " 0 |   0-0    |   0-1    |   0-2    "
+        " 1 |   1-0    |   1-1    |   1-2    "
+        " 2 |   2-0    |   2-1    |   2-2    "
+);
+
+test_table!(
+    padding_by_column_name_not_existing,
+    create_table::<3, 3>()
+        .with(Style::psql())
+        .with(Modify::new(ByColumnName::new("column 01123123")).with(Padding::new(3, 3, 0, 0)))
+        .with(Modify::new(Segment::all()).with(Alignment::center())),
+        " N | column 0 | column 1 | column 2 "
+        "---+----------+----------+----------"
+        " 0 |   0-0    |   0-1    |   0-2    "
+        " 1 |   1-0    |   1-1    |   1-2    "
+        " 2 |   2-0    |   2-1    |   2-2    "
 );

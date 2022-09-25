@@ -32,7 +32,8 @@ fn main() {
     let mut builder = Table::builder(&data).index();
     builder.set_index(0).set_name(None).transpose();
 
-    let table = builder.build().with(Style::modern());
+    let mut table = builder.build();
+    table.with(Style::modern());
 
     println!("{}", table);
 }

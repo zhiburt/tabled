@@ -1,0 +1,9 @@
+[package]
+name = "terminal_size"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+terminal_size = "0.2.1"
+tabled = { path = "../..", features = ["derive"] }

@@ -3,8 +3,7 @@
 
 use tabled::{
     object::{Cell, Segment},
-    style::{Border, Style},
-    Alignment, Extract, Header, Highlight, Modify, TableIteratorExt, Tabled,
+    Alignment, Border, Extract, Highlight, Modify, Panel, Style, TableIteratorExt, Tabled,
 };
 
 #[derive(Tabled)]
@@ -32,24 +31,22 @@ fn main() {
 
     let commiters_table = commiters
         .table()
-        .with(Header("Contributors"))
-        .with(Modify::new(Segment::all()).with(Alignment::center()));
+        .with(Panel::header("Contributors"))
+        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .to_string();
 
     let issues_table = issuers
         .table()
-        .with(Header("Issuers"))
-        .with(Modify::new(Segment::all()).with(Alignment::center()));
+        .with(Panel::header("Issuers"))
+        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .to_string();
 
-    let a_welcome_table = [
-        "Thank You".to_owned(),
-        commiters_table.to_string(),
-        issues_table.to_string(),
-    ]
-    .table()
-    .with(Extract::rows(1..))
-    .with(Style::ascii().off_horizontal())
-    .with(Modify::new(Segment::all()).with(Alignment::center()))
-    .with(Highlight::new(Cell(0, 0), Border::filled('*')));
+    let mut a_welcome_table = [String::from("Thank You"), commiters_table, issues_table].table();
+    a_welcome_table
+        .with(Extract::rows(1..))
+        .with(Style::ascii().off_horizontal())
+        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .with(Highlight::new(Cell(0, 0), Border::filled('*')));
 
     println!("{}", a_welcome_table);
 }

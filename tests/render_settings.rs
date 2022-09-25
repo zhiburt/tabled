@@ -1,5 +1,5 @@
 use tabled::{
-    formatting_settings::{AlignmentStrategy, TabSize, TrimStrategy},
+    formatting::{AlignmentStrategy, TabSize, TrimStrategy},
     object::{Cell, Segment},
     Alignment, Modify, Span, Style,
 };

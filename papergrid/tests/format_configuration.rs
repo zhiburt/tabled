@@ -1,4 +1,6 @@
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Formatting, Settings};
+use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Formatting};
+
+use crate::util::{grid, static_table};
 
 mod util;
 
@@ -8,888 +10,804 @@ fn formatting_test() {
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |A long string|          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |A         |\n\
-             |             |    string|\n\
-             |             |with      |\n\
-             |             | new      |\n\
-             |             |line      |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |1-0          |1-1       |\n\
-             +-------------+----------+\n\
-             |A one more   |...       |\n\
-             |    string   |          |\n\
-             |with         |          |\n\
-             | new         |          |\n\
-             |line         |          |\n\
-             +-------------+----------+",
+            Formatting::new(false, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|A long string|          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |A         |"
+                "|             |    string|"
+                "|             |with      |"
+                "|             | new      |"
+                "|             |line      |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|1-0          |1-1       |"
+                "+-------------+----------+"
+                "|A one more   |...       |"
+                "|    string   |          |"
+                "|with         |          |"
+                "| new         |          |"
+                "|line         |          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |A long string|          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |A         |\n\
-             |             |string    |\n\
-             |             |with      |\n\
-             |             |new       |\n\
-             |             |line      |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |1-0          |1-1       |\n\
-             +-------------+----------+\n\
-             |A one more   |...       |\n\
-             |string       |          |\n\
-             |with         |          |\n\
-             |new          |          |\n\
-             |line         |          |\n\
-             +-------------+----------+",
+            Formatting::new(true, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|A long string|          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |A         |"
+                "|             |string    |"
+                "|             |with      |"
+                "|             |new       |"
+                "|             |line      |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|1-0          |1-1       |"
+                "+-------------+----------+"
+                "|A one more   |...       |"
+                "|string       |          |"
+                "|with         |          |"
+                "|new          |          |"
+                "|line         |          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
-            "+-------------+----------+\n\
-             |A long string|A         |\n\
-             |             |string    |\n\
-             |             |with      |\n\
-             |             |new       |\n\
-             |             |line      |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |1-0          |1-1       |\n\
-             +-------------+----------+\n\
-             |A one more   |...       |\n\
-             |string       |          |\n\
-             |with         |          |\n\
-             |new          |          |\n\
-             |line         |          |\n\
-             +-------------+----------+",
+            Formatting::new(true, true, true),
+            static_table!(
+                "+-------------+----------+"
+                "|A long string|A         |"
+                "|             |string    |"
+                "|             |with      |"
+                "|             |new       |"
+                "|             |line      |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|1-0          |1-1       |"
+                "+-------------+----------+"
+                "|A one more   |...       |"
+                "|string       |          |"
+                "|with         |          |"
+                "|new          |          |"
+                "|line         |          |"
+                "+-------------+----------+"
+            ),
         ),
         //
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |A long string|          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |    A     |\n\
-             |             |    string|\n\
-             |             |   with   |\n\
-             |             |    new   |\n\
-             |             |   line   |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |     1-0     |   1-1    |\n\
-             +-------------+----------+\n\
-             | A one more  |   ...    |\n\
-             |     string  |          |\n\
-             |    with     |          |\n\
-             |     new     |          |\n\
-             |    line     |          |\n\
-             +-------------+----------+",
+            Formatting::new(false, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|A long string|          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |    A     |"
+                "|             |    string|"
+                "|             |   with   |"
+                "|             |    new   |"
+                "|             |   line   |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|     1-0     |   1-1    |"
+                "+-------------+----------+"
+                "| A one more  |   ...    |"
+                "|     string  |          |"
+                "|    with     |          |"
+                "|     new     |          |"
+                "|    line     |          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |A long string|          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |    A     |\n\
-             |             |  string  |\n\
-             |             |   with   |\n\
-             |             |   new    |\n\
-             |             |   line   |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |     1-0     |   1-1    |\n\
-             +-------------+----------+\n\
-             | A one more  |   ...    |\n\
-             |   string    |          |\n\
-             |    with     |          |\n\
-             |     new     |          |\n\
-             |    line     |          |\n\
-             +-------------+----------+",
+            Formatting::new(true, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|A long string|          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |    A     |"
+                "|             |  string  |"
+                "|             |   with   |"
+                "|             |   new    |"
+                "|             |   line   |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|     1-0     |   1-1    |"
+                "+-------------+----------+"
+                "| A one more  |   ...    |"
+                "|   string    |          |"
+                "|    with     |          |"
+                "|     new     |          |"
+                "|    line     |          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
-            "+-------------+----------+\n\
-             |A long string|    A     |\n\
-             |             |  string  |\n\
-             |             |   with   |\n\
-             |             |   new    |\n\
-             |             |   line   |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |     1-0     |   1-1    |\n\
-             +-------------+----------+\n\
-             | A one more  |   ...    |\n\
-             |   string    |          |\n\
-             |    with     |          |\n\
-             |     new     |          |\n\
-             |    line     |          |\n\
-             +-------------+----------+",
+            Formatting::new(true, true, true),
+            static_table!(
+                "+-------------+----------+"
+                "|A long string|    A     |"
+                "|             |  string  |"
+                "|             |   with   |"
+                "|             |   new    |"
+                "|             |   line   |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|     1-0     |   1-1    |"
+                "+-------------+----------+"
+                "| A one more  |   ...    |"
+                "|   string    |          |"
+                "|    with     |          |"
+                "|     new     |          |"
+                "|    line     |          |"
+                "+-------------+----------+"
+            ),
         ),
         //
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |A long string|          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |         A|\n\
-             |             |    string|\n\
-             |             |      with|\n\
-             |             |       new|\n\
-             |             |      line|\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |          1-0|       1-1|\n\
-             +-------------+----------+\n\
-             |   A one more|       ...|\n\
-             |       string|          |\n\
-             |         with|          |\n\
-             |          new|          |\n\
-             |         line|          |\n\
-             +-------------+----------+",
+            Formatting::new(false, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|A long string|          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |         A|"
+                "|             |    string|"
+                "|             |      with|"
+                "|             |       new|"
+                "|             |      line|"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|          1-0|       1-1|"
+                "+-------------+----------+"
+                "|   A one more|       ...|"
+                "|       string|          |"
+                "|         with|          |"
+                "|          new|          |"
+                "|         line|          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |A long string|          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |         A|\n\
-             |             |    string|\n\
-             |             |      with|\n\
-             |             |       new|\n\
-             |             |      line|\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |          1-0|       1-1|\n\
-             +-------------+----------+\n\
-             |   A one more|       ...|\n\
-             |       string|          |\n\
-             |         with|          |\n\
-             |          new|          |\n\
-             |         line|          |\n\
-             +-------------+----------+",
+            Formatting::new(true, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|A long string|          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |         A|"
+                "|             |    string|"
+                "|             |      with|"
+                "|             |       new|"
+                "|             |      line|"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|          1-0|       1-1|"
+                "+-------------+----------+"
+                "|   A one more|       ...|"
+                "|       string|          |"
+                "|         with|          |"
+                "|          new|          |"
+                "|         line|          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Top,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
-            "+-------------+----------+\n\
-             |A long string|         A|\n\
-             |             |    string|\n\
-             |             |      with|\n\
-             |             |       new|\n\
-             |             |      line|\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |          1-0|       1-1|\n\
-             +-------------+----------+\n\
-             |   A one more|       ...|\n\
-             |       string|          |\n\
-             |         with|          |\n\
-             |          new|          |\n\
-             |         line|          |\n\
-             +-------------+----------+",
+            Formatting::new(true, true, true),
+            static_table!(
+                "+-------------+----------+"
+                "|A long string|         A|"
+                "|             |    string|"
+                "|             |      with|"
+                "|             |       new|"
+                "|             |      line|"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|          1-0|       1-1|"
+                "+-------------+----------+"
+                "|   A one more|       ...|"
+                "|       string|          |"
+                "|         with|          |"
+                "|          new|          |"
+                "|         line|          |"
+                "+-------------+----------+"
+            ),
         ),
         // asd
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |A         |\n\
-             |             |    string|\n\
-             |A long string|with      |\n\
-             |             | new      |\n\
-             |             |line      |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |1-0          |1-1       |\n\
-             +-------------+----------+\n\
-             |A one more   |          |\n\
-             |    string   |          |\n\
-             |with         |...       |\n\
-             | new         |          |\n\
-             |line         |          |\n\
-             +-------------+----------+",
+            Formatting::new(false, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |A         |"
+                "|             |    string|"
+                "|A long string|with      |"
+                "|             | new      |"
+                "|             |line      |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|1-0          |1-1       |"
+                "+-------------+----------+"
+                "|A one more   |          |"
+                "|    string   |          |"
+                "|with         |...       |"
+                "| new         |          |"
+                "|line         |          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |A         |\n\
-             |             |string    |\n\
-             |A long string|with      |\n\
-             |             |new       |\n\
-             |             |line      |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |1-0          |1-1       |\n\
-             +-------------+----------+\n\
-             |A one more   |          |\n\
-             |string       |          |\n\
-             |with         |...       |\n\
-             |new          |          |\n\
-             |line         |          |\n\
-             +-------------+----------+",
+            Formatting::new(true, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |A         |"
+                "|             |string    |"
+                "|A long string|with      |"
+                "|             |new       |"
+                "|             |line      |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|1-0          |1-1       |"
+                "+-------------+----------+"
+                "|A one more   |          |"
+                "|string       |          |"
+                "|with         |...       |"
+                "|new          |          |"
+                "|line         |          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |A         |\n\
-             |             |string    |\n\
-             |A long string|with      |\n\
-             |             |new       |\n\
-             |             |line      |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |1-0          |1-1       |\n\
-             +-------------+----------+\n\
-             |A one more   |          |\n\
-             |string       |          |\n\
-             |with         |...       |\n\
-             |new          |          |\n\
-             |line         |          |\n\
-             +-------------+----------+",
+            Formatting::new(true, true, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |A         |"
+                "|             |string    |"
+                "|A long string|with      |"
+                "|             |new       |"
+                "|             |line      |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|1-0          |1-1       |"
+                "+-------------+----------+"
+                "|A one more   |          |"
+                "|string       |          |"
+                "|with         |...       |"
+                "|new          |          |"
+                "|line         |          |"
+                "+-------------+----------+"
+            ),
         ),
         //
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |    A     |\n\
-             |             |    string|\n\
-             |A long string|   with   |\n\
-             |             |    new   |\n\
-             |             |   line   |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |     1-0     |   1-1    |\n\
-             +-------------+----------+\n\
-             | A one more  |          |\n\
-             |     string  |          |\n\
-             |    with     |   ...    |\n\
-             |     new     |          |\n\
-             |    line     |          |\n\
-             +-------------+----------+",
+            Formatting::new(false, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |    A     |"
+                "|             |    string|"
+                "|A long string|   with   |"
+                "|             |    new   |"
+                "|             |   line   |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|     1-0     |   1-1    |"
+                "+-------------+----------+"
+                "| A one more  |          |"
+                "|     string  |          |"
+                "|    with     |   ...    |"
+                "|     new     |          |"
+                "|    line     |          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |    A     |\n\
-             |             |  string  |\n\
-             |A long string|   with   |\n\
-             |             |   new    |\n\
-             |             |   line   |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |     1-0     |   1-1    |\n\
-             +-------------+----------+\n\
-             | A one more  |          |\n\
-             |   string    |          |\n\
-             |    with     |   ...    |\n\
-             |     new     |          |\n\
-             |    line     |          |\n\
-             +-------------+----------+",
+            Formatting::new(true, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |    A     |"
+                "|             |  string  |"
+                "|A long string|   with   |"
+                "|             |   new    |"
+                "|             |   line   |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|     1-0     |   1-1    |"
+                "+-------------+----------+"
+                "| A one more  |          |"
+                "|   string    |          |"
+                "|    with     |   ...    |"
+                "|     new     |          |"
+                "|    line     |          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |    A     |\n\
-             |             |  string  |\n\
-             |A long string|   with   |\n\
-             |             |   new    |\n\
-             |             |   line   |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |     1-0     |   1-1    |\n\
-             +-------------+----------+\n\
-             | A one more  |          |\n\
-             |   string    |          |\n\
-             |    with     |   ...    |\n\
-             |     new     |          |\n\
-             |    line     |          |\n\
-             +-------------+----------+",
+            Formatting::new(true, true, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |    A     |"
+                "|             |  string  |"
+                "|A long string|   with   |"
+                "|             |   new    |"
+                "|             |   line   |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|     1-0     |   1-1    |"
+                "+-------------+----------+"
+                "| A one more  |          |"
+                "|   string    |          |"
+                "|    with     |   ...    |"
+                "|     new     |          |"
+                "|    line     |          |"
+                "+-------------+----------+"
+            ),
         ),
         //
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |         A|\n\
-             |             |    string|\n\
-             |A long string|      with|\n\
-             |             |       new|\n\
-             |             |      line|\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |          1-0|       1-1|\n\
-             +-------------+----------+\n\
-             |   A one more|          |\n\
-             |       string|          |\n\
-             |         with|       ...|\n\
-             |          new|          |\n\
-             |         line|          |\n\
-             +-------------+----------+",
+            Formatting::new(false, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |         A|"
+                "|             |    string|"
+                "|A long string|      with|"
+                "|             |       new|"
+                "|             |      line|"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|          1-0|       1-1|"
+                "+-------------+----------+"
+                "|   A one more|          |"
+                "|       string|          |"
+                "|         with|       ...|"
+                "|          new|          |"
+                "|         line|          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |         A|\n\
-             |             |    string|\n\
-             |A long string|      with|\n\
-             |             |       new|\n\
-             |             |      line|\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |          1-0|       1-1|\n\
-             +-------------+----------+\n\
-             |   A one more|          |\n\
-             |       string|          |\n\
-             |         with|       ...|\n\
-             |          new|          |\n\
-             |         line|          |\n\
-             +-------------+----------+",
+            Formatting::new(true, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |         A|"
+                "|             |    string|"
+                "|A long string|      with|"
+                "|             |       new|"
+                "|             |      line|"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|          1-0|       1-1|"
+                "+-------------+----------+"
+                "|   A one more|          |"
+                "|       string|          |"
+                "|         with|       ...|"
+                "|          new|          |"
+                "|         line|          |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Center,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |         A|\n\
-             |             |    string|\n\
-             |A long string|      with|\n\
-             |             |       new|\n\
-             |             |      line|\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             +-------------+----------+\n\
-             |          1-0|       1-1|\n\
-             +-------------+----------+\n\
-             |   A one more|          |\n\
-             |       string|          |\n\
-             |         with|       ...|\n\
-             |          new|          |\n\
-             |         line|          |\n\
-             +-------------+----------+",
+            Formatting::new(true, true, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |         A|"
+                "|             |    string|"
+                "|A long string|      with|"
+                "|             |       new|"
+                "|             |      line|"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "+-------------+----------+"
+                "|          1-0|       1-1|"
+                "+-------------+----------+"
+                "|   A one more|          |"
+                "|       string|          |"
+                "|         with|       ...|"
+                "|          new|          |"
+                "|         line|          |"
+                "+-------------+----------+"
+            ),
         ),
         //
         // asd
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |A         |\n\
-             |             |    string|\n\
-             |             |with      |\n\
-             |             | new      |\n\
-             |             |line      |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |A long string|          |\n\
-             +-------------+----------+\n\
-             |1-0          |1-1       |\n\
-             +-------------+----------+\n\
-             |A one more   |          |\n\
-             |    string   |          |\n\
-             |with         |          |\n\
-             | new         |          |\n\
-             |line         |...       |\n\
-             +-------------+----------+",
+            Formatting::new(false, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |A         |"
+                "|             |    string|"
+                "|             |with      |"
+                "|             | new      |"
+                "|             |line      |"
+                "|             |          |"
+                "|             |          |"
+                "|A long string|          |"
+                "+-------------+----------+"
+                "|1-0          |1-1       |"
+                "+-------------+----------+"
+                "|A one more   |          |"
+                "|    string   |          |"
+                "|with         |          |"
+                "| new         |          |"
+                "|line         |...       |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |A         |\n\
-             |             |string    |\n\
-             |             |with      |\n\
-             |             |new       |\n\
-             |             |line      |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |A long string|          |\n\
-             +-------------+----------+\n\
-             |1-0          |1-1       |\n\
-             +-------------+----------+\n\
-             |A one more   |          |\n\
-             |string       |          |\n\
-             |with         |          |\n\
-             |new          |          |\n\
-             |line         |...       |\n\
-             +-------------+----------+",
+            Formatting::new(true, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |A         |"
+                "|             |string    |"
+                "|             |with      |"
+                "|             |new       |"
+                "|             |line      |"
+                "|             |          |"
+                "|             |          |"
+                "|A long string|          |"
+                "+-------------+----------+"
+                "|1-0          |1-1       |"
+                "+-------------+----------+"
+                "|A one more   |          |"
+                "|string       |          |"
+                "|with         |          |"
+                "|new          |          |"
+                "|line         |...       |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Left,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |A         |\n\
-             |             |string    |\n\
-             |             |with      |\n\
-             |             |new       |\n\
-             |A long string|line      |\n\
-             +-------------+----------+\n\
-             |1-0          |1-1       |\n\
-             +-------------+----------+\n\
-             |A one more   |          |\n\
-             |string       |          |\n\
-             |with         |          |\n\
-             |new          |          |\n\
-             |line         |...       |\n\
-             +-------------+----------+",
+            Formatting::new(true, true, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |A         |"
+                "|             |string    |"
+                "|             |with      |"
+                "|             |new       |"
+                "|A long string|line      |"
+                "+-------------+----------+"
+                "|1-0          |1-1       |"
+                "+-------------+----------+"
+                "|A one more   |          |"
+                "|string       |          |"
+                "|with         |          |"
+                "|new          |          |"
+                "|line         |...       |"
+                "+-------------+----------+"
+            ),
         ),
         //
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |    A     |\n\
-             |             |    string|\n\
-             |             |   with   |\n\
-             |             |    new   |\n\
-             |             |   line   |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |A long string|          |\n\
-             +-------------+----------+\n\
-             |     1-0     |   1-1    |\n\
-             +-------------+----------+\n\
-             | A one more  |          |\n\
-             |     string  |          |\n\
-             |    with     |          |\n\
-             |     new     |          |\n\
-             |    line     |   ...    |\n\
-             +-------------+----------+",
+            Formatting::new(false, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |    A     |"
+                "|             |    string|"
+                "|             |   with   |"
+                "|             |    new   |"
+                "|             |   line   |"
+                "|             |          |"
+                "|             |          |"
+                "|A long string|          |"
+                "+-------------+----------+"
+                "|     1-0     |   1-1    |"
+                "+-------------+----------+"
+                "| A one more  |          |"
+                "|     string  |          |"
+                "|    with     |          |"
+                "|     new     |          |"
+                "|    line     |   ...    |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |    A     |\n\
-             |             |  string  |\n\
-             |             |   with   |\n\
-             |             |   new    |\n\
-             |             |   line   |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |A long string|          |\n\
-             +-------------+----------+\n\
-             |     1-0     |   1-1    |\n\
-             +-------------+----------+\n\
-             | A one more  |          |\n\
-             |   string    |          |\n\
-             |    with     |          |\n\
-             |     new     |          |\n\
-             |    line     |   ...    |\n\
-             +-------------+----------+",
+            Formatting::new(true, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |    A     |"
+                "|             |  string  |"
+                "|             |   with   |"
+                "|             |   new    |"
+                "|             |   line   |"
+                "|             |          |"
+                "|             |          |"
+                "|A long string|          |"
+                "+-------------+----------+"
+                "|     1-0     |   1-1    |"
+                "+-------------+----------+"
+                "| A one more  |          |"
+                "|   string    |          |"
+                "|    with     |          |"
+                "|     new     |          |"
+                "|    line     |   ...    |"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Center,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |    A     |\n\
-             |             |  string  |\n\
-             |             |   with   |\n\
-             |             |   new    |\n\
-             |A long string|   line   |\n\
-             +-------------+----------+\n\
-             |     1-0     |   1-1    |\n\
-             +-------------+----------+\n\
-             | A one more  |          |\n\
-             |   string    |          |\n\
-             |    with     |          |\n\
-             |     new     |          |\n\
-             |    line     |   ...    |\n\
-             +-------------+----------+",
+            Formatting::new(true, true, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |    A     |"
+                "|             |  string  |"
+                "|             |   with   |"
+                "|             |   new    |"
+                "|A long string|   line   |"
+                "+-------------+----------+"
+                "|     1-0     |   1-1    |"
+                "+-------------+----------+"
+                "| A one more  |          |"
+                "|   string    |          |"
+                "|    with     |          |"
+                "|     new     |          |"
+                "|    line     |   ...    |"
+                "+-------------+----------+"
+            ),
         ),
         //
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: false,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |         A|\n\
-             |             |    string|\n\
-             |             |      with|\n\
-             |             |       new|\n\
-             |             |      line|\n\
-             |             |          |\n\
-             |             |          |\n\
-             |A long string|          |\n\
-             +-------------+----------+\n\
-             |          1-0|       1-1|\n\
-             +-------------+----------+\n\
-             |   A one more|          |\n\
-             |       string|          |\n\
-             |         with|          |\n\
-             |          new|          |\n\
-             |         line|       ...|\n\
-             +-------------+----------+",
+            Formatting::new(false, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |         A|"
+                "|             |    string|"
+                "|             |      with|"
+                "|             |       new|"
+                "|             |      line|"
+                "|             |          |"
+                "|             |          |"
+                "|A long string|          |"
+                "+-------------+----------+"
+                "|          1-0|       1-1|"
+                "+-------------+----------+"
+                "|   A one more|          |"
+                "|       string|          |"
+                "|         with|          |"
+                "|          new|          |"
+                "|         line|       ...|"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: false,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |         A|\n\
-             |             |    string|\n\
-             |             |      with|\n\
-             |             |       new|\n\
-             |             |      line|\n\
-             |             |          |\n\
-             |             |          |\n\
-             |A long string|          |\n\
-             +-------------+----------+\n\
-             |          1-0|       1-1|\n\
-             +-------------+----------+\n\
-             |   A one more|          |\n\
-             |       string|          |\n\
-             |         with|          |\n\
-             |          new|          |\n\
-             |         line|       ...|\n\
-             +-------------+----------+",
+            Formatting::new(true, false, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |         A|"
+                "|             |    string|"
+                "|             |      with|"
+                "|             |       new|"
+                "|             |      line|"
+                "|             |          |"
+                "|             |          |"
+                "|A long string|          |"
+                "+-------------+----------+"
+                "|          1-0|       1-1|"
+                "+-------------+----------+"
+                "|   A one more|          |"
+                "|       string|          |"
+                "|         with|          |"
+                "|          new|          |"
+                "|         line|       ...|"
+                "+-------------+----------+"
+            ),
         ),
         (
             AlignmentHorizontal::Right,
             AlignmentVertical::Bottom,
-            Formatting {
-                allow_lines_alignement: true,
-                horizontal_trim: true,
-                vertical_trim: true,
-            },
-            "+-------------+----------+\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |          |\n\
-             |             |         A|\n\
-             |             |    string|\n\
-             |             |      with|\n\
-             |             |       new|\n\
-             |A long string|      line|\n\
-             +-------------+----------+\n\
-             |          1-0|       1-1|\n\
-             +-------------+----------+\n\
-             |   A one more|          |\n\
-             |       string|          |\n\
-             |         with|          |\n\
-             |          new|          |\n\
-             |         line|       ...|\n\
-             +-------------+----------+",
+            Formatting::new(true, true, true),
+            static_table!(
+                "+-------------+----------+"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |          |"
+                "|             |         A|"
+                "|             |    string|"
+                "|             |      with|"
+                "|             |       new|"
+                "|A long string|      line|"
+                "+-------------+----------+"
+                "|          1-0|       1-1|"
+                "+-------------+----------+"
+                "|   A one more|          |"
+                "|       string|          |"
+                "|         with|          |"
+                "|          new|          |"
+                "|         line|       ...|"
+                "+-------------+----------+"
+            ),
         ),
     ];
 
-    let mut grid = util::new_grid::<3, 2>();
-    grid.set(Entity::Cell(0, 0), Settings::new().text("A long string"));
-    grid.set(
-        Entity::Cell(0, 1),
-        Settings::new().text("\n\n\nA\n    string\nwith\n new\nline\n\n\n"),
-    );
-    grid.set(
-        Entity::Cell(2, 0),
-        Settings::new().text("A one more\n    string\nwith\n new\nline"),
-    );
-    grid.set(Entity::Cell(2, 1), Settings::new().text("..."));
+    let grid = grid(3, 2)
+        .change_cell((0, 0), "A long string")
+        .change_cell((0, 1), "\n\n\nA\n    string\nwith\n new\nline\n\n\n")
+        .change_cell((2, 0), "A one more\n    string\nwith\n new\nline")
+        .change_cell((2, 1), "...");
 
     for (i, test) in tests.iter().enumerate() {
         let expected = test.3;
 
-        grid.set(
-            Entity::Global,
-            Settings::new()
-                .alignment(test.0)
-                .vertical_alignment(test.1)
-                .formatting(test.2),
-        );
+        let table = grid
+            .clone()
+            .config(|cfg| {
+                cfg.set_alignment_horizontal(Entity::Global, test.0);
+                cfg.set_alignment_vertical(Entity::Global, test.1);
+                cfg.set_formatting(Entity::Global, test.2);
+            })
+            .clone()
+            .build();
 
-        assert_eq!(grid.to_string(), expected, "test case #{:?} failed", i,);
+        assert_eq!(table, expected, "test case #{:?} failed", i,);
     }
 }
 
 #[test]
 fn formatting_empty_test() {
-    let mut grid = util::new_grid::<0, 0>();
-    grid.set(
-        Entity::Global,
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: true,
-            vertical_trim: true,
-        }),
-    );
-
-    assert_eq!(grid.to_string(), "");
-
-    let mut grid = util::new_grid::<4, 0>();
-    grid.set(
-        Entity::Global,
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: true,
-            vertical_trim: true,
-        }),
-    );
-
-    assert_eq!(grid.to_string(), "");
-
-    let mut grid = util::new_grid::<0, 4>();
-    grid.set(
-        Entity::Global,
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: true,
-            vertical_trim: true,
-        }),
-    );
-
-    assert_eq!(grid.to_string(), "");
+    for (rows, cols) in [(0, 0), (0, 4), (4, 0)] {
+        let formatting = Formatting::new(true, true, true);
+        assert_eq!(
+            grid(rows, cols)
+                .config(|cfg| cfg.set_formatting(Entity::Global, formatting))
+                .build(),
+            ""
+        );
+    }
 }
 
 #[test]
@@ -908,127 +826,99 @@ fn formatting_1x1_test() {
     ]
 }"#;
 
-    let mut grid = util::new_grid::<1, 1>();
-    grid.set(
-        Entity::Cell(0, 0),
-        Settings::new()
-            .text(json)
-            .alignment(AlignmentHorizontal::Left),
+    let grid = util::grid(1, 1).data([[json]]);
+
+    assert_eq!(
+        grid.clone()
+            .config(
+                |cfg| cfg.set_alignment_horizontal(Entity::Cell(0, 0), AlignmentHorizontal::Left)
+            )
+            .build(),
+        static_table!(
+            r#"+--------------------------------------------------+"#
+            r#"|                                                  |"#
+            r#"|{                                                 |"#
+            r#"|    "id": "0001",                                 |"#
+            r#"|    "batters": {                                  |"#
+            r#"|        "batter": [                               |"#
+            r#"|            { "id": "1002", "type": "Chocolate" },|"#
+            r#"|        ]                                         |"#
+            r#"|    },                                            |"#
+            r#"|    "topping": [                                  |"#
+            r#"|        { "id": "5003", "type": "Chocolate" },    |"#
+            r#"|        { "id": "5004", "type": "Maple" }         |"#
+            r#"|    ]                                             |"#
+            r#"|}                                                 |"#
+            r#"+--------------------------------------------------+"#
+        ),
     );
 
     assert_eq!(
-        grid.to_string(),
-        vec![
-            r#"+--------------------------------------------------+"#,
-            r#"|                                                  |"#,
-            r#"|{                                                 |"#,
-            r#"|    "id": "0001",                                 |"#,
-            r#"|    "batters": {                                  |"#,
-            r#"|        "batter": [                               |"#,
-            r#"|            { "id": "1002", "type": "Chocolate" },|"#,
-            r#"|        ]                                         |"#,
-            r#"|    },                                            |"#,
-            r#"|    "topping": [                                  |"#,
-            r#"|        { "id": "5003", "type": "Chocolate" },    |"#,
-            r#"|        { "id": "5004", "type": "Maple" }         |"#,
-            r#"|    ]                                             |"#,
-            r#"|}                                                 |"#,
-            r#"+--------------------------------------------------+"#,
-        ]
-        .join("\n")
-    );
-
-    grid.set(
-        Entity::Cell(0, 0),
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: false,
-            vertical_trim: false,
-        }),
+        grid.clone()
+            .config(|cfg| cfg.set_formatting(Entity::Global, Formatting::new(false, false, true)))
+            .build(),
+        static_table!(
+            r#"+--------------------------------------------------+"#
+            r#"|                                                  |"#
+            r#"|{                                                 |"#
+            r#"|    "id": "0001",                                 |"#
+            r#"|    "batters": {                                  |"#
+            r#"|        "batter": [                               |"#
+            r#"|            { "id": "1002", "type": "Chocolate" },|"#
+            r#"|        ]                                         |"#
+            r#"|    },                                            |"#
+            r#"|    "topping": [                                  |"#
+            r#"|        { "id": "5003", "type": "Chocolate" },    |"#
+            r#"|        { "id": "5004", "type": "Maple" }         |"#
+            r#"|    ]                                             |"#
+            r#"|}                                                 |"#
+            r#"+--------------------------------------------------+"#
+        ),
     );
 
     assert_eq!(
-        grid.to_string(),
-        vec![
-            r#"+--------------------------------------------------+"#,
-            r#"|                                                  |"#,
-            r#"|{                                                 |"#,
-            r#"|    "id": "0001",                                 |"#,
-            r#"|    "batters": {                                  |"#,
-            r#"|        "batter": [                               |"#,
-            r#"|            { "id": "1002", "type": "Chocolate" },|"#,
-            r#"|        ]                                         |"#,
-            r#"|    },                                            |"#,
-            r#"|    "topping": [                                  |"#,
-            r#"|        { "id": "5003", "type": "Chocolate" },    |"#,
-            r#"|        { "id": "5004", "type": "Maple" }         |"#,
-            r#"|    ]                                             |"#,
-            r#"|}                                                 |"#,
-            r#"+--------------------------------------------------+"#,
-        ]
-        .join("\n")
-    );
-
-    grid.set(
-        Entity::Cell(0, 0),
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: true,
-            vertical_trim: false,
-        }),
+        grid.clone()
+            .config(|cfg| cfg.set_formatting(Entity::Global, Formatting::new(true, false, true)))
+            .build(),
+        static_table!(
+            r#"+--------------------------------------------------+"#
+            r#"|                                                  |"#
+            r#"|{                                                 |"#
+            r#"|"id": "0001",                                     |"#
+            r#"|"batters": {                                      |"#
+            r#"|"batter": [                                       |"#
+            r#"|{ "id": "1002", "type": "Chocolate" },            |"#
+            r#"|]                                                 |"#
+            r#"|},                                                |"#
+            r#"|"topping": [                                      |"#
+            r#"|{ "id": "5003", "type": "Chocolate" },            |"#
+            r#"|{ "id": "5004", "type": "Maple" }                 |"#
+            r#"|]                                                 |"#
+            r#"|}                                                 |"#
+            r#"+--------------------------------------------------+"#
+        ),
     );
 
     assert_eq!(
-        grid.to_string(),
-        vec![
-            r#"+--------------------------------------------------+"#,
-            r#"|                                                  |"#,
-            r#"|{                                                 |"#,
-            r#"|"id": "0001",                                     |"#,
-            r#"|"batters": {                                      |"#,
-            r#"|"batter": [                                       |"#,
-            r#"|{ "id": "1002", "type": "Chocolate" },            |"#,
-            r#"|]                                                 |"#,
-            r#"|},                                                |"#,
-            r#"|"topping": [                                      |"#,
-            r#"|{ "id": "5003", "type": "Chocolate" },            |"#,
-            r#"|{ "id": "5004", "type": "Maple" }                 |"#,
-            r#"|]                                                 |"#,
-            r#"|}                                                 |"#,
-            r#"+--------------------------------------------------+"#,
-        ]
-        .join("\n")
-    );
-
-    grid.set(
-        Entity::Cell(0, 0),
-        Settings::new().formatting(Formatting {
-            allow_lines_alignement: true,
-            horizontal_trim: true,
-            vertical_trim: true,
-        }),
-    );
-
-    assert_eq!(
-        grid.to_string(),
-        vec![
-            r#"+--------------------------------------------------+"#,
-            r#"|{                                                 |"#,
-            r#"|"id": "0001",                                     |"#,
-            r#"|"batters": {                                      |"#,
-            r#"|"batter": [                                       |"#,
-            r#"|{ "id": "1002", "type": "Chocolate" },            |"#,
-            r#"|]                                                 |"#,
-            r#"|},                                                |"#,
-            r#"|"topping": [                                      |"#,
-            r#"|{ "id": "5003", "type": "Chocolate" },            |"#,
-            r#"|{ "id": "5004", "type": "Maple" }                 |"#,
-            r#"|]                                                 |"#,
-            r#"|}                                                 |"#,
-            r#"|                                                  |"#,
-            r#"+--------------------------------------------------+"#,
-        ]
-        .join("\n")
+        grid.config(|cfg| cfg.set_formatting(Entity::Global, Formatting::new(true, true, true)))
+            .build(),
+        static_table!(
+            r#"+--------------------------------------------------+"#
+            r#"|{                                                 |"#
+            r#"|"id": "0001",                                     |"#
+            r#"|"batters": {                                      |"#
+            r#"|"batter": [                                       |"#
+            r#"|{ "id": "1002", "type": "Chocolate" },            |"#
+            r#"|]                                                 |"#
+            r#"|},                                                |"#
+            r#"|"topping": [                                      |"#
+            r#"|{ "id": "5003", "type": "Chocolate" },            |"#
+            r#"|{ "id": "5004", "type": "Maple" }                 |"#
+            r#"|]                                                 |"#
+            r#"|}                                                 |"#
+            r#"|                                                  |"#
+            r#"+--------------------------------------------------+"#
+        ),
     );
 }
 
@@ -1043,52 +933,53 @@ fn tab_size_test() {
 \t\t ]
 }";
 
-    let mut grid = util::new_grid::<1, 1>();
-    grid.set(Entity::Cell(0, 0), Settings::new().text(json));
+    let grid = grid(1, 1).data([[json]]);
 
     assert_eq!(
-        grid.to_string(),
-        "+-------------------------------+\n\
-         |{                              |\n\
-         |         \"id\": \"1\",            |\n\
-         |         \"name\": \"Hello World\",|\n\
-         |         \"list\": [             |\n\
-         |                 [1, 2, 3],    |\n\
-         |                 [4, 5, 6],    |\n\
-         |         ]                     |\n\
-         |}                              |\n\
-         +-------------------------------+",
+        grid.clone().build(),
+        static_table!(
+            "+-------------------------------+"
+            "|{                              |"
+            "|         \"id\": \"1\",            |"
+            "|         \"name\": \"Hello World\",|"
+            "|         \"list\": [             |"
+            "|                 [1, 2, 3],    |"
+            "|                 [4, 5, 6],    |"
+            "|         ]                     |"
+            "|}                              |"
+            "+-------------------------------+"
+        ),
     );
 
-    grid.set_tab_width(1);
-
     assert_eq!(
-        grid.to_string(),
-        "+-------------------------+\n\
-         |{                        |\n\
-         |   \"id\": \"1\",            |\n\
-         |   \"name\": \"Hello World\",|\n\
-         |   \"list\": [             |\n\
-         |     [1, 2, 3],          |\n\
-         |     [4, 5, 6],          |\n\
-         |   ]                     |\n\
-         |}                        |\n\
-         +-------------------------+"
+        grid.clone().config(|cfg| cfg.set_tab_width(1)).build(),
+        static_table!(
+            "+-------------------------+"
+            "|{                        |"
+            "|   \"id\": \"1\",            |"
+            "|   \"name\": \"Hello World\",|"
+            "|   \"list\": [             |"
+            "|     [1, 2, 3],          |"
+            "|     [4, 5, 6],          |"
+            "|   ]                     |"
+            "|}                        |"
+            "+-------------------------+"
+        ),
     );
 
-    grid.set_tab_width(0);
-
     assert_eq!(
-        grid.to_string(),
-        "+-----------------------+\n\
-         |{                      |\n\
-         | \"id\": \"1\",            |\n\
-         | \"name\": \"Hello World\",|\n\
-         | \"list\": [             |\n\
-         | [1, 2, 3],            |\n\
-         | [4, 5, 6],            |\n\
-         | ]                     |\n\
-         |}                      |\n\
-         +-----------------------+"
+        grid.config(|cfg| cfg.set_tab_width(0)).build(),
+        static_table!(
+            "+-----------------------+"
+            "|{                      |"
+            "| \"id\": \"1\",            |"
+            "| \"name\": \"Hello World\",|"
+            "| \"list\": [             |"
+            "| [1, 2, 3],            |"
+            "| [4, 5, 6],            |"
+            "| ]                     |"
+            "|}                      |"
+            "+-----------------------+"
+        )
     );
 }

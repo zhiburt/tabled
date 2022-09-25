@@ -4,12 +4,12 @@ use std::iter::FromIterator;
 use tabled::ModifyObject;
 
 use tabled::{
-    formatting_settings::TrimStrategy,
+    formatting::TrimStrategy,
     object::{Cell, Columns, Object, Rows, Segment},
-    papergrid::string_width_multiline,
-    width::{Justify, MinWidth, Width},
-    width::{PriorityMax, PriorityMin, SuffixLimit},
-    Alignment, Modify, Padding, Panel, Span, Style,
+    papergrid::util::string_width_multiline,
+    peaker::{PriorityMax, PriorityMin},
+    width::{Justify, MinWidth, SuffixLimit, Width},
+    Alignment, Margin, Modify, Padding, Panel, Span, Style,
 };
 
 use crate::util::{create_table, init_table, is_lines_equal, new_table, static_table};
@@ -187,7 +187,7 @@ fn max_width_wrapped_keep_words() {
             "| &str              |"
             "|-------------------|"
             "| this is a long    |"
-            "| sentence          |"
+            "|  sentence         |"
         )
     );
     assert!(is_lines_equal(&table, 17 + 2 + 2));
@@ -236,8 +236,8 @@ fn max_width_wrapped_keep_words_color() {
         static_table!(
             "| String            |"
             "|-------------------|"
-            "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |"
-            "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
+            "| \u{1b}[32;40mthis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mlong\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m   |"
+            "| \u{1b}[32;40msentence\u{1b}[0m          |"
         )
     );
 
@@ -260,12 +260,7 @@ fn max_width_wrapped_keep_words_color() {
 
     assert_eq!(
         table,
-        static_table!(
-            "| String            |"
-            "|-------------------|"
-            "| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m  |"
-            "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
-        )
+        "| String            |\n|-------------------|\n| \u{1b}[32;40mthis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mlong\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m  |\n| \u{1b}[32;40msentence\u{1b}[0m          |"
     );
 
     let data = vec!["this is a long   sentence".on_black().green().to_string()];
@@ -287,7 +282,7 @@ fn max_width_wrapped_keep_words_color() {
 
     assert_eq!(
         table,
-        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
+        "| String            |\n|-------------------|\n| \u{1b}[32;40mthis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mlong\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32;40msentence\u{1b}[0m          |"
     );
 
     let data = vec!["this is a long    sentence".on_black().green().to_string()];
@@ -303,17 +298,14 @@ fn max_width_wrapped_keep_words_color() {
             "| String            |"
             "|-------------------|"
             "| this is a long    |"
-            "| sentence          |"
+            "|  sentence         |"
         )
     );
 
     assert_eq!(
         table,
         static_table!(
-            "| String            |"
-            "|-------------------|"
-            "| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
+            "| String            |\n|-------------------|\n| \u{1b}[32;40mthis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mlong\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40msentence\u{1b}[0m         |"
         )
     );
 
@@ -394,7 +386,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
         static_table!(
             "| String            |"
             "|-------------------|"
-            "| \u{1b}[32m\u{1b}[40mthis is a long se\u{1b}[39m\u{1b}[49m |"
+            "| \u{1b}[32;40mthis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mlong\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m |"
             "| \u{1b}[32m\u{1b}[40mntencesentencesen\u{1b}[39m\u{1b}[49m |"
             "| \u{1b}[32m\u{1b}[40mtence\u{1b}[39m\u{1b}[49m             |"
         )
@@ -498,7 +490,8 @@ fn color_chars_are_stripped() {
 
 #[test]
 fn min_width() {
-    let table = create_table::<3, 3>()
+    let mut table = create_table::<3, 3>();
+    table
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(12)));
 
@@ -513,7 +506,7 @@ fn min_width() {
         ),
     );
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
 
     assert_eq!(
         table.to_string(),
@@ -548,7 +541,8 @@ fn min_width_with_filler() {
 
 #[test]
 fn min_width_one_column() {
-    let table = create_table::<3, 3>()
+    let mut table = create_table::<3, 3>();
+    table
         .with(Style::markdown())
         .with(Modify::new(Cell(0, 0)).with(MinWidth::new(5)));
 
@@ -563,7 +557,7 @@ fn min_width_one_column() {
         )
     );
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
 
     assert_eq!(
         table.to_string(),
@@ -590,7 +584,8 @@ fn min_width_on_smaller_content() {
 
 #[test]
 fn min_with_max_width() {
-    let table = create_table::<3, 3>()
+    let mut table = create_table::<3, 3>();
+    table
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
         .with(Modify::new(Rows::single(0)).with(Width::truncate(3)));
@@ -606,7 +601,7 @@ fn min_with_max_width() {
         )
     );
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
 
     assert_eq!(
         table.to_string(),
@@ -622,7 +617,8 @@ fn min_with_max_width() {
 
 #[test]
 fn min_with_max_width_truncate_suffix() {
-    let table = create_table::<3, 3>()
+    let mut table = create_table::<3, 3>();
+    table
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
         .with(Modify::new(Rows::single(0)).with(Width::truncate(3).suffix("...")));
@@ -638,7 +634,7 @@ fn min_with_max_width_truncate_suffix() {
         )
     );
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::None));
 
     assert_eq!(
         table.to_string(),
@@ -654,16 +650,19 @@ fn min_with_max_width_truncate_suffix() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_replace() {
-    let table = create_table::<3, 3>().with(Style::markdown()).with(
-        Modify::new(Rows::single(0)).with(
-            Width::truncate(3)
-                .suffix("...")
-                .suffix_limit(SuffixLimit::Replace('x')),
-        ),
-    );
+    let table = create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(
+            Modify::new(Rows::single(0)).with(
+                Width::truncate(3)
+                    .suffix("...")
+                    .suffix_limit(SuffixLimit::Replace('x')),
+            ),
+        )
+        .to_string();
 
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
             "| N | xxx | xxx | xxx |"
             "|---|-----|-----|-----|"
@@ -676,16 +675,19 @@ fn min_with_max_width_truncate_suffix_limit_replace() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_cut() {
-    let table = create_table::<3, 3>().with(Style::markdown()).with(
-        Modify::new(Rows::single(0)).with(
-            Width::truncate(3)
-                .suffix("qwert")
-                .suffix_limit(SuffixLimit::Cut),
-        ),
-    );
+    let table = create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(
+            Modify::new(Rows::single(0)).with(
+                Width::truncate(3)
+                    .suffix("qwert")
+                    .suffix_limit(SuffixLimit::Cut),
+            ),
+        )
+        .to_string();
 
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
             "| N | qwe | qwe | qwe |"
             "|---|-----|-----|-----|"
@@ -698,16 +700,19 @@ fn min_with_max_width_truncate_suffix_limit_cut() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_ignore() {
-    let table = create_table::<3, 3>().with(Style::markdown()).with(
-        Modify::new(Rows::single(0)).with(
-            Width::truncate(3)
-                .suffix("qwert")
-                .suffix_limit(SuffixLimit::Ignore),
-        ),
-    );
+    let table = create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(
+            Modify::new(Rows::single(0)).with(
+                Width::truncate(3)
+                    .suffix("qwert")
+                    .suffix_limit(SuffixLimit::Ignore),
+            ),
+        )
+        .to_string();
 
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
             "| N | col | col | col |"
             "|---|-----|-----|-----|"
@@ -731,10 +736,11 @@ fn min_with_max_width_truncate_suffix_try_color() {
 
     let table = new_table(data)
         .with(Style::markdown())
-        .with(Width::truncate(7).suffix("..").suffix_try_color(true));
+        .with(Width::truncate(7).suffix("..").suffix_try_color(true))
+        .to_string();
 
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
             "| S.. |"
             "|-----|"
@@ -809,11 +815,11 @@ fn total_width_big() {
     assert_eq!(
         table,
         static_table!(
-            "| N            | column 0            | column 1           | column 2           |"
+            "|      N       |      column 0       |      column 1      |      column 2      |"
             "|--------------|---------------------|--------------------|--------------------|"
-            "| 0            | 0-0                 | 0-1                | 0-2                |"
-            "| 1            | 1-0                 | 1-1                | 1-2                |"
-            "| 2            | 2-0                 | 2-1                | 2-2                |"
+            "|      0       |         0-0         |        0-1         |        0-2         |"
+            "|      1       |         1-0         |        1-1         |        1-2         |"
+            "|      2       |         2-0         |        2-1         |        2-2         |"
         )
     );
 
@@ -828,11 +834,11 @@ fn total_width_big() {
     assert_eq!(
         table,
         static_table!(
-            "| N            | column 0            | column 1           | column 2           |"
+            "|      N       |      column 0       |      column 1      |      column 2      |"
             "|--------------|---------------------|--------------------|--------------------|"
-            "| 0            | 0-0                 | 0-1                | 0-2                |"
-            "| 1            | 1-0                 | 1-1                | 1-2                |"
-            "| 2            | 2-0                 | 2-1                | 2-2                |"
+            "|      0       |         0-0         |        0-1         |        0-2         |"
+            "|      1       |         1-0         |        1-1         |        1-2         |"
+            "|      2       |         2-0         |        2-1         |        2-2         |"
         )
     );
 }
@@ -840,7 +846,7 @@ fn total_width_big() {
 #[test]
 fn total_width_big_with_panel() {
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(
             Modify::new(Segment::all())
                 .with(Alignment::center())
@@ -855,12 +861,12 @@ fn total_width_big_with_panel() {
     assert_eq!(
         table,
         static_table!(
-            "|Hello World                                                                   |"
+            "|                                 Hello World                                  |"
             "|--------------|---------------------|--------------------|--------------------|"
-            "|N             |column 0             |column 1            |column 2            |"
-            "|0             |0-0                  |0-1                 |0-2                 |"
-            "|1             |1-0                  |1-1                 |1-2                 |"
-            "|2             |2-0                  |2-1                 |2-2                 |"
+            "|      N       |      column 0       |      column 1      |      column 2      |"
+            "|      0       |         0-0         |        0-1         |        0-2         |"
+            "|      1       |         1-0         |        1-1         |        1-2         |"
+            "|      2       |         2-0         |        2-1         |        2-2         |"
         )
     );
 }
@@ -868,7 +874,7 @@ fn total_width_big_with_panel() {
 #[test]
 fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
     let table1 = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(80))
@@ -876,7 +882,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
         .to_string();
 
     let table2 = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(80))
@@ -949,7 +955,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 20));
 
     let table = new_table(Vec::<usize>::new())
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(
             Modify::new(Segment::all())
                 .with(Alignment::center())
@@ -966,7 +972,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 5));
 
     let table = create_table::<1, 2>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
@@ -985,7 +991,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 20));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
@@ -1006,7 +1012,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 20));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(6))
@@ -1027,7 +1033,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 13));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(14))
@@ -1048,7 +1054,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 14));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World 123", 0))
+        .with(Panel::horizontal(0).text("Hello World 123"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(14))
@@ -1123,7 +1129,7 @@ fn total_width_wrapping() {
 #[test]
 fn total_width_small_with_panel_using_wrapping() {
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(20))
@@ -1150,7 +1156,7 @@ fn total_width_small_with_panel_using_wrapping() {
     assert!(is_lines_equal(&table, 20));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World", 0))
+        .with(Panel::horizontal(0).text("Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(14))
@@ -1185,7 +1191,7 @@ fn total_width_small_with_panel_using_wrapping() {
     assert!(is_lines_equal(&table, 14));
 
     let table = create_table::<3, 3>()
-        .with(Panel("Hello World 123", 0))
+        .with(Panel::horizontal(0).text("Hello World 123"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(14))
@@ -1222,12 +1228,13 @@ fn total_width_small_with_panel_using_wrapping() {
 
 #[test]
 fn max_width_with_span() {
-    let table = init_table::<3, 3, _, _>([((0, 1), "a long string")])
+    let mut table = init_table::<3, 3, _, _>([((0, 1), "a long string")]);
+    table
         .with(Style::psql())
         .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 2)).with(Span::column(2)));
 
-    let table = table.with(Width::truncate(40));
+    table.with(Width::truncate(40));
 
     assert_eq!(
         table.to_string(),
@@ -1241,7 +1248,7 @@ fn max_width_with_span() {
     );
     assert!(is_lines_equal(&table.to_string(), 36));
 
-    let table = table.with(Width::truncate(20));
+    table.with(Width::truncate(20));
 
     assert_eq!(
         table.to_string(),
@@ -1255,7 +1262,7 @@ fn max_width_with_span() {
     );
     assert!(is_lines_equal(&table.to_string(), 20));
 
-    let table = table.with(Width::truncate(10));
+    table.with(Width::truncate(10));
 
     assert_eq!(
         table.to_string(),
@@ -1283,35 +1290,36 @@ fn min_width_works_with_right_alignment() {
     }
     "#;
 
-    let table = new_table([json])
-        .with(Style::markdown())
-        .with(MinWidth::new(50))
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::right())
-                .with(TrimStrategy::None),
-        );
+    let mut table = new_table([json]);
+    table.with(Style::markdown()).with(MinWidth::new(50)).with(
+        Modify::new(Segment::all())
+            .with(Alignment::right())
+            .with(TrimStrategy::None),
+    );
 
+    assert_eq!(
+        papergrid::util::string_width_multiline(&table.to_string()),
+        50
+    );
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| &str                                           |"
+            "|                                           &str |"
             "|------------------------------------------------|"
             "|                                                |"
-            "|     {                                          |"
-            "|         \"some\": \"random\",                      |"
-            "|         \"json\": [                              |"
-            "|             { \"1\": \"2\" },                      |"
-            "|             { \"1\": \"2\" },                      |"
-            "|             { \"1\": \"2\" }                       |"
-            "|         ]                                      |"
-            "|     }                                          |"
+            "|                          {                     |"
+            "|                              \"some\": \"random\", |"
+            "|                              \"json\": [         |"
+            "|                                  { \"1\": \"2\" }, |"
+            "|                                  { \"1\": \"2\" }, |"
+            "|                                  { \"1\": \"2\" }  |"
+            "|                              ]                 |"
+            "|                          }                     |"
             "|                                                |"
         )
     );
-    assert!(is_lines_equal(&table.to_string(), 50));
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
 
     assert_eq!(
         table.to_string(),
@@ -1332,7 +1340,7 @@ fn min_width_works_with_right_alignment() {
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
 
     assert_eq!(
         table.to_string(),
@@ -1353,35 +1361,33 @@ fn min_width_works_with_right_alignment() {
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    let table = new_table([json])
-        .with(Style::markdown())
-        .with(MinWidth::new(50))
-        .with(
-            Modify::new(Segment::all())
-                .with(Alignment::center())
-                .with(TrimStrategy::None),
-        );
+    let mut table = new_table([json]);
+    table.with(Style::markdown()).with(MinWidth::new(50)).with(
+        Modify::new(Segment::all())
+            .with(Alignment::center())
+            .with(TrimStrategy::None),
+    );
 
     assert_eq!(
         table.to_string(),
         static_table!(
-            "| &str                                           |"
+            "|                      &str                      |"
             "|------------------------------------------------|"
             "|                                                |"
-            "|     {                                          |"
-            "|         \"some\": \"random\",                      |"
-            "|         \"json\": [                              |"
-            "|             { \"1\": \"2\" },                      |"
-            "|             { \"1\": \"2\" },                      |"
-            "|             { \"1\": \"2\" }                       |"
-            "|         ]                                      |"
-            "|     }                                          |"
+            "|               {                                |"
+            "|                   \"some\": \"random\",            |"
+            "|                   \"json\": [                    |"
+            "|                       { \"1\": \"2\" },            |"
+            "|                       { \"1\": \"2\" },            |"
+            "|                       { \"1\": \"2\" }             |"
+            "|                   ]                            |"
+            "|               }                                |"
             "|                                                |"
         )
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
 
     assert_eq!(
         table.to_string(),
@@ -1402,7 +1408,7 @@ fn min_width_works_with_right_alignment() {
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    let table = table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
+    table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
 
     assert_eq!(
         table.to_string(),
@@ -1438,14 +1444,15 @@ fn min_width_with_span_1() {
         .with(MinWidth::new(100))
         .to_string();
 
+    assert_eq!(papergrid::util::string_width_multiline(&table), 100);
     assert_eq!(
         table,
         static_table!(
-            "| 0                                                                      | 1                       |"
+            "|                                   0                                    |            1            |"
             "|------------------------------------------------------------------------|-------------------------|"
-            "| 0                                                                                                |"
-            "| a long string which will affect min width logic                        |                         |"
-            "| 2                                                                      | 3                       |"
+            "|                                                0                                                 |"
+            "|            a long string which will affect min width logic             |                         |"
+            "|                                   2                                    |            3            |"
         )
     );
     assert!(is_lines_equal(&table, 100));
@@ -1465,17 +1472,17 @@ fn min_width_with_span_2() {
         .with(MinWidth::new(100))
         .to_string();
 
+    assert_eq!(papergrid::util::string_width_multiline(&table), 100);
     assert_eq!(
         table,
         static_table!(
-            "| 0                                               | 1                                              |"
+            "|                        0                        |                       1                        |"
             "|-------------------------------------------------|------------------------------------------------|"
-            "| 0                                               | 1                                              |"
-            "| a long string which will affect min width logic                                                  |"
-            "| 2                                               | 3                                              |"
+            "|                        0                        |                       1                        |"
+            "|                         a long string which will affect min width logic                          |"
+            "|                        2                        |                       3                        |"
         )
     );
-    assert!(is_lines_equal(&table, 100));
 }
 
 #[test]
@@ -2103,16 +2110,18 @@ fn max_width_wrap_priority_min_with_span() {
 fn min_width_priority_max() {
     let table = create_table::<3, 3>()
         .with(Style::markdown())
-        .with(MinWidth::new(60).priority::<PriorityMax>());
+        .with(MinWidth::new(60).priority::<PriorityMax>())
+        .to_string();
 
+    assert_eq!(papergrid::util::string_width_multiline(&table), 60);
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
-            "| N | column 0 | column 1 | column 2                       |"
+            "| N | column 0 | column 1 |            column 2            |"
             "|---|----------|----------|--------------------------------|"
-            "| 0 | 0-0      | 0-1      | 0-2                            |"
-            "| 1 | 1-0      | 1-1      | 1-2                            |"
-            "| 2 | 2-0      | 2-1      | 2-2                            |"
+            "| 0 |   0-0    |   0-1    |              0-2               |"
+            "| 1 |   1-0    |   1-1    |              1-2               |"
+            "| 2 |   2-0    |   2-1    |              2-2               |"
         ),
     );
 }
@@ -2121,16 +2130,18 @@ fn min_width_priority_max() {
 fn min_width_priority_min() {
     let table = create_table::<3, 3>()
         .with(Style::markdown())
-        .with(MinWidth::new(60).priority::<PriorityMin>());
+        .with(MinWidth::new(60).priority::<PriorityMin>())
+        .to_string();
 
+    assert_eq!(papergrid::util::string_width_multiline(&table), 60);
     assert_eq!(
-        table.to_string(),
+        table,
         static_table!(
-            "| N            | column 0     | column 1     | column 2    |"
+            "|      N       |   column 0   |   column 1   |  column 2   |"
             "|--------------|--------------|--------------|-------------|"
-            "| 0            | 0-0          | 0-1          | 0-2         |"
-            "| 1            | 1-0          | 1-1          | 1-2         |"
-            "| 2            | 2-0          | 2-1          | 2-2         |"
+            "|      0       |     0-0      |     0-1      |     0-2     |"
+            "|      1       |     1-0      |     1-1      |     1-2     |"
+            "|      2       |     2-0      |     2-1      |     2-2     |"
         ),
     );
 }
@@ -2152,6 +2163,50 @@ fn max_width_tab_0() {
             "|         Tigre Ecuador    OMYA Andina    3824909999    Ca |"
             "| lcium carbonate    Colombia                              |"
         )
+    );
+}
+
+#[test]
+fn min_width_is_not_used_after_padding() {
+    let table = create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(MinWidth::new(60))
+        .with(Modify::new(Cell(0, 0)).with(Padding::new(2, 2, 0, 0)))
+        .to_string();
+
+    assert_eq!(papergrid::util::string_width_multiline(&table), 40);
+    assert_eq!(
+        table,
+        static_table!(
+            "|  N  | column 0 | column 1 | column 2 |"
+            "|-----|----------|----------|----------|"
+            "|  0  |   0-0    |   0-1    |   0-2    |"
+            "|  1  |   1-0    |   1-1    |   1-2    |"
+            "|  2  |   2-0    |   2-1    |   2-2    |"
+        ),
+    );
+}
+
+#[test]
+fn min_width_is_used_after_margin() {
+    let table = create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(MinWidth::new(60))
+        .with(Margin::new(1, 1, 1, 1))
+        .to_string();
+
+    assert_eq!(papergrid::util::string_width_multiline(&table), 62);
+    assert_eq!(
+        table,
+        static_table!(
+            "                                                              "
+            " |    N    |    column 0    |   column 1    |   column 2    | "
+            " |---------|----------------|---------------|---------------| "
+            " |    0    |      0-0       |      0-1      |      0-2      | "
+            " |    1    |      1-0       |      1-1      |      1-2      | "
+            " |    2    |      2-0       |      2-1      |      2-2      | "
+            "                                                              "
+        ),
     );
 }
 
@@ -2300,8 +2355,8 @@ mod derived {
                 "| sio | ate         | ive    |                          |"
                 "| n   |             |        |                          |"
                 "|-----|-------------|--------|--------------------------|"
-                "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |"
-                "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattribute\u{1b}[39m\u{1b}[49m                |"
+                "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)]\u{1b}[39m\u{1b}[49m\u{1b}[34;42m \u{1b}[39m\u{1b}[49m       |"
+                "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34;42mattribute\u{1b}[0m                |"
                 "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |"
                 "| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |"
                 "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
@@ -2400,11 +2455,11 @@ mod derived {
                 name: text.to_owned(),
                 is_hyperlink: true,
             }];
-            tabled::Table::from_iter(data)
+            tabled::Table::from_iter(&data)
                 .with(
                     Segment::all()
                         .modify()
-                        .with(Width::wrap(30).keep_words())
+                        .with(Width::wrap(5).keep_words())
                         .with(Alignment::left()),
                 )
                 .to_string()
@@ -2416,11 +2471,15 @@ mod derived {
         );
         assert_eq!(
             table(&text),
-            "+--------------------------------+--------------+\n\
-             | name                           | is_hyperlink |\n\
-             +--------------------------------+--------------+\n\
-             | Debian :link                   | true         |\n\
-             +--------------------------------+--------------+"
+            "+-------+-------+\n\
+             | name  | is_hy |\n\
+             |       | perli |\n\
+             |       | nk    |\n\
+             +-------+-------+\n\
+             | Debia | true  |\n\
+             | n     |       |\n\
+             | :link |       |\n\
+             +-------+-------+"
         );
 
         let text = format!(
@@ -2430,12 +2489,20 @@ mod derived {
         );
         assert_eq!(
             table(&text),
-            "+--------------------------------+--------------+\n\
-             | name                           | is_hyperlink |\n\
-             +--------------------------------+--------------+\n\
-             | asd Debian 2 links in a string | true         |\n\
-             | Debian                         |              |\n\
-             +--------------------------------+--------------+"
+            "+-------+-------+\n\
+             | name  | is_hy |\n\
+             |       | perli |\n\
+             |       | nk    |\n\
+             +-------+-------+\n\
+             | asd D | true  |\n\
+             | ebian |       |\n\
+             |  2    |       |\n\
+             | links |       |\n\
+             |  in a |       |\n\
+             |  stri |       |\n\
+             | ng De |       |\n\
+             | bian  |       |\n\
+             +-------+-------+"
         );
     }
 }

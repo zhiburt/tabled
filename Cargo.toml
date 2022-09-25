@@ -19,26 +19,29 @@ maintenance = { status = "actively-developed" }
 [workspace]
 members = [
     "papergrid",
+    "papergrid/examples/colored_backend",
     "tabled_derive",
-    "examples/table_with_terminal_width",
+    "examples/terminal_size",
     "examples/show",
+    "json_to_table",
     "benches",
 ]
 
 [features]
-default = ["derive"]
+default = ["derive", "macros"]
 derive = ["tabled_derive"]
-color = ["papergrid/color", "ansi-str"]
+color = ["papergrid/color", "ansi-str", "vte-ansi-tools"]
+macros = []
 
 [dependencies]
-papergrid = "0.5.1"
+papergrid = { path = "./papergrid" }
 unicode-width = "0.1.9"
-tabled_derive = { version = "0.4.0", optional = true }
-ansi-str = { version = "0.3.0", optional = true }
-vte-ansi-tools = { git = "https://github.com/dandavison/vte-ansi-tools.git", branch = "main" }
+tabled_derive = { path = "./tabled_derive", optional = true }
+ansi-str = { git = "https://github.com/zhiburt/ansi-str", branch = "master", optional = true }
+vte-ansi-tools = { git = "https://github.com/dandavison/vte-ansi-tools.git", branch = "main", optional = true }
 
 [dev-dependencies]
-owo-colors = "3.4.0"
+owo-colors = "3.5.0"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
 
@@ -49,6 +52,10 @@ required-features = ["color", "derive"]
 [[example]]
 name = "color"
 required-features = ["color", "derive"]
+
+[[example]]
+name = "disable"
+required-features = ["derive"]
 
 [[example]]
 name = "rename_all"
@@ -145,11 +152,24 @@ name = "padding_color"
 path = "examples/padding_color.rs"
 required-features = ["color", "derive"]
 
+[[example]]
+name = "col_row_macros"
+path = "examples/col_row_macros.rs"
+required-features = ["macros"]
+
+[[example]]
+name = "merge_duplicates1"
+path = "examples/merge_duplicates1.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "merge_duplicates2"
+path = "examples/merge_duplicates2.rs"
+required-features = ["derive"]
+
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #
 # RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
 [package.metadata.docs.rs]
-features = ["unstable-doc"]
-cargo-args = ["-Zunstable-options"]
+all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
-rustc-args = ["--cfg", "docsrs"]

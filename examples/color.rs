@@ -8,8 +8,9 @@ use std::convert::TryFrom;
 use owo_colors::OwoColorize;
 
 use tabled::{
+    color::Color,
     object::{Columns, Rows},
-    style::{BorderColored, Color, Style, Symbol},
+    style::{BorderColored, Style, Symbol},
     ModifyObject, Table, Tabled,
 };
 
@@ -53,7 +54,8 @@ fn main() {
             .bottom_right_corner(purple_split('+')),
     );
 
-    let table = Table::new(&data)
+    let mut table = Table::new(&data);
+    table
         .with(Style::psql())
         .with(yellow_color)
         .with(first_row_style)

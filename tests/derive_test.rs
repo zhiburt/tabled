@@ -3,7 +3,7 @@
 use tabled::Tabled;
 
 // https://users.rust-lang.org/t/create-a-struct-from-macro-rules/19829
-macro_rules! test_tupple {
+macro_rules! test_tuple {
     (
         $test_name:ident,
         t: $(#[$struct_attr:meta])* { $( $(#[$attr:meta])* $ty:ty)* },
@@ -120,36 +120,36 @@ type sstr = &'static str;
 mod tupple {
     use super::*;
 
-    test_tupple!(basic, t: { u8 sstr }, init: { 0 "v2" }, expected: ["0", "1"], ["0", "v2"],);
-    test_tupple!(empty, t: { }, init: { }, expected: [], [],);
+    test_tuple!(basic, t: { u8 sstr }, init: { 0 "v2" }, expected: ["0", "1"], ["0", "v2"],);
+    test_tuple!(empty, t: { }, init: { }, expected: [], [],);
 
-    test_tupple!(rename, t: { u8 #[tabled(rename = "field 2")] sstr }, init: { 0 "123" }, expected: ["0", "field 2"], ["0", "123"],);
+    test_tuple!(rename, t: { u8 #[tabled(rename = "field 2")] sstr }, init: { 0 "123" }, expected: ["0", "field 2"], ["0", "123"],);
 
-    test_tupple!(skip_0, t: { #[tabled(skip)] u8 #[tabled(rename = "field 2", skip)] sstr sstr }, init: { 0 "v2" "123" }, expected: ["2"], ["123"],);
-    test_tupple!(skip_1, t: { #[tabled(skip)] u8 #[tabled(skip)] #[tabled(rename = "field 2")] sstr sstr }, init: { 0 "v2" "123" }, expected: ["2"], ["123"],);
+    test_tuple!(skip_0, t: { #[tabled(skip)] u8 #[tabled(rename = "field 2", skip)] sstr sstr }, init: { 0 "v2" "123" }, expected: ["2"], ["123"],);
+    test_tuple!(skip_1, t: { #[tabled(skip)] u8 #[tabled(skip)] #[tabled(rename = "field 2")] sstr sstr }, init: { 0 "v2" "123" }, expected: ["2"], ["123"],);
 
-    test_tupple!(order_0, t: { #[tabled(order = 0)] u8 u8 u8}, init: { 0 1 2 }, expected: ["0", "1", "2"], ["0", "1", "2"],);
-    test_tupple!(order_1, t: { #[tabled(order = 1)] u8 u8 u8}, init: { 0 1 2 }, expected: ["1", "0", "2"], ["1", "0", "2"],);
-    test_tupple!(order_2, t: { #[tabled(order = 2)] u8 u8 u8}, init: { 0 1 2 }, expected: ["1", "2", "0"], ["1", "2", "0"],);
-    test_tupple!(order_3, t: { u8 #[tabled(order = 0)] u8 u8}, init: { 0 1 2 }, expected: ["1", "0", "2"], ["1", "0", "2"],);
-    test_tupple!(order_4, t: { u8 #[tabled(order = 1)] u8 u8}, init: { 0 1 2 }, expected: ["0", "1", "2"], ["0", "1", "2"],);
-    test_tupple!(order_5, t: { u8 #[tabled(order = 2)] u8 u8}, init: { 0 1 2 }, expected: ["0", "2", "1"], ["0", "2", "1"],);
-    test_tupple!(order_6, t: { u8 u8 #[tabled(order = 0)] u8}, init: { 0 1 2 }, expected: ["2", "0", "1"], ["2", "0", "1"],);
-    test_tupple!(order_7, t: { u8 u8 #[tabled(order = 1)] u8}, init: { 0 1 2 }, expected: ["0", "2", "1"], ["0", "2", "1"],);
-    test_tupple!(order_8, t: { u8 u8 #[tabled(order = 2)] u8}, init: { 0 1 2 }, expected: ["0", "1", "2"], ["0", "1", "2"],);
-    test_tupple!(order_9, t: { #[tabled(order = 2)] u8 u8 #[tabled(order = 0)] u8}, init: { 0 1 2 }, expected: ["2", "1", "0"], ["2", "1", "0"],);
-    test_tupple!(order_10, t: { #[tabled(order = 2)] u8 #[tabled(order = 1)] u8 u8}, init: { 0 1 2 }, expected: ["2", "1", "0"], ["2", "1", "0"],);
-    test_tupple!(order_11, t: { #[tabled(order = 2)] u8 #[tabled(order = 2)] u8 #[tabled(order = 1)] u8}, init: { 0 1 2 }, expected: ["0", "2", "1"], ["0", "2", "1"],);
-    test_tupple!(order_12, t: { #[tabled(order = 2)] u8 #[tabled(order = 2)] u8 #[tabled(order = 2)] u8}, init: { 0 1 2 }, expected: ["0", "1", "2"], ["0", "1", "2"],);
-    test_tupple!(order_13, t: { #[tabled(order = 1)] u8 #[tabled(order = 1)] u8 #[tabled(order = 1)] u8}, init: { 0 1 2 }, expected: ["0", "2", "1"], ["0", "2", "1"],);
-    test_tupple!(order_14, t: { #[tabled(order = 2)] u8 #[tabled(order = 1)] u8 #[tabled(order = 0)] u8}, init: { 0 1 2 }, expected: ["2", "1", "0"], ["2", "1", "0"],);
+    test_tuple!(order_0, t: { #[tabled(order = 0)] u8 u8 u8}, init: { 0 1 2 }, expected: ["0", "1", "2"], ["0", "1", "2"],);
+    test_tuple!(order_1, t: { #[tabled(order = 1)] u8 u8 u8}, init: { 0 1 2 }, expected: ["1", "0", "2"], ["1", "0", "2"],);
+    test_tuple!(order_2, t: { #[tabled(order = 2)] u8 u8 u8}, init: { 0 1 2 }, expected: ["1", "2", "0"], ["1", "2", "0"],);
+    test_tuple!(order_3, t: { u8 #[tabled(order = 0)] u8 u8}, init: { 0 1 2 }, expected: ["1", "0", "2"], ["1", "0", "2"],);
+    test_tuple!(order_4, t: { u8 #[tabled(order = 1)] u8 u8}, init: { 0 1 2 }, expected: ["0", "1", "2"], ["0", "1", "2"],);
+    test_tuple!(order_5, t: { u8 #[tabled(order = 2)] u8 u8}, init: { 0 1 2 }, expected: ["0", "2", "1"], ["0", "2", "1"],);
+    test_tuple!(order_6, t: { u8 u8 #[tabled(order = 0)] u8}, init: { 0 1 2 }, expected: ["2", "0", "1"], ["2", "0", "1"],);
+    test_tuple!(order_7, t: { u8 u8 #[tabled(order = 1)] u8}, init: { 0 1 2 }, expected: ["0", "2", "1"], ["0", "2", "1"],);
+    test_tuple!(order_8, t: { u8 u8 #[tabled(order = 2)] u8}, init: { 0 1 2 }, expected: ["0", "1", "2"], ["0", "1", "2"],);
+    test_tuple!(order_9, t: { #[tabled(order = 2)] u8 u8 #[tabled(order = 0)] u8}, init: { 0 1 2 }, expected: ["2", "1", "0"], ["2", "1", "0"],);
+    test_tuple!(order_10, t: { #[tabled(order = 2)] u8 #[tabled(order = 1)] u8 u8}, init: { 0 1 2 }, expected: ["2", "1", "0"], ["2", "1", "0"],);
+    test_tuple!(order_11, t: { #[tabled(order = 2)] u8 #[tabled(order = 2)] u8 #[tabled(order = 1)] u8}, init: { 0 1 2 }, expected: ["0", "2", "1"], ["0", "2", "1"],);
+    test_tuple!(order_12, t: { #[tabled(order = 2)] u8 #[tabled(order = 2)] u8 #[tabled(order = 2)] u8}, init: { 0 1 2 }, expected: ["0", "1", "2"], ["0", "1", "2"],);
+    test_tuple!(order_13, t: { #[tabled(order = 1)] u8 #[tabled(order = 1)] u8 #[tabled(order = 1)] u8}, init: { 0 1 2 }, expected: ["0", "2", "1"], ["0", "2", "1"],);
+    test_tuple!(order_14, t: { #[tabled(order = 2)] u8 #[tabled(order = 1)] u8 #[tabled(order = 0)] u8}, init: { 0 1 2 }, expected: ["2", "1", "0"], ["2", "1", "0"],);
 
-    test_tupple!(rename_all, t: #[tabled(rename_all = "UPPERCASE")] { u8 sstr}, init: { 0 "123" }, expected: ["0", "1"], ["0", "123"],);
-    test_tupple!(rename_all_field, t: { u8 #[tabled(rename_all = "UPPERCASE")] sstr}, init: { 0 "123" }, expected: ["0", "1"], ["0", "123"],);
-    test_tupple!(rename_all_field_with_rename_0, t: { u8 #[tabled(rename_all = "UPPERCASE", rename = "Something")] sstr}, init: { 0 "123" }, expected: ["0", "Something"], ["0", "123"],);
-    test_tupple!(rename_all_field_with_rename_1, t: { u8 #[tabled(rename = "Something")] #[tabled(rename_all = "UPPERCASE")] sstr}, init: { 0 "123" }, expected: ["0", "Something"], ["0", "123"],);
+    test_tuple!(rename_all, t: #[tabled(rename_all = "UPPERCASE")] { u8 sstr}, init: { 0 "123" }, expected: ["0", "1"], ["0", "123"],);
+    test_tuple!(rename_all_field, t: { u8 #[tabled(rename_all = "UPPERCASE")] sstr}, init: { 0 "123" }, expected: ["0", "1"], ["0", "123"],);
+    test_tuple!(rename_all_field_with_rename_0, t: { u8 #[tabled(rename_all = "UPPERCASE", rename = "Something")] sstr}, init: { 0 "123" }, expected: ["0", "Something"], ["0", "123"],);
+    test_tuple!(rename_all_field_with_rename_1, t: { u8 #[tabled(rename = "Something")] #[tabled(rename_all = "UPPERCASE")] sstr}, init: { 0 "123" }, expected: ["0", "Something"], ["0", "123"],);
 
-    test_tupple!(
+    test_tuple!(
         display_option,
         t: { u8 #[tabled(display_with = "display_option")] Option<sstr> },
         init: { 0 Some("v2") },
@@ -164,7 +164,7 @@ mod tupple {
         }
     );
 
-    test_tupple!(
+    test_tuple!(
         display_option_self,
         t: { u8 #[tabled(display_with = "Self::display_option")] Option<sstr> },
         init: { 0 Some("v2") },
@@ -181,7 +181,7 @@ mod tupple {
         }
     );
 
-    test_tupple!(
+    test_tuple!(
         display_option_self_2,
         t: { u8 #[tabled(display_with("Self::display_option", args))] Option<sstr> },
         init: { 0 Some("v2") },
@@ -198,7 +198,7 @@ mod tupple {
         }
     );
 
-    test_tupple!(
+    test_tuple!(
         display_option_self_3,
         t: { u8 #[tabled(display_with("display_option", args))] Option<sstr> },
         init: { 0 Some("v2") },
@@ -685,7 +685,7 @@ mod structure {
     // }
 }
 
-test_tupple!(skipped_fields_not_implement_display_tuple, t: { #[tabled(skip)] () sstr }, init: { () "123" }, expected: ["1"], ["123"],);
+test_tuple!(skipped_fields_not_implement_display_tuple, t: { #[tabled(skip)] () sstr }, init: { () "123" }, expected: ["1"], ["123"],);
 test_struct!(skipped_fields_not_implement_display_struct, t: { #[tabled(skip)] _unit: (), s: sstr } init: { _unit: (), s: "123" } expected: ["s"], ["123"],);
 test_struct!(
     skipped_fields_not_implement_display_struct_in_inline,

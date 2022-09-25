@@ -2,9 +2,9 @@
 //! `cargo run --example formatting_settings`
 
 use tabled::{
-    formatting_settings::{AlignmentStrategy, TrimStrategy},
+    formatting::{AlignmentStrategy, TrimStrategy},
     object::Segment,
-    Modify, Style, TableIteratorExt,
+    Alignment, Modify, Style, TableIteratorExt,
 };
 
 fn main() {
@@ -20,16 +20,18 @@ fn main() {
     }
 ]"#;
 
-    let data = [some_json];
-    let table = data.table().with(Style::rounded());
+    let mut table = [some_json].table();
+    table
+        .with(Style::rounded())
+        .with(Modify::new(Segment::all()).with(Alignment::center()));
 
     println!("A default Alignment settings\n{}", table);
 
-    let table = table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
+    table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
 
     println!("Per line Alignment strategy\n{}", table);
 
-    let table = table.with(
+    table.with(
         Modify::new(Segment::all())
             .with(AlignmentStrategy::PerCell)
             .with(TrimStrategy::Both),

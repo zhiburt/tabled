@@ -1,6 +1,8 @@
 //! The example can be run by this command
 //! `cargo run --example display_with`
 
+use std::borrow::Cow;
+
 use tabled::{TableIteratorExt, Tabled};
 
 #[derive(Tabled)]
@@ -15,11 +17,11 @@ struct Country {
     national_currency_short: &'static str,
 }
 
-fn display_perimeter(country: &Country) -> String {
+fn display_perimeter(country: &Country) -> Cow<'_, str> {
     if country.surface_area_km2 > 1_000_000.0 {
-        String::from("Very Big Land")
+        "Very Big Land".into()
     } else {
-        String::from("Big Land")
+        "Big Land".into()
     }
 }
 

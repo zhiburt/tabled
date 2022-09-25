@@ -1,6 +1,6 @@
-use papergrid::{Entity, Grid};
+use papergrid::{records::Records, Entity};
 
-use crate::{object::Object, CellOption, TableOption};
+use crate::{object::Object, CellOption, Table, TableOption};
 
 /// Modify structure provide an abstraction, to be able to apply
 /// a set of [`CellOption`]s to the same object.
@@ -29,10 +29,7 @@ where
     ///
     /// [`Table`]: crate::Table
     /// [`Table::with`]: crate::Table::with
-    pub fn with<F>(self, s: F) -> ModifyList<O, F>
-    where
-        F: CellOption,
-    {
+    pub fn with<M>(self, s: M) -> ModifyList<O, M> {
         ModifyList {
             obj: self.obj,
             modifiers: s,
@@ -47,10 +44,9 @@ pub struct ModifyList<O, S> {
     modifiers: S,
 }
 
-impl<O, S> ModifyList<O, S>
+impl<O, M1> ModifyList<O, M1>
 where
     O: Object,
-    S: CellOption,
 {
     /// With a generic function which stores a [`CellOption`].
     ///
@@ -60,10 +56,7 @@ where
     ///
     /// [`Table`]: crate::Table
     /// [`Table::with`]: crate::Table::with
-    pub fn with<F>(self, s: F) -> ModifyList<O, CellSettingsList<S, F>>
-    where
-        F: CellOption,
-    {
+    pub fn with<M2>(self, s: M2) -> ModifyList<O, CellSettingsList<M1, M2>> {
         ModifyList {
             obj: self.obj,
             modifiers: CellSettingsList {
@@ -74,15 +67,15 @@ where
     }
 }
 
-impl<O, S> TableOption for ModifyList<O, S>
+impl<O, M, R> TableOption<R> for ModifyList<O, M>
 where
     O: Object,
-    S: CellOption,
+    M: CellOption<R>,
+    R: Records,
 {
-    fn change(&mut self, grid: &mut Grid) {
-        let cells = self.obj.cells(grid.count_rows(), grid.count_columns());
-        for entity in cells {
-            self.modifiers.change_cell(grid, entity);
+    fn change(&mut self, table: &mut Table<R>) {
+        for entity in self.obj.cells(table) {
+            self.modifiers.change_cell(table, entity);
         }
     }
 }
@@ -94,14 +87,14 @@ pub struct CellSettingsList<S1, S2> {
     s2: S2,
 }
 
-impl<S1, S2> CellOption for CellSettingsList<S1, S2>
+impl<M1, M2, R> CellOption<R> for CellSettingsList<M1, M2>
 where
-    S1: CellOption,
-    S2: CellOption,
+    M1: CellOption<R>,
+    M2: CellOption<R>,
 {
-    fn change_cell(&mut self, grid: &mut Grid, entity: Entity) {
-        self.s1.change_cell(grid, entity);
-        self.s2.change_cell(grid, entity);
+    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+        self.s1.change_cell(table, entity);
+        self.s2.change_cell(table, entity);
     }
 }
 

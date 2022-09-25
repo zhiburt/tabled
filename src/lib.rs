@@ -200,6 +200,34 @@
 //! );
 //! ```
 //!
+//! ### Build table using [`row`] and [`col`].
+//!
+#![cfg_attr(feature = "macros", doc = "```")]
+#![cfg_attr(not(feature = "macros"), doc = "```ignore")]
+//! use tabled::{row, col};
+//!
+//! let table = row![
+//!     col!["Hello", "World", "!"],
+//!     col!["Hello"; 3],
+//!     col!["World"; 3],
+//! ].to_string();
+//!
+//! assert_eq!(
+//!     table,
+//!     concat!(
+//!         "+-----------+-----------+-----------+\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "| | Hello | | | Hello | | | World | |\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "| | World | | | Hello | | | World | |\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "| | !     | | | Hello | | | World | |\n",
+//!         "| +-------+ | +-------+ | +-------+ |\n",
+//!         "+-----------+-----------+-----------+",
+//!     )
+//! );
+//! ```
+//!
 //! ## Settings
 //!
 //! You can find more examples of settings and attributes in
@@ -209,152 +237,52 @@
     html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
 )]
 
-mod alignment;
-mod concat;
-mod disable;
-mod extract;
-mod formating;
+mod features;
 mod modify;
-mod panel;
-mod rotate;
-mod span;
 mod table;
+mod table_iterator_ext;
+mod tabled;
 
 pub mod builder;
 pub mod display;
-pub mod formatting_settings;
-pub mod highlight;
-pub mod margin;
 pub mod object;
-pub mod padding;
-pub mod style;
-pub mod width;
 
-use std::fmt;
-
-#[cfg(feature = "derive")]
-#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-pub use tabled_derive::Tabled;
+#[cfg(feature = "macros")]
+#[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
+pub mod macros;
 
 pub use papergrid;
 
 pub use crate::{
-    alignment::*, concat::*, disable::*, extract::*, formating::*, highlight::Highlight,
-    margin::Margin, modify::*, padding::Padding, panel::*, rotate::*, span::*, style::Style,
-    table::*, width::Width,
+    features::{
+        alignment::{self, Alignment},
+        concat::Concat,
+        disable::Disable,
+        extract::Extract,
+        format, formatting,
+        height::{self, Height},
+        highlight::Highlight,
+        locator,
+        margin::Margin,
+        measurment, merge,
+        padding::Padding,
+        panel::{Footer, Header, Panel},
+        peaker,
+        rotate::Rotate,
+        span::Span,
+        style::{self, Border, BorderText, Style},
+        width::{self, Width},
+    },
+    modify::{CellSettingsList, Modify, ModifyList, ModifyObject},
+    table::{CellOption, Table, TableOption},
+    table_iterator_ext::TableIteratorExt,
+    tabled::Tabled,
 };
 
-/// Tabled a trait responsible for providing a header fields and a row fields.
-///
-/// It's urgent that `header` len is equal to `fields` len.
-///
-/// ```text
-/// Self::headers().len() == self.fields().len()
-/// ```
-pub trait Tabled {
-    /// A length of fields and headers,
-    /// which must be the same.
-    const LENGTH: usize;
+#[cfg(feature = "color")]
+#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
+pub use crate::features::{color, highlight, margin_color, padding_color};
 
-    /// Fields method must return a list of cells.
-    ///
-    /// The cells will be placed in the same row, preserving the order.
-    fn fields(&self) -> Vec<String>;
-    /// Headers must return a list of column names.
-    fn headers() -> Vec<String>;
-}
-
-impl<T> Tabled for &T
-where
-    T: Tabled,
-{
-    const LENGTH: usize = T::LENGTH;
-
-    fn fields(&self) -> Vec<String> {
-        T::fields(self)
-    }
-    fn headers() -> Vec<String> {
-        T::headers()
-    }
-}
-
-macro_rules! tuple_table {
-    ( $($name:ident)+ ) => {
-        impl<$($name: Tabled),+> Tabled for ($($name,)+){
-            const LENGTH: usize = $($name::LENGTH+)+ 0;
-
-            fn fields(&self) -> Vec<String> {
-                #![allow(non_snake_case)]
-                let ($($name,)+) = self;
-                let mut fields = Vec::new();
-                $(fields.append(&mut $name.fields());)+
-                fields
-            }
-
-            fn headers() -> Vec<String> {
-                let mut fields = Vec::new();
-                $(fields.append(&mut $name::headers());)+
-                fields
-            }
-        }
-    };
-}
-
-tuple_table! { A }
-tuple_table! { A B }
-tuple_table! { A B C }
-tuple_table! { A B C D }
-tuple_table! { A B C D E }
-tuple_table! { A B C D E F }
-
-macro_rules! default_table {
-    ( $t:ty ) => {
-        impl Tabled for $t {
-            const LENGTH: usize = 1;
-
-            fn fields(&self) -> Vec<String> {
-                vec![format!("{}", self)]
-            }
-            fn headers() -> Vec<String> {
-                vec![stringify!($t).to_string()]
-            }
-        }
-    };
-}
-
-default_table!(&str);
-default_table!(String);
-
-default_table!(char);
-
-default_table!(bool);
-
-default_table!(isize);
-default_table!(usize);
-
-default_table!(u8);
-default_table!(u16);
-default_table!(u32);
-default_table!(u64);
-default_table!(u128);
-
-default_table!(i8);
-default_table!(i16);
-default_table!(i32);
-default_table!(i64);
-default_table!(i128);
-
-default_table!(f32);
-default_table!(f64);
-
-impl<T: fmt::Display, const N: usize> Tabled for [T; N] {
-    const LENGTH: usize = N;
-
-    fn fields(&self) -> Vec<String> {
-        self.iter().map(ToString::to_string).collect()
-    }
-
-    fn headers() -> Vec<String> {
-        (0..N).map(|i| format!("{}", i)).collect()
-    }
-}
+#[cfg(feature = "derive")]
+#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
+pub use tabled_derive::Tabled;
