@@ -30,7 +30,7 @@ members = [
 [features]
 default = ["derive", "macros"]
 derive = ["tabled_derive"]
-color = ["papergrid/color", "ansi-str"]
+color = ["papergrid/color", "ansi-str", "vte"]
 macros = []
 
 [dependencies]
@@ -38,6 +38,7 @@ papergrid = { path = "./papergrid" }
 unicode-width = "0.1.9"
 tabled_derive = { path = "./tabled_derive", optional = true }
 ansi-str = { git = "https://github.com/zhiburt/ansi-str", branch = "master", optional = true }
+vte = { version = "0.11.0", optional = true }
 
 [dev-dependencies]
 owo-colors = "3.5.0"
@@ -165,6 +166,11 @@ required-features = ["derive"]
 name = "merge_duplicates2"
 path = "examples/merge_duplicates2.rs"
 required-features = ["derive"]
+
+[[example]]
+name = "hyperlink"
+path = "examples/hyperlink.rs"
+required-features = ["derive", "color"]
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #
