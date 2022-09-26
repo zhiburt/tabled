@@ -2465,6 +2465,20 @@ mod derived {
                 .to_string()
         };
 
+        let text = format_osc8_hyperlink("https://www.debian.org/", "Debian");
+        assert_eq!(
+            table(&text),
+            "+-------+-------+\n\
+             | name  | is_hy |\n\
+             |       | perli |\n\
+             |       | nk    |\n\
+             +-------+-------+\n\
+             | \u{1b}]8;;https://www.debian.org/\u{1b}\\Debia\u{1b}]8;;\u{1b}\\ | true  |\n\
+             | \u{1b}]8;;https://www.debian.org/\u{1b}\\n\u{1b}]8;;\u{1b}\\     |       |\n\
+             +-------+-------+"
+        );
+
+        // if there's more text than a link it will be ignored
         let text = format!(
             "{} :link",
             format_osc8_hyperlink("https://www.debian.org/", "Debian"),

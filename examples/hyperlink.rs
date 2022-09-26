@@ -28,12 +28,6 @@ fn format_osc8_hyperlink(url: &str, text: &str) -> String {
 }
 
 fn main() {
-    // Use cfg macro to check that 'color' feature is enabled
-    assert!(
-        cfg!(feature = "color"),
-        "This example requires the 'color' feature"
-    );
-
     let multicolored_debian = "\x1b[30mDebian\x1b[0m\
     \x1b[31mDebian \x1b[0m\
     \x1b[32mDebian \x1b[0m\
