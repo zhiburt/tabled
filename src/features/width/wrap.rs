@@ -215,6 +215,7 @@ pub(crate) fn wrap_text(text: &str, width: usize, keep_words: bool) -> String {
     }
 }
 
+#[cfg(feature = "color")]
 fn build_link_prefix_suffix(url: Option<String>) -> (String, String) {
     let (prefix, suffix) = if let Some(url) = url {
         // https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
@@ -1039,11 +1040,7 @@ mod tests {
     #[cfg(feature = "color")]
     #[test]
     fn split_by_line_keeping_words_color_3_test() {
-        #[cfg(feature = "color")]
         let split_keeping_words = |text, width| split_keeping_words(text, width, "", "", "\n");
-
-        #[cfg(not(feature = "color"))]
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
 
         println!(
             "{}",
@@ -1073,6 +1070,18 @@ mod tests {
             split_keeping_words("\u{1b}[37mHello Wo\u{1b}[37mrld\u{1b}[0m", 8),
             "\u{1b}[37mHello\u{1b}[39m\u{1b}[37m \u{1b}[39m  \n\u{1b}[37mWo\u{1b}[37mrld\u{1b}[0m   "
         );
+    }
+
+    #[test]
+    fn split_keeping_words_4_test() {
+        #[cfg(feature = "color")]
+        let split_keeping_words = |text, width| split_keeping_words(text, width, "", "", "\n");
+
+        #[cfg(not(feature = "color"))]
+        let split_keeping_words = |text, width| split_keeping_words(text, width, "\n");
+
+        assert_eq!(split_keeping_words("12345678", 3,), "123\n456\n78 ");
+        assert_eq!(split_keeping_words("12345678", 2,), "12\n34\n56\n78");
     }
 
     #[cfg(feature = "color")]

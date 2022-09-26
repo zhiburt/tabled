@@ -31,6 +31,8 @@ impl<'a> VecRecords<CellInfo<'a>> {
 
 impl<T> VecRecords<T> {
     /// Builds a structure instance with using an exact columns length.
+    ///
+    /// WARNING: You must verify that provided records contains is bigger than or eqaull than provided hint value.
     pub fn with_hint(records: Vec<Vec<T>>, count_columns: usize) -> Self {
         let count_rows = records.len();
         let size = (count_rows, count_columns);
