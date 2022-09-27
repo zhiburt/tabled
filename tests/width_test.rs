@@ -236,8 +236,8 @@ fn max_width_wrapped_keep_words_color() {
         static_table!(
             "| String            |"
             "|-------------------|"
-            "| \u{1b}[32;40mthis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mlong\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m   |"
-            "| \u{1b}[32;40msentence\u{1b}[0m          |"
+            "| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |"
+            "| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
         )
     );
 
@@ -260,7 +260,7 @@ fn max_width_wrapped_keep_words_color() {
 
     assert_eq!(
         table,
-        "| String            |\n|-------------------|\n| \u{1b}[32;40mthis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mlong\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m  |\n| \u{1b}[32;40msentence\u{1b}[0m          |"
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long  \u{1b}[39m\u{1b}[49m  |\n| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
     );
 
     let data = vec!["this is a long   sentence".on_black().green().to_string()];
@@ -282,7 +282,7 @@ fn max_width_wrapped_keep_words_color() {
 
     assert_eq!(
         table,
-        "| String            |\n|-------------------|\n| \u{1b}[32;40mthis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mlong\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32;40msentence\u{1b}[0m          |"
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40msentence\u{1b}[39m\u{1b}[49m          |"
     );
 
     let data = vec!["this is a long    sentence".on_black().green().to_string()];
@@ -304,9 +304,7 @@ fn max_width_wrapped_keep_words_color() {
 
     assert_eq!(
         table,
-        static_table!(
-            "| String            |\n|-------------------|\n| \u{1b}[32;40mthis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mlong\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40msentence\u{1b}[0m         |"
-        )
+        "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long   \u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40m sentence\u{1b}[39m\u{1b}[49m         |"
     );
 
     let data = vec!["this".on_black().green().to_string()];
@@ -343,6 +341,7 @@ fn max_width_wrapped_keep_words_long_word() {
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
+    #[cfg(not(feature = "color"))]
     assert_eq!(
         table,
         static_table!(
@@ -351,6 +350,18 @@ fn max_width_wrapped_keep_words_long_word() {
             "| this is a long se |"
             "| ntencesentencesen |"
             "| tence             |"
+        )
+    );
+
+    #[cfg(feature = "color")]
+    assert_eq!(
+        table,
+        static_table!(
+            "| &str              |"
+            "|-------------------|"
+            "| this is a long    |"
+            "| sentencesentences |"
+            "| entence           |"
         )
     );
 }
@@ -373,22 +384,14 @@ fn max_width_wrapped_keep_words_long_word_color() {
     assert_eq!(
         ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
-            "| String            |"
-            "|-------------------|"
-            "| this is a long se |"
-            "| ntencesentencesen |"
-            "| tence             |"
+            "| String            |\n|-------------------|\n| this is a long    |\n| sentencesentences |\n| entence           |"
         )
     );
 
     assert_eq!(
         table,
         static_table!(
-            "| String            |"
-            "|-------------------|"
-            "| \u{1b}[32;40mthis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mis\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40ma\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32;40mlong\u{1b}[39m\u{1b}[49m\u{1b}[32;40m \u{1b}[39m\u{1b}[49m\u{1b}[32m\u{1b}[40mse\u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40mntencesentencesen\u{1b}[39m\u{1b}[49m |"
-            "| \u{1b}[32m\u{1b}[40mtence\u{1b}[39m\u{1b}[49m             |"
+            "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |\n| \u{1b}[32m\u{1b}[40msentencesentences\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m           |"
         )
     );
 }
@@ -2355,8 +2358,8 @@ mod derived {
                 "| sio | ate         | ive    |                          |"
                 "| n   |             |        |                          |"
                 "|-----|-------------|--------|--------------------------|"
-                "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34;42m#[header(inline)]\u{1b}[39m\u{1b}[49m\u{1b}[34;42m \u{1b}[39m\u{1b}[49m       |"
-                "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34;42mattribute\u{1b}[0m                |"
+                "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-23\u{1b}[39m\u{1b}[49m  | true   | \u{1b}[34m\u{1b}[42m#[header(inline)] \u{1b}[39m\u{1b}[49m       |"
+                "| \u{1b}[31m.1\u{1b}[39m  |             |        | \u{1b}[34m\u{1b}[42mattribute\u{1b}[39m\u{1b}[49m                |"
                 "| \u{1b}[31m0.2\u{1b}[39m | \u{1b}[48;2;8;100;30m\u{1b}[32m2021-06-19\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[33mAPI changes\u{1b}[39m              |"
                 "| \u{1b}[31m.0\u{1b}[39m  |             |        |                          |"
                 "| \u{1b}[37m0.1\u{1b}[39m | \u{1b}[48;2;8;10;30m\u{1b}[31m2021-06-07\u{1b}[39m\u{1b}[49m  | false  | \u{1b}[31;40mdisplay_with attribute\u{1b}[0m   |"
@@ -2508,14 +2511,16 @@ mod derived {
              |       | perli |\n\
              |       | nk    |\n\
              +-------+-------+\n\
-             | asd D | true  |\n\
-             | ebian |       |\n\
-             |  2    |       |\n\
+             | asd   | true  |\n\
+             | Debia |       |\n\
+             | n 2   |       |\n\
              | links |       |\n\
              |  in a |       |\n\
-             |  stri |       |\n\
-             | ng De |       |\n\
-             | bian  |       |\n\
+             |       |       |\n\
+             | strin |       |\n\
+             | g     |       |\n\
+             | Debia |       |\n\
+             | n     |       |\n\
              +-------+-------+"
         );
     }
