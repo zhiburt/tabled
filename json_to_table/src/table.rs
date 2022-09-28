@@ -6,16 +6,10 @@ use tabled::{papergrid::GridConfig, style::RawStyle, Style, Table};
 /// Converter of [`Value`] to a table,
 /// with a set of configurations.
 #[derive(Debug, Clone)]
-pub struct JsonTable<'a> {
-    value: &'a Value,
+pub struct JsonTable<'val, ModeVisitor = fn(&Value) -> Orientation> {
+    value: &'val Value,
     cfg: Config,
-}
-
-#[derive(Debug, Clone, Default)]
-struct Config {
-    plain: bool,
-    style: Option<RawStyle>,
-    cfg: Option<GridConfig>,
+    mode_visitor: Option<ModeVisitor>,
 }
 
 impl JsonTable<'_> {
@@ -27,10 +21,15 @@ impl JsonTable<'_> {
                 plain: true,
                 style: None,
                 cfg: None,
+                array_orientation: Orientation::Vertical,
+                object_orientation: Orientation::Vertical,
             },
+            mode_visitor: None,
         }
     }
+}
 
+impl<'val, ModeVisitor> JsonTable<'val, ModeVisitor> {
     /// Set a style which will be used,
     /// default is [`Style::ascii`].
     pub fn set_style(&mut self, style: impl Into<RawStyle>) -> &mut Self {
@@ -42,6 +41,36 @@ impl JsonTable<'_> {
     pub fn collapse(&mut self) -> &mut Self {
         self.cfg.plain = false;
         self
+    }
+
+    /// Set a table mode for a [`serde_json::Value::Object`].
+    ///
+    /// BE AWARE: The setting works only in not collapsed mode.
+    pub fn set_object_mode(&mut self, mode: Orientation) -> &mut Self {
+        self.cfg.object_orientation = mode;
+        self
+    }
+
+    /// Set a table mode for a [`serde_json::Value::Array`].
+    ///
+    /// BE AWARE: The setting works only in not collapsed mode.
+    pub fn set_array_mode(&mut self, mode: Orientation) -> &mut Self {
+        self.cfg.array_orientation = mode;
+        self
+    }
+
+    /// Set a visitor which can configure table mode at processing time.
+    ///
+    /// BE AWARE: The setting works only in not collapsed mode.
+    pub fn set_mode_visitor<F>(self, visitor: F) -> JsonTable<'val, F>
+    where
+        F: FnMut(&Value) -> Orientation,
+    {
+        JsonTable {
+            cfg: self.cfg,
+            mode_visitor: Some(visitor),
+            value: self.value,
+        }
     }
 
     /// Set a config which will be used.
@@ -105,20 +134,48 @@ impl JsonTable<'_> {
     }
 }
 
-impl Display for JsonTable<'_> {
+impl<ModeVisitor> Display for JsonTable<'_, ModeVisitor>
+where
+    ModeVisitor: FnMut(&Value) -> Orientation + Clone,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let table = json_to_table::json_to_table(self.value, &self.cfg);
+        let mut mode_visitor = self.mode_visitor.clone();
+        let table = json_to_table::json_to_table(self.value, &self.cfg, mode_visitor.as_mut());
         table.fmt(f)
     }
 }
 
-impl From<JsonTable<'_>> for Table {
-    fn from(t: JsonTable<'_>) -> Self {
-        json_to_table::json_to_table(t.value, &t.cfg)
+impl<ModeVisitor> From<JsonTable<'_, ModeVisitor>> for Table
+where
+    ModeVisitor: FnMut(&Value) -> Orientation,
+{
+    fn from(mut t: JsonTable<'_, ModeVisitor>) -> Self {
+        json_to_table::json_to_table(t.value, &t.cfg, t.mode_visitor.as_mut())
     }
 }
 
+#[derive(Debug, Clone)]
+struct Config {
+    plain: bool,
+    style: Option<RawStyle>,
+    cfg: Option<GridConfig>,
+    object_orientation: Orientation,
+    array_orientation: Orientation,
+}
+
+/// The structure represents a table mode for a given entity,
+/// either it will be rendered vertically or horizontally.
+#[derive(Debug, Clone, Copy)]
+pub enum Orientation {
+    /// Vertical mode (from top to bottom).
+    Vertical,
+    /// Horizontal mode (from left to right).
+    Horizontal,
+}
+
 mod json_to_table {
+    #![allow(clippy::too_many_arguments)]
+
     use std::cmp;
 
     use tabled::{
@@ -130,105 +187,133 @@ mod json_to_table {
 
     use super::*;
 
-    pub(super) fn json_to_table(value: &Value, cfg: &Config) -> Table {
+    pub(super) fn json_to_table<F>(
+        value: &Value,
+        cfg: &Config,
+        mut mode_visitor: Option<&mut F>,
+    ) -> Table
+    where
+        F: FnMut(&Value) -> Orientation,
+    {
         if cfg.plain {
-            json_to_table_f(value, cfg.style.as_ref(), cfg.cfg.as_ref(), true)
+            json_to_table_f(value, cfg, &mut mode_visitor, true)
         } else {
-            json_to_table_r(
-                value,
-                cfg.style.as_ref(),
-                cfg.cfg.as_ref(),
-                0,
-                0,
-                true,
-                true,
-                false,
-                false,
-                &[],
-                None,
-            )
+            json_to_table_r(value, cfg, 0, 0, true, true, false, false, &[], None)
         }
     }
 
-    fn json_to_table_f(
+    fn json_to_table_f<F>(
         v: &Value,
-        style: Option<&RawStyle>,
-        cfg: Option<&GridConfig>,
+        config: &Config,
+        mode_visitor: &mut Option<&mut F>,
         outer: bool,
-    ) -> Table {
+    ) -> Table
+    where
+        F: FnMut(&Value) -> Orientation,
+    {
         match v {
-            Value::Null => {
-                let mut table = col![];
-                set_table_style(&mut table, style, cfg);
-
-                if !outer {
-                    table.with(Style::empty());
-                }
-
-                table
-            }
-            Value::Bool(b) => {
-                let mut table = col![b];
-                set_table_style(&mut table, style, cfg);
-
-                if !outer {
-                    table.with(Style::empty());
-                }
-
-                table
-            }
-            Value::Number(n) => {
-                let mut table = col![n];
-                set_table_style(&mut table, style, cfg);
-
-                if !outer {
-                    table.with(Style::empty());
-                }
-
-                table
-            }
-            Value::String(s) => {
-                let mut table = col![s];
-                set_table_style(&mut table, style, cfg);
-
-                if !outer {
-                    table.with(Style::empty());
-                }
-
-                table
-            }
             Value::Array(arr) => {
                 let mut builder = Builder::new();
-                for value in arr {
-                    let val = json_to_table_f(value, style, cfg, false).to_string();
-                    builder.add_record([val]);
+
+                let orientation = mode_visitor
+                    .as_mut()
+                    .map(|f| (f)(v))
+                    .unwrap_or(config.array_orientation);
+
+                match orientation {
+                    Orientation::Vertical => {
+                        for value in arr {
+                            let val =
+                                json_to_table_f(value, config, mode_visitor, false).to_string();
+                            builder.add_record([val]);
+                        }
+                    }
+                    Orientation::Horizontal => {
+                        let mut row = Vec::with_capacity(arr.len());
+                        for value in arr {
+                            let val =
+                                json_to_table_f(value, config, mode_visitor, false).to_string();
+                            row.push(val);
+                        }
+
+                        builder.hint_column_size(row.len());
+                        builder.add_record(row);
+                    }
                 }
 
                 let mut table = builder.build();
-                set_table_style(&mut table, style, cfg);
+                set_table_style(&mut table, config);
 
                 table
             }
             Value::Object(map) => {
                 let mut builder = Builder::new();
-                for (key, value) in map {
-                    let val = json_to_table_f(value, style, cfg, false).to_string();
-                    builder.add_record([key.clone(), val]);
+
+                let orientation = mode_visitor
+                    .as_mut()
+                    .map(|f| (f)(v))
+                    .unwrap_or(config.object_orientation);
+
+                match orientation {
+                    Orientation::Vertical => {
+                        for (key, value) in map {
+                            let val =
+                                json_to_table_f(value, config, mode_visitor, false).to_string();
+                            builder.add_record([key.clone(), val]);
+                        }
+                    }
+                    Orientation::Horizontal => {
+                        let mut keys = Vec::with_capacity(map.len());
+                        let mut vals = Vec::with_capacity(map.len());
+                        for (key, value) in map {
+                            let val =
+                                json_to_table_f(value, config, mode_visitor, false).to_string();
+                            vals.push(val);
+                            keys.push(key.clone());
+                        }
+
+                        builder.hint_column_size(map.len());
+                        builder.add_record(keys);
+                        builder.add_record(vals);
+                    }
                 }
 
                 let mut table = builder.build();
-                set_table_style(&mut table, style, cfg);
+                set_table_style(&mut table, config);
+
+                table
+            }
+            value => {
+                let value = match value {
+                    Value::String(text) => Some(text.clone()),
+                    Value::Bool(val) => Some(val.to_string()),
+                    Value::Number(num) => Some(num.to_string()),
+                    Value::Null => None,
+                    _ => unreachable!(),
+                };
+
+                let mut builder = Builder::new();
+
+                if let Some(value) = value {
+                    builder.hint_column_size(1);
+                    builder.add_record([value]);
+                }
+
+                let mut table = builder.build();
+                set_table_style(&mut table, config);
+
+                if !outer {
+                    table.with(Style::empty());
+                }
 
                 table
             }
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn json_to_table_r(
         value: &Value,
-        style: Option<&RawStyle>,
-        cfg: Option<&GridConfig>,
+        config: &Config,
         row: usize,
         column: usize,
         is_last: bool,
@@ -248,7 +333,7 @@ mod json_to_table {
                     _ => unreachable!(),
                 };
 
-                set_table_style(&mut table, style, cfg);
+                set_table_style(&mut table, config);
 
                 table.with(Width::increase(width.unwrap_or(0)));
                 table.with(SetBottomChars(
@@ -264,15 +349,11 @@ mod json_to_table {
             }
             Value::Object(obj) => {
                 let map_length = obj.len();
-
-                // we build a table here to not make any assumptions about style.
-                // but we could to reduce allocations.
                 let max_keys_width = obj
                     .iter()
                     .map(|(key, _)| col![key].with(NoRightBorders).total_width())
                     .max()
                     .unwrap_or(0);
-
                 let width = match width {
                     Some(width) => width,
                     None => {
@@ -285,8 +366,7 @@ mod json_to_table {
 
                             let value = json_to_table_r(
                                 value,
-                                style,
-                                cfg,
+                                config,
                                 row,
                                 column + 2,
                                 is_last,
@@ -310,7 +390,6 @@ mod json_to_table {
                         width + max_keys_width
                     }
                 };
-
                 let mut builder = Builder::new();
                 let mut iter = obj.iter().enumerate().peekable();
                 while let Some((i, value)) = iter.next() {
@@ -350,8 +429,7 @@ mod json_to_table {
                     let width = width - max_keys_width;
                     let mut value = json_to_table_r(
                         value,
-                        style,
-                        cfg,
+                        config,
                         row,
                         column + 2,
                         is_last,
@@ -384,7 +462,7 @@ mod json_to_table {
                     }
 
                     let mut key = col![key];
-                    set_table_style(&mut key, style, cfg);
+                    set_table_style(&mut key, config);
 
                     let top_intersection = key
                         .get_config()
@@ -447,7 +525,6 @@ mod json_to_table {
 
                     builder.add_record([key.to_string(), value.to_string()]);
                 }
-
                 let mut table = builder.build();
                 table.with(Style::empty()).with(Padding::zero());
                 table
@@ -458,15 +535,15 @@ mod json_to_table {
                     None => {
                         // build a dummy tables
                         let list = list.iter().enumerate().map(|(i, value)| {
-                            let is_last = is_last && i + 1 == list.len();
+                            let is_last_element = i + 1 == list.len();
+                            let is_last = is_last && is_last_element;
                             json_to_table_r(
                                 value,
-                                style,
-                                cfg,
+                                config,
                                 row,
                                 column,
                                 is_last,
-                                i + 1 == list.len(),
+                                is_last_element,
                                 true,
                                 false,
                                 &[],
@@ -481,7 +558,6 @@ mod json_to_table {
                             .unwrap_or(0)
                     }
                 };
-
                 let map_length = list.len();
                 let mut builder = Builder::new();
                 for (i, value) in list.iter().enumerate() {
@@ -503,8 +579,7 @@ mod json_to_table {
 
                     let mut value = json_to_table_r(
                         value,
-                        style,
-                        cfg,
+                        config,
                         row,
                         column,
                         is_last,
@@ -551,7 +626,6 @@ mod json_to_table {
 
                     builder.add_record([value.to_string()]);
                 }
-
                 let mut table = builder.build();
                 table.with(Style::empty()).with(Padding::zero());
                 table
@@ -593,12 +667,12 @@ mod json_to_table {
         }
     }
 
-    fn set_table_style(table: &mut Table, style: Option<&RawStyle>, cfg: Option<&GridConfig>) {
-        if let Some(cfg) = cfg {
+    fn set_table_style(table: &mut Table, config: &Config) {
+        if let Some(cfg) = config.cfg.as_ref() {
             *table.get_config_mut() = cfg.clone();
         }
 
-        if let Some(style) = style {
+        if let Some(style) = config.style.as_ref() {
             table.with(style);
         }
     }
@@ -617,6 +691,20 @@ mod json_to_table {
         }
     }
 
+    struct NoBottomBorders;
+
+    impl<R> TableOption<R> for NoBottomBorders {
+        fn change(&mut self, table: &mut Table<R>) {
+            let mut borders = table.get_config().get_borders().clone();
+            borders.bottom = None;
+            borders.bottom_intersection = None;
+            borders.bottom_left = None;
+            borders.bottom_right = None;
+
+            table.get_config_mut().set_borders(borders);
+        }
+    }
+
     struct NoRightBorders;
 
     impl<R> TableOption<R> for NoRightBorders {
@@ -626,6 +714,20 @@ mod json_to_table {
             borders.bottom_right = None;
             borders.vertical_right = None;
             borders.horizontal_right = None;
+
+            table.get_config_mut().set_borders(borders);
+        }
+    }
+
+    struct NoLeftBorders;
+
+    impl<R> TableOption<R> for NoLeftBorders {
+        fn change(&mut self, table: &mut Table<R>) {
+            let mut borders = table.get_config().get_borders().clone();
+            borders.top_left = None;
+            borders.bottom_left = None;
+            borders.vertical_left = None;
+            borders.horizontal_left = None;
 
             table.get_config_mut().set_borders(borders);
         }

@@ -85,7 +85,7 @@
 
 use serde_json::Value;
 
-pub use table::JsonTable;
+pub use table::{JsonTable, Orientation};
 
 mod table;
 
