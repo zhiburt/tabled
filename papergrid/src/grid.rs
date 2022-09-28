@@ -130,7 +130,7 @@ mod print_general {
                 print_margin_left(f, cfg)?;
 
                 for col in 0..records.count_columns() {
-                    print_vertical_char(f, cfg, records, (row, col))?;
+                    print_vertical_char(f, cfg, records, (row, col), i, count_lines)?;
 
                     let width = width.get(col).unwrap();
                     let height = height.get(row).unwrap();
@@ -138,7 +138,7 @@ mod print_general {
 
                     let is_last_column = col + 1 == records.count_columns();
                     if is_last_column {
-                        print_vertical_char(f, cfg, records, (row, col + 1))?;
+                        print_vertical_char(f, cfg, records, (row, col + 1), i, count_lines)?;
                     }
                 }
 
@@ -375,7 +375,7 @@ mod print_spanned {
                 for col in 0..records.count_columns() {
                     if !cfg.is_cell_covered_by_both_spans((row, col), shape) {
                         if cfg.is_cell_covered_by_row_span((row, col), shape) {
-                            print_vertical_char(f, cfg, records, (row, col))?;
+                            print_vertical_char(f, cfg, records, (row, col), i, count_lines)?;
 
                             // means it's part of other a spanned cell
                             // so. we just need to use line from other cell.
@@ -401,14 +401,14 @@ mod print_spanned {
                                 line,
                             )?;
                         } else if !cfg.is_cell_covered_by_column_span((row, col), shape) {
-                            print_vertical_char(f, cfg, records, (row, col))?;
+                            print_vertical_char(f, cfg, records, (row, col), i, count_lines)?;
                             print_cell_line(f, cfg, records, width, height, (row, col), i)?;
                         }
                     }
 
                     let is_last_column = col + 1 == records.count_columns();
                     if is_last_column {
-                        print_vertical_char(f, cfg, records, (row, col + 1))?;
+                        print_vertical_char(f, cfg, records, (row, col + 1), i, count_lines)?;
                     }
                 }
 
@@ -438,6 +438,7 @@ mod print_spanned {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn print_split_line<R, W, H>(
         f: &mut fmt::Formatter<'_>,
         cfg: &GridConfig,
@@ -969,25 +970,34 @@ fn print_vertical_char<R>(
     cfg: &GridConfig,
     records: &R,
     pos: Position,
+    line_index: usize,
+    count_lines: usize,
 ) -> fmt::Result
 where
     R: Records,
 {
     let left = get_vertical(cfg, records, pos);
     if let Some(c) = left {
+        let c = if cfg.is_overidden_vertical(pos) {
+            cfg.lookup_overidden_vertical(pos, line_index, count_lines)
+                .unwrap_or(*c)
+        } else {
+            *c
+        };
+
         #[cfg(feature = "color")]
         {
             if let Some(clr) = get_vertical_color(cfg, records, pos) {
                 clr.fmt_prefix(f)?;
-                f.write_char(*c)?;
+                f.write_char(c)?;
                 clr.fmt_suffix(f)?;
             } else {
-                f.write_char(*c)?;
+                f.write_char(c)?;
             }
         }
 
         #[cfg(not(feature = "color"))]
-        f.write_char(*c)?;
+        f.write_char(c)?;
     }
 
     Ok(())

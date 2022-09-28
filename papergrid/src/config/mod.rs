@@ -39,8 +39,9 @@ pub struct GridConfig {
     span_rows: HashMap<Position, usize>,
     borders: BordersConfig<char>,
     borders_missing_char: char,
-    override_split_lines: HashMap<usize, (String, Offset)>,
+    override_horizontal_lines: HashMap<usize, (String, Offset)>,
     override_horizontal_borders: HashMap<Position, HashMap<Offset, char>>,
+    override_vertical_borders: HashMap<Position, HashMap<Offset, char>>,
     #[cfg(feature = "color")]
     margin_color: MarginColor,
     #[cfg(feature = "color")]
@@ -62,8 +63,9 @@ impl Default for GridConfig {
             borders_missing_char: ' ',
             span_columns: HashMap::default(),
             span_rows: HashMap::default(),
-            override_split_lines: HashMap::default(),
+            override_horizontal_lines: HashMap::default(),
             override_horizontal_borders: HashMap::default(),
+            override_vertical_borders: HashMap::default(),
             #[cfg(feature = "color")]
             margin_color: MarginColor::default(),
             #[cfg(feature = "color")]
@@ -147,8 +149,9 @@ impl GridConfig {
     /// And sets it to default.
     pub fn clear_theme(&mut self) {
         self.borders = BordersConfig::default();
-        self.override_split_lines.clear();
+        self.override_horizontal_lines.clear();
         self.override_horizontal_borders.clear();
+        self.override_vertical_borders.clear();
     }
 
     /// Set the [`Borders`] value as currect one.
@@ -233,17 +236,20 @@ impl GridConfig {
     ///
     /// If borders are not set the string won't be rendered.
     pub fn override_split_line(&mut self, row: usize, line: impl Into<String>, offset: Offset) {
-        self.override_split_lines.insert(row, (line.into(), offset));
+        self.override_horizontal_lines
+            .insert(row, (line.into(), offset));
     }
 
     /// Gets a set text to a border line by index
     pub fn get_split_line_text(&self, row: usize) -> Option<&str> {
-        self.override_split_lines.get(&row).map(|(s, _)| s.as_str())
+        self.override_horizontal_lines
+            .get(&row)
+            .map(|(s, _)| s.as_str())
     }
 
     /// Gets a set text to a border line by index
     pub fn get_split_line_offset(&self, row: usize) -> Option<Offset> {
-        self.override_split_lines
+        self.override_horizontal_lines
             .get(&row)
             .map(|(_, offset)| offset)
             .copied()
@@ -251,12 +257,12 @@ impl GridConfig {
 
     /// Removes a split line text if any set.
     pub fn remove_split_line_text(&mut self, row: usize) -> Option<(String, Offset)> {
-        self.override_split_lines.remove(&row)
+        self.override_horizontal_lines.remove(&row)
     }
 
-    /// Override the split line with a custom text.
+    /// Override a character on a horizontal line.
     ///
-    /// If borders are not set the string won't be rendered.
+    /// If borders are not set the char won't be used.
     pub fn override_horizontal_border(&mut self, pos: Position, c: char, offset: Offset) {
         let chars = self
             .override_horizontal_borders
@@ -299,6 +305,53 @@ impl GridConfig {
     /// Removes a list of overriden chars in a horizontal border.
     pub fn remove_overidden_horizontal(&mut self, pos: Position) {
         self.override_horizontal_borders.remove(&pos);
+    }
+
+    /// Override a vertical split line.
+    ///
+    /// If borders are not set the char won't be used.
+    pub fn override_vertical_border(&mut self, pos: Position, c: char, offset: Offset) {
+        let chars = self
+            .override_vertical_borders
+            .entry(pos)
+            .or_insert_with(|| HashMap::with_capacity(1));
+
+        chars.insert(offset, c);
+    }
+
+    /// Get a list of overriden chars in a horizontal border.
+    pub fn lookup_overidden_vertical(
+        &self,
+        pos: Position,
+        offset: usize,
+        end: usize,
+    ) -> Option<char> {
+        self.override_vertical_borders
+            .get(&pos)
+            .and_then(|chars| {
+                chars.get(&Offset::Begin(offset)).or_else(|| {
+                    if end > offset {
+                        if end == 0 {
+                            chars.get(&Offset::End(0))
+                        } else {
+                            chars.get(&Offset::End(end - offset - 1))
+                        }
+                    } else {
+                        None
+                    }
+                })
+            })
+            .copied()
+    }
+
+    /// Checks if there any char in a horizontal border being overriden.
+    pub fn is_overidden_vertical(&self, pos: Position) -> bool {
+        self.override_vertical_borders.get(&pos).is_some()
+    }
+
+    /// Removes a list of overriden chars in a horizontal border.
+    pub fn remove_overidden_vertical(&mut self, pos: Position) {
+        self.override_vertical_borders.remove(&pos);
     }
 
     /// Set a padding to a given cells.

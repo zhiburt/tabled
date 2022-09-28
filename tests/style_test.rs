@@ -4,6 +4,7 @@ use crate::util::{create_table, init_table, static_table, test_table};
 
 use tabled::{
     builder::Builder,
+    format::Format,
     object::{Cell, Columns, Rows, Segment},
     style::{BorderChar, HorizontalLine, Line, Offset, RawStyle, VerticalLine},
     Border, BorderText, Highlight, Modify, Padding, Span, Style, Table,
@@ -2320,8 +2321,8 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::markdown())
         .with(Modify::new(Rows::single(1))
-            .with(BorderChar::new(':', Offset::Begin(0)))
-            .with(BorderChar::new(':', Offset::End(0)))
+            .with(BorderChar::horizontal(':', Offset::Begin(0)))
+            .with(BorderChar::horizontal(':', Offset::End(0)))
     ),
     "| N | column 0 | column 1 | column 2 |"
     "|:-:|:--------:|:--------:|:--------:|"
@@ -2334,10 +2335,10 @@ test_table!(
     override_horizontal_border_on_borders,
     create_table::<3, 3>()
         .with(Modify::new(Rows::new(..5))
-            .with(BorderChar::new(':', Offset::Begin(0)))
-            .with(BorderChar::new('y', Offset::Begin(3)))
-            .with(BorderChar::new(':', Offset::End(0)))
-            .with(BorderChar::new('x', Offset::End(3)))
+            .with(BorderChar::horizontal(':', Offset::Begin(0)))
+            .with(BorderChar::horizontal('y', Offset::Begin(3)))
+            .with(BorderChar::horizontal(':', Offset::End(0)))
+            .with(BorderChar::horizontal('x', Offset::End(3)))
     ),
     "+:-:+:--y--x--:+:--y--x--:+:--y--x--:+"
     "| N | column 0 | column 1 | column 2 |"
@@ -2355,10 +2356,10 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Rows::new(..5))
             .with(Border::filled('['))
-            .with(BorderChar::new(':', Offset::Begin(0)))
-            .with(BorderChar::new('y', Offset::Begin(3)))
-            .with(BorderChar::new(':', Offset::End(0)))
-            .with(BorderChar::new('x', Offset::End(3)))
+            .with(BorderChar::horizontal(':', Offset::Begin(0)))
+            .with(BorderChar::horizontal('y', Offset::Begin(3)))
+            .with(BorderChar::horizontal(':', Offset::End(0)))
+            .with(BorderChar::horizontal('x', Offset::End(3)))
     ),
     "[:[:[:[[y[[x[[:[:[[y[[x[[:[:[[y[[x[[:["
     "[ N [ column 0 [ column 1 [ column 2 ["
@@ -2369,6 +2370,102 @@ test_table!(
     "[:[:[:[[y[[x[[:[:[[y[[x[[:[:[[y[[x[[:["
     "[ 2 [   2-0    [   2-1    [   2-2    ["
     "[:[:[:[[y[[x[[:[:[[y[[x[[:[:[[y[[x[[:["
+);
+
+test_table!(
+    override_vertical_border_on_line,
+    create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(Modify::new(Columns::single(1))
+            .with(BorderChar::vertical(':', Offset::Begin(0)))
+    ),
+    "| N : column 0 | column 1 | column 2 |"
+    "|---|----------|----------|----------|"
+    "| 0 :   0-0    |   0-1    |   0-2    |"
+    "| 1 :   1-0    |   1-1    |   1-2    |"
+    "| 2 :   2-0    |   2-1    |   2-2    |"
+);
+
+test_table!(
+    override_vertical_border_on_line_1,
+    create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(Modify::new(Columns::single(1))
+            .with(BorderChar::vertical(':', Offset::End(0)))
+    ),
+    "| N : column 0 | column 1 | column 2 |"
+    "|---|----------|----------|----------|"
+    "| 0 :   0-0    |   0-1    |   0-2    |"
+    "| 1 :   1-0    |   1-1    |   1-2    |"
+    "| 2 :   2-0    |   2-1    |   2-2    |"
+);
+
+test_table!(
+    override_vertical_border_on_line_multiline,
+    create_table::<3, 3>()
+        .with(Modify::new(Rows::single(1)).with(Format::new(|s| format!("\nsome text\ntext\n{}\ntext\ntext\n", s))))
+        .with(Style::markdown())
+        .with(Modify::new(Columns::single(1))
+            .with(BorderChar::vertical(':', Offset::Begin(4)))
+    ),
+    "|     N     | column 0  | column 1  | column 2  |"
+    "|-----------|-----------|-----------|-----------|"
+    "|           |           |           |           |"
+    "| some text | some text | some text | some text |"
+    "| text      | text      | text      | text      |"
+    "| 0         | 0-0       | 0-1       | 0-2       |"
+    "| text      : text      | text      | text      |"
+    "| text      | text      | text      | text      |"
+    "|           |           |           |           |"
+    "|     1     |    1-0    |    1-1    |    1-2    |"
+    "|     2     |    2-0    |    2-1    |    2-2    |"
+);
+
+test_table!(
+    override_vertical_border_on_line_multiline_2,
+    create_table::<3, 3>()
+        .with(Modify::new(Rows::single(1)).with(Format::new(|s| format!("\nsome text\ntext\n{}\ntext\ntext\n", s))))
+        .with(Style::markdown())
+        .with(Modify::new(Columns::single(1))
+            .with(BorderChar::vertical(':', Offset::End(4)))
+    ),
+    "|     N     | column 0  | column 1  | column 2  |"
+    "|-----------|-----------|-----------|-----------|"
+    "|           |           |           |           |"
+    "| some text | some text | some text | some text |"
+    "| text      : text      | text      | text      |"
+    "| 0         | 0-0       | 0-1       | 0-2       |"
+    "| text      | text      | text      | text      |"
+    "| text      | text      | text      | text      |"
+    "|           |           |           |           |"
+    "|     1     |    1-0    |    1-1    |    1-2    |"
+    "|     2     |    2-0    |    2-1    |    2-2    |"
+);
+
+test_table!(
+    override_vertical_and_horizontal_border_on_line,
+    create_table::<3, 3>()
+        .with(Modify::new(Rows::single(1)).with(Format::new(|s| format!("\nsome text\ntext\n{}\ntext\ntext\n", s))))
+        .with(Style::markdown())
+        .with(Modify::new(Columns::new(..5))
+            .with(BorderChar::vertical('y', Offset::Begin(0)))
+            .with(BorderChar::vertical('^', Offset::End(0)))
+        )
+        .with(Modify::new(Rows::single(1))
+            .with(BorderChar::horizontal('x', Offset::Begin(0)))
+            .with(BorderChar::horizontal('@', Offset::End(0)))
+        ),
+    "y     N     y column 0  y column 1  y column 2  y"
+    "|x---------@|x---------@|x---------@|x---------@|"
+    "y           y           y           y           y"
+    "| some text | some text | some text | some text |"
+    "| text      | text      | text      | text      |"
+    "| 0         | 0-0       | 0-1       | 0-2       |"
+    "| text      | text      | text      | text      |"
+    "| text      | text      | text      | text      |"
+    "^           ^           ^           ^           ^"
+    "y     1     y    1-0    y    1-1    y    1-2    y"
+    "y     2     y    2-0    y    2-1    y    2-2    y"
 );
 
 test_table!(
