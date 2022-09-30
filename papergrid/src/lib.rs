@@ -10,6 +10,9 @@
 
 //! Papergrid is a library for generating text-based tables.
 //!
+//! It has relatively low level API.
+//! If you're interested in a more friendly one take a look at [`tabled`](https://github.com/zhiburt/tabled).
+//!
 //! # Example
 //!
 //! ```

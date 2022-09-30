@@ -1,6 +1,9 @@
 # papergrid
 
-Is a pretty print table backend.
+This is library for pretty tables.
+
+It has relatively low level API.
+If you're interested in a more friendly one take a look at [`tabled`](https://github.com/zhiburt/tabled).
 
 ## Usage
 
@@ -35,7 +38,8 @@ const STYLE: Borders = Borders {
 fn main() {
     let mut cfg = GridConfig::default();
     cfg.set_borders(STYLE);
-    cfg.set_span((1, 0), 4);
+    cfg.set_column_span((1, 1), 3);
+    cfg.set_row_span((0, 0), 2);
     cfg.set_alignment_horizontal((1, 0).into(), AlignmentHorizontal::Center);
     cfg.set_alignment_vertical(Global, papergrid::AlignmentVertical::Center);
     cfg.set_padding(
@@ -49,8 +53,8 @@ fn main() {
     );
 
     let data = [
-        ["Papergrid", "is a library", "to print tables", "!"],
-        ["Just like this", "", "", ""],
+        ["Papergrid", "is a library", "for print tables", "!"],
+        ["", "Just like this", "", ""],
     ];
 
     let records = VecRecords::new(&data, (2, 4), CfgWidthFunction::from_cfg(&cfg));
@@ -70,11 +74,9 @@ fn main() {
 Running the example you must see.
 
 ```text
-+-----------------+------------+---------------+-+
-|                 |            |               | |
-|    Papergrid    |is a library|to print tables|!|
-|                 |            |               | |
-+-----------------+------------+---------------+-+
-|                 Just like this                 |
-+-----------------+------------+---------------+-+
++-----------------+------------+----------------+-+
+|                 |is a library|for print tables|!|
++    Papergrid    +------------+----------------+-+
+|                 |Just like this                 |
++-----------------+------------+----------------+-+
 ```
