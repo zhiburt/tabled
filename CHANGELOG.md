@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Macros `row!` and `col!` by [@IsaacCloos](https://github.com/IsaacCloos).
+- Added `Panel::vertical` to create a vertically spanned panels.
+- Added `Span::row` to create vertically spanned cells.
+- Added `Merge` to combine cells with the same content together via `Span`.
+- Added `ByColumnName` locator to target columns via name and use it as `Object`.
+- Added `VerticalLine` to set custom vertical lines.
+- Added `Height` structure to control table/cell height.
+- Added `BorderChar` to set a char by an arbitraty offest on a split horizonta/vertical lines.
+- Added support for `fmt::*` settings when called with `format`/`println`.
+- Created `json_to_table` crate to convert json into table.
+- `papergrid` has got a few new functions.
+
+### Changed
+
+- `papergrid` was restructured to be more generic in regard of underlying data types.
+- `Table::with` function now doesn't consume the table but called by reference `&mut`.
+- impl `TableOption` for `Alignment`.
+- impl `TableOption` for `Padding`.
+- impl `CellOption` for `String`.
+- `Wrap` logic was changed specifically with `color` feature.
+- `Wrap` now recognizes hyperlinks (by [@Dan Davison](https://github.com/dandavison)).
+- `Tabled` trait now returns `std::borrow::Cow` instead of `String`.
+
+### Fixed
+
+- Fixed issues in `Width::wrap` logic. (one found by [@Dan Davison](https://github.com/dandavison)).
+
+
+## [0.8.0] - 2022-07-22
+
+### Added
+
 - Created `#[tabled(order = 2)]` attribute to support reordering of fields.
 - Created `#[tabled(rename_all = "UPPERCASE")]` attribute to rename columns.
 - Created `#[tabled(display_width("some_func", args))]` attribute to being able to call functions with `&self` argument.
