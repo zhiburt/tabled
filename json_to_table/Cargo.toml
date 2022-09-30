@@ -10,10 +10,11 @@ license = "MIT"
 keywords = ["table", "print", "pretty-table", "format", "json"]
 categories = ["text-processing", "visualization"]
 readme = "README.md"
+description = "A libary for pretty print JSON as a table"
 
 [features]
 color = ["tabled/color"]
 
 [dependencies]
 serde_json = "1.*"
-tabled = { path = "../" }
+tabled = "0.9.0"
