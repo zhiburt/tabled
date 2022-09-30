@@ -401,6 +401,37 @@ assert_eq!(
 );
 ```
 
+Sometimes though it's not convinient to set a string.
+But rather necessary to set a custom char.
+
+You can use `BorderChar` to achieve this.
+
+```rust
+use tabled::{
+    object::Columns,
+    style::{BorderChar, Offset, Style},
+    Modify, Table,
+};
+
+fn main() {
+    let table = Table::new([["Hello", "World", "!"]])
+        .with(Style::markdown())
+        .with(
+            Modify::new(Columns::new(..))
+                .with(BorderChar::horizontal(':', Offset::Begin(0)))
+                .with(BorderChar::horizontal(':', Offset::End(0))),
+        )
+        .to_string();
+
+    assert_eq!(
+        table,
+        "| 0     | 1     | 2 |\n\
+         |:-----:|:-----:|:-:|\n\
+         | Hello | World | ! |"
+    );
+}
+```
+
 #### Colorize borders
 
 You can set a colors of all borders using `Color`.
@@ -1348,13 +1379,21 @@ assert_eq!(
 
 ### Object
 
-You can apply settings to subgroup of cells using `and` and `not` methods for an object.
+You can apply settings to a subgroup of cells using `and` and `not` methods for an object.
 
 ```rust
 use tabled::object::{Object, Segment, Cell, Rows, Columns};
 Segment::all().not(Rows::first()); // select all cells except header.
 Columns::first().and(Columns::last()); // select cells from first and last columns.
 Rows::first().and(Columns::single(0)).not(Cell(0, 0)); // select the header and first column except the (0, 0) cell.
+```
+
+Also you can target a column via its name using `ByColumnName`.
+
+```rust
+use tabled::{locator::ByColumnName, Alignment, Modify};
+
+table.with(Modify::new(ByColumnName::new("name")).with(Alignment::center()));
 ```
 
 ### Macros
