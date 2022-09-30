@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.9.0] - 2022-09-30
+
 ### Added
 
 - Macros `row!` and `col!` by [@IsaacCloos](https://github.com/IsaacCloos).
