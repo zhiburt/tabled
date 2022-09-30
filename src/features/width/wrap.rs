@@ -566,7 +566,7 @@ fn split_string_at(text: &str, at: usize) -> (&str, &str, (usize, usize)) {
 
 #[cfg(feature = "color")]
 mod link_extraction {
-    //! The module is based on Dan Davison (https://github.com/dandavison) delta (https://github.com/dandavison/delta) ansi library.
+    //! The module is based on Dan Davison <https://github.com/dandavison> delta <https://github.com/dandavison/delta> ansi library.
 
     use core::str::Bytes;
     use vte::Params;
