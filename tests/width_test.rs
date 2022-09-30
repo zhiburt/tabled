@@ -398,6 +398,75 @@ fn max_width_wrapped_keep_words_long_word_color() {
 
 #[cfg(feature = "color")]
 #[test]
+fn max_width_keep_words_1() {
+    use tabled::style::HorizontalLine;
+
+    let table = new_table(&["asdf"])
+        .with(Width::wrap(7).keep_words())
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+-----+"
+            "| &st |"
+            "| r   |"
+            "+-----+"
+            "| asd |"
+            "| f   |"
+            "+-----+"
+        )
+    );
+
+    let table = new_table(&["qweqw eqwe"])
+        .with(Width::wrap(8).keep_words())
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "+------+"
+            "| &str |"
+            "+------+"
+            "| qweq |"
+            "| w    |"
+            "| eqwe |"
+            "+------+"
+        )
+    );
+
+    let table = new_table([
+        ["123 45678", "qweqw eqwe", "..."],
+        ["0", "1", "..."],
+        ["0", "1", "..."],
+    ])
+    .with(
+        Style::modern()
+            .off_horizontal()
+            .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]),
+    )
+    .with(Width::wrap(21).keep_words().priority::<PriorityMax>())
+    .with(Alignment::center())
+    .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "┌──────┬──────┬─────┐"
+            "│  0   │  1   │  2  │"
+            "├──────┼──────┼─────┤"
+            "│ 123  │ qweq │ ... │"
+            "│ 4567 │ w    │     │"
+            "│ 8    │ eqwe │     │"
+            "│  0   │  1   │ ... │"
+            "│  0   │  1   │ ... │"
+            "└──────┴──────┴─────┘"
+        )
+    );
+}
+
+#[cfg(feature = "color")]
+#[test]
 fn max_width_wrapped_collored() {
     use owo_colors::OwoColorize;
 
