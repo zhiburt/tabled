@@ -1,0 +1,11 @@
+[package]
+name = "table_to_html"
+version = "0.1.0"
+edition = "2021"
+authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
+description = "The library provides a interface to convert a `tabled::Table` into a HTML table (`<table>`)."
+repository = "https://github.com/zhiburt/tabled"
+license = "MIT"
+
+[dependencies]
+tabled = "0.9.0"
