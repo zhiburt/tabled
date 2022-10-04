@@ -30,64 +30,63 @@ impl Distribution {
     }
 }
 
-let data = [
-    Distribution::new("Debian", "", true),
-    Distribution::new("Arch", "", true),
-    Distribution::new("Manjaro", "Arch", true),
-];
+fn main() {
+    let data = [
+        Distribution::new("Debian", "", true),
+        Distribution::new("Arch", "", true),
+        Distribution::new("Manjaro", "Arch", true),
+    ];
 
-let mut table = Table::from_iter(&data);
-table.with(Rows::first().modify().with(Alignment::center()));
+    let mut table = Table::from_iter(&data);
+    table.with(Rows::first().modify().with(Alignment::center()));
 
-let html_table = HtmlTable::from(table);
+    let html_table = HtmlTable::from(table).to_string();
 
-assert_eq!(
-    html_table.to_string(),
-    concat!(
-        "<table id=\"tabled-table\" border=\"1\">\n",
-        "    <tr id=\"tabled-table-0\">\n",
-        "        <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" style=\"text-align: center;\">\n",
-        "            <p> name </p>\n",
-        "        </td>\n",
-        "        <td id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" style=\"text-align: center;\">\n",
-        "            <p> based_on </p>\n",
-        "        </td>\n",
-        "        <td id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" style=\"text-align: center;\">\n",
-        "            <p> is_active </p>\n",
-        "        </td>\n",
-        "    </tr>\n",
-        "    <tr id=\"tabled-table-1\">\n",
-        "        <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-        "            <p> Debian </p>\n",
-        "        </td>\n",
-        "        <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-        "        </td>\n",
-        "        <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-        "            <p> true </p>\n",
-        "        </td>\n",
-        "    </tr>\n",
-        "    <tr id=\"tabled-table-2\">\n",
-        "        <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-        "            <p> Arch </p>\n",
-        "        </td>\n",
-        "        <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-        "        </td>\n",
-        "        <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-        "            <p> true </p>\n",
-        "        </td>\n",
-        "    </tr>\n",
-        "    <tr id=\"tabled-table-3\">\n",
-        "        <td id=\"tabled-table-3-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-        "            <p> Manjaro </p>\n",
-        "        </td>\n",
-        "        <td id=\"tabled-table-3-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-        "            <p> Arch </p>\n",
-        "        </td>\n",
-        "        <td id=\"tabled-table-3-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-        "            <p> true </p>\n",
-        "        </td>\n",
-        "    </tr>\n",
-        "</table>"
-    ),
-)
+    let expected = r#"<table id="tabled-table" border="1">
+    <tr id="tabled-table-0">
+        <td id="tabled-table-0-0" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;" style="text-align: center;">
+            <p> name </p>
+        </td>
+        <td id="tabled-table-0-1" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;" style="text-align: center;">
+            <p> based_on </p>
+        </td>
+        <td id="tabled-table-0-2" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;" style="text-align: center;">
+            <p> is_active </p>
+        </td>
+    </tr>
+    <tr id="tabled-table-1">
+        <td id="tabled-table-1-0" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;">
+            <p> Debian </p>
+        </td>
+        <td id="tabled-table-1-1" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;">
+        </td>
+        <td id="tabled-table-1-2" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;">
+            <p> true </p>
+        </td>
+    </tr>
+    <tr id="tabled-table-2">
+        <td id="tabled-table-2-0" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;">
+            <p> Arch </p>
+        </td>
+        <td id="tabled-table-2-1" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;">
+        </td>
+        <td id="tabled-table-2-2" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;">
+            <p> true </p>
+        </td>
+    </tr>
+    <tr id="tabled-table-3">
+        <td id="tabled-table-3-0" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;">
+            <p> Manjaro </p>
+        </td>
+        <td id="tabled-table-3-1" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;">
+            <p> Arch </p>
+        </td>
+        <td id="tabled-table-3-2" style="padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;">
+            <p> true </p>
+        </td>
+    </tr>
+</table>"#;
+
+    assert_eq!(html_table, expected)
+}
 ```
