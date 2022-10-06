@@ -1,6 +1,6 @@
 [package]
 name = "tabled"
-version = "0.9.0"
+version = "0.9.0-fix.docs.rs.1"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."
@@ -10,7 +10,7 @@ documentation = "https://docs.rs/tabled"
 license = "MIT"
 keywords = ["table", "print", "pretty-table", "format", "terminal"]
 categories = ["text-processing", "visualization"]
-readme = "README.md"
+readme = "docs.rs.md"
 
 [badges]
 coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master", service = "github" }
@@ -177,5 +177,7 @@ quickcheck_macros = "1.0.0"
 #
 # RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
 [package.metadata.docs.rs]
-all-features = true
+targets = ["x86_64-unknown-linux-gnu"]
+features = ["unstable-doc"]
 rustdoc-args = ["--cfg", "docsrs"]
+cargo-args = ["-Zunstable-options"]
