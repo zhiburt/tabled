@@ -17,4 +17,4 @@ color = ["tabled/color"]
 
 [dependencies]
 serde_json = "1.*"
-tabled = { git = "https://github.com/zhiburt/tabled" }
+tabled = { git = "https://github.com/zhiburt/tabled", rev = "883eeda030e8a822a8d5fcbee2d416b69ac4e42d" }
