@@ -132,9 +132,11 @@ pub fn string_width(text: &str) -> usize {
     // we need to strip ansi because of terminal links
     // and they're can't be stripped by ansi_str.
 
-    let b = strip_ansi_escapes::strip(text.as_bytes()).unwrap();
-    let s = std::str::from_utf8(&b).unwrap();
-    unicode_width::UnicodeWidthStr::width(s)
+    ansitok::parse_ansi(text)
+        .filter(|e| e.kind() == ansitok::ElementKind::Text)
+        .map(|e| &text[e.start()..e.end()])
+        .map(unicode_width::UnicodeWidthStr::width)
+        .sum()
 }
 
 /// Returns a max string width of a line.
@@ -216,6 +218,69 @@ pub fn replace_tab(text: &str, n: usize) -> String {
         let mut text = text.to_owned();
         replace_tab_range(&mut text, n);
         text
+    }
+}
+
+/// Strip OSC codes from `s`. If `s` is a single OSC8 hyperlink, with no other text, then return
+/// (s_with_all_hyperlinks_removed, Some(url)). If `s` does not meet this description, then return
+/// (s_with_all_hyperlinks_removed, None). Any ANSI color sequences in `s` will be retained. See
+/// <https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda>
+///
+/// The function is based on Dan Davison <https://github.com/dandavison> delta <https://github.com/dandavison/delta> ansi library.
+#[cfg(feature = "color")]
+pub fn strip_osc(text: &str) -> (String, Option<String>) {
+    #[derive(Debug)]
+    enum ExtractOsc8HyperlinkState {
+        ExpectOsc8Url,
+        ExpectFirstText,
+        ExpectMoreTextOrTerminator,
+        SeenOneHyperlink,
+        WillNotReturnUrl,
+    }
+
+    use ExtractOsc8HyperlinkState::*;
+
+    let mut url = None;
+    let mut state = ExpectOsc8Url;
+    let mut buf = String::with_capacity(text.len());
+
+    for el in ansitok::parse_ansi(text) {
+        match el.kind() {
+            ansitok::ElementKind::Osc => match state {
+                ExpectOsc8Url => {
+                    url = Some(&text[el.start()..el.end()]);
+                    state = ExpectFirstText;
+                }
+                ExpectMoreTextOrTerminator => state = SeenOneHyperlink,
+                _ => state = WillNotReturnUrl,
+            },
+            ansitok::ElementKind::Sgr => buf.push_str(&text[el.start()..el.end()]),
+            ansitok::ElementKind::Csi => buf.push_str(&text[el.start()..el.end()]),
+            ansitok::ElementKind::Esc => {}
+            ansitok::ElementKind::Text => {
+                buf.push_str(&text[el.start()..el.end()]);
+                match state {
+                    ExpectFirstText => state = ExpectMoreTextOrTerminator,
+                    ExpectMoreTextOrTerminator => {}
+                    _ => state = WillNotReturnUrl,
+                }
+            }
+        }
+    }
+
+    match state {
+        WillNotReturnUrl => (buf, None),
+        _ => {
+            let url = url.and_then(|s| {
+                s.strip_prefix("\x1b]8;;")
+                    .and_then(|s| s.strip_suffix('\x1b'))
+            });
+            if let Some(url) = url {
+                (buf, Some(url.to_string()))
+            } else {
+                (buf, None)
+            }
+        }
     }
 }
 
@@ -380,6 +445,15 @@ mod tests {
             string_width_multiline(
                 "\u{1b}]8;;file:///home/nushell/asd.zip\u{1b}\\asd.zip\u{1b}]8;;\u{1b}\\"
             ),
+            7
+        );
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn string_width_for_link() {
+        assert_eq!(
+            string_width("\u{1b}]8;;file:///home/nushell/asd.zip\u{1b}\\asd.zip\u{1b}]8;;\u{1b}\\"),
             7
         );
     }
