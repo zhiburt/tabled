@@ -6,10 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tabled = { path = ".." }
 
 [dev-dependencies]
-criterion = "0.3.6"
+tabled = { path = "..", features = ["color"] }
+tabled_master = { version = "0.9.0", features = ["color"], package = "tabled"}
+
+owo-colors = "3.5.0"
+criterion = { version = "0.4.0", features = ["html_reports"] }
+
+[[bench]]
+name = "strings"
+harness = false
 
 [[bench]]
 name = "to_string"
