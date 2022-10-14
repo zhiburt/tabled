@@ -9,6 +9,7 @@ pub mod measurment;
 pub mod peaker;
 pub mod style;
 pub mod width;
+pub mod shadow;
 
 #[cfg(feature = "color")]
 pub mod color;

@@ -162,7 +162,7 @@ color = ["papergrid/color", "ansi-str", "vte"]
 macros = []
 
 [dependencies]
-papergrid = "0.6.0"
+papergrid = { path = "papergrid" }
 unicode-width = "0.1.9"
 tabled_derive = { version = "0.5.0", optional = true }
 ansi-str = { version = "0.4.0", optional = true }
