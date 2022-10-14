@@ -16,13 +16,13 @@ pub use self::{
     entity::{Entity, EntityIterator, Position},
     formatting::Formatting,
     offset::Offset,
-    sides::Indent,
+    sides::{Indent, Sides},
 };
 
 #[cfg(feature = "color")]
 use crate::AnsiColor;
 
-use self::{borders::BordersConfig, entity_map::EntityMap, sides::Sides};
+use self::{borders::BordersConfig, entity_map::EntityMap};
 
 /// This structure represents a settings of a grid.
 ///
@@ -31,6 +31,7 @@ use self::{borders::BordersConfig, entity_map::EntityMap, sides::Sides};
 pub struct GridConfig {
     tab_width: usize,
     margin: Margin,
+    margin_offset: Sides<Offset>,
     padding: EntityMap<Padding>,
     alignment_h: EntityMap<AlignmentHorizontal>,
     alignment_v: EntityMap<AlignmentVertical>,
@@ -52,9 +53,17 @@ pub struct GridConfig {
 
 impl Default for GridConfig {
     fn default() -> Self {
+        let margin_offset = Sides::new(
+            Offset::Begin(0),
+            Offset::Begin(0),
+            Offset::Begin(0),
+            Offset::Begin(0),
+        );
+
         Self {
             tab_width: 4,
             margin: Margin::default(),
+            margin_offset,
             padding: EntityMap::default(),
             formatting: EntityMap::default(),
             alignment_h: EntityMap::new(AlignmentHorizontal::Left),
@@ -143,6 +152,16 @@ impl GridConfig {
     /// Returns a [`Margin`] value currently set.
     pub fn get_margin(&self) -> &Margin {
         &self.margin
+    }
+
+    /// Set [`Margin`] offset.
+    pub fn set_margin_offset(&mut self, margin: Sides<Offset>) {
+        self.margin_offset = margin;
+    }
+
+    /// Returns a [`Margin`] offset.
+    pub fn get_margin_offset(&self) -> &Sides<Offset> {
+        &self.margin_offset
     }
 
     /// Clears all theme changes.
