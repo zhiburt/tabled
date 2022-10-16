@@ -269,6 +269,7 @@ pub use crate::{
         panel::{Footer, Header, Panel},
         peaker,
         rotate::Rotate,
+        shadow,
         span::Span,
         style::{self, Border, BorderText, Style},
         width::{self, Width},
