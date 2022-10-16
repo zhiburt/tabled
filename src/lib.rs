@@ -1,11 +1,3 @@
-#![warn(
-    missing_docs,
-    rust_2018_idioms,
-    missing_debug_implementations,
-    unreachable_pub
-)]
-#![deny(unused_must_use)]
-
 //! An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
 //!
 //! The library is based on a [`Tabled`] trait which is used to actually build tables.
@@ -233,9 +225,17 @@
 //! You can find more examples of settings and attributes in
 //! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
 
+#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
 )]
+#![warn(
+    missing_docs,
+    rust_2018_idioms,
+    missing_debug_implementations,
+    unreachable_pub
+)]
+#![deny(unused_must_use)]
 
 mod features;
 mod modify;
@@ -269,6 +269,7 @@ pub use crate::{
         panel::{Footer, Header, Panel},
         peaker,
         rotate::Rotate,
+        shadow,
         span::Span,
         style::{self, Border, BorderText, Style},
         width::{self, Width},

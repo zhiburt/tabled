@@ -1,6 +1,6 @@
 [package]
 name = "tabled"
-version = "0.9.0-fix.docs.rs.1"
+version = "0.9.0-fix.docs.rs.4"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."
@@ -162,7 +162,7 @@ color = ["papergrid/color", "ansi-str", "vte"]
 macros = []
 
 [dependencies]
-papergrid = "0.6.0"
+papergrid = { path = "papergrid" }
 unicode-width = "0.1.9"
 tabled_derive = { version = "0.5.0", optional = true }
 ansi-str = { version = "0.4.0", optional = true }
@@ -177,7 +177,7 @@ quickcheck_macros = "1.0.0"
 #
 # RUSTDOCFLAGS="--cfg docsrs" cargo +nightly -Zunstable-options doc --no-deps --all-features --open
 [package.metadata.docs.rs]
+all-features = true
 targets = ["x86_64-unknown-linux-gnu"]
-features = ["unstable-doc"]
 rustdoc-args = ["--cfg", "docsrs"]
-cargo-args = ["-Zunstable-options"]
+rustc-args = ["--cfg", "docsrs"]
