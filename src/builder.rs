@@ -308,8 +308,9 @@ impl<'a> Builder<'a> {
             self.fix_rows();
         }
 
+        let has_columns = self.columns.is_some();
         let records = build_grid(self.records, self.columns, self.size);
-        build_table(records)
+        build_table(records, has_columns)
     }
 
     /// Add an index to the [`Table`].
@@ -770,11 +771,20 @@ impl<'a> From<IndexBuilder<'a>> for Builder<'a> {
 #[derive(Debug, Clone)]
 pub struct CustomRecords<R> {
     records: R,
+    has_header: bool,
 }
 
 impl<R> CustomRecords<R> {
     fn new(records: R) -> Self {
-        Self { records }
+        Self {
+            records,
+            has_header: false,
+        }
+    }
+
+    /// Set a flag that custom records has a columns row.
+    pub fn with_header(&mut self) {
+        self.has_header = true;
     }
 }
 
@@ -786,7 +796,7 @@ where
     ///
     /// [`Records`]: papergrid::records::Records
     pub fn build(self) -> Table<R> {
-        build_table(self.records)
+        build_table(self.records, self.has_header)
     }
 }
 
@@ -892,7 +902,7 @@ where
 }
 
 /// Building [`Table`] from ordinary data.
-fn build_table<R>(records: R) -> Table<R>
+fn build_table<R>(records: R, with_header: bool) -> Table<R>
 where
     R: Records,
 {
@@ -900,6 +910,8 @@ where
     table.with(Style::ascii());
 
     configure_grid(table.get_config_mut());
+    table.set_header_flag(with_header);
+
     table
 }
 
