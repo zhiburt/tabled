@@ -36,9 +36,9 @@ use crate::{
 use crate::color::Color;
 
 /// The structure represents a shadow of a table.
-/// 
+///
 /// NOTICE: It uses [`Margin`] therefore it often can't be combined.
-/// 
+///
 /// [`Margin`]: crate::Margin
 #[derive(Debug, Clone)]
 pub struct Shadow {

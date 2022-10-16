@@ -7,9 +7,9 @@ pub mod highlight;
 pub mod locator;
 pub mod measurment;
 pub mod peaker;
+pub mod shadow;
 pub mod style;
 pub mod width;
-pub mod shadow;
 
 #[cfg(feature = "color")]
 pub mod color;
