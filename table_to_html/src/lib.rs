@@ -246,6 +246,111 @@ fn convert_to_html_table<R>(
 where
     R: Records,
 {
+    if table.has_header() {
+        let body = (0 .. 2).map(|i| {
+            let (body_tag, inner_tag, (row_start, row_end)) = if i == 0 {
+                ("thead", "th", (0, 1))
+            } else {
+                ("tbody", "td", (1, table.count_rows()))
+            };
+
+            let rows = (row_start..row_end).map(move |row| {
+                let columns = (0..table.count_columns()).filter(move |col| table.get_config().is_cell_visible((row, *col), table.shape())).map(move |col| {
+                    let text = table.get_records().get_text((row, col));
+
+                    let id = attr("id", id(table_id, [row, col]).to_string());
+                    let mut attrs = vec![id];
+
+                    let padding = table.get_config().get_padding(Entity::Cell(row, col));
+                    if *padding != Padding::default() {
+                        let padding =  attr("style", format!("padding-top: {}{}; padding-bottom: {}{}; padding-left: {}{}; padding-right: {}{};", padding.top.size, unit, padding.bottom.size, unit, padding.left.size, unit, padding.right.size, unit));
+                        attrs.push(padding);
+                    }
+
+                    let halignment = table.get_config().get_alignment_horizontal(Entity::Cell(row, col));
+                    if !matches!(halignment, AlignmentHorizontal::Left) {
+                        let halignment = match halignment {
+                            AlignmentHorizontal::Center => "center",
+                            AlignmentHorizontal::Left => "left",
+                            AlignmentHorizontal::Right => "right",
+                        };
+                        let halignment =  attr("style", format!("text-align: {};", halignment));
+                        attrs.push(halignment);
+                    }
+
+                    let valignment = table.get_config().get_alignment_vertical(Entity::Cell(row, col));
+                    if !matches!(valignment, AlignmentVertical::Top) {
+                        let valignment = match valignment {
+                            AlignmentVertical::Center => "center",
+                            AlignmentVertical::Bottom => "bottom",
+                            AlignmentVertical::Top => "top",
+                        };
+                        let valignment =  attr("style", format!("vertical-align: {};", valignment));
+                        attrs.push(valignment);
+                    }
+
+                    let hspan = table.get_config().get_column_span((row, col), table.shape());
+                    if let Some(span) = hspan {
+                        let span = attr("colspan", span.to_string());
+                        attrs.push(span);
+                    }
+
+                    let vspan = table.get_config().get_row_span((row, col), table.shape());
+                    if let Some(span) = vspan {
+                        let span = attr("rowspan", span.to_string());
+                        attrs.push(span);
+                    }
+
+                    attrs.extend(td_attrs.iter().cloned());
+
+                    tag(inner_tag, attrs, text)
+                });
+
+                let td = block(columns);
+
+                let mut attrs = vec![attr("id", id(table_id, [row]).to_string())];
+                attrs.extend(tr_attrs.iter().cloned());
+
+                tag("tr", attrs, td)
+            });
+            let inner = block(rows);
+            tag(body_tag, [Attr::default(); 0], inner)
+        });
+
+        let mut attrs = vec![attr("id", table_id.to_string())];
+
+        let margin = table.get_config().get_margin();
+        if *margin != Margin::default() {
+            let margin = format!(
+                "margin: {}{} {}{} {}{} {}{};",
+                margin.top.size,
+                unit,
+                margin.right.size,
+                unit,
+                margin.bottom.size,
+                unit,
+                margin.left.size,
+                unit
+            );
+
+            let attr = attr("style", margin);
+            attrs.push(attr);
+        }
+
+        if border_size > 0 {
+            attrs.push(attr("border", border_size.to_string()));
+        }
+
+        attrs.extend(table_attrs.iter().cloned());
+
+        let table = tag("table", attrs, block(body));
+
+        let mut ctx = Context::new(0, 4, f);
+        table.display(&mut ctx)?;
+
+        return Ok(());
+    }
+
     let rows = (0..table.count_rows()).map(|row| {
         let columns = (0..table.count_columns()).filter(move |col| table.get_config().is_cell_visible((row, *col), table.shape())).map(move |col| {
             let text = table.get_records().get_text((row, col));
@@ -307,6 +412,7 @@ where
         tag("tr", attrs, td)
     });
     let inner = block(rows);
+    let tbody = tag("tbody", [Attr::default(); 0], inner);
 
     let mut attrs = vec![attr("id", table_id.to_string())];
 
@@ -334,7 +440,7 @@ where
 
     attrs.extend(table_attrs.iter().cloned());
 
-    let table = tag("table", attrs, inner);
+    let table = tag("table", attrs, tbody);
 
     let mut ctx = Context::new(0, 4, f);
     table.display(&mut ctx)
@@ -386,6 +492,12 @@ fn attr<D>(name: &str, value: D) -> Attr<'_, D> {
 struct Attr<'a, D> {
     name: Cow<'a, str>,
     value: D,
+}
+
+impl Default for Attr<'static, &'static str> {
+    fn default() -> Self {
+        Self::new("", "")
+    }
 }
 
 impl<'a, D> Attr<'a, D> {
