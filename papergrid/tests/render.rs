@@ -12,7 +12,7 @@
 
 use std::vec;
 
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity};
+use papergrid::{width::CfgWidthFunction, AlignmentHorizontal, AlignmentVertical, Entity};
 
 use crate::util::{grid, test_table};
 
@@ -39,7 +39,9 @@ test_table!(
 test_table!(
     render_1x1_empty_with_height_0,
     {
-        let records = papergrid::records::vec_records::VecRecords::new(vec![vec![papergrid::records::cell_info::CellInfo::new("", 0)]], (1, 1), 0);
+        let ctrl = CfgWidthFunction::default();
+        let data = vec![vec![papergrid::records::cell_info::CellInfo::new("", &ctrl)]];
+        let records = papergrid::records::vec_records::VecRecords::new(data, (1, 1), &ctrl);
         let width = util::EstimationList::from(vec![0]);
         let height = util::EstimationList::from(vec![0]);
         let mut cfg = papergrid::GridConfig::default();
@@ -55,7 +57,9 @@ test_table!(
 test_table!(
     render_1x1_empty_with_height_with_width,
     {
-        let records = papergrid::records::vec_records::VecRecords::new(vec![vec![papergrid::records::cell_info::CellInfo::new("", 0)]], (1, 1), 0);
+        let ctrl = CfgWidthFunction::default();
+        let data = vec![vec![papergrid::records::cell_info::CellInfo::new("", &ctrl)]];
+        let records = papergrid::records::vec_records::VecRecords::new(data, (1, 1), &ctrl);
         let width = util::EstimationList::from(vec![10]);
         let height = util::EstimationList::from(vec![0]);
         let mut cfg = papergrid::GridConfig::default();
