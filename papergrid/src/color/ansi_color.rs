@@ -19,11 +19,8 @@ impl<'a> AnsiColor<'a> {
     /// Otherwise you may want to use [`TryFrom`].
     ///
     /// [`TryFrom`]: std::convert::TryFrom
-    pub fn new(prefix: impl Into<Cow<'a, str>>, suffix: impl Into<Cow<'a, str>>) -> Self {
-        Self {
-            prefix: prefix.into(),
-            suffix: suffix.into(),
-        }
+    pub const fn new(prefix: Cow<'a, str>, suffix: Cow<'a, str>) -> Self {
+        Self { prefix, suffix }
     }
 }
 
@@ -72,5 +69,5 @@ fn parse_ansi_color(s: &str) -> Option<AnsiColor<'static>> {
     let start = block.start().to_string();
     let end = block.end().to_string();
 
-    Some(AnsiColor::new(start, end))
+    Some(AnsiColor::new(start.into(), end.into()))
 }
