@@ -25,7 +25,7 @@ use crate::{color::Color, Table, TableOption};
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default)]
 pub struct MarginColor {
-    inner: papergrid::MarginColor,
+    inner: papergrid::MarginColor<'static>,
 }
 
 impl MarginColor {
