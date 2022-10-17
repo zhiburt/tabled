@@ -1,4 +1,6 @@
-use tabled::{Style, Table, Width};
+use std::iter::FromIterator;
+
+use tabled::{builder::Builder, Height, Padding, Style, Table, Width};
 
 use crate::util::{create_table, test_table};
 
@@ -761,3 +763,60 @@ fn multiline_table_test2() {
         ),
     );
 }
+
+test_table!(
+    table_1x1_empty,
+    {
+        Builder::from_iter(vec![vec![""]]).build()
+            .with(tabled::Style::modern())
+            .with(Height::limit(0))
+            .with(Width::increase(10))
+    },
+    "┌────────┐"
+    "└────────┘"
+);
+
+test_table!(
+    table_2x2_empty,
+    {
+        Builder::from_iter(vec![vec![" ", ""], vec![" ", ""]]).build()
+            .with(tabled::Style::modern())
+            .with(Padding::zero())
+            .with(Height::list([1, 0]))
+    },
+    "┌─┬┐"
+    "│ ││"
+    "├─┼┤"
+    "└─┴┘"
+);
+
+test_table!(
+    table_2x2_empty_height_list_together_with_width_list_dont_work_0,
+    {
+        Builder::from_iter(vec![vec!["", ""], vec!["", ""]]).build()
+            .with(tabled::Style::modern())
+            .with(Padding::zero())
+            .with(Height::list([1, 0]))
+            .with(Width::list([1, 0]))
+    },
+    "┌─┬┐"
+    "│ ││"
+    "├─┼┤"
+    "│ ││"
+    "└─┴┘"
+);
+
+test_table!(
+    table_2x2_empty_height_list_together_with_width_list_dont_work_1,
+    {
+        Builder::from_iter(vec![vec!["", ""], vec!["", ""]]).build()
+            .with(tabled::Style::modern())
+            .with(Padding::zero())
+            .with(Width::list([1, 0]))
+            .with(Height::list([1, 0]))
+    },
+    "┌┬┐"
+    "│││"
+    "├┼┤"
+    "└┴┘"
+);

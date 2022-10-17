@@ -318,7 +318,35 @@ impl Style<(), (), (), (), (), (), (), ()> {
         )
     }
 
-    /// This style looks like a [`Style::modern`] but with rounded corners and no horozizontal lines except a header.
+    /// This style looks like a [`Style::modern`] but without horozizontal lines except a header.
+    ///
+    /// Beware: It uses UTF-8 characters.
+    ///
+    /// ```text
+    ///     ┌────┬──────────────┬───────────────────────────┐
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     └────┴──────────────┴───────────────────────────┘
+    /// ```
+    pub const fn sharp() -> Style<On, On, On, On, (), On, HLineArray<1>> {
+        Style::new(
+            create_borders(
+                Line::full('─', '┬', '┌', '┐'),
+                Line::full('─', '┴', '└', '┘'),
+                Line::empty(),
+                Some('│'),
+                Some('│'),
+                Some('│'),
+            ),
+            [HorizontalLine::new(1, Line::full('─', '┼', '├', '┤'))],
+            [],
+        )
+    }
+
+    /// This style looks like a [`Style::sharp`] but with rounded corners.
     ///
     /// Beware: It uses UTF-8 characters.
     ///
