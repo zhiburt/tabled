@@ -73,6 +73,18 @@ test_table!(
 );
 
 test_table!(
+    sharp_style,
+    create_table::<3, 3>().with(Style::sharp()),
+    "┌───┬──────────┬──────────┬──────────┐"
+    "│ N │ column 0 │ column 1 │ column 2 │"
+    "├───┼──────────┼──────────┼──────────┤"
+    "│ 0 │   0-0    │   0-1    │   0-2    │"
+    "│ 1 │   1-0    │   1-1    │   1-2    │"
+    "│ 2 │   2-0    │   2-1    │   2-2    │"
+    "└───┴──────────┴──────────┴──────────┘"
+);
+
+test_table!(
     modern_clean_style,
     create_table::<3, 3>().with(Style::modern().off_horizontal().horizontals(vec![HorizontalLine::new(1, Style::modern().get_horizontal())])),
     "┌───┬──────────┬──────────┬──────────┐"
