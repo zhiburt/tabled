@@ -57,3 +57,13 @@ impl WidthFunc for CfgWidthFunction {
         string_width_multiline_tab(text, self.tab_width)
     }
 }
+
+impl WidthFunc for usize {
+    fn width(&self, _: &str) -> usize {
+        *self
+    }
+
+    fn width_multiline(&self, _: &str) -> usize {
+        *self
+    }
+}
