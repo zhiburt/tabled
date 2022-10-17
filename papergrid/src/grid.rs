@@ -874,8 +874,8 @@ fn print_text(f: &mut fmt::Formatter<'_>, text: &str, tab_width: usize) -> fmt::
 #[cfg(feature = "color")]
 fn prepare_coloring<'a>(
     f: &mut fmt::Formatter<'_>,
-    clr: Option<&'a AnsiColor>,
-    used_color: &mut Option<&'a AnsiColor>,
+    clr: Option<&'a AnsiColor<'a>>,
+    used_color: &mut Option<&'a AnsiColor<'a>>,
 ) -> fmt::Result {
     match clr {
         Some(clr) => match used_color.as_mut() {
@@ -1090,7 +1090,7 @@ fn print_margin_vertical(
     offset: Offset,
     line: usize,
     count_lines: usize,
-    #[cfg(feature = "color")] color: &AnsiColor,
+    #[cfg(feature = "color")] color: &AnsiColor<'_>,
 ) -> fmt::Result {
     if indent.size == 0 {
         return Ok(());
@@ -1129,7 +1129,7 @@ fn print_indent_lines(
     indent: &Indent,
     offset: &Offset,
     width: usize,
-    #[cfg(feature = "color")] color: &AnsiColor,
+    #[cfg(feature = "color")] color: &AnsiColor<'_>,
 ) -> fmt::Result {
     if indent.size == 0 {
         return Ok(());
@@ -1187,7 +1187,7 @@ fn print_indent(
     f: &mut fmt::Formatter<'_>,
     c: char,
     n: usize,
-    #[cfg(feature = "color")] color: &AnsiColor,
+    #[cfg(feature = "color")] color: &AnsiColor<'_>,
 ) -> fmt::Result {
     #[cfg(feature = "color")]
     color.fmt_prefix(f)?;
@@ -1316,7 +1316,7 @@ where
 }
 
 #[cfg(feature = "color")]
-fn get_intersection_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor>
+fn get_intersection_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor<'_>>
 where
     R: Records,
 {
@@ -1324,7 +1324,7 @@ where
 }
 
 #[cfg(feature = "color")]
-fn get_vertical_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor>
+fn get_vertical_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor<'_>>
 where
     R: Records,
 {
@@ -1332,7 +1332,7 @@ where
 }
 
 #[cfg(feature = "color")]
-fn get_horizontal_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor>
+fn get_horizontal_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor<'_>>
 where
     R: Records,
 {

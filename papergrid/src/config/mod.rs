@@ -44,11 +44,11 @@ pub struct GridConfig {
     override_horizontal_borders: HashMap<Position, HashMap<Offset, char>>,
     override_vertical_borders: HashMap<Position, HashMap<Offset, char>>,
     #[cfg(feature = "color")]
-    margin_color: MarginColor,
+    margin_color: MarginColor<'static>,
     #[cfg(feature = "color")]
-    padding_color: EntityMap<PaddingColor>,
+    padding_color: EntityMap<PaddingColor<'static>>,
     #[cfg(feature = "color")]
-    border_colors: BordersConfig<AnsiColor>,
+    border_colors: BordersConfig<AnsiColor<'static>>,
 }
 
 impl Default for GridConfig {
@@ -545,33 +545,33 @@ impl GridConfig {
 #[cfg(feature = "color")]
 impl GridConfig {
     /// Gets a color of all borders on the grid.
-    pub fn get_border_color_global(&self) -> Option<&AnsiColor> {
+    pub fn get_border_color_global(&self) -> Option<&AnsiColor<'_>> {
         self.border_colors.get_global()
     }
 
     /// Sets a color of all borders on the grid.
-    pub fn set_border_color_global(&mut self, clr: AnsiColor) {
+    pub fn set_border_color_global(&mut self, clr: AnsiColor<'static>) {
         self.border_colors = BordersConfig::default();
         self.border_colors.set_global(clr);
     }
 
     /// Gets colors of a borders carcass on the grid.
-    pub fn get_color_borders(&self) -> &Borders<AnsiColor> {
+    pub fn get_color_borders(&self) -> &Borders<AnsiColor<'_>> {
         self.border_colors.get_borders()
     }
 
     /// Sets colors of border carcass on the grid.
-    pub fn set_borders_color(&mut self, clrs: Borders<AnsiColor>) {
+    pub fn set_borders_color(&mut self, clrs: Borders<AnsiColor<'static>>) {
         self.border_colors.set_borders(clrs);
     }
 
     /// Sets a color of border of a cell on the grid.
-    pub fn set_border_color(&mut self, pos: Position, border: Border<AnsiColor>) {
+    pub fn set_border_color(&mut self, pos: Position, border: Border<AnsiColor<'static>>) {
         self.border_colors.insert_border(pos, border)
     }
 
     /// Gets a color of border of a cell on the grid.
-    pub fn get_border_color(&self, pos: Position, shape: (usize, usize)) -> Border<&AnsiColor> {
+    pub fn get_border_color(&self, pos: Position, shape: (usize, usize)) -> Border<&AnsiColor<'_>> {
         self.border_colors.get_border(pos, shape.0, shape.1)
     }
 
@@ -581,32 +581,36 @@ impl GridConfig {
     }
 
     /// Get colors for a [`Margin`] value.
-    pub fn get_margin_color(&self) -> &MarginColor {
+    pub fn get_margin_color(&self) -> &MarginColor<'_> {
         &self.margin_color
     }
 
     /// Set colors for a [`Margin`] value.
-    pub fn set_margin_color(&mut self, color: MarginColor) {
+    pub fn set_margin_color(&mut self, color: MarginColor<'static>) {
         self.margin_color = color;
     }
 
     /// Get a padding to a given cells.
-    pub fn get_padding_color(&self, entity: Entity) -> &PaddingColor {
+    pub fn get_padding_color(&self, entity: Entity) -> &PaddingColor<'_> {
         self.padding_color.lookup(entity)
     }
 
     /// Set a padding to a given cells.
-    pub fn set_padding_color(&mut self, entity: Entity, color: PaddingColor) {
+    pub fn set_padding_color(&mut self, entity: Entity, color: PaddingColor<'static>) {
         self.padding_color.set(entity, color);
     }
 
     /// Gets a color of a cell horizontal.
-    pub fn get_horizontal_color(&self, pos: Position, count_rows: usize) -> Option<&AnsiColor> {
+    pub fn get_horizontal_color(&self, pos: Position, count_rows: usize) -> Option<&AnsiColor<'_>> {
         self.border_colors.get_horizontal(pos, count_rows)
     }
 
     /// Gets a color of a cell vertical.
-    pub fn get_vertical_color(&self, pos: Position, count_columns: usize) -> Option<&AnsiColor> {
+    pub fn get_vertical_color(
+        &self,
+        pos: Position,
+        count_columns: usize,
+    ) -> Option<&AnsiColor<'_>> {
         self.border_colors.get_vertical(pos, count_columns)
     }
 
@@ -615,7 +619,7 @@ impl GridConfig {
         &self,
         pos: Position,
         shape: (usize, usize),
-    ) -> Option<&AnsiColor> {
+    ) -> Option<&AnsiColor<'_>> {
         self.border_colors.get_intersection(pos, shape.0, shape.1)
     }
 }
@@ -628,11 +632,11 @@ pub type Padding = Sides<Indent>;
 
 #[cfg(feature = "color")]
 /// Margin represent a 4 indents of table as a whole.
-pub type MarginColor = Sides<AnsiColor>;
+pub type MarginColor<'a> = Sides<AnsiColor<'a>>;
 
 #[cfg(feature = "color")]
 /// PaddingColor represent a 4 indents of a cell.
-pub type PaddingColor = Sides<AnsiColor>;
+pub type PaddingColor<'a> = Sides<AnsiColor<'a>>;
 
 fn set_cell_row_span(cfg: &mut GridConfig, (mut row, col): Position, mut span: usize) {
     // such spans aren't supported

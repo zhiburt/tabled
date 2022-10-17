@@ -1,25 +1,33 @@
-use std::fmt::{self, Display, Formatter};
+use std::{
+    borrow::Cow,
+    fmt::{self, Display, Formatter},
+};
 
 use super::Color;
 
 /// The structure represents a ANSI color by suffix and prefix.
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
-pub struct AnsiColor {
-    prefix: String,
-    suffix: String,
+pub struct AnsiColor<'a> {
+    prefix: Cow<'a, str>,
+    suffix: Cow<'a, str>,
 }
 
-impl AnsiColor {
+impl<'a> AnsiColor<'a> {
     /// Constructs a new instance with suffix and prefix.
     ///
     /// They are not checked so you should make sure you provide correct ANSI.
     /// Otherwise you may want to use [`TryFrom`].
     ///
     /// [`TryFrom`]: std::convert::TryFrom
-    pub fn new(prefix: String, suffix: String) -> Self {
-        Self { prefix, suffix }
+    pub fn new(prefix: impl Into<Cow<'a, str>>, suffix: impl Into<Cow<'a, str>>) -> Self {
+        Self {
+            prefix: prefix.into(),
+            suffix: suffix.into(),
+        }
     }
+}
 
+impl AnsiColor<'_> {
     /// Gets a reference to a prefix.
     pub fn get_prefix(&self) -> &str {
         &self.prefix
@@ -31,7 +39,7 @@ impl AnsiColor {
     }
 }
 
-impl std::convert::TryFrom<&str> for AnsiColor {
+impl std::convert::TryFrom<&str> for AnsiColor<'static> {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
@@ -39,7 +47,7 @@ impl std::convert::TryFrom<&str> for AnsiColor {
     }
 }
 
-impl std::convert::TryFrom<String> for AnsiColor {
+impl std::convert::TryFrom<String> for AnsiColor<'static> {
     type Error = ();
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -47,7 +55,7 @@ impl std::convert::TryFrom<String> for AnsiColor {
     }
 }
 
-impl Color for AnsiColor {
+impl Color for AnsiColor<'_> {
     fn fmt_prefix(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.prefix.fmt(f)
     }
@@ -57,7 +65,7 @@ impl Color for AnsiColor {
     }
 }
 
-fn parse_ansi_color(s: &str) -> Option<AnsiColor> {
+fn parse_ansi_color(s: &str) -> Option<AnsiColor<'static>> {
     let mut blocks = ansi_str::get_blocks(s);
     let block = blocks.next()?;
 

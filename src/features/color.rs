@@ -34,7 +34,7 @@ use crate::{CellOption, Table, TableOption};
 /// [`Border`]: crate::Border
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct Color(AnsiColor);
+pub struct Color(AnsiColor<'static>);
 
 impl Color {
     /// Creates a new [`Color`]` instance, with ANSI prefix and ANSI suffix.
@@ -44,14 +44,14 @@ impl Color {
     }
 }
 
-impl From<Color> for AnsiColor {
+impl From<Color> for AnsiColor<'static> {
     fn from(c: Color) -> Self {
         c.0
     }
 }
 
-impl From<AnsiColor> for Color {
-    fn from(c: AnsiColor) -> Self {
+impl From<AnsiColor<'static>> for Color {
+    fn from(c: AnsiColor<'static>) -> Self {
         Self(c)
     }
 }
@@ -107,7 +107,7 @@ where
     }
 }
 
-fn border_color(color: &Color) -> papergrid::Border<AnsiColor> {
+fn border_color(color: &Color) -> papergrid::Border<AnsiColor<'static>> {
     papergrid::Border::full(
         color.0.clone(),
         color.0.clone(),

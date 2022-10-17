@@ -24,7 +24,7 @@ use crate::{color::Color, CellOption, Table};
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default)]
 pub struct PaddingColor {
-    inner: papergrid::PaddingColor,
+    inner: papergrid::PaddingColor<'static>,
 }
 
 impl PaddingColor {
