@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use papergrid::{
     height::HeightEstimator,
-    records::{cell_info::CellInfo, vec_records::VecRecords},
+    records::{cell_info::CellInfo, vec_records::VecRecords, Records},
     width::{CfgWidthFunction, WidthEstimator},
     Borders, Estimate, Grid, GridConfig, Position,
 };
@@ -146,3 +146,32 @@ pub const DEFAULT_BORDERS: Borders = Borders {
 
     intersection: Some('+'),
 };
+
+/// A [`Estimate`]or of a width for a [`Grid`].
+///
+/// [`Grid`]: crate::Grid
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct EstimationList {
+    list: Vec<usize>,
+}
+
+impl From<Vec<usize>> for EstimationList {
+    fn from(list: Vec<usize>) -> Self {
+        Self { list }
+    }
+}
+
+impl<R> Estimate<R> for EstimationList
+where
+    R: Records,
+{
+    fn estimate(&mut self, _: R, _: &GridConfig) {}
+
+    fn get(&self, column: usize) -> Option<usize> {
+        self.list.get(column).cloned()
+    }
+
+    fn total(&self) -> usize {
+        self.list.iter().sum()
+    }
+}

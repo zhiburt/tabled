@@ -10,7 +10,9 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity};
+use std::vec;
+
+use papergrid::{width::CfgWidthFunction, AlignmentHorizontal, AlignmentVertical, Entity};
 
 use crate::util::{grid, test_table};
 
@@ -24,6 +26,58 @@ test_table!(
     "+--------+"
     "|one line|"
     "+--------+"
+);
+
+test_table!(
+    render_1x1_empty,
+    grid(1, 1).change_cell((0, 0), "").build(),
+    "++"
+    "||"
+    "++"
+);
+
+test_table!(
+    render_1x1_empty_with_height_0,
+    {
+        let ctrl = CfgWidthFunction::default();
+        let data = vec![vec![papergrid::records::cell_info::CellInfo::new("", &ctrl)]];
+        let records = papergrid::records::vec_records::VecRecords::new(data, (1, 1), &ctrl);
+        let width = util::EstimationList::from(vec![0]);
+        let height = util::EstimationList::from(vec![0]);
+        let mut cfg = papergrid::GridConfig::default();
+        cfg.set_borders(util::DEFAULT_BORDERS);
+
+        let grid = papergrid::Grid::new(records, &cfg, &width, &height);
+        grid.to_string()
+    },
+    "++"
+    "++"
+);
+
+test_table!(
+    render_1x1_empty_with_height_with_width,
+    {
+        let ctrl = CfgWidthFunction::default();
+        let data = vec![vec![papergrid::records::cell_info::CellInfo::new("", &ctrl)]];
+        let records = papergrid::records::vec_records::VecRecords::new(data, (1, 1), &ctrl);
+        let width = util::EstimationList::from(vec![10]);
+        let height = util::EstimationList::from(vec![0]);
+        let mut cfg = papergrid::GridConfig::default();
+        cfg.set_borders(papergrid::Borders {
+            top_left: Some('┌'),
+            top_right: Some('┐'),
+            bottom_left: Some('└'),
+            bottom_right: Some('┘'),
+            top: Some('─'),
+            bottom: Some('─'),
+            ..Default::default()
+        });
+
+        let grid = papergrid::Grid::new(records, &cfg, &width, &height);
+        grid.to_string()
+    },
+    "┌──────────┐"
+    "└──────────┘"
 );
 
 test_table!(

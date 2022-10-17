@@ -1,6 +1,6 @@
 [package]
 name = "tabled"
-version = "0.9.0-fix.docs.rs.4"
+version = "0.9.1"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."
@@ -119,6 +119,11 @@ required-features = ["derive"]
 name = "rotate"
 path = "examples/rotate.rs"
 required-features = ["derive"]
+
+[[example]]
+name = "shadow"
+path = "examples/shadow.rs"
+required-features = ["macros"]
 
 [[example]]
 name = "nested_table_2"
