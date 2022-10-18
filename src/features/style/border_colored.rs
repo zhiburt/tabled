@@ -145,7 +145,7 @@ impl From<BorderColored> for Border<char> {
     }
 }
 
-impl From<BorderColored> for Border<AnsiColor> {
+impl From<BorderColored> for Border<AnsiColor<'static>> {
     fn from(val: BorderColored) -> Self {
         let border = val;
         let mut b = Border::default();
@@ -185,9 +185,9 @@ impl From<BorderColored> for Border<AnsiColor> {
     }
 }
 
-fn split_border_colored(b: &BorderColored) -> (Border<char>, Border<AnsiColor>) {
+fn split_border_colored(b: &BorderColored) -> (Border<char>, Border<AnsiColor<'static>>) {
     let mut border = Border::default();
-    let mut color: Border<AnsiColor> = Border::default();
+    let mut color: Border<AnsiColor<'static>> = Border::default();
 
     if let Some(s) = &b.0.left {
         border.left = Some(s.c());

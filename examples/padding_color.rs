@@ -88,10 +88,10 @@ fn main() {
         .with(Padding::new(1, 1, 2, 2))
         .with(MakeMaxPadding)
         .with(PaddingColor::new(
-            Color::try_from(' '.on_green().to_string()).unwrap(),
-            Color::try_from(' '.on_yellow().to_string()).unwrap(),
-            Color::try_from(' '.on_magenta().to_string()).unwrap(),
-            Color::try_from(' '.on_cyan().to_string()).unwrap(),
+            Color::BG_GREEN,
+            Color::BG_YELLOW,
+            Color::BG_MAGENTA,
+            Color::BG_CYAN,
         ))
         .with(Format::new(|s| s.on_black().white().to_string()));
 

@@ -6,11 +6,13 @@ use crate::measurment::Measurment;
 
 mod cell_height_increase;
 mod cell_height_limit;
+mod height_list;
 mod table_height_increase;
 mod table_height_limit;
 
 pub use cell_height_increase::CellHeightIncrease;
 pub use cell_height_limit::CellHeightLimit;
+pub use height_list::HeightList;
 pub use table_height_increase::TableHeightIncrease;
 pub use table_height_limit::TableHeightLimit;
 
@@ -197,6 +199,42 @@ impl Height {
         W: Measurment<Height>,
     {
         CellHeightLimit::new(width)
+    }
+
+    /// Create [`HeightList`] to set a table height to a constant list of row heights.
+    ///
+    /// Notice if you provide a list with `.len()` less than `Table::count_rows` then it will have no affect.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{Table, Height, Modify, object::Columns};
+    ///
+    /// let data = vec![
+    ///     ("Some\ndata", "here", "and here"),
+    ///     ("Some\ndata on a next", "line", "right here"),
+    /// ];
+    ///
+    /// let table = Table::new(data)
+    ///     .with(Height::list([1, 0, 2]))
+    ///     .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     "+----------------+------+------------+\n\
+    ///      | &str           | &str | &str       |\n\
+    ///      +----------------+------+------------+\n\
+    ///      +----------------+------+------------+\n\
+    ///      | Some           | line | right here |\n\
+    ///      | data on a next |      |            |\n\
+    ///      +----------------+------+------------+",
+    /// )
+    /// ```
+    pub fn list<I>(rows: I) -> HeightList
+    where
+        I: IntoIterator<Item = usize>,
+    {
+        HeightList::new(rows.into_iter().collect())
     }
 }
 

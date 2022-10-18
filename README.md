@@ -22,6 +22,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     - [Themes](#themes)
       - [ascii](#ascii)
       - [modern](#modern)
+      - [sharp](#sharp)
       - [rounded](#rounded)
       - [extended](#extended)
       - [psql](#psql)
@@ -203,6 +204,18 @@ please open an issue.
 └──────┴────────────────┴───────────────┘
 ```
 
+##### sharp
+
+```text
+┌──────┬────────────────┬───────────────┐
+│ name │ designed_by    │ invented_year │
+├──────┼────────────────┼───────────────┤
+│ C    │ Dennis Ritchie │ 1972          │
+│ Rust │ Graydon Hoare  │ 2010          │
+│ Go   │ Rob Pike       │ 2009          │
+└──────┴────────────────┴───────────────┘
+```
+
 ##### rounded
 
 ```text
@@ -210,9 +223,7 @@ please open an issue.
 │ name │ designed_by    │ invented_year │
 ├──────┼────────────────┼───────────────┤
 │ C    │ Dennis Ritchie │ 1972          │
-├──────┼────────────────┼───────────────┤
 │ Rust │ Graydon Hoare  │ 2010          │
-├──────┼────────────────┼───────────────┤
 │ Go   │ Rob Pike       │ 2009          │
 ╰──────┴────────────────┴───────────────╯
 ```

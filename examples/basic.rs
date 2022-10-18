@@ -5,34 +5,28 @@ use std::iter::FromIterator;
 
 use tabled::{object::Rows, Alignment, ModifyObject, Style, Table, Tabled};
 
-#[derive(Tabled)]
+#[derive(Debug, Tabled)]
 struct Distribution {
-    name: &'static str,
-    based_on: &'static str,
+    name: String,
+    based_on: String,
     is_active: bool,
-    is_cool: bool,
+}
+
+impl Distribution {
+    fn new(name: &str, base: &str, is_active: bool) -> Self {
+        Self {
+            based_on: base.to_owned(),
+            name: name.to_owned(),
+            is_active,
+        }
+    }
 }
 
 fn main() {
     let data = [
-        Distribution {
-            name: "Debian",
-            based_on: "",
-            is_active: true,
-            is_cool: true,
-        },
-        Distribution {
-            name: "Arch",
-            based_on: "",
-            is_active: true,
-            is_cool: true,
-        },
-        Distribution {
-            name: "Manjaro",
-            based_on: "Arch",
-            is_active: true,
-            is_cool: true,
-        },
+        Distribution::new("Debian", "", true),
+        Distribution::new("Arch", "", true),
+        Distribution::new("Manjaro", "Arch", true),
     ];
 
     let mut table = Table::from_iter(&data);
