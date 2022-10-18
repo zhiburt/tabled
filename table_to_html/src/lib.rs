@@ -117,7 +117,6 @@ use tabled::{
 /// The structure represents an HTML `<table>`.
 ///
 /// You can create it using [From] [Table].
-#[derive(Debug, Clone)]
 pub struct HtmlTable<T = Table> {
     id: String,
     border_size: usize,
@@ -125,6 +124,7 @@ pub struct HtmlTable<T = Table> {
     custom_table_atributes: Vec<Attr<'static, String>>,
     custom_td_atributes: Vec<Attr<'static, String>>,
     custom_tr_atributes: Vec<Attr<'static, String>>,
+    custom_cell_print: Option<Box<dyn Fn(&T, usize, usize) -> String>>,
     table: T,
 }
 
@@ -172,19 +172,52 @@ impl<T> HtmlTable<T> {
 
         self.custom_tr_atributes.push(attr);
     }
+
+    /// Overrides cell output to the given function.
+    ///
+    /// todo: We could create a trait like a Visitor which would be called when building the table.
+    ///       and a user could influence the build by overriding the emit logic, setting attribute etc.
+    pub fn override_cell_elements<F>(&mut self, f: F)
+    where
+        F: Fn(&T, usize, usize) -> String + 'static,
+    {
+        self.custom_cell_print = Some(Box::new(f));
+    }
 }
 
 impl<R> From<Table<R>> for HtmlTable<Table<R>> {
     fn from(table: Table<R>) -> Self {
         Self {
+            id: "tabled-table".into(),
             table,
             border_size: 1,
+            unit: Unit::Rem,
             custom_table_atributes: Vec::new(),
             custom_td_atributes: Vec::new(),
             custom_tr_atributes: Vec::new(),
-            id: "tabled-table".into(),
-            unit: Unit::Rem,
+            custom_cell_print: None,
         }
+    }
+}
+
+impl fmt::Debug for HtmlTable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result {
+        f.debug_struct("HtmlTable")
+            .field("id", &self.id)
+            .field("border_size", &self.border_size)
+            .field("unit", &self.unit)
+            .field("custom_table_atributes", &self.custom_table_atributes)
+            .field("custom_td_atributes", &self.custom_td_atributes)
+            .field("custom_tr_atributes", &self.custom_tr_atributes)
+            .field(
+                "custom_cell_print",
+                &self
+                    .custom_cell_print
+                    .as_ref()
+                    .map(|f| core::ptr::addr_of!(f)),
+            )
+            .field("table", &self.table)
+            .finish()
     }
 }
 
@@ -202,6 +235,7 @@ where
             &self.custom_table_atributes,
             &self.custom_tr_atributes,
             &self.custom_td_atributes,
+            &self.custom_cell_print,
         )
     }
 }
@@ -244,6 +278,7 @@ fn convert_to_html_table<R>(
     table_attrs: &[Attr<'static, String>],
     tr_attrs: &[Attr<'static, String>],
     td_attrs: &[Attr<'static, String>],
+    print_custom_cell: &Option<impl Fn(&Table<R>, usize, usize) -> String>,
 ) -> fmt::Result
 where
     R: Records,
@@ -264,16 +299,20 @@ where
                             .is_cell_visible((row, *col), table.shape())
                     })
                     .map(move |col| {
-                        let td_attr = if body_tag == "tbody" {
-                            td_attrs
-                        } else {
-                            &[]
-                        };
-
+                        let td_attr = if body_tag == "tbody" { td_attrs } else { &[] };
                         let attrs = create_cell_attrs(table, table_id, row, col, unit, td_attr);
 
-                        let text = table.get_records().get_text((row, col));
-                        let text = escape_text_html(text);
+                        let text = match print_custom_cell.as_ref() {
+                            Some(f) => {
+                                let text = (f)(table, row, col);
+                                Paragraph::NoEdit(text)
+                            }
+                            None => {
+                                let text = table.get_records().get_text((row, col));
+                                let text = escape_text_html(text);
+                                Paragraph::General(text)
+                            }
+                        };
 
                         tag(inner_tag, attrs, text)
                     });
@@ -333,8 +372,17 @@ where
             .map(move |col| {
                 let attrs = create_cell_attrs(table, table_id, row, col, unit, td_attrs);
 
-                let text = table.get_records().get_text((row, col));
-                let text = escape_text_html(text);
+                let text = match print_custom_cell.as_ref() {
+                    Some(f) => {
+                        let text = (f)(table, row, col);
+                        Paragraph::NoEdit(text)
+                    }
+                    None => {
+                        let text = table.get_records().get_text((row, col));
+                        let text = escape_text_html(text);
+                        Paragraph::General(text)
+                    }
+                };
 
                 tag("td", attrs, text)
             });
@@ -626,20 +674,43 @@ where
     }
 }
 
-impl Element for &str {
-    fn display(&self, ctx: &mut Context<'_, '_>) -> fmt::Result {
-        for (i, line) in self.lines().enumerate() {
-            if i > 0 {
-                ctx.write_str("\n")?;
-            }
+pub enum Paragraph {
+    General(String),
+    NoEdit(String),
+}
 
-            ctx.make_tab()?;
-            ctx.write_str("<p> ")?;
-            ctx.write_str(line)?;
-            ctx.write_str(" </p>")?;
+impl Element for Paragraph {
+    fn display(&self, ctx: &mut Context<'_, '_>) -> fmt::Result {
+        match self {
+            Paragraph::General(text) => {
+                for (i, line) in text.lines().enumerate() {
+                    if i > 0 {
+                        ctx.write_str("\n")?;
+                    }
+
+                    ctx.make_tab()?;
+                    ctx.write_str("<p> ")?;
+                    ctx.write_str(line)?;
+                    ctx.write_str(" </p>")?;
+                }
+            }
+            Paragraph::NoEdit(text) => text.display(ctx)?,
         }
 
         Ok(())
+    }
+
+    fn is_empty(&self) -> bool {
+        match self {
+            Paragraph::General(text) => text.is_empty(),
+            Paragraph::NoEdit(text) => text.is_empty(),
+        }
+    }
+}
+
+impl Element for &str {
+    fn display(&self, ctx: &mut Context<'_, '_>) -> fmt::Result {
+        ctx.write_str(self)
     }
 
     fn is_empty(&self) -> bool {
@@ -697,12 +768,12 @@ where
     }
 }
 
-trait Element {
+pub trait Element {
     fn display(&self, ctx: &mut Context<'_, '_>) -> fmt::Result;
     fn is_empty(&self) -> bool;
 }
 
-struct Context<'a, 'b> {
+pub struct Context<'a, 'b> {
     deep: usize,
     deep_step: usize,
     f: &'a mut fmt::Formatter<'b>,
@@ -713,13 +784,13 @@ impl<'a, 'b> Context<'a, 'b> {
         Self { deep, deep_step, f }
     }
 
-    fn dive<'c>(&'c mut self) -> Context<'c, 'b> {
+    pub fn dive<'c>(&'c mut self) -> Context<'c, 'b> {
         Context::new(self.deep + self.deep_step, self.deep_step, self.f)
     }
 }
 
 impl Context<'_, '_> {
-    fn make_tab(&mut self) -> fmt::Result {
+    pub fn make_tab(&mut self) -> fmt::Result {
         for _ in 0..self.deep {
             self.write_char(' ')?;
         }
