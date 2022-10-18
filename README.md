@@ -42,6 +42,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
     - [Padding Color](#padding-color)
   - [Margin](#margin)
     - [Margin Color](#margin-color)
+  - [Shadow](#shadow)
   - [Width](#width)
     - [Truncate](#truncate)
     - [Wrapping](#wrapping)
@@ -82,6 +83,7 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Expanded display](#expanded-display)
 - [Formats](#formats)
   - [`json` format](#json-format)
+  - [`html` format](#html-format)
 - [Notes](#notes)
   - [ANSI escape codes](#ansi-escape-codes)
   - [Emoji](#emoji)
@@ -584,6 +586,33 @@ table
     .with(MarginColor::new(on_red.clone(), on_red.clone(), on_red.clone(), on_red));
 ```
 
+### Shadow
+
+`Shadow` can be used to set a 'shadow' like margin.
+
+```rust
+use tabled::{Style, TableIteratorExt, shadow::Shadow};
+
+let data = vec![["A", "B", "C"]];
+let table = data
+    .table()
+    .with(Style::modern())
+    .with(Shadow::new(1))
+    .to_string();
+
+println!("{}", table);
+```
+
+An output could look like the following.
+
+```text
+┌───┬───┬───┐ 
+│ 0 │ 1 │ 2 │▒
+├───┼───┼───┤▒
+│ A │ B │ C │▒
+└───┴───┴───┘▒
+ ▒▒▒▒▒▒▒▒▒▒▒▒▒
+```
 
 ### Width
 
@@ -1567,6 +1596,11 @@ You can convert some formats to a `Table`.
 ### `json` format
 
 You can convert arbitrary `json` to a `Table` using [`json_to_table`](/json_to_table/README.md) library.
+See the **[example](/json_to_table/README.md)**.
+
+### `html` format
+
+You can convert a `Table` into `HTML` `<table>` using [`table_to_html`](/table_to_html/README.md) library.
 See the **[example](/json_to_table/README.md)**.
 
 ## Notes
