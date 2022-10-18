@@ -97,11 +97,14 @@ mod print_general {
         let total_width_with_margin =
             total_width + cfg.get_margin().left.size + cfg.get_margin().right.size;
 
+        let total_height = total_height(cfg, records, height);
+
         if cfg.get_margin().top.size > 0 {
             print_margin_top(f, cfg, total_width_with_margin)?;
             f.write_char('\n')?;
         }
 
+        let mut table_line = 0;
         let mut prev_empty_horizontal = false;
         for row in 0..records.count_rows() {
             let count_lines = height.get(row).unwrap();
@@ -111,9 +114,9 @@ mod print_general {
                     f.write_char('\n')?;
                 }
 
-                print_margin_left(f, cfg)?;
+                print_margin_left(f, cfg, table_line, total_height)?;
                 print_split_line(f, cfg, records, width, row, total_width)?;
-                print_margin_right(f, cfg)?;
+                print_margin_right(f, cfg, table_line, total_height)?;
 
                 if count_lines > 0 {
                     f.write_char('\n')?;
@@ -121,13 +124,15 @@ mod print_general {
                 } else {
                     prev_empty_horizontal = true;
                 }
+
+                table_line += 1;
             } else if count_lines > 0 && prev_empty_horizontal {
                 f.write_char('\n')?;
                 prev_empty_horizontal = false;
             }
 
             for i in 0..count_lines {
-                print_margin_left(f, cfg)?;
+                print_margin_left(f, cfg, table_line, total_height)?;
 
                 for col in 0..records.count_columns() {
                     print_vertical_char(f, cfg, records, (row, col), i, count_lines)?;
@@ -142,21 +147,23 @@ mod print_general {
                     }
                 }
 
-                print_margin_right(f, cfg)?;
+                print_margin_right(f, cfg, table_line, total_height)?;
 
                 let is_last_line = i + 1 == count_lines;
                 let is_last_row = row + 1 == records.count_rows();
                 if !(is_last_line && is_last_row) {
                     f.write_char('\n')?;
                 }
+
+                table_line += 1;
             }
         }
 
         if has_horizontal(cfg, records, records.count_rows()) {
             f.write_char('\n')?;
-            print_margin_left(f, cfg)?;
+            print_margin_left(f, cfg, table_line, total_height)?;
             print_split_line(f, cfg, records, width, records.count_rows(), total_width)?;
-            print_margin_right(f, cfg)?;
+            print_margin_right(f, cfg, table_line, total_height)?;
         }
 
         if cfg.get_margin().bottom.size > 0 {
@@ -340,11 +347,14 @@ mod print_spanned {
         let total_width_with_margin =
             total_width + cfg.get_margin().left.size + cfg.get_margin().right.size;
 
+        let total_height = total_height(cfg, records, height);
+
         if cfg.get_margin().top.size > 0 {
             print_margin_top(f, cfg, total_width_with_margin)?;
             f.write_char('\n')?;
         }
 
+        let mut table_line = 0;
         let mut prev_empty_horizontal = false;
         for row in 0..records.count_rows() {
             let count_lines = height.get(row).unwrap();
@@ -354,9 +364,9 @@ mod print_spanned {
                     f.write_char('\n')?;
                 }
 
-                print_margin_left(f, cfg)?;
+                print_margin_left(f, cfg, table_line, total_height)?;
                 print_split_line(f, cfg, records, width, height, row, total_width)?;
-                print_margin_right(f, cfg)?;
+                print_margin_right(f, cfg, table_line, total_height)?;
 
                 if count_lines > 0 {
                     f.write_char('\n')?;
@@ -364,13 +374,15 @@ mod print_spanned {
                 } else {
                     prev_empty_horizontal = true;
                 }
+
+                table_line += 1;
             } else if count_lines > 0 && prev_empty_horizontal {
                 f.write_char('\n')?;
                 prev_empty_horizontal = false;
             }
 
             for i in 0..count_lines {
-                print_margin_left(f, cfg)?;
+                print_margin_left(f, cfg, table_line, total_height)?;
 
                 for col in 0..records.count_columns() {
                     if !cfg.is_cell_covered_by_both_spans((row, col), shape) {
@@ -412,22 +424,24 @@ mod print_spanned {
                     }
                 }
 
-                print_margin_right(f, cfg)?;
+                print_margin_right(f, cfg, table_line, total_height)?;
 
                 let is_last_line = i + 1 == count_lines;
                 let is_last_row = row + 1 == records.count_rows();
                 if !(is_last_line && is_last_row) {
                     f.write_char('\n')?;
                 }
+
+                table_line += 1;
             }
         }
 
         if has_horizontal(cfg, records, records.count_rows()) {
             f.write_char('\n')?;
-            print_margin_left(f, cfg)?;
+            print_margin_left(f, cfg, table_line, total_height)?;
             let row = records.count_rows();
             print_split_line(f, cfg, records, width, height, row, total_width)?;
-            print_margin_right(f, cfg)?;
+            print_margin_right(f, cfg, table_line, total_height)?;
         }
 
         if cfg.get_margin().bottom.size > 0 {
@@ -860,8 +874,8 @@ fn print_text(f: &mut fmt::Formatter<'_>, text: &str, tab_width: usize) -> fmt::
 #[cfg(feature = "color")]
 fn prepare_coloring<'a>(
     f: &mut fmt::Formatter<'_>,
-    clr: Option<&'a AnsiColor>,
-    used_color: &mut Option<&'a AnsiColor>,
+    clr: Option<&'a AnsiColor<'a>>,
+    used_color: &mut Option<&'a AnsiColor<'a>>,
 ) -> fmt::Result {
     match clr {
         Some(clr) => match used_color.as_mut() {
@@ -965,6 +979,17 @@ where
     content_width + count_borders
 }
 
+fn total_height<R, H>(cfg: &GridConfig, records: &R, height: &H) -> usize
+where
+    H: Estimate<R>,
+    R: Records,
+{
+    let content_width = height.total();
+    let count_borders = cfg.count_horizontal(records.count_rows());
+
+    content_width + count_borders
+}
+
 fn print_vertical_char<R>(
     f: &mut fmt::Formatter<'_>,
     cfg: &GridConfig,
@@ -1007,6 +1032,7 @@ fn print_margin_top(f: &mut fmt::Formatter<'_>, cfg: &GridConfig, width: usize) 
     print_indent_lines(
         f,
         &cfg.get_margin().top,
+        &cfg.get_margin_offset().top,
         width,
         #[cfg(feature = "color")]
         &cfg.get_margin_color().top,
@@ -1017,46 +1043,137 @@ fn print_margin_bottom(f: &mut fmt::Formatter<'_>, cfg: &GridConfig, width: usiz
     print_indent_lines(
         f,
         &cfg.get_margin().bottom,
+        &cfg.get_margin_offset().bottom,
         width,
         #[cfg(feature = "color")]
         &cfg.get_margin_color().bottom,
     )
 }
 
-fn print_margin_left(f: &mut fmt::Formatter<'_>, cfg: &GridConfig) -> fmt::Result {
-    print_indent(
+fn print_margin_left(
+    f: &mut fmt::Formatter<'_>,
+    cfg: &GridConfig,
+    line: usize,
+    count_lines: usize,
+) -> fmt::Result {
+    print_margin_vertical(
         f,
-        cfg.get_margin().left.fill,
-        cfg.get_margin().left.size,
+        cfg.get_margin().left,
+        cfg.get_margin_offset().left,
+        line,
+        count_lines,
         #[cfg(feature = "color")]
         &cfg.get_margin_color().left,
     )
 }
 
-fn print_margin_right(f: &mut fmt::Formatter<'_>, cfg: &GridConfig) -> fmt::Result {
-    print_indent(
+fn print_margin_right(
+    f: &mut fmt::Formatter<'_>,
+    cfg: &GridConfig,
+    line: usize,
+    count_lines: usize,
+) -> fmt::Result {
+    print_margin_vertical(
         f,
-        cfg.get_margin().right.fill,
-        cfg.get_margin().right.size,
+        cfg.get_margin().right,
+        cfg.get_margin_offset().right,
+        line,
+        count_lines,
         #[cfg(feature = "color")]
         &cfg.get_margin_color().right,
     )
 }
 
-fn print_indent_lines(
+fn print_margin_vertical(
     f: &mut fmt::Formatter<'_>,
-    indent: &Indent,
-    width: usize,
-    #[cfg(feature = "color")] color: &AnsiColor,
+    indent: Indent,
+    offset: Offset,
+    line: usize,
+    count_lines: usize,
+    #[cfg(feature = "color")] color: &AnsiColor<'_>,
 ) -> fmt::Result {
-    for i in 0..indent.size {
+    if indent.size == 0 {
+        return Ok(());
+    }
+
+    let (start_offset, end_offset) = match offset {
+        Offset::Begin(start) => (start, 0),
+        Offset::End(end) => (0, end),
+    };
+
+    let start_offset = std::cmp::min(start_offset, count_lines);
+    let end_offset = std::cmp::min(end_offset, count_lines);
+    let end_pos = count_lines - end_offset;
+
+    if line >= start_offset && line < end_pos {
         print_indent(
             f,
             indent.fill,
-            width,
+            indent.size,
             #[cfg(feature = "color")]
             color,
-        )?;
+        )
+    } else {
+        print_indent(
+            f,
+            ' ',
+            indent.size,
+            #[cfg(feature = "color")]
+            &AnsiColor::default(),
+        )
+    }
+}
+
+fn print_indent_lines(
+    f: &mut fmt::Formatter<'_>,
+    indent: &Indent,
+    offset: &Offset,
+    width: usize,
+    #[cfg(feature = "color")] color: &AnsiColor<'_>,
+) -> fmt::Result {
+    if indent.size == 0 {
+        return Ok(());
+    }
+
+    let (start_offset, end_offset) = match offset {
+        Offset::Begin(start) => (*start, 0),
+        Offset::End(end) => (0, *end),
+    };
+
+    let start_offset = std::cmp::min(start_offset, width);
+    let end_offset = std::cmp::min(end_offset, width);
+    let indent_size = width - start_offset - end_offset;
+
+    for i in 0..indent.size {
+        if start_offset > 0 {
+            print_indent(
+                f,
+                ' ',
+                start_offset,
+                #[cfg(feature = "color")]
+                &AnsiColor::default(),
+            )?;
+        }
+
+        if indent_size > 0 {
+            print_indent(
+                f,
+                indent.fill,
+                indent_size,
+                #[cfg(feature = "color")]
+                color,
+            )?;
+        }
+
+        if end_offset > 0 {
+            print_indent(
+                f,
+                ' ',
+                end_offset,
+                #[cfg(feature = "color")]
+                &AnsiColor::default(),
+            )?;
+        }
 
         if i + 1 != indent.size {
             f.write_char('\n')?;
@@ -1070,7 +1187,7 @@ fn print_indent(
     f: &mut fmt::Formatter<'_>,
     c: char,
     n: usize,
-    #[cfg(feature = "color")] color: &AnsiColor,
+    #[cfg(feature = "color")] color: &AnsiColor<'_>,
 ) -> fmt::Result {
     #[cfg(feature = "color")]
     color.fmt_prefix(f)?;
@@ -1199,7 +1316,7 @@ where
 }
 
 #[cfg(feature = "color")]
-fn get_intersection_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor>
+fn get_intersection_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor<'_>>
 where
     R: Records,
 {
@@ -1207,7 +1324,7 @@ where
 }
 
 #[cfg(feature = "color")]
-fn get_vertical_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor>
+fn get_vertical_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor<'_>>
 where
     R: Records,
 {
@@ -1215,7 +1332,7 @@ where
 }
 
 #[cfg(feature = "color")]
-fn get_horizontal_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor>
+fn get_horizontal_color<R>(cfg: &GridConfig, records: R, pos: Position) -> Option<&AnsiColor<'_>>
 where
     R: Records,
 {

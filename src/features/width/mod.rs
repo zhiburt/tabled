@@ -35,6 +35,7 @@
 mod justify;
 mod min_width;
 mod truncate;
+mod width_list;
 mod wrap;
 
 use crate::measurment::Measurment;
@@ -43,6 +44,7 @@ pub use self::{
     justify::Justify,
     min_width::MinWidth,
     truncate::{SuffixLimit, Truncate},
+    width_list::WidthList,
     wrap::Wrap,
 };
 
@@ -135,6 +137,46 @@ impl Width {
         W: Measurment<Width>,
     {
         Justify::new(width)
+    }
+
+    /// Create [`WidthList`] to set a table width to a constant list of column widths.
+    ///
+    /// Notice if you provide a list with `.len()` smaller than `Table::count_columns` then it will have no affect.
+    ///
+    /// Also notice that you must provide values bigger than or equal to a real content width, otherwise it may panic.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{Table, Width};
+    ///
+    /// let data = vec![
+    ///     ("Some\ndata", "here", "and here"),
+    ///     ("Some\ndata on a next", "line", "right here"),
+    /// ];
+    ///
+    /// let table = Table::new(data)
+    ///     .with(Width::list([20, 10, 12]))
+    ///     .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     "+--------------------+----------+------------+\n\
+    ///      | &str               | &str     | &str       |\n\
+    ///      +--------------------+----------+------------+\n\
+    ///      | Some               | here     | and here   |\n\
+    ///      | data               |          |            |\n\
+    ///      +--------------------+----------+------------+\n\
+    ///      | Some               | line     | right here |\n\
+    ///      | data on a next     |          |            |\n\
+    ///      +--------------------+----------+------------+"
+    /// )
+    /// ```
+    pub fn list<I>(rows: I) -> WidthList
+    where
+        I: IntoIterator<Item = usize>,
+    {
+        WidthList::new(rows.into_iter().collect())
     }
 }
 
