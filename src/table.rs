@@ -387,7 +387,9 @@ where
             records.push(list);
         }
 
-        Builder::custom(VecRecords::from(records)).build()
+        let mut b = Builder::custom(VecRecords::from(records));
+        b.with_header();
+        b.build()
     }
 }
 
