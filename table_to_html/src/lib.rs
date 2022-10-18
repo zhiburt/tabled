@@ -309,7 +309,7 @@ where
                             }
                             None => {
                                 let text = table.get_records().get_text((row, col));
-                                let text = escape_text_html(text);
+                                let text = html_escape_text(text);
                                 Paragraph::General(text)
                             }
                         };
@@ -379,7 +379,7 @@ where
                     }
                     None => {
                         let text = table.get_records().get_text((row, col));
-                        let text = escape_text_html(text);
+                        let text = html_escape_text(text);
                         Paragraph::General(text)
                     }
                 };
@@ -813,7 +813,7 @@ impl<'a, 'b> DerefMut for Context<'a, 'b> {
     }
 }
 
-fn escape_text_html(text: &str) -> String {
+pub fn html_escape_text(text: &str) -> String {
     let mut buf = String::new();
     for c in text.chars() {
         match c {
