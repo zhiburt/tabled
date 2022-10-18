@@ -14,8 +14,8 @@ color = ["ansi-str", "ansitok"]
 unicode-width = "0.1.9"
 bytecount = "0.6.3"
 fnv = "1.0.7"
-ansi-str = { git = "https://github.com/zhiburt/ansi-str", branch = "patch-switch-to-vte", optional = true }
-ansitok = { git = "https://gitlab.com/zhiburt/ansitok", branch = "patch-switch-to-vte", optional = true  }
+ansi-str = { version = "0.4.1", optional = true }
+ansitok = { version = "0.1.1", optional = true  }
 
 [dev-dependencies]
 owo-colors = "3.4.0"
