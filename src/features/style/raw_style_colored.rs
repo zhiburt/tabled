@@ -16,7 +16,7 @@ use crate::{
 #[derive(Debug, Clone)]
 pub struct RawStyleColored {
     style: RawStyle,
-    colors: Borders<AnsiColor>,
+    colors: Borders<AnsiColor<'static>>,
 }
 
 impl RawStyleColored {
