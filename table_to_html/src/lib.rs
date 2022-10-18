@@ -53,49 +53,51 @@
 //!     html_table.to_string(),
 //!     concat!(
 //!         "<table id=\"tabled-table\" border=\"1\">\n",
-//!         "    <tr id=\"tabled-table-0\">\n",
-//!         "        <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" style=\"text-align: center;\">\n",
-//!         "            <p> name </p>\n",
-//!         "        </td>\n",
-//!         "        <td id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" style=\"text-align: center;\">\n",
-//!         "            <p> based_on </p>\n",
-//!         "        </td>\n",
-//!         "        <td id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" style=\"text-align: center;\">\n",
-//!         "            <p> is_active </p>\n",
-//!         "        </td>\n",
-//!         "    </tr>\n",
-//!         "    <tr id=\"tabled-table-1\">\n",
-//!         "        <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-//!         "            <p> Debian </p>\n",
-//!         "        </td>\n",
-//!         "        <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-//!         "        </td>\n",
-//!         "        <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-//!         "            <p> true </p>\n",
-//!         "        </td>\n",
-//!         "    </tr>\n",
-//!         "    <tr id=\"tabled-table-2\">\n",
-//!         "        <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-//!         "            <p> Arch </p>\n",
-//!         "        </td>\n",
-//!         "        <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-//!         "        </td>\n",
-//!         "        <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-//!         "            <p> true </p>\n",
-//!         "        </td>\n",
-//!         "    </tr>\n",
-//!         "    <tr id=\"tabled-table-3\">\n",
-//!         "        <td id=\"tabled-table-3-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-//!         "            <p> Manjaro </p>\n",
-//!         "        </td>\n",
-//!         "        <td id=\"tabled-table-3-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-//!         "            <p> Arch </p>\n",
-//!         "        </td>\n",
-//!         "        <td id=\"tabled-table-3-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
-//!         "            <p> true </p>\n",
-//!         "        </td>\n",
-//!         "    </tr>\n",
-//!         "</table>"
+//!         "    <tbody>\n",
+//!         "        <tr id=\"tabled-table-0\">\n",
+//!         "            <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" style=\"text-align: center;\">\n",
+//!         "                <p> name </p>\n",
+//!         "            </td>\n",
+//!         "            <td id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" style=\"text-align: center;\">\n",
+//!         "                <p> based_on </p>\n",
+//!         "            </td>\n",
+//!         "            <td id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" style=\"text-align: center;\">\n",
+//!         "                <p> is_active </p>\n",
+//!         "            </td>\n",
+//!         "        </tr>\n",
+//!         "        <tr id=\"tabled-table-1\">\n",
+//!         "            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
+//!         "                <p> Debian </p>\n",
+//!         "            </td>\n",
+//!         "            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
+//!         "            </td>\n",
+//!         "            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
+//!         "                <p> true </p>\n",
+//!         "            </td>\n",
+//!         "        </tr>\n",
+//!         "        <tr id=\"tabled-table-2\">\n",
+//!         "            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
+//!         "                <p> Arch </p>\n",
+//!         "            </td>\n",
+//!         "            <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
+//!         "            </td>\n",
+//!         "            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
+//!         "                <p> true </p>\n",
+//!         "            </td>\n",
+//!         "        </tr>\n",
+//!         "        <tr id=\"tabled-table-3\">\n",
+//!         "            <td id=\"tabled-table-3-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
+//!         "                <p> Manjaro </p>\n",
+//!         "            </td>\n",
+//!         "            <td id=\"tabled-table-3-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
+//!         "                <p> Arch </p>\n",
+//!         "            </td>\n",
+//!         "            <td id=\"tabled-table-3-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n",
+//!         "                <p> true </p>\n",
+//!         "            </td>\n",
+//!         "        </tr>\n",
+//!         "    </tbody>\n",
+//!         "</table>",
 //!     ),
 //! )
 //! ```
@@ -246,10 +248,114 @@ fn convert_to_html_table<R>(
 where
     R: Records,
 {
+    if table.has_header() {
+        let body = (0 .. 2).map(|i| {
+            let (body_tag, inner_tag, (row_start, row_end)) = if i == 0 {
+                ("thead", "th", (0, 1))
+            } else {
+                ("tbody", "td", (1, table.count_rows()))
+            };
+
+            let rows = (row_start..row_end).map(move |row| {
+                let columns = (0..table.count_columns()).filter(move |col| table.get_config().is_cell_visible((row, *col), table.shape())).map(move |col| {
+                    let id = attr("id", id(table_id, [row, col]).to_string());
+                    let mut attrs = vec![id];
+
+                    let padding = table.get_config().get_padding(Entity::Cell(row, col));
+                    if *padding != Padding::default() {
+                        let padding =  attr("style", format!("padding-top: {}{}; padding-bottom: {}{}; padding-left: {}{}; padding-right: {}{};", padding.top.size, unit, padding.bottom.size, unit, padding.left.size, unit, padding.right.size, unit));
+                        attrs.push(padding);
+                    }
+
+                    let halignment = table.get_config().get_alignment_horizontal(Entity::Cell(row, col));
+                    if !matches!(halignment, AlignmentHorizontal::Left) {
+                        let halignment = match halignment {
+                            AlignmentHorizontal::Center => "center",
+                            AlignmentHorizontal::Left => "left",
+                            AlignmentHorizontal::Right => "right",
+                        };
+                        let halignment =  attr("style", format!("text-align: {};", halignment));
+                        attrs.push(halignment);
+                    }
+
+                    let valignment = table.get_config().get_alignment_vertical(Entity::Cell(row, col));
+                    if !matches!(valignment, AlignmentVertical::Top) {
+                        let valignment = match valignment {
+                            AlignmentVertical::Center => "center",
+                            AlignmentVertical::Bottom => "bottom",
+                            AlignmentVertical::Top => "top",
+                        };
+                        let valignment =  attr("style", format!("vertical-align: {};", valignment));
+                        attrs.push(valignment);
+                    }
+
+                    let hspan = table.get_config().get_column_span((row, col), table.shape());
+                    if let Some(span) = hspan {
+                        let span = attr("colspan", span.to_string());
+                        attrs.push(span);
+                    }
+
+                    let vspan = table.get_config().get_row_span((row, col), table.shape());
+                    if let Some(span) = vspan {
+                        let span = attr("rowspan", span.to_string());
+                        attrs.push(span);
+                    }
+
+                    attrs.extend(td_attrs.iter().cloned());
+
+                    let text = table.get_records().get_text((row, col));
+                    let text = escape_text_html(text);
+
+                    tag(inner_tag, attrs, text)
+                });
+
+                let td = block(columns);
+
+                let mut attrs = vec![attr("id", id(table_id, [row]).to_string())];
+                attrs.extend(tr_attrs.iter().cloned());
+
+                tag("tr", attrs, td)
+            });
+            let inner = block(rows);
+            tag(body_tag, [Attr::default(); 0], inner)
+        });
+
+        let mut attrs = vec![attr("id", table_id.to_string())];
+
+        let margin = table.get_config().get_margin();
+        if *margin != Margin::default() {
+            let margin = format!(
+                "margin: {}{} {}{} {}{} {}{};",
+                margin.top.size,
+                unit,
+                margin.right.size,
+                unit,
+                margin.bottom.size,
+                unit,
+                margin.left.size,
+                unit
+            );
+
+            let attr = attr("style", margin);
+            attrs.push(attr);
+        }
+
+        if border_size > 0 {
+            attrs.push(attr("border", border_size.to_string()));
+        }
+
+        attrs.extend(table_attrs.iter().cloned());
+
+        let table = tag("table", attrs, block(body));
+
+        let mut ctx = Context::new(0, 4, f);
+        table.display(&mut ctx)?;
+
+        return Ok(());
+    }
+
     let rows = (0..table.count_rows()).map(|row| {
         let columns = (0..table.count_columns()).filter(move |col| table.get_config().is_cell_visible((row, *col), table.shape())).map(move |col| {
-            let text = table.get_records().get_text((row, col));
-
             let id = attr("id", id(table_id, [row, col]).to_string());
             let mut attrs = vec![id];
 
@@ -296,6 +402,9 @@ where
 
             attrs.extend(td_attrs.iter().cloned());
 
+            let text = table.get_records().get_text((row, col));
+            let text = escape_text_html(text);
+
             tag("td", attrs, text)
         });
 
@@ -307,6 +416,7 @@ where
         tag("tr", attrs, td)
     });
     let inner = block(rows);
+    let tbody = tag("tbody", [Attr::default(); 0], inner);
 
     let mut attrs = vec![attr("id", table_id.to_string())];
 
@@ -334,7 +444,7 @@ where
 
     attrs.extend(table_attrs.iter().cloned());
 
-    let table = tag("table", attrs, inner);
+    let table = tag("table", attrs, tbody);
 
     let mut ctx = Context::new(0, 4, f);
     table.display(&mut ctx)
@@ -386,6 +496,12 @@ fn attr<D>(name: &str, value: D) -> Attr<'_, D> {
 struct Attr<'a, D> {
     name: Cow<'a, str>,
     value: D,
+}
+
+impl Default for Attr<'static, &'static str> {
+    fn default() -> Self {
+        Self::new("", "")
+    }
 }
 
 impl<'a, D> Attr<'a, D> {
@@ -493,6 +609,16 @@ impl Element for &str {
     }
 }
 
+impl Element for String {
+    fn display(&self, ctx: &mut Context<'_, '_>) -> fmt::Result {
+        self.as_str().display(ctx)
+    }
+
+    fn is_empty(&self) -> bool {
+        self.as_str().is_empty()
+    }
+}
+
 fn block<F>(f: F) -> Block<F>
 where
     F: IntoIterator + Clone,
@@ -578,6 +704,22 @@ impl<'a, 'b> DerefMut for Context<'a, 'b> {
     }
 }
 
+fn escape_text_html(text: &str) -> String {
+    let mut buf = String::new();
+    for c in text.chars() {
+        match c {
+            '<' => buf.push_str("&lt;"),
+            '>' => buf.push_str("&gt;"),
+            '&' => buf.push_str("&amp;"),
+            '\'' => buf.push_str("&apos;"),
+            '\"' => buf.push_str("&quot;"),
+            c => buf.push(c),
+        }
+    }
+
+    buf
+}
+
 #[cfg(test)]
 mod tests {
     use tabled::Panel;
@@ -589,7 +731,7 @@ mod tests {
         let table = Table::new([["123", "324", "zxc"], ["123", "324", "zxc"]]);
         let table = HtmlTable::from(table).to_string();
 
-        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <tr id=\"tabled-table-0\">\n        <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 0 </p>\n        </td>\n        <td id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 1 </p>\n        </td>\n        <td id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 2 </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-1\">\n        <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-2\">\n        <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n</table>")
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 0 </p>\n            </th>\n            <th id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n            </th>\n            <th id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 2 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
     }
 
     #[test]
@@ -597,7 +739,7 @@ mod tests {
         let table = Table::new([["1\n2\n3", "324", "zxc"], ["123", "324", "zxc"]]);
         let table = HtmlTable::from(table).to_string();
 
-        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <tr id=\"tabled-table-0\">\n        <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 0 </p>\n        </td>\n        <td id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 1 </p>\n        </td>\n        <td id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 2 </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-1\">\n        <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 1 </p>\n            <p> 2 </p>\n            <p> 3 </p>\n        </td>\n        <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-2\">\n        <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n</table>")
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 0 </p>\n            </th>\n            <th id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n            </th>\n            <th id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 2 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n                <p> 2 </p>\n                <p> 3 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
     }
 
     #[test]
@@ -608,7 +750,7 @@ mod tests {
 
         let table = table.to_string();
 
-        assert_eq!(table, "<table id=\"custom.id.0\" border=\"1\">\n    <tr id=\"custom.id.0-0\">\n        <td id=\"custom.id.0-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 0 </p>\n        </td>\n        <td id=\"custom.id.0-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 1 </p>\n        </td>\n        <td id=\"custom.id.0-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 2 </p>\n        </td>\n    </tr>\n    <tr id=\"custom.id.0-1\">\n        <td id=\"custom.id.0-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"custom.id.0-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"custom.id.0-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n    <tr id=\"custom.id.0-2\">\n        <td id=\"custom.id.0-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"custom.id.0-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"custom.id.0-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n</table>")
+        assert_eq!(table, "<table id=\"custom.id.0\" border=\"1\">\n    <thead>\n        <tr id=\"custom.id.0-0\">\n            <th id=\"custom.id.0-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 0 </p>\n            </th>\n            <th id=\"custom.id.0-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n            </th>\n            <th id=\"custom.id.0-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 2 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"custom.id.0-1\">\n            <td id=\"custom.id.0-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"custom.id.0-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"custom.id.0-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"custom.id.0-2\">\n            <td id=\"custom.id.0-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"custom.id.0-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"custom.id.0-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
     }
 
     #[test]
@@ -619,7 +761,7 @@ mod tests {
 
         let table = table.to_string();
 
-        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <tr id=\"tabled-table-0\">\n        <td id=\"tabled-table-0-0\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n            <p> 0 </p>\n        </td>\n        <td id=\"tabled-table-0-1\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n            <p> 1 </p>\n        </td>\n        <td id=\"tabled-table-0-2\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n            <p> 2 </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-1\">\n        <td id=\"tabled-table-1-0\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-1-1\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-1-2\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-2\">\n        <td id=\"tabled-table-2-0\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-2-1\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-2-2\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n</table>")
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n                <p> 0 </p>\n            </th>\n            <th id=\"tabled-table-0-1\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n                <p> 1 </p>\n            </th>\n            <th id=\"tabled-table-0-2\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n                <p> 2 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-1\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0em; padding-bottom: 0em; padding-left: 1em; padding-right: 1em;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
     }
 
     #[test]
@@ -630,7 +772,7 @@ mod tests {
 
         let table = table.to_string();
 
-        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <tr id=\"tabled-table-0\" custom-attr=\"custom-val\">\n        <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 0 </p>\n        </td>\n        <td id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 1 </p>\n        </td>\n        <td id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 2 </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-1\" custom-attr=\"custom-val\">\n        <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-2\" custom-attr=\"custom-val\">\n        <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n</table>")
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\" custom-attr=\"custom-val\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 0 </p>\n            </th>\n            <th id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n            </th>\n            <th id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 2 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\" custom-attr=\"custom-val\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\" custom-attr=\"custom-val\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
     }
 
     #[test]
@@ -641,7 +783,7 @@ mod tests {
 
         let table = table.to_string();
 
-        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <tr id=\"tabled-table-0\">\n        <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n            <p> 0 </p>\n        </td>\n        <td id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n            <p> 1 </p>\n        </td>\n        <td id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n            <p> 2 </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-1\">\n        <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n            <p> zxc </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-2\">\n        <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n            <p> zxc </p>\n        </td>\n    </tr>\n</table>")
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 0 </p>\n            </th>\n            <th id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 1 </p>\n            </th>\n            <th id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 2 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
     }
 
     #[test]
@@ -652,7 +794,7 @@ mod tests {
 
         let table = table.to_string();
 
-        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\" custom-attr=\"custom-val\">\n    <tr id=\"tabled-table-0\">\n        <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 0 </p>\n        </td>\n        <td id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 1 </p>\n        </td>\n        <td id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 2 </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-1\">\n        <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-2\">\n        <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n</table>")
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\" custom-attr=\"custom-val\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 0 </p>\n            </th>\n            <th id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n            </th>\n            <th id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 2 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
     }
 
     #[test]
@@ -662,7 +804,7 @@ mod tests {
 
         let table = HtmlTable::from(table).to_string();
 
-        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <tr id=\"tabled-table-0\">\n        <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" colspan=\"3\">\n            <p> Hello World! </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-1\">\n        <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 0 </p>\n        </td>\n        <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 1 </p>\n        </td>\n        <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 2 </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-2\">\n        <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-3\">\n        <td id=\"tabled-table-3-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-3-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-3-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n</table>")
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" colspan=\"3\">\n                <p> Hello World! </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 0 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 2 </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-3\">\n            <td id=\"tabled-table-3-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-3-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-3-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
     }
 
     #[test]
@@ -672,7 +814,7 @@ mod tests {
 
         let table = HtmlTable::from(table).to_string();
 
-        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <tr id=\"tabled-table-0\">\n        <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 0 </p>\n        </td>\n        <td id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" rowspan=\"3\">\n            <p> H </p>\n            <p> e </p>\n            <p> l </p>\n            <p> l </p>\n            <p> o </p>\n            <p>   </p>\n            <p> W </p>\n            <p> o </p>\n            <p> r </p>\n            <p> l </p>\n            <p> d </p>\n            <p> ! </p>\n        </td>\n        <td id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 1 </p>\n        </td>\n        <td id=\"tabled-table-0-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 2 </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-1\">\n        <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-1-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-2\">\n        <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-2-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n</table>")
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 0 </p>\n            </th>\n            <th id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" rowspan=\"3\">\n                <p> H </p>\n                <p> e </p>\n                <p> l </p>\n                <p> l </p>\n                <p> o </p>\n                <p>   </p>\n                <p> W </p>\n                <p> o </p>\n                <p> r </p>\n                <p> l </p>\n                <p> d </p>\n                <p> ! </p>\n            </th>\n            <th id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n            </th>\n            <th id=\"tabled-table-0-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 2 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-1-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
     }
 
     #[test]
@@ -683,6 +825,15 @@ mod tests {
 
         let table = HtmlTable::from(table).to_string();
 
-        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <tr id=\"tabled-table-0\">\n        <td id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" colspan=\"3\">\n            <p> Hello World! </p>\n        </td>\n        <td id=\"tabled-table-0-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n        </td>\n    </tr>\n    <tr id=\"tabled-table-1\">\n        <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 0 </p>\n        </td>\n        <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" rowspan=\"3\">\n            <p> H </p>\n            <p> e </p>\n            <p> l </p>\n            <p> l </p>\n            <p> o </p>\n            <p>   </p>\n            <p> W </p>\n            <p> o </p>\n            <p> r </p>\n            <p> l </p>\n            <p> d </p>\n            <p> ! </p>\n        </td>\n        <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 1 </p>\n        </td>\n        <td id=\"tabled-table-1-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 2 </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-2\">\n        <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-2-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n    <tr id=\"tabled-table-3\">\n        <td id=\"tabled-table-3-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 123 </p>\n        </td>\n        <td id=\"tabled-table-3-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> 324 </p>\n        </td>\n        <td id=\"tabled-table-3-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            <p> zxc </p>\n        </td>\n    </tr>\n</table>")
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" colspan=\"3\">\n                <p> Hello World! </p>\n            </th>\n            <th id=\"tabled-table-0-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 0 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" rowspan=\"3\">\n                <p> H </p>\n                <p> e </p>\n                <p> l </p>\n                <p> l </p>\n                <p> o </p>\n                <p>   </p>\n                <p> W </p>\n                <p> o </p>\n                <p> r </p>\n                <p> l </p>\n                <p> d </p>\n                <p> ! </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n            </td>\n            <td id=\"tabled-table-1-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 2 </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-3\">\n            <td id=\"tabled-table-3-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-3-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-3-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
+    }
+
+    #[test]
+    fn text_escape() {
+        let mut table = Table::new([["&&&<<<>>>'''\"\"\""]]);
+        table.with(tabled::Padding::zero());
+        let table = HtmlTable::from(table).to_string();
+
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\">\n                <p> 0 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\">\n                <p> &amp;&amp;&amp;&lt;&lt;&lt;&gt;&gt;&gt;&apos;&apos;&apos;&quot;&quot;&quot; </p>\n            </td>\n        </tr>\n    </tbody>\n</table>");
     }
 }

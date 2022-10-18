@@ -81,6 +81,7 @@ pub trait CellOption<R> {
 pub struct Table<R = VecRecords<CellInfo<'static>>> {
     records: R,
     cfg: GridConfig,
+    has_header: bool,
     widths: Option<Vec<usize>>,
     heights: Option<Vec<usize>>,
 }
@@ -112,7 +113,9 @@ impl Table<VecRecords<CellInfo<'static>>> {
             records.push(list);
         }
 
-        Builder::custom(VecRecords::from(records)).build()
+        let mut b = Builder::custom(VecRecords::from(records));
+        b.with_header();
+        b.build()
     }
 }
 
@@ -220,6 +223,14 @@ impl<R> Table<R> {
         self
     }
 
+    /// A verification that first row is actually a header.
+    ///
+    /// It's `true` when [`Table::new`] and [`Table::builder`] is used.
+    /// In many other cases it's `false`.
+    pub fn has_header(&self) -> bool {
+        self.has_header
+    }
+
     pub(crate) fn cache_width(&mut self, widths: Vec<usize>) {
         self.widths = Some(widths);
     }
@@ -234,6 +245,10 @@ impl<R> Table<R> {
 
     pub(crate) fn destroy_height_cache(&mut self) {
         self.heights = None;
+    }
+
+    pub(crate) fn set_header_flag(&mut self, has_header: bool) {
+        self.has_header = has_header;
     }
 }
 
@@ -340,6 +355,7 @@ where
         Self {
             records,
             cfg: GridConfig::default(),
+            has_header: false,
             widths: None,
             heights: None,
         }

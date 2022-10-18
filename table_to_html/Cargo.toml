@@ -8,4 +8,4 @@ repository = "https://github.com/zhiburt/tabled"
 license = "MIT"
 
 [dependencies]
-tabled = "0.9.0"
+tabled = { path = ".." }

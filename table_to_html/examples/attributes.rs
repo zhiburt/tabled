@@ -1,7 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example basic`
-
-use std::iter::FromIterator;
+//! `cargo run --example attributes`
 
 use table_to_html::HtmlTable;
 use tabled::{object::Rows, Alignment, ModifyObject, Table, Tabled};
@@ -30,7 +28,7 @@ fn main() {
         Distribution::new("Manjaro", "Arch", true),
     ];
 
-    let mut table = Table::from_iter(&data);
+    let mut table = Table::new(&data);
     table.with(Rows::first().modify().with(Alignment::center()));
 
     let mut html_table = HtmlTable::from(table);
