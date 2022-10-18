@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.10.0] - 2022-10-18
+
+### Added
+
+- Added `Shadow` configuration to create a margin which would look like a 'shadow'.
+- Added `table_to_html` crate to build an `HTML` from a `Table`.
+- Added default list of colors to `Color` such as `Color::RED`, `Color::BLUE` etc.
+- Added a new style `Style::sharp` by [@wfxr](https://github.com/wfxr).
+
+### Changed
+
+- Bumped `ansi-str` in hope it being more effective.
+
+### Fixed
+
+- docs.rs build issue.
+
 ## [0.9.0] - 2022-09-30
 
 ### Added
