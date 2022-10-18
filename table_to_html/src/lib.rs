@@ -258,8 +258,6 @@ where
 
             let rows = (row_start..row_end).map(move |row| {
                 let columns = (0..table.count_columns()).filter(move |col| table.get_config().is_cell_visible((row, *col), table.shape())).map(move |col| {
-                    let text = table.get_records().get_text((row, col));
-
                     let id = attr("id", id(table_id, [row, col]).to_string());
                     let mut attrs = vec![id];
 
@@ -304,6 +302,9 @@ where
                     }
 
                     attrs.extend(td_attrs.iter().cloned());
+
+                    let text = table.get_records().get_text((row, col));
+                    let text = escape_text_html(text);
 
                     tag(inner_tag, attrs, text)
                 });
@@ -355,8 +356,6 @@ where
 
     let rows = (0..table.count_rows()).map(|row| {
         let columns = (0..table.count_columns()).filter(move |col| table.get_config().is_cell_visible((row, *col), table.shape())).map(move |col| {
-            let text = table.get_records().get_text((row, col));
-
             let id = attr("id", id(table_id, [row, col]).to_string());
             let mut attrs = vec![id];
 
@@ -402,6 +401,9 @@ where
             }
 
             attrs.extend(td_attrs.iter().cloned());
+
+            let text = table.get_records().get_text((row, col));
+            let text = escape_text_html(text);
 
             tag("td", attrs, text)
         });
@@ -607,6 +609,16 @@ impl Element for &str {
     }
 }
 
+impl Element for String {
+    fn display(&self, ctx: &mut Context<'_, '_>) -> fmt::Result {
+        self.as_str().display(ctx)
+    }
+
+    fn is_empty(&self) -> bool {
+        self.as_str().is_empty()
+    }
+}
+
 fn block<F>(f: F) -> Block<F>
 where
     F: IntoIterator + Clone,
@@ -690,6 +702,22 @@ impl<'a, 'b> DerefMut for Context<'a, 'b> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.f
     }
+}
+
+fn escape_text_html(text: &str) -> String {
+    let mut buf = String::new();
+    for c in text.chars() {
+        match c {
+            '<' => buf.push_str("&lt;"),
+            '>' => buf.push_str("&gt;"),
+            '&' => buf.push_str("&amp;"),
+            '\'' => buf.push_str("&apos;"),
+            '\"' => buf.push_str("&quot;"),
+            c => buf.push(c),
+        }
+    }
+
+    buf
 }
 
 #[cfg(test)]
@@ -798,5 +826,14 @@ mod tests {
         let table = HtmlTable::from(table).to_string();
 
         assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" colspan=\"3\">\n                <p> Hello World! </p>\n            </th>\n            <th id=\"tabled-table-0-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 0 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" rowspan=\"3\">\n                <p> H </p>\n                <p> e </p>\n                <p> l </p>\n                <p> l </p>\n                <p> o </p>\n                <p>   </p>\n                <p> W </p>\n                <p> o </p>\n                <p> r </p>\n                <p> l </p>\n                <p> d </p>\n                <p> ! </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n            </td>\n            <td id=\"tabled-table-1-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 2 </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-3\">\n            <td id=\"tabled-table-3-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-3-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-3-3\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
+    }
+
+    #[test]
+    fn text_escape() {
+        let mut table = Table::new([["&&&<<<>>>'''\"\"\""]]);
+        table.with(tabled::Padding::zero());
+        let table = HtmlTable::from(table).to_string();
+
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\">\n                <p> 0 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\">\n                <p> &amp;&amp;&amp;&lt;&lt;&lt;&gt;&gt;&gt;&apos;&apos;&apos;&quot;&quot;&quot; </p>\n            </td>\n        </tr>\n    </tbody>\n</table>");
     }
 }
