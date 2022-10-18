@@ -249,7 +249,7 @@ where
     R: Records,
 {
     if table.has_header() {
-        let body = (0 .. 2).map(|i| {
+        let body = (0..2).map(|i| {
             let (body_tag, inner_tag, (row_start, row_end)) = if i == 0 {
                 ("thead", "th", (0, 1))
             } else {
@@ -257,57 +257,26 @@ where
             };
 
             let rows = (row_start..row_end).map(move |row| {
-                let columns = (0..table.count_columns()).filter(move |col| table.get_config().is_cell_visible((row, *col), table.shape())).map(move |col| {
-                    let id = attr("id", id(table_id, [row, col]).to_string());
-                    let mut attrs = vec![id];
-
-                    let padding = table.get_config().get_padding(Entity::Cell(row, col));
-                    if *padding != Padding::default() {
-                        let padding =  attr("style", format!("padding-top: {}{}; padding-bottom: {}{}; padding-left: {}{}; padding-right: {}{};", padding.top.size, unit, padding.bottom.size, unit, padding.left.size, unit, padding.right.size, unit));
-                        attrs.push(padding);
-                    }
-
-                    let halignment = table.get_config().get_alignment_horizontal(Entity::Cell(row, col));
-                    if !matches!(halignment, AlignmentHorizontal::Left) {
-                        let halignment = match halignment {
-                            AlignmentHorizontal::Center => "center",
-                            AlignmentHorizontal::Left => "left",
-                            AlignmentHorizontal::Right => "right",
+                let columns = (0..table.count_columns())
+                    .filter(move |col| {
+                        table
+                            .get_config()
+                            .is_cell_visible((row, *col), table.shape())
+                    })
+                    .map(move |col| {
+                        let td_attr = if body_tag == "tbody" {
+                            td_attrs
+                        } else {
+                            &[]
                         };
-                        let halignment =  attr("style", format!("text-align: {};", halignment));
-                        attrs.push(halignment);
-                    }
 
-                    let valignment = table.get_config().get_alignment_vertical(Entity::Cell(row, col));
-                    if !matches!(valignment, AlignmentVertical::Top) {
-                        let valignment = match valignment {
-                            AlignmentVertical::Center => "center",
-                            AlignmentVertical::Bottom => "bottom",
-                            AlignmentVertical::Top => "top",
-                        };
-                        let valignment =  attr("style", format!("vertical-align: {};", valignment));
-                        attrs.push(valignment);
-                    }
+                        let attrs = create_cell_attrs(table, table_id, row, col, unit, td_attr);
 
-                    let hspan = table.get_config().get_column_span((row, col), table.shape());
-                    if let Some(span) = hspan {
-                        let span = attr("colspan", span.to_string());
-                        attrs.push(span);
-                    }
+                        let text = table.get_records().get_text((row, col));
+                        let text = escape_text_html(text);
 
-                    let vspan = table.get_config().get_row_span((row, col), table.shape());
-                    if let Some(span) = vspan {
-                        let span = attr("rowspan", span.to_string());
-                        attrs.push(span);
-                    }
-
-                    attrs.extend(td_attrs.iter().cloned());
-
-                    let text = table.get_records().get_text((row, col));
-                    let text = escape_text_html(text);
-
-                    tag(inner_tag, attrs, text)
-                });
+                        tag(inner_tag, attrs, text)
+                    });
 
                 let td = block(columns);
 
@@ -355,58 +324,20 @@ where
     }
 
     let rows = (0..table.count_rows()).map(|row| {
-        let columns = (0..table.count_columns()).filter(move |col| table.get_config().is_cell_visible((row, *col), table.shape())).map(move |col| {
-            let id = attr("id", id(table_id, [row, col]).to_string());
-            let mut attrs = vec![id];
+        let columns = (0..table.count_columns())
+            .filter(move |col| {
+                table
+                    .get_config()
+                    .is_cell_visible((row, *col), table.shape())
+            })
+            .map(move |col| {
+                let attrs = create_cell_attrs(table, table_id, row, col, unit, td_attrs);
 
-            let padding = table.get_config().get_padding(Entity::Cell(row, col));
-            if *padding != Padding::default() {
-                let padding =  attr("style", format!("padding-top: {}{}; padding-bottom: {}{}; padding-left: {}{}; padding-right: {}{};", padding.top.size, unit, padding.bottom.size, unit, padding.left.size, unit, padding.right.size, unit));
-                attrs.push(padding);
-            }
+                let text = table.get_records().get_text((row, col));
+                let text = escape_text_html(text);
 
-            let halignment = table.get_config().get_alignment_horizontal(Entity::Cell(row, col));
-            if !matches!(halignment, AlignmentHorizontal::Left) {
-                let halignment = match halignment {
-                    AlignmentHorizontal::Center => "center",
-                    AlignmentHorizontal::Left => "left",
-                    AlignmentHorizontal::Right => "right",
-                };
-                let halignment =  attr("style", format!("text-align: {};", halignment));
-                attrs.push(halignment);
-            }
-
-            let valignment = table.get_config().get_alignment_vertical(Entity::Cell(row, col));
-            if !matches!(valignment, AlignmentVertical::Top) {
-                let valignment = match valignment {
-                    AlignmentVertical::Center => "center",
-                    AlignmentVertical::Bottom => "bottom",
-                    AlignmentVertical::Top => "top",
-                };
-                let valignment =  attr("style", format!("vertical-align: {};", valignment));
-                attrs.push(valignment);
-            }
-
-
-            let hspan = table.get_config().get_column_span((row, col), table.shape());
-            if let Some(span) = hspan {
-                let span = attr("colspan", span.to_string());
-                attrs.push(span);
-            }
-
-            let vspan = table.get_config().get_row_span((row, col), table.shape());
-            if let Some(span) = vspan {
-                let span = attr("rowspan", span.to_string());
-                attrs.push(span);
-            }
-
-            attrs.extend(td_attrs.iter().cloned());
-
-            let text = table.get_records().get_text((row, col));
-            let text = escape_text_html(text);
-
-            tag("td", attrs, text)
-        });
+                tag("td", attrs, text)
+            });
 
         let td = block(columns);
 
@@ -448,6 +379,113 @@ where
 
     let mut ctx = Context::new(0, 4, f);
     table.display(&mut ctx)
+}
+
+fn create_cell_attrs<R>(
+    table: &Table<R>,
+    table_id: &str,
+    row: usize,
+    col: usize,
+    unit: Unit,
+    td_attrs: &[Attr<'static, String>],
+) -> Vec<Attr<'static, String>>
+where
+    R: Records,
+{
+    let id = attr("id", id(table_id, [row, col]).to_string());
+
+    let mut attrs = vec![id];
+
+    let padding = table.get_config().get_padding(Entity::Cell(row, col));
+    add_attr_padding(*padding, unit, &mut attrs);
+
+    let halignment = table
+        .get_config()
+        .get_alignment_horizontal(Entity::Cell(row, col));
+    add_attr_horizontal_alignment(halignment, &mut attrs);
+
+    let valignment = table
+        .get_config()
+        .get_alignment_vertical(Entity::Cell(row, col));
+    add_attr_vertical_alignment(valignment, &mut attrs);
+
+    let hspan = table
+        .get_config()
+        .get_column_span((row, col), table.shape());
+    add_attr_horizontal_span(hspan, &mut attrs);
+
+    let vspan = table.get_config().get_row_span((row, col), table.shape());
+    add_attr_vertical_span(vspan, &mut attrs);
+
+    attrs.extend(td_attrs.iter().cloned());
+
+    attrs
+}
+
+fn add_attr_horizontal_alignment(
+    alignment: &AlignmentHorizontal,
+    attrs: &mut Vec<Attr<'static, String>>,
+) {
+    if !matches!(alignment, AlignmentHorizontal::Left) {
+        let alignment = match alignment {
+            AlignmentHorizontal::Center => "center",
+            AlignmentHorizontal::Left => "left",
+            AlignmentHorizontal::Right => "right",
+        };
+
+        let attr = attr("style", format!("text-align: {};", alignment));
+        attrs.push(attr);
+    }
+}
+
+fn add_attr_vertical_alignment(
+    alignment: &AlignmentVertical,
+    attrs: &mut Vec<Attr<'static, String>>,
+) {
+    if !matches!(alignment, AlignmentVertical::Top) {
+        let valignment = match alignment {
+            AlignmentVertical::Center => "center",
+            AlignmentVertical::Bottom => "bottom",
+            AlignmentVertical::Top => "top",
+        };
+
+        let attr = attr("style", format!("vertical-align: {};", valignment));
+        attrs.push(attr);
+    }
+}
+
+fn add_attr_vertical_span(span: Option<usize>, attrs: &mut Vec<Attr<'static, String>>) {
+    if let Some(span) = span {
+        let attr = attr("rowspan", span.to_string());
+        attrs.push(attr);
+    }
+}
+
+fn add_attr_horizontal_span(span: Option<usize>, attrs: &mut Vec<Attr<'static, String>>) {
+    if let Some(span) = span {
+        let attr = attr("colspan", span.to_string());
+        attrs.push(attr);
+    }
+}
+
+fn add_attr_padding(padding: Padding, unit: Unit, attrs: &mut Vec<Attr<'static, String>>) {
+    if padding != Padding::default() {
+        let padding = attr(
+            "style",
+            format!(
+                "padding-top: {}{}; padding-bottom: {}{}; padding-left: {}{}; padding-right: {}{};",
+                padding.top.size,
+                unit,
+                padding.bottom.size,
+                unit,
+                padding.left.size,
+                unit,
+                padding.right.size,
+                unit
+            ),
+        );
+        attrs.push(padding);
+    }
 }
 
 fn id<T>(table_id: &str, tail: T) -> ElementID<'_, T> {
@@ -783,7 +821,7 @@ mod tests {
 
         let table = table.to_string();
 
-        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 0 </p>\n            </th>\n            <th id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 1 </p>\n            </th>\n            <th id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 2 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
+        assert_eq!(table, "<table id=\"tabled-table\" border=\"1\">\n    <thead>\n        <tr id=\"tabled-table-0\">\n            <th id=\"tabled-table-0-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 0 </p>\n            </th>\n            <th id=\"tabled-table-0-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 1 </p>\n            </th>\n            <th id=\"tabled-table-0-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\">\n                <p> 2 </p>\n            </th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr id=\"tabled-table-1\">\n            <td id=\"tabled-table-1-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-1-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-1-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> zxc </p>\n            </td>\n        </tr>\n        <tr id=\"tabled-table-2\">\n            <td id=\"tabled-table-2-0\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 123 </p>\n            </td>\n            <td id=\"tabled-table-2-1\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> 324 </p>\n            </td>\n            <td id=\"tabled-table-2-2\" style=\"padding-top: 0rem; padding-bottom: 0rem; padding-left: 1rem; padding-right: 1rem;\" custom-attr=\"custom-val\">\n                <p> zxc </p>\n            </td>\n        </tr>\n    </tbody>\n</table>")
     }
 
     #[test]
