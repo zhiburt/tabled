@@ -1,6 +1,6 @@
 [package]
 name = "json_to_table"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 repository = "https://github.com/zhiburt/tabled"
@@ -17,4 +17,4 @@ color = ["tabled/color"]
 
 [dependencies]
 serde_json = "1.*"
-tabled = { git = "https://github.com/zhiburt/tabled", rev = "3d86a327267da9793c5ad9b48c5d6167bc9c9314" }
+tabled = "0.10.0"
