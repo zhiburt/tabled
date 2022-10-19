@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example custom_cell_logic`
 
-use std::{fmt::format, iter::FromIterator};
+use std::iter::FromIterator;
 
 use table_to_html::HtmlTable;
 use tabled::{object::Rows, papergrid::records::Records, Alignment, ModifyObject, Table, Tabled};

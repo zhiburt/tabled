@@ -124,9 +124,11 @@ pub struct HtmlTable<T = Table> {
     custom_table_atributes: Vec<Attr<'static, String>>,
     custom_td_atributes: Vec<Attr<'static, String>>,
     custom_tr_atributes: Vec<Attr<'static, String>>,
-    custom_cell_print: Option<Box<dyn Fn(&T, usize, usize) -> String>>,
+    custom_cell_print: Option<DynCellPrint<T>>,
     table: T,
 }
+
+type DynCellPrint<T> = Box<dyn Fn(&T, usize, usize) -> String>;
 
 impl<T> HtmlTable<T> {
     /// Set an `id` attribute of a `<table>`.
@@ -674,8 +676,13 @@ where
     }
 }
 
+/// A type which represents either a text which will be emited inside `<p></p>` tags or
+/// A custom HTML which will be left as it is.
+#[derive(Debug)]
 pub enum Paragraph {
+    /// Text inside paragraphs.
     General(String),
+    /// HTML which will be emited.
     NoEdit(String),
 }
 
@@ -768,15 +775,29 @@ where
     }
 }
 
+/// An HTML element.
 pub trait Element {
+    /// Display element.
     fn display(&self, ctx: &mut Context<'_, '_>) -> fmt::Result;
+    /// Is element empty and can be skipped.
     fn is_empty(&self) -> bool;
 }
 
+/// Context has some general structure.
 pub struct Context<'a, 'b> {
     deep: usize,
     deep_step: usize,
     f: &'a mut fmt::Formatter<'b>,
+}
+
+impl fmt::Debug for Context<'_, '_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result {
+        f.debug_struct("Context")
+            .field("deep", &self.deep)
+            .field("deep_step", &self.deep_step)
+            .field("f", &std::ptr::addr_of!(self.f))
+            .finish()
+    }
 }
 
 impl<'a, 'b> Context<'a, 'b> {
@@ -784,12 +805,14 @@ impl<'a, 'b> Context<'a, 'b> {
         Self { deep, deep_step, f }
     }
 
+    /// Increase tab size
     pub fn dive<'c>(&'c mut self) -> Context<'c, 'b> {
         Context::new(self.deep + self.deep_step, self.deep_step, self.f)
     }
 }
 
 impl Context<'_, '_> {
+    /// Print tab.
     pub fn make_tab(&mut self) -> fmt::Result {
         for _ in 0..self.deep {
             self.write_char(' ')?;
@@ -813,6 +836,7 @@ impl<'a, 'b> DerefMut for Context<'a, 'b> {
     }
 }
 
+/// Escape HTML text
 pub fn html_escape_text(text: &str) -> String {
     let mut buf = String::new();
     for c in text.chars() {
