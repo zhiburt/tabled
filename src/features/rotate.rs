@@ -67,19 +67,20 @@ where
         let records = table.get_records_mut();
         match self {
             Self::Left => {
+                let size = std::cmp::max(count_rows, count_cols);
+
                 {
-                    let n = std::cmp::max(count_rows, count_cols);
-                    for _ in count_rows..n {
+                    for _ in count_rows..size {
                         records.push_row();
                     }
 
-                    for _ in count_cols..n {
+                    for _ in count_cols..size {
                         records.push_column();
                     }
                 }
 
-                for col in 0..count_cols {
-                    for row in col..count_rows {
+                for col in 0..size {
+                    for row in col..size {
                         records.swap((col, row), (row, col));
                     }
                 }
@@ -89,32 +90,32 @@ where
                 }
 
                 {
-                    let n = std::cmp::max(count_rows, count_cols);
-                    for (shift, row) in (count_rows..n).enumerate() {
+                    for (shift, row) in (count_rows..size).enumerate() {
                         let row = row - shift;
                         records.remove_column(row);
                     }
 
-                    for (shift, col) in (count_cols..n).enumerate() {
+                    for (shift, col) in (count_cols..size).enumerate() {
                         let col = col - shift;
                         records.remove_row(col);
                     }
                 }
             }
             Self::Right => {
+                let size = std::cmp::max(count_rows, count_cols);
+
                 {
-                    let n = std::cmp::max(count_rows, count_cols);
-                    for _ in count_rows..n {
+                    for _ in count_rows..size {
                         records.push_row();
                     }
 
-                    for _ in count_cols..n {
+                    for _ in count_cols..size {
                         records.push_column();
                     }
                 }
 
-                for col in 0..count_cols {
-                    for row in col..count_rows {
+                for col in 0..size {
+                    for row in col..size {
                         records.swap((col, row), (row, col));
                     }
                 }
@@ -124,13 +125,12 @@ where
                 }
 
                 {
-                    let n = std::cmp::max(count_rows, count_cols);
-                    for (shift, row) in (count_rows..n).enumerate() {
+                    for (shift, row) in (count_rows..size).enumerate() {
                         let row = row - shift;
                         records.remove_column(row);
                     }
 
-                    for (shift, col) in (count_cols..n).enumerate() {
+                    for (shift, col) in (count_cols..size).enumerate() {
                         let col = col - shift;
                         records.remove_row(col);
                     }
