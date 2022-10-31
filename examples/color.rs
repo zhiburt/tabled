@@ -9,6 +9,7 @@ use owo_colors::OwoColorize;
 
 use tabled::{
     color::Color,
+    colorization::Colorize,
     object::{Columns, Rows},
     style::{BorderColored, Style, Symbol},
     ModifyObject, Table, Tabled,
@@ -40,12 +41,13 @@ fn main() {
         Bsd::new("OpenBSD", 1995, true),
     ];
 
-    let red = |s: &str| s.red().on_bright_white().to_string();
-    let blue = |s: &str| s.blue().to_string();
-    let green = |s: &str| s.green().to_string();
+    let red = Color::try_from(' '.red().on_bright_white().to_string()).unwrap();
+    let blue = Color::try_from(' '.blue().to_string()).unwrap();
+    let green = Color::try_from(' '.green().to_string()).unwrap();
+    let yellow_color = Color::try_from(' '.yellow().to_string()).unwrap();
+
     let red_split = |c: char| Symbol::ansi(c.red().to_string()).unwrap();
     let purple_split = |c: char| Symbol::ansi(c.purple().to_string()).unwrap();
-    let yellow_color = Color::try_from(' '.yellow().to_string()).unwrap();
 
     let first_row_style = Rows::first().modify().with(
         BorderColored::default()
@@ -59,9 +61,9 @@ fn main() {
         .with(Style::psql())
         .with(yellow_color)
         .with(first_row_style)
-        .with(Columns::single(0).modify().with(red))
-        .with(Columns::single(1).modify().with(green))
-        .with(Columns::single(2).modify().with(blue));
+        .with(Columns::single(0).modify().with(Colorize::from(red)))
+        .with(Columns::single(1).modify().with(Colorize::from(green)))
+        .with(Columns::single(2).modify().with(Colorize::from(blue)));
 
     println!("{}", table);
 }

@@ -282,7 +282,7 @@ pub use crate::{
 
 #[cfg(feature = "color")]
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-pub use crate::features::{color, highlight, margin_color, padding_color};
+pub use crate::features::{color, colorization, highlight, margin_color, padding_color};
 
 /// A derive to implement a [`Tabled`] trait.
 ///

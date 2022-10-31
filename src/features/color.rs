@@ -175,6 +175,18 @@ impl Color {
     pub fn new(prefix: String, suffix: String) -> Self {
         Self(AnsiColor::new(prefix.into(), suffix.into()))
     }
+
+    /// Embed ANSI sequences to a given text.
+    pub fn colorize(&self, text: &str) -> String {
+        let mut buf = String::with_capacity(text.len());
+        for line in text.lines() {
+            buf.push_str(self.0.get_prefix());
+            buf.push_str(line);
+            buf.push_str(self.0.get_suffix());
+        }
+
+        buf
+    }
 }
 
 impl From<Color> for AnsiColor<'static> {

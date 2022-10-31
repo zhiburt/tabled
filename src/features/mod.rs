@@ -14,6 +14,8 @@ pub mod width;
 #[cfg(feature = "color")]
 pub mod color;
 #[cfg(feature = "color")]
+pub mod colorization;
+#[cfg(feature = "color")]
 pub mod margin_color;
 #[cfg(feature = "color")]
 pub mod padding_color;
