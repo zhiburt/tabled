@@ -178,6 +178,13 @@ mod squashed {
             .to_string();
 
         assert_eq!(table, table_squashed);
+
+        let table = json_to_table(&json!(""))
+            .set_style(Style::modern())
+            .collapse()
+            .to_string();
+
+        assert_eq!(table, "┌──┐\n│  │\n└──┘");
     }
 
     #[test]
@@ -285,6 +292,14 @@ mod squashed {
                 "└─────────────┘",
             )
         );
+
+        let value = json!([]);
+        let table = json_to_table(&value)
+            .set_style(Style::modern())
+            .collapse()
+            .to_string();
+
+        assert_eq!(table, "┌──┐\n│  │\n└──┘");
     }
 
     #[test]
@@ -326,5 +341,13 @@ mod squashed {
                 "└─────────┴────────┴─────────────┘",
             )
         );
+
+        let value = json!({});
+        let table = json_to_table(&value)
+            .set_style(Style::modern())
+            .collapse()
+            .to_string();
+
+        assert_eq!(table, "┌──┐\n│  │\n└──┘");
     }
 }

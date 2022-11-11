@@ -708,3 +708,323 @@ fn array_split_with_inner_array_2_test() {
         )
     );
 }
+
+#[test]
+fn test_map_empty_entity_collapsed_0() {
+    let value = json!(
+        {
+            "field1" : {},
+            "field2": "Value",
+            "field3" : {},
+            "field4": 3,
+            "field5" : {}
+        }
+    );
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌────────┬───────┐\n",
+            "│ field1 │       │\n",
+            "├────────┼───────┤\n",
+            "│ field2 │ Value │\n",
+            "├────────┼───────┤\n",
+            "│ field3 │       │\n",
+            "├────────┼───────┤\n",
+            "│ field4 │ 3     │\n",
+            "├────────┼───────┤\n",
+            "│ field5 │       │\n",
+            "└────────┴───────┘",
+        )
+    );
+}
+
+#[test]
+fn test_map_empty_entity_collapsed_1() {
+    let value = json!(
+        {
+            "field1" : [],
+            "field2": "Value",
+            "field3" : [],
+            "field4": 3,
+            "field5" : []
+        }
+    );
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌────────┬───────┐\n",
+            "│ field1 │       │\n",
+            "├────────┼───────┤\n",
+            "│ field2 │ Value │\n",
+            "├────────┼───────┤\n",
+            "│ field3 │       │\n",
+            "├────────┼───────┤\n",
+            "│ field4 │ 3     │\n",
+            "├────────┼───────┤\n",
+            "│ field5 │       │\n",
+            "└────────┴───────┘",
+        )
+    );
+}
+
+#[test]
+fn test_map_empty_entity_collapsed_2() {
+    let value = json!(
+        {
+            "key0": {},
+            "field1" : {
+                "key1": "value1",
+                "key2": []
+            },
+            "field2": "Value",
+            "field3" : [],
+            "field4": [
+                {},
+                "123",
+                {},
+                "sadas",
+                {}
+            ],
+            "field5" : []
+        }
+    );
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌────────┬──────┬────────┐\n",
+            "│ field1 │ key1 │ value1 │\n",
+            "│        ├──────┼────────┤\n",
+            "│        │ key2 │        │\n",
+            "├────────┼──────┴────────┤\n",
+            "│ field2 │ Value         │\n",
+            "├────────┼───────────────┤\n",
+            "│ field3 │               │\n",
+            "├────────┼───────────────┤\n",
+            "│ field4 │               │\n",
+            "│        ├───────────────┤\n",
+            "│        │ 123           │\n",
+            "│        ├───────────────┤\n",
+            "│        │               │\n",
+            "│        ├───────────────┤\n",
+            "│        │ sadas         │\n",
+            "│        ├───────────────┤\n",
+            "│        │               │\n",
+            "├────────┼───────────────┤\n",
+            "│ field5 │               │\n",
+            "├────────┼───────────────┤\n",
+            "│ key0   │               │\n",
+            "└────────┴───────────────┘",
+        )
+    );
+}
+
+#[test]
+fn test_list_empty_entity_collapsed_0() {
+    let value = json!([{}, "field1", {}, "field2", {}]);
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌────────┐\n",
+            "│        │\n",
+            "├────────┤\n",
+            "│ field1 │\n",
+            "├────────┤\n",
+            "│        │\n",
+            "├────────┤\n",
+            "│ field2 │\n",
+            "├────────┤\n",
+            "│        │\n",
+            "└────────┘",
+        )
+    );
+}
+
+#[test]
+fn test_list_empty_entity_collapsed_1() {
+    let value = json!([{}, {}, {}]);
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌──┐\n",
+            "│  │\n",
+            "├──┤\n",
+            "│  │\n",
+            "├──┤\n",
+            "│  │\n",
+            "└──┘",
+        )
+    );
+}
+
+#[test]
+fn test_list_empty_entity_collapsed_2() {
+    let value = json!([[], [], []]);
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌──┐\n",
+            "│  │\n",
+            "├──┤\n",
+            "│  │\n",
+            "├──┤\n",
+            "│  │\n",
+            "└──┘",
+        )
+    );
+}
+
+#[test]
+fn test_map_empty_entity_plain_0() {
+    let value = json!(
+        {
+            "field1" : {},
+            "field2": "Value",
+            "field3" : {},
+            "field4": 3,
+            "field5" : {}
+        }
+    );
+
+    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌────────┬─────────┐\n",
+            "│ field1 │         │\n",
+            "├────────┼─────────┤\n",
+            "│ field2 │  Value  │\n",
+            "├────────┼─────────┤\n",
+            "│ field3 │         │\n",
+            "├────────┼─────────┤\n",
+            "│ field4 │  3      │\n",
+            "├────────┼─────────┤\n",
+            "│ field5 │         │\n",
+            "└────────┴─────────┘",
+        )
+    );
+}
+
+#[test]
+fn test_list_empty_entity_plain_0() {
+    let value = json!([{}, "field1", {}, "field2", {}]);
+
+    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌──────────┐\n",
+            "│          │\n",
+            "├──────────┤\n",
+            "│  field1  │\n",
+            "├──────────┤\n",
+            "│          │\n",
+            "├──────────┤\n",
+            "│  field2  │\n",
+            "├──────────┤\n",
+            "│          │\n",
+            "└──────────┘",
+        )
+    );
+}
+
+#[test]
+fn test_list_empty_entity_plain_1() {
+    let value = json!([[], "field1", [], "field2", []]);
+
+    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌──────────┐\n",
+            "│          │\n",
+            "├──────────┤\n",
+            "│  field1  │\n",
+            "├──────────┤\n",
+            "│          │\n",
+            "├──────────┤\n",
+            "│  field2  │\n",
+            "├──────────┤\n",
+            "│          │\n",
+            "└──────────┘",
+        )
+    );
+}
+
+#[test]
+fn test_list_empty_entity_plain_2() {
+    let value = json!([{}, {}, {}]);
+
+    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+
+    println!("{}", table);
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌──┐\n",
+            "│  │\n",
+            "├──┤\n",
+            "│  │\n",
+            "├──┤\n",
+            "│  │\n",
+            "└──┘",
+        )
+    );
+}
