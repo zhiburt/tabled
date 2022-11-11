@@ -348,12 +348,30 @@ mod json_to_table {
                 table
             }
             Value::Object(obj) => {
+                if obj.is_empty() {
+                    // a corner case where the object must behave as empty string
+
+                    return json_to_table_r(
+                        &Value::String(String::new()),
+                        config,
+                        row,
+                        column,
+                        is_last,
+                        is_prev_row_last,
+                        is_in_list,
+                        change_key_split,
+                        used_splits,
+                        width,
+                    );
+                }
+
                 let map_length = obj.len();
                 let max_keys_width = obj
                     .iter()
                     .map(|(key, _)| col![key].with(NoRightBorders).total_width())
                     .max()
                     .unwrap_or(0);
+
                 let width = match width {
                     Some(width) => width,
                     None => {
@@ -390,6 +408,7 @@ mod json_to_table {
                         width + max_keys_width
                     }
                 };
+
                 let mut builder = Builder::new();
                 let mut iter = obj.iter().enumerate().peekable();
                 while let Some((i, value)) = iter.next() {
@@ -427,6 +446,9 @@ mod json_to_table {
 
                     let is_last = is_last && i + 1 == map_length;
                     let width = width - max_keys_width;
+
+                    println!("{:?}", value);
+
                     let mut value = json_to_table_r(
                         value,
                         config,
@@ -439,6 +461,7 @@ mod json_to_table {
                         &intersections,
                         Some(width),
                     );
+
                     {
                         value.with(TopLeftChangeSplit);
 
@@ -525,11 +548,29 @@ mod json_to_table {
 
                     builder.add_record([key.to_string(), value.to_string()]);
                 }
+
                 let mut table = builder.build();
                 table.with(Style::empty()).with(Padding::zero());
                 table
             }
             Value::Array(list) => {
+                if list.is_empty() {
+                    // a corner case where the list must behave as empty string
+
+                    return json_to_table_r(
+                        &Value::String(String::new()),
+                        config,
+                        row,
+                        column,
+                        is_last,
+                        is_prev_row_last,
+                        is_in_list,
+                        change_key_split,
+                        used_splits,
+                        width,
+                    );
+                }
+
                 let width = match width {
                     Some(width) => width,
                     None => {
