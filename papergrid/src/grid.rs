@@ -692,7 +692,7 @@ where
     let formatting = *cfg.get_formatting(pos.into());
     if formatting.vertical_trim {
         cell_height -=
-            count_empty_lines_at_start(&records, pos) + count_empty_lines_at_end(&records, pos);
+            count_empty_lines_at_start(records, pos) + count_empty_lines_at_end(records, pos);
     }
 
     if cell_height > height {
@@ -730,7 +730,7 @@ where
     }
 
     if formatting.vertical_trim {
-        let empty_lines = count_empty_lines_at_start(&records, pos);
+        let empty_lines = count_empty_lines_at_start(records, pos);
         index += empty_lines;
 
         if index > records.count_lines(pos) {
