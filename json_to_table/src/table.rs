@@ -447,8 +447,6 @@ mod json_to_table {
                     let is_last = is_last && i + 1 == map_length;
                     let width = width - max_keys_width;
 
-                    println!("{:?}", value);
-
                     let mut value = json_to_table_r(
                         value,
                         config,
