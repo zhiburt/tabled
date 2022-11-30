@@ -243,6 +243,9 @@ mod table;
 mod table_iterator_ext;
 mod tabled;
 
+#[cfg(feature = "parallel")]
+mod par;
+
 pub mod builder;
 pub mod display;
 pub mod object;
