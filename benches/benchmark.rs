@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, BatchSize};
+use criterion::{black_box, criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion};
 
 macro_rules! bench_lib {
     ($name:ident, $data_fn:expr, $({ $lib_name:expr, $lib_table:expr }),* $(,)?) => {

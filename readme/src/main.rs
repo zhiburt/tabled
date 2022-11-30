@@ -4,15 +4,40 @@ use std::{
     process::Command,
 };
 
-use tabled::{builder::Builder, Style, Table};
+use tabled::{
+    builder::Builder,
+    papergrid::{
+        records::{Records, RecordsMut},
+        width::CfgWidthFunction,
+    },
+    Style, Table, TableOption,
+};
 
 fn main() {
     let data = collect_data().unwrap();
-    let benches = parse_benches(std::io::Cursor::new(data)).unwrap();
+    let mut benches = parse_benches(std::io::Cursor::new(data)).unwrap();
 
-    let table = build_markdown_table(benches).with(Style::markdown());
+    sort_benches(&mut benches);
+
+    let mut table = build_markdown_table(&benches);
+    table.with(Style::markdown());
+    table.with(HighlightMin);
 
     println!("{}", table);
+}
+
+fn sort_benches(benches: &mut [Bench]) {
+    benches.sort_by(|a, b| {
+        a.function
+            .cmp(&b.function)
+            .then_with(|| a.group.cmp(&b.group))
+            .then_with(|| {
+                let ap = a.param.parse::<usize>().unwrap();
+                let bp = b.param.parse::<usize>().unwrap();
+
+                ap.cmp(&bp)
+            })
+    });
 }
 
 fn collect_data() -> Result<String> {
@@ -82,9 +107,7 @@ fn get_data_particle<'a>(parts: &mut impl Iterator<Item = &'a str>) -> Result<St
     })
 }
 
-fn build_markdown_table(mut benches: Vec<Bench>) -> Table {
-    benches.sort_by(|a, b| a.name.cmp(&b.name));
-
+fn build_markdown_table(benches: &[Bench]) -> Table {
     let (_, group_index) =
         benches
             .iter()
@@ -105,7 +128,7 @@ fn build_markdown_table(mut benches: Vec<Bench>) -> Table {
 
     let mut funcs: Vec<(&str, &str, Vec<&Bench>)> = vec![];
     let mut seen = HashSet::new();
-    for bench in &benches {
+    for bench in benches {
         let key = (&bench.function, &bench.param);
         if seen.contains(&key) {
             continue;
@@ -137,4 +160,65 @@ fn build_markdown_table(mut benches: Vec<Bench>) -> Table {
     }
 
     b.build()
+}
+
+// returns ns
+fn parse_value(val: &str) -> Option<usize> {
+    let (value, diff) = val.split_once('±')?;
+    let value = value.parse::<f32>().ok()?;
+
+    let suffix = if diff.ends_with("ns") {
+        "ns"
+    } else if diff.ends_with("µs") {
+        "µs"
+    } else if diff.ends_with("ms") {
+        "ms"
+    } else if diff.ends_with('s') {
+        "s"
+    } else {
+        return None;
+    };
+
+    let mult = match suffix {
+        "ns" => 1.0,
+        "µs" => 1_000.0,
+        "ms" => 1_000_000.0,
+        "s" => 1_000_000_000.0,
+        _ => unreachable!(),
+    };
+
+    Some((mult * value) as usize)
+}
+
+struct HighlightMin;
+
+impl<R> TableOption<R> for HighlightMin
+where
+    R: Records + RecordsMut<String>,
+{
+    fn change(&mut self, table: &mut Table<R>) {
+        let (count_rows, count_cols) = table.shape();
+        for row in 1..count_rows {
+            let values = (1..count_cols)
+                .map(|col| table.get_records().get_text((row, col)))
+                .map(parse_value)
+                .collect::<Option<Vec<_>>>();
+
+            if let Some(values) = values {
+                if let Some(min) = values.iter().min() {
+                    for (col, value) in values.iter().enumerate() {
+                        if value == min {
+                            let text = table.get_records().get_text((row, col + 1));
+                            let text = format!("**{}**", text);
+
+                            let pos = (row, col + 1);
+                            let w = CfgWidthFunction::default();
+
+                            table.get_records_mut().set(pos, text, w);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
