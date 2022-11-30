@@ -18,6 +18,9 @@ use crate::{
     Tabled,
 };
 
+#[cfg(feature = "parallel")]
+use crate::par;
+
 /// A trait which is responsilbe for configuration of a [`Table`].
 pub trait TableOption<R> {
     /// The function modifies a [`Grid`] object.
@@ -315,6 +318,35 @@ where
 
 impl<R> Table<R>
 where
+    R: Records + Sync,
+{
+    #[cfg(feature = "parallel")]
+    fn get_width_ctrl_par(&self) -> CachedEstimator<'_, par::width::WidthEstimator> {
+        match &self.widths {
+            Some(widths) => CachedEstimator::Cached(widths),
+            None => {
+                let mut w = par::width::WidthEstimator::default();
+                w.estimate(&self.records, &self.cfg);
+                CachedEstimator::Ctrl(w)
+            }
+        }
+    }
+
+    #[cfg(feature = "parallel")]
+    fn get_height_ctrl_par(&self) -> CachedEstimator<'_, par::height::HeightEstimator> {
+        match &self.heights {
+            Some(heights) => CachedEstimator::Cached(heights),
+            None => {
+                let mut w = crate::par::height::HeightEstimator::default();
+                w.estimate(&self.records, &self.cfg);
+                CachedEstimator::Ctrl(w)
+            }
+        }
+    }
+}
+
+impl<R> Table<R>
+where
     R: Records + RecordsMut<String>,
 {
     pub(crate) fn update_records(&mut self) {
@@ -329,6 +361,26 @@ where
     }
 }
 
+#[cfg(feature = "parallel")]
+impl<R> fmt::Display for Table<R>
+where
+    R: Records + Sync,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut cfg = Cow::Borrowed(&self.cfg);
+        set_align_table(f, &mut cfg);
+        set_width_table(f, &mut cfg, self);
+
+        let (width, height) =
+            rayon::join(|| self.get_width_ctrl_par(), || self.get_height_ctrl_par());
+
+        let grid = Grid::new(&self.records, &cfg, &width, &height);
+
+        write!(f, "{}", grid)
+    }
+}
+
+#[cfg(not(feature = "parallel"))]
 impl<R> fmt::Display for Table<R>
 where
     R: Records,

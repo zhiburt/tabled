@@ -58,7 +58,7 @@ pub fn wrap(c: &mut Criterion) {
                 let text = black_box(build_string(size));
                 b.iter(|| {
                     black_box(
-                        tabled::Table::new(&[&text])
+                        tabled::Table::new([&text])
                             .with(tabled::Width::wrap(1))
                             .to_string(),
                     )
@@ -73,7 +73,7 @@ pub fn wrap(c: &mut Criterion) {
                 let text = black_box(build_string(size));
                 b.iter(|| {
                     black_box(
-                        tabled_master::Table::new(&[&text])
+                        tabled_master::Table::new([&text])
                             .with(tabled_master::Width::wrap(1))
                             .to_string(),
                     )

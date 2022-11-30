@@ -401,7 +401,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
 fn max_width_keep_words_1() {
     use tabled::style::HorizontalLine;
 
-    let table = new_table(&["asdf"])
+    let table = new_table(["asdf"])
         .with(Width::wrap(7).keep_words())
         .to_string();
 
@@ -418,7 +418,7 @@ fn max_width_keep_words_1() {
         )
     );
 
-    let table = new_table(&["qweqw eqwe"])
+    let table = new_table(["qweqw eqwe"])
         .with(Width::wrap(8).keep_words())
         .to_string();
 
@@ -2218,6 +2218,7 @@ fn min_width_priority_min() {
     );
 }
 
+#[allow(clippy::needless_borrow)]
 #[test]
 fn max_width_tab_0() {
     let table =
