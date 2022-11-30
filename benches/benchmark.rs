@@ -30,11 +30,12 @@ macro_rules! create_bench {
             $name,
             $table,
             { "tabled", benchs::tabled::build },
-            // { "tabled_master", benchs::tabled_master::build },
             { "tabled_color", benchs::tabled_color::build },
+            { "tabled_par", benchs::tabled_par::build },
             { "cli_table", benchs::cli_table::build  },
             { "comfy_table", benchs::comfy_table::build },
             { "term_table", benchs::term_table::build  },
+            // { "tabled_master", benchs::tabled_master::build },
             // { "nu-table", benchs::nu_table::build  },
             // { "prettytable_rs", benchs::prettytable_rs::build },
         );

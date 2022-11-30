@@ -24,8 +24,8 @@ pub mod tabled_color {
     }
 }
 
-pub mod tabled_master {
-    use tabled_master::builder::Builder;
+pub mod tabled_par {
+    use tabled_par::builder::Builder;
 
     #[inline]
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
