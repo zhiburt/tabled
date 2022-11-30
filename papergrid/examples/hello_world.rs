@@ -47,7 +47,7 @@ fn main() {
         ["", "Just like this", "", ""],
     ];
 
-    let records = VecRecords::new(&data, (2, 4), CfgWidthFunction::from_cfg(&cfg));
+    let records = VecRecords::new(data, (2, 4), CfgWidthFunction::from_cfg(&cfg));
 
     let mut width = WidthEstimator::default();
     width.estimate(&records, &cfg);
