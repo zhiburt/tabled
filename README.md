@@ -414,7 +414,7 @@ assert_eq!(
 );
 ```
 
-Sometimes though it's not convinient to set a string.
+Sometimes though it's not convenient to set a string.
 But rather necessary to set a custom char.
 
 You can use `BorderChar` to achieve this.
@@ -639,7 +639,7 @@ table.with(Modify::new(Rows::first()).with(Width::truncate(10)));
 table.with(Modify::new(Rows::new(1..)).with(Width::truncate(10).suffix("...")));
 ```
 
-`Trucate` also can be used to set a maximum width of a whole table.
+`Truncate` also can be used to set a maximum width of a whole table.
 
 ```rust
 use tabled::{TableIteratorExt, Width};
@@ -1302,7 +1302,7 @@ println!("{}", table);
 You can change a table layout by `Builder`.
 
 ```rust
-// previos example
+// previous example
 // ...
 
 let mut builder = builder.index();
@@ -1387,13 +1387,13 @@ struct Developer(#[tabled(rename = "name")] &'static str);
 #[derive(Tabled)]
 enum Domain {
     Security,
-    Embeded,
+    Embedded,
     Frontend,
     Unknown,
 }
 
 let data = vec![
-    (Developer("Terri Kshlerin"), Domain::Embeded),
+    (Developer("Terri Kshlerin"), Domain::Embedded),
     (Developer("Catalina Dicki"), Domain::Security),
     (Developer("Jennie Schmeler"), Domain::Frontend),
     (Developer("Maxim Zhiburt"), Domain::Unknown),
@@ -1407,7 +1407,7 @@ let table = Table::new(data)
 assert_eq!(
     table,
     concat!(
-        "      name       | Security | Embeded | Frontend | Unknown \n",
+        "      name       | Security | Embedded | Frontend | Unknown \n",
         "-----------------+----------+---------+----------+---------\n",
         " Terri Kshlerin  |          |    +    |          |         \n",
         " Catalina Dicki  |    +     |         |          |         \n",
@@ -1535,7 +1535,7 @@ col![
 
 ### Expanded display
 
-You can use `ExpanedDisplay` if your data structure has a lot of fields.
+You can use `ExpandedDisplay` if your data structure has a lot of fields.
 
 Here's an example.
 
@@ -1674,7 +1674,7 @@ Some may wonder why `tabled` is better or worse than others libraries?
 I hope `tabled` does it's job good, but at the end of the day you probably need to decide it yourself.
 If you have any ideas for an enhancement or have a question about `tabled` please file an issue.
 
-Bellow you will find a list of crates which do simmilar things or do something which `tabled` doesn't.
+Bellow you will find a list of crates which do similar things or do something which `tabled` doesn't.
 You can find performance Comparison benchmarks for some of them [here](https://github.com/zhiburt/tabled/tree/comparision-libs-bench). 
 
 The description is taken from the author's quotes.
