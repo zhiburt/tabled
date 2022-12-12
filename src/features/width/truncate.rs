@@ -11,7 +11,7 @@ use papergrid::{
 
 use crate::{
     peaker::{Peaker, PriorityNone},
-    width::{count_borders, get_table_widths, get_table_widths_with_total, Measurment},
+    width::{count_borders, get_table_widths, get_table_widths_with_total, Measurement},
     CellOption, Table, TableOption, Width,
 };
 
@@ -72,7 +72,7 @@ pub enum SuffixLimit {
 
 impl<W> Truncate<'static, W>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
 {
     /// Creates a [`Truncate`] object
     pub fn new(width: W) -> Truncate<'static, W> {
@@ -150,7 +150,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
 
 impl<W, P, R> CellOption<R> for Truncate<'_, W, P>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
     R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
@@ -201,7 +201,7 @@ where
             let records = table.get_records();
             let text = records.get_text(pos);
             // todo: Think about it.
-            //       We could eliminate this allcation if we would be allowed to cut '\t' with unknown characters.
+            //       We could eliminate this allocation if we would be allowed to cut '\t' with unknown characters.
             //       Currently we don't do that.
             let text = papergrid::util::replace_tab(text, table.get_config().get_tab_width());
             let text = truncate_text(&text, width, set_width, &suffix, suffix_color_try_keeping)
@@ -217,7 +217,7 @@ where
 
 impl<W, P, R> TableOption<R> for Truncate<'_, W, P>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
     P: Peaker,
     R: Records + RecordsMut<String>,
 {

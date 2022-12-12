@@ -21,7 +21,7 @@ pub trait Locator {
     /// A coordinate of the finding.
     type Coordinate;
     /// An iterator of the coordinates.
-    /// If it's empty it's consideret that nothing is found.
+    /// If it's empty it's considered that nothing is found.
     type IntoIter: IntoIterator<Item = Self::Coordinate>;
 
     /// Search for the thing in [`Records`], returning a list of coordinates.
@@ -152,10 +152,10 @@ impl Locator for LastRow {
     }
 }
 
-/// The structure is an implementaion of [`Locator`] to search for a column by it's name.
-/// A name is considerent be a value in a first row.
+/// The structure is an implementation of [`Locator`] to search for a column by it's name.
+/// A name is considered be a value in a first row.
 ///
-/// So even if in reality there's no header, first row will be consideret the one.
+/// So even if in reality there's no header, the first row will be considered to be one.
 #[derive(Debug, Clone, Copy)]
 pub struct ByColumnName<S>(S);
 

@@ -1,7 +1,7 @@
 use papergrid::records::Records;
 
 use crate::{
-    measurment::Measurment,
+    measurement::Measurement,
     peaker::{Peaker, PriorityNone},
     Height, Table, TableOption,
 };
@@ -19,7 +19,7 @@ impl<W> TableHeightIncrease<W, PriorityNone> {
     /// Creates a new object.
     pub fn new(height: W) -> Self
     where
-        W: Measurment<Height>,
+        W: Measurement<Height>,
     {
         Self {
             height,
@@ -42,7 +42,7 @@ impl<W> TableHeightIncrease<W, PriorityNone> {
 impl<R, W, P> TableOption<R> for TableHeightIncrease<W, P>
 where
     R: Records,
-    W: Measurment<Height>,
+    W: Measurement<Height>,
     P: Peaker + Clone,
 {
     fn change(&mut self, table: &mut Table<R>) {

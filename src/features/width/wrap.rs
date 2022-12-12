@@ -11,7 +11,7 @@ use papergrid::{
 };
 
 use crate::{
-    measurment::Measurment,
+    measurement::Measurement,
     peaker::{Peaker, PriorityNone},
     CellOption, Table, TableOption, Width,
 };
@@ -48,7 +48,7 @@ pub struct Wrap<W = usize, P = PriorityNone> {
 
 impl<W> Wrap<W>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
 {
     /// Creates a [`Wrap`] object
     pub fn new(width: W) -> Self {
@@ -93,7 +93,7 @@ impl<W, P> Wrap<W, P> {
 
 impl<W, P, R> CellOption<R> for Wrap<W, P>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
     R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
@@ -110,7 +110,7 @@ where
 
             let text = records.get_text(pos);
             // todo: Think about it.
-            //       We could eliminate this allcation if we would be allowed to cut '\t' with unknown characters.
+            //       We could eliminate this allocation if we would be allowed to cut '\t' with unknown characters.
             //       Currently we don't do that.
             let text = papergrid::util::replace_tab(text, table.get_config().get_tab_width());
             let wrapped = wrap_text(&text, width, self.keep_words);
@@ -133,7 +133,7 @@ where
 
 impl<W, P, R> TableOption<R> for Wrap<W, P>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
     P: Peaker,
     R: Records + RecordsMut<String>,
 {

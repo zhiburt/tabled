@@ -9,7 +9,7 @@ use crate::util::{create_table, static_table, test_table};
 mod util;
 
 test_table!(
-    highlingt_object_exceeds_bounderies,
+    highlingt_object_exceeds_boundaries,
     create_table::<3, 3>().with(Style::modern()).with(Highlight::new(Cell(1000, 0), Border::filled('+'))),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"

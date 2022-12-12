@@ -3,7 +3,7 @@
 use papergrid::records::{Records, RecordsMut};
 
 use crate::{
-    measurment::{Max, Measurment, Min},
+    measurement::{Max, Measurement, Min},
     CellOption, Table, TableOption, Width,
 };
 
@@ -45,7 +45,7 @@ pub struct Justify<W> {
 
 impl<W> Justify<W>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
 {
     /// Creates a new [`Justify`] instance.
     ///
@@ -73,7 +73,7 @@ impl Justify<Min> {
 
 impl<W, R> TableOption<R> for Justify<W>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
     R: Records + RecordsMut<String>,
 {
     fn change(&mut self, table: &mut Table<R>) {

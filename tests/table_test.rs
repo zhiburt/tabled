@@ -618,7 +618,7 @@ mod derived {
             #[derive(Tabled)]
             enum Domain {
                 Security,
-                Embeded,
+                Embedded,
                 Frontend,
                 Unknown,
             }
@@ -627,23 +627,23 @@ mod derived {
             struct Developer(#[tabled(rename = "name")] &'static str);
 
             vec![
-                (Developer("Terri Kshlerin"), Domain::Embeded),
+                (Developer("Terri Kshlerin"), Domain::Embedded),
                 (Developer("Catalina Dicki"), Domain::Security),
                 (Developer("Jennie Schmeler"), Domain::Frontend),
                 (Developer("Maxim Zhiburt"), Domain::Unknown),
             ]
         }),
-        "+-----------------+----------+---------+----------+---------+"
-        "| name            | Security | Embeded | Frontend | Unknown |"
-        "+-----------------+----------+---------+----------+---------+"
-        "| Terri Kshlerin  |          | +       |          |         |"
-        "+-----------------+----------+---------+----------+---------+"
-        "| Catalina Dicki  | +        |         |          |         |"
-        "+-----------------+----------+---------+----------+---------+"
-        "| Jennie Schmeler |          |         | +        |         |"
-        "+-----------------+----------+---------+----------+---------+"
-        "| Maxim Zhiburt   |          |         |          | +       |"
-        "+-----------------+----------+---------+----------+---------+"
+        "+-----------------+----------+----------+----------+---------+"
+        "| name            | Security | Embedded | Frontend | Unknown |"
+        "+-----------------+----------+----------+----------+---------+"
+        "| Terri Kshlerin  |          | +        |          |         |"
+        "+-----------------+----------+----------+----------+---------+"
+        "| Catalina Dicki  | +        |          |          |         |"
+        "+-----------------+----------+----------+----------+---------+"
+        "| Jennie Schmeler |          |          | +        |         |"
+        "+-----------------+----------+----------+----------+---------+"
+        "| Maxim Zhiburt   |          |          |          | +       |"
+        "+-----------------+----------+----------+----------+---------+"
 
     );
 
@@ -653,7 +653,7 @@ mod derived {
             #[derive(Tabled)]
             enum Domain {
                 Security,
-                Embeded,
+                Embedded,
                 Frontend,
                 Unknown,
             }
@@ -662,23 +662,23 @@ mod derived {
             struct Developer(#[tabled(rename = "name")] &'static str);
 
             vec![
-                (Developer("Terri Kshlerin"), Domain::Embeded),
+                (Developer("Terri Kshlerin"), Domain::Embedded),
                 (Developer("Catalina Dicki"), Domain::Security),
                 (Developer("Jennie Schmeler"), Domain::Frontend),
                 (Developer("Maxim Zhiburt"), Domain::Unknown),
             ]
         }),
-        "+-----------------+----------+---------+----------+---------+"
-        "| name            | Security | Embeded | Frontend | Unknown |"
-        "+-----------------+----------+---------+----------+---------+"
-        "| Terri Kshlerin  |          | +       |          |         |"
-        "+-----------------+----------+---------+----------+---------+"
-        "| Catalina Dicki  | +        |         |          |         |"
-        "+-----------------+----------+---------+----------+---------+"
-        "| Jennie Schmeler |          |         | +        |         |"
-        "+-----------------+----------+---------+----------+---------+"
-        "| Maxim Zhiburt   |          |         |          | +       |"
-        "+-----------------+----------+---------+----------+---------+"
+        "+-----------------+----------+----------+----------+---------+"
+        "| name            | Security | Embedded | Frontend | Unknown |"
+        "+-----------------+----------+----------+----------+---------+"
+        "| Terri Kshlerin  |          | +        |          |         |"
+        "+-----------------+----------+----------+----------+---------+"
+        "| Catalina Dicki  | +        |          |          |         |"
+        "+-----------------+----------+----------+----------+---------+"
+        "| Jennie Schmeler |          |          | +        |         |"
+        "+-----------------+----------+----------+----------+---------+"
+        "| Maxim Zhiburt   |          |          |          | +       |"
+        "+-----------------+----------+----------+----------+---------+"
     );
 
     test_table!(

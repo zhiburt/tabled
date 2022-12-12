@@ -19,7 +19,7 @@ impl Contribution {
 }
 
 fn main() {
-    let commiters = [
+    let committers = [
         Contribution::new("kozmod", "https:/github.com/kozmod"),
         Contribution::new("IsaacCloos", "https:/github.com/IsaacCloos"),
     ];
@@ -29,7 +29,7 @@ fn main() {
         "https:/github.com/aharpervc",
     )];
 
-    let commiters_table = commiters
+    let committers_table = committers
         .table()
         .with(Panel::header("Contributors"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
@@ -41,7 +41,7 @@ fn main() {
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .to_string();
 
-    let mut a_welcome_table = [String::from("Thank You"), commiters_table, issues_table].table();
+    let mut a_welcome_table = [String::from("Thank You"), committers_table, issues_table].table();
     a_welcome_table
         .with(Extract::rows(1..))
         .with(Style::ascii().off_horizontal())

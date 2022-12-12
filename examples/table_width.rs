@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example table_width`
 
-use tabled::{measurment::Percent, object::Segment, Alignment, Modify, Style, Table, Width};
+use tabled::{measurement::Percent, object::Segment, Alignment, Modify, Style, Table, Width};
 
 fn main() {
     let data = [

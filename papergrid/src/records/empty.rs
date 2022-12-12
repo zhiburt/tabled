@@ -10,7 +10,7 @@ pub struct EmptyRecords {
 }
 
 impl EmptyRecords {
-    /// Constracts an empty representation of [`Records`] with a given shape.
+    /// Constructs an empty representation of [`Records`] with a given shape.
     pub fn new(rows: usize, cols: usize) -> Self {
         Self { rows, cols }
     }

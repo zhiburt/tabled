@@ -117,7 +117,7 @@
 //! #[derive(Tabled)]
 //! enum Domain {
 //!     Security,
-//!     Embeded,
+//!     Embedded,
 //!     Frontend,
 //!     Unknown,
 //! }
@@ -126,7 +126,7 @@
 //! struct Developer(#[tabled(rename = "name")] &'static str);
 //!     
 //! let data = vec![
-//!     (Developer("Terri Kshlerin"), Domain::Embeded),
+//!     (Developer("Terri Kshlerin"), Domain::Embedded),
 //!     (Developer("Catalina Dicki"), Domain::Security),
 //!     (Developer("Jennie Schmeler"), Domain::Frontend),
 //!     (Developer("Maxim Zhiburt"), Domain::Unknown),
@@ -140,12 +140,12 @@
 //! assert_eq!(
 //!     table,
 //!     concat!(
-//!         " name            | Security | Embeded | Frontend | Unknown \n",
-//!         "-----------------+----------+---------+----------+---------\n",
-//!         " Terri Kshlerin  |          |    +    |          |         \n",
-//!         " Catalina Dicki  |    +     |         |          |         \n",
-//!         " Jennie Schmeler |          |         |    +     |         \n",
-//!         " Maxim Zhiburt   |          |         |          |    +    "
+//!         " name            | Security | Embedded | Frontend | Unknown \n",
+//!         "-----------------+----------+----------+----------+---------\n",
+//!         " Terri Kshlerin  |          |    +     |          |         \n",
+//!         " Catalina Dicki  |    +     |          |          |         \n",
+//!         " Jennie Schmeler |          |          |    +     |         \n",
+//!         " Maxim Zhiburt   |          |          |          |    +    "
 //!     )
 //! );
 //! ```
@@ -264,7 +264,7 @@ pub use crate::{
         highlight::Highlight,
         locator,
         margin::Margin,
-        measurment, merge,
+        measurement, merge,
         padding::Padding,
         panel::{Footer, Header, Panel},
         peaker,

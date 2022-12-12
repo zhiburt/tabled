@@ -9,7 +9,7 @@ use papergrid::{
 };
 
 use crate::{
-    measurment::Measurment,
+    measurement::Measurement,
     peaker::{Peaker, PriorityNone},
     CellOption, Table, TableOption, Width,
 };
@@ -60,7 +60,7 @@ pub struct MinWidth<W = usize, P = PriorityNone> {
 
 impl<W> MinWidth<W>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
 {
     /// Creates a new instance of [`MinWidth`].
     pub fn new(width: W) -> Self {
@@ -101,7 +101,7 @@ impl<W, P> MinWidth<W, P> {
 
 impl<W, R> CellOption<R> for MinWidth<W>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
     R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
@@ -128,7 +128,7 @@ where
 
 impl<W, P, R> TableOption<R> for MinWidth<W, P>
 where
-    W: Measurment<Width>,
+    W: Measurement<Width>,
     P: Peaker,
     R: Records + RecordsMut<String>,
 {

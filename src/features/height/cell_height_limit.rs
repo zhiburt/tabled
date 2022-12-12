@@ -5,7 +5,7 @@ use papergrid::{
     Entity,
 };
 
-use crate::{measurment::Measurment, peaker::Peaker, CellOption, Height, Table, TableOption};
+use crate::{measurement::Measurement, peaker::Peaker, CellOption, Height, Table, TableOption};
 
 use super::table_height_limit::TableHeightLimit;
 
@@ -23,7 +23,7 @@ impl<W> CellHeightLimit<W> {
     /// Constructs a new object.
     pub fn new(height: W) -> Self
     where
-        W: Measurment<Height>,
+        W: Measurement<Height>,
     {
         Self { height }
     }
@@ -32,7 +32,7 @@ impl<W> CellHeightLimit<W> {
     pub fn priority<P>(self) -> TableHeightLimit<W, P>
     where
         P: Peaker,
-        W: Measurment<Height>,
+        W: Measurement<Height>,
     {
         TableHeightLimit::new(self.height).priority::<P>()
     }
@@ -40,7 +40,7 @@ impl<W> CellHeightLimit<W> {
 
 impl<W, R> CellOption<R> for CellHeightLimit<W>
 where
-    W: Measurment<Height>,
+    W: Measurement<Height>,
     R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
@@ -67,7 +67,7 @@ where
 
 impl<W, R> TableOption<R> for CellHeightLimit<W>
 where
-    W: Measurment<Height>,
+    W: Measurement<Height>,
     R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {

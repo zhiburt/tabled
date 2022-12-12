@@ -232,7 +232,7 @@ test_table!(
 );
 
 test_table!(
-    when_border_is_not_complet_default_char_is_used_test,
+    when_border_is_not_complete_default_char_is_used_test,
     grid(2, 2)
         .config(|cfg| {
             cfg.set_borders(Borders {

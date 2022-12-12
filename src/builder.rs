@@ -821,7 +821,7 @@ fn build_index(mut b: IndexBuilder<'_>) -> Builder<'_> {
 
     let records = &mut b.b.records;
 
-    // it's guaranted to be set
+    // it's guaranteed to be set
     let columns = b.b.columns.take().unwrap();
 
     records.insert(0, columns);

@@ -2,7 +2,7 @@
 
 use papergrid::{height::HeightEstimator, records::Records, Estimate, GridConfig};
 
-use crate::measurment::Measurment;
+use crate::measurement::Measurement;
 
 mod cell_height_increase;
 mod cell_height_limit;
@@ -123,7 +123,7 @@ impl Height {
     /// ```
     pub fn increase<W>(width: W) -> CellHeightIncrease<W>
     where
-        W: Measurment<Height>,
+        W: Measurement<Height>,
     {
         CellHeightIncrease::new(width)
     }
@@ -196,7 +196,7 @@ impl Height {
     /// ```
     pub fn limit<W>(width: W) -> CellHeightLimit<W>
     where
-        W: Measurment<Height>,
+        W: Measurement<Height>,
     {
         CellHeightLimit::new(width)
     }

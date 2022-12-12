@@ -7,7 +7,7 @@ use papergrid::{records::Records, Position};
 
 use crate::{Table, TableOption};
 
-/// A correctnes function of style for [`Table`] which has [`Span`]s.
+/// A correctness function of style for [`Table`] which has [`Span`]s.
 ///
 /// See [`Style::correct_spans`].
 ///

@@ -38,7 +38,7 @@ mod truncate;
 mod width_list;
 mod wrap;
 
-use crate::measurment::Measurment;
+use crate::measurement::Measurement;
 
 pub use self::{
     justify::Justify,
@@ -110,7 +110,7 @@ impl Width {
     /// Returns a [`Wrap`] structure.
     pub fn wrap<W>(width: W) -> Wrap<W>
     where
-        W: Measurment<Width>,
+        W: Measurement<Width>,
     {
         Wrap::new(width)
     }
@@ -118,7 +118,7 @@ impl Width {
     /// Returns a [`Truncate`] structure.
     pub fn truncate<W>(width: W) -> Truncate<'static, W>
     where
-        W: Measurment<Width>,
+        W: Measurement<Width>,
     {
         Truncate::new(width)
     }
@@ -126,7 +126,7 @@ impl Width {
     /// Returns a [`MinWidth`] structure.
     pub fn increase<W>(width: W) -> MinWidth<W>
     where
-        W: Measurment<Width>,
+        W: Measurement<Width>,
     {
         MinWidth::new(width)
     }
@@ -134,7 +134,7 @@ impl Width {
     /// Returns a [`Justify`] structure.
     pub fn justify<W>(width: W) -> Justify<W>
     where
-        W: Measurment<Width>,
+        W: Measurement<Width>,
     {
         Justify::new(width)
     }

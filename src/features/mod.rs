@@ -5,7 +5,7 @@ pub mod height;
 #[allow(unreachable_pub)]
 pub mod highlight;
 pub mod locator;
-pub mod measurment;
+pub mod measurement;
 pub mod peaker;
 pub mod shadow;
 pub mod style;

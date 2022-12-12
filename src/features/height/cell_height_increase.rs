@@ -4,7 +4,7 @@ use papergrid::{
     Entity,
 };
 
-use crate::{measurment::Measurment, peaker::Peaker, CellOption, Height, Table, TableOption};
+use crate::{measurement::Measurement, peaker::Peaker, CellOption, Height, Table, TableOption};
 
 use super::TableHeightIncrease;
 
@@ -22,7 +22,7 @@ impl<W> CellHeightIncrease<W> {
     /// Creates a new object of the structure.
     pub fn new(height: W) -> Self
     where
-        W: Measurment<Height>,
+        W: Measurement<Height>,
     {
         Self { height }
     }
@@ -32,7 +32,7 @@ impl<W> CellHeightIncrease<W> {
     pub fn priority<P>(self) -> TableHeightIncrease<W, P>
     where
         P: Peaker,
-        W: Measurment<Height>,
+        W: Measurement<Height>,
     {
         TableHeightIncrease::new(self.height).priority::<P>()
     }
@@ -40,7 +40,7 @@ impl<W> CellHeightIncrease<W> {
 
 impl<W, R> CellOption<R> for CellHeightIncrease<W>
 where
-    W: Measurment<Height>,
+    W: Measurement<Height>,
     R: Records + RecordsMut<String>,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
@@ -74,7 +74,7 @@ fn add_lines(s: &str, n: usize) -> String {
 
 impl<W, R> TableOption<R> for CellHeightIncrease<W>
 where
-    W: Measurment<Height>,
+    W: Measurement<Height>,
     R: Records,
 {
     fn change(&mut self, table: &mut Table<R>) {

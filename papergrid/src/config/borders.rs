@@ -366,7 +366,7 @@ pub struct Borders<T = char> {
     /// A vertical split on the right frame line.
     pub vertical_right: Option<T>,
 
-    /// A top left charcter on the frame.
+    /// A top left character on the frame.
     pub intersection: Option<T>,
 }
 
@@ -439,7 +439,7 @@ pub(crate) struct BordersLayout {
     verticals: HashSet<usize>,
 }
 
-/// A structre for a custom horizontal line.
+/// A structure for a custom horizontal line.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct HorizontalLine<T> {
     /// Line character.
@@ -462,7 +462,7 @@ impl<T> HorizontalLine<T> {
     }
 }
 
-/// A structre for a vertical line.
+/// A structure for a vertical line.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct VerticalLine<T> {
     /// Line character.
