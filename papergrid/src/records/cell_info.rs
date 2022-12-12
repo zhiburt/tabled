@@ -114,7 +114,7 @@ impl Clone for CellInfo<'_> {
                     // # Safety
                     //
                     // It must be safe because the referenced string and the references are dropped at the same time.
-                    // And the referenced String is guaranted to not be changed.
+                    // And the referenced String is guaranteed to not be changed.
                     let text = unsafe {
                         let text_ptr = self.text.as_ptr();
                         let line_ptr = s.as_ptr();
@@ -175,7 +175,7 @@ where
     // # Safety
     //
     // It must be safe because the referenced string and the references are dropped at the same time.
-    // And the referenced String is guaranted to not be changed.
+    // And the referenced String is guaranteed to not be changed.
     let text = unsafe {
         std::str::from_utf8_unchecked(std::slice::from_raw_parts(
             info.text.as_ptr(),

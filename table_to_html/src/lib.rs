@@ -11,7 +11,7 @@
 //! The library provides a interface to build a HTML table (`<table>`) from a [`Table`].
 //!
 //! Because of the specifics of HTML it's not considered to be the best approach to supply custom CSS for the table.
-//! Istead of that you can set a custom id for the table and use your on CSS.
+//! Instead of that you can set a custom id for the table and use your on CSS.
 //!
 //! # Example
 //!
@@ -121,9 +121,9 @@ pub struct HtmlTable<T = Table> {
     id: String,
     border_size: usize,
     unit: Unit,
-    custom_table_atributes: Vec<Attr<'static, String>>,
-    custom_td_atributes: Vec<Attr<'static, String>>,
-    custom_tr_atributes: Vec<Attr<'static, String>>,
+    custom_table_attributes: Vec<Attr<'static, String>>,
+    custom_td_attributes: Vec<Attr<'static, String>>,
+    custom_tr_attributes: Vec<Attr<'static, String>>,
     custom_cell_print: Option<DynCellPrint<T>>,
     table: T,
 }
@@ -136,7 +136,7 @@ impl<T> HtmlTable<T> {
         self.id = id.into();
     }
 
-    /// Set a unit measurment which will be used for padding set.
+    /// Set a unit measurement which will be used for padding set.
     pub fn set_unit(&mut self, unit: Unit) {
         self.unit = unit;
     }
@@ -154,7 +154,7 @@ impl<T> HtmlTable<T> {
         let val = value.into();
         let attr = Attr::new(key, val);
 
-        self.custom_table_atributes.push(attr);
+        self.custom_table_attributes.push(attr);
     }
 
     /// Adds an attribute to all `<td>` inside a `<table>`.
@@ -163,7 +163,7 @@ impl<T> HtmlTable<T> {
         let val = value.into();
         let attr = Attr::new(key, val);
 
-        self.custom_td_atributes.push(attr);
+        self.custom_td_attributes.push(attr);
     }
 
     /// Adds an attribute to all `<tr>` inside a `<table>`.
@@ -172,7 +172,7 @@ impl<T> HtmlTable<T> {
         let val = value.into();
         let attr = Attr::new(key, val);
 
-        self.custom_tr_atributes.push(attr);
+        self.custom_tr_attributes.push(attr);
     }
 
     /// Overrides cell output to the given function.
@@ -194,9 +194,9 @@ impl<R> From<Table<R>> for HtmlTable<Table<R>> {
             table,
             border_size: 1,
             unit: Unit::Rem,
-            custom_table_atributes: Vec::new(),
-            custom_td_atributes: Vec::new(),
-            custom_tr_atributes: Vec::new(),
+            custom_table_attributes: Vec::new(),
+            custom_td_attributes: Vec::new(),
+            custom_tr_attributes: Vec::new(),
             custom_cell_print: None,
         }
     }
@@ -208,9 +208,9 @@ impl fmt::Debug for HtmlTable {
             .field("id", &self.id)
             .field("border_size", &self.border_size)
             .field("unit", &self.unit)
-            .field("custom_table_atributes", &self.custom_table_atributes)
-            .field("custom_td_atributes", &self.custom_td_atributes)
-            .field("custom_tr_atributes", &self.custom_tr_atributes)
+            .field("custom_table_attributes", &self.custom_table_attributes)
+            .field("custom_td_attributes", &self.custom_td_attributes)
+            .field("custom_tr_attributes", &self.custom_tr_attributes)
             .field(
                 "custom_cell_print",
                 &self
@@ -234,9 +234,9 @@ where
             &self.id,
             self.unit,
             self.border_size,
-            &self.custom_table_atributes,
-            &self.custom_tr_atributes,
-            &self.custom_td_atributes,
+            &self.custom_table_attributes,
+            &self.custom_tr_attributes,
+            &self.custom_td_attributes,
             &self.custom_cell_print,
         )
     }
@@ -676,13 +676,13 @@ where
     }
 }
 
-/// A type which represents either a text which will be emited inside `<p></p>` tags or
+/// A type which represents either a text which will be emitted inside `<p></p>` tags or
 /// A custom HTML which will be left as it is.
 #[derive(Debug)]
 pub enum Paragraph {
     /// Text inside paragraphs.
     General(String),
-    /// HTML which will be emited.
+    /// HTML which will be emitted.
     NoEdit(String),
 }
 

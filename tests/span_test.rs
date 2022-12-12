@@ -230,7 +230,7 @@ test_table!(
 );
 
 test_table!(
-    spaned_columns_with_colision,
+    spaned_columns_with_collision,
     new_table([["just 1 column"; 5]; 5])
         .with(Style::modern())
         .with(
@@ -389,7 +389,7 @@ test_table!(
 #[test]
 #[should_panic]
 #[ignore = "span zero not yet decided"]
-fn span_column_exceeds_boundries_test() {
+fn span_column_exceeds_boundaries_test() {
     // todo: determine if it's the right behaiviour
 
     create_table::<3, 3>()
@@ -399,7 +399,7 @@ fn span_column_exceeds_boundries_test() {
 
 #[test]
 #[ignore = "span zero not yet decided"]
-fn span_cell_exceeds_boundries_test() {
+fn span_cell_exceeds_boundaries_test() {
     // these tests shows that exiding boundaries causes invalid behaiviour
     //
     // todo: determine if it's the right behaiviour

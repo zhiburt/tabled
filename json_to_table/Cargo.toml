@@ -10,7 +10,7 @@ license = "MIT"
 keywords = ["table", "print", "pretty-table", "format", "json"]
 categories = ["text-processing", "visualization"]
 readme = "README.md"
-description = "A libary for pretty print JSON as a table"
+description = "A library for pretty print JSON as a table"
 
 [features]
 color = ["tabled/color"]

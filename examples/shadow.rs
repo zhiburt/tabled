@@ -1,4 +1,4 @@
-//! The example relayes on STDIN to read the message which will be outputed.
+//! The example relayes on STDIN to read the message which will be outputted.
 //!
 //! The table is inspired by <https://en.wikipedia.org/wiki/Box-drawing_character>
 //!

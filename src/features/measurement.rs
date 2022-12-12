@@ -1,4 +1,4 @@
-//! The module contains [`Measurment`] trait and its implementations to be used in [`Height`] and [`Width`].
+//! The module contains [`Measurement`] trait and its implementations to be used in [`Height`] and [`Width`].
 
 use papergrid::{
     height::HeightEstimator,
@@ -12,14 +12,14 @@ use crate::{height::get_table_total_height, width::get_table_widths_with_total, 
 /// A width value which can be obtained on behalf of [`Table`].
 ///
 /// [`Table`]: crate::Table
-pub trait Measurment<Attribute> {
-    /// Returns a measurment value.
+pub trait Measurement<Attribute> {
+    /// Returns a measurement value.
     fn measure<R>(&self, records: R, cfg: &GridConfig) -> usize
     where
         R: Records;
 }
 
-impl<T> Measurment<T> for usize {
+impl<T> Measurement<T> for usize {
     fn measure<R>(&self, _: R, _: &GridConfig) -> usize {
         *self
     }
@@ -29,7 +29,7 @@ impl<T> Measurment<T> for usize {
 #[derive(Debug)]
 pub struct Max;
 
-impl Measurment<Width> for Max {
+impl Measurement<Width> for Max {
     fn measure<R>(&self, records: R, cfg: &GridConfig) -> usize
     where
         R: Records,
@@ -42,7 +42,7 @@ impl Measurment<Width> for Max {
     }
 }
 
-impl Measurment<Height> for Max {
+impl Measurement<Height> for Max {
     fn measure<R>(&self, records: R, _: &GridConfig) -> usize
     where
         R: Records,
@@ -58,7 +58,7 @@ impl Measurment<Height> for Max {
 #[derive(Debug)]
 pub struct Min;
 
-impl Measurment<Width> for Min {
+impl Measurement<Width> for Min {
     fn measure<R>(&self, records: R, cfg: &GridConfig) -> usize
     where
         R: Records,
@@ -71,7 +71,7 @@ impl Measurment<Width> for Min {
     }
 }
 
-impl Measurment<Height> for Min {
+impl Measurement<Height> for Min {
     fn measure<R>(&self, records: R, _: &GridConfig) -> usize
     where
         R: Records,
@@ -87,7 +87,7 @@ impl Measurment<Height> for Min {
 #[derive(Debug)]
 pub struct Percent(pub usize);
 
-impl Measurment<Width> for Percent {
+impl Measurement<Width> for Percent {
     fn measure<R>(&self, records: R, cfg: &GridConfig) -> usize
     where
         R: Records,
@@ -97,7 +97,7 @@ impl Measurment<Width> for Percent {
     }
 }
 
-impl Measurment<Height> for Percent {
+impl Measurement<Height> for Percent {
     fn measure<R>(&self, records: R, cfg: &GridConfig) -> usize
     where
         R: Records,

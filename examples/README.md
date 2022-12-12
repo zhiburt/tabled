@@ -3,7 +3,7 @@ This file contains an overview of examples.
 - `derive` folder contains a list of examples which uses different `#[derive(Tabled)]` attributes.
 - `show` folder contains a program which uses different styles and prints the resulting table.
 - `terminal_size` folder contains a program which spreads the table to the max terminal width and max terminal height.
-  You can use wich dimension to use via args `--width`, `--height` by default 2 are used.
+  You can use which dimension to use via args `--width`, `--height` by default 2 are used.
 
 Bellow there's a list of results of running some examples.
 

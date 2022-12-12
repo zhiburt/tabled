@@ -20,7 +20,7 @@ test_table!(
 );
 
 test_table!(
-    highligt_panel_0,
+    highlight_panel_0,
     create_table::<3, 3>()
         .with(Panel::horizontal(0).text("Linux Distributions"))
         .with(Style::psql())
@@ -35,7 +35,7 @@ test_table!(
 );
 
 test_table!(
-    highligt_panel_1,
+    highlight_panel_1,
     create_table::<3, 3>()
         .with(Panel::horizontal(0).text("Linux Distributions"))
         .with(Style::psql())
@@ -167,7 +167,7 @@ test_table!(
 );
 
 test_table!(
-    panel_style_change_corect,
+    panel_style_change_correct,
     new_table(&[(0, 1)])
         .with(Panel::horizontal(0).text("Numbers"))
         .with(Style::modern().top_intersection('─').horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(Some('┬'))]))

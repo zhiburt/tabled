@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ByColumnName` locator to target columns via name and use it as `Object`.
 - Added `VerticalLine` to set custom vertical lines.
 - Added `Height` structure to control table/cell height.
-- Added `BorderChar` to set a char by an arbitraty offest on a split horizonta/vertical lines.
+- Added `BorderChar` to set a char by an arbitrary offset on a split horizonta/vertical lines.
 - Added support for `fmt::*` settings when called with `format`/`println`.
 - Created `json_to_table` crate to convert json into table.
 - `papergrid` has got a few new functions.
@@ -229,7 +229,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `MaxWidth` interface changed in regard to support `wrapping`. Now old `MaxWidth` logic can be called by `MaxWidth::trucating`.
+- `MaxWidth` interface changed in regard to support `wrapping`. Now old `MaxWidth` logic can be called by `MaxWidth::truncating`.
 
 ### Fixed
 

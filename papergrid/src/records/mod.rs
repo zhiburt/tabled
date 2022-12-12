@@ -1,4 +1,4 @@
-//! The module contains a [Records] abstraction of a [`Grid`] trait and its implementators.
+//! The module contains a [Records] abstraction of a [`Grid`] trait and its implementers.
 //!
 //! [`Grid`]: crate::Grid
 
@@ -11,7 +11,7 @@ pub mod vec_records;
 #[cfg(feature = "color")]
 pub mod tcell;
 
-/// The representaion of data, rows and columns of a [`Grid`].
+/// The representation of data, rows and columns of a [`Grid`].
 ///
 /// [`Grid`]: crate::Grid
 pub trait Records {

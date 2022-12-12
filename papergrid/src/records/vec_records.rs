@@ -308,7 +308,7 @@ where
     cells
 }
 
-/// Cell imlementation which can be used with [`VecRecords`].
+/// Cell implementation which can be used with [`VecRecords`].
 pub trait Cell: AsRef<str> {
     /// Gets a line by index.
     fn get_line(&self, i: usize) -> &str;
@@ -348,7 +348,7 @@ pub trait CellMut<T> {
     where
         W: WidthFunc;
 
-    /// Trigers an update a cell.
+    /// Triggers an update a cell.
     ///
     /// It may be caused if width function was changed.
     fn update<W>(&mut self, width_ctrl: W)

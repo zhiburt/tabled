@@ -219,7 +219,7 @@ impl GridConfig {
         self.borders.remove_horizontal_line(row);
     }
 
-    /// Gets a overriden vertical line.
+    /// Gets a overridden vertical line.
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
@@ -243,7 +243,7 @@ impl GridConfig {
         self.borders.remove_vertical_line(row);
     }
 
-    /// Gets a overriden line.
+    /// Gets a overridden line.
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
@@ -291,8 +291,8 @@ impl GridConfig {
         chars.insert(offset, c);
     }
 
-    /// Get a list of overriden chars in a horizontal border.
-    pub fn lookup_overidden_horizontal(
+    /// Get a list of overridden chars in a horizontal border.
+    pub fn lookup_overridden_horizontal(
         &self,
         pos: Position,
         offset: usize,
@@ -316,13 +316,13 @@ impl GridConfig {
             .copied()
     }
 
-    /// Checks if there any char in a horizontal border being overriden.
-    pub fn is_overidden_horizontal(&self, pos: Position) -> bool {
+    /// Checks if there any char in a horizontal border being overridden.
+    pub fn is_overridden_horizontal(&self, pos: Position) -> bool {
         self.override_horizontal_borders.get(&pos).is_some()
     }
 
-    /// Removes a list of overriden chars in a horizontal border.
-    pub fn remove_overidden_horizontal(&mut self, pos: Position) {
+    /// Removes a list of overridden chars in a horizontal border.
+    pub fn remove_overridden_horizontal(&mut self, pos: Position) {
         self.override_horizontal_borders.remove(&pos);
     }
 
@@ -338,8 +338,8 @@ impl GridConfig {
         chars.insert(offset, c);
     }
 
-    /// Get a list of overriden chars in a horizontal border.
-    pub fn lookup_overidden_vertical(
+    /// Get a list of overridden chars in a horizontal border.
+    pub fn lookup_overridden_vertical(
         &self,
         pos: Position,
         offset: usize,
@@ -363,13 +363,13 @@ impl GridConfig {
             .copied()
     }
 
-    /// Checks if there any char in a horizontal border being overriden.
-    pub fn is_overidden_vertical(&self, pos: Position) -> bool {
+    /// Checks if there any char in a horizontal border being overridden.
+    pub fn is_overridden_vertical(&self, pos: Position) -> bool {
         self.override_vertical_borders.get(&pos).is_some()
     }
 
-    /// Removes a list of overriden chars in a horizontal border.
-    pub fn remove_overidden_vertical(&mut self, pos: Position) {
+    /// Removes a list of overridden chars in a horizontal border.
+    pub fn remove_overridden_vertical(&mut self, pos: Position) {
         self.override_vertical_borders.remove(&pos);
     }
 
@@ -458,12 +458,12 @@ impl GridConfig {
 
     /// Sets off all borders possible on the [`Entity`].
     ///
-    /// It doesn't changes globaly set borders through [`GridConfig::set_borders`].
+    /// It doesn't changes globally set borders through [`GridConfig::set_borders`].
     pub fn remove_border(&mut self, pos: Position, shape: (usize, usize)) {
         self.borders.remove_border(pos, shape);
     }
 
-    /// Set a character wich will be used in case any missconfiguration of borders.
+    /// Set a character which will be used in case any misconfiguration of borders.
     ///
     /// It will be usde for example when you set a left char for border frame and top but didn't set a top left corner.
     pub fn set_borders_missing(&mut self, c: char) {
@@ -767,18 +767,18 @@ fn is_column_span_valid(
     span: usize,
     (count_rows, count_cols): (usize, usize),
 ) -> bool {
-    // ignore spans which are invlid
+    // ignore spans which are invalid
     let pos_correct = pos.1 < count_cols && pos.0 < count_rows;
-    // ignore a span range wich begger then count rows
+    // ignore a span range which begger then count rows
     let span_correct = span + pos.1 <= count_cols;
 
     pos_correct && span_correct
 }
 
 fn is_row_span_valid(pos: Position, span: usize, (count_rows, count_cols): (usize, usize)) -> bool {
-    // ignore spans which are invlid
+    // ignore spans which are invalid
     let pos_correct = pos.1 < count_cols && pos.0 < count_rows;
-    // ignore a span range wich begger then count columns
+    // ignore a span range which begger then count columns
     let span_correct = span + pos.0 <= count_rows;
 
     pos_correct && span_correct

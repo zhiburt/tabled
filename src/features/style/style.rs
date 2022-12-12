@@ -104,7 +104,7 @@ use super::{HorizontalLine, Line, VerticalLine};
 /// It tries to limit an controlling a valid state of it.
 /// It doesn't allow to call method [`Style::top_left_corner`] unless [`Style::left`] and [`Style::top`] is set.
 ///
-/// You can turn [`Style`] into [`RawStyle`] to have more controll using [`Into`] implementation.
+/// You can turn [`Style`] into [`RawStyle`] to have more control using [`Into`] implementation.
 ///
 /// # Example
 ///
@@ -1178,7 +1178,7 @@ const fn create_borders(
     }
 }
 
-/// An interator which limits [`Line`] influence on iterations over lines for in [`Style`].
+/// An iterator which limits [`Line`] influence on iterations over lines for in [`Style`].
 #[derive(Debug, Clone)]
 pub struct HorizontalLineIter<I> {
     iter: I,
@@ -1227,7 +1227,7 @@ where
     }
 }
 
-/// An interator which limits [`Line`] influence on iterations over lines for in [`Style`].
+/// An iterator which limits [`Line`] influence on iterations over lines for in [`Style`].
 #[derive(Debug, Clone)]
 pub struct VerticalLineIter<I> {
     iter: I,

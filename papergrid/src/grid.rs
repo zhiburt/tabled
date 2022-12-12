@@ -663,9 +663,9 @@ fn print_horizontal_border(
     width: usize,
     c: char,
 ) -> fmt::Result {
-    if cfg.is_overidden_horizontal(pos) {
+    if cfg.is_overridden_horizontal(pos) {
         for i in 0..width {
-            let c = cfg.lookup_overidden_horizontal(pos, i, width).unwrap_or(c);
+            let c = cfg.lookup_overridden_horizontal(pos, i, width).unwrap_or(c);
 
             f.write_char(c)?;
         }
@@ -805,9 +805,9 @@ where
         (line, width)
     };
 
-    if formatting.allow_lines_alignement {
+    if formatting.allow_lines_alignment {
         let (left, right) = calculate_indent(alignment, line_width, available_width);
-        return print_text_formated(f, records, pos, &line, tab_width, left, right);
+        return print_text_formatted(f, records, pos, &line, tab_width, left, right);
     }
 
     let cell_width = if formatting.horizontal_trim {
@@ -821,7 +821,7 @@ where
     };
 
     let (left, right) = calculate_indent(alignment, cell_width, available_width);
-    print_text_formated(f, records, pos, &line, tab_width, left, right)?;
+    print_text_formatted(f, records, pos, &line, tab_width, left, right)?;
 
     let rest_width = cell_width - line_width;
     repeat_char(f, DEFAULT_SPACE_CHAR, rest_width)?;
@@ -830,7 +830,7 @@ where
 }
 
 #[allow(unused)]
-fn print_text_formated<R>(
+fn print_text_formatted<R>(
     f: &mut fmt::Formatter<'_>,
     records: &R,
     pos: Position,
@@ -1003,8 +1003,8 @@ where
 {
     let left = get_vertical(cfg, records, pos);
     if let Some(c) = left {
-        let c = if cfg.is_overidden_vertical(pos) {
-            cfg.lookup_overidden_vertical(pos, line_index, count_lines)
+        let c = if cfg.is_overridden_vertical(pos) {
+            cfg.lookup_overridden_vertical(pos, line_index, count_lines)
                 .unwrap_or(*c)
         } else {
             *c
@@ -1359,7 +1359,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn horizontal_aligment_test() {
+    fn horizontal_alignment_test() {
         use std::fmt;
 
         struct F<'a>(&'a str, AlignmentHorizontal, usize);
@@ -1367,7 +1367,7 @@ mod tests {
         impl fmt::Display for F<'_> {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 let (left, right) = calculate_indent(self.1, string_width(self.0), self.2);
-                print_text_formated(f, &EmptyRecords::default(), (0, 0), self.0, 4, left, right)
+                print_text_formatted(f, &EmptyRecords::default(), (0, 0), self.0, 4, left, right)
             }
         }
 
@@ -1389,7 +1389,7 @@ mod tests {
     }
 
     #[test]
-    fn vertical_aligment_test() {
+    fn vertical_alignment_test() {
         use AlignmentVertical::*;
 
         assert_eq!(indent_from_top(Bottom, 1, 1), 0);

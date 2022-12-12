@@ -117,7 +117,7 @@ macro_rules! test_struct {
 #[allow(non_camel_case_types)]
 type sstr = &'static str;
 
-mod tupple {
+mod tuple {
     use super::*;
 
     test_tuple!(basic, t: { u8 sstr }, init: { 0 "v2" }, expected: ["0", "1"], ["0", "v2"],);
@@ -225,11 +225,11 @@ mod enum_ {
 
     test_enum!(
         basic,
-        t: { Security Embeded Frontend Unknown },
-        headers: ["Security", "Embeded", "Frontend", "Unknown"],
+        t: { Security Embedded Frontend Unknown },
+        headers: ["Security", "Embedded", "Frontend", "Unknown"],
         tests:
             Security => ["+", "", "", ""],
-            Embeded => ["", "+", "", ""],
+            Embedded => ["", "+", "", ""],
             Frontend => ["", "", "+", ""],
             Unknown => ["", "", "", "+"],
     );
@@ -443,7 +443,7 @@ mod enum_ {
     );
 
     test_enum!(
-        rename_all_variant_inhirited_inside_struct_enum_overiden_by_rename,
+        rename_all_variant_inhirited_inside_struct_enum_overridden_by_rename,
         t: #[tabled(rename_all = "snake_case")] {
             #[tabled(inline, rename_all = "snake_case")]
             VariantName1 {
@@ -667,7 +667,7 @@ mod structure {
         expected: ["f1", "F2"], ["0", "v2"]
     );
     test_struct!(
-        rename_all_field_overriden_by_rename,
+        rename_all_field_overridden_by_rename,
         t: { #[tabled(rename_all = "lowercase", rename = "Hello")] f1: u8, #[tabled(rename_all = "UPPERCASE")] f2: sstr }
         init: { f1: 0, f2: "v2" }
         expected: ["Hello", "F2"], ["0", "v2"]

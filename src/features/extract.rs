@@ -161,7 +161,7 @@ where
             shape.1,
         );
 
-        // Cleanup table in case if boundries are exeeded.
+        // Cleanup table in case if boundaries are exeeded.
         //
         // todo: can be optimized by adding a clear() method to Resizable
         rows.0 = std::cmp::min(rows.0, shape.0);
