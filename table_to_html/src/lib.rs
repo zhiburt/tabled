@@ -11,7 +11,7 @@
 //! The library provides a interface to build a HTML table (`<table>`) from a [`Table`].
 //!
 //! Because of the specifics of HTML it's not considered to be the best approach to supply custom CSS for the table.
-//! Istead of that you can set a custom id for the table and use your on CSS.
+//! Instead of that you can set a custom id for the table and use your on CSS.
 //!
 //! # Example
 //!
