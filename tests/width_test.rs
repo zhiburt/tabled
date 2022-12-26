@@ -9,7 +9,7 @@ use tabled::{
     papergrid::util::string_width_multiline,
     peaker::{PriorityMax, PriorityMin},
     width::{Justify, MinWidth, SuffixLimit, Width},
-    Alignment, Margin, Modify, Padding, Panel, Span, Style,
+    Alignment, Margin, Modify, Padding, Panel, Span, Style, Table,
 };
 
 use crate::util::{create_table, init_table, is_lines_equal, new_table, static_table};
@@ -2280,6 +2280,43 @@ fn min_width_is_used_after_margin() {
             "                                                              "
         ),
     );
+}
+
+#[test]
+fn wrap_keeping_words_0() {
+    let data = vec![["Hello world"]];
+    let table = Table::new(data)
+        .with(Width::wrap(8).keep_words())
+        .to_string();
+
+    println!("{}", table);
+
+    assert_eq!(papergrid::util::string_width_multiline(&table), 8);
+
+    #[cfg(feature = "color")]
+    let expected = static_table!(
+        "+------+"
+        "| 0    |"
+        "+------+"
+        "| Hell |"
+        "| o    |"
+        "| worl |"
+        "| d    |"
+        "+------+"
+    );
+
+    #[cfg(not(feature = "color"))]
+    let expected = static_table!(
+        "+------+"
+        "| 0    |"
+        "+------+"
+        "| Hell |"
+        "| o wo |"
+        "| rld  |"
+        "+------+"
+    );
+
+    assert_eq!(table, expected,);
 }
 
 #[cfg(feature = "derive")]
