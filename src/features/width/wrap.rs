@@ -400,6 +400,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 
                 word_part = &rhs[split_char..];
                 line_width += unicode_width::UnicodeWidthStr::width(lhs) + unknowns;
+                is_first_word = false;
 
                 line.push_str(lhs);
                 line.extend(std::iter::repeat(REPLACEMENT).take(unknowns));
