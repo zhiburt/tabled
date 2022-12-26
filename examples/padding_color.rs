@@ -153,7 +153,7 @@ where
         let (count_rows, count_cols) = table.shape();
         for (row, col) in entity.iter(count_rows, count_cols) {
             let column_width = widths[col];
-            let width = table.get_records().get_width((row, col), &ctrl);
+            let width = table.get_records().get_width((row, col), ctrl.clone());
 
             if width < column_width {
                 let available_width = column_width - width;

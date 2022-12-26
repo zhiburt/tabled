@@ -126,7 +126,7 @@ test_table!(
 
 test_table!(
     panel_style_uses_most_left_and_right_cell_styles,
-    new_table(&[(0, 1)]).with(Panel::horizontal(0).text("Numbers")).with(Style::modern()),
+    new_table([(0, 1)]).with(Panel::horizontal(0).text("Numbers")).with(Style::modern()),
     "┌─────┬─────┐"
     "│  Numbers  │"
     "├─────┼─────┤"
@@ -138,7 +138,7 @@ test_table!(
 
 test_table!(
     panel_style_change,
-    new_table(&[(0, 1)])
+    new_table([(0, 1)])
         .with(Panel::horizontal(0).text("Numbers"))
         .with(Style::modern().top_intersection('─').horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(Some('┬'))]))
         .with(Modify::new(Cell(0, 0)).with(Alignment::center())),
@@ -153,7 +153,7 @@ test_table!(
 
 test_table!(
     panel_style_uses_most_left_and_right_cell_styles_correct,
-    new_table(&[(0, 1)])
+    new_table([(0, 1)])
         .with(Panel::horizontal(0).text("Numbers"))
         .with(Style::modern())
         .with(Style::correct_spans()),
@@ -168,7 +168,7 @@ test_table!(
 
 test_table!(
     panel_style_change_correct,
-    new_table(&[(0, 1)])
+    new_table([(0, 1)])
         .with(Panel::horizontal(0).text("Numbers"))
         .with(Style::modern().top_intersection('─').horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(Some('┬'))]))
         .with(Style::correct_spans())
@@ -184,7 +184,7 @@ test_table!(
 
 test_table!(
     panel_in_single_column,
-    new_table(&[(0)]).with(Panel::horizontal(0).text("Numbers")).with(Style::modern()),
+    new_table([(0)]).with(Panel::horizontal(0).text("Numbers")).with(Style::modern()),
     "┌─────────┐"
     "│ Numbers │"
     "├─────────┤"

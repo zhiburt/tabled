@@ -401,7 +401,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
 fn max_width_keep_words_1() {
     use tabled::style::HorizontalLine;
 
-    let table = new_table(&["asdf"])
+    let table = new_table(["asdf"])
         .with(Width::wrap(7).keep_words())
         .to_string();
 
@@ -418,7 +418,7 @@ fn max_width_keep_words_1() {
         )
     );
 
-    let table = new_table(&["qweqw eqwe"])
+    let table = new_table(["qweqw eqwe"])
         .with(Width::wrap(8).keep_words())
         .to_string();
 
@@ -2221,7 +2221,7 @@ fn min_width_priority_min() {
 #[test]
 fn max_width_tab_0() {
     let table =
-        new_table(&["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
+        new_table(["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
             .with(Style::markdown())
             .with(Width::wrap(60))
             .to_string();
