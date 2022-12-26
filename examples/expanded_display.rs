@@ -23,13 +23,13 @@ impl Distribution {
 }
 
 fn main() {
-    let data = [
+    let data = &[
         Distribution::new("Manjaro", "Arch", true, true),
         Distribution::new("Arch", "", true, true),
         Distribution::new("Debian", "", true, true),
     ];
 
-    let table = ExpandedDisplay::new(&data);
+    let table = ExpandedDisplay::new(data);
 
     println!("{}", table);
 }

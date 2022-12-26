@@ -81,9 +81,9 @@ fn build_grid(
     let records = VecRecords::new(records, (rows, cols), CfgWidthFunction::from_cfg(cfg));
     let records = Box::leak(Box::new(records));
 
-    let width = Box::leak(Box::new(WidthEstimator::default()));
+    let width: &mut WidthEstimator = Box::leak(Box::default());
     width.estimate(&*records, cfg);
-    let height = Box::leak(Box::new(HeightEstimator::default()));
+    let height: &mut HeightEstimator = Box::leak(Box::default());
     height.estimate(&*records, cfg);
 
     Grid::new(&*records, cfg, &*width, &*height)

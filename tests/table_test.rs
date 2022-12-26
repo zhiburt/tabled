@@ -234,7 +234,7 @@ mod default_types {
 
 test_table!(
     table_tuple,
-    Table::new(&[("we are in", 2020)]),
+    Table::new([("we are in", 2020)]),
     "+-----------+------+"
     "| &str      | i32  |"
     "+-----------+------+"
@@ -244,7 +244,7 @@ test_table!(
 
 test_table!(
     table_single_tuple,
-    Table::new(&[(2020,)]),
+    Table::new([(2020,)]),
     "+------+"
     "| i32  |"
     "+------+"
@@ -254,7 +254,7 @@ test_table!(
 
 test_table!(
     table_tuple_vec,
-    Table::new(&[(0, "Monday"), (1, "Thursday")]),
+    Table::new([(0, "Monday"), (1, "Thursday")]),
     "+-----+----------+"
     "| i32 | &str     |"
     "+-----+----------+"
@@ -276,7 +276,7 @@ test_table!(
 
 test_table!(
     multiline_table_test_0,
-    Table::new(&[["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
+    Table::new([["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
         .with(tabled::Style::modern()),
     r#"┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐"#
     r#"│ 0                                                                                                                                                                                                                                                                    │"#
@@ -290,7 +290,7 @@ test_table!(
 
 test_table!(
     multiline_table_test_1,
-    Table::new(&[["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
+    Table::new([["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
         .with(tabled::Style::modern())
         .with(Width::wrap(100)),
     "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐"
@@ -722,11 +722,11 @@ mod derived {
 #[cfg(feature = "color")]
 #[test]
 fn multiline_table_test2() {
-    let data = [
+    let data = &[
         ["\u{1b}[37mThis is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\n\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\n\u{1b}[0m"],
     ];
 
-    let mut table = Table::new(&data);
+    let mut table = Table::new(data);
     table.with(tabled::Style::modern());
 
     assert_eq!(
