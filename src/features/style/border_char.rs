@@ -1,6 +1,6 @@
 use papergrid::records::Records;
 
-use crate::{style::Offset, CellOption, Table};
+use crate::{style::Offset, CellOption, Table, TableOption};
 
 /// [`BorderChar`] sets a char to a specific location on a horizontal line.
 ///
@@ -71,6 +71,35 @@ where
                     table
                         .get_config_mut()
                         .override_vertical_border(pos, self.c, offset);
+                }
+            }
+        }
+    }
+}
+
+
+impl<R> TableOption<R> for BorderChar
+where
+        R: Records,
+{
+    fn change(&mut self, table: &mut Table<R>) {
+        let offset = self.offset.into();
+        let (count_rows, count_cols) = table.shape();
+
+        for row in 0..count_rows {
+            for col in 0..count_cols {
+                let pos = (row, col).into();
+                match self.horizontal {
+                    true => {
+                        table
+                            .get_config_mut()
+                            .override_horizontal_border(pos, self.c, offset);
+                    }
+                    false => {
+                        table
+                            .get_config_mut()
+                            .override_vertical_border(pos, self.c, offset);
+                    }
                 }
             }
         }
