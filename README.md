@@ -445,6 +445,34 @@ fn main() {
 }
 ```
 
+Or if you want a specific cell, you can modify `Column`/`Row`.
+
+```rust
+use tabled::{
+    object::Columns,
+    style::{BorderChar, Offset, Style},
+    Modify, Table,
+};
+
+fn main() {
+    let table = Table::new([["Hello", "World", "!"]])
+        .with(Style::markdown())
+        .with(
+            Modify::new(Columns::single(1))
+                .with(BorderChar::horizontal(':', Offset::Begin(0)))
+                .with(BorderChar::horizontal(':', Offset::End(0))),
+        )
+        .to_string();
+
+    assert_eq!(
+        table,
+        "| 0     | 1     | 2 |\n\
+         |-------|:-----:|---|\n\
+         | Hello | World | ! |"
+    );
+}
+```
+
 #### Colorize borders
 
 You can set a colors of all borders using `Color`.
