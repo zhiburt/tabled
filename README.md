@@ -421,19 +421,15 @@ You can use `BorderChar` to achieve this.
 
 ```rust
 use tabled::{
-    object::Columns,
     style::{BorderChar, Offset, Style},
-    Modify, Table,
+    Table,
 };
 
 fn main() {
     let table = Table::new([["Hello", "World", "!"]])
         .with(Style::markdown())
-        .with(
-            Modify::new(Columns::new(..))
-                .with(BorderChar::horizontal(':', Offset::Begin(0)))
-                .with(BorderChar::horizontal(':', Offset::End(0))),
-        )
+        .with(BorderChar::horizontal(':', Offset::Begin(0)))
+        .with(BorderChar::horizontal(':', Offset::End(0)))
         .to_string();
 
     assert_eq!(
