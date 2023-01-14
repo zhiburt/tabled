@@ -181,7 +181,7 @@ impl<S> VerticalPanel<S> {
 impl<S, R> TableOption<R> for VerticalPanel<S>
 where
     S: AsRef<str> + Clone,
-    R: Records + RecordsMut<String> + Resizable,
+    R: Records + RecordsMut + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
         let (count_rows, count_cols) = table.shape();
@@ -234,7 +234,7 @@ impl<S> HorizontalPanel<S> {
 impl<S, R> TableOption<R> for HorizontalPanel<S>
 where
     S: AsRef<str> + Clone,
-    R: Records + RecordsMut<String> + Resizable,
+    R: Records + RecordsMut + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
         let (count_rows, count_cols) = table.shape();
@@ -268,7 +268,7 @@ pub struct Header<S>(S);
 impl<S, R> TableOption<R> for Header<S>
 where
     S: AsRef<str>,
-    R: Records + RecordsMut<String> + Resizable,
+    R: Records + RecordsMut + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
         HorizontalPanel {
@@ -287,7 +287,7 @@ pub struct Footer<S>(S);
 impl<S, R> TableOption<R> for Footer<S>
 where
     S: AsRef<str> + Clone,
-    R: Records + RecordsMut<String> + Resizable,
+    R: Records + RecordsMut + Resizable,
 {
     fn change(&mut self, table: &mut Table<R>) {
         HorizontalPanel {
@@ -392,7 +392,7 @@ where
 
 fn set_text<R>(table: &mut Table<R>, pos: Position, text: String)
 where
-    R: RecordsMut<String>,
+    R: RecordsMut,
 {
     let ctrl = CfgWidthFunction::from_cfg(table.get_config());
     table.get_records_mut().set(pos, text, ctrl);

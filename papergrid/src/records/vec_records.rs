@@ -1,11 +1,8 @@
 //! The module contains a [`VecRecords`] implementation of [`Records`].
 
-use std::{
-    fmt::{self, Formatter},
-    ops::{Index, IndexMut},
-};
+use std::ops::{Index, IndexMut};
 
-use super::{cell_info::CellInfo, Records, RecordsMut, Resizable};
+use super::{cell_info::CellInfo, ExactRecords, RecordCell, Records, RecordsMut, Resizable};
 use crate::{width::WidthFunc, Position};
 
 /// The structure represents a [`Records`] implementation as an pre built vector of cells.
@@ -108,66 +105,43 @@ where
     }
 }
 
-impl<T> Records for VecRecords<T>
+impl<'a, T> Records for &'a VecRecords<T>
 where
-    T: Cell,
+    for<'b> &'b T: RecordCell,
 {
-    fn count_rows(&self) -> usize {
-        self.size.0
-    }
+    type Cell = &'a T;
+    type Cells = std::slice::Iter<'a, T>;
+    type IntoRecords = RecordRowIterator<'a, T>;
 
     fn count_columns(&self) -> usize {
         self.size.1
     }
 
-    fn get_text(&self, (row, col): Position) -> &str {
-        self.records[row][col].as_ref()
-    }
-
-    fn get_line(&self, (row, col): Position, i: usize) -> &str {
-        self.records[row][col].get_line(i)
-    }
-
-    fn get_width<W>(&self, (row, col): Position, width_ctrl: W) -> usize
-    where
-        W: WidthFunc,
-    {
-        self.records[row][col].width(width_ctrl)
-    }
-
-    fn get_line_width<W>(&self, (row, col): Position, i: usize, width_ctrl: W) -> usize
-    where
-        W: WidthFunc,
-    {
-        self.records[row][col].line_width(i, width_ctrl)
-    }
-
-    fn count_lines(&self, (row, col): Position) -> usize {
-        self.records[row][col].count_lines()
-    }
-
-    fn fmt_text_prefix(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        (row, col): Position,
-    ) -> std::fmt::Result {
-        self.records[row][col].fmt_prefix(f)
-    }
-
-    fn fmt_text_suffix(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        (row, col): Position,
-    ) -> std::fmt::Result {
-        self.records[row][col].fmt_suffix(f)
+    fn iter_rows(&self) -> Self::IntoRecords {
+        RecordRowIterator {
+            iter: self.records.iter(),
+        }
     }
 }
 
-impl<T, Q> RecordsMut<Q> for VecRecords<T>
+impl<T> ExactRecords for &VecRecords<T>
 where
-    T: CellMut<Q>,
+    for<'b> &'b T: RecordCell,
 {
-    fn set<W>(&mut self, (row, col): Position, text: Q, width_ctrl: W)
+    fn count_rows(&self) -> usize {
+        self.records.len()
+    }
+
+    fn get(&self, (row, col): Position) -> Option<Self::Cell> {
+        self.records.get(row).and_then(|rows| rows.get(col))
+    }
+}
+
+impl<T> RecordsMut for VecRecords<T>
+where
+    T: CellMut,
+{
+    fn set<W>(&mut self, (row, col): Position, text: String, width_ctrl: W)
     where
         W: WidthFunc,
     {
@@ -308,50 +282,25 @@ where
     cells
 }
 
-/// Cell implementation which can be used with [`VecRecords`].
-pub trait Cell: AsRef<str> {
-    /// Gets a line by index.
-    fn get_line(&self, i: usize) -> &str;
-
-    /// Returns a number of lines cell has.
-    fn count_lines(&self) -> usize;
-
-    /// Returns a width of cell.
-    fn width<W>(&self, width_ctrl: W) -> usize
-    where
-        W: WidthFunc;
-
-    /// Returns a width of cell line.
-    fn line_width<W>(&self, i: usize, width_ctrl: W) -> usize
-    where
-        W: WidthFunc;
-
-    /// Prints a prefix.
-    ///
-    /// It might be usefull when used for ANSI prefix.
-    fn fmt_prefix(&self, _: &mut Formatter<'_>) -> fmt::Result {
-        Ok(())
-    }
-
-    /// Prints a suffix.
-    ///
-    /// It might be usefull when used for ANSI suffix.
-    fn fmt_suffix(&self, _: &mut Formatter<'_>) -> fmt::Result {
-        Ok(())
-    }
-}
-
 /// Cell representation of [`VecRecords`] which can be modified.
-pub trait CellMut<T> {
+pub trait CellMut {
     /// Sets a text to a cell.
-    fn set<W>(&mut self, text: T, width_ctrl: W)
-    where
-        W: WidthFunc;
+    fn set<W: WidthFunc>(&mut self, text: String, width_ctrl: W);
 
     /// Triggers an update a cell.
     ///
     /// It may be caused if width function was changed.
-    fn update<W>(&mut self, width_ctrl: W)
-    where
-        W: WidthFunc;
+    fn update<W: WidthFunc>(&mut self, width_ctrl: W);
+}
+
+pub struct RecordRowIterator<'a, T> {
+    iter: std::slice::Iter<'a, Vec<T>>,
+}
+
+impl<'a, T> Iterator for RecordRowIterator<'a, T> {
+    type Item = std::slice::Iter<'a, T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        Some(self.iter.next()?.iter())
+    }
 }

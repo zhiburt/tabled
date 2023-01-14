@@ -5,114 +5,158 @@
 use crate::{width::WidthFunc, Position};
 
 pub mod cell_info;
-pub mod empty;
 pub mod vec_records;
-
-#[cfg(feature = "color")]
-pub mod tcell;
+pub mod empty;
 
 /// The representation of data, rows and columns of a [`Grid`].
 ///
 /// [`Grid`]: crate::Grid
 pub trait Records {
-    /// Returns amount of rows on a grid.
-    fn count_rows(&self) -> usize;
+    type Cell: RecordCell;
+    type Cells: Iterator<Item = Self::Cell>;
+    type IntoRecords: Iterator<Item = Self::Cells>;
 
     /// Returns amount of columns on a grid.
     fn count_columns(&self) -> usize;
 
-    /// Returns a text of a cell by an index.
-    fn get_text(&self, pos: Position) -> &str;
+    /// Returns an iterator over rows.
+    fn iter_rows(&self) -> Self::IntoRecords;
 
-    /// Returns a line of a text of a cell by an index.
-    fn get_line(&self, pos: Position, i: usize) -> &str;
-
-    /// Returns an amount of lines of a text of a cell by an index.
-    fn count_lines(&self, pos: Position) -> usize;
-
-    /// Returns a width of a text of a cell by an index.
-    fn get_width<W>(&self, pos: Position, width_ctrl: W) -> usize
-    where
-        W: WidthFunc;
-
-    /// Returns a width of line of a text of a cell by an index.
-    fn get_line_width<W>(&self, pos: Position, i: usize, width_ctrl: W) -> usize
-    where
-        W: WidthFunc;
-
-    /// Prints a prefix of a text of a cell by an index.
-    ///
-    /// Maybe be usefull in order to emit ANSI sequences.
-    fn fmt_text_prefix(&self, f: &mut std::fmt::Formatter<'_>, pos: Position) -> std::fmt::Result;
-
-    /// Prints a suffix of a text of a cell by an index.
-    ///
-    /// Maybe be usefull in order to emit ANSI sequences.
-    fn fmt_text_suffix(&self, f: &mut std::fmt::Formatter<'_>, pos: Position) -> std::fmt::Result;
+    /// Returns amount of rows on a grid.
+    fn hint_rows(&self) -> Option<usize> {
+        None
+    }
 }
 
-impl<R> Records for &R
+impl<'a, T> Records for &'a T
 where
-    R: Records,
+    T: Records,
 {
-    fn count_rows(&self) -> usize {
-        R::count_rows(self)
-    }
+    type Cell = T::Cell;
+    type Cells = T::Cells;
+    type IntoRecords = T::IntoRecords;
 
     fn count_columns(&self) -> usize {
-        R::count_columns(self)
+        T::count_columns(self)
     }
 
-    fn get_text(&self, pos: Position) -> &str {
-        R::get_text(self, pos)
+    fn iter_rows(&self) -> Self::IntoRecords {
+        T::iter_rows(self)
     }
 
-    fn get_line(&self, pos: Position, i: usize) -> &str {
-        R::get_line(self, pos, i)
+    fn hint_rows(&self) -> Option<usize> {
+        T::hint_rows(self)
+    }
+}
+
+pub trait ExactRecords: Records {
+    /// Returns an exact amount of rows in records.
+    ///
+    /// It must be guarated that an iterator will yield this amount.
+    fn count_rows(&self) -> usize;
+
+    /// Returns a text of a cell by an index.
+    fn get(&self, pos: Position) -> Option<Self::Cell>;
+}
+
+impl<'a, T> ExactRecords for &'a T
+where
+    T: ExactRecords,
+{
+    fn count_rows(&self) -> usize {
+        T::count_rows(self)
     }
 
-    fn count_lines(&self, pos: Position) -> usize {
-        R::count_lines(self, pos)
+    fn get(&self, pos: Position) -> Option<Self::Cell> {
+        T::get(self, pos)
+    }
+}
+
+pub trait RecordCell {
+    type Text: AsRef<str>;
+    type Line: AsRef<str>;
+    type Lines: IntoIterator<Item = Self::Line>;
+
+    /// Returns a text of a cell by an index.
+    fn get_text(&self) -> Self::Text;
+
+    /// Returns a line of a text of a cell by an index.
+    fn get_line(&self, i: usize) -> Self::Line;
+
+    /// Returns a line of a text of a cell by an index.
+    fn get_lines(&self) -> Self::Lines;
+
+    /// Returns an amount of lines of a text of a cell by an index.
+    fn count_lines(&self) -> usize;
+
+    /// Returns a width of a text of a cell by an index.
+    fn get_width<W: WidthFunc>(&self, width_ctrl: W) -> usize {
+        width_ctrl.width_multiline(self.get_text().as_ref())
     }
 
-    fn get_width<W>(&self, pos: Position, width_ctrl: W) -> usize
-    where
-        W: WidthFunc,
-    {
-        R::get_width(self, pos, width_ctrl)
+    /// Returns a width of line of a text of a cell by an index.
+    fn get_line_width<W: WidthFunc>(&self, i: usize, width_ctrl: W) -> usize {
+        width_ctrl.width_multiline(self.get_line(i).as_ref())
+    }
+}
+
+impl<'a, T> RecordCell for &'a T
+where
+    T: RecordCell,
+{
+    type Text = T::Text;
+    type Line = T::Line;
+    type Lines = T::Lines;
+
+    fn get_text(&self) -> Self::Text {
+        T::get_text(self)
     }
 
-    fn get_line_width<W>(&self, pos: Position, i: usize, width_ctrl: W) -> usize
-    where
-        W: WidthFunc,
-    {
-        R::get_line_width(self, pos, i, width_ctrl)
+    fn get_line(&self, i: usize) -> Self::Line {
+        T::get_line(self, i)
     }
 
-    fn fmt_text_prefix(&self, f: &mut std::fmt::Formatter<'_>, pos: Position) -> std::fmt::Result {
-        R::fmt_text_prefix(self, f, pos)
+    fn get_lines(&self) -> Self::Lines {
+        T::get_lines(self)
     }
 
-    fn fmt_text_suffix(&self, f: &mut std::fmt::Formatter<'_>, pos: Position) -> std::fmt::Result {
-        R::fmt_text_suffix(self, f, pos)
+    fn count_lines(&self) -> usize {
+        T::count_lines(self)
+    }
+
+    fn get_width<W: WidthFunc>(&self, width_ctrl: W) -> usize {
+        T::get_width(self, width_ctrl)
+    }
+
+    fn get_line_width<W: WidthFunc>(&self, i: usize, width_ctrl: W) -> usize {
+        T::get_line_width(self, i, width_ctrl)
     }
 }
 
 /// A [`Grid`] representation of a data set which can be modified.
 ///
 /// [`Grid`]: crate::Grid
-pub trait RecordsMut<T> {
+pub trait RecordsMut {
     /// Sets a text to a given cell by index.
-    fn set<W>(&mut self, pos: Position, text: T, width_ctrl: W)
-    where
-        W: WidthFunc;
+    fn set<W: WidthFunc>(&mut self, pos: Position, text: String, width_ctrl: W);
 
     /// Updates a given cell by index.
     ///
     /// Maybe used if width function was changed.
-    fn update<W>(&mut self, pos: Position, width_ctrl: W)
-    where
-        W: WidthFunc;
+    fn update<W: WidthFunc>(&mut self, pos: Position, width_ctrl: W);
+}
+
+impl<'a, T> RecordsMut for &'a mut T
+where
+    T: RecordsMut,
+{
+    fn set<W: WidthFunc>(&mut self, pos: Position, text: String, width_ctrl: W) {
+        T::set(self, pos, text, width_ctrl)
+    }
+
+    fn update<W: WidthFunc>(&mut self, pos: Position, width_ctrl: W) {
+        T::update(self, pos, width_ctrl)
+    }
 }
 
 /// A [`Grid`] representation of a data set which can be modified by moving rows/columns around.
@@ -135,4 +179,41 @@ pub trait Resizable {
     fn remove_column(&mut self, column: usize);
     /// Inserts a row to specific by row index.
     fn insert_row(&mut self, row: usize);
+}
+
+impl<'a, T> Resizable for &'a mut T
+where
+    T: Resizable,
+{
+    fn swap(&mut self, lhs: Position, rhs: Position) {
+        T::swap(self, lhs, rhs)
+    }
+
+    fn swap_row(&mut self, lhs: usize, rhs: usize) {
+        T::swap_row(self, lhs, rhs)
+    }
+
+    fn swap_column(&mut self, lhs: usize, rhs: usize) {
+        T::swap_column(self, lhs, rhs)
+    }
+
+    fn push_row(&mut self) {
+        T::push_row(self)
+    }
+
+    fn push_column(&mut self) {
+        T::push_column(self)
+    }
+
+    fn remove_row(&mut self, row: usize) {
+        T::remove_row(self, row)
+    }
+
+    fn remove_column(&mut self, column: usize) {
+        T::remove_column(self, column)
+    }
+
+    fn insert_row(&mut self, row: usize) {
+        T::insert_row(self, row)
+    }
 }

@@ -94,7 +94,7 @@ impl<W, P> Wrap<W, P> {
 impl<W, P, R> CellOption<R> for Wrap<W, P>
 where
     W: Measurement<Width>,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
@@ -135,7 +135,7 @@ impl<W, P, R> TableOption<R> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     fn change(&mut self, table: &mut Table<R>) {
         if table.is_empty() {
@@ -164,7 +164,7 @@ fn wrap_total_width<R, P>(
     priority: P,
 ) where
     P: Peaker,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     let (count_rows, count_cols) = table.shape();
     let cfg = table.get_config();

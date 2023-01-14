@@ -26,7 +26,7 @@ pub struct TabSize(pub usize);
 
 impl<R> TableOption<R> for TabSize
 where
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     fn change(&mut self, table: &mut Table<R>) {
         table.get_config_mut().set_tab_width(self.0);
@@ -174,8 +174,8 @@ impl<R> CellOption<R> for AlignmentStrategy {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let mut formatting = *table.get_config().get_formatting(entity);
         match &self {
-            AlignmentStrategy::PerCell => formatting.allow_lines_alignement = false,
-            AlignmentStrategy::PerLine => formatting.allow_lines_alignement = true,
+            AlignmentStrategy::PerCell => formatting.allow_lines_alignment = false,
+            AlignmentStrategy::PerLine => formatting.allow_lines_alignment = true,
         }
 
         table.get_config_mut().set_formatting(entity, formatting);

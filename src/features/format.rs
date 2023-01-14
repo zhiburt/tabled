@@ -3,7 +3,7 @@
 //! [`Table`]: crate::Table
 
 use papergrid::{
-    records::{Records, RecordsMut},
+    records::{ExactRecords, RecordCell, Records, RecordsMut},
     width::CfgWidthFunction,
     Entity,
 };
@@ -129,20 +129,10 @@ impl Format<()> {
 impl<F, R> CellOption<R> for Format<F>
 where
     F: FnMut(&str) -> String,
-    R: Records + RecordsMut<String>,
+    R: Records + ExactRecords + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
-        let width_fn = CfgWidthFunction::from_cfg(table.get_config());
-        let (count_rows, count_cols) = table.shape();
-        for pos in entity.iter(count_rows, count_cols) {
-            let records = table.get_records();
-            let content = records.get_text(pos);
-            let content = (self.f)(content);
-            table.get_records_mut().set(pos, content, &width_fn);
-        }
-
-        table.destroy_width_cache();
-        table.destroy_height_cache();
+        FormatWithIndex::new(|s, _| (self.f)(s)).change_cell(table, entity);
     }
 }
 
@@ -166,16 +156,19 @@ where
 impl<F, R> CellOption<R> for FormatWithIndex<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
-    R: Records + RecordsMut<String>,
+    R: Records + ExactRecords + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_fn = CfgWidthFunction::from_cfg(table.get_config());
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
             let records = table.get_records();
-            let content = records.get_text(pos);
-            let content = (self.f)(content, pos);
-            table.get_records_mut().set(pos, content, &width_fn);
+            let cell = records.get(pos);
+            if let Some(cell) = cell {
+                let content = cell.get_text().as_ref();
+                let content = (self.f)(content, pos);
+                table.get_records_mut().set(pos, content, &width_fn);
+            }
         }
 
         table.destroy_width_cache();
@@ -186,7 +179,7 @@ where
 impl<F, R> CellOption<R> for F
 where
     F: FnMut(&str) -> String,
-    R: Records + RecordsMut<String>,
+    R: Records + ExactRecords + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         Format::new(self).change_cell(table, entity);
@@ -195,7 +188,7 @@ where
 
 impl<R> CellOption<R> for String
 where
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_fn = CfgWidthFunction::from_cfg(table.get_config());

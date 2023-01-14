@@ -42,12 +42,14 @@ test_table!(
         let ctrl = CfgWidthFunction::default();
         let data = vec![vec![papergrid::records::cell_info::CellInfo::new("", &ctrl)]];
         let records = papergrid::records::vec_records::VecRecords::new(data, (1, 1), &ctrl);
+
         let width = util::EstimationList::from(vec![0]);
         let height = util::EstimationList::from(vec![0]);
+
         let mut cfg = papergrid::GridConfig::default();
         cfg.set_borders(util::DEFAULT_BORDERS);
 
-        let grid = papergrid::Grid::new(records, &cfg, &width, &height);
+        let grid = papergrid::Grid::new(&records, &cfg, &width, &height);
         grid.to_string()
     },
     "++"
@@ -73,7 +75,7 @@ test_table!(
             ..Default::default()
         });
 
-        let grid = papergrid::Grid::new(records, &cfg, &width, &height);
+        let grid = papergrid::Grid::new(&records, &cfg, &width, &height);
         grid.to_string()
     },
     "┌──────────┐"

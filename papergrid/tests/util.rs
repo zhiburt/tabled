@@ -6,7 +6,7 @@ use papergrid::{
     height::HeightEstimator,
     records::{cell_info::CellInfo, vec_records::VecRecords, Records},
     width::{CfgWidthFunction, WidthEstimator},
-    Borders, Estimate, Grid, GridConfig, Position,
+    Borders, Estimate, ExactEstimate, Grid, GridConfig, Position,
 };
 
 pub fn grid(rows: usize, cols: usize) -> GridBuilder {
@@ -161,17 +161,20 @@ impl From<Vec<usize>> for EstimationList {
     }
 }
 
-impl<R> Estimate<R> for EstimationList
-where
-    R: Records,
-{
-    fn estimate(&mut self, _: R, _: &GridConfig) {}
+impl Estimate for EstimationList {
+    fn estimate<R>(&mut self, _: R, _: &GridConfig) {}
 
     fn get(&self, column: usize) -> Option<usize> {
         self.list.get(column).cloned()
     }
 
-    fn total(&self) -> usize {
+    fn total(&self) -> Option<usize> {
+        Some(self.list.iter().sum())
+    }
+}
+
+impl ExactEstimate for EstimationList {
+    fn total_amount(&self) -> usize {
         self.list.iter().sum()
     }
 }

@@ -1,9 +1,7 @@
 use std::fmt::{self, Display, Formatter};
 
-#[cfg(feature = "color")]
 mod ansi_color;
 
-#[cfg(feature = "color")]
 pub use ansi_color::AnsiColor;
 
 #[allow(unreachable_pub)]

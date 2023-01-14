@@ -1,6 +1,10 @@
 //! An empty [`Records`] implementation.
 
+use std::iter;
+
 use crate::{records::Records, Position};
+
+use super::{ExactRecords, RecordCell};
 
 /// Empty representation of [`Records`].
 #[derive(Debug, Default, Clone)]
@@ -17,39 +21,53 @@ impl EmptyRecords {
 }
 
 impl Records for EmptyRecords {
-    fn count_rows(&self) -> usize {
-        self.rows
-    }
+    type Cell = EmptyCell;
+    type Cells = iter::Empty<Self::Cell>;
+    type IntoRecords = iter::Empty<Self::Cells>;
 
     fn count_columns(&self) -> usize {
         self.cols
     }
 
-    fn get_text(&self, _: Position) -> &str {
-        ""
+    fn iter_rows(&self) -> Self::IntoRecords {
+        iter::empty()
     }
 
-    fn get_line(&self, _: Position, _: usize) -> &str {
-        ""
+    fn hint_rows(&self) -> Option<usize> {
+        Some(self.rows)
+    }
+}
+
+impl ExactRecords for EmptyRecords {
+    fn count_rows(&self) -> usize {
+        self.rows
     }
 
-    fn get_width<W>(&self, _: Position, _: W) -> usize {
-        0
+    fn get(&self, _: Position) -> Option<Self::Cell> {
+        Some(EmptyCell)
+    }
+}
+
+pub struct EmptyCell;
+
+impl RecordCell for EmptyCell {
+    type Text = String;
+    type Line = String;
+    type Lines = Vec<String>;
+
+    fn get_text(&self) -> Self::Text {
+        String::new()
     }
 
-    fn get_line_width<W>(&self, _: Position, _: usize, _: W) -> usize {
-        0
+    fn get_line(&self, _: usize) -> Self::Line {
+        String::new()
     }
 
-    fn count_lines(&self, _: Position) -> usize {
+    fn get_lines(&self) -> Self::Lines {
+        vec![]
+    }
+
+    fn count_lines(&self) -> usize {
         1
-    }
-
-    fn fmt_text_prefix(&self, _: &mut std::fmt::Formatter<'_>, _: Position) -> std::fmt::Result {
-        Ok(())
-    }
-
-    fn fmt_text_suffix(&self, _: &mut std::fmt::Formatter<'_>, _: Position) -> std::fmt::Result {
-        Ok(())
     }
 }

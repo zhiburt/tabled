@@ -3,17 +3,17 @@ use fnv::FnvHashMap;
 use super::{Entity, Position};
 
 #[derive(Debug, Clone, Default)]
-pub(crate) struct EntityMap<T> {
+pub struct EntityMap<T> {
     // we have a global type to allocate in on stack.
     // because most of the time no changes are made to the [EntityMap].
-    pub(crate) global: T,
-    pub(crate) columns: FnvHashMap<usize, T>,
-    pub(crate) rows: FnvHashMap<usize, T>,
-    pub(crate) cells: FnvHashMap<Position, T>,
+    global: T,
+    columns: FnvHashMap<usize, T>,
+    rows: FnvHashMap<usize, T>,
+    cells: FnvHashMap<Position, T>,
 }
 
 impl<T> EntityMap<T> {
-    pub(crate) fn new(global: T) -> Self {
+    pub fn new(global: T) -> Self {
         Self {
             global,
             rows: FnvHashMap::default(),
@@ -22,7 +22,7 @@ impl<T> EntityMap<T> {
         }
     }
 
-    pub(crate) fn lookup(&self, entity: Entity) -> &T {
+    pub fn get(&self, entity: Entity) -> &T {
         if self.rows.is_empty() && self.columns.is_empty() && self.cells.is_empty() {
             return &self.global;
         }
@@ -40,7 +40,7 @@ impl<T> EntityMap<T> {
         }
     }
 
-    pub(crate) fn invalidate(&mut self, entity: Entity) {
+    pub fn remove(&mut self, entity: Entity) {
         match entity {
             Entity::Global => {
                 self.cells.clear();
@@ -55,8 +55,9 @@ impl<T> EntityMap<T> {
 }
 
 impl<T: Clone> EntityMap<T> {
-    pub(crate) fn set(&mut self, entity: Entity, value: T) {
-        self.invalidate(entity);
+    pub fn set(&mut self, entity: Entity, value: T) {
+        // why we do it exactly?
+        self.remove(entity);
 
         match entity {
             Entity::Column(col) => {

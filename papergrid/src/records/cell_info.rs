@@ -2,13 +2,18 @@
 //!
 //! [`VecRecords`]: crate::records::vec_records::VecRecords
 
+// todo: Remove Line width logic
+//      maybe even lines?
+
 use std::{borrow::Cow, cmp::max};
 
 use crate::{
-    records::vec_records::{Cell, CellMut},
+    records::vec_records::CellMut,
     util::{count_lines, get_lines},
     width::WidthFunc,
 };
+
+use super::RecordCell;
 
 /// The struct is a [Cell] implementation which keeps width information pre allocated.
 #[derive(Debug, Default)]
@@ -35,8 +40,16 @@ impl<'a> CellInfo<'a> {
     }
 }
 
-impl Cell for CellInfo<'_> {
-    fn get_line(&self, i: usize) -> &str {
+impl<'a> RecordCell for &'a CellInfo<'_> {
+    type Text = &'a str;
+    type Line = &'a str;
+    type Lines = CellInfoLines<'a>;
+
+    fn get_text(&self) -> Self::Text {
+        self.text.as_ref()
+    }
+
+    fn get_line(&self, i: usize) -> Self::Line {
         if i == 0 && self.lines.is_empty() {
             return &self.text;
         }
@@ -44,21 +57,26 @@ impl Cell for CellInfo<'_> {
         &self.lines[i].text
     }
 
+    fn get_lines(&self) -> Self::Lines {
+        if self.lines.is_empty() {
+            CellInfoLines::SingleLine(Some(&self.text))
+        } else {
+            CellInfoLines::Lines(self.lines.iter())
+        }
+    }
+
     fn count_lines(&self) -> usize {
         self.count_lines
     }
 
-    fn width<W>(&self, _: W) -> usize
+    fn get_width<W>(&self, _: W) -> usize
     where
         W: WidthFunc,
     {
         self.width
     }
 
-    fn line_width<W>(&self, i: usize, _: W) -> usize
-    where
-        W: WidthFunc,
-    {
+    fn get_line_width<W>(&self, i: usize, _: W) -> usize {
         if i == 0 && self.lines.is_empty() {
             return self.width;
         }
@@ -67,22 +85,13 @@ impl Cell for CellInfo<'_> {
     }
 }
 
-impl<'a, T> CellMut<T> for CellInfo<'a>
-where
-    T: Into<Cow<'a, str>>,
-{
-    fn update<W>(&mut self, width_ctrl: W)
-    where
-        W: WidthFunc,
-    {
+impl<'a> CellMut for CellInfo<'a> {
+    fn update<W: WidthFunc>(&mut self, width_ctrl: W) {
         self.width = 0;
         update_cell_info(self, width_ctrl);
     }
 
-    fn set<W>(&mut self, text: T, width_ctrl: W)
-    where
-        W: WidthFunc,
-    {
+    fn set<W: WidthFunc>(&mut self, text: String, width_ctrl: W) {
         let text = text.into();
         *self = create_cell_info(text, width_ctrl);
     }
@@ -138,7 +147,7 @@ impl Clone for CellInfo<'_> {
 }
 
 #[derive(Debug, Clone, Default)]
-struct StrWithWidth<'a> {
+pub struct StrWithWidth<'a> {
     text: Cow<'a, str>,
     width: usize,
 }
@@ -210,5 +219,21 @@ where
     for line in &mut info.lines {
         line.width = width_fn.width(&line.text);
         info.width = max(info.width, line.width);
+    }
+}
+
+pub enum CellInfoLines<'a> {
+    SingleLine(Option<&'a str>),
+    Lines(std::slice::Iter<'a, StrWithWidth<'a>>),
+}
+
+impl<'a> Iterator for CellInfoLines<'a> {
+    type Item = &'a str;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            CellInfoLines::SingleLine(line) => line.take(),
+            CellInfoLines::Lines(lines) => lines.next().map(|l| l.text.as_ref()),
+        }
     }
 }

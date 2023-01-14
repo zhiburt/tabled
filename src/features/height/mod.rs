@@ -1,6 +1,10 @@
 //! The module contains [`Height`] structure which is responsible for a table and cell height.
 
-use papergrid::{height::HeightEstimator, records::Records, Estimate, GridConfig};
+use papergrid::{
+    height::HeightEstimator,
+    records::{ExactRecords, Records},
+    Estimate, GridConfig,
+};
 
 use crate::measurement::Measurement;
 
@@ -240,10 +244,10 @@ impl Height {
 
 pub(crate) fn get_table_total_height<R, E>(records: &R, cfg: &GridConfig, ctrl: &E) -> usize
 where
-    R: Records,
-    E: Estimate<R>,
+    R: Records + ExactRecords,
+    E: Estimate,
 {
-    ctrl.total()
+    ctrl.total().unwrap()
         + cfg.count_horizontal(records.count_rows())
         + cfg.get_margin().top.size
         + cfg.get_margin().bottom.size
@@ -251,11 +255,12 @@ where
 
 pub(crate) fn get_table_total_height2<R>(records: &R, cfg: &GridConfig) -> (usize, Vec<usize>)
 where
-    R: Records,
+    R: Records + ExactRecords,
 {
     let mut ctrl = HeightEstimator::default();
     ctrl.estimate(records, cfg);
-    let total = <HeightEstimator as Estimate<R>>::total(&ctrl)
+
+    let total = ctrl.total().unwrap()
         + cfg.count_horizontal(records.count_rows())
         + cfg.get_margin().top.size
         + cfg.get_margin().bottom.size;

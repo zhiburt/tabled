@@ -2,9 +2,15 @@
 //!
 //! [`Grid`]: crate::Grid
 
-use std::cmp::{max, Ordering};
+use std::{
+    cmp::{self, max, Ordering},
+    collections::HashMap,
+};
 
-use crate::{records::Records, Entity, GridConfig, Position};
+use crate::{
+    records::{RecordCell, Records},
+    Entity, GridConfig, Position,
+};
 
 use super::Estimate;
 
@@ -16,11 +22,8 @@ pub struct HeightEstimator {
     heights: Vec<usize>,
 }
 
-impl<R> Estimate<R> for HeightEstimator
-where
-    R: Records,
-{
-    fn estimate(&mut self, records: R, cfg: &GridConfig) {
+impl Estimate for HeightEstimator {
+    fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {
         self.heights = build_heights(&records, cfg);
     }
 
@@ -28,8 +31,8 @@ where
         self.heights.get(column).copied()
     }
 
-    fn total(&self) -> usize {
-        self.heights.iter().sum()
+    fn total(&self) -> Option<usize> {
+        Some(self.heights.iter().sum())
     }
 }
 
@@ -45,32 +48,43 @@ impl From<HeightEstimator> for Vec<usize> {
     }
 }
 
-fn build_heights<R>(records: &R, cfg: &GridConfig) -> Vec<usize>
-where
-    R: Records,
-{
-    let shape = (records.count_rows(), records.count_columns());
-    let mut heights = vec![0; records.count_rows()];
-    for (row, height) in heights.iter_mut().enumerate() {
-        let max = (0..records.count_columns())
-            .filter(|&col| is_simple_cell(cfg, (row, col), shape))
-            .map(|col| cell_height(records, cfg, (row, col)))
-            .max()
-            .unwrap_or(0);
+fn build_heights<R: Records>(records: &R, cfg: &GridConfig) -> Vec<usize> {
+    let mut heights = vec![0; records.hint_rows().unwrap_or(0)];
 
-        *height = max;
+    let shape = (usize::MAX, records.count_columns());
+    let mut span_list = HashMap::new();
+
+    for (row, columns) in records.iter_rows().enumerate() {
+        let mut max = 0;
+        for (col, cell) in columns.enumerate() {
+            if !is_simple_cell(cfg, (row, col), shape) {
+                let is_spanned = cfg.get_row_span((row, col), shape).is_some();
+                if is_spanned {
+                    let height = cell_height(&cell, cfg, (row, col));
+                    span_list.insert((row, col), height);
+                }
+                continue;
+            }
+
+            let height = cell_height(&cell, cfg, (row, col));
+            max = cmp::max(max, height);
+        }
+
+        heights.push(max);
     }
 
-    adjust_spans(records, cfg, &mut heights);
+    adjust_spans(cfg, &span_list, shape.1, &mut heights);
 
     heights
 }
 
-fn adjust_spans<R>(records: &R, cfg: &GridConfig, heights: &mut [usize])
-where
-    R: Records,
-{
-    if !cfg.has_row_spans() {
+fn adjust_spans(
+    cfg: &GridConfig,
+    span_list: &HashMap<Position, usize>,
+    count_columns: usize,
+    heights: &mut [usize],
+) {
+    if span_list.is_empty() {
         return;
     }
 
@@ -78,7 +92,7 @@ where
     //
     // We sort spans in order to prioritize the smaller spans first.
     let mut spans = cfg
-        .iter_row_spans((records.count_rows(), records.count_columns()))
+        .iter_row_spans((usize::MAX, count_columns))
         .collect::<Vec<_>>();
     spans.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
         Ordering::Equal => acol.cmp(bcol),
@@ -87,23 +101,20 @@ where
 
     // todo: the order is matter here; we need to figure out what is correct.
     for ((row, col), span) in spans {
-        adjust_range(records, cfg, col, row, row + span, heights);
+        adjust_range(span_list, cfg, col, row, row + span, heights);
     }
 }
 
-fn adjust_range<R>(
-    records: &R,
+fn adjust_range(
+    span_list: &HashMap<Position, usize>,
     cfg: &GridConfig,
     col: usize,
     start: usize,
     end: usize,
     heights: &mut [usize],
-) where
-    R: Records,
-{
-    let max_span_height = cell_height(records, cfg, (start, col));
+) {
+    let max_span_height = *span_list.get(&(start, col)).expect("must be there");
     let range_height = range_height(cfg, start, end, heights);
-
     if range_height >= max_span_height {
         return;
     }
@@ -128,11 +139,11 @@ fn count_borders_in_range(cfg: &GridConfig, start: usize, end: usize, count_rows
         .count()
 }
 
-fn cell_height<R>(records: &R, cfg: &GridConfig, pos: Position) -> usize
+fn cell_height<C>(cell: &C, cfg: &GridConfig, pos: Position) -> usize
 where
-    R: Records,
+    C: RecordCell,
 {
-    let count_lines = max(1, records.count_lines(pos));
+    let count_lines = max(1, cell.count_lines());
     let padding = cfg.get_padding(Entity::Cell(pos.0, pos.1));
     count_lines + padding.top.size + padding.bottom.size
 }

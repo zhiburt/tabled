@@ -77,22 +77,19 @@ mod color;
 mod config;
 mod estimation;
 mod grid;
+mod colors;
 
 pub mod records;
 pub mod util;
 
 pub use self::{
+    color::{AnsiColor, Color},
     config::{
         AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, EntityIterator,
         Formatting, GridConfig, HorizontalLine, Indent, Margin, Offset, Padding, Position, Sides,
         VerticalLine,
     },
-    estimation::{height, width, Estimate},
-    grid::Grid,
-};
-
-#[cfg(feature = "color")]
-pub use crate::{
-    color::{AnsiColor, Color},
     config::{MarginColor, PaddingColor},
+    estimation::{height, width, Estimate, ExactEstimate},
+    grid::Grid,
 };

@@ -203,7 +203,7 @@ pub(crate) fn count_borders(
 
 pub(crate) fn get_table_total_width<W, R>(records: R, cfg: &GridConfig, ctrl: &W) -> usize
 where
-    W: Estimate<R>,
+    W: Estimate,
     R: Records,
 {
     ctrl.total()

@@ -74,7 +74,7 @@ impl Justify<Min> {
 impl<W, R> TableOption<R> for Justify<W>
 where
     W: Measurement<Width>,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     fn change(&mut self, table: &mut Table<R>) {
         let width = self.width.measure(table.get_records(), table.get_config());

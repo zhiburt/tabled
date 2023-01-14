@@ -48,7 +48,7 @@
 //! ```
 
 use papergrid::{
-    records::{Records, RecordsMut, Resizable},
+    records::{ExactRecords, RecordCell, Records, RecordsMut, Resizable},
     width::CfgWidthFunction,
 };
 
@@ -110,8 +110,8 @@ impl<T> Concat<T> {
 
 impl<T, R> TableOption<R> for Concat<T>
 where
-    R: Records + Resizable + RecordsMut<String>,
-    T: Records,
+    R: Records + ExactRecords + Resizable + RecordsMut,
+    T: Records + ExactRecords,
 {
     fn change(&mut self, lhs: &mut Table<R>) {
         let (count_rows, count_cols) = lhs.shape();
@@ -134,7 +134,13 @@ where
 
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
-                        let text = rhs.get_records().get_text((row, col)).to_owned();
+                        let text = rhs
+                            .get_records()
+                            .get((row, col))
+                            .unwrap()
+                            .get_text()
+                            .as_ref()
+                            .to_owned();
                         let col = col + count_cols;
                         lhs.get_records_mut().set((row, col), text, &ctrl);
                     }
@@ -156,7 +162,13 @@ where
 
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
-                        let text = rhs.get_records().get_text((row, col)).to_owned();
+                        let text = rhs
+                            .get_records()
+                            .get((row, col))
+                            .unwrap()
+                            .get_text()
+                            .as_ref()
+                            .to_owned();
                         let row = row + count_rows;
                         lhs.get_records_mut().set((row, col), text, &ctrl);
                     }

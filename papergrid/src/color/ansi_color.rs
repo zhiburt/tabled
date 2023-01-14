@@ -36,6 +36,7 @@ impl AnsiColor<'_> {
     }
 }
 
+#[cfg(feature = "color")]
 impl std::convert::TryFrom<&str> for AnsiColor<'static> {
     type Error = ();
 
@@ -44,6 +45,7 @@ impl std::convert::TryFrom<&str> for AnsiColor<'static> {
     }
 }
 
+#[cfg(feature = "color")]
 impl std::convert::TryFrom<String> for AnsiColor<'static> {
     type Error = ();
 
@@ -62,6 +64,7 @@ impl Color for AnsiColor<'_> {
     }
 }
 
+#[cfg(feature = "color")]
 fn parse_ansi_color(s: &str) -> Option<AnsiColor<'static>> {
     let mut blocks = ansi_str::get_blocks(s);
     let block = blocks.next()?;

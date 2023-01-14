@@ -102,7 +102,7 @@ impl<W, P> MinWidth<W, P> {
 impl<W, R> CellOption<R> for MinWidth<W>
 where
     W: Measurement<Width>,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
@@ -130,7 +130,7 @@ impl<W, P, R> TableOption<R> for MinWidth<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     fn change(&mut self, table: &mut Table<R>) {
         if table.is_empty() {
@@ -197,7 +197,7 @@ fn increase_total_width<P, R>(
     priority: P,
 ) where
     P: Peaker,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     let increase_list = get_increase_list(widths, expected_width, total_width, priority);
     table.cache_width(increase_list);

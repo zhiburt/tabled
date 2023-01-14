@@ -1,6 +1,6 @@
 //! This module contains a main table representation of this crate [`Table`].
 
-use std::{borrow::Cow, fmt, iter::FromIterator};
+use std::{fmt, iter::FromIterator};
 
 use papergrid::{
     height::HeightEstimator,
@@ -290,6 +290,34 @@ where
         get_table_total_height(&self.records, &self.cfg, &ctrl)
     }
 
+    /// Set column widths.
+    ///
+    /// In general the method is only considered to be usefull to a [`TableOption`].
+    ///
+    /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided widths.
+    pub fn set_widths(&mut self, columns: Vec<usize>) -> bool {
+        if self.count_columns() != columns.len() {
+            return false;
+        }
+
+        self.cache_width(columns);
+        true
+    }
+
+    /// Set rows heights.
+    ///
+    /// In general the method is only considered to be usefull to a [`TableOption`].
+    ///
+    /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided heights.
+    pub fn set_heights(&mut self, columns: Vec<usize>) -> bool {
+        if self.count_columns() != columns.len() {
+            return false;
+        }
+
+        self.cache_width(columns);
+        true
+    }
+
     fn get_width_ctrl(&self) -> CachedEstimator<'_, WidthEstimator> {
         match &self.widths {
             Some(widths) => CachedEstimator::Cached(widths),
@@ -315,7 +343,7 @@ where
 
 impl<R> Table<R>
 where
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     pub(crate) fn update_records(&mut self) {
         let ctrl = CfgWidthFunction::from_cfg(self.get_config());
@@ -334,7 +362,7 @@ where
     R: Records,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut cfg = Cow::Borrowed(&self.cfg);
+        let mut cfg = self.cfg.clone();
         set_align_table(f, &mut cfg);
         set_width_table(f, &mut cfg, self);
 
@@ -399,46 +427,35 @@ enum CachedEstimator<'a, E> {
     Ctrl(E),
 }
 
-impl<R, E> Estimate<R> for CachedEstimator<'_, E>
+impl<E> Estimate for CachedEstimator<'_, E>
 where
-    R: Records,
-    E: Estimate<R>,
+    E: Estimate,
 {
-    fn estimate(&mut self, _: R, _: &GridConfig) {}
+    fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
 
     fn get(&self, i: usize) -> Option<usize> {
         match self {
             Self::Cached(list) => list.get(i).copied(),
-            Self::Ctrl(e) => Estimate::<R>::get(e, i),
+            Self::Ctrl(e) => e.get(i),
         }
     }
 
-    fn total(&self) -> usize {
+    fn total(&self) -> Option<usize> {
         match self {
             Self::Cached(list) => list.iter().sum(),
-            Self::Ctrl(e) => Estimate::<R>::total(e),
+            Self::Ctrl(e) => e.total(),
         }
     }
 }
 
-fn set_align_table(f: &fmt::Formatter<'_>, cfg: &mut Cow<'_, GridConfig>) {
+fn set_align_table(f: &fmt::Formatter<'_>, cfg: &mut GridConfig) {
     if let Some(alignment) = f.align() {
         let alignment = convert_fmt_alignment(alignment);
-
-        match cfg {
-            Cow::Borrowed(c) => {
-                let mut new = c.clone();
-                new.set_alignment_horizontal(Entity::Global, alignment);
-                *cfg = Cow::Owned(new);
-            }
-            Cow::Owned(cfg) => {
-                cfg.set_alignment_horizontal(Entity::Global, alignment);
-            }
-        }
+        cfg.set_alignment_horizontal(Entity::Global, alignment);
     }
 }
 
-fn set_width_table<R>(f: &fmt::Formatter<'_>, cfg: &mut Cow<'_, GridConfig>, table: &Table<R>)
+fn set_width_table<R>(f: &fmt::Formatter<'_>, cfg: &mut GridConfig, table: &Table<R>)
 where
     R: Records,
 {
@@ -472,14 +489,7 @@ where
             margin.right.fill = fill;
         }
 
-        match cfg {
-            Cow::Borrowed(c) => {
-                let mut new = c.clone();
-                new.set_margin(margin);
-                *cfg = Cow::Owned(new);
-            }
-            Cow::Owned(cfg) => cfg.set_margin(margin),
-        }
+        cfg.set_margin(margin)
     }
 }
 

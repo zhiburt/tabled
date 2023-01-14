@@ -41,7 +41,7 @@ impl<W> CellHeightIncrease<W> {
 impl<W, R> CellOption<R> for CellHeightIncrease<W>
 where
     W: Measurement<Height>,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let height = self.height.measure(table.get_records(), table.get_config());

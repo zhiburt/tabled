@@ -9,20 +9,19 @@ mod sides;
 
 use std::collections::HashMap;
 
+use self::borders::BordersConfig;
+use crate::AnsiColor;
+
 pub use self::{
     alignment::{AlignmentHorizontal, AlignmentVertical},
     border::Border,
     borders::{Borders, HorizontalLine, VerticalLine},
     entity::{Entity, EntityIterator, Position},
+    entity_map::EntityMap,
     formatting::Formatting,
     offset::Offset,
     sides::{Indent, Sides},
 };
-
-#[cfg(feature = "color")]
-use crate::AnsiColor;
-
-use self::{borders::BordersConfig, entity_map::EntityMap};
 
 /// This structure represents a settings of a grid.
 ///
@@ -43,11 +42,8 @@ pub struct GridConfig {
     override_horizontal_lines: HashMap<usize, (String, Offset)>,
     override_horizontal_borders: HashMap<Position, HashMap<Offset, char>>,
     override_vertical_borders: HashMap<Position, HashMap<Offset, char>>,
-    #[cfg(feature = "color")]
     margin_color: MarginColor<'static>,
-    #[cfg(feature = "color")]
     padding_color: EntityMap<PaddingColor<'static>>,
-    #[cfg(feature = "color")]
     border_colors: BordersConfig<AnsiColor<'static>>,
 }
 
@@ -75,11 +71,8 @@ impl Default for GridConfig {
             override_horizontal_lines: HashMap::default(),
             override_horizontal_borders: HashMap::default(),
             override_vertical_borders: HashMap::default(),
-            #[cfg(feature = "color")]
             margin_color: MarginColor::default(),
-            #[cfg(feature = "color")]
             padding_color: EntityMap::default(),
-            #[cfg(feature = "color")]
             border_colors: BordersConfig::default(),
         }
     }
@@ -380,7 +373,7 @@ impl GridConfig {
 
     /// Get a padding for a given [Entity].
     pub fn get_padding(&self, entity: Entity) -> &Padding {
-        self.padding.lookup(entity)
+        self.padding.get(entity)
     }
 
     /// Set a formatting to a given cells.
@@ -390,7 +383,7 @@ impl GridConfig {
 
     /// Get a formatting settings for a given [Entity].
     pub fn get_formatting(&self, entity: Entity) -> &Formatting {
-        self.formatting.lookup(entity)
+        self.formatting.get(entity)
     }
 
     /// Set a vertical alignment to a given cells.
@@ -400,7 +393,7 @@ impl GridConfig {
 
     /// Get a vertical alignment for a given [Entity].
     pub fn get_alignment_vertical(&self, entity: Entity) -> &AlignmentVertical {
-        self.alignment_v.lookup(entity)
+        self.alignment_v.get(entity)
     }
 
     /// Set a horizontal alignment to a given cells.
@@ -410,7 +403,7 @@ impl GridConfig {
 
     /// Get a horizontal alignment for a given [Entity].
     pub fn get_alignment_horizontal(&self, entity: Entity) -> &AlignmentHorizontal {
-        self.alignment_h.lookup(entity)
+        self.alignment_h.get(entity)
     }
 
     /// The function returns whether the cells will be rendered or it will be hidden because of a span.
@@ -542,7 +535,6 @@ impl GridConfig {
     }
 }
 
-#[cfg(feature = "color")]
 impl GridConfig {
     /// Gets a color of all borders on the grid.
     pub fn get_border_color_global(&self) -> Option<&AnsiColor<'_>> {
@@ -591,8 +583,8 @@ impl GridConfig {
     }
 
     /// Get a padding to a given cells.
-    pub fn get_padding_color(&self, entity: Entity) -> &PaddingColor<'_> {
-        self.padding_color.lookup(entity)
+    pub fn get_padding_color(&self, entity: Entity) -> &PaddingColor<'static> {
+        self.padding_color.get(entity)
     }
 
     /// Set a padding to a given cells.
@@ -630,11 +622,9 @@ pub type Margin = Sides<Indent>;
 /// Padding represent a 4 indents of cell.
 pub type Padding = Sides<Indent>;
 
-#[cfg(feature = "color")]
 /// Margin represent a 4 indents of table as a whole.
 pub type MarginColor<'a> = Sides<AnsiColor<'a>>;
 
-#[cfg(feature = "color")]
 /// PaddingColor represent a 4 indents of a cell.
 pub type PaddingColor<'a> = Sides<AnsiColor<'a>>;
 

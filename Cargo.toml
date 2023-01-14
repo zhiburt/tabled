@@ -24,6 +24,7 @@ members = [
     "examples/terminal_size",
     "examples/show",
     "json_to_table",
+    "csv_to_table",
     "table_to_html",
     "benches",
 ]
@@ -167,10 +168,10 @@ color = ["papergrid/color", "ansi-str"]
 macros = []
 
 [dependencies]
-papergrid = "0.7.1"
 unicode-width = "0.1.9"
+papergrid = { path = "./papergrid" }
 tabled_derive = { version = "0.5.0", optional = true }
-ansi-str = { version = "0.5.0", optional = true }
+ansi-str = { version = "0.7.2", optional = true }
 
 [dev-dependencies]
 owo-colors = "3.5.0"

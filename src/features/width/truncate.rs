@@ -151,7 +151,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
 impl<W, P, R> CellOption<R> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
         let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
@@ -219,7 +219,7 @@ impl<W, P, R> TableOption<R> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     fn change(&mut self, table: &mut Table<R>) {
         if table.is_empty() {
@@ -379,7 +379,7 @@ fn truncate_total_width<P, R>(
     priority: P,
 ) where
     P: Peaker,
-    R: Records + RecordsMut<String>,
+    R: Records + RecordsMut,
 {
     let (count_rows, count_cols) = table.shape();
     let cfg = table.get_config();

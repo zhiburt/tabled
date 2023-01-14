@@ -29,7 +29,7 @@
 
 use std::marker::PhantomData;
 
-use papergrid::records::{Records, Resizable};
+use papergrid::records::{ExactRecords, Records, Resizable};
 
 use crate::{locator::Locator, Table, TableOption};
 
@@ -184,7 +184,7 @@ where
 impl<L, D> TableOption<D> for Disable<L, TargetRow>
 where
     L: Locator<Coordinate = usize>,
-    D: Records + Resizable,
+    D: Records + ExactRecords + Resizable,
 {
     fn change(&mut self, table: &mut Table<D>) {
         let rows = self.locator.locate(table.get_records());
