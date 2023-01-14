@@ -165,9 +165,11 @@ fn info_from_fields(
     let mut values = Vec::new();
     let mut reorder = HashMap::new();
 
+    let mut skipped = 0;
     for result in fields {
         let (i, field, attributes) = result?;
         if attributes.is_ignored() {
+            skipped += 1;
             continue;
         }
 
@@ -179,16 +181,14 @@ fn info_from_fields(
                 )));
             }
 
-            reorder.insert(order, i);
+            reorder.insert(order, i - skipped);
         }
 
         let header = field_headers(field, i, &attributes, header_prefix);
-
         headers.push(header);
 
         let field_name = field_name(i, field);
         let value = get_field_fields(&field_name, &attributes);
-
         values.push(value);
     }
 

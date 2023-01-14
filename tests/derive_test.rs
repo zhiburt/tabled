@@ -834,3 +834,27 @@ fn rename_all_gets_last_value() {
     assert_eq!(Struct1::headers(), vec!["Field"],);
     assert_eq!(st.fields(), vec!["789"]);
 }
+
+#[test]
+fn test_order_skip_usage() {
+    #[derive(Tabled, Default)]
+    pub struct Example {
+        #[tabled(skip)]
+        id: usize,
+        name: String,
+        #[tabled(order = 0)]
+        details: String,
+    }
+
+    #[derive(Tabled, Default)]
+    pub struct Example2 {
+        #[tabled(skip)]
+        id: usize,
+        name: String,
+        #[tabled(order = 1)]
+        details: String,
+    }
+
+    assert_eq!(Example::headers(), vec!["details", "name"],);
+    assert_eq!(Example::default().fields(), vec!["", ""]);
+}
