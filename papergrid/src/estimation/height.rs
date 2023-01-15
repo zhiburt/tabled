@@ -56,7 +56,7 @@ where
             .filter(|&col| is_simple_cell(cfg, (row, col), shape))
             .map(|col| cell_height(records, cfg, (row, col)))
             .max()
-            .unwrap_or(0);
+            .unwrap_or_default();
 
         *height = max;
     }

@@ -104,7 +104,7 @@ pub fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
             break;
         };
 
-        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or_default();
 
         // We cut the chars which takes more then 1 symbol to display,
         // in order to archive the necessary width.
@@ -145,13 +145,13 @@ pub fn string_width_multiline(text: &str) -> usize {
     text.lines()
         .map(unicode_width::UnicodeWidthStr::width)
         .max()
-        .unwrap_or(0)
+        .unwrap_or_default()
 }
 
 /// Returns a max string width of a line.
 #[cfg(feature = "color")]
 pub fn string_width_multiline(text: &str) -> usize {
-    text.lines().map(string_width).max().unwrap_or(0)
+    text.lines().map(string_width).max().unwrap_or_default()
 }
 
 /// Calculates a number of lines.
@@ -176,7 +176,7 @@ pub fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
     text.lines()
         .map(|line| string_width_tab(line, tab_width))
         .max()
-        .unwrap_or(0)
+        .unwrap_or_default()
 }
 
 /// Trims a string.

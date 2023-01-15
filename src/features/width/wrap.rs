@@ -242,7 +242,7 @@ fn chunks(s: &str, width: usize) -> Vec<String> {
     let mut list = Vec::new();
     let mut i = 0;
     for c in s.chars() {
-        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or_default();
         if i + c_width > width {
             let count_unknowns = width - i;
             buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
@@ -459,7 +459,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
         let _ = write!(buf, "{}", block.start());
 
         for c in block.text().chars() {
-            let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+            let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or_default();
             let is_enough_space = line_width + c_width <= width;
 
             let is_space = c == ' ';

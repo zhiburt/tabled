@@ -335,7 +335,7 @@ mod json_to_table {
 
                 set_table_style(&mut table, config);
 
-                table.with(Width::increase(width.unwrap_or(0)));
+                table.with(Width::increase(width.unwrap_or_default()));
                 table.with(SetBottomChars(
                     used_splits,
                     table
@@ -370,7 +370,7 @@ mod json_to_table {
                     .iter()
                     .map(|(key, _)| col![key].with(NoRightBorders).total_width())
                     .max()
-                    .unwrap_or(0);
+                    .unwrap_or_default();
 
                 let width = match width {
                     Some(width) => width,
@@ -403,7 +403,7 @@ mod json_to_table {
                             .into_iter()
                             .map(|(_, value)| value.total_width())
                             .max()
-                            .unwrap_or(0);
+                            .unwrap_or_default();
 
                         width + max_keys_width
                     }
@@ -489,7 +489,7 @@ mod json_to_table {
                         .get_config()
                         .get_borders()
                         .top_intersection
-                        .unwrap_or(' ');
+                        .unwrap_or_default();
 
                     {
                         key.with(NoRightBorders);
@@ -594,7 +594,7 @@ mod json_to_table {
                         list.into_iter()
                             .map(|value| value.total_width())
                             .max()
-                            .unwrap_or(0)
+                            .unwrap_or_default()
                     }
                 };
                 let map_length = list.len();
