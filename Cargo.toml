@@ -27,6 +27,8 @@ members = [
     "table_to_html",
     "benches",
 ]
+[workspace.package]
+rust-version = "1.58.1"
 
 [[example]]
 name = "colored_borders"

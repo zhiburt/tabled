@@ -24,7 +24,16 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - run: cargo check --no-default-features --features=${{ matrix.features }}
+      - run: cargo check --all-targets --all --no-default-features --features=${{ matrix.features }}
+
+  msrv:
+    name: MSRV
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@1.58.1
+      # check only the root crate for MSRV
+      - run: cargo build --all-features
 
   fmt:
     name: Rustfmt
