@@ -46,9 +46,9 @@ fn main() {
             Columns::first()
                 .not(Rows::first())
                 .modify()
-                .with(|s: &str| format!("{}...", s)),
+                .with(|s: &str| format!("{s}...")),
         )
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

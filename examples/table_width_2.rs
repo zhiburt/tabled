@@ -15,5 +15,5 @@ fn main() {
             .with(Alignment::left()),
     );
 
-    println!("{}", table);
+    println!("{table}");
 }

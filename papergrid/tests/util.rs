@@ -93,7 +93,7 @@ fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {
     let mut records = vec![vec![String::new(); cols]; rows];
     (0..rows).for_each(|row| {
         (0..cols).for_each(|col| {
-            let text = format!("{}-{}", row, col);
+            let text = format!("{row}-{col}");
             records[row][col] = text;
         });
     });

@@ -40,5 +40,5 @@ fn main() {
         .with(Style::correct_spans())
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

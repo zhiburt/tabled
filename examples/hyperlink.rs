@@ -87,7 +87,7 @@ fn main() {
         .with(Alignment::left())
         .with(Segment::all().modify().with(Width::wrap(16).keep_words()));
 
-    println!("{}", table);
+    println!("{table}");
 
     let mut table = Table::from_iter(&data);
     table
@@ -95,5 +95,5 @@ fn main() {
         .with(Alignment::left())
         .with(Segment::all().modify().with(Width::wrap(16)));
 
-    println!("{}", table);
+    println!("{table}");
 }

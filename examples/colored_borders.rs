@@ -58,5 +58,5 @@ fn main() {
             .bottom_right_corner(Symbol::ansi("╝".blue().to_string()).unwrap()),
     ));
 
-    println!("{}", table);
+    println!("{table}");
 }

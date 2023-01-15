@@ -46,5 +46,5 @@ fn main() {
         .with(Style::empty())
         .with(Segment::all().modify().with(Alignment::left()));
 
-    println!("{}", weather_table);
+    println!("{weather_table}");
 }

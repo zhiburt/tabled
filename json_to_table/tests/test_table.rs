@@ -398,7 +398,7 @@ fn general_json_3_test() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -494,7 +494,7 @@ fn many_splits_bettween_map_entries_test() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -526,7 +526,7 @@ fn array_split_test() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -558,7 +558,7 @@ fn array_split_2_test() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -590,7 +590,7 @@ fn array_split_4_test() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -623,7 +623,7 @@ fn array_split_3_test() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -655,7 +655,7 @@ fn array_split_with_inner_array_test() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -687,7 +687,7 @@ fn array_split_with_inner_array_2_test() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -726,7 +726,7 @@ fn test_map_empty_entity_collapsed_0() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -763,7 +763,7 @@ fn test_map_empty_entity_collapsed_1() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -810,7 +810,7 @@ fn test_map_empty_entity_collapsed_2() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -851,7 +851,7 @@ fn test_list_empty_entity_collapsed_0() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -880,7 +880,7 @@ fn test_list_empty_entity_collapsed_1() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -905,7 +905,7 @@ fn test_list_empty_entity_collapsed_2() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -935,7 +935,7 @@ fn test_map_empty_entity_plain_0() {
 
     let table = json_to_table(&value).set_style(Style::modern()).to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -961,7 +961,7 @@ fn test_list_empty_entity_plain_0() {
 
     let table = json_to_table(&value).set_style(Style::modern()).to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -987,7 +987,7 @@ fn test_list_empty_entity_plain_1() {
 
     let table = json_to_table(&value).set_style(Style::modern()).to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -1013,7 +1013,7 @@ fn test_list_empty_entity_plain_2() {
 
     let table = json_to_table(&value).set_style(Style::modern()).to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,

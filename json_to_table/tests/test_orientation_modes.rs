@@ -91,7 +91,7 @@ fn orientation_test_2() {
         .set_array_mode(Orientation::Horizontal)
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,

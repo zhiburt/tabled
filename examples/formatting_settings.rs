@@ -25,11 +25,11 @@ fn main() {
         .with(Style::rounded())
         .with(Modify::new(Segment::all()).with(Alignment::center()));
 
-    println!("A default Alignment settings\n{}", table);
+    println!("A default Alignment settings\n{table}");
 
     table.with(Modify::new(Segment::all()).with(AlignmentStrategy::PerLine));
 
-    println!("Per line Alignment strategy\n{}", table);
+    println!("Per line Alignment strategy\n{table}");
 
     table.with(
         Modify::new(Segment::all())
@@ -37,8 +37,5 @@ fn main() {
             .with(TrimStrategy::Both),
     );
 
-    println!(
-        "A default Alignment; allowing vertical and horizontal trim\n{}",
-        table
-    );
+    println!("A default Alignment; allowing vertical and horizontal trim\n{table}");
 }

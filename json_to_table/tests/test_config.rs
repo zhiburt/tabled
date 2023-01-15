@@ -31,7 +31,7 @@ fn config_from_table_test() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,
@@ -78,7 +78,7 @@ fn config_from_table_general_test() {
         .set_config(cfg)
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(
         table,

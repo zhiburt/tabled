@@ -2289,7 +2289,7 @@ fn wrap_keeping_words_0() {
         .with(Width::wrap(8).keep_words())
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 
     assert_eq!(papergrid::util::string_width_multiline(&table), 8);
 

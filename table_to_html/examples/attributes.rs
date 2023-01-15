@@ -36,5 +36,5 @@ fn main() {
     html_table.add_tr_attr("style", "background-color: #D6EEEE;");
     html_table.add_td_attr("style", "background-color: rgba(150, 212, 212, 0.4);");
 
-    println!("{}", html_table);
+    println!("{html_table}");
 }

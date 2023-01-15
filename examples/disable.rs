@@ -35,5 +35,5 @@ fn main() {
         .with(Disable::column(ByColumnName::new("is_active")))
         .with(ByColumnName::new("name").modify().with(Border::filled('#')));
 
-    println!("{}", table);
+    println!("{table}");
 }

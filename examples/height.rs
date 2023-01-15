@@ -10,13 +10,13 @@ fn main() {
     table.with(Style::markdown());
 
     println!("Table\n");
-    println!("{}", table);
+    println!("{table}");
     println!();
 
     let table_increase_height = table.clone().with(Height::increase(10)).to_string();
 
     println!("Table increase height to 10\n");
-    println!("{}", table_increase_height);
+    println!("{table_increase_height}");
     println!();
 
     let table_decrease_height = table
@@ -25,5 +25,5 @@ fn main() {
         .to_string();
 
     println!("Table decrease height to 4\n");
-    println!("{}", table_decrease_height);
+    println!("{table_decrease_height}");
 }

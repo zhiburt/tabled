@@ -71,18 +71,18 @@ fn main() {
         .with(Style::modern())
         .with(Modify::new(Rows::first()).with(Alignment::center()))
         .with(Modify::new(Rows::new(1..)).with(Alignment::left()));
-    println!("{}", table);
+    println!("{table}");
 
     println!("Segment   row: (1..=2)   column: (1..)");
 
     let table = table.with(Extract::segment(1..=2, 1..));
-    println!("{}", table);
+    println!("{table}");
 
     println!("Refinished segment");
 
     let highlight = |s: &str| {
         if s == "Outstanding" {
-            format!("+{}+", s)
+            format!("+{s}+")
         } else {
             s.to_string()
         }
@@ -91,5 +91,5 @@ fn main() {
     let table = table
         .with(Style::modern())
         .with(Modify::new(Columns::new(1..)).with(highlight));
-    println!("{}", table);
+    println!("{table}");
 }

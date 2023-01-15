@@ -157,7 +157,7 @@ mod tuple {
         pre: {
             fn display_option(o: &Option<sstr>) -> String {
                 match o {
-                    Some(s) => format!("some {}", s),
+                    Some(s) => format!("some {s}"),
                     None => "none".to_string(),
                 }
             }
@@ -173,7 +173,7 @@ mod tuple {
             impl TestType {
                 fn display_option(o: &Option<sstr>) -> String {
                     match o {
-                        Some(s) => format!("some {}", s),
+                        Some(s) => format!("some {s}"),
                         None => "none".to_string(),
                     }
                 }
@@ -190,7 +190,7 @@ mod tuple {
             impl TestType {
                 fn display_option(o: &TestType) -> String {
                     match o.1 {
-                        Some(s) => format!("some {}", s),
+                        Some(s) => format!("some {s}"),
                         None => "none".to_string(),
                     }
                 }
@@ -206,7 +206,7 @@ mod tuple {
         pre: {
             fn display_option(o: &TestType) -> String {
                 match o.1 {
-                    Some(s) => format!("some {}", s),
+                    Some(s) => format!("some {s}"),
                     None => "none".to_string(),
                 }
             }
@@ -542,7 +542,7 @@ mod structure {
         pre: {
             fn display_option(o: &Option<sstr>) -> String {
                 match o {
-                    Some(s) => format!("some {}", s),
+                    Some(s) => format!("some {s}"),
                     None => "none".to_string(),
                 }
             }
@@ -561,7 +561,7 @@ mod structure {
             impl TestType {
                 fn display_option(o: &Option<sstr>) -> String {
                     match o {
-                        Some(s) => format!("some {}", s),
+                        Some(s) => format!("some {s}"),
                         None => "none".to_string(),
                     }
                 }
@@ -581,7 +581,7 @@ mod structure {
             impl TestType {
                 fn display_option(o: &TestType) -> String {
                     match o.f2 {
-                        Some(s) => format!("some {}", s),
+                        Some(s) => format!("some {s}"),
                         None => "none".to_string(),
                     }
                 }
@@ -601,7 +601,7 @@ mod structure {
             impl TestType {
                 fn display_option(&self) -> String {
                     match self.f2 {
-                        Some(s) => format!("some {}", s),
+                        Some(s) => format!("some {s}"),
                         None => "none".to_string(),
                     }
                 }
@@ -620,7 +620,7 @@ mod structure {
         pre: {
             fn display_option(o: &TestType) -> String {
                 match o.f2 {
-                    Some(s) => format!("some {}", s),
+                    Some(s) => format!("some {s}"),
                     None => "none".to_string(),
                 }
             }

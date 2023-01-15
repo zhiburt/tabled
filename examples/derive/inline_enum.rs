@@ -38,5 +38,5 @@ fn main() {
 
     let table = Table::new(&data);
 
-    println!("{}", table);
+    println!("{table}");
 }
