@@ -449,7 +449,7 @@ impl<'a> Builder<'a> {
     fn get_size(&mut self) -> usize {
         let mut max = self.columns.as_ref().map_or(0, Vec::len);
 
-        let max_records = self.records.iter().map(Vec::len).max().unwrap_or(0);
+        let max_records = self.records.iter().map(Vec::len).max().unwrap_or_default();
 
         max = std::cmp::max(max_records, max);
 
@@ -501,7 +501,7 @@ where
 
 impl From<Vec<Vec<String>>> for Builder<'_> {
     fn from(strings: Vec<Vec<String>>) -> Self {
-        let size = strings.iter().map(|r| r.len()).max().unwrap_or(0);
+        let size = strings.iter().map(|r| r.len()).max().unwrap_or_default();
         if size == 0 {
             return Self::default();
         }

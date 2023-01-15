@@ -36,9 +36,9 @@ impl Measurement<Width> for Max {
     {
         let ctrl = CfgWidthFunction::from_cfg(cfg);
         grid_widths(&records, &ctrl)
-            .map(|r| r.max().unwrap_or(0))
+            .flatten()
             .max()
-            .unwrap_or(0)
+            .unwrap_or_default()
     }
 }
 
@@ -48,9 +48,9 @@ impl Measurement<Height> for Max {
         R: Records,
     {
         records_heights(&records)
-            .map(|r| r.max().unwrap_or(0))
+            .flatten()
             .max()
-            .unwrap_or(0)
+            .unwrap_or_default()
     }
 }
 
@@ -65,9 +65,9 @@ impl Measurement<Width> for Min {
     {
         let ctrl = CfgWidthFunction::from_cfg(cfg);
         grid_widths(&records, &ctrl)
-            .map(|r| r.min().unwrap_or(0))
+            .flatten()
             .max()
-            .unwrap_or(0)
+            .unwrap_or_default()
     }
 }
 
@@ -77,9 +77,9 @@ impl Measurement<Height> for Min {
         R: Records,
     {
         records_heights(&records)
-            .map(|r| r.max().unwrap_or(0))
+            .flatten()
             .min()
-            .unwrap_or(0)
+            .unwrap_or_default()
     }
 }
 

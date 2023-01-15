@@ -59,7 +59,7 @@ where
             .filter(|&row| is_simple_cell(cfg, (row, col), shape))
             .map(|row| get_cell_width(cfg, records, (row, col), width_ctrl))
             .max()
-            .unwrap_or(0);
+            .unwrap_or_default();
 
         *column = max;
     }

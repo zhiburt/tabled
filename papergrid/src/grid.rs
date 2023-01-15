@@ -815,7 +815,7 @@ where
             .map(|i| records.get_line(pos, i))
             .map(|line| width_ctrl.width(line.trim()))
             .max()
-            .unwrap_or(0)
+            .unwrap_or_default()
     } else {
         records.get_width(pos, width_ctrl)
     };
