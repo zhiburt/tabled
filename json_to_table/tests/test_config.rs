@@ -119,10 +119,7 @@ fn color_test() {
     );
 
     let mut cfg = GridConfig::default();
-    cfg.set_border_color_global(AnsiColor::new(
-        String::from("\u{1b}[34m"),
-        String::from("\u{1b}[39m"),
-    ));
+    cfg.set_border_color_global(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into()));
 
     let table = json_to_table(&value)
         .set_style(Style::modern())
