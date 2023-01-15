@@ -44,5 +44,5 @@ fn main() {
         .with(Style::modern())
         .with(Style::correct_spans());
 
-    println!("{}", table);
+    println!("{table}");
 }

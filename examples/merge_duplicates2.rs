@@ -70,5 +70,5 @@ fn main() {
     theme(&mut table);
     table.with(Style::correct_spans()).with(Merge::horizontal());
 
-    println!("{}", table);
+    println!("{table}");
 }

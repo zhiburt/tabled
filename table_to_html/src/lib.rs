@@ -484,7 +484,7 @@ fn add_attr_horizontal_alignment(
             AlignmentHorizontal::Right => "right",
         };
 
-        let attr = attr("style", format!("text-align: {};", alignment));
+        let attr = attr("style", format!("text-align: {alignment};"));
         attrs.push(attr);
     }
 }
@@ -500,7 +500,7 @@ fn add_attr_vertical_alignment(
             AlignmentVertical::Top => "top",
         };
 
-        let attr = attr("style", format!("vertical-align: {};", valignment));
+        let attr = attr("style", format!("vertical-align: {valignment};"));
         attrs.push(attr);
     }
 }

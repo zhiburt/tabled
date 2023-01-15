@@ -63,5 +63,5 @@ fn main() {
         .with(Columns::single(1).modify().with(green))
         .with(Columns::single(2).modify().with(blue));
 
-    println!("{}", table);
+    println!("{table}");
 }

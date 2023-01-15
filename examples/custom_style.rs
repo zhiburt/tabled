@@ -41,5 +41,5 @@ fn main() {
     let mut table = Table::new(&data);
     table.with(theme).with(Alignment::left());
 
-    println!("{}", table);
+    println!("{table}");
 }

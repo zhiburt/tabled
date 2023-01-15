@@ -20,5 +20,5 @@ fn main() {
         .with(Segment::all().modify().with(Alignment::left()))
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

@@ -49,7 +49,7 @@ pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUM
     for row in 0..ROWS {
         let mut data = Vec::with_capacity(COLUMNS);
         for column in 0..COLUMNS {
-            let text = format!("{}-{}", row, column);
+            let text = format!("{row}-{column}");
             data.push(text);
         }
 
@@ -95,7 +95,7 @@ impl<const N: usize> Tabled for Obj<N> {
 
     fn headers() -> Vec<Cow<'static, str>> {
         std::iter::once("N".to_owned())
-            .chain((0..N).map(|n| format!("column {}", n)))
+            .chain((0..N).map(|n| format!("column {n}")))
             .map(Cow::Owned)
             .collect()
     }

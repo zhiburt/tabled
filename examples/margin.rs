@@ -12,5 +12,5 @@ fn main() {
         .with(Margin::new(4, 3, 2, 1).set_fill('<', '>', 'v', '^'))
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

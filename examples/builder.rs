@@ -24,5 +24,5 @@ fn main() {
         .with(Style::markdown())
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

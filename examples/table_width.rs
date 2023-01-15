@@ -17,17 +17,17 @@ fn main() {
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()));
 
-    println!("Original table\n{}", table);
+    println!("Original table\n{table}");
 
     table.with(Width::truncate(20).suffix("..."));
 
-    println!("Truncated table\n{}", table);
+    println!("Truncated table\n{table}");
 
     table.with(Modify::new(Segment::all()).with(Width::wrap(5)));
 
-    println!("Wrapped table\n{}", table);
+    println!("Wrapped table\n{table}");
 
     table.with(Width::increase(Percent(200)));
 
-    println!("Widen table\n{}", table);
+    println!("Widen table\n{table}");
 }

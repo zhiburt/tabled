@@ -20,5 +20,5 @@ fn main() {
     let data = matrix::<10>();
     let table = Table::new(data).with(Style::modern()).to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

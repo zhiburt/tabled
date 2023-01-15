@@ -224,7 +224,7 @@ fn build_link_prefix_suffix(url: Option<String>) -> (String, String) {
             let osc8 = "\x1b]8;;";
             let st = "\x1b\\";
 
-            (format!("{}{}{}", osc8, url, st), format!("{}{}", osc8, st))
+            (format!("{osc8}{url}{st}"), format!("{osc8}{st}"))
         }
         None => ("".to_string(), "".to_string()),
     }

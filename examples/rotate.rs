@@ -29,5 +29,5 @@ fn main() {
 
     let table = Table::new(&data).with(Rotate::Left).to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

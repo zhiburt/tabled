@@ -343,7 +343,7 @@ where
 
         let grid = Grid::new(&self.records, &cfg, &width, &height);
 
-        write!(f, "{}", grid)
+        write!(f, "{grid}")
     }
 }
 

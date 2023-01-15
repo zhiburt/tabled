@@ -22,5 +22,5 @@ fn main() {
         table.collapse();
     }
 
-    println!("{}", table);
+    println!("{table}");
 }

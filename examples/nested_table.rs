@@ -39,22 +39,22 @@ fn main() {
             .with(Alignment::center()),
     );
 
-    println!("{}", table);
+    println!("{table}");
 }
 
 fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> Table {
     let mut table_fields = Builder::from_iter(fields.iter().map(|(field, t, d)| {
         if d.is_empty() {
-            [format!("+{}: {}", field, t)]
+            [format!("+{field}: {t}")]
         } else {
-            [format!("+{}: {} = {:?}", field, t, d)]
+            [format!("+{field}: {t} = {d:?}")]
         }
     }))
     .build();
     table_fields.with(Style::ascii().off_horizontal().off_vertical());
 
     let mut table_methods =
-        Builder::from_iter(methods.iter().map(|method| [format!("+{}()", method)])).build();
+        Builder::from_iter(methods.iter().map(|method| [format!("+{method}()")])).build();
     table_methods.with(Style::ascii().off_horizontal().off_vertical());
 
     let (table_fields, table_methods) = make_equal_width(table_fields, table_methods);

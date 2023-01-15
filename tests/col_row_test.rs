@@ -11,11 +11,11 @@ test_table!(
         row!(create_table::<3, 3>()
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s)))),
+                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{s}]")))),
             create_table::<4, 4>()
                 .with(Modify::new(Segment::all()).with(Alignment::right()))
                 .with(Modify::new(Segment::all()).with(Padding::new(1, 1, 1, 1)))
-                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("({})", s))))),
+                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("({s})"))))),
     "+--------------------------------------------------------+-------------------------------------------------------------+"
     "| +-------+--------------+--------------+--------------+ | +-----+------------+------------+------------+------------+ |"
     "| |   [N] |   [column 0] |   [column 1] |   [column 2] | | |     |            |            |            |            | |"
@@ -46,11 +46,11 @@ test_table!(
         col!(create_table::<3, 3>()
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s)))),
+                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{s}]")))),
             create_table::<4, 4>()
                 .with(Modify::new(Segment::all()).with(Alignment::right()))
                 .with(Modify::new(Segment::all()).with(Padding::new(1, 1, 1, 1)))
-                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("({})", s))))),
+                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("({s})"))))),
         "+-------------------------------------------------------------+"
         "| +-------+--------------+--------------+--------------+      |"
         "| |   [N] |   [column 0] |   [column 1] |   [column 2] |      |"
@@ -91,7 +91,7 @@ test_table!(
         row!(create_table::<3, 3>()
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s)))); 3),
+                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{s}]")))); 3),
     "+--------------------------------------------------------+--------------------------------------------------------+--------------------------------------------------------+"
     "| +-------+--------------+--------------+--------------+ | +-------+--------------+--------------+--------------+ | +-------+--------------+--------------+--------------+ |"
     "| |   [N] |   [column 0] |   [column 1] |   [column 2] | | |   [N] |   [column 0] |   [column 1] |   [column 2] | | |   [N] |   [column 0] |   [column 1] |   [column 2] | |"
@@ -112,16 +112,16 @@ test_table!(
                 create_table::<3, 3>()
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
                     .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-                    .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s)))),
+                    .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{s}]")))),
                 create_table::<4, 4>()
                     .with(Modify::new(Segment::all()).with(Alignment::right()))
                     .with(Modify::new(Segment::all()).with(Padding::new(1, 1, 1, 1)))
-                    .with(Modify::new(Segment::all()).with(Format::new(|s| format!("({})", s)))),
+                    .with(Modify::new(Segment::all()).with(Format::new(|s| format!("({s})")))),
             ),
             create_table::<3, 5>()
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Segment::all()).with(Padding::new(2, 2, 0, 0)))
-                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
+                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{s}]"))))
         ),
         "+--------------------------------------------------------------------------------------------------------------------------+"
         "| +--------------------------------------------------------+-------------------------------------------------------------+ |"
@@ -167,16 +167,16 @@ test_table!(
                 create_table::<3, 3>()
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
                     .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-                    .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s)))),
+                    .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{s}]")))),
                 create_table::<4, 4>()
                     .with(Modify::new(Segment::all()).with(Alignment::right()))
                     .with(Modify::new(Segment::all()).with(Padding::new(1, 1, 1, 1)))
-                    .with(Modify::new(Segment::all()).with(Format::new(|s| format!("({})", s)))),
+                    .with(Modify::new(Segment::all()).with(Format::new(|s| format!("({s})")))),
             ),
             create_table::<3, 5>()
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Segment::all()).with(Padding::new(2, 2, 0, 0)))
-                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{}]", s))))
+                .with(Modify::new(Segment::all()).with(Format::new(|s| format!("[{s}]"))))
         ),
     "+-----------------------------------------------------------------+--------------------------------------------------------------------------------------+"
     "| +-------------------------------------------------------------+ | +-------+--------------+--------------+--------------+--------------+--------------+ |"

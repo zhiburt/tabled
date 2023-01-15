@@ -2415,7 +2415,7 @@ test_table!(
 test_table!(
     override_vertical_border_on_line_multiline,
     create_table::<3, 3>()
-        .with(Modify::new(Rows::single(1)).with(Format::new(|s| format!("\nsome text\ntext\n{}\ntext\ntext\n", s))))
+        .with(Modify::new(Rows::single(1)).with(Format::new(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
             .with(BorderChar::vertical(':', Offset::Begin(4)))
@@ -2436,7 +2436,7 @@ test_table!(
 test_table!(
     override_vertical_border_on_line_multiline_2,
     create_table::<3, 3>()
-        .with(Modify::new(Rows::single(1)).with(Format::new(|s| format!("\nsome text\ntext\n{}\ntext\ntext\n", s))))
+        .with(Modify::new(Rows::single(1)).with(Format::new(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
             .with(BorderChar::vertical(':', Offset::End(4)))
@@ -2457,7 +2457,7 @@ test_table!(
 test_table!(
     override_vertical_and_horizontal_border_on_line,
     create_table::<3, 3>()
-        .with(Modify::new(Rows::single(1)).with(Format::new(|s| format!("\nsome text\ntext\n{}\ntext\ntext\n", s))))
+        .with(Modify::new(Rows::single(1)).with(Format::new(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::new(..5))
             .with(BorderChar::vertical('y', Offset::Begin(0)))

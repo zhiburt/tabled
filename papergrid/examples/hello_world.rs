@@ -57,5 +57,5 @@ fn main() {
 
     let grid = Grid::new(&records, &cfg, &width, &height);
 
-    println!("{}", grid);
+    println!("{grid}");
 }

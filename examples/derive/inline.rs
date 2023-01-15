@@ -47,5 +47,5 @@ fn main() {
 
     let table = data.table();
 
-    println!("{}", table);
+    println!("{table}");
 }

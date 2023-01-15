@@ -44,9 +44,9 @@ fn main() {
     let mut row_col_t = col![row![table_a, table_b].with(Style::empty()), table_c];
     row_col_t.with(Alignment::center());
 
-    println!("{}", row_t);
+    println!("{row_t}");
     println!();
-    println!("{}", col_t);
+    println!("{col_t}");
     println!();
-    println!("{}", row_col_t);
+    println!("{row_col_t}");
 }

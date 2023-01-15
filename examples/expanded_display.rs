@@ -31,5 +31,5 @@ fn main() {
 
     let table = ExpandedDisplay::new(data);
 
-    println!("{}", table);
+    println!("{table}");
 }

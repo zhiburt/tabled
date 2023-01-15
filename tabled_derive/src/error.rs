@@ -44,7 +44,7 @@ impl std::fmt::Display for Error {
         match self {
             Error::Syn(err) => err.fmt(f),
             Error::Custom { error, .. } => {
-                write!(f, "a custom error: {}", error)
+                write!(f, "a custom error: {error}")
             }
         }
     }
