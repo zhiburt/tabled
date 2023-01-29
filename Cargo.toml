@@ -176,6 +176,7 @@ ansi-str = { version = "0.5.0", optional = true }
 owo-colors = "3.5.0"
 quickcheck = "1.0.3"
 quickcheck_macros = "1.0.0"
+rand="0.8.5"
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #

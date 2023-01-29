@@ -1,6 +1,16 @@
 use std::iter::FromIterator;
 
-use tabled::builder::Builder;
+use quickcheck::Arbitrary;
+use rand::{
+    distributions::{Alphanumeric, DistString},
+    rngs::StdRng,
+    SeedableRng,
+};
+use tabled::{
+    builder::Builder,
+    style::{HorizontalLine, Line, VerticalLine},
+    Style, Table, Tabled,
+};
 
 use util::test_table;
 
@@ -755,4 +765,116 @@ fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
         .map(|line| papergrid::util::string_width(line))
         .all(|line_width| line_width == lines[0].len());
     lines_has_the_same_length
+}
+
+#[derive(Tabled, Clone, Debug)]
+struct DataFixture {
+    one: String,
+    two: i8,
+    three: u8,
+    four: u16,
+    five: u32,
+    six: u64,
+    seven: u128,
+    eight: i8,
+    nine: i16,
+    ten: i32,
+    eleven: i64,
+    twelve: i128,
+    thirteen: bool,
+}
+
+impl Arbitrary for DataFixture {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let mut rng = StdRng::seed_from_u64(u64::arbitrary(g));
+        DataFixture {
+            one: Alphanumeric
+                .sample_string(&mut rng, u8::arbitrary(g) as usize)
+                .to_string(),
+            //one: Arbitrary::arbitrary(g), //FIXME This does not seem to work
+            two: Arbitrary::arbitrary(g),
+            three: Arbitrary::arbitrary(g),
+            four: Arbitrary::arbitrary(g),
+            five: Arbitrary::arbitrary(g),
+            six: Arbitrary::arbitrary(g),
+            seven: Arbitrary::arbitrary(g),
+            eight: Arbitrary::arbitrary(g),
+            nine: Arbitrary::arbitrary(g),
+            ten: Arbitrary::arbitrary(g),
+            eleven: Arbitrary::arbitrary(g),
+            twelve: Arbitrary::arbitrary(g),
+            thirteen: Arbitrary::arbitrary(g),
+        }
+    }
+}
+
+#[quickcheck_macros::quickcheck]
+#[ignore = "Quickcheck tests are a bit slow, so we don't run them all the time"]
+fn qc_table_is_consistent_with_borders(data: Vec<DataFixture>) {
+    //FIXME - Unable to make this work.
+    let data_len = data.len();
+    /*         let styles = [
+        Style::empty(),
+        Style::blank(),
+        Style::ascii(),
+        Style::psql(),
+        Style::markdown(),
+        Style::modern(),
+        Style::sharp(),
+        Style::rounded(),
+        Style::extended(),
+        Style::dots(),
+        Style::re_structured_text(),
+        Style::ascii_rounded(),
+    ];
+    let mut rng = rand::thread_rng();
+    let raw_style = styles[(rng.gen() as usize % styles.len()) - 1]; */
+
+    let horizontals: Vec<HorizontalLine> = (1..=data_len)
+        .map(|i| HorizontalLine::new(i, Line::full('*', 'i', 's', 'e')))
+        .collect();
+    let verticals: Vec<VerticalLine> = (0..=13)
+        .map(|i| VerticalLine::new(i, Line::filled('c')))
+        .collect();
+    let style = Style::modern()
+        .horizontals(horizontals)
+        .verticals(verticals)
+        .bottom('b')
+        .top('t');
+
+    let table = Table::new(data).with(style).to_string();
+    let lines: Vec<String> = table.lines().map(|l| l.into()).collect();
+
+    let border_lines: Vec<String> = lines
+        .iter()
+        .filter(|&l| l.starts_with('s'))
+        .map(String::to_string)
+        .collect();
+
+    let data_lines: Vec<String> = lines
+        .iter()
+        .filter(|&l| l.starts_with('c'))
+        .map(String::to_string)
+        .collect();
+
+    if data_len > 0 {
+        println!("{}", table);
+        println!("Data len: {}", data_len);
+        assert_eq!(data_len, border_lines.len());
+        assert_eq!(data_len + 1, data_lines.len());
+
+        assert!(border_lines.iter().all(|l| {
+            let mut chars = l.chars();
+            let first = chars.nth(0).unwrap();
+            let last = chars.rev().nth(0).unwrap();
+            first == 's' && last == 'e'
+        }));
+
+        assert!(data_lines.iter().all(|l| {
+            let mut chars = l.chars();
+            let first = chars.nth(0).unwrap();
+            let last = chars.rev().nth(0).unwrap();
+            first == 'c' && last == 'c'
+        }));
+    }
 }
