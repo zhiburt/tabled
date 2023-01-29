@@ -53,7 +53,7 @@ fn main() {
             .with(Height::limit(height as usize));
     }
 
-    println!("{}", table);
+    println!("{table}");
 }
 
 fn parse_args() -> (bool, bool) {
@@ -66,17 +66,11 @@ fn parse_args() -> (bool, bool) {
         (Some(param), None) => match param.as_str() {
             "--width" => (true, false),
             "--height" => (false, true),
-            _ => panic!(
-                "unexpected argument {:?}, expected '--width' or '--height'",
-                param
-            ),
+            _ => panic!("unexpected argument {param:?}, expected '--width' or '--height'",),
         },
         (Some(param1), Some(param2)) => {
             if param1 != "--height" || param1 != "--width" {
-                panic!(
-                    "unexpected argument {:?}, expected '--width' or '--height'",
-                    param1
-                )
+                panic!("unexpected argument {param1:?}, expected '--width' or '--height'",)
             }
 
             let use_height = param1 == "--height" || param2 == "--height";
