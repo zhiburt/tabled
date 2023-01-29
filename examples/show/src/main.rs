@@ -387,7 +387,7 @@ impl Printer for DebugPrinter<'_> {
     {
         for frame in frames {
             writeln!(self.stdout, "FRAME={}", self.i).unwrap();
-            writeln!(self.stdout, "{}", frame).unwrap();
+            writeln!(self.stdout, "{frame}").unwrap();
             self.stdout.flush().unwrap();
             self.i += 1;
         }

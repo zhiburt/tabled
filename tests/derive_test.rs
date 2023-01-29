@@ -840,6 +840,7 @@ fn test_order_skip_usage() {
     #[derive(Tabled, Default)]
     pub struct Example {
         #[tabled(skip)]
+        #[allow(dead_code)]
         id: usize,
         name: String,
         #[tabled(order = 0)]
@@ -849,6 +850,7 @@ fn test_order_skip_usage() {
     #[derive(Tabled, Default)]
     pub struct Example2 {
         #[tabled(skip)]
+        #[allow(dead_code)]
         id: usize,
         name: String,
         #[tabled(order = 1)]

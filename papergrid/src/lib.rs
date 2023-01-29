@@ -1,3 +1,4 @@
+#![deny(unused_must_use)]
 #![warn(
     rust_2018_idioms,
     rust_2018_compatibility,
@@ -6,7 +7,7 @@
     unreachable_pub,
     missing_docs
 )]
-#![deny(unused_must_use)]
+#![allow(clippy::uninlined_format_args)]
 
 //! Papergrid is a library for generating text-based tables.
 //!
