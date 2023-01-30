@@ -65,7 +65,7 @@ impl Measurement<Width> for Min {
     {
         let ctrl = CfgWidthFunction::from_cfg(cfg);
         grid_widths(&records, &ctrl)
-            .flatten()
+            .map(|r| r.min().unwrap_or_default())
             .max()
             .unwrap_or_default()
     }
