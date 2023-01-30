@@ -489,7 +489,7 @@ mod json_to_table {
                         .get_config()
                         .get_borders()
                         .top_intersection
-                        .unwrap_or_default();
+                        .unwrap_or(' ');
 
                     {
                         key.with(NoRightBorders);
