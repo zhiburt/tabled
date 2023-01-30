@@ -77,7 +77,7 @@ impl Measurement<Height> for Min {
         R: Records,
     {
         records_heights(&records)
-            .flatten()
+            .map(|r| r.max().unwrap_or_default())
             .min()
             .unwrap_or_default()
     }
