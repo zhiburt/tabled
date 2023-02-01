@@ -2481,6 +2481,31 @@ test_table!(
 );
 
 test_table!(
+    override_horizontal_border_char_on_table,
+    create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(BorderChar::horizontal(':', Offset::Begin(0)))
+        .with(BorderChar::horizontal(':', Offset::End(0))),
+    "| N | column 0 | column 1 | column 2 |"
+    "|:-:|:--------:|:--------:|:--------:|"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+);
+
+test_table!(
+    override_vertical_border_char_on_table,
+    create_table::<3, 3>()
+        .with(Style::markdown())
+        .with(BorderChar::vertical(':', Offset::Begin(0))),
+    ": N : column 0 : column 1 : column 2 |"
+    "|---|----------|----------|----------|"
+    ": 0 :   0-0    :   0-1    :   0-2    |"
+    ": 1 :   1-0    :   1-1    :   1-2    |"
+    ": 2 :   2-0    :   2-1    :   2-2    |"
+);
+
+test_table!(
     table_format_alignment_left_test,
     format!("{:<}", Table::new(vec!["hello", "world", "!"])),
     "+-------+"

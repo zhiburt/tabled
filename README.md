@@ -421,6 +421,30 @@ You can use `BorderChar` to achieve this.
 
 ```rust
 use tabled::{
+    style::{BorderChar, Offset, Style},
+    Table,
+};
+
+fn main() {
+    let table = Table::new([["Hello", "World", "!"]])
+        .with(Style::markdown())
+        .with(BorderChar::horizontal(':', Offset::Begin(0)))
+        .with(BorderChar::horizontal(':', Offset::End(0)))
+        .to_string();
+
+    assert_eq!(
+        table,
+        "| 0     | 1     | 2 |\n\
+         |:-----:|:-----:|:-:|\n\
+         | Hello | World | ! |"
+    );
+}
+```
+
+Or if you want a specific cell, you can modify `Column`/`Row`.
+
+```rust
+use tabled::{
     object::Columns,
     style::{BorderChar, Offset, Style},
     Modify, Table,
@@ -430,7 +454,7 @@ fn main() {
     let table = Table::new([["Hello", "World", "!"]])
         .with(Style::markdown())
         .with(
-            Modify::new(Columns::new(..))
+            Modify::new(Columns::single(1))
                 .with(BorderChar::horizontal(':', Offset::Begin(0)))
                 .with(BorderChar::horizontal(':', Offset::End(0))),
         )
@@ -439,7 +463,7 @@ fn main() {
     assert_eq!(
         table,
         "| 0     | 1     | 2 |\n\
-         |:-----:|:-----:|:-:|\n\
+         |-------|:-----:|---|\n\
          | Hello | World | ! |"
     );
 }
