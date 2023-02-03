@@ -148,7 +148,7 @@ where
         ctrl.estimate(table.get_records(), table.get_config());
         let widths: Vec<usize> = ctrl.into();
 
-        let ctrl = papergrid::width::CfgWidthFunction::from_cfg(table.get_config());
+        let ctrl = papergrid::width::CfgWidthFunc::from_cfg(table.get_config());
 
         let (count_rows, count_cols) = table.shape();
         for (row, col) in entity.iter(count_rows, count_cols) {

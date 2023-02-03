@@ -1,6 +1,6 @@
 //! This module contains a colored representation of a char which we call [`Symbol`].
 
-use crate::{color::Color, papergrid::util::string_width};
+use crate::{color::Color, grid::util::string_width};
 
 /// Symbol represents a character of a border.
 ///
@@ -91,8 +91,9 @@ fn get_ansi_secuences(s: &str) -> Option<(char, String, String)> {
 
     let c = block.text().chars().next()?;
 
-    let start = block.start().to_string();
-    let end = block.end().to_string();
+    let style = block.style();
+    let start = style.start().to_string();
+    let end = style.end().to_string();
 
     Some((c, start, end))
 }

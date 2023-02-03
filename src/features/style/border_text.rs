@@ -1,8 +1,6 @@
 use std::borrow::Cow;
 
-use papergrid::records::Records;
-
-use crate::{Table, TableOption};
+use crate::{grid::config::GridConfig, records::ExactRecords, TableOption};
 
 use super::Offset;
 
@@ -27,59 +25,43 @@ use super::Offset;
 /// );
 /// ```
 #[derive(Debug)]
-pub struct BorderText<'a> {
+pub struct BorderText<'a, Line> {
     // todo: offset from which we start overriding border
     // offset: usize,
     text: Cow<'a, str>,
-    row: SplitLineIndex,
     offset: Offset,
+    line: Line,
 }
 
-#[derive(Debug)]
-enum SplitLineIndex {
-    First,
-    Last,
-    Line(usize),
-}
+pub struct LineIndex(usize);
 
-impl<'a> BorderText<'a> {
+pub struct LineFirst;
+
+pub struct LineLast;
+
+impl<'a> BorderText<'a, ()> {
     /// Creates a [`BorderText`] instance.
     ///
     /// Lines are numbered from 0 to the `count_rows` included
     /// (`line >= 0 && line <= count_rows`).
-    pub fn new<S>(line: usize, text: S) -> Self
-    where
-        S: Into<Cow<'a, str>>,
-    {
-        Self {
-            text: text.into(),
-            row: SplitLineIndex::Line(line),
-            offset: Offset::Begin(0),
-        }
+    pub fn new<S: Into<Cow<'a, str>>>(line: usize, text: S) -> BorderText<'a, LineIndex> {
+        BorderText::create(text.into(), Offset::Begin(0), LineIndex(line))
     }
 
     /// Creates a [`BorderText`] instance for a top line.
-    pub fn first<S>(text: S) -> Self
+    pub fn first<S>(text: S) -> BorderText<'a, LineFirst>
     where
         S: Into<Cow<'a, str>>,
     {
-        Self {
-            text: text.into(),
-            row: SplitLineIndex::First,
-            offset: Offset::Begin(0),
-        }
+        BorderText::create(text.into(), Offset::Begin(0), LineFirst)
     }
 
     /// Creates a [`BorderText`] instance for a bottom line.
-    pub fn last<S>(text: S) -> Self
+    pub fn last<S>(text: S) -> BorderText<'a, LineLast>
     where
         S: Into<Cow<'a, str>>,
     {
-        Self {
-            text: text.into(),
-            row: SplitLineIndex::Last,
-            offset: Offset::Begin(0),
-        }
+        BorderText::create(text.into(), Offset::Begin(0), LineLast)
     }
 
     /// Set an offset from which the text will be started.
@@ -87,27 +69,29 @@ impl<'a> BorderText<'a> {
         self.offset = offset;
         self
     }
+
+    fn create<L>(text: Cow<'a, str>, offset: Offset, line: L) -> BorderText<'a, L> {
+        BorderText { text, line, offset }
+    }
 }
 
-impl<'a, R> TableOption<R> for BorderText<'a>
+impl<R, D> TableOption<R, D> for BorderText<'_, LineFirst> {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+        cfg.override_split_line(0, self.text.as_ref(), self.offset.into());
+    }
+}
+
+impl<R, D> TableOption<R, D> for BorderText<'_, LineIndex> {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+        cfg.override_split_line(self.line.0, self.text.as_ref(), self.offset.into());
+    }
+}
+
+impl<R, D> TableOption<R, D> for BorderText<'_, LineLast>
 where
-    R: Records,
+    R: ExactRecords,
 {
-    fn change(&mut self, table: &mut Table<R>) {
-        let row = match self.row {
-            SplitLineIndex::First => 0,
-            SplitLineIndex::Last => table.shape().0,
-            SplitLineIndex::Line(row) => {
-                if row > table.shape().0 {
-                    return;
-                }
-
-                row
-            }
-        };
-
-        table
-            .get_config_mut()
-            .override_split_line(row, self.text.as_ref(), self.offset.into());
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+        cfg.override_split_line(records.count_rows(), self.text.as_ref(), self.offset.into());
     }
 }

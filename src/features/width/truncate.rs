@@ -5,7 +5,7 @@ use std::{borrow::Cow, marker::PhantomData};
 use papergrid::{
     records::{empty::EmptyRecords, Records, RecordsMut},
     util::cut_str,
-    width::{CfgWidthFunction, WidthFunc},
+    width::{CfgWidthFunc, WidthFunc},
     Entity, GridConfig,
 };
 
@@ -154,7 +154,7 @@ where
     R: Records + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
-        let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
+        let width_ctrl = CfgWidthFunc::from_cfg(table.get_config());
         let set_width = self.width.measure(table.get_records(), table.get_config());
 
         let mut width = set_width;

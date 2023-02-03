@@ -4,7 +4,7 @@ use csv::{StringRecord, StringRecordsIntoIter, Reader};
 
 pub struct CsvRecords<R> {
     size: (usize, usize),
-    records: StringRecordsIntoIter<R>,
+    records: StringRecordsIntoIter<R>,  
     first_record: Option<Result<StringRecord>>,
 }
 

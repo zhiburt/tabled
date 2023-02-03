@@ -49,7 +49,7 @@
 
 use papergrid::{
     records::{ExactRecords, RecordCell, Records, RecordsMut, Resizable},
-    width::CfgWidthFunction,
+    width::CfgWidthFunc,
 };
 
 use crate::{Table, TableOption};
@@ -115,7 +115,7 @@ where
 {
     fn change(&mut self, lhs: &mut Table<R>) {
         let (count_rows, count_cols) = lhs.shape();
-        let ctrl = CfgWidthFunction::from_cfg(lhs.get_config());
+        let ctrl = CfgWidthFunc::from_cfg(lhs.get_config());
         let rhs = &self.table;
         match self.mode {
             ConcatMode::Horizontal => {

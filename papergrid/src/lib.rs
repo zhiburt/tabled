@@ -17,10 +17,9 @@
 //!
 //! ```
 //! use papergrid::{
-//!     height::HeightEstimator,
-//!     records::vec_records::VecRecords,
-//!     width::{CfgWidthFunction, WidthEstimator},
-//!     Borders, Estimate, Grid, GridConfig,
+//!     records::iter_records::IterRecords,
+//!     dimension::{Dimension, ExactDimension},
+//!     Borders, Grid, GridConfig,
 //! };
 //!
 //! // Creating a borders structure of a grid.
@@ -48,18 +47,14 @@
 //!
 //! // Creating an actual data for grid.
 //! let records = vec![vec!["Hello", "World"], vec!["Hi", "World"]];
-//! let records = VecRecords::new(&records, (2, 2), CfgWidthFunction::from_cfg(&cfg));
+//! let records = IterRecords::new(records, 2);
 //!
-//! // Estimate width space for rendering.
-//! let mut width = WidthEstimator::default();
-//! width.estimate(&records, &cfg);
-//!
-//! // Estimate height space for rendering.
-//! let mut height = HeightEstimator::default();
-//! height.estimate(&records, &cfg);
+//! // Estimate grid dimension.
+//! let mut dimension = ExactDimension::default();
+//! dimension.estimate(&records, &cfg);
 //!
 //! // Creating a grid.
-//! let grid = Grid::new(&records, &cfg, &width, &height).to_string();
+//! let grid = Grid::new(&records, &cfg, &dimension).to_string();
 //!
 //! assert_eq!(
 //!     grid,
@@ -73,23 +68,16 @@
 //! );
 //! ```
 
-mod color;
-mod config;
-mod estimation;
 mod grid;
-mod colors;
 
+pub mod color;
+pub mod colors;
+pub mod config;
+pub mod grid_projection;
+pub mod dimension;
 pub mod records;
 pub mod util;
 
-pub use self::{
-    color::{AnsiColor, Color},
-    config::{
-        AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, EntityIterator,
-        Formatting, GridConfig, HorizontalLine, Indent, Margin, Offset, Padding, Position, Sides,
-        VerticalLine,
-    },
-    config::{MarginColor, PaddingColor},
-    estimation::{height, width, Estimate, ExactEstimate},
-    grid::Grid,
-};
+pub use self::grid::Grid;
+pub use dimension::{Dimension, ExactDimension};
+pub use config::GridConfig;

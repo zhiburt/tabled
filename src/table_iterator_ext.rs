@@ -1,4 +1,6 @@
-use papergrid::records::{cell_info::CellInfo, vec_records::VecRecords};
+use std::borrow::Cow;
+
+use crate::records::IterRecords;
 
 use crate::{Table, Tabled};
 
@@ -22,7 +24,7 @@ pub trait TableIteratorExt {
     type Records;
 
     /// Returns a [`Table`] instance from a given type
-    fn table(self) -> Table<Self::Records>;
+    fn table(self) -> Table;
 }
 
 impl<I, T> TableIteratorExt for I
@@ -30,9 +32,9 @@ where
     I: IntoIterator<Item = T>,
     T: Tabled,
 {
-    type Records = VecRecords<CellInfo<'static>>;
+    type Records = IterRecords<Vec<Vec<Cow<'static, str>>>>;
 
-    fn table(self) -> Table<Self::Records> {
+    fn table(self) -> Table {
         Table::new(self)
     }
 }

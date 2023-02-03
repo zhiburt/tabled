@@ -3,7 +3,7 @@
 use papergrid::{
     height::HeightEstimator,
     records::Records,
-    width::{CfgWidthFunction, WidthFunc},
+    width::{CfgWidthFunc, WidthFunc},
     GridConfig,
 };
 
@@ -34,7 +34,7 @@ impl Measurement<Width> for Max {
     where
         R: Records,
     {
-        let ctrl = CfgWidthFunction::from_cfg(cfg);
+        let ctrl = CfgWidthFunc::from_cfg(cfg);
         grid_widths(&records, &ctrl)
             .map(|r| r.max().unwrap_or(0))
             .max()
@@ -63,7 +63,7 @@ impl Measurement<Width> for Min {
     where
         R: Records,
     {
-        let ctrl = CfgWidthFunction::from_cfg(cfg);
+        let ctrl = CfgWidthFunc::from_cfg(cfg);
         grid_widths(&records, &ctrl)
             .map(|r| r.min().unwrap_or(0))
             .max()

@@ -48,7 +48,7 @@ pub use self::{
     wrap::Wrap,
 };
 
-use papergrid::{records::Records, width::WidthEstimator, Estimate, GridConfig};
+use papergrid::{dimension::Dimension, records::Records, GridConfig};
 
 pub(crate) use wrap::wrap_text;
 

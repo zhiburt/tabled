@@ -38,7 +38,7 @@
 
 use papergrid::{
     records::{Records, RecordsMut, Resizable},
-    width::CfgWidthFunction,
+    width::CfgWidthFunc,
     Position,
 };
 
@@ -394,7 +394,7 @@ fn set_text<R>(table: &mut Table<R>, pos: Position, text: String)
 where
     R: RecordsMut,
 {
-    let ctrl = CfgWidthFunction::from_cfg(table.get_config());
+    let ctrl = CfgWidthFunc::from_cfg(table.get_config());
     table.get_records_mut().set(pos, text, ctrl);
 }
 

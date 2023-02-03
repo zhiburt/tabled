@@ -93,9 +93,14 @@
 
 use std::marker::PhantomData;
 
-use papergrid::{records::Records, Borders};
+use papergrid::GridConfig;
 
-use crate::{style::StyleCorrectSpan, Border, Table, TableOption};
+use crate::{
+    grid::config::{Border as GridBorder, Borders},
+    records::Records,
+    style::StyleCorrectSpan,
+    Border, Table, TableOption,
+};
 
 use super::{HorizontalLine, Line, VerticalLine};
 
@@ -574,7 +579,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// );
     /// ```
     pub const fn get_frame(&self) -> Border {
-        Border::new_raw(Some(papergrid::Border {
+        Border::new_raw(Some(GridBorder {
             top: self.borders.top,
             bottom: self.borders.bottom,
             left: self.borders.vertical_left,
@@ -1122,32 +1127,31 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
             _vertical: PhantomData,
         }
     }
+
+    pub const fn get_borders(self) -> Borders<char> {
+        self.borders
+    }
 }
 
-impl<T, B, L, R, H, V, HLines, VLines, I> TableOption<I> for Style<T, B, L, R, H, V, HLines, VLines>
+impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D>
+    for Style<T, B, L, R, H, V, HLines, VLines>
 where
     I: Records,
     HLines: IntoIterator<Item = HorizontalLine> + Clone,
     VLines: IntoIterator<Item = VerticalLine> + Clone,
 {
-    fn change(&mut self, table: &mut Table<I>) {
-        table.get_config_mut().clear_theme();
-        table.get_config_mut().set_borders(self.borders.clone());
+    fn change(&mut self, records: &mut I, cfg: &mut GridConfig, dimension: &mut D) {
+        cfg.clear_theme();
 
-        if table.shape().0 > 1 {
-            for mut hl in self.horizontals.clone() {
-                hl.change(table);
-            }
+        cfg.set_borders(self.borders.clone());
+
+        for mut hl in self.horizontals.clone() {
+            hl.change(records, cfg, dimension);
         }
 
-        if table.shape().1 > 1 {
-            for mut vl in self.verticals.clone() {
-                vl.change(table);
-            }
+        for mut vl in self.verticals.clone() {
+            vl.change(records, cfg, dimension);
         }
-
-        table.destroy_width_cache();
-        table.destroy_height_cache();
     }
 }
 

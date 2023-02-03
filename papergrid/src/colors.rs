@@ -1,6 +1,9 @@
 use std::collections::{BTreeMap, HashMap};
 
-use crate::{config::EntityMap, Color, Entity, Position};
+use crate::{
+    color::Color,
+    config::{Entity, EntityMap, Position},
+};
 
 pub trait Colors {
     type Color: Color;

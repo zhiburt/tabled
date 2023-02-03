@@ -4,9 +4,14 @@
 
 use std::{borrow::Cow, convert::TryFrom};
 
-use papergrid::{records::Records, AnsiColor, Entity};
-
-use crate::{CellOption, Table, TableOption};
+use crate::{
+    grid::{
+        color::AnsiColor,
+        config::{Border, Entity, GridConfig},
+    },
+    records::{ExactRecords, Records},
+    CellOption, TableOption,
+};
 
 /// Color represents a color which can be set to things like [`Border`], [`Padding`] and [`Margin`].
 ///
@@ -205,43 +210,41 @@ impl TryFrom<String> for Color {
     }
 }
 
-impl<R> TableOption<R> for Color {
-    fn change(&mut self, table: &mut Table<R>) {
+impl<R, D> TableOption<R, D> for Color {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
         let color = self.0.clone();
-        table.get_config_mut().set_border_color_global(color);
+        cfg.set_border_color_global(color);
     }
 }
 
 impl<R> CellOption<R> for Color
 where
-    R: Records,
+    R: Records + ExactRecords,
 {
-    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
         let border = border_color(self);
 
-        let (count_rows, count_cols) = table.shape();
-        for pos in entity.iter(count_rows, count_cols) {
-            table.get_config_mut().set_border_color(pos, border.clone());
+        for pos in entity.iter(records.count_rows(), records.count_columns()) {
+            cfg.set_border_color(pos, border.clone());
         }
     }
 }
 
 impl<'b, R> CellOption<R> for &'b Color
 where
-    R: Records,
+    R: Records + ExactRecords,
 {
-    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
         let border = border_color(self);
 
-        let (count_rows, count_cols) = table.shape();
-        for pos in entity.iter(count_rows, count_cols) {
-            table.get_config_mut().set_border_color(pos, border.clone());
+        for pos in entity.iter(records.count_rows(), records.count_columns()) {
+            cfg.set_border_color(pos, border.clone());
         }
     }
 }
 
-fn border_color(color: &Color) -> papergrid::Border<AnsiColor<'static>> {
-    papergrid::Border::full(
+fn border_color(color: &Color) -> Border<AnsiColor<'static>> {
+    Border::full(
         color.0.clone(),
         color.0.clone(),
         color.0.clone(),

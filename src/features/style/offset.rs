@@ -1,3 +1,5 @@
+use crate::grid::config;
+
 /// The structure represents an offset in a text.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Offset {
@@ -7,11 +9,11 @@ pub enum Offset {
     End(usize),
 }
 
-impl From<Offset> for papergrid::Offset {
+impl From<Offset> for config::Offset {
     fn from(o: Offset) -> Self {
         match o {
-            Offset::Begin(i) => papergrid::Offset::Begin(i),
-            Offset::End(i) => papergrid::Offset::End(i),
+            Offset::Begin(i) => config::Offset::Begin(i),
+            Offset::End(i) => config::Offset::End(i),
         }
     }
 }

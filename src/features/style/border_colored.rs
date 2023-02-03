@@ -1,8 +1,14 @@
 //! This module contains a configuration of a Border to set its color via [`BorderColored`].
 
-use papergrid::{records::Records, AnsiColor, Border, Entity};
-
-use crate::{style::Symbol, CellOption, Table};
+use crate::{
+    grid::{
+        color::AnsiColor,
+        config::{Border, Entity, GridConfig},
+    },
+    records::{ExactRecords, Records},
+    style::Symbol,
+    CellOption,
+};
 
 /// BorderColored represents a colored border of a Cell.
 ///
@@ -19,7 +25,7 @@ use crate::{style::Symbol, CellOption, Table};
 /// ```
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct BorderColored(papergrid::Border<Symbol>);
+pub struct BorderColored(Border<Symbol>);
 
 impl BorderColored {
     /// Set a top border character.
@@ -73,7 +79,7 @@ impl BorderColored {
     /// This function constructs a cell borders with all sides's char set to a given character.
     /// It behaives like [`Border::full`] with the same character set to each side.
     pub fn filled(c: Symbol) -> Self {
-        Self(papergrid::Border {
+        Self(Border {
             top: Some(c.clone()),
             bottom: Some(c.clone()),
             left: Some(c.clone()),
@@ -88,20 +94,17 @@ impl BorderColored {
 
 impl<R> CellOption<R> for BorderColored
 where
-    R: Records,
+    R: Records + ExactRecords,
 {
-    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
         let (border, color) = split_border_colored(self);
 
-        let (count_rows, count_cols) = table.shape();
-        for pos in entity.iter(count_rows, count_cols) {
-            let cfg = table.get_config_mut();
+        let count_rows = records.count_rows();
+        let count_columns = records.count_columns();
+        for pos in entity.iter(count_rows, count_columns) {
             cfg.set_border_color(pos, color.clone());
             cfg.set_border(pos, border.clone());
         }
-
-        table.destroy_width_cache();
-        table.destroy_height_cache();
     }
 }
 

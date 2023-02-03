@@ -1,6 +1,6 @@
 use papergrid::{
     records::{Records, RecordsMut},
-    width::CfgWidthFunction,
+    width::CfgWidthFunc,
     Entity,
 };
 
@@ -56,7 +56,7 @@ where
 
             let content = records.get_text(pos);
             let content = add_lines(content, height - cell_height);
-            let ctrl = CfgWidthFunction::from_cfg(table.get_config());
+            let ctrl = CfgWidthFunc::from_cfg(table.get_config());
             table.get_records_mut().set(pos, content, &ctrl);
         }
 

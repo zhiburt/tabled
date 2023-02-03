@@ -3,10 +3,10 @@
 use std::collections::HashMap;
 
 use papergrid::{
-    height::HeightEstimator,
-    records::{cell_info::CellInfo, vec_records::VecRecords, Records},
-    width::{CfgWidthFunction, WidthEstimator},
-    Borders, Estimate, ExactEstimate, Grid, GridConfig, Position,
+    config::{Borders, GridConfig, Position},
+    dimension::{CfgWidthFunc, Dimension, ExactDimension},
+    records::{IterRecords, Records},
+    Grid,
 };
 
 pub fn grid(rows: usize, cols: usize) -> GridBuilder {
@@ -62,31 +62,24 @@ impl GridBuilder {
             data[row][col] = text;
         }
 
-        let grid = build_grid(self.size.0, self.size.1, self.cfg, data);
-
+        let grid = build_grid(data, self.cfg, self.size);
         grid.to_string()
     }
 }
 
 fn build_grid(
-    rows: usize,
-    cols: usize,
-    cfg: GridConfig,
     data: Vec<Vec<String>>,
-) -> Grid<'static, &'static VecRecords<CellInfo<'static>>, WidthEstimator, HeightEstimator> {
+    cfg: GridConfig,
+    shape: (usize, usize),
+) -> Grid<'static, IterRecords<Vec<Vec<String>>>, ExactDimension> {
     let cfg = Box::leak(Box::new(cfg));
 
-    let records = data;
-    let records = Box::leak(records.into_boxed_slice());
-    let records = VecRecords::new(records, (rows, cols), CfgWidthFunction::from_cfg(cfg));
-    let records = Box::leak(Box::new(records));
+    let records = IterRecords::new(data, shape.1, Some(shape.0));
 
-    let width = Box::leak(Box::new(WidthEstimator::default()));
-    width.estimate(&*records, cfg);
-    let height = Box::leak(Box::new(HeightEstimator::default()));
-    height.estimate(&*records, cfg);
+    let dims: &mut ExactDimension = Box::leak(Box::default());
+    dims.estimate(&records, cfg);
 
-    Grid::new(&*records, cfg, &*width, &*height)
+    Grid::new(records, cfg, &*dims)
 }
 
 fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {
@@ -151,30 +144,16 @@ pub const DEFAULT_BORDERS: Borders = Borders {
 ///
 /// [`Grid`]: crate::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct EstimationList {
-    list: Vec<usize>,
-}
+pub struct ConstantDimension(pub Vec<usize>, pub Vec<usize>);
 
-impl From<Vec<usize>> for EstimationList {
-    fn from(list: Vec<usize>) -> Self {
-        Self { list }
-    }
-}
+impl Dimension for ConstantDimension {
+    fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
 
-impl Estimate for EstimationList {
-    fn estimate<R>(&mut self, _: R, _: &GridConfig) {}
-
-    fn get(&self, column: usize) -> Option<usize> {
-        self.list.get(column).cloned()
+    fn get_width(&self, column: usize) -> usize {
+        self.0[column]
     }
 
-    fn total(&self) -> Option<usize> {
-        Some(self.list.iter().sum())
-    }
-}
-
-impl ExactEstimate for EstimationList {
-    fn total_amount(&self) -> usize {
-        self.list.iter().sum()
+    fn get_height(&self, row: usize) -> usize {
+        self.1[row]
     }
 }

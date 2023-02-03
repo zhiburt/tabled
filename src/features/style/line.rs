@@ -1,3 +1,5 @@
+use crate::grid::config::{HorizontalLine, VerticalLine};
+
 /// The structure represent a vertical or horizontal line.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Line {
@@ -52,7 +54,7 @@ impl Line {
     }
 }
 
-impl From<Line> for papergrid::HorizontalLine<char> {
+impl From<Line> for HorizontalLine<char> {
     fn from(l: Line) -> Self {
         Self {
             main: l.main,
@@ -63,7 +65,7 @@ impl From<Line> for papergrid::HorizontalLine<char> {
     }
 }
 
-impl From<Line> for papergrid::VerticalLine<char> {
+impl From<Line> for VerticalLine<char> {
     fn from(l: Line) -> Self {
         Self {
             main: l.main,

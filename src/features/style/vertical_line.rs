@@ -1,4 +1,7 @@
-use crate::{Table, TableOption};
+use crate::{
+    grid::config::{self, GridConfig},
+    Table, TableOption,
+};
 
 use super::Line;
 
@@ -86,13 +89,11 @@ impl VerticalLine {
     }
 }
 
-impl<R> TableOption<R> for VerticalLine {
-    fn change(&mut self, table: &mut Table<R>) {
+impl<R, D> TableOption<R, D> for VerticalLine {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
         match &self.line {
-            Some(line) => table
-                .get_config_mut()
-                .set_vertical_line(self.index, papergrid::VerticalLine::from(*line)),
-            None => table.get_config_mut().remove_vertical_line(self.index),
+            Some(line) => cfg.set_vertical_line(self.index, config::VerticalLine::from(*line)),
+            None => cfg.remove_vertical_line(self.index),
         }
     }
 }

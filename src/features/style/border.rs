@@ -1,6 +1,8 @@
-use papergrid::{records::Records, Entity};
-
-use crate::{CellOption, Table};
+use crate::{
+    grid::config::{Border as GridBorder, Entity, GridConfig},
+    records::{ExactRecords, Records},
+    CellOption,
+};
 
 /// Border represents a border of a Cell.
 ///
@@ -13,11 +15,11 @@ use crate::{CellOption, Table};
 /// ```
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Border {
-    border: Option<papergrid::Border<char>>,
+    border: Option<GridBorder<char>>,
 }
 
 impl Border {
-    pub(crate) const fn new_raw(border: Option<papergrid::Border<char>>) -> Self {
+    pub(crate) const fn new_raw(border: Option<GridBorder<char>>) -> Self {
         Self { border }
     }
 }
@@ -35,7 +37,7 @@ impl Border {
         bottom_left: char,
         bottom_right: char,
     ) -> Self {
-        Self::from(papergrid::Border::full(
+        Self::from(GridBorder::full(
             top,
             bottom,
             left,
@@ -117,30 +119,27 @@ impl Border {
 
 impl<R> CellOption<R> for Border
 where
-    R: Records,
+    R: Records + ExactRecords,
 {
-    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
-        let (count_rows, count_cols) = table.shape();
-        let cfg = table.get_config_mut();
-        for pos in entity.iter(count_rows, count_cols) {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+        let shape = (records.count_rows(), records.count_columns());
+
+        for pos in entity.iter(shape.0, shape.1) {
             match &self.border {
                 Some(border) => cfg.set_border(pos, border.clone()),
-                None => cfg.remove_border(pos, (count_rows, count_cols)),
+                None => cfg.remove_border(pos, shape),
             }
         }
-
-        table.destroy_width_cache();
-        table.destroy_height_cache();
     }
 }
 
-impl From<papergrid::Border> for Border {
-    fn from(b: papergrid::Border) -> Border {
+impl From<GridBorder> for Border {
+    fn from(b: GridBorder) -> Border {
         Border { border: Some(b) }
     }
 }
 
-impl From<Border> for Option<papergrid::Border> {
+impl From<Border> for Option<GridBorder> {
     fn from(val: Border) -> Self {
         val.border
     }

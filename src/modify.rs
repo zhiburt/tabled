@@ -1,6 +1,7 @@
-use papergrid::{records::Records, Entity};
-
-use crate::{object::Object, CellOption, Table, TableOption};
+use crate::{
+    grid::config::Entity, object::Object, records::ExactRecords, records::Records, CellOption,
+    TableOption,
+};
 
 /// Modify structure provide an abstraction, to be able to apply
 /// a set of [`CellOption`]s to the same object.
@@ -12,10 +13,7 @@ pub struct Modify<O> {
     obj: O,
 }
 
-impl<O> Modify<O>
-where
-    O: Object,
-{
+impl<O> Modify<O> {
     /// Creates a new [`Modify`] without any options.
     pub fn new(obj: O) -> Self {
         Self { obj }
@@ -44,10 +42,7 @@ pub struct ModifyList<O, S> {
     modifiers: S,
 }
 
-impl<O, M1> ModifyList<O, M1>
-where
-    O: Object,
-{
+impl<O, M1> ModifyList<O, M1> {
     /// With a generic function which stores a [`CellOption`].
     ///
     /// IMPORTANT:
@@ -67,15 +62,15 @@ where
     }
 }
 
-impl<O, M, R> TableOption<R> for ModifyList<O, M>
+impl<O, M, R, D> TableOption<R, D> for ModifyList<O, M>
 where
-    O: Object,
+    O: Object<R>,
     M: CellOption<R>,
-    R: Records,
+    R: Records + ExactRecords,
 {
-    fn change(&mut self, table: &mut Table<R>) {
-        for entity in self.obj.cells(table) {
-            self.modifiers.change_cell(table, entity);
+    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, _: &mut D) {
+        for entity in self.obj.cells(&records) {
+            self.modifiers.change(records, cfg, entity);
         }
     }
 }
@@ -92,9 +87,9 @@ where
     M1: CellOption<R>,
     M2: CellOption<R>,
 {
-    fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
-        self.s1.change_cell(table, entity);
-        self.s2.change_cell(table, entity);
+    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, entity: Entity) {
+        self.s1.change(records, cfg, entity);
+        self.s2.change(records, cfg, entity);
     }
 }
 
@@ -109,11 +104,9 @@ where
 /// // 2nd way to create modification container
 /// let m = Cell(1, 1).modify();
 /// ```
-pub trait ModifyObject: Object {
+pub trait ModifyObject<R>: Object<R> + Sized {
     /// Returns a Modify container of [`Object`]
     fn modify(self) -> Modify<Self> {
         Modify::new(self)
     }
 }
-
-impl<O> ModifyObject for O where O: Object {}

@@ -1,4 +1,4 @@
-use papergrid::{AlignmentHorizontal, Border, Borders, Entity, Indent, Padding};
+use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent, Padding};
 
 #[cfg(feature = "color")]
 use std::convert::TryFrom;
@@ -278,7 +278,7 @@ test_table!(
         .config(|cfg| {
             (0..2).for_each(|r| (0..2).for_each(|c| {
                 use owo_colors::OwoColorize;
-                use papergrid::{Border, AnsiColor};
+                use papergrid::{config::Border, color::AnsiColor};
 
                 let top = AnsiColor::try_from(" ".green().on_red().to_string()).unwrap();
                 let bottom = AnsiColor::try_from(" ".on_green().blue().to_string()).unwrap();
@@ -307,7 +307,7 @@ test_table!(
     grid(2, 2)
         .config(|cfg| {
             use owo_colors::OwoColorize;
-            use papergrid::AnsiColor;
+            use papergrid::color::AnsiColor;
 
             let color = " ".on_blue().red().bold().to_string();
             cfg.set_border_color_global(AnsiColor::try_from(color).unwrap());
@@ -324,7 +324,7 @@ test_table!(
 #[test]
 fn grid_2x2_ansi_border_none_if_string_is_not_1_char_test() {
     use owo_colors::OwoColorize;
-    use papergrid::AnsiColor;
+    use papergrid::color::AnsiColor;
 
     assert!(AnsiColor::try_from("12").is_ok());
     assert!(AnsiColor::try_from("123").is_ok());

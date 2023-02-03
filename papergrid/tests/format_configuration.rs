@@ -1,4 +1,4 @@
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Formatting};
+use papergrid::config::{AlignmentHorizontal, AlignmentVertical, Entity, Formatting};
 
 use crate::util::{grid, static_table};
 
@@ -934,6 +934,8 @@ fn tab_size_test() {
 }";
 
     let grid = grid(1, 1).data([[json]]);
+
+    println!("{}", grid.clone().build());
 
     assert_eq!(
         grid.clone().build(),

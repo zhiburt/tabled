@@ -1,4 +1,4 @@
-use json_to_table::{json_to_table, Orientation};
+use json_to_table::json_to_table;
 
 fn main() {
     let json = serde_json::json!({

@@ -1,6 +1,6 @@
 mod util;
 
-use papergrid::{
+use papergrid::config::{
     AlignmentHorizontal, AlignmentVertical, Borders,
     Entity::{self, *},
     Indent, Padding,

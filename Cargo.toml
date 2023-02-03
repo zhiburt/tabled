@@ -19,7 +19,6 @@ maintenance = { status = "actively-developed" }
 [workspace]
 members = [
     "papergrid",
-    "papergrid/examples/colored_backend",
     "tabled_derive",
     "examples/terminal_size",
     "examples/show",

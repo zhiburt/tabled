@@ -4,9 +4,9 @@
 //! [`Symbol`]: crate::style::Symbol
 //! [`RawStyle`]: crate::style::RawStyle
 
-use papergrid::{records::Records, AnsiColor, Borders};
-
 use crate::{
+    grid::{color::AnsiColor, config::Borders},
+    records::Records,
     style::{RawStyle, Symbol},
     Table, TableOption,
 };
@@ -186,15 +186,13 @@ impl RawStyleColored {
     }
 }
 
-impl<R> TableOption<R> for RawStyleColored
+impl<R, D> TableOption<R, D> for RawStyleColored
 where
     R: Records,
 {
-    fn change(&mut self, table: &mut Table<R>) {
-        self.style.change(table);
-        table
-            .get_config_mut()
-            .set_borders_color(self.colors.clone());
+    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, dimension: &mut D) {
+        self.style.change(records, cfg, dimension);
+        cfg.set_borders_color(self.colors.clone());
     }
 }
 

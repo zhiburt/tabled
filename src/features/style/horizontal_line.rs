@@ -1,4 +1,7 @@
-use crate::{Table, TableOption};
+use crate::{
+    grid::config::{GridConfig, HorizontalLine as GridLine},
+    TableOption,
+};
 
 use super::Line;
 
@@ -86,13 +89,11 @@ impl HorizontalLine {
     }
 }
 
-impl<R> TableOption<R> for HorizontalLine {
-    fn change(&mut self, table: &mut Table<R>) {
+impl<R, D> TableOption<R, D> for HorizontalLine {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
         match &self.line {
-            Some(line) => table
-                .get_config_mut()
-                .set_horizontal_line(self.index, papergrid::HorizontalLine::from(*line)),
-            None => table.get_config_mut().remove_horizontal_line(self.index),
+            Some(line) => cfg.set_horizontal_line(self.index, GridLine::from(*line)),
+            None => cfg.remove_horizontal_line(self.index),
         }
     }
 }

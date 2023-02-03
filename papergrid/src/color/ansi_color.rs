@@ -1,6 +1,6 @@
 use std::{
     borrow::Cow,
-    fmt::{self, Display, Formatter},
+    fmt::{self, Write},
 };
 
 use super::Color;
@@ -36,6 +36,16 @@ impl AnsiColor<'_> {
     }
 }
 
+impl Color for AnsiColor<'_> {
+    fn fmt_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
+        f.write_str(&self.prefix)
+    }
+
+    fn fmt_suffix<W: Write>(&self, f: &mut W) -> fmt::Result {
+        f.write_str(&self.suffix)
+    }
+}
+
 #[cfg(feature = "color")]
 impl std::convert::TryFrom<&str> for AnsiColor<'static> {
     type Error = ();
@@ -51,16 +61,6 @@ impl std::convert::TryFrom<String> for AnsiColor<'static> {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Self::try_from(value.as_str())
-    }
-}
-
-impl Color for AnsiColor<'_> {
-    fn fmt_prefix(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.prefix.fmt(f)
-    }
-
-    fn fmt_suffix(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.suffix.fmt(f)
     }
 }
 

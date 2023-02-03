@@ -1,6 +1,6 @@
 mod util;
 
-use papergrid::Offset;
+use papergrid::config::Offset;
 use util::{grid, test_table, DEFAULT_BORDERS};
 
 test_table!(

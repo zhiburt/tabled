@@ -3,11 +3,11 @@
 
 use std::collections::HashMap;
 
-use papergrid::{records::Records, Borders};
-
 use crate::{
+    grid::config::{self, Borders, GridConfig},
+    records::Records,
     style::{HorizontalLine, Line, VerticalLine},
-    Border, Style, Table, TableOption,
+    Border, Style, TableOption,
 };
 
 /// A raw style data, which can be produced safely from [`Style`].
@@ -249,7 +249,7 @@ impl RawStyle {
 
     /// Returns an outer border of the style.
     pub fn get_frame(&self) -> Border {
-        Border::new_raw(Some(papergrid::Border {
+        Border::new_raw(Some(config::Border {
             top: self.borders.top,
             bottom: self.borders.bottom,
             left: self.borders.vertical_left,
@@ -279,52 +279,36 @@ impl From<Borders<char>> for RawStyle {
     }
 }
 
-impl<R> TableOption<R> for RawStyle
+impl<R, D> TableOption<R, D> for RawStyle
 where
     R: Records,
 {
-    fn change(&mut self, table: &mut Table<R>) {
-        (&*self).change(table)
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+        (&*self).change(records, cfg, dimension)
     }
 }
 
-impl<R> TableOption<R> for &RawStyle
-where
-    R: Records,
-{
-    fn change(&mut self, table: &mut Table<R>) {
-        if table.is_empty() {
-            return;
-        }
-
-        let (count_rows, count_cols) = table.shape();
-
-        let cfg = table.get_config_mut();
+impl<R, D> TableOption<R, D> for &RawStyle {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
         cfg.clear_theme();
+
         cfg.set_borders(self.borders.clone());
 
-        if count_rows > 1 {
-            for (&row, line) in &self.horizontals {
-                if line.is_empty() {
-                    cfg.remove_horizontal_line(row);
-                } else {
-                    cfg.set_horizontal_line(row, papergrid::HorizontalLine::from(*line));
-                }
+        for (&row, line) in &self.horizontals {
+            if line.is_empty() {
+                cfg.remove_horizontal_line(row);
+            } else {
+                cfg.set_horizontal_line(row, config::HorizontalLine::from(*line));
             }
         }
 
-        if count_cols > 1 {
-            for (&col, line) in &self.verticals {
-                if line.is_empty() {
-                    cfg.remove_vertical_line(col);
-                } else {
-                    cfg.set_vertical_line(col, papergrid::VerticalLine::from(*line));
-                }
+        for (&col, line) in &self.verticals {
+            if line.is_empty() {
+                cfg.remove_vertical_line(col);
+            } else {
+                cfg.set_vertical_line(col, config::VerticalLine::from(*line));
             }
         }
-
-        table.destroy_width_cache();
-        table.destroy_height_cache();
     }
 }
 

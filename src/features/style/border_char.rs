@@ -1,6 +1,10 @@
-use papergrid::records::Records;
-
-use crate::{style::Offset, CellOption, Table};
+use crate::{
+    grid::config::{Entity, GridConfig, Position},
+    records::ExactRecords,
+    records::Records,
+    style::Offset,
+    CellOption,
+};
 
 /// [`BorderChar`] sets a char to a specific location on a horizontal line.
 ///
@@ -56,23 +60,40 @@ impl BorderChar {
 
 impl<R> CellOption<R> for BorderChar
 where
-    R: Records,
+    R: Records + ExactRecords,
 {
-    fn change_cell(&mut self, table: &mut Table<R>, entity: papergrid::Entity) {
-        let offset = self.offset.into();
-        for pos in entity.iter(table.count_rows(), table.count_rows()) {
-            match self.horizontal {
-                true => {
-                    table
-                        .get_config_mut()
-                        .override_horizontal_border(pos, self.c, offset);
-                }
-                false => {
-                    table
-                        .get_config_mut()
-                        .override_vertical_border(pos, self.c, offset);
-                }
-            }
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+        let cells = entity.iter(records.count_rows(), records.count_columns());
+
+        match self.horizontal {
+            true => add_char_horizontal(cfg, self.c, self.offset, cells),
+            false => add_char_vertical(cfg, self.c, self.offset, cells),
         }
+    }
+}
+
+fn add_char_vertical<I: Iterator<Item = Position>>(
+    cfg: &mut GridConfig,
+    c: char,
+    offset: Offset,
+    cells: I,
+) {
+    let offset = offset.into();
+
+    for pos in cells {
+        cfg.override_vertical_border(pos, c, offset);
+    }
+}
+
+fn add_char_horizontal<I: Iterator<Item = Position>>(
+    cfg: &mut GridConfig,
+    c: char,
+    offset: Offset,
+    cells: I,
+) {
+    let offset = offset.into();
+
+    for pos in cells {
+        cfg.override_horizontal_border(pos, c, offset);
     }
 }

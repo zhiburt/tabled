@@ -4,7 +4,7 @@
 
 use papergrid::{
     records::{ExactRecords, RecordCell, Records, RecordsMut},
-    width::CfgWidthFunction,
+    width::CfgWidthFunc,
     Entity,
 };
 
@@ -159,7 +159,7 @@ where
     R: Records + ExactRecords + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
-        let width_fn = CfgWidthFunction::from_cfg(table.get_config());
+        let width_fn = CfgWidthFunc::from_cfg(table.get_config());
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
             let records = table.get_records();
@@ -191,7 +191,7 @@ where
     R: Records + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
-        let width_fn = CfgWidthFunction::from_cfg(table.get_config());
+        let width_fn = CfgWidthFunc::from_cfg(table.get_config());
         let (count_rows, count_cols) = table.shape();
         for pos in entity.iter(count_rows, count_cols) {
             let text = self.clone();

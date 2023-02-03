@@ -6,7 +6,7 @@ use std::marker::PhantomData;
 use papergrid::{
     records::{empty::EmptyRecords, Records, RecordsMut},
     util::string_width_multiline,
-    width::CfgWidthFunction,
+    width::CfgWidthFunc,
     Entity,
 };
 
@@ -97,7 +97,7 @@ where
     R: Records + RecordsMut,
 {
     fn change_cell(&mut self, table: &mut Table<R>, entity: Entity) {
-        let width_ctrl = CfgWidthFunction::from_cfg(table.get_config());
+        let width_ctrl = CfgWidthFunc::from_cfg(table.get_config());
         let width = self.width.measure(table.get_records(), table.get_config());
 
         let (count_rows, count_cols) = table.shape();

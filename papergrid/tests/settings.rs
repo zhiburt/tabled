@@ -1,4 +1,4 @@
-use papergrid::{AlignmentHorizontal, Border, Borders, Entity, Indent, Padding};
+use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent, Padding};
 
 mod util;
 

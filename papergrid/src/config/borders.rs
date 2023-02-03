@@ -90,25 +90,16 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
         }
     }
 
-    pub(crate) fn get_border(
-        &self,
-        pos: Position,
-        count_rows: usize,
-        count_cols: usize,
-    ) -> Border<&T> {
+    pub(crate) fn get_border(&self, pos: Position, shape: (usize, usize)) -> Border<&T> {
         Border {
-            top: self.get_horizontal(pos, count_rows),
-            bottom: self.get_horizontal((pos.0 + 1, pos.1), count_rows),
-            left: self.get_vertical(pos, count_cols),
-            left_top_corner: self.get_intersection(pos, count_rows, count_cols),
-            left_bottom_corner: self.get_intersection((pos.0 + 1, pos.1), count_rows, count_cols),
-            right: self.get_vertical((pos.0, pos.1 + 1), count_cols),
-            right_top_corner: self.get_intersection((pos.0, pos.1 + 1), count_rows, count_cols),
-            right_bottom_corner: self.get_intersection(
-                (pos.0 + 1, pos.1 + 1),
-                count_rows,
-                count_cols,
-            ),
+            top: self.get_horizontal(pos, shape.0),
+            bottom: self.get_horizontal((pos.0 + 1, pos.1), shape.0),
+            left: self.get_vertical(pos, shape.1),
+            left_top_corner: self.get_intersection(pos, shape),
+            left_bottom_corner: self.get_intersection((pos.0 + 1, pos.1), shape),
+            right: self.get_vertical((pos.0, pos.1 + 1), shape.1),
+            right_top_corner: self.get_intersection((pos.0, pos.1 + 1), shape),
+            right_bottom_corner: self.get_intersection((pos.0 + 1, pos.1 + 1), shape),
         }
     }
 
@@ -211,8 +202,7 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
     pub(crate) fn get_intersection(
         &self,
         pos: Position,
-        count_rows: usize,
-        count_cols: usize,
+        (count_rows, count_cols): (usize, usize),
     ) -> Option<&T> {
         let use_top = pos.0 == 0;
         let use_bottom = pos.0 == count_rows;
@@ -494,8 +484,8 @@ mod tests {
         let mut borders = BordersConfig::<char>::default();
         borders.insert_border((0, 0), Border::filled('x'));
 
-        assert_eq!(borders.get_border((0, 0), 10, 10), Border::filled(&'x'));
-        assert_eq!(borders.get_border((0, 0), 0, 0), Border::filled(&'x'));
+        assert_eq!(borders.get_border((0, 0), (10, 10)), Border::filled(&'x'));
+        assert_eq!(borders.get_border((0, 0), (0, 0)), Border::filled(&'x'));
 
         assert!(borders.is_horizontal_set(0, 10));
         assert!(borders.is_horizontal_set(1, 10));
@@ -521,19 +511,19 @@ mod tests {
         borders.insert_border((1, 1), Border::filled('q'));
 
         assert_eq!(
-            borders.get_border((0, 0), 10, 10).copied(),
+            borders.get_border((0, 0), (10, 10)).copied(),
             Border::full('x', 'y', 'x', 'w', 'x', 'w', 'y', 'q')
         );
         assert_eq!(
-            borders.get_border((0, 1), 10, 10).copied(),
+            borders.get_border((0, 1), (10, 10)).copied(),
             Border::full('w', 'q', 'w', 'w', 'w', 'w', 'q', 'q')
         );
         assert_eq!(
-            borders.get_border((1, 0), 10, 10).copied(),
+            borders.get_border((1, 0), (10, 10)).copied(),
             Border::full('y', 'y', 'y', 'q', 'y', 'q', 'y', 'q')
         );
         assert_eq!(
-            borders.get_border((1, 1), 10, 10).copied(),
+            borders.get_border((1, 1), (10, 10)).copied(),
             Border::filled('q')
         );
 
@@ -553,8 +543,8 @@ mod tests {
         borders.insert_border((0, 0), Border::filled('x'));
         borders.set_global('l');
 
-        assert_eq!(borders.get_border((0, 0), 10, 10), Border::filled(&'x'));
-        assert_eq!(borders.get_border((2, 0), 10, 10), Border::filled(&'l'));
+        assert_eq!(borders.get_border((0, 0), (10, 10)), Border::filled(&'x'));
+        assert_eq!(borders.get_border((2, 0), (10, 10)), Border::filled(&'l'));
 
         assert!(borders.is_horizontal_set(0, 10));
         assert!(borders.is_horizontal_set(1, 10));

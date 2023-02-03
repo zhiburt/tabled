@@ -196,17 +196,47 @@ pub fn count_tabs(s: &str) -> usize {
     bytecount::count(s.as_bytes(), b'\t')
 }
 
-/// Splits the string by lines.
-#[cfg(not(feature = "color"))]
-pub fn get_lines(text: &str) -> impl Iterator<Item = Cow<'_, str>> {
-    // we call split but not `lines()` in order to match colored implementation
-    text.split('\n').map(Cow::Borrowed)
+pub struct Lines<'a> {
+    #[cfg(not(feature = "color"))]
+    inner: std::str::Split<'a, char>,
+    #[cfg(feature = "color")]
+    inner: ansi_str::AnsiSplit<'a>,
+}
+
+impl<'a> Iterator for Lines<'a> {
+    type Item = Cow<'a, str>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        #[cfg(not(feature = "color"))]
+        {
+            self.inner.next().map(Cow::Borrowed)
+        }
+
+        #[cfg(feature = "color")]
+        {
+            self.inner.next()
+        }
+    }
 }
 
 /// Splits the string by lines.
-#[cfg(feature = "color")]
-pub fn get_lines(text: &str) -> impl Iterator<Item = Cow<'_, str>> {
-    ansi_str::AnsiStr::ansi_split(text, "\n")
+pub fn get_lines(text: &str) -> Lines<'_> {
+    #[cfg(not(feature = "color"))]
+    {
+        // we call `split()` but not `lines()` in order to match colored implementation
+        // specifically how we treat a traling '\n' character.
+
+        Lines {
+            inner: text.split('\n'),
+        }
+    }
+
+    #[cfg(feature = "color")]
+    {
+        Lines {
+            inner: ansi_str::AnsiStr::ansi_split(text, "\n"),
+        }
+    }
 }
 
 /// Replaces tabs in a string with a given width of spaces.

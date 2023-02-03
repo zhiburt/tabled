@@ -1,4 +1,4 @@
-//! A module which contains a [`WidthFunc`] trait and it's implementation [`CfgWidthFunction`]
+//! A module which contains a [`WidthFunc`] trait and it's implementation [`CfgWidthFunc`]
 
 use crate::{
     util::{string_width_multiline_tab, string_width_tab},
@@ -30,17 +30,17 @@ where
 ///
 /// [`Grid`]: crate::Grid
 #[derive(Debug, Default, Clone)]
-pub struct CfgWidthFunction {
+pub struct CfgWidthFunc {
     tab_width: usize,
 }
 
-impl CfgWidthFunction {
-    /// Creates a [`CfgWidthFunction`] from [`GridConfig`].
+impl CfgWidthFunc {
+    /// Creates a [`CfgWidthFunc`] from [`GridConfig`].
     pub fn from_cfg(cfg: &GridConfig) -> Self {
         Self::new(cfg.get_tab_width())
     }
 
-    /// Creates a [`CfgWidthFunction`] with a tab size.
+    /// Creates a [`CfgWidthFunc`] with a tab size.
     pub fn new(tab_size: usize) -> Self {
         Self {
             tab_width: tab_size,
@@ -48,7 +48,7 @@ impl CfgWidthFunction {
     }
 }
 
-impl WidthFunc for CfgWidthFunction {
+impl WidthFunc for CfgWidthFunc {
     fn width(&self, text: &str) -> usize {
         string_width_tab(text, self.tab_width)
     }

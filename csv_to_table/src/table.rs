@@ -17,7 +17,7 @@ where
     pub fn new(reader: Reader<R>) -> Self {
         let mut reader = reader;
         let t = reader.into_records();
-        t.next();
+        let a = t.next().unwrap().unwrap();
 
         Self {
             reader: Cell::new(Some(reader)),
