@@ -1,3 +1,5 @@
+// todo: remove it. I believe it's unnessary and not usefull.
+
 use std::borrow::Cow;
 
 use crate::records::IterRecords;
@@ -18,11 +20,6 @@ use crate::{Table, Tabled};
 /// println!("{}", table);
 /// ```
 pub trait TableIteratorExt {
-    /// A underline [`Records`]
-    ///
-    /// [`Records`]: crate::papergrid::records::Records
-    type Records;
-
     /// Returns a [`Table`] instance from a given type
     fn table(self) -> Table;
 }
@@ -32,8 +29,6 @@ where
     I: IntoIterator<Item = T>,
     T: Tabled,
 {
-    type Records = IterRecords<Vec<Vec<Cow<'static, str>>>>;
-
     fn table(self) -> Table {
         Table::new(self)
     }

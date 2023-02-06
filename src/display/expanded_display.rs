@@ -48,7 +48,9 @@
 //! assert_eq!(table, expected);
 //! ```
 
-use papergrid::util::{cut_str_basic, string_width};
+use std::borrow::Cow;
+
+use papergrid::util::string::string_width;
 
 use crate::Tabled;
 
@@ -276,4 +278,43 @@ fn truncate(text: &mut String, max: usize, suffix: &str) {
     if !suffix.is_empty() && cut_was_done {
         text.push_str(suffix);
     }
+}
+
+fn cut_str_basic(s: &str, width: usize) -> Cow<'_, str> {
+    const REPLACEMENT: char = '\u{FFFD}';
+
+    let (length, count_unknowns, _) = split_at_pos(s, width);
+    let buf = &s[..length];
+    if count_unknowns == 0 {
+        return Cow::Borrowed(buf);
+    }
+
+    let mut buf = buf.to_owned();
+    buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+
+    Cow::Owned(buf)
+}
+
+fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
+    let mut length = 0;
+    let mut i = 0;
+    for c in s.chars() {
+        if i == pos {
+            break;
+        };
+
+        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+
+        // We cut the chars which takes more then 1 symbol to display,
+        // in order to archive the necessary width.
+        if i + c_width > pos {
+            let count = pos - i;
+            return (length, count, c.len_utf8());
+        }
+
+        i += c_width;
+        length += c.len_utf8();
+    }
+
+    (length, 0, 0)
 }

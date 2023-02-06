@@ -1,13 +1,13 @@
 use tabled::{
     object::{Cell, Segment},
-    Alignment, ModifyObject, Span, Style, TableIteratorExt,
+    Alignment, Modify, Span, Style, TableIteratorExt,
 };
 
 fn main() {
     let data = [["just 1 column"; 5]; 5];
 
-    let h_span = |r, c, span| Cell(r, c).modify().with(Span::column(span));
-    let v_span = |r, c, span| Cell(r, c).modify().with(Span::row(span));
+    let h_span = |r, c, span| Modify::new(Cell(r, c)).with(Span::column(span));
+    let v_span = |r, c, span| Modify::new(Cell(r, c)).with(Span::row(span));
 
     let table = data
         .table()
@@ -20,7 +20,7 @@ fn main() {
         .with(h_span(3, 1, 2))
         .with(Style::modern())
         .with(Style::correct_spans())
-        .with(Segment::all().modify().with(Alignment::center_vertical()))
+        .with(Modify::new(Segment::all()).with(Alignment::center_vertical()))
         .to_string();
 
     println!("{}", table);

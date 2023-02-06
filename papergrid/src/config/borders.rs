@@ -322,7 +322,7 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
 }
 
 /// Borders represents a Table frame with horizontal and vertical split lines.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Borders<T = char> {
     /// A top horizontal on the frame.
     pub top: Option<T>,
@@ -361,6 +361,24 @@ pub struct Borders<T = char> {
 }
 
 impl<T> Borders<T> {
+    pub const fn is_empty(&self) -> bool {
+        !(self.top.is_some()
+            || self.top_left.is_some()
+            || self.top_right.is_some()
+            || self.top_intersection.is_some()
+            || self.bottom.is_some()
+            || self.bottom_left.is_some()
+            || self.bottom_right.is_some()
+            || self.bottom_intersection.is_some()
+            || self.horizontal.is_some()
+            || self.horizontal_left.is_some()
+            || self.horizontal_right.is_some()
+            || self.vertical.is_some()
+            || self.vertical_left.is_some()
+            || self.vertical_right.is_some()
+            || self.intersection.is_some())
+    }
+
     /// Verifies if borders has left line set on the frame.
     pub const fn has_left(&self) -> bool {
         self.vertical_left.is_some()

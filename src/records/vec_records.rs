@@ -1,9 +1,11 @@
-use std::mem;
+use std::{borrow::Cow, mem};
 
 use crate::{
     grid::config::Position,
     records::{ExactRecords, IntoRecords, Records, Resizable},
 };
+
+use super::RecordsMut;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VecRecords<T> {
@@ -128,5 +130,21 @@ where
 
     fn insert_row(&mut self, row: usize) {
         self.data.insert(row, vec![T::default(); self.shape.1]);
+    }
+}
+
+// impl<T> RecordsMut for VecRecords<T> {
+//     type Text = T;
+
+//     fn set(&mut self, pos: Position, text: Self::Text) {
+//         self.data[pos.0][pos.1] = text;
+//     }
+// }
+
+impl RecordsMut for VecRecords<Cow<'static, str>> {
+    type Text = String;
+
+    fn set(&mut self, pos: Position, text: Self::Text) {
+        self.data[pos.0][pos.1] = Cow::Owned(text);
     }
 }

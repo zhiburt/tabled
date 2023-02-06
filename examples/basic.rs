@@ -3,7 +3,7 @@
 
 use std::iter::FromIterator;
 
-use tabled::{object::Rows, Alignment, ModifyObject, Style, Table, Tabled};
+use tabled::{object::Rows, Alignment, Modify, Style, Table, Tabled};
 
 #[derive(Debug, Tabled)]
 struct Distribution {
@@ -32,7 +32,7 @@ fn main() {
     let mut table = Table::from_iter(&data);
     table
         .with(Style::markdown())
-        .with(Rows::first().modify().with(Alignment::center()));
+        .with(Modify::new(Rows::first()).with(Alignment::center()));
 
     println!("{}", table);
 }

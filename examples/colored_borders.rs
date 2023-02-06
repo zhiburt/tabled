@@ -8,10 +8,11 @@ use std::iter::FromIterator;
 use owo_colors::OwoColorize;
 
 use tabled::{
+    color::Color,
     object::Segment,
     style::Style,
-    style::{BorderColored, RawStyle, Symbol},
-    Highlight, Table, Tabled,
+    style::{BorderColor, RawStyle, Symbol},
+    Border, Highlight, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -40,23 +41,25 @@ fn main() {
         CodeEditor::new("Neovim", "2015", "Vim community"),
     ];
 
-    let mut style = RawStyle::from(Style::extended()).colored();
-    style.set_horizontal(Some(Symbol::ansi("═".magenta().to_string()).unwrap()));
-    style.set_vertical(Some(Symbol::ansi("║".cyan().to_string()).unwrap()));
+    let mut style = RawStyle::from(Style::extended());
+    style.set_color_top(Color::FG_RED);
+    style.set_color_bottom(Color::FG_CYAN);
+    style.set_color_left(Color::FG_BLUE);
+    style.set_color_right(Color::FG_GREEN);
+    style.set_color_corner_top_left(Color::FG_BLUE);
+    style.set_color_corner_top_right(Color::FG_RED);
+    style.set_color_corner_bottom_left(Color::FG_CYAN);
+    style.set_color_corner_bottom_right(Color::FG_GREEN);
+    style.set_color_intersection_bottom(Color::FG_CYAN);
+    style.set_color_intersection_top(Color::FG_RED);
+    style.set_color_intersection_right(Color::FG_GREEN);
+    style.set_color_intersection_left(Color::FG_BLUE);
+    style.set_color_intersection(Color::FG_MAGENTA);
+    style.set_color_horizontal(Color::FG_MAGENTA);
+    style.set_color_vertical(Color::FG_MAGENTA);
 
     let mut table = Table::from_iter(&data);
-    table.with(style).with(Highlight::colored(
-        Segment::all(),
-        BorderColored::default()
-            .top(Symbol::ansi("═".red().to_string()).unwrap())
-            .bottom(Symbol::ansi("═".blue().to_string()).unwrap())
-            .left(Symbol::ansi("║".green().to_string()).unwrap())
-            .right(Symbol::ansi("║".yellow().to_string()).unwrap())
-            .top_left_corner(Symbol::ansi("╔".red().to_string()).unwrap())
-            .top_right_corner(Symbol::ansi("╗".red().to_string()).unwrap())
-            .bottom_left_corner(Symbol::ansi("╚".blue().to_string()).unwrap())
-            .bottom_right_corner(Symbol::ansi("╝".blue().to_string()).unwrap()),
-    ));
+    table.with(style);
 
     println!("{}", table);
 }

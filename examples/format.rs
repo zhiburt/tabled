@@ -6,7 +6,7 @@
 use tabled::{
     format::Format,
     object::{Columns, Object, Rows},
-    ModifyObject, Style, Table, Tabled,
+    Modify, Style, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -38,15 +38,12 @@ fn main() {
     let table = Table::new(data)
         .with(Style::psql())
         .with(
-            Rows::first()
-                .modify()
-                .with(Format::with_index(|_, (_, column)| column.to_string())),
+            Modify::new(Rows::first())
+                .with(Format::positioned(|_, (_, column)| column.to_string())),
         )
         .with(
-            Columns::first()
-                .not(Rows::first())
-                .modify()
-                .with(|s: &str| format!("{}...", s)),
+            Modify::new(Columns::first().not(Rows::first()))
+                .with(Format::content(|s| format!("{}...", s))),
         )
         .to_string();
 

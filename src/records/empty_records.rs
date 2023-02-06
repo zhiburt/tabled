@@ -18,6 +18,12 @@ impl EmptyRecords {
     }
 }
 
+impl From<(usize, usize)> for EmptyRecords {
+    fn from((count_rows, count_columns): (usize, usize)) -> Self {
+        Self::new(count_rows, count_columns)
+    }
+}
+
 impl Records for EmptyRecords {
     type Iter = Take<Repeat<Take<Repeat<&'static str>>>>;
 

@@ -1,7 +1,7 @@
 //! The module contains a [`Grid`] structure.
 
 use std::{
-    borrow::{Borrow, Cow},
+    borrow::Cow,
     cmp,
     collections::BTreeMap,
     fmt::{self, Display, Write},
@@ -14,10 +14,12 @@ use crate::{
         AlignmentHorizontal, AlignmentVertical, EntityMap, Formatting, GridConfig, Indent, Offset,
         Padding, PaddingColor, Position,
     },
-    dimension::{CfgWidthFunc, Dimension, WidthFunc},
+    dimension::Dimension,
     grid_projection::GridProjection,
-    records::{IntoRecords, Records},
-    util::{count_lines, get_lines, spplit_str_at, string_trim, string_width, Lines},
+    records::Records,
+    util::string::{
+        count_lines, get_lines, string_width, string_width_multiline_tab, string_width_tab, Lines,
+    },
 };
 
 const DEFAULT_SPACE_CHAR: char = ' ';
@@ -269,11 +271,8 @@ where
     D: Dimension,
     C: Colors,
 {
-    let wctrl = CfgWidthFunc::from_cfg(cfg);
-
-    collect_columns(buf, columns, cfg, colors, dimension, &wctrl, height, row);
-
-    print_columns_lines(f, buf, height, cfg, &wctrl, line, row, totalh, shape)?;
+    collect_columns(buf, columns, cfg, colors, dimension, height, row);
+    print_columns_lines(f, buf, height, cfg, line, row, totalh, shape)?;
 
     buf.clear();
 
@@ -298,8 +297,6 @@ where
     D: Dimension,
     C: Colors,
 {
-    let width_ctrl = CfgWidthFunc::from_cfg(cfg);
-
     print_margin_left(f, cfg, line, totalh)?;
 
     for (col, cell) in columns.enumerate() {
@@ -307,7 +304,7 @@ where
 
         let width = dims.get_width(col);
         let color = colors.and_then(|c| c.get_color((row, col)));
-        print_single_line_column(f, cell.as_ref(), cfg, width, color, (row, col), &width_ctrl)?;
+        print_single_line_column(f, cell.as_ref(), cfg, width, color, (row, col))?;
     }
 
     print_vertical_char(f, cfg, (row, shape.1), line, shape)?;
@@ -317,14 +314,13 @@ where
     Ok(())
 }
 
-fn print_single_line_column<F: Write, C: Color, W: WidthFunc>(
+fn print_single_line_column<F: Write, C: Color>(
     f: &mut F,
     text: &str,
     cfg: &GridConfig,
     width: usize,
     color: Option<&C>,
     pos: Position,
-    width_ctrl: &W,
 ) -> Result<(), fmt::Error> {
     let pos = pos.into();
     let pad = cfg.get_padding(pos);
@@ -334,10 +330,14 @@ fn print_single_line_column<F: Write, C: Color, W: WidthFunc>(
 
     let (text, text_width) = if formatting.horizontal_trim && !text.is_empty() {
         let text = string_trim(text);
-        let width = width_ctrl.width(&text);
+        let width = string_width_tab(&text, cfg.get_tab_width());
+
         (text, width)
     } else {
-        (Cow::Borrowed(text), width_ctrl.width_multiline(text))
+        let text = Cow::Borrowed(text);
+        let width = string_width_multiline_tab(&text, cfg.get_tab_width());
+
+        (text, width)
     };
 
     let alignment = *cfg.get_alignment_horizontal(pos);
@@ -360,7 +360,6 @@ fn print_columns_lines<S, F: Write, C: Color>(
     columns: &mut [CellLines<'_, S, C>],
     height: usize,
     cfg: &GridConfig,
-    width_ctrl: &CfgWidthFunc,
     line: usize,
     row: usize,
     totalh: Option<usize>,
@@ -373,7 +372,7 @@ fn print_columns_lines<S, F: Write, C: Color>(
 
         for (col, cell) in columns.iter_mut().enumerate() {
             print_vertical_char(f, cfg, (row, col), line, shape)?;
-            cell.display(f, width_ctrl, cfg.get_tab_width())?;
+            cell.display(f, cfg.get_tab_width())?;
         }
 
         print_vertical_char(f, cfg, (row, shape.1), line, shape)?;
@@ -394,7 +393,7 @@ fn collect_columns<'a, I, D, C>(
     cfg: &'a GridConfig,
     colors: Option<&'a C>,
     dimension: &D,
-    width_ctrl: &CfgWidthFunc,
+
     height: usize,
     row: usize,
 ) where
@@ -409,7 +408,6 @@ fn collect_columns<'a, I, D, C>(
 
         CellLines::new(
             cell,
-            width_ctrl,
             width,
             height,
             cfg.get_formatting(pos),
@@ -417,6 +415,7 @@ fn collect_columns<'a, I, D, C>(
             cfg.get_padding_color(pos),
             *cfg.get_alignment_horizontal(pos),
             *cfg.get_alignment_vertical(pos),
+            cfg.get_tab_width(),
             colors.and_then(|c| c.get_color((row, col))),
         )
     });
@@ -491,8 +490,7 @@ fn print_split_line<F: Write, D: Dimension>(
         }
 
         if i >= override_text_pos && !override_text.is_empty() {
-            let width_ctrl = CfgWidthFunc::from_cfg(cfg);
-            let text_width = width_ctrl.width(&override_text);
+            let text_width = string_width_tab(&override_text, cfg.get_tab_width());
             let print_width = cmp::min(text_width, width);
             let (c, rest) = spplit_str_at(&override_text, print_width);
             f.write_str(&c)?;
@@ -607,15 +605,17 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
         row += 1;
     }
 
-    if has_horizontal(cfg, 3, 3) {
-        f.write_char('\n')?;
-        let shape = (2, count_columns);
-        print_horizontal_line(f, cfg, line, totalh, dims, 1, total_width, shape)?;
-    }
+    if row > 0 {
+        if has_horizontal(cfg, row, row) {
+            f.write_char('\n')?;
+            let shape = (row, count_columns);
+            print_horizontal_line(f, cfg, line, totalh, dims, row, total_width, shape)?;
+        }
 
-    if cfg.get_margin().bottom.size > 0 {
-        f.write_char('\n')?;
-        print_margin_bottom(f, cfg, total_width_with_margin)?;
+        if cfg.get_margin().bottom.size > 0 {
+            f.write_char('\n')?;
+            print_margin_bottom(f, cfg, total_width_with_margin)?;
+        }
     }
 
     Ok(())
@@ -681,7 +681,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             // so. we just need to use line from other cell.
 
             let (cell, _, _) = columns.get_mut(&col).unwrap();
-            cell.display(f, &CfgWidthFunc::from_cfg(cfg), cfg.get_tab_width())?;
+            cell.display(f, cfg.get_tab_width())?;
 
             // We need to use a correct right split char.
             let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
@@ -709,11 +709,12 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             }
 
             if i >= override_text_pos && !override_text.is_empty() {
-                let width_ctrl = CfgWidthFunc::from_cfg(cfg);
-                let text_width = width_ctrl.width(&override_text);
+                let text_width = string_width_tab(&override_text, cfg.get_tab_width());
                 let print_width = cmp::min(text_width, width);
+
                 let (c, rest) = spplit_str_at(&override_text, print_width);
                 f.write_str(&c)?;
+
                 override_text = rest.into_owned();
                 if string_width(&override_text) == 0 {
                     override_text = String::new()
@@ -783,7 +784,6 @@ where
     D: Dimension,
     C: Colors,
 {
-    let width_ctrl = CfgWidthFunc::from_cfg(cfg);
     let gp = GridProjection::with_shape(cfg, shape);
 
     let mut skip = 0;
@@ -816,7 +816,6 @@ where
         let pos = (row, col).into();
         let cell = CellLines::new(
             cell,
-            &width_ctrl,
             width,
             height,
             cfg.get_formatting(pos),
@@ -824,6 +823,7 @@ where
             cfg.get_padding_color(pos),
             *cfg.get_alignment_horizontal(pos),
             *cfg.get_alignment_vertical(pos),
+            cfg.get_tab_width(),
             colors.and_then(|c| c.get_color((row, col))),
         );
 
@@ -837,7 +837,7 @@ where
 
         for (&col, (cell, _, _)) in columns.iter_mut() {
             print_vertical_char(f, cfg, (row, col), line, shape)?;
-            cell.display(f, &width_ctrl, cfg.get_tab_width())?;
+            cell.display(f, cfg.get_tab_width())?;
         }
 
         print_vertical_char(f, cfg, (row, shape.1), line, shape)?;
@@ -890,9 +890,8 @@ struct CellLines<'a, S, C> {
 }
 
 impl CellLines<'_, (), ()> {
-    fn new<'a, W: WidthFunc, C: Color, A: AsRef<str>>(
+    fn new<'a, C: Color, A: AsRef<str>>(
         text: A,
-        width_ctrl: &W,
         maxwidth: usize,
         height: usize,
         formatting: &'a Formatting,
@@ -900,13 +899,20 @@ impl CellLines<'_, (), ()> {
         padding_color: &'a PaddingColor<'static>,
         alignmenth: AlignmentHorizontal,
         alignmentv: AlignmentVertical,
+        tab_width: usize,
         color: Option<&'a C>,
     ) -> CellLines<'a, A, C> {
         let (cell_height, vindent) = get_top_bottom_skip(text.as_ref(), formatting);
         let top_indent = top_indent(padding, alignmentv, cell_height, height);
-        let width = maxwidth - padding.left.size - padding.right.size;
-        let indent =
-            get_left_right_indent(text.as_ref(), width_ctrl, formatting, alignmenth, width);
+
+        let mut indent = None;
+        if !formatting.allow_lines_alignment {
+            let available_width = maxwidth - padding.left.size - padding.right.size;
+            let trim = formatting.horizontal_trim;
+            let hindent =
+                get_left_right_indent(text.as_ref(), alignmenth, trim, tab_width, available_width);
+            indent = Some(hindent);
+        }
 
         let mut lines = LinesIter::new(text);
         if let Some(top) = vindent {
@@ -933,12 +939,7 @@ impl<S, C> CellLines<'_, S, C>
 where
     C: Color,
 {
-    fn display<F: Write, W: WidthFunc>(
-        &mut self,
-        f: &mut F,
-        width_ctrl: &W,
-        tab_width: usize,
-    ) -> fmt::Result {
+    fn display<F: Write>(&mut self, f: &mut F, tab_width: usize) -> fmt::Result {
         // todo: fix bottom/top padding and indent symbol issue
 
         let pad = &self.padding;
@@ -965,7 +966,7 @@ where
             line
         };
 
-        let line_width = width_ctrl.width(&line);
+        let line_width = string_width_tab(&line, tab_width);
 
         let (left, right) = if formatting.allow_lines_alignment {
             calculate_indent(alignment, line_width, available_width)
@@ -1033,30 +1034,26 @@ fn get_top_bottom_skip(cell: &str, format: &Formatting) -> (usize, Option<usize>
     }
 }
 
-fn get_left_right_indent<W: WidthFunc>(
+fn get_left_right_indent(
     cell: &str,
-    width_ctrl: &W,
-    formatting: &Formatting,
     alignment: AlignmentHorizontal,
-    maxwidth: usize,
-) -> Option<usize> {
-    if formatting.allow_lines_alignment {
-        return None;
-    }
-
-    let width = if formatting.horizontal_trim {
+    trim: bool,
+    tab_width: usize,
+    available: usize,
+) -> usize {
+    let cell_width = if trim {
         get_lines(cell)
             .into_iter()
-            .map(|line| width_ctrl.width(line.trim()))
+            .map(|line| string_width_tab(line.trim(), tab_width))
             .max()
             .unwrap_or(0)
     } else {
-        width_ctrl.width_multiline(cell)
+        string_width_multiline_tab(cell, tab_width)
     };
 
-    let (left, _) = calculate_indent(alignment, width, maxwidth);
+    let (left, _) = calculate_indent(alignment, cell_width, available);
 
-    Some(left)
+    left
 }
 
 fn print_text<F: Write>(f: &mut F, s: &str, tab: usize, clr: Option<impl Color>) -> fmt::Result {
@@ -1449,6 +1446,89 @@ fn convert_count_rows(row: usize, is_last: bool) -> usize {
         row + 1
     } else {
         usize::MAX
+    }
+}
+
+/// Get string at
+///
+/// BE AWARE: width is expected to be in bytes.
+fn spplit_str_at(text: &str, at: usize) -> (Cow<'_, str>, Cow<'_, str>) {
+    #[cfg(feature = "color")]
+    {
+        const REPLACEMENT: char = '\u{FFFD}';
+
+        let stripped = ansi_str::AnsiStr::ansi_strip(text);
+        let (length, count_unknowns, _) = split_at_pos(&stripped, at);
+
+        let mut buf = ansi_str::AnsiStr::ansi_cut(text, ..length);
+
+        if count_unknowns > 0 {
+            let mut b = buf.into_owned();
+            b.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+            buf = Cow::Owned(b);
+        }
+
+        let rest = ansi_str::AnsiStr::ansi_cut(text, length..);
+
+        (buf, rest)
+    }
+    #[cfg(not(feature = "color"))]
+    {
+        const REPLACEMENT: char = '\u{FFFD}';
+
+        let (length, count_unknowns, _) = split_at_pos(text, at);
+        let buf = &text[..length];
+        let rest = &text[length..];
+        if count_unknowns == 0 {
+            return (Cow::Borrowed(buf), Cow::Borrowed(rest));
+        }
+
+        let mut buf = buf.to_owned();
+        buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
+
+        return (Cow::Owned(buf), Cow::Borrowed(rest));
+    }
+}
+
+/// The function splits a string in the position and
+/// returns a exact number of bytes before the position and in case of a split in an unicode grapheme
+/// a width of a character which was tried to be splited in.
+///
+/// BE AWARE: pos is expected to be in bytes.
+fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
+    let mut length = 0;
+    let mut i = 0;
+    for c in s.chars() {
+        if i == pos {
+            break;
+        };
+
+        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+
+        // We cut the chars which takes more then 1 symbol to display,
+        // in order to archive the necessary width.
+        if i + c_width > pos {
+            let count = pos - i;
+            return (length, count, c.len_utf8());
+        }
+
+        i += c_width;
+        length += c.len_utf8();
+    }
+
+    (length, 0, 0)
+}
+
+/// Trims a string.
+fn string_trim(text: &str) -> Cow<'_, str> {
+    #[cfg(feature = "color")]
+    {
+        ansi_str::AnsiStr::ansi_trim(text)
+    }
+
+    #[cfg(not(feature = "color"))]
+    {
+        text.trim().into()
     }
 }
 

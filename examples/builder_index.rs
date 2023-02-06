@@ -29,10 +29,13 @@ fn main() {
         Distribution::new("Debian", "None", true, true),
     ];
 
-    let mut builder = Table::builder(&data).index();
-    builder.set_index(0).set_name(None).transpose();
+    let mut table = Table::builder(&data)
+        .index()
+        .index(0)
+        .name(None)
+        .transpose()
+        .build();
 
-    let mut table = builder.build();
     table.with(Style::modern());
 
     println!("{}", table);

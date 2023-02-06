@@ -27,7 +27,7 @@ macro_rules! col {
         let mut builder = $crate::builder::Builder::default();
 
         $(
-            builder.add_record([$table.to_string()]);
+            builder.push_record([$table.to_string()]);
         )*
 
         builder.build()
@@ -41,7 +41,7 @@ macro_rules! col {
         if n > 0 {
             let t = $table.to_string();
             for _ in 0..$N {
-                builder.add_record([t.clone()]);
+                builder.push_record([t.clone()]);
             }
         }
 

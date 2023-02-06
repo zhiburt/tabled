@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example concat`
 
-use tabled::{object::Segment, Alignment, Concat, ModifyObject, Style, Table, Tabled};
+use tabled::{object::Segment, Alignment, Concat, Modify, Style, Table, Tabled};
 
 #[derive(Debug, Tabled)]
 struct Weather {
@@ -44,7 +44,7 @@ fn main() {
     weather_table
         .with(Concat::horizontal(location_table))
         .with(Style::empty())
-        .with(Segment::all().modify().with(Alignment::left()));
+        .with(Modify::new(Segment::all()).with(Alignment::left()));
 
     println!("{}", weather_table);
 }

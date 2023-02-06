@@ -9,9 +9,10 @@ use owo_colors::OwoColorize;
 
 use tabled::{
     color::Color,
+    format::Format,
     object::{Columns, Rows},
-    style::{BorderColored, Style, Symbol},
-    ModifyObject, Table, Tabled,
+    style::{BorderColor, Style, Symbol},
+    Modify, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -40,18 +41,20 @@ fn main() {
         Bsd::new("OpenBSD", 1995, true),
     ];
 
-    let red = |s: &str| s.red().on_bright_white().to_string();
-    let blue = |s: &str| s.blue().to_string();
-    let green = |s: &str| s.green().to_string();
-    let red_split = |c: char| Symbol::ansi(c.red().to_string()).unwrap();
-    let purple_split = |c: char| Symbol::ansi(c.purple().to_string()).unwrap();
+    let red = Format::content(|s| s.red().on_bright_white().to_string());
+    let blue = Format::content(|s| s.blue().to_string());
+    let green = Format::content(|s| s.green().to_string());
+
+    let color_red = Color::try_from(' '.red().to_string()).unwrap();
+    let color_purple = Color::try_from(' '.purple().to_string()).unwrap();
+
     let yellow_color = Color::try_from(' '.yellow().to_string()).unwrap();
 
-    let first_row_style = Rows::first().modify().with(
-        BorderColored::default()
-            .bottom(red_split('-'))
-            .bottom_left_corner(purple_split('+'))
-            .bottom_right_corner(purple_split('+')),
+    let first_row_style = Modify::new(Rows::first()).with(
+        BorderColor::default()
+            .bottom(color_red)
+            .corner_bottom_left(color_purple.clone())
+            .corner_bottom_right(color_purple),
     );
 
     let mut table = Table::new(&data);
@@ -59,9 +62,9 @@ fn main() {
         .with(Style::psql())
         .with(yellow_color)
         .with(first_row_style)
-        .with(Columns::single(0).modify().with(red))
-        .with(Columns::single(1).modify().with(green))
-        .with(Columns::single(2).modify().with(blue));
+        .with(Modify::new(Columns::single(0)).with(red))
+        .with(Modify::new(Columns::single(1)).with(green))
+        .with(Modify::new(Columns::single(2)).with(blue));
 
     println!("{}", table);
 }

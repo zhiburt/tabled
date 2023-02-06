@@ -9,10 +9,9 @@ use std::{
 
 use crate::{
     config::{Entity, GridConfig, Position},
-    dimension::width_func::{CfgWidthFunc, WidthFunc},
     grid_projection::GridProjection,
     records::Records,
-    util::count_lines,
+    util::string::{count_lines, string_width_multiline_tab},
 };
 
 use super::Dimension;
@@ -68,7 +67,6 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
     let mut vspans = HashMap::new();
     let mut hspans = HashMap::new();
 
-    let wctrl = CfgWidthFunc::from_cfg(cfg);
     let gp = GridProjection::with_shape(cfg, shape);
 
     for (row, columns) in records.iter_rows().into_iter().enumerate() {
@@ -82,7 +80,7 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
 
             let cell = cell.as_ref();
 
-            let width = get_cell_width(cell, cfg, pos, &wctrl);
+            let width = get_cell_width(cell, cfg, pos);
 
             let vspan = gp.get_span_column(pos);
             let has_vspan = !matches!(vspan, None | Some(1));
@@ -239,9 +237,9 @@ fn adjust_column_range(
     inc_range(widths, max_span_width - range_width, start, end);
 }
 
-fn get_cell_width(text: &str, cfg: &GridConfig, pos: Position, wctrl: &CfgWidthFunc) -> usize {
+fn get_cell_width(text: &str, cfg: &GridConfig, pos: Position) -> usize {
     let padding = get_cell_padding(cfg, pos); // todo: remove it...
-    let width = wctrl.width_multiline(text);
+    let width = string_width_multiline_tab(text, cfg.get_tab_width());
     width + padding
 }
 
@@ -303,8 +301,6 @@ fn build_width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
     let shape = (usize::MAX, count_columns);
     let gp = GridProjection::with_shape(cfg, shape);
 
-    let wctrl = CfgWidthFunc::from_cfg(cfg);
-
     let mut widths = vec![0; count_columns];
     let mut vspans = HashMap::new();
 
@@ -315,7 +311,7 @@ fn build_width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
                 continue;
             }
 
-            let width = get_cell_width(cell.as_ref(), cfg, pos, &wctrl);
+            let width = get_cell_width(cell.as_ref(), cfg, pos);
 
             let has_vspan = !matches!(gp.get_span_column(pos), None | Some(1));
             if has_vspan {

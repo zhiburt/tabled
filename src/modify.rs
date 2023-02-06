@@ -92,21 +92,3 @@ where
         self.s2.change(records, cfg, entity);
     }
 }
-
-/// An utility trait for a different interface of [`Modify`] creation.
-///
-/// # Example
-///
-/// ```
-/// # use tabled::{object::Cell, Modify, ModifyObject};
-/// // 1st way to create modification container
-/// let m = Modify::new(Cell(1, 1));
-/// // 2nd way to create modification container
-/// let m = Cell(1, 1).modify();
-/// ```
-pub trait ModifyObject<R>: Object<R> + Sized {
-    /// Returns a Modify container of [`Object`]
-    fn modify(self) -> Modify<Self> {
-        Modify::new(self)
-    }
-}

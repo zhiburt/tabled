@@ -33,7 +33,7 @@ fn main() {
         [duck.to_string()],
     ])
     .build();
-    table.with(Style::ascii().off_horizontal()).with(
+    table.with(Style::ascii().remove_horizontal()).with(
         Modify::new(Segment::all())
             .with(Padding::new(5, 5, 0, 0))
             .with(Alignment::center()),
@@ -43,40 +43,48 @@ fn main() {
 }
 
 fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> Table {
-    let mut table_fields = Builder::from_iter(fields.iter().map(|(field, t, d)| {
-        if d.is_empty() {
-            [format!("+{}: {}", field, t)]
-        } else {
-            [format!("+{}: {} = {:?}", field, t, d)]
-        }
-    }))
-    .build();
-    table_fields.with(Style::ascii().off_horizontal().off_vertical());
+    let fields = fields
+        .iter()
+        .map(|(field, t, d)| [format_field(d, field, t)]);
+    let mut table_fields = Builder::from_iter(fields).build();
+    table_fields.with(Style::ascii().remove_horizontal().remove_vertical());
 
-    let mut table_methods =
-        Builder::from_iter(methods.iter().map(|method| [format!("+{}()", method)])).build();
-    table_methods.with(Style::ascii().off_horizontal().off_vertical());
+    let methods = methods.iter().map(|method| [format_method(method)]);
+    let mut table_methods = Builder::from_iter(methods).build();
+    table_methods.with(Style::ascii().remove_horizontal().remove_vertical());
 
     let (table_fields, table_methods) = make_equal_width(table_fields, table_methods);
 
-    let mut builder = Builder::default();
-    builder
-        .add_record([table_fields.to_string()])
-        .add_record([table_methods.to_string()])
-        .set_columns([name.to_string()]);
+    let mut table = Builder::from_iter([
+        [name.to_string()],
+        [table_fields.to_string()],
+        [table_methods.to_string()],
+    ])
+    .build();
 
-    let mut table = builder.build();
     table
         .with(
             Style::ascii()
                 .horizontals([HorizontalLine::new(1, Style::ascii().get_horizontal())])
-                .off_horizontal()
-                .off_vertical(),
+                .remove_horizontal()
+                .remove_vertical(),
         )
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Rows::first()).with(Alignment::center()));
 
     table
+}
+
+fn format_field(d: &&str, field: &&str, t: &&str) -> String {
+    if d.is_empty() {
+        format!("+{}: {}", field, t)
+    } else {
+        format!("+{}: {} = {:?}", field, t, d)
+    }
+}
+
+fn format_method(method: &str) -> String {
+    format!("+{}()", method)
 }
 
 fn make_equal_width(mut table1: Table, mut table2: Table) -> (Table, Table) {
@@ -87,6 +95,7 @@ fn make_equal_width(mut table1: Table, mut table2: Table) -> (Table, Table) {
 
     let table1_width = table1.to_string().lines().next().unwrap().len();
     let table2_width = table2.to_string().lines().next().unwrap().len();
+
     match table1_width.cmp(&table2_width) {
         std::cmp::Ordering::Less => {
             table1.with(Width::increase(table2_width));

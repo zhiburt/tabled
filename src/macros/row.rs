@@ -26,7 +26,8 @@ macro_rules! row {
     ( $($table:expr), * $(,)? ) => {{
         let mut builder = $crate::builder::Builder::default();
 
-        builder.add_record([ $($table.to_string(),)* ]);
+        let record = [ $($table.to_string(),)* ];
+        builder.push_record(record);
 
         builder.build()
     }};
@@ -36,7 +37,7 @@ macro_rules! row {
         let mut builder = $crate::builder::Builder::default();
 
         let duplicates = vec![$table.to_string(); $N];
-        builder.add_record(duplicates);
+        builder.push_record(duplicates);
 
         builder.build()
     }};

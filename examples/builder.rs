@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example builder`
 
-use tabled::{builder::Builder, object::Rows, Modify, Panel, Style, Width};
+use tabled::{builder::Builder, object::Rows, Modify, Panel, Style, Width, Alignment, Padding};
 
 fn main() {
     let message = r#"The terms "the ocean" or "the sea" used without specification refer to the interconnected body of salt water covering the majority of the Earth's surface"#;
@@ -9,10 +9,9 @@ fn main() {
 
     let oceans = ["Atlantic", "Pacific", "Indian", "Southern", "Arctic"];
 
-    let mut builder = Builder::default();
-    builder.set_columns(["#", "Ocean"]);
+    let mut builder = Builder::default().set_header(["#", "Ocean"]);
     for (i, ocean) in oceans.iter().enumerate() {
-        builder.add_record([i.to_string(), ocean.to_string()]);
+        builder.push_record([i.to_string(), ocean.to_string()]);
     }
 
     let table = builder

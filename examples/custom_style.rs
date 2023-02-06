@@ -33,8 +33,8 @@ fn main() {
     ];
 
     let theme = Style::modern()
-        .off_horizontal()
-        .off_vertical()
+        .remove_horizontal()
+        .remove_vertical()
         .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(None)])
         .verticals([VerticalLine::new(1, Style::modern().get_vertical())]);
 

@@ -30,7 +30,7 @@ members = [
 
 [[example]]
 name = "colored_borders"
-required-features = ["color", "derive"]
+required-features = ["derive"]
 
 [[example]]
 name = "color"
@@ -163,7 +163,7 @@ required-features = ["derive", "color"]
 [features]
 default = ["derive", "macros"]
 derive = ["tabled_derive"]
-color = ["papergrid/color", "ansi-str"]
+color = ["papergrid/color", "ansi-str", "ansitok"]
 macros = []
 
 [dependencies]
@@ -171,6 +171,7 @@ unicode-width = "0.1.9"
 papergrid = { path = "./papergrid" }
 tabled_derive = { version = "0.5.0", optional = true }
 ansi-str = { version = "0.7.2", optional = true }
+ansitok = { version = "0.2.0", optional = true }
 
 [dev-dependencies]
 owo-colors = "3.5.0"

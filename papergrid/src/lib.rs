@@ -73,11 +73,11 @@ mod grid;
 pub mod color;
 pub mod colors;
 pub mod config;
-pub mod grid_projection;
 pub mod dimension;
+pub mod grid_projection;
 pub mod records;
 pub mod util;
 
 pub use self::grid::Grid;
-pub use dimension::{Dimension, ExactDimension};
 pub use config::GridConfig;
+pub use dimension::{Dimension, ExactDimension};

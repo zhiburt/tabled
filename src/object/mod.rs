@@ -8,7 +8,7 @@ mod columns;
 mod frame;
 mod rows;
 mod segment;
-mod util;
+pub(crate) mod util;
 
 use std::{collections::HashSet, marker::PhantomData, ops::RangeBounds};
 

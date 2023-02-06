@@ -1,6 +1,11 @@
 //! This module contains a main table representation of this crate [`Table`].
 
-use std::{borrow::Cow, fmt, iter::FromIterator};
+use std::{
+    borrow::{Borrow, Cow},
+    fmt,
+    iter::FromIterator,
+    ops::Deref,
+};
 
 use papergrid::config::{Formatting, Indent, Padding};
 
@@ -74,7 +79,12 @@ impl Table {
 
         let mut records = vec![header];
         for row in iter.into_iter() {
-            let list = row.fields();
+            let mut list = vec![Cow::Borrowed(""); T::LENGTH];
+            for (col, cell) in row.fields().into_iter().enumerate() {
+                let cell = Cow::Owned(cell.into_owned());
+                list[col] = cell;
+            }
+
             records.push(list);
         }
 
@@ -142,15 +152,15 @@ impl Table {
         let mut records = Vec::new();
         for row in iter {
             let mut list = vec![Cow::Borrowed(""); T::LENGTH];
-            for (text, cell) in row.fields().into_iter().zip(list.iter_mut()) {
-                *cell = text;
+            for (col, cell) in row.fields().into_iter().enumerate() {
+                let cell = Cow::Owned(cell.into_owned());
+                list[col] = cell;
             }
 
             records.push(list);
         }
 
-        let mut b = Builder::from(records);
-        b.set_header(T::headers());
+        let mut b = Builder::from(records).set_header(T::headers());
         b.hint_column_size(T::LENGTH);
 
         b
@@ -195,12 +205,11 @@ impl Table {
 
     /// Returns total widths of a table, including margin and horizontal lines.
     pub fn total_height(&self) -> usize {
-        if !self.dimension.is_complete() {
-            self.dimension.estimate(&self.records, &self.cfg);
-        }
+        let mut dims = TableDimension::from_origin(&self.dimension);
+        dims.estimate(&self.records, &self.cfg);
 
         let gp = GridProjection::new(&self.cfg).count_rows(self.count_rows());
-        let width = gp.total_height(&self.dimension);
+        let width = gp.total_height(&dims);
 
         let margin = self.cfg.get_margin();
 
@@ -208,13 +217,12 @@ impl Table {
     }
 
     /// Returns total widths of a table, including margin and vertical lines.
-    pub fn total_width(&mut self) -> usize {
-        if !self.dimension.is_complete() {
-            self.dimension.estimate(&self.records, &self.cfg);
-        }
+    pub fn total_width(&self) -> usize {
+        let mut dims = TableDimension::from_origin(&self.dimension);
+        dims.estimate(&self.records, &self.cfg);
 
         let gp = GridProjection::new(&self.cfg).count_columns(self.count_columns());
-        let width = gp.total_width(&self.dimension);
+        let width = gp.total_width(&dims);
 
         let margin = self.cfg.get_margin();
 
@@ -224,12 +232,12 @@ impl Table {
 
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut config = use_format_configuration(f, self);
+        let config = use_format_configuration(f, self);
 
         let mut dimension = self.dimension.clone();
         dimension.estimate(&self.records, &config);
 
-        let grid = Grid::new(&self.records, &config, &dimension);
+        let grid = Grid::new(self.records.clone(), &config, &dimension);
 
         write!(f, "{}", grid)
     }
@@ -257,51 +265,6 @@ impl From<Builder> for Table {
     }
 }
 
-fn set_align_table(f: &fmt::Formatter<'_>, cfg: &mut GridConfig) {
-    if let Some(alignment) = f.align() {
-        let alignment = convert_fmt_alignment(alignment);
-        cfg.set_alignment_horizontal(Entity::Global, alignment);
-    }
-}
-
-fn set_width_table<R>(f: &fmt::Formatter<'_>, cfg: &mut GridConfig, table: &Table)
-where
-    for<'a> &'a R: Records,
-{
-    if let Some(width) = f.width() {
-        let total_width = table.total_width();
-        if total_width >= width {
-            return;
-        }
-
-        let mut fill = f.fill();
-        if fill == char::default() {
-            fill = ' ';
-        }
-
-        let available = width - total_width;
-        let alignment = f.align().unwrap_or(fmt::Alignment::Left);
-        let (left, right) = table_padding(alignment, available);
-
-        let mut margin = *cfg.get_margin();
-        margin.left.size += left;
-        margin.right.size += right;
-
-        if (margin.left.size > 0 && margin.left.fill == char::default()) || fill != char::default()
-        {
-            margin.left.fill = fill;
-        }
-
-        if (margin.right.size > 0 && margin.right.fill == char::default())
-            || fill != char::default()
-        {
-            margin.right.fill = fill;
-        }
-
-        cfg.set_margin(margin)
-    }
-}
-
 fn convert_fmt_alignment(alignment: fmt::Alignment) -> AlignmentHorizontal {
     match alignment {
         fmt::Alignment::Left => AlignmentHorizontal::Left,
@@ -322,19 +285,10 @@ fn table_padding(alignment: fmt::Alignment, available: usize) -> (usize, usize) 
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TableDimension<'a> {
     width: Option<Cow<'a, [usize]>>,
     height: Option<Cow<'a, [usize]>>,
-}
-
-impl<'a> Clone for TableDimension<'a> {
-    fn clone(&self) -> Self {
-        Self {
-            width: self.width.as_ref().map(|w| Cow::Borrowed(w.as_ref())),
-            height: self.height.as_ref().map(|h| Cow::Borrowed(h.as_ref())),
-        }
-    }
 }
 
 impl TableDimension<'_> {
@@ -378,6 +332,20 @@ impl TableDimension<'_> {
 
     pub fn force_height_estimation(&mut self) {
         self.height = None;
+    }
+
+    fn from_origin<'a>(origin: &'a TableDimension<'_>) -> TableDimension<'a> {
+        let width = match origin.width.as_deref() {
+            Some(v) => Some(Cow::Borrowed(v)),
+            None => None,
+        };
+
+        let height = match origin.height.as_deref() {
+            Some(v) => Some(Cow::Borrowed(v)),
+            None => None,
+        };
+
+        TableDimension { width, height }
     }
 }
 
@@ -440,7 +408,7 @@ fn configure_grid() -> GridConfig {
     );
     cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Left);
     cfg.set_formatting(Entity::Global, Formatting::new(false, false, false));
-    cfg.set_borders(Style::ascii().get_borders());
+    cfg.set_borders(*Style::ascii().get_borders());
 
     cfg
 }
@@ -459,4 +427,52 @@ fn use_format_configuration<'a>(
     } else {
         Cow::Borrowed(&table.cfg)
     }
+}
+
+fn set_align_table(f: &fmt::Formatter<'_>, cfg: &mut GridConfig) {
+    if let Some(alignment) = f.align() {
+        let alignment = convert_fmt_alignment(alignment);
+        cfg.set_alignment_horizontal(Entity::Global, alignment);
+    }
+}
+
+fn set_width_table(f: &fmt::Formatter<'_>, cfg: &mut GridConfig, table: &Table) {
+    if let Some(width) = f.width() {
+        let total_width = table.total_width();
+        if total_width >= width {
+            return;
+        }
+
+        let mut fill = f.fill();
+        if fill == char::default() {
+            fill = ' ';
+        }
+
+        let available = width - total_width;
+        let alignment = f.align().unwrap_or(fmt::Alignment::Left);
+        let (left, right) = table_padding(alignment, available);
+
+        let mut margin = *cfg.get_margin();
+        margin.left.size += left;
+        margin.right.size += right;
+
+        if (margin.left.size > 0 && margin.left.fill == char::default()) || fill != char::default()
+        {
+            margin.left.fill = fill;
+        }
+
+        if (margin.right.size > 0 && margin.right.fill == char::default())
+            || fill != char::default()
+        {
+            margin.right.fill = fill;
+        }
+
+        cfg.set_margin(margin)
+    }
+}
+
+fn set_width_table2<R>(f: &fmt::Formatter<'_>, cfg: &mut GridConfig, table: &Table)
+where
+    for<'a> &'a R: Records,
+{
 }

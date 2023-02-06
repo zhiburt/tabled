@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use papergrid::{
     config::{Borders, GridConfig, Position},
-    dimension::{CfgWidthFunc, Dimension, ExactDimension},
+    dimension::{Dimension, ExactDimension},
     records::{IterRecords, Records},
     Grid,
 };

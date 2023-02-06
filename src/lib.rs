@@ -237,31 +237,52 @@
 )]
 #![deny(unused_must_use)]
 
-mod features;
-mod modify;
 mod records;
+mod settings;
 mod table;
 mod table_iterator_ext;
 mod tabled;
 
 pub mod builder;
 pub mod display;
+pub mod modify;
 pub mod object;
 
 #[cfg(feature = "macros")]
 #[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
 pub mod macros;
 
+// move features to settings module instead of pub one
+
 pub use crate::{
-    features::style::{self, Border, BorderText, Style},
-    modify::{CellSettingsList, Modify, ModifyList, ModifyObject},
+    modify::Modify,
+    settings::{
+        alignment::{self, Alignment},
+        concat::Concat,
+        disable::Disable,
+        extract::Extract,
+        format, formatting,
+        height::{self, Height},
+        highlight::Highlight,
+        locator,
+        margin::Margin,
+        measurement, merge,
+        padding::Padding,
+        panel::{Footer, Header, Panel},
+        peaker,
+        rotate::Rotate,
+        shadow,
+        span::Span,
+        style::{self, Border, BorderText, Style},
+        width::{self, Width},
+    },
     table::{CellOption, Table, TableOption},
     table_iterator_ext::TableIteratorExt,
     tabled::Tabled,
 };
 
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-pub use crate::features::color;
+pub use crate::settings::color;
 
 pub mod grid {
     pub use papergrid::color;
@@ -269,7 +290,6 @@ pub mod grid {
     pub use papergrid::config;
     pub use papergrid::dimension;
     pub use papergrid::grid_projection;
-    pub use papergrid::util;
     pub use papergrid::Grid;
 }
 

@@ -2,12 +2,8 @@
 use crate::{records::Records, GridConfig};
 
 mod exact_dimension;
-mod width_func;
 
-pub use crate::dimension::{
-    exact_dimension::ExactDimension,
-    width_func::{CfgWidthFunc, WidthFunc},
-};
+pub use crate::dimension::exact_dimension::ExactDimension;
 
 /// Dimension of a [`Grid`]
 ///

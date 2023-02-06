@@ -180,3 +180,24 @@ where
         self.insert(row, vec![T::default(); count_columns]);
     }
 }
+
+/// A [`Grid`] representation of a data set which can be modified.
+///
+/// [`Grid`]: crate::Grid
+pub trait RecordsMut {
+    type Text;
+
+    /// Sets a text to a given cell by index.
+    fn set(&mut self, pos: Position, text: Self::Text);
+}
+
+impl<'a, T> RecordsMut for &'a mut T
+where
+    T: RecordsMut,
+{
+    type Text = T::Text;
+
+    fn set(&mut self, pos: Position, text: Self::Text) {
+        T::set(self, pos, text)
+    }
+}

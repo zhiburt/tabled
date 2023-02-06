@@ -22,7 +22,7 @@ pub struct Border<T = char> {
 impl<T> Border<T> {
     /// This function constructs a cell borders with all sides set.
     #[allow(clippy::too_many_arguments)]
-    pub fn full(
+    pub const fn full(
         top: T,
         bottom: T,
         left: T,
@@ -45,7 +45,7 @@ impl<T> Border<T> {
     }
 
     /// Checks whether any side is set.
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.top.is_none()
             && self.left_top_corner.is_none()
             && self.right_top_corner.is_none()
@@ -61,7 +61,7 @@ impl<T: Copy> Border<T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
     ///
     /// It behaives like [`Border::full`] with the same character set to each side.
-    pub fn filled(c: T) -> Self {
+    pub const fn filled(c: T) -> Self {
         Self::full(c, c, c, c, c, c, c, c)
     }
 }
