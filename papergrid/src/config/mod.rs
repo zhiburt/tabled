@@ -463,6 +463,14 @@ impl GridConfig {
         self.span_rows.get(&pos).copied()
     }
 
+    pub fn clear_span_column(&mut self) {
+        self.span_columns.clear()
+    }
+
+    pub fn clear_span_row(&mut self) {
+        self.span_rows.clear()
+    }
+
     /// Sets off all borders possible on the [`Entity`].
     ///
     /// It doesn't changes globally set borders through [`GridConfig::set_borders`].

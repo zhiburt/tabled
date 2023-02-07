@@ -2,8 +2,11 @@
 //! `cargo run --example highlight`
 
 use tabled::{
+    color::Color,
+    highlight::Highlight,
     object::{Columns, Object, Rows},
-    Border, Highlight, Style, TableIteratorExt, style::BorderColor, color::Color,
+    style::BorderColor,
+    Style, TableIteratorExt,
 };
 
 fn main() {

@@ -13,17 +13,25 @@ fn main() {
     println!("{}", table);
     println!();
 
-    let table_increase_height = table.clone().with(Height::increase(10)).to_string();
+    let table_ = table.clone().with(Height::increase(10)).to_string();
 
     println!("Table increase height to 10\n");
-    println!("{}", table_increase_height);
+    println!("{}", table_);
     println!();
 
-    let table_decrease_height = table
+    let table_ = table
         .clone()
         .with(Height::limit(4).priority::<PriorityMax>())
         .to_string();
 
     println!("Table decrease height to 4\n");
-    println!("{}", table_decrease_height);
+    println!("{}", table_);
+
+    let table_ = table
+        .clone()
+        .with(Height::limit(0).priority::<PriorityMax>())
+        .to_string();
+
+    println!("Table decrease height to 0\n");
+    println!("{}", table_);
 }

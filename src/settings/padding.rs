@@ -60,7 +60,7 @@ impl Padding {
     ///
     /// It uses space(' ') as a default fill character.
     /// To set a custom character you can use [`Self::set_fill`] function.
-    pub fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
+    pub const fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
         let indent = Indent::spaced;
         Self(GridPadding::new(
             indent(left),
@@ -74,13 +74,13 @@ impl Padding {
     ///
     /// It uses space(' ') as a default fill character.
     /// To set a custom character you can use [`Self::set_fill`] function.
-    pub fn zero() -> Self {
+    pub const fn zero() -> Self {
         let indent = Indent::spaced(0);
         Self(GridPadding::new(indent, indent, indent, indent))
     }
 
     /// The function, sets a characters for the padding on an each side.
-    pub fn set_fill(mut self, left: char, right: char, top: char, bottom: char) -> Self {
+    pub const fn fill(mut self, left: char, right: char, top: char, bottom: char) -> Self {
         self.0.left.fill = left;
         self.0.right.fill = right;
         self.0.top.fill = top;

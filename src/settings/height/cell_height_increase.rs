@@ -5,7 +5,8 @@ use crate::{
     measurement::Measurement,
     peaker::Peaker,
     records::{ExactRecords, Records, RecordsMut},
-    CellOption, Height,
+    table::TableDimension,
+    CellOption, Height, TableOption,
 };
 
 use super::TableHeightIncrease;
@@ -63,6 +64,23 @@ where
             let content = add_lines(text, height - cell_height);
             records.set(pos, content);
         }
+    }
+}
+
+impl<R, W> TableOption<R, TableDimension<'static>> for CellHeightIncrease<W>
+where
+    W: Measurement<Height>,
+    R: Records + ExactRecords,
+    for<'a> &'a R: Records,
+{
+    fn change(
+        &mut self,
+        records: &mut R,
+        cfg: &mut GridConfig,
+        dims: &mut TableDimension<'static>,
+    ) {
+        let height = self.height.measure(&*records, cfg);
+        TableHeightIncrease::new(height).change(records, cfg, dims)
     }
 }
 

@@ -80,13 +80,13 @@ fn main() {
 
     println!("Refinished segment");
 
-    let highlight = |s: &str| {
+    let highlight = tabled::format::Format::content(|s: &str| {
         if s == "Outstanding" {
             format!("+{}+", s)
         } else {
             s.to_string()
         }
-    };
+    });
 
     let table = table
         .with(Style::modern())

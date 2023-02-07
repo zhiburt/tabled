@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example table_width_2`
 
-use tabled::{object::Segment, Alignment, ModifyObject, Style, TableIteratorExt, Width};
+use tabled::{object::Segment, Alignment, Modify, Style, TableIteratorExt, Width};
 
 fn main() {
     let readme_text = include_str!("../CHANGELOG.md");
@@ -9,8 +9,7 @@ fn main() {
 
     let mut table = lines.table();
     table.with(Style::ascii_rounded()).with(
-        Segment::all()
-            .modify()
+        Modify::new(Segment::all())
             .with(Width::wrap(30).keep_words())
             .with(Alignment::left()),
     );

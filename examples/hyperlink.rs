@@ -3,7 +3,60 @@
 
 use std::iter::FromIterator;
 
-use tabled::{object::Segment, Alignment, ModifyObject, Style, Table, Tabled, Width};
+use tabled::{object::Segment, Alignment, Modify, Style, Table, Tabled, Width};
+
+fn main() {
+    let multicolored_debian = "\x1b[30mDebian\x1b[0m\
+    \x1b[31m Debian\x1b[0m\
+    \x1b[32m Debian\x1b[0m\
+    \x1b[33m Debian\x1b[0m\
+    \x1b[34m Debian\x1b[0m\
+    \x1b[35m Debian\x1b[0m\
+    \x1b[36m Debian\x1b[0m\
+    \x1b[37m Debian\x1b[0m\
+    \x1b[40m Debian\x1b[0m\
+    \x1b[41m Debian\x1b[0m\
+    \x1b[42m Debian\x1b[0m\
+    \x1b[43m Debian\x1b[0m\
+    \x1b[44m Debian\x1b[0m";
+
+    let debian_repeat =
+        "DebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebian"
+            .to_string();
+
+    let debian_colored_link = format_osc8_hyperlink("https://www.debian.org/", multicolored_debian);
+    let debian_link = format_osc8_hyperlink("https://www.debian.org/", "Debian");
+    let wiki_link = format_osc8_hyperlink("https://www.wikipedia.org/", "Debian");
+
+    let data = [
+        Distribution::new("Debian".into(), false),
+        Distribution::new(debian_link.clone(), true),
+        Distribution::new(format!("{} a link followed by text", debian_link), true),
+        Distribution::new(
+            format!("{} links with intervening text {}", debian_link, wiki_link),
+            true,
+        ),
+        Distribution::new(format!("a link surrounded {} by text", debian_link), true),
+        Distribution::new(debian_colored_link, true),
+        Distribution::new(debian_repeat, false),
+    ];
+
+    let mut table = Table::from_iter(&data);
+    table
+        .with(Style::ascii_rounded())
+        .with(Alignment::left())
+        .with(Modify::new(Segment::all()).with(Width::wrap(16).keep_words()));
+
+    println!("{}", table);
+
+    let mut table = Table::from_iter(&data);
+    table
+        .with(Style::ascii_rounded())
+        .with(Alignment::left())
+        .with(Modify::new(Segment::all()).with(Width::wrap(16)));
+
+    println!("{}", table);
+}
 
 #[derive(Tabled)]
 struct Distribution {
@@ -25,75 +78,4 @@ fn format_osc8_hyperlink(url: &str, text: &str) -> String {
         osc = "\x1b]",
         st = "\x1b\\"
     )
-}
-
-fn main() {
-    let multicolored_debian = "\x1b[30mDebian\x1b[0m\
-    \x1b[31mDebian \x1b[0m\
-    \x1b[32mDebian \x1b[0m\
-    \x1b[33mDebian \x1b[0m\
-    \x1b[34mDebian \x1b[0m\
-    \x1b[35mDebian \x1b[0m\
-    \x1b[36mDebian \x1b[0m\
-    \x1b[37mDebian \x1b[0m\
-    \x1b[40mDebian \x1b[0m\
-    \x1b[41mDebian \x1b[0m\
-    \x1b[42mDebian \x1b[0m\
-    \x1b[43mDebian \x1b[0m\
-    \x1b[44mDebian \x1b[0m";
-
-    let data = [
-        Distribution::new(
-            format_osc8_hyperlink("https://www.debian.org/", "Debian"),
-            true,
-        ),
-        Distribution::new(
-            format!(
-                "{}---- 1 link followed by text",
-                format_osc8_hyperlink("https://www.debian.org/", "Debian"),
-            ),
-            true,
-        ),
-        Distribution::new(
-            format!(
-                "{} 2 links with intervening text {}",
-                format_osc8_hyperlink("https://www.debian.org/", "Debian"),
-                format_osc8_hyperlink("https://www.wikipedia.org/", "Debian"),
-            ),
-            true,
-        ),
-        Distribution::new(
-            format!(
-                "a link surrounded {} by text",
-                format_osc8_hyperlink("https://www.debian.org/", "Debian"),
-            ),
-            true,
-        ),
-        Distribution::new("Debian".into(), false),
-        Distribution::new(
-            format_osc8_hyperlink("https://www.debian.org/", multicolored_debian),
-            true,
-        ),
-        Distribution::new(
-            "DebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebianDebian"
-                .into(),
-            false,
-        ),
-    ];
-
-    let mut table = Table::from_iter(&data);
-    table
-        .with(Style::ascii_rounded())
-        .with(Alignment::left())
-        .with(Segment::all().modify().with(Width::wrap(16).keep_words()));
-
-    println!("{}", table);
-
-    let mut table = Table::from_iter(&data);
-    table
-        .with(Style::ascii_rounded())
-        .with(Alignment::left())
-        .with(Segment::all().modify().with(Width::wrap(16)));
-
-    println!("{}", table);
 }

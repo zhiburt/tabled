@@ -13,7 +13,7 @@ pub struct Sides<T> {
 
 impl<T> Sides<T> {
     /// Creates a new object.
-    pub fn new(left: T, right: T, top: T, bottom: T) -> Self {
+    pub const fn new(left: T, right: T, top: T, bottom: T) -> Self {
         Self {
             top,
             bottom,

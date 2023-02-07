@@ -64,23 +64,23 @@ where
             return;
         }
 
-        get_increase_list(&mut heights, total, height, self.priority.clone());
+        get_increase_list(&mut heights, height, total, self.priority.clone());
 
         dims.set_heights(heights);
     }
 }
 
-fn get_increase_list<P>(list: &mut [usize], total: usize, mut value: usize, mut peaker: P)
+fn get_increase_list<P>(list: &mut [usize], total: usize, mut current: usize, mut peaker: P)
 where
     P: Peaker,
 {
-    while value != total {
+    while current != total {
         let col = match peaker.peak(&[], list) {
             Some(col) => col,
             None => break,
         };
 
         list[col] += 1;
-        value += 1;
+        current += 1;
     }
 }

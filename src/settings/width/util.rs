@@ -23,15 +23,21 @@ fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
 }
 
 /// Replaces tabs in a string with a given width of spaces.
-pub fn replace_tab(text: &str, n: usize) -> String {
+pub fn replace_tab(text: &str, n: usize) -> Cow<'_, str> {
+    if !text.contains('\t') {
+        return Cow::Borrowed(text);
+    }
+
     // it's a general case which probably must be faster?
-    if n == 4 {
+    let replaced = if n == 4 {
         text.replace('\t', "    ")
     } else {
         let mut text = text.to_owned();
         replace_tab_range(&mut text, n);
         text
-    }
+    };
+
+    Cow::Owned(replaced)
 }
 
 fn replace_tab_range(cell: &mut String, n: usize) -> &str {

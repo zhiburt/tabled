@@ -5,7 +5,8 @@ use crate::{
     measurement::Measurement,
     peaker::Peaker,
     records::{ExactRecords, Records, RecordsMut},
-    CellOption, Height,
+    table::TableDimension,
+    CellOption, Height, TableOption,
 };
 
 use super::table_height_limit::TableHeightLimit;
@@ -62,6 +63,23 @@ where
             let content = limit_lines(text.as_ref(), height);
             records.set(pos, content);
         }
+    }
+}
+
+impl<R, W> TableOption<R, TableDimension<'static>> for CellHeightLimit<W>
+where
+    W: Measurement<Height>,
+    R: Records + ExactRecords + RecordsMut<Text = String>,
+    for<'a> &'a R: Records,
+{
+    fn change(
+        &mut self,
+        records: &mut R,
+        cfg: &mut GridConfig,
+        dims: &mut TableDimension<'static>,
+    ) {
+        let height = self.height.measure(&*records, cfg);
+        TableHeightLimit::new(height).change(records, cfg, dims)
     }
 }
 

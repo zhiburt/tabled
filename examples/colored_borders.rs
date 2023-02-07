@@ -12,7 +12,7 @@ use tabled::{
     object::Segment,
     style::Style,
     style::{BorderColor, RawStyle, Symbol},
-    Border, Highlight, Table, Tabled,
+    Border, Table, Tabled,
 };
 
 #[derive(Tabled)]

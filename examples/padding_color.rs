@@ -8,15 +8,16 @@ use std::convert::TryFrom;
 
 use owo_colors::OwoColorize;
 
-use papergrid::{records::Records, Estimate};
 use tabled::{
     color::Color,
     format::Format,
+    grid::{dimension::ExactDimension, util::string::string_width_multiline},
     margin_color::MarginColor,
     object::{Columns, Object, Rows, Segment},
     padding_color::PaddingColor,
+    records::{ExactRecords, Records, VecRecords},
     style::Style,
-    Alignment, CellOption, Margin, ModifyObject, Padding, Table, Tabled,
+    Alignment, CellOption, Margin, Modify, Padding, Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -83,8 +84,7 @@ fn main() {
     let border_color = Color::try_from(' '.bg_rgb::<200, 200, 220>().bold().to_string()).unwrap();
     let data_color = Color::try_from(' '.bg_rgb::<200, 200, 220>().to_string()).unwrap();
 
-    let header_settings = Rows::first()
-        .modify()
+    let header_settings = Modify::new(Rows::first())
         .with(Padding::new(1, 1, 2, 2))
         .with(MakeMaxPadding)
         .with(PaddingColor::new(
@@ -93,11 +93,9 @@ fn main() {
             Color::BG_MAGENTA,
             Color::BG_CYAN,
         ))
-        .with(Format::new(|s| s.on_black().white().to_string()));
+        .with(Format::content(|s| s.on_black().white().to_string()));
 
-    let data_settings = Rows::first()
-        .inverse()
-        .modify()
+    let data_settings = Modify::new(Rows::first().inverse())
         .with(Alignment::left())
         .with(MakeMaxPadding)
         .with(PaddingColor::new(
@@ -107,15 +105,11 @@ fn main() {
             data_color.clone(),
         ));
 
-    let symbol_settings = Columns::single(1)
-        .not(Rows::first())
-        .modify()
-        .with(Format::new(|s| s.bold().to_string()));
+    let symbol_settings = Modify::new(Columns::single(1).not(Rows::first()))
+        .with(Format::content(|s| s.bold().to_string()));
 
-    let unit_settings = Columns::single(3)
-        .not(Rows::first())
-        .modify()
-        .with(Format::new(|s| s.italic().to_string()));
+    let unit_settings = Modify::new(Columns::single(3).not(Rows::first()))
+        .with(Format::content(|s| s.italic().to_string()));
 
     let table = Table::new(&data)
         .with(Style::rounded())
@@ -127,7 +121,7 @@ fn main() {
             pane_color,
         ))
         .with(border_color)
-        .with(Segment::all().modify().with(data_color))
+        .with(Modify::new(Segment::all()).with(data_color))
         .with(header_settings)
         .with(data_settings)
         .with(symbol_settings)
@@ -139,21 +133,25 @@ fn main() {
 
 struct MakeMaxPadding;
 
-impl<R> CellOption<R> for MakeMaxPadding
+impl<T> CellOption<VecRecords<T>> for MakeMaxPadding
 where
-    R: Records,
+    T: AsRef<str>,
 {
-    fn change_cell(&mut self, table: &mut Table<R>, entity: papergrid::Entity) {
-        let mut ctrl = papergrid::width::WidthEstimator::default();
-        ctrl.estimate(table.get_records(), table.get_config());
-        let widths: Vec<usize> = ctrl.into();
+    fn change(
+        &mut self,
+        records: &mut VecRecords<T>,
+        cfg: &mut papergrid::GridConfig,
+        entity: papergrid::config::Entity,
+    ) {
+        let widths = ExactDimension::width(&*records, cfg);
 
-        let ctrl = papergrid::width::CfgWidthFunc::from_cfg(table.get_config());
+        let count_rows = records.count_rows();
+        let count_cols = records.count_columns();
 
-        let (count_rows, count_cols) = table.shape();
         for (row, col) in entity.iter(count_rows, count_cols) {
             let column_width = widths[col];
-            let width = table.get_records().get_width((row, col), &ctrl);
+            let text = records.get_cell((row, col)).as_ref();
+            let width = string_width_multiline(text);
 
             if width < column_width {
                 let available_width = column_width - width;
@@ -161,11 +159,11 @@ where
                 let right = available_width - left;
 
                 let pos = (row, col).into();
-                let mut padding = *table.get_config().get_padding(pos);
+                let mut padding = *cfg.get_padding(pos);
                 padding.left.size = left;
                 padding.right.size = right;
 
-                table.get_config_mut().set_padding(pos, padding);
+                cfg.set_padding(pos, padding);
             }
         }
     }

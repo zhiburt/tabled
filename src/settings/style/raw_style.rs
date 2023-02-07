@@ -414,12 +414,13 @@ impl<R, D> TableOption<R, D> for &RawStyle {
 
 impl<T, B, L, R, H, V, HLines, VLines> From<Style<T, B, L, R, H, V, HLines, VLines>> for RawStyle
 where
-    HLines: IntoIterator<Item = HorizontalLine>,
-    VLines: IntoIterator<Item = VerticalLine>,
+    HLines: IntoIterator<Item = HorizontalLine> + Clone,
+    VLines: IntoIterator<Item = VerticalLine> + Clone,
 {
     fn from(style: Style<T, B, L, R, H, V, HLines, VLines>) -> Self {
         let horizontals = style
-            .horizontals
+            .get_horizontals()
+            .clone()
             .into_iter()
             .flat_map(|hr| {
                 let index = hr.index;
@@ -428,7 +429,8 @@ where
             .collect();
 
         let verticals = style
-            .verticals
+            .get_verticals()
+            .clone()
             .into_iter()
             .flat_map(|hr| {
                 let index = hr.index;
@@ -437,7 +439,7 @@ where
             .collect();
 
         Self {
-            borders: style.borders,
+            borders: *style.get_borders(),
             horizontals,
             verticals,
             colors: Borders::default(),

@@ -3,7 +3,7 @@
 
 use tabled::{
     object::{Cell, Segment},
-    Alignment, Border, Extract, Highlight, Modify, Panel, Style, TableIteratorExt, Tabled,
+    Alignment, Border, Extract, highlight::Highlight, Modify, Panel, Style, TableIteratorExt, Tabled,
 };
 
 #[derive(Tabled)]
@@ -44,7 +44,7 @@ fn main() {
     let mut a_welcome_table = [String::from("Thank You"), committers_table, issues_table].table();
     a_welcome_table
         .with(Extract::rows(1..))
-        .with(Style::ascii().off_horizontal())
+        .with(Style::ascii().remove_horizontal())
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Highlight::new(Cell(0, 0), Border::filled('*')));
 

@@ -1,6 +1,6 @@
 use crate::{
-    grid::config::Entity, object::Object, records::ExactRecords, records::Records, CellOption,
-    TableOption,
+    grid::config::Entity, object::Object, records::ExactRecords, records::Records,
+    settings_list::Settings, CellOption, TableOption,
 };
 
 /// Modify structure provide an abstraction, to be able to apply
@@ -15,8 +15,15 @@ pub struct Modify<O> {
 
 impl<O> Modify<O> {
     /// Creates a new [`Modify`] without any options.
-    pub fn new(obj: O) -> Self {
+    pub const fn new(obj: O) -> Self {
         Self { obj }
+    }
+
+    pub const fn list<M>(obj: O, next: M) -> ModifyList<O, M> {
+        ModifyList {
+            obj,
+            modifiers: next,
+        }
     }
 
     /// It's a generic function which stores a [`CellOption`].
@@ -27,10 +34,10 @@ impl<O> Modify<O> {
     ///
     /// [`Table`]: crate::Table
     /// [`Table::with`]: crate::Table::with
-    pub fn with<M>(self, s: M) -> ModifyList<O, M> {
+    pub fn with<M>(self, next: M) -> ModifyList<O, M> {
         ModifyList {
             obj: self.obj,
-            modifiers: s,
+            modifiers: next,
         }
     }
 }
@@ -51,13 +58,10 @@ impl<O, M1> ModifyList<O, M1> {
     ///
     /// [`Table`]: crate::Table
     /// [`Table::with`]: crate::Table::with
-    pub fn with<M2>(self, s: M2) -> ModifyList<O, CellSettingsList<M1, M2>> {
+    pub fn with<M2>(self, next: M2) -> ModifyList<O, Settings<M1, M2>> {
         ModifyList {
             obj: self.obj,
-            modifiers: CellSettingsList {
-                s1: self.modifiers,
-                s2: s,
-            },
+            modifiers: Settings::new(self.modifiers, next),
         }
     }
 }
@@ -72,23 +76,5 @@ where
         for entity in self.obj.cells(&records) {
             self.modifiers.change(records, cfg, entity);
         }
-    }
-}
-
-/// This is a container of [`CellOption`]s.
-#[derive(Debug)]
-pub struct CellSettingsList<S1, S2> {
-    s1: S1,
-    s2: S2,
-}
-
-impl<M1, M2, R> CellOption<R> for CellSettingsList<M1, M2>
-where
-    M1: CellOption<R>,
-    M2: CellOption<R>,
-{
-    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, entity: Entity) {
-        self.s1.change(records, cfg, entity);
-        self.s2.change(records, cfg, entity);
     }
 }

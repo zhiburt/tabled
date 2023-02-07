@@ -130,9 +130,9 @@ use super::{HorizontalLine, Line, VerticalLine};
 /// [`RawStyle`]: crate::style::RawStyle
 #[derive(Debug, Clone)]
 pub struct Style<T, B, L, R, H, V, HLines = HLineArray<0>, VLines = VLineArray<0>> {
-    pub(crate) borders: Borders<char>,
-    pub(crate) horizontals: HLines,
-    pub(crate) verticals: VLines,
+    borders: Borders<char>,
+    horizontals: HLines,
+    verticals: VLines,
     _top: PhantomData<T>,
     _bottom: PhantomData<B>,
     _left: PhantomData<L>,
@@ -1155,6 +1155,14 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
 
     pub const fn get_borders(&self) -> &Borders<char> {
         &self.borders
+    }
+
+    pub const fn get_horizontals(&self) -> &HLines {
+        &self.horizontals
+    }
+
+    pub const fn get_verticals(&self) -> &VLines {
+        &self.verticals
     }
 }
 

@@ -237,16 +237,18 @@
 )]
 #![deny(unused_must_use)]
 
-mod records;
 mod settings;
 mod table;
 mod table_iterator_ext;
 mod tabled;
 
+pub mod records;
+pub mod iter_table;
 pub mod builder;
 pub mod display;
 pub mod modify;
 pub mod object;
+pub mod settings_list;
 
 #[cfg(feature = "macros")]
 #[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
@@ -258,16 +260,17 @@ pub use crate::{
     modify::Modify,
     settings::{
         alignment::{self, Alignment},
+        color,
         concat::Concat,
         disable::Disable,
         extract::Extract,
         format, formatting,
         height::{self, Height},
-        highlight::Highlight,
-        locator,
+        highlight, locator,
         margin::Margin,
-        measurement, merge,
+        margin_color, measurement, merge,
         padding::Padding,
+        padding_color,
         panel::{Footer, Header, Panel},
         peaker,
         rotate::Rotate,
@@ -281,9 +284,6 @@ pub use crate::{
     tabled::Tabled,
 };
 
-#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
-pub use crate::settings::color;
-
 pub mod grid {
     pub use papergrid::color;
     pub use papergrid::colors;
@@ -291,6 +291,7 @@ pub mod grid {
     pub use papergrid::dimension;
     pub use papergrid::grid_projection;
     pub use papergrid::Grid;
+    pub use papergrid::util;
 }
 
 /// A derive to implement a [`Tabled`] trait.

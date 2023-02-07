@@ -20,14 +20,14 @@ impl<R> Rows<R> {
     /// Returns a new instance of [`Rows`] for a range of rows.
     ///
     /// If the boundaries are exceeded it may panic.
-    pub fn new(range: R) -> Self
+    pub const fn new(range: R) -> Self
     where
         R: RangeBounds<usize>,
     {
         Self { range }
     }
 
-    pub(crate) fn get_range(&self) -> &R {
+    pub(crate) const fn get_range(&self) -> &R {
         &self.range
     }
 }
@@ -36,21 +36,21 @@ impl Rows<()> {
     /// Returns a new instance of [`Rows`] with a single row.
     ///
     /// If the boundaries are exceeded it may panic.
-    pub fn single(index: usize) -> Row {
+    pub const fn single(index: usize) -> Row {
         Row { index }
     }
 
     /// Returns a first row [`Object`].
     ///
     /// If the table has 0 rows returns an empty set of cells.
-    pub fn first() -> FirstRow {
+    pub const fn first() -> FirstRow {
         FirstRow
     }
 
     /// Returns a last row [`Object`].
     ///
     /// If the table has 0 rows returns an empty set of cells.
-    pub fn last() -> LastRow {
+    pub const fn last() -> LastRow {
         LastRow
     }
 }

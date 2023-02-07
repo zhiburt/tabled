@@ -158,16 +158,17 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
 
     let mut row = 0;
     let mut line = 0;
+    let mut is_prev_row_skipped = false;
     while let Some(columns) = next_columns {
         let columns = columns.into_iter();
         next_columns = records_iter.next();
         let is_last_row = next_columns.is_none();
 
         let height = dims.get_height(row);
-        let count_rows = convert_count_rows(line + height, is_last_row);
+        let count_rows = convert_count_rows(row, is_last_row);
         let has_horizontal = has_horizontal(cfg, row, count_rows);
 
-        if row > 0 && (has_horizontal || height > 0) {
+        if row > 0 && !is_prev_row_skipped && (has_horizontal || height > 0) {
             f.write_char('\n')?;
         }
 
@@ -193,6 +194,12 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
                     f, &mut rbuf, columns, cfg, colors, dims, height, row, line, totalh, shape,
                 )?;
             }
+        }
+
+        if height == 0 && !has_horizontal {
+            is_prev_row_skipped = true;
+        } else {
+            is_prev_row_skipped = false;
         }
 
         line += height;
@@ -300,14 +307,14 @@ where
     print_margin_left(f, cfg, line, totalh)?;
 
     for (col, cell) in columns.enumerate() {
-        print_vertical_char(f, cfg, (row, col), line, shape)?;
+        print_vertical_char(f, cfg, (row, col), 0, shape)?;
 
         let width = dims.get_width(col);
         let color = colors.and_then(|c| c.get_color((row, col)));
         print_single_line_column(f, cell.as_ref(), cfg, width, color, (row, col))?;
     }
 
-    print_vertical_char(f, cfg, (row, shape.1), line, shape)?;
+    print_vertical_char(f, cfg, (row, shape.1), 0, shape)?;
 
     print_margin_right(f, cfg, line, totalh)?;
 
@@ -366,18 +373,19 @@ fn print_columns_lines<S, F: Write, C: Color>(
     shape: (usize, usize),
 ) -> Result<(), fmt::Error> {
     for i in 0..height {
-        let line = line + i;
+        let exact_line = line + i;
+        let cell_line = i;
 
-        print_margin_left(f, cfg, line, totalh)?;
+        print_margin_left(f, cfg, exact_line, totalh)?;
 
         for (col, cell) in columns.iter_mut().enumerate() {
-            print_vertical_char(f, cfg, (row, col), line, shape)?;
+            print_vertical_char(f, cfg, (row, col), cell_line, shape)?;
             cell.display(f, cfg.get_tab_width())?;
         }
 
-        print_vertical_char(f, cfg, (row, shape.1), line, shape)?;
+        print_vertical_char(f, cfg, (row, shape.1), cell_line, shape)?;
 
-        print_margin_right(f, cfg, line, totalh)?;
+        print_margin_right(f, cfg, exact_line, totalh)?;
 
         if i + 1 != height {
             f.write_char('\n')?;
@@ -571,6 +579,7 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
     let mut records_iter = records.iter_rows().into_iter();
     let mut next_columns = records_iter.next();
 
+    let mut is_prev_row_skipped = false;
     let mut line = 0;
     let mut row = 0;
     while let Some(columns) = next_columns {
@@ -578,12 +587,12 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
         next_columns = records_iter.next();
         let is_last_row = next_columns.is_none();
 
-        let row_height = dims.get_height(row);
-        let count_rows = convert_count_rows(line + row_height, is_last_row);
+        let height = dims.get_height(row);
+        let count_rows = convert_count_rows(row, is_last_row);
         let shape = (count_rows, count_columns);
 
         let has_horizontal = has_horizontal(cfg, row, count_rows);
-        if row > 0 && (has_horizontal || row_height > 0) {
+        if row > 0 && !is_prev_row_skipped && (has_horizontal || height > 0) {
             f.write_char('\n')?;
         }
 
@@ -592,16 +601,25 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
 
             line += 1;
 
-            if row_height > 0 {
+            if height > 0 {
                 f.write_char('\n')?;
             }
         }
 
-        print_spanned_columns(
-            f, &mut buf, columns, cfg, colors, dims, row_height, row, line, totalh, shape,
-        )?;
+        if height > 0 {
+            print_spanned_columns(
+                f, &mut buf, columns, cfg, colors, dims, height, row, line, totalh, shape,
+            )?;
 
-        line += row_height;
+            line += height;
+        }
+
+        if height == 0 && !has_horizontal {
+            is_prev_row_skipped = true;
+        } else {
+            is_prev_row_skipped = false;
+        }
+
         row += 1;
     }
 
@@ -831,18 +849,19 @@ where
     }
 
     for i in 0..this_height {
-        let line = line + i;
+        let exact_line = line + i;
+        let cell_line = i;
 
-        print_margin_left(f, cfg, line, totalh)?;
+        print_margin_left(f, cfg, exact_line, totalh)?;
 
         for (&col, (cell, _, _)) in columns.iter_mut() {
-            print_vertical_char(f, cfg, (row, col), line, shape)?;
+            print_vertical_char(f, cfg, (row, col), cell_line, shape)?;
             cell.display(f, cfg.get_tab_width())?;
         }
 
-        print_vertical_char(f, cfg, (row, shape.1), line, shape)?;
+        print_vertical_char(f, cfg, (row, shape.1), cell_line, shape)?;
 
-        print_margin_right(f, cfg, line, totalh)?;
+        print_margin_right(f, cfg, exact_line, totalh)?;
 
         if i + 1 != this_height {
             f.write_char('\n')?;
@@ -1191,6 +1210,8 @@ fn print_vertical_char<F: Write>(
     line_index: usize,
     shape: (usize, usize),
 ) -> fmt::Result {
+    // todo: Add Border/verticals to CellLines structure to not make these lookup calls
+
     let gp = GridProjection::with_shape(cfg, shape);
 
     let symbol = match gp.get_vertical(pos) {
@@ -1445,7 +1466,7 @@ fn convert_count_rows(row: usize, is_last: bool) -> usize {
     if is_last {
         row + 1
     } else {
-        usize::MAX
+        row + 2
     }
 }
 

@@ -4,22 +4,21 @@
 
 mod border;
 mod border_char;
+mod border_color;
 mod border_text;
 mod horizontal_line;
 mod line;
 mod offset;
 mod raw_style;
 mod span_border_correction;
-#[allow(clippy::module_inception)]
-mod style;
+mod symbol;
 mod vertical_line;
 
-mod border_color;
-mod symbol;
+pub mod builder;
 
 pub use self::{
     border::Border, border_char::BorderChar, border_color::BorderColor, border_text::BorderText,
-    horizontal_line::HorizontalLine, line::Line, offset::Offset, raw_style::RawStyle,
-    span_border_correction::StyleCorrectSpan, style::Style, symbol::Symbol,
+    builder::Style, horizontal_line::HorizontalLine, line::Line, offset::Offset,
+    raw_style::RawStyle, span_border_correction::StyleCorrectSpan, symbol::Symbol,
     vertical_line::VerticalLine,
 };

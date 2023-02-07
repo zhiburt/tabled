@@ -8,6 +8,7 @@
 
 use std::{io::Read, iter::FromIterator};
 
+use papergrid::util::string;
 use tabled::{
     builder::Builder,
     object::Cell,
@@ -19,10 +20,14 @@ use tabled::{
 
 fn main() {
     let message = read_message();
+    print_table(message);
+}
 
+fn print_table(message: String) {
     let main_table = create_main_table(&message);
     let main_table_width = main_table.total_width();
     let small_table_row = create_small_table_list(main_table_width);
+
     println!("{}", small_table_row);
     println!("{}", main_table);
 }
@@ -42,28 +47,28 @@ fn create_small_table_list(width_available: usize) -> String {
             Style::modern()
                 .left('║')
                 .right('║')
-                .left_intersection('╟')
-                .right_intersection('╢')
-                .top_right_corner('╖')
-                .top_left_corner('╓')
-                .bottom_right_corner('╜')
-                .bottom_left_corner('╙')
+                .intersection_left('╟')
+                .intersection_right('╢')
+                .corner_top_right('╖')
+                .corner_top_left('╓')
+                .corner_bottom_right('╜')
+                .corner_bottom_left('╙')
                 .into(),
         ),
         create_small_table(
             Style::modern()
                 .top('═')
                 .bottom('═')
-                .top_right_corner('╕')
-                .top_left_corner('╒')
-                .bottom_right_corner('╛')
-                .bottom_left_corner('╘')
+                .corner_top_right('╕')
+                .corner_top_left('╒')
+                .corner_bottom_right('╛')
+                .corner_bottom_left('╘')
                 .horizontal('═')
-                .left_intersection('╞')
-                .right_intersection('╡')
-                .inner_intersection('╪')
-                .top_intersection('╤')
-                .bottom_intersection('╧')
+                .intersection_left('╞')
+                .intersection_right('╡')
+                .intersection_top('╤')
+                .intersection_bottom('╧')
+                .intersection('╪')
                 .into(),
         ),
     ];
@@ -111,8 +116,8 @@ fn create_small_table(style: RawStyle) -> Table {
 // ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
 
 fn create_main_table(message: &str) -> Table {
-    let count_lines = papergrid::util::count_lines(message);
-    let message_width = papergrid::util::string_width_multiline_tab(message, 4);
+    let count_lines = string::count_lines(message);
+    let message_width = string::string_width_multiline_tab(message, 4);
     let count_additional_separators = if count_lines > 2 { count_lines - 2 } else { 0 };
 
     let left_table = format!(
@@ -141,7 +146,7 @@ fn create_main_table(message: &str) -> Table {
     let mut table = row![left_table, message];
     table
         .with(Padding::zero())
-        .with(Style::modern().off_vertical())
+        .with(Style::modern().remove_vertical())
         .with(Modify::new(Cell(0, 0)).with(BorderChar::vertical('╞', Offset::Begin(count_lines))))
         .with(Modify::new(Cell(0, 2)).with(BorderChar::vertical('╡', Offset::Begin(count_lines))))
         .with(Shadow::new(2));

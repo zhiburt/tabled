@@ -1,9 +1,13 @@
-use papergrid::{records::Records, GridConfig};
+use papergrid::{
+    records::Records,
+    util::string::{count_lines, get_lines},
+    GridConfig,
+};
 
 use crate::{
     measurement::Measurement,
     peaker::{Peaker, PriorityNone},
-    records::ExactRecords,
+    records::{ExactRecords, RecordsMut},
     table::TableDimension,
     Height, TableOption,
 };
@@ -45,7 +49,8 @@ impl<R, W, P> TableOption<R, TableDimension<'static>> for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
-    for<'a> &'a R: Records + ExactRecords,
+    R: ExactRecords + RecordsMut<Text = String>,
+    for<'a> &'a R: Records,
 {
     fn change(
         &mut self,
@@ -53,19 +58,35 @@ where
         cfg: &mut GridConfig,
         dims: &mut TableDimension<'static>,
     ) {
-        let records = &*records;
+        let count_rows = records.count_rows();
+        let count_cols = (&*records).count_columns();
 
-        if records.count_rows() == 0 || records.count_columns() == 0 {
+        if count_rows == 0 || count_cols == 0 {
             return;
         }
 
-        let height = self.height.measure(records, cfg);
-        let (total, mut heights) = get_table_height(records, cfg);
+        let height = self.height.measure(&*records, cfg);
+        let (total, mut heights) = get_table_height(&*records, cfg);
         if total <= height {
             return;
         }
 
         decrease_list(&mut heights, total, height, self.priority.clone());
+
+        for (row, &height) in heights.iter().enumerate() {
+            for col in 0..count_cols {
+                let text = records.get_cell((row, col)).as_ref();
+                let count_lines = count_lines(text);
+
+                if count_lines <= height {
+                    continue;
+                }
+
+                let text = limit_lines(text, height);
+
+                records.set((row, col), text);
+            }
+        }
 
         dims.set_heights(heights);
     }
@@ -85,4 +106,17 @@ where
         list[row] -= 1;
         value += 1;
     }
+}
+
+fn limit_lines(s: &str, n: usize) -> String {
+    let mut text = String::new();
+    for (i, line) in get_lines(s).take(n).enumerate() {
+        if i > 0 {
+            text.push('\n');
+        }
+
+        text.push_str(&line);
+    }
+
+    text
 }

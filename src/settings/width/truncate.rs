@@ -1,6 +1,6 @@
 //! This module contains [`Truncate`] structure, used to decrease width of a [`Table`]s or a cell on a [`Table`] by truncating the width.
 
-use std::{borrow::Cow, iter, marker::PhantomData, sync::Arc};
+use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref, sync::Arc};
 
 use papergrid::util::string::{string_width_multiline_tab, string_width_tab};
 
@@ -148,6 +148,20 @@ impl<'a, W, P> Truncate<'a, W, P> {
     }
 }
 
+impl Truncate<'_, (), ()> {
+    pub fn truncate_text(text: &str, width: usize, tab_width: usize) -> Cow<'_, str> {
+        let text = replace_tab(text, tab_width);
+
+        match text {
+            Cow::Borrowed(text) => truncate_text(&text, width, "", false),
+            Cow::Owned(text) => match truncate_text(&text, width, "", false) {
+                Cow::Borrowed(_) => Cow::Owned(text),
+                Cow::Owned(text) => Cow::Owned(text),
+            },
+        }
+    }
+}
+
 impl<W, P, R> CellOption<R> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
@@ -177,14 +191,21 @@ where
                 continue;
             }
 
-            // todo: Think about it.
-            //       We could eliminate this allocation if we would be allowed to cut '\t' with unknown characters.
-            //       Currently we don't do that.
-            let text = replace_tab(text, cfg.get_tab_width());
-            let text =
-                truncate_text(&text, width, set_width, &suffix, save_suffix_color).into_owned();
+            let text = if width == 0 {
+                if set_width == 0 {
+                    Cow::Borrowed("")
+                } else {
+                    Cow::Borrowed(suffix.deref())
+                }
+            } else {
+                // todo: Think about it.
+                //       We could eliminate this allocation if we would be allowed to cut '\t' with unknown characters.
+                //       Currently we don't do that.
+                let text = replace_tab(text, cfg.get_tab_width());
+                Cow::Owned(truncate_text(&text, width, &suffix, save_suffix_color).into_owned())
+            };
 
-            records.set(pos, text);
+            records.set(pos, text.into_owned());
         }
     }
 }
@@ -293,18 +314,9 @@ where
 fn truncate_text<'a>(
     content: &'a str,
     width: usize,
-    original_width: usize,
-    suffix: &'a str,
+    suffix: &str,
     _suffix_color_try_keeping: bool,
 ) -> Cow<'a, str> {
-    if width == 0 {
-        if original_width == 0 {
-            return Cow::Borrowed("");
-        } else {
-            return Cow::Borrowed(suffix);
-        }
-    }
-
     let content = cut_str(content, width);
 
     if suffix.is_empty() {

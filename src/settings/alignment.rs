@@ -106,36 +106,36 @@ impl Alignment {
     ///
     /// [`MinWidth`]: crate::width::MinWidth
     /// [`TrimStrategy`]: crate::formatting::TrimStrategy
-    pub fn center() -> Self {
+    pub const fn center() -> Self {
         Self::horizontal(AlignmentHorizontal::Center)
     }
 
     /// Top constructs a vertical alignment to [`AlignmentVertical::Top`]
-    pub fn top() -> Self {
+    pub const fn top() -> Self {
         Self::vertical(AlignmentVertical::Top)
     }
 
     /// Bottom constructs a vertical alignment to [`AlignmentVertical::Bottom`]
-    pub fn bottom() -> Self {
+    pub const fn bottom() -> Self {
         Self::vertical(AlignmentVertical::Bottom)
     }
 
     /// `Center_vertical` constructs a vertical alignment to [`AlignmentVertical::Center`]
-    pub fn center_vertical() -> Self {
+    pub const fn center_vertical() -> Self {
         Self::vertical(AlignmentVertical::Center)
     }
 
     /// Returns an alignment with the given horizontal alignment.
-    fn horizontal(alignment: AlignmentHorizontal) -> Self {
+    const fn horizontal(alignment: AlignmentHorizontal) -> Self {
         Self::new(Horizontal(alignment))
     }
 
     /// Returns an alignment with the given vertical alignment.
-    fn vertical(alignment: AlignmentVertical) -> Self {
+    const fn vertical(alignment: AlignmentVertical) -> Self {
         Self::new(Vertical(alignment))
     }
 
-    fn new(inner: AlignmentInner) -> Self {
+    const fn new(inner: AlignmentInner) -> Self {
         Self { inner }
     }
 }

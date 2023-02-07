@@ -173,8 +173,8 @@ impl Table {
         &mut self,
         option: O,
     ) -> &mut Self {
-        self.dimension.force_width_estimation();
-        self.dimension.force_height_estimation();
+        self.dimension.clear_width();
+        self.dimension.clear_height();
 
         let mut option = option;
         option.change(&mut self.records, &mut self.cfg, &mut self.dimension);
@@ -326,11 +326,11 @@ impl TableDimension<'_> {
         true
     }
 
-    pub fn force_width_estimation(&mut self) {
+    pub fn clear_width(&mut self) {
         self.width = None;
     }
 
-    pub fn force_height_estimation(&mut self) {
+    pub fn clear_height(&mut self) {
         self.height = None;
     }
 
