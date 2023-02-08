@@ -89,7 +89,6 @@ where
     }
 }
 
-
 fn set_span(cfg: &mut GridConfig, pos: (usize, usize), span: SpanType) {
     match span {
         SpanType::Column(size) => {

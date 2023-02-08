@@ -38,7 +38,7 @@
 
 use crate::{
     grid::config::{Entity, GridConfig, Indent, Padding as GridPadding},
-    table::{CellOption, Table},
+    table::CellOption,
     TableOption,
 };
 

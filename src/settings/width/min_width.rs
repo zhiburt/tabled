@@ -12,7 +12,7 @@ use crate::{
     measurement::Measurement,
     peaker::{Peaker, PriorityNone},
     records::{ExactRecords, Records, RecordsMut},
-    table::TableDimension,
+    table::general::TableDimension,
     CellOption, Table, TableOption, Width,
 };
 

@@ -2,7 +2,7 @@ use std::iter::FromIterator;
 
 use papergrid::{records::Records, GridConfig};
 
-use crate::{records::ExactRecords, table::TableDimension, TableOption};
+use crate::{records::ExactRecords, table::general::TableDimension, TableOption};
 
 /// A structure used to set [`Table`] height via a list of rows heights.
 #[derive(Debug)]

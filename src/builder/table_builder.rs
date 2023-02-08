@@ -60,6 +60,14 @@ impl Builder {
         Self::default()
     }
 
+    /// Creates a [`Builder`] instance.
+    pub fn with_capacity(capacity: usize) -> Self {
+        let mut b = Self::new();
+        b.records = Vec::with_capacity(capacity);
+
+        b
+    }
+
     /// Sets a [`Table`] header.
     ///
     /// ```rust

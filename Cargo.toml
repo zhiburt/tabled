@@ -96,8 +96,8 @@ path = "examples/custom_style.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "expanded_display"
-path = "examples/expanded_display.rs"
+name = "extended_display"
+path = "examples/extended_display.rs"
 required-features = ["derive"]
 
 [[example]]

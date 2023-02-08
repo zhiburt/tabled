@@ -8,7 +8,7 @@ use crate::{
     measurement::Measurement,
     peaker::{Peaker, PriorityNone},
     records::{ExactRecords, RecordsMut},
-    table::TableDimension,
+    table::general::TableDimension,
     Height, TableOption,
 };
 

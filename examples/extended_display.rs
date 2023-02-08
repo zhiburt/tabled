@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example expanded_display`
 
-use tabled::{display::ExpandedDisplay, Tabled};
+use tabled::{table::extended::ExtendedTable, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {
@@ -29,7 +29,7 @@ fn main() {
         Distribution::new("Debian", "", true, true),
     ];
 
-    let table = ExpandedDisplay::new(&data);
+    let table = ExtendedTable::new(&data);
 
     println!("{}", table);
 }

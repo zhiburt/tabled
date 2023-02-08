@@ -238,17 +238,15 @@
 #![deny(unused_must_use)]
 
 mod settings;
-mod table;
 mod table_iterator_ext;
 mod tabled;
 
-pub mod records;
-pub mod iter_table;
 pub mod builder;
-pub mod display;
 pub mod modify;
 pub mod object;
+pub mod records;
 pub mod settings_list;
+pub mod table;
 
 #[cfg(feature = "macros")]
 #[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
@@ -279,7 +277,7 @@ pub use crate::{
         style::{self, Border, BorderText, Style},
         width::{self, Width},
     },
-    table::{CellOption, Table, TableOption},
+    table::{general::Table, CellOption, TableOption},
     table_iterator_ext::TableIteratorExt,
     tabled::Tabled,
 };
@@ -290,8 +288,8 @@ pub mod grid {
     pub use papergrid::config;
     pub use papergrid::dimension;
     pub use papergrid::grid_projection;
-    pub use papergrid::Grid;
     pub use papergrid::util;
+    pub use papergrid::Grid;
 }
 
 /// A derive to implement a [`Tabled`] trait.

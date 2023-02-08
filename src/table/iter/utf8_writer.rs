@@ -1,0 +1,29 @@
+use std::fmt;
+use std::io;
+
+pub struct UTF8Writer<W>(W);
+
+impl<W> UTF8Writer<W> {
+    pub fn new(writer: W) -> Self {
+        Self(writer)
+    }
+}
+
+impl<W> fmt::Write for UTF8Writer<W>
+where
+    W: io::Write,
+{
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+        let mut buf = s.as_bytes();
+        loop {
+            let n = self.0.write(buf).map_err(|_| std::fmt::Error::default())?;
+            if n == buf.len() {
+                break;
+            }
+
+            buf = &buf[n..];
+        }
+
+        Ok(())
+    }
+}

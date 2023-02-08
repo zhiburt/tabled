@@ -112,4 +112,3 @@ impl Format {
         FormatConfig(f)
     }
 }
-

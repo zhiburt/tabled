@@ -2,8 +2,9 @@
 //! `cargo run --example nested_table_3`
 
 use tabled::{
+    highlight::Highlight,
     object::{Cell, Segment},
-    Alignment, Border, Extract, highlight::Highlight, Modify, Panel, Style, TableIteratorExt, Tabled,
+    Alignment, Border, Extract, Modify, Panel, Style, TableIteratorExt, Tabled,
 };
 
 #[derive(Tabled)]

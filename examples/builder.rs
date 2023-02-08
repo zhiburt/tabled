@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example builder`
 
-use tabled::{builder::Builder, object::Rows, Modify, Panel, Style, Width, Alignment, Padding};
+use tabled::{builder::Builder, object::Rows, Alignment, Modify, Padding, Panel, Style, Width};
 
 fn main() {
     let message = r#"The terms "the ocean" or "the sea" used without specification refer to the interconnected body of salt water covering the majority of the Earth's surface"#;

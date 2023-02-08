@@ -6,6 +6,7 @@ use crate::{
 };
 
 // todo: Update documentation
+// todo: Move to settings
 
 /// A trait for configuring a single cell.
 ///

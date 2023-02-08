@@ -79,12 +79,12 @@ use crate::Tabled;
 /// );
 /// ```
 #[derive(Debug, Clone)]
-pub struct ExpandedDisplay {
+pub struct ExtendedTable {
     fields: Vec<String>,
     records: Vec<Vec<String>>,
 }
 
-impl ExpandedDisplay {
+impl ExtendedTable {
     /// Creates a new instance of `ExpandedDisplay`
     pub fn new<T>(iter: impl IntoIterator<Item = T>) -> Self
     where
@@ -165,7 +165,7 @@ impl ExpandedDisplay {
     }
 }
 
-impl std::fmt::Display for ExpandedDisplay {
+impl std::fmt::Display for ExtendedTable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.records.is_empty() {
             return Ok(());

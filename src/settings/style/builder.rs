@@ -1032,7 +1032,9 @@ impl<T, B, L, R, HLines, VLines> Style<T, B, L, R, On, On, HLines, VLines> {
 
 impl<B, L, R, H, V, HLines, VLines> Style<On, B, L, R, H, V, HLines, VLines> {
     /// Removes top border.
-    pub fn remove_top(mut self) -> Style<(), B, L, R, H, V, HLines, VerticalLineIter<VLines::IntoIter>>
+    pub fn remove_top(
+        mut self,
+    ) -> Style<(), B, L, R, H, V, HLines, VerticalLineIter<VLines::IntoIter>>
     where
         VLines: IntoIterator<Item = VerticalLine> + Clone,
     {

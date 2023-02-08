@@ -8,7 +8,7 @@ use crate::{
     grid::{config::GridConfig, grid_projection::GridProjection},
     peaker::{Peaker, PriorityNone},
     records::{EmptyRecords, ExactRecords, Records, RecordsMut},
-    table::TableDimension,
+    table::general::TableDimension,
     width::Measurement,
     CellOption, Table, TableOption, Width,
 };

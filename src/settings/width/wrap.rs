@@ -14,7 +14,7 @@ use crate::{
     peaker::{Peaker, PriorityNone},
     records::ExactRecords,
     records::{EmptyRecords, Records, RecordsMut},
-    table::TableDimension,
+    table::general::TableDimension,
     width::util::replace_tab,
     CellOption, Table, TableOption, Width,
 };

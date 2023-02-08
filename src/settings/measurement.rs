@@ -8,7 +8,7 @@ use papergrid::{
 use crate::{
     grid::{config::GridConfig, dimension::ExactDimension},
     records::{ExactRecords, Records},
-    // Height, 
+    // Height,
     Width,
 };
 

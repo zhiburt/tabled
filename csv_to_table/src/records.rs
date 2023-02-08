@@ -1,91 +1,106 @@
-use std::io::Read;
+use std::{io::Read, mem::transmute};
 
-use csv::{StringRecord, StringRecordsIntoIter, Reader};
+use csv::{Reader, StringRecord, StringRecordsIntoIter};
+use tabled::records::IntoRecords;
 
 pub struct CsvRecords<R> {
-    size: (usize, usize),
-    records: StringRecordsIntoIter<R>,  
-    first_record: Option<Result<StringRecord>>,
+    rows: StringRecordsIntoIter<R>,
+    err_logic: ErorrLogic,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ErorrLogic {
+    Ignore,
+    Print,
+}
+
+impl Default for ErorrLogic {
+    fn default() -> Self {
+        Self::Ignore
+    }
 }
 
 impl<R> CsvRecords<R> {
-    pub fn new(records: Reader<R>) -> Self
+    pub fn new(reader: Reader<R>, err_logic: ErorrLogic) -> Self
     where
-        R: Read + Clone,
+        R: Read,
     {
-        let mut count_rows = 0;
-        let mut count_column = 0;
-
-        loop {
-            match records.next() {
-                Some(Ok(record)) => {
-                    next = Some(record);
-                    count_columns = record.len();
-                    break;
-                }
-                Some(Err(..)) => {}
-                None => break,
-            }
-        }
-
-        let count_rows = records.reader().
-
         Self {
-            size: (count_rows, count_columns),
-            first_record: next,
-            records,
+            rows: reader.into_records(),
+            err_logic,
         }
     }
 }
 
-impl Records for CsvRecords<'_> {
-    fn count_rows(&self) -> usize {
-        todo!()
-    }
+pub struct CsvStringRecordsRows<R>(StringRecordsIntoIter<R>, ErorrLogic);
 
-    fn count_columns(&self) -> usize {
-        todo!()
-    }
+impl<R> Iterator for CsvStringRecordsRows<R>
+where
+    R: Read,
+{
+    type Item = CsvStringRecord;
 
-    fn get_text(&self, pos: tabled::papergrid::Position) -> &str {
-        todo!()
-    }
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            let result = self.0.next()?;
 
-    fn get_line(&self, pos: tabled::papergrid::Position, i: usize) -> &str {
-        todo!()
-    }
+            match result {
+                Ok(record) => return Some(CsvStringRecord::new(record)),
+                Err(err) => match self.1 {
+                    ErorrLogic::Ignore => continue,
+                    ErorrLogic::Print => {
+                        let err = err.to_string();
+                        let mut record = StringRecord::with_capacity(err.len(), 1);
+                        record.push_field(&err);
 
-    fn count_lines(&self, pos: tabled::papergrid::Position) -> usize {
-        todo!()
+                        return Some(CsvStringRecord::new(record));
+                    }
+                },
+            }
+        }
     }
+}
 
-    fn get_width<W>(&self, pos: tabled::papergrid::Position, width_ctrl: W) -> usize
-    where
-        W: tabled::papergrid::width::WidthFunc,
-    {
-        todo!()
+pub struct CsvStringRecord {
+    record: StringRecord,
+    i: usize,
+}
+
+impl CsvStringRecord {
+    fn new(record: StringRecord) -> Self {
+        Self { record, i: 0 }
     }
+}
 
-    fn get_line_width<W>(&self, pos: tabled::papergrid::Position, i: usize, width_ctrl: W) -> usize
-    where
-        W: tabled::papergrid::width::WidthFunc,
-    {
-        todo!()
+impl Iterator for CsvStringRecord {
+    type Item = CsvStrField;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let text = self.record.get(self.i)?;
+        let text = unsafe { transmute::<&str, &'static str>(text) };
+
+        self.i += 1;
+        Some(CsvStrField(text))
     }
+}
 
-    fn fmt_text_prefix(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        pos: tabled::papergrid::Position,
-    ) -> std::fmt::Result {
-        todo!()
+pub struct CsvStrField(&'static str);
+
+impl AsRef<str> for CsvStrField {
+    fn as_ref(&self) -> &str {
+        &self.0
     }
+}
 
-    fn fmt_text_suffix(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        pos: tabled::papergrid::Position,
-    ) -> std::fmt::Result {
-        todo!()
+impl<R> IntoRecords for CsvRecords<R>
+where
+    R: Read,
+{
+    type Cell = CsvStrField;
+    type IterColumns = CsvStringRecord;
+    type IterRows = CsvStringRecordsRows<R>;
+
+    fn iter_rows(self) -> Self::IterRows {
+        CsvStringRecordsRows(self.rows.into_iter(), self.err_logic)
     }
 }

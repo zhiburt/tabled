@@ -2,7 +2,7 @@ use std::iter::FromIterator;
 
 use papergrid::{records::Records, GridConfig};
 
-use crate::{records::ExactRecords, table::TableDimension, Table, TableOption};
+use crate::{records::ExactRecords, table::general::TableDimension, Table, TableOption};
 
 /// A structure used to set [`Table`] width via a list of columns widths.
 #[derive(Debug)]

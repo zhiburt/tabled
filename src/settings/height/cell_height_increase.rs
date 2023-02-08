@@ -5,7 +5,7 @@ use crate::{
     measurement::Measurement,
     peaker::Peaker,
     records::{ExactRecords, Records, RecordsMut},
-    table::TableDimension,
+    table::general::TableDimension,
     CellOption, Height, TableOption,
 };
 

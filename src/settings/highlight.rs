@@ -6,7 +6,7 @@
 use std::collections::HashSet;
 
 use crate::{
-    grid::config::{Border as GridBorder, Entity, GridConfig, Position, self},
+    grid::config::{self, Border as GridBorder, Entity, GridConfig, Position},
     object::Object,
     records::{ExactRecords, Records},
     style::BorderColor,
@@ -151,11 +151,7 @@ where
     }
 }
 
-fn set_border_color(
-    cfg: &mut GridConfig,
-    sector: HashSet<(usize, usize)>,
-    border: &BorderColor,
-) {
+fn set_border_color(cfg: &mut GridConfig, sector: HashSet<(usize, usize)>, border: &BorderColor) {
     if sector.is_empty() {
         return;
     }

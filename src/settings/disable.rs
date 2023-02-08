@@ -160,7 +160,7 @@ where
 {
     fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
         let columns = self.locator.locate(records).into_iter().collect::<Vec<_>>();
-    
+
         let mut shift = 0;
         for col in columns.into_iter() {
             if col - shift > records.count_columns() {
