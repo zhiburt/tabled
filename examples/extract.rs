@@ -4,8 +4,15 @@
 use std::fmt::{Display, Formatter};
 
 use tabled::{
-    object::{Columns, Rows},
-    Alignment, Extract, Modify, Style, Table, Tabled,
+    settings::{
+        alignment::Alignment,
+        extract::Extract,
+        format::Format,
+        object::{Columns, Rows},
+        style::Style,
+        Modify,
+    },
+    Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -80,7 +87,7 @@ fn main() {
 
     println!("Refinished segment");
 
-    let highlight = tabled::format::Format::content(|s: &str| {
+    let highlight = Format::content(|s| {
         if s == "Outstanding" {
             format!("+{}+", s)
         } else {
@@ -91,5 +98,6 @@ fn main() {
     let table = table
         .with(Style::modern())
         .with(Modify::new(Columns::new(1..)).with(highlight));
+
     println!("{}", table);
 }

@@ -2,9 +2,14 @@
 //! `cargo run --example formatting_settings`
 
 use tabled::{
-    formatting::{AlignmentStrategy, TrimStrategy},
-    object::Segment,
-    Alignment, Modify, Style, TableIteratorExt,
+    settings::{
+        alignment::Alignment,
+        formatting::{AlignmentStrategy, TrimStrategy},
+        object::Segment,
+        style::Style,
+        Modify,
+    },
+    Table,
 };
 
 fn main() {
@@ -20,7 +25,7 @@ fn main() {
     }
 ]"#;
 
-    let mut table = [some_json].table();
+    let mut table = Table::new([some_json]);
     table
         .with(Style::rounded())
         .with(Modify::new(Segment::all()).with(Alignment::center()));

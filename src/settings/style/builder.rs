@@ -93,16 +93,13 @@
 
 use std::marker::PhantomData;
 
-use papergrid::GridConfig;
-
 use crate::{
-    grid::config::{Border as GridBorder, Borders},
+    grid::config::{Borders, GridConfig},
     records::Records,
-    style::StyleCorrectSpan,
-    Border, Table, TableOption,
+    settings::TableOption,
 };
 
-use super::{HorizontalLine, Line, VerticalLine};
+use super::{Border, HorizontalLine, Line, VerticalLine};
 
 /// Style is represents a theme of a [`Table`].
 ///
@@ -491,65 +488,6 @@ impl Style<(), (), (), (), (), (), (), ()> {
             [],
             [],
         )
-    }
-
-    /// Try to fix the style when table contains spans.
-    ///
-    /// By default [`Style`] doesn't implies any logic to better render split lines when
-    /// [`Span`] is used.
-    ///
-    /// So this function can be used to set the split lines in regard of spans used.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use tabled::{TableIteratorExt, Style, Modify, format::Format, Span, object::Cell};
-    ///
-    /// let data = vec![
-    ///     ("09", "June", "2022"),
-    ///     ("10", "July", "2022"),
-    /// ];
-    ///
-    /// let mut table = data.table();
-    /// table
-    ///     .with(
-    ///         Modify::new(Cell(0, 0))
-    ///             .with(Format::new(|_| String::from("date")))
-    ///             .with(Span::column(3))
-    ///     );
-    ///
-    /// assert_eq!(
-    ///     table.to_string(),
-    ///     concat!(
-    ///         "+----+------+------+\n",
-    ///         "| date             |\n",
-    ///         "+----+------+------+\n",
-    ///         "| 09 | June | 2022 |\n",
-    ///         "+----+------+------+\n",
-    ///         "| 10 | July | 2022 |\n",
-    ///         "+----+------+------+",
-    ///     )
-    /// );
-    ///
-    /// table.with(Style::correct_spans());
-    ///
-    /// assert_eq!(
-    ///     table.to_string(),
-    ///     concat!(
-    ///         "+------------------+\n",
-    ///         "| date             |\n",
-    ///         "+----+------+------+\n",
-    ///         "| 09 | June | 2022 |\n",
-    ///         "+----+------+------+\n",
-    ///         "| 10 | July | 2022 |\n",
-    ///         "+----+------+------+",
-    ///     )
-    /// );
-    /// ```
-    ///
-    /// [`Span`]: crate::Span
-    pub const fn correct_spans() -> StyleCorrectSpan {
-        StyleCorrectSpan
     }
 }
 

@@ -1,8 +1,11 @@
 use std::iter::FromIterator;
 
-use papergrid::{records::Records, GridConfig};
-
-use crate::{records::ExactRecords, table::general::TableDimension, TableOption};
+use crate::{
+    grid::config::GridConfig,
+    records::{ExactRecords, Records},
+    settings::TableOption,
+    tables::table::TableDimension,
+};
 
 /// A structure used to set [`Table`] height via a list of rows heights.
 #[derive(Debug)]
@@ -24,10 +27,7 @@ impl From<Vec<usize>> for HeightList {
 }
 
 impl FromIterator<usize> for HeightList {
-    fn from_iter<T>(iter: T) -> Self
-    where
-        T: IntoIterator<Item = usize>,
-    {
+    fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
         Self::new(iter.into_iter().collect())
     }
 }

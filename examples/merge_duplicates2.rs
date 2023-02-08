@@ -1,9 +1,13 @@
 //! The example can be run using `cargo run --example merge_duplicates2`
 
 use tabled::{
-    merge::Merge,
-    object::{Cell, Columns, Object, Rows},
-    Border, Modify, Style, Table, Tabled,
+    settings::{
+        merge::Merge,
+        object::{Cell, Columns, Object, Rows},
+        style::{Border, Style, CorrectSpans},
+        Modify,
+    },
+    Table, Tabled,
 };
 
 fn main() {
@@ -20,7 +24,7 @@ fn main() {
 
     let mut table = Table::builder(data).index().transpose().build();
     config_theme(&mut table);
-    table.with(Merge::horizontal()).with(Style::correct_spans());
+    table.with(Merge::horizontal()).with(CorrectSpans);
 
     println!("{}", table);
 }

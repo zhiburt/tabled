@@ -2,9 +2,16 @@
 //! `cargo run --example nested_table_3`
 
 use tabled::{
-    highlight::Highlight,
-    object::{Cell, Segment},
-    Alignment, Border, Extract, Modify, Panel, Style, TableIteratorExt, Tabled,
+    settings::{
+        alignment::Alignment,
+        extract::Extract,
+        highlight::Highlight,
+        object::{Cell, Segment},
+        panel::Panel,
+        style::{Border, Style},
+        Modify,
+    },
+    Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -30,19 +37,17 @@ fn main() {
         "https:/github.com/aharpervc",
     )];
 
-    let committers_table = committers
-        .table()
+    let committers_table = Table::new(committers)
         .with(Panel::header("Contributors"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .to_string();
 
-    let issues_table = issuers
-        .table()
+    let issues_table = Table::new(issuers)
         .with(Panel::header("Issuers"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .to_string();
 
-    let mut a_welcome_table = [String::from("Thank You"), committers_table, issues_table].table();
+    let mut a_welcome_table = Table::new([String::from("Thank You"), committers_table, issues_table]);
     a_welcome_table
         .with(Extract::rows(1..))
         .with(Style::ascii().remove_horizontal())

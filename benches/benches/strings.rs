@@ -8,7 +8,7 @@ pub fn string_width(c: &mut Criterion) {
             &size,
             |b, &size| {
                 let text = black_box(build_string(size));
-                b.iter(|| black_box(tabled::papergrid::util::string_width(&text)));
+                b.iter(|| black_box(tabled::grid::util::string::string_width(&text)));
             },
         );
 
@@ -32,7 +32,7 @@ pub fn string_width_multiline(c: &mut Criterion) {
             &size,
             |b, &size| {
                 let text = black_box(build_string_multiline(size));
-                b.iter(|| black_box(tabled::papergrid::util::string_width(&text)));
+                b.iter(|| black_box(tabled::grid::util::string::string_width(&text)));
             },
         );
 
@@ -59,7 +59,7 @@ pub fn wrap(c: &mut Criterion) {
                 b.iter(|| {
                     black_box(
                         tabled::Table::new(&[&text])
-                            .with(tabled::Width::wrap(1))
+                            .with(tabled::settings::width::Width::wrap(1))
                             .to_string(),
                     )
                 });

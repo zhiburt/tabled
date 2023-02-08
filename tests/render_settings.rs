@@ -1,7 +1,10 @@
-use tabled::{
+use tabled::settings::{
+    alignment::Alignment,
     formatting::{AlignmentStrategy, TabSize, TrimStrategy},
     object::{Cell, Segment},
-    Alignment, Modify, Span, Style,
+    span::Span,
+    style::Style,
+    Modify,
 };
 
 use crate::util::{create_vector, new_table, test_table};

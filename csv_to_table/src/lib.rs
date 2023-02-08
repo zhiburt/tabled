@@ -11,7 +11,7 @@ mod records;
 use std::{io::Read, path::Path};
 
 use csv::Reader;
-use tabled::{builder::Builder, table::iter::IterTable, Table};
+use tabled::{builder::Builder, tables::iter::IterTable, Table};
 
 pub mod iter {
     use super::*;

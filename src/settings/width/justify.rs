@@ -1,9 +1,12 @@
 //! This module contains [`Justify`] structure, used to set an exact width to each column.
 
 use crate::{
-    measurement::{Max, Measurement, Min},
     records::{ExactRecords, Records, RecordsMut},
-    CellOption, TableOption, Width,
+    settings::{
+        measurement::{Max, Measurement, Min},
+        width::Width,
+        CellOption, TableOption,
+    },
 };
 
 /// Justify sets all columns widths to the set value.

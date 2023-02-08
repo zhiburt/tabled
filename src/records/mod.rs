@@ -1,6 +1,8 @@
 mod empty_records;
 mod vec_records;
 
+pub mod into_records;
+
 use std::ops::Index;
 
 use crate::grid::config::Position;

@@ -1,11 +1,13 @@
-use papergrid::{records::Records, GridConfig};
-
 use crate::{
-    measurement::Measurement,
-    peaker::{Peaker, PriorityNone},
-    records::ExactRecords,
-    table::general::TableDimension,
-    Height, TableOption,
+    grid::config::GridConfig,
+    records::{ExactRecords, Records},
+    settings::{
+        height::Height,
+        measurement::Measurement,
+        peaker::{Peaker, PriorityNone},
+        TableOption,
+    },
+    tables::table::TableDimension,
 };
 
 use super::util::get_table_height;

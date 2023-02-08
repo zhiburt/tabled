@@ -1,7 +1,10 @@
 //! The example can be run by this command
 //! `cargo run --example table_width`
 
-use tabled::{peaker::PriorityMax, Height, Style, Table};
+use tabled::{
+    settings::{height::Height, peaker::PriorityMax, style::Style},
+    Table,
+};
 
 fn main() {
     let data = vec![("Multi\nline\nstring", 123), ("Single line", 234)];

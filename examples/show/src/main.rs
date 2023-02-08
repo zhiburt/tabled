@@ -23,9 +23,20 @@ use crossterm::{
 };
 
 use tabled::{
-    object::{Columns, Object, Rows},
-    style::{BorderColored, Symbol},
-    Alignment, BorderText, Disable, Highlight, Margin, Modify, Panel, Style, Table, Tabled, Width,
+    settings::{
+        alignment::Alignment,
+        color::Color,
+        disable::Disable,
+        format::Format,
+        highlight::Highlight,
+        margin::Margin,
+        object::{Columns, Object, Rows},
+        panel::Panel,
+        style::{Border, BorderColor, BorderText, Style},
+        width::Width,
+        Modify,
+    },
+    Table, Tabled,
 };
 
 mod config;
@@ -146,10 +157,15 @@ fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
 
     #[rustfmt::skip]
     let add_summary_actions: Vec<Action> = vec![
-        full_action(|_, m, _| Table::builder(m).add_record(["", "", "", "", ""]).clone().build().with(Style::modern()).clone()),
-        action(|mut t| t.with(Modify::new(Rows::last().not(Columns::new(..2)).not(Columns::new(3..))).with(|_: &str| String::from(">= $281,000,000"))).clone()),
-        action(|mut t| t.with(Modify::new(Rows::last().not(Columns::new(..3)).not(Columns::new(4..))).with(|_: &str| String::from("$394,835,565"))).clone()),
-        action(|mut t| t.with(Modify::new(Rows::last().not(Columns::new(..4)).not(Columns::new(5..))).with(|_: &str| String::from("$5,930,687,178"))).clone()),
+        full_action(|_, m, _| {
+            let mut table = Table::builder(m);
+            table.push_record(["", "", "", "", ""]);
+            
+            table.build().with(Style::modern()).clone()
+        }),
+        action(|mut t| t.with(Modify::new(Rows::last().not(Columns::new(..2)).not(Columns::new(3..))).with(">= $281,000,000")).clone()),
+        action(|mut t| t.with(Modify::new(Rows::last().not(Columns::new(..3)).not(Columns::new(4..))).with("$394,835,565")).clone()),
+        action(|mut t| t.with(Modify::new(Rows::last().not(Columns::new(..4)).not(Columns::new(5..))).with("$5,930,687,178")).clone()),
     ];
 
     #[rustfmt::skip]
@@ -185,8 +201,14 @@ fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
     #[rustfmt::skip]
     let panel_actions: Vec<Action> = vec![
         action(|mut t| t.with(Panel::header("The Lord of the Rings")).with(Modify::new(Rows::first()).with(Alignment::center())).clone()),
-        action(|mut t| t.with(Highlight::colored(Rows::single(2), BorderColored::default().top(Symbol::ansi("━".yellow().to_string()).unwrap()))).clone()),
-        action(|mut t| t.with(Highlight::colored(Rows::last(), BorderColored::default().top(Symbol::ansi("━".yellow().to_string()).unwrap()))).clone()),
+        action(|mut t| t
+            .with(Highlight::colored(Rows::single(2), BorderColor::default().top(Color::FG_YELLOW)))
+            .with(Highlight::new(Rows::single(2), Border::default().top('━')))
+            .clone()),
+        action(|mut t| t
+            .with(Highlight::colored(Rows::last(), BorderColor::default().top(Color::FG_YELLOW)))
+            .with(Highlight::new(Rows::last(), Border::default().top('━')))
+            .clone()),
         full_action(|mut t, m, _| {
             let c = "━".yellow();
             let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
@@ -196,11 +218,11 @@ fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
 
     #[rustfmt::skip]
     let colorization_actions: Vec<Action> = vec![
-        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(|s: &str| s.white().bold().to_string())).clone()),
-        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..1)).not(Columns::new(2..))).with(|s: &str| s.white().bold().to_string())).clone()),
-        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..2)).not(Columns::new(3..))).with(|s: &str| s.red().bold().to_string())).clone()),
-        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..3)).not(Columns::new(4..))).with(|s: &str| s.green().bold().to_string())).clone()),
-        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..4)).not(Columns::new(5..))).with(|s: &str| s.blue().bold().to_string())).clone()),
+        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..0)).not(Columns::new(1..))).with(Format::content(|s| s.white().bold().to_string()))).clone()),
+        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..1)).not(Columns::new(2..))).with(Format::content(|s| s.white().bold().to_string()))).clone()),
+        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..2)).not(Columns::new(3..))).with(Format::content(|s| s.red().bold().to_string()))).clone()),
+        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..3)).not(Columns::new(4..))).with(Format::content(|s| s.green().bold().to_string()))).clone()),
+        action(|mut t| t.with(Modify::new(Rows::single(1).and(Rows::last()).not(Columns::new(..4)).not(Columns::new(5..))).with(Format::content(|s| s.blue().bold().to_string()))).clone()),
     ];
 
     #[rustfmt::skip]

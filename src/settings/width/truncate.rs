@@ -1,16 +1,19 @@
 //! This module contains [`Truncate`] structure, used to decrease width of a [`Table`]s or a cell on a [`Table`] by truncating the width.
 
-use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref, sync::Arc};
+use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
 
 use papergrid::util::string::{string_width_multiline_tab, string_width_tab};
 
 use crate::{
     grid::{config::GridConfig, grid_projection::GridProjection},
-    peaker::{Peaker, PriorityNone},
     records::{EmptyRecords, ExactRecords, Records, RecordsMut},
-    table::general::TableDimension,
-    width::Measurement,
-    CellOption, Table, TableOption, Width,
+    settings::{
+        measurement::Measurement,
+        peaker::{Peaker, PriorityNone},
+        width::Width,
+        CellOption, TableOption,
+    },
+    tables::table::TableDimension,
 };
 
 use super::util::{cut_str, get_table_widths, get_table_widths_with_total, replace_tab};
@@ -202,9 +205,7 @@ where
                 //       We could eliminate this allocation if we would be allowed to cut '\t' with unknown characters.
                 //       Currently we don't do that.
                 let text = replace_tab(text, cfg.get_tab_width());
-                Cow::Owned(
-                    truncate_text(&text, width, &suffix, save_suffix_color).into_owned(),
-                )
+                Cow::Owned(truncate_text(&text, width, &suffix, save_suffix_color).into_owned())
             };
 
             records.set(pos, text.into_owned());

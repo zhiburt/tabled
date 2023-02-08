@@ -1,6 +1,6 @@
 use crate::{
     grid::config::{GridConfig, HorizontalLine as GridLine},
-    TableOption,
+    settings::TableOption,
 };
 
 use super::Line;

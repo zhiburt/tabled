@@ -1,8 +1,10 @@
 use tabled::{
     builder::Builder,
-    highlight::Highlight,
-    object::{Cell, Columns, Frame, Object, Rows, Segment},
-    Border, Style,
+    settings::{
+        highlight::Highlight,
+        object::{Cell, Columns, Frame, Object, Rows, Segment},
+        style::{Border, Style},
+    },
 };
 
 use crate::util::{create_table, static_table, test_table};

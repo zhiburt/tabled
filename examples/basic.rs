@@ -3,7 +3,10 @@
 
 use std::iter::FromIterator;
 
-use tabled::{object::Rows, Alignment, Modify, Style, Table, Tabled};
+use tabled::{
+    settings::{object::Rows, style::Style, alignment::Alignment, Modify},
+    Table, Tabled,
+};
 
 #[derive(Debug, Tabled)]
 struct Distribution {

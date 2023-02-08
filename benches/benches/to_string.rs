@@ -1,5 +1,9 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use tabled::{object::Segment, Alignment, Modify, Padding, Style, TableIteratorExt, Tabled};
+
+use tabled::{
+    settings::{alignment::Alignment, object::Segment, padding::Padding, style::Style, Modify},
+    Table, Tabled,
+};
 
 macro_rules! table_bench {
     ($name:ident, $table:expr, $( $modificator:expr ),*) => {
@@ -11,7 +15,7 @@ macro_rules! table_bench {
                     let data = vec![entry; size];
 
                     #[allow(unused_mut)]
-                    let mut table = data.table();
+                    let mut table = Table::new(data);
 
                     $(table.with($modificator);)*
 

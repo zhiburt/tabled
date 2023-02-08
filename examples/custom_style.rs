@@ -2,8 +2,11 @@
 //! `cargo run --example custom_style`
 
 use tabled::{
-    style::{HorizontalLine, VerticalLine},
-    Alignment, Style, Table, Tabled,
+    settings::{
+        alignment::Alignment,
+        style::{HorizontalLine, Style, VerticalLine},
+    },
+    Table, Tabled,
 };
 
 #[derive(Tabled)]

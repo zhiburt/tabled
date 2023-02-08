@@ -8,13 +8,6 @@ mod format_positioned;
 
 use papergrid::GridConfig;
 
-use crate::{
-    grid::config::Entity,
-    records::{ExactRecords, Records, RecordsMut},
-};
-
-use crate::CellOption;
-
 pub use format_config::FormatConfig;
 pub use format_content::FormatContent;
 pub use format_positioned::FormatContentPositioned;

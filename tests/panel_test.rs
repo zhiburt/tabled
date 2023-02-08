@@ -1,8 +1,11 @@
-use tabled::{
+use tabled::settings::{
+    alignment::Alignment,
     highlight::Highlight,
     object::{Cell, Object, Rows, Segment},
-    style::HorizontalLine,
-    Alignment, Border, Modify, Panel, Style,
+    panel::Panel,
+    style::{Border, Style},
+    style::{CorrectSpans, HorizontalLine},
+    Modify,
 };
 
 use crate::util::{create_table, new_table, test_table};
@@ -157,7 +160,7 @@ test_table!(
     new_table(&[(0, 1)])
         .with(Panel::horizontal(0).text("Numbers"))
         .with(Style::modern())
-        .with(Style::correct_spans()),
+        .with(CorrectSpans),
     "┌───────────┐"
     "│  Numbers  │"
     "├─────┬─────┤"
@@ -172,7 +175,7 @@ test_table!(
     new_table(&[(0, 1)])
         .with(Panel::horizontal(0).text("Numbers"))
         .with(Style::modern().intersection_top('─').horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(Some('┬'))]))
-        .with(Style::correct_spans())
+        .with(CorrectSpans)
         .with(Modify::new(Cell(0, 0)).with(Alignment::center())),
     "┌───────────┐"
     "│  Numbers  │"

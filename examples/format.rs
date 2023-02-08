@@ -4,9 +4,13 @@
 //! The example shows a usage of [`tabled::Format`]/[`tabled::FormatWithIndex`].
 
 use tabled::{
-    format::Format,
-    object::{Columns, Object, Rows},
-    Modify, Style, Table, Tabled,
+    settings::{
+        format::Format,
+        object::{Columns, Object, Rows},
+        style::Style,
+        Modify,
+    },
+    Table, Tabled,
 };
 
 #[derive(Tabled)]

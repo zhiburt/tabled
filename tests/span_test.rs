@@ -1,7 +1,15 @@
 use tabled::{
-    highlight::Highlight,
-    object::{Cell, Columns, Segment},
-    Alignment, Border, Modify, Padding, Panel, Span, Style, Table,
+    settings::{
+        alignment::Alignment,
+        highlight::Highlight,
+        object::{Cell, Columns, Segment},
+        padding::Padding,
+        panel::Panel,
+        span::Span,
+        style::{Border, CorrectSpans, Style},
+        Modify,
+    },
+    Table,
 };
 
 use crate::util::{create_table, init_table, new_table, static_table, test_table};
@@ -340,7 +348,7 @@ test_table!(
         .with(Panel::horizontal(0).text("Tabled Releases"))
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(Style::ascii())
-        .with(Style::correct_spans()),
+        .with(CorrectSpans),
     "+-----------------+"
     "| Tabled Releases |"
     "+-----------+-----+"
@@ -356,7 +364,7 @@ test_table!(
         .with(Panel::horizontal(0).text("Tabled Releases"))
         .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
         .with(Style::ascii())
-        .with(Style::correct_spans()),
+        .with(CorrectSpans),
     "+-----------------+"
     "| Tabled Releases |"
     "+-----+-----+-----+"
@@ -375,7 +383,7 @@ test_table!(
         .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
         .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
         .with(Style::ascii())
-        .with(Style::correct_spans()),
+        .with(CorrectSpans),
     "+-----------------+"
     "| Tabled Releases |"
     "+-----------+-----+"
@@ -574,7 +582,7 @@ fn span_all_table_to_zero_test() {
 }
 
 mod row {
-    use tabled::object::Rows;
+    use tabled::settings::object::Rows;
 
     use super::*;
 
@@ -904,7 +912,7 @@ mod row {
         let table = Table::new(data)
             .with(Modify::new(Cell(0, 0)).with(Span::row(2)))
             .with(Style::ascii())
-            .with(Style::correct_spans())
+            .with(CorrectSpans)
             .to_string();
 
         assert_eq!(
@@ -923,7 +931,7 @@ mod row {
             .with(Modify::new(Cell(1, 0)).with(Span::row(2)))
             .with(Modify::new(Cell(0, 2)).with(Span::row(3)))
             .with(Style::ascii())
-            .with(Style::correct_spans())
+            .with(CorrectSpans)
             .to_string();
 
         assert_eq!(
@@ -945,7 +953,7 @@ mod row {
             .with(Modify::new(Cell(0, 2)).with(Span::row(3)))
             .with(Modify::new(Cell(0, 1)).with(Span::row(2)))
             .with(Style::ascii())
-            .with(Style::correct_spans())
+            .with(CorrectSpans)
             .to_string();
 
         assert_eq!(
@@ -969,7 +977,7 @@ mod row {
                     .with(Span::column(2)),
             )
             .with(Style::ascii())
-            .with(Style::correct_spans())
+            .with(CorrectSpans)
             .to_string();
 
         assert_eq!(
@@ -1001,7 +1009,7 @@ mod row {
             .with(v_span(2, 3, 3).with(String::from("just 1 column\nspan\n3\ncolumns")))
             .with(h_span(3, 1, 2))
             .with(Style::modern())
-            .with(Style::correct_spans())
+            .with(CorrectSpans)
             .with(Modify::new(Segment::all()).with(Alignment::center_vertical()))
             .to_string();
 

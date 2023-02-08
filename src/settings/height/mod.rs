@@ -7,13 +7,13 @@ mod table_height_increase;
 mod table_height_limit;
 mod util;
 
+use crate::settings::measurement::Measurement;
+
 pub use cell_height_increase::CellHeightIncrease;
 pub use cell_height_limit::CellHeightLimit;
 pub use height_list::HeightList;
 pub use table_height_increase::TableHeightIncrease;
 pub use table_height_limit::TableHeightLimit;
-
-use crate::measurement::Measurement;
 
 /// Height is a abstract factory for height settings.
 ///
@@ -120,10 +120,7 @@ impl Height {
     ///      +---------------------+------+------------+",
     /// )
     /// ```
-    pub fn increase<W>(width: W) -> CellHeightIncrease<W>
-    where
-        W: Measurement<Height>,
-    {
+    pub fn increase<W: Measurement<Height>>(width: W) -> CellHeightIncrease<W> {
         CellHeightIncrease::new(width)
     }
 
@@ -193,10 +190,7 @@ impl Height {
     ///      +----------------+------+------------+",
     /// );
     /// ```
-    pub fn limit<W>(width: W) -> CellHeightLimit<W>
-    where
-        W: Measurement<Height>,
-    {
+    pub fn limit<W: Measurement<Height>>(width: W) -> CellHeightLimit<W> {
         CellHeightLimit::new(width)
     }
 
@@ -229,10 +223,7 @@ impl Height {
     ///      +----------------+------+------------+",
     /// )
     /// ```
-    pub fn list<I>(rows: I) -> HeightList
-    where
-        I: IntoIterator<Item = usize>,
-    {
+    pub fn list<I: IntoIterator<Item = usize>>(rows: I) -> HeightList {
         HeightList::new(rows.into_iter().collect())
     }
 }

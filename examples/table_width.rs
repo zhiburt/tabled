@@ -1,7 +1,13 @@
 //! The example can be run by this command
 //! `cargo run --example table_width`
 
-use tabled::{measurement::Percent, object::Segment, Alignment, Modify, Style, Table, Width};
+use tabled::{
+    settings::{
+        alignment::Alignment, measurement::Percent, object::Segment, style::Style, width::Width,
+        Modify,
+    },
+    Table,
+};
 
 fn main() {
     let data = [
@@ -15,17 +21,17 @@ fn main() {
     let mut table = Table::builder(data).build();
     table
         .with(Style::markdown())
-        .with(Modify::new(Segment::all()).with(Alignment::left()));
+        .with(Alignment::left());
 
-    println!("Original table\n{}", table);
+    println!("Original table\n{}\n", table);
 
     table.with(Width::truncate(20).suffix("..."));
 
-    println!("Truncated table\n{}", table);
+    println!("Truncated table\n{}\n", table);
 
     table.with(Modify::new(Segment::all()).with(Width::wrap(5)));
 
-    println!("Wrapped table\n{}", table);
+    println!("Wrapped table\n{}\n", table);
 
     table.with(Width::increase(Percent(200)));
 

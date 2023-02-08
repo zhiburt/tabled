@@ -9,10 +9,66 @@ use crate::{
         grid_projection::GridProjection,
     },
     records::{ExactRecords, Records},
-    TableOption,
+    settings::TableOption,
 };
 
 /// A correctness function of style for [`Table`] which has [`Span`]s.
+///
+/// Try to fix the style when table contains spans.
+///
+/// By default [`Style`] doesn't implies any logic to better render split lines when
+/// [`Span`] is used.
+///
+/// So this function can be used to set the split lines in regard of spans used.
+///
+/// # Example
+///
+/// ```
+/// use tabled::{TableIteratorExt, Style, Modify, format::Format, Span, object::Cell};
+///
+/// let data = vec![
+///     ("09", "June", "2022"),
+///     ("10", "July", "2022"),
+/// ];
+///
+/// let mut table = data.table();
+/// table
+///     .with(
+///         Modify::new(Cell(0, 0))
+///             .with(Format::new(|_| String::from("date")))
+///             .with(Span::column(3))
+///     );
+///
+/// assert_eq!(
+///     table.to_string(),
+///     concat!(
+///         "+----+------+------+\n",
+///         "| date             |\n",
+///         "+----+------+------+\n",
+///         "| 09 | June | 2022 |\n",
+///         "+----+------+------+\n",
+///         "| 10 | July | 2022 |\n",
+///         "+----+------+------+",
+///     )
+/// );
+///
+/// table.with(Style::correct_spans());
+///
+/// assert_eq!(
+///     table.to_string(),
+///     concat!(
+///         "+------------------+\n",
+///         "| date             |\n",
+///         "+----+------+------+\n",
+///         "| 09 | June | 2022 |\n",
+///         "+----+------+------+\n",
+///         "| 10 | July | 2022 |\n",
+///         "+----+------+------+",
+///     )
+/// );
+/// ```
+///
+/// [`Span`]: crate::Span
 ///
 /// See [`Style::correct_spans`].
 ///
@@ -20,9 +76,9 @@ use crate::{
 /// [`Span`]: crate::Span
 /// [`Style::correct_spans`]: crate::Style::correct_spans
 #[derive(Debug)]
-pub struct StyleCorrectSpan;
+pub struct CorrectSpans;
 
-impl<R, D> TableOption<R, D> for StyleCorrectSpan
+impl<R, D> TableOption<R, D> for CorrectSpans
 where
     R: Records + ExactRecords,
 {

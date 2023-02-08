@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example expanded_display`
 
-use tabled::{table::extended::ExtendedTable, Tabled};
+use tabled::{tables::extended::ExtendedTable, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {

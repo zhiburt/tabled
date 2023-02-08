@@ -3,16 +3,13 @@
 //!
 //! This example requires a `color` feature.
 
-use std::iter::FromIterator;
-
-use owo_colors::OwoColorize;
-
 use tabled::{
-    color::Color,
-    object::Segment,
-    style::Style,
-    style::{BorderColor, RawStyle},
-    Border, Table, Tabled,
+    settings::{
+        color::Color,
+        object::Segment,
+        style::{Border, BorderColor, RawStyle, Style},
+    },
+    Table, Tabled,
 };
 
 #[derive(Tabled)]
@@ -33,14 +30,6 @@ impl CodeEditor {
 }
 
 fn main() {
-    let data = [
-        CodeEditor::new("Sublime Text 3", "2008", "Sublime HQ"),
-        CodeEditor::new("Visual Studio Code", "2015", "Microsoft"),
-        CodeEditor::new("Notepad++", "2003", "Don Ho"),
-        CodeEditor::new("GNU Emacs", "1984", "Richard Stallman"),
-        CodeEditor::new("Neovim", "2015", "Vim community"),
-    ];
-
     let mut style = RawStyle::from(Style::extended());
     style.set_color_top(Color::FG_RED);
     style.set_color_bottom(Color::FG_CYAN);
@@ -58,8 +47,15 @@ fn main() {
     style.set_color_horizontal(Color::FG_MAGENTA);
     style.set_color_vertical(Color::FG_MAGENTA);
 
-    let mut table = Table::from_iter(&data);
-    table.with(style);
+    let data = [
+        CodeEditor::new("Sublime Text 3", "2008", "Sublime HQ"),
+        CodeEditor::new("Visual Studio Code", "2015", "Microsoft"),
+        CodeEditor::new("Notepad++", "2003", "Don Ho"),
+        CodeEditor::new("GNU Emacs", "1984", "Richard Stallman"),
+        CodeEditor::new("Neovim", "2015", "Vim community"),
+    ];
+
+    let table = data.iter().collect::<Table>().with(style).to_string();
 
     println!("{}", table);
 }

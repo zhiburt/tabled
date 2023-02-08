@@ -8,14 +8,20 @@
 
 use std::{io::Read, iter::FromIterator};
 
-use papergrid::util::string;
 use tabled::{
     builder::Builder,
-    object::Cell,
+    grid::util::string,
     row,
-    shadow::Shadow,
-    style::{BorderChar, Offset, RawStyle},
-    Height, Modify, Padding, Style, Table, Width,
+    settings::{
+        height::Height,
+        object::Cell,
+        padding::Padding,
+        shadow::Shadow,
+        style::{BorderChar, Offset, RawStyle, Style},
+        width::Width,
+        Modify,
+    },
+    Table,
 };
 
 fn main() {

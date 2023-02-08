@@ -1,7 +1,10 @@
-use tabled::{
+use tabled::settings::{
+    alignment::Alignment,
     locator::ByColumnName,
     object::{Columns, Rows, Segment},
-    Alignment, Modify, Padding, Style,
+    padding::Padding,
+    style::Style,
+    Modify,
 };
 
 use crate::util::{create_table, init_table, test_table};

@@ -5,15 +5,15 @@ use std::marker::PhantomData;
 use papergrid::util::string::{get_lines, string_width_multiline_tab};
 
 use crate::{
-    grid::{
-        config::{Entity, GridConfig},
-        dimension::ExactDimension,
-    },
-    measurement::Measurement,
-    peaker::{Peaker, PriorityNone},
+    grid::config::{Entity, GridConfig},
     records::{ExactRecords, Records, RecordsMut},
-    table::general::TableDimension,
-    CellOption, Table, TableOption, Width,
+    settings::{
+        measurement::Measurement,
+        peaker::{Peaker, PriorityNone},
+        width::Width,
+        CellOption, TableOption,
+    },
+    tables::table::TableDimension,
 };
 
 use super::util::get_table_widths_with_total;

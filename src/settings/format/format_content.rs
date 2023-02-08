@@ -1,7 +1,7 @@
 use crate::{
     grid::config::{Entity, GridConfig},
     records::{ExactRecords, Records, RecordsMut},
-    CellOption,
+    settings::CellOption,
 };
 
 use super::FormatContentPositioned;

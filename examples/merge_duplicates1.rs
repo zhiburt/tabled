@@ -1,6 +1,12 @@
 //! The example can be run using `cargo run --example merge_duplicates1`
 
-use tabled::{merge::Merge, Style, TableIteratorExt, Tabled};
+use tabled::{
+    settings::{
+        merge::Merge,
+        style::{CorrectSpans, Style},
+    },
+    Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct DatabaseTable {
@@ -33,11 +39,10 @@ fn main() {
         DatabaseTable::new("database_3", "table_3", 141723),
     ];
 
-    let table = data
-        .table()
+    let table = Table::new(data)
         .with(Merge::vertical())
         .with(Style::modern())
-        .with(Style::correct_spans())
+        .with(CorrectSpans)
         .to_string();
 
     println!("{}", table);

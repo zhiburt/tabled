@@ -1,7 +1,10 @@
 //! The example can be run by this command
 //! `cargo run --example panel`
 
-use tabled::{object::Segment, Alignment, Modify, Panel, Style, Table, Tabled};
+use tabled::{
+    settings::{alignment::Alignment, object::Segment, panel::Panel, style::{Style, CorrectSpans}, Modify},
+    Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct Release {
@@ -42,7 +45,7 @@ fn main() {
         .with(Panel::vertical(5).text("Some text goes here").text_width(1))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::modern())
-        .with(Style::correct_spans());
+        .with(CorrectSpans);
 
     println!("{}", table);
 }

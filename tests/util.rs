@@ -9,7 +9,11 @@ use std::{
 
 use papergrid::util::string::string_width_multiline;
 
-use tabled::{grid::config::Position, object::SegmentAll, Alignment, Modify, Table, Tabled};
+use tabled::{
+    grid::config::Position,
+    settings::{alignment::Alignment, object::SegmentAll, Modify},
+    Table, Tabled,
+};
 
 /// A helper table factory.
 ///

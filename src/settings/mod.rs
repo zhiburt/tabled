@@ -1,26 +1,33 @@
+mod cell_option;
+mod modify;
+mod settings_list;
+mod table_option;
+
+pub mod object;
+
 pub mod alignment;
+pub mod color;
+pub mod concat;
+pub mod disable;
+pub mod extract;
 pub mod format;
 pub mod formatting;
 pub mod height;
-#[allow(unreachable_pub)]
 pub mod highlight;
 pub mod locator;
+pub mod margin;
 pub mod measurement;
+pub mod merge;
+pub mod padding;
+pub mod panel;
 pub mod peaker;
+pub mod rotate;
 pub mod shadow;
+pub mod span;
 pub mod style;
 pub mod width;
 
-pub mod color;
-pub mod margin_color;
-pub mod padding_color;
-
-pub(crate) mod concat;
-pub(crate) mod disable;
-pub(crate) mod extract;
-pub(crate) mod margin;
-pub mod merge;
-pub(crate) mod padding;
-pub(crate) mod panel;
-pub(crate) mod rotate;
-pub(crate) mod span;
+pub use cell_option::CellOption;
+pub use modify::{Modify, ModifyList};
+pub use settings_list::{EmptySettings, Settings};
+pub use table_option::TableOption;

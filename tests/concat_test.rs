@@ -1,4 +1,4 @@
-use tabled::{Concat, Style};
+use tabled::settings::{concat::Concat, style::Style};
 
 use crate::util::{create_table, init_table, test_table};
 

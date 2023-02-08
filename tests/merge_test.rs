@@ -1,8 +1,8 @@
-use tabled::{merge::Merge, Table};
+mod util;
+
+use tabled::{settings::merge::Merge, Table};
 
 use crate::util::test_table;
-
-mod util;
 
 test_table!(
     merge_horizontal,

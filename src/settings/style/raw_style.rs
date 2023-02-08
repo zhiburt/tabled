@@ -4,15 +4,15 @@
 use std::collections::HashMap;
 
 use crate::{
-    color::Color,
     grid::{
         color::AnsiColor,
         config::{self, Borders, GridConfig},
     },
     records::Records,
-    style::{HorizontalLine, Line, VerticalLine},
-    Border, Style, TableOption,
+    settings::{color::Color, TableOption},
 };
+
+use super::{Border, HorizontalLine, Line, Style, VerticalLine};
 
 /// A raw style data, which can be produced safely from [`Style`].
 ///

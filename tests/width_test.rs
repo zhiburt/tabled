@@ -1,12 +1,17 @@
 use papergrid::util::string::string_width_multiline;
 
-use tabled::{
+use tabled::settings::{
+    alignment::Alignment,
     formatting::TrimStrategy,
+    margin::Margin,
     object::{Cell, Columns, Object, Rows, Segment},
+    padding::Padding,
+    panel::Panel,
     peaker::{PriorityMax, PriorityMin},
-    settings_list::Settings,
+    span::Span,
+    style::Style,
     width::{Justify, MinWidth, SuffixLimit, Width},
-    Alignment, Margin, Modify, Padding, Panel, Span, Style,
+    Modify, Settings,
 };
 
 #[cfg(feature = "color")]
@@ -399,7 +404,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
 #[cfg(feature = "color")]
 #[test]
 fn max_width_keep_words_1() {
-    use tabled::style::HorizontalLine;
+    use tabled::settings::style::HorizontalLine;
 
     let table = new_table(&["asdf"])
         .with(Width::wrap(7).keep_words())

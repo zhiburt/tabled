@@ -1,13 +1,12 @@
 //! This module contains a configuration of a Border to set its color via [`BorderColored`].
 
 use crate::{
-    color::Color,
     grid::{
         color::AnsiColor,
         config::{Border, Entity, GridConfig},
     },
     records::{ExactRecords, Records},
-    CellOption,
+    settings::{color::Color, CellOption},
 };
 
 /// BorderColored represents a colored border of a Cell.

@@ -1,6 +1,9 @@
-use tabled::{
+use tabled::settings::{
+    alignment::Alignment,
     object::{Rows, Segment},
-    Alignment, Modify, Padding, Style,
+    padding::Padding,
+    style::Style,
+    Modify,
 };
 
 use crate::util::{create_table, test_table};
@@ -101,7 +104,7 @@ test_table!(
     {
         use std::convert::TryFrom;
         use owo_colors::OwoColorize;
-        use tabled::{padding_color::PaddingColor, color::Color};
+        use tabled::settings::{padding::PaddingColor, color::Color};
 
         let padding_color = PaddingColor::new(
             Color::try_from(' '.on_red().to_string()).unwrap(),

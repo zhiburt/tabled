@@ -1,6 +1,9 @@
 //! The example shows how we could spread a table to the size of a terminal.
 
-use tabled::{Height, Style, TableIteratorExt, Tabled, Width};
+use tabled::{
+    settings::{height::Height, style::Style, width::Width},
+    Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct Release {
@@ -38,7 +41,7 @@ fn main() {
     let (terminal_size::Width(width), terminal_size::Height(height)) =
         terminal_size::terminal_size().unwrap();
 
-    let mut table = DATA.table();
+    let mut table = Table::new(DATA);
     table.with(Style::extended());
 
     if use_width {

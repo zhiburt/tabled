@@ -1,7 +1,11 @@
 //! The example can be run by this command
 //! `cargo run --example col_row_macros --features="macros"`
 
-use tabled::{col, row, Alignment, Style, Table, Tabled};
+use tabled::{
+    col, row,
+    settings::{alignment::Alignment, style::Style},
+    Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct Person {

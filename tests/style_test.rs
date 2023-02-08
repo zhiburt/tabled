@@ -1,16 +1,24 @@
 use std::{convert::TryFrom, iter::FromIterator};
 
-use crate::util::{create_table, init_table, static_table, test_table};
-
 use tabled::{
     builder::Builder,
-    color::Color,
-    format::Format,
-    highlight::Highlight,
-    object::{Cell, Columns, Rows, Segment},
-    style::{BorderChar, HorizontalLine, Line, Offset, RawStyle, VerticalLine},
-    Border, BorderText, Modify, Padding, Span, Style, Table,
+    settings::{
+        color::Color,
+        format::Format,
+        highlight::Highlight,
+        object::{Cell, Columns, Rows, Segment},
+        padding::Padding,
+        span::Span,
+        style::{
+            Border, BorderChar, BorderText, CorrectSpans, HorizontalLine, Line, Offset, RawStyle,
+            Style, VerticalLine,
+        },
+        Modify,
+    },
+    Table,
 };
+
+use crate::util::{create_table, init_table, static_table, test_table};
 
 mod util;
 
@@ -336,7 +344,7 @@ test_table!(
     border_text_colored_1,
     {
         use owo_colors::OwoColorize;
-        use tabled::style::{BorderColor, Border};
+        use tabled::settings::style::{BorderColor, Border};
 
         create_table::<2, 2>()
             .with(BorderText::new(2, "-Table213123".blue().on_green().to_string()))
@@ -580,7 +588,7 @@ test_table!(
         .with(Modify::new(Cell(4, 1)).with(Span::column(4)))
         .with(Modify::new(Cell(5, 0)).with(Span::column(5)))
         .with(Modify::new(Cell(6, 0)).with(Span::column(5)))
-        .with(Style::correct_spans()),
+        .with(CorrectSpans),
     "+---+----------+----------+-----------+"
     "| N | column 0 | column 1 | column 2  |"
     "+---+----------+----------+-----+-----+"
@@ -609,7 +617,7 @@ test_table!(
         .with(Modify::new(Cell(4, 1)).with(Span::column(4)))
         .with(Modify::new(Cell(5, 0)).with(Span::column(5)))
         .with(Modify::new(Cell(6, 0)).with(Span::column(5)))
-        .with(Style::correct_spans()),
+        .with(CorrectSpans),
     "+----------------------+"
     "|          N           |"
     "+----------+-----+-----+"
@@ -2045,7 +2053,7 @@ fn test_default_border_usage() {
 #[test]
 fn border_colored_test() {
     use owo_colors::OwoColorize;
-    use tabled::{color::Color, style::BorderColor};
+    use tabled::settings::{color::Color, style::BorderColor};
 
     let table = create_table::<2, 2>()
         .with(Style::ascii())
@@ -2118,7 +2126,7 @@ fn border_colored_test() {
 #[test]
 fn style_with_color_test() {
     use owo_colors::OwoColorize;
-    use tabled::color::Color;
+    use tabled::settings::color::Color;
 
     let mut style: RawStyle = Style::ascii().into();
     style
@@ -2185,7 +2193,7 @@ test_table!(
     {
         use std::convert::TryFrom;
         use owo_colors::OwoColorize;
-        use tabled::color::Color;
+        use tabled::settings::color::Color;
 
         let color = Color::try_from(' '.on_green().to_string()).unwrap();
 
@@ -2200,7 +2208,7 @@ test_table!(
     {
         use std::convert::TryFrom;
         use owo_colors::OwoColorize;
-        use tabled::color::Color;
+        use tabled::settings::color::Color;
 
         let color = Color::try_from(' '.on_green().to_string()).unwrap();
 

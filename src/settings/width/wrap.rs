@@ -3,23 +3,24 @@
 
 use std::marker::PhantomData;
 
-use papergrid::util::string::{string_width_multiline, string_width_multiline_tab};
-
 use crate::{
     grid::{
         config::{Entity, GridConfig},
         grid_projection::GridProjection,
+        util::string::string_width_multiline_tab,
     },
-    measurement::Measurement,
-    peaker::{Peaker, PriorityNone},
     records::ExactRecords,
     records::{EmptyRecords, Records, RecordsMut},
-    table::general::TableDimension,
-    width::util::replace_tab,
-    CellOption, Table, TableOption, Width,
+    settings::{
+        measurement::Measurement,
+        peaker::{Peaker, PriorityNone},
+        width::Width,
+        CellOption, TableOption,
+    },
+    tables::table::TableDimension,
 };
 
-use super::util::{get_table_widths, get_table_widths_with_total, split_at_pos};
+use super::util::{get_table_widths, get_table_widths_with_total, replace_tab, split_at_pos};
 
 /// Wrap wraps a string to a new line in case it exceeds the provided max boundary.
 /// Otherwise keeps the content of a cell untouched.

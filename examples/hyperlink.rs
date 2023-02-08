@@ -3,7 +3,10 @@
 
 use std::iter::FromIterator;
 
-use tabled::{object::Segment, Alignment, Modify, Style, Table, Tabled, Width};
+use tabled::{
+    settings::{alignment::Alignment, object::Segment, style::Style, width::Width, Modify},
+    Table, Tabled,
+};
 
 fn main() {
     let multicolored_debian = "\x1b[30mDebian\x1b[0m\

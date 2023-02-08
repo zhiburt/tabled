@@ -1,4 +1,4 @@
-use tabled::{shadow::Shadow, Style};
+use tabled::settings::{shadow::Shadow, style::Style};
 
 use crate::util::{new_table, test_table};
 
@@ -7,7 +7,7 @@ use owo_colors::OwoColorize;
 #[cfg(feature = "color")]
 use std::convert::TryFrom;
 #[cfg(feature = "color")]
-use tabled::color::Color;
+use tabled::settings::color::Color;
 
 mod util;
 

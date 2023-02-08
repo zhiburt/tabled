@@ -927,15 +927,6 @@ where
         }
     }
 
-    println!(
-        "here we built row={} {:?}",
-        row,
-        columns
-            .iter()
-            .map(|(key, val)| (key, (val.1, val.2)))
-            .collect::<Vec<_>>()
-    );
-
     columns.retain(|_, (_, rowspan, _)| {
         *rowspan -= 1;
         *rowspan != 0

@@ -1,8 +1,10 @@
-use tabled::{
+use tabled::settings::{
+    alignment::Alignment,
+    disable::Disable,
     locator::ByColumnName,
     object::{Columns, Rows, Segment},
-    style::HorizontalLine,
-    Alignment, Disable, Modify, Style,
+    style::{HorizontalLine, Style},
+    Modify,
 };
 
 use crate::util::{create_table, test_table};

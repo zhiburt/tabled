@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example rotate`
 
-use tabled::{Rotate, Table, Tabled};
+use tabled::{settings::rotate::Rotate, Table, Tabled};
 
 #[derive(Tabled)]
 struct Linux {

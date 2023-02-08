@@ -7,9 +7,15 @@ use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
-    object::{Rows, Segment},
-    style::HorizontalLine,
-    Alignment, Modify, Padding, Style, Table, Width,
+    settings::{
+        alignment::Alignment,
+        object::{Rows, Segment},
+        padding::Padding,
+        style::{HorizontalLine, Style},
+        width::Width,
+        Modify,
+    },
+    Table,
 };
 
 fn main() {

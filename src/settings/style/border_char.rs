@@ -1,10 +1,10 @@
 use crate::{
     grid::config::{Entity, GridConfig, Position},
-    records::ExactRecords,
-    records::Records,
-    style::Offset,
-    CellOption,
+    records::{ExactRecords, Records},
+    settings::CellOption,
 };
+
+use super::Offset;
 
 /// [`BorderChar`] sets a char to a specific location on a horizontal line.
 ///

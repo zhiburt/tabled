@@ -1,7 +1,10 @@
 //! The example can be run by this command
 //! `cargo run --example concat`
 
-use tabled::{object::Segment, Alignment, Concat, Modify, Style, Table, Tabled};
+use tabled::{
+    settings::{alignment::Alignment, concat::Concat, object::Segment, style::Style, Modify},
+    Table, Tabled,
+};
 
 #[derive(Debug, Tabled)]
 struct Weather {

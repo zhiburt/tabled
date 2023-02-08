@@ -1,8 +1,9 @@
 use std::iter::FromIterator;
 
-use papergrid::{records::Records, GridConfig};
-
-use crate::{records::ExactRecords, table::general::TableDimension, Table, TableOption};
+use crate::{
+    grid::config::GridConfig, records::Records, settings::TableOption,
+    tables::table::TableDimension,
+};
 
 /// A structure used to set [`Table`] width via a list of columns widths.
 #[derive(Debug)]
@@ -24,10 +25,7 @@ impl From<Vec<usize>> for WidthList {
 }
 
 impl FromIterator<usize> for WidthList {
-    fn from_iter<T>(iter: T) -> Self
-    where
-        T: IntoIterator<Item = usize>,
-    {
+    fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
         Self::new(iter.into_iter().collect())
     }
 }

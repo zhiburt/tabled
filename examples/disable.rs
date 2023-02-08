@@ -1,7 +1,15 @@
 //! The example can be run by this command
 //! `cargo run --example disable`
 
-use tabled::{locator::ByColumnName, Border, Disable, Modify, Style, Table, Tabled};
+use tabled::{
+    settings::{
+        disable::Disable,
+        locator::ByColumnName,
+        style::{Border, Style},
+        Modify,
+    },
+    Table, Tabled,
+};
 
 #[derive(Tabled)]
 struct Distribution {

@@ -2,11 +2,15 @@
 //! `cargo run --example custom_style`
 
 use tabled::{
-    modify::ModifyList,
-    object::{Columns, FirstRow, Rows},
-    settings_list::Settings,
-    style::{builder::On, HorizontalLine, VerticalLine},
-    Alignment, Header, Modify, Padding, Style, Table, Tabled,
+    settings::{
+        alignment::Alignment,
+        object::{Columns, FirstRow, Rows},
+        padding::Padding,
+        style::Style,
+        style::{builder::On, HorizontalLine, VerticalLine},
+        Modify, ModifyList, Settings,
+    },
+    Table, Tabled,
 };
 
 #[derive(Tabled)]

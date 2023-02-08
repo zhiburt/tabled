@@ -1,6 +1,4 @@
-use crate::grid::config::{Entity, GridConfig};
-
-use crate::{CellOption, TableOption};
+use crate::{grid::config::GridConfig, settings::TableOption};
 
 #[derive(Debug)]
 pub struct FormatConfig<F>(pub F)

@@ -1,15 +1,16 @@
-use papergrid::{
-    records::Records,
-    util::string::{count_lines, get_lines},
-    GridConfig,
-};
-
 use crate::{
-    measurement::Measurement,
-    peaker::{Peaker, PriorityNone},
-    records::{ExactRecords, RecordsMut},
-    table::general::TableDimension,
-    Height, TableOption,
+    grid::{
+        config::GridConfig,
+        util::string::{count_lines, get_lines},
+    },
+    records::{ExactRecords, Records, RecordsMut},
+    settings::{
+        height::Height,
+        measurement::Measurement,
+        peaker::{Peaker, PriorityNone},
+        TableOption,
+    },
+    tables::table::TableDimension,
 };
 
 use super::util::get_table_height;

@@ -1,6 +1,10 @@
 use std::iter::FromIterator;
 
-use tabled::{builder::Builder, settings_list::Settings, Height, Padding, Style, Table, Width};
+use tabled::{
+    builder::Builder,
+    settings::{height::Height, padding::Padding, style::Style, width::Width, Settings},
+    Table,
+};
 
 use crate::util::{create_table, test_table};
 
@@ -277,7 +281,7 @@ test_table!(
 test_table!(
     multiline_table_test_0,
     Table::new(&[["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
-        .with(tabled::Style::modern()),
+        .with(Style::modern()),
     r#"┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐"#
     r#"│ 0                                                                                                                                                                                                                                                                    │"#
     r#"├──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤"#
@@ -291,7 +295,7 @@ test_table!(
 test_table!(
     multiline_table_test_1,
     Table::new(&[["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
-        .with(tabled::Style::modern())
+        .with(Style::modern())
         .with(Width::wrap(100)),
     "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐"
     "│ 0                                                                                                │"
@@ -727,7 +731,7 @@ fn multiline_table_test2() {
     ];
 
     let mut table = Table::new(&data);
-    table.with(tabled::Style::modern());
+    table.with(Style::modern());
 
     assert_eq!(
         ansi_str::AnsiStr::ansi_strip(&table.to_string()),
@@ -768,7 +772,7 @@ test_table!(
     table_1x1_empty,
     {
         Builder::from_iter(vec![vec![""]]).build()
-            .with(tabled::Style::modern())
+            .with(Style::modern())
             .with(Settings::new(Height::limit(0), Width::increase(10)))
     },
     "┌────────┐"
@@ -779,7 +783,7 @@ test_table!(
     table_2x2_empty,
     {
         Builder::from_iter(vec![vec![" ", ""], vec![" ", ""]]).build()
-            .with(tabled::Style::modern())
+            .with(Style::modern())
             .with(Padding::zero())
             .with(Height::list([1, 0]))
     },
@@ -793,7 +797,7 @@ test_table!(
     table_2x2_empty_height_list_together_with_width_list_dont_work_0,
     {
         Builder::from_iter(vec![vec!["", ""], vec!["", ""]]).build()
-            .with(tabled::Style::modern())
+            .with(Style::modern())
             .with(Padding::zero())
             .with(Height::list([1, 0]))
             .with(Width::list([1, 0]))
@@ -809,7 +813,7 @@ test_table!(
     table_2x2_empty_height_list_together_with_width_list_dont_work_1,
     {
         Builder::from_iter(vec![vec!["", ""], vec!["", ""]]).build()
-            .with(tabled::Style::modern())
+            .with(Style::modern())
             .with(Padding::zero())
             .with(Width::list([1, 0]))
             .with(Height::list([1, 0]))

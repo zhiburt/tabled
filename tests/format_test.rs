@@ -1,7 +1,10 @@
-use tabled::{
+use tabled::settings::{
+    alignment::Alignment,
     format::Format,
     object::{Cell, Columns, Object, Rows, Segment},
-    Alignment, Modify, Padding, Style,
+    padding::Padding,
+    style::Style,
+    Modify,
 };
 
 use crate::util::{create_table, init_table, test_table};
@@ -224,7 +227,6 @@ test_table!(
     "| Hello World | Hello World | Hello World | Hello World |"
     "+-------------+-------------+-------------+-------------+"
 );
-
 
 #[cfg(feature = "color")]
 mod color {

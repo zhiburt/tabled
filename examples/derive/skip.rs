@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example skip`
 
-use tabled::{TableIteratorExt, Tabled};
+use tabled::{Table, Tabled};
 
 #[allow(dead_code)]
 #[derive(Tabled)]
@@ -40,7 +40,7 @@ fn main() {
         Country::new("Canada", "Canadian Dollar", "CAD", "Ottawa", 9984670.0),
     ];
 
-    let table = data.table();
+    let table = Table::new(data);
 
     println!("{}", table);
 }

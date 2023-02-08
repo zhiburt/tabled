@@ -1,7 +1,7 @@
 use crate::{
     grid::config::{Entity, GridConfig},
     records::{ExactRecords, Records, RecordsMut},
-    CellOption,
+    settings::CellOption,
 };
 
 /// [`FormatWithIndex`] is like a [`Format`] an abstraction over a function you can use against a cell.

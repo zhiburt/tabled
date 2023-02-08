@@ -1,10 +1,11 @@
-use crate::util::{create_vector, static_table};
-use tabled::{table::extended::ExtendedTable, Tabled};
-
 #[cfg(feature = "color")]
 use owo_colors::{AnsiColors, OwoColorize};
 
+use tabled::{tables::extended::ExtendedTable, Tabled};
+
 mod util;
+
+use crate::util::{create_vector, static_table};
 
 macro_rules! assert_expanded_display {
     ( $data:expr, $expected:expr ) => {

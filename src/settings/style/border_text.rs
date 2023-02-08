@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crate::{grid::config::GridConfig, records::ExactRecords, TableOption, Border};
+use crate::{grid::config::GridConfig, records::ExactRecords, settings::TableOption};
 
 use super::Offset;
 
@@ -49,18 +49,12 @@ impl<'a> BorderText<'a, ()> {
     }
 
     /// Creates a [`BorderText`] instance for a top line.
-    pub fn first<S>(text: S) -> BorderText<'a, LineFirst>
-    where
-        S: Into<Cow<'a, str>>,
-    {
+    pub fn first<S: Into<Cow<'a, str>>>(text: S) -> BorderText<'a, LineFirst> {
         BorderText::create(text.into(), Offset::Begin(0), LineFirst)
     }
 
     /// Creates a [`BorderText`] instance for a bottom line.
-    pub fn last<S>(text: S) -> BorderText<'a, LineLast>
-    where
-        S: Into<Cow<'a, str>>,
-    {
+    pub fn last<S: Into<Cow<'a, str>>>(text: S) -> BorderText<'a, LineLast> {
         BorderText::create(text.into(), Offset::Begin(0), LineLast)
     }
 

@@ -1,12 +1,9 @@
-use papergrid::util::string::count_lines;
-
 use crate::{
     grid::config::{Entity, GridConfig},
-    measurement::Measurement,
-    peaker::Peaker,
+    grid::util::string::count_lines,
     records::{ExactRecords, Records, RecordsMut},
-    table::general::TableDimension,
-    CellOption, Height, TableOption,
+    settings::{height::Height, measurement::Measurement, peaker::Peaker, CellOption, TableOption},
+    tables::table::TableDimension,
 };
 
 use super::TableHeightIncrease;

@@ -9,15 +9,19 @@ use std::convert::TryFrom;
 use owo_colors::OwoColorize;
 
 use tabled::{
-    color::Color,
-    format::Format,
     grid::{dimension::ExactDimension, util::string::string_width_multiline},
-    margin_color::MarginColor,
-    object::{Columns, Object, Rows, Segment},
-    padding_color::PaddingColor,
     records::{ExactRecords, Records, VecRecords},
-    style::Style,
-    Alignment, CellOption, Margin, Modify, Padding, Table, Tabled,
+    settings::{
+        alignment::Alignment,
+        color::Color,
+        format::Format,
+        margin::{Margin, MarginColor},
+        object::{Columns, Object, Rows, Segment},
+        padding::{Padding, PaddingColor},
+        style::Style,
+        CellOption, Modify,
+    },
+    Table, Tabled,
 };
 
 #[derive(Tabled)]

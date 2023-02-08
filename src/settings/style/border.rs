@@ -1,7 +1,7 @@
 use crate::{
     grid::config::{Border as GridBorder, Entity, GridConfig},
     records::{ExactRecords, Records},
-    CellOption,
+    settings::CellOption,
 };
 
 /// Border represents a border of a Cell.

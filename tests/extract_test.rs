@@ -1,8 +1,14 @@
 use tabled::{
     builder::Builder,
-    format::Format,
-    object::{Rows, Segment},
-    Alignment, Disable, Extract, Modify, Padding,
+    settings::{
+        alignment::Alignment,
+        disable::Disable,
+        extract::Extract,
+        format::Format,
+        object::{Rows, Segment},
+        padding::Padding,
+        Modify,
+    },
 };
 
 use crate::util::{create_table, test_table};

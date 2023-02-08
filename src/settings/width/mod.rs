@@ -39,7 +39,7 @@ mod util;
 mod width_list;
 mod wrap;
 
-use crate::{grid::dimension::ExactDimension, measurement::Measurement};
+use crate::settings::measurement::Measurement;
 
 pub use self::{
     justify::Justify,
@@ -48,8 +48,6 @@ pub use self::{
     width_list::WidthList,
     wrap::Wrap,
 };
-
-use papergrid::{dimension::Dimension, records::Records, GridConfig};
 
 pub(crate) use wrap::wrap_text;
 
@@ -109,34 +107,22 @@ pub struct Width;
 
 impl Width {
     /// Returns a [`Wrap`] structure.
-    pub fn wrap<W>(width: W) -> Wrap<W>
-    where
-        W: Measurement<Width>,
-    {
+    pub fn wrap<W: Measurement<Width>>(width: W) -> Wrap<W> {
         Wrap::new(width)
     }
 
     /// Returns a [`Truncate`] structure.
-    pub fn truncate<W>(width: W) -> Truncate<'static, W>
-    where
-        W: Measurement<Width>,
-    {
+    pub fn truncate<W: Measurement<Width>>(width: W) -> Truncate<'static, W> {
         Truncate::new(width)
     }
 
     /// Returns a [`MinWidth`] structure.
-    pub fn increase<W>(width: W) -> MinWidth<W>
-    where
-        W: Measurement<Width>,
-    {
+    pub fn increase<W: Measurement<Width>>(width: W) -> MinWidth<W> {
         MinWidth::new(width)
     }
 
     /// Returns a [`Justify`] structure.
-    pub fn justify<W>(width: W) -> Justify<W>
-    where
-        W: Measurement<Width>,
-    {
+    pub fn justify<W: Measurement<Width>>(width: W) -> Justify<W> {
         Justify::new(width)
     }
 
@@ -173,10 +159,7 @@ impl Width {
     ///      +--------------------+----------+------------+"
     /// )
     /// ```
-    pub fn list<I>(rows: I) -> WidthList
-    where
-        I: IntoIterator<Item = usize>,
-    {
+    pub fn list<I: IntoIterator<Item = usize>>(rows: I) -> WidthList {
         WidthList::new(rows.into_iter().collect())
     }
 }

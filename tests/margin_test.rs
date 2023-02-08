@@ -1,4 +1,12 @@
-use tabled::{highlight::Highlight, object::Cell, Border, Margin, Modify, Span, Style, Width};
+use tabled::settings::{
+    highlight::Highlight,
+    margin::Margin,
+    object::Cell,
+    span::Span,
+    style::{Border, Style},
+    width::Width,
+    Modify,
+};
 
 use crate::util::{create_table, init_table, is_lines_equal, static_table, test_table};
 
@@ -129,12 +137,43 @@ fn table_0_spanned_with_width() {
     assert_eq!(table, "++\n|\n++\n");
 }
 
+#[test]
+fn margin_color_test_not_colored_feature() {
+    use tabled::settings::{color::Color, margin::MarginColor};
+
+    let table = create_table::<3, 3>()
+        .with(Style::psql())
+        .with(Margin::new(2, 2, 2, 2).set_fill('>', '<', 'V', '^'))
+        .with(MarginColor::new(
+            Color::BG_RED,
+            Color::BG_BLUE,
+            Color::BG_GREEN,
+            Color::BG_YELLOW,
+        ))
+        .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "\u{1b}[41mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[49m"
+            "\u{1b}[41mVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\u{1b}[49m"
+            "\u{1b}[42m>>\u{1b}[49m N | column 0 | column 1 | column 2 \u{1b}[43m<<\u{1b}[49m"
+            "\u{1b}[42m>>\u{1b}[49m---+----------+----------+----------\u{1b}[43m<<\u{1b}[49m"
+            "\u{1b}[42m>>\u{1b}[49m 0 |   0-0    |   0-1    |   0-2    \u{1b}[43m<<\u{1b}[49m"
+            "\u{1b}[42m>>\u{1b}[49m 1 |   1-0    |   1-1    |   1-2    \u{1b}[43m<<\u{1b}[49m"
+            "\u{1b}[42m>>\u{1b}[49m 2 |   2-0    |   2-1    |   2-2    \u{1b}[43m<<\u{1b}[49m"
+            "\u{1b}[44m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[49m"
+            "\u{1b}[44m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u{1b}[49m"
+        )
+    );
+}
+
 #[cfg(feature = "color")]
 #[test]
 fn margin_color_test() {
     use owo_colors::OwoColorize;
     use std::convert::TryFrom;
-    use tabled::{color::Color, margin_color::MarginColor};
+    use tabled::settings::{color::Color, margin::MarginColor};
 
     let table = create_table::<3, 3>()
         .with(Style::psql())

@@ -1,13 +1,16 @@
 mod util;
 
-use tabled::{
-    format::Format,
-    object::{Columns, Segment},
-    Alignment, Height, Modify, Style,
-};
-
 #[cfg(feature = "color")]
 use owo_colors::OwoColorize;
+
+use tabled::settings::{
+    alignment::Alignment,
+    format::Format,
+    height::Height,
+    object::{Columns, Segment},
+    style::Style,
+    Modify,
+};
 
 use util::{create_table, test_table};
 
@@ -164,7 +167,8 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::markdown())
         .with(
-            Modify::new(Columns::new(..)).with(Format::content(|s| format!("xxxx\n{}xxxx\nxxxx\n", s)))
+            Modify::new(Columns::new(..))
+                .with(Format::content(|s| format!("xxxx\n{}xxxx\nxxxx\n", s)))
         )
         .with(Height::limit(0)),
     "|--|--|--|--|"

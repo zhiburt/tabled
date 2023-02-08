@@ -2,18 +2,19 @@
 //! `cargo run --example highlight`
 
 use tabled::{
-    color::Color,
-    highlight::Highlight,
-    object::{Columns, Object, Rows},
-    style::BorderColor,
-    Style, TableIteratorExt,
+    settings::{
+        color::Color,
+        highlight::Highlight,
+        object::{Columns, Object, Rows},
+        style::{BorderColor, Style},
+    },
+    Table,
 };
 
 fn main() {
     let data = vec![["A", "B", "C"], ["D", "E", "F"], ["G", "H", "I"]];
 
-    let table = data
-        .table()
+    let table = Table::new(data)
         .with(Style::modern())
         .with(Highlight::colored(
             Rows::first().and(Columns::single(1)),
