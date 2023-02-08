@@ -36,7 +36,7 @@ test_table!(
 
 test_table!(
     builder_index_0,
-    Table::builder(create_vector::<4, 2>()).index().set_index(0).clone().build(),
+    Table::builder(create_vector::<4, 2>()).index().column(0).clone().build(),
     "+---+----------+----------+"
     "|   | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -54,7 +54,7 @@ test_table!(
 
 test_table!(
     builder_index_0_no_name,
-    Table::builder(create_vector::<4, 2>()).index().set_index(0).set_name(None).clone().build(),
+    Table::builder(create_vector::<4, 2>()).index().column(0).name(None).clone().build(),
     "+---+----------+----------+"
     "|   | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -70,7 +70,7 @@ test_table!(
 
 test_table!(
     builder_index_0_name,
-    Table::builder(create_vector::<4, 2>()).index().set_index(0).set_name(Some("Hello World".to_owned())).clone().build(),
+    Table::builder(create_vector::<4, 2>()).index().column(0).name(Some("Hello World".into())).clone().build(),
     "+-------------+----------+----------+"
     "|             | column 0 | column 1 |"
     "+-------------+----------+----------+"
@@ -88,7 +88,7 @@ test_table!(
 
 test_table!(
     builder_index_0_name_transpose,
-    Table::builder(create_vector::<4, 2>()).index().set_index(0).set_name(Some("Hello World".to_owned())).transpose().clone().build(),
+    Table::builder(create_vector::<4, 2>()).index().column(0).name(Some("Hello World".into())).transpose().clone().build(),
     "+-------------+-----+-----+-----+-----+"
     "| Hello World | 0   | 1   | 2   | 3   |"
     "+-------------+-----+-----+-----+-----+"
@@ -116,7 +116,7 @@ test_table!(
     builder_index_with_no_columns_and_name,
     Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["d", "e", "f"]])
         .index()
-        .set_name(Some("Hello World".to_owned()))
+        .name(Some("Hello World".into()))
         .clone()
         .build(),
     "+-------------+---+---+---+"
@@ -160,7 +160,7 @@ test_table!(
 
 test_table!(
     builder_index_invalid_dosnt_panic,
-    Builder::default().index().set_index(100).clone().build(),
+    Builder::default().index().column(100).clone().build(),
     ""
 );
 
@@ -168,7 +168,7 @@ test_table!(
     builder_index_name_doesnt_shown_when_empty,
     Builder::default()
         .index()
-        .set_name(Some("Hello World".to_owned()))
+        .name(Some("Hello World".into()))
         .clone()
         .build(),
     ""
@@ -188,7 +188,7 @@ fn builder_index_transpose_transpose() {
 #[test]
 fn builder_index_no_name_transpose_transpose() {
     let data = create_vector::<4, 2>();
-    let mut builder = Table::builder(&data).index().set_name(None).clone();
+    let mut builder = Table::builder(&data).index().name(None).clone();
 
     let orig_table = builder.clone().build().to_string();
     let two_times_transposed_table = builder.transpose().transpose().clone().build().to_string();

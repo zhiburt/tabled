@@ -17,7 +17,7 @@ where
     F: FnMut(&str, (usize, usize)) -> String,
     R: Records + ExactRecords + RecordsMut<Text = String>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, _: &mut GridConfig, entity: Entity) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

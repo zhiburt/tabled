@@ -1,6 +1,7 @@
 use tabled::{
+    highlight::Highlight,
     object::{Cell, Columns, Segment},
-    Alignment, Border, Highlight, Modify, Padding, Panel, Span, Style, Table,
+    Alignment, Border, Modify, Padding, Panel, Span, Style, Table,
 };
 
 use crate::util::{create_table, init_table, new_table, static_table, test_table};
@@ -236,37 +237,37 @@ test_table!(
         .with(
             Modify::new(Cell(0, 0))
                 .with(Span::column(5))
-                .with(|_: &str| "span all 5 columns".to_string()),
+                .with("span all 5 columns"),
         )
         .with(
             Modify::new(Cell(1, 0))
                 .with(Span::column(4))
-                .with(|_: &str| "span 4 columns".to_string()),
+                .with("span 4 columns"),
         )
         .with(
             Modify::new(Cell(2, 0))
                 .with(Span::column(3))
-                .with(|_: &str| "span 3 columns".to_string()),
+                .with("span 3 columns"),
         )
         .with(
             Modify::new(Cell(2, 3))
                 .with(Span::column(2))
-                .with(|_: &str| "span 2 columns".to_string()),
+                .with("span 2 columns"),
         )
         .with(
             Modify::new(Cell(3, 0))
                 .with(Span::column(2))
-                .with(|_: &str| "span 3 columns".to_string()),
+                .with("span 3 columns"),
         )
         .with(
             Modify::new(Cell(3, 2))
                 .with(Span::column(3))
-                .with(|_: &str| "span 3 columns".to_string()),
+                .with("span 3 columns"),
         )
         .with(
             Modify::new(Cell(4, 1))
                 .with(Span::column(4))
-                .with(|_: &str| "span 4 columns".to_string()),
+                .with("span 4 columns"),
         ),
     "┌───────────────┬───────────────┬───────────────┬───────────────┬───────────────┐"
     "│                              span all 5 columns                               │"
@@ -1113,12 +1114,12 @@ test_table!(
     create_table::<3, 3>().with(Modify::new(Cell(0, 0)).with(Span::row(100))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
-    "+---+----------+----------+----------+"
-    "| 0 |   0-0    |   0-1    |   0-2    |"
-    "+---+----------+----------+----------+"
-    "| 1 |   1-0    |   1-1    |   1-2    |"
-    "+---+----------+----------+----------+"
-    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "+   +----------+----------+----------+"
+    "|   |   0-0    |   0-1    |   0-2    |"
+    "+   +----------+----------+----------+"
+    "|   |   1-0    |   1-1    |   1-2    |"
+    "+   +----------+----------+----------+"
+    "|   |   2-0    |   2-1    |   2-2    |"
     "+---+----------+----------+----------+"
 );
 

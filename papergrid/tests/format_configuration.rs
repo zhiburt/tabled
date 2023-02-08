@@ -935,8 +935,6 @@ fn tab_size_test() {
 
     let grid = grid(1, 1).data([[json]]);
 
-    println!("{}", grid.clone().build());
-
     assert_eq!(
         grid.clone().build(),
         static_table!(

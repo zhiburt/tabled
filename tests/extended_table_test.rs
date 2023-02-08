@@ -1,5 +1,5 @@
 use crate::util::{create_vector, static_table};
-use tabled::{display::ExpandedDisplay, Tabled};
+use tabled::{table::extended::ExtendedTable, Tabled};
 
 #[cfg(feature = "color")]
 use owo_colors::{AnsiColors, OwoColorize};
@@ -8,7 +8,7 @@ mod util;
 
 macro_rules! assert_expanded_display {
     ( $data:expr, $expected:expr ) => {
-        let table = ExpandedDisplay::new($data).to_string();
+        let table = ExtendedTable::new($data).to_string();
         assert_eq!(table, $expected);
     };
 }
@@ -251,7 +251,7 @@ fn display_with_truncate() {
     let mut data = create_vector::<3, 3>();
     data[0][0] = String::from("a long string");
 
-    let mut table = ExpandedDisplay::new(&data);
+    let mut table = ExtendedTable::new(&data);
     table.truncate(14, "");
     let table = table.to_string();
 
@@ -282,7 +282,7 @@ fn truncate_with_suffix() {
     let mut data = create_vector::<3, 3>();
     data[0][0] = String::from("a long string");
 
-    let mut table = ExpandedDisplay::new(&data);
+    let mut table = ExtendedTable::new(&data);
     table.truncate(15, "..");
     let table = table.to_string();
 
@@ -318,7 +318,7 @@ fn truncate_big_fields() {
     );
     let data: Vec<TestType> = vec![TestType, TestType];
 
-    let mut table = ExpandedDisplay::new(&data);
+    let mut table = ExtendedTable::new(&data);
     table.truncate(14, "..");
     let table = table.to_string();
 
@@ -336,7 +336,7 @@ fn truncate_big_fields() {
         )
     );
 
-    let mut table = ExpandedDisplay::new(&data);
+    let mut table = ExtendedTable::new(&data);
     table.truncate(15, "..");
     let table = table.to_string();
 
@@ -354,7 +354,7 @@ fn truncate_big_fields() {
         )
     );
 
-    let mut table = ExpandedDisplay::new(&data);
+    let mut table = ExtendedTable::new(&data);
     table.truncate(0, "..");
     let table = table.to_string();
 
@@ -372,7 +372,7 @@ fn truncate_big_fields() {
         )
     );
 
-    let mut table = ExpandedDisplay::new(&data);
+    let mut table = ExtendedTable::new(&data);
     table.truncate(20, "......");
     let table = table.to_string();
 
@@ -396,7 +396,7 @@ fn truncate_too_small() {
     let mut data = create_vector::<3, 3>();
     data[0][0] = String::from("a long string");
 
-    let mut table = ExpandedDisplay::new(&data);
+    let mut table = ExtendedTable::new(&data);
     let success = table.truncate(2, "");
     assert!(!success);
 
@@ -469,7 +469,7 @@ fn display_with_truncate_colored() {
         .to_string();
     data[1][2] = "https://www.opensuse.org/".to_string();
 
-    let mut table = ExpandedDisplay::new(&data);
+    let mut table = ExtendedTable::new(&data);
     table.truncate(20, "");
     let table = table.to_string();
 

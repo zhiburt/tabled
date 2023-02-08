@@ -130,6 +130,7 @@ impl Builder {
     /// ```
     pub fn remove_header(mut self) -> Self {
         self.columns = None;
+        self.count_columns = self.get_size();
 
         self
     }

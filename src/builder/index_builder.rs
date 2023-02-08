@@ -133,14 +133,14 @@ impl IndexBuilder {
     ///      +---------+---+---------+"
     /// )
     /// ```
-    pub fn index(mut self, column: usize) -> Self {
+    pub fn column(mut self, column: usize) -> Self {
         if column >= matrix_count_columns(&self.data) {
             return self;
         }
 
         self.index = get_column(&mut self.data, column);
 
-        let name = remove_or_default(&mut self.index, column);
+        let name = remove_or_default(&mut self.index, 0);
         self.name = Some(name);
 
         self
@@ -205,12 +205,14 @@ impl From<Builder> for IndexBuilder {
 
         let mut data: Vec<Vec<_>> = builder.into();
 
-        let index = build_range_index(data.len());
-
         if !has_header {
             let count_columns = matrix_count_columns(&data);
             data.insert(0, build_range_index(count_columns));
         }
+
+        // we exclude first row which contains a header
+        let data_len = data.len().saturating_sub(1);
+        let index = build_range_index(data_len);
 
         Self {
             index,

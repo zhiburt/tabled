@@ -109,7 +109,6 @@ macro_rules! test_table {
     ($test:ident, $table:expr, $($line:expr)*) => {
         #[test]
         fn $test() {
-            println!("{}", $table);
             let table = $table.to_string();
             assert_eq!(table, crate::util::static_table!($($line)*));
         }

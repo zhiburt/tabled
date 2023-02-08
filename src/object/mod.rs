@@ -529,8 +529,8 @@ mod tests {
         assert_eq!(vec_cells(Columns::first(), 5, 2), [Entity::Column(0)]);
         assert_eq!(vec_cells(Columns::first() + 0, 5, 2), [Entity::Column(0)]);
         assert_eq!(vec_cells(Columns::first() + 1, 5, 2), [Entity::Column(1)]);
-        assert_eq!(vec_cells(Columns::first() + 2, 5, 2), []);
-        assert_eq!(vec_cells(Columns::first() + 100, 5, 2), []);
+        assert_eq!(vec_cells(Columns::first() + 2, 5, 2), [Entity::Column(2)]);
+        assert_eq!(vec_cells(Columns::first() + 100, 5, 2), [Entity::Column(100)]);
     }
 
     #[test]
@@ -545,7 +545,7 @@ mod tests {
         assert_eq!(vec_cells(Rows::new(1..2), 2, 3), [Entity::Row(1)],);
         assert_eq!(vec_cells(Rows::new(..), 0, 0), []);
         assert_eq!(vec_cells(Rows::new(..), 0, 3), []);
-        assert_eq!(vec_cells(Rows::new(..), 2, 0), []);
+        assert_eq!(vec_cells(Rows::new(..), 2, 0), [Entity::Row(0), Entity::Row(1)]);
     }
 
     #[test]
@@ -589,11 +589,11 @@ mod tests {
         assert_eq!(vec_cells(Rows::first() + 2, 5, 2), [Entity::Row(2)]);
         assert_eq!(vec_cells(Rows::first() + 3, 5, 2), [Entity::Row(3)]);
         assert_eq!(vec_cells(Rows::first() + 4, 5, 2), [Entity::Row(4)]);
-        assert_eq!(vec_cells(Rows::first() + 5, 5, 2), []);
-        assert_eq!(vec_cells(Rows::first() + 100, 5, 2), []);
-        assert_eq!(vec_cells(Rows::first() + 1, 0, 0), []);
-        assert_eq!(vec_cells(Rows::first() + 1, 5, 0), []);
-        assert_eq!(vec_cells(Rows::first() + 1, 0, 2), []);
+        assert_eq!(vec_cells(Rows::first() + 5, 5, 2), [Entity::Row(5)]);
+        assert_eq!(vec_cells(Rows::first() + 100, 5, 2), [Entity::Row(100)]);
+        assert_eq!(vec_cells(Rows::first() + 1, 0, 0), [Entity::Row(1)]);
+        assert_eq!(vec_cells(Rows::first() + 1, 5, 0), [Entity::Row(1)]);
+        assert_eq!(vec_cells(Rows::first() + 1, 0, 2), [Entity::Row(1)]);
     }
 
     #[test]

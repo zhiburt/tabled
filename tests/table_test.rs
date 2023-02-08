@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 
-use tabled::{builder::Builder, Height, Padding, Style, Table, Width};
+use tabled::{builder::Builder, settings_list::Settings, Height, Padding, Style, Table, Width};
 
 use crate::util::{create_table, test_table};
 
@@ -536,7 +536,7 @@ mod derived {
                     invented_year: 2009,
                 },
             ]
-        }).with(Style::modern().off_horizontal()),
+        }).with(Style::modern().remove_horizontal()),
         // Note: It doesn't look good in VS Code
         "┌─────────┬────────────────┬───────────────┐"
         "│ name    │ designed_by    │ invented_year │"
@@ -769,8 +769,7 @@ test_table!(
     {
         Builder::from_iter(vec![vec![""]]).build()
             .with(tabled::Style::modern())
-            .with(Height::limit(0))
-            .with(Width::increase(10))
+            .with(Settings::new(Height::limit(0), Width::increase(10)))
     },
     "┌────────┐"
     "└────────┘"

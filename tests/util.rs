@@ -7,14 +7,9 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use papergrid::{
-    records::{cell_info::CellInfo, vec_records::VecRecords},
-    Position,
-};
-use tabled::{
-    object::SegmentAll, papergrid::util::string_width_multiline, Alignment, ModifyObject, Table,
-    Tabled,
-};
+use papergrid::util::string::string_width_multiline;
+
+use tabled::{grid::config::Position, object::SegmentAll, Alignment, Modify, Table, Tabled};
 
 /// A helper table factory.
 ///
@@ -36,11 +31,9 @@ where
     new_table(data)
 }
 
-pub fn new_table<'a, T: Tabled>(
-    iter: impl IntoIterator<Item = T> + 'a,
-) -> Table<VecRecords<CellInfo<'a>>> {
+pub fn new_table<'a, T: Tabled>(iter: impl IntoIterator<Item = T> + 'a) -> Table {
     let mut table = Table::new(iter);
-    table.with(SegmentAll.modify().with(Alignment::center()));
+    table.with(Modify::new(SegmentAll).with(Alignment::center()));
     table
 }
 
@@ -121,7 +114,6 @@ macro_rules! test_table {
         #[test]
         fn $test() {
             let table = $table.to_string();
-            println!("{}", table);
             assert_eq!(table, crate::util::static_table!($($line)*));
         }
     };

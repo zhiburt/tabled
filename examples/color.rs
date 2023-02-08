@@ -11,7 +11,7 @@ use tabled::{
     color::Color,
     format::Format,
     object::{Columns, Rows},
-    style::{BorderColor, Style, Symbol},
+    style::{BorderColor, Style},
     Modify, Table, Tabled,
 };
 

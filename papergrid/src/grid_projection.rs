@@ -289,7 +289,7 @@ fn is_cell_covered_by_row_span(cfg: &GridConfig, pos: Position, shape: (usize, u
     }
 
     cfg.iter_span_rows()
-        .filter(|&(pos, span)| is_row_span_valid(pos, span, shape))
+        // .filter(|&(pos, span)| is_row_span_valid(pos, span, shape))
         .any(|((row, col), span)| pos.0 > row && pos.0 < row + span && col == pos.1)
 }
 

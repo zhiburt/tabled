@@ -1,16 +1,16 @@
-#[cfg(feature = "color")]
-use std::iter::FromIterator;
-#[cfg(feature = "color")]
-use tabled::ModifyObject;
+use papergrid::util::string::string_width_multiline;
 
 use tabled::{
     formatting::TrimStrategy,
     object::{Cell, Columns, Object, Rows, Segment},
-    papergrid::util::string_width_multiline,
     peaker::{PriorityMax, PriorityMin},
+    settings_list::Settings,
     width::{Justify, MinWidth, SuffixLimit, Width},
     Alignment, Margin, Modify, Padding, Panel, Span, Style,
 };
+
+#[cfg(feature = "color")]
+use std::iter::FromIterator;
 
 use crate::util::{create_table, init_table, is_lines_equal, new_table, static_table};
 
@@ -442,7 +442,7 @@ fn max_width_keep_words_1() {
     ])
     .with(
         Style::modern()
-            .off_horizontal()
+            .remove_horizontal()
             .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]),
     )
     .with(Width::wrap(21).keep_words().priority::<PriorityMax>())
@@ -897,9 +897,8 @@ fn total_width_big() {
 
     let table = create_table::<3, 3>()
         .with(Style::markdown())
-        .with(Width::truncate(80))
-        .with(MinWidth::new(80))
         .with(Modify::new(Segment::all()).with(TrimStrategy::None))
+        .with(Settings::new(Width::truncate(80), Width::increase(80)))
         .to_string();
 
     assert_eq!(string_width_multiline(&table), 80);
@@ -1363,16 +1362,16 @@ fn min_width_works_with_right_alignment() {
     "#;
 
     let mut table = new_table([json]);
-    table.with(Style::markdown()).with(MinWidth::new(50)).with(
-        Modify::new(Segment::all())
-            .with(Alignment::right())
-            .with(TrimStrategy::None),
-    );
+    table
+        .with(Style::markdown())
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::right())
+                .with(TrimStrategy::None),
+        )
+        .with(MinWidth::new(50));
 
-    assert_eq!(
-        papergrid::util::string_width_multiline(&table.to_string()),
-        50
-    );
+    assert_eq!(string_width_multiline(&table.to_string()), 50);
     assert_eq!(
         table.to_string(),
         static_table!(
@@ -1391,7 +1390,9 @@ fn min_width_works_with_right_alignment() {
         )
     );
 
-    table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
+    table
+        .with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal))
+        .with(MinWidth::new(50));
 
     assert_eq!(
         table.to_string(),
@@ -1412,7 +1413,9 @@ fn min_width_works_with_right_alignment() {
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
+    table
+        .with(Modify::new(Segment::all()).with(TrimStrategy::Both))
+        .with(MinWidth::new(50));
 
     assert_eq!(
         table.to_string(),
@@ -1434,11 +1437,14 @@ fn min_width_works_with_right_alignment() {
     assert!(is_lines_equal(&table.to_string(), 50));
 
     let mut table = new_table([json]);
-    table.with(Style::markdown()).with(MinWidth::new(50)).with(
-        Modify::new(Segment::all())
-            .with(Alignment::center())
-            .with(TrimStrategy::None),
-    );
+    table
+        .with(Style::markdown())
+        .with(
+            Modify::new(Segment::all())
+                .with(Alignment::center())
+                .with(TrimStrategy::None),
+        )
+        .with(MinWidth::new(50));
 
     assert_eq!(
         table.to_string(),
@@ -1457,9 +1463,11 @@ fn min_width_works_with_right_alignment() {
             "|                                                |"
         )
     );
-    assert!(is_lines_equal(&table.to_string(), 50));
+    assert_eq!(string_width_multiline(&table.to_string()), 50);
 
-    table.with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal));
+    table
+        .with(Modify::new(Segment::all()).with(TrimStrategy::Horizontal))
+        .with(MinWidth::new(50));
 
     assert_eq!(
         table.to_string(),
@@ -1480,7 +1488,9 @@ fn min_width_works_with_right_alignment() {
     );
     assert!(is_lines_equal(&table.to_string(), 50));
 
-    table.with(Modify::new(Segment::all()).with(TrimStrategy::Both));
+    table
+        .with(Modify::new(Segment::all()).with(TrimStrategy::Both))
+        .with(MinWidth::new(50));
 
     assert_eq!(
         table.to_string(),
@@ -1516,7 +1526,7 @@ fn min_width_with_span_1() {
         .with(MinWidth::new(100))
         .to_string();
 
-    assert_eq!(papergrid::util::string_width_multiline(&table), 100);
+    assert_eq!(string_width_multiline(&table), 100);
     assert_eq!(
         table,
         static_table!(
@@ -1544,7 +1554,7 @@ fn min_width_with_span_2() {
         .with(MinWidth::new(100))
         .to_string();
 
-    assert_eq!(papergrid::util::string_width_multiline(&table), 100);
+    assert_eq!(string_width_multiline(&table), 100);
     assert_eq!(
         table,
         static_table!(
@@ -2185,7 +2195,7 @@ fn min_width_priority_max() {
         .with(MinWidth::new(60).priority::<PriorityMax>())
         .to_string();
 
-    assert_eq!(papergrid::util::string_width_multiline(&table), 60);
+    assert_eq!(string_width_multiline(&table), 60);
     assert_eq!(
         table,
         static_table!(
@@ -2205,7 +2215,7 @@ fn min_width_priority_min() {
         .with(MinWidth::new(60).priority::<PriorityMin>())
         .to_string();
 
-    assert_eq!(papergrid::util::string_width_multiline(&table), 60);
+    assert_eq!(string_width_multiline(&table), 60);
     assert_eq!(
         table,
         static_table!(
@@ -2246,7 +2256,7 @@ fn min_width_is_not_used_after_padding() {
         .with(Modify::new(Cell(0, 0)).with(Padding::new(2, 2, 0, 0)))
         .to_string();
 
-    assert_eq!(papergrid::util::string_width_multiline(&table), 40);
+    assert_eq!(string_width_multiline(&table), 40);
     assert_eq!(
         table,
         static_table!(
@@ -2263,21 +2273,21 @@ fn min_width_is_not_used_after_padding() {
 fn min_width_is_used_after_margin() {
     let table = create_table::<3, 3>()
         .with(Style::markdown())
-        .with(MinWidth::new(60))
         .with(Margin::new(1, 1, 1, 1))
+        .with(Width::increase(60))
         .to_string();
 
-    assert_eq!(papergrid::util::string_width_multiline(&table), 62);
+    assert_eq!(string_width_multiline(&table), 60);
     assert_eq!(
         table,
         static_table!(
-            "                                                              "
-            " |    N    |    column 0    |   column 1    |   column 2    | "
-            " |---------|----------------|---------------|---------------| "
-            " |    0    |      0-0       |      0-1      |      0-2      | "
-            " |    1    |      1-0       |      1-1      |      1-2      | "
-            " |    2    |      2-0       |      2-1      |      2-2      | "
-            "                                                              "
+            "                                                            "
+            " |   N    |   column 0    |   column 1    |   column 2    | "
+            " |--------|---------------|---------------|---------------| "
+            " |   0    |      0-0      |      0-1      |      0-2      | "
+            " |   1    |      1-0      |      1-1      |      1-2      | "
+            " |   2    |      2-0      |      2-1      |      2-2      | "
+            "                                                            "
         ),
     );
 }
@@ -2529,8 +2539,7 @@ mod derived {
             }];
             tabled::Table::from_iter(&data)
                 .with(
-                    Segment::all()
-                        .modify()
+                    Modify::new(Segment::all())
                         .with(Width::wrap(5).keep_words())
                         .with(Alignment::left()),
                 )

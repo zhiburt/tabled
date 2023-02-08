@@ -1,4 +1,4 @@
-use tabled::{object::Cell, Border, Highlight, Margin, Modify, Span, Style, Width};
+use tabled::{highlight::Highlight, object::Cell, Border, Margin, Modify, Span, Style, Width};
 
 use crate::util::{create_table, init_table, is_lines_equal, static_table, test_table};
 
@@ -96,7 +96,7 @@ fn table_with_margin_and_max_width() {
         .with(Width::increase(50))
         .to_string();
 
-    assert_eq!(papergrid::util::string_width_multiline(&table), 50);
+    assert_eq!(papergrid::util::string::string_width_multiline(&table), 50);
     assert_eq!(
         table,
         static_table!(

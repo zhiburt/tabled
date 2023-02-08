@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crate::{grid::config::GridConfig, records::ExactRecords, TableOption};
+use crate::{grid::config::GridConfig, records::ExactRecords, TableOption, Border};
 
 use super::Offset;
 
@@ -64,14 +64,16 @@ impl<'a> BorderText<'a, ()> {
         BorderText::create(text.into(), Offset::Begin(0), LineLast)
     }
 
+    fn create<L>(text: Cow<'a, str>, offset: Offset, line: L) -> BorderText<'a, L> {
+        BorderText { text, line, offset }
+    }
+}
+
+impl<L> BorderText<'_, L> {
     /// Set an offset from which the text will be started.
     pub fn offset(mut self, offset: Offset) -> Self {
         self.offset = offset;
         self
-    }
-
-    fn create<L>(text: Cow<'a, str>, offset: Offset, line: L) -> BorderText<'a, L> {
-        BorderText { text, line, offset }
     }
 }
 

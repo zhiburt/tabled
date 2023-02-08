@@ -31,7 +31,7 @@ fn main() {
 
     let mut table = Table::builder(&data)
         .index()
-        .index(0)
+        .column(0)
         .name(None)
         .transpose()
         .build();

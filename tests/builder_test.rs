@@ -7,13 +7,15 @@ use util::test_table;
 mod util;
 
 test_table!(
-    add_record,
-    Builder::default()
-        .add_record(["1", "2", "3"])
-        .add_record(["a", "b", "c"])
-        .add_record(["d", "e", "f"])
-        .clone()
-        .build(),
+    push_record,
+    {
+        let mut b = Builder::default();
+        b.push_record(["1", "2", "3"]);
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+
+        b.build()
+    },
     "+---+---+---+"
     "| 1 | 2 | 3 |"
     "+---+---+---+"
@@ -24,13 +26,14 @@ test_table!(
 );
 
 test_table!(
-    set_columns,
-    Builder::default()
-        .add_record(["a", "b", "c"])
-        .add_record(["d", "e", "f"])
-        .set_columns(["1", "2", "3"])
-        .clone()
-        .build(),
+    set_header,
+    {
+        let mut b = Builder::default().set_header(["1", "2", "3"]);
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+
+        b.build()
+    },
     "+---+---+---+"
     "| 1 | 2 | 3 |"
     "+---+---+---+"
@@ -42,13 +45,14 @@ test_table!(
 
 test_table!(
     header_remove_0,
-    Builder::default()
-        .add_record(["a", "b", "c"])
-        .add_record(["d", "e", "f"])
-        .set_columns(["1", "2", "3"])
-        .remove_columns()
-        .clone()
-        .build(),
+    {
+        let mut b = Builder::default().set_header(["1", "2", "3"]);
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+        let b = b.remove_header();
+
+        b.build()
+    },
     "+---+---+---+"
     "| a | b | c |"
     "+---+---+---+"
@@ -58,13 +62,14 @@ test_table!(
 
 test_table!(
     header_remove_1,
-    Builder::default()
-        .add_record(["a", "b", "c"])
-        .add_record(["d", "e", "f"])
-        .set_columns(["1", "2", "3", "4", "5"])
-        .remove_columns()
-        .clone()
-        .build(),
+    {
+        let mut b = Builder::default().set_header(["1", "2", "3", "4", "5"]);
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+        let b = b.remove_header();
+
+        b.build()
+    },
     "+---+---+---+"
     "| a | b | c |"
     "+---+---+---+"
@@ -86,7 +91,13 @@ test_table!(
 
 test_table!(
     used_with_different_number_of_columns_0,
-    Builder::default().set_columns(["1", "2"]).add_record(["a", "b", "c"]).add_record(["d"]).clone().build(),
+    {
+        let mut b = Builder::default().set_header(["1", "2"]);
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d"]);
+
+        b.build()
+    },
     "+---+---+---+"
     "| 1 | 2 |   |"
     "+---+---+---+"
@@ -98,7 +109,13 @@ test_table!(
 
 test_table!(
     used_with_different_number_of_columns_1,
-    Builder::default().set_columns(["1", "2", "3"]).add_record(["a", "b"]).add_record(["d"]).clone().build(),
+    {
+        let mut b = Builder::default().set_header(["1", "2", "3"]);
+        b.push_record(["a", "b"]);
+        b.push_record(["d"]);
+
+        b.build()
+    },
     "+---+---+---+"
     "| 1 | 2 | 3 |"
     "+---+---+---+"
@@ -110,7 +127,13 @@ test_table!(
 
 test_table!(
     used_with_different_number_of_columns_2,
-    Builder::default().set_columns(["1"]).add_record(["a", "b"]).add_record(["d", "e", "f"]).clone().build(),
+    {
+        let mut b = Builder::default().set_header(["1"]);
+        b.push_record(["a", "b"]);
+        b.push_record(["d", "e", "f"]);
+
+        b.build()
+    },
     "+---+---+---+"
     "| 1 |   |   |"
     "+---+---+---+"
@@ -122,13 +145,13 @@ test_table!(
 
 test_table!(
     with_default_cell_0,
-    Builder::default()
-        .set_default_text("NaN")
-        .set_columns(["1", "2"])
-        .add_record(["a", "b", "c"])
-        .add_record(["d"])
-        .clone()
-        .build(),
+    {
+        let mut b = Builder::default().set_header(["1", "2"]).set_default_text("NaN");
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d"]);
+
+        b.build()
+    },
     "+---+-----+-----+"
     "| 1 | 2   | NaN |"
     "+---+-----+-----+"
@@ -140,13 +163,13 @@ test_table!(
 
 test_table!(
     with_default_cell_1,
-    Builder::default()
-        .set_default_text("NaN")
-        .set_columns(["1"])
-        .add_record(["a", "b"])
-        .add_record(["d", "e", "f"])
-        .clone()
-        .build(),
+    {
+        let mut b = Builder::default().set_header(["1"]).set_default_text("NaN");
+        b.push_record(["a", "b"]);
+        b.push_record(["d", "e", "f"]);
+
+        b.build()
+    },
     "+---+-----+-----+"
     "| 1 | NaN | NaN |"
     "+---+-----+-----+"
@@ -176,7 +199,7 @@ test_table!(
 
 test_table!(
     from_vector_0,
-    Builder::from(vec![
+    Builder::from_iter(vec![
         vec!["1".to_string(), "2".to_string(), "3".to_string()],
         vec!["a".to_string(), "b".to_string(), "c".to_string()],
         vec!["d".to_string(), "e".to_string(), "f".to_string()],
@@ -193,7 +216,7 @@ test_table!(
 
 test_table!(
     from_with_empty_lines_0,
-    Builder::from(vec![
+    Builder::from_iter(vec![
         vec!["1".to_string(), "2".to_string(), "3".to_string()],
         vec![],
         vec![],
@@ -213,7 +236,7 @@ test_table!(
 
 test_table!(
     from_with_empty_lines_1,
-    Builder::from(vec![
+    Builder::from_iter(vec![
         vec!["1".to_string(), "2".to_string(), "3".to_string()],
         vec![],
         vec!["d".to_string(), "e".to_string(), "f".to_string()],
@@ -230,7 +253,7 @@ test_table!(
 
 test_table!(
     from_with_empty_lines_2,
-    Builder::from(vec![
+    Builder::from_iter(vec![
         vec![],
         vec!["1".to_string(), "2".to_string(), "3".to_string()],
         vec!["d".to_string(), "e".to_string(), "f".to_string()],
@@ -247,7 +270,7 @@ test_table!(
 
 test_table!(
     from_with_empty_lines_3,
-    Builder::from(vec![
+    Builder::from_iter(vec![
         vec!["1".to_string(), "2".to_string(), "3".to_string()],
         vec!["d".to_string(), "e".to_string(), "f".to_string()],
         vec![],
@@ -264,7 +287,7 @@ test_table!(
 
 test_table!(
     clean_0,
-    Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["d", "e", "f"]]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["d", "e", "f"]])),
     "+---+---+---+"
     "| 1 | 2 | 3 |"
     "+---+---+---+"
@@ -276,7 +299,7 @@ test_table!(
 
 test_table!(
     clean_1,
-    Builder::from_iter([["", "2", "3"], ["", "b", "c"], ["", "e", "f"]]).clean().clone().build(),
+    clean(Builder::from_iter([["", "2", "3"], ["", "b", "c"], ["", "e", "f"]])),
     "+---+---+"
     "| 2 | 3 |"
     "+---+---+"
@@ -288,7 +311,7 @@ test_table!(
 
 test_table!(
     clean_2,
-    Builder::from_iter([["1", "", "3"], ["a", "", "c"], ["d", "", "f"]]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "", "3"], ["a", "", "c"], ["d", "", "f"]])),
     "+---+---+"
     "| 1 | 3 |"
     "+---+---+"
@@ -300,7 +323,7 @@ test_table!(
 
 test_table!(
     clean_3,
-    Builder::from_iter([["1", "2", ""], ["a", "b", ""], ["d", "e", ""]]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "2", ""], ["a", "b", ""], ["d", "e", ""]])),
     "+---+---+"
     "| 1 | 2 |"
     "+---+---+"
@@ -312,7 +335,7 @@ test_table!(
 
 test_table!(
     clean_4,
-    Builder::from_iter([["", "", "3"], ["", "", "c"], ["", "", "f"]]).clean().clone().build(),
+    clean(Builder::from_iter([["", "", "3"], ["", "", "c"], ["", "", "f"]])),
     "+---+"
     "| 3 |"
     "+---+"
@@ -324,7 +347,7 @@ test_table!(
 
 test_table!(
     clean_5,
-    Builder::from_iter([["1", "", ""], ["a", "", ""], ["d", "", ""]]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "", ""], ["a", "", ""], ["d", "", ""]])),
     "+---+"
     "| 1 |"
     "+---+"
@@ -336,7 +359,7 @@ test_table!(
 
 test_table!(
     clean_6,
-    Builder::from_iter([["", "2", ""], ["", "b", ""], ["", "e", ""]]).clean().clone().build(),
+    clean(Builder::from_iter([["", "2", ""], ["", "b", ""], ["", "e", ""]])),
     "+---+"
     "| 2 |"
     "+---+"
@@ -348,7 +371,7 @@ test_table!(
 
 test_table!(
     clean_7,
-    Builder::from_iter([["", "", ""], ["a", "b", "c"], ["d", "e", "f"]]).clean().clone().build(),
+    clean(Builder::from_iter([["", "", ""], ["a", "b", "c"], ["d", "e", "f"]])),
     "+---+---+---+"
     "| a | b | c |"
     "+---+---+---+"
@@ -358,7 +381,7 @@ test_table!(
 
 test_table!(
     clean_8,
-    Builder::from_iter([["1", "2", "3"], ["", "", ""], ["d", "e", "f"]]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "2", "3"], ["", "", ""], ["d", "e", "f"]])),
     "+---+---+---+"
     "| 1 | 2 | 3 |"
     "+---+---+---+"
@@ -368,7 +391,7 @@ test_table!(
 
 test_table!(
     clean_9,
-    Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["", "", ""]]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["", "", ""]])),
     "+---+---+---+"
     "| 1 | 2 | 3 |"
     "+---+---+---+"
@@ -378,7 +401,7 @@ test_table!(
 
 test_table!(
     clean_10,
-    Builder::from_iter([["", "", ""], ["", "", ""], ["d", "e", "f"]]).clean().clone().build(),
+    clean(Builder::from_iter([["", "", ""], ["", "", ""], ["d", "e", "f"]])),
     "+---+---+---+"
     "| d | e | f |"
     "+---+---+---+"
@@ -386,7 +409,7 @@ test_table!(
 
 test_table!(
     clean_11,
-    Builder::from_iter([["1", "2", "3"], ["", "", ""], ["", "", ""]]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "2", "3"], ["", "", ""], ["", "", ""]])),
     "+---+---+---+"
     "| 1 | 2 | 3 |"
     "+---+---+---+"
@@ -394,7 +417,7 @@ test_table!(
 
 test_table!(
     clean_12,
-    Builder::from_iter([["", "", ""], ["a", "b", "c"], ["", "", ""]]).clean().clone().build(),
+    clean(Builder::from_iter([["", "", ""], ["a", "b", "c"], ["", "", ""]])),
     "+---+---+---+"
     "| a | b | c |"
     "+---+---+---+"
@@ -402,7 +425,7 @@ test_table!(
 
 test_table!(
     clean_13,
-    Builder::from_iter([["1", "", "3"], ["", "", ""], ["d", "", "f"]]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "", "3"], ["", "", ""], ["d", "", "f"]])),
     "+---+---+"
     "| 1 | 3 |"
     "+---+---+"
@@ -412,7 +435,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_0,
-    Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["d", "e", "f"]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["d", "e", "f"]]).set_header(["col1", "col2", "col3"])),
     "+------+------+------+"
     "| col1 | col2 | col3 |"
     "+------+------+------+"
@@ -426,7 +449,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_1,
-    Builder::from_iter([["", "2", "3"], ["", "b", "c"], ["", "e", "f"]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["", "2", "3"], ["", "b", "c"], ["", "e", "f"]]).set_header(["col1", "col2", "col3"])),
     "+------+------+"
     "| col2 | col3 |"
     "+------+------+"
@@ -440,7 +463,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_2,
-    Builder::from_iter([["1", "", "3"], ["a", "", "c"], ["d", "", "f"]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "", "3"], ["a", "", "c"], ["d", "", "f"]]).set_header(["col1", "col2", "col3"])),
     "+------+------+"
     "| col1 | col3 |"
     "+------+------+"
@@ -454,7 +477,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_3,
-    Builder::from_iter([["1", "2", ""], ["a", "b", ""], ["d", "e", ""]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "2", ""], ["a", "b", ""], ["d", "e", ""]]).set_header(["col1", "col2", "col3"])),
     "+------+------+"
     "| col1 | col2 |"
     "+------+------+"
@@ -468,7 +491,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_4,
-    Builder::from_iter([["", "", "3"], ["", "", "c"], ["", "", "f"]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["", "", "3"], ["", "", "c"], ["", "", "f"]]).set_header(["col1", "col2", "col3"])),
     "+------+"
     "| col3 |"
     "+------+"
@@ -482,7 +505,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_5,
-    Builder::from_iter([["1", "", ""], ["a", "", ""], ["d", "", ""]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "", ""], ["a", "", ""], ["d", "", ""]]).set_header(["col1", "col2", "col3"])),
     "+------+"
     "| col1 |"
     "+------+"
@@ -496,7 +519,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_6,
-    Builder::from_iter([["", "2", ""], ["", "b", ""], ["", "e", ""]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["", "2", ""], ["", "b", ""], ["", "e", ""]]).set_header(["col1", "col2", "col3"])),
     "+------+"
     "| col2 |"
     "+------+"
@@ -510,17 +533,16 @@ test_table!(
 
 test_table!(
     clean_with_columns_7,
-    Builder::from_iter([["", "", ""], ["", "", ""], ["", "", ""]])
-        .set_columns(["col1", "col2", "col3"])
-        .clean()
-        .clone()
-        .build(),
+    clean(
+        Builder::from_iter([["", "", ""], ["", "", ""], ["", "", ""]])
+            .set_header(["col1", "col2", "col3"])
+    ),
     ""
 );
 
 test_table!(
     clean_with_columns_8,
-    Builder::from_iter([["", "", ""], ["a", "b", "c"], ["d", "e", "f"]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["", "", ""], ["a", "b", "c"], ["d", "e", "f"]]).set_header(["col1", "col2", "col3"])),
     "+------+------+------+"
     "| col1 | col2 | col3 |"
     "+------+------+------+"
@@ -532,7 +554,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_9,
-    Builder::from_iter([["1", "2", "3"], ["", "", ""], ["d", "e", "f"]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "2", "3"], ["", "", ""], ["d", "e", "f"]]).set_header(["col1", "col2", "col3"])),
     "+------+------+------+"
     "| col1 | col2 | col3 |"
     "+------+------+------+"
@@ -544,7 +566,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_10,
-    Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["", "", ""]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["", "", ""]]).set_header(["col1", "col2", "col3"])),
     "+------+------+------+"
     "| col1 | col2 | col3 |"
     "+------+------+------+"
@@ -556,7 +578,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_11,
-    Builder::from_iter([["", "", ""], ["", "", ""], ["d", "e", "f"]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["", "", ""], ["", "", ""], ["d", "e", "f"]]).set_header(["col1", "col2", "col3"])),
     "+------+------+------+"
     "| col1 | col2 | col3 |"
     "+------+------+------+"
@@ -566,7 +588,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_12,
-    Builder::from_iter([["1", "2", "3"], ["", "", ""], ["", "", ""]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "2", "3"], ["", "", ""], ["", "", ""]]).set_header(["col1", "col2", "col3"])),
     "+------+------+------+"
     "| col1 | col2 | col3 |"
     "+------+------+------+"
@@ -576,7 +598,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_13,
-    Builder::from_iter([["", "", ""], ["a", "b", "c"], ["", "", ""]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["", "", ""], ["a", "b", "c"], ["", "", ""]]).set_header(["col1", "col2", "col3"])),
     "+------+------+------+"
     "| col1 | col2 | col3 |"
     "+------+------+------+"
@@ -586,7 +608,7 @@ test_table!(
 
 test_table!(
     clean_with_columns_14,
-    Builder::from_iter([["1", "", "3"], ["", "", ""], ["d", "", "f"]]).set_columns(["col1", "col2", "col3"]).clean().clone().build(),
+    clean(Builder::from_iter([["1", "", "3"], ["", "", ""], ["d", "", "f"]]).set_header(["col1", "col2", "col3"])),
     "+------+------+"
     "| col1 | col3 |"
     "+------+------+"
@@ -596,17 +618,9 @@ test_table!(
     "+------+------+"
 );
 
-test_table!(
-    clean_empty_0,
-    Builder::from_iter([[""; 0]; 0]).clean().clone().build(),
-    ""
-);
+test_table!(clean_empty_0, clean(Builder::from_iter([[""; 0]; 0])), "");
 
-test_table!(
-    clean_empty_1,
-    Builder::from_iter([[""; 0]; 10]).clean().clone().build(),
-    ""
-);
+test_table!(clean_empty_1, clean(Builder::from_iter([[""; 0]; 10])), "");
 
 test_table!(
     index,
@@ -626,8 +640,7 @@ test_table!(
     index_set_name,
     Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
         .index()
-        .set_name(Some("A index name".to_owned()))
-        .clone()
+        .name(Some("A index name".into()))
         .build(),
     "+--------------+---+-----------+"
     "|              | 0 | 1         |"
@@ -646,8 +659,7 @@ test_table!(
     index_enumeration,
     Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
         .index()
-        .hide_index()
-        .clone()
+        .hide()
         .build(),
     "+---+-----------+"
     "| 0 | 1         |"
@@ -664,8 +676,7 @@ test_table!(
     set_index,
     Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
         .index()
-        .set_index(1)
-        .clone()
+        .column(1)
         .build(),
     "+-----------+---+"
     "|           | 0 |"
@@ -684,9 +695,8 @@ test_table!(
     set_index_and_set_index_name_0,
     Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
         .index()
-        .set_index(1)
-        .set_name(Some("Hello".to_owned()))
-        .clone()
+        .column(1)
+        .name(Some("Hello".into()))
         .build(),
     "+-----------+---+"
     "|           | 0 |"
@@ -705,9 +715,8 @@ test_table!(
     set_index_and_set_index_name_1,
     Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]])
         .index()
-        .set_index(1)
-        .set_name(None)
-        .clone()
+        .column(1)
+        .name(None)
         .build(),
     "+-----------+---+"
     "|           | 0 |"
@@ -725,7 +734,6 @@ test_table!(
     Builder::from_iter([["n", "name", "zz"], ["0", "Dmitriy", "123"], ["1", "Vladislav", "123"]])
         .index()
         .transpose()
-        .clone()
         .build(),
     "+---+------+---------+-----------+"
     "|   | 0    | 1       | 2         |"
@@ -744,7 +752,7 @@ fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
     let mut builder = Builder::default();
     for row in data {
         let row = row.into_iter().map(|i| i.to_string()).collect::<Vec<_>>();
-        builder.add_record(row);
+        builder.push_record(row);
     }
 
     let table = builder.build().to_string();
@@ -752,7 +760,12 @@ fn qc_table_is_consistent(data: Vec<Vec<isize>>) -> bool {
     let lines = table.lines().collect::<Vec<_>>();
     let lines_has_the_same_length = lines
         .iter()
-        .map(|line| papergrid::util::string_width(line))
+        .map(|line| papergrid::util::string::string_width(line))
         .all(|line_width| line_width == lines[0].len());
     lines_has_the_same_length
+}
+
+fn clean(mut b: Builder) -> String {
+    b.clean();
+    b.build().to_string()
 }

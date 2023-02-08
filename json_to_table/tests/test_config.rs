@@ -31,8 +31,6 @@ fn config_from_table_test() {
         .collapse()
         .to_string();
 
-    println!("{}", table);
-
     assert_eq!(
         table,
         concat!(
@@ -77,8 +75,6 @@ fn config_from_table_general_test() {
         .set_style(Style::modern())
         .set_config(cfg)
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(
         table,
@@ -129,8 +125,6 @@ fn color_test() {
         .set_config(cfg)
         .collapse()
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(
         table,

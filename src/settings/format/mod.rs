@@ -58,11 +58,12 @@ impl Format {
     ///                    +-------+-------------+-----------+");
     /// ```
     ///
-    pub fn content<F>(f: F) -> FormatContent<F>
+    pub fn content<F, S>(mut f: F) -> FormatContent<impl FnMut(&str) -> String>
     where
-        F: FnMut(&str) -> String,
+        F: FnMut(&str) -> S,
+        S: Into<String>,
     {
-        FormatContent(f)
+        FormatContent(move |s: &str| (f)(s).into())
     }
 
     /// This function creates a new [`FormatWithIndex`], so

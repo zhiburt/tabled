@@ -153,7 +153,7 @@ impl Truncate<'_, (), ()> {
         let text = replace_tab(text, tab_width);
 
         match text {
-            Cow::Borrowed(text) => truncate_text(&text, width, "", false),
+            Cow::Borrowed(text) => truncate_text(text, width, "", false),
             Cow::Owned(text) => match truncate_text(&text, width, "", false) {
                 Cow::Borrowed(_) => Cow::Owned(text),
                 Cow::Owned(text) => Cow::Owned(text),
@@ -169,13 +169,13 @@ where
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: papergrid::config::Entity) {
-        let set_width = self.width.measure(&*records, cfg);
+        let truncate_width = self.width.measure(&*records, cfg);
 
-        let mut width = set_width;
+        let mut width = truncate_width;
         let mut suffix = Cow::Borrowed("");
 
         if let Some(x) = self.suffix.as_ref() {
-            (suffix, width) = make_suffix(x, cfg.get_tab_width(), set_width)
+            (suffix, width) = make_suffix(x, width, cfg.get_tab_width())
         };
 
         let count_rows = records.count_rows();
@@ -187,12 +187,12 @@ where
             let text = records.get_cell(pos).as_ref();
 
             let cell_width = string_width_multiline_tab(text, cfg.get_tab_width());
-            if set_width >= cell_width {
+            if truncate_width >= cell_width {
                 continue;
             }
 
             let text = if width == 0 {
-                if set_width == 0 {
+                if truncate_width == 0 {
                     Cow::Borrowed("")
                 } else {
                     Cow::Borrowed(suffix.deref())
@@ -202,7 +202,9 @@ where
                 //       We could eliminate this allocation if we would be allowed to cut '\t' with unknown characters.
                 //       Currently we don't do that.
                 let text = replace_tab(text, cfg.get_tab_width());
-                Cow::Owned(truncate_text(&text, width, &suffix, save_suffix_color).into_owned())
+                Cow::Owned(
+                    truncate_text(&text, width, &suffix, save_suffix_color).into_owned(),
+                )
             };
 
             records.set(pos, text.into_owned());

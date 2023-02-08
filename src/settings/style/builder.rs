@@ -938,12 +938,12 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     }
 
     /// Removes all horizontal lines set by [`Style::horizontals`]
-    pub fn off_horizontals(self) -> Style<T, B, L, R, H, V, HLineArray<0>, VLines> {
+    pub fn remove_horizontals(self) -> Style<T, B, L, R, H, V, HLineArray<0>, VLines> {
         Style::new(self.borders, [], self.verticals)
     }
 
     /// Removes all verticals lines set by [`Style::verticals`]
-    pub fn off_verticals(self) -> Style<T, B, L, R, H, V, HLines, VLineArray<0>> {
+    pub fn remove_verticals(self) -> Style<T, B, L, R, H, V, HLines, VLineArray<0>> {
         Style::new(self.borders, self.horizontals, [])
     }
 }

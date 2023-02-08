@@ -91,8 +91,6 @@ fn orientation_test_2() {
         .set_array_mode(Orientation::Horizontal)
         .to_string();
 
-    println!("{}", table);
-
     assert_eq!(
         table,
         concat!(

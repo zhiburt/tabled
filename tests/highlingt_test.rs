@@ -1,7 +1,8 @@
 use tabled::{
     builder::Builder,
+    highlight::Highlight,
     object::{Cell, Columns, Frame, Object, Rows, Segment},
-    Border, Highlight, Style,
+    Border, Style,
 };
 
 use crate::util::{create_table, static_table, test_table};
@@ -120,10 +121,10 @@ test_table!(
         .with(Highlight::new(
             Frame,
             Border::filled('+')
-                .top_left_corner('*')
-                .top_right_corner('#')
-                .bottom_left_corner('@')
-                .bottom_right_corner('.'),
+                .corner_top_left('*')
+                .corner_top_right('#')
+                .corner_bottom_left('@')
+                .corner_bottom_right('.'),
         )),
     "*++++++++++++++++++++++++++++++++++++#"
     "+ N │ column 0 │ column 1 │ column 2 +"
@@ -143,10 +144,10 @@ test_table!(
         .with(Highlight::new(
             Segment::all(),
             Border::filled('+')
-                .top_left_corner('*')
-                .top_right_corner('#')
-                .bottom_left_corner('@')
-                .bottom_right_corner('.'),
+                .corner_top_left('*')
+                .corner_top_right('#')
+                .corner_bottom_left('@')
+                .corner_bottom_right('.'),
         )),
     "*++++++++++++++++++++++++++++++++++++#"
     "+ N │ column 0 │ column 1 │ column 2 +"
@@ -222,10 +223,10 @@ fn highlingt_complex_figures() {
     macro_rules! test_highlight {
         ($object:expr, $expected:expr,) => {
             let border = Border::filled('+')
-                .top_left_corner('*')
-                .top_right_corner('#')
-                .bottom_left_corner('@')
-                .bottom_right_corner('.');
+                .corner_top_left('*')
+                .corner_top_right('#')
+                .corner_bottom_left('@')
+                .corner_bottom_right('.');
 
             let table = create_table::<3, 3>()
                 .with(Style::modern())

@@ -1,8 +1,9 @@
 // todo: add method for SPACING between cells.
 
 use tabled::{
+    highlight::Highlight,
     object::{Cell, Rows},
-    Border, Highlight, Rotate,
+    Border, Rotate,
 };
 
 use crate::util::{new_table, test_table};

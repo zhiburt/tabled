@@ -30,7 +30,7 @@ test_table!(
     padding_with_set_characters,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Segment::all()).with(Padding::new(1, 2, 1, 1).set_fill('>', '<', 'V', '^'))),
+        .with(Modify::new(Segment::all()).with(Padding::new(1, 2, 1, 1).fill('>', '<', 'V', '^'))),
     "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV"
     ">N<<|>column 0<<|>column 1<<|>column 2<<"
     "^^^^|^^^^^^^^^^^|^^^^^^^^^^^|^^^^^^^^^^^"
@@ -50,7 +50,7 @@ test_table!(
     padding_with_set_characters_and_zero_ident,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Segment::all()).with(Padding::zero().set_fill('>', '<', '^', 'V'))),
+        .with(Modify::new(Segment::all()).with(Padding::zero().fill('>', '<', '^', 'V'))),
     "N|column 0|column 1|column 2"
     "-+--------+--------+--------"
     "0|  0-0   |  0-1   |  0-2   "

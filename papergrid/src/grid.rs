@@ -307,14 +307,14 @@ where
     print_margin_left(f, cfg, line, totalh)?;
 
     for (col, cell) in columns.enumerate() {
-        print_vertical_char(f, cfg, (row, col), 0, shape)?;
+        print_vertical_char(f, cfg, (row, col), 0, 1, shape)?;
 
         let width = dims.get_width(col);
         let color = colors.and_then(|c| c.get_color((row, col)));
         print_single_line_column(f, cell.as_ref(), cfg, width, color, (row, col))?;
     }
 
-    print_vertical_char(f, cfg, (row, shape.1), 0, shape)?;
+    print_vertical_char(f, cfg, (row, shape.1), 0, 1, shape)?;
 
     print_margin_right(f, cfg, line, totalh)?;
 
@@ -374,16 +374,15 @@ fn print_columns_lines<S, F: Write, C: Color>(
 ) -> Result<(), fmt::Error> {
     for i in 0..height {
         let exact_line = line + i;
-        let cell_line = i;
 
         print_margin_left(f, cfg, exact_line, totalh)?;
 
         for (col, cell) in columns.iter_mut().enumerate() {
-            print_vertical_char(f, cfg, (row, col), cell_line, shape)?;
+            print_vertical_char(f, cfg, (row, col), i, height, shape)?;
             cell.display(f, cfg.get_tab_width())?;
         }
 
-        print_vertical_char(f, cfg, (row, shape.1), cell_line, shape)?;
+        print_vertical_char(f, cfg, (row, shape.1), i, height, shape)?;
 
         print_margin_right(f, cfg, exact_line, totalh)?;
 
@@ -579,7 +578,7 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
     let mut records_iter = records.iter_rows().into_iter();
     let mut next_columns = records_iter.next();
 
-    let mut is_prev_row_skipped = false;
+    let mut need_new_line = false;
     let mut line = 0;
     let mut row = 0;
     while let Some(columns) = next_columns {
@@ -592,12 +591,15 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
         let shape = (count_rows, count_columns);
 
         let has_horizontal = has_horizontal(cfg, row, count_rows);
-        if row > 0 && !is_prev_row_skipped && (has_horizontal || height > 0) {
+        if need_new_line && (has_horizontal || height > 0) {
             f.write_char('\n')?;
+            need_new_line = false;
         }
 
         if has_horizontal {
+            print_margin_left(f, cfg, line, totalh)?;
             print_split_line_spanned(f, &mut buf, cfg, dims, total_width, row, shape)?;
+            print_margin_right(f, cfg, line, totalh)?;
 
             line += 1;
 
@@ -606,20 +608,15 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
             }
         }
 
-        if height > 0 {
-            print_spanned_columns(
-                f, &mut buf, columns, cfg, colors, dims, height, row, line, totalh, shape,
-            )?;
+        print_spanned_columns(
+            f, &mut buf, columns, cfg, colors, dims, height, row, line, totalh, shape,
+        )?;
 
-            line += height;
+        if has_horizontal || height > 0 {
+            need_new_line = true;
         }
 
-        if height == 0 && !has_horizontal {
-            is_prev_row_skipped = true;
-        } else {
-            is_prev_row_skipped = false;
-        }
-
+        line += height;
         row += 1;
     }
 
@@ -802,6 +799,68 @@ where
     D: Dimension,
     C: Colors,
 {
+    if this_height == 0 {
+        let gp = GridProjection::with_shape(cfg, shape);
+
+        // it's possible that we dont show row but it contains an actuall cell which will be
+        // rendered after all cause it's a rowspanned
+
+        let mut skip = 0;
+        for (col, cell) in iter.enumerate() {
+            if skip > 0 {
+                skip -= 1;
+                continue;
+            }
+
+            if let Some((_, _, colspan)) = columns.get(&col) {
+                skip = *colspan - 1;
+                continue;
+            }
+
+            let rowspan = cfg.get_span_row((row, col)).unwrap_or(1);
+            if rowspan < 2 {
+                continue;
+            }
+
+            let height = if rowspan > 1 {
+                range_height(cfg, dimension, row, row + rowspan, shape.0)
+            } else {
+                this_height
+            };
+
+            let colspan = gp.get_span_column((row, col)).unwrap_or(1);
+            skip = colspan - 1;
+            let width = if colspan > 1 {
+                range_width(cfg, dimension, col, col + colspan, shape.1)
+            } else {
+                dimension.get_width(col)
+            };
+
+            let pos = (row, col).into();
+            let cell = CellLines::new(
+                cell,
+                width,
+                height,
+                cfg.get_formatting(pos),
+                cfg.get_padding(pos),
+                cfg.get_padding_color(pos),
+                *cfg.get_alignment_horizontal(pos),
+                *cfg.get_alignment_vertical(pos),
+                cfg.get_tab_width(),
+                colors.and_then(|c| c.get_color((row, col))),
+            );
+
+            columns.insert(col, (cell, rowspan, colspan));
+        }
+
+        columns.retain(|_, (_, rowspan, _)| {
+            *rowspan -= 1;
+            *rowspan != 0
+        });
+
+        return Ok(());
+    }
+
     let gp = GridProjection::with_shape(cfg, shape);
 
     let mut skip = 0;
@@ -824,7 +883,7 @@ where
             dimension.get_width(col)
         };
 
-        let rowspan = gp.get_span_row((row, col)).unwrap_or(1);
+        let rowspan = cfg.get_span_row((row, col)).unwrap_or(1);
         let height = if rowspan > 1 {
             range_height(cfg, dimension, row, row + rowspan, shape.0)
         } else {
@@ -855,11 +914,11 @@ where
         print_margin_left(f, cfg, exact_line, totalh)?;
 
         for (&col, (cell, _, _)) in columns.iter_mut() {
-            print_vertical_char(f, cfg, (row, col), cell_line, shape)?;
+            print_vertical_char(f, cfg, (row, col), cell_line, this_height, shape)?;
             cell.display(f, cfg.get_tab_width())?;
         }
 
-        print_vertical_char(f, cfg, (row, shape.1), cell_line, shape)?;
+        print_vertical_char(f, cfg, (row, shape.1), cell_line, this_height, shape)?;
 
         print_margin_right(f, cfg, exact_line, totalh)?;
 
@@ -867,6 +926,15 @@ where
             f.write_char('\n')?;
         }
     }
+
+    println!(
+        "here we built row={} {:?}",
+        row,
+        columns
+            .iter()
+            .map(|(key, val)| (key, (val.1, val.2)))
+            .collect::<Vec<_>>()
+    );
 
     columns.retain(|_, (_, rowspan, _)| {
         *rowspan -= 1;
@@ -1207,7 +1275,8 @@ fn print_vertical_char<F: Write>(
     f: &mut F,
     cfg: &GridConfig,
     pos: Position,
-    line_index: usize,
+    line: usize,
+    count_lines: usize,
     shape: (usize, usize),
 ) -> fmt::Result {
     // todo: Add Border/verticals to CellLines structure to not make these lookup calls
@@ -1221,7 +1290,7 @@ fn print_vertical_char<F: Write>(
 
     let symbol = cfg
         .is_overridden_vertical(pos)
-        .then(|| cfg.lookup_overridden_vertical(pos, line_index, shape.0))
+        .then(|| cfg.lookup_overridden_vertical(pos, line, count_lines))
         .flatten()
         .unwrap_or(symbol);
 
@@ -1317,11 +1386,14 @@ fn print_margin_vertical<F: Write>(
             if let Some(max) = height {
                 offset = cmp::min(offset, max);
                 let pos = max - offset;
-                if line <= pos {
-                    print_indent(f, indent.fill, indent.size, color)?;
-                } else {
+
+                if line >= pos {
                     print_indent(f, ' ', indent.size, &AnsiColor::default())?;
+                } else {
+                    print_indent(f, indent.fill, indent.size, color)?;
                 }
+            } else {
+                print_indent(f, indent.fill, indent.size, color)?;
             }
         }
     }
