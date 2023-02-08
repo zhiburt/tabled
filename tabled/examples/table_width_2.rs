@@ -7,7 +7,7 @@ use tabled::{
 };
 
 fn main() {
-    let readme_text = include_str!("../CHANGELOG.md");
+    let readme_text = include_str!("../../CHANGELOG.md");
     let lines = readme_text.lines().filter(|s| !s.is_empty()).enumerate();
 
     let mut table = Table::new(lines);
