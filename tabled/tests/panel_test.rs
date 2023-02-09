@@ -3,8 +3,10 @@ use tabled::settings::{
     highlight::Highlight,
     object::{Cell, Object, Rows, Segment},
     panel::Panel,
+    span::Span,
     style::{Border, Style},
-    style::{CorrectSpans, HorizontalLine},
+    style::{BorderSpanCorrection, HorizontalLine},
+    width::Width,
     Modify,
 };
 
@@ -14,7 +16,7 @@ mod util;
 
 test_table!(
     panel_has_no_style_by_default,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::horizontal(0).text("Linux Distributions")),
+    create_table::<3, 3>().with(Style::psql()).with(Panel::horizontal(0,"Linux Distributions")),
     "        Linux Distributions         "
     "---+----------+----------+----------"
     " N | column 0 | column 1 | column 2 "
@@ -26,9 +28,9 @@ test_table!(
 test_table!(
     highlight_panel_0,
     create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Linux Distributions"))
+        .with(Panel::horizontal(0,"Linux Distributions"))
         .with(Style::psql())
-        .with(Highlight::new(Cell(0, 0), Border::filled('#'))),
+        .with(Highlight::new(Cell::new(0, 0), Border::filled('#'))),
     "#####                                "
     "#        Linux Distributions         "
     "#####----------+----------+----------"
@@ -41,12 +43,12 @@ test_table!(
 test_table!(
     highlight_panel_1,
     create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Linux Distributions"))
+        .with(Panel::horizontal(0,"Linux Distributions"))
         .with(Style::psql())
-        .with(Highlight::new(Cell(0, 0), Border::filled('#')))
-        .with(Highlight::new(Cell(0, 1), Border::filled('#')))
-        .with(Highlight::new(Cell(0, 2), Border::filled('#')))
-        .with(Highlight::new(Cell(0, 3), Border::filled('#'))),
+        .with(Highlight::new(Cell::new(0, 0), Border::filled('#')))
+        .with(Highlight::new(Cell::new(0, 1), Border::filled('#')))
+        .with(Highlight::new(Cell::new(0, 2), Border::filled('#')))
+        .with(Highlight::new(Cell::new(0, 3), Border::filled('#'))),
     "######################################"
     "#        Linux Distributions         #"
     "######################################"
@@ -59,7 +61,7 @@ test_table!(
 test_table!(
     top_panel,
     create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Linux Distributions"))
+        .with(Panel::horizontal(0,"Linux Distributions"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::psql()),
     "        Linux Distributions         "
@@ -73,7 +75,7 @@ test_table!(
 test_table!(
     bottom_panel,
     create_table::<3, 3>()
-        .with(Panel::horizontal(4).text("Linux Distributions"))
+        .with(Panel::horizontal(4,"Linux Distributions"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::psql()),
     " N | column 0 | column 1 | column 2 "
@@ -87,7 +89,7 @@ test_table!(
 test_table!(
     inner_panel,
     create_table::<3, 3>()
-        .with(Panel::horizontal(2).text("Linux Distributions"))
+        .with(Panel::horizontal(2,"Linux Distributions"))
         .with(Modify::new(Rows::new(2..)).with(Alignment::center()))
         .with(Style::psql()),
     " N | column 0 | column 1 | column 2 "
@@ -130,7 +132,7 @@ test_table!(
 
 test_table!(
     panel_style_uses_most_left_and_right_cell_styles,
-    new_table(&[(0, 1)]).with(Panel::horizontal(0).text("Numbers")).with(Style::modern()),
+    new_table(&[(0, 1)]).with(Panel::horizontal(0,"Numbers")).with(Style::modern()),
     "┌─────┬─────┐"
     "│  Numbers  │"
     "├─────┼─────┤"
@@ -143,9 +145,9 @@ test_table!(
 test_table!(
     panel_style_change,
     new_table(&[(0, 1)])
-        .with(Panel::horizontal(0).text("Numbers"))
+        .with(Panel::horizontal(0,"Numbers"))
         .with(Style::modern().intersection_top('─').horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(Some('┬'))]))
-        .with(Modify::new(Cell(0, 0)).with(Alignment::center())),
+        .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
     "┌───────────┐"
     "│  Numbers  │"
     "├─────┬─────┤"
@@ -158,9 +160,9 @@ test_table!(
 test_table!(
     panel_style_uses_most_left_and_right_cell_styles_correct,
     new_table(&[(0, 1)])
-        .with(Panel::horizontal(0).text("Numbers"))
+        .with(Panel::horizontal(0,"Numbers"))
         .with(Style::modern())
-        .with(CorrectSpans),
+        .with(BorderSpanCorrection),
     "┌───────────┐"
     "│  Numbers  │"
     "├─────┬─────┤"
@@ -173,10 +175,10 @@ test_table!(
 test_table!(
     panel_style_change_correct,
     new_table(&[(0, 1)])
-        .with(Panel::horizontal(0).text("Numbers"))
+        .with(Panel::horizontal(0,"Numbers"))
         .with(Style::modern().intersection_top('─').horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(Some('┬'))]))
-        .with(CorrectSpans)
-        .with(Modify::new(Cell(0, 0)).with(Alignment::center())),
+        .with(BorderSpanCorrection)
+        .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
     "┌───────────┐"
     "│  Numbers  │"
     "├───────────┤" // it's different because we use a top_intersection char by default when making style for `Panel`s.
@@ -188,7 +190,7 @@ test_table!(
 
 test_table!(
     panel_in_single_column,
-    new_table(&[(0)]).with(Panel::horizontal(0).text("Numbers")).with(Style::modern()),
+    new_table(&[(0)]).with(Panel::horizontal(0,"Numbers")).with(Style::modern()),
     "┌─────────┐"
     "│ Numbers │"
     "├─────────┤"
@@ -200,7 +202,7 @@ test_table!(
 
 test_table!(
     panel_vertical_0,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(0).text("Linux Distributions")),
+    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(0,"Linux Distributions")),
     " Linux Distributions | N | column 0 | column 1 | column 2 "
     "                     +---+----------+----------+----------"
     "                     | 0 |   0-0    |   0-1    |   0-2    "
@@ -210,7 +212,7 @@ test_table!(
 
 test_table!(
     panel_vertical_1,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(1).text("Linux Distributions")),
+    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(1,"Linux Distributions")),
     " N | Linux Distributions | column 0 | column 1 | column 2 "
     "---+                     +----------+----------+----------"
     " 0 |                     |   0-0    |   0-1    |   0-2    "
@@ -220,7 +222,7 @@ test_table!(
 
 test_table!(
     panel_vertical_2,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(4).text("Linux Distributions")),
+    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(4,"Linux Distributions")),
     " N | column 0 | column 1 | column 2 | Linux Distributions "
     "---+----------+----------+----------+                     "
     " 0 |   0-0    |   0-1    |   0-2    |                     "
@@ -230,7 +232,7 @@ test_table!(
 
 test_table!(
     panel_vertical_0_wrap,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(0).text("Linux Distributions").text_width(3)),
+    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(0,"Linux Distributions")).with(Modify::new(Cell::new(0, 0)).with(Width::wrap(3))),
     " Lin | N | column 0 | column 1 | column 2 "
     " ux  |   |          |          |          "
     " Dis |   |          |          |          "
@@ -242,93 +244,30 @@ test_table!(
 
 test_table!(
     panel_vertical_0_wrap_0,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(0).text("Linux Distributions").text_width(0)),
-    " Linux Distributions | N | column 0 | column 1 | column 2 "
-    "                     +---+----------+----------+----------"
-    "                     | 0 |   0-0    |   0-1    |   0-2    "
-    "                     | 1 |   1-0    |   1-1    |   1-2    "
-    "                     | 2 |   2-0    |   2-1    |   2-2    "
+    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(0,"Linux Distributions")).with(Modify::new(Cell::new(0, 0)).with(Width::wrap(0))),
+    "  | N | column 0 | column 1 | column 2 "
+    "  +---+----------+----------+----------"
+    "  | 0 |   0-0    |   0-1    |   0-2    "
+    "  | 1 |   1-0    |   1-1    |   1-2    "
+    "  | 2 |   2-0    |   2-1    |   2-2    "
 );
 
 test_table!(
     panel_vertical_0_wrap_100,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(0).text("Linux Distributions").text_width(100)),
+    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(0,"Linux Distributions")).with(Modify::new(Cell::new(0, 0)).with(Width::wrap(100))),
     " Linux Distributions | N | column 0 | column 1 | column 2 "
     "                     +---+----------+----------+----------"
     "                     | 0 |   0-0    |   0-1    |   0-2    "
     "                     | 1 |   1-0    |   1-1    |   1-2    "
     "                     | 2 |   2-0    |   2-1    |   2-2    "
-);
-
-test_table!(
-    panel_vertical_set_row_0,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(0).row(1).text("Linux Distributions")),
-    "                     | N | column 0 | column 1 | column 2 "
-    "---------------------+---+----------+----------+----------"
-    " Linux Distributions | 0 |   0-0    |   0-1    |   0-2    "
-    "                     | 1 |   1-0    |   1-1    |   1-2    "
-    "                     | 2 |   2-0    |   2-1    |   2-2    "
-);
-
-test_table!(
-    panel_vertical_set_row_1,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(1).row(1).text("Linux Distributions")),
-    " N |                     | column 0 | column 1 | column 2 "
-    "---+---------------------+----------+----------+----------"
-    " 0 | Linux Distributions |   0-0    |   0-1    |   0-2    "
-    " 1 |                     |   1-0    |   1-1    |   1-2    "
-    " 2 |                     |   2-0    |   2-1    |   2-2    "
-);
-
-test_table!(
-    panel_vertical_set_row_2,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::vertical(4).row(1).text("Linux Distributions")),
-   " N | column 0 | column 1 | column 2 |                     "
-   "---+----------+----------+----------+---------------------"
-   " 0 |   0-0    |   0-1    |   0-2    | Linux Distributions "
-   " 1 |   1-0    |   1-1    |   1-2    |                     "
-   " 2 |   2-0    |   2-1    |   2-2    |                     "
-);
-
-test_table!(
-    panel_horizontal_set_col_0,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::horizontal(0).column(1).text("Linux Distributions")),
-    "   |      Linux Distributions       "
-    "---+----------+----------+----------"
-    " N | column 0 | column 1 | column 2 "
-    " 0 |   0-0    |   0-1    |   0-2    "
-    " 1 |   1-0    |   1-1    |   1-2    "
-    " 2 |   2-0    |   2-1    |   2-2    "
-);
-
-test_table!(
-    panel_horizontal_set_col_1,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::horizontal(2).column(1).text("Linux Distributions")),
-    " N | column 0 | column 1 | column 2 "
-    "---+----------+----------+----------"
-    " 0 |   0-0    |   0-1    |   0-2    "
-    "   |      Linux Distributions       "
-    " 1 |   1-0    |   1-1    |   1-2    "
-    " 2 |   2-0    |   2-1    |   2-2    "
-);
-
-test_table!(
-    panel_horizontal_set_col_2,
-    create_table::<3, 3>().with(Style::psql()).with(Panel::horizontal(4).column(1).text("Linux Distributions")),
-    " N | column 0 | column 1 | column 2 "
-    "---+----------+----------+----------"
-    " 0 |   0-0    |   0-1    |   0-2    "
-    " 1 |   1-0    |   1-1    |   1-2    "
-    " 2 |   2-0    |   2-1    |   2-2    "
-    "   |      Linux Distributions       "
 );
 
 test_table!(
     panel_horizontal_set_0,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Panel::horizontal(0).text("Linux Distributions"))
-        .with(Panel::vertical(0).text("asd")),
+        .with(Panel::horizontal(0,"Linux Distributions"))
+        .with(Panel::vertical(0,"asd")),
     " asd |        Linux Distributions         "
     "     +---+----------+----------+----------"
     "     | N | column 0 | column 1 | column 2 "
@@ -341,9 +280,9 @@ test_table!(
     panel_horizontal_set_1,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Panel::horizontal(0).text("Linux Distributions"))
-        .with(Panel::vertical(0).text("asd"))
-        .with(Panel::vertical(5).text("asd"))
+        .with(Panel::horizontal(0,"Linux Distributions"))
+        .with(Panel::vertical(0,"asd"))
+        .with(Panel::vertical(5,"asd"))
         ,
     " asd |        Linux Distributions         | asd "
     "     +---+----------+----------+----------+     "
@@ -354,17 +293,33 @@ test_table!(
 );
 
 test_table!(
-    panel_horizontal_set_2,
+    panel_horizontal_x_1,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Panel::horizontal(0).text("Linux Distributions"))
-        .with(Panel::vertical(0).text("asd"))
-        .with(Panel::vertical(5).text("asd"))
-        .with(Panel::vertical(3).row(1).text("asd")),
-    " asd |      Linux Distributions      |          | asd "
-    "     +---+----------+-----+----------+----------+     "
-    "     | N | column 0 | asd | column 1 | column 2 |     "
-    "     | 0 |   0-0    |     |   0-1    |   0-2    |     "
-    "     | 1 |   1-0    |     |   1-1    |   1-2    |     "
-    "     | 2 |   2-0    |     |   2-1    |   2-2    |     "
+        .with(Panel::horizontal(0,"Linux Distributions"))
+        .with(Panel::vertical(0,"asd"))
+        .with(Panel::vertical(5,"zxc"))
+        .with(Modify::new((1, 3)).with(Span::horizontal(3)).with("wwwww")),
+        " asd |   Linux Distributions    | zxc "
+        "     +---+----------+-----+-----+     "
+        "     | N | column 0 |      wwwww      |     "
+        "     | 0 |   0-0    | 0-1 | 0-2 |     "
+        "     | 1 |   1-0    | 1-1 | 1-2 |     "
+        "     | 2 |   2-0    | 2-1 | 2-2 |     "
+);
+
+test_table!(
+    panel_horizontal_x_2,
+    create_table::<3, 3>()
+        .with(Style::psql())
+        .with(Panel::horizontal(0,"Linux Distributions"))
+        .with(Panel::vertical(0,"asd"))
+        .with(Panel::vertical(5,"zxc"))
+        .with(Modify::new((1, 3)).with(Span::horizontal(2)).with("wwwww")),
+        " asd |   Linux Distributions    | zxc "
+        "     +---+----------+-----+-----+     "
+        "     | N | column 0 |   wwwww   |     "
+        "     | 0 |   0-0    | 0-1 | 0-2 |     "
+        "     | 1 |   1-0    | 1-1 | 1-2 |     "
+        "     | 2 |   2-0    | 2-1 | 2-2 |     "
 );

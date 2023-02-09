@@ -43,14 +43,12 @@ fn main() {
     let table_b = Table::new(&not_validated).with(Style::modern()).to_string();
     let table_c = Table::new(&unsure).with(Style::ascii_rounded()).to_string();
 
-    let row_t = row![table_c, table_b];
-    let col_t = col![table_c; 3];
-    let mut row_col_t = col![row![table_a, table_b].with(Style::empty()), table_c];
-    row_col_t.with(Alignment::center());
+    let row_table = row![table_c, table_b];
 
-    println!("{}", row_t);
-    println!();
-    println!("{}", col_t);
-    println!();
-    println!("{}", row_col_t);
+    let col_table = col![table_c; 3];
+
+    let mut row_col_table = col![row![table_a, table_b].with(Style::empty()), table_c];
+    row_col_table.with(Alignment::center());
+
+    println!("{row_table}\n{col_table}\n{row_col_table}",);
 }

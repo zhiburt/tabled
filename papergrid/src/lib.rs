@@ -6,6 +6,7 @@
     unreachable_pub,
     missing_docs
 )]
+#![allow(clippy::uninlined_format_args)]
 #![deny(unused_must_use)]
 
 //! Papergrid is a library for generating text-based tables.
@@ -17,9 +18,9 @@
 //!
 //! ```
 //! use papergrid::{
-//!     records::iter_records::IterRecords,
+//!     records::IterRecords,
 //!     dimension::{Dimension, ExactDimension},
-//!     Borders, Grid, GridConfig,
+//!     config::{Borders, GridConfig}, Grid,
 //! };
 //!
 //! // Creating a borders structure of a grid.
@@ -47,7 +48,7 @@
 //!
 //! // Creating an actual data for grid.
 //! let records = vec![vec!["Hello", "World"], vec!["Hi", "World"]];
-//! let records = IterRecords::new(records, 2);
+//! let records = IterRecords::new(records, 2, None);
 //!
 //! // Estimate grid dimension.
 //! let mut dimension = ExactDimension::default();

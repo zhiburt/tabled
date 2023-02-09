@@ -19,7 +19,7 @@ fn main() {
 
     let grid = Grid::new(records, &cfg, &dim);
 
-    println!("{}", grid);
+    println!("{grid}");
 }
 
 fn generate_table_config() -> GridConfig {

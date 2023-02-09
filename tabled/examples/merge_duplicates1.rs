@@ -3,7 +3,7 @@
 use tabled::{
     settings::{
         merge::Merge,
-        style::{CorrectSpans, Style},
+        style::{Style, BorderSpanCorrection},
     },
     Table, Tabled,
 };
@@ -42,8 +42,8 @@ fn main() {
     let table = Table::new(data)
         .with(Merge::vertical())
         .with(Style::modern())
-        .with(CorrectSpans)
+        .with(BorderSpanCorrection)
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

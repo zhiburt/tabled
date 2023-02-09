@@ -104,7 +104,7 @@ impl<W, P> MinWidth<W, P> {
 impl<W, R> CellOption<R> for MinWidth<W>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {

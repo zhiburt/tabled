@@ -153,7 +153,7 @@ where
     C: RangeBounds<usize> + Clone,
     RR: Records + ExactRecords + Resizable,
 {
-    fn change(&mut self, records: &mut RR, cfg: &mut papergrid::GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut RR, _: &mut papergrid::GridConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
 

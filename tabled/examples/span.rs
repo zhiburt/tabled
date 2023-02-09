@@ -1,9 +1,9 @@
 use tabled::{
     settings::{
         alignment::Alignment,
-        object::{Cell, Segment},
-        span::Span,
-        style::{CorrectSpans, Style},
+        object::Cell,
+        span::{ColumnSpan, RowSpan},
+        style::{Style, BorderSpanCorrection},
         Modify,
     },
     Table,
@@ -12,8 +12,8 @@ use tabled::{
 fn main() {
     let data = [["just 1 column"; 5]; 5];
 
-    let h_span = |r, c, span| Modify::new(Cell(r, c)).with(Span::column(span));
-    let v_span = |r, c, span| Modify::new(Cell(r, c)).with(Span::row(span));
+    let h_span = |r, c, span| Modify::new(Cell::new(r, c)).with(ColumnSpan::new(span));
+    let v_span = |r, c, span| Modify::new(Cell::new(r, c)).with(RowSpan::new(span));
 
     let table = Table::new(data)
         .with(h_span(0, 0, 5).with("span all 5 columns"))
@@ -24,9 +24,9 @@ fn main() {
         .with(v_span(2, 3, 3).with("just 1 column\nspan\n3\ncolumns"))
         .with(h_span(3, 1, 2))
         .with(Style::modern())
-        .with(CorrectSpans)
+        .with(BorderSpanCorrection)
         .with(Alignment::center_vertical())
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

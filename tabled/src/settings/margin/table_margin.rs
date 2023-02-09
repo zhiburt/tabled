@@ -18,7 +18,7 @@ impl Margin {
     ///
     /// It uses space(' ') as a default fill character.
     /// To set a custom character you can use [`Self::set_fill`] function.
-    pub fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
+    pub const fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
         Self(GridMargin {
             top: Indent::spaced(top),
             bottom: Indent::spaced(bottom),
@@ -28,7 +28,7 @@ impl Margin {
     }
 
     /// The function, sets a characters for the margin on an each side.
-    pub fn set_fill(mut self, left: char, right: char, top: char, bottom: char) -> Self {
+    pub const fn fill(mut self, left: char, right: char, top: char, bottom: char) -> Self {
         self.0.left.fill = left;
         self.0.right.fill = right;
         self.0.top.fill = top;

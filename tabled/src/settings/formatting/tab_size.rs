@@ -12,7 +12,7 @@ use crate::{grid::config::GridConfig, settings::TableOption};
 pub struct TabSize(pub usize);
 
 impl<R, D> TableOption<R, D> for TabSize {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.set_tab_width(self.0);
     }
 }

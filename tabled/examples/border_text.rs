@@ -2,19 +2,14 @@
 //! `cargo run --example border_text`
 
 use tabled::{
-    settings::{
-        alignment::Alignment,
-        object::Segment,
-        style::{BorderText, HorizontalLine, Style},
-        Modify,
-    },
+    settings::style::{BorderText, HorizontalLine, Style},
     Table,
 };
 
 fn main() {
     let data = [[5, 6, 7, 8, 9], [10, 11, 12, 13, 14]];
 
-    let table = Table::new(&data)
+    let table = Table::new(data)
         .with(
             Style::modern()
                 .remove_horizontal()
@@ -25,5 +20,5 @@ fn main() {
         .with(BorderText::last(" end. "))
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

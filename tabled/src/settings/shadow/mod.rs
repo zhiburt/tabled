@@ -112,7 +112,7 @@ impl Shadow {
 }
 
 impl<R, D> TableOption<R, D> for Shadow {
-    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, dimension: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut papergrid::GridConfig, _: &mut D) {
         let mut margin = *cfg.get_margin();
 
         if self.direction.top {

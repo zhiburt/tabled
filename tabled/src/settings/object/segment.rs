@@ -98,7 +98,7 @@ impl Iterator for SectorIter {
 }
 
 #[derive(Debug)]
-pub struct SectorCellsIter {
+pub(crate) struct SectorCellsIter {
     rows_end: usize,
     cols_start: usize,
     cols_end: usize,
@@ -107,7 +107,8 @@ pub struct SectorCellsIter {
 }
 
 impl SectorCellsIter {
-    pub const fn new(
+    /// Create an iterator from 1st row to last from 1st col to last.
+    pub(crate) const fn new(
         rows_start: usize,
         rows_end: usize,
         cols_start: usize,

@@ -22,5 +22,5 @@ fn main() {
         ))
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

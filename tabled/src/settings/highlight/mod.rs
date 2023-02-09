@@ -109,11 +109,11 @@ where
     O: Object<R>,
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
-        let cells = self.target.cells(&records);
+        let cells = self.target.cells(records);
         let segments = split_segments(cells, count_rows, count_cols);
 
         for sector in segments {
@@ -136,7 +136,7 @@ where
     O: Object<R>,
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

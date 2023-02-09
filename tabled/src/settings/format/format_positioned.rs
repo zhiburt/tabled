@@ -15,7 +15,7 @@ where
 impl<F, R> CellOption<R> for FormatContentPositioned<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
 {
     fn change(&mut self, records: &mut R, _: &mut GridConfig, entity: Entity) {
         let count_rows = records.count_rows();

@@ -37,11 +37,11 @@ fn main() {
         Distribution::new("Manjaro", "Arch", true, true),
     ];
 
-    let mut table = Table::new(&data);
+    let mut table = Table::new(data);
     table
         .with(Style::markdown())
         .with(Disable::column(ByColumnName::new("is_active")))
         .with(Modify::new(ByColumnName::new("name")).with(Border::filled('#')));
 
-    println!("{}", table);
+    println!("{table}");
 }

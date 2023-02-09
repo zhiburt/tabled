@@ -3,7 +3,8 @@
 use tabled::settings::{
     highlight::Highlight,
     object::{Cell, Rows},
-    style::Border, rotate::Rotate,
+    rotate::Rotate,
+    style::Border,
 };
 
 use crate::util::{new_table, test_table};
@@ -154,7 +155,7 @@ test_table!(
 test_table!(
     rotate_preserve_border_styles_test_1,
     new_table([(123, 456, 789), (234, 567, 891), (111, 222, 333)])
-        .with(Highlight::new(Cell(0, 2), Border::default().bottom('*')))
+        .with(Highlight::new(Cell::new(0, 2), Border::default().bottom('*')))
         .with(Rotate::Left),
         "+-----+-----+-----+-----+"
         "| i32 | 789 | 891 | 333 |"

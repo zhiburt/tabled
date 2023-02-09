@@ -32,6 +32,8 @@ fn test_0() {
         table,
         concat!(
             "+------+---------+----+-------------+--------------------+-----+----------------------------------------+-----------------------+---------+---------------------+\n",
+            "| 2021 | Level 1 | AA | Agriculture | Dollars (millions) | H10 | Indirect taxes                         | Financial performance | 489     | ANZSIC06 division A |\n",
+            "+------+---------+----+-------------+--------------------+-----+----------------------------------------+-----------------------+---------+---------------------+\n",
             "| 2021 | Level 1 | AA | Agriculture | Dollars (millions) | H11 | Depreciation                           | Financial performance | 2,318   | ANZSIC06 division A |\n",
             "+------+---------+----+-------------+--------------------+-----+----------------------------------------+-----------------------+---------+---------------------+\n",
             "| 2021 | Level 1 | AA | Agriculture | Dollars (millions) | H12 | Salaries and wages paid                | Financial performance | 6,202   | ANZSIC06 division A |\n",

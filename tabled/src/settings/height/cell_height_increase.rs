@@ -41,7 +41,7 @@ impl<W> CellHeightIncrease<W> {
 impl<W, R> CellOption<R> for CellHeightIncrease<W>
 where
     W: Measurement<Height>,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {

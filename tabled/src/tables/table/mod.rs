@@ -1,5 +1,7 @@
 //! This module contains a main table representation of this crate [`Table`].
 
+mod dimension;
+
 use std::{borrow::Cow, fmt, iter::FromIterator};
 
 use crate::{
@@ -7,7 +9,7 @@ use crate::{
     grid::config::AlignmentHorizontal,
     grid::{
         config::{Entity, Formatting, GridConfig, Indent, Padding},
-        dimension::{Dimension, ExactDimension},
+        dimension::Dimension,
         grid_projection::GridProjection,
         Grid,
     },
@@ -15,6 +17,8 @@ use crate::{
     settings::{style::Style, TableOption},
     Tabled,
 };
+
+pub use dimension::TableDimension;
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
 ///
@@ -279,115 +283,6 @@ fn table_padding(alignment: fmt::Alignment, available: usize) -> (usize, usize) 
     }
 }
 
-#[derive(Debug, Default, Clone)]
-pub struct TableDimension<'a> {
-    width: Option<Cow<'a, [usize]>>,
-    height: Option<Cow<'a, [usize]>>,
-}
-
-impl TableDimension<'_> {
-    pub fn is_complete(&self) -> bool {
-        self.width.is_some() && self.height.is_some()
-    }
-
-    pub fn count_rows(&self) -> Option<usize> {
-        self.height.as_ref().map(|list| list.len())
-    }
-
-    pub fn count_columns(&self) -> Option<usize> {
-        self.width.as_ref().map(|list| list.len())
-    }
-
-    /// Set column widths.
-    ///
-    /// In general the method is only considered to be usefull to a [`TableOption`].
-    ///
-    /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided widths.
-    pub fn set_widths(&mut self, columns: Vec<usize>) -> bool {
-        self.width = Some(Cow::Owned(columns));
-
-        true
-    }
-
-    /// Set rows heights.
-    ///
-    /// In general the method is only considered to be usefull to a [`TableOption`].
-    ///
-    /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided heights.
-    pub fn set_heights(&mut self, rows: Vec<usize>) -> bool {
-        self.height = Some(Cow::Owned(rows));
-
-        true
-    }
-
-    pub fn clear_width(&mut self) {
-        self.width = None;
-    }
-
-    pub fn clear_height(&mut self) {
-        self.height = None;
-    }
-
-    fn from_origin<'a>(origin: &'a TableDimension<'_>) -> TableDimension<'a> {
-        let width = match origin.width.as_deref() {
-            Some(v) => Some(Cow::Borrowed(v)),
-            None => None,
-        };
-
-        let height = match origin.height.as_deref() {
-            Some(v) => Some(Cow::Borrowed(v)),
-            None => None,
-        };
-
-        TableDimension { width, height }
-    }
-}
-
-impl Dimension for TableDimension<'_> {
-    fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {
-        match (self.width.is_some(), self.height.is_some()) {
-            (true, true) => {}
-            (true, false) => {
-                self.height = Some(Cow::Owned(ExactDimension::height(records, cfg)));
-            }
-            (false, true) => {
-                self.width = Some(Cow::Owned(ExactDimension::width(records, cfg)));
-            }
-            (false, false) => {
-                let mut dims = ExactDimension::default();
-                dims.estimate(records, cfg);
-                let (width, height) = dims.into();
-
-                self.width = Some(Cow::Owned(width));
-                self.height = Some(Cow::Owned(height));
-            }
-        }
-    }
-
-    fn get_width(&self, column: usize) -> usize {
-        let width = self
-            .width
-            .as_ref()
-            .expect("It must always be Some at this point");
-
-        width[column]
-    }
-
-    fn get_height(&self, row: usize) -> usize {
-        let height = self
-            .height
-            .as_ref()
-            .expect("It must always be Some at this point");
-
-        if row >= height.len() {
-            // the if is made for a user wrong calls
-            return 1;
-        } else {
-            height[row]
-        }
-    }
-}
-
 fn configure_grid() -> GridConfig {
     let mut cfg = GridConfig::default();
     cfg.set_tab_width(4);
@@ -463,10 +358,4 @@ fn set_width_table(f: &fmt::Formatter<'_>, cfg: &mut GridConfig, table: &Table) 
 
         cfg.set_margin(margin)
     }
-}
-
-fn set_width_table2<R>(f: &fmt::Formatter<'_>, cfg: &mut GridConfig, table: &Table)
-where
-    for<'a> &'a R: Records,
-{
 }

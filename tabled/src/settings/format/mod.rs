@@ -99,6 +99,7 @@ impl Format {
         FormatContentPositioned(f)
     }
 
+    /// This function creates [`FormatConfig`] function to modify a [`GridConfig`].
     pub fn config<F>(f: F) -> FormatConfig<F>
     where
         F: FnMut(&mut GridConfig),

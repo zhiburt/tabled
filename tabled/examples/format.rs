@@ -47,9 +47,9 @@ fn main() {
         )
         .with(
             Modify::new(Columns::first().not(Rows::first()))
-                .with(Format::content(|s| format!("{}...", s))),
+                .with(Format::content(|s| format!("{s}..."))),
         )
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

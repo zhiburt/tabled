@@ -63,7 +63,7 @@ impl<R, D> TableOption<R, D> for Rotate
 where
     R: Records + ExactRecords + Resizable,
 {
-    fn change(&mut self, records: &mut R, _: &mut papergrid::GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut papergrid::GridConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

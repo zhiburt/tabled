@@ -1,4 +1,5 @@
-///! The module contains an [`Estimate`] trait and its implementations.
+//! The module contains an [`Estimate`] trait and its implementations.
+
 use crate::{records::Records, GridConfig};
 
 mod exact_dimension;

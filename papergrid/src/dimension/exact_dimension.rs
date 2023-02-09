@@ -26,12 +26,19 @@ pub struct ExactDimension {
 }
 
 impl ExactDimension {
+    /// Calculates height of rows.
     pub fn height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
         build_height(records, cfg)
     }
 
+    /// Calculates width of columns.
     pub fn width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
         build_width(records, cfg)
+    }
+
+    /// Return width and height lists.
+    pub fn get_values(self) -> (Vec<usize>, Vec<usize>) {
+        (self.width, self.height)
     }
 }
 
@@ -48,12 +55,6 @@ impl Dimension for ExactDimension {
 
     fn get_height(&self, row: usize) -> usize {
         self.height[row]
-    }
-}
-
-impl Into<(Vec<usize>, Vec<usize>)> for ExactDimension {
-    fn into(self) -> (Vec<usize>, Vec<usize>) {
-        (self.width, self.height)
     }
 }
 
@@ -82,7 +83,7 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
 
             let width = get_cell_width(cell, cfg, pos);
 
-            let vspan = gp.get_span_column(pos);
+            let vspan = cfg.get_span_column(pos);
             let has_vspan = !matches!(vspan, None | Some(1));
             if has_vspan {
                 vspans.insert(pos, width);
@@ -92,7 +93,7 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
 
             let height = get_cell_height(cell, cfg, pos);
 
-            let hspan = gp.get_span_row(pos);
+            let hspan = cfg.get_span_row(pos);
             let has_hspan = !matches!(hspan, None | Some(1));
             if has_hspan {
                 hspans.insert(pos, height);
@@ -127,7 +128,7 @@ fn adjust_hspans(
     // We sort spans in order to prioritize the smaller spans first.
     //
     // todo: we actually have a span list already.... so we could keep order from the begining
-    let mut spans = gp.iter_span_rows().collect::<Vec<_>>();
+    let mut spans = gp.as_ref().iter_span_rows().collect::<Vec<_>>();
     spans.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
         Ordering::Equal => acol.cmp(bcol),
         ord => ord,
@@ -207,7 +208,7 @@ fn adjust_vspans(
     // The overall width disctribution will be different depend on the order.
     //
     // We sort spans in order to prioritize the smaller spans first.
-    let mut spans = gp.iter_span_columns().collect::<Vec<_>>();
+    let mut spans = gp.as_ref().iter_span_columns().collect::<Vec<_>>();
     spans.sort_unstable_by(|a, b| match a.1.cmp(&b.1) {
         Ordering::Equal => a.0.cmp(&b.0),
         o => o,
@@ -277,7 +278,7 @@ fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
 
             let height = get_cell_height(cell.as_ref(), cfg, pos);
 
-            let has_hspan = !matches!(gp.get_span_row(pos), None | Some(1));
+            let has_hspan = !matches!(cfg.get_span_row(pos), None | Some(1));
             if has_hspan {
                 hspans.insert(pos, height);
             } else {
@@ -313,7 +314,7 @@ fn build_width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
 
             let width = get_cell_width(cell.as_ref(), cfg, pos);
 
-            let has_vspan = !matches!(gp.get_span_column(pos), None | Some(1));
+            let has_vspan = !matches!(cfg.get_span_column(pos), None | Some(1));
             if has_vspan {
                 vspans.insert(pos, width);
             } else {

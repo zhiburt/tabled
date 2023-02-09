@@ -141,7 +141,7 @@ impl Alignment {
 }
 
 impl<R> CellOption<R> for Alignment {
-    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, entity: Entity) {
+    fn change(&mut self, _: &mut R, cfg: &mut papergrid::GridConfig, entity: Entity) {
         match self.inner {
             Horizontal(a) => cfg.set_alignment_horizontal(entity, a),
             Vertical(a) => cfg.set_alignment_vertical(entity, a),
@@ -150,7 +150,7 @@ impl<R> CellOption<R> for Alignment {
 }
 
 impl<R, D> TableOption<R, D> for Alignment {
-    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, dimension: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut papergrid::GridConfig, _: &mut D) {
         match self.inner {
             Horizontal(a) => cfg.set_alignment_horizontal(Entity::Global, a),
             Vertical(a) => cfg.set_alignment_vertical(Entity::Global, a),

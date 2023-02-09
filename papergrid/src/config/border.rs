@@ -61,7 +61,7 @@ impl<T: Copy> Border<T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
     ///
     /// It behaives like [`Border::full`] with the same character set to each side.
-    pub const fn filled(c: T) -> Self {
+    pub fn filled(c: T) -> Self {
         Self::full(c, c, c, c, c, c, c, c)
     }
 }

@@ -1,38 +1,46 @@
-use std::{io::Read, mem::transmute};
+use std::{fmt::Debug, io::Read, mem::transmute};
 
 use csv::{Reader, StringRecord, StringRecordsIntoIter};
 use tabled::records::IntoRecords;
 
+/// A [`IntoRecords`] implementation for a [`csv::Reader`].
+///
+/// By default all errors are ignored, but you can print them using [`CsvRecords::print_erorrs`].
 pub struct CsvRecords<R> {
     rows: StringRecordsIntoIter<R>,
     err_logic: ErorrLogic,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum ErorrLogic {
+enum ErorrLogic {
     Ignore,
     Print,
 }
 
-impl Default for ErorrLogic {
-    fn default() -> Self {
-        Self::Ignore
-    }
-}
-
 impl<R> CsvRecords<R> {
-    pub fn new(reader: Reader<R>, err_logic: ErorrLogic) -> Self
+    /// Creates a new [`CsvRecords`] structure.
+    pub fn new(reader: Reader<R>) -> Self
     where
         R: Read,
     {
         Self {
             rows: reader.into_records(),
-            err_logic,
+            err_logic: ErorrLogic::Ignore,
         }
+    }
+
+    /// Show underlying [Read] errors inside a table.
+    pub fn print_errors(mut self) -> Self {
+        self.err_logic = ErorrLogic::Print;
+        self
     }
 }
 
-pub struct CsvStringRecordsRows<R>(StringRecordsIntoIter<R>, ErorrLogic);
+/// A row iterator.
+pub struct CsvStringRecordsRows<R> {
+    iter: StringRecordsIntoIter<R>,
+    err_logic: ErorrLogic,
+}
 
 impl<R> Iterator for CsvStringRecordsRows<R>
 where
@@ -42,11 +50,11 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            let result = self.0.next()?;
+            let result = self.iter.next()?;
 
             match result {
                 Ok(record) => return Some(CsvStringRecord::new(record)),
-                Err(err) => match self.1 {
+                Err(err) => match self.err_logic {
                     ErorrLogic::Ignore => continue,
                     ErorrLogic::Print => {
                         let err = err.to_string();
@@ -61,6 +69,7 @@ where
     }
 }
 
+/// A column iterator.
 pub struct CsvStringRecord {
     record: StringRecord,
     i: usize,
@@ -84,11 +93,21 @@ impl Iterator for CsvStringRecord {
     }
 }
 
+/// A cell struct.
+/// 
+/// # SAFETY
+/// 
+/// NOTICE that it has a &'static lifetime which is not true.
+/// It's made so only cause of trait limitations.
+/// 
+/// It's unsafe to keep the reference around.
+/// 
+/// It's OK for [`CsvRecords`] cause we do not keep it internally.
 pub struct CsvStrField(&'static str);
 
 impl AsRef<str> for CsvStrField {
     fn as_ref(&self) -> &str {
-        &self.0
+        self.0
     }
 }
 
@@ -101,6 +120,9 @@ where
     type IterRows = CsvStringRecordsRows<R>;
 
     fn iter_rows(self) -> Self::IterRows {
-        CsvStringRecordsRows(self.rows.into_iter(), self.err_logic)
+        CsvStringRecordsRows {
+            iter: self.rows,
+            err_logic: self.err_logic,
+        }
     }
 }

@@ -506,7 +506,7 @@ test_table!(
     _3x2_with_zero_row_span_0,
     grid(3, 2)
         .config(|cfg|{
-            cfg.set_row_span((1, 0), 0);
+            cfg.set_row_span((0, 0), 2);
         })
         .build(),
     "+---+---+"
@@ -522,8 +522,8 @@ test_table!(
     _3x2_with_zero_row_span_1,
     grid(3, 2)
         .config(|cfg|{
-            cfg.set_row_span((1, 0), 0);
-            cfg.set_row_span((1, 1), 0);
+            cfg.set_row_span((0, 0), 2);
+            cfg.set_row_span((0, 1), 2);
         })
         .build(),
     "+---+---+"
@@ -537,8 +537,7 @@ test_table!(
     _3x2_with_zero_row_span_2,
     grid(3, 2)
         .config(|cfg|{
-            cfg.set_row_span((1, 1), 0);
-            cfg.set_row_span((2, 1), 0);
+            cfg.set_row_span((0, 1), 3);
         })
         .build(),
     "+---+---+"
@@ -554,10 +553,8 @@ test_table!(
     _3x2_with_zero_row_span_3,
     grid(3, 2)
         .config(|cfg|{
-            cfg.set_row_span((1, 1), 0);
-            cfg.set_row_span((2, 1), 0);
-            cfg.set_row_span((1, 0), 0);
-            cfg.set_row_span((2, 0), 0);
+            cfg.set_row_span((0, 1), 3);
+            cfg.set_row_span((0, 0), 3);
         })
         .build(),
     "+---+---+"
@@ -570,10 +567,8 @@ test_table!(
     _2x2_with_zero_row_span_4,
     grid(2, 2)
         .config(|cfg|{
-            cfg.set_row_span((0, 0), 0);
-            cfg.set_row_span((0, 1), 0);
-            cfg.set_row_span((1, 0), 0);
-            cfg.set_row_span((1, 1), 0);
+            cfg.set_row_span((0, 0), 2);
+            cfg.set_row_span((0, 1), 2);
         })
         .build(),
     "+---+---+"

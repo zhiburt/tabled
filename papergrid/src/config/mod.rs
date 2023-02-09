@@ -1,3 +1,5 @@
+//! A module which contains [GridConfig] which is responsible for grid configuration.
+
 mod alignment;
 mod border;
 mod borders;
@@ -342,7 +344,7 @@ impl GridConfig {
 
     /// Set a padding to a given cells.
     pub fn set_padding(&mut self, entity: Entity, padding: Padding) {
-        self.padding.set(entity, padding);
+        self.padding.insert(entity, padding);
     }
 
     /// Get a padding for a given [Entity].
@@ -352,7 +354,7 @@ impl GridConfig {
 
     /// Set a formatting to a given cells.
     pub fn set_formatting(&mut self, entity: Entity, formatting: Formatting) {
-        self.formatting.set(entity, formatting);
+        self.formatting.insert(entity, formatting);
     }
 
     /// Get a formatting settings for a given [Entity].
@@ -362,7 +364,7 @@ impl GridConfig {
 
     /// Set a vertical alignment to a given cells.
     pub fn set_alignment_vertical(&mut self, entity: Entity, alignment: AlignmentVertical) {
-        self.alignment_v.set(entity, alignment);
+        self.alignment_v.insert(entity, alignment);
     }
 
     /// Get a vertical alignment for a given [Entity].
@@ -372,7 +374,7 @@ impl GridConfig {
 
     /// Set a horizontal alignment to a given cells.
     pub fn set_alignment_horizontal(&mut self, entity: Entity, alignment: AlignmentHorizontal) {
-        self.alignment_h.set(entity, alignment);
+        self.alignment_h.insert(entity, alignment);
     }
 
     /// Get a horizontal alignment for a given [Entity].
@@ -440,7 +442,7 @@ impl GridConfig {
 
     /// Set a padding to a given cells.
     pub fn set_padding_color(&mut self, entity: Entity, color: PaddingColor<'static>) {
-        self.padding_color.set(entity, color);
+        self.padding_color.insert(entity, color);
     }
 
     /// Get a span value of the cell, if any is set.
@@ -463,10 +465,12 @@ impl GridConfig {
         self.span_rows.get(&pos).copied()
     }
 
+    /// Removes column spans.
     pub fn clear_span_column(&mut self) {
         self.span_columns.clear()
     }
 
+    /// Removes row spans.
     pub fn clear_span_row(&mut self) {
         self.span_rows.clear()
     }
@@ -504,123 +508,35 @@ impl GridConfig {
     }
 }
 
-fn set_cell_row_span(cfg: &mut GridConfig, (mut row, col): Position, mut span: usize) {
+fn set_cell_row_span(cfg: &mut GridConfig, pos: Position, span: usize) {
     // such spans aren't supported
-    if row == 0 && span == 0 {
+    if span == 0 {
         return;
     }
 
     // It's a default span so we can do nothing.
     // but we check if it's an override of a span.
     if span == 1 {
-        cfg.span_rows.remove(&(row, col));
+        cfg.span_rows.remove(&pos);
         return;
     }
 
-    if span == 0 && row > 0 {
-        match closest_visible_row(cfg, (row - 1, col)) {
-            Some(c) => {
-                span += 1 + row - c;
-                row = c;
-            }
-            None => return,
-        }
-    }
-
-    cfg.span_rows.insert((row, col), span);
+    cfg.span_rows.insert(pos, span);
 }
 
-fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
-    loop {
-        if is_cell_visible(cfg, pos) {
-            return Some(pos.0);
-        }
 
-        if pos.0 == 0 {
-            return None;
-        }
-
-        pos.0 -= 1;
-    }
-}
-
-fn closest_visible_column(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
-    loop {
-        if is_cell_visible(cfg, pos) {
-            return Some(pos.1);
-        }
-
-        if pos.1 == 0 {
-            return None;
-        }
-
-        pos.1 -= 1;
-    }
-}
-
-fn set_cell_column_span(cfg: &mut GridConfig, (row, mut col): Position, mut span: usize) {
+fn set_cell_column_span(cfg: &mut GridConfig, pos: Position, span: usize) {
     // such spans aren't supported
-    if col == 0 && span == 0 {
+    if span == 0 {
         return;
     }
 
     // It's a default span so we can do nothing.
     // but we check if it's an override of a span.
     if span == 1 {
-        cfg.span_columns.remove(&(row, col));
+        cfg.span_columns.remove(&pos);
         return;
     }
 
-    if span == 0 && col > 0 {
-        match closest_visible_column(cfg, (row, col - 1)) {
-            Some(c) => {
-                span += 1 + col - c;
-                col = c;
-            }
-            None => return,
-        }
-    }
-
-    cfg.span_columns.insert((row, col), span);
-}
-
-fn is_cell_visible(cfg: &GridConfig, pos: Position) -> bool {
-    !(is_cell_covered_by_column_span(cfg, pos)
-        || is_cell_covered_by_row_span(cfg, pos)
-        || is_cell_covered_by_both_spans(cfg, pos))
-}
-
-fn is_cell_covered_by_column_span(cfg: &GridConfig, pos: Position) -> bool {
-    if cfg.span_columns.is_empty() {
-        return false;
-    }
-
-    cfg.span_columns
-        .iter()
-        .any(|(&(row, col), span)| pos.1 > col && pos.1 < col + span && row == pos.0)
-}
-
-fn is_cell_covered_by_row_span(cfg: &GridConfig, pos: Position) -> bool {
-    if cfg.span_rows.is_empty() {
-        return false;
-    }
-
-    cfg.span_rows
-        .iter()
-        .any(|(&(row, col), span)| pos.0 > row && pos.0 < row + span && col == pos.1)
-}
-
-fn is_cell_covered_by_both_spans(cfg: &GridConfig, pos: Position) -> bool {
-    if cfg.span_rows.is_empty() || cfg.span_columns.is_empty() {
-        return false;
-    }
-
-    cfg.span_rows.iter().any(|(p1, row_span)| {
-        cfg.span_columns
-            .iter()
-            .filter(|(p2, _)| &p1 == p2)
-            .any(|(_, col_span)| {
-                pos.0 > p1.0 && pos.0 < p1.0 + row_span && pos.1 > p1.1 && pos.1 < p1.1 + col_span
-            })
-    })
+    cfg.span_columns.insert(pos, span);
 }

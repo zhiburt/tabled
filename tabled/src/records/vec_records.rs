@@ -1,3 +1,5 @@
+//! Module contains [`VecRecords`].
+
 use std::{borrow::Cow, mem};
 
 use crate::{
@@ -7,6 +9,7 @@ use crate::{
 
 use super::RecordsMut;
 
+/// A [Records] implementation based on allocated buffers.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VecRecords<T> {
     data: Vec<Vec<T>>,
@@ -14,6 +17,9 @@ pub struct VecRecords<T> {
 }
 
 impl<T> VecRecords<T> {
+    /// Creates new [`VecRecords`] structure.
+    ///
+    /// It assumes that data vector has all rows has the same length().
     pub fn new(data: Vec<Vec<T>>) -> Self {
         let count_columns = data.get(0).map_or(0, |row| row.len());
         let count_rows = data.len();
@@ -133,18 +139,20 @@ where
     }
 }
 
-// impl<T> RecordsMut for VecRecords<T> {
-//     type Text = T;
+impl<T> RecordsMut<T> for VecRecords<T> {
+    fn set(&mut self, pos: Position, text: T) {
+        self.data[pos.0][pos.1] = text;
+    }
+}
 
-//     fn set(&mut self, pos: Position, text: Self::Text) {
-//         self.data[pos.0][pos.1] = text;
-//     }
-// }
-
-impl RecordsMut for VecRecords<Cow<'static, str>> {
-    type Text = String;
-
-    fn set(&mut self, pos: Position, text: Self::Text) {
+impl RecordsMut<String> for VecRecords<Cow<'static, str>> {
+    fn set(&mut self, pos: Position, text: String) {
         self.data[pos.0][pos.1] = Cow::Owned(text);
+    }
+}
+
+impl RecordsMut<&'static str> for VecRecords<Cow<'static, str>> {
+    fn set(&mut self, pos: Position, text: &'static str) {
+        self.data[pos.0][pos.1] = Cow::Borrowed(text);
     }
 }

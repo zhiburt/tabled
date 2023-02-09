@@ -139,7 +139,7 @@ pub enum AlignmentStrategy {
 }
 
 impl<R> CellOption<R> for AlignmentStrategy {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
         let mut formatting = *cfg.get_formatting(entity);
         match &self {
             AlignmentStrategy::PerCell => formatting.allow_lines_alignment = false,

@@ -1,3 +1,8 @@
+//! The module contains [`Records`], [`ExactRecords`], [`RecordsMut`], [`Resizable`] traits
+//! and its implementations.
+//!
+//! Also it provies a list of helpers for a user built [`Records`] via [`into_records`].
+
 mod empty_records;
 mod vec_records;
 
@@ -12,7 +17,9 @@ pub use papergrid::records::{IntoRecords, IterRecords, Records};
 pub use empty_records::EmptyRecords;
 pub use vec_records::VecRecords;
 
+/// [Records] extension which guarantess the amount of rows.
 pub trait ExactRecords {
+    /// A cell represented by a string value.
     type Cell: AsRef<str>;
 
     /// Returns an exact amount of rows in records.
@@ -186,20 +193,16 @@ where
 /// A [`Grid`] representation of a data set which can be modified.
 ///
 /// [`Grid`]: crate::Grid
-pub trait RecordsMut {
-    type Text;
-
+pub trait RecordsMut<Text> {
     /// Sets a text to a given cell by index.
-    fn set(&mut self, pos: Position, text: Self::Text);
+    fn set(&mut self, pos: Position, text: Text);
 }
 
-impl<'a, T> RecordsMut for &'a mut T
+impl<'a, T, Text> RecordsMut<Text> for &'a mut T
 where
-    T: RecordsMut,
+    T: RecordsMut<Text>,
 {
-    type Text = T::Text;
-
-    fn set(&mut self, pos: Position, text: Self::Text) {
+    fn set(&mut self, pos: Position, text: Text) {
         T::set(self, pos, text)
     }
 }

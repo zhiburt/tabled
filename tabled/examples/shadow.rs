@@ -2,6 +2,16 @@
 //!
 //! The table is inspired by <https://en.wikipedia.org/wiki/Box-drawing_character>
 //!
+//! 
+//! ┌───────────────────┐
+//! │  ╔═══╗ Some Text  │▒
+//! │  ╚═╦═╝ in the box │▒
+//! ╞═╤══╩══╤═══════════╡▒
+//! │ ├──┬──┤           │▒
+//! │ └──┴──┘           │▒
+//! └───────────────────┘▒
+//!  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+//! 
 //! ## Example
 //!
 //! `echo -e -n 'Some text\nIn the box' | cargo run --package tabled --example shadow`
@@ -34,8 +44,8 @@ fn print_table(message: String) {
     let main_table_width = main_table.total_width();
     let small_table_row = create_small_table_list(main_table_width);
 
-    println!("{}", small_table_row);
-    println!("{}", main_table);
+    println!("{small_table_row}");
+    println!("{main_table}");
 }
 
 fn read_message() -> String {
@@ -112,15 +122,6 @@ fn create_small_table(style: RawStyle) -> Table {
     table
 }
 
-// ┌───────────────────┐
-// │  ╔═══╗ Some Text  │▒
-// │  ╚═╦═╝ in the box │▒
-// ╞═╤══╩══╤═══════════╡▒
-// │ ├──┬──┤           │▒
-// │ └──┴──┘           │▒
-// └───────────────────┘▒
-// ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-
 fn create_main_table(message: &str) -> Table {
     let count_lines = string::count_lines(message);
     let message_width = string::string_width_multiline_tab(message, 4);
@@ -153,8 +154,8 @@ fn create_main_table(message: &str) -> Table {
     table
         .with(Padding::zero())
         .with(Style::modern().remove_vertical())
-        .with(Modify::new(Cell(0, 0)).with(BorderChar::vertical('╞', Offset::Begin(count_lines))))
-        .with(Modify::new(Cell(0, 2)).with(BorderChar::vertical('╡', Offset::Begin(count_lines))))
+        .with(Modify::new(Cell::new(0, 0)).with(BorderChar::vertical('╞', Offset::Begin(count_lines))))
+        .with(Modify::new(Cell::new(0, 2)).with(BorderChar::vertical('╡', Offset::Begin(count_lines))))
         .with(Shadow::new(2));
 
     table

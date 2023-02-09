@@ -35,5 +35,5 @@ fn main() {
 
     let html_table = HtmlTable::from(table);
 
-    println!("{}", html_table);
+    println!("{html_table}");
 }

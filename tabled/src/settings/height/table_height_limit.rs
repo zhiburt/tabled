@@ -50,7 +50,7 @@ impl<R, W, P> TableOption<R, TableDimension<'static>> for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
-    R: ExactRecords + RecordsMut<Text = String>,
+    R: ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(

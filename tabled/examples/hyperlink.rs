@@ -50,7 +50,7 @@ fn main() {
         .with(Alignment::left())
         .with(Modify::new(Segment::all()).with(Width::wrap(16).keep_words()));
 
-    println!("{}", table);
+    println!("{table}");
 
     let mut table = Table::from_iter(&data);
     table
@@ -58,7 +58,7 @@ fn main() {
         .with(Alignment::left())
         .with(Modify::new(Segment::all()).with(Width::wrap(16)));
 
-    println!("{}", table);
+    println!("{table}");
 }
 
 #[derive(Tabled)]
@@ -74,11 +74,5 @@ impl Distribution {
 }
 
 fn format_osc8_hyperlink(url: &str, text: &str) -> String {
-    format!(
-        "{osc}8;;{url}{st}{text}{osc}8;;{st}",
-        url = url,
-        text = text,
-        osc = "\x1b]",
-        st = "\x1b\\"
-    )
+    format!("\x1b]8;;{url}\x1b\\{text}\x1b]8;;\x1b\\",)
 }

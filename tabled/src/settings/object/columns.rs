@@ -134,7 +134,7 @@ pub struct Column(usize);
 impl<I> Object<I> for Column {
     type Iter = EntityOnce;
 
-    fn cells(&self, records: &I) -> Self::Iter {
+    fn cells(&self, _: &I) -> Self::Iter {
         EntityOnce::new(Some(Entity::Column(self.0)))
     }
 }
@@ -188,7 +188,7 @@ pub struct ColumnsIter {
 }
 
 impl ColumnsIter {
-    pub const fn new(start: usize, end: usize) -> Self {
+    const fn new(start: usize, end: usize) -> Self {
         Self { start, end }
     }
 }

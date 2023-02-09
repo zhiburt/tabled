@@ -1,3 +1,27 @@
+//! This module contains a [`IterTable`] table.
+//!
+//! In contrast to [`Table`] [`IterTable`] does no allocations but it consumes an iterator.
+//! It's usefull when you dont want to re/allocate a buffer for your data.
+//!
+//! # Example
+//!
+//! ```
+//! use tabled::{
+//!     records::IterRecords,
+//!     tables::iter::IterTable,
+//! };
+//!
+//! let iterator = vec![vec!["First", "row"], vec!["Second", "row"]];
+//! let records = IterRecords::new(iterator, 2, Some(2));
+//! let table = IterTable::new(records);
+//!
+//! let s = table.to_string();
+//!
+//! assert_eq!(s, "");
+//! ```
+//!
+//! [`Table`]: crate::Table
+
 mod dimension;
 mod utf8_writer;
 
@@ -12,8 +36,7 @@ use crate::{
     },
     records::{
         into_records::{
-            truncate_records::Width, BufRecords, BufRecords2, ColumnLimitRecords, RowLimitRecords,
-            TruncatedRecords,
+            truncate_records::Width, BufColumns, BufRows, LimitColumns, LimitRows, TruncateContent,
         },
         IntoRecords, IterRecords,
     },
@@ -22,6 +45,11 @@ use crate::{
 
 use self::{dimension::IterTableDimension, utf8_writer::UTF8Writer};
 
+/// A table which consumes an [`IntoRecords`] iterator.
+///
+/// To be able to build table we need a dimensions.
+/// If no width and count_columns is set, [`IterTable`] will sniff the records, by
+/// keeping a number of rows buffered (You can set the number via [`IterTable::sniff`]).
 #[derive(Debug, Clone)]
 pub struct IterTable<I> {
     records: I,
@@ -39,6 +67,7 @@ struct TableConfig {
 }
 
 impl<I> IterTable<I> {
+    /// Creates a new [`IterTable`] structure.
     pub fn new(iter: I) -> Self
     where
         I: IntoRecords,
@@ -56,7 +85,7 @@ impl<I> IterTable<I> {
         }
     }
 
-    /// With is a generic function which applies options to the [`Table`].
+    /// With is a generic function which applies options to the [`IterTable`].
     pub fn with<O>(mut self, option: O) -> Self
     where
         for<'a> O: TableOption<IterRecords<&'a I>, IterTableDimension<'static>>,
@@ -78,31 +107,37 @@ impl<I> IterTable<I> {
         self
     }
 
+    /// Limit a number of columns.
     pub fn cols(mut self, count_columns: usize) -> Self {
         self.table.count_columns = Some(count_columns);
         self
     }
 
+    /// Limit a number of rows.
     pub fn rows(mut self, count_rows: usize) -> Self {
         self.table.count_rows = Some(count_rows);
         self
     }
 
+    /// Limit an amount of rows will be read for dimension estimations.
     pub fn sniff(mut self, count: usize) -> Self {
         self.table.sniff = count;
         self
     }
 
+    /// Set a height for each row.
     pub fn height(mut self, size: usize) -> Self {
         self.table.height = size;
         self
     }
 
+    /// Set a width for each column.
     pub fn width(mut self, size: usize) -> Self {
         self.table.width = Some(size);
         self
     }
 
+    /// Format table into [fmt::Write]er.
     pub fn fmt<W: fmt::Write>(self, writer: W) -> fmt::Result
     where
         I: IntoRecords,
@@ -113,6 +148,10 @@ impl<I> IterTable<I> {
         build_grid(writer, self.records, &config, &self.table)
     }
 
+    /// Build a string.
+    ///
+    /// We can't implement [`std::fmt::ToString`] cause it does takes `&self` reference.
+    #[allow(clippy::inherent_to_string)]
     pub fn to_string(self) -> String
     where
         I: IntoRecords,
@@ -123,6 +162,7 @@ impl<I> IterTable<I> {
         buf
     }
 
+    /// Format table into [`io::Write`]r.
     pub fn build<W: io::Write>(self, writer: W) -> io::Result<()>
     where
         I: IntoRecords,
@@ -158,7 +198,7 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
 
         match count_rows {
             Some(limit) => {
-                let records = RowLimitRecords::new(records, limit);
+                let records = LimitRows::new(records, limit);
                 let records =
                     build_records(records, content_width, count_columns, count_rows, tab_size);
                 return Grid::new(records, config, &dimension).build(writer);
@@ -171,8 +211,8 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
         }
     }
 
-    let records = BufRecords::new(records, iter_cfg.sniff);
-    let records = BufRecords2::from(records);
+    let records = BufRows::new(records, iter_cfg.sniff);
+    let records = BufColumns::from(records);
 
     let count_columns = match iter_cfg.count_columns {
         Some(size) => size,
@@ -197,7 +237,7 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
             (Width::Exact(contentwidth), Width::Exact(dims_width))
         }
         None => {
-            let records = ColumnLimitRecords::new(records.as_slice(), count_columns);
+            let records = LimitColumns::new(records.as_slice(), count_columns);
             let records = IterRecords::new(records, count_columns, None);
             let width = ExactDimension::width(records, config);
 
@@ -215,13 +255,13 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
 
     match count_rows {
         Some(limit) => {
-            let records = RowLimitRecords::new(records, limit);
+            let records = LimitRows::new(records, limit);
             let records = build_records(records, contentw, count_columns, count_rows, tab_size);
-            Grid::new(records, &config, &dimension).build(writer)
+            Grid::new(records, config, &dimension).build(writer)
         }
         None => {
             let records = build_records(records, contentw, count_columns, count_rows, tab_size);
-            Grid::new(records, &config, &dimension).build(writer)
+            Grid::new(records, config, &dimension).build(writer)
         }
     }
 }
@@ -258,8 +298,8 @@ fn build_records<I: IntoRecords>(
     count_columns: usize,
     count_rows: Option<usize>,
     tab_size: usize,
-) -> IterRecords<ColumnLimitRecords<TruncatedRecords<'_, I>>> {
-    let records = TruncatedRecords::new(records, width, tab_size);
-    let records = ColumnLimitRecords::new(records, count_columns);
+) -> IterRecords<LimitColumns<TruncateContent<'_, I>>> {
+    let records = TruncateContent::new(records, width, tab_size);
+    let records = LimitColumns::new(records, count_columns);
     IterRecords::new(records, count_columns, count_rows)
 }

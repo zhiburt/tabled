@@ -23,13 +23,13 @@ impl Distribution {
 }
 
 fn main() {
-    let data = [
+    let data = vec![
         Distribution::new("Manjaro", "Arch", true, true),
         Distribution::new("Arch", "", true, true),
         Distribution::new("Debian", "", true, true),
     ];
 
-    let table = ExtendedTable::new(&data);
+    let table = ExtendedTable::new(data);
 
-    println!("{}", table);
+    println!("{table}");
 }

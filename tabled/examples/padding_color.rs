@@ -132,7 +132,7 @@ fn main() {
         .with(unit_settings)
         .to_string();
 
-    println!("\n\n{}\n\n", table);
+    println!("\n\n{table}\n\n");
 }
 
 struct MakeMaxPadding;

@@ -224,9 +224,9 @@ impl From<Builder> for IndexBuilder {
     }
 }
 
-impl Into<Builder> for IndexBuilder {
-    fn into(self) -> Builder {
-        build_index(self)
+impl From<IndexBuilder> for Builder {
+    fn from(b: IndexBuilder) -> Self {
+        build_index(b)
     }
 }
 

@@ -47,6 +47,8 @@
 //! )
 //! ```
 
+use std::borrow::Cow;
+
 use papergrid::{config::Position, GridConfig};
 
 use crate::{
@@ -75,7 +77,7 @@ use crate::{
 pub struct Concat {
     table: Table,
     mode: ConcatMode,
-    default_cell: String,
+    default_cell: Cow<'static, str>,
 }
 
 #[derive(Debug)]
@@ -89,7 +91,7 @@ impl Concat {
         Self {
             table,
             mode,
-            default_cell: String::new(),
+            default_cell: Cow::Borrowed(""),
         }
     }
 
@@ -104,7 +106,7 @@ impl Concat {
     }
 
     /// Sets a cell's content for cases where 2 tables has different sizes.
-    pub fn default_cell(mut self, cell: impl Into<String>) -> Self {
+    pub fn default_cell(mut self, cell: impl Into<Cow<'static, str>>) -> Self {
         self.default_cell = cell.into();
         self
     }
@@ -112,9 +114,9 @@ impl Concat {
 
 impl<R, D> TableOption<R, D> for Concat
 where
-    R: Records + ExactRecords + Resizable + RecordsMut<Text = String>,
+    R: Records + ExactRecords + Resizable + RecordsMut<Cow<'static, str>>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut GridConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -140,7 +142,7 @@ where
                         let text = cell_text.0;
 
                         let col = col + count_cols;
-                        records.set((row, col), text);
+                        records.set((row, col), text.into());
                     }
                 }
             }
@@ -164,7 +166,7 @@ where
                         let text = cell_text.0;
 
                         let row = row + count_rows;
-                        records.set((row, col), text);
+                        records.set((row, col), text.into());
                     }
                 }
             }
@@ -179,7 +181,7 @@ impl<R, D> TableOption<R, D> for GetCell
 where
     R: ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut GridConfig, _: &mut D) {
         let cell = records.get_cell(self.1).as_ref().to_string();
         self.0 = cell;
     }

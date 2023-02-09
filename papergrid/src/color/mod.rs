@@ -1,3 +1,5 @@
+//! A module which contains [`Color`] trait and its implementation [`AnsiColor`].
+
 mod ansi_color;
 
 use std::fmt::{self, Write};

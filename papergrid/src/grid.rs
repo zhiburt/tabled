@@ -49,7 +49,8 @@ impl<'a, R, D> Grid<'a, R, D, ColorsMap> {
 }
 
 impl<'a, R, D, C> Grid<'a, R, D, C> {
-    pub fn set_colors<Colors: colors::Colors>(self, colors: Colors) -> Grid<'a, R, D, Colors> {
+    /// Sets colors map.
+    pub fn with_colors<Colors: colors::Colors>(self, colors: Colors) -> Grid<'a, R, D, Colors> {
         Grid {
             records: self.records,
             config: self.config,
@@ -58,11 +59,13 @@ impl<'a, R, D, C> Grid<'a, R, D, C> {
         }
     }
 
-    pub fn build<F: Write>(self, mut f: F) -> fmt::Result
+    /// Builds a table.
+    pub fn build<F>(self, mut f: F) -> fmt::Result
     where
         R: Records,
         D: Dimension,
         C: Colors,
+        F: Write,
     {
         if self.records.count_columns() == 0 {
             return Ok(());
@@ -77,6 +80,10 @@ impl<'a, R, D, C> Grid<'a, R, D, C> {
         )
     }
 
+    /// Builds a table into string.
+    ///
+    /// Notice that it consumes self.
+    #[allow(clippy::inherent_to_string)]
     pub fn to_string(self) -> String
     where
         R: Records,
@@ -240,6 +247,7 @@ fn total_height<D: Dimension>(cfg: &GridConfig, dims: &D, count_rows: usize) -> 
         .total_height(dims)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn print_horizontal_line<F: Write, D: Dimension>(
     f: &mut F,
     cfg: &GridConfig,
@@ -258,7 +266,8 @@ fn print_horizontal_line<F: Write, D: Dimension>(
 
 type CLines<'a, S, C> = CellLines<'a, S, <C as Colors>::Color>;
 
-fn print_multiline_columns<'a, 'b, F, I, D, C>(
+#[allow(clippy::too_many_arguments)]
+fn print_multiline_columns<'a, F, I, D, C>(
     f: &mut F,
     buf: &mut Vec<CLines<'a, I::Item, C>>,
     columns: I,
@@ -286,6 +295,7 @@ where
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn print_single_line_columns<'a, F, I, D, C>(
     f: &mut F,
     columns: I,
@@ -362,6 +372,7 @@ fn print_single_line_column<F: Write, C: Color>(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn print_columns_lines<S, F: Write, C: Color>(
     f: &mut F,
     columns: &mut [CellLines<'_, S, C>],
@@ -700,7 +711,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
 
             // We need to use a correct right split char.
             let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
-            if let Some(span) = gp.get_span_column((original_row, col)) {
+            if let Some(span) = gp.as_ref().get_span_column((original_row, col)) {
                 col += span - 1;
             }
         } else if width > 0 {
@@ -779,6 +790,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn print_spanned_columns<'a, F, I, D, C>(
     f: &mut F,
     columns: &mut BTreeMap<usize, (CLines<'a, I::Item, C>, usize, usize)>,
@@ -828,7 +840,7 @@ where
                 this_height
             };
 
-            let colspan = gp.get_span_column((row, col)).unwrap_or(1);
+            let colspan = gp.as_ref().get_span_column((row, col)).unwrap_or(1);
             skip = colspan - 1;
             let width = if colspan > 1 {
                 range_width(cfg, dimension, col, col + colspan, shape.1)
@@ -875,8 +887,9 @@ where
             continue;
         }
 
-        let colspan = gp.get_span_column((row, col)).unwrap_or(1);
+        let colspan = gp.as_ref().get_span_column((row, col)).unwrap_or(1);
         skip = colspan - 1;
+
         let width = if colspan > 1 {
             range_width(cfg, dimension, col, col + colspan, shape.1)
         } else {
@@ -968,6 +981,7 @@ struct CellLines<'a, S, C> {
 }
 
 impl CellLines<'_, (), ()> {
+    #[allow(clippy::too_many_arguments)]
     fn new<'a, C: Color, A: AsRef<str>>(
         text: A,
         maxwidth: usize,
@@ -1242,12 +1256,14 @@ fn count_empty_lines(cell: &str) -> (usize, usize) {
             } else {
                 top_check = false;
             }
+
+            continue;
+        }
+
+        if is_empty {
+            bottom += 1;
         } else {
-            if is_empty {
-                bottom += 1;
-            } else {
-                bottom = 0;
-            }
+            bottom = 0;
         }
     }
 

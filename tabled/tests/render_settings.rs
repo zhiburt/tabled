@@ -2,7 +2,7 @@ use tabled::settings::{
     alignment::Alignment,
     formatting::{AlignmentStrategy, TabSize, TrimStrategy},
     object::{Cell, Segment},
-    span::Span,
+    span::ColumnSpan,
     style::Style,
     Modify,
 };
@@ -150,9 +150,9 @@ test_table!(
     tab_size_span_test,
     new_table(tab_data2())
         .with(Style::psql())
-        .with(Modify::new(Cell(0, 0)).with(Span::column(3)))
-        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
-        .with(Modify::new(Cell(2, 1)).with(Span::column(2))),
+        .with(Modify::new((0, 0)).with(ColumnSpan::new(3)))
+        .with(Modify::new((1, 0)).with(ColumnSpan::new(2)))
+        .with(Modify::new((2, 1)).with(ColumnSpan::new(2))),
     "                     N                     | column 2 "
     "----------------------+-----+--------------+----------"
     "     H        ello    World |     0-1      |   0-2    "

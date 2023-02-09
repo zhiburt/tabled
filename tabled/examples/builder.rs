@@ -21,10 +21,10 @@ fn main() {
         .build()
         .with(Panel::header(message))
         .with(Panel::header(link))
-        .with(Panel::horizontal(2).text("=".repeat(link.len())))
+        .with(Panel::horizontal(2, "=".repeat(link.len())))
         .with(Modify::new(Rows::single(1)).with(Width::wrap(link.len())))
         .with(Style::markdown())
         .to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

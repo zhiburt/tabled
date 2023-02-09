@@ -2,6 +2,7 @@ use fnv::FnvHashMap;
 
 use super::{Entity, Position};
 
+/// A structure to keep information for [`Entity`] as a key.
 #[derive(Debug, Clone, Default)]
 pub struct EntityMap<T> {
     // we have a global type to allocate in on stack.
@@ -13,6 +14,7 @@ pub struct EntityMap<T> {
 }
 
 impl<T> EntityMap<T> {
+    /// Creates an empty [`EntityMap`].
     pub fn new(global: T) -> Self {
         Self {
             global,
@@ -22,6 +24,7 @@ impl<T> EntityMap<T> {
         }
     }
 
+    /// Get a value for an [`Entity`].
     pub fn get(&self, entity: Entity) -> &T {
         if self.rows.is_empty() && self.columns.is_empty() && self.cells.is_empty() {
             return &self.global;
@@ -58,6 +61,7 @@ impl<T> EntityMap<T> {
         }
     }
 
+    /// Removes a value for an [`Entity`].
     pub fn remove(&mut self, entity: Entity) {
         match entity {
             Entity::Global => {
@@ -75,7 +79,8 @@ impl<T> EntityMap<T> {
 }
 
 impl<T: Clone> EntityMap<T> {
-    pub fn set(&mut self, entity: Entity, value: T) {
+    /// Set a value for an [`Entity`].
+    pub fn insert(&mut self, entity: Entity, value: T) {
         match entity {
             Entity::Column(col) => {
                 for &row in self.rows.keys() {

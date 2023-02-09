@@ -793,7 +793,7 @@ fn formatting_test() {
             .clone()
             .build();
 
-        assert_eq!(table, expected, "test case #{:?} failed", i,);
+        assert_eq!(table, expected, "test case #{i:?} failed");
     }
 }
 

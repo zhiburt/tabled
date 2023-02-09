@@ -2,7 +2,14 @@
 //! `cargo run --example panel`
 
 use tabled::{
-    settings::{alignment::Alignment, object::Segment, panel::Panel, style::{Style, CorrectSpans}, Modify},
+    settings::{
+        alignment::Alignment,
+        object::{Cell, Segment},
+        panel::Panel,
+        style::{Style, BorderSpanCorrection},
+        width::Width,
+        Modify,
+    },
     Table, Tabled,
 };
 
@@ -41,11 +48,13 @@ fn main() {
     table
         .with(Panel::header("Tabled Releases"))
         .with(Panel::footer(format!("N - {}", DATA.len())))
-        .with(Panel::vertical(0).text("Some text goes here").text_width(1))
-        .with(Panel::vertical(5).text("Some text goes here").text_width(1))
+        .with(Panel::vertical(0, "Some text goes here"))
+        .with(Panel::vertical(5, "Some text goes here"))
+        .with(Modify::new(Cell::new(0, 0)).with(Width::wrap(1)))
+        .with(Modify::new(Cell::new(0, 5)).with(Width::wrap(1)))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::modern())
-        .with(CorrectSpans);
+        .with(BorderSpanCorrection);
 
-    println!("{}", table);
+    println!("{table}");
 }

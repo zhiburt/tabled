@@ -2,7 +2,7 @@ use tabled::settings::{
     highlight::Highlight,
     margin::Margin,
     object::Cell,
-    span::Span,
+    span::ColumnSpan,
     style::{Border, Style},
     width::Width,
     Modify,
@@ -16,9 +16,9 @@ test_table!(
     margin_with_table_based_on_grid_borders,
     create_table::<3, 3>()
         .with(Style::extended())
-        .with(Highlight::new(Cell(0, 0), Border::filled('+')))
-        .with(Highlight::new(Cell(1, 1), Border::filled('*')))
-        .with(Margin::new(1, 2, 1, 2).set_fill('>', '<', 'V', '^')),
+        .with(Highlight::new(Cell::new(0, 0), Border::filled('+')))
+        .with(Highlight::new(Cell::new(1, 1), Border::filled('*')))
+        .with(Margin::new(1, 2, 1, 2).fill('>', '<', 'V', '^')),
     "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
     ">+++++══════════╦══════════╦══════════╗<<"
     ">+ N + column 0 ║ column 1 ║ column 2 ║<<"
@@ -37,8 +37,8 @@ test_table!(
     margin_without_table_based_on_grid_borders,
     init_table::<3, 3, _, _>([((2, 2), "https://\nwww\n.\nredhat\n.com\n/en")])
         .with(Style::psql())
-        .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
-        .with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^')),
+        .with(Modify::new(Cell::new(3, 2)).with(ColumnSpan::new(2)))
+        .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^')),
     "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
     "> N | column 0 | column 1 | column 2 <"
     ">---+----------+----------+----------<"
@@ -57,8 +57,8 @@ test_table!(
     table_with_empty_margin,
     init_table::<3, 3, _, _>([((2, 2), "https://\nwww\n.\nredhat\n.com\n/en")])
         .with(Style::psql())
-        .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
-        .with(Margin::new(0, 0, 0, 0).set_fill('>', '<', 'V', '^')),
+        .with(Modify::new(Cell::new(3, 2)).with(ColumnSpan::new(2)))
+        .with(Margin::new(0, 0, 0, 0).fill('>', '<', 'V', '^')),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    "
@@ -75,8 +75,8 @@ test_table!(
 fn table_with_margin_and_min_width() {
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
-        .with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'))
+        .with(Modify::new(Cell::new(1, 1)).with(ColumnSpan::new(2)))
+        .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^'))
         .with(Width::truncate(20))
         .to_string();
 
@@ -99,8 +99,8 @@ fn table_with_margin_and_min_width() {
 fn table_with_margin_and_max_width() {
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
-        .with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'))
+        .with(Modify::new(Cell::new(1, 1)).with(ColumnSpan::new(2)))
+        .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^'))
         .with(Width::increase(50))
         .to_string();
 
@@ -123,14 +123,14 @@ fn table_with_margin_and_max_width() {
 #[ignore = "It's not yet clear what to do with such spans"]
 fn table_0_spanned_with_width() {
     let table = create_table::<0, 0>()
-        .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
+        .with(Modify::new(Cell::new(0, 0)).with(ColumnSpan::new(0)))
         .with(Width::increase(50))
         .to_string();
 
     assert_eq!(table, "++\n|\n++\n");
 
     let table = create_table::<0, 0>()
-        .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
+        .with(Modify::new(Cell::new(0, 0)).with(ColumnSpan::new(0)))
         .with(Width::truncate(50))
         .to_string();
 
@@ -143,7 +143,7 @@ fn margin_color_test_not_colored_feature() {
 
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Margin::new(2, 2, 2, 2).set_fill('>', '<', 'V', '^'))
+        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^'))
         .with(MarginColor::new(
             Color::BG_RED,
             Color::BG_BLUE,
@@ -177,7 +177,7 @@ fn margin_color_test() {
 
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Margin::new(2, 2, 2, 2).set_fill('>', '<', 'V', '^'))
+        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^'))
         .with(MarginColor::new(
             Color::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
             Color::try_from(" ".on_yellow().blue().to_string()).unwrap(),

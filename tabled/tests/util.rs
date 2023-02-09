@@ -46,7 +46,7 @@ pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUM
     for row in 0..ROWS {
         let mut data = Vec::with_capacity(COLUMNS);
         for column in 0..COLUMNS {
-            let text = format!("{}-{}", row, column);
+            let text = format!("{row}-{column}");
             data.push(text);
         }
 

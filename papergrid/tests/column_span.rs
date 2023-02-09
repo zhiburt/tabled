@@ -320,7 +320,7 @@ test_table!(
 test_table!(
     _2x3_zero_span_between_cells_0,
     grid(2, 3)
-        .config(|cfg| cfg.set_column_span((0, 1), 0))
+        .config(|cfg| cfg.set_column_span((0, 0), 2))
         .build(),
     "+---+---+---+"
     "|0-0    |0-2|"
@@ -333,8 +333,8 @@ test_table!(
     _2x3_zero_span_between_cells_1,
     grid(2, 3)
         .config(|cfg| {
-            cfg.set_column_span((0, 1), 0);
-            cfg.set_column_span((1, 1), 0);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((1, 0), 2);
         })
         .build(),
     "+-+-+---+"
@@ -348,8 +348,7 @@ test_table!(
     _2x3_zero_span_at_the_end_0,
     grid(2, 3)
         .config(|cfg| {
-            cfg.set_column_span((0, 1), 0);
-            cfg.set_column_span((0, 2), 0);
+            cfg.set_column_span((0, 0), 3);
         })
         .build(),
     "+---+---+---+"
@@ -363,10 +362,8 @@ test_table!(
     _2x3_zero_span_at_the_end_1,
     grid(2, 3)
         .config(|cfg| {
-            cfg.set_column_span((0, 1), 0);
-            cfg.set_column_span((0, 2), 0);
-            cfg.set_column_span((1, 1), 0);
-            cfg.set_column_span((1, 2), 0);
+            cfg.set_column_span((0, 0), 3);
+            cfg.set_column_span((1, 0), 3);
         })
         .build(),
     "+-+++"
@@ -376,16 +373,13 @@ test_table!(
     "+-+++"
 );
 
-// todo: determine if it's correct behaviour?
 test_table!(
     zero_span_grid,
     grid(2, 2)
         .data([["123", ""], ["asd", "asd"]])
         .config(|cfg| {
-            cfg.set_column_span((0, 0), 0);
-            cfg.set_column_span((0, 1), 0);
-            cfg.set_column_span((1, 0), 0);
-            cfg.set_column_span((1, 1), 0);
+            cfg.set_column_span((0, 0), 2);
+            cfg.set_column_span((1, 0), 2);
         })
         .build(),
     "+-+-+"
@@ -396,19 +390,41 @@ test_table!(
 );
 
 test_table!(
-    zero_span_of_0x0_cell,
+    zero_span_grid_1,
     grid(2, 2)
-        .config(|cfg| { cfg.set_column_span((0, 0), 0); })
+        .data([["123", ""], ["asd", "asd"]])
+        .config(|cfg| {
+            cfg.set_row_span((0, 0), 2);
+            cfg.set_row_span((0, 1), 2);
+        })
+        .build(),
+    "+---++"
+    "+123++"
+    "+---++"
+);
+
+test_table!(
+    zero_span_grid_2,
+    grid(2, 2)
+        .data([["123", "axc"], ["asd", "asd"]])
+        .config(|cfg| {
+            cfg.set_row_span((0, 0), 2);
+            cfg.set_row_span((0, 1), 2);
+        })
+        .build(),
+    "+---+---+"
+    "+123+axc+"
+    "+---+---+"
+);
+
+test_table!(
+    zero_span_is_not_handled,
+    grid(2, 2)
+        .config(|cfg| { cfg.set_column_span((0, 1), 0); })
         .build(),
     "+---+---+"
     "|0-0|0-1|"
     "+---+---+"
     "|1-0|1-1|"
     "+---+---+"
-    // it doesn't work so far because it's not clear if it should make this dynamic logic.
-    // "+---+---+"
-    // "|0-1    |"
-    // "+---+---+"
-    // "|1-0|1-1|"
-    // "+---+---+"
 );

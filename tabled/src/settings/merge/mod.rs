@@ -38,7 +38,7 @@ impl<R, D> TableOption<R, D> for MergeDuplicatesVertical
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -124,7 +124,7 @@ impl<R, D> TableOption<R, D> for MergeDuplicatesHorizontal
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

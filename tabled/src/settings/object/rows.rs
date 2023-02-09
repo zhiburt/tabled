@@ -20,7 +20,7 @@ impl<R> Rows<R> {
     /// Returns a new instance of [`Rows`] for a range of rows.
     ///
     /// If the boundaries are exceeded it may panic.
-    pub const fn new(range: R) -> Self
+    pub fn new(range: R) -> Self
     where
         R: RangeBounds<usize>,
     {
@@ -81,7 +81,7 @@ pub struct Row {
 impl<I> Object<I> for Row {
     type Iter = EntityOnce;
 
-    fn cells(&self, records: &I) -> Self::Iter {
+    fn cells(&self, _: &I) -> Self::Iter {
         EntityOnce::new(Some(Entity::Row(self.index)))
     }
 }

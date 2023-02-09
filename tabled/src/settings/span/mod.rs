@@ -26,13 +26,12 @@
 //!     )
 //! )
 //! ```
-//!
 
-use crate::{
-    grid::config::{Entity, GridConfig},
-    records::{ExactRecords, Records},
-    settings::CellOption,
-};
+mod column;
+mod row;
+
+pub use column::ColumnSpan;
+pub use row::RowSpan;
 
 /// Span represent a horizontal/column span setting for any cell on a [`Table`].
 ///
@@ -50,51 +49,20 @@ use crate::{
 ///
 /// [`Table`]: crate::Table
 #[derive(Debug)]
-pub struct Span(SpanType);
-
-#[derive(Debug, Clone, Copy)]
-enum SpanType {
-    Column(usize),
-    Row(usize),
-}
+pub struct Span;
 
 impl Span {
     /// New constructs a horizontal/column [`Span`].
     ///
     /// If size is bigger then the total number of columns it will be ignored.
-    pub fn column(size: usize) -> Self {
-        Self(SpanType::Column(size))
+    pub fn horizontal(size: usize) -> ColumnSpan {
+        ColumnSpan::new(size)
     }
 
     /// New constructs a vertical/row [`Span`].
     ///
     /// If size is bigger then the total number of rows it will be ignored.
-    pub fn row(size: usize) -> Self {
-        Self(SpanType::Row(size))
-    }
-}
-
-impl<R> CellOption<R> for Span
-where
-    R: Records + ExactRecords,
-{
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
-        let count_rows = records.count_rows();
-        let count_cols = records.count_columns();
-
-        for pos in entity.iter(count_rows, count_cols) {
-            set_span(cfg, pos, self.0);
-        }
-    }
-}
-
-fn set_span(cfg: &mut GridConfig, pos: (usize, usize), span: SpanType) {
-    match span {
-        SpanType::Column(size) => {
-            cfg.set_column_span(pos, size);
-        }
-        SpanType::Row(size) => {
-            cfg.set_row_span(pos, size);
-        }
+    pub fn vertical(size: usize) -> RowSpan {
+        RowSpan::new(size)
     }
 }

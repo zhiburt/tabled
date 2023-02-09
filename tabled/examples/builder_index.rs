@@ -29,7 +29,7 @@ fn main() {
         Distribution::new("Debian", "None", true, true),
     ];
 
-    let mut table = Table::builder(&data)
+    let mut table = Table::builder(data)
         .index()
         .column(0)
         .name(None)
@@ -38,5 +38,5 @@ fn main() {
 
     table.with(Style::modern());
 
-    println!("{}", table);
+    println!("{table}");
 }

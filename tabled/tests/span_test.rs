@@ -1,12 +1,14 @@
+#![allow(clippy::redundant_clone)]
+
 use tabled::{
     settings::{
         alignment::Alignment,
         highlight::Highlight,
-        object::{Cell, Columns, Segment},
+        object::{Columns, Segment},
         padding::Padding,
         panel::Panel,
-        span::Span,
-        style::{Border, CorrectSpans, Style},
+        span::{ColumnSpan, RowSpan},
+        style::{Border, BorderSpanCorrection, Style},
         Modify,
     },
     Table,
@@ -21,7 +23,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Columns::single(0)).with(Span::column(2))),
+        .with(Modify::new(Columns::single(0)).with(ColumnSpan::new(2))),
     " N | column 1 | column 2 "
     "-+-+----------+----------"
     " 0 | 0-1      | 0-2      "
@@ -34,7 +36,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Columns::new(1..2)).with(Span::column(2))),
+        .with(Modify::new(Columns::new(1..2)).with(ColumnSpan::new(2))),
     " N | column 0 | column 2 "
     "---+-----+----+----------"
     " 0 | 0-0      | 0-2      "
@@ -47,7 +49,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Columns::single(0)).with(Span::column(4))),
+        .with(Modify::new(Columns::single(0)).with(ColumnSpan::new(4))),
     " N "
     "+++"
     " 0 "
@@ -60,7 +62,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(0, 0)).with(Span::column(2))),
+        .with(Modify::new((0, 0)).with(ColumnSpan::new(2))),
     " N       | column 1 | column 2 "
     "---+-----+----------+----------"
     " 0 | 0-0 | 0-1      | 0-2      "
@@ -73,7 +75,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(1, 0)).with(Span::column(2))),
+        .with(Modify::new((1, 0)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0            | 0-1      | 0-2      "
@@ -85,7 +87,7 @@ test_table!(
     cell_span_test_2,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(2, 0)).with(Span::column(2))),
+        .with(Modify::new((2, 0)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    "
@@ -98,7 +100,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(3, 0)).with(Span::column(2))),
+        .with(Modify::new((3, 0)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 | 0-0      | 0-1      | 0-2      "
@@ -111,7 +113,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(0, 1)).with(Span::column(2))),
+        .with(Modify::new((0, 1)).with(ColumnSpan::new(2))),
     " N | column 0  | column 2 "
     "---+-----+-----+----------"
     " 0 | 0-0 | 0-1 | 0-2      "
@@ -124,7 +126,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(1, 1)).with(Span::column(2))),
+        .with(Modify::new((1, 1)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 | 0-0                 | 0-2      "
@@ -137,7 +139,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(2, 1)).with(Span::column(2))),
+        .with(Modify::new((2, 1)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 | 0-0      | 0-1      | 0-2      "
@@ -150,7 +152,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(3, 1)).with(Span::column(2))),
+        .with(Modify::new((3, 1)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 | 0-0      | 0-1      | 0-2      "
@@ -162,7 +164,7 @@ test_table!(
     cell_span_test_8,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(0, 2)).with(Span::column(2))),
+        .with(Modify::new((0, 2)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1  "
     "---+----------+-----+-----"
     " 0 |   0-0    | 0-1 | 0-2 "
@@ -174,7 +176,7 @@ test_table!(
     cell_span_test_9,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(1, 2)).with(Span::column(2))),
+        .with(Modify::new((1, 2)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |         0-1         "
@@ -186,7 +188,7 @@ test_table!(
     cell_span_test_10,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(2, 2)).with(Span::column(2))),
+        .with(Modify::new((2, 2)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    "
@@ -198,7 +200,7 @@ test_table!(
     cell_span_test_11,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(3, 2)).with(Span::column(2))),
+        .with(Modify::new((3, 2)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    "
@@ -210,7 +212,7 @@ test_table!(
     span_multiline,
     init_table::<3, 3, _, _>([((2, 2), "https://\nwww\n.\nredhat\n.com\n/en")])
         .with(Style::psql())
-        .with(Modify::new(Cell(3, 2)).with(Span::column(2))),
+        .with(Modify::new((3, 2)).with(ColumnSpan::new(2))),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    "
@@ -229,8 +231,8 @@ test_table!(
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Padding::new(3, 0, 0, 0)))
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(1, 1)).with(Span::column(3)))
-        .with(Modify::new(Cell(3, 1)).with(Span::column(3))),
+        .with(Modify::new((1, 1)).with(ColumnSpan::new(3)))
+        .with(Modify::new((3, 1)).with(ColumnSpan::new(3))),
     "   N|   column 0|   column 1|   column 2"
     "----+-----------+-----------+-----------"
     "   0|   0-0                             "
@@ -243,38 +245,38 @@ test_table!(
     new_table([["just 1 column"; 5]; 5])
         .with(Style::modern())
         .with(
-            Modify::new(Cell(0, 0))
-                .with(Span::column(5))
+            Modify::new((0, 0))
+                .with(ColumnSpan::new(5))
                 .with("span all 5 columns"),
         )
         .with(
-            Modify::new(Cell(1, 0))
-                .with(Span::column(4))
+            Modify::new((1, 0))
+                .with(ColumnSpan::new(4))
                 .with("span 4 columns"),
         )
         .with(
-            Modify::new(Cell(2, 0))
-                .with(Span::column(3))
+            Modify::new((2, 0))
+                .with(ColumnSpan::new(3))
                 .with("span 3 columns"),
         )
         .with(
-            Modify::new(Cell(2, 3))
-                .with(Span::column(2))
+            Modify::new((2, 3))
+                .with(ColumnSpan::new(2))
                 .with("span 2 columns"),
         )
         .with(
-            Modify::new(Cell(3, 0))
-                .with(Span::column(2))
+            Modify::new((3, 0))
+                .with(ColumnSpan::new(2))
                 .with("span 3 columns"),
         )
         .with(
-            Modify::new(Cell(3, 2))
-                .with(Span::column(3))
+            Modify::new((3, 2))
+                .with(ColumnSpan::new(3))
                 .with("span 3 columns"),
         )
         .with(
-            Modify::new(Cell(4, 1))
-                .with(Span::column(4))
+            Modify::new((4, 1))
+                .with(ColumnSpan::new(4))
                 .with("span 4 columns"),
         ),
     "┌───────────────┬───────────────┬───────────────┬───────────────┬───────────────┐"
@@ -295,8 +297,8 @@ test_table!(
 test_table!(
     span_with_panel_test_0,
     new_table([[1, 2, 3]])
-        .with(Panel::horizontal(0).text("Tabled Releases"))
-        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
+        .with(Panel::horizontal(0,"Tabled Releases"))
+        .with(Modify::new((1, 0)).with(ColumnSpan::new(2)))
         .with(Style::ascii()),
     "+-----+-----+-----+"
     "| Tabled Releases |"
@@ -310,8 +312,8 @@ test_table!(
 test_table!(
     span_with_panel_test_1,
     new_table([[1, 2, 3], [4, 5, 6]])
-        .with(Panel::horizontal(0).text("Tabled Releases"))
-        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Panel::horizontal(0,"Tabled Releases"))
+        .with(Modify::new((2, 0)).with(ColumnSpan::new(2)))
         .with(Style::ascii()),
     "+-----+-----+-----+"
     "| Tabled Releases |"
@@ -327,9 +329,9 @@ test_table!(
 test_table!(
     span_with_panel_test_2,
     new_table([[1, 2, 3], [4, 5, 6]])
-        .with(Panel::horizontal(0).text("Tabled Releases"))
-        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
-        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Panel::horizontal(0,"Tabled Releases"))
+        .with(Modify::new((1, 0)).with(ColumnSpan::new(2)))
+        .with(Modify::new((2, 0)).with(ColumnSpan::new(2)))
         .with(Style::ascii()),
     "+-----+-----+-----+"
     "| Tabled Releases |"
@@ -345,10 +347,10 @@ test_table!(
 test_table!(
     span_with_panel_with_correction_test_0,
     new_table([[1, 2, 3]])
-        .with(Panel::horizontal(0).text("Tabled Releases"))
-        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
+        .with(Panel::horizontal(0,"Tabled Releases"))
+        .with(Modify::new((1, 0)).with(ColumnSpan::new(2)))
         .with(Style::ascii())
-        .with(CorrectSpans),
+        .with(BorderSpanCorrection),
     "+-----------------+"
     "| Tabled Releases |"
     "+-----------+-----+"
@@ -361,10 +363,10 @@ test_table!(
 test_table!(
     span_with_panel_with_correction_test_1,
     new_table([[1, 2, 3], [4, 5, 6]])
-        .with(Panel::horizontal(0).text("Tabled Releases"))
-        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Panel::horizontal(0,"Tabled Releases"))
+        .with(Modify::new((2, 0)).with(ColumnSpan::new(2)))
         .with(Style::ascii())
-        .with(CorrectSpans),
+        .with(BorderSpanCorrection),
     "+-----------------+"
     "| Tabled Releases |"
     "+-----+-----+-----+"
@@ -379,11 +381,11 @@ test_table!(
 test_table!(
     span_with_panel_with_correction_test_2,
     new_table([[1, 2, 3], [4, 5, 6]])
-        .with(Panel::horizontal(0).text("Tabled Releases"))
-        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
-        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Panel::horizontal(0,"Tabled Releases"))
+        .with(Modify::new((1, 0)).with(ColumnSpan::new(2)))
+        .with(Modify::new((2, 0)).with(ColumnSpan::new(2)))
         .with(Style::ascii())
-        .with(CorrectSpans),
+        .with(BorderSpanCorrection),
     "+-----------------+"
     "| Tabled Releases |"
     "+-----------+-----+"
@@ -402,7 +404,7 @@ fn span_column_exceeds_boundaries_test() {
     // todo: determine if it's the right behaiviour
 
     create_table::<3, 3>()
-        .with(Modify::new(Columns::single(0)).with(Span::column(100)))
+        .with(Modify::new(Columns::single(0)).with(ColumnSpan::new(100)))
         .to_string();
 }
 
@@ -416,7 +418,7 @@ fn span_cell_exceeds_boundaries_test() {
     let table = create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(0, 0)).with(Span::column(20)))
+        .with(Modify::new((0, 0)).with(ColumnSpan::new(20)))
         .to_string();
 
     assert_eq!(
@@ -433,7 +435,7 @@ fn span_cell_exceeds_boundaries_test() {
     let table = create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(1, 1)).with(Span::column(20)))
+        .with(Modify::new((1, 1)).with(ColumnSpan::new(20)))
         .to_string();
 
     assert_eq!(
@@ -450,7 +452,7 @@ fn span_cell_exceeds_boundaries_test() {
     let table = create_table::<3, 3>()
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
-        .with(Modify::new(Cell(1, 0)).with(Span::column(20)))
+        .with(Modify::new((1, 0)).with(ColumnSpan::new(20)))
         .to_string();
 
     assert_eq!(
@@ -470,7 +472,7 @@ fn span_cell_exceeds_boundaries_test() {
 fn span_zero_test() {
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
+        .with(Modify::new((0, 0)).with(ColumnSpan::new(0)))
         .to_string();
 
     assert_eq!(
@@ -486,7 +488,7 @@ fn span_zero_test() {
 
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(0, 1)).with(Span::column(0)))
+        .with(Modify::new((0, 1)).with(ColumnSpan::new(0)))
         .to_string();
 
     assert_eq!(
@@ -502,7 +504,7 @@ fn span_zero_test() {
 
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(0, 2)).with(Span::column(0)))
+        .with(Modify::new((0, 2)).with(ColumnSpan::new(0)))
         .to_string();
 
     assert_eq!(
@@ -518,7 +520,7 @@ fn span_zero_test() {
 
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(0, 3)).with(Span::column(0)))
+        .with(Modify::new((0, 3)).with(ColumnSpan::new(0)))
         .to_string();
 
     assert_eq!(
@@ -534,7 +536,7 @@ fn span_zero_test() {
 
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(0, 4)).with(Span::column(0)))
+        .with(Modify::new((0, 4)).with(ColumnSpan::new(0)))
         .to_string();
 
     assert_eq!(
@@ -550,11 +552,11 @@ fn span_zero_test() {
 
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(0, 0)).with(Span::column(0)))
-        .with(Modify::new(Cell(1, 1)).with(Span::column(0)))
-        .with(Modify::new(Cell(2, 2)).with(Span::column(0)))
-        .with(Modify::new(Cell(3, 2)).with(Span::column(0)))
-        .with(Modify::new(Cell(3, 1)).with(Span::column(0)))
+        .with(Modify::new((0, 0)).with(ColumnSpan::new(0)))
+        .with(Modify::new((1, 1)).with(ColumnSpan::new(0)))
+        .with(Modify::new((2, 2)).with(ColumnSpan::new(0)))
+        .with(Modify::new((3, 2)).with(ColumnSpan::new(0)))
+        .with(Modify::new((3, 1)).with(ColumnSpan::new(0)))
         .to_string();
 
     assert_eq!(
@@ -574,7 +576,7 @@ fn span_zero_test() {
 fn span_all_table_to_zero_test() {
     let table = create_table::<2, 2>()
         .with(Style::psql())
-        .with(Modify::new(Segment::all()).with(Span::column(0)))
+        .with(Modify::new(Segment::all()).with(ColumnSpan::new(0)))
         .to_string();
 
     // todo: determine whether it's correct
@@ -594,7 +596,7 @@ mod row {
             //     .clone()
             //     .with(Style::ascii())
             //     .with(Modify::new(Segment::all()).with(Alignment::left()))
-            //     .with(Modify::new(Rows::single(0)).with(Span::row(2)))
+            //     .with(Modify::new(Rows::single(0)).with(RowSpan::new(2)))
             //     .to_string();
 
             // assert_eq!(
@@ -614,7 +616,7 @@ mod row {
                 .clone()
                 .with(Style::psql())
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
-                .with(Modify::new(Rows::single(0)).with(Span::row(2)))
+                .with(Modify::new(Rows::single(0)).with(RowSpan::new(2)))
                 .to_string();
 
             assert_eq!(
@@ -631,7 +633,7 @@ mod row {
                 .clone()
                 .with(Style::psql())
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
-                .with(Modify::new(Rows::new(1..2)).with(Span::row(2)))
+                .with(Modify::new(Rows::new(1..2)).with(RowSpan::new(2)))
                 .to_string();
 
             assert_eq!(
@@ -649,7 +651,7 @@ mod row {
                 .clone()
                 .with(Style::psql())
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
-                .with(Modify::new(Rows::single(0)).with(Span::row(4)))
+                .with(Modify::new(Rows::single(0)).with(RowSpan::new(4)))
                 .to_string();
 
             assert_eq!(table, " N + column 0 + column 1 + column 2 ");
@@ -667,7 +669,7 @@ mod row {
                     .clone()
                     .with(Style::psql())
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
-                    .with(Modify::new(Cell(0, 0)).with(Span::row(2)))
+                    .with(Modify::new((0, 0)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -686,7 +688,7 @@ mod row {
                     .clone()
                     .with(Style::psql())
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
-                    .with(Modify::new(Cell(1, 0)).with(Span::row(2)))
+                    .with(Modify::new((1, 0)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -704,7 +706,7 @@ mod row {
                 let table = table
                     .clone()
                     .with(Style::psql())
-                    .with(Modify::new(Cell(2, 0)).with(Span::row(2)))
+                    .with(Modify::new((2, 0)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -728,7 +730,7 @@ mod row {
                     .clone()
                     .with(Style::psql())
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
-                    .with(Modify::new(Cell(0, 1)).with(Span::row(2)))
+                    .with(Modify::new((0, 1)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -747,7 +749,7 @@ mod row {
                     .clone()
                     .with(Style::psql())
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
-                    .with(Modify::new(Cell(0, 2)).with(Span::row(2)))
+                    .with(Modify::new((0, 2)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -765,7 +767,7 @@ mod row {
                 let table = table
                     .clone()
                     .with(Style::psql())
-                    .with(Modify::new(Cell(0, 3)).with(Span::row(2)))
+                    .with(Modify::new((0, 3)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -788,7 +790,7 @@ mod row {
                     .clone()
                     .with(Style::psql())
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
-                    .with(Modify::new(Cell(1, 1)).with(Span::row(2)))
+                    .with(Modify::new((1, 1)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -807,7 +809,7 @@ mod row {
                     .clone()
                     .with(Style::psql())
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
-                    .with(Modify::new(Cell(2, 1)).with(Span::row(2)))
+                    .with(Modify::new((2, 1)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -829,7 +831,7 @@ mod row {
                     .clone()
                     .with(Style::psql())
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
-                    .with(Modify::new(Cell(1, 2)).with(Span::row(2)))
+                    .with(Modify::new((1, 2)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -848,7 +850,7 @@ mod row {
                     .clone()
                     .with(Style::psql())
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
-                    .with(Modify::new(Cell(2, 2)).with(Span::row(2)))
+                    .with(Modify::new((2, 2)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -870,7 +872,7 @@ mod row {
                     .clone()
                     .with(Style::psql())
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
-                    .with(Modify::new(Cell(1, 3)).with(Span::row(2)))
+                    .with(Modify::new((1, 3)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -889,7 +891,7 @@ mod row {
                     .clone()
                     .with(Style::psql())
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
-                    .with(Modify::new(Cell(2, 3)).with(Span::row(2)))
+                    .with(Modify::new((2, 3)).with(RowSpan::new(2)))
                     .to_string();
 
                 assert_eq!(
@@ -910,9 +912,9 @@ mod row {
     fn span_with_panel_with_correction_test() {
         let data = [[1, 2, 3]];
         let table = Table::new(data)
-            .with(Modify::new(Cell(0, 0)).with(Span::row(2)))
+            .with(Modify::new((0, 0)).with(RowSpan::new(2)))
             .with(Style::ascii())
-            .with(CorrectSpans)
+            .with(BorderSpanCorrection)
             .to_string();
 
         assert_eq!(
@@ -928,10 +930,10 @@ mod row {
 
         let data = [[1, 2, 3], [4, 5, 6]];
         let table = Table::new(data)
-            .with(Modify::new(Cell(1, 0)).with(Span::row(2)))
-            .with(Modify::new(Cell(0, 2)).with(Span::row(3)))
+            .with(Modify::new((1, 0)).with(RowSpan::new(2)))
+            .with(Modify::new((0, 2)).with(RowSpan::new(3)))
             .with(Style::ascii())
-            .with(CorrectSpans)
+            .with(BorderSpanCorrection)
             .to_string();
 
         assert_eq!(
@@ -949,11 +951,11 @@ mod row {
 
         let data = [[1, 2, 3], [4, 5, 6]];
         let table = Table::new(data)
-            .with(Modify::new(Cell(1, 0)).with(Span::row(2)))
-            .with(Modify::new(Cell(0, 2)).with(Span::row(3)))
-            .with(Modify::new(Cell(0, 1)).with(Span::row(2)))
+            .with(Modify::new((1, 0)).with(RowSpan::new(2)))
+            .with(Modify::new((0, 2)).with(RowSpan::new(3)))
+            .with(Modify::new((0, 1)).with(RowSpan::new(2)))
             .with(Style::ascii())
-            .with(CorrectSpans)
+            .with(BorderSpanCorrection)
             .to_string();
 
         assert_eq!(
@@ -970,14 +972,14 @@ mod row {
 
         let data = [[1, 2, 3], [4, 5, 6]];
         let table = Table::new(data)
-            .with(Modify::new(Cell(1, 0)).with(Span::row(2)))
+            .with(Modify::new((1, 0)).with(RowSpan::new(2)))
             .with(
-                Modify::new(Cell(0, 1))
-                    .with(Span::row(2))
-                    .with(Span::column(2)),
+                Modify::new((0, 1))
+                    .with(RowSpan::new(2))
+                    .with(ColumnSpan::new(2)),
             )
             .with(Style::ascii())
-            .with(CorrectSpans)
+            .with(BorderSpanCorrection)
             .to_string();
 
         assert_eq!(
@@ -997,8 +999,8 @@ mod row {
     fn span_example_test() {
         let data = [["just 1 column"; 5]; 5];
 
-        let h_span = |r, c, span| Modify::new(Cell(r, c)).with(Span::column(span));
-        let v_span = |r, c, span| Modify::new(Cell(r, c)).with(Span::row(span));
+        let h_span = |r, c, span| Modify::new((r, c)).with(ColumnSpan::new(span));
+        let v_span = |r, c, span| Modify::new((r, c)).with(RowSpan::new(span));
 
         let table = Table::new(data)
             .with(h_span(0, 0, 5).with(String::from("span all 5 columns")))
@@ -1009,7 +1011,7 @@ mod row {
             .with(v_span(2, 3, 3).with(String::from("just 1 column\nspan\n3\ncolumns")))
             .with(h_span(3, 1, 2))
             .with(Style::modern())
-            .with(CorrectSpans)
+            .with(BorderSpanCorrection)
             .with(Modify::new(Segment::all()).with(Alignment::center_vertical()))
             .to_string();
 
@@ -1042,7 +1044,7 @@ mod row {
             ["7", "8", "9"],
         ];
         let table = Table::new(data)
-            .with(Modify::new(Cell(1, 1)).with(Span::row(3)))
+            .with(Modify::new((1, 1)).with(RowSpan::new(3)))
             .with(Style::modern())
             .with(Highlight::new(Columns::single(1), Border::filled('*')))
             .to_string();
@@ -1076,9 +1078,9 @@ fn highlight_row_col_span_test() {
     ];
     let table = Table::new(data)
         .with(
-            Modify::new(Cell(1, 1))
-                .with(Span::row(3))
-                .with(Span::column(2)),
+            Modify::new((1, 1))
+                .with(RowSpan::new(3))
+                .with(ColumnSpan::new(2)),
         )
         .with(Style::modern())
         .with(Highlight::new(Columns::new(1..3), Border::filled('*')))
@@ -1105,21 +1107,21 @@ fn highlight_row_col_span_test() {
 
 test_table!(
     column_span_bigger_then_max,
-    create_table::<3, 3>().with(Modify::new(Cell(0, 0)).with(Span::column(100))),
-    "+---+----------+----------+----------+"
-    "| N | column 0 | column 1 | column 2 |"
-    "+---+----------+----------+----------+"
-    "| 0 |   0-0    |   0-1    |   0-2    |"
-    "+---+----------+----------+----------+"
-    "| 1 |   1-0    |   1-1    |   1-2    |"
-    "+---+----------+----------+----------+"
-    "| 2 |   2-0    |   2-1    |   2-2    |"
-    "+---+----------+----------+----------+"
+    create_table::<3, 3>().with(Modify::new((0, 0)).with(ColumnSpan::new(100))),
+    "+---+-----+-----+-----+"
+    "|          N          |"
+    "+---+-----+-----+-----+"
+    "| 0 | 0-0 | 0-1 | 0-2 |"
+    "+---+-----+-----+-----+"
+    "| 1 | 1-0 | 1-1 | 1-2 |"
+    "+---+-----+-----+-----+"
+    "| 2 | 2-0 | 2-1 | 2-2 |"
+    "+---+-----+-----+-----+"
 );
 
 test_table!(
     row_span_bigger_then_max,
-    create_table::<3, 3>().with(Modify::new(Cell(0, 0)).with(Span::row(100))),
+    create_table::<3, 3>().with(Modify::new((0, 0)).with(RowSpan::new(100))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+   +----------+----------+----------+"
@@ -1133,7 +1135,7 @@ test_table!(
 
 test_table!(
     column_span_invalid_position_row,
-    create_table::<3, 3>().with(Modify::new(Cell(1000, 0)).with(Span::column(2))),
+    create_table::<3, 3>().with(Modify::new((1000, 0)).with(ColumnSpan::new(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -1147,7 +1149,7 @@ test_table!(
 
 test_table!(
     column_span_invalid_position_column,
-    create_table::<3, 3>().with(Modify::new(Cell(0, 1000)).with(Span::column(2))),
+    create_table::<3, 3>().with(Modify::new((0, 1000)).with(ColumnSpan::new(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -1161,7 +1163,7 @@ test_table!(
 
 test_table!(
     column_span_invalid_position_row_and_column,
-    create_table::<3, 3>().with(Modify::new(Cell(1000, 1000)).with(Span::column(2))),
+    create_table::<3, 3>().with(Modify::new((1000, 1000)).with(ColumnSpan::new(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -1175,7 +1177,7 @@ test_table!(
 
 test_table!(
     row_span_invalid_position_row,
-    create_table::<3, 3>().with(Modify::new(Cell(1000, 0)).with(Span::row(2))),
+    create_table::<3, 3>().with(Modify::new((1000, 0)).with(RowSpan::new(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -1189,7 +1191,7 @@ test_table!(
 
 test_table!(
     row_span_invalid_position_column,
-    create_table::<3, 3>().with(Modify::new(Cell(0, 1000)).with(Span::row(2))),
+    create_table::<3, 3>().with(Modify::new((0, 1000)).with(RowSpan::new(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -1203,7 +1205,7 @@ test_table!(
 
 test_table!(
     row_span_invalid_position_row_and_column,
-    create_table::<3, 3>().with(Modify::new(Cell(1000, 1000)).with(Span::row(2))),
+    create_table::<3, 3>().with(Modify::new((1000, 1000)).with(RowSpan::new(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"

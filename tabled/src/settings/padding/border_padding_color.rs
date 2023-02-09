@@ -39,7 +39,7 @@ impl PaddingColor {
 }
 
 impl<R> CellOption<R> for PaddingColor {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
         cfg.set_padding_color(entity, self.0.clone());
     }
 }

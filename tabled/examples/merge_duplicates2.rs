@@ -4,7 +4,7 @@ use tabled::{
     settings::{
         merge::Merge,
         object::{Cell, Columns, Object, Rows},
-        style::{Border, Style, CorrectSpans},
+        style::{Border, Style, BorderSpanCorrection},
         Modify,
     },
     Table, Tabled,
@@ -24,9 +24,9 @@ fn main() {
 
     let mut table = Table::builder(data).index().transpose().build();
     config_theme(&mut table);
-    table.with(Merge::horizontal()).with(CorrectSpans);
+    table.with(Merge::horizontal()).with(BorderSpanCorrection);
 
-    println!("{}", table);
+    println!("{table}");
 }
 
 #[derive(Tabled)]
@@ -60,7 +60,7 @@ fn config_theme(table: &mut Table) {
         .with(Style::rounded().remove_vertical())
         .with(Modify::new(Columns::first()).with(Border::default().right('│')))
         .with(
-            Modify::new(Cell(0, 0)).with(
+            Modify::new(Cell::new(0, 0)).with(
                 Border::default()
                     .corner_top_right('┬')
                     .corner_bottom_right('┼'),

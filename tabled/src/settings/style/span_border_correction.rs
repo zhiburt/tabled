@@ -76,9 +76,9 @@ use crate::{
 /// [`Span`]: crate::Span
 /// [`Style::correct_spans`]: crate::Style::correct_spans
 #[derive(Debug)]
-pub struct CorrectSpans;
+pub struct BorderSpanCorrection;
 
-impl<R, D> TableOption<R, D> for CorrectSpans
+impl<R, D> TableOption<R, D> for BorderSpanCorrection
 where
     R: Records + ExactRecords,
 {

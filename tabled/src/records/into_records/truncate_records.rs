@@ -1,3 +1,5 @@
+//! The module contains [`TruncateContent`] records iterator.
+
 use std::borrow::Cow;
 
 use crate::{
@@ -6,20 +8,22 @@ use crate::{
 
 use super::either_string::EitherString;
 
+/// A records iterator which truncates all cells to a given width.
 #[derive(Debug)]
-pub struct TruncatedRecords<'a, I> {
+pub struct TruncateContent<'a, I> {
     records: I,
     width: Width<'a>,
     tab_size: usize,
 }
 
-impl TruncatedRecords<'_, ()> {
+impl TruncateContent<'_, ()> {
+    /// Creates new [`TruncateContent`] object.
     pub fn new<I: IntoRecords>(
         records: I,
         width: Width<'_>,
         tab_size: usize,
-    ) -> TruncatedRecords<'_, I> {
-        TruncatedRecords {
+    ) -> TruncateContent<'_, I> {
+        TruncateContent {
             records,
             width,
             tab_size,
@@ -27,16 +31,16 @@ impl TruncatedRecords<'_, ()> {
     }
 }
 
-impl<'a, I> IntoRecords for TruncatedRecords<'a, I>
+impl<'a, I> IntoRecords for TruncateContent<'a, I>
 where
     I: IntoRecords,
 {
     type Cell = EitherString<I::Cell>;
-    type IterColumns = TruncatedRecordsColumnsIter<'a, <I::IterColumns as IntoIterator>::IntoIter>;
-    type IterRows = TruncatedRecordsIter<'a, <I::IterRows as IntoIterator>::IntoIter>;
+    type IterColumns = TruncateContentColumnsIter<'a, <I::IterColumns as IntoIterator>::IntoIter>;
+    type IterRows = TruncateContentIter<'a, <I::IterRows as IntoIterator>::IntoIter>;
 
     fn iter_rows(self) -> Self::IterRows {
-        TruncatedRecordsIter {
+        TruncateContentIter {
             iter: self.records.iter_rows().into_iter(),
             width: self.width.clone(),
             tab_size: self.tab_size,
@@ -44,23 +48,25 @@ where
     }
 }
 
-pub struct TruncatedRecordsIter<'a, I> {
+/// A row iterator for [`TruncateContent`].
+#[derive(Debug)]
+pub struct TruncateContentIter<'a, I> {
     iter: I,
     width: Width<'a>,
     tab_size: usize,
 }
 
-impl<'a, I> Iterator for TruncatedRecordsIter<'a, I>
+impl<'a, I> Iterator for TruncateContentIter<'a, I>
 where
     I: Iterator,
     I::Item: IntoIterator,
     <I::Item as IntoIterator>::Item: AsRef<str>,
 {
-    type Item = TruncatedRecordsColumnsIter<'a, <I::Item as IntoIterator>::IntoIter>;
+    type Item = TruncateContentColumnsIter<'a, <I::Item as IntoIterator>::IntoIter>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let iter = self.iter.next()?;
-        Some(TruncatedRecordsColumnsIter {
+        Some(TruncateContentColumnsIter {
             iter: iter.into_iter(),
             current: 0,
             width: self.width.clone(),
@@ -69,14 +75,16 @@ where
     }
 }
 
-pub struct TruncatedRecordsColumnsIter<'a, I> {
+/// A column iterator for [`TruncateContent`].
+#[derive(Debug)]
+pub struct TruncateContentColumnsIter<'a, I> {
     iter: I,
     width: Width<'a>,
     tab_size: usize,
     current: usize,
 }
 
-impl<I> Iterator for TruncatedRecordsColumnsIter<'_, I>
+impl<I> Iterator for TruncateContentColumnsIter<'_, I>
 where
     I: Iterator,
     I::Item: AsRef<str>,
@@ -102,13 +110,17 @@ where
     }
 }
 
+/// A width value.
 #[derive(Debug, Clone)]
 pub enum Width<'a> {
+    /// Const width value.
     Exact(usize),
+    /// A list of width values for columns.
     List(Cow<'a, [usize]>),
 }
 
 impl Width<'_> {
+    /// Get a width by column.
     pub fn get(&self, col: usize) -> usize {
         match self {
             Width::Exact(val) => *val,

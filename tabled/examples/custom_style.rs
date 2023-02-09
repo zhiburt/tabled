@@ -41,8 +41,8 @@ fn main() {
         .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(None)])
         .verticals([VerticalLine::new(1, Style::modern().get_vertical())]);
 
-    let mut table = Table::new(&data);
+    let mut table = Table::new(data);
     table.with(theme).with(Alignment::left());
 
-    println!("{}", table);
+    println!("{table}");
 }

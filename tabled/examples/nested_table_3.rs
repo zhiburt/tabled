@@ -47,12 +47,13 @@ fn main() {
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .to_string();
 
-    let mut a_welcome_table = Table::new([String::from("Thank You"), committers_table, issues_table]);
+    let mut a_welcome_table =
+        Table::new([String::from("Thank You"), committers_table, issues_table]);
     a_welcome_table
         .with(Extract::rows(1..))
         .with(Style::ascii().remove_horizontal())
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Highlight::new(Cell(0, 0), Border::filled('*')));
+        .with(Highlight::new(Cell::new(0, 0), Border::filled('*')));
 
-    println!("{}", a_welcome_table);
+    println!("{a_welcome_table}");
 }

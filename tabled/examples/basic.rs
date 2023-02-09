@@ -37,5 +37,5 @@ fn main() {
         .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(Alignment::center()));
 
-    println!("{}", table);
+    println!("{table}");
 }

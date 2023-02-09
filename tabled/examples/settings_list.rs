@@ -4,10 +4,10 @@
 use tabled::{
     settings::{
         alignment::Alignment,
-        object::{Columns, FirstRow, Rows},
+        object::{FirstRow, Rows},
         padding::Padding,
+        style::builder::On,
         style::Style,
-        style::{builder::On, HorizontalLine, VerticalLine},
         Modify, ModifyList, Settings,
     },
     Table, Tabled,
@@ -30,7 +30,7 @@ impl CodeEditor {
     }
 }
 
-// unfortunately compiler can't infer a type automaticall, so we need to provide it.
+// unfortunately we can't leave it as a blank type, so we need to provide it.
 type TableTheme = Settings<
     Settings<Settings<Settings, Style<On, On, On, On, On, On>>, Padding>,
     ModifyList<FirstRow, Alignment>,
@@ -50,8 +50,8 @@ fn main() {
         CodeEditor::new("Neovim", "2015", "Vim community"),
     ];
 
-    let mut table = Table::new(&data);
+    let mut table = Table::new(data);
     table.with(THEME);
 
-    println!("{}", table);
+    println!("{table}");
 }

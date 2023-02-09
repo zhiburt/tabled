@@ -2,10 +2,7 @@
 
 use crate::{
     grid::{config::GridConfig, dimension::ExactDimension},
-    grid::{
-        grid_projection::GridProjection,
-        util::string::{count_lines, string_width_multiline_tab},
-    },
+    grid::{grid_projection::GridProjection, util::string::string_width_multiline_tab},
     records::{ExactRecords, Records},
     settings::width::Width,
 };
@@ -92,21 +89,10 @@ impl Measurement<Width> for Percent {
 //     }
 // }
 
-fn records_heights<R: Records + ExactRecords>(
+fn grid_widths<R: Records + ExactRecords>(
     records: &R,
-) -> impl Iterator<Item = impl Iterator<Item = usize> + '_> + '_ {
-    (0..records.count_rows()).map(move |row| {
-        (0..records.count_columns()).map(move |col| {
-            let text = records.get_cell((row, col)).as_ref();
-            count_lines(text)
-        })
-    })
-}
-
-fn grid_widths<'a, R: Records + ExactRecords>(
-    records: &'a R,
     tab_width: usize,
-) -> impl Iterator<Item = impl Iterator<Item = usize> + 'a> + 'a {
+) -> impl Iterator<Item = impl Iterator<Item = usize> + '_> + '_ {
     let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
     (0..count_rows).map(move |row| {
         (0..count_cols).map(move |col| {
@@ -131,22 +117,4 @@ fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
     let total = list.iter().sum::<usize>();
 
     total + gp.count_vertical() + margin.left.size + margin.right.size
-}
-
-fn get_table_height<R: Records + ExactRecords>(
-    records: R,
-    cfg: &GridConfig,
-) -> (usize, Vec<usize>) {
-    let gp = GridProjection::new(cfg).count_rows(records.count_rows());
-    let count_horizontals = gp.count_horizontal();
-
-    let margin = cfg.get_margin();
-    let margin_size = margin.top.size + margin.bottom.size;
-
-    let list = ExactDimension::height(records, cfg);
-    let total = list.iter().sum::<usize>();
-
-    let total = total + count_horizontals + margin_size;
-
-    (total, list)
 }

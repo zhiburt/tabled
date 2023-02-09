@@ -2,8 +2,15 @@
 ///
 /// [`Grid`]: crate::Grid
 pub trait IntoRecords {
+    /// A string representation of a [Grid] cell.
+    ///
+    /// [`Grid`]: crate::Grid
     type Cell: AsRef<str>;
+
+    /// Cell iterator inside a row.
     type IterColumns: IntoIterator<Item = Self::Cell>;
+
+    /// Rows iterator.
     type IterRows: IntoIterator<Item = Self::IterColumns>;
 
     /// Returns an iterator over rows.

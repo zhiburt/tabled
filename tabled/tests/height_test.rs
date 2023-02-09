@@ -93,7 +93,7 @@ test_table!(
     cell_height_limit,
     create_table::<3, 3>()
         .with(Style::markdown())
-        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{}xxxx\nxxxx\n", s))))
+        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n"))))
         .with(
             Modify::new(Columns::first())
                 .with(Height::limit(1))
@@ -112,7 +112,7 @@ test_table!(
     table_height_limit,
     create_table::<3, 3>()
         .with(Style::markdown())
-        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{}xxxx\nxxxx\n", s))))
+        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n"))))
         .with(Modify::new(Columns::first()).with(Alignment::center_vertical()))
         .with(Height::limit(10)),
     "| xxxx  | column 0 | column 1 | column 2 |"
@@ -131,7 +131,7 @@ test_table!(
     table_height_limit_style_change_after,
     create_table::<3, 3>()
         .with(Style::markdown())
-        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{}xxxx\nxxxx\n", s))))
+        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n"))))
         .with(Modify::new(Columns::first()).with(Alignment::center_vertical()))
         .with(Height::limit(7)),
     "| xxxx  | column 0 | column 1 | column 2 |"
@@ -147,7 +147,7 @@ test_table!(
     cell_height_limit_zero,
     create_table::<3, 3>()
         .with(Style::markdown())
-        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{}xxxx\nxxxx\n", s))))
+        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n"))))
         .with(
             Modify::new(Columns::first())
                 .with(Height::limit(0))
@@ -168,7 +168,7 @@ test_table!(
         .with(Style::markdown())
         .with(
             Modify::new(Columns::new(..))
-                .with(Format::content(|s| format!("xxxx\n{}xxxx\nxxxx\n", s)))
+                .with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n")))
         )
         .with(Height::limit(0)),
     "|--|--|--|--|"
@@ -180,7 +180,7 @@ test_table!(
         .with(Style::markdown())
         .with(Height::limit(0))
         .with(
-            Modify::new(Columns::new(..)).with(Format::content(|s| format!("xxxx\n{}xxxx\nxxxx\n", s)))
+            Modify::new(Columns::new(..)).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n")))
         ),
         "| xxxx | xxxx | xxxx | xxxx |"
         "| xxxx | xxxx | xxxx | xxxx |"
@@ -206,7 +206,7 @@ test_table!(
     cell_height_limit_colored,
     create_table::<3, 3>()
         .with(Style::markdown())
-        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{}xxxx\nxxxx\n", s).red().to_string())))
+        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n").red().to_string())))
         .with(
             Modify::new(Columns::first())
                 .with(Height::limit(1))
@@ -226,7 +226,7 @@ test_table!(
     table_height_limit_colored,
     create_table::<3, 3>()
         .with(Style::markdown())
-        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{}xxxx\nxxxx\n", s).blue().on_green().to_string())))
+        .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n").blue().on_green().to_string())))
         .with(Modify::new(Columns::first()).with(Alignment::center_vertical()))
         .with(Height::limit(10)),
         "| \u{1b}[34;42mxxxx\u{1b}[39m\u{1b}[49m  | column 0 | column 1 | column 2 |"

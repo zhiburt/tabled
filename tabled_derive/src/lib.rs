@@ -1,3 +1,5 @@
+#![allow(clippy::uninlined_format_args)]
+
 extern crate proc_macro;
 
 mod attributes;

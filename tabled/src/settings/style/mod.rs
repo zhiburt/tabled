@@ -18,5 +18,5 @@ pub mod builder;
 pub use self::{
     border::Border, border_char::BorderChar, border_color::BorderColor, border_text::BorderText,
     builder::Style, horizontal_line::HorizontalLine, line::Line, offset::Offset,
-    raw_style::RawStyle, span_border_correction::CorrectSpans, vertical_line::VerticalLine,
+    raw_style::RawStyle, span_border_correction::BorderSpanCorrection, vertical_line::VerticalLine,
 };

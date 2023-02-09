@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use papergrid::records::Records;
 
 use crate::{
@@ -31,7 +33,7 @@ where
 
 impl<R> CellOption<R> for String
 where
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
 {
     fn change(&mut self, records: &mut R, _: &mut GridConfig, entity: Entity) {
         let count_rows = records.count_rows();
@@ -43,12 +45,16 @@ where
     }
 }
 
-impl<R> CellOption<R> for &str
+impl<'a, R> CellOption<R> for &'a str
 where
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<&'a str>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
-        let mut string = self.to_owned();
-        <String as CellOption<R>>::change(&mut string, records, cfg, entity);
+    fn change(&mut self, records: &mut R, _: &mut GridConfig, entity: Entity) {
+        let count_rows = records.count_rows();
+        let count_cols = records.count_columns();
+
+        for pos in entity.iter(count_rows, count_cols) {
+            records.set(pos, self);
+        }
     }
 }

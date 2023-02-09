@@ -76,7 +76,7 @@ impl Justify<Min> {
 impl<R, D, W> TableOption<R, D> for Justify<W>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, dims: &mut D) {

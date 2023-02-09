@@ -19,21 +19,19 @@ fn main() {
     ];
 
     let mut table = Table::builder(data).build();
-    table
-        .with(Style::markdown())
-        .with(Alignment::left());
+    table.with(Style::markdown()).with(Alignment::left());
 
-    println!("Original table\n{}\n", table);
+    println!("Original table\n{table}\n");
 
     table.with(Width::truncate(20).suffix("..."));
 
-    println!("Truncated table\n{}\n", table);
+    println!("Truncated table\n{table}\n");
 
     table.with(Modify::new(Segment::all()).with(Width::wrap(5)));
 
-    println!("Wrapped table\n{}\n", table);
+    println!("Wrapped table\n{table}\n");
 
     table.with(Width::increase(Percent(200)));
 
-    println!("Widen table\n{}", table);
+    println!("Widen table\n{table}");
 }

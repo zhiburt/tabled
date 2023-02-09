@@ -2,7 +2,7 @@
 //!
 //! [`Border`]: crate::Border
 
-use std::{borrow::Cow, convert::TryFrom};
+use std::borrow::Cow;
 
 use crate::{
     grid::{
@@ -195,7 +195,7 @@ impl From<AnsiColor<'static>> for Color {
 }
 
 #[cfg(feature = "color")]
-impl TryFrom<&str> for Color {
+impl std::convert::TryFrom<&str> for Color {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
@@ -204,7 +204,7 @@ impl TryFrom<&str> for Color {
 }
 
 #[cfg(feature = "color")]
-impl TryFrom<String> for Color {
+impl std::convert::TryFrom<String> for Color {
     type Error = ();
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -213,7 +213,7 @@ impl TryFrom<String> for Color {
 }
 
 impl<R, D> TableOption<R, D> for Color {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         let color = self.0.clone();
         cfg.set_border_color_global(color);
     }

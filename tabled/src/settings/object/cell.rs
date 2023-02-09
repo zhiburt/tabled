@@ -1,12 +1,35 @@
-use crate::{grid::config::Entity, settings::object::Object};
+use crate::{
+    grid::config::{Entity, Position},
+    settings::object::Object,
+};
 
 /// Cell denotes a particular cell on a [`Table`].
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug)]
-pub struct Cell(pub usize, pub usize);
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Cell(usize, usize);
+
+impl Cell {
+    pub fn new(row: usize, col: usize) -> Self {
+        Self(row, col)
+    }
+}
+
+impl From<Position> for Cell {
+    fn from((row, col): Position) -> Self {
+        Self(row, col)
+    }
+}
 
 impl<I> Object<I> for Cell {
+    type Iter = EntityOnce;
+
+    fn cells(&self, _: &I) -> Self::Iter {
+        EntityOnce::new(Some(Entity::Cell(self.0, self.1)))
+    }
+}
+
+impl<I> Object<I> for Position {
     type Iter = EntityOnce;
 
     fn cells(&self, _: &I) -> Self::Iter {

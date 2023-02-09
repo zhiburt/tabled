@@ -168,7 +168,7 @@ impl Truncate<'_, (), ()> {
 impl<W, P, R> CellOption<R> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: papergrid::config::Entity) {
@@ -178,7 +178,9 @@ where
         let mut suffix = Cow::Borrowed("");
 
         if let Some(x) = self.suffix.as_ref() {
-            (suffix, width) = make_suffix(x, width, cfg.get_tab_width())
+            let (s, w) = make_suffix(x, width, cfg.get_tab_width());
+            suffix = s;
+            width = w;
         };
 
         let count_rows = records.count_rows();
@@ -251,7 +253,7 @@ impl<W, P, R> TableOption<R, TableDimension<'static>> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
@@ -283,7 +285,7 @@ where
     }
 }
 
-fn truncate_total_width<P: Peaker, R: Records + ExactRecords + RecordsMut<Text = String>>(
+fn truncate_total_width<P: Peaker, R: Records + ExactRecords + RecordsMut<String>>(
     records: &mut R,
     cfg: &mut GridConfig,
     mut widths: Vec<usize>,

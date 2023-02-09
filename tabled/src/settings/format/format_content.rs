@@ -6,6 +6,8 @@ use crate::{
 
 use super::FormatContentPositioned;
 
+/// A lambda which formats cell content.
+#[derive(Debug)]
 pub struct FormatContent<F>(pub F)
 where
     F: FnMut(&str) -> String;
@@ -33,7 +35,7 @@ where
 impl<F, R> CellOption<R> for FormatContent<F>
 where
     F: FnMut(&str) -> String,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
 {
     fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
         FormatContentPositioned(|s, _| (self.0)(s)).change(records, cfg, entity);

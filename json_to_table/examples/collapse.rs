@@ -17,5 +17,5 @@ fn main() {
     let mut table = json_to_table(&json);
     table.collapse();
 
-    println!("{}", table);
+    println!("{table}");
 }

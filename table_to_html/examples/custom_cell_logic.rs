@@ -42,12 +42,11 @@ fn main() {
 <ul>
     <li>Coffee</li>
     <li>Tea</li>
-    <li>{}</li>
+    <li>{text}</li>
 </ul>
 "#,
-            text
         )
     });
 
-    println!("{}", html_table);
+    println!("{html_table}");
 }

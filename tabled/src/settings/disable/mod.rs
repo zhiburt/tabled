@@ -157,7 +157,7 @@ where
     for<'a> L: Locator<&'a R, Coordinate = usize>,
     R: Records + Resizable,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut GridConfig, _: &mut D) {
         let columns = self.locator.locate(records).into_iter().collect::<Vec<_>>();
 
         let mut shift = 0;
@@ -180,7 +180,7 @@ where
     for<'a> L: Locator<&'a R, Coordinate = usize>,
     R: ExactRecords + Resizable,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut GridConfig, _: &mut D) {
         let rows = self.locator.locate(records).into_iter().collect::<Vec<_>>();
 
         let mut shift = 0;

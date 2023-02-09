@@ -28,8 +28,7 @@ fn main() {
 
     let colors = generate_colors();
 
-    let grid = Grid::new(records, &cfg, &dimension);
-    let grid = grid.set_colors(colors);
+    let grid = Grid::new(records, &cfg, &dimension).with_colors(colors);
 
     grid.build(UTF8Stdout(std::io::stdout())).unwrap();
     println!();

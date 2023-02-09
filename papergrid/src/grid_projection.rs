@@ -1,3 +1,5 @@
+//! A module which contains [GridProjection] a grid like structure for various checks.
+
 use std::marker::PhantomData;
 
 use crate::{
@@ -6,6 +8,9 @@ use crate::{
     dimension::Dimension,
 };
 
+/// A Grid mock structure but with no data.
+///
+/// It might be handy for some checks which infolves a shape of a grid.
 #[derive(Debug, Clone)]
 pub struct GridProjection<'a, R = WithRows, C = WithColumns> {
     cfg: &'a GridConfig,
@@ -15,10 +20,16 @@ pub struct GridProjection<'a, R = WithRows, C = WithColumns> {
     _columns: PhantomData<C>,
 }
 
+/// A marker structure.
+#[derive(Debug)]
 pub struct WithRows;
+
+/// A marker structure.
+#[derive(Debug)]
 pub struct WithColumns;
 
 impl<'a> GridProjection<'a, (), ()> {
+    /// Returns [`GridProjection`] with no shape.
     pub fn new(cfg: &'a GridConfig) -> Self {
         Self {
             cfg,
@@ -31,6 +42,7 @@ impl<'a> GridProjection<'a, (), ()> {
 }
 
 impl<'a> GridProjection<'a, WithRows, WithColumns> {
+    /// Returns [`GridProjection`] with shape.
     pub fn with_shape(cfg: &'a GridConfig, shape: (usize, usize)) -> Self {
         Self {
             cfg,
@@ -83,61 +95,10 @@ impl GridProjection<'_, WithRows, WithColumns> {
             .get_border(pos, self.shape())
             .copied()
     }
-
-    /// Get a span value of the cell, if any is set.
-    pub fn get_span_column(&self, pos: Position) -> Option<usize> {
-        match self.cfg.get_span_column(pos) {
-            Some(span) if is_column_span_valid(pos, span, self.shape()) => Some(span),
-            _ => None,
-        }
-    }
-
-    /// Get a span value of the cell, if any is set.
-    pub fn get_span_row(&self, pos: Position) -> Option<usize> {
-        match self.cfg.get_span_row(pos) {
-            Some(span) if is_row_span_valid(pos, span, self.shape()) => Some(span),
-            _ => None,
-        }
-    }
-
-    /// Get a span value of the cell, if any is set.
-    pub fn iter_span_rows<'a>(&'a self) -> impl Iterator<Item = (Position, usize)> + 'a {
-        self.cfg
-            .iter_span_rows()
-            .filter(move |&(pos, span)| is_row_span_valid(pos, span, self.shape()))
-    }
-
-    /// Get a span value of the cell, if any is set.
-    pub fn iter_span_columns<'a>(&'a self) -> impl Iterator<Item = (Position, usize)> + 'a {
-        self.cfg
-            .iter_span_columns()
-            .filter(move |&(pos, span)| is_column_span_valid(pos, span, self.shape()))
-    }
-
-    /// The function returns whether the cells will be rendered or it will be hidden because of a span.
-    pub fn is_cell_visible(&self, pos: Position) -> bool {
-        !(self.is_cell_covered_by_column_span(pos)
-            || self.is_cell_covered_by_row_span(pos)
-            || self.is_cell_covered_by_both_spans(pos))
-    }
-
-    /// The function checks if a cell is hidden because of a row span.
-    pub fn is_cell_covered_by_row_span(&self, pos: Position) -> bool {
-        is_cell_covered_by_row_span(self.cfg, pos, self.shape())
-    }
-
-    /// The function checks if a cell is hidden because of a column span.
-    pub fn is_cell_covered_by_column_span(&self, pos: Position) -> bool {
-        is_cell_covered_by_column_span(self.cfg, pos, self.shape())
-    }
-
-    /// The function checks if a cell is hidden indirectly because of a row and column span combination.
-    pub fn is_cell_covered_by_both_spans(&self, pos: Position) -> bool {
-        is_cell_covered_by_both_spans(self.cfg, pos, self.shape())
-    }
 }
 
 impl<'a, R, C> GridProjection<'a, R, C> {
+    /// Sets a rows size.
     pub fn count_rows(self, len: usize) -> GridProjection<'a, WithRows, C> {
         GridProjection {
             cfg: self.cfg,
@@ -148,6 +109,7 @@ impl<'a, R, C> GridProjection<'a, R, C> {
         }
     }
 
+    /// Sets a columns size.
     pub fn count_columns(self, len: usize) -> GridProjection<'a, R, WithColumns> {
         GridProjection {
             cfg: self.cfg,
@@ -158,6 +120,7 @@ impl<'a, R, C> GridProjection<'a, R, C> {
         }
     }
 
+    /// Returns a shape of a grid.
     pub fn shape(&self) -> (usize, usize) {
         (self.count_rows, self.count_columns)
     }
@@ -170,6 +133,28 @@ impl<'a, R, C> GridProjection<'a, R, C> {
     /// Verifies if there's any spans set.
     pub fn has_span_rows(&self) -> bool {
         self.cfg.has_row_spans()
+    }
+
+    /// The function returns whether the cells will be rendered or it will be hidden because of a span.
+    pub fn is_cell_visible(&self, pos: Position) -> bool {
+        !(self.is_cell_covered_by_column_span(pos)
+            || self.is_cell_covered_by_row_span(pos)
+            || self.is_cell_covered_by_both_spans(pos))
+    }
+
+    /// The function checks if a cell is hidden because of a row span.
+    pub fn is_cell_covered_by_row_span(&self, pos: Position) -> bool {
+        is_cell_covered_by_row_span(self.cfg, pos)
+    }
+
+    /// The function checks if a cell is hidden because of a column span.
+    pub fn is_cell_covered_by_column_span(&self, pos: Position) -> bool {
+        is_cell_covered_by_column_span(self.cfg, pos)
+    }
+
+    /// The function checks if a cell is hidden indirectly because of a row and column span combination.
+    pub fn is_cell_covered_by_both_spans(&self, pos: Position) -> bool {
+        is_cell_covered_by_both_spans(self.cfg, pos)
     }
 }
 
@@ -218,6 +203,7 @@ impl<C> GridProjection<'_, WithRows, C> {
             .get_horizontal(pos, self.count_rows)
     }
 
+    /// Calculates total height with a given dimensions.
     pub fn total_height<D: Dimension>(&self, dimension: &D) -> usize {
         total_height(self, dimension)
     }
@@ -268,71 +254,48 @@ impl<R> GridProjection<'_, R, WithColumns> {
             .get_vertical(pos, self.count_columns)
     }
 
+    /// Calculates total width with a given dimensions.
     pub fn total_width<D: Dimension>(&self, dimension: &D) -> usize {
         total_width(self, dimension)
     }
 }
 
-fn is_cell_covered_by_column_span(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+impl AsRef<GridConfig> for GridProjection<'_> {
+    fn as_ref(&self) -> &GridConfig {
+        self.cfg
+    }
+}
+
+fn is_cell_covered_by_column_span(cfg: &GridConfig, pos: Position) -> bool {
     if !cfg.has_column_spans() {
         return false;
     }
 
     cfg.iter_span_columns()
-        .filter(|&(pos, span)| is_column_span_valid(pos, span, shape))
         .any(|((row, col), span)| pos.1 > col && pos.1 < col + span && row == pos.0)
 }
 
-fn is_cell_covered_by_row_span(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+fn is_cell_covered_by_row_span(cfg: &GridConfig, pos: Position) -> bool {
     if !cfg.has_row_spans() {
         return false;
     }
 
     cfg.iter_span_rows()
-        // .filter(|&(pos, span)| is_row_span_valid(pos, span, shape))
         .any(|((row, col), span)| pos.0 > row && pos.0 < row + span && col == pos.1)
 }
 
-fn is_cell_covered_by_both_spans(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+fn is_cell_covered_by_both_spans(cfg: &GridConfig, pos: Position) -> bool {
     if !cfg.has_column_spans() || !cfg.has_row_spans() {
         return false;
     }
 
-    cfg.iter_span_rows()
-        .filter(|&(pos, span)| is_row_span_valid(pos, span, shape))
-        .any(|(p1, row_span)| {
-            cfg.iter_span_columns()
-                .filter(|&(pos, span)| is_column_span_valid(pos, span, shape))
-                .filter(|(p2, _)| &p1 == p2)
-                .any(|(_, col_span)| {
-                    pos.0 > p1.0
-                        && pos.0 < p1.0 + row_span
-                        && pos.1 > p1.1
-                        && pos.1 < p1.1 + col_span
-                })
-        })
-}
-
-fn is_column_span_valid(
-    pos: Position,
-    span: usize,
-    (count_rows, count_cols): (usize, usize),
-) -> bool {
-    // ignore spans which are invalid
-    let pos_correct = pos.1 < count_cols && pos.0 < count_rows;
-    // ignore a span range which begger then count rows
-    let span_correct = span + pos.1 <= count_cols;
-
-    pos_correct && span_correct
-}
-
-fn is_row_span_valid(pos: Position, span: usize, (count_rows, count_cols): (usize, usize)) -> bool {
-    // ignore spans which are invalid
-    let pos_correct = pos.1 < count_cols && pos.0 < count_rows;
-    // ignore a span range which begger then count columns
-    let span_correct = span + pos.0 <= count_rows;
-
-    pos_correct && span_correct
+    cfg.iter_span_rows().any(|(p1, row_span)| {
+        cfg.iter_span_columns()
+            .filter(|(p2, _)| &p1 == p2)
+            .any(|(_, col_span)| {
+                pos.0 > p1.0 && pos.0 < p1.0 + row_span && pos.1 > p1.1 && pos.1 < p1.1 + col_span
+            })
+    })
 }
 
 fn total_width<D: Dimension, R>(gp: &GridProjection<'_, R, WithColumns>, dimension: &D) -> usize {

@@ -45,13 +45,13 @@ fn main() {
             .with(Alignment::center()),
     );
 
-    println!("{}", table);
+    println!("{table}");
 }
 
 fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> Table {
     let fields = fields
         .iter()
-        .map(|(field, t, d)| [format_field(d, field, t)]);
+        .map(|(field, t, d)| [format_field(field, t, d)]);
     let mut table_fields = Builder::from_iter(fields).build();
     table_fields.with(Style::ascii().remove_horizontal().remove_vertical());
 
@@ -81,16 +81,16 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
     table
 }
 
-fn format_field(d: &&str, field: &&str, t: &&str) -> String {
-    if d.is_empty() {
-        format!("+{}: {}", field, t)
+fn format_field(field: &&str, field_type: &&str, default_value: &&str) -> String {
+    if default_value.is_empty() {
+        format!("+{field}: {field_type}")
     } else {
-        format!("+{}: {} = {:?}", field, t, d)
+        format!("+{field}: {field_type} = {default_value:?}")
     }
 }
 
 fn format_method(method: &str) -> String {
-    format!("+{}()", method)
+    format!("+{method}()")
 }
 
 fn make_equal_width(mut table1: Table, mut table2: Table) -> (Table, Table) {

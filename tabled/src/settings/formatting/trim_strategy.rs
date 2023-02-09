@@ -82,7 +82,7 @@ pub enum TrimStrategy {
 }
 
 impl<R> CellOption<R> for TrimStrategy {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
         let mut formatting = *cfg.get_formatting(entity);
 
         // todo: could be changed to be a struct an enum like consts in `impl` block.

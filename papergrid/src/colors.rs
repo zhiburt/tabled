@@ -1,3 +1,5 @@
+//! A module which contains [Colors] trait and its blanket implementations. 
+
 use std::collections::{BTreeMap, HashMap};
 
 use crate::{
@@ -5,9 +7,12 @@ use crate::{
     config::{Entity, EntityMap, Position},
 };
 
+/// A trait which represents map of colors.
 pub trait Colors {
+    /// Color implementation.
     type Color: Color;
 
+    /// Returns a color for a given position.
     fn get_color(&self, pos: Position) -> Option<&Self::Color>;
 }
 

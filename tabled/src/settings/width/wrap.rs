@@ -96,7 +96,7 @@ impl<W, P, R> TableOption<R, TableDimension<'static>> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
@@ -126,7 +126,7 @@ where
 impl<W, R> CellOption<R> for Wrap<W>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
@@ -164,7 +164,7 @@ fn wrap_total_width<R, P>(
     priority: P,
 ) -> Vec<usize>
 where
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
     P: Peaker,
     for<'a> &'a R: Records,
 {

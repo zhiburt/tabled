@@ -1,6 +1,12 @@
+//! A module with a utility enum [`EitherString`].
 
+
+/// Either allocated string or some type which can be used as a string.
+#[derive(Debug)]
 pub enum EitherString<T> {
+    /// Allocated string.
     Owned(String),
+    /// Something which can be used as a string.
     Some(T),
 }
 

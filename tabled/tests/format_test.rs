@@ -13,7 +13,7 @@ mod util;
 
 test_table!(
     formatting_full_test,
-    create_table::<3, 3>().with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s)))),
+    create_table::<3, 3>().with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]")))),
     "+-----+------------+------------+------------+"
     "| [N] | [column 0] | [column 1] | [column 2] |"
     "+-----+------------+------------+------------+"
@@ -29,7 +29,7 @@ test_table!(
     formatting_head_test,
     create_table::<3, 3>()
         .with(Style::markdown())
-        .with(Modify::new(Rows::first()).with(Format::content(|s| format!(":{}", s)))),
+        .with(Modify::new(Rows::first()).with(Format::content(|s| format!(":{s}")))),
     "| :N | :column 0 | :column 1 | :column 2 |"
     "|----|-----------|-----------|-----------|"
     "| 0  |    0-0    |    0-1    |    0-2    |"
@@ -41,7 +41,7 @@ test_table!(
     formatting_row_test,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Rows::new(1..)).with(Format::content(|s| format!("<{}>", s)))),
+        .with(Modify::new(Rows::new(1..)).with(Format::content(|s| format!("<{s}>")))),
     "  N  | column 0 | column 1 | column 2 "
     "-----+----------+----------+----------"
     " <0> |  <0-0>   |  <0-1>   |  <0-2>   "
@@ -53,7 +53,7 @@ test_table!(
     formatting_column_test,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Columns::single(0)).with(Format::content(|s| format!("(x) {}", s)))),
+        .with(Modify::new(Columns::single(0)).with(Format::content(|s| format!("(x) {s}")))),
     " (x) N | column 0 | column 1 | column 2 "
     "-------+----------+----------+----------"
     " (x) 0 |   0-0    |   0-1    |   0-2    "
@@ -69,7 +69,7 @@ test_table!(
         ((2, 3), "https://\nwww\n.\nredhat\n.com\n/en"),
     ])
     .with(Style::psql())
-    .with(Modify::new(Segment::all()).with(Format::content(|s| format!("(x) {}", s)).multiline())),
+    .with(Modify::new(Segment::all()).with(Format::content(|s| format!("(x) {s}")).multiline())),
     " (x) N | (x) column 0 | (x) column 1 | (x) column 2 "
     "-------+--------------+--------------+--------------"
     " (x) 0 |   (x) 0-0    |   (x) 0-1    |   (x) 0-2    "
@@ -89,9 +89,9 @@ test_table!(
     formatting_cell_test,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell(0, 0)).with(Format::content(|s| format!("(x) {}", s))))
-        .with(Modify::new(Cell(0, 1)).with(Format::content(|s| format!("(x) {}", s))))
-        .with(Modify::new(Cell(0, 2)).with(Format::content(|s| format!("(x) {}", s)))),
+        .with(Modify::new(Cell::new(0, 0)).with(Format::content(|s| format!("(x) {s}"))))
+        .with(Modify::new(Cell::new(0, 1)).with(Format::content(|s| format!("(x) {s}"))))
+        .with(Modify::new(Cell::new(0, 2)).with(Format::content(|s| format!("(x) {s}")))),
     " (x) N | (x) column 0 | (x) column 1 | column 2 "
     "-------+--------------+--------------+----------"
     "   0   |     0-0      |     0-1      |   0-2    "
@@ -105,7 +105,7 @@ test_table!(
         .with(Style::psql())
         .with(
             Modify::new(Columns::single(0).and(Rows::single(0)))
-                .with(Format::content(|s| format!("(x) {}", s))),
+                .with(Format::content(|s| format!("(x) {s}"))),
         ),
     " (x) N | (x) column 0 | (x) column 1 | (x) column 2 "
     "-------+--------------+--------------+--------------"
@@ -119,8 +119,8 @@ test_table!(
     create_table::<3, 3>()
         .with(Style::psql())
         .with(
-            Modify::new(Columns::single(0).and(Rows::single(0)).not(Cell(0, 0)))
-                .with(Format::content(|s| format!("(x) {}", s))),
+            Modify::new(Columns::single(0).and(Rows::single(0)).not(Cell::new(0, 0)))
+                .with(Format::content(|s| format!("(x) {s}"))),
         ),
     "   N   | (x) column 0 | (x) column 1 | (x) column 2 "
     "-------+--------------+--------------+--------------"
@@ -133,7 +133,7 @@ test_table!(
     formatting_combination_inverse_test,
     create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Columns::single(0).inverse()).with(Format::content(|s| format!("(x) {}", s)))),
+        .with(Modify::new(Columns::single(0).inverse()).with(Format::content(|s| format!("(x) {s}")))),
     " N | (x) column 0 | (x) column 1 | (x) column 2 "
     "---+--------------+--------------+--------------"
     " 0 |   (x) 0-0    |   (x) 0-1    |   (x) 0-2    "
@@ -147,7 +147,7 @@ test_table!(
         .with(Style::psql())
         .with(
             Modify::new(Columns::new(1..3).intersect(Rows::new(1..3)))
-                .with(Format::content(|s| format!("(x) {}", s))),
+                .with(Format::content(|s| format!("(x) {s}"))),
         ),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
@@ -160,7 +160,7 @@ test_table!(
     formatting_using_lambda_test,
     create_table::<3, 3>()
         .with(Style::markdown())
-        .with(Modify::new(Rows::first()).with(Format::content(|s| format!(":{}", s)))),
+        .with(Modify::new(Rows::first()).with(Format::content(|s| format!(":{s}")))),
     "| :N | :column 0 | :column 1 | :column 2 |"
     "|----|-----------|-----------|-----------|"
     "| 0  |    0-0    |    0-1    |    0-2    |"
@@ -202,7 +202,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s)))),
+        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]")))),
     "+-------+--------------+--------------+--------------+"
     "|   [N] |   [column 0] |   [column 1] |   [column 2] |"
     "+-------+--------------+--------------+--------------+"

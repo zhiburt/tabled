@@ -1,17 +1,16 @@
-use std::{convert::TryFrom, iter::FromIterator};
+use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
     settings::{
-        color::Color,
         format::Format,
         highlight::Highlight,
-        object::{Cell, Columns, Rows, Segment},
+        object::{Columns, Rows, Segment},
         padding::Padding,
-        span::Span,
+        span::ColumnSpan,
         style::{
-            Border, BorderChar, BorderText, CorrectSpans, HorizontalLine, Line, Offset, RawStyle,
-            Style, VerticalLine,
+            Border, BorderChar, BorderSpanCorrection, BorderText, HorizontalLine, Line, Offset,
+            RawStyle, Style, VerticalLine,
         },
         Modify,
     },
@@ -580,15 +579,15 @@ test_table!(
 test_table!(
     span_correct_test_0,
     create_table::<6, 4>()
-        .with(Modify::new(Cell(0, 3)).with(Span::column(2)))
-        .with(Modify::new(Cell(1, 0)).with(Span::column(3)))
-        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
-        .with(Modify::new(Cell(2, 3)).with(Span::column(2)))
-        .with(Modify::new(Cell(3, 0)).with(Span::column(5)))
-        .with(Modify::new(Cell(4, 1)).with(Span::column(4)))
-        .with(Modify::new(Cell(5, 0)).with(Span::column(5)))
-        .with(Modify::new(Cell(6, 0)).with(Span::column(5)))
-        .with(CorrectSpans),
+        .with(Modify::new((0, 3)).with(ColumnSpan::new(2)))
+        .with(Modify::new((1, 0)).with(ColumnSpan::new(3)))
+        .with(Modify::new((2, 0)).with(ColumnSpan::new(2)))
+        .with(Modify::new((2, 3)).with(ColumnSpan::new(2)))
+        .with(Modify::new((3, 0)).with(ColumnSpan::new(5)))
+        .with(Modify::new((4, 1)).with(ColumnSpan::new(4)))
+        .with(Modify::new((5, 0)).with(ColumnSpan::new(5)))
+        .with(Modify::new((6, 0)).with(ColumnSpan::new(5)))
+        .with(BorderSpanCorrection),
     "+---+----------+----------+-----------+"
     "| N | column 0 | column 1 | column 2  |"
     "+---+----------+----------+-----+-----+"
@@ -609,15 +608,15 @@ test_table!(
 test_table!(
     span_correct_test_1,
     create_table::<6, 4>()
-        .with(Modify::new(Cell(0, 0)).with(Span::column(5)))
-        .with(Modify::new(Cell(1, 0)).with(Span::column(3)))
-        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
-        .with(Modify::new(Cell(2, 3)).with(Span::column(2)))
-        .with(Modify::new(Cell(3, 0)).with(Span::column(5)))
-        .with(Modify::new(Cell(4, 1)).with(Span::column(4)))
-        .with(Modify::new(Cell(5, 0)).with(Span::column(5)))
-        .with(Modify::new(Cell(6, 0)).with(Span::column(5)))
-        .with(CorrectSpans),
+        .with(Modify::new((0, 0)).with(ColumnSpan::new(5)))
+        .with(Modify::new((1, 0)).with(ColumnSpan::new(3)))
+        .with(Modify::new((2, 0)).with(ColumnSpan::new(2)))
+        .with(Modify::new((2, 3)).with(ColumnSpan::new(2)))
+        .with(Modify::new((3, 0)).with(ColumnSpan::new(5)))
+        .with(Modify::new((4, 1)).with(ColumnSpan::new(4)))
+        .with(Modify::new((5, 0)).with(ColumnSpan::new(5)))
+        .with(Modify::new((6, 0)).with(ColumnSpan::new(5)))
+        .with(BorderSpanCorrection),
     "+----------------------+"
     "|          N           |"
     "+----------+-----+-----+"
@@ -1590,7 +1589,7 @@ fn test_default_border_usage() {
     }
 
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().corner_bottom_left('*')),
+        Modify::new((3, 2)).with(Border::default().corner_bottom_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1600,7 +1599,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().corner_bottom_right('*')),
+        Modify::new((3, 2)).with(Border::default().corner_bottom_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1610,7 +1609,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().bottom('*')),
+        Modify::new((3, 2)).with(Border::default().bottom('*')),
         static_table!(
             " N     column 0      column 1  column 2 "
             " 0  a longer string    0-1       0-2    "
@@ -1620,7 +1619,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().bottom('*').corner_bottom_left('#')),
+        Modify::new((3, 2)).with(Border::default().bottom('*').corner_bottom_left('#')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1630,7 +1629,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().bottom('*').corner_bottom_right('#')),
+        Modify::new((3, 2)).with(Border::default().bottom('*').corner_bottom_right('#')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1640,7 +1639,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().left('*')),
+        Modify::new((3, 2)).with(Border::default().left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1649,7 +1648,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().corner_top_left('*')),
+        Modify::new((3, 2)).with(Border::default().corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1659,7 +1658,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().left('#').corner_top_left('*')),
+        Modify::new((3, 2)).with(Border::default().left('#').corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1669,7 +1668,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().left('#').corner_bottom_left('@').corner_top_left('*')),
+        Modify::new((3, 2)).with(Border::default().left('#').corner_bottom_left('@').corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1680,7 +1679,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().right('*')),
+        Modify::new((3, 2)).with(Border::default().right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1689,7 +1688,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().corner_top_right('*')),
+        Modify::new((3, 2)).with(Border::default().corner_top_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1699,7 +1698,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().right('#').corner_top_right('*')),
+        Modify::new((3, 2)).with(Border::default().right('#').corner_top_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1709,7 +1708,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_right('@')),
+        Modify::new((3, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_right('@')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1720,7 +1719,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_left('@')),
+        Modify::new((3, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_left('@')),
         static_table!(
             " N     column 0       column 1   column 2 "
             " 0  a longer string     0-1        0-2    "
@@ -1731,7 +1730,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(3, 2)).with(Border::filled('@')),
+        Modify::new((3, 2)).with(Border::filled('@')),
         static_table!(
             " N     column 0       column 1   column 2 "
             " 0  a longer string     0-1        0-2    "
@@ -1743,7 +1742,7 @@ fn test_default_border_usage() {
     }
 
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().corner_bottom_left('*')),
+        Modify::new((1, 2)).with(Border::default().corner_bottom_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1753,7 +1752,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().corner_bottom_right('*')),
+        Modify::new((1, 2)).with(Border::default().corner_bottom_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1763,7 +1762,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().bottom('*')),
+        Modify::new((1, 2)).with(Border::default().bottom('*')),
         static_table!(
             " N     column 0      column 1  column 2 "
             " 0  a longer string    0-1       0-2    "
@@ -1773,7 +1772,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().bottom('*').corner_bottom_left('#')),
+        Modify::new((1, 2)).with(Border::default().bottom('*').corner_bottom_left('#')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1783,7 +1782,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().bottom('*').corner_bottom_right('#')),
+        Modify::new((1, 2)).with(Border::default().bottom('*').corner_bottom_right('#')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1793,7 +1792,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().left('*')),
+        Modify::new((1, 2)).with(Border::default().left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string *   0-1       0-2    "
@@ -1802,7 +1801,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().corner_top_left('*')),
+        Modify::new((1, 2)).with(Border::default().corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             "                    *                    "
@@ -1812,7 +1811,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().left('#').corner_top_left('*')),
+        Modify::new((1, 2)).with(Border::default().left('#').corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             "                    *                    "
@@ -1822,7 +1821,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().left('#').corner_bottom_left('@').corner_top_left('*')),
+        Modify::new((1, 2)).with(Border::default().left('#').corner_bottom_left('@').corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             "                    *                    "
@@ -1833,7 +1832,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().right('*')),
+        Modify::new((1, 2)).with(Border::default().right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1    *   0-2    "
@@ -1842,7 +1841,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().corner_top_right('*')),
+        Modify::new((1, 2)).with(Border::default().corner_top_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             "                              *          "
@@ -1852,7 +1851,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().right('#').corner_top_right('*')),
+        Modify::new((1, 2)).with(Border::default().right('#').corner_top_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             "                              *          "
@@ -1862,7 +1861,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_right('@')),
+        Modify::new((1, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_right('@')),
         static_table!(
             " N     column 0      column 1   column 2 "
             "                              *          "
@@ -1873,7 +1872,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_left('@')),
+        Modify::new((1, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_left('@')),
         static_table!(
             " N     column 0       column 1   column 2 "
             "                               *          "
@@ -1884,7 +1883,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(1, 2)).with(Border::filled('@')),
+        Modify::new((1, 2)).with(Border::filled('@')),
         static_table!(
             " N     column 0       column 1   column 2 "
             "                    @@@@@@@@@@@@          "
@@ -1896,7 +1895,7 @@ fn test_default_border_usage() {
     }
 
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().corner_bottom_left('*')),
+        Modify::new((0, 3)).with(Border::default().corner_bottom_left('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             "                              *          "
@@ -1906,7 +1905,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().corner_bottom_right('*')),
+        Modify::new((0, 3)).with(Border::default().corner_bottom_right('*')),
         static_table!(
             " N     column 0      column 1  column 2  "
             "                                        *"
@@ -1916,7 +1915,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().bottom('*')),
+        Modify::new((0, 3)).with(Border::default().bottom('*')),
         static_table!(
             " N     column 0      column 1  column 2 "
             "                              **********"
@@ -1926,7 +1925,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().bottom('*').corner_bottom_left('#')),
+        Modify::new((0, 3)).with(Border::default().bottom('*').corner_bottom_left('#')),
         static_table!(
             " N     column 0      column 1   column 2 "
             "                              #**********"
@@ -1936,7 +1935,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().bottom('*').corner_bottom_right('#')),
+        Modify::new((0, 3)).with(Border::default().bottom('*').corner_bottom_right('#')),
         static_table!(
             " N     column 0      column 1  column 2  "
             "                              **********#"
@@ -1946,7 +1945,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().left('*')),
+        Modify::new((0, 3)).with(Border::default().left('*')),
         static_table!(
             " N     column 0      column 1 * column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1955,7 +1954,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().corner_top_left('*')),
+        Modify::new((0, 3)).with(Border::default().corner_top_left('*')),
         static_table!(
             "                              *          "
             " N     column 0      column 1   column 2 "
@@ -1965,7 +1964,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().left('#').corner_top_left('*')),
+        Modify::new((0, 3)).with(Border::default().left('#').corner_top_left('*')),
         static_table!(
             "                              *          "
             " N     column 0      column 1 # column 2 "
@@ -1975,7 +1974,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().left('#').corner_bottom_left('@').corner_top_left('*')),
+        Modify::new((0, 3)).with(Border::default().left('#').corner_bottom_left('@').corner_top_left('*')),
         static_table!(
             "                              *          "
             " N     column 0      column 1 # column 2 "
@@ -1986,7 +1985,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().right('*')),
+        Modify::new((0, 3)).with(Border::default().right('*')),
         static_table!(
             " N     column 0      column 1  column 2 *"
             " 0  a longer string    0-1       0-2     "
@@ -1995,7 +1994,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().corner_top_right('*')),
+        Modify::new((0, 3)).with(Border::default().corner_top_right('*')),
         static_table!(
             "                                        *"
             " N     column 0      column 1  column 2  "
@@ -2005,7 +2004,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().right('#').corner_top_right('*')),
+        Modify::new((0, 3)).with(Border::default().right('#').corner_top_right('*')),
         static_table!(
             "                                        *"
             " N     column 0      column 1  column 2 #"
@@ -2015,7 +2014,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().right('#').corner_top_right('*').corner_bottom_right('@')),
+        Modify::new((0, 3)).with(Border::default().right('#').corner_top_right('*').corner_bottom_right('@')),
         static_table!(
             "                                        *"
             " N     column 0      column 1  column 2 #"
@@ -2026,7 +2025,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::default().right('#').corner_top_right('*').corner_bottom_left('@')),
+        Modify::new((0, 3)).with(Border::default().right('#').corner_top_right('*').corner_bottom_left('@')),
         static_table!(
             "                                         *"
             " N     column 0      column 1   column 2 #"
@@ -2037,7 +2036,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new(Cell(0, 3)).with(Border::filled('@')),
+        Modify::new((0, 3)).with(Border::filled('@')),
         static_table!(
             "                              @@@@@@@@@@@@"
             " N     column 0      column 1 @ column 2 @"
@@ -2439,7 +2438,7 @@ test_table!(
 test_table!(
     override_vertical_border_on_line_multiline,
     create_table::<3, 3>()
-        .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{}\ntext\ntext\n", s))))
+        .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
             .with(BorderChar::vertical(':', Offset::Begin(4)))
@@ -2460,7 +2459,7 @@ test_table!(
 test_table!(
     override_vertical_border_on_line_multiline_2,
     create_table::<3, 3>()
-        .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{}\ntext\ntext\n", s))))
+        .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
             .with(BorderChar::vertical(':', Offset::End(4)))
@@ -2481,7 +2480,7 @@ test_table!(
 test_table!(
     override_vertical_and_horizontal_border_on_line,
     create_table::<3, 3>()
-        .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{}\ntext\ntext\n", s))))
+        .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::new(..5))
             .with(BorderChar::vertical('y', Offset::Begin(0)))

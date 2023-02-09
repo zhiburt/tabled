@@ -10,7 +10,7 @@ mod rows;
 mod segment;
 pub(crate) mod util;
 
-use std::{collections::HashSet, marker::PhantomData, ops::RangeBounds};
+use std::{collections::HashSet, marker::PhantomData};
 
 use self::segment::SectorCellsIter;
 
@@ -82,7 +82,7 @@ pub struct UnionCombination<L, R, I> {
 }
 
 impl<L, R, I> UnionCombination<L, R, I> {
-    pub fn new(lhs: L, rhs: R) -> Self {
+    fn new(lhs: L, rhs: R) -> Self {
         Self {
             lhs,
             rhs,
@@ -118,7 +118,7 @@ pub struct DiffCombination<L, R, I> {
 }
 
 impl<L, R, I> DiffCombination<L, R, I> {
-    pub fn new(lhs: L, rhs: R) -> Self {
+    fn new(lhs: L, rhs: R) -> Self {
         Self {
             lhs,
             rhs,
@@ -155,7 +155,7 @@ pub struct IntersectionCombination<L, R, I> {
 }
 
 impl<L, R, I> IntersectionCombination<L, R, I> {
-    pub fn new(lhs: L, rhs: R) -> Self {
+    fn new(lhs: L, rhs: R) -> Self {
         Self {
             lhs,
             rhs,
@@ -191,7 +191,7 @@ pub struct InversionCombination<O, I> {
 }
 
 impl<O, I> InversionCombination<O, I> {
-    pub fn new(obj: O) -> Self {
+    fn new(obj: O) -> Self {
         Self {
             obj,
             _records: PhantomData,
@@ -530,7 +530,10 @@ mod tests {
         assert_eq!(vec_cells(Columns::first() + 0, 5, 2), [Entity::Column(0)]);
         assert_eq!(vec_cells(Columns::first() + 1, 5, 2), [Entity::Column(1)]);
         assert_eq!(vec_cells(Columns::first() + 2, 5, 2), [Entity::Column(2)]);
-        assert_eq!(vec_cells(Columns::first() + 100, 5, 2), [Entity::Column(100)]);
+        assert_eq!(
+            vec_cells(Columns::first() + 100, 5, 2),
+            [Entity::Column(100)]
+        );
     }
 
     #[test]
@@ -545,7 +548,10 @@ mod tests {
         assert_eq!(vec_cells(Rows::new(1..2), 2, 3), [Entity::Row(1)],);
         assert_eq!(vec_cells(Rows::new(..), 0, 0), []);
         assert_eq!(vec_cells(Rows::new(..), 0, 3), []);
-        assert_eq!(vec_cells(Rows::new(..), 2, 0), [Entity::Row(0), Entity::Row(1)]);
+        assert_eq!(
+            vec_cells(Rows::new(..), 2, 0),
+            [Entity::Row(0), Entity::Row(1)]
+        );
     }
 
     #[test]
@@ -663,24 +669,24 @@ mod tests {
     #[test]
     fn object_and_test() {
         assert_eq!(
-            vec_cells(Cell(0, 0).and(Cell(0, 0)), 2, 3),
+            vec_cells(Cell::new(0, 0).and(Cell::new(0, 0)), 2, 3),
             [Entity::Cell(0, 0)]
         );
         assert_eq!(
-            vec_cells(Cell(0, 0).and(Cell(1, 2)), 2, 3),
+            vec_cells(Cell::new(0, 0).and(Cell::new(1, 2)), 2, 3),
             [Entity::Cell(0, 0), Entity::Cell(1, 2)]
         );
-        assert_eq!(vec_cells(Cell(0, 0).and(Cell(1, 2)), 0, 0), []);
+        assert_eq!(vec_cells(Cell::new(0, 0).and(Cell::new(1, 2)), 0, 0), []);
     }
 
     #[test]
     fn object_not_test() {
-        assert_eq!(vec_cells(Cell(0, 0).not(Cell(0, 0)), 2, 3), []);
+        assert_eq!(vec_cells(Cell::new(0, 0).not(Cell::new(0, 0)), 2, 3), []);
         assert_eq!(
-            vec_cells(Rows::first().not(Cell(0, 0)), 2, 3),
+            vec_cells(Rows::first().not(Cell::new(0, 0)), 2, 3),
             [Entity::Cell(0, 1), Entity::Cell(0, 2)]
         );
-        assert_eq!(vec_cells(Rows::first().not(Cell(0, 0)), 0, 0), []);
+        assert_eq!(vec_cells(Rows::first().not(Cell::new(0, 0)), 0, 0), []);
     }
 
     #[test]
@@ -690,21 +696,24 @@ mod tests {
             [Entity::Cell(1, 0), Entity::Cell(1, 1), Entity::Cell(1, 2)]
         );
         assert_eq!(
-            vec_cells(Cell(0, 0).intersect(Cell(0, 0)), 2, 3),
+            vec_cells(Cell::new(0, 0).intersect(Cell::new(0, 0)), 2, 3),
             [Entity::Cell(0, 0)]
         );
         assert_eq!(
-            vec_cells(Rows::first().intersect(Cell(0, 0)), 2, 3),
+            vec_cells(Rows::first().intersect(Cell::new(0, 0)), 2, 3),
             [Entity::Cell(0, 0)]
         );
-        assert_eq!(vec_cells(Rows::first().intersect(Cell(0, 0)), 0, 0), []);
+        assert_eq!(
+            vec_cells(Rows::first().intersect(Cell::new(0, 0)), 0, 0),
+            []
+        );
     }
 
     #[test]
     fn object_inverse_test() {
         assert_eq!(vec_cells(Segment::all().inverse(), 2, 3), []);
         assert_eq!(
-            vec_cells(Cell(0, 0).inverse(), 2, 3),
+            vec_cells(Cell::new(0, 0).inverse(), 2, 3),
             [
                 Entity::Cell(0, 1),
                 Entity::Cell(0, 2),

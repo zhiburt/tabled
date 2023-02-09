@@ -6,8 +6,7 @@
 use tabled::{
     settings::{
         color::Color,
-        object::Segment,
-        style::{Border, BorderColor, RawStyle, Style},
+        style::{RawStyle, Style},
     },
     Table, Tabled,
 };
@@ -57,5 +56,5 @@ fn main() {
 
     let table = data.iter().collect::<Table>().with(style).to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

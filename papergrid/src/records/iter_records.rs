@@ -1,5 +1,6 @@
-pub use super::{IntoRecords, Records};
+use super::{IntoRecords, Records};
 
+/// A [Records] implementation for any [IntoIterator].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct IterRecords<I> {
     iter: I,
@@ -8,6 +9,7 @@ pub struct IterRecords<I> {
 }
 
 impl<I> IterRecords<I> {
+    /// Returns a new [IterRecords] object.
     pub fn new(iter: I, count_columns: usize, count_rows: Option<usize>) -> Self {
         Self {
             iter,

@@ -217,19 +217,20 @@ impl Builder {
         self.records.push(list);
     }
 
-    pub fn insert_record<R, T>(&mut self, row: usize, record: R) -> bool
+    /// Insert a row into a specific position.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index > count_rows`.
+    pub fn insert_record<R>(&mut self, index: usize, record: R) -> bool
     where
-        R: IntoIterator<Item = T>,
-        T: Into<Cow<'static, str>>,
+        R: IntoIterator,
+        R::Item: Into<Cow<'static, str>>,
     {
-        if row > self.records.len() {
-            return false;
-        }
-
         let list = create_row(record, self.count_columns);
 
         self.update_size(list.len());
-        self.records.insert(row, list);
+        self.records.insert(index, list);
 
         true
     }
@@ -270,12 +271,19 @@ impl Builder {
         self.is_consistent = true;
     }
 
+    /// Returns an amount of columns which would be present in a built table.
     pub fn count_columns(&self) -> usize {
         self.count_columns
     }
 
+    /// Returns an amount of rows which would be present in a built table.
+    pub fn count_rows(&self) -> usize {
+        self.records.len()
+    }
+
+    /// Checks whether a builder contains a header set.
     pub fn has_header(&self) -> bool {
-        return self.columns.is_some();
+        self.columns.is_some()
     }
 
     fn clean_columns(&mut self) {
@@ -424,24 +432,6 @@ impl From<Vec<Vec<Cow<'static, str>>>> for Builder {
     }
 }
 
-fn get_column<T: Default>(v: &mut [Vec<T>], col: usize) -> Vec<T> {
-    let mut column = Vec::with_capacity(v.len());
-    for row in v.iter_mut() {
-        let value = remove_or_default(row, col);
-        column.push(value);
-    }
-
-    column
-}
-
-fn remove_or_default<T: Default>(v: &mut Vec<T>, i: usize) -> T {
-    if v.len() > i {
-        v.remove(i)
-    } else {
-        T::default()
-    }
-}
-
 fn create_row<'a, R, T>(row: R, size: usize) -> Vec<Cow<'a, str>>
 where
     R: IntoIterator<Item = T>,
@@ -461,6 +451,6 @@ fn append_header<'a>(records: &mut Vec<Vec<Cow<'a, str>>>, columns: Option<Vec<C
     }
 }
 
-fn append_vec<'a, T: Clone>(v: &mut Vec<T>, value: T, n: usize) {
+fn append_vec<T: Clone>(v: &mut Vec<T>, value: T, n: usize) {
     v.extend((0..n).map(|_| value.clone()));
 }

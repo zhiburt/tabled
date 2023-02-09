@@ -40,7 +40,7 @@ impl<W> CellHeightLimit<W> {
 impl<W, R> CellOption<R> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
@@ -66,7 +66,7 @@ where
 impl<R, W> TableOption<R, TableDimension<'static>> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
-    R: Records + ExactRecords + RecordsMut<Text = String>,
+    R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(

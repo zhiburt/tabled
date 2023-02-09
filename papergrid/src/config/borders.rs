@@ -361,6 +361,7 @@ pub struct Borders<T = char> {
 }
 
 impl<T> Borders<T> {
+    /// A verification whether any border was set.
     pub const fn is_empty(&self) -> bool {
         !(self.top.is_some()
             || self.top_left.is_some()

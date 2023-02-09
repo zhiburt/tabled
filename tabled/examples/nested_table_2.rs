@@ -80,7 +80,7 @@ fn main() {
         ),
     ];
 
-    let table = Table::new(&data).with(Style::modern()).to_string();
+    let table = Table::new(data).with(Style::modern()).to_string();
 
-    println!("{}", table);
+    println!("{table}");
 }

@@ -51,13 +51,13 @@ impl Padding {
 }
 
 impl<R> CellOption<R> for Padding {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
         cfg.set_padding(entity, self.0);
     }
 }
 
 impl<R, D> TableOption<R, D> for Padding {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.set_padding(Entity::Global, self.0);
     }
 }

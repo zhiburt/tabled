@@ -4,11 +4,11 @@ use tabled::settings::{
     alignment::Alignment,
     formatting::TrimStrategy,
     margin::Margin,
-    object::{Cell, Columns, Object, Rows, Segment},
+    object::{Columns, Object, Rows, Segment},
     padding::Padding,
     panel::Panel,
     peaker::{PriorityMax, PriorityMin},
-    span::Span,
+    span::ColumnSpan,
     style::Style,
     width::{Justify, MinWidth, SuffixLimit, Width},
     Modify, Settings,
@@ -338,6 +338,7 @@ fn max_width_wrapped_keep_words_color() {
 }
 
 #[test]
+#[allow(clippy::needless_borrow)]
 fn max_width_wrapped_keep_words_long_word() {
     let data = vec!["this is a long sentencesentencesentence"];
     let table = new_table(&data)
@@ -621,7 +622,7 @@ fn min_width_one_column() {
     let mut table = create_table::<3, 3>();
     table
         .with(Style::markdown())
-        .with(Modify::new(Cell(0, 0)).with(MinWidth::new(5)));
+        .with(Modify::new((0, 0)).with(MinWidth::new(5)));
 
     assert_eq!(
         table.to_string(),
@@ -922,7 +923,7 @@ fn total_width_big() {
 #[test]
 fn total_width_big_with_panel() {
     let table = create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Hello World"))
+        .with(Panel::horizontal(0, "Hello World"))
         .with(
             Modify::new(Segment::all())
                 .with(Alignment::center())
@@ -950,7 +951,7 @@ fn total_width_big_with_panel() {
 #[test]
 fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
     let table1 = create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Hello World"))
+        .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(80))
@@ -958,7 +959,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
         .to_string();
 
     let table2 = create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Hello World"))
+        .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(80))
@@ -1031,7 +1032,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 20));
 
     let table = new_table(Vec::<usize>::new())
-        .with(Panel::horizontal(0).text("Hello World"))
+        .with(Panel::horizontal(0, "Hello World"))
         .with(
             Modify::new(Segment::all())
                 .with(Alignment::center())
@@ -1048,7 +1049,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 5));
 
     let table = create_table::<1, 2>()
-        .with(Panel::horizontal(0).text("Hello World"))
+        .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
@@ -1067,7 +1068,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 20));
 
     let table = create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Hello World"))
+        .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
@@ -1088,7 +1089,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 20));
 
     let table = create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Hello World"))
+        .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(6))
@@ -1109,7 +1110,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 13));
 
     let table = create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Hello World"))
+        .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(14))
@@ -1130,7 +1131,7 @@ fn total_width_small_with_panel() {
     assert!(is_lines_equal(&table, 14));
 
     let table = create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Hello World 123"))
+        .with(Panel::horizontal(0, "Hello World 123"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(14))
@@ -1205,7 +1206,7 @@ fn total_width_wrapping() {
 #[test]
 fn total_width_small_with_panel_using_wrapping() {
     let table = create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Hello World"))
+        .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(20))
@@ -1232,7 +1233,7 @@ fn total_width_small_with_panel_using_wrapping() {
     assert!(is_lines_equal(&table, 20));
 
     let table = create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Hello World"))
+        .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(14))
@@ -1267,7 +1268,7 @@ fn total_width_small_with_panel_using_wrapping() {
     assert!(is_lines_equal(&table, 14));
 
     let table = create_table::<3, 3>()
-        .with(Panel::horizontal(0).text("Hello World 123"))
+        .with(Panel::horizontal(0, "Hello World 123"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(14))
@@ -1307,8 +1308,8 @@ fn max_width_with_span() {
     let mut table = init_table::<3, 3, _, _>([((0, 1), "a long string")]);
     table
         .with(Style::psql())
-        .with(Modify::new(Cell(1, 1)).with(Span::column(2)))
-        .with(Modify::new(Cell(2, 2)).with(Span::column(2)));
+        .with(Modify::new((1, 1)).with(ColumnSpan::new(2)))
+        .with(Modify::new((2, 2)).with(ColumnSpan::new(2)));
 
     table.with(Width::truncate(40));
 
@@ -1527,7 +1528,7 @@ fn min_width_with_span_1() {
 
     let table = new_table(data)
         .with(Style::markdown())
-        .with(Modify::new(Cell(1, 0)).with(Span::column(2)))
+        .with(Modify::new((1, 0)).with(ColumnSpan::new(2)))
         .with(MinWidth::new(100))
         .to_string();
 
@@ -1555,7 +1556,7 @@ fn min_width_with_span_2() {
 
     let table = new_table(data)
         .with(Style::markdown())
-        .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
+        .with(Modify::new((2, 0)).with(ColumnSpan::new(2)))
         .with(MinWidth::new(100))
         .to_string();
 
@@ -1722,7 +1723,7 @@ fn max_width_table_when_cell_has_tabs() {
 fn max_width_truncate_with_big_span() {
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line; Here we gooooooo")])
         .with(Style::markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
+        .with(Modify::new((2, 1)).with(ColumnSpan::new(3)))
         .with(Width::truncate(40))
         .to_string();
 
@@ -1743,8 +1744,8 @@ fn max_width_truncate_with_big_span() {
         ((2, 2), "Hello World With Big Line; Here"),
     ])
     .with(Style::markdown())
-    .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
-    .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+    .with(Modify::new((2, 1)).with(ColumnSpan::new(3)))
+    .with(Modify::new((3, 2)).with(ColumnSpan::new(2)))
     .to_string();
 
     assert_eq!(
@@ -1763,8 +1764,8 @@ fn max_width_truncate_with_big_span() {
         ((2, 2), "Hello World With Big Line; Here"),
     ])
     .with(Style::markdown())
-    .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
-    .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+    .with(Modify::new((2, 1)).with(ColumnSpan::new(3)))
+    .with(Modify::new((3, 2)).with(ColumnSpan::new(2)))
     .with(Width::truncate(40))
     .to_string();
 
@@ -1785,8 +1786,8 @@ fn max_width_truncate_with_big_span() {
         ((2, 2), "Hello World With Big Line; Here"),
     ])
     .with(Style::markdown())
-    .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
-    .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+    .with(Modify::new((2, 1)).with(ColumnSpan::new(2)))
+    .with(Modify::new((3, 2)).with(ColumnSpan::new(2)))
     .with(Width::truncate(40))
     .to_string();
 
@@ -1807,8 +1808,8 @@ fn max_width_truncate_with_big_span() {
         ((2, 2), "Hello World With Big L"),
     ])
     .with(Style::markdown())
-    .with(Modify::new(Cell(2, 1)).with(Span::column(3)))
-    .with(Modify::new(Cell(3, 2)).with(Span::column(2)))
+    .with(Modify::new((2, 1)).with(ColumnSpan::new(3)))
+    .with(Modify::new((3, 2)).with(ColumnSpan::new(2)))
     .to_string();
 
     assert_eq!(
@@ -1881,7 +1882,7 @@ fn max_width_truncate_priority_max() {
 fn max_width_truncate_priority_max_with_span() {
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(Modify::new((2, 1)).with(ColumnSpan::new(2)))
         .with(Width::truncate(15).priority::<PriorityMax>())
         .to_string();
 
@@ -1977,7 +1978,7 @@ fn max_width_wrap_priority_max() {
 fn max_width_wrap_priority_max_with_span() {
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(Modify::new((2, 1)).with(ColumnSpan::new(2)))
         .with(Width::wrap(15).priority::<PriorityMax>())
         .to_string();
 
@@ -2069,7 +2070,7 @@ fn max_width_truncate_priority_min() {
 fn max_width_truncate_priority_min_with_span() {
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(Modify::new((2, 1)).with(ColumnSpan::new(2)))
         .with(Width::truncate(15).priority::<PriorityMin>())
         .to_string();
 
@@ -2087,7 +2088,7 @@ fn max_width_truncate_priority_min_with_span() {
 
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(Modify::new((2, 1)).with(ColumnSpan::new(2)))
         .with(Width::truncate(17).priority::<PriorityMin>())
         .to_string();
 
@@ -2167,7 +2168,7 @@ fn max_width_wrap_priority_min() {
 fn max_width_wrap_priority_min_with_span() {
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
-        .with(Modify::new(Cell(2, 1)).with(Span::column(2)))
+        .with(Modify::new((2, 1)).with(ColumnSpan::new(2)))
         .with(Width::wrap(15).priority::<PriorityMin>())
         .to_string();
 
@@ -2236,7 +2237,7 @@ fn min_width_priority_min() {
 #[test]
 fn max_width_tab_0() {
     let table =
-        new_table(&["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
+        new_table(["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
             .with(Style::markdown())
             .with(Width::wrap(60))
             .to_string();
@@ -2258,7 +2259,7 @@ fn min_width_is_not_used_after_padding() {
     let table = create_table::<3, 3>()
         .with(Style::markdown())
         .with(MinWidth::new(60))
-        .with(Modify::new(Cell(0, 0)).with(Padding::new(2, 2, 0, 0)))
+        .with(Modify::new((0, 0)).with(Padding::new(2, 2, 0, 0)))
         .to_string();
 
     assert_eq!(string_width_multiline(&table), 40);
