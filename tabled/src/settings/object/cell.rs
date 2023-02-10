@@ -5,6 +5,17 @@ use crate::{
 
 /// Cell denotes a particular cell on a [`Table`].
 ///
+/// For example such table has 4 cells.
+/// Which indexes are (0, 0), (0, 1), (1, 0), (1, 1).
+///
+/// ```text
+/// ┌───┬───┐
+/// │ 0 │ 1 │
+/// ├───┼───┤
+/// │ 1 │ 2 │
+/// └───┴───┘
+/// ```
+///
 /// [`Table`]: crate::Table
 #[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Cell(usize, usize);

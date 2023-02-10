@@ -94,6 +94,12 @@ impl Default for GridConfig {
 
 impl GridConfig {
     /// Set a column span to a given cells.
+    ///
+    /// BEWARE
+    ///
+    /// IT'S CALLER RESPONSIBILITY TO MAKE SURE
+    /// THAT THERE NO INTERSECTIONS IN PLACE AND THE SPAN VALUE IS CORRECT
+
     pub fn set_column_span(&mut self, pos: Position, span: usize) {
         set_cell_column_span(self, pos, span);
     }
@@ -104,6 +110,11 @@ impl GridConfig {
     }
 
     /// Set a column span to a given cells.
+    ///
+    /// BEWARE
+    ///
+    /// IT'S CALLER RESPONSIBILITY TO MAKE SURE
+    /// THAT THERE NO INTERSECTIONS IN PLACE AND THE SPAN VALUE IS CORRECT
     pub fn set_row_span(&mut self, pos: Position, span: usize) {
         set_cell_row_span(self, pos, span);
     }
@@ -529,6 +540,12 @@ impl GridConfig {
 
     pub(crate) fn get_border_color_config_mut(&mut self) -> &mut BordersConfig<AnsiColor<'static>> {
         &mut self.border_colors
+    }
+}
+
+impl From<&GridConfig> for GridConfig {
+    fn from(value: &GridConfig) -> Self {
+        value.clone()
     }
 }
 

@@ -3,8 +3,9 @@
 use std::collections::HashMap;
 
 use papergrid::{
+    colors::NoColors,
     config::{Borders, GridConfig, Position},
-    dimension::{Dimension, ExactDimension},
+    dimension::{Dimension, Estimate, ExactDimension},
     records::{IterRecords, Records},
     Grid,
 };
@@ -71,15 +72,13 @@ fn build_grid(
     data: Vec<Vec<String>>,
     cfg: GridConfig,
     shape: (usize, usize),
-) -> Grid<'static, IterRecords<Vec<Vec<String>>>, ExactDimension> {
-    let cfg = Box::leak(Box::new(cfg));
-
+) -> Grid<IterRecords<Vec<Vec<String>>>, ExactDimension, GridConfig, NoColors> {
     let records = IterRecords::new(data, shape.1, Some(shape.0));
 
-    let dims: &mut ExactDimension = Box::leak(Box::default());
-    dims.estimate(&records, cfg);
+    let mut dims = ExactDimension::default();
+    dims.estimate(&records, &cfg);
 
-    Grid::new(records, cfg, &*dims)
+    Grid::new(records, dims, cfg)
 }
 
 fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {
@@ -146,8 +145,6 @@ pub const DEFAULT_BORDERS: Borders = Borders {
 pub struct ConstantDimension(pub Vec<usize>, pub Vec<usize>);
 
 impl Dimension for ConstantDimension {
-    fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
-
     fn get_width(&self, column: usize) -> usize {
         self.0[column]
     }
@@ -155,4 +152,8 @@ impl Dimension for ConstantDimension {
     fn get_height(&self, row: usize) -> usize {
         self.1[row]
     }
+}
+
+impl Estimate for ConstantDimension {
+    fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
 }

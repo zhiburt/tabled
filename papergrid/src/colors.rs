@@ -3,7 +3,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use crate::{
-    color::Color,
+    color::{AnsiColor, Color},
     config::{Entity, EntityMap, Position},
 };
 
@@ -57,5 +57,17 @@ where
 
     fn get_color(&self, pos: Position) -> Option<&Self::Color> {
         self.get(Entity::Cell(pos.0, pos.1)).as_ref()
+    }
+}
+
+/// The structure represents empty [`Colors`] map.
+#[derive(Debug, Default, Clone)]
+pub struct NoColors;
+
+impl Colors for NoColors {
+    type Color = AnsiColor<'static>;
+
+    fn get_color(&self, _: Position) -> Option<&Self::Color> {
+        None
     }
 }

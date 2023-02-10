@@ -19,7 +19,7 @@
 //! ```
 //! use papergrid::{
 //!     records::IterRecords,
-//!     dimension::{Dimension, ExactDimension},
+//!     dimension::{Estimate, ExactDimension},
 //!     config::{Borders, GridConfig}, Grid,
 //! };
 //!
@@ -55,7 +55,7 @@
 //! dimension.estimate(&records, &cfg);
 //!
 //! // Creating a grid.
-//! let grid = Grid::new(&records, &cfg, &dimension).to_string();
+//! let grid = Grid::new(&records, &dimension, &cfg).to_string();
 //!
 //! assert_eq!(
 //!     grid,

@@ -14,7 +14,7 @@ use crate::{
     util::string::{count_lines, string_width_multiline_tab},
 };
 
-use super::Dimension;
+use super::{Dimension, Estimate};
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height.
 ///
@@ -43,18 +43,20 @@ impl ExactDimension {
 }
 
 impl Dimension for ExactDimension {
-    fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {
-        let (width, height) = build_dimensions(records, cfg);
-        self.width = width;
-        self.height = height;
-    }
-
     fn get_width(&self, column: usize) -> usize {
         self.width[column]
     }
 
     fn get_height(&self, row: usize) -> usize {
         self.height[row]
+    }
+}
+
+impl Estimate for ExactDimension {
+    fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {
+        let (width, height) = build_dimensions(records, cfg);
+        self.width = width;
+        self.height = height;
     }
 }
 

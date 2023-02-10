@@ -1,16 +1,15 @@
 //! An easy to use library for pretty print tables of Rust `struct`s and `enum`s.
 //!
-//! The library is based on a [`Tabled`] trait which is used to actually build tables.
-//! It also provides an variate of dynamic settings for customization of a [`Table`].
-//!
-//! [`Table`] can be build from vast majority of Rust's standard types.
+//! The library supports different approaches of table building.
+//! You can use [`Tabled`] trait if the data type is known.
+//! Or you can use [`Builder`] to construct the table from stractch.
 //!
 //! ## Usage
 //!
 //! If you want to build a table for your custom type.
 //! A starting point is to a anotate your type with `#[derive(Tabled)]`.
 //!
-//! Then one of ways to create a table is to call [`Table::new`] to create a table.
+//! Then to provide your collection to [`Table::new`] and you will be set to render table.
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
@@ -69,13 +68,12 @@
 //!     struct SomeOtherType;
 //! ```
 //!
-//! We must know what we're up to print as a field. Because of this
-//! each field must implement [`std::fmt::Display`].
+//! Because `tabled` must know what we're up to print as a field, so
+//! each (almoust) field must implement [`std::fmt::Display`].
 //!
 //! ### Default implementations
 //!
-//! As I've already mentioned most of the default types implements the trait out of the box.
-//!
+//! [`Table`] can be build from vast majority of Rust's standard types.
 //! This allows you to run the following code.
 //!
 //! ```rust
@@ -147,16 +145,17 @@
 //!
 //! ### Dynamic table
 //!
-//! When you data sheme is not known at compile time.
-//! You mostlikely will not able to use [`Tabled`] trait.
-//! But you could build table from scratch.
+//! When you data scheme is not known at compile time.
+//! You most likely will not able to relay on [`Tabled`] trait.
+//! 
+//! So one option would be is to use [`Builder`].
 //!
 //! ```
 //! use tabled::{builder::Builder, settings::{Modify, object::Rows, alignment::Alignment, style::Style}};
 //!
-//! let mut builder = Builder::default()
-//!     .set_header(std::iter::once(String::from("i")).chain((0..10).map(|i| i.to_string())));
+//! let header = std::iter::once(String::from("i")).chain((0..10).map(|i| i.to_string()));
 //!
+//! let mut builder = Builder::default().set_header(header);
 //! for i in 0..3 {
 //!     let mut row = vec![];
 //!     row.push(i.to_string());
@@ -186,7 +185,7 @@
 //! );
 //! ```
 //!
-//! ### Build table using [`row`] and [`col`].
+//! ### Build table using [`row`] and [`col`] macros.
 //!
 #![cfg_attr(feature = "macros", doc = "```")]
 #![cfg_attr(not(feature = "macros"), doc = "```ignore")]
@@ -213,11 +212,50 @@
 //!     )
 //! );
 //! ```
+//! 
+//! # Advanced
+//! 
+//! ## Alloc
+//! 
+//! [`Table`] keeps data buffered, which sometimes not ideal choise.
+//! For such reason there is [`IterTable`].
 //!
-//! ## Settings
+//! It reuses a given data and does not make copies of it [1].
+//! But because of that it has some limitations compared to [`Table`]
+//! 
+//! It also can be printed directly to [`io::Write`] to not have any intermidiaries.
+//! 
+//! ```
+//! use tabled::{records::IterRecords, tables::iter::IterTable};
+//!
+//! let iterator = (0..3).map(|row| (0..4).map(move |col| format!("{}-{}", row, col)));
+//!
+//! let table = IterTable::new(iterator).to_string();
+//!
+//! assert_eq!(
+//!     table,
+//!     "+-----+-----+-----+-----+\n\
+//!      | 0-0 | 0-1 | 0-2 | 0-3 |\n\
+//!      +-----+-----+-----+-----+\n\
+//!      | 1-0 | 1-1 | 1-2 | 1-3 |\n\
+//!      +-----+-----+-----+-----+\n\
+//!      | 2-0 | 2-1 | 2-2 | 2-3 |\n\
+//!      +-----+-----+-----+-----+",
+//! );
+//! ```
+//! 
+//! [1]. It does not make any allocations in case you provide it with `width` and `count_rows`.
+//!  
+//! ## Alloc free
+//! 
+//! ## More information
 //!
 //! You can find more examples of settings and attributes in
 //! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
+//! 
+//! [`Builder`]: crate::builder::Builder
+//! [`IterTable`]: crate::tables::iter::IterTable
+//! [`io::Write`]: io::Write
 
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 #![doc(

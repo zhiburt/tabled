@@ -244,6 +244,20 @@ where
     }
 }
 
+impl papergrid::color::Color for Color {
+    fn fmt_prefix<W: std::fmt::Write>(&self, f: &mut W) -> std::fmt::Result {
+        self.0.fmt_prefix(f)
+    }
+
+    fn fmt_suffix<W: std::fmt::Write>(&self, f: &mut W) -> std::fmt::Result {
+        self.0.fmt_suffix(f)
+    }
+
+    fn colorize<W: std::fmt::Write>(&self, f: &mut W, text: &str) -> std::fmt::Result {
+        self.0.colorize(f, text)
+    }
+}
+
 fn border_color(color: &Color) -> Border<AnsiColor<'static>> {
     Border::full(
         color.0.clone(),

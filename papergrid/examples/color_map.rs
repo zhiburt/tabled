@@ -12,7 +12,7 @@ use owo_colors::{
 use papergrid::{
     color::Color,
     config::{Borders, GridConfig, Position},
-    dimension::{Dimension, ExactDimension},
+    dimension::{Estimate, ExactDimension},
     records::IterRecords,
     Grid,
 };
@@ -28,7 +28,7 @@ fn main() {
 
     let colors = generate_colors();
 
-    let grid = Grid::new(records, &cfg, &dimension).with_colors(colors);
+    let grid = Grid::new(records, &dimension, &cfg).with_colors(colors);
 
     grid.build(UTF8Stdout(std::io::stdout())).unwrap();
     println!();

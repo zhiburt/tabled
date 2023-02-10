@@ -63,6 +63,26 @@ impl TableDimension<'_> {
 }
 
 impl Dimension for TableDimension<'_> {
+    fn get_width(&self, column: usize) -> usize {
+        let width = self
+            .width
+            .as_ref()
+            .expect("It must always be Some at this point");
+
+        width[column]
+    }
+
+    fn get_height(&self, row: usize) -> usize {
+        let height = self
+            .height
+            .as_ref()
+            .expect("It must always be Some at this point");
+
+        height[row]
+    }
+}
+
+impl crate::grid::dimension::Estimate for TableDimension<'_> {
     fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {
         match (self.width.is_some(), self.height.is_some()) {
             (true, true) => {}
@@ -81,23 +101,5 @@ impl Dimension for TableDimension<'_> {
                 self.height = Some(Cow::Owned(height));
             }
         }
-    }
-
-    fn get_width(&self, column: usize) -> usize {
-        let width = self
-            .width
-            .as_ref()
-            .expect("It must always be Some at this point");
-
-        width[column]
-    }
-
-    fn get_height(&self, row: usize) -> usize {
-        let height = self
-            .height
-            .as_ref()
-            .expect("It must always be Some at this point");
-
-        height[row]
     }
 }

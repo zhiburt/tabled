@@ -1,4 +1,25 @@
 /// Entity a structure which represent a set of cells.
+///
+/// For example such table:
+///
+/// ```text
+/// ┌───┬───┐
+/// │ 0 │ 1 │
+/// ├───┼───┤
+/// │ 1 │ 2 │
+/// └───┴───┘
+/// ```
+///
+/// - has 4 cells.
+///   Which indexes are (0, 0), (0, 1), (1, 0), (1, 1).
+///
+/// - has 2 rows.
+///   Which indexes are 0, 1.
+///
+/// - has 2 column.
+///   Which indexes are 0, 1.
+///
+/// In [`Entity`] terms, all cells on the grid we call `Global`.
 #[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
 pub enum Entity {
     /// All cells on the grid.
@@ -25,6 +46,17 @@ impl Entity {
 }
 
 /// Position is a (row, col) position on a Grid.
+///
+/// For example such table has 4 cells.
+/// Which indexes are (0, 0), (0, 1), (1, 0), (1, 1).
+///
+/// ```text
+/// ┌───┬───┐
+/// │ 0 │ 1 │
+/// ├───┼───┤
+/// │ 1 │ 2 │
+/// └───┴───┘
+/// ```
 pub type Position = (usize, usize);
 
 impl From<Position> for Entity {

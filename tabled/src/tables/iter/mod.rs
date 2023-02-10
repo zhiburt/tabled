@@ -205,12 +205,12 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
                 let records = LimitRows::new(records, limit);
                 let records =
                     build_records(records, content_width, count_columns, count_rows, tab_size);
-                return Grid::new(records, config, &dimension).build(writer);
+                return Grid::new(records, &dimension, config).build(writer);
             }
             None => {
                 let records =
                     build_records(records, content_width, count_columns, count_rows, tab_size);
-                return Grid::new(records, config, &dimension).build(writer);
+                return Grid::new(records, &dimension, config).build(writer);
             }
         }
     }
@@ -261,11 +261,11 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
         Some(limit) => {
             let records = LimitRows::new(records, limit);
             let records = build_records(records, contentw, count_columns, count_rows, tab_size);
-            Grid::new(records, config, &dimension).build(writer)
+            Grid::new(records, &dimension, config).build(writer)
         }
         None => {
             let records = build_records(records, contentw, count_columns, count_rows, tab_size);
-            Grid::new(records, config, &dimension).build(writer)
+            Grid::new(records, &dimension, config).build(writer)
         }
     }
 }

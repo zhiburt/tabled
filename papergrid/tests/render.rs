@@ -51,7 +51,7 @@ test_table!(
         let mut cfg = GridConfig::default();
         cfg.set_borders(util::DEFAULT_BORDERS);
 
-        let grid = Grid::new(&data, &cfg, &dims);
+        let grid = Grid::new(&data, &dims, &cfg);
         grid.to_string()
     },
     "++"
@@ -76,7 +76,7 @@ test_table!(
             ..Default::default()
         });
 
-        let grid = Grid::new(data, &cfg, &dims);
+        let grid = Grid::new(data, &dims, &cfg);
         grid.to_string()
     },
     "┌──────────┐"

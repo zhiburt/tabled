@@ -1,7 +1,7 @@
 use papergrid::{
     color::AnsiColor,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Padding},
-    dimension::{Dimension, ExactDimension},
+    dimension::{Estimate, ExactDimension},
     records::IterRecords,
     Grid, GridConfig,
 };
@@ -18,7 +18,7 @@ fn main() {
     let mut dim = ExactDimension::default();
     dim.estimate(&records, &cfg);
 
-    let grid = Grid::new(records, &cfg, &dim);
+    let grid = Grid::new(records, &dim, &cfg);
 
     println!("{grid}");
 }

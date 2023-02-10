@@ -1,7 +1,7 @@
 //! The module contains a [`Grid`] structure.
 
 use std::{
-    borrow::Cow,
+    borrow::{Borrow, Cow},
     cmp,
     collections::BTreeMap,
     fmt::{self, Display, Write},
@@ -9,10 +9,10 @@ use std::{
 
 use crate::{
     color::{AnsiColor, Color},
-    colors::{self, Colors},
+    colors::{self, Colors, NoColors},
     config::{
-        AlignmentHorizontal, AlignmentVertical, EntityMap, Formatting, GridConfig, Indent, Offset,
-        Padding, PaddingColor, Position,
+        AlignmentHorizontal, AlignmentVertical, Formatting, GridConfig, Indent, Offset, Padding,
+        PaddingColor, Position,
     },
     dimension::Dimension,
     grid_projection::GridProjection,
@@ -25,37 +25,35 @@ use crate::{
 const DEFAULT_SPACE_CHAR: char = ' ';
 const DEFAULT_BORDER_HORIZONTAL_CHAR: char = ' ';
 
-type ColorsMap = EntityMap<Option<AnsiColor<'static>>>;
-
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
-pub struct Grid<'a, R, D, C = ColorsMap> {
+pub struct Grid<R, D, G, C> {
     records: R,
-    config: &'a GridConfig,
-    dimension: &'a D,
-    colors: Option<C>,
+    config: G,
+    dimension: D,
+    colors: C,
 }
 
-impl<'a, R, D> Grid<'a, R, D, ColorsMap> {
+impl<R, D, G> Grid<R, D, G, NoColors> {
     /// The new method creates a grid instance with default styles.
-    pub fn new(records: R, config: &'a GridConfig, dimension: &'a D) -> Self {
+    pub fn new(records: R, dimension: D, config: G) -> Self {
         Grid {
             records,
             config,
             dimension,
-            colors: None,
+            colors: NoColors::default(),
         }
     }
 }
 
-impl<'a, R, D, C> Grid<'a, R, D, C> {
+impl<R, D, G, C> Grid<R, D, G, C> {
     /// Sets colors map.
-    pub fn with_colors<Colors: colors::Colors>(self, colors: Colors) -> Grid<'a, R, D, Colors> {
+    pub fn with_colors<Colors: colors::Colors>(self, colors: Colors) -> Grid<R, D, G, Colors> {
         Grid {
             records: self.records,
             config: self.config,
             dimension: self.dimension,
-            colors: Some(colors),
+            colors,
         }
     }
 
@@ -65,19 +63,15 @@ impl<'a, R, D, C> Grid<'a, R, D, C> {
         R: Records,
         D: Dimension,
         C: Colors,
+        G: Borrow<GridConfig>,
         F: Write,
     {
         if self.records.count_columns() == 0 {
             return Ok(());
         }
 
-        print_grid(
-            &mut f,
-            self.records,
-            self.config,
-            self.dimension,
-            self.colors.as_ref(),
-        )
+        let config = self.config.borrow();
+        print_grid(&mut f, self.records, config, &self.dimension, &self.colors)
     }
 
     /// Builds a table into string.
@@ -88,6 +82,7 @@ impl<'a, R, D, C> Grid<'a, R, D, C> {
     where
         R: Records,
         D: Dimension,
+        G: Borrow<GridConfig>,
         C: Colors,
     {
         let mut buf = String::new();
@@ -96,10 +91,11 @@ impl<'a, R, D, C> Grid<'a, R, D, C> {
     }
 }
 
-impl<R, D, C> Display for Grid<'_, R, D, C>
+impl<R, D, G, C> Display for Grid<R, D, G, C>
 where
     for<'a> &'a R: Records,
     D: Dimension,
+    G: Borrow<GridConfig>,
     C: Colors,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -108,13 +104,9 @@ where
             return Ok(());
         }
 
-        print_grid(
-            f,
-            records,
-            self.config,
-            self.dimension,
-            self.colors.as_ref(),
-        )
+        let config = self.config.borrow();
+
+        print_grid(f, records, config, &self.dimension, &self.colors)
     }
 }
 
@@ -123,7 +115,7 @@ fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
     records: R,
     cfg: &GridConfig,
     dimension: &D,
-    colors: Option<&C>,
+    colors: &C,
 ) -> fmt::Result {
     // spanned version is a bit more complex and 'supposedly' slower,
     // because spans are considered to be not a general case we are having 2 versions
@@ -140,7 +132,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
     records: R,
     cfg: &GridConfig,
     dims: &D,
-    colors: Option<&C>,
+    colors: &C,
 ) -> fmt::Result {
     let count_columns = records.count_columns();
 
@@ -272,7 +264,7 @@ fn print_multiline_columns<'a, F, I, D, C>(
     buf: &mut Vec<CLines<'a, I::Item, C>>,
     columns: I,
     cfg: &'a GridConfig,
-    colors: Option<&'a C>,
+    colors: &'a C,
     dimension: &D,
     height: usize,
     row: usize,
@@ -296,11 +288,11 @@ where
 }
 
 #[allow(clippy::too_many_arguments)]
-fn print_single_line_columns<'a, F, I, D, C>(
+fn print_single_line_columns<F, I, D, C>(
     f: &mut F,
     columns: I,
-    cfg: &'a GridConfig,
-    colors: Option<&'a C>,
+    cfg: &GridConfig,
+    colors: &C,
     dims: &D,
     row: usize,
     line: usize,
@@ -320,7 +312,7 @@ where
         print_vertical_char(f, cfg, (row, col), 0, 1, shape)?;
 
         let width = dims.get_width(col);
-        let color = colors.and_then(|c| c.get_color((row, col)));
+        let color = colors.get_color((row, col));
         print_single_line_column(f, cell.as_ref(), cfg, width, color, (row, col))?;
     }
 
@@ -409,7 +401,7 @@ fn collect_columns<'a, I, D, C>(
     row_columns: &mut Vec<CLines<'a, I::Item, C>>,
     columns: I,
     cfg: &'a GridConfig,
-    colors: Option<&'a C>,
+    colors: &'a C,
     dimension: &D,
 
     height: usize,
@@ -434,7 +426,7 @@ fn collect_columns<'a, I, D, C>(
             *cfg.get_alignment_horizontal(pos),
             *cfg.get_alignment_vertical(pos),
             cfg.get_tab_width(),
-            colors.and_then(|c| c.get_color((row, col))),
+            colors.get_color((row, col)),
         )
     });
 
@@ -567,7 +559,7 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
     records: R,
     cfg: &GridConfig,
     dims: &D,
-    colors: Option<&C>,
+    colors: &C,
 ) -> fmt::Result {
     let count_columns = records.count_columns();
 
@@ -796,7 +788,7 @@ fn print_spanned_columns<'a, F, I, D, C>(
     columns: &mut BTreeMap<usize, (CLines<'a, I::Item, C>, usize, usize)>,
     iter: I,
     cfg: &'a GridConfig,
-    colors: Option<&'a C>,
+    colors: &'a C,
     dimension: &D,
     this_height: usize,
     row: usize,
@@ -859,7 +851,7 @@ where
                 *cfg.get_alignment_horizontal(pos),
                 *cfg.get_alignment_vertical(pos),
                 cfg.get_tab_width(),
-                colors.and_then(|c| c.get_color((row, col))),
+                colors.get_color((row, col)),
             );
 
             columns.insert(col, (cell, rowspan, colspan));
@@ -914,7 +906,7 @@ where
             *cfg.get_alignment_horizontal(pos),
             *cfg.get_alignment_vertical(pos),
             cfg.get_tab_width(),
-            colors.and_then(|c| c.get_color((row, col))),
+            colors.get_color((row, col)),
         );
 
         columns.insert(col, (cell, rowspan, colspan));

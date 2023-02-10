@@ -1,4 +1,4 @@
-//! This module contains a main table representation of this crate [`Table`].
+//! This module contains a main table representation [`Table`].
 
 mod dimension;
 
@@ -9,7 +9,7 @@ use crate::{
     grid::config::AlignmentHorizontal,
     grid::{
         config::{Entity, Formatting, GridConfig, Indent, Padding},
-        dimension::Dimension,
+        dimension::Estimate,
         grid_projection::GridProjection,
         Grid,
     },
@@ -238,9 +238,8 @@ impl fmt::Display for Table {
         let mut dimension = self.dimension.clone();
         dimension.estimate(&self.records, &config);
 
-        let grid = Grid::new(self.records.clone(), &config, &dimension);
-
-        write!(f, "{}", grid)
+        let grid = Grid::new(&self.records, &dimension, config.as_ref());
+        grid.build(f)
     }
 }
 
@@ -263,6 +262,25 @@ impl From<Builder> for Table {
             cfg: configure_grid(),
             dimension: TableDimension::default(),
         }
+    }
+}
+
+impl From<Table>
+    for Grid<
+        VecRecords<Cow<'static, str>>,
+        TableDimension<'static>,
+        GridConfig,
+        crate::grid::colors::NoColors,
+    >
+{
+    fn from(table: Table) -> Self {
+        let records = table.records;
+        let config = table.cfg;
+
+        let mut dimension = table.dimension;
+        dimension.estimate(&records, &config);
+
+        Grid::new(records, dimension, config)
     }
 }
 

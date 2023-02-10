@@ -17,8 +17,6 @@ impl<'a> IterTableDimension<'a> {
 }
 
 impl Dimension for IterTableDimension<'_> {
-    fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
-
     fn get_width(&self, column: usize) -> usize {
         self.width.get(column)
     }
@@ -26,4 +24,8 @@ impl Dimension for IterTableDimension<'_> {
     fn get_height(&self, _: usize) -> usize {
         self.height
     }
+}
+
+impl crate::grid::dimension::Estimate for IterTableDimension<'_> {
+    fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
 }
