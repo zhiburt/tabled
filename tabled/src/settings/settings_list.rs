@@ -3,6 +3,7 @@ use crate::{
     settings::{CellOption, TableOption},
 };
 
+/// Settigns is a combinator of [`CellOption`] and [`TableOption`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Settings<A = EmptySettings, B = EmptySettings>(A, B);
 
@@ -13,16 +14,19 @@ impl Default for Settings<EmptySettings, EmptySettings> {
 }
 
 impl Settings<(), ()> {
+    /// Creates an empty list.
     pub const fn empty() -> Settings<EmptySettings, EmptySettings> {
         Settings(EmptySettings, EmptySettings)
     }
 }
 
 impl<A, B> Settings<A, B> {
+    /// Creates a new combinator.
     pub const fn new(settings1: A, settings2: B) -> Settings<A, B> {
         Settings(settings1, settings2)
     }
 
+    /// Add an option to a combinator.
     pub const fn with<C>(self, settings: C) -> Settings<Self, C> {
         Settings(self, settings)
     }
@@ -50,6 +54,8 @@ where
     }
 }
 
+/// A marker structure to be able to create an empty [`Settings`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct EmptySettings;
 
 impl<R> CellOption<R> for EmptySettings {

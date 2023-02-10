@@ -29,7 +29,7 @@ use super::util::{cut_str, get_table_widths, get_table_widths_with_total, replac
 /// ## Example
 ///
 /// ```
-/// use tabled::{object::Segment, Width, Modify, Table};
+/// use tabled::{Table, settings::{object::Segment, width::Width, Modify}};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Width::truncate(3)));
@@ -152,6 +152,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
 }
 
 impl Truncate<'_, (), ()> {
+    /// Truncate a given string
     pub fn truncate_text(text: &str, width: usize, tab_width: usize) -> Cow<'_, str> {
         let text = replace_tab(text, tab_width);
 
@@ -215,14 +216,14 @@ where
     }
 }
 
-fn need_suffix_color_preservation(suffix: &Option<TruncateSuffix<'_>>) -> bool {
+fn need_suffix_color_preservation(_suffix: &Option<TruncateSuffix<'_>>) -> bool {
     #[cfg(not(feature = "color"))]
     {
         false
     }
     #[cfg(feature = "color")]
     {
-        suffix.as_ref().map_or(false, |s| s.try_color)
+        _suffix.as_ref().map_or(false, |s| s.try_color)
     }
 }
 

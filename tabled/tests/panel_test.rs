@@ -132,7 +132,7 @@ test_table!(
 
 test_table!(
     panel_style_uses_most_left_and_right_cell_styles,
-    new_table(&[(0, 1)]).with(Panel::horizontal(0,"Numbers")).with(Style::modern()),
+    new_table([(0, 1)]).with(Panel::horizontal(0,"Numbers")).with(Style::modern()),
     "┌─────┬─────┐"
     "│  Numbers  │"
     "├─────┼─────┤"
@@ -144,7 +144,7 @@ test_table!(
 
 test_table!(
     panel_style_change,
-    new_table(&[(0, 1)])
+    new_table([(0, 1)])
         .with(Panel::horizontal(0,"Numbers"))
         .with(Style::modern().intersection_top('─').horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(Some('┬'))]))
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
@@ -159,7 +159,7 @@ test_table!(
 
 test_table!(
     panel_style_uses_most_left_and_right_cell_styles_correct,
-    new_table(&[(0, 1)])
+    new_table([(0, 1)])
         .with(Panel::horizontal(0,"Numbers"))
         .with(Style::modern())
         .with(BorderSpanCorrection),
@@ -174,7 +174,7 @@ test_table!(
 
 test_table!(
     panel_style_change_correct,
-    new_table(&[(0, 1)])
+    new_table([(0, 1)])
         .with(Panel::horizontal(0,"Numbers"))
         .with(Style::modern().intersection_top('─').horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(Some('┬'))]))
         .with(BorderSpanCorrection)
@@ -190,6 +190,7 @@ test_table!(
 
 test_table!(
     panel_in_single_column,
+    #[allow(clippy::needless_borrow)]
     new_table(&[(0)]).with(Panel::horizontal(0,"Numbers")).with(Style::modern()),
     "┌─────────┐"
     "│ Numbers │"
@@ -293,19 +294,19 @@ test_table!(
 );
 
 test_table!(
-    panel_horizontal_x_1,
+    ignore_col_span_intersect_with_other_span,
     create_table::<3, 3>()
         .with(Style::psql())
         .with(Panel::horizontal(0,"Linux Distributions"))
         .with(Panel::vertical(0,"asd"))
         .with(Panel::vertical(5,"zxc"))
         .with(Modify::new((1, 3)).with(Span::horizontal(3)).with("wwwww")),
-        " asd |   Linux Distributions    | zxc "
-        "     +---+----------+-----+-----+     "
-        "     | N | column 0 |      wwwww      |     "
-        "     | 0 |   0-0    | 0-1 | 0-2 |     "
-        "     | 1 |   1-0    | 1-1 | 1-2 |     "
-        "     | 2 |   2-0    | 2-1 | 2-2 |     "
+    " asd |       Linux Distributions       | zxc "
+    "     +---+----------+-------+----------+     "
+    "     | N | column 0 | wwwww | column 2 |     "
+    "     | 0 |   0-0    |  0-1  |   0-2    |     "
+    "     | 1 |   1-0    |  1-1  |   1-2    |     "
+    "     | 2 |   2-0    |  2-1  |   2-2    |     "
 );
 
 test_table!(
@@ -322,4 +323,20 @@ test_table!(
         "     | 0 |   0-0    | 0-1 | 0-2 |     "
         "     | 1 |   1-0    | 1-1 | 1-2 |     "
         "     | 2 |   2-0    | 2-1 | 2-2 |     "
+);
+
+test_table!(
+    ignore_row_span_intersect_with_other_span,
+    create_table::<3, 3>()
+        .with(Style::psql())
+        .with(Panel::horizontal(2,"Linux Distributions"))
+        .with(Panel::vertical(0,"asd"))
+        .with(Panel::vertical(5,"zxc"))
+        .with(Modify::new((0, 3)).with(Span::vertical(4)).with("xxxxx")),
+    " asd | N | column 0 | xxxxx | column 2 | zxc "
+    "     +---+----------+-------+----------+     "
+    "     | 0 |   0-0    |  0-1  |   0-2    |     "
+    "     |       Linux Distributions       |     "
+    "     | 1 |   1-0    |  1-1  |   1-2    |     "
+    "     | 2 |   2-0    |  2-1  |   2-2    |     "
 );

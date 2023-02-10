@@ -93,7 +93,7 @@ pub fn get_lines(text: &str) -> Lines<'_> {
 }
 
 /// Iterator over lines.
-/// 
+///
 /// In comparison to `std::str::Lines`, it treats trailing '\n' as a new line.
 #[allow(missing_debug_implementations)]
 pub struct Lines<'a> {

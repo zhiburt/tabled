@@ -36,7 +36,7 @@ use super::util::get_table_widths_with_total;
 /// Cell change
 ///
 /// ```
-/// use tabled::{object::Segment, Width, Modify, Style, Table};
+/// use tabled::{Table, settings::{object::Segment, width::Width, style::Style, Modify}};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -47,7 +47,7 @@ use super::util::get_table_widths_with_total;
 /// Table change
 ///
 /// ```
-/// use tabled::{Width, Table};
+/// use tabled::{Table, settings::width::Width};
 ///
 /// let table = Table::new(&["Hello World!"]).with(Width::increase(5));
 /// ```

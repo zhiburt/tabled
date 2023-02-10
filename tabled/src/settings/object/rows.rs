@@ -2,8 +2,8 @@ use std::ops::{Add, RangeBounds, Sub};
 
 use crate::{
     grid::config::Entity,
-    settings::object::{cell::EntityOnce, Object},
     records::{ExactRecords, Records},
+    settings::object::{cell::EntityOnce, Object},
 };
 
 use super::util::bounds_to_usize;

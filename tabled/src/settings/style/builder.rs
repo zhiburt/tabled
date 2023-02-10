@@ -8,7 +8,7 @@
 //! ### Example
 //!
 //! ```
-//! use tabled::{Table, Style};
+//! use tabled::{Table, settings::style::Style};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let mut table = Table::new(&data);
@@ -32,7 +32,7 @@
 //! ### Example
 //!
 //! ```
-//! use tabled::{Table, BorderText, Style};
+//! use tabled::{Table, settings::style::{BorderText, Style}};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
@@ -60,12 +60,12 @@
 //! ### Example
 //!
 //! ```
-//! use tabled::{Table, Style, Modify, object::Cell};
+//! use tabled::{Table, settings::{Modify, style::Style}};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
 //!     .with(Style::psql())
-//!     .with(Modify::new(Cell(0, 0)).with(Style::modern().get_frame()))
+//!     .with(Modify::new((0, 0)).with(Style::modern().get_frame()))
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -111,11 +111,11 @@ use super::{Border, HorizontalLine, Line, VerticalLine};
 /// # Example
 ///
 /// ```rust,no_run
-/// use tabled::{Table, Style};
+/// use tabled::{Table, settings::style::Style};
 ///
 /// let style = Style::ascii()
 ///                 .bottom('*')
-///                 .inner_intersection(' ');
+///                 .intersection(' ');
 ///
 /// let data = vec!["Hello", "2021"];
 /// let table = Table::new(&data).with(style).to_string();
@@ -161,13 +161,12 @@ impl Style<(), (), (), (), (), (), (), ()> {
     /// This style can be used as a base style to build a custom one.
     ///
     /// ```rust,no_run
-    /// # use tabled::Style;
+    /// # use tabled::settings::style::Style;
     /// let style = Style::empty()
     ///     .top('*')
     ///     .bottom('*')
     ///     .vertical('#')
-    ///     .bottom_intersection('^')
-    ///     .top_intersection('*');
+    ///     .intersection_top('*');
     /// ```
     pub const fn empty() -> Style<(), (), (), (), (), ()> {
         Style::new(
@@ -497,14 +496,15 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, Style, Highlight, object::Rows};
+    /// use tabled::{Table, settings::{style::Style, highlight::Highlight, object::Rows}};
     ///
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
-    /// let mut table = Table::new(data);
-    /// table.with(Highlight::new(Rows::first(), Style::modern().get_frame()));
+    /// let table = Table::new(data)
+    ///     .with(Highlight::new(Rows::first(), Style::modern().get_frame()))
+    ///     .to_string();
     ///
     /// assert_eq!(
-    ///     table.to_string(),
+    ///     table,
     ///     concat!(
     ///         "┌──────────────────┐\n",
     ///         "│ 0        | 1     │\n",
@@ -561,12 +561,10 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{style::{Style, HorizontalLine, Line}, TableIteratorExt};
+    /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
     ///
-    /// let table = (0..3)
-    ///    .map(|i| ("Hello", "World", i))
-    ///    .table()
-    ///    .with(Style::ascii().off_horizontal().horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]))
+    /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
+    ///    .with(Style::ascii().remove_horizontal().horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]))
     ///    .to_string();
     ///
     /// assert_eq!(
@@ -598,12 +596,10 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{style::{Style, VerticalLine, Line}, TableIteratorExt};
+    /// use tabled::{settings::style::{Style, VerticalLine, Line}, Table};
     ///
-    /// let table = (0..3)
-    ///    .map(|i| ("Hello", "World", i))
-    ///    .table()
-    ///    .with(Style::ascii().off_horizontal().verticals([VerticalLine::new(1, Style::modern().get_vertical())]))
+    /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
+    ///    .with(Style::ascii().remove_horizontal().verticals([VerticalLine::new(1, Style::modern().get_vertical())]))
     ///    .to_string();
     ///
     /// assert_eq!(
@@ -812,11 +808,9 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{style::{Style, HorizontalLine, Line}, TableIteratorExt};
+    /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
     ///
-    /// let table = (0..3)
-    ///    .map(|i| ("Hello", i))
-    ///    .table()
+    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
     ///    .with(Style::rounded().horizontals((1..4).map(|i| HorizontalLine::new(i, Line::filled('#')))))
     ///    .to_string();
     ///
@@ -847,11 +841,9 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{style::{Style, VerticalLine, Line}, TableIteratorExt};
+    /// use tabled::{Table, settings::style::{Style, VerticalLine, Line}};
     ///
-    /// let table = (0..3)
-    ///    .map(|i| ("Hello", i))
-    ///    .table()
+    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
     ///    .with(Style::rounded().verticals((0..3).map(|i| VerticalLine::new(i, Line::filled('#')))))
     ///    .to_string();
     ///
@@ -1093,14 +1085,17 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         }
     }
 
+    /// Return borders of a table.
     pub const fn get_borders(&self) -> &Borders<char> {
         &self.borders
     }
 
+    /// Return custom horizontals which were set.
     pub const fn get_horizontals(&self) -> &HLines {
         &self.horizontals
     }
 
+    /// Return custom verticals which were set.
     pub const fn get_verticals(&self) -> &VLines {
         &self.verticals
     }

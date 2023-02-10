@@ -4,13 +4,13 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{object::Cell, Modify, TableIteratorExt, Span};
+//! use tabled::{settings::{span::Span, Modify}, Table};
 //!
 //! let data = [[1, 2, 3], [4, 5, 6]];
 //!
-//! let table = data.table()
-//!     .with(Modify::new(Cell(2, 0)).with(Span::column(2)))
-//!     .with(Modify::new(Cell(0, 1)).with(Span::column(2)))
+//! let table = Table::new(data)
+//!     .with(Modify::new((2, 0)).with(Span::horizontal(2)))
+//!     .with(Modify::new((0, 1)).with(Span::horizontal(2)))
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -41,10 +41,10 @@ pub use row::RowSpan;
 ///  - size is bigger then the total number of rows.
 ///
 /// ```rust,no_run
-/// # use tabled::{Style, Span, Modify, object::Columns, Table};
+/// # use tabled::{Table, settings::{style::Style, span::Span, Modify, object::Columns}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
-///     .with(Modify::new(Columns::single(0)).with(Span::column(2)));
+///     .with(Modify::new(Columns::single(0)).with(Span::horizontal(2)));
 /// ```
 ///
 /// [`Table`]: crate::Table

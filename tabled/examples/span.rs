@@ -3,7 +3,7 @@ use tabled::{
         alignment::Alignment,
         object::Cell,
         span::{ColumnSpan, RowSpan},
-        style::{Style, BorderSpanCorrection},
+        style::{BorderSpanCorrection, Style},
         Modify,
     },
     Table,

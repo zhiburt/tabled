@@ -1,7 +1,7 @@
 use crate::{
     grid::config::Entity,
-    settings::object::Object,
     records::{ExactRecords, Records},
+    settings::object::Object,
 };
 
 /// Frame includes cells which are on the edges of each side.

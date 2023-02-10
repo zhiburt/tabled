@@ -15,9 +15,8 @@ use super::IndexBuilder;
 /// ```rust
 /// use tabled::builder::Builder;
 ///
-/// let mut builder = Builder::default();
-/// builder.set_columns(["index", "measure", "value"]);
-/// builder.add_record(["0", "weight", "0.443"]);
+/// let mut builder = Builder::default().set_header(["index", "measure", "value"]);
+/// builder.push_record(["0", "weight", "0.443"]);
 ///
 /// let table = builder.build();
 ///
@@ -71,12 +70,8 @@ impl Builder {
     /// Sets a [`Table`] header.
     ///
     /// ```rust
-    /// use tabled::builder::Builder;
-    ///
-    /// let mut builder = Builder::default();
-    /// builder
-    ///     .set_header((0..3).map(|i| i.to_string()))
-    ///     .add_record(["i", "surname", "lastname"]);
+    /// # use tabled::builder::Builder;
+    /// let mut builder = Builder::default().set_header((0..3).map(|i| i.to_string()));
     /// ```
     pub fn set_header<H, T>(mut self, columns: H) -> Self
     where
@@ -114,8 +109,7 @@ impl Builder {
     /// );
     ///
     ///
-    /// let mut builder = Table::builder(data);
-    /// builder.remove_columns();
+    /// let mut builder = Table::builder(data).remove_header();
     /// let table = builder.build().to_string();
     ///
     /// assert_eq!(
@@ -141,10 +135,10 @@ impl Builder {
     /// ```rust
     /// use tabled::builder::Builder;
     ///
-    /// let mut builder = Builder::default();
-    /// builder.set_default_text("undefined");
-    /// builder.set_columns((0..3).map(|i| i.to_string()));
-    /// builder.add_record(["i"]);
+    /// let mut builder = Builder::default()
+    ///     .set_default_text("undefined")
+    ///     .set_header((0..3).map(|i| i.to_string()));
+    /// builder.push_record(["i"]);
     /// ```
     pub fn set_default_text<T>(mut self, text: T) -> Self
     where
@@ -159,9 +153,8 @@ impl Builder {
     /// ```rust
     /// use tabled::builder::Builder;
     ///
-    /// let mut builder = Builder::default();
-    /// builder.set_columns(["i", "column1", "column2"]);
-    /// builder.add_record(["0", "value1", "value2"]);
+    /// let mut builder = Builder::default().set_header(["i", "column1", "column2"]);
+    /// builder.push_record(["0", "value1", "value2"]);
     /// ```
     pub fn build(self) -> Table {
         Table::from(self)

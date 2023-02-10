@@ -1,4 +1,4 @@
-//! A module which contains [Colors] trait and its blanket implementations. 
+//! A module which contains [Colors] trait and its blanket implementations.
 
 use std::collections::{BTreeMap, HashMap};
 

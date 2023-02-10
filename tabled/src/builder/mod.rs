@@ -9,7 +9,7 @@
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Table, Tabled, Style};
+//! use tabled::{Table, Tabled, settings::style::Style};
 //!
 //! #[derive(Tabled)]
 //! struct Mission {
@@ -31,10 +31,10 @@
 //!     Mission { name: "Apolo", status: Status::Complete },
 //! ];
 //!
-//! let mut builder = Table::builder(&data).index();
-//! builder
-//!     .set_index(0)
-//!     .set_name(None)
+//! let mut builder = Table::builder(&data)
+//!     .index()
+//!     .column(0)
+//!     .name(None)
 //!     .transpose();
 //!
 //! let mut table = builder.build();
@@ -64,7 +64,7 @@
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Table, Tabled, Style};
+//! use tabled::{Table, Tabled, settings::style::Style};
 //!
 //! #[derive(Tabled)]
 //! enum Status {

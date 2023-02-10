@@ -3,7 +3,6 @@
 
 use tabled::{settings::style::Style, Table, Tabled};
 
-
 #[derive(Tabled)]
 struct Vendor {
     name: &'static str,

@@ -524,7 +524,6 @@ fn set_cell_row_span(cfg: &mut GridConfig, pos: Position, span: usize) {
     cfg.span_rows.insert(pos, span);
 }
 
-
 fn set_cell_column_span(cfg: &mut GridConfig, pos: Position, span: usize) {
     // such spans aren't supported
     if span == 0 {

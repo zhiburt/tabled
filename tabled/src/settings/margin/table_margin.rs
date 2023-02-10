@@ -6,9 +6,10 @@ use crate::{
 /// Margin is responsible for a left/right/top/bottom outer indent of a grid.
 ///
 /// ```rust,no_run
-/// # use tabled::{Margin, Table};
+/// # use tabled::{settings::margin::Margin, Table};
 /// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data).with(Margin::new(1, 1, 1, 1).set_fill('>', '<', 'V', '^'));
+/// let table = Table::new(&data)
+///     .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^'));
 /// ```
 #[derive(Debug, Clone)]
 pub struct Margin(GridMargin);

@@ -10,6 +10,7 @@ use crate::{
 pub struct Cell(usize, usize);
 
 impl Cell {
+    /// Create new cell structure.
     pub fn new(row: usize, col: usize) -> Self {
         Self(row, col)
     }

@@ -10,14 +10,12 @@ use crate::{
 /// List of colors for [`Margin`].
 ///
 /// ```rust,no_run
-/// # use tabled::{Margin, margin_color::MarginColor, color::Color, Table};
-/// # use owo_colors::OwoColorize;
-/// # use std::convert::TryFrom;
+/// # use tabled::{settings::{margin::{Margin, MarginColor}, color::Color}, Table};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Margin::new(1, 1, 1, 1))
 ///     .with(MarginColor::new(
-///         Color::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
+///         Color::BG_RED,
 ///         Color::default(),
 ///         Color::default(),
 ///         Color::default(),

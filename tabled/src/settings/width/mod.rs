@@ -9,7 +9,7 @@
 //! ## Example
 //!
 //! ```
-//! use tabled::{Width, Table};
+//! use tabled::{Table, settings::width::Width};
 //!
 //! let table = Table::new(&["Hello World!"])
 //!     .with(Width::wrap(7))
@@ -49,8 +49,6 @@ pub use self::{
     wrap::Wrap,
 };
 
-pub(crate) use wrap::wrap_text;
-
 /// Width allows you to set a min and max width of an object on a [`Table`]
 /// using different strategies.
 ///
@@ -73,7 +71,7 @@ pub(crate) use wrap::wrap_text;
 /// ### Cell change
 ///
 /// ```
-/// use tabled::{object::Segment, Width, Modify, Style, Table};
+/// use tabled::{Table, settings::{object::Segment, width::Width, style::Style, Modify}};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -85,7 +83,7 @@ pub(crate) use wrap::wrap_text;
 /// ### Table change
 ///
 /// ```
-/// use tabled::{Width, Table};
+/// use tabled::{Table, settings::width::Width};
 ///
 /// let table = Table::new(&["Hello World!"]).with(Width::wrap(5));
 /// ```
@@ -93,7 +91,7 @@ pub(crate) use wrap::wrap_text;
 /// ### Total width
 ///
 /// ```
-/// use tabled::{Width, Table};
+/// use tabled::{Table, settings::width::Width};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Width::wrap(5))
@@ -135,7 +133,7 @@ impl Width {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, Width};
+    /// use tabled::{Table, settings::width::Width};
     ///
     /// let data = vec![
     ///     ("Some\ndata", "here", "and here"),

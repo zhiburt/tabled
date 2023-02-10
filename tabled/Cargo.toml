@@ -10,7 +10,7 @@ documentation = "https://docs.rs/tabled"
 license = "MIT"
 keywords = ["table", "print", "pretty-table", "format", "terminal"]
 categories = ["text-processing", "visualization"]
-readme = "docs.rs.md"
+readme = "README.md"
 
 [badges]
 coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master", service = "github" }

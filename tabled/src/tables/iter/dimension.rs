@@ -1,7 +1,7 @@
 use crate::{
     grid::{config::GridConfig, dimension::Dimension},
-    records::Records,
     records::into_records::truncate_records::Width,
+    records::Records,
 };
 
 #[derive(Debug)]
@@ -17,7 +17,7 @@ impl<'a> IterTableDimension<'a> {
 }
 
 impl Dimension for IterTableDimension<'_> {
-    fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {}
+    fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
 
     fn get_width(&self, column: usize) -> usize {
         self.width.get(column)

@@ -2,7 +2,7 @@
 //!
 //! The table is inspired by <https://en.wikipedia.org/wiki/Box-drawing_character>
 //!
-//! 
+//!
 //! ┌───────────────────┐
 //! │  ╔═══╗ Some Text  │▒
 //! │  ╚═╦═╝ in the box │▒
@@ -11,7 +11,7 @@
 //! │ └──┴──┘           │▒
 //! └───────────────────┘▒
 //!  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-//! 
+//!
 //! ## Example
 //!
 //! `echo -e -n 'Some text\nIn the box' | cargo run --package tabled --example shadow`
@@ -154,8 +154,14 @@ fn create_main_table(message: &str) -> Table {
     table
         .with(Padding::zero())
         .with(Style::modern().remove_vertical())
-        .with(Modify::new(Cell::new(0, 0)).with(BorderChar::vertical('╞', Offset::Begin(count_lines))))
-        .with(Modify::new(Cell::new(0, 2)).with(BorderChar::vertical('╡', Offset::Begin(count_lines))))
+        .with(
+            Modify::new(Cell::new(0, 0))
+                .with(BorderChar::vertical('╞', Offset::Begin(count_lines))),
+        )
+        .with(
+            Modify::new(Cell::new(0, 2))
+                .with(BorderChar::vertical('╡', Offset::Begin(count_lines))),
+        )
         .with(Shadow::new(2));
 
     table

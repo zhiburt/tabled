@@ -542,7 +542,7 @@ mod structure {
         pre: {
             fn display_option(o: &Option<sstr>) -> String {
                 match o {
-                    Some(s) => format!("some {}", s),
+                    Some(s) => format!("some {s}"),
                     None => "none".to_string(),
                 }
             }

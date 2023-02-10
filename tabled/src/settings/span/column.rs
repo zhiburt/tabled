@@ -37,20 +37,19 @@ where
     }
 }
 
-fn set_col_spans(
-    cfg: &mut GridConfig,
-    span: usize,
-    entity: Entity,
-    (count_rows, count_cols): (usize, usize),
-) {
-    for pos in entity.iter(count_rows, count_cols) {
-        if !is_valid_pos(pos, (count_rows, count_cols)) {
+fn set_col_spans(cfg: &mut GridConfig, span: usize, entity: Entity, shape: (usize, usize)) {
+    for pos in entity.iter(shape.0, shape.1) {
+        if !is_valid_pos(pos, shape) {
             continue;
         }
 
         let mut span = span;
-        if !is_column_span_valid(pos.1, span, count_cols) {
-            span = count_cols - pos.1;
+        if !is_column_span_valid(pos.1, span, shape.1) {
+            span = shape.1 - pos.1;
+        }
+
+        if span_has_intersections(cfg, pos, span, shape) {
+            continue;
         }
 
         set_span_column(cfg, pos, span);
@@ -64,7 +63,7 @@ fn set_span_column(cfg: &mut GridConfig, pos: (usize, usize), span: usize) {
             return;
         }
 
-        let closecol = closest_visible_column(cfg, (row, col - 1));
+        let closecol = closest_visible(cfg, (row, col - 1));
         let span = col + 1 - closecol;
 
         cfg.set_column_span((row, closecol), span);
@@ -75,7 +74,7 @@ fn set_span_column(cfg: &mut GridConfig, pos: (usize, usize), span: usize) {
     cfg.set_column_span(pos, span);
 }
 
-fn closest_visible_column(cfg: &GridConfig, mut pos: Position) -> usize {
+fn closest_visible(cfg: &GridConfig, mut pos: Position) -> usize {
     loop {
         if GridProjection::new(cfg).is_cell_visible(pos) {
             return pos.1;
@@ -95,4 +94,21 @@ fn is_column_span_valid(col: usize, span: usize, count_cols: usize) -> bool {
 
 fn is_valid_pos((row, col): Position, (count_rows, count_cols): (usize, usize)) -> bool {
     row < count_rows && col < count_cols
+}
+
+fn span_has_intersections(
+    cfg: &GridConfig,
+    (row, col): Position,
+    span: usize,
+    shape: (usize, usize),
+) -> bool {
+    let gp = GridProjection::with_shape(cfg, shape);
+
+    for col in col..col + span {
+        if !gp.is_cell_visible((row, col)) {
+            return true;
+        }
+    }
+
+    false
 }

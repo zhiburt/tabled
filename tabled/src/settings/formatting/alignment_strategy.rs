@@ -10,8 +10,11 @@ use crate::{
 ///
 /// ```
 /// use tabled::{
-///     Table, Style, Modify, Alignment, object::Segment,
-///     formatting::{AlignmentStrategy, TrimStrategy}
+///     Table,
+///     settings::{
+///         style::Style, Modify, alignment::Alignment, object::Segment,
+///         formatting::{AlignmentStrategy, TrimStrategy}
+///     }
 /// };
 ///
 /// // sample_from: https://opensource.adobe.com/Spry/samples/data_region/JSONDataSetSample.html

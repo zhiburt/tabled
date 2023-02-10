@@ -6,7 +6,7 @@ use tabled::{
         alignment::Alignment,
         object::{Cell, Segment},
         panel::Panel,
-        style::{Style, BorderSpanCorrection},
+        style::{BorderSpanCorrection, Style},
         width::Width,
         Modify,
     },

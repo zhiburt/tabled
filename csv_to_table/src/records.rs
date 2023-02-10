@@ -70,6 +70,7 @@ where
 }
 
 /// A column iterator.
+#[derive(Debug)]
 pub struct CsvStringRecord {
     record: StringRecord,
     i: usize,
@@ -94,15 +95,16 @@ impl Iterator for CsvStringRecord {
 }
 
 /// A cell struct.
-/// 
+///
 /// # SAFETY
-/// 
+///
 /// NOTICE that it has a &'static lifetime which is not true.
 /// It's made so only cause of trait limitations.
-/// 
+///
 /// It's unsafe to keep the reference around.
-/// 
+///
 /// It's OK for [`CsvRecords`] cause we do not keep it internally.
+#[derive(Debug)]
 pub struct CsvStrField(&'static str);
 
 impl AsRef<str> for CsvStrField {

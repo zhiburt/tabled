@@ -9,8 +9,11 @@ use crate::{
 ///
 /// ```
 /// use tabled::{
-///     Table, Style, Modify, Alignment, object::Segment,
-///     formatting::{TrimStrategy, AlignmentStrategy}
+///     Table,
+///     settings::{
+///         style::Style, Modify, alignment::Alignment, object::Segment,
+///         formatting::{TrimStrategy, AlignmentStrategy}
+///     }
 /// };
 ///
 /// let mut table = Table::new(&["   Hello World"]);

@@ -10,7 +10,7 @@ pub struct LimitColumns<I> {
 }
 
 impl LimitColumns<()> {
-    /// Creates new [`LimitColumns`]. 
+    /// Creates new [`LimitColumns`].
     pub fn new<I: IntoRecords>(records: I, limit: usize) -> LimitColumns<I> {
         LimitColumns { records, limit }
     }

@@ -33,7 +33,7 @@ use super::util::{get_table_widths, get_table_widths_with_total, replace_tab, sp
 /// ## Example
 ///
 /// ```
-/// use tabled::{object::Segment, Width, Modify, Table};
+/// use tabled::{Table, settings::{object::Segment, width::Width, Modify}};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Width::wrap(3)));
@@ -105,7 +105,7 @@ where
         cfg: &mut GridConfig,
         dims: &mut TableDimension<'static>,
     ) {
-        if (&*records).count_rows() == 0 || (&*records).count_columns() == 0 {
+        if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
         }
 
@@ -681,6 +681,7 @@ mod tests {
 
     #[test]
     fn chunks_test() {
+        #[allow(clippy::redundant_closure)]
         #[cfg(not(feature = "color"))]
         let chunks = |text, width| chunks(text, width);
 

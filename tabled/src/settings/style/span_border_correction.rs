@@ -24,20 +24,21 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Style, Modify, format::Format, Span, object::Cell};
+/// use tabled::{
+///     Table,
+///     settings::{
+///         Modify, style::{Style, BorderSpanCorrection},
+///         format::Format, span::Span, object::Cell
+///     }
+/// };
 ///
 /// let data = vec![
 ///     ("09", "June", "2022"),
 ///     ("10", "July", "2022"),
 /// ];
 ///
-/// let mut table = data.table();
-/// table
-///     .with(
-///         Modify::new(Cell(0, 0))
-///             .with(Format::new(|_| String::from("date")))
-///             .with(Span::column(3))
-///     );
+/// let mut table = Table::new(data);
+/// table.with(Modify::new((0, 0)).with("date").with(Span::horizontal(3)));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -52,7 +53,7 @@ use crate::{
 ///     )
 /// );
 ///
-/// table.with(Style::correct_spans());
+/// table.with(BorderSpanCorrection);
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -67,10 +68,7 @@ use crate::{
 ///     )
 /// );
 /// ```
-///
-/// [`Span`]: crate::Span
-///
-/// See [`Style::correct_spans`].
+/// See [`BorderSpanCorrection`].
 ///
 /// [`Table`]: crate::Table
 /// [`Span`]: crate::Span

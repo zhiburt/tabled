@@ -92,7 +92,7 @@ impl<const N: usize> Tabled for Obj<N> {
 
     fn headers() -> Vec<Cow<'static, str>> {
         std::iter::once("N".to_owned())
-            .chain((0..N).map(|n| format!("column {}", n)))
+            .chain((0..N).map(|n| format!("column {n}")))
             .map(Cow::Owned)
             .collect()
     }
@@ -118,6 +118,7 @@ macro_rules! test_table {
         #[test]
         fn $test() {
             let table = $table.to_string();
+            println!("{}", table);
             assert_eq!(table, crate::util::static_table!($($line)*));
         }
     };

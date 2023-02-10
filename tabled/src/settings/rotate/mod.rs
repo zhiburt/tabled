@@ -6,11 +6,11 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{Rotate, TableIteratorExt};
+//! use tabled::{Table, settings::rotate::Rotate};
 //!
 //! let data = [[1, 2, 3], [4, 5, 6]];
 //!
-//! let table = data.table().with(Rotate::Left).to_string();
+//! let table = Table::new(data).with(Rotate::Left).to_string();
 //!
 //! assert_eq!(
 //!     table,

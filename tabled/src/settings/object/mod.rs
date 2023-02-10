@@ -681,16 +681,28 @@ mod tests {
 
     #[test]
     fn object_not_test() {
+        assert_eq!(vec_cells(Rows::first().not(Cell::new(0, 0)), 0, 0), []);
         assert_eq!(vec_cells(Cell::new(0, 0).not(Cell::new(0, 0)), 2, 3), []);
         assert_eq!(
             vec_cells(Rows::first().not(Cell::new(0, 0)), 2, 3),
             [Entity::Cell(0, 1), Entity::Cell(0, 2)]
         );
-        assert_eq!(vec_cells(Rows::first().not(Cell::new(0, 0)), 0, 0), []);
+        assert_eq!(
+            vec_cells(Columns::single(1).not(Rows::single(1)), 3, 3),
+            [Entity::Cell(0, 1), Entity::Cell(2, 1)]
+        );
+        assert_eq!(
+            vec_cells(Rows::single(1).not(Columns::single(1)), 3, 3),
+            [Entity::Cell(1, 0), Entity::Cell(1, 2)]
+        );
     }
 
     #[test]
     fn object_intersect_test() {
+        assert_eq!(
+            vec_cells(Rows::first().intersect(Cell::new(0, 0)), 0, 0),
+            []
+        );
         assert_eq!(
             vec_cells(Segment::all().intersect(Rows::single(1)), 2, 3),
             [Entity::Cell(1, 0), Entity::Cell(1, 1), Entity::Cell(1, 2)]
@@ -703,8 +715,9 @@ mod tests {
             vec_cells(Rows::first().intersect(Cell::new(0, 0)), 2, 3),
             [Entity::Cell(0, 0)]
         );
+        // maybe we somehow shall not limit the rows/columns by the max count? 
         assert_eq!(
-            vec_cells(Rows::first().intersect(Cell::new(0, 0)), 0, 0),
+            vec_cells(Rows::single(1).intersect(Columns::single(1)), 2, 1),
             []
         );
     }

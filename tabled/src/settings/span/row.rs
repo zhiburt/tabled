@@ -37,20 +37,19 @@ where
     }
 }
 
-fn set_row_spans(
-    cfg: &mut GridConfig,
-    span: usize,
-    entity: Entity,
-    (count_rows, count_cols): (usize, usize),
-) {
-    for pos in entity.iter(count_rows, count_cols) {
-        if !is_valid_pos(pos, (count_rows, count_cols)) {
+fn set_row_spans(cfg: &mut GridConfig, span: usize, entity: Entity, shape: (usize, usize)) {
+    for pos in entity.iter(shape.0, shape.1) {
+        if !is_valid_pos(pos, shape) {
             continue;
         }
 
         let mut span = span;
-        if !is_row_span_valid(pos.0, span, count_rows) {
-            span = count_rows - pos.0;
+        if !is_row_span_valid(pos.0, span, shape.0) {
+            span = shape.0 - pos.0;
+        }
+
+        if span_has_intersections(cfg, pos, span, shape) {
+            continue;
         }
 
         set_span_row(cfg, pos, span);
@@ -95,4 +94,21 @@ fn is_row_span_valid(row: usize, span: usize, count_rows: usize) -> bool {
 
 fn is_valid_pos((row, col): Position, (count_rows, count_cols): (usize, usize)) -> bool {
     row < count_rows && col < count_cols
+}
+
+fn span_has_intersections(
+    cfg: &GridConfig,
+    (row, col): Position,
+    span: usize,
+    shape: (usize, usize),
+) -> bool {
+    let gp = GridProjection::with_shape(cfg, shape);
+
+    for row in row..row + span {
+        if !gp.is_cell_visible((row, col)) {
+            return true;
+        }
+    }
+
+    false
 }

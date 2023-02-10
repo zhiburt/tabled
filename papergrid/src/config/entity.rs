@@ -36,7 +36,7 @@ impl From<Position> for Entity {
 /// An iterator over cells.
 ///
 /// Produced from [`Entity::iter`].
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EntityIterator {
     entity: Entity,
     count_rows: usize,

@@ -9,7 +9,7 @@ use super::Offset;
 /// # Example
 ///
 /// ```rust
-/// use tabled::{Table, BorderText};
+/// use tabled::{Table, settings::style::BorderText};
 ///
 /// let mut table = Table::new(["Hello World"]);
 /// table
@@ -33,10 +33,13 @@ pub struct BorderText<'a, Line> {
     line: Line,
 }
 
+#[derive(Debug)]
 pub struct LineIndex(usize);
 
+#[derive(Debug)]
 pub struct LineFirst;
 
+#[derive(Debug)]
 pub struct LineLast;
 
 impl<'a> BorderText<'a, ()> {
@@ -72,13 +75,13 @@ impl<L> BorderText<'_, L> {
 }
 
 impl<R, D> TableOption<R, D> for BorderText<'_, LineFirst> {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.override_split_line(0, self.text.as_ref(), self.offset.into());
     }
 }
 
 impl<R, D> TableOption<R, D> for BorderText<'_, LineIndex> {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.override_split_line(self.line.0, self.text.as_ref(), self.offset.into());
     }
 }
@@ -87,7 +90,7 @@ impl<R, D> TableOption<R, D> for BorderText<'_, LineLast>
 where
     R: ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.override_split_line(records.count_rows(), self.text.as_ref(), self.offset.into());
     }
 }

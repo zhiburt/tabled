@@ -4,7 +4,7 @@ use tabled::{
     settings::{
         merge::Merge,
         object::{Cell, Columns, Object, Rows},
-        style::{Border, Style, BorderSpanCorrection},
+        style::{Border, BorderSpanCorrection, Style},
         Modify,
     },
     Table, Tabled,

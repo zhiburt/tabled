@@ -8,17 +8,12 @@ use crate::{
 /// Color settings for a [`Padding`].
 ///
 /// ```rust,no_run
-/// # use tabled::{padding_color::PaddingColor, color::Color, Table, Modify, object::Segment};
-/// # use owo_colors::OwoColorize;
-/// # use std::convert::TryFrom;
+/// # use tabled::{Table, settings::{padding::PaddingColor, color::Color, Modify, object::Segment}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
-///     .with(Modify::new(Segment::all()).with(PaddingColor::new(
-///         Color::try_from(" ".on_blue().red().to_string()).unwrap(),
-///         Color::try_from(" ".red().to_string()).unwrap(),
-///         Color::try_from(" ".on_blue().red().to_string()).unwrap(),
-///         Color::try_from(" ".on_green().to_string()).unwrap(),
-///     )));
+///     .with(Modify::new(Segment::all()).with(
+///         PaddingColor::new(Color::FG_RED, Color::FG_BLUE, Color::FG_BLUE, Color::FG_RED)
+///     ));
 /// ```
 ///
 /// [`Padding`]: crate::Padding

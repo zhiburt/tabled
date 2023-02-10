@@ -17,7 +17,7 @@ use crate::{
 /// ## Examples
 ///
 /// ```
-/// use tabled::{width::Justify, Style, Modify, object::Segment, Padding, Table};
+/// use tabled::{Table, settings::{width::Justify, style::Style, object::Segment, padding::Padding, Modify}};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -30,7 +30,7 @@ use crate::{
 /// [`Max`] usage to justify by a max column width.
 ///
 /// ```
-/// use tabled::{width::Justify, Style, Table};
+/// use tabled::{Table, settings::{width::Justify, style::Style}};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -79,7 +79,7 @@ where
     R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, dims: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, _: &mut D) {
         let width = self.width.measure(&*records, cfg);
 
         let count_rows = records.count_rows();

@@ -12,15 +12,13 @@ use crate::{
 /// BorderColored represents a colored border of a Cell.
 ///
 /// ```rust,no_run
-/// # use owo_colors::OwoColorize;
-/// # use tabled::{style::{Symbol, Style, BorderColored}, object::Rows, Table, Modify};
+/// # use tabled::{settings::{style::{Style, BorderColor}, color::Color, object::Rows, Modify}, Table};
 /// #
 /// # let data: Vec<&'static str> = Vec::new();
 /// #
-/// let c = Symbol::ansi("#".red().to_string()).unwrap();
 /// let table = Table::new(&data)
 ///     .with(Style::ascii())
-///     .with(Modify::new(Rows::single(0)).with(BorderColored::default().top(c)));
+///     .with(Modify::new(Rows::single(0)).with(BorderColor::default().top(Color::FG_RED)));
 /// ```
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default, Eq, PartialEq)]

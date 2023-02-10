@@ -7,11 +7,11 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{Disable, TableIteratorExt, object::Rows};
+//! use tabled::{Table, settings::{disable::Disable, object::Rows}};
 //!
 //! let data = vec!["Hello", "World", "!!!"];
 //!
-//! let table = data.table().with(Disable::row(Rows::new(1..2))).to_string();
+//! let table = Table::new(data).with(Disable::row(Rows::new(1..2))).to_string();
 //!
 //! assert_eq!(
 //!     table,
@@ -44,7 +44,7 @@ use crate::{
 /// # Example
 ///
 /// ```rust,no_run
-/// # use tabled::{Disable, Table, object::Rows};
+/// # use tabled::{Table, settings::{disable::Disable, object::Rows}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data).with(Disable::row(Rows::first()));
 /// ```
@@ -68,12 +68,12 @@ impl<L> Disable<L, TargetColumn> {
     /// - [`ByColumnName`]
     ///
     /// ```rust
-    /// use tabled::{Disable, locator::ByColumnName, builder::Builder, object::Columns};
+    /// use tabled::{builder::Builder, settings::{disable::Disable, locator::ByColumnName, object::Columns}};
     ///
     /// let mut builder = Builder::default();
     ///
-    /// builder.add_record(["col1", "col2", "col3"]);
-    /// builder.add_record(["Hello", "World", "1"]);
+    /// builder.push_record(["col1", "col2", "col3"]);
+    /// builder.push_record(["Hello", "World", "1"]);
     ///
     /// let table = builder.build()
     ///     .with(Disable::column(ByColumnName::new("col3")))
@@ -113,12 +113,11 @@ impl<L> Disable<L, TargetRow> {
     /// - [`LastRow`]
     ///
     /// ```rust
-    /// use tabled::{Disable, builder::Builder, object::Rows};
+    /// use tabled::{settings::{disable::Disable, object::Rows}, builder::Builder};
     ///
     /// let mut builder = Builder::default();
-    ///
-    /// builder.add_record(["col1", "col2", "col3"]);
-    /// builder.add_record(["Hello", "World", "1"]);
+    /// builder.push_record(["col1", "col2", "col3"]);
+    /// builder.push_record(["Hello", "World", "1"]);
     ///
     /// let table = builder.build()
     ///     .with(Disable::row(Rows::first()))

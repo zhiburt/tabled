@@ -7,7 +7,7 @@ use crate::{
 /// Border represents a border of a Cell.
 ///
 /// ```rust,no_run
-/// # use tabled::{Style, Border, object::Rows, Table, Modify};
+/// # use tabled::{Table, settings::{Modify, style::{Style, Border}, object::Rows}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Style::ascii())
@@ -126,6 +126,7 @@ impl From<Border> for GridBorder {
     }
 }
 
+#[derive(Debug)]
 pub struct EmptyBorder;
 
 impl<R> CellOption<R> for EmptyBorder

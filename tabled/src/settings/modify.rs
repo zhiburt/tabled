@@ -20,6 +20,7 @@ impl<O> Modify<O> {
         Self { obj }
     }
 
+    /// A function which combines together [`Modify::new`] and [`Modify::with`] calls.
     pub const fn list<M>(obj: O, next: M) -> ModifyList<O, M> {
         ModifyList {
             obj,
@@ -74,7 +75,7 @@ where
     R: Records + ExactRecords,
 {
     fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, _: &mut D) {
-        for entity in self.obj.cells(&records) {
+        for entity in self.obj.cells(records) {
             self.modifiers.change(records, cfg, entity);
         }
     }

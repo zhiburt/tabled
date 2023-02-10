@@ -41,7 +41,7 @@ pub use dimension::TableDimension;
 /// ### With settings
 ///
 /// ```rust,no_run
-/// use tabled::{Table, Style, Alignment};
+/// use tabled::{Table, settings::{style::Style, alignment::Alignment}};
 ///
 /// let data = vec!["Hello", "2021"];
 /// let mut table = Table::new(&data);
@@ -102,7 +102,10 @@ impl Table {
     ///
     #[cfg_attr(feature = "derive", doc = "```")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{Table, Tabled, object::Segment, ModifyObject, Alignment};
+    /// use tabled::{
+    ///     Table, Tabled,
+    ///     settings::{object::Segment, Modify, alignment::Alignment}
+    /// };
     ///
     /// #[derive(Tabled)]
     /// struct User {
@@ -123,12 +126,12 @@ impl Table {
     ///     User { name: "John", device: Device::PC },
     /// ];
     ///
-    /// let mut builder = Table::builder(data).index();
-    /// builder.set_index(0);
-    /// builder.transpose();
-    ///
-    /// let table = builder.build()
-    ///     .with(Segment::new(1.., 1..).modify().with(Alignment::center()))
+    /// let mut table = Table::builder(data)
+    ///     .index()
+    ///     .column(0)
+    ///     .transpose()
+    ///     .build()
+    ///     .with(Modify::new(Segment::new(1.., 1..)).with(Alignment::center()))
     ///     .to_string();
     ///
     /// assert_eq!(

@@ -6,10 +6,7 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{
-//!     records::IterRecords,
-//!     tables::iter::IterTable,
-//! };
+//! use tabled::{records::IterRecords, tables::iter::IterTable};
 //!
 //! let iterator = vec![vec!["First", "row"], vec!["Second", "row"]];
 //! let records = IterRecords::new(iterator, 2, Some(2));
@@ -17,7 +14,14 @@
 //!
 //! let s = table.to_string();
 //!
-//! assert_eq!(s, "");
+//! assert_eq!(
+//!     s,
+//!     "+--------+-----+\n\
+//!      | First  | row |\n\
+//!      +--------+-----+\n\
+//!      | Second | row |\n\
+//!      +--------+-----+",
+//! );
 //! ```
 //!
 //! [`Table`]: crate::Table

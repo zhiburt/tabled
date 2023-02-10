@@ -3,15 +3,12 @@ use crate::{
     settings::{CellOption, TableOption},
 };
 
-// #[cfg(feature = "color")]
-// use crate::style::Color;
-
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///
 /// ```rust,no_run
-/// # use tabled::{Style, Padding, object::Rows, Table, Modify};
+/// # use tabled::{settings::{style::Style, padding::Padding, object::Rows, Modify}, Table};
 /// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).set_fill('>', '<', '^', 'V')));
+/// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
 /// ```
 #[derive(Debug)]
 pub struct Padding(GridPadding);

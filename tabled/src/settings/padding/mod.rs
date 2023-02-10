@@ -3,13 +3,11 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{TableIteratorExt, Padding, Style, Modify, object::Cell};
+//! use tabled::{Table, settings::{padding::Padding, style::Style, Modify, object::Cell}};
 //!
-//! let data = "2022".chars();
-//!
-//! let table = data.table()
+//! let table = Table::new("2022".chars())
 //!     .with(Style::modern())
-//!     .with(Modify::new(Cell(2, 0)).with(Padding::new(1, 1, 2, 2)))
+//!     .with(Modify::new((2, 0)).with(Padding::new(1, 1, 2, 2)))
 //!     .to_string();
 //!
 //! assert_eq!(

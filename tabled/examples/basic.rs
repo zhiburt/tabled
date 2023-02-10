@@ -4,7 +4,7 @@
 use std::iter::FromIterator;
 
 use tabled::{
-    settings::{object::Rows, style::Style, alignment::Alignment, Modify},
+    settings::{alignment::Alignment, object::Rows, style::Style, Modify},
     Table, Tabled,
 };
 

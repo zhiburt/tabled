@@ -4,7 +4,7 @@
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Table, Tabled, Style, Concat};
+//! use tabled::{Table, Tabled, settings::{style::Style, concat::Concat}};
 //!
 //! #[derive(Tabled)]
 //! struct Message {
@@ -66,9 +66,9 @@ use crate::{
 /// But it behaives on tables rather than on an actual data.
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Concat};
-/// let table1 = [0, 1, 2, 3].table();
-/// let table2 = ["A", "B", "C", "D"].table();
+/// use tabled::{Table, settings::concat::Concat};
+/// let table1 = Table::new([0, 1, 2, 3]);
+/// let table2 = Table::new(["A", "B", "C", "D"]);
 ///
 /// let mut table3 = table1;
 /// table3.with(Concat::horizontal(table2));

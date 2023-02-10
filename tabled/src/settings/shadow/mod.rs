@@ -3,11 +3,11 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{Style, TableIteratorExt, shadow::Shadow};
+//! use tabled::{Table, settings::{shadow::Shadow, style::Style}};
 //!
 //! let data = vec!["Hello", "World", "!"];
 //!
-//! let table = data.table()
+//! let table = Table::new(data)
 //!     .with(Style::markdown())
 //!     .with(Shadow::new(1))
 //!     .to_string();

@@ -90,7 +90,7 @@ impl VerticalLine {
 }
 
 impl<R, D> TableOption<R, D> for VerticalLine {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         match &self.line {
             Some(line) => cfg.set_vertical_line(self.index, config::VerticalLine::from(*line)),
             None => cfg.remove_vertical_line(self.index),

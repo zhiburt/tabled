@@ -1,9 +1,9 @@
-//! This module contains an [`ExpandedDisplay`] structure which is useful in cases where
+//! This module contains an [`ExtendedTable`] structure which is useful in cases where
 //! a structure has a lot of fields.
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Tabled, display::ExpandedDisplay};
+//! use tabled::{Tabled, tables::extended::ExtendedTable};
 //!
 //! #[derive(Tabled)]
 //! struct Language {
@@ -30,7 +30,7 @@
 //!     },
 //! ];
 //!
-//! let table = ExpandedDisplay::new(languages).to_string();
+//! let table = ExtendedTable::new(languages).to_string();
 //!
 //! let expected = "-[ RECORD 0 ]-+---------------\n\
 //!                 name          | C\n\
@@ -54,7 +54,7 @@ use papergrid::util::string::string_width;
 
 use crate::Tabled;
 
-/// `ExpandedDisplay` display data in a 'expanded display mode' from postgresql.
+/// `ExtendedTable` display data in a 'expanded display mode' from postgresql.
 /// It may be useful for a large data sets with a lot of fields.
 ///
 /// See 'Examples' in <https://www.postgresql.org/docs/current/app-psql.html.>.
@@ -63,13 +63,13 @@ use crate::Tabled;
 /// Because of that ANSI sequences will be not be rendered too so colores will not be showed.
 ///
 /// ```
-/// use tabled::{display::ExpandedDisplay};
+/// use tabled::tables::extended::ExtendedTable;
 ///
 /// let data = vec!["Hello", "2021"];
-/// let table = ExpandedDisplay::new(&data);
+/// let table = ExtendedTable::new(&data).to_string();
 ///
 /// assert_eq!(
-///     table.to_string(),
+///     table,
 ///     concat!(
 ///         "-[ RECORD 0 ]-\n",
 ///         "&str | Hello\n",
@@ -85,7 +85,7 @@ pub struct ExtendedTable {
 }
 
 impl ExtendedTable {
-    /// Creates a new instance of `ExpandedDisplay`
+    /// Creates a new instance of `ExtendedTable`
     pub fn new<T>(iter: impl IntoIterator<Item = T>) -> Self
     where
         T: Tabled,

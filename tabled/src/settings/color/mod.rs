@@ -18,17 +18,15 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// use std::convert::TryFrom;
-/// use owo_colors::OwoColorize;
-/// use tabled::{color::Color, TableIteratorExt};
+/// use tabled::{settings::color::Color, Table};
 ///
 /// let data = [
 ///     (0u8, "Hello"),
 ///     (1u8, "World"),
 /// ];
 ///
-/// let table = data.table()
-///     .with(Color::try_from(" ".red().to_string()).unwrap())
+/// let table = Table::new(data)
+///     .with(Color::BG_BLUE)
 ///     .to_string();
 ///
 /// println!("{}", table);

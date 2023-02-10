@@ -209,7 +209,7 @@ impl RawStyle {
     ///
     /// ```
     /// use std::collections::HashMap;
-    /// use tabled::{style::{Style, Line, RawStyle}, TableIteratorExt};
+    /// use tabled::{Table, settings::style::{Style, Line, RawStyle}};
     ///
     /// let mut style = RawStyle::from(Style::re_structured_text());
     ///
@@ -217,9 +217,7 @@ impl RawStyle {
     /// lines.insert(1, Style::extended().get_horizontal());
     /// style.set_horizontals(lines);
     ///
-    /// let table = (0..3)
-    ///    .map(|i| ("Hello", i))
-    ///    .table()
+    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
     ///    .with(style)
     ///    .to_string();
     ///
@@ -241,6 +239,7 @@ impl RawStyle {
         self
     }
 
+    /// Insert a horizontal line to a specific row location.
     pub fn insert_horizontal(&mut self, row: usize, line: Line) -> &mut Self {
         self.horizontals.insert(row, line);
         self
@@ -252,7 +251,7 @@ impl RawStyle {
     ///
     /// ```
     /// use std::collections::HashMap;
-    /// use tabled::{style::{Style, Line, RawStyle}, TableIteratorExt};
+    /// use tabled::{Table, settings::style::{Style, Line, RawStyle}};
     ///
     /// let mut style = RawStyle::from(Style::re_structured_text());
     ///
@@ -260,9 +259,7 @@ impl RawStyle {
     /// lines.insert(1, Style::extended().get_horizontal());
     /// style.set_verticals(lines);
     ///
-    /// let table = (0..3)
-    ///    .map(|i| ("Hello", i))
-    ///    .table()
+    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
     ///    .with(style)
     ///    .to_string();
     ///
@@ -284,6 +281,7 @@ impl RawStyle {
         self
     }
 
+    /// Insert a vertical line into specific column location.
     pub fn insert_vertical(&mut self, column: usize, line: Line) -> &mut Self {
         self.verticals.insert(column, line);
         self
@@ -385,7 +383,7 @@ where
 }
 
 impl<R, D> TableOption<R, D> for &RawStyle {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.clear_theme();
 
         cfg.set_borders(self.borders);

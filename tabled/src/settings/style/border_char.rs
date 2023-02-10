@@ -11,7 +11,7 @@ use super::Offset;
 /// # Example
 ///
 /// ```rust
-/// use tabled::{Table, style::{Style, BorderChar, Offset}, Modify, object::Rows};
+/// use tabled::{Table, settings::{style::{Style, BorderChar, Offset}, Modify, object::{Object, Rows, Columns}}};
 ///
 /// let mut table = Table::new(["Hello World"]);
 /// table
@@ -19,8 +19,8 @@ use super::Offset;
 ///     .with(Modify::new(Rows::single(1))
 ///         .with(BorderChar::horizontal(':', Offset::Begin(0)))
 ///         .with(BorderChar::horizontal(':', Offset::End(0)))
-///         .with(BorderChar::vertical('#', Offset::Begin(0)))
-///     );
+///     )
+///     .with(Modify::new((1, 0).and((1, 1))).with(BorderChar::vertical('#', Offset::Begin(0))));
 ///
 /// assert_eq!(
 ///     table.to_string(),

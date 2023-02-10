@@ -20,14 +20,13 @@ use super::Builder;
 /// ```
 /// use tabled::builder::Builder;
 ///
-/// let mut builder = Builder::default();
-/// builder.set_columns(["i", "col-1", "col-2"]);
-/// builder.add_record(["0", "value-1", "value-2"]);
+/// let mut builder = Builder::default().set_header(["i", "col-1", "col-2"]);
+/// builder.push_record(["0", "value-1", "value-2"]);
 ///
-/// let table = builder.index().build();
+/// let table = builder.index().build().to_string();
 ///
 /// assert_eq!(
-///     table.to_string(),
+///     table,
 ///     "+---+---+---------+---------+\n\
 ///      |   | i | col-1   | col-2   |\n\
 ///      +---+---+---------+---------+\n\
@@ -70,18 +69,14 @@ impl IndexBuilder {
     /// ```
     /// use tabled::builder::Builder;
     ///
-    /// let mut builder = Builder::default();
-    /// builder.set_columns(["i", "col-1", "col-2"]);
-    /// builder.add_record(["0", "value-1", "value-2"]);
-    /// builder.add_record(["2", "value-3", "value-4"]);
+    /// let mut builder = Builder::default().set_header(["i", "col-1", "col-2"]);
+    /// builder.push_record(["0", "value-1", "value-2"]);
+    /// builder.push_record(["2", "value-3", "value-4"]);
     ///
-    /// let mut builder = builder.index();
-    /// builder.hide();
-    ///
-    /// let table = builder.build();
+    /// let table = builder.index().hide().build().to_string();
     ///
     /// assert_eq!(
-    ///     table.to_string(),
+    ///     table,
     ///     "+---+---------+---------+\n\
     ///      | i | col-1   | col-2   |\n\
     ///      +---+---------+---------+\n\
@@ -113,14 +108,10 @@ impl IndexBuilder {
     /// ```
     /// use tabled::builder::Builder;
     ///
-    /// let mut builder = Builder::default();
-    /// builder.set_columns(["i", "column1", "column2"]);
-    /// builder.add_record(["0", "value1", "value2"]);
+    /// let mut builder = Builder::default().set_header(["i", "column1", "column2"]);
+    /// builder.push_record(["0", "value1", "value2"]);
     ///
-    /// let mut builder = builder.index();
-    /// builder.set_index(1);
-    ///
-    /// let table = builder.build();
+    /// let table = builder.index().column(1).build();
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -153,16 +144,12 @@ impl IndexBuilder {
     /// ```
     /// use tabled::builder::Builder;
     ///
-    /// let mut builder = Builder::default();
-    /// builder.set_columns(["i", "column-1", "column-2", "column-3"]);
-    /// builder.add_record(["0", "value-1", "value-2", "value-3"]);
-    /// builder.add_record(["1", "value-4", "value-5", "value-6"]);
-    /// builder.add_record(["2", "value-7", "value-8", "value-9"]);
+    /// let mut builder = Builder::default().set_header(["i", "column-1", "column-2", "column-3"]);
+    /// builder.push_record(["0", "value-1", "value-2", "value-3"]);
+    /// builder.push_record(["1", "value-4", "value-5", "value-6"]);
+    /// builder.push_record(["2", "value-7", "value-8", "value-9"]);
     ///
-    /// let mut builder = builder.index();
-    /// builder.set_index(1).transpose();
-    ///
-    /// let table = builder.build();
+    /// let table = builder.index().column(1).transpose().build();
     ///
     /// assert_eq!(
     ///     table.to_string(),

@@ -18,7 +18,7 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, format::Format, object::Rows, Modify, Extract};
+/// use tabled::{Table, settings::{format::Format, object::Rows, Modify, extract::Extract}};
 ///
 /// let data = vec![
 ///     (0, "Grodno", true),
@@ -28,7 +28,7 @@ use crate::{
 /// ];
 ///
 /// let table = Table::new(&data)
-///                .with(Modify::new(Rows::new(1..)).with(Format::new(|s| format!(": {} :", s))))
+///                .with(Modify::new(Rows::new(1..)).with(Format::content(|s| format!(": {} :", s))))
 ///                .with(Extract::segment(1..=2, 1..))
 ///                .to_string();
 ///
@@ -54,7 +54,7 @@ where
     /// Returns a new [`Table`] that reflects a segment of the referenced [`Table`]
     ///
     /// ```rust,no_run
-    /// # use tabled::Extract;
+    /// # use tabled::settings::extract::Extract;
     /// let rows = 1..3;
     /// let columns = 1..;
     /// Extract::segment(rows, columns);
@@ -89,7 +89,7 @@ where
     /// The segment is defined by [`RangeBounds`<usize>] for Rows
     ///
     /// ```rust,no_run
-    /// # use tabled::Extract;
+    /// # use tabled::settings::extract::Extract;
     /// Extract::rows(1..3);
     /// ```
     ///
@@ -123,7 +123,7 @@ where
     /// The segment is defined by [`RangeBounds`<usize>] for Columns
     ///
     /// ```rust,no_run
-    /// # use tabled::Extract;
+    /// # use tabled::settings::extract::Extract;
     /// Extract::columns(1..3);
     /// ```
     ///

@@ -1,3 +1,45 @@
+//! Module contains various table configuration settings.
+//!
+//! There 2 types of settings;
+//!
+//! - [`CellOption`] which can modify only a cell.
+//! - [`TableOption`] which can modify table as a whole.
+//!
+//! [`CellOption`] works on behave of [`Modify`] which is actually a [`TableOption`].
+//!
+//! Notice that it's possble to combine settings together by the help of [`Settings`].
+//!
+//! ```rust
+//! use tabled::{Table, settings::{Settings, style::Style, padding::Padding}};
+//!
+//! let table_config = Settings::default()
+//!     .with(Padding::new(2, 2, 1, 1))
+//!     .with(Style::rounded());
+//!
+//! let data = [[2023;10]; 3];
+//!
+//! let table = Table::new(data).with(table_config).to_string();
+//!
+//! assert_eq!(
+//!     table,
+//!     "╭────────┬────────┬────────┬────────┬────────┬────────┬────────┬────────┬────────┬────────╮\n\
+//!      │        │        │        │        │        │        │        │        │        │        │\n\
+//!      │  0     │  1     │  2     │  3     │  4     │  5     │  6     │  7     │  8     │  9     │\n\
+//!      │        │        │        │        │        │        │        │        │        │        │\n\
+//!      ├────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┤\n\
+//!      │        │        │        │        │        │        │        │        │        │        │\n\
+//!      │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │\n\
+//!      │        │        │        │        │        │        │        │        │        │        │\n\
+//!      │        │        │        │        │        │        │        │        │        │        │\n\
+//!      │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │\n\
+//!      │        │        │        │        │        │        │        │        │        │        │\n\
+//!      │        │        │        │        │        │        │        │        │        │        │\n\
+//!      │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │  2023  │\n\
+//!      │        │        │        │        │        │        │        │        │        │        │\n\
+//!      ╰────────┴────────┴────────┴────────┴────────┴────────┴────────┴────────┴────────┴────────╯"
+//! )
+//! ```
+
 mod cell_option;
 mod modify;
 mod settings_list;

@@ -56,14 +56,6 @@
 //! assert_eq!(table, expected);
 //! ```
 //!
-//! You can also create a table by using [`TableIteratorExt`].
-//!
-//! ```rust,no_run
-//! # let languages = [""];
-//! use tabled::TableIteratorExt;
-//! let table = languages.table();
-//! ```
-//!
 //! Not all types can derive [`Tabled`] trait though.
 //! The example below can't be compiled.
 //!
@@ -112,7 +104,10 @@
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Tabled, Table, Style, Alignment, ModifyObject, object::{Rows, Columns, Object}};
+//! use tabled::{
+//!     Tabled, Table,
+//!     settings::{style::Style, alignment::Alignment, Modify, object::{Rows, Columns, Object}}
+//! };
 //!
 //! #[derive(Tabled)]
 //! enum Domain {
@@ -134,7 +129,7 @@
 //!     
 //! let table = Table::new(data)
 //!     .with(Style::psql())
-//!     .with(Rows::new(1..).not(Columns::first()).modify().with(Alignment::center()))
+//!     .with(Modify::new(Rows::new(1..).not(Columns::first())).with(Alignment::center()))
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -157,9 +152,10 @@
 //! But you could build table from scratch.
 //!
 //! ```
-//! use tabled::{builder::Builder, ModifyObject, object::Rows, Alignment, Style};
+//! use tabled::{builder::Builder, settings::{Modify, object::Rows, alignment::Alignment, style::Style}};
 //!
-//! let mut builder = Builder::default();
+//! let mut builder = Builder::default()
+//!     .set_header(std::iter::once(String::from("i")).chain((0..10).map(|i| i.to_string())));
 //!
 //! for i in 0..3 {
 //!     let mut row = vec![];
@@ -168,14 +164,12 @@
 //!         row.push((i*j).to_string());
 //!     }
 //!
-//!     builder.add_record(row);
+//!     builder.push_record(row);
 //! }
-//!
-//! builder.set_columns(std::iter::once(String::from("i")).chain((0..10).map(|i| i.to_string())));
 //!
 //! let table = builder.build()
 //!     .with(Style::rounded())
-//!     .with(Rows::new(1..).modify().with(Alignment::left()))
+//!     .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -252,6 +246,13 @@ pub mod macros;
 // move features to settings module instead of pub one
 
 pub mod grid {
+    //! Module is responsible for tables underlyign [`Grid`].
+    //!
+    //! It might be used when implementing your own [`TableOption`] and [`CellOption`].
+    //!
+    //! [`TableOption`]: crate::settings::TableOption
+    //! [`CellOption`]: crate::settings::CellOption
+
     pub use papergrid::color;
     pub use papergrid::colors;
     pub use papergrid::config;

@@ -3,7 +3,7 @@
 use tabled::{
     settings::{
         merge::Merge,
-        style::{Style, BorderSpanCorrection},
+        style::{BorderSpanCorrection, Style},
     },
     Table, Tabled,
 };

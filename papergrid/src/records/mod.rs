@@ -19,6 +19,6 @@ pub trait Records {
     /// Returns count of columns in the records.
     fn count_columns(&self) -> usize;
 
-    /// Hint amount of rows in the records. 
+    /// Hint amount of rows in the records.
     fn hint_count_rows(&self) -> Option<usize>;
 }

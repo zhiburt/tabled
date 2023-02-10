@@ -6,9 +6,12 @@
 //!
 //! ```
 //! use tabled::{
-//!     formatting::AlignmentStrategy,
-//!     object::Segment,
-//!     Alignment, Modify, Style, Table,
+//!     Table,
+//!     settings::{
+//!         formatting::AlignmentStrategy,
+//!         object::Segment, alignment::Alignment,
+//!         Modify, style::Style,
+//!     }
 //! };
 //!
 //! let data = [
@@ -58,7 +61,7 @@ use AlignmentInner::*;
 /// Alignment represent a horizontal and vertical alignment setting for any cell on a [`Table`].
 ///
 /// ```rust,no_run
-/// # use tabled::{Alignment, Modify, object::Rows, Table};
+/// # use tabled::{Table, settings::{alignment::Alignment, Modify, object::Rows}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let mut table = Table::new(&data);
 /// table.with(Modify::new(Rows::single(0)).with(Alignment::center()));

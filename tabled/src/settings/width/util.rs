@@ -2,11 +2,11 @@ use std::borrow::Cow;
 
 use papergrid::{grid_projection::GridProjection, records::Records, ExactDimension, GridConfig};
 
-pub fn get_table_widths<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
+pub(crate) fn get_table_widths<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
     ExactDimension::width(records, cfg)
 }
 
-pub fn get_table_widths_with_total<R: Records>(
+pub(crate) fn get_table_widths_with_total<R: Records>(
     records: R,
     cfg: &GridConfig,
 ) -> (Vec<usize>, usize) {
@@ -23,7 +23,7 @@ fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
 }
 
 /// Replaces tabs in a string with a given width of spaces.
-pub fn replace_tab(text: &str, n: usize) -> Cow<'_, str> {
+pub(crate) fn replace_tab(text: &str, n: usize) -> Cow<'_, str> {
     if !text.contains('\t') {
         return Cow::Borrowed(text);
     }
@@ -69,7 +69,7 @@ fn replace_tab_range(cell: &mut String, n: usize) -> &str {
 /// The function cuts the string to a specific width.
 ///
 /// BE AWARE: width is expected to be in bytes.
-pub fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
+pub(crate) fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
     #[cfg(feature = "color")]
     {
         const REPLACEMENT: char = '\u{FFFD}';
@@ -95,7 +95,7 @@ pub fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
 /// The function cuts the string to a specific width.
 ///
 /// BE AWARE: width is expected to be in bytes.
-pub fn cut_str_basic(s: &str, width: usize) -> Cow<'_, str> {
+pub(crate) fn cut_str_basic(s: &str, width: usize) -> Cow<'_, str> {
     const REPLACEMENT: char = '\u{FFFD}';
 
     let (length, count_unknowns, _) = split_at_pos(s, width);
@@ -115,7 +115,7 @@ pub fn cut_str_basic(s: &str, width: usize) -> Cow<'_, str> {
 /// a width of a character which was tried to be splited in.
 ///
 /// BE AWARE: pos is expected to be in bytes.
-pub fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
+pub(crate) fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
     let mut length = 0;
     let mut i = 0;
     for c in s.chars() {

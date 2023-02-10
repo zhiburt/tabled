@@ -20,7 +20,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))
         .with(Extract::segment(.., ..)),
     "+-------+--------------+--------------+--------------+"
     "|   [N] |   [column 0] |   [column 1] |   [column 2] |"
@@ -38,7 +38,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))
         .with(Extract::segment(1.., ..)),
     "+-------+---------+---------+---------+"
     "|   [0] |   [0-0] |   [0-1] |   [0-2] |"
@@ -54,7 +54,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))
         .with(Extract::segment(.., 1..)),
     "+--------------+--------------+--------------+"
     "|   [column 0] |   [column 1] |   [column 2] |"
@@ -72,7 +72,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))
         .with(Extract::segment(2.., 2..)),
     "+---------+---------+"
     "|   [1-1] |   [1-2] |"
@@ -86,7 +86,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))
         .with(Extract::segment(1..3, 1..)),
         "+---------+---------+---------+"
         "|   [0-0] |   [0-1] |   [0-2] |"
@@ -106,7 +106,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))
         .with(Extract::rows(..)),
     "+-------+--------------+--------------+--------------+"
     "|   [N] |   [column 0] |   [column 1] |   [column 2] |"
@@ -130,7 +130,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))
         .with(Extract::rows(0..=2)),
     "+-------+--------------+--------------+--------------+"
     "|   [N] |   [column 0] |   [column 1] |   [column 2] |"
@@ -146,7 +146,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))
         .with(Extract::columns(..)),
     "+-------+--------------+--------------+--------------+"
     "|   [N] |   [column 0] |   [column 1] |   [column 2] |"
@@ -170,7 +170,7 @@ test_table!(
     create_table::<3, 3>()
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
-        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{}]", s))))
+        .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))
         .with(Extract::columns(0..2)),
     "+-------+--------------+"
     "|   [N] |   [column 0] |"

@@ -6,12 +6,12 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{TableIteratorExt, Panel};
+//! use tabled::{Table, settings::panel::Panel};
 //!
 //! let data = [[1, 2, 3], [4, 5, 6]];
 //!
-//! let table = data.table()
-//!     .with(Panel::vertical(1).text("Split").text_width(1))
+//! let table = Table::new(data)
+//!     .with(Panel::vertical(1, "S\np\nl\ni\nt"))
 //!     .with(Panel::header("Numbers"))
 //!     .to_string();
 //!
@@ -58,12 +58,12 @@ impl Panel {
     /// Creates an empty vertical row at given index.
     ///
     /// ```
-    /// use tabled::{Panel, TableIteratorExt};
+    /// use tabled::{settings::panel::Panel, Table};
     ///
     /// let data = [[1, 2, 3], [4, 5, 6]];
     ///
-    /// let table = data.table()
-    ///     .with(Panel::vertical(1).text("Tabled Releases"))
+    /// let table = Table::new(data)
+    ///     .with(Panel::vertical(1, "Tabled Releases"))
     ///     .to_string();
     ///
     /// println!("{}", table);
@@ -88,11 +88,11 @@ impl Panel {
     /// Creates an empty horizontal row at given index.
     ///
     /// ```
-    /// use tabled::{Panel, TableIteratorExt};
+    /// use tabled::{Table, settings::panel::Panel};
     ///
     /// let data = [[1, 2, 3], [4, 5, 6]];
     ///
-    /// let table = data.table()
+    /// let table = Table::new(data)
     ///     .with(Panel::vertical(1, ""))
     ///     .to_string();
     ///

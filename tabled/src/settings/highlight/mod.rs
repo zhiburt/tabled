@@ -16,7 +16,10 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Highlight, Border, Style, object::Segment};
+/// use tabled::{
+///     Table,
+///     settings::{highlight::Highlight, style::{Border, Style}, object::Segment}
+/// };
 ///
 /// let data = [
 ///     ("ELF", "Extensible Linking Format", true),
@@ -24,9 +27,7 @@ use crate::{
 ///     ("PE", "Portable Executable", false),
 /// ];
 ///
-/// let table = data.iter()
-///                .enumerate()
-///                .table()
+/// let table = Table::new(data.iter().enumerate())
 ///                .with(Style::markdown())
 ///                .with(Highlight::new(Segment::all(), Border::default().top('^').bottom('v')))
 ///                .to_string();
@@ -48,7 +49,14 @@ use crate::{
 /// It's possible to use [`Highlight`] for many kinds of figures.
 ///
 /// ```
-/// use tabled::{TableIteratorExt, Highlight, Border, Style, object::{Segment, Cell, Object}};
+/// use tabled::{
+///     Table,
+///     settings::{
+///         highlight::Highlight,
+///         style::{Border, Style},
+///         object::{Segment, Object}
+///     }
+/// };
 ///
 /// let data = [
 ///     ("ELF", "Extensible Linking Format", true),
@@ -56,11 +64,9 @@ use crate::{
 ///     ("PE", "Portable Executable", false),
 /// ];
 ///
-/// let table = data.iter()
-///                .enumerate()
-///                .table()
+/// let table = Table::new(data.iter().enumerate())
 ///                .with(Style::markdown())
-///                .with(Highlight::new(Segment::all().not(Cell(0,0).and(Cell(1, 0).and(Cell(0, 1)).and(Cell(0, 3)))), Border::filled('*')))
+///                .with(Highlight::new(Segment::all().not((0,0).and((1, 0)).and((0, 1)).and((0, 3))), Border::filled('*')))
 ///                .to_string();
 ///
 /// println!("{}", table);

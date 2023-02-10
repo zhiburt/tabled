@@ -90,7 +90,7 @@ impl HorizontalLine {
 }
 
 impl<R, D> TableOption<R, D> for HorizontalLine {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         match &self.line {
             Some(line) => cfg.set_horizontal_line(self.index, GridLine::from(*line)),
             None => cfg.remove_horizontal_line(self.index),

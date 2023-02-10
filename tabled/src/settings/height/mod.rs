@@ -20,7 +20,7 @@ pub use table_height_limit::TableHeightLimit;
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, Height};
+/// use tabled::{Table, settings::{height::Height, Settings}};
 ///
 /// let data = vec![
 ///     ("Some data", "here", "and here"),
@@ -28,8 +28,7 @@ pub use table_height_limit::TableHeightLimit;
 /// ];
 ///
 /// let table = Table::new(data)
-///     .with(Height::increase(10))
-///     .with(Height::limit(10))
+///     .with(Settings::new(Height::limit(10), Height::increase(10)))
 ///     .to_string();
 ///
 /// assert_eq!(
@@ -57,7 +56,7 @@ impl Height {
     /// ## Cell height
     ///
     /// ```
-    /// use tabled::{Table, Height, Modify, object::Columns};
+    /// use tabled::{Table, settings::{height::Height, Modify, object::Columns}};
     ///
     /// let data = vec![
     ///     ("Some data", "here", "and here"),
@@ -95,7 +94,7 @@ impl Height {
     /// ## Table height
     ///
     /// ```
-    /// use tabled::{Table, Height};
+    /// use tabled::{Table, settings::height::Height};
     ///
     /// let data = vec![
     ///     ("Some data", "here", "and here"),
@@ -131,7 +130,7 @@ impl Height {
     /// ## Cell height
     ///
     /// ```
-    /// use tabled::{Table, Height, Modify, object::Columns};
+    /// use tabled::{Table, settings::{height::Height, Modify, object::Columns}};
     ///
     /// let data = vec![
     ///     ("Some\ndata", "here", "and here"),
@@ -157,7 +156,7 @@ impl Height {
     /// ## Table height
     ///
     /// ```
-    /// use tabled::{Table, Height};
+    /// use tabled::{Table, settings::height::Height};
     ///
     /// let data = vec![
     ///     ("Some\ndata", "here", "and here"),
@@ -170,12 +169,12 @@ impl Height {
     ///
     /// assert_eq!(
     ///     table,
-    ///     "+----------------+------+------------+\n\
-    ///      +----------------+------+------------+\n\
-    ///      | Some           | here | and here   |\n\
-    ///      +----------------+------+------------+\n\
-    ///      | Some           | line | right here |\n\
-    ///      +----------------+------+------------+",
+    ///     "+------+------+------------+\n\
+    ///      +------+------+------------+\n\
+    ///      | Some | here | and here   |\n\
+    ///      +------+------+------------+\n\
+    ///      | Some | line | right here |\n\
+    ///      +------+------+------------+",
     /// );
     ///
     /// let table = Table::new(&data)
@@ -184,10 +183,10 @@ impl Height {
     ///
     /// assert_eq!(
     ///     table,
-    ///     "+----------------+------+------------+\n\
-    ///      +----------------+------+------------+\n\
-    ///      +----------------+------+------------+\n\
-    ///      +----------------+------+------------+",
+    ///     "+--+--+--+\n\
+    ///      +--+--+--+\n\
+    ///      +--+--+--+\n\
+    ///      +--+--+--+",
     /// );
     /// ```
     pub fn limit<W: Measurement<Height>>(width: W) -> CellHeightLimit<W> {
@@ -201,7 +200,7 @@ impl Height {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, Height, Modify, object::Columns};
+    /// use tabled::{Table, settings::{height::Height, Modify, object::Columns}};
     ///
     /// let data = vec![
     ///     ("Some\ndata", "here", "and here"),

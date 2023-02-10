@@ -25,7 +25,7 @@ impl Format {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, format::Format, object::Rows, Modify};
+    /// use tabled::{Table, settings::{format::Format, object::Rows, Modify}};
     ///
     /// let data = vec![
     ///     (0, "Grodno", true),
@@ -35,7 +35,7 @@ impl Format {
     /// ];
     ///
     /// let table = Table::new(&data)
-    ///                .with(Modify::new(Rows::new(1..)).with(Format::new(|s| format!(": {} :", s))))
+    ///                .with(Modify::new(Rows::new(1..)).with(Format::content(|s| format!(": {} :", s))))
     ///                .to_string();
     ///
     /// assert_eq!(table, "+-------+-------------+-----------+\n\
@@ -67,7 +67,7 @@ impl Format {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, format::Format, object::Rows, Modify};
+    /// use tabled::{Table, settings::{format::Format, object::Rows, Modify}};
     ///
     /// let data = vec![
     ///     (0, "Grodno", true),
@@ -77,7 +77,7 @@ impl Format {
     /// ];
     ///
     /// let table = Table::new(&data)
-    ///                .with(Modify::new(Rows::single(0)).with(Format::with_index(|_, (_, column)| column.to_string())))
+    ///                .with(Modify::new(Rows::single(0)).with(Format::positioned(|_, (_, col)| col.to_string())))
     ///                .to_string();
     ///
     /// assert_eq!(table, "+---+---------+-------+\n\

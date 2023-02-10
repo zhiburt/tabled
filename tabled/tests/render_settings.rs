@@ -1,7 +1,7 @@
 use tabled::settings::{
     alignment::Alignment,
     formatting::{AlignmentStrategy, TabSize, TrimStrategy},
-    object::{Cell, Segment},
+    object::Segment,
     span::ColumnSpan,
     style::Style,
     Modify,
@@ -167,7 +167,7 @@ test_table!(
 
 test_table!(
     test_top_alignment_and_vertical_trim_1,
-    new_table(&["   \n\n\n    Hello World"])
+    new_table(vec!["   \n\n\n    Hello World"])
         .with(Style::modern())
         .with(Modify::new(Segment::all()).with(Alignment::top()).with(TrimStrategy::Vertical)),
     "┌─────────────────┐"

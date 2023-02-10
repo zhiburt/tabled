@@ -1,10 +1,10 @@
 use std::fmt;
 use std::io;
 
-pub struct UTF8Writer<W>(W);
+pub(super) struct UTF8Writer<W>(W);
 
 impl<W> UTF8Writer<W> {
-    pub fn new(writer: W) -> Self {
+    pub(crate) fn new(writer: W) -> Self {
         Self(writer)
     }
 }
