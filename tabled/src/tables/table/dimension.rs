@@ -3,6 +3,8 @@ use std::borrow::Cow;
 use papergrid::{records::Records, Dimension, ExactDimension, GridConfig};
 
 /// TableDimension is a [`Dimension`] implementation for a [`Table`]
+///
+/// [`Table`]: crate::Table
 #[derive(Debug, Default, Clone)]
 pub struct TableDimension<'a> {
     width: Option<Cow<'a, [usize]>>,
@@ -20,6 +22,8 @@ impl TableDimension<'_> {
     /// In general the method is only considered to be usefull to a [`TableOption`].
     ///
     /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided widths.
+    ///
+    /// [`TableOption`]: crate::settings::TableOption
     pub fn set_widths(&mut self, columns: Vec<usize>) -> bool {
         self.width = Some(Cow::Owned(columns));
 
@@ -31,6 +35,8 @@ impl TableDimension<'_> {
     /// In general the method is only considered to be usefull to a [`TableOption`].
     ///
     /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided heights.
+    ///
+    /// [`TableOption`]: crate::settings::TableOption
     pub fn set_heights(&mut self, rows: Vec<usize>) -> bool {
         self.height = Some(Cow::Owned(rows));
 

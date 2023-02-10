@@ -1,4 +1,19 @@
 /// Border is a representation of a cells's borders (left, right, top, bottom, and the corners)
+///
+///
+/// ```text
+///                         top border
+///                             |
+///                             V
+/// corner top left ------> +_______+  <---- corner top left
+///                         |       |
+/// left border ----------> |  cell |  <---- right border
+///                         |       |
+/// corner bottom right --> +_______+  <---- corner bottom right
+///                             ^
+///                             |
+///                        bottom border
+/// ```
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Border<T = char> {
     /// A character for a top.

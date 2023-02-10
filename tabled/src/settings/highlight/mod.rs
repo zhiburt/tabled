@@ -130,7 +130,7 @@ where
 
 /// A [`Highlight`] object which works with a [`BorderColored`]
 ///
-/// [`BorderColored`]: crate::style::BorderColored
+/// [`BorderColored`]: crate::settings::style::BorderColor
 #[derive(Debug)]
 pub struct HighlightColored<O> {
     target: O,

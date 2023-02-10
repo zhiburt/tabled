@@ -12,7 +12,8 @@ use super::table_height_limit::TableHeightLimit;
 ///
 /// If used for a [`Table`] [`PriorityNone`] is used.
 ///
-/// [`PriorityNone`]: crate::peaker::PriorityNone
+/// [`PriorityNone`]: crate::settings::peaker::PriorityNone
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct CellHeightLimit<W = usize> {
     height: W,

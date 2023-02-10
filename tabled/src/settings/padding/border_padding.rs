@@ -17,7 +17,7 @@ impl Padding {
     /// Construct's an Padding object.
     ///
     /// It uses space(' ') as a default fill character.
-    /// To set a custom character you can use [`Self::set_fill`] function.
+    /// To set a custom character you can use [`Padding::fill`] function.
     pub const fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
         let indent = Indent::spaced;
         Self(GridPadding::new(
@@ -31,7 +31,7 @@ impl Padding {
     /// Construct's an Padding object with all sides set to 0.
     ///
     /// It uses space(' ') as a default fill character.
-    /// To set a custom character you can use [`Self::set_fill`] function.
+    /// To set a custom character you can use [`Padding::fill`] function.
     pub const fn zero() -> Self {
         let indent = Indent::spaced(0);
         Self(GridPadding::new(indent, indent, indent, indent))

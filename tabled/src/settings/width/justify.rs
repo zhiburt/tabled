@@ -39,7 +39,7 @@ use crate::{
 ///     .with(Justify::max());
 /// ```
 ///
-/// [`Padding`]: crate::Padding
+/// [`Padding`]: crate::settings::padding::Padding
 #[derive(Debug)]
 pub struct Justify<W> {
     width: W,
@@ -53,7 +53,7 @@ where
     ///
     /// Be aware that [`Padding`] is not considered when comparing the width.
     ///
-    /// [`Padding`]: crate::Padding
+    /// [`Padding`]: crate::settings::padding::Padding
     pub fn new(width: W) -> Self {
         Self { width }
     }

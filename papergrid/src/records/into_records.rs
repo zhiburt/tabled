@@ -2,7 +2,7 @@
 ///
 /// [`Grid`]: crate::Grid
 pub trait IntoRecords {
-    /// A string representation of a [Grid] cell.
+    /// A string representation of a [`Grid`] cell.
     ///
     /// [`Grid`]: crate::Grid
     type Cell: AsRef<str>;

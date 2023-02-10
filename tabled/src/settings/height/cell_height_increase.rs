@@ -12,7 +12,8 @@ use super::TableHeightIncrease;
 ///
 /// If used for a [`Table`] [`PriorityNone`] is used.
 ///
-/// [`PriorityNone`]: crate::peaker::PriorityNone
+/// [`PriorityNone`]: crate::settings::peaker::PriorityNone
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct CellHeightIncrease<W = usize> {
     height: W,

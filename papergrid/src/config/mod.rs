@@ -176,81 +176,84 @@ impl GridConfig {
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
-    pub fn set_horizontal_line(&mut self, row: usize, line: HorizontalLine<char>) {
-        self.borders.insert_horizontal_line(row, line);
+    pub fn set_horizontal_line(&mut self, line: usize, val: HorizontalLine<char>) {
+        self.borders.insert_horizontal_line(line, val);
     }
 
     /// Sets off the border line by row index if any were set
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
-    pub fn remove_horizontal_line(&mut self, row: usize) {
-        self.borders.remove_horizontal_line(row);
+    pub fn remove_horizontal_line(&mut self, line: usize) {
+        self.borders.remove_horizontal_line(line);
     }
 
     /// Gets a overridden vertical line.
     ///
-    /// Row `0` means the top row.
-    /// Row `grid.count_rows()` means the bottom row.
-    pub fn get_vertical_line(&self, row: usize) -> Option<&VerticalLine<char>> {
-        self.borders.get_vertical_line(row)
+    /// Row `0` means the left row.
+    /// Row `grid.count_columns()` means the right most row.
+    pub fn get_vertical_line(&self, line: usize) -> Option<&VerticalLine<char>> {
+        self.borders.get_vertical_line(line)
     }
 
     /// Set the border line by column index.
     ///
-    /// Row `0` means the top row.
-    /// Row `grid.count_rows()` means the bottom row.
-    pub fn set_vertical_line(&mut self, row: usize, line: VerticalLine<char>) {
-        self.borders.insert_vertical_line(row, line);
+    /// Row `0` means the left row.
+    /// Row `grid.count_columns()` means the right most row.
+    pub fn set_vertical_line(&mut self, line: usize, val: VerticalLine<char>) {
+        self.borders.insert_vertical_line(line, val);
     }
 
-    /// Sets off the border line by row index if any were set
+    /// Sets off the border line by column index if any were set
     ///
-    /// Row `0` means the top row.
-    /// Row `grid.count_rows()` means the bottom row.
-    pub fn remove_vertical_line(&mut self, row: usize) {
-        self.borders.remove_vertical_line(row);
+    /// Row `0` means the left row.
+    /// Row `grid.count_columns()` means the right most row.
+    pub fn remove_vertical_line(&mut self, line: usize) {
+        self.borders.remove_vertical_line(line);
     }
 
     /// Gets a overridden line.
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
-    pub fn get_horizontal_line(&self, row: usize) -> Option<&HorizontalLine<char>> {
-        self.borders.get_horizontal_line(row)
+    pub fn get_horizontal_line(&self, line: usize) -> Option<&HorizontalLine<char>> {
+        self.borders.get_horizontal_line(line)
     }
 
     /// Override the split line with a custom text.
     ///
     /// If borders are not set the string won't be rendered.
-    pub fn override_split_line(&mut self, row: usize, line: impl Into<String>, offset: Offset) {
+    pub fn override_split_line(&mut self, line: usize, text: impl Into<String>, offset: Offset) {
         self.override_horizontal_lines
-            .insert(row, (line.into(), offset));
+            .insert(line, (text.into(), offset));
     }
 
     /// Gets a set text to a border line by index
-    pub fn get_split_line_text(&self, row: usize) -> Option<&str> {
+    pub fn get_split_line_text(&self, line: usize) -> Option<&str> {
         self.override_horizontal_lines
-            .get(&row)
+            .get(&line)
             .map(|(s, _)| s.as_str())
     }
 
     /// Gets a set text to a border line by index
-    pub fn get_split_line_offset(&self, row: usize) -> Option<Offset> {
+    pub fn get_split_line_offset(&self, line: usize) -> Option<Offset> {
         self.override_horizontal_lines
-            .get(&row)
+            .get(&line)
             .map(|(_, offset)| offset)
             .copied()
     }
 
     /// Removes a split line text if any set.
-    pub fn remove_split_line_text(&mut self, row: usize) -> Option<(String, Offset)> {
-        self.override_horizontal_lines.remove(&row)
+    pub fn remove_split_line_text(&mut self, line: usize) -> Option<(String, Offset)> {
+        self.override_horizontal_lines.remove(&line)
     }
 
     /// Override a character on a horizontal line.
     ///
     /// If borders are not set the char won't be used.
+    ///
+    /// It takes not cell position but line as row and column of a cell;
+    /// So its range is line <= count_rows && col < count_columns.
     pub fn override_horizontal_border(&mut self, pos: Position, c: char, offset: Offset) {
         let chars = self
             .override_horizontal_borders
@@ -261,6 +264,9 @@ impl GridConfig {
     }
 
     /// Get a list of overridden chars in a horizontal border.
+    ///
+    /// It takes not cell position but line as row and column of a cell;
+    /// So its range is line <= count_rows && col < count_columns.
     pub fn lookup_overridden_horizontal(
         &self,
         pos: Position,
@@ -286,11 +292,17 @@ impl GridConfig {
     }
 
     /// Checks if there any char in a horizontal border being overridden.
+    ///
+    /// It takes not cell position but line as row and column of a cell;
+    /// So its range is line <= count_rows && col < count_columns.
     pub fn is_overridden_horizontal(&self, pos: Position) -> bool {
         self.override_horizontal_borders.get(&pos).is_some()
     }
 
     /// Removes a list of overridden chars in a horizontal border.
+    ///
+    /// It takes not cell position but line as row and column of a cell;
+    /// So its range is line <= count_rows && col < count_columns.
     pub fn remove_overridden_horizontal(&mut self, pos: Position) {
         self.override_horizontal_borders.remove(&pos);
     }
@@ -298,6 +310,9 @@ impl GridConfig {
     /// Override a vertical split line.
     ///
     /// If borders are not set the char won't be used.
+    ///
+    /// It takes not cell position but cell row and column of a line;
+    /// So its range is row < count_rows && col <= count_columns.
     pub fn override_vertical_border(&mut self, pos: Position, c: char, offset: Offset) {
         let chars = self
             .override_vertical_borders
@@ -308,6 +323,9 @@ impl GridConfig {
     }
 
     /// Get a list of overridden chars in a horizontal border.
+    ///
+    /// It takes not cell position but cell row and column of a line;
+    /// So its range is row < count_rows && col <= count_columns.
     pub fn lookup_overridden_vertical(
         &self,
         pos: Position,
@@ -333,11 +351,17 @@ impl GridConfig {
     }
 
     /// Checks if there any char in a horizontal border being overridden.
+    ///
+    /// It takes not cell position but cell row and column of a line;
+    /// So its range is row < count_rows && col <= count_columns.
     pub fn is_overridden_vertical(&self, pos: Position) -> bool {
         self.override_vertical_borders.get(&pos).is_some()
     }
 
     /// Removes a list of overridden chars in a horizontal border.
+    ///
+    /// It takes not cell position but cell row and column of a line;
+    /// So its range is row < count_rows && col <= count_columns.
     pub fn remove_overridden_vertical(&mut self, pos: Position) {
         self.override_vertical_borders.remove(&pos);
     }

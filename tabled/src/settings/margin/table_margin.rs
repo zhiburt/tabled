@@ -18,7 +18,7 @@ impl Margin {
     /// Construct's an Margin object.
     ///
     /// It uses space(' ') as a default fill character.
-    /// To set a custom character you can use [`Self::set_fill`] function.
+    /// To set a custom character you can use [`Margin::fill`] function.
     pub const fn new(left: usize, right: usize, top: usize, bottom: usize) -> Self {
         Self(GridMargin {
             top: Indent::spaced(top),

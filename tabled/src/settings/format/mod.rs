@@ -59,10 +59,10 @@ impl Format {
         FormatContent(move |s: &str| (f)(s).into())
     }
 
-    /// This function creates a new [`FormatWithIndex`], so
+    /// This function creates a new [`FormatContentPositioned`], so
     /// it can be used as a grid setting.
     ///
-    /// It's different from [`Format::new`] as it also provides a row and column index.
+    /// It's different from [`Format::content`] as it also provides a row and column index.
     ///
     /// # Example
     ///

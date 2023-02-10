@@ -6,6 +6,8 @@ use crate::{
 };
 
 /// A structure used to set [`Table`] width via a list of columns widths.
+///
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct WidthList {
     list: Vec<usize>,

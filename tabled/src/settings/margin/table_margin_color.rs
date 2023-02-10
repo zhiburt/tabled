@@ -1,6 +1,6 @@
 //! This module contains a configuration of a color for [`Margin`].
 //!
-//! [`Margin`]: crate::Margin
+//! [`Margin`]: crate::settings::margin::Margin
 
 use crate::{
     grid::config::{GridConfig, MarginColor as GridMarginColor},
@@ -22,7 +22,7 @@ use crate::{
 ///     ));
 /// ```
 ///
-/// [`Margin`]: crate::Margin
+/// [`Margin`]: crate::settings::margin::Margin
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default)]
 pub struct MarginColor(GridMarginColor<'static>);

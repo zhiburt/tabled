@@ -1,4 +1,4 @@
-//! The module contains an [`Estimate`] trait and its implementations.
+//! The module contains an [`Dimension`] trait and its implementations.
 
 use crate::{records::Records, GridConfig};
 

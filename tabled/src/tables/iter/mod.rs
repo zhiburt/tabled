@@ -154,7 +154,7 @@ impl<I> IterTable<I> {
 
     /// Build a string.
     ///
-    /// We can't implement [`std::fmt::ToString`] cause it does takes `&self` reference.
+    /// We can't implement [`std::string::ToString`] cause it does takes `&self` reference.
     #[allow(clippy::inherent_to_string)]
     pub fn to_string(self) -> String
     where

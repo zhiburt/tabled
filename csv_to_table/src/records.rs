@@ -6,6 +6,8 @@ use tabled::records::IntoRecords;
 /// A [`IntoRecords`] implementation for a [`csv::Reader`].
 ///
 /// By default all errors are ignored, but you can print them using [`CsvRecords::print_erorrs`].
+///
+/// [`CsvRecords::print_erorrs`]: CsvRecords.print_errors
 pub struct CsvRecords<R> {
     rows: StringRecordsIntoIter<R>,
     err_logic: ErorrLogic,

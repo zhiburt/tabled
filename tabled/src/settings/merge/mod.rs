@@ -1,6 +1,6 @@
 //! The module contains a set of methods to merge cells together via [`Span`]s.
 //!
-//! [`Span`]: crate::Span
+//! [`Span`]: crate::settings::span::Span
 
 use crate::{
     grid::{config::GridConfig, grid_projection::GridProjection},
@@ -10,7 +10,7 @@ use crate::{
 
 /// Merge to combine duplicates together, using [`Span`].
 ///
-/// [`Span`]: crate::Span
+/// [`Span`]: crate::settings::span::Span
 #[derive(Debug)]
 pub struct Merge;
 
@@ -30,7 +30,7 @@ impl Merge {
 /// in case of duplicate merges the cells together using [`Span`].
 ///
 /// [`Table`]: crate::Table
-/// [`Span`]: crate::Span
+/// [`Span`]: crate::settings::span::Span
 #[derive(Debug)]
 pub struct MergeDuplicatesVertical;
 
@@ -116,7 +116,7 @@ where
 /// in case of duplicate merges the cells together using [`Span`].
 ///
 /// [`Table`]: crate::Table
-/// [`Span`]: crate::Span
+/// [`Span`]: crate::settings::span::Span
 #[derive(Debug)]
 pub struct MergeDuplicatesHorizontal;
 

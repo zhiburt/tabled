@@ -2,8 +2,12 @@
 
 use crate::{
     grid::{config::GridConfig, dimension::ExactDimension},
-    grid::{grid_projection::GridProjection, util::string::string_width_multiline_tab},
+    grid::{
+        grid_projection::GridProjection,
+        util::string::{self, string_width_multiline_tab},
+    },
     records::{ExactRecords, Records},
+    settings::height::Height,
     settings::width::Width,
 };
 
@@ -34,14 +38,14 @@ impl Measurement<Width> for Max {
     }
 }
 
-// impl Measurement<Height> for Max {
-//     fn measure<R: Records + ExactRecords>(&self, records: R, _: &GridConfig) -> usize {
-//         records_heights(&records)
-//             .map(|r| r.max().unwrap_or(0))
-//             .max()
-//             .unwrap_or(0)
-//     }
-// }
+impl Measurement<Height> for Max {
+    fn measure<R: Records + ExactRecords>(&self, records: R, _: &GridConfig) -> usize {
+        records_heights(&records)
+            .map(|r| r.max().unwrap_or(0))
+            .max()
+            .unwrap_or(0)
+    }
+}
 
 /// Min width value.
 #[derive(Debug)]
@@ -56,14 +60,14 @@ impl Measurement<Width> for Min {
     }
 }
 
-// impl Measurement<Height> for Min {
-//     fn measure<R: Records + ExactRecords>(&self, records: R, _: &GridConfig) -> usize {
-//         records_heights(&records)
-//             .map(|r| r.max().unwrap_or(0))
-//             .min()
-//             .unwrap_or(0)
-//     }
-// }
+impl Measurement<Height> for Min {
+    fn measure<R: Records + ExactRecords>(&self, records: R, _: &GridConfig) -> usize {
+        records_heights(&records)
+            .map(|r| r.max().unwrap_or(0))
+            .min()
+            .unwrap_or(0)
+    }
+}
 
 /// Percent from a total table width.
 #[derive(Debug)]
@@ -79,15 +83,15 @@ impl Measurement<Width> for Percent {
     }
 }
 
-// impl Measurement<Height> for Percent {
-//     fn measure<R>(&self, records: R, cfg: &GridConfig) -> usize
-//     where
-//         R: Records + ExactRecords,
-//     {
-//         let (total, _) = get_table_height(records, cfg);
-//         (total * self.0) / 100
-//     }
-// }
+impl Measurement<Height> for Percent {
+    fn measure<R>(&self, records: R, cfg: &GridConfig) -> usize
+    where
+        R: Records + ExactRecords,
+    {
+        let (_, total) = get_table_heights_width_total(records, cfg);
+        (total * self.0) / 100
+    }
+}
 
 fn grid_widths<R: Records + ExactRecords>(
     records: &R,
@@ -112,9 +116,34 @@ where
 
 fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
     let gp = GridProjection::new(cfg).count_columns(list.len());
-    let margin = cfg.get_margin();
-
     let total = list.iter().sum::<usize>();
 
-    total + gp.count_vertical() + margin.left.size + margin.right.size
+    total + gp.count_vertical()
+}
+
+fn records_heights<R>(records: &R) -> impl Iterator<Item = impl Iterator<Item = usize> + '_> + '_
+where
+    R: Records + ExactRecords,
+{
+    (0..records.count_rows()).map(move |row| {
+        (0..records.count_columns())
+            .map(move |col| string::count_lines(records.get_cell((row, col)).as_ref()))
+    })
+}
+
+fn get_table_heights_width_total<R>(records: R, cfg: &GridConfig) -> (Vec<usize>, usize)
+where
+    R: Records,
+{
+    let list = ExactDimension::height(records, cfg);
+    let total = get_table_total_height(&list, cfg);
+    (list, total)
+}
+
+fn get_table_total_height(list: &[usize], cfg: &GridConfig) -> usize {
+    let gp = GridProjection::new(cfg).count_rows(list.len());
+    let total = list.iter().sum::<usize>();
+    let counth = gp.count_horizontal();
+
+    total + counth
 }

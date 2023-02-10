@@ -89,11 +89,11 @@ impl<L> Disable<L, TargetColumn> {
     /// );
     /// ```
     ///
-    /// [`Columns`]: crate::object::Columns
-    /// [`Column`]: crate::object::Column
-    /// [`FirstColumn`]: crate::object::FirstColumn
-    /// [`LastColumn`]: crate::object::LastColumn
-    /// [`ByColumnName`]: crate::locator::ByColumnName
+    /// [`Columns`]: crate::settings::object::Columns
+    /// [`Column`]: crate::settings::object::Column
+    /// [`FirstColumn`]: crate::settings::object::FirstColumn
+    /// [`LastColumn`]: crate::settings::object::LastColumn
+    /// [`ByColumnName`]: crate::settings::locator::ByColumnName
     pub fn column(locator: L) -> Self {
         Self {
             locator,
@@ -131,10 +131,10 @@ impl<L> Disable<L, TargetRow> {
     /// );
     /// ```
     ///
-    /// [`Rows`]: crate::object::Rows
-    /// [`Row`]: crate::object::Row
-    /// [`FirstRow`]: crate::object::FirstRow
-    /// [`LastRow`]: crate::object::LastRow
+    /// [`Rows`]: crate::settings::object::Rows
+    /// [`Row`]: crate::settings::object::Row
+    /// [`FirstRow`]: crate::settings::object::FirstRow
+    /// [`LastRow`]: crate::settings::object::LastRow
     pub fn row(locator: L) -> Self {
         Self {
             locator,

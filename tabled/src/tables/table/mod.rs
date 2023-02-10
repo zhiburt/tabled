@@ -50,9 +50,9 @@ pub use dimension::TableDimension;
 /// println!("{}", table);
 /// ```
 ///
-/// [`Padding`]: crate::Padding
-/// [`Style`]: crate::Style
-/// [`Style::ascii`]: crate::Style::ascii
+/// [`Padding`]: crate::settings::padding::Padding
+/// [`Style`]: crate::settings::style::Style
+/// [`Style::ascii`]: crate::settings::style::Style::ascii
 #[derive(Debug, Clone)]
 pub struct Table {
     records: VecRecords<Cow<'static, str>>,

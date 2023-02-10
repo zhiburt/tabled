@@ -1,4 +1,6 @@
 //! This module contains [`Truncate`] structure, used to decrease width of a [`Table`]s or a cell on a [`Table`] by truncating the width.
+//!
+//! [`Table`]: crate::Table
 
 use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
 
@@ -35,7 +37,7 @@ use super::util::{cut_str, get_table_widths, get_table_widths_with_total, replac
 ///     .with(Modify::new(Segment::all()).with(Width::truncate(3)));
 /// ```
 ///
-/// [`Padding`]: crate::Padding
+/// [`Padding`]: crate::settings::padding::Padding
 #[derive(Debug)]
 pub struct Truncate<'a, W = usize, P = PriorityNone> {
     width: W,
@@ -140,8 +142,8 @@ impl<'a, W, P> Truncate<'a, W, P> {
     /// - [`PriorityMax`] cuts the biggest columns first.
     /// - [`PriorityMin`] cuts the lowest columns first.
     ///
-    /// [`PriorityMax`]: crate::peaker::PriorityMax
-    /// [`PriorityMin`]: crate::peaker::PriorityMin
+    /// [`PriorityMax`]: crate::settings::peaker::PriorityMax
+    /// [`PriorityMin`]: crate::settings::peaker::PriorityMin
     pub fn priority<PP: Peaker>(self) -> Truncate<'a, W, PP> {
         Truncate {
             width: self.width,

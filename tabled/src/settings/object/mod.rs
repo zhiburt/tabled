@@ -715,7 +715,7 @@ mod tests {
             vec_cells(Rows::first().intersect(Cell::new(0, 0)), 2, 3),
             [Entity::Cell(0, 0)]
         );
-        // maybe we somehow shall not limit the rows/columns by the max count? 
+        // maybe we somehow shall not limit the rows/columns by the max count?
         assert_eq!(
             vec_cells(Rows::single(1).intersect(Columns::single(1)), 2, 1),
             []

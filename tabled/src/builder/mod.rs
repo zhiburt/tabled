@@ -108,6 +108,8 @@
 //!    ),
 //! )
 //! ```
+//!
+//! [`Table`]: crate::Table
 
 mod index_builder;
 mod table_builder;

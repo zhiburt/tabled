@@ -1286,7 +1286,7 @@ fn print_vertical_char<F: Write>(
     count_lines: usize,
     shape: (usize, usize),
 ) -> fmt::Result {
-    // todo: Add Border/verticals to CellLines structure to not make these lookup calls
+    // todo: Is Adding Border/verticals to CellLines structure to not make these lookup calls
 
     let gp = GridProjection::with_shape(cfg, shape);
 

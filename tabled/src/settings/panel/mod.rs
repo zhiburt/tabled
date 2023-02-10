@@ -34,7 +34,7 @@
 //! ```
 //!
 //! [`Table`]: crate::Table
-//! [`Span`]: crate::Span
+//! [`Span`]: crate::settings::span::Span
 
 mod footer;
 mod header;

@@ -1,8 +1,10 @@
 use crate::grid::config::GridConfig;
 
 /// A trait which is responsilbe for configuration of a [`Table`].
+///
+/// [`Table`]: crate::Table
 pub trait TableOption<R, D> {
-    /// The function modifies a [`Grid`] object.
+    /// The function allows modification of records and a grid configuration.
     fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D);
 }
 

@@ -36,7 +36,7 @@ use crate::{
 ///
 /// NOTICE: It uses [`Margin`] therefore it often can't be combined.
 ///
-/// [`Margin`]: crate::Margin
+/// [`Margin`]: crate::settings::margin::Margin
 #[derive(Debug, Clone)]
 pub struct Shadow {
     c: char,

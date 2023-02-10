@@ -4,7 +4,7 @@
 //! There's a similar structure [`Highlight`] which does a highlighting a of segments.
 //!
 //! [`Table`]: crate::Table
-//! [`Highlight`]: crate::Highlight
+//! [`Highlight`]: crate::settings::highlight::Highlight
 
 use std::ops::{RangeBounds, RangeFull};
 
@@ -86,7 +86,7 @@ where
 {
     /// Returns a new [`Table`] that reflects a segment of the referenced [`Table`]
     ///
-    /// The segment is defined by [`RangeBounds`<usize>] for Rows
+    /// The segment is defined by [`RangeBounds`] for Rows
     ///
     /// ```rust,no_run
     /// # use tabled::settings::extract::Extract;
@@ -120,7 +120,7 @@ where
 {
     /// Returns a new [`Table`] that reflects a segment of the referenced [`Table`]
     ///
-    /// The segment is defined by [`RangeBounds`<usize>] for Columns
+    /// The segment is defined by [`RangeBounds`] for columns.
     ///
     /// ```rust,no_run
     /// # use tabled::settings::extract::Extract;

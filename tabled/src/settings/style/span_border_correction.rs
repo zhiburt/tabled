@@ -1,7 +1,7 @@
-//! This module contains [`StyleCorrectSpan`] structure, which can be usefull when [`Span`] is used, and
+//! This module contains [`BorderSpanCorrection`] structure, which can be usefull when [`Span`] is used, and
 //! you wan't to fix the intersections symbols which are left intact by default.
 //!
-//! [`Span`]: crate::Span
+//! [`Span`]: crate::settings::span::Span
 
 use crate::{
     grid::{
@@ -71,8 +71,9 @@ use crate::{
 /// See [`BorderSpanCorrection`].
 ///
 /// [`Table`]: crate::Table
-/// [`Span`]: crate::Span
-/// [`Style::correct_spans`]: crate::Style::correct_spans
+/// [`Span`]: crate::settings::span::Span
+/// [`Style`]: crate::settings::style::Style
+/// [`Style::correct_spans`]: crate::settings::style::BorderSpanCorrection
 #[derive(Debug)]
 pub struct BorderSpanCorrection;
 

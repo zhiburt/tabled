@@ -1,4 +1,6 @@
 //! This module contains [`MinWidth`] structure, used to increase width of a [`Table`]s or a cell on a [`Table`].
+//!
+//! [`Table`]: crate::Table
 
 use std::marker::PhantomData;
 
@@ -52,7 +54,7 @@ use super::util::get_table_widths_with_total;
 /// let table = Table::new(&["Hello World!"]).with(Width::increase(5));
 /// ```
 ///
-/// [`Padding`]: crate::Padding
+/// [`Padding`]: crate::settings::padding::Padding
 #[derive(Debug)]
 pub struct MinWidth<W = usize, P = PriorityNone> {
     width: W,
@@ -90,8 +92,8 @@ impl<W, P> MinWidth<W, P> {
     /// - [`PriorityMax`] inc the biggest columns first.
     /// - [`PriorityMin`] inc the lowest columns first.
     ///
-    /// [`PriorityMax`]: crate::peaker::PriorityMax
-    /// [`PriorityMin`]: crate::peaker::PriorityMin
+    /// [`PriorityMax`]: crate::settings::peaker::PriorityMax
+    /// [`PriorityMin`]: crate::settings::peaker::PriorityMin
     pub fn priority<PP: Peaker>(self) -> MinWidth<W, PP> {
         MinWidth {
             fill: self.fill,

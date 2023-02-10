@@ -1,4 +1,6 @@
 //! This module contains a [`PaddingColor`] setting of a cell on a [`Table`].
+//!
+//! [`Table`]: crate::Table
 
 use crate::{
     grid::config::{Entity, GridConfig, PaddingColor as GridPaddingColor},
@@ -16,7 +18,7 @@ use crate::{
 ///     ));
 /// ```
 ///
-/// [`Padding`]: crate::Padding
+/// [`Padding`]: crate::settings::padding::Padding
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default)]
 pub struct PaddingColor(GridPaddingColor<'static>);

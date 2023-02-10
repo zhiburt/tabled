@@ -4,9 +4,11 @@ use crate::{
     settings::CellOption,
 };
 
-/// [`FormatWithIndex`] is like a [`Format`] an abstraction over a function you can use against a cell.
+/// [`FormatContentPositioned`] is like a [`FormatContent`] an abstraction over a function you can use against a cell.
 ///
-/// It differerent from [`Format`] that it provides a row and column index.
+/// It differerent from [`FormatContent`] that it provides a row and column index.
+///
+/// [`FormatContent`]: crate::settings::format::FormatContent
 #[derive(Debug)]
 pub struct FormatContentPositioned<F>(pub F)
 where

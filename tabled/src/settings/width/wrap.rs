@@ -1,5 +1,7 @@
 //! This module contains [`Wrap`] structure, used to decrease width of a [`Table`]s or a cell on a [`Table`] by wrapping it's content
 //! to a new line.
+//!
+//! [`Table`]: crate::Table
 
 use std::marker::PhantomData;
 
@@ -39,7 +41,7 @@ use super::util::{get_table_widths, get_table_widths_with_total, replace_tab, sp
 ///     .with(Modify::new(Segment::all()).with(Width::wrap(3)));
 /// ```
 ///
-/// [`Padding`]: crate::Padding
+/// [`Padding`]: crate::settings::padding::Padding
 #[derive(Debug, Clone)]
 pub struct Wrap<W = usize, P = PriorityNone> {
     width: W,
@@ -71,9 +73,9 @@ impl<W, P> Wrap<W, P> {
     /// Be aware that it doesn't consider padding.
     /// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
     ///
-    /// [`Padding`]: crate::Padding
-    /// [`PriorityMax`]: crate::peaker::PriorityMax
-    /// [`PriorityMin`]: crate::peaker::PriorityMin
+    /// [`Padding`]: crate::settings::padding::Padding
+    /// [`PriorityMax`]: crate::settings::peaker::PriorityMax
+    /// [`PriorityMin`]: crate::settings::peaker::PriorityMin
     pub fn priority<PP>(self) -> Wrap<W, PP> {
         Wrap {
             width: self.width,

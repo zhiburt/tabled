@@ -103,8 +103,41 @@ use super::{Border, HorizontalLine, Line, VerticalLine};
 
 /// Style is represents a theme of a [`Table`].
 ///
+/// ```text
+/// corner top left         top intersection                    corner top right
+///                .             |                             .
+///                 .            V                            .
+///                  ╭───┬───┬───┬───┬───┬───┬────┬────┬────╮
+///                  │ i │ 0 │ 1 │ 2 │ 3 │ 4 │ 5  │ 6  │ 7  │
+///                  ├───┼───┼───┼───┼───┼───┼────┼────┼────┤ <- this horizontal line is custom 'horizontals'
+///                  │ 0 │ 0 │ 0 │ 0 │ 0 │ 0 │ 0  │ 0  │ 0  │    other lines horizontal lines are not set they called 'horizontal'
+///                  │ 1 │ 0 │ 1 │ 2 │ 3 │ 4 │ 5  │ 6  │ 7  │
+///                  │ 2 │ 0 │ 2 │ 4 │ 6 │ 8 │ 10 │ 12 │ 14 │
+///                  ╰───┴───┴───┴───┴───┴───┴────┴────┴────╯
+///                .         ^                    ^           .
+///               .          |                    |            .
+/// corner bottom left       |         bottom intersection     corner bottom right
+///                          |
+///                          |
+///             all this vertical lines are called 'vertical'
+/// ```
+///
+///
+/// ```text
+///                     ┌───┬───┬───┬───┬───┐
+///                     │ 0 │ 1 │ 2 │ 3 │ 4 │
+/// intersection left ->├───X───X───X───X───┤ <- all this horizontal lines are called 'horizontal'
+///                     │ 1 │ 2 │ 3 │ 4 │ 5 │
+///                     ├───X───X───X───X───┤ <- intersection right
+///                     │ 2 │ 3 │ 4 │ 5 │ 6 │
+///                     └───┴───┴───┴───┴───┘
+///
+/// All 'X' positions are called 'intersection'.
+/// It's a place where 'vertical' and 'horizontal' lines intersect.
+/// ```
+///
 /// It tries to limit an controlling a valid state of it.
-/// It doesn't allow to call method [`Style::top_left_corner`] unless [`Style::left`] and [`Style::top`] is set.
+/// For example, it won't allow to call method [`Style::corner_top_left`] unless [`Style::left`] and [`Style::top`] is set.
 ///
 /// You can turn [`Style`] into [`RawStyle`] to have more control using [`Into`] implementation.
 ///
@@ -124,7 +157,10 @@ use super::{Border, HorizontalLine, Line, VerticalLine};
 /// ```
 ///
 /// [`Table`]: crate::Table
-/// [`RawStyle`]: crate::style::RawStyle
+/// [`RawStyle`]: crate::settings::style::RawStyle
+/// [`Style::corner_top_left`]: Style::corner_top_left
+/// [`Style::left`]: Style.left
+/// [`Style::top`]: Style.function.top
 #[derive(Debug, Clone)]
 pub struct Style<T, B, L, R, H, V, HLines = HLineArray<0>, VLines = VLineArray<0>> {
     borders: Borders<char>,

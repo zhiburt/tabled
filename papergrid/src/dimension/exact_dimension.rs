@@ -1,4 +1,4 @@
-//! The module contains a [`HeightEstimator`] for [`Grid`] height estimation.
+//! The module contains a [`ExactDimension`] for [`Grid`] height/width estimation.
 //!
 //! [`Grid`]: crate::Grid
 
@@ -16,7 +16,7 @@ use crate::{
 
 use super::Dimension;
 
-/// A [`Estimate`]or of a height for a [`Grid`].
+/// A [`Dimension`] implementation which calculates exact column/row width/height.
 ///
 /// [`Grid`]: crate::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]

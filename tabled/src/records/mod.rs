@@ -78,9 +78,7 @@ where
     }
 }
 
-/// A [`Grid`] representation of a data set which can be modified by moving rows/columns around.
-///
-/// [`Grid`]: crate::Grid
+/// A records representation which can be modified by moving rows/columns around.
 pub trait Resizable {
     /// Swap cells with one another.
     fn swap(&mut self, lhs: Position, rhs: Position);
@@ -190,9 +188,7 @@ where
     }
 }
 
-/// A [`Grid`] representation of a data set which can be modified.
-///
-/// [`Grid`]: crate::Grid
+/// A [`Records`] representation which can modify cell by (row, column) index.
 pub trait RecordsMut<Text> {
     /// Sets a text to a given cell by index.
     fn set(&mut self, pos: Position, text: Text);

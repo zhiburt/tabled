@@ -8,6 +8,8 @@ use crate::{
 };
 
 /// A structure used to set [`Table`] height via a list of rows heights.
+///
+/// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct HeightList {
     list: Vec<usize>,

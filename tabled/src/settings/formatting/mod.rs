@@ -4,7 +4,7 @@
 //!
 //! [`TabSize`] sets a default tab size.
 //!
-//! [`Alignment`]: crate::Alignment
+//! [`Alignment`]: crate::settings::alignment::Alignment
 
 mod alignment_strategy;
 mod tab_size;

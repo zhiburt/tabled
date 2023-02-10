@@ -1,7 +1,7 @@
 //! The module contains [`Peaker`] trait and its implementations to be used in [`Height`] and [`Width`].
 //!
-//! [`Width`]: crate::Width
-//! [`Height`]: crate::Height
+//! [`Width`]: crate::settings::width::Width
+//! [`Height`]: crate::settings::height::Height
 
 /// A strategy of width function.
 /// It determines the order how the function is applied.

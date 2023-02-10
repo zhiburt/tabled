@@ -98,7 +98,7 @@ pub use self::{
 ///     .with(Width::increase(5));
 /// ```
 ///
-/// [`Padding`]: crate::Padding
+/// [`Padding`]: crate::settings::padding::Padding
 /// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Width;

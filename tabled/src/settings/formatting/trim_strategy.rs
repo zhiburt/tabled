@@ -71,7 +71,7 @@ use crate::{
 /// );
 /// ```
 ///
-/// [`Alignment`]: crate::Alignment
+/// [`Alignment`]: crate::settings::alignment::Alignment
 #[derive(Debug, Clone)]
 pub enum TrimStrategy {
     /// Allow vertical trim.

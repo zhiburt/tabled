@@ -190,8 +190,6 @@ impl Builder {
 
     /// Adds a row to a [`Table`].
     ///
-    /// If [`Self::set_columns`] is not set the first row will be considered a header.
-    ///
     /// ```rust
     /// use tabled::builder::Builder;
     ///

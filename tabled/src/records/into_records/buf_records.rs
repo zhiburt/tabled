@@ -1,4 +1,4 @@
-//! A module contains [`BufRows`] and [`BufRecords2`] iterators.
+//! A module contains [`BufRows`] and [`BufColumns`] iterators.
 //!
 //! Almoust always they both can be used interchangably but [`BufRows`] is supposed to be lighter cause it
 //! does not reads columns.
@@ -16,7 +16,7 @@ pub struct BufRows<I, T> {
 }
 
 impl BufRows<(), ()> {
-    /// Creates a new [`BufRecords`] structure, filling the buffer.
+    /// Creates a new [`BufRows`] structure, filling the buffer.
     pub fn new<I: IntoRecords>(
         records: I,
         sniff: usize,
@@ -113,7 +113,7 @@ pub struct BufColumns<I> {
 }
 
 impl BufColumns<()> {
-    /// Creates new [`BufRecords2`] structure, filling the buffer.
+    /// Creates new [`BufColumns`] structure, filling the buffer.
     pub fn new<I: IntoRecords>(
         records: I,
         sniff: usize,
@@ -163,7 +163,7 @@ where
     }
 }
 
-/// A row iterator for [`BufRecords2`]
+/// A row iterator for [`BufColumns`]
 #[derive(Debug)]
 pub struct BufColumnIter<I> {
     buf: std::vec::IntoIter<Vec<String>>,

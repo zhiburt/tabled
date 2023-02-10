@@ -49,7 +49,7 @@
 //! ```
 //!
 //! [`Table`]: crate::Table
-//! [`AlignmentStrategy`]: crate::formatting::AlignmentStrategy
+//! [`AlignmentStrategy`]: crate::settings::formatting::AlignmentStrategy
 
 use crate::{
     grid::config::{AlignmentHorizontal, AlignmentVertical, Entity},
@@ -94,8 +94,8 @@ impl Alignment {
     /// When you use [`MinWidth`] the alignment might not work as you expected.
     /// You could try to apply [`TrimStrategy`] which may help.
     ///
-    /// [`MinWidth`]: crate::width::MinWidth
-    /// [`TrimStrategy`]: crate::formatting::TrimStrategy
+    /// [`MinWidth`]: crate::settings::width::MinWidth
+    /// [`TrimStrategy`]: crate::settings::formatting::TrimStrategy
     pub fn right() -> Self {
         Self::horizontal(AlignmentHorizontal::Right)
     }
@@ -107,8 +107,8 @@ impl Alignment {
     /// When you use [`MinWidth`] the alignment might not work as you expected.
     /// You could try to apply [`TrimStrategy`] which may help.
     ///
-    /// [`MinWidth`]: crate::width::MinWidth
-    /// [`TrimStrategy`]: crate::formatting::TrimStrategy
+    /// [`MinWidth`]: crate::settings::width::MinWidth
+    /// [`TrimStrategy`]: crate::settings::formatting::TrimStrategy
     pub const fn center() -> Self {
         Self::horizontal(AlignmentHorizontal::Center)
     }

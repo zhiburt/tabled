@@ -6,6 +6,20 @@ use crate::{
 
 /// Border represents a border of a Cell.
 ///
+/// ```text
+///                         top border
+///                             |
+///                             V
+/// corner top left ------> +_______+  <---- corner top left
+///                         |       |
+/// left border ----------> |  cell |  <---- right border
+///                         |       |
+/// corner bottom right --> +_______+  <---- corner bottom right
+///                             ^
+///                             |
+///                        bottom border
+/// ```
+///
 /// ```rust,no_run
 /// # use tabled::{Table, settings::{Modify, style::{Style, Border}, object::Rows}};
 /// # let data: Vec<&'static str> = Vec::new();

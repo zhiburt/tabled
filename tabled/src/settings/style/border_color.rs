@@ -1,4 +1,4 @@
-//! This module contains a configuration of a Border to set its color via [`BorderColored`].
+//! This module contains a configuration of a Border to set its color via [`BorderColor`].
 
 use crate::{
     grid::{
