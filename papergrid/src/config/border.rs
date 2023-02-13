@@ -15,7 +15,7 @@
 ///                        bottom border
 /// ```
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct Border<T = char> {
+pub struct Border<T> {
     /// A character for a top.
     pub top: Option<T>,
     /// A character for a bottom.

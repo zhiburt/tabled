@@ -1,11 +1,7 @@
 use papergrid::{
-    config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent},
+    config::{AlignmentHorizontal, Borders, Indent, Sides},
     dimension::Estimate,
-    grid::spanned::{
-        config::{Entity::Global, Padding},
-        dimension::ExactDimension,
-        Grid, GridConfig,
-    },
+    grid::common::{CommonConfig, CommonGrid, ExactDimension},
     records::IterRecords,
 };
 
@@ -14,19 +10,24 @@ fn main() {
 
     let data = [
         ["Papergrid", "is a library", "for print tables", "!"],
-        ["", "Just like this", "", ""],
+        [
+            "Just like this",
+            "NOTICE",
+            "that multiline is not supported",
+            "H\ne\nl\nl\no",
+        ],
     ];
     let records = IterRecords::new(data, 4, None);
 
     let mut dim = ExactDimension::default();
     dim.estimate(records, &cfg);
 
-    let grid = Grid::new(records, &dim, &cfg);
+    let grid = CommonGrid::new(records, &dim, &cfg);
 
     println!("{grid}");
 }
 
-fn generate_table_config() -> GridConfig {
+fn generate_table_config() -> CommonConfig {
     const STYLE: Borders<char> = Borders {
         top: Some('-'),
         top_left: Some('+'),
@@ -45,21 +46,15 @@ fn generate_table_config() -> GridConfig {
         intersection: Some('+'),
     };
 
-    let mut cfg = GridConfig::default();
+    let mut cfg = CommonConfig::default();
     cfg.set_borders(STYLE);
-    cfg.set_column_span((1, 1), 3);
-    cfg.set_row_span((0, 0), 2);
-    cfg.set_alignment_horizontal((1, 0).into(), AlignmentHorizontal::Center);
-    cfg.set_alignment_vertical(Global, AlignmentVertical::Center);
-    cfg.set_padding(
-        (0, 0).into(),
-        Padding::new(
-            Indent::spaced(4),
-            Indent::spaced(4),
-            Indent::spaced(1),
-            Indent::spaced(1),
-        ),
-    );
+    cfg.set_alignment_horizontal(AlignmentHorizontal::Center);
+    cfg.set_padding(Sides::new(
+        Indent::spaced(1),
+        Indent::spaced(1),
+        Indent::spaced(0),
+        Indent::spaced(0),
+    ));
 
     cfg
 }

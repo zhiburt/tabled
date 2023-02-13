@@ -1,10 +1,10 @@
 use std::io::Write;
 
 use papergrid::{
-    config::{Borders, GridConfig},
-    dimension::{Dimension, ExactDimension},
+    config::Borders,
+    dimension::Estimate,
+    grid::spanned::{ExactDimension, Grid, GridConfig},
     records::IterRecords,
-    Grid,
 };
 
 fn main() {
@@ -19,7 +19,7 @@ fn main() {
     let mut dimension = ExactDimension::default();
     dimension.estimate(&records, &cfg);
 
-    let grid = Grid::new(&records, &cfg, &dimension);
+    let grid = Grid::new(&records, &dimension, &cfg);
 
     grid.build(UTF8Stdout(std::io::stdout())).unwrap();
     println!();
@@ -30,8 +30,8 @@ fn generate_table_config() -> GridConfig {
     cfg.set_borders(Borders {
         top: Some('-'),
         bottom: Some('-'),
-        vertical_left: Some('|'),
-        vertical_right: Some('|'),
+        left: Some('|'),
+        right: Some('|'),
         vertical: Some('|'),
         horizontal: Some('-'),
         ..Default::default()

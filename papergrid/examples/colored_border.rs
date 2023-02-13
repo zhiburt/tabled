@@ -1,9 +1,13 @@
 use papergrid::{
     color::AnsiColor,
-    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Padding},
-    dimension::{Estimate, ExactDimension},
+    config::{AlignmentHorizontal, AlignmentVertical, Indent},
+    dimension::Estimate,
+    grid::spanned::{
+        config::{Borders, Entity::Global, GridConfig, Padding},
+        dimension::ExactDimension,
+        Grid,
+    },
     records::IterRecords,
-    Grid, GridConfig,
 };
 
 fn main() {
@@ -34,11 +38,11 @@ fn generate_table_config() -> GridConfig {
         bottom_right: Some('+'),
         bottom_intersection: Some('+'),
         horizontal: Some('-'),
-        horizontal_left: Some('+'),
-        horizontal_right: Some('+'),
+        left_intersection: Some('+'),
+        right_intersection: Some('+'),
         vertical: Some('|'),
-        vertical_left: Some('|'),
-        vertical_right: Some('|'),
+        left: Some('|'),
+        right: Some('|'),
         intersection: Some('+'),
     };
 

@@ -4,8 +4,11 @@ use std::collections::HashMap;
 
 use papergrid::{
     colors::NoColors,
-    config::{Borders, GridConfig, Position},
-    dimension::{Dimension, Estimate, ExactDimension},
+    config::{
+        grid_config::{Borders, GridConfig},
+        Position,
+    },
+    dimension::{exact_grid::ExactDimension, Dimension, Estimate},
     records::{IterRecords, Records},
     Grid,
 };
@@ -128,11 +131,11 @@ pub const DEFAULT_BORDERS: Borders = Borders {
     bottom_intersection: Some('+'),
 
     horizontal: Some('-'),
-    horizontal_left: Some('+'),
-    horizontal_right: Some('+'),
+    left_intersection: Some('+'),
+    right_intersection: Some('+'),
 
-    vertical_left: Some('|'),
-    vertical_right: Some('|'),
+    left: Some('|'),
+    right: Some('|'),
     vertical: Some('|'),
 
     intersection: Some('+'),
@@ -155,5 +158,7 @@ impl Dimension for ConstantDimension {
 }
 
 impl Estimate for ConstantDimension {
+    type Config = GridConfig;
+
     fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
 }

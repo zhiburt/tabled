@@ -10,17 +10,15 @@ use std::{
 use crate::{
     color::{AnsiColor, Color},
     colors::{self, Colors, NoColors},
-    config::{
-        AlignmentHorizontal, AlignmentVertical, Formatting, GridConfig, Indent, Offset, Padding,
-        PaddingColor, Position,
-    },
+    config::{AlignmentHorizontal, AlignmentVertical, Indent, Position},
     dimension::Dimension,
-    grid_projection::GridProjection,
     records::Records,
     util::string::{
         count_lines, get_lines, string_width, string_width_multiline_tab, string_width_tab, Lines,
     },
 };
+
+use super::config::{Formatting, GridConfig, Offset, Padding, PaddingColor};
 
 const DEFAULT_SPACE_CHAR: char = ' ';
 const DEFAULT_BORDER_HORIZONTAL_CHAR: char = ' ';
@@ -165,7 +163,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
 
         let height = dims.get_height(row);
         let count_rows = convert_count_rows(row, is_last_row);
-        let has_horizontal = has_horizontal(cfg, row, count_rows);
+        let has_horizontal = cfg.has_horizontal(row, count_rows);
 
         if row > 0 && !is_prev_row_skipped && (has_horizontal || height > 0) {
             f.write_char('\n')?;
@@ -206,7 +204,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
     }
 
     if row > 0 {
-        if has_horizontal(cfg, row, row) {
+        if cfg.has_horizontal(row, row) {
             f.write_char('\n')?;
             let shape = (row, count_columns);
             print_horizontal_line(f, cfg, line, totalh, dims, row, total_width, shape)?;
@@ -219,24 +217,6 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
     }
 
     Ok(())
-}
-
-fn has_horizontal(cfg: &GridConfig, row: usize, count_rows: usize) -> bool {
-    GridProjection::new(cfg)
-        .count_rows(count_rows)
-        .has_horizontal(row)
-}
-
-fn total_width<D: Dimension>(cfg: &GridConfig, dims: &D, count_columns: usize) -> usize {
-    GridProjection::new(cfg)
-        .count_columns(count_columns)
-        .total_width(dims)
-}
-
-fn total_height<D: Dimension>(cfg: &GridConfig, dims: &D, count_rows: usize) -> usize {
-    GridProjection::new(cfg)
-        .count_rows(count_rows)
-        .total_height(dims)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -449,14 +429,12 @@ fn print_split_line<F: Write, D: Dimension>(
     let override_text_offset = cfg.get_split_line_offset(row).unwrap_or(Offset::Begin(0));
     let override_text_pos = offset_start_pos(override_text_offset, total_width);
 
-    let gp = GridProjection::with_shape(cfg, shape);
-
     let mut used_color = None;
 
     let mut i = 0;
     for col in 0..shape.1 {
         if col == 0 {
-            let left = gp.get_intersection((row, col));
+            let left = cfg.get_intersection((row, col), shape);
             if let Some(c) = left {
                 if i >= override_text_pos && !override_text.is_empty() {
                     let (c, rest) = spplit_str_at(&override_text, 1);
@@ -466,7 +444,7 @@ fn print_split_line<F: Write, D: Dimension>(
                         override_text = String::new()
                     }
                 } else {
-                    let clr = gp.get_intersection_color((row, col));
+                    let clr = cfg.get_intersection_color((row, col), shape);
                     if let Some(clr) = clr {
                         clr.fmt_prefix(f)?;
                         used_color = Some(clr);
@@ -487,10 +465,10 @@ fn print_split_line<F: Write, D: Dimension>(
             i += available;
             let width = available;
 
-            let main = gp.get_horizontal((row, col));
+            let main = cfg.get_horizontal((row, col), shape.0);
             match main {
                 Some(c) => {
-                    let clr = gp.get_horizontal_color((row, col));
+                    let clr = cfg.get_horizontal_color((row, col), shape.0);
                     prepare_coloring(f, clr, &mut used_color)?;
 
                     print_horizontal_border(f, cfg, (row, col), width, c)?;
@@ -514,10 +492,10 @@ fn print_split_line<F: Write, D: Dimension>(
 
         // general case
         if width > 0 {
-            let main = gp.get_horizontal((row, col));
+            let main = cfg.get_horizontal((row, col), shape.0);
             match main {
                 Some(c) => {
-                    let clr = gp.get_horizontal_color((row, col));
+                    let clr = cfg.get_horizontal_color((row, col), shape.0);
                     prepare_coloring(f, clr, &mut used_color)?;
 
                     print_horizontal_border(f, cfg, (row, col), width, c)?;
@@ -528,7 +506,7 @@ fn print_split_line<F: Write, D: Dimension>(
             i += width;
         }
 
-        let right = gp.get_intersection((row, col + 1));
+        let right = cfg.get_intersection((row, col + 1), shape);
         if let Some(c) = right {
             if i >= override_text_pos && !override_text.is_empty() {
                 let (c, rest) = spplit_str_at(&override_text, 1);
@@ -538,7 +516,7 @@ fn print_split_line<F: Write, D: Dimension>(
                     override_text = String::new()
                 }
             } else {
-                let clr = gp.get_intersection_color((row, col + 1));
+                let clr = cfg.get_intersection_color((row, col + 1), shape);
                 prepare_coloring(f, clr, &mut used_color)?;
 
                 f.write_char(c)?;
@@ -593,7 +571,7 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
         let count_rows = convert_count_rows(row, is_last_row);
         let shape = (count_rows, count_columns);
 
-        let has_horizontal = has_horizontal(cfg, row, count_rows);
+        let has_horizontal = cfg.has_horizontal(row, count_rows);
         if need_new_line && (has_horizontal || height > 0) {
             f.write_char('\n')?;
             need_new_line = false;
@@ -624,7 +602,7 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
     }
 
     if row > 0 {
-        if has_horizontal(cfg, row, row) {
+        if cfg.has_horizontal(row, row) {
             f.write_char('\n')?;
             let shape = (row, count_columns);
             print_horizontal_line(f, cfg, line, totalh, dims, row, total_width, shape)?;
@@ -656,14 +634,12 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
     let override_text_offset = cfg.get_split_line_offset(row).unwrap_or(Offset::Begin(0));
     let override_text_pos = offset_start_pos(override_text_offset, total_width);
 
-    let gp = GridProjection::with_shape(cfg, shape);
-
     let mut used_color = None;
 
     let mut i = 0;
     for col in 0..shape.1 {
         if col == 0 {
-            let left = gp.get_intersection((row, col));
+            let left = cfg.get_intersection((row, col), shape);
             if let Some(c) = left {
                 if i >= override_text_pos && !override_text.is_empty() {
                     let (c, rest) = spplit_str_at(&override_text, 1);
@@ -673,7 +649,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
                         override_text = String::new()
                     }
                 } else {
-                    let clr = gp.get_intersection_color((row, col));
+                    let clr = cfg.get_intersection_color((row, col), shape);
                     if let Some(clr) = clr {
                         clr.fmt_prefix(f)?;
                         used_color = Some(clr);
@@ -685,11 +661,11 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             }
         }
 
-        if gp.is_cell_covered_by_both_spans((row, col)) {
+        if cfg.is_cell_covered_by_both_spans((row, col)) {
             continue;
         }
 
-        let is_spanned_split_line_part = gp.is_cell_covered_by_row_span((row, col));
+        let is_spanned_split_line_part = cfg.is_cell_covered_by_row_span((row, col));
 
         let mut width = dimension.get_width(col);
 
@@ -702,8 +678,8 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             cell.display(f, cfg.get_tab_width())?;
 
             // We need to use a correct right split char.
-            let original_row = closest_visible_row(cfg, (row, col), shape).unwrap();
-            if let Some(span) = gp.as_ref().get_span_column((original_row, col)) {
+            let original_row = closest_visible_row(cfg, (row, col)).unwrap();
+            if let Some(span) = cfg.get_span_column((original_row, col)) {
                 col += span - 1;
             }
         } else if width > 0 {
@@ -714,10 +690,10 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
                 i += available;
                 let width = available;
 
-                let main = gp.get_horizontal((row, col));
+                let main = cfg.get_horizontal((row, col), shape.0);
                 match main {
                     Some(c) => {
-                        let clr = gp.get_horizontal_color((row, col));
+                        let clr = cfg.get_horizontal_color((row, col), shape.0);
                         prepare_coloring(f, clr, &mut used_color)?;
 
                         print_horizontal_border(f, cfg, (row, col), width, c)?;
@@ -742,10 +718,10 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             }
 
             // general case
-            let main = gp.get_horizontal((row, col));
+            let main = cfg.get_horizontal((row, col), shape.0);
             match main {
                 Some(c) => {
-                    let clr = gp.get_horizontal_color((row, col));
+                    let clr = cfg.get_horizontal_color((row, col), shape.0);
                     prepare_coloring(f, clr, &mut used_color)?;
 
                     print_horizontal_border(f, cfg, (row, col), width, c)?;
@@ -756,7 +732,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             i += width;
         }
 
-        let right = gp.get_intersection((row, col + 1));
+        let right = cfg.get_intersection((row, col + 1), shape);
         if let Some(c) = right {
             if i >= override_text_pos && !override_text.is_empty() {
                 let (c, rest) = spplit_str_at(&override_text, 1);
@@ -766,7 +742,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
                     override_text = String::new()
                 }
             } else {
-                let clr = gp.get_intersection_color((row, col + 1));
+                let clr = cfg.get_intersection_color((row, col + 1), shape);
                 prepare_coloring(f, clr, &mut used_color)?;
 
                 f.write_char(c)?;
@@ -804,8 +780,6 @@ where
     C: Colors,
 {
     if this_height == 0 {
-        let gp = GridProjection::with_shape(cfg, shape);
-
         // it's possible that we dont show row but it contains an actuall cell which will be
         // rendered after all cause it's a rowspanned
 
@@ -832,7 +806,7 @@ where
                 this_height
             };
 
-            let colspan = gp.as_ref().get_span_column((row, col)).unwrap_or(1);
+            let colspan = cfg.get_span_column((row, col)).unwrap_or(1);
             skip = colspan - 1;
             let width = if colspan > 1 {
                 range_width(cfg, dimension, col, col + colspan, shape.1)
@@ -865,8 +839,6 @@ where
         return Ok(());
     }
 
-    let gp = GridProjection::with_shape(cfg, shape);
-
     let mut skip = 0;
     for (col, cell) in iter.enumerate() {
         if skip > 0 {
@@ -879,7 +851,7 @@ where
             continue;
         }
 
-        let colspan = gp.as_ref().get_span_column((row, col)).unwrap_or(1);
+        let colspan = cfg.get_span_column((row, col)).unwrap_or(1);
         skip = colspan - 1;
 
         let width = if colspan > 1 {
@@ -967,7 +939,7 @@ struct CellLines<'a, S, C> {
     alignmenth: AlignmentHorizontal,
     formatting: &'a Formatting,
     padding: &'a Padding,
-    padding_color: &'a PaddingColor<'static>,
+    padding_color: &'a PaddingColor,
     color: Option<&'a C>,
     indent: Option<usize>,
 }
@@ -980,7 +952,7 @@ impl CellLines<'_, (), ()> {
         height: usize,
         formatting: &'a Formatting,
         padding: &'a Padding,
-        padding_color: &'a PaddingColor<'static>,
+        padding_color: &'a PaddingColor,
         alignmenth: AlignmentHorizontal,
         alignmentv: AlignmentVertical,
         tab_width: usize,
@@ -1280,9 +1252,7 @@ fn print_vertical_char<F: Write>(
 ) -> fmt::Result {
     // todo: Is Adding Border/verticals to CellLines structure to not make these lookup calls
 
-    let gp = GridProjection::with_shape(cfg, shape);
-
-    let symbol = match gp.get_vertical(pos) {
+    let symbol = match cfg.get_vertical(pos, shape.1) {
         Some(c) => c,
         None => return Ok(()),
     };
@@ -1293,7 +1263,7 @@ fn print_vertical_char<F: Write>(
         .flatten()
         .unwrap_or(symbol);
 
-    match gp.get_vertical_color(pos) {
+    match cfg.get_vertical_color(pos, shape.1) {
         Some(clr) => {
             clr.fmt_prefix(f)?;
             f.write_char(symbol)?;
@@ -1468,9 +1438,10 @@ fn count_borders_in_range(
     end: usize,
     count_columns: usize,
 ) -> usize {
-    let gp = GridProjection::new(cfg).count_columns(count_columns);
-
-    (start..end).skip(1).filter(|&i| gp.has_vertical(i)).count()
+    (start..end)
+        .skip(1)
+        .filter(|&i| cfg.has_vertical(i, count_columns)) // todo: change to sum as usize
+        .count()
 }
 
 fn range_height<D: Dimension>(
@@ -1492,23 +1463,15 @@ fn count_horizontal_borders_in_range(
     end: usize,
     count_rows: usize,
 ) -> usize {
-    let gp = GridProjection::new(cfg).count_rows(count_rows);
-
     (start..end)
         .skip(1)
-        .filter(|&i| gp.has_horizontal(i))
+        .filter(|&i| cfg.has_horizontal(i, count_rows))
         .count()
 }
 
-fn closest_visible_row(
-    cfg: &GridConfig,
-    mut pos: Position,
-    shape: (usize, usize),
-) -> Option<usize> {
-    let gp = GridProjection::with_shape(cfg, shape);
-
+fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
     loop {
-        if gp.is_cell_visible(pos) {
+        if cfg.is_cell_visible(pos) {
             return Some(pos.0);
         }
 
@@ -1622,6 +1585,20 @@ fn string_trim(text: &str) -> Cow<'_, str> {
     {
         text.trim().into()
     }
+}
+
+fn total_width<D: Dimension>(cfg: &GridConfig, dimension: &D, count_columns: usize) -> usize {
+    (0..count_columns)
+        .map(|i| dimension.get_width(i))
+        .sum::<usize>()
+        + cfg.count_vertical(count_columns)
+}
+
+fn total_height<D: Dimension>(cfg: &GridConfig, dimension: &D, count_rows: usize) -> usize {
+    (0..count_rows)
+        .map(|i| dimension.get_height(i))
+        .sum::<usize>()
+        + cfg.count_horizontal(count_rows)
 }
 
 #[cfg(test)]

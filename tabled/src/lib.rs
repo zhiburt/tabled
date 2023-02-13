@@ -147,7 +147,7 @@
 //!
 //! When you data scheme is not known at compile time.
 //! You most likely will not able to relay on [`Tabled`] trait.
-//! 
+//!
 //! So one option would be is to use [`Builder`].
 //!
 //! ```
@@ -212,19 +212,19 @@
 //!     )
 //! );
 //! ```
-//! 
+//!
 //! # Advanced
-//! 
+//!
 //! ## Alloc
-//! 
+//!
 //! [`Table`] keeps data buffered, which sometimes not ideal choise.
 //! For such reason there is [`IterTable`].
 //!
 //! It reuses a given data and does not make copies of it [1].
 //! But because of that it has some limitations compared to [`Table`]
-//! 
+//!
 //! It also can be printed directly to [`io::Write`] to not have any intermidiaries.
-//! 
+//!
 //! ```
 //! use tabled::{records::IterRecords, tables::iter::IterTable};
 //!
@@ -243,16 +243,16 @@
 //!      +-----+-----+-----+-----+",
 //! );
 //! ```
-//! 
+//!
 //! [1]. It does not make any allocations in case you provide it with `width` and `count_rows`.
 //!  
 //! ## Alloc free
-//! 
+//!
 //! ## More information
 //!
 //! You can find more examples of settings and attributes in
 //! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
-//! 
+//!
 //! [`Builder`]: crate::builder::Builder
 //! [`IterTable`]: crate::tables::iter::IterTable
 //! [`io::Write`]: io::Write

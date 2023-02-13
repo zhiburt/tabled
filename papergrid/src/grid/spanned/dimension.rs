@@ -8,13 +8,13 @@ use std::{
 };
 
 use crate::{
-    config::{Entity, GridConfig, Position},
-    grid_projection::GridProjection,
+    config::Position,
+    dimension::{Dimension, Estimate},
     records::Records,
     util::string::{count_lines, string_width_multiline_tab},
 };
 
-use super::{Dimension, Estimate};
+use super::config::GridConfig;
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height.
 ///
@@ -52,7 +52,7 @@ impl Dimension for ExactDimension {
     }
 }
 
-impl Estimate for ExactDimension {
+impl Estimate<GridConfig> for ExactDimension {
     fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {
         let (width, height) = build_dimensions(records, cfg);
         self.width = width;
@@ -62,7 +62,6 @@ impl Estimate for ExactDimension {
 
 fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Vec<usize>) {
     let count_columns = records.count_columns();
-    let shape = (usize::MAX, count_columns);
 
     let mut widths = vec![0; count_columns];
     let mut heights = vec![];
@@ -70,14 +69,12 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
     let mut vspans = HashMap::new();
     let mut hspans = HashMap::new();
 
-    let gp = GridProjection::with_shape(cfg, shape);
-
     for (row, columns) in records.iter_rows().into_iter().enumerate() {
         let mut row_height = 0;
         for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col);
 
-            if !gp.is_cell_visible(pos) {
+            if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
@@ -107,21 +104,21 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
         heights.push(row_height);
     }
 
-    // recreate projection cause we know the exact number of rows
-    let gp = GridProjection::with_shape(cfg, (heights.len(), count_columns));
+    let count_rows = heights.len();
 
-    adjust_vspans(&gp, &vspans, &mut widths);
-    adjust_hspans(&gp, &hspans, &mut heights);
+    adjust_vspans(cfg, count_columns, &vspans, &mut widths);
+    adjust_hspans(cfg, count_rows, &hspans, &mut heights);
 
     (widths, heights)
 }
 
 fn adjust_hspans(
-    gp: &GridProjection<'_>,
-    span_list: &HashMap<Position, usize>,
+    cfg: &GridConfig,
+    len: usize,
+    spans: &HashMap<Position, usize>,
     heights: &mut [usize],
 ) {
-    if span_list.is_empty() {
+    if spans.is_empty() {
         return;
     }
 
@@ -130,27 +127,28 @@ fn adjust_hspans(
     // We sort spans in order to prioritize the smaller spans first.
     //
     // todo: we actually have a span list already.... so we could keep order from the begining
-    let mut spans = gp.as_ref().iter_span_rows().collect::<Vec<_>>();
-    spans.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
+    let mut spans_orderd = cfg.iter_span_rows().collect::<Vec<_>>();
+    spans_orderd.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
         Ordering::Equal => acol.cmp(bcol),
         ord => ord,
     });
 
-    for ((row, col), span) in spans {
-        adjust_row_range(span_list, gp, col, row, row + span, heights);
+    for ((row, col), span) in spans_orderd {
+        adjust_row_range(spans, cfg, len, col, row, row + span, heights);
     }
 }
 
 fn adjust_row_range(
     span_list: &HashMap<Position, usize>,
-    gp: &GridProjection<'_>,
+    cfg: &GridConfig,
+    len: usize,
     col: usize,
     start: usize,
     end: usize,
     heights: &mut [usize],
 ) {
     let max_span_height = *span_list.get(&(start, col)).expect("must be there");
-    let range_height = range_height(gp, start, end, heights);
+    let range_height = range_height(cfg, len, start, end, heights);
     if range_height >= max_span_height {
         return;
     }
@@ -158,22 +156,28 @@ fn adjust_row_range(
     inc_range(heights, max_span_height - range_height, start, end);
 }
 
-fn range_height(gp: &GridProjection<'_>, start: usize, end: usize, heights: &[usize]) -> usize {
-    let count_borders = count_horizontal_borders(gp, start, end);
+fn range_height(
+    cfg: &GridConfig,
+    len: usize,
+    start: usize,
+    end: usize,
+    heights: &[usize],
+) -> usize {
+    let count_borders = count_horizontal_borders(cfg, len, start, end);
     let range_height = heights[start..end].iter().sum::<usize>();
     count_borders + range_height
 }
 
-fn count_horizontal_borders(gp: &GridProjection<'_>, start: usize, end: usize) -> usize {
+fn count_horizontal_borders(cfg: &GridConfig, len: usize, start: usize, end: usize) -> usize {
     (start..end)
         .skip(1)
-        .filter(|&i| gp.has_horizontal(i))
+        .filter(|&i| cfg.has_horizontal(i, len))
         .count()
 }
 
 fn get_cell_height(cell: &str, cfg: &GridConfig, pos: Position) -> usize {
     let count_lines = max(1, count_lines(cell));
-    let padding = cfg.get_padding(Entity::Cell(pos.0, pos.1));
+    let padding = cfg.get_padding(pos.into());
     count_lines + padding.top.size + padding.bottom.size
 }
 
@@ -199,39 +203,41 @@ fn inc_range(list: &mut [usize], size: usize, start: usize, end: usize) {
 }
 
 fn adjust_vspans(
-    gp: &GridProjection<'_>,
-    span_list: &HashMap<Position, usize>,
+    cfg: &GridConfig,
+    len: usize,
+    spans: &HashMap<Position, usize>,
     widths: &mut [usize],
 ) {
-    if !gp.has_span_columns() {
+    if !cfg.has_column_spans() {
         return;
     }
 
     // The overall width disctribution will be different depend on the order.
     //
     // We sort spans in order to prioritize the smaller spans first.
-    let mut spans = gp.as_ref().iter_span_columns().collect::<Vec<_>>();
-    spans.sort_unstable_by(|a, b| match a.1.cmp(&b.1) {
+    let mut spans_ordered = cfg.iter_span_columns().collect::<Vec<_>>();
+    spans_ordered.sort_unstable_by(|a, b| match a.1.cmp(&b.1) {
         Ordering::Equal => a.0.cmp(&b.0),
         o => o,
     });
 
     // todo: the order is matter here; we need to figure out what is correct.
-    for ((row, col), span) in spans {
-        adjust_column_range(gp, span_list, row, col, col + span, widths);
+    for ((row, col), span) in spans_ordered {
+        adjust_column_range(cfg, len, spans, row, col, col + span, widths);
     }
 }
 
 fn adjust_column_range(
-    gp: &GridProjection<'_>,
-    span_list: &HashMap<Position, usize>,
+    cfg: &GridConfig,
+    len: usize,
+    spans: &HashMap<Position, usize>,
     row: usize,
     start: usize,
     end: usize,
     widths: &mut [usize],
 ) {
-    let max_span_width = *span_list.get(&(row, start)).expect("must be there");
-    let range_width = range_width(gp, start, end, widths);
+    let max_span_width = *spans.get(&(row, start)).expect("must be there");
+    let range_width = range_width(cfg, len, start, end, widths);
 
     if range_width >= max_span_width {
         return;
@@ -251,20 +257,22 @@ fn get_cell_padding(cfg: &GridConfig, pos: Position) -> usize {
     padding.left.size + padding.right.size
 }
 
-fn range_width(gp: &GridProjection<'_>, start: usize, end: usize, widths: &[usize]) -> usize {
-    let count_borders = count_vertical_borders(gp, start, end);
+fn range_width(cfg: &GridConfig, len: usize, start: usize, end: usize, widths: &[usize]) -> usize {
+    let count_borders = count_vertical_borders(cfg, len, start, end);
     let range_width = widths[start..end].iter().sum::<usize>();
     count_borders + range_width
 }
 
-fn count_vertical_borders(gp: &GridProjection<'_>, start: usize, end: usize) -> usize {
-    (start..end).skip(1).filter(|&i| gp.has_vertical(i)).count()
+fn count_vertical_borders(cfg: &GridConfig, len: usize, start: usize, end: usize) -> usize {
+    (start..end)
+        .skip(1)
+        .filter(|&i| cfg.has_vertical(i, len))
+        .count()
 }
 
 fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
     let count_columns = records.count_columns();
     let shape = (usize::MAX, count_columns);
-    let gp = GridProjection::with_shape(cfg, shape);
 
     let mut heights = vec![];
     let mut hspans = HashMap::new();
@@ -273,8 +281,7 @@ fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
         let mut row_height = 0;
         for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col);
-
-            if !gp.is_cell_visible(pos) {
+            if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
@@ -291,10 +298,7 @@ fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
         heights.push(row_height);
     }
 
-    // recreate projection cause we know the exact number of rows
-    let gp = GridProjection::with_shape(cfg, (heights.len(), count_columns));
-
-    adjust_hspans(&gp, &hspans, &mut heights);
+    adjust_hspans(cfg, heights.len(), &hspans, &mut heights);
 
     heights
 }
@@ -302,7 +306,6 @@ fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
 fn build_width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
     let count_columns = records.count_columns();
     let shape = (usize::MAX, count_columns);
-    let gp = GridProjection::with_shape(cfg, shape);
 
     let mut widths = vec![0; count_columns];
     let mut vspans = HashMap::new();
@@ -310,7 +313,7 @@ fn build_width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
     for (row, columns) in records.iter_rows().into_iter().enumerate() {
         for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col);
-            if !gp.is_cell_visible(pos) {
+            if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
@@ -325,7 +328,7 @@ fn build_width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
         }
     }
 
-    adjust_vspans(&gp, &vspans, &mut widths);
+    adjust_vspans(cfg, count_columns, &vspans, &mut widths);
 
     widths
 }

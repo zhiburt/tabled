@@ -1,9 +1,11 @@
 mod util;
 
 use papergrid::config::{
-    AlignmentHorizontal, AlignmentVertical, Borders,
-    Entity::{self, *},
-    Indent, Padding,
+    grid_config::{
+        Entity::{self, *},
+        Padding,
+    },
+    AlignmentHorizontal, AlignmentVertical, Borders, Indent,
 };
 
 use crate::util::{grid, test_table};

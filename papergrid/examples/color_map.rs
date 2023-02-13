@@ -11,10 +11,14 @@ use owo_colors::{
 
 use papergrid::{
     color::Color,
-    config::{Borders, GridConfig, Position},
-    dimension::{Estimate, ExactDimension},
+    config::Position,
+    dimension::Estimate,
+    grid::spanned::{
+        config::{Borders, GridConfig},
+        dimension::ExactDimension,
+        Grid,
+    },
     records::IterRecords,
-    Grid,
 };
 
 fn main() {
@@ -46,8 +50,8 @@ fn generate_table_config() -> GridConfig {
     cfg.set_borders(Borders {
         top: Some('-'),
         bottom: Some('-'),
-        vertical_left: Some('|'),
-        vertical_right: Some('|'),
+        left: Some('|'),
+        right: Some('|'),
         vertical: Some('|'),
         horizontal: Some('-'),
         ..Default::default()

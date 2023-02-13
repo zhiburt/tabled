@@ -1,10 +1,6 @@
 //! The module contains an [`Dimension`] trait and its implementations.
 
-use crate::{records::Records, GridConfig};
-
-mod exact_dimension;
-
-pub use crate::dimension::exact_dimension::ExactDimension;
+use crate::records::Records;
 
 /// Dimension of a [`Grid`]
 ///
@@ -37,16 +33,7 @@ where
 /// It's a friend trait of [`Dimension`].
 ///
 /// [`Grid`]: crate::Grid
-pub trait Estimate {
+pub trait Estimate<Config> {
     /// Estimates a metric.
-    fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig);
-}
-
-impl<T> Estimate for &mut T
-where
-    T: Estimate,
-{
-    fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {
-        T::estimate(self, records, cfg)
-    }
+    fn estimate<R: Records>(&mut self, records: R, cfg: &Config);
 }

@@ -13,7 +13,7 @@
 use std::vec;
 
 use papergrid::{
-    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity, GridConfig},
+    config::{AlignmentHorizontal, AlignmentVertical, Borders, grid_config::{Entity, GridConfig}},
     records::IterRecords,
     Grid,
 };

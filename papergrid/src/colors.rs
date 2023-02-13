@@ -1,11 +1,6 @@
 //! A module which contains [Colors] trait and its blanket implementations.
 
-use std::collections::{BTreeMap, HashMap};
-
-use crate::{
-    color::{AnsiColor, Color},
-    config::{Entity, EntityMap, Position},
-};
+use crate::{color::Color, config::Position};
 
 /// A trait which represents map of colors.
 pub trait Colors {
@@ -13,7 +8,7 @@ pub trait Colors {
     type Color: Color;
 
     /// Returns a color for a given position.
-    fn get_color(&self, pos: Position) -> Option<&Self::Color>;
+    fn get_color(&self, pos: (usize, usize)) -> Option<&Self::Color>;
 }
 
 impl<C> Colors for &'_ C
@@ -27,7 +22,8 @@ where
     }
 }
 
-impl<C> Colors for HashMap<Position, C>
+// #[cfg(feature = "std")]
+impl<C> Colors for std::collections::HashMap<Position, C>
 where
     C: Color,
 {
@@ -38,7 +34,8 @@ where
     }
 }
 
-impl<C> Colors for BTreeMap<Position, C>
+// #[cfg(feature = "std")]
+impl<C> Colors for std::collections::BTreeMap<Position, C>
 where
     C: Color,
 {
@@ -49,14 +46,15 @@ where
     }
 }
 
-impl<C> Colors for EntityMap<Option<C>>
+// #[cfg(feature = "std")]
+impl<C> Colors for crate::grid::spanned::config::EntityMap<Option<C>>
 where
     C: Color,
 {
     type Color = C;
 
     fn get_color(&self, pos: Position) -> Option<&Self::Color> {
-        self.get(Entity::Cell(pos.0, pos.1)).as_ref()
+        self.get(pos.into()).as_ref()
     }
 }
 
@@ -65,9 +63,27 @@ where
 pub struct NoColors;
 
 impl Colors for NoColors {
-    type Color = AnsiColor<'static>;
+    type Color = EmptyColor;
 
     fn get_color(&self, _: Position) -> Option<&Self::Color> {
         None
+    }
+}
+
+/// A color which is actually has not value.
+#[derive(Debug)]
+pub struct EmptyColor;
+
+impl Color for EmptyColor {
+    fn fmt_prefix<W: core::fmt::Write>(&self, _: &mut W) -> core::fmt::Result {
+        Ok(())
+    }
+
+    fn colorize<W: core::fmt::Write>(&self, _: &mut W, _: &str) -> core::fmt::Result {
+        Ok(())
+    }
+
+    fn fmt_suffix<W: core::fmt::Write>(&self, _: &mut W) -> core::fmt::Result {
+        Ok(())
     }
 }

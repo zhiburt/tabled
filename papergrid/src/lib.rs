@@ -34,12 +34,12 @@
 //!     bottom_right: Some('+'),
 //!     bottom_intersection: Some('+'),
 //!     horizontal: Some('-'),
-//!     horizontal_left: Some('+'),
-//!     horizontal_right: Some('+'),
 //!     vertical: Some('|'),
-//!     vertical_left: Some('|'),
-//!     vertical_right: Some('|'),
+//!     left: Some('|'),
+//!     right: Some('|'),
 //!     intersection: Some('+'),
+//!     left_intersection: Some('+'),
+//!     right_intersection: Some('+'),
 //! };
 //!
 //! // Creating a grid config.
@@ -69,16 +69,10 @@
 //! );
 //! ```
 
-mod grid;
-
 pub mod color;
 pub mod colors;
 pub mod config;
 pub mod dimension;
-pub mod grid_projection;
 pub mod records;
 pub mod util;
-
-pub use self::grid::Grid;
-pub use config::GridConfig;
-pub use dimension::{Dimension, ExactDimension};
+pub mod grid;
