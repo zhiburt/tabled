@@ -295,9 +295,9 @@ pub mod grid {
     pub use papergrid::colors;
     pub use papergrid::config;
     pub use papergrid::dimension;
-    pub use papergrid::grid_projection;
     pub use papergrid::util;
-    pub use papergrid::Grid;
+    pub use papergrid::grid::compact;
+    pub use papergrid::grid::spanned;
 }
 
 pub use crate::{tabled::Tabled, tables::table::Table};

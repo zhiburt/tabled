@@ -1,9 +1,9 @@
 use papergrid::{
     color::AnsiColor,
-    config::{AlignmentHorizontal, AlignmentVertical, Indent},
+    config::{Entity::Global, AlignmentHorizontal, AlignmentVertical, Indent},
     dimension::Estimate,
     grid::spanned::{
-        config::{Borders, Entity::Global, GridConfig, Padding},
+        config::{Borders, GridConfig, Padding},
         dimension::ExactDimension,
         Grid,
     },

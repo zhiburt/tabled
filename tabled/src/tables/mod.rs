@@ -13,6 +13,7 @@
 //!
 //! Has a table which is usefull for large amount of data.
 
+pub mod compact;
 pub mod extended;
 pub mod iter;
 pub mod table;

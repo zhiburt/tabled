@@ -1,7 +1,7 @@
 use crate::{
     grid::{
-        config::{Entity, GridConfig, Position},
-        grid_projection::GridProjection,
+        config::{Entity, Position},
+        spanned::GridConfig,
     },
     records::{ExactRecords, Records},
     settings::CellOption,
@@ -25,7 +25,7 @@ impl RowSpan {
     }
 }
 
-impl<R> CellOption<R> for RowSpan
+impl<R> CellOption<R, GridConfig> for RowSpan
 where
     R: Records + ExactRecords,
 {
@@ -48,7 +48,7 @@ fn set_row_spans(cfg: &mut GridConfig, span: usize, entity: Entity, shape: (usiz
             span = shape.0 - pos.0;
         }
 
-        if span_has_intersections(cfg, pos, span, shape) {
+        if span_has_intersections(cfg, pos, span) {
             continue;
         }
 
@@ -76,7 +76,7 @@ fn set_span_row(cfg: &mut GridConfig, pos: (usize, usize), span: usize) {
 
 fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> usize {
     loop {
-        if GridProjection::new(cfg).is_cell_visible(pos) {
+        if cfg.is_cell_visible(pos) {
             return pos.0;
         }
 
@@ -96,16 +96,9 @@ fn is_valid_pos((row, col): Position, (count_rows, count_cols): (usize, usize)) 
     row < count_rows && col < count_cols
 }
 
-fn span_has_intersections(
-    cfg: &GridConfig,
-    (row, col): Position,
-    span: usize,
-    shape: (usize, usize),
-) -> bool {
-    let gp = GridProjection::with_shape(cfg, shape);
-
+fn span_has_intersections(cfg: &GridConfig, (row, col): Position, span: usize) -> bool {
     for row in row..row + span {
-        if !gp.is_cell_visible((row, col)) {
+        if !cfg.is_cell_visible((row, col)) {
             return true;
         }
     }

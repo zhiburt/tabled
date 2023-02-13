@@ -6,8 +6,6 @@ mod format_config;
 mod format_content;
 mod format_positioned;
 
-use papergrid::GridConfig;
-
 pub use format_config::FormatConfig;
 pub use format_content::FormatContent;
 pub use format_positioned::FormatContentPositioned;
@@ -100,10 +98,7 @@ impl Format {
     }
 
     /// This function creates [`FormatConfig`] function to modify a [`GridConfig`].
-    pub fn config<F>(f: F) -> FormatConfig<F>
-    where
-        F: FnMut(&mut GridConfig),
-    {
+    pub fn config<F, C>(f: F) -> FormatConfig<F> {
         FormatConfig(f)
     }
 }

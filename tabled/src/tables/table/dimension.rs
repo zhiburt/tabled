@@ -1,6 +1,10 @@
 use std::borrow::Cow;
 
-use papergrid::{records::Records, Dimension, ExactDimension, GridConfig};
+use papergrid::{
+    dimension::{Dimension, Estimate},
+    grid::spanned::{ExactDimension, GridConfig},
+    records::Records,
+};
 
 /// TableDimension is a [`Dimension`] implementation for a [`Table`]
 ///
@@ -82,7 +86,7 @@ impl Dimension for TableDimension<'_> {
     }
 }
 
-impl crate::grid::dimension::Estimate for TableDimension<'_> {
+impl Estimate<GridConfig> for TableDimension<'_> {
     fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {
         match (self.width.is_some(), self.height.is_some()) {
             (true, true) => {}

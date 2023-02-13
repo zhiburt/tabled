@@ -8,10 +8,12 @@ use crate::{
     builder::Builder,
     grid::config::AlignmentHorizontal,
     grid::{
-        config::{Entity, Formatting, GridConfig, Indent, Padding},
+        config::{Entity, Indent},
         dimension::Estimate,
-        grid_projection::GridProjection,
-        Grid,
+        spanned::{
+            config::{Formatting, GridConfig, Padding},
+            Grid,
+        },
     },
     records::{ExactRecords, Records, VecRecords},
     settings::{style::Style, TableOption},
@@ -19,6 +21,7 @@ use crate::{
 };
 
 pub use dimension::TableDimension;
+use papergrid::dimension::Dimension;
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
 ///
@@ -170,7 +173,9 @@ impl Table {
     /// With is a generic function which applies options to the [`Table`].
     ///
     /// It applies settings immediately.
-    pub fn with<O: TableOption<VecRecords<Cow<'static, str>>, TableDimension<'static>>>(
+    pub fn with<
+        O: TableOption<VecRecords<Cow<'static, str>>, TableDimension<'static>, GridConfig>,
+    >(
         &mut self,
         option: O,
     ) -> &mut Self {
@@ -209,12 +214,14 @@ impl Table {
         let mut dims = TableDimension::from_origin(&self.dimension);
         dims.estimate(&self.records, &self.cfg);
 
-        let gp = GridProjection::new(&self.cfg).count_rows(self.count_rows());
-        let width = gp.total_height(&dims);
+        let total = (0..self.count_rows())
+            .map(|row| dims.get_height(row))
+            .sum::<usize>();
+        let counth = self.cfg.count_horizontal(self.count_rows());
 
         let margin = self.cfg.get_margin();
 
-        width + margin.left.size + margin.right.size
+        total + counth + margin.top.size + margin.bottom.size
     }
 
     /// Returns total widths of a table, including margin and vertical lines.
@@ -222,12 +229,14 @@ impl Table {
         let mut dims = TableDimension::from_origin(&self.dimension);
         dims.estimate(&self.records, &self.cfg);
 
-        let gp = GridProjection::new(&self.cfg).count_columns(self.count_columns());
-        let width = gp.total_width(&dims);
+        let total = (0..self.count_columns())
+            .map(|row| dims.get_width(row))
+            .sum::<usize>();
+        let countv = self.cfg.count_vertical(self.count_columns());
 
         let margin = self.cfg.get_margin();
 
-        width + margin.left.size + margin.right.size
+        total + countv + margin.left.size + margin.right.size
     }
 }
 

@@ -8,7 +8,7 @@ use crate::config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent, Sid
 ///
 /// grid: crate::Grid.
 #[derive(Debug, Clone, Copy)]
-pub struct CommonConfig {
+pub struct CompactConfig {
     borders: Borders<char>,
     border_colors: Borders<StaticColor>,
     margin: Sides<Indent>,
@@ -20,114 +20,126 @@ pub struct CommonConfig {
     tab_width: usize,
 }
 
-impl Default for CommonConfig {
+impl Default for CompactConfig {
     fn default() -> Self {
+        Self::empty()
+    }
+}
+
+impl CompactConfig {
+    pub const fn empty() -> Self {
         Self {
             tab_width: 4,
             halignment: AlignmentHorizontal::Left,
             valignment: AlignmentVertical::Top,
-            borders: Borders::default(),
-            border_colors: Borders::default(),
-            margin: Sides::default(),
-            margin_color: Sides::default(),
-            padding: Sides::default(),
-            padding_color: Sides::default(),
+            borders: Borders::empty(),
+            border_colors: Borders::empty(),
+            margin: Sides::filled(Indent::zero()),
+            margin_color: Sides::filled(StaticColor::new("", "")),
+            padding: Sides::filled(Indent::zero()),
+            padding_color: Sides::filled(StaticColor::new("", "")),
         }
     }
-}
 
-impl CommonConfig {
     /// Set [`Margin`].
-    pub fn set_margin(&mut self, margin: Sides<Indent>) {
+    pub const fn set_margin(mut self, margin: Sides<Indent>) {
         self.margin = margin;
     }
 
     /// Returns a [`Margin`].
-    pub fn get_margin(&self) -> &Sides<Indent> {
+    pub const fn get_margin(&self) -> &Sides<Indent> {
         &self.margin
     }
 
     /// Set the [`Borders`] value as currect one.
-    pub fn set_borders(&mut self, borders: Borders<char>) {
+    pub const fn set_borders(mut self, borders: Borders<char>) -> Self {
         self.borders = borders;
+        self
     }
 
     /// Set tab width in spaces.
-    pub fn set_tab_width(&mut self, width: usize) {
+    pub const fn set_tab_width(mut self, width: usize) -> Self {
         self.tab_width = width;
+        self
     }
 
     /// Get tab width value in spaces.
-    pub fn get_tab_width(&self) -> usize {
+    pub const fn get_tab_width(&self) -> usize {
         self.tab_width
     }
 
     /// Returns a current [`Borders`] structure.
-    pub fn get_borders(&self) -> &Borders<char> {
+    pub const fn get_borders(&self) -> &Borders<char> {
         &self.borders
     }
 
     /// Returns a current [`Borders`] structure.
-    pub fn get_borders_color(&self) -> &Borders<StaticColor> {
+    pub const fn get_borders_color(&self) -> &Borders<StaticColor> {
         &self.border_colors
     }
 
     /// Set a padding to a given cells.
-    pub fn set_padding(&mut self, padding: Sides<Indent>) {
+    pub const fn set_padding(mut self, padding: Sides<Indent>) -> Self {
         self.padding = padding;
+        self
     }
 
     /// Get a padding for a given [Entity].
-    pub fn get_padding(&self) -> &Sides<Indent> {
+    pub const fn get_padding(&self) -> &Sides<Indent> {
         &self.padding
     }
 
     /// Set a horizontal alignment to a given cells.
-    pub fn set_alignment_horizontal(&mut self, alignment: AlignmentHorizontal) {
+    pub const fn set_alignment_horizontal(mut self, alignment: AlignmentHorizontal) -> Self {
         self.halignment = alignment;
+        self
     }
 
-    pub fn get_alignment_horizontal(&self) -> AlignmentHorizontal {
+    pub const fn get_alignment_horizontal(&self) -> AlignmentHorizontal {
         self.halignment
     }
 
     /// Set a horizontal alignment to a given cells.
-    pub fn set_alignment_vertical(&mut self, alignment: AlignmentVertical) {
+    pub const fn set_alignment_vertical(mut self, alignment: AlignmentVertical) -> Self {
         self.valignment = alignment;
+        self
     }
 
-    pub fn get_alignment_vertical(&self) -> AlignmentVertical {
+    pub const fn get_alignment_vertical(&self) -> AlignmentVertical {
         self.valignment
     }
 
     /// Sets colors of border carcass on the grid.
-    pub fn set_borders_color(&mut self, borders: Borders<StaticColor>) {
+    pub const fn set_borders_color(mut self, borders: Borders<StaticColor>) -> Self {
         self.border_colors = borders;
+        self
     }
 
     /// Set colors for a [`Margin`] value.
-    pub fn set_margin_color(&mut self, color: Sides<StaticColor>) {
+    pub const fn set_margin_color(mut self, color: Sides<StaticColor>) -> Self {
         self.margin_color = color;
+        self
     }
 
     /// Returns a [`Margin`] offset.
-    pub fn get_margin_color(&self) -> &Sides<StaticColor> {
+    pub const fn get_margin_color(&self) -> &Sides<StaticColor> {
         &self.margin_color
     }
 
     /// Set a padding to a given cells.
-    pub fn set_padding_color(&mut self, color: Sides<StaticColor>) {
+    pub const fn set_padding_color(mut self, color: Sides<StaticColor>) -> Self {
         self.padding_color = color;
+        self
     }
 
     /// Set a padding to a given cells.
-    pub fn get_padding_color(&self) -> Sides<StaticColor> {
+    pub const fn get_padding_color(&self) -> Sides<StaticColor> {
         self.padding_color
     }
 }
 
-impl From<&CommonConfig> for CommonConfig {
-    fn from(value: &CommonConfig) -> Self {
+impl From<&CompactConfig> for CompactConfig {
+    fn from(value: &CompactConfig) -> Self {
         *value
     }
 }

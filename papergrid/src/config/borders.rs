@@ -38,6 +38,26 @@ pub struct Borders<T> {
 }
 
 impl<T> Borders<T> {
+    pub const fn empty() -> Self {
+        Self {
+            top: None,
+            top_left: None,
+            top_right: None,
+            top_intersection: None,
+            bottom: None,
+            bottom_left: None,
+            bottom_right: None,
+            bottom_intersection: None,
+            horizontal: None,
+            left: None,
+            right: None,
+            vertical: None,
+            left_intersection: None,
+            right_intersection: None,
+            intersection: None,
+        }
+    }
+
     pub const fn filled(val: T) -> Self
     where
         T: Copy,

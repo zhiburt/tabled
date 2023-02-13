@@ -1,5 +1,9 @@
 use crate::{
-    grid::config::{GridConfig, Indent, Margin as GridMargin},
+    grid::config::Indent,
+    grid::{
+        compact::CompactConfig,
+        spanned::config::{GridConfig, Margin as GridMargin},
+    },
     settings::TableOption,
 };
 
@@ -38,8 +42,14 @@ impl Margin {
     }
 }
 
-impl<R, D> TableOption<R, D> for Margin {
+impl<R, D> TableOption<R, D, GridConfig> for Margin {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+        cfg.set_margin(self.0);
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactConfig> for Margin {
+    fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         cfg.set_margin(self.0);
     }
 }

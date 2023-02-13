@@ -12,10 +12,10 @@
 
 use std::vec;
 
+use papergrid::grid::spanned::{config::GridConfig, Grid};
 use papergrid::{
-    config::{AlignmentHorizontal, AlignmentVertical, Borders, grid_config::{Entity, GridConfig}},
+    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity},
     records::IterRecords,
-    Grid,
 };
 
 use crate::util::{grid, test_table};

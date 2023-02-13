@@ -21,4 +21,17 @@ impl<T> Sides<T> {
             right,
         }
     }
+
+    /// Creates a new object.
+    pub const fn filled(value: T) -> Self
+    where
+        T: Copy,
+    {
+        Self {
+            top: value,
+            bottom: value,
+            left: value,
+            right: value,
+        }
+    }
 }

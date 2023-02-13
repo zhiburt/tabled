@@ -1,7 +1,7 @@
 use papergrid::{
     config::{AlignmentHorizontal, Borders, Indent, Sides},
     dimension::Estimate,
-    grid::common::{CommonConfig, CommonGrid, ExactDimension},
+    grid::compact::{CompactConfig, CompactGrid, ExactDimension},
     records::IterRecords,
 };
 
@@ -22,12 +22,12 @@ fn main() {
     let mut dim = ExactDimension::default();
     dim.estimate(records, &cfg);
 
-    let grid = CommonGrid::new(records, &dim, &cfg);
+    let grid = CompactGrid::new(records, &dim, &cfg);
 
     println!("{grid}");
 }
 
-fn generate_table_config() -> CommonConfig {
+fn generate_table_config() -> CompactConfig {
     const STYLE: Borders<char> = Borders {
         top: Some('-'),
         top_left: Some('+'),
@@ -46,15 +46,13 @@ fn generate_table_config() -> CommonConfig {
         intersection: Some('+'),
     };
 
-    let mut cfg = CommonConfig::default();
-    cfg.set_borders(STYLE);
-    cfg.set_alignment_horizontal(AlignmentHorizontal::Center);
-    cfg.set_padding(Sides::new(
-        Indent::spaced(1),
-        Indent::spaced(1),
-        Indent::spaced(0),
-        Indent::spaced(0),
-    ));
-
-    cfg
+    CompactConfig::default()
+        .set_borders(STYLE)
+        .set_alignment_horizontal(AlignmentHorizontal::Center)
+        .set_padding(Sides::new(
+            Indent::spaced(1),
+            Indent::spaced(1),
+            Indent::spaced(0),
+            Indent::spaced(0),
+        ))
 }

@@ -1,4 +1,4 @@
-use crate::{grid::config::GridConfig, settings::TableOption};
+use crate::{grid::compact::CompactConfig, grid::spanned::GridConfig, settings::TableOption};
 
 /// Set a tab size.
 ///
@@ -11,8 +11,14 @@ use crate::{grid::config::GridConfig, settings::TableOption};
 #[derive(Debug, Default, Clone)]
 pub struct TabSize(pub usize);
 
-impl<R, D> TableOption<R, D> for TabSize {
+impl<R, D> TableOption<R, D, GridConfig> for TabSize {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+        cfg.set_tab_width(self.0);
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactConfig> for TabSize {
+    fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         cfg.set_tab_width(self.0);
     }
 }

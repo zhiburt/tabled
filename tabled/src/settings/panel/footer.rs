@@ -1,5 +1,5 @@
 use crate::{
-    grid::config::GridConfig,
+    grid::spanned::config::GridConfig,
     records::{ExactRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
 };
@@ -21,7 +21,7 @@ impl<S> Footer<S> {
     }
 }
 
-impl<S, R, D> TableOption<R, D> for Footer<S>
+impl<S, R, D> TableOption<R, D, GridConfig> for Footer<S>
 where
     S: AsRef<str>,
     R: Records + ExactRecords + Resizable + RecordsMut<String>,

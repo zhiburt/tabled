@@ -1,5 +1,6 @@
 use crate::{
-    grid::config::{Entity, GridConfig},
+    grid::config::Entity,
+    grid::spanned::GridConfig,
     grid::util::string::{count_lines, get_lines},
     records::{ExactRecords, Records, RecordsMut},
     settings::{height::Height, measurement::Measurement, peaker::Peaker, CellOption, TableOption},
@@ -38,7 +39,7 @@ impl<W> CellHeightLimit<W> {
     }
 }
 
-impl<W, R> CellOption<R> for CellHeightLimit<W>
+impl<W, R> CellOption<R, GridConfig> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + RecordsMut<String>,
@@ -64,7 +65,7 @@ where
     }
 }
 
-impl<R, W> TableOption<R, TableDimension<'static>> for CellHeightLimit<W>
+impl<R, W> TableOption<R, TableDimension<'static>, GridConfig> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + RecordsMut<String>,

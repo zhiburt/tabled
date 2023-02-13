@@ -24,21 +24,21 @@ impl StaticColor {
 impl StaticColor {
     /// Gets a reference to a prefix.
     pub fn get_prefix(&self) -> &str {
-        &self.prefix
+        self.prefix
     }
 
     /// Gets a reference to a suffix.
     pub fn get_suffix(&self) -> &str {
-        &self.suffix
+        self.suffix
     }
 }
 
 impl Color for StaticColor {
     fn fmt_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
-        f.write_str(&self.prefix)
+        f.write_str(self.prefix)
     }
 
     fn fmt_suffix<W: Write>(&self, f: &mut W) -> fmt::Result {
-        f.write_str(&self.suffix)
+        f.write_str(self.suffix)
     }
 }

@@ -3,7 +3,7 @@
 //! [`Span`]: crate::settings::span::Span
 
 use crate::{
-    grid::{config::GridConfig, grid_projection::GridProjection},
+    grid::spanned::config::GridConfig,
     records::{ExactRecords, Records},
     settings::TableOption,
 };
@@ -34,7 +34,7 @@ impl Merge {
 #[derive(Debug)]
 pub struct MergeDuplicatesVertical;
 
-impl<R, D> TableOption<R, D> for MergeDuplicatesVertical
+impl<R, D> TableOption<R, D, GridConfig> for MergeDuplicatesVertical
 where
     R: Records + ExactRecords,
 {
@@ -58,8 +58,7 @@ where
                 }
 
                 // we need to mitigate messing existing spans
-                let gp = GridProjection::with_shape(cfg, (count_rows, count_cols));
-                let is_cell_visible = gp.is_cell_visible((row, column));
+                let is_cell_visible = cfg.is_cell_visible((row, column));
 
                 let is_row_span_cell = cfg.get_span_column((row, column)).is_some();
 
@@ -120,7 +119,7 @@ where
 #[derive(Debug)]
 pub struct MergeDuplicatesHorizontal;
 
-impl<R, D> TableOption<R, D> for MergeDuplicatesHorizontal
+impl<R, D> TableOption<R, D, GridConfig> for MergeDuplicatesHorizontal
 where
     R: Records + ExactRecords,
 {
@@ -145,8 +144,7 @@ where
                 }
 
                 // we need to mitigate messing existing spans
-                let gp = GridProjection::with_shape(cfg, (count_rows, count_cols));
-                let is_cell_visible = gp.is_cell_visible((row, column));
+                let is_cell_visible = cfg.is_cell_visible((row, column));
 
                 let is_col_span_cell = cfg.get_span_row((row, column)).is_some();
 

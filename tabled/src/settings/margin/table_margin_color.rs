@@ -3,7 +3,7 @@
 //! [`Margin`]: crate::settings::margin::Margin
 
 use crate::{
-    grid::config::{GridConfig, MarginColor as GridMarginColor},
+    grid::spanned::{config::MarginColor as GridMarginColor, GridConfig},
     settings::{color::Color, TableOption},
 };
 
@@ -25,7 +25,7 @@ use crate::{
 /// [`Margin`]: crate::settings::margin::Margin
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default)]
-pub struct MarginColor(GridMarginColor<'static>);
+pub struct MarginColor(GridMarginColor);
 
 impl MarginColor {
     /// Creates a new [MarginColor] with colors set for all sides.
@@ -39,7 +39,7 @@ impl MarginColor {
     }
 }
 
-impl<R, D> TableOption<R, D> for MarginColor {
+impl<R, D> TableOption<R, D, GridConfig> for MarginColor {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.set_margin_color(self.0.clone());
     }

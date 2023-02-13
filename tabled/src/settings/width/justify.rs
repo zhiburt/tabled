@@ -1,5 +1,7 @@
 //! This module contains [`Justify`] structure, used to set an exact width to each column.
 
+use papergrid::grid::spanned::GridConfig;
+
 use crate::{
     records::{ExactRecords, Records, RecordsMut},
     settings::{
@@ -73,13 +75,13 @@ impl Justify<Min> {
     }
 }
 
-impl<R, D, W> TableOption<R, D> for Justify<W>
+impl<R, D, W> TableOption<R, D, GridConfig> for Justify<W>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
         let width = self.width.measure(&*records, cfg);
 
         let count_rows = records.count_rows();

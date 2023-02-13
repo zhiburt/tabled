@@ -1,7 +1,7 @@
 use std::iter::FromIterator;
 
 use crate::{
-    grid::config::GridConfig, records::Records, settings::TableOption,
+    grid::spanned::config::GridConfig, records::Records, settings::TableOption,
     tables::table::TableDimension,
 };
 
@@ -32,7 +32,7 @@ impl FromIterator<usize> for WidthList {
     }
 }
 
-impl<R> TableOption<R, TableDimension<'static>> for WidthList
+impl<R> TableOption<R, TableDimension<'static>, GridConfig> for WidthList
 where
     R: Records,
 {

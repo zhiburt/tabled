@@ -3,7 +3,8 @@
 //! [`Table`]: crate::Table
 
 use crate::{
-    grid::config::{Entity, GridConfig, PaddingColor as GridPaddingColor},
+    grid::config::Entity,
+    grid::spanned::config::{GridConfig, PaddingColor as GridPaddingColor},
     settings::{color::Color, CellOption},
 };
 
@@ -21,7 +22,7 @@ use crate::{
 /// [`Padding`]: crate::settings::padding::Padding
 #[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default)]
-pub struct PaddingColor(GridPaddingColor<'static>);
+pub struct PaddingColor(GridPaddingColor);
 
 impl PaddingColor {
     /// Creates a new [PaddingColor] with colors set for all sides.
@@ -35,7 +36,7 @@ impl PaddingColor {
     }
 }
 
-impl<R> CellOption<R> for PaddingColor {
+impl<R> CellOption<R, GridConfig> for PaddingColor {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
         cfg.set_padding_color(entity, self.0.clone());
     }

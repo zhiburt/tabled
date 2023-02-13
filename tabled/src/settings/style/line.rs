@@ -1,4 +1,4 @@
-use crate::grid::config::{HorizontalLine, VerticalLine};
+use crate::grid::spanned::config::{HorizontalLine, VerticalLine};
 
 /// The structure represent a vertical or horizontal line.
 #[derive(Debug, Default, Clone, Copy)]
@@ -54,7 +54,7 @@ impl Line {
     }
 }
 
-impl From<Line> for HorizontalLine<char> {
+impl From<Line> for HorizontalLine {
     fn from(l: Line) -> Self {
         Self {
             main: l.main,
@@ -65,7 +65,7 @@ impl From<Line> for HorizontalLine<char> {
     }
 }
 
-impl From<Line> for VerticalLine<char> {
+impl From<Line> for VerticalLine {
     fn from(l: Line) -> Self {
         Self {
             main: l.main,

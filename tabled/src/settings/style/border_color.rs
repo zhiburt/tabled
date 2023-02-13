@@ -3,7 +3,8 @@
 use crate::{
     grid::{
         color::AnsiColor,
-        config::{Border, Entity, GridConfig},
+        config::{Border, Entity},
+        spanned::GridConfig,
     },
     records::{ExactRecords, Records},
     settings::{color::Color, CellOption},
@@ -115,7 +116,7 @@ impl BorderColor {
     }
 }
 
-impl<R> CellOption<R> for BorderColor
+impl<R> CellOption<R, GridConfig> for BorderColor
 where
     R: Records + ExactRecords,
 {

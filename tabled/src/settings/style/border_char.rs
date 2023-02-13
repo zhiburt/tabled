@@ -1,5 +1,6 @@
 use crate::{
-    grid::config::{Entity, GridConfig, Position},
+    grid::config::{Entity, Position},
+    grid::spanned::GridConfig,
     records::{ExactRecords, Records},
     settings::CellOption,
 };
@@ -58,7 +59,7 @@ impl BorderChar {
     }
 }
 
-impl<R> CellOption<R> for BorderChar
+impl<R> CellOption<R, GridConfig> for BorderChar
 where
     R: Records + ExactRecords,
 {

@@ -1,5 +1,5 @@
 use crate::{
-    grid::config::{Entity, GridConfig},
+    grid::config::Entity,
     settings::{CellOption, TableOption},
 };
 
@@ -32,23 +32,23 @@ impl<A, B> Settings<A, B> {
     }
 }
 
-impl<R, A, B> CellOption<R> for Settings<A, B>
+impl<R, C, A, B> CellOption<R, C> for Settings<A, B>
 where
-    A: CellOption<R>,
-    B: CellOption<R>,
+    A: CellOption<R, C>,
+    B: CellOption<R, C>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut C, entity: Entity) {
         self.0.change(records, cfg, entity);
         self.1.change(records, cfg, entity);
     }
 }
 
-impl<R, D, A, B> TableOption<R, D> for Settings<A, B>
+impl<R, D, C, A, B> TableOption<R, D, C> for Settings<A, B>
 where
-    A: TableOption<R, D>,
-    B: TableOption<R, D>,
+    A: TableOption<R, D, C>,
+    B: TableOption<R, D, C>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dims: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut C, dims: &mut D) {
         self.0.change(records, cfg, dims);
         self.1.change(records, cfg, dims);
     }
@@ -58,10 +58,10 @@ where
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct EmptySettings;
 
-impl<R> CellOption<R> for EmptySettings {
-    fn change(&mut self, _: &mut R, _: &mut GridConfig, _: Entity) {}
+impl<R, C> CellOption<R, C> for EmptySettings {
+    fn change(&mut self, _: &mut R, _: &mut C, _: Entity) {}
 }
 
-impl<R, D> TableOption<R, D> for EmptySettings {
-    fn change(&mut self, _: &mut R, _: &mut GridConfig, _: &mut D) {}
+impl<R, D, C> TableOption<R, D, C> for EmptySettings {
+    fn change(&mut self, _: &mut R, _: &mut C, _: &mut D) {}
 }

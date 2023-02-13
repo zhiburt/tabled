@@ -1,6 +1,9 @@
 use std::borrow::Cow;
 
-use papergrid::{grid_projection::GridProjection, records::Records, ExactDimension, GridConfig};
+use papergrid::{
+    grid::spanned::{ExactDimension, GridConfig},
+    records::Records,
+};
 
 pub(crate) fn get_table_widths<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
     ExactDimension::width(records, cfg)
@@ -17,9 +20,10 @@ pub(crate) fn get_table_widths_with_total<R: Records>(
 
 fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
     let margin = cfg.get_margin();
-    let gp = GridProjection::new(cfg).count_columns(list.len());
-
-    list.iter().sum::<usize>() + gp.count_vertical() + margin.left.size + margin.right.size
+    list.iter().sum::<usize>()
+        + cfg.count_vertical(list.len())
+        + margin.left.size
+        + margin.right.size
 }
 
 /// Replaces tabs in a string with a given width of spaces.

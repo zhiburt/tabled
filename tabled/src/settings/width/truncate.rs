@@ -7,7 +7,7 @@ use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
 use papergrid::util::string::{string_width_multiline_tab, string_width_tab};
 
 use crate::{
-    grid::{config::GridConfig, grid_projection::GridProjection},
+    grid::spanned::config::GridConfig,
     records::{EmptyRecords, ExactRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
@@ -168,7 +168,7 @@ impl Truncate<'_, (), ()> {
     }
 }
 
-impl<W, P, R> CellOption<R> for Truncate<'_, W, P>
+impl<W, P, R> CellOption<R, GridConfig> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + RecordsMut<String>,
@@ -252,7 +252,7 @@ fn make_suffix<'a>(
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>> for Truncate<'_, W, P>
+impl<W, P, R> TableOption<R, TableDimension<'static>, GridConfig> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -375,12 +375,10 @@ fn get_decrease_cell_list(
     min_widths: &[usize],
     shape: (usize, usize),
 ) -> Vec<((usize, usize), usize)> {
-    let gp = GridProjection::with_shape(cfg, shape);
-
     let mut points = Vec::new();
     (0..shape.1).for_each(|col| {
         (0..shape.0)
-            .filter(|&row| gp.is_cell_visible((row, col)))
+            .filter(|&row| cfg.is_cell_visible((row, col)))
             .for_each(|row| {
                 let (width, width_min) = match cfg.get_span_column((row, col)) {
                     Some(span) => {
@@ -445,7 +443,8 @@ fn decrease_widths<F>(
 }
 
 fn count_borders(cfg: &GridConfig, start: usize, end: usize, count_columns: usize) -> usize {
-    let gp = GridProjection::new(cfg).count_columns(count_columns);
-
-    (start..end).skip(1).filter(|&i| gp.has_vertical(i)).count()
+    (start..end)
+        .skip(1)
+        .filter(|&i| cfg.has_vertical(i, count_columns))
+        .count()
 }

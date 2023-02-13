@@ -8,7 +8,8 @@ use std::borrow::Cow;
 use crate::{
     grid::{
         color::AnsiColor,
-        config::{Border, Entity, GridConfig},
+        config::{Border, Entity},
+        spanned::GridConfig,
     },
     records::{ExactRecords, Records},
     settings::{CellOption, TableOption},
@@ -211,14 +212,14 @@ impl std::convert::TryFrom<String> for Color {
     }
 }
 
-impl<R, D> TableOption<R, D> for Color {
+impl<R, D> TableOption<R, D, GridConfig> for Color {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         let color = self.0.clone();
         cfg.set_border_color_global(color);
     }
 }
 
-impl<R> CellOption<R> for Color
+impl<R> CellOption<R, GridConfig> for Color
 where
     R: Records + ExactRecords,
 {
@@ -231,7 +232,7 @@ where
     }
 }
 
-impl<'b, R> CellOption<R> for &'b Color
+impl<'b, R> CellOption<R, GridConfig> for &'b Color
 where
     R: Records + ExactRecords,
 {

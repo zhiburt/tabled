@@ -1,5 +1,9 @@
 use crate::{
-    grid::{config::GridConfig, dimension::Dimension},
+    grid::{
+        compact::CompactConfig,
+        dimension::{Dimension, Estimate},
+        spanned::GridConfig,
+    },
     records::into_records::truncate_records::Width,
     records::Records,
 };
@@ -26,6 +30,10 @@ impl Dimension for IterTableDimension<'_> {
     }
 }
 
-impl crate::grid::dimension::Estimate for IterTableDimension<'_> {
+impl Estimate<CompactConfig> for IterTableDimension<'_> {
+    fn estimate<R: Records>(&mut self, _: R, _: &CompactConfig) {}
+}
+
+impl Estimate<GridConfig> for IterTableDimension<'_> {
     fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
 }

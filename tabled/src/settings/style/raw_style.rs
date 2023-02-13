@@ -4,10 +4,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    grid::{
-        color::AnsiColor,
-        config::{self, Borders, GridConfig},
-    },
+    grid::spanned::config::{self, Borders, BordersColor, GridConfig},
     records::Records,
     settings::{color::Color, TableOption},
 };
@@ -19,10 +16,10 @@ use super::{Border, HorizontalLine, Line, Style, VerticalLine};
 /// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
 #[derive(Default, Debug, Clone)]
 pub struct RawStyle {
-    borders: Borders<char>,
+    borders: Borders,
+    colors: BordersColor,
     horizontals: HashMap<usize, Line>,
     verticals: HashMap<usize, Line>,
-    colors: Borders<AnsiColor<'static>>,
 }
 
 impl RawStyle {
@@ -52,25 +49,25 @@ impl RawStyle {
 
     /// Set a left border character.
     pub fn set_left(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.vertical_left = s;
+        self.borders.left = s;
         self
     }
 
     /// Set a left border color.
     pub fn set_color_left(&mut self, color: Color) -> &mut Self {
-        self.colors.vertical_left = Some(color.into());
+        self.colors.left = Some(color.into());
         self
     }
 
     /// Set a right border character.
     pub fn set_right(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.vertical_right = s;
+        self.borders.right = s;
         self
     }
 
     /// Set a right border color.
     pub fn set_color_right(&mut self, color: Color) -> &mut Self {
-        self.colors.vertical_right = Some(color.into());
+        self.colors.right = Some(color.into());
         self
     }
 
@@ -100,25 +97,25 @@ impl RawStyle {
 
     /// Set a left split character.
     pub fn set_intersection_left(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.horizontal_left = s;
+        self.borders.left_intersection = s;
         self
     }
 
     /// Set a bottom interesion color.
     pub fn set_color_intersection_left(&mut self, color: Color) -> &mut Self {
-        self.colors.horizontal_left = Some(color.into());
+        self.colors.left_intersection = Some(color.into());
         self
     }
 
     /// Set a right split character.
     pub fn set_intersection_right(&mut self, s: Option<char>) -> &mut Self {
-        self.borders.horizontal_right = s;
+        self.borders.right_intersection = s;
         self
     }
 
     /// Set a bottom interesion color.
     pub fn set_color_intersection_right(&mut self, color: Color) -> &mut Self {
-        self.colors.horizontal_right = Some(color.into());
+        self.colors.right_intersection = Some(color.into());
         self
     }
 
@@ -289,22 +286,22 @@ impl RawStyle {
 
     /// Get a left char.
     pub fn get_left(&self) -> Option<char> {
-        self.borders.vertical_left
+        self.borders.left
     }
 
     /// Get a left intersection char.
     pub fn get_left_intersection(&self) -> Option<char> {
-        self.borders.horizontal_left
+        self.borders.left_intersection
     }
 
     /// Get a right char.
     pub fn get_right(&self) -> Option<char> {
-        self.borders.vertical_right
+        self.borders.right
     }
 
     /// Get a right intersection char.
     pub fn get_right_intersection(&self) -> Option<char> {
-        self.borders.horizontal_right
+        self.borders.right_intersection
     }
 
     /// Get a top char.
@@ -352,8 +349,8 @@ impl RawStyle {
         Border::from(config::Border {
             top: self.borders.top,
             bottom: self.borders.bottom,
-            left: self.borders.vertical_left,
-            right: self.borders.vertical_right,
+            left: self.borders.left,
+            right: self.borders.right,
             left_top_corner: self.borders.top_left,
             right_top_corner: self.borders.top_right,
             left_bottom_corner: self.borders.bottom_left,
@@ -362,18 +359,18 @@ impl RawStyle {
     }
 }
 
-impl From<Borders<char>> for RawStyle {
-    fn from(borders: Borders<char>) -> Self {
+impl From<Borders> for RawStyle {
+    fn from(borders: Borders) -> Self {
         Self {
             borders,
             horizontals: HashMap::new(),
             verticals: HashMap::new(),
-            colors: Borders::default(),
+            colors: BordersColor::default(),
         }
     }
 }
 
-impl<R, D> TableOption<R, D> for RawStyle
+impl<R, D> TableOption<R, D, GridConfig> for RawStyle
 where
     R: Records,
 {
@@ -382,7 +379,7 @@ where
     }
 }
 
-impl<R, D> TableOption<R, D> for &RawStyle {
+impl<R, D> TableOption<R, D, GridConfig> for &RawStyle {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.clear_theme();
 
@@ -440,7 +437,7 @@ where
             borders: *style.get_borders(),
             horizontals,
             verticals,
-            colors: Borders::default(),
+            colors: BordersColor::default(),
         }
     }
 }

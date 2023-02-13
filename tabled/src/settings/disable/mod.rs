@@ -29,8 +29,6 @@
 
 use std::marker::PhantomData;
 
-use papergrid::GridConfig;
-
 use crate::{
     records::{ExactRecords, Records, Resizable},
     settings::{locator::Locator, TableOption},
@@ -151,12 +149,12 @@ pub struct TargetRow;
 #[derive(Debug)]
 pub struct TargetColumn;
 
-impl<L, R, D> TableOption<R, D> for Disable<L, TargetColumn>
+impl<L, R, D, C> TableOption<R, D, C> for Disable<L, TargetColumn>
 where
     for<'a> L: Locator<&'a R, Coordinate = usize>,
     R: Records + Resizable,
 {
-    fn change(&mut self, records: &mut R, _: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
         let columns = self.locator.locate(records).into_iter().collect::<Vec<_>>();
 
         let mut shift = 0;
@@ -174,12 +172,12 @@ where
     }
 }
 
-impl<L, R, D> TableOption<R, D> for Disable<L, TargetRow>
+impl<L, R, D, C> TableOption<R, D, C> for Disable<L, TargetRow>
 where
     for<'a> L: Locator<&'a R, Coordinate = usize>,
     R: ExactRecords + Resizable,
 {
-    fn change(&mut self, records: &mut R, _: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
         let rows = self.locator.locate(records).into_iter().collect::<Vec<_>>();
 
         let mut shift = 0;

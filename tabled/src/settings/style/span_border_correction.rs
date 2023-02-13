@@ -4,10 +4,7 @@
 //! [`Span`]: crate::settings::span::Span
 
 use crate::{
-    grid::{
-        config::{GridConfig, Position},
-        grid_projection::GridProjection,
-    },
+    grid::{config::Position, spanned::GridConfig},
     records::{ExactRecords, Records},
     settings::TableOption,
 };
@@ -77,7 +74,7 @@ use crate::{
 #[derive(Debug)]
 pub struct BorderSpanCorrection;
 
-impl<R, D> TableOption<R, D> for BorderSpanCorrection
+impl<R, D> TableOption<R, D, GridConfig> for BorderSpanCorrection
 where
     R: Records + ExactRecords,
 {
@@ -101,8 +98,7 @@ fn correct_span_styles(cfg: &mut GridConfig, shape: (usize, usize)) {
 
             let borders = cfg.get_borders();
 
-            let gp = GridProjection::with_shape(cfg, shape);
-            let mut border = gp.get_border((row, col));
+            let mut border = cfg.get_border((row, col), shape);
 
             let has_top_border = border.left_top_corner.is_some() && border.top.is_some();
             if has_top_border {
@@ -137,15 +133,14 @@ fn correct_span_styles(cfg: &mut GridConfig, shape: (usize, usize)) {
     let spans = cfg.iter_span_rows().collect::<Vec<_>>();
     for &((r, col), span) in &spans {
         for row in r + 1..r + span {
-            let gp = GridProjection::with_shape(cfg, shape);
-            let mut border = gp.get_border((row, col));
+            let mut border = cfg.get_border((row, col), shape);
             let borders = cfg.get_borders();
 
             let has_left_border = border.left_top_corner.is_some();
             if has_left_border {
                 let has_left = col > 0 && has_top(cfg, (row, col - 1), shape);
                 if has_left {
-                    border.left_top_corner = borders.horizontal_right;
+                    border.left_top_corner = borders.right_intersection;
                 } else {
                     border.left_top_corner = borders.vertical;
                 }
@@ -155,7 +150,7 @@ fn correct_span_styles(cfg: &mut GridConfig, shape: (usize, usize)) {
             if has_right_border {
                 let has_right = col + 1 < shape.1 && has_top(cfg, (row, col + 1), shape);
                 if has_right {
-                    border.right_top_corner = borders.horizontal_left;
+                    border.right_top_corner = borders.left_intersection;
                 } else {
                     border.right_top_corner = borders.vertical;
                 }
@@ -171,14 +166,13 @@ fn correct_span_styles(cfg: &mut GridConfig, shape: (usize, usize)) {
             continue;
         }
 
-        let gp = GridProjection::with_shape(cfg, shape);
-        let mut border = gp.get_border((row, col));
+        let mut border = cfg.get_border((row, col), shape);
         let borders = cfg.get_borders();
 
         let has_right = col + 1 < shape.1 && has_top(cfg, (row, col + 1), shape);
         let has_up = has_left(cfg, (row - 1, col), shape);
         if has_up && !has_right {
-            border.right_top_corner = borders.horizontal_right;
+            border.right_top_corner = borders.right_intersection;
         }
 
         let has_down = row + 1 < shape.0 && has_left(cfg, (row + 1, col), shape);
@@ -191,22 +185,20 @@ fn correct_span_styles(cfg: &mut GridConfig, shape: (usize, usize)) {
 }
 
 fn has_left(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
-    let gp = GridProjection::with_shape(cfg, shape);
-    if gp.is_cell_covered_by_both_spans(pos) || gp.is_cell_covered_by_column_span(pos) {
+    if cfg.is_cell_covered_by_both_spans(pos) || cfg.is_cell_covered_by_column_span(pos) {
         return false;
     }
 
-    let border = gp.get_border(pos);
+    let border = cfg.get_border(pos, shape);
     border.left.is_some() || border.left_top_corner.is_some() || border.left_bottom_corner.is_some()
 }
 
 fn has_top(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
-    let gp = GridProjection::with_shape(cfg, shape);
-    if gp.is_cell_covered_by_both_spans(pos) || gp.is_cell_covered_by_row_span(pos) {
+    if cfg.is_cell_covered_by_both_spans(pos) || cfg.is_cell_covered_by_row_span(pos) {
         return false;
     }
 
-    let border = gp.get_border(pos);
+    let border = cfg.get_border(pos, shape);
     border.top.is_some() || border.left_top_corner.is_some() || border.right_top_corner.is_some()
 }
 
@@ -219,9 +211,6 @@ fn iter_totaly_spanned_cells(
     (0..count_rows).flat_map(move |row| {
         (0..count_cols)
             .map(move |col| (row, col))
-            .filter(move |&p| {
-                let gp = GridProjection::with_shape(cfg, shape);
-                gp.is_cell_covered_by_both_spans(p)
-            })
+            .filter(move |&p| cfg.is_cell_covered_by_both_spans(p))
     })
 }

@@ -1,5 +1,4 @@
 mod borders_config;
-mod entity;
 mod entity_map;
 mod formatting;
 mod offset;
@@ -7,15 +6,10 @@ mod offset;
 use std::collections::HashMap;
 
 use crate::color::AnsiColor;
-use crate::config::{AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides};
+use crate::config::{Entity, AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides};
 use borders_config::BordersConfig;
 
-pub use self::{
-    entity::{Entity, EntityIterator},
-    entity_map::EntityMap,
-    formatting::Formatting,
-    offset::Offset,
-};
+pub use self::{entity_map::EntityMap, formatting::Formatting, offset::Offset};
 
 /// This structure represents a settings of a grid.
 ///

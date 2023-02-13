@@ -1,4 +1,5 @@
-use papergrid::config::{AlignmentHorizontal, AlignmentVertical, grid_config::{Entity, Formatting}};
+use papergrid::config::{AlignmentHorizontal, AlignmentVertical, Entity};
+use papergrid::grid::spanned::config::Formatting;
 
 use crate::util::{grid, static_table};
 

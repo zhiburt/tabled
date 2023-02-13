@@ -1,7 +1,5 @@
-use papergrid::config::{
-    grid_config::{Entity, Padding},
-    AlignmentHorizontal, Border, Borders, Indent,
-};
+use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent};
+use papergrid::grid::spanned::config::Padding;
 
 #[cfg(feature = "color")]
 use std::convert::TryFrom;

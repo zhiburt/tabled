@@ -1,6 +1,6 @@
 use fnv::FnvHashMap;
 
-use super::{Entity, Position};
+use crate::config::{Entity, Position};
 
 /// A structure to keep information for [`Entity`] as a key.
 #[derive(Debug, Clone, Default)]

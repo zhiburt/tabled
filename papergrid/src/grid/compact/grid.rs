@@ -14,21 +14,21 @@ use crate::{
     util::string::{get_lines, string_width_tab},
 };
 
-use super::config::CommonConfig;
+use super::config::CompactConfig;
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
-pub struct CommonGrid<R, D, G, C> {
+pub struct CompactGrid<R, D, G, C> {
     records: R,
     config: G,
     dimension: D,
     colors: C,
 }
 
-impl<R, D, G> CommonGrid<R, D, G, NoColors> {
+impl<R, D, G> CompactGrid<R, D, G, NoColors> {
     /// The new method creates a grid instance with default styles.
     pub fn new(records: R, dimension: D, config: G) -> Self {
-        CommonGrid {
+        CompactGrid {
             records,
             config,
             dimension,
@@ -37,10 +37,10 @@ impl<R, D, G> CommonGrid<R, D, G, NoColors> {
     }
 }
 
-impl<R, D, G, C> CommonGrid<R, D, G, C> {
+impl<R, D, G, C> CompactGrid<R, D, G, C> {
     /// Sets colors map.
-    pub fn with_colors<Colors>(self, colors: Colors) -> CommonGrid<R, D, G, Colors> {
-        CommonGrid {
+    pub fn with_colors<Colors>(self, colors: Colors) -> CompactGrid<R, D, G, Colors> {
+        CompactGrid {
             records: self.records,
             config: self.config,
             dimension: self.dimension,
@@ -54,7 +54,7 @@ impl<R, D, G, C> CommonGrid<R, D, G, C> {
         R: Records,
         D: Dimension,
         C: Colors,
-        G: Borrow<CommonConfig>,
+        G: Borrow<CompactConfig>,
         F: Write,
     {
         if self.records.count_columns() == 0 {
@@ -73,7 +73,7 @@ impl<R, D, G, C> CommonGrid<R, D, G, C> {
     where
         R: Records,
         D: Dimension,
-        G: Borrow<CommonConfig>,
+        G: Borrow<CompactConfig>,
         C: Colors,
     {
         let mut buf = String::new();
@@ -82,11 +82,11 @@ impl<R, D, G, C> CommonGrid<R, D, G, C> {
     }
 }
 
-impl<R, D, G, C> Display for CommonGrid<R, D, G, C>
+impl<R, D, G, C> Display for CompactGrid<R, D, G, C>
 where
     for<'a> &'a R: Records,
     D: Dimension,
-    G: Borrow<CommonConfig>,
+    G: Borrow<CompactConfig>,
     C: Colors,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -100,7 +100,7 @@ where
 fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
     f: &mut F,
     records: R,
-    cfg: &CommonConfig,
+    cfg: &CompactConfig,
     dims: &D,
     colors: &C,
 ) -> fmt::Result {
@@ -315,7 +315,7 @@ where
     Ok(())
 }
 
-fn create_padding(cfg: &CommonConfig) -> Sides<ColoredIndent> {
+fn create_padding(cfg: &CompactConfig) -> Sides<ColoredIndent> {
     let pad = cfg.get_padding();
     let pad_colors = cfg.get_padding_color();
     Sides::new(
@@ -381,7 +381,7 @@ fn create_horizontal_bottom_colors(
     )
 }
 
-fn create_margin(cfg: &CommonConfig) -> Sides<ColoredIndent> {
+fn create_margin(cfg: &CompactConfig) -> Sides<ColoredIndent> {
     let indent = cfg.get_margin();
     let color = cfg.get_margin_color();
 
@@ -393,7 +393,7 @@ fn create_margin(cfg: &CommonConfig) -> Sides<ColoredIndent> {
     )
 }
 
-fn total_width<D: Dimension>(cfg: &CommonConfig, dims: &D, count_columns: usize) -> usize {
+fn total_width<D: Dimension>(cfg: &CompactConfig, dims: &D, count_columns: usize) -> usize {
     let content_width = total_columns_width(count_columns, dims);
     let count_verticals = count_verticals(cfg, count_columns);
 
@@ -404,7 +404,7 @@ fn total_columns_width<D: Dimension>(count_columns: usize, dims: &D) -> usize {
     (0..count_columns).map(|i| dims.get_width(i)).sum::<usize>()
 }
 
-fn count_verticals(cfg: &CommonConfig, count_columns: usize) -> usize {
+fn count_verticals(cfg: &CompactConfig, count_columns: usize) -> usize {
     assert!(count_columns > 1);
 
     let count_verticals = count_columns - 2;
@@ -414,7 +414,7 @@ fn count_verticals(cfg: &CommonConfig, count_columns: usize) -> usize {
         + borders.has_right() as usize
 }
 
-fn has_vertical(cfg: &CommonConfig, is_first: bool, is_last: bool) -> bool {
+fn has_vertical(cfg: &CompactConfig, is_first: bool, is_last: bool) -> bool {
     if is_last {
         cfg.get_borders().has_right()
     } else if is_first {
@@ -424,14 +424,14 @@ fn has_vertical(cfg: &CommonConfig, is_first: bool, is_last: bool) -> bool {
     }
 }
 
-fn total_height<D: Dimension>(cfg: &CommonConfig, dims: &D, count_rows: usize) -> usize {
+fn total_height<D: Dimension>(cfg: &CompactConfig, dims: &D, count_rows: usize) -> usize {
     let content_height = total_rows_height(count_rows, dims);
     let count_horizontals = count_horizontals(cfg, count_rows);
 
     content_height + count_horizontals
 }
 
-fn count_horizontals(cfg: &CommonConfig, count_rows: usize) -> usize {
+fn count_horizontals(cfg: &CompactConfig, count_rows: usize) -> usize {
     assert!(count_rows > 1);
 
     let count_verticals = count_rows - 2;
@@ -561,7 +561,11 @@ fn print_cell<F: Write, C: Color>(
     let available = width - pad_l.0.size - pad_r.0.size;
 
     let text_width = string_width_tab(&text, tab_size);
-    let (left, right) = calculate_indent(align, text_width, available);
+    let (left, right) = if available < text_width {
+        (0, 0)
+    } else {
+        calculate_indent(align, text_width, available)
+    };
 
     print_indent(f, pad_l.0.fill, pad_l.0.size, pad_l.1)?;
 

@@ -57,6 +57,7 @@ use crate::{
 };
 
 use AlignmentInner::*;
+use papergrid::grid::{spanned::GridConfig, compact::CompactConfig};
 
 /// Alignment represent a horizontal and vertical alignment setting for any cell on a [`Table`].
 ///
@@ -143,8 +144,8 @@ impl Alignment {
     }
 }
 
-impl<R> CellOption<R> for Alignment {
-    fn change(&mut self, _: &mut R, cfg: &mut papergrid::GridConfig, entity: Entity) {
+impl<R> CellOption<R, GridConfig> for Alignment {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
         match self.inner {
             Horizontal(a) => cfg.set_alignment_horizontal(entity, a),
             Vertical(a) => cfg.set_alignment_vertical(entity, a),
@@ -152,11 +153,20 @@ impl<R> CellOption<R> for Alignment {
     }
 }
 
-impl<R, D> TableOption<R, D> for Alignment {
-    fn change(&mut self, _: &mut R, cfg: &mut papergrid::GridConfig, _: &mut D) {
+impl<R, D> TableOption<R, D, GridConfig> for Alignment {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         match self.inner {
             Horizontal(a) => cfg.set_alignment_horizontal(Entity::Global, a),
             Vertical(a) => cfg.set_alignment_vertical(Entity::Global, a),
+        }
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactConfig> for Alignment {
+    fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+        match self.inner {
+            Horizontal(a) => *cfg = cfg.set_alignment_horizontal(a),
+            Vertical(a) => *cfg = cfg.set_alignment_vertical(a),
         }
     }
 }

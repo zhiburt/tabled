@@ -1,5 +1,8 @@
+use papergrid::grid::compact::CompactConfig;
+
 use crate::{
-    grid::config::{Entity, GridConfig, Indent, Padding as GridPadding},
+    grid::config::{Entity, Indent},
+    grid::spanned::config::{GridConfig, Padding as GridPadding},
     settings::{CellOption, TableOption},
 };
 
@@ -47,14 +50,20 @@ impl Padding {
     }
 }
 
-impl<R> CellOption<R> for Padding {
+impl<R> CellOption<R, GridConfig> for Padding {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
         cfg.set_padding(entity, self.0);
     }
 }
 
-impl<R, D> TableOption<R, D> for Padding {
+impl<R, D> TableOption<R, D, GridConfig> for Padding {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.set_padding(Entity::Global, self.0);
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactConfig> for Padding {
+    fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+        cfg.set_padding(self.0);
     }
 }

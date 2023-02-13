@@ -6,11 +6,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-    grid::{
-        config::{Entity, GridConfig},
-        grid_projection::GridProjection,
-        util::string::string_width_multiline_tab,
-    },
+    grid::{config::Entity, spanned::GridConfig, util::string::string_width_multiline_tab},
     records::ExactRecords,
     records::{EmptyRecords, Records, RecordsMut},
     settings::{
@@ -94,7 +90,7 @@ impl<W, P> Wrap<W, P> {
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>> for Wrap<W, P>
+impl<W, P, R> TableOption<R, TableDimension<'static>, GridConfig> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -125,7 +121,7 @@ where
     }
 }
 
-impl<W, R> CellOption<R> for Wrap<W>
+impl<W, R> CellOption<R, GridConfig> for Wrap<W>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + RecordsMut<String>,
@@ -181,7 +177,7 @@ where
     wrap.keep_words = keep_words;
     for ((row, col), width) in points {
         wrap.width = width;
-        <Wrap as CellOption<R>>::change(&mut wrap, records, cfg, (row, col).into());
+        <Wrap as CellOption<R, GridConfig>>::change(&mut wrap, records, cfg, (row, col).into());
     }
 
     widths
@@ -616,12 +612,10 @@ fn get_decrease_cell_list(
     min_widths: &[usize],
     shape: (usize, usize),
 ) -> Vec<((usize, usize), usize)> {
-    let gp = GridProjection::with_shape(cfg, shape);
-
     let mut points = Vec::new();
     (0..shape.1).for_each(|col| {
         (0..shape.0)
-            .filter(|&row| gp.is_cell_visible((row, col)))
+            .filter(|&row| cfg.is_cell_visible((row, col)))
             .for_each(|row| {
                 let (width, width_min) = match cfg.get_span_column((row, col)) {
                     Some(span) => {
@@ -646,9 +640,10 @@ fn get_decrease_cell_list(
 }
 
 fn count_borders(cfg: &GridConfig, start: usize, end: usize, count_columns: usize) -> usize {
-    let gp = GridProjection::new(cfg).count_columns(count_columns);
-
-    (start..end).skip(1).filter(|&i| gp.has_vertical(i)).count()
+    (start..end)
+        .skip(1)
+        .filter(|&i| cfg.has_vertical(i, count_columns))
+        .count()
 }
 
 #[cfg(test)]

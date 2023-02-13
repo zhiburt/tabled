@@ -1,6 +1,7 @@
 mod util;
 
-use papergrid::config::{AlignmentHorizontal, Borders, Indent, grid_config::{Entity, Padding}};
+use papergrid::config::{AlignmentHorizontal, Borders, Entity, Indent};
+use papergrid::grid::spanned::config::Padding;
 
 use crate::util::{grid, test_table};
 
@@ -71,8 +72,8 @@ test_table!(
                 Padding::new(
                     Indent::spaced(4),
                     Indent::spaced(4),
-                    Indent::default(),
-                    Indent::default(),
+                    Indent::zero(),
+                    Indent::zero(),
                 ),
             );
         })

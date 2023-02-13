@@ -147,13 +147,13 @@ where
     }
 }
 
-impl<R, C, RR, D> TableOption<RR, D> for Extract<R, C>
+impl<R, C, RR, D, Cfg> TableOption<RR, D, Cfg> for Extract<R, C>
 where
     R: RangeBounds<usize> + Clone,
     C: RangeBounds<usize> + Clone,
     RR: Records + ExactRecords + Resizable,
 {
-    fn change(&mut self, records: &mut RR, _: &mut papergrid::GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut RR, _: &mut Cfg, _: &mut D) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
 

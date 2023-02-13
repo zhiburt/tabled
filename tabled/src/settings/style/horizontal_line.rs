@@ -1,5 +1,5 @@
 use crate::{
-    grid::config::{GridConfig, HorizontalLine as GridLine},
+    grid::spanned::config::{GridConfig, HorizontalLine as GridLine},
     settings::TableOption,
 };
 
@@ -89,7 +89,7 @@ impl HorizontalLine {
     }
 }
 
-impl<R, D> TableOption<R, D> for HorizontalLine {
+impl<R, D> TableOption<R, D, GridConfig> for HorizontalLine {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         match &self.line {
             Some(line) => cfg.set_horizontal_line(self.index, GridLine::from(*line)),

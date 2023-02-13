@@ -59,11 +59,11 @@ pub enum Rotate {
     Bottom,
 }
 
-impl<R, D> TableOption<R, D> for Rotate
+impl<R, D, C> TableOption<R, D, C> for Rotate
 where
     R: Records + ExactRecords + Resizable,
 {
-    fn change(&mut self, records: &mut R, _: &mut papergrid::GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

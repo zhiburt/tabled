@@ -68,13 +68,13 @@ impl<O, M1> ModifyList<O, M1> {
     }
 }
 
-impl<O, M, R, D> TableOption<R, D> for ModifyList<O, M>
+impl<O, M, R, D, C> TableOption<R, D, C> for ModifyList<O, M>
 where
     O: Object<R>,
-    M: CellOption<R>,
+    M: CellOption<R, C>,
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut papergrid::GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut C, _: &mut D) {
         for entity in self.obj.cells(records) {
             self.modifiers.change(records, cfg, entity);
         }

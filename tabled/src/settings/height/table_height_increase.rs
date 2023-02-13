@@ -1,5 +1,5 @@
 use crate::{
-    grid::config::GridConfig,
+    grid::spanned::GridConfig,
     records::{ExactRecords, Records},
     settings::{
         height::Height,
@@ -43,7 +43,7 @@ impl<W> TableHeightIncrease<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, TableDimension<'static>> for TableHeightIncrease<W, P>
+impl<R, W, P> TableOption<R, TableDimension<'static>, GridConfig> for TableHeightIncrease<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,

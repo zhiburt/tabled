@@ -1,5 +1,5 @@
 use crate::{
-    grid::config::{Entity, GridConfig},
+    grid::{config::{Entity}, spanned::GridConfig},
     settings::CellOption,
 };
 
@@ -141,7 +141,7 @@ pub enum AlignmentStrategy {
     PerLine,
 }
 
-impl<R> CellOption<R> for AlignmentStrategy {
+impl<R> CellOption<R, GridConfig> for AlignmentStrategy {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
         let mut formatting = *cfg.get_formatting(entity);
         match &self {

@@ -1,11 +1,7 @@
 use papergrid::{
-    config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent},
+    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent},
     dimension::Estimate,
-    grid::spanned::{
-        config::{Entity::Global, Padding},
-        dimension::ExactDimension,
-        Grid, GridConfig,
-    },
+    grid::spanned::{config::Padding, dimension::ExactDimension, Grid, GridConfig},
     records::IterRecords,
 };
 

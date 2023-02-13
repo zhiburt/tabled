@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crate::{grid::config::GridConfig, records::ExactRecords, settings::TableOption};
+use crate::{grid::spanned::GridConfig, records::ExactRecords, settings::TableOption};
 
 use super::Offset;
 
@@ -74,19 +74,19 @@ impl<L> BorderText<'_, L> {
     }
 }
 
-impl<R, D> TableOption<R, D> for BorderText<'_, LineFirst> {
+impl<R, D> TableOption<R, D, GridConfig> for BorderText<'_, LineFirst> {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.override_split_line(0, self.text.as_ref(), self.offset.into());
     }
 }
 
-impl<R, D> TableOption<R, D> for BorderText<'_, LineIndex> {
+impl<R, D> TableOption<R, D, GridConfig> for BorderText<'_, LineIndex> {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         cfg.override_split_line(self.line.0, self.text.as_ref(), self.offset.into());
     }
 }
 
-impl<R, D> TableOption<R, D> for BorderText<'_, LineLast>
+impl<R, D> TableOption<R, D, GridConfig> for BorderText<'_, LineLast>
 where
     R: ExactRecords,
 {

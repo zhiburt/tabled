@@ -91,10 +91,12 @@
 //! [`BorderText`]: crate::border_text::BorderText
 //! [`RawStyle`]: crate::raw_style::RawStyle
 
-use std::marker::PhantomData;
+use core::marker::PhantomData;
+
+use papergrid::grid::compact::CompactConfig;
 
 use crate::{
-    grid::config::{Borders, GridConfig},
+    grid::spanned::{config::Borders, GridConfig},
     records::Records,
     settings::TableOption,
 };
@@ -163,7 +165,7 @@ use super::{Border, HorizontalLine, Line, VerticalLine};
 /// [`Style::top`]: Style.function.top
 #[derive(Debug, Clone)]
 pub struct Style<T, B, L, R, H, V, HLines = HLineArray<0>, VLines = VLineArray<0>> {
-    borders: Borders<char>,
+    borders: Borders,
     horizontals: HLines,
     verticals: VLines,
     _top: PhantomData<T>,
@@ -563,11 +565,11 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
             border = border.bottom(c);
         }
 
-        if let Some(c) = self.borders.vertical_left {
+        if let Some(c) = self.borders.left {
             border = border.left(c);
         }
 
-        if let Some(c) = self.borders.vertical_right {
+        if let Some(c) = self.borders.right {
             border = border.right(c);
         }
 
@@ -620,8 +622,8 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         Line::new(
             self.borders.horizontal,
             self.borders.intersection,
-            self.borders.horizontal_left,
-            self.borders.horizontal_right,
+            self.borders.left_intersection,
+            self.borders.right_intersection,
         )
     }
 
@@ -726,7 +728,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     where
         for<'a> &'a mut HLines: IntoIterator<Item = &'a mut HorizontalLine>,
     {
-        self.borders.vertical_left = Some(c);
+        self.borders.left = Some(c);
 
         if self.borders.has_top() {
             self.borders.top_left = Some(c);
@@ -737,7 +739,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         }
 
         if self.borders.has_horizontal() {
-            self.borders.horizontal_left = Some(c);
+            self.borders.left_intersection = Some(c);
         }
 
         for hl in &mut self.horizontals {
@@ -756,7 +758,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     where
         for<'a> &'a mut HLines: IntoIterator<Item = &'a mut HorizontalLine>,
     {
-        self.borders.vertical_right = Some(c);
+        self.borders.right = Some(c);
 
         if self.borders.has_top() {
             self.borders.top_right = Some(c);
@@ -767,7 +769,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         }
 
         if self.borders.has_horizontal() {
-            self.borders.horizontal_right = Some(c);
+            self.borders.right_intersection = Some(c);
         }
 
         for hl in &mut self.horizontals {
@@ -793,11 +795,11 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         }
 
         if self.borders.has_left() {
-            self.borders.horizontal_left = Some(c);
+            self.borders.left_intersection = Some(c);
         }
 
         if self.borders.has_right() {
-            self.borders.horizontal_right = Some(c);
+            self.borders.right_intersection = Some(c);
         }
 
         for vl in &mut self.verticals {
@@ -953,7 +955,7 @@ impl<T, R, H, V, HLines, VLines> Style<T, On, On, R, H, V, HLines, VLines> {
 impl<T, B, R, V, HLines, VLines> Style<T, B, On, R, On, V, HLines, VLines> {
     /// Sets a left intersection char.
     pub fn intersection_left(mut self, c: char) -> Self {
-        self.borders.horizontal_left = Some(c);
+        self.borders.left_intersection = Some(c);
 
         Style::new(self.borders, self.horizontals, self.verticals)
     }
@@ -962,7 +964,7 @@ impl<T, B, R, V, HLines, VLines> Style<T, B, On, R, On, V, HLines, VLines> {
 impl<T, B, L, V, HLines, VLines> Style<T, B, L, On, On, V, HLines, VLines> {
     /// Sets a right intersection char.
     pub fn intersection_right(mut self, c: char) -> Self {
-        self.borders.horizontal_right = Some(c);
+        self.borders.right_intersection = Some(c);
 
         Style::new(self.borders, self.horizontals, self.verticals)
     }
@@ -1040,8 +1042,8 @@ impl<T, B, R, H, V, HLines, VLines> Style<T, B, On, R, H, V, HLines, VLines> {
     where
         HLines: IntoIterator<Item = HorizontalLine> + Clone,
     {
-        self.borders.vertical_left = None;
-        self.borders.horizontal_left = None;
+        self.borders.left = None;
+        self.borders.left_intersection = None;
         self.borders.top_left = None;
         self.borders.bottom_left = None;
 
@@ -1058,8 +1060,8 @@ impl<T, B, L, H, V, HLines, VLines> Style<T, B, L, On, H, V, HLines, VLines> {
     where
         HLines: IntoIterator<Item = HorizontalLine> + Clone,
     {
-        self.borders.vertical_right = None;
-        self.borders.horizontal_right = None;
+        self.borders.right = None;
+        self.borders.right_intersection = None;
         self.borders.top_right = None;
         self.borders.bottom_right = None;
 
@@ -1079,8 +1081,8 @@ impl<T, B, L, R, V, HLines, VLines> Style<T, B, L, R, On, V, HLines, VLines> {
         VLines: IntoIterator<Item = VerticalLine> + Clone,
     {
         self.borders.horizontal = None;
-        self.borders.horizontal_left = None;
-        self.borders.horizontal_right = None;
+        self.borders.left_intersection = None;
+        self.borders.right_intersection = None;
         self.borders.intersection = None;
 
         let iter = VerticalLineIter::new(self.verticals.into_iter(), true, false, false);
@@ -1122,7 +1124,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     }
 
     /// Return borders of a table.
-    pub const fn get_borders(&self) -> &Borders<char> {
+    pub const fn get_borders(&self) -> &Borders {
         &self.borders
     }
 
@@ -1137,10 +1139,9 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     }
 }
 
-impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D>
+impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, GridConfig>
     for Style<T, B, L, R, H, V, HLines, VLines>
 where
-    I: Records,
     HLines: IntoIterator<Item = HorizontalLine> + Clone,
     VLines: IntoIterator<Item = VerticalLine> + Clone,
 {
@@ -1156,6 +1157,14 @@ where
         for mut vl in self.verticals.clone() {
             vl.change(records, cfg, dimension);
         }
+    }
+}
+
+impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, CompactConfig>
+    for Style<T, B, L, R, H, V, HLines, VLines>
+{
+    fn change(&mut self, _: &mut I, cfg: &mut CompactConfig, _: &mut D) {
+        cfg.set_borders(self.borders);
     }
 }
 
@@ -1274,12 +1283,12 @@ const fn create_borders(
         bottom_right: bottom.connector2,
         top_intersection: top.intersection,
         bottom_intersection: bottom.intersection,
-        horizontal_left: horizontal.connector1,
-        horizontal_right: horizontal.connector2,
+        left_intersection: horizontal.connector1,
+        right_intersection: horizontal.connector2,
         horizontal: horizontal.main,
         intersection: horizontal.intersection,
-        vertical_left: left,
-        vertical_right: right,
+        left,
+        right,
         vertical,
     }
 }

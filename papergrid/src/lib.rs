@@ -19,8 +19,8 @@
 //! ```
 //! use papergrid::{
 //!     records::IterRecords,
-//!     dimension::{Estimate, ExactDimension},
-//!     config::{Borders, GridConfig}, Grid,
+//!     dimension::{Estimate},
+//!     grid::spanned::{config::{Borders, GridConfig}, Grid, ExactDimension},
 //! };
 //!
 //! // Creating a borders structure of a grid.

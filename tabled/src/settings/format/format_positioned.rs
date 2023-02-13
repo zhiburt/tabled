@@ -1,5 +1,5 @@
 use crate::{
-    grid::config::{Entity, GridConfig},
+    grid::config::Entity,
     records::{ExactRecords, Records, RecordsMut},
     settings::CellOption,
 };
@@ -14,12 +14,12 @@ pub struct FormatContentPositioned<F>(pub F)
 where
     F: FnMut(&str, (usize, usize)) -> String;
 
-impl<F, R> CellOption<R> for FormatContentPositioned<F>
+impl<F, R, C> CellOption<R, C> for FormatContentPositioned<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
     R: Records + ExactRecords + RecordsMut<String>,
 {
-    fn change(&mut self, records: &mut R, _: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, _: &mut C, entity: Entity) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

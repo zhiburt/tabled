@@ -1,8 +1,6 @@
 use crate::{
-    grid::{
-        config::GridConfig,
-        util::string::{count_lines, get_lines},
-    },
+    grid::spanned::GridConfig,
+    grid::util::string::{count_lines, get_lines},
     records::{ExactRecords, Records, RecordsMut},
     settings::{
         height::Height,
@@ -46,7 +44,7 @@ impl<W> TableHeightLimit<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, TableDimension<'static>> for TableHeightLimit<W, P>
+impl<R, W, P> TableOption<R, TableDimension<'static>, GridConfig> for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,

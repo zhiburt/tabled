@@ -28,7 +28,8 @@
 //! [`Table`]: crate::Table
 
 use crate::{
-    grid::config::{Offset, Sides},
+    grid::config::Sides,
+    grid::spanned::config::{GridConfig, Offset},
     settings::{color::Color, TableOption},
 };
 
@@ -111,8 +112,8 @@ impl Shadow {
     }
 }
 
-impl<R, D> TableOption<R, D> for Shadow {
-    fn change(&mut self, _: &mut R, cfg: &mut papergrid::GridConfig, _: &mut D) {
+impl<R, D> TableOption<R, D, GridConfig> for Shadow {
+    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         let mut margin = *cfg.get_margin();
 
         if self.direction.top {

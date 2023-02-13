@@ -1,16 +1,14 @@
-use crate::{grid::config::GridConfig, settings::TableOption};
+use crate::settings::TableOption;
 
 /// This is a struct wrapper for a lambda which changes config.
 #[derive(Debug)]
-pub struct FormatConfig<F>(pub F)
-where
-    F: FnMut(&mut GridConfig);
+pub struct FormatConfig<F>(pub F);
 
-impl<F, R, D> TableOption<R, D> for FormatConfig<F>
+impl<F, R, D, C> TableOption<R, D, C> for FormatConfig<F>
 where
-    F: FnMut(&mut GridConfig),
+    F: FnMut(&mut C),
 {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut C, _: &mut D) {
         (self.0)(cfg);
     }
 }

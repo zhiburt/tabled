@@ -6,7 +6,8 @@
 use std::collections::HashSet;
 
 use crate::{
-    grid::config::{self, Border as GridBorder, Entity, GridConfig, Position},
+    grid::config::{Border as GridBorder, Entity, Position},
+    grid::spanned::{config, GridConfig},
     records::{ExactRecords, Records},
     settings::{object::Object, style::Border, style::BorderColor, TableOption},
 };
@@ -110,7 +111,7 @@ impl<O> Highlight<O> {
     }
 }
 
-impl<O, R, D> TableOption<R, D> for Highlight<O>
+impl<O, R, D> TableOption<R, D, GridConfig> for Highlight<O>
 where
     O: Object<R>,
     R: Records + ExactRecords,
@@ -137,7 +138,7 @@ pub struct HighlightColored<O> {
     border: BorderColor,
 }
 
-impl<O, R, D> TableOption<R, D> for HighlightColored<O>
+impl<O, R, D> TableOption<R, D, GridConfig> for HighlightColored<O>
 where
     O: Object<R>,
     R: Records + ExactRecords,

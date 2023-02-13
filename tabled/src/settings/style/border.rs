@@ -1,5 +1,6 @@
 use crate::{
-    grid::config::{Border as GridBorder, Entity, GridConfig},
+    grid::config::Entity,
+    grid::spanned::config::{Border as GridBorder, GridConfig},
     records::{ExactRecords, Records},
     settings::CellOption,
 };
@@ -28,7 +29,7 @@ use crate::{
 ///     .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
 /// ```
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct Border(GridBorder<char>);
+pub struct Border(GridBorder);
 
 impl Border {
     /// This function constructs a cell borders with all sides set.
@@ -115,7 +116,7 @@ impl Border {
     }
 }
 
-impl<R> CellOption<R> for Border
+impl<R> CellOption<R, GridConfig> for Border
 where
     R: Records + ExactRecords,
 {
@@ -143,7 +144,7 @@ impl From<Border> for GridBorder {
 #[derive(Debug)]
 pub struct EmptyBorder;
 
-impl<R> CellOption<R> for EmptyBorder
+impl<R> CellOption<R, GridConfig> for EmptyBorder
 where
     R: Records + ExactRecords,
 {

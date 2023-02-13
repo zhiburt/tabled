@@ -34,9 +34,11 @@ use std::{borrow::Cow, cmp, fmt, io};
 use crate::{
     grid::config::AlignmentHorizontal,
     grid::{
-        config::{Entity, Formatting, GridConfig, Indent, Padding},
-        dimension::ExactDimension,
-        Grid,
+        config::{Entity, Indent},
+        spanned::{
+            config::{Formatting, GridConfig, Padding},
+            ExactDimension, Grid,
+        },
     },
     records::{
         into_records::{
@@ -92,7 +94,7 @@ impl<I> IterTable<I> {
     /// With is a generic function which applies options to the [`IterTable`].
     pub fn with<O>(mut self, option: O) -> Self
     where
-        for<'a> O: TableOption<IterRecords<&'a I>, IterTableDimension<'static>>,
+        for<'a> O: TableOption<IterRecords<&'a I>, IterTableDimension<'static>, GridConfig>,
     {
         let mut dimension = IterTableDimension::new(
             Width::Exact(self.table.width.unwrap_or(0)),
@@ -149,7 +151,7 @@ impl<I> IterTable<I> {
         let mut config = self.cfg;
         clean_config(&mut config);
 
-        build_grid(writer, self.records, &config, &self.table)
+        build_grid(writer, self.records, config, &self.table)
     }
 
     /// Build a string.
@@ -177,10 +179,22 @@ impl<I> IterTable<I> {
     }
 }
 
+impl<I> fmt::Display for IterTable<I>
+where
+    for<'a> &'a I: IntoRecords,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut config = self.cfg.clone();
+        clean_config(&mut config);
+
+        build_grid(f, &self.records, config, &self.table)
+    }
+}
+
 fn build_grid<W: fmt::Write, I: IntoRecords>(
     writer: W,
     records: I,
-    config: &GridConfig,
+    config: GridConfig,
     iter_cfg: &TableConfig,
 ) -> Result<(), fmt::Error> {
     let tab_size = config.get_tab_width();
@@ -243,7 +257,7 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
         None => {
             let records = LimitColumns::new(records.as_slice(), count_columns);
             let records = IterRecords::new(records, count_columns, None);
-            let width = ExactDimension::width(records, config);
+            let width = ExactDimension::width(records, &config);
 
             dims_width = width.iter().map(|i| cmp::max(*i, padding)).collect();
             content_width = width.iter().map(|i| i.saturating_sub(padding)).collect();

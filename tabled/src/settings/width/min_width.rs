@@ -7,7 +7,8 @@ use std::marker::PhantomData;
 use papergrid::util::string::{get_lines, string_width_multiline_tab};
 
 use crate::{
-    grid::config::{Entity, GridConfig},
+    grid::config::Entity,
+    grid::spanned::config::GridConfig,
     records::{ExactRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
@@ -103,7 +104,7 @@ impl<W, P> MinWidth<W, P> {
     }
 }
 
-impl<W, R> CellOption<R> for MinWidth<W>
+impl<W, R> CellOption<R, GridConfig> for MinWidth<W>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + RecordsMut<String>,
@@ -128,7 +129,7 @@ where
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>> for MinWidth<W, P>
+impl<W, P, R> TableOption<R, TableDimension<'static>, GridConfig> for MinWidth<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,

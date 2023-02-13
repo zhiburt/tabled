@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 
 use tabled::{
-    grid::Grid,
+    grid::spanned::Grid,
     settings::{color::Color, style::Style},
     Table, Tabled,
 };

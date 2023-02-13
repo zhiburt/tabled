@@ -11,7 +11,7 @@ use crate::{
     dimension::{Dimension, Estimate}
 };
 
-use super::config::CommonConfig;
+use super::config::CompactConfig;
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height.
 ///
@@ -24,12 +24,12 @@ pub struct ExactDimension {
 
 impl ExactDimension {
     /// Calculates height of rows.
-    pub fn height<R: Records>(records: R, cfg: &CommonConfig) -> Vec<usize> {
+    pub fn height<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
         build_height(records, cfg)
     }
 
     /// Calculates width of columns.
-    pub fn width<R: Records>(records: R, cfg: &CommonConfig) -> Vec<usize> {
+    pub fn width<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
         build_width(records, cfg)
     }
 
@@ -49,15 +49,15 @@ impl Dimension for ExactDimension {
     }
 }
 
-impl Estimate<CommonConfig> for ExactDimension {
-    fn estimate<R: Records>(&mut self, records: R, cfg: &CommonConfig) {
+impl Estimate<CompactConfig> for ExactDimension {
+    fn estimate<R: Records>(&mut self, records: R, cfg: &CompactConfig) {
         let (width, height) = build_dimensions(records, cfg);
         self.width = width;
         self.height = height;
     }
 }
 
-fn build_dimensions<R: Records>(records: R, cfg: &CommonConfig) -> (Vec<usize>, Vec<usize>) {
+fn build_dimensions<R: Records>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<usize>) {
     let count_columns = records.count_columns();
 
     let mut widths = vec![0; count_columns];
@@ -83,7 +83,7 @@ fn build_dimensions<R: Records>(records: R, cfg: &CommonConfig) -> (Vec<usize>, 
     (widths, heights)
 }
 
-fn build_height<R: Records>(records: R, cfg: &CommonConfig) -> Vec<usize> {
+fn build_height<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
     let count_columns = records.count_columns();
     let shape = (usize::MAX, count_columns);
 
@@ -103,7 +103,7 @@ fn build_height<R: Records>(records: R, cfg: &CommonConfig) -> Vec<usize> {
     heights
 }
 
-fn build_width<R: Records>(records: R, cfg: &CommonConfig) -> Vec<usize> {
+fn build_width<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
     let count_columns = records.count_columns();
     let shape = (usize::MAX, count_columns);
 
@@ -120,13 +120,13 @@ fn build_width<R: Records>(records: R, cfg: &CommonConfig) -> Vec<usize> {
     widths
 }
 
-fn get_cell_height(cell: &str, cfg: &CommonConfig, pos: Position) -> usize {
+fn get_cell_height(cell: &str, cfg: &CompactConfig, pos: Position) -> usize {
     let padding = cfg.get_padding();
     let count_lines = max(1, count_lines(cell));
     count_lines + padding.top.size + padding.bottom.size
 }
 
-fn get_cell_width(text: &str, cfg: &CommonConfig, pos: Position) -> usize {
+fn get_cell_width(text: &str, cfg: &CompactConfig, pos: Position) -> usize {
     let pad = cfg.get_padding();
     let width = string_width_multiline_tab(text, cfg.get_tab_width());
 

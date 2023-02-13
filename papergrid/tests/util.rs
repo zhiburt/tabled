@@ -5,12 +5,12 @@ use std::collections::HashMap;
 use papergrid::{
     colors::NoColors,
     config::{
-        grid_config::{Borders, GridConfig},
         Position,
     },
-    dimension::{exact_grid::ExactDimension, Dimension, Estimate},
+    dimension::{Dimension, Estimate},
     records::{IterRecords, Records},
-    Grid,
+    grid::spanned::{config::Borders, GridConfig, Grid, ExactDimension},
+
 };
 
 pub fn grid(rows: usize, cols: usize) -> GridBuilder {
@@ -157,8 +157,6 @@ impl Dimension for ConstantDimension {
     }
 }
 
-impl Estimate for ConstantDimension {
-    type Config = GridConfig;
-
+impl Estimate<GridConfig> for ConstantDimension {
     fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
 }

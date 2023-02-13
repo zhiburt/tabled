@@ -49,7 +49,7 @@
 
 use std::borrow::Cow;
 
-use papergrid::{config::Position, GridConfig};
+use papergrid::config::Position;
 
 use crate::{
     records::{ExactRecords, Records, RecordsMut, Resizable},
@@ -112,11 +112,11 @@ impl Concat {
     }
 }
 
-impl<R, D> TableOption<R, D> for Concat
+impl<R, D, C> TableOption<R, D, C> for Concat
 where
     R: Records + ExactRecords + Resizable + RecordsMut<Cow<'static, str>>,
 {
-    fn change(&mut self, records: &mut R, _: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -177,11 +177,11 @@ where
 #[derive(Debug, Default)]
 struct GetCell(String, Position);
 
-impl<R, D> TableOption<R, D> for GetCell
+impl<R, D, C> TableOption<R, D, C> for GetCell
 where
     R: ExactRecords,
 {
-    fn change(&mut self, records: &mut R, _: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
         let cell = records.get_cell(self.1).as_ref().to_string();
         self.0 = cell;
     }

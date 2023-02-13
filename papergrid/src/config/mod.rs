@@ -3,13 +3,15 @@
 mod alignment;
 mod border;
 mod borders;
+mod entity;
 mod indent;
-mod sides;
 mod position;
+mod sides;
 
 pub use alignment::{AlignmentHorizontal, AlignmentVertical};
 pub use border::Border;
 pub use borders::Borders;
+pub use entity::{Entity, EntityIterator};
 pub use indent::Indent;
-pub use sides::Sides;
 pub use position::Position;
+pub use sides::Sides;

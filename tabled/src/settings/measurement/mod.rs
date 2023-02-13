@@ -1,11 +1,8 @@
 //! The module contains [`Measurement`] trait and its implementations to be used in [`Height`] and [`Width`].;
 
 use crate::{
-    grid::{config::GridConfig, dimension::ExactDimension},
-    grid::{
-        grid_projection::GridProjection,
-        util::string::{self, string_width_multiline_tab},
-    },
+    grid::spanned::{ExactDimension, GridConfig},
+    grid::util::string::{self, string_width_multiline_tab},
     records::{ExactRecords, Records},
     settings::height::Height,
     settings::width::Width,
@@ -115,10 +112,9 @@ where
 }
 
 fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
-    let gp = GridProjection::new(cfg).count_columns(list.len());
     let total = list.iter().sum::<usize>();
 
-    total + gp.count_vertical()
+    total + cfg.count_vertical(list.len())
 }
 
 fn records_heights<R>(records: &R) -> impl Iterator<Item = impl Iterator<Item = usize> + '_> + '_
@@ -141,9 +137,8 @@ where
 }
 
 fn get_table_total_height(list: &[usize], cfg: &GridConfig) -> usize {
-    let gp = GridProjection::new(cfg).count_rows(list.len());
     let total = list.iter().sum::<usize>();
-    let counth = gp.count_horizontal();
+    let counth = cfg.count_horizontal(list.len());
 
     total + counth
 }
