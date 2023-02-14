@@ -1,26 +1,32 @@
-//! This module contains a [`IterTable`] table.
+//! This module contains a [`CompactTable`] table.
 //!
-//! In contrast to [`Table`] [`IterTable`] does no allocations but it consumes an iterator.
+//! In contrast to [`Table`] [`CompactTable`] does no allocations but it consumes an iterator.
 //! It's usefull when you dont want to re/allocate a buffer for your data.
 //!
 //! # Example
 //!
 //! ```
-//! use tabled::{records::IterRecords, tables::iter::IterTable};
+//!use tabled::{settings::style::Style, tables::compact::CompactTable};
 //!
-//! let iterator = vec![vec!["First", "row"], vec!["Second", "row"]];
-//! let records = IterRecords::new(iterator, 2, Some(2));
-//! let table = IterTable::new(records);
+//! let data = [
+//!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
+//!     ["OpenBSD", "1995", "Theo de Raadt", ""],
+//!     ["HardenedBSD", "2014", "Oliver Pinter and Shawn Webb", ""],
+//! ];
 //!
-//! let s = table.to_string();
+//! let table = CompactTable::from(data)
+//!     .with(Style::psql())
+//!     .to_string();
 //!
 //! assert_eq!(
-//!     s,
-//!     "+--------+-----+\n\
-//!      | First  | row |\n\
-//!      +--------+-----+\n\
-//!      | Second | row |\n\
-//!      +--------+-----+",
+//!     table,
+//!     "+-------------+------+------------------------------+---+\n\
+//!      | FreeBSD     | 1993 | William and Lynne Jolitz     | ? |\n\
+//!      |-------------+------+------------------------------+---|\n\
+//!      | OpenBSD     | 1995 | Theo de Raadt                |   |\n\
+//!      |-------------+------+------------------------------+---|\n\
+//!      | HardenedBSD | 2014 | Oliver Pinter and Shawn Webb |   |\n\
+//!      +-------------+------+------------------------------+---+"
 //! );
 //! ```
 //!
@@ -29,23 +35,18 @@
 mod dimension;
 mod utf8_writer;
 
-use std::{borrow::Cow, cmp, fmt, io};
+use std::{fmt, io};
 
-use papergrid::grid::compact::{CompactConfig, CompactGrid};
+use papergrid::{
+    grid::compact::{CompactConfig, CompactGrid},
+    util::string::string_width_tab,
+};
 
 use crate::{
     grid::config::AlignmentHorizontal,
-    grid::{
-        config::{Entity, Indent},
-        spanned::{
-            config::{Formatting, GridConfig, Padding},
-            ExactDimension, Grid,
-        },
-    },
+    grid::{config::Indent, spanned::config::Padding},
     records::{
-        into_records::{
-            truncate_records::Width, BufColumns, BufRows, LimitColumns, LimitRows, TruncateContent,
-        },
+        into_records::{LimitColumns, LimitRows},
         IntoRecords, IterRecords,
     },
     settings::{style::Style, TableOption},
@@ -55,9 +56,7 @@ use self::{dimension::ConstantDimension, utf8_writer::UTF8Writer};
 
 /// A table which consumes an [`IntoRecords`] iterator.
 ///
-/// To be able to build table we need a dimensions.
-/// If no width and count_columns is set, [`IterTable`] will sniff the records, by
-/// keeping a number of rows buffered (You can set the number via [`IterTable::sniff`]).
+/// To be able to build table we need a descrit dimensions.
 #[derive(Debug, Clone)]
 pub struct CompactTable<I, const COUNT_COLUMNS: usize> {
     records: I,
@@ -74,7 +73,7 @@ struct TableConfig<const COUNT_COLUMNS: usize> {
 }
 
 impl<I> CompactTable<I, 0> {
-    /// Creates a new [`IterTable`] structure.
+    /// Creates a new [`CompactTable`] structure.
     pub fn new(iter: I, count_columns: usize, cell_width: usize) -> Self
     where
         I: IntoRecords,
@@ -93,6 +92,7 @@ impl<I> CompactTable<I, 0> {
 }
 
 impl<I, const COUNT_COLUMNS: usize> CompactTable<I, COUNT_COLUMNS> {
+    /// Creates a new [`CompactTable`] structure with a width dimension for all columns.
     pub const fn with_dimension(iter: I, widths: [usize; COUNT_COLUMNS]) -> Self
     where
         I: IntoRecords,
@@ -109,7 +109,7 @@ impl<I, const COUNT_COLUMNS: usize> CompactTable<I, COUNT_COLUMNS> {
         }
     }
 
-    /// With is a generic function which applies options to the [`IterTable`].
+    /// With is a generic function which applies options to the [`CompactTable`].
     pub fn with<O>(mut self, option: O) -> Self
     where
         for<'a> O: TableOption<IterRecords<&'a I>, ConstantDimension<COUNT_COLUMNS>, CompactConfig>,
@@ -182,13 +182,30 @@ where
     }
 }
 
+impl<T, const COUNT_COLUMNS: usize, const COUNT_ROWS: usize> From<[[T; COUNT_COLUMNS]; COUNT_ROWS]>
+    for CompactTable<[[T; COUNT_COLUMNS]; COUNT_ROWS], COUNT_COLUMNS>
+where
+    T: AsRef<str>,
+{
+    fn from(mat: [[T; COUNT_COLUMNS]; COUNT_ROWS]) -> Self {
+        let mut widths = [0; COUNT_COLUMNS];
+        for row in &mat {
+            for (col, text) in row.iter().enumerate() {
+                let w = string_width_tab(text.as_ref(), 4);
+                widths[col] = std::cmp::max(widths[col], w);
+            }
+        }
+
+        Self::with_dimension(mat, widths)
+    }
+}
+
 fn build_grid<W: fmt::Write, I: IntoRecords, const COUNT_COLUMNS: usize>(
     writer: W,
     records: I,
     config: CompactConfig,
     iter_cfg: &TableConfig<COUNT_COLUMNS>,
 ) -> Result<(), fmt::Error> {
-    let tab_size = config.get_tab_width();
     let count_rows = iter_cfg.count_rows;
 
     let padding = config.get_padding();
@@ -213,12 +230,12 @@ fn build_grid<W: fmt::Write, I: IntoRecords, const COUNT_COLUMNS: usize>(
             let records = LimitRows::new(records, limit);
             let records = LimitColumns::new(records, count_columns);
             let records = IterRecords::new(records, count_columns, count_rows);
-            return CompactGrid::new(records, &dimension, config).build(writer);
+            CompactGrid::new(records, &dimension, config).build(writer)
         }
         None => {
             let records = LimitColumns::new(records, count_columns);
             let records = IterRecords::new(records, count_columns, count_rows);
-            return CompactGrid::new(records, &dimension, config).build(writer);
+            CompactGrid::new(records, &dimension, config).build(writer)
         }
     }
 }

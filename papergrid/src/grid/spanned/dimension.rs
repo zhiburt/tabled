@@ -271,9 +271,6 @@ fn count_vertical_borders(cfg: &GridConfig, len: usize, start: usize, end: usize
 }
 
 fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
-    let count_columns = records.count_columns();
-    let shape = (usize::MAX, count_columns);
-
     let mut heights = vec![];
     let mut hspans = HashMap::new();
 
@@ -305,7 +302,6 @@ fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
 
 fn build_width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
     let count_columns = records.count_columns();
-    let shape = (usize::MAX, count_columns);
 
     let mut widths = vec![0; count_columns];
     let mut vspans = HashMap::new();

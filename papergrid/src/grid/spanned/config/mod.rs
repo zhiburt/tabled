@@ -1,3 +1,7 @@
+//! A module which contains configuration options for a [`Grid`].
+//!
+//! [`Grid`]: crate::grid::spanned::Grid
+
 mod borders_config;
 mod entity_map;
 mod formatting;
@@ -50,16 +54,22 @@ pub type MarginOffset = Sides<Offset>;
 /// PaddingColor represent a 4 indents of a cell.
 pub type PaddingColor = Sides<AnsiColor<'static>>;
 
+/// Borders represents a characters set which are used to build border grid.
 pub type Borders = crate::config::Borders<char>;
 
+/// Borders represents a color set which are used to build border grid.
 pub type BordersColor = crate::config::Borders<AnsiColor<'static>>;
 
+/// HorizontalLine represents a horizontal border line.
 pub type HorizontalLine = borders_config::HorizontalLine<char>;
 
+/// HorizontalLine represents a vertical border line.
 pub type VerticalLine = borders_config::VerticalLine<char>;
 
+/// Border represent a 4 side border lines of a cell.
 pub type Border = crate::config::Border<char>;
 
+/// Border represent a 4 side color for border lines of a cell.
 pub type BorderColor = crate::config::Border<AnsiColor<'static>>;
 
 impl Default for GridConfig {
@@ -529,15 +539,7 @@ impl GridConfig {
     //
     // todo: would be great to remove a shape
     pub fn remove_border_color(&mut self, pos: Position, shape: (usize, usize)) {
-        self.get_border_color_config_mut().remove_border(pos, shape);
-    }
-
-    pub(crate) fn get_border_color_config(&self) -> &BordersConfig<AnsiColor<'static>> {
-        &self.border_colors
-    }
-
-    pub(crate) fn get_border_color_config_mut(&mut self) -> &mut BordersConfig<AnsiColor<'static>> {
-        &mut self.border_colors
+        self.border_colors.remove_border(pos, shape);
     }
 }
 

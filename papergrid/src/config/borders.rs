@@ -38,6 +38,7 @@ pub struct Borders<T> {
 }
 
 impl<T> Borders<T> {
+    /// Returns empty borders.
     pub const fn empty() -> Self {
         Self {
             top: None,
@@ -58,6 +59,7 @@ impl<T> Borders<T> {
         }
     }
 
+    /// Returns Borders filled in with a supplied value.
     pub const fn filled(val: T) -> Self
     where
         T: Copy,

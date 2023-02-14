@@ -3,7 +3,7 @@
 extern crate proc_macro;
 
 use proc_macro_error::proc_macro_error;
-use quote::{quote, IdentFragment, ToTokens};
+use quote::{quote, ToTokens};
 use std::{
     collections::{HashMap, HashSet},
     iter::FromIterator,
@@ -14,9 +14,19 @@ use syn::{
     parse_macro_input,
     punctuated::Punctuated,
     token::{self, Brace},
-    Expr, ExprCall, ExprLit, Ident, LitInt, Result, Token,
+    ExprLit, Ident, Lit, LitInt, LitStr, Result, Token,
 };
-use tabled::settings::Modify;
+use tabled::{
+    builder::Builder,
+    settings::{
+        margin::Margin,
+        padding,
+        span::{ColumnSpan, RowSpan},
+        style::Style,
+        Modify,
+    },
+    Table,
+};
 
 #[allow(dead_code)]
 struct MatrixRow {
@@ -222,110 +232,158 @@ impl Parse for MatrixInput {
     }
 }
 
+#[allow(dead_code)]
+struct KeyValue<V> {
+    key: Ident,
+    token: Token!(=),
+    value: V,
+}
+
+impl<V: Parse> Parse for KeyValue<V> {
+    fn parse(input: ParseStream) -> Result<Self> {
+        Ok(Self {
+            key: input.parse()?,
+            token: input.parse()?,
+            value: input.parse()?,
+        })
+    }
+}
+
+#[allow(dead_code)]
 struct TableStruct {
     matrix: MatrixInput,
     comma_token: Option<Token![,]>,
-    theme: Option<Ident>,
+    settings: Punctuated<KeyValue<LitStr>, Token!(,)>,
 }
 
 impl Parse for TableStruct {
     fn parse(input: ParseStream) -> Result<Self> {
         let matrix = input.parse()?;
-        let mut theme = None;
         let mut comma_token = None;
+        let mut settings = Punctuated::new();
 
         if input.peek(Token![,]) {
-            let tok = input.parse()?;
-            if !input.is_empty() {
+            comma_token = Some(input.parse()?);
+            while !input.is_empty() {
                 let val = input.parse()?;
-                theme = Some(val);
-                comma_token = Some(tok);
+                settings.push_value(val);
+                if input.is_empty() {
+                    break;
+                }
+                let punct = input.parse()?;
+                settings.push_punct(punct);
             }
         }
 
         Ok(Self {
             matrix,
             comma_token,
-            theme,
+            settings,
+        })
+    }
+}
+
+#[allow(dead_code)]
+struct Padding<T> {
+    left: T,
+    comma1_tk: Token!(,),
+    right: T,
+    comma2_tk: Token!(,),
+    top: T,
+    comma3_tk: Token!(,),
+    bottom: T,
+}
+
+impl<T: Parse> Parse for Padding<T> {
+    fn parse(input: ParseStream) -> Result<Self> {
+        Ok(Self {
+            left: input.parse()?,
+            comma1_tk: input.parse()?,
+            right: input.parse()?,
+            comma2_tk: input.parse()?,
+            top: input.parse()?,
+            comma3_tk: input.parse()?,
+            bottom: input.parse()?,
         })
     }
 }
 
 fn expr_lit_to_string(expr_lit: &ExprLit) -> String {
     match &expr_lit.lit {
-        syn::Lit::Str(s) => s.value(),
-        syn::Lit::ByteStr(s) => format!("{:?}", s.value()),
+        Lit::Str(s) => s.value(),
+        Lit::ByteStr(s) => format!("{:?}", s.value()),
         lit => lit.to_token_stream().to_string(),
     }
 }
 
-fn expr_val_to_list(expr_val: &ExprVal) -> Vec<String> {
+fn expr_val_to_list(expr_val: &ExprVal) -> Result<Vec<String>> {
     match expr_val {
-        ExprVal::Lit(lit) => vec![expr_lit_to_string(lit)],
+        ExprVal::Lit(lit) => Ok(vec![expr_lit_to_string(lit)]),
         ExprVal::Scope { expr, .. } => match expr {
             Some(val) => match val {
-                ScopeVal::Expr(lit) => vec![expr_lit_to_string(lit)],
-                ScopeVal::List(list) => list.into_iter().map(expr_lit_to_string).collect(),
+                ScopeVal::Expr(lit) => Ok(vec![expr_lit_to_string(lit)]),
+                ScopeVal::List(list) => Ok(list.into_iter().map(expr_lit_to_string).collect()),
                 ScopeVal::Sized { elem, len, .. } => {
-                    let len = len.base10_parse::<usize>().unwrap();
+                    let len = len.base10_parse::<usize>()?;
                     let mut data = vec![String::new(); len];
                     if len > 0 {
                         data[0] = expr_lit_to_string(elem);
                     }
 
-                    data
+                    Ok(data)
                 }
             },
-            None => vec![String::new()],
+            None => Ok(vec![String::new()]),
         },
     }
 }
 
-fn collect_matrix(table: &TableStruct) -> Vec<Vec<String>> {
-    match &table.matrix.data {
-        MatrixData::List(list) => list
-            .into_iter()
-            .map(|arr| match &arr.elems {
-                MatrixRowElements::List(list) => list
-                    .into_iter()
-                    .flat_map(expr_val_to_list)
-                    .collect::<Vec<_>>(),
-                MatrixRowElements::Static { elem, len, .. } => {
-                    let len = len.base10_parse::<usize>().unwrap();
-                    let elem = expr_val_to_list(elem);
-                    std::iter::repeat(elem)
-                        .take(len)
-                        .flatten()
-                        .collect::<Vec<_>>()
-                }
-            })
-            .collect::<Vec<_>>(),
-        MatrixData::Static { elem, len, .. } => {
-            let data = match &elem.elems {
-                MatrixRowElements::List(list) => list
-                    .into_iter()
-                    .flat_map(expr_val_to_list)
-                    .collect::<Vec<_>>(),
-                MatrixRowElements::Static { elem, len, .. } => {
-                    let len = len.base10_parse::<usize>().unwrap();
-                    let elem = expr_val_to_list(elem);
-                    std::iter::repeat(elem)
-                        .take(len)
-                        .flatten()
-                        .collect::<Vec<_>>()
-                }
-            };
-            let len = len.base10_parse::<usize>().unwrap();
+fn collect_matrix(matrix: &MatrixInput) -> Result<Vec<Vec<String>>> {
+    match &matrix.data {
+        MatrixData::List(list) => {
+            let mut data = vec![];
+            for row in list {
+                let row = collect_row(&row.elems)?;
+                data.push(row)
+            }
 
-            vec![data; len]
+            Ok(data)
+        }
+        MatrixData::Static { elem, len, .. } => {
+            let data = collect_row(&elem.elems)?;
+            let len = len.base10_parse::<usize>()?;
+
+            Ok(vec![data; len])
         }
     }
 }
 
-fn collect_vspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
+fn collect_row(elems: &MatrixRowElements) -> Result<Vec<String>> {
+    let mut row = vec![];
+
+    match elems {
+        MatrixRowElements::List(list) => {
+            for val in list {
+                let vals = expr_val_to_list(val)?;
+                row.extend(vals);
+            }
+        }
+        MatrixRowElements::Static { elem, len, .. } => {
+            let len = len.base10_parse::<usize>()?;
+            let elem = expr_val_to_list(elem)?;
+            let iter = std::iter::repeat(elem).take(len).flatten();
+
+            row.extend(iter);
+        }
+    }
+
+    Ok(row)
+}
+
+fn collect_vspan(matrix: &MatrixInput) -> Result<HashMap<(usize, usize), usize>> {
     let mut spans = HashMap::new();
 
-    match &table.matrix.data {
+    match &matrix.data {
         MatrixData::List(list) => {
             for (row, e) in list.iter().enumerate() {
                 match &e.elems {
@@ -339,7 +397,7 @@ fn collect_vspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
                                         ScopeVal::Expr(_) => i += 1,
                                         ScopeVal::List(list) => i += list.len(),
                                         ScopeVal::Sized { len, .. } => {
-                                            let len = len.base10_parse::<usize>().unwrap();
+                                            let len = len.base10_parse::<usize>()?;
                                             if len > 0 {
                                                 spans.insert((row, i), len);
                                                 i += len;
@@ -352,7 +410,7 @@ fn collect_vspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
                         }
                     }
                     MatrixRowElements::Static { elem, len, .. } => {
-                        let arr_len = len.base10_parse::<usize>().unwrap();
+                        let arr_len = len.base10_parse::<usize>()?;
                         match elem {
                             ExprVal::Lit(_) => {}
                             ExprVal::Scope { expr, .. } => match expr {
@@ -360,7 +418,7 @@ fn collect_vspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
                                     ScopeVal::Expr(_) => {}
                                     ScopeVal::List(_) => {}
                                     ScopeVal::Sized { len, .. } => {
-                                        let len = len.base10_parse::<usize>().unwrap();
+                                        let len = len.base10_parse::<usize>()?;
                                         if len > 0 {
                                             let iter = (0..arr_len).map(|i| ((row, i * len), len));
                                             spans.extend(iter);
@@ -375,7 +433,7 @@ fn collect_vspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
             }
         }
         MatrixData::Static { elem, len, .. } => {
-            let count_rows = len.base10_parse::<usize>().unwrap();
+            let count_rows = len.base10_parse::<usize>()?;
 
             match &elem.elems {
                 MatrixRowElements::List(list) => {
@@ -388,7 +446,7 @@ fn collect_vspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
                                     ScopeVal::Expr(_) => i += 1,
                                     ScopeVal::List(list) => i += list.len(),
                                     ScopeVal::Sized { len, .. } => {
-                                        let len = len.base10_parse::<usize>().unwrap();
+                                        let len = len.base10_parse::<usize>()?;
                                         if len > 0 {
                                             spans
                                                 .extend((0..count_rows).map(|row| ((row, i), len)));
@@ -406,13 +464,13 @@ fn collect_vspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
         }
     }
 
-    spans
+    Ok(spans)
 }
 
-fn collect_hspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
+fn collect_hspan(matrix: &MatrixInput) -> Result<HashMap<(usize, usize), usize>> {
     let mut filled = HashSet::new();
     let mut empties = HashSet::new();
-    match &table.matrix.data {
+    match &matrix.data {
         MatrixData::List(list) => {
             for (row, e) in list.iter().enumerate() {
                 match &e.elems {
@@ -430,7 +488,7 @@ fn collect_hspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
                                         }
                                         ScopeVal::Sized { len, .. } => {
                                             filled.insert((row, col));
-                                            let len = len.base10_parse::<usize>().unwrap();
+                                            let len = len.base10_parse::<usize>()?;
                                             col += len;
                                         }
                                     },
@@ -443,7 +501,7 @@ fn collect_hspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
                         }
                     }
                     MatrixRowElements::Static { elem, len, .. } => {
-                        let arr_len = len.base10_parse::<usize>().unwrap();
+                        let arr_len = len.base10_parse::<usize>()?;
 
                         match elem {
                             ExprVal::Lit(_) => {}
@@ -454,7 +512,7 @@ fn collect_hspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
                                         filled.extend((0..arr_len).map(|col| (row, col)));
                                     }
                                     ScopeVal::Sized { len, .. } => {
-                                        let len = len.base10_parse::<usize>().unwrap();
+                                        let len = len.base10_parse::<usize>()?;
                                         filled.extend((0..arr_len).map(|col| (row, col * len)));
                                     }
                                 },
@@ -486,7 +544,7 @@ fn collect_hspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
         }
     }
 
-    spans
+    Ok(spans)
 }
 
 // todo: export the constants from crate so they could be highlighted by language servers.
@@ -494,83 +552,148 @@ fn collect_hspan(table: &TableStruct) -> HashMap<(usize, usize), usize> {
 fn is_supported_theme(name: &str) -> bool {
     matches!(
         name,
-        "STYLE_EMPTY"
-            | "STYLE_BLANK"
-            | "STYLE_ASCII"
-            | "STYLE_ASCII_ROUNDED"
-            | "STYLE_DOTS"
-            | "STYLE_MODERN"
-            | "STYLE_SHARP"
-            | "STYLE_ROUNDED"
-            | "STYLE_EXTENDED"
-            | "STYLE_RE_STRUCTURED_TEXT"
-            | "STYLE_MARKDOWN"
-            | "STYLE_PSQL"
+        "EMPTY"
+            | "BLANK"
+            | "ASCII"
+            | "ASCII_ROUNDED"
+            | "DOTS"
+            | "MODERN"
+            | "SHARP"
+            | "ROUNDED"
+            | "EXTENDED"
+            | "RE_STRUCTURED_TEXT"
+            | "MARKDOWN"
+            | "PSQL"
     )
 }
+
 fn apply_theme(table: &mut tabled::Table, name: &str) {
     match name {
-        "STYLE_EMPTY" => table.with(tabled::settings::style::Style::empty()),
-        "STYLE_BLANK" => table.with(tabled::settings::style::Style::blank()),
-        "STYLE_ASCII" => table.with(tabled::settings::style::Style::ascii()),
-        "STYLE_ASCII_ROUNDED" => table.with(tabled::settings::style::Style::ascii_rounded()),
-        "STYLE_DOTS" => table.with(tabled::settings::style::Style::dots()),
-        "STYLE_MODERN" => table.with(tabled::settings::style::Style::modern()),
-        "STYLE_SHARP" => table.with(tabled::settings::style::Style::sharp()),
-        "STYLE_ROUNDED" => table.with(tabled::settings::style::Style::rounded()),
-        "STYLE_EXTENDED" => table.with(tabled::settings::style::Style::extended()),
-        "STYLE_RE_STRUCTURED_TEXT" => {
-            table.with(tabled::settings::style::Style::re_structured_text())
-        }
-        "STYLE_MARKDOWN" => table.with(tabled::settings::style::Style::markdown()),
-        "STYLE_PSQL" => table.with(tabled::settings::style::Style::psql()),
+        "EMPTY" => table.with(Style::empty()),
+        "BLANK" => table.with(Style::blank()),
+        "ASCII" => table.with(Style::ascii()),
+        "ASCII_ROUNDED" => table.with(Style::ascii_rounded()),
+        "DOTS" => table.with(Style::dots()),
+        "MODERN" => table.with(Style::modern()),
+        "SHARP" => table.with(Style::sharp()),
+        "ROUNDED" => table.with(Style::rounded()),
+        "EXTENDED" => table.with(Style::extended()),
+        "RE_STRUCTURED_TEXT" => table.with(Style::re_structured_text()),
+        "MARKDOWN" => table.with(Style::markdown()),
+        "PSQL" => table.with(Style::psql()),
         _ => unreachable!(),
     };
+}
+
+fn build_padding(pad: Padding<LitInt>) -> syn::Result<padding::Padding> {
+    let left = pad.left.base10_parse::<usize>()?;
+    let right = pad.left.base10_parse::<usize>()?;
+    let top = pad.left.base10_parse::<usize>()?;
+    let bottom = pad.left.base10_parse::<usize>()?;
+
+    Ok(padding::Padding::new(left, right, top, bottom))
+}
+
+fn build_margin(pad: Padding<LitInt>) -> syn::Result<Margin> {
+    let left = pad.left.base10_parse::<usize>()?;
+    let right = pad.left.base10_parse::<usize>()?;
+    let top = pad.left.base10_parse::<usize>()?;
+    let bottom = pad.left.base10_parse::<usize>()?;
+
+    Ok(Margin::new(left, right, top, bottom))
+}
+
+fn panic_not_supported_theme(ident: &LitStr) {
+    proc_macro_error::abort!(
+        ident,
+        "The given settings is not supported";
+        note="custom themes are yet not supported";
+        help = r#"Supported theames are [EMPTY, BLANK, ASCII, ASCII_ROUNDED, DOTS, MODERN, SHARP, ROUNDED, EXTENDED, RE_STRUCTURED_TEXT, MARKDOWN, PSQL]"#
+    )
+}
+
+fn panic_not_supported_settings(ident: &Ident) {
+    proc_macro_error::abort!(
+        ident,
+        "The given settings is not supported";
+        help = r#"Supported list is [THEME, PADDING, MARGIN]"#
+    )
+}
+
+fn build_table(table_st: &TableStruct) -> Result<String> {
+    let mut table = create_table(&table_st.matrix)?;
+
+    if table_st.comma_token.is_some() {
+        apply_settings(&mut table, &table_st.settings)?;
+    }
+
+    Ok(table.to_string())
+}
+
+fn apply_settings(
+    table: &mut Table,
+    settings: &Punctuated<KeyValue<LitStr>, Token![,]>,
+) -> Result<()> {
+    for kv in settings {
+        config_table(table, kv)?;
+    }
+
+    Ok(())
+}
+
+fn config_table(table: &mut Table, kv: &KeyValue<LitStr>) -> Result<()> {
+    if kv.key == "THEME" {
+        let theme = kv.value.value();
+        if !is_supported_theme(&theme) {
+            panic_not_supported_theme(&kv.value);
+        }
+
+        apply_theme(table, &theme);
+    } else if kv.key == "PADDING" {
+        let padding = kv.value.parse().and_then(build_padding)?;
+        table.with(padding);
+    } else if kv.key == "MARGIN" {
+        let margin = kv.value.parse().and_then(build_margin)?;
+        table.with(margin);
+    } else {
+        panic_not_supported_settings(&kv.key);
+    }
+
+    Ok(())
+}
+
+fn create_table(mat: &MatrixInput) -> Result<Table> {
+    let data = collect_matrix(mat)?;
+    let vspan = collect_vspan(mat)?;
+    let hspan = collect_hspan(mat)?;
+
+    let builder = Builder::from_iter(data);
+    let mut table = builder.build();
+
+    for (pos, span) in vspan {
+        table.with(Modify::new(pos).with(ColumnSpan::new(span)));
+    }
+
+    for (pos, span) in hspan {
+        table.with(Modify::new(pos).with(RowSpan::new(span)));
+    }
+
+    Ok(table)
 }
 
 #[proc_macro]
 #[proc_macro_error]
 pub fn static_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let mat = parse_macro_input!(input as TableStruct);
+    let table = parse_macro_input!(input as TableStruct);
+    let table = build_table(&table);
+    match table {
+        Ok(table) => {
+            let out = quote! {
+                #table
+            };
 
-    let vspan = collect_vspan(&mat);
-    let hspan = collect_hspan(&mat);
-    let data = collect_matrix(&mat);
-
-    let builder = tabled::builder::Builder::from_iter(data);
-    let mut table = builder.build();
-
-    if let Some(ident) = mat.theme {
-        let theme = ident.to_string();
-        if !is_supported_theme(&theme) {
-            panic_not_supported_theme(ident);
+            proc_macro::TokenStream::from(out)
         }
-
-        apply_theme(&mut table, &theme);
+        Err(err) => proc_macro::TokenStream::from(err.into_compile_error()),
     }
-
-    for (pos, span) in vspan {
-        table.with(Modify::new(pos).with(tabled::settings::span::ColumnSpan::new(span)));
-    }
-
-    for (pos, span) in hspan {
-        table.with(Modify::new(pos).with(tabled::settings::span::RowSpan::new(span)));
-    }
-
-    let table = table.to_string();
-
-    let out = quote! {
-        #table
-    };
-
-    out.into()
-}
-
-fn panic_not_supported_theme(ident: Ident) {
-    proc_macro_error::abort!(
-        ident,
-        "The given settings is not supported";
-        note="custom themes are yet not supported";
-        help = r#"Supported theames are [STYLE_EMPTY, STYLE_BLANK, STYLE_ASCII, STYLE_ASCII_ROUNDED, STYLE_DOTS, STYLE_MODERN, STYLE_SHARP, STYLE_ROUNDED, STYLE_EXTENDED, STYLE_RE_STRUCTURED_TEXT, STYLE_MARKDOWN, STYLE_PSQL]"#
-    )
 }

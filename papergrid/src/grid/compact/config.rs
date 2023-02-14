@@ -27,6 +27,7 @@ impl Default for CompactConfig {
 }
 
 impl CompactConfig {
+    /// Returns an standart config.
     pub const fn empty() -> Self {
         Self {
             tab_width: 4,
@@ -95,6 +96,7 @@ impl CompactConfig {
         self
     }
 
+    /// Get a alignment horizontal.
     pub const fn get_alignment_horizontal(&self) -> AlignmentHorizontal {
         self.halignment
     }
@@ -105,6 +107,7 @@ impl CompactConfig {
         self
     }
 
+    /// Get a alignment vertical.
     pub const fn get_alignment_vertical(&self) -> AlignmentVertical {
         self.valignment
     }

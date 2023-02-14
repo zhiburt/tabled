@@ -78,7 +78,6 @@ fn static_table_repeat_column_zero_times() {
     assert_eq!(table, expected);
 }
 
-
 #[test]
 fn static_table_repeat_column_zero_times_with_other_row() {
     let table = static_table!([["Hello World"; 0], ["hello", "world"]]);
@@ -342,5 +341,38 @@ fn static_table_vspan_const_row() {
     let expected = "+----+----+----+\n\
                           | Hello World! |\n\
                           +----+----+----+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_with_theme_padding_margin() {
+    let table = static_table!(
+        [[1, 2, 123], [1, 2, 123], [1, 2, 123]],
+        MARGIN = "1, 1, 1, 1",
+        PADDING = "2, 2, 0, 0",
+        THEME = "ROUNDED"
+    );
+    let expected = concat!(
+        "                       \n",
+        " ╭─────┬─────┬───────╮ \n",
+        " │     │     │       │ \n",
+        " │     │     │       │ \n",
+        " │  1  │  2  │  123  │ \n",
+        " │     │     │       │ \n",
+        " │     │     │       │ \n",
+        " ├─────┼─────┼───────┤ \n",
+        " │     │     │       │ \n",
+        " │     │     │       │ \n",
+        " │  1  │  2  │  123  │ \n",
+        " │     │     │       │ \n",
+        " │     │     │       │ \n",
+        " │     │     │       │ \n",
+        " │     │     │       │ \n",
+        " │  1  │  2  │  123  │ \n",
+        " │     │     │       │ \n",
+        " │     │     │       │ \n",
+        " ╰─────┴─────┴───────╯ \n",
+        "                       "
+    );
     assert_eq!(table, expected);
 }

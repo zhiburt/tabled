@@ -5,7 +5,6 @@
 use std::cmp::max;
 
 use crate::{
-    config::Position,
     dimension::{Dimension, Estimate},
     records::Records,
     util::string::{count_lines, string_width_multiline_tab},
@@ -63,17 +62,15 @@ fn build_dimensions<R: Records>(records: R, cfg: &CompactConfig) -> (Vec<usize>,
     let mut widths = vec![0; count_columns];
     let mut heights = vec![];
 
-    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+    for columns in records.iter_rows() {
         let mut row_height = 0;
         for (col, cell) in columns.into_iter().enumerate() {
-            let pos = (row, col);
-
             let cell = cell.as_ref();
 
-            let width = get_cell_width(cell, cfg, pos);
+            let width = get_cell_width(cell, cfg);
             widths[col] = max(widths[col], width);
 
-            let height = get_cell_height(cell, cfg, pos);
+            let height = get_cell_height(cell, cfg);
             row_height = max(row_height, height);
         }
 
@@ -84,16 +81,12 @@ fn build_dimensions<R: Records>(records: R, cfg: &CompactConfig) -> (Vec<usize>,
 }
 
 fn build_height<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
-    let count_columns = records.count_columns();
-    let shape = (usize::MAX, count_columns);
-
     let mut heights = vec![];
 
-    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+    for columns in records.iter_rows() {
         let mut row_height = 0;
-        for (col, cell) in columns.into_iter().enumerate() {
-            let pos = (row, col);
-            let height = get_cell_height(cell.as_ref(), cfg, pos);
+        for cell in columns.into_iter() {
+            let height = get_cell_height(cell.as_ref(), cfg);
             row_height = max(row_height, height);
         }
 
@@ -105,14 +98,11 @@ fn build_height<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
 
 fn build_width<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
     let count_columns = records.count_columns();
-    let shape = (usize::MAX, count_columns);
-
     let mut widths = vec![0; count_columns];
 
-    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+    for columns in records.iter_rows() {
         for (col, cell) in columns.into_iter().enumerate() {
-            let pos = (row, col);
-            let width = get_cell_width(cell.as_ref(), cfg, pos);
+            let width = get_cell_width(cell.as_ref(), cfg);
             widths[col] = max(widths[col], width);
         }
     }
@@ -120,13 +110,13 @@ fn build_width<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
     widths
 }
 
-fn get_cell_height(cell: &str, cfg: &CompactConfig, pos: Position) -> usize {
+fn get_cell_height(cell: &str, cfg: &CompactConfig) -> usize {
     let padding = cfg.get_padding();
     let count_lines = max(1, count_lines(cell));
     count_lines + padding.top.size + padding.bottom.size
 }
 
-fn get_cell_width(text: &str, cfg: &CompactConfig, pos: Position) -> usize {
+fn get_cell_width(text: &str, cfg: &CompactConfig) -> usize {
     let pad = cfg.get_padding();
     let width = string_width_multiline_tab(text, cfg.get_tab_width());
 

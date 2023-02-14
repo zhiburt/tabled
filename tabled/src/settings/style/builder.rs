@@ -97,7 +97,6 @@ use papergrid::grid::compact::CompactConfig;
 
 use crate::{
     grid::spanned::{config::Borders, GridConfig},
-    records::Records,
     settings::TableOption,
 };
 

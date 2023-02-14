@@ -11,7 +11,7 @@ use crate::{
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent, Sides},
     dimension::Dimension,
     records::Records,
-    util::string::{get_lines, string_width_tab},
+    util::string::string_width_tab,
 };
 
 use super::config::CompactConfig;
@@ -247,6 +247,7 @@ fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
 
 type ColoredIndent = (Indent, StaticColor);
 
+#[allow(clippy::too_many_arguments)]
 fn print_grid_row<F, I, T, C, D>(
     f: &mut F,
     mut columns: I,
@@ -381,18 +382,6 @@ fn create_horizontal_bottom_colors(
     )
 }
 
-fn create_margin(cfg: &CompactConfig) -> Sides<ColoredIndent> {
-    let indent = cfg.get_margin();
-    let color = cfg.get_margin_color();
-
-    Sides::new(
-        (indent.left, color.left),
-        (indent.right, color.right),
-        (indent.top, color.top),
-        (indent.bottom, color.bottom),
-    )
-}
-
 fn total_width<D: Dimension>(cfg: &CompactConfig, dims: &D, count_columns: usize) -> usize {
     let content_width = total_columns_width(count_columns, dims);
     let count_verticals = count_verticals(cfg, count_columns);
@@ -412,37 +401,6 @@ fn count_verticals(cfg: &CompactConfig, count_columns: usize) -> usize {
     borders.has_vertical() as usize * count_verticals
         + borders.has_left() as usize
         + borders.has_right() as usize
-}
-
-fn has_vertical(cfg: &CompactConfig, is_first: bool, is_last: bool) -> bool {
-    if is_last {
-        cfg.get_borders().has_right()
-    } else if is_first {
-        cfg.get_borders().has_left()
-    } else {
-        cfg.get_borders().has_vertical()
-    }
-}
-
-fn total_height<D: Dimension>(cfg: &CompactConfig, dims: &D, count_rows: usize) -> usize {
-    let content_height = total_rows_height(count_rows, dims);
-    let count_horizontals = count_horizontals(cfg, count_rows);
-
-    content_height + count_horizontals
-}
-
-fn count_horizontals(cfg: &CompactConfig, count_rows: usize) -> usize {
-    assert!(count_rows > 1);
-
-    let count_verticals = count_rows - 2;
-    let borders = cfg.get_borders();
-    borders.has_horizontal() as usize * count_rows
-        + borders.has_top() as usize
-        + borders.has_bottom() as usize
-}
-
-fn total_rows_height<D: Dimension>(count_rows: usize, dims: &D) -> usize {
-    (0..count_rows).map(|i| dims.get_height(i)).sum::<usize>()
 }
 
 type BorderChar = Option<(char, Option<StaticColor>)>;
@@ -560,7 +518,7 @@ fn print_cell<F: Write, C: Color>(
 ) -> fmt::Result {
     let available = width - pad_l.0.size - pad_r.0.size;
 
-    let text_width = string_width_tab(&text, tab_size);
+    let text_width = string_width_tab(text, tab_size);
     let (left, right) = if available < text_width {
         (0, 0)
     } else {
@@ -570,7 +528,7 @@ fn print_cell<F: Write, C: Color>(
     print_indent(f, pad_l.0.fill, pad_l.0.size, pad_l.1)?;
 
     repeat_char(f, ' ', left)?;
-    print_text(f, &text, tab_size, color)?;
+    print_text(f, text, tab_size, color)?;
     repeat_char(f, ' ', right)?;
 
     print_indent(f, pad_r.0.fill, pad_r.0.size, pad_r.1)?;
@@ -684,11 +642,7 @@ fn print_str<F: Write>(f: &mut F, text: &str, tab_width: usize) -> fmt::Result {
     Ok(())
 }
 
-fn prepare_coloring<'a, F: Write>(
-    f: &mut F,
-    clr: &StaticColor,
-    used: &mut StaticColor,
-) -> fmt::Result {
+fn prepare_coloring<F: Write>(f: &mut F, clr: &StaticColor, used: &mut StaticColor) -> fmt::Result {
     if *used != *clr {
         used.fmt_suffix(f)?;
         clr.fmt_prefix(f)?;
@@ -698,9 +652,14 @@ fn prepare_coloring<'a, F: Write>(
     Ok(())
 }
 
-fn top_indent(pad_top: usize, valign: AlignmentVertical, height: usize, available: usize) -> usize {
+fn top_indent(
+    pad_top: usize,
+    valign: AlignmentVertical,
+    cell_height: usize,
+    available: usize,
+) -> usize {
     let height = available - pad_top;
-    let indent = indent_from_top(valign, height, height);
+    let indent = indent_from_top(valign, height, cell_height);
 
     indent + pad_top
 }
@@ -728,33 +687,6 @@ fn calculate_indent(
             (left, rest)
         }
     }
-}
-
-fn count_empty_lines(cell: &str) -> (usize, usize) {
-    let mut top = 0;
-    let mut bottom = 0;
-    let mut top_check = true;
-
-    for line in get_lines(cell) {
-        let is_empty = line.trim().is_empty();
-        if top_check {
-            if is_empty {
-                top += 1;
-            } else {
-                top_check = false;
-            }
-
-            continue;
-        }
-
-        if is_empty {
-            bottom += 1;
-        } else {
-            bottom = 0;
-        }
-    }
-
-    (top, bottom)
 }
 
 fn repeat_char<F: Write>(f: &mut F, c: char, n: usize) -> fmt::Result {
@@ -785,7 +717,7 @@ fn print_indent_lines<F: Write>(
     print_indent(f, indent.fill, width, color)?;
     f.write_char('\n')?;
 
-    for i in 1..indent.size {
+    for _ in 1..indent.size {
         f.write_char('\n')?;
         print_indent(f, indent.fill, width, color)?;
     }
@@ -804,90 +736,3 @@ fn print_indent<F: Write>(f: &mut F, c: char, n: usize, color: StaticColor) -> f
 fn print_indent2<F: Write>(f: &mut F, indent: Indent, color: StaticColor) -> fmt::Result {
     print_indent(f, indent.fill, indent.size, color)
 }
-
-fn convert_count_rows(row: usize, is_last: bool) -> usize {
-    if is_last {
-        row + 1
-    } else {
-        row + 2
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    // use crate::util::string_width;
-
-    use super::*;
-
-    // #[test]
-    // fn horizontal_alignment_test() {
-    //     use std::fmt;
-
-    //     struct F<'a>(&'a str, AlignmentHorizontal, usize);
-
-    //     impl fmt::Display for F<'_> {
-    //         fn fmt(&self, f: &mut impl fmt::Write) -> fmt::Result {
-    //             let (left, right) = calculate_indent(self.1, string_width(self.0), self.2);
-    //             print_text_formatted(f, &self.0, 4, Option::<&AnsiColor<'_>>::None)
-    //         }
-    //     }
-
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Right, 4).to_string(), " AAA");
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Left, 4).to_string(), "AAA ");
-    //     assert_eq!(F("AAA", AlignmentHorizontal::Center, 4).to_string(), "AAA ");
-    //     assert_eq!(F("🎩", AlignmentHorizontal::Center, 4).to_string(), " 🎩 ");
-    //     assert_eq!(F("🎩", AlignmentHorizontal::Center, 3).to_string(), "🎩 ");
-
-    //     #[cfg(feature = "color")]
-    //     {
-    //         use owo_colors::OwoColorize;
-    //         let text = "Colored Text".red().to_string();
-    //         assert_eq!(
-    //             F(&text, AlignmentHorizontal::Center, 15).to_string(),
-    //             format!(" {}  ", text)
-    //         );
-    //     }
-    // }
-
-    #[test]
-    fn vertical_alignment_test() {
-        use AlignmentVertical::*;
-
-        assert_eq!(indent_from_top(Bottom, 1, 1), 0);
-        assert_eq!(indent_from_top(Top, 1, 1), 0);
-        assert_eq!(indent_from_top(Center, 1, 1), 0);
-        assert_eq!(indent_from_top(Bottom, 3, 1), 2);
-        assert_eq!(indent_from_top(Top, 3, 1), 0);
-        assert_eq!(indent_from_top(Center, 3, 1), 1);
-        assert_eq!(indent_from_top(Center, 4, 1), 1);
-    }
-
-    #[test]
-    fn count_empty_lines_test() {
-        assert_eq!(count_empty_lines("\n\nsome text\n\n\n"), (2, 3));
-    }
-}
-
-// pub trait GridProjection1 {
-//     fn print_margin_top<F: Write>(&self, width: usize, f: &mut F) -> &Margin;
-//     fn print_margin_bottom<F: Write>(&self, width: usize, f: &mut F) -> &Margin;
-//     fn print_margin_left<F: Write>(&self, width: usize, f: &mut F) -> &Margin;
-//     fn print_margin_right<F: Write>(&self, width: usize, f: &mut F) -> &Margin;
-//     fn print_horizontal_line<F: Write>(&self, width: usize, f: &mut F) -> &Margin;
-//     fn print_vertical_char<F: Write>(&self, width: usize, f: &mut F) -> &Margin;
-
-//     fn get_margin(&self) -> &Margin;
-//     fn get_margin_color(&self) -> &Margin;
-//     fn get_padding(&self, pos: Position) -> &Padding;
-//     fn get_padding_color(&self, pos: Position) -> &PaddingColor<'_>;
-//     fn get_vertical(&self, pos: Position, line: usize) -> Option<char>;
-//     fn get_horizonal(&self, pos: Position, width: usize) -> Option<char>;
-//     fn get_horizonal_line(&self, pos: Position, width: usize) -> Option<char>;
-//     fn get_span_horizontal(&self, pos: Position) -> Option<usize>;
-//     fn get_span_vertical(&self, pos: Position) -> Option<usize>;
-//     fn has_horizontal(&self, line: usize) -> bool;
-//     fn has_vertical(&self, line: usize) -> bool;
-//     fn has_spans(&self) -> bool;
-
-//     fn print_horizontal_border(&self)
-// }

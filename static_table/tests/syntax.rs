@@ -91,7 +91,7 @@ fn static_table_empty_layer() {
 
 #[test]
 fn static_table_style() {
-    static_table!([[1, 2, 123], [1, 2, 123], [1, 2, 123]], STYLE_MODERN);
+    static_table!([[1, 2, 123], [1, 2, 123], [1, 2, 123]], THEME = "MODERN");
 }
 
 // #[test]
