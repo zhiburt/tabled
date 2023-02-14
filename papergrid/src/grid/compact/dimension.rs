@@ -5,10 +5,10 @@
 use std::cmp::max;
 
 use crate::{
-    config::{Position},
+    config::Position,
+    dimension::{Dimension, Estimate},
     records::Records,
     util::string::{count_lines, string_width_multiline_tab},
-    dimension::{Dimension, Estimate}
 };
 
 use super::config::CompactConfig;

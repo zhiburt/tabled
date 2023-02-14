@@ -1,5 +1,5 @@
 use crate::{
-    grid::{config::{Entity}, spanned::GridConfig},
+    grid::{config::Entity, spanned::GridConfig},
     settings::CellOption,
 };
 

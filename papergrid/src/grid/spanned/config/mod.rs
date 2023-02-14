@@ -6,7 +6,7 @@ mod offset;
 use std::collections::HashMap;
 
 use crate::color::AnsiColor;
-use crate::config::{Entity, AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides};
+use crate::config::{AlignmentHorizontal, AlignmentVertical, Entity, Indent, Position, Sides};
 use borders_config::BordersConfig;
 
 pub use self::{entity_map::EntityMap, formatting::Formatting, offset::Offset};

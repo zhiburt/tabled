@@ -73,6 +73,6 @@ pub mod color;
 pub mod colors;
 pub mod config;
 pub mod dimension;
+pub mod grid;
 pub mod records;
 pub mod util;
-pub mod grid;

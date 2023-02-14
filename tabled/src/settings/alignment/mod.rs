@@ -56,8 +56,8 @@ use crate::{
     settings::{CellOption, TableOption},
 };
 
+use papergrid::grid::{compact::CompactConfig, spanned::GridConfig};
 use AlignmentInner::*;
-use papergrid::grid::{spanned::GridConfig, compact::CompactConfig};
 
 /// Alignment represent a horizontal and vertical alignment setting for any cell on a [`Table`].
 ///

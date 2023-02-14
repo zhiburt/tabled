@@ -1,4 +1,3 @@
-
 /// Position is a (row, col) position on a Grid.
 ///
 /// For example such table has 4 cells.

@@ -1,6 +1,6 @@
 use papergrid::{
     color::AnsiColor,
-    config::{Entity::Global, AlignmentHorizontal, AlignmentVertical, Indent},
+    config::{AlignmentHorizontal, AlignmentVertical, Entity::Global, Indent},
     dimension::Estimate,
     grid::spanned::{
         config::{Borders, GridConfig, Padding},

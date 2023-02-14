@@ -4,13 +4,10 @@ use std::collections::HashMap;
 
 use papergrid::{
     colors::NoColors,
-    config::{
-        Position,
-    },
+    config::Position,
     dimension::{Dimension, Estimate},
+    grid::spanned::{config::Borders, ExactDimension, Grid, GridConfig},
     records::{IterRecords, Records},
-    grid::spanned::{config::Borders, GridConfig, Grid, ExactDimension},
-
 };
 
 pub fn grid(rows: usize, cols: usize) -> GridBuilder {
