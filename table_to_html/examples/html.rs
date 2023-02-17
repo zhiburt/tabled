@@ -1,10 +1,3 @@
-# `table_to_html`
-
-Provides a interface to build HTML `<table>`.
-
-# Get started
-
-```rust
 use table_to_html::HtmlTable;
 
 fn main() {
@@ -22,6 +15,3 @@ fn main() {
 
     println!("{table}")
 }
-```
-
-![<table>](https://user-images.githubusercontent.com/20165848/219793600-9e685a3f-0e27-4c37-bebb-d9bdef198b33.png)

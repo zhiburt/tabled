@@ -1,53 +1,36 @@
-# A library for converting `json` to a table.
+# A library for converting `csv` to a table.
 
-It uses https://github.com/zhiburt/tabled to build a table.
+It uses [`tabled`](https://github.com/zhiburt/tabled) as a rendering backend.
 
 ## Usage
 
-Add the library to a dependency list.
+There's 2 approaches the library provides.
 
-```toml
-[dependencies]
-json_to_table = "*"
-```
+- In memory apporach; where we load CSV into memory and then construct a table.
+- Sniffing a csv; so the used memory will be limited.
+- Setting your constrains so no memory will be used. 
 
-The main and only function you shall use to build a table is `json_to_table`.
-
+Notice that 
 <table>
 <tr>
-<th> Example </th>
+<th> Example of in memory approach </th>
 <th> Result </th>
 </tr>
 <tr>
 <td>
 
 ```rust
-use json_to_table::json_to_table;
-use serde_json::json;
-
 fn main() {
-    let value = json!(
-        [
-            {
-                "name": "Aleix Melon",
-                "id": "E00245",
-                "role": ["Dev", "DBA"],
-                "age": 23,
-                "doj": "11-12-2019",
-                "married": false,
-                "address": {
-                    "street": "32, Laham St.",
-                    "city": "Innsbruck",
-                    "country": "Austria"
-                    },
-                "referred-by": "E0012"
-            },
-        ]
-    );
+    let syscalls = "\
+        0,INDIR,,\"int sys_syscall(int number, ...)\"\n\
+        1,STD,,\"void sys_exit(int rval)\"\n\
+        2,STD,,\"int sys_fork(void)\"\n\
+        3,STD,NOLOCK,\"ssize_t sys_read(int fd, void *buf, size_t nbyte)\"\n\
+        4,STD,NOLOCK,\"ssize_t sys_write(int fd, const void *buf, size_t nbyte)\""; 
 
-    let table = json_to_table(&value).to_string();
+    let table = csv_to_table::from_reader(syscalls.as_bytes()).unwrap();
 
-    println!("{}", table)
+    println!("{table}")
 }
 ```
 
@@ -55,78 +38,43 @@ fn main() {
 <td style="vertical-align: top;">
 
 ```text
-+-------------------------------------------------+
-| +-------------+-------------------------------+ |
-| | address     | +---------+-----------------+ | |
-| |             | | city    |  Innsbruck      | | |
-| |             | +---------+-----------------+ | |
-| |             | | country |  Austria        | | |
-| |             | +---------+-----------------+ | |
-| |             | | street  |  32, Laham St.  | | |
-| |             | +---------+-----------------+ | |
-| +-------------+-------------------------------+ |
-| | age         |  23                           | |
-| +-------------+-------------------------------+ |
-| | doj         |  11-12-2019                   | |
-| +-------------+-------------------------------+ |
-| | id          |  E00245                       | |
-| +-------------+-------------------------------+ |
-| | married     |  false                        | |
-| +-------------+-------------------------------+ |
-| | name        |  Aleix Melon                  | |
-| +-------------+-------------------------------+ |
-| | referred-by |  E0012                        | |
-| +-------------+-------------------------------+ |
-| | role        | +-------+                     | |
-| |             | |  Dev  |                     | |
-| |             | +-------+                     | |
-| |             | |  DBA  |                     | |
-| |             | +-------+                     | |
-| +-------------+-------------------------------+ |
-+-------------------------------------------------+
++---+-------+--------+----------------------------------------------------------+
+| 0 | INDIR |        | int sys_syscall(int number, ...)                         |
++---+-------+--------+----------------------------------------------------------+
+| 1 | STD   |        | void sys_exit(int rval)                                  |
++---+-------+--------+----------------------------------------------------------+
+| 2 | STD   |        | int sys_fork(void)                                       |
++---+-------+--------+----------------------------------------------------------+
+| 3 | STD   | NOLOCK | ssize_t sys_read(int fd, void *buf, size_t nbyte)        |
++---+-------+--------+----------------------------------------------------------+
+| 4 | STD   | NOLOCK | ssize_t sys_write(int fd, const void *buf, size_t nbyte) |
++---+-------+--------+----------------------------------------------------------+
 ```
 
 </td>
 </tr>
 </table>
 
-You can also build a table in a squash mode.
-
 <table>
 <tr>
-<th> Example </th>
+<th> Example of sniffing approach </th>
 <th> Result </th>
 </tr>
 <tr>
 <td>
 
 ```rust
-use json_to_table::json_to_table;
-use serde_json::json;
-
 fn main() {
-    let value = json!(
-        [
-            {
-                "name": "Aleix Melon",
-                "id": "E00245",
-                "role": ["Dev", "DBA"],
-                "age": 23,
-                "doj": "11-12-2019",
-                "married": false,
-                "address": {
-                    "street": "32, Laham St.",
-                    "city": "Innsbruck",
-                    "country": "Austria"
-                    },
-                "referred-by": "E0012"
-            },
-        ]
-    );
+    let syscalls = "\
+        0,INDIR,,\"int sys_syscall(int number, ...)\"\n\
+        1,STD,,\"void sys_exit(int rval)\"\n\
+        2,STD,,\"int sys_fork(void)\"\n\
+        3,STD,NOLOCK,\"ssize_t sys_read(int fd, void *buf, size_t nbyte)\"\n\
+        4,STD,NOLOCK,\"ssize_t sys_write(int fd, const void *buf, size_t nbyte)\"";
 
-    let table = json_to_table(&value).collapse().to_string();
+    let table = csv_to_table::iter::from_reader(syscalls.as_bytes()).sniff(3);
 
-    println!("{}", table)
+    table.build(std::io::stdout()).unwrap();
 }
 ```
 
@@ -134,99 +82,20 @@ fn main() {
 <td style="vertical-align: top;">
 
 ```text
-+-------------+---------+---------------+
-| address     | city    | Innsbruck     |
-|             +---------+---------------+
-|             | country | Austria       |
-|             +---------+---------------+
-|             | street  | 32, Laham St. |
-+-------------+---------+---------------+
-| age         | 23                      |
-+-------------+-------------------------+
-| doj         | 11-12-2019              |
-+-------------+-------------------------+
-| id          | E00245                  |
-+-------------+-------------------------+
-| married     | false                   |
-+-------------+-------------------------+
-| name        | Aleix Melon             |
-+-------------+-------------------------+
-| referred-by | E0012                   |
-+-------------+-------------------------+
-| role        | Dev                     |
-|             +-------------------------+
-|             | DBA                     |
-+-------------+-------------------------+
++---+-------+--+----------------------------------+
+| 0 | INDIR |  | int sys_syscall(int number, ...) |
++---+-------+--+----------------------------------+
+| 1 | STD   |  | void sys_exit(int rval)          |
++---+-------+--+----------------------------------+
+| 2 | STD   |  | int sys_fork(void)               |
++---+-------+--+----------------------------------+
+| 3 | STD   |  | ssize_t sys_read(int fd, void *b |
++---+-------+--+----------------------------------+
+| 4 | STD   |  | ssize_t sys_write(int fd, const  |
++---+-------+--+----------------------------------+
 ```
 
-</td>
-</tr>
-</table>
-
-You can chose how to build an `Array` and `Object` via `Orientation`.
-
-<table>
-<tr>
-<th> Example </th>
-<th> Result </th>
-</tr>
-<tr>
-<td>
-
-```rust
-use json_to_table::{json_to_table, Orientation};
-use serde_json::json;
-
-fn main() {
-    let value = json!(
-        [
-            {
-                "name": "Aleix Melon",
-                "role": ["Dev", "DBA"],
-                "age": 23,
-                "referred-by": "E0012"
-            },
-            {
-                "name": "Aleix Melon",
-                "role": ["DBA"],
-                "age": 24,
-                "referred-by": "E0012"
-            },
-        ]
-    );
-
-    let table = json_to_table(&value)
-        .set_object_mode(Orientation::Horizontal)
-        .to_string();
-
-    println!("{}", table)
-}
-```
-
-</td>
-<td style="vertical-align: top;">
-
-```text
-+----------------------------------------------------+
-| +------+---------------+-------------+-----------+ |
-| | age  | name          | referred-by | role      | |
-| +------+---------------+-------------+-----------+ |
-| |  23  |  Aleix Melon  |  E0012      | +-------+ | |
-| |      |               |             | |  Dev  | | |
-| |      |               |             | +-------+ | |
-| |      |               |             | |  DBA  | | |
-| |      |               |             | +-------+ | |
-| +------+---------------+-------------+-----------+ |
-+----------------------------------------------------+
-| +------+---------------+-------------+-----------+ |
-| | age  | name          | referred-by | role      | |
-| +------+---------------+-------------+-----------+ |
-| |  24  |  Aleix Melon  |  E0012      | +-------+ | |
-| |      |               |             | |  DBA  | | |
-| |      |               |             | +-------+ | |
-| +------+---------------+-------------+-----------+ |
-+----------------------------------------------------+
-```
+<h5> Notice that the last 2 rows are truncated. <h5>
 
 </td>
 </tr>
