@@ -11,6 +11,7 @@
 //!
 //! Credit for data: https://www.boxofficemojo.com/
 
+use clap::Parser;
 use std::{
     io::{stdout, Stdout, StdoutLock, Write},
     time::Duration,
@@ -38,8 +39,6 @@ use tabled::{
     },
     Table, Tabled,
 };
-
-mod config;
 
 #[derive(Tabled, Debug, Clone)]
 struct Movie {
@@ -110,8 +109,15 @@ const MOVIES: &[Movie] = &[
     },
 ];
 
+#[derive(Parser)]
+struct Config {
+    /// Turn debugging information on
+    #[clap(long, short)]
+    pub debug: bool,
+}
+
 fn main() {
-    let cfg = config::parse();
+    let cfg = Config::parse();
 
     run(MOVIES, cfg.debug);
 }
