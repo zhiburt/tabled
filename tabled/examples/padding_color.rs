@@ -9,7 +9,11 @@ use std::convert::TryFrom;
 use owo_colors::OwoColorize;
 
 use tabled::{
-    grid::{dimension::ExactDimension, util::string::string_width_multiline},
+    grid::{
+        config::Entity,
+        spanned::{ExactDimension, GridConfig},
+        util::string::string_width_multiline,
+    },
     records::{ExactRecords, Records, VecRecords},
     settings::{
         alignment::Alignment,
@@ -115,7 +119,7 @@ fn main() {
     let unit_settings = Modify::new(Columns::single(3).not(Rows::first()))
         .with(Format::content(|s| s.italic().to_string()));
 
-    let table = Table::new(&data)
+    let table = Table::new(data)
         .with(Style::rounded())
         .with(Margin::new(1, 2, 1, 1))
         .with(MarginColor::new(
@@ -137,16 +141,11 @@ fn main() {
 
 struct MakeMaxPadding;
 
-impl<T> CellOption<VecRecords<T>> for MakeMaxPadding
+impl<T> CellOption<VecRecords<T>, GridConfig> for MakeMaxPadding
 where
     T: AsRef<str>,
 {
-    fn change(
-        &mut self,
-        records: &mut VecRecords<T>,
-        cfg: &mut papergrid::GridConfig,
-        entity: papergrid::config::Entity,
-    ) {
+    fn change(&mut self, records: &mut VecRecords<T>, cfg: &mut GridConfig, entity: Entity) {
         let widths = ExactDimension::width(&*records, cfg);
 
         let count_rows = records.count_rows();

@@ -2,7 +2,8 @@
 //!
 //! # Example
 //!
-//! ```
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
 //! use tabled::{Table, settings::{padding::Padding, style::Style, Modify, object::Cell}};
 //!
 //! let table = Table::new("2022".chars())
@@ -35,7 +36,13 @@
 //! [`Table`]: crate::Table
 
 mod border_padding;
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod border_padding_color;
 
-pub use border_padding::Padding;
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use border_padding_color::PaddingColor;
+
+pub use border_padding::Padding;

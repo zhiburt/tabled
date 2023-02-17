@@ -97,8 +97,8 @@ impl Format {
         FormatContentPositioned(f)
     }
 
-    /// This function creates [`FormatConfig`] function to modify a [`GridConfig`].
-    pub fn config<F, C>(f: F) -> FormatConfig<F> {
+    /// This function creates [`FormatConfig`] function to modify a table config.
+    pub fn config<F>(f: F) -> FormatConfig<F> {
         FormatConfig(f)
     }
 }

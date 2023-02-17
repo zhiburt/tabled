@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 mod util;
 
 #[cfg(feature = "color")]

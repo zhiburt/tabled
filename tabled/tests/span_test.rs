@@ -1,3 +1,4 @@
+#![cfg(feature = "std")]
 #![allow(clippy::redundant_clone)]
 
 use tabled::{

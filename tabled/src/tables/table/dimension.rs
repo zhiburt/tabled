@@ -68,6 +68,8 @@ impl TableDimension<'_> {
 
 impl Dimension for TableDimension<'_> {
     fn get_width(&self, column: usize) -> usize {
+        println!("xxx {:?}", self);
+
         let width = self
             .width
             .as_ref()

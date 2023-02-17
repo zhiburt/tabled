@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 use tabled::settings::{
     highlight::Highlight,
     margin::Margin,

@@ -2,9 +2,7 @@
 //!
 //! You should use it if you want to comply with how [`Grid`].
 //!
-//! [`Grid`]: crate::Grid
-
-use std::borrow::Cow;
+//! [`Grid`]: crate::grid::spanned::Grid
 
 /// Returns a string width with correction to tab width.
 pub fn string_width_tab(text: &str, tab_width: usize) -> usize {
@@ -73,6 +71,8 @@ pub fn count_tabs(s: &str) -> usize {
 }
 
 /// Splits the string by lines.
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub fn get_lines(text: &str) -> Lines<'_> {
     #[cfg(not(feature = "color"))]
     {
@@ -96,20 +96,23 @@ pub fn get_lines(text: &str) -> Lines<'_> {
 ///
 /// In comparison to `std::str::Lines`, it treats trailing '\n' as a new line.
 #[allow(missing_debug_implementations)]
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub struct Lines<'a> {
     #[cfg(not(feature = "color"))]
     inner: std::str::Split<'a, char>,
     #[cfg(feature = "color")]
     inner: ansi_str::AnsiSplit<'a>,
 }
-
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<'a> Iterator for Lines<'a> {
-    type Item = Cow<'a, str>;
+    type Item = std::borrow::Cow<'a, str>;
 
     fn next(&mut self) -> Option<Self::Item> {
         #[cfg(not(feature = "color"))]
         {
-            self.inner.next().map(Cow::Borrowed)
+            self.inner.next().map(std::borrow::Cow::Borrowed)
         }
 
         #[cfg(feature = "color")]

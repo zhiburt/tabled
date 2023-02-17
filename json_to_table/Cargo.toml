@@ -17,4 +17,4 @@ color = ["tabled/color"]
 
 [dependencies]
 serde_json = "1.*"
-tabled = "0.10.0"
+tabled = { path = "../tabled", features = ["macros"], default-features = false }

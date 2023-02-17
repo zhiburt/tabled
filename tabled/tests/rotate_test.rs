@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 // todo: add method for SPACING between cells.
 
 use tabled::settings::{

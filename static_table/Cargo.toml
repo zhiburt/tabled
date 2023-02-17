@@ -11,7 +11,7 @@ license = "MIT"
 proc-macro = true
 
 [dependencies]
-tabled = { path = "../tabled" }
+tabled = { path = "../tabled", features = ["std"], default-features = false }
 syn = { version = "1", features = ["full"] }
 quote = "1"
 proc-macro2 = "1"

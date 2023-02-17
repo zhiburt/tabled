@@ -10,6 +10,10 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
+#![cfg(feature = "std")]
+
+mod util;
+
 use std::vec;
 
 use papergrid::grid::spanned::{config::GridConfig, Grid};
@@ -19,8 +23,6 @@ use papergrid::{
 };
 
 use crate::util::{grid, test_table};
-
-mod util;
 
 test_table!(render_0x0, grid(0, 0).build(), "");
 

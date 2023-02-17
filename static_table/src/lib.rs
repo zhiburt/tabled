@@ -19,6 +19,7 @@ use syn::{
 use tabled::{
     builder::Builder,
     settings::{
+        alignment::Alignment,
         margin::Margin,
         padding,
         span::{ColumnSpan, RowSpan},
@@ -612,6 +613,15 @@ fn panic_not_supported_theme(ident: &LitStr) {
     )
 }
 
+fn panic_not_supported_alignment(ident: &LitStr) {
+    proc_macro_error::abort!(
+        ident,
+        "The given settings is not supported";
+        note="custom themes are yet not supported";
+        help = r#"Supported alignment are [LEFT, RIGHT, CENTER, CENTER_VERTICAL, TOP, BOTTOM]"#
+    )
+}
+
 fn panic_not_supported_settings(ident: &Ident) {
     proc_macro_error::abort!(
         ident,
@@ -641,6 +651,25 @@ fn apply_settings(
     Ok(())
 }
 
+fn is_supported_alignment(name: &str) -> bool {
+    matches!(
+        name,
+        "LEFT" | "RIGHT" | "CENTER" | "CENTER_VERTICAL" | "TOP" | "BOTTOM"
+    )
+}
+
+fn apply_alignment(table: &mut tabled::Table, name: &str) {
+    match name {
+        "LEFT" => table.with(Alignment::left()),
+        "RIGHT" => table.with(Alignment::right()),
+        "CENTER" => table.with(Alignment::center()),
+        "CENTER_VERTICAL" => table.with(Alignment::center_vertical()),
+        "TOP" => table.with(Alignment::top()),
+        "BOTTOM" => table.with(Alignment::bottom()),
+        _ => unreachable!(),
+    };
+}
+
 fn config_table(table: &mut Table, kv: &KeyValue<LitStr>) -> Result<()> {
     if kv.key == "THEME" {
         let theme = kv.value.value();
@@ -655,6 +684,13 @@ fn config_table(table: &mut Table, kv: &KeyValue<LitStr>) -> Result<()> {
     } else if kv.key == "MARGIN" {
         let margin = kv.value.parse().and_then(build_margin)?;
         table.with(margin);
+    } else if kv.key == "ALIGNMENT" {
+        let alignment = kv.value.value();
+        if !is_supported_alignment(&alignment) {
+            panic_not_supported_alignment(&kv.value);
+        }
+
+        apply_alignment(table, &alignment);
     } else {
         panic_not_supported_settings(&kv.key);
     }

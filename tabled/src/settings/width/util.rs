@@ -99,6 +99,7 @@ pub(crate) fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
 /// The function cuts the string to a specific width.
 ///
 /// BE AWARE: width is expected to be in bytes.
+#[cfg(not(feature = "color"))]
 pub(crate) fn cut_str_basic(s: &str, width: usize) -> Cow<'_, str> {
     const REPLACEMENT: char = '\u{FFFD}';
 
@@ -150,7 +151,7 @@ pub(crate) fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
 ///
 /// The function is based on Dan Davison <https://github.com/dandavison> delta <https://github.com/dandavison/delta> ansi library.
 #[cfg(feature = "color")]
-pub fn strip_osc(text: &str) -> (String, Option<String>) {
+pub(crate) fn strip_osc(text: &str) -> (String, Option<String>) {
     #[derive(Debug)]
     enum ExtractOsc8HyperlinkState {
         ExpectOsc8Url,

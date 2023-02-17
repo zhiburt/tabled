@@ -131,7 +131,7 @@ required-features = ["color", "derive"]
 [[example]]
 name = "col_row_macros"
 path = "examples/col_row_macros.rs"
-required-features = ["macros"]
+required-features = ["macros", "derive"]
 
 [[example]]
 name = "merge_duplicates1"
@@ -148,14 +148,101 @@ name = "hyperlink"
 path = "examples/hyperlink.rs"
 required-features = ["derive", "color"]
 
+[[example]]
+name = "highlight"
+path = "examples/highlight.rs"
+required-features = ["std"]
+
+[[example]]
+name = "highlight_color"
+path = "examples/highlight_color.rs"
+required-features = ["std"]
+
+[[example]]
+name = "border_text"
+path = "examples/border_text.rs"
+required-features = ["std"]
+
+[[example]]
+name = "span"
+path = "examples/span.rs"
+required-features = ["std"]
+
+[[example]]
+name = "nested_table"
+path = "examples/nested_table.rs"
+required-features = ["std"]
+
+[[example]]
+name = "builder"
+path = "examples/builder.rs"
+required-features = ["std"]
+
+[[example]]
+name = "table_width"
+path = "examples/table_width.rs"
+required-features = ["std"]
+
+[[example]]
+name = "table_width_2"
+path = "examples/table_width_2.rs"
+required-features = ["std"]
+
+[[example]]
+name = "height"
+path = "examples/height.rs"
+required-features = ["std"]
+
+[[example]]
+name = "margin"
+path = "examples/margin.rs"
+required-features = ["std"]
+
+[[example]]
+name = "iter_table"
+path = "examples/iter_table.rs"
+required-features = ["std"]
+
+[[example]]
+name = "matrix"
+path = "examples/matrix.rs"
+required-features = ["std"]
+
+[[example]]
+name = "formatting_settings"
+path = "examples/formatting_settings.rs"
+required-features = ["std"]
+
+[[example]]
+name = "settings_list"
+path = "examples/settings_list.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "grid_colors"
+path = "examples/grid_colors.rs"
+required-features = ["derive"]
+
+[[example]]
+name = "compact_table"
+path = "examples/compact_table.rs"
+required-features = []
+
+[[example]]
+name = "compact_table2"
+path = "examples/compact_table2.rs"
+required-features = []
+
 [features]
 default = ["derive", "macros"]
-derive = ["tabled_derive"]
-color = ["papergrid/color", "ansi-str", "ansitok"]
-macros = []
+std = ["papergrid/std"]
+derive = ["tabled_derive", "std"]
+color = ["papergrid/color", "ansi-str", "ansitok", "std"]
+macros = ["std"]
+static_table = ["std"]
 
 [dependencies]
-papergrid = { path = "../papergrid", version = "0.7.1" }
+papergrid = { path = "../papergrid", version = "0.7.1", default-features = false }
 tabled_derive = { path = "../tabled_derive", version = "0.5.0", optional = true }
 ansi-str = { version = "0.7.2", optional = true }
 ansitok = { version = "0.2.0", optional = true }

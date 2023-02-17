@@ -1,3 +1,4 @@
+#![cfg(feature = "std")]
 #![allow(dead_code, unused_macros, unused_imports)]
 
 use std::collections::HashMap;
@@ -140,7 +141,7 @@ pub const DEFAULT_BORDERS: Borders = Borders {
 
 /// A [`Estimate`]or of a width for a [`Grid`].
 ///
-/// [`Grid`]: crate::Grid
+/// [`Grid`]: crate::grid::spanned::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct ConstantDimension(pub Vec<usize>, pub Vec<usize>);
 

@@ -4,11 +4,15 @@
 //! But it assumed to have a better performance.
 //!
 //! [`Grid`]: crate::grid::spanned::Grid
-
 mod config;
-mod dimension;
 mod grid;
 
+#[cfg(feature = "std")]
+mod dimension;
+
 pub use config::CompactConfig;
-pub use dimension::ExactDimension;
 pub use grid::CompactGrid;
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub use dimension::ExactDimension;

@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 mod util;
 
 use papergrid::grid::spanned::config::Offset;

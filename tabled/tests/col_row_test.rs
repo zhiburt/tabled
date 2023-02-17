@@ -1,4 +1,5 @@
 #![cfg(feature = "macros")]
+#![cfg(feature = "std")]
 
 use tabled::{
     col, row,

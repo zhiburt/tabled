@@ -1,7 +1,8 @@
-use crate::{
-    grid::spanned::{config, GridConfig},
-    settings::TableOption,
-};
+use crate::settings::TableOption;
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+use crate::grid::spanned::{config, GridConfig};
 
 use super::Line;
 
@@ -89,6 +90,8 @@ impl VerticalLine {
     }
 }
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<R, D> TableOption<R, D, GridConfig> for VerticalLine {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
         match &self.line {

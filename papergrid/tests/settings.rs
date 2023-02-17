@@ -1,7 +1,9 @@
-use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent};
-use papergrid::grid::spanned::config::Padding;
+#![cfg(feature = "std")]
 
 mod util;
+
+use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent};
+use papergrid::grid::spanned::config::Padding;
 
 use util::{grid, test_table};
 

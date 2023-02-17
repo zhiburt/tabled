@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 #[cfg(feature = "color")]
 use owo_colors::{AnsiColors, OwoColorize};
 

@@ -1,6 +1,6 @@
 //! An empty [`Records`] implementation.
 
-use std::iter::{repeat, Repeat, Take};
+use core::iter::{repeat, Repeat, Take};
 
 use super::Records;
 

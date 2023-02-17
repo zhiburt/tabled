@@ -11,8 +11,8 @@
 //!
 //! Then to provide your collection to [`Table::new`] and you will be set to render table.
 //!
-#![cfg_attr(feature = "derive", doc = "```")]
-#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
+#![cfg_attr(all(feature = "derive", feature = "std"), doc = "```")]
+#![cfg_attr(not(all(feature = "derive", feature = "std")), doc = "```ignore")]
 //! use tabled::{Tabled, Table};
 //!
 //! #[derive(Tabled)]
@@ -76,7 +76,8 @@
 //! [`Table`] can be build from vast majority of Rust's standard types.
 //! This allows you to run the following code.
 //!
-//! ```rust
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
 //! use tabled::{Tabled, Table};
 //! let table = Table::new(&[1, 2, 3]);
 //! # let expected = "+-----+\n\
@@ -150,7 +151,8 @@
 //!
 //! So one option would be is to use [`Builder`].
 //!
-//! ```
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
 //! use tabled::{builder::Builder, settings::{Modify, object::Rows, alignment::Alignment, style::Style}};
 //!
 //! let header = std::iter::once(String::from("i")).chain((0..10).map(|i| i.to_string()));
@@ -187,8 +189,8 @@
 //!
 //! ### Build table using [`row`] and [`col`] macros.
 //!
-#![cfg_attr(feature = "macros", doc = "```")]
-#![cfg_attr(not(feature = "macros"), doc = "```ignore")]
+#![cfg_attr(all(feature = "macros", feature = "std"), doc = "```")]
+#![cfg_attr(not(all(feature = "macros", feature = "std")), doc = "```ignore")]
 //! use tabled::{row, col};
 //!
 //! let table = row![
@@ -220,12 +222,13 @@
 //! [`Table`] keeps data buffered, which sometimes not ideal choise.
 //! For such reason there is [`IterTable`].
 //!
-//! It reuses a given data and does not make copies of it [1].
+//! It reuses a given data and does not make copies of it '1.
 //! But because of that it has some limitations compared to [`Table`]
 //!
 //! It also can be printed directly to [`io::Write`] to not have any intermidiaries.
 //!
-//! ```
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
 //! use tabled::{records::IterRecords, tables::iter::IterTable};
 //!
 //! let iterator = (0..3).map(|row| (0..4).map(move |col| format!("{}-{}", row, col)));
@@ -244,7 +247,7 @@
 //! );
 //! ```
 //!
-//! [1]. It does not make any allocations in case you provide it with `width` and `count_rows`.
+//! '1. It does not make any allocations in case you provide it with `width` and `count_rows`.
 //!  
 //! ## Alloc free
 //!
@@ -255,8 +258,9 @@
 //!
 //! [`Builder`]: crate::builder::Builder
 //! [`IterTable`]: crate::tables::iter::IterTable
-//! [`io::Write`]: io::Write
+//! [`io::Write`]: std::io::Write
 
+#![cfg_attr(not(any(feature = "std", test)), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
@@ -270,21 +274,23 @@
 )]
 #![allow(clippy::uninlined_format_args)]
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod tabled;
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod builder;
 pub mod records;
 pub mod settings;
 pub mod tables;
 
-#[cfg(feature = "macros")]
-#[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
+#[cfg(all(feature = "std", feature = "macros"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "std", feature = "macros"))))]
 pub mod macros;
 
-// move features to settings module instead of pub one
-
 pub mod grid {
-    //! Module is responsible for tables underlyign [`Grid`].
+    //! Module is responsible for tables underlyign grid.
     //!
     //! It might be used when implementing your own [`TableOption`] and [`CellOption`].
     //!
@@ -296,10 +302,15 @@ pub mod grid {
     pub use papergrid::config;
     pub use papergrid::dimension;
     pub use papergrid::grid::compact;
-    pub use papergrid::grid::spanned;
     pub use papergrid::util;
+
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    pub use papergrid::grid::spanned;
 }
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use crate::{tabled::Tabled, tables::table::Table};
 
 /// A derive to implement a [`Tabled`] trait.
@@ -491,6 +502,6 @@ pub use crate::{tabled::Tabled, tables::table::Table};
 /// }
 /// ```
 // @todo: Move the comment to tabled_derive
-#[cfg(feature = "derive")]
-#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
+#[cfg(all(feature = "std", feature = "derive"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "std", feature = "derive"))))]
 pub use tabled_derive::Tabled;

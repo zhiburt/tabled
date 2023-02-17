@@ -22,7 +22,8 @@ where
     }
 }
 
-// #[cfg(feature = "std")]
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<C> Colors for std::collections::HashMap<Position, C>
 where
     C: Color,
@@ -34,7 +35,8 @@ where
     }
 }
 
-// #[cfg(feature = "std")]
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<C> Colors for std::collections::BTreeMap<Position, C>
 where
     C: Color,
@@ -46,7 +48,8 @@ where
     }
 }
 
-// #[cfg(feature = "std")]
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<C> Colors for crate::grid::spanned::config::EntityMap<Option<C>>
 where
     C: Color,

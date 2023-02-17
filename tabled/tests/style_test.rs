@@ -1,8 +1,11 @@
+#![cfg(feature = "std")]
+
 use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
     settings::{
+        color::Color,
         format::Format,
         highlight::Highlight,
         object::{Columns, Rows, Segment},
@@ -18,6 +21,9 @@ use tabled::{
 };
 
 use crate::util::{create_table, init_table, static_table, test_table};
+
+#[cfg(feature = "color")]
+use std::convert::TryFrom;
 
 mod util;
 
@@ -355,6 +361,26 @@ test_table!(
     "+---+----------+----------+"
     "| 0 |   0-0    |   0-1    |"
     "\u{1b}[34;42m-\u{1b}[39m\u{1b}[49m\u{1b}[34;42mTab\u{1b}[39m\u{1b}[49m\u{1b}[34;42ml\u{1b}[39m\u{1b}[49m\u{1b}[34;42me213123\u{1b}[0m\u{1b}[31m___\u{1b}[39m+\u{1b}[31m__________\u{1b}[39m+"
+    "| 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    border_text_colored_default_color,
+    {
+        use owo_colors::OwoColorize;
+        use tabled::settings::style::{BorderColor, Border};
+
+        create_table::<2, 2>()
+            .with(BorderText::new(2, "-Table213123".blue().on_green().to_string()))
+            .with(Modify::new(Rows::single(1)).with(BorderColor::default().bottom(Color::FG_RED)))
+            .with(Modify::new(Rows::single(1)).with(Border::default().bottom('_')))
+    },
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+----------+----------+"
+    "| 0 |   0-0    |   0-1    |"
+    "\u{1b}[34;42m-Table213123\u{1b}[0m\u{1b}[31m____\u{1b}[39m+"
     "| 1 |   1-0    |   1-1    |"
     "+---+----------+----------+"
 );

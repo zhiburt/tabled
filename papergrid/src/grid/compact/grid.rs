@@ -1,4 +1,5 @@
-//! The module contains a [`Grid`] structure.
+//! The module contains a [`CompactGrid`] structure, 
+//! which is a relatively strict grid. 
 
 use core::{
     borrow::Borrow,
@@ -8,7 +9,7 @@ use core::{
 use crate::{
     color::{Color, StaticColor},
     colors::{Colors, NoColors},
-    config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent, Sides},
+    config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent, Line, Sides},
     dimension::Dimension,
     records::Records,
     util::string::string_width_tab,
@@ -69,6 +70,8 @@ impl<R, D, G, C> CompactGrid<R, D, G, C> {
     ///
     /// Notice that it consumes self.
     #[allow(clippy::inherent_to_string)]
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     pub fn to_string(self) -> String
     where
         R: Records,
@@ -128,6 +131,7 @@ fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
 
     let has_horizontal = borders.has_horizontal();
     let has_horizontal_colors = bcolors.has_horizontal();
+    let has_horizontal_second = cfg.get_first_horizontal_line().is_some();
 
     let vert = (
         borders.left.map(|c| (c, bcolors.left)),
@@ -187,6 +191,22 @@ fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
             }
 
             print_indent2(f, margin.left, margin_color.left)?;
+
+            if has_horizontal_colors {
+                print_split_line_colored(f, h_chars, h_colors, dims, count_columns)?;
+            } else {
+                print_split_line(f, h_chars, dims, count_columns)?;
+            }
+
+            print_indent2(f, margin.right, margin_color.right)?;
+        } else if row == 1 && has_horizontal_second {
+            if new_line {
+                f.write_char('\n')?;
+            }
+
+            print_indent2(f, margin.left, margin_color.left)?;
+
+            let h_chars = cfg.get_first_horizontal_line().expect("must be here");
 
             if has_horizontal_colors {
                 print_split_line_colored(f, h_chars, h_colors, dims, count_columns)?;
@@ -327,24 +347,24 @@ fn create_padding(cfg: &CompactConfig) -> Sides<ColoredIndent> {
     )
 }
 
-fn create_horizontal(b: &Borders<char>) -> (char, Option<char>, Option<char>, Option<char>) {
-    (b.horizontal.unwrap_or(' '), b.left, b.intersection, b.right)
+fn create_horizontal(b: &Borders<char>) -> Line<char> {
+    Line::new(b.horizontal.unwrap_or(' '), b.intersection, b.left, b.right)
 }
 
-fn create_horizontal_top(b: &Borders<char>) -> (char, Option<char>, Option<char>, Option<char>) {
-    (
+fn create_horizontal_top(b: &Borders<char>) -> Line<char> {
+    Line::new(
         b.top.unwrap_or(' '),
-        b.top_left,
         b.top_intersection,
+        b.top_left,
         b.top_right,
     )
 }
 
-fn create_horizontal_bottom(b: &Borders<char>) -> (char, Option<char>, Option<char>, Option<char>) {
-    (
+fn create_horizontal_bottom(b: &Borders<char>) -> Line<char> {
+    Line::new(
         b.bottom.unwrap_or(' '),
-        b.bottom_left,
         b.bottom_intersection,
+        b.bottom_left,
         b.bottom_right,
     )
 }
@@ -538,14 +558,14 @@ fn print_cell<F: Write, C: Color>(
 
 fn print_split_line_colored<F: Write>(
     f: &mut F,
-    chars: (char, Option<char>, Option<char>, Option<char>),
+    chars: Line<char>,
     colors: (StaticColor, StaticColor, StaticColor, StaticColor),
     dimension: impl Dimension,
     count_columns: usize,
 ) -> fmt::Result {
     let mut used_color = StaticColor::default();
 
-    if let Some(c) = chars.1 {
+    if let Some(c) = chars.connect1 {
         colors.1.fmt_prefix(f)?;
         f.write_char(c)?;
         used_color = colors.1;
@@ -554,11 +574,11 @@ fn print_split_line_colored<F: Write>(
     let width = dimension.get_width(0);
     if width > 0 {
         prepare_coloring(f, &colors.0, &mut used_color)?;
-        repeat_char(f, chars.0, width)?;
+        repeat_char(f, chars.main, width)?;
     }
 
     for col in 1..count_columns {
-        if let Some(c) = &chars.2 {
+        if let Some(c) = &chars.intersection {
             prepare_coloring(f, &colors.2, &mut used_color)?;
             f.write_char(*c)?;
         }
@@ -566,11 +586,11 @@ fn print_split_line_colored<F: Write>(
         let width = dimension.get_width(col);
         if width > 0 {
             prepare_coloring(f, &colors.0, &mut used_color)?;
-            repeat_char(f, chars.0, width)?;
+            repeat_char(f, chars.main, width)?;
         }
     }
 
-    if let Some(c) = &chars.3 {
+    if let Some(c) = &chars.connect2 {
         prepare_coloring(f, &colors.3, &mut used_color)?;
         f.write_char(*c)?;
     }
@@ -582,31 +602,31 @@ fn print_split_line_colored<F: Write>(
 
 fn print_split_line<F: Write>(
     f: &mut F,
-    chars: (char, Option<char>, Option<char>, Option<char>),
+    chars: Line<char>,
     dimension: impl Dimension,
     count_columns: usize,
 ) -> fmt::Result {
-    if let Some(c) = chars.1 {
+    if let Some(c) = chars.connect1 {
         f.write_char(c)?;
     }
 
     let width = dimension.get_width(0);
     if width > 0 {
-        repeat_char(f, chars.0, width)?;
+        repeat_char(f, chars.main, width)?;
     }
 
     for col in 1..count_columns {
-        if let Some(c) = chars.2 {
+        if let Some(c) = chars.intersection {
             f.write_char(c)?;
         }
 
         let width = dimension.get_width(col);
         if width > 0 {
-            repeat_char(f, chars.0, width)?;
+            repeat_char(f, chars.main, width)?;
         }
     }
 
-    if let Some(c) = chars.3 {
+    if let Some(c) = chars.connect2 {
         f.write_char(c)?;
     }
 

@@ -1,4 +1,5 @@
 #![cfg(feature = "derive")]
+#![cfg(feature = "std")]
 
 use tabled::Tabled;
 

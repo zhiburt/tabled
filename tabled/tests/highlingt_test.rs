@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 use tabled::{
     builder::Builder,
     settings::{

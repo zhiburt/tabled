@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 use tabled::settings::{shadow::Shadow, style::Style};
 
 use crate::util::{new_table, test_table};

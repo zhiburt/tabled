@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 use tabled::settings::{
     alignment::Alignment,
     format::Format,
