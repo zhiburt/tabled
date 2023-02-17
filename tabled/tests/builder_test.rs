@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 use std::iter::FromIterator;
 
 use tabled::builder::Builder;

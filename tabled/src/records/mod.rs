@@ -4,17 +4,23 @@
 //! Also it provies a list of helpers for a user built [`Records`] via [`into_records`].
 
 mod empty_records;
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod vec_records;
 
 pub mod into_records;
 
-use std::ops::Index;
+use core::ops::Index;
 
 use crate::grid::config::Position;
 
 pub use papergrid::records::{IntoRecords, IterRecords, Records};
 
 pub use empty_records::EmptyRecords;
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use vec_records::VecRecords;
 
 /// [Records] extension which guarantess the amount of rows.
@@ -46,6 +52,8 @@ where
     }
 }
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<T, I> ExactRecords for Vec<I>
 where
     T: AsRef<str>,
@@ -135,6 +143,8 @@ where
     }
 }
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<T> Resizable for Vec<Vec<T>>
 where
     T: Default + Clone,

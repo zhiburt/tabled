@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 use papergrid::util::string::string_width_multiline;
 
 use tabled::settings::{
@@ -126,7 +128,7 @@ fn max_width_wrapped_does_nothing_if_str_is_smaller() {
 #[test]
 fn max_width_wrapped_keep_words() {
     let data = vec!["this is a long sentence"];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -144,7 +146,7 @@ fn max_width_wrapped_keep_words() {
     assert!(is_lines_equal(&table, 17 + 2 + 2));
 
     let data = vec!["this is a long  sentence"];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -162,7 +164,7 @@ fn max_width_wrapped_keep_words() {
     assert!(is_lines_equal(&table, 17 + 2 + 2));
 
     let data = vec!["this is a long   sentence"];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -179,7 +181,7 @@ fn max_width_wrapped_keep_words() {
     );
 
     let data = vec!["this is a long    sentence"];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -198,7 +200,7 @@ fn max_width_wrapped_keep_words() {
     assert!(is_lines_equal(&table, 17 + 2 + 2));
 
     let data = vec!["this"];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
         .to_string();
@@ -220,7 +222,7 @@ fn max_width_wrapped_keep_words_color() {
     use owo_colors::OwoColorize;
 
     let data = vec!["this is a long sentence".on_black().green().to_string()];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -247,7 +249,7 @@ fn max_width_wrapped_keep_words_color() {
     );
 
     let data = vec!["this is a long  sentence".on_black().green().to_string()];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -269,7 +271,7 @@ fn max_width_wrapped_keep_words_color() {
     );
 
     let data = vec!["this is a long   sentence".on_black().green().to_string()];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -291,7 +293,7 @@ fn max_width_wrapped_keep_words_color() {
     );
 
     let data = vec!["this is a long    sentence".on_black().green().to_string()];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -313,7 +315,7 @@ fn max_width_wrapped_keep_words_color() {
     );
 
     let data = vec!["this".on_black().green().to_string()];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::wrap(10).keep_words()))
         .to_string();
@@ -381,7 +383,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
         .on_black()
         .green()
         .to_string()];
-    let table = new_table(&data)
+    let table = new_table(data)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
@@ -407,7 +409,7 @@ fn max_width_wrapped_keep_words_long_word_color() {
 fn max_width_keep_words_1() {
     use tabled::settings::style::HorizontalLine;
 
-    let table = new_table(&["asdf"])
+    let table = new_table(["asdf"])
         .with(Width::wrap(7).keep_words())
         .to_string();
 
@@ -424,7 +426,7 @@ fn max_width_keep_words_1() {
         )
     );
 
-    let table = new_table(&["qweqw eqwe"])
+    let table = new_table(["qweqw eqwe"])
         .with(Width::wrap(8).keep_words())
         .to_string();
 
@@ -2494,7 +2496,7 @@ mod derived {
             ),
         ];
 
-        let table = new_table(&data)
+        let table = new_table(data)
             .with(Style::markdown())
             .with(Modify::new(Segment::all()).with(Alignment::left()))
             .with(Width::truncate(57))

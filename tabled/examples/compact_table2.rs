@@ -5,15 +5,12 @@ use tabled::{settings::style::Style, tables::compact::CompactTable};
 
 fn main() {
     let data = [
-        ["Debian", "", "true"],
-        ["Arch", "", "true"],
+        ["Debian", "1.1.1.1", "true"],
+        ["Arch", "127.1.1.1", "true"],
         ["Manjaro", "Arch", "true"],
     ];
 
-    let table = CompactTable::new(data)
-        .columns(3)
-        .width([7, 5, 5])
-        .with(Style::markdown());
+    let table = CompactTable::from(data).with(Style::psql());
 
     println!("{table}");
 }

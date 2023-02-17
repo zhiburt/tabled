@@ -19,6 +19,6 @@ impl<R, D> TableOption<R, D, GridConfig> for TabSize {
 
 impl<R, D> TableOption<R, D, CompactConfig> for TabSize {
     fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
-        cfg.set_tab_width(self.0);
+        *cfg = cfg.set_tab_width(self.0);
     }
 }

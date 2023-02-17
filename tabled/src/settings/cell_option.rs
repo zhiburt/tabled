@@ -29,6 +29,8 @@ where
     }
 }
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<R, C> CellOption<R, C> for String
 where
     R: Records + ExactRecords + RecordsMut<String>,

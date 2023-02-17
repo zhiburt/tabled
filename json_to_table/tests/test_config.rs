@@ -1,12 +1,60 @@
 use json_to_table::json_to_table;
 use serde_json::json;
-use tabled::{Alignment, Padding, Style, Table};
+use tabled::{
+    settings::{alignment::Alignment, padding::Padding, style::Style},
+    Table,
+};
 
 #[cfg(feature = "color")]
 use tabled::papergrid::{AnsiColor, GridConfig};
 
 #[test]
 fn config_from_table_test() {
+    let value = json!(
+        {
+            "key1": 123,
+            "234": ["123", "234", "456"],
+            "key22": {
+                "k1": 1,
+                "k2": 2,
+            }
+        }
+    );
+
+    let cfg = Table::new([""])
+        .with(Alignment::center())
+        .with(Alignment::center_vertical())
+        .get_config()
+        .clone();
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .set_config(cfg)
+        .collapse()
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌───────┬────────┐\n",
+            "│       │  123   │\n",
+            "│       ├────────┤\n",
+            "│  234  │  234   │\n",
+            "│       ├────────┤\n",
+            "│       │  456   │\n",
+            "├───────┼────────┤\n",
+            "│ key1  │  123   │\n",
+            "├───────┼────┬───┤\n",
+            "│       │ k1 │ 1 │\n",
+            "│ key22 ├────┼───┤\n",
+            "│       │ k2 │ 2 │\n",
+            "└───────┴────┴───┘",
+        )
+    );
+}
+
+#[test]
+fn config_from_table_padding_zero_test() {
     let value = json!(
         {
             "key1": 123,
@@ -31,22 +79,24 @@ fn config_from_table_test() {
         .collapse()
         .to_string();
 
+    println!("{table}");
+
     assert_eq!(
         table,
         concat!(
-            "┌───────┬──────┐\n",
-            "│       │ 123  │\n",
-            "│       ├──────┤\n",
-            "│  234  │ 234  │\n",
-            "│       ├──────┤\n",
-            "│       │ 456  │\n",
-            "├───────┼──────┤\n",
-            "│ key1  │ 123  │\n",
-            "├───────┼────┬─┤\n",
-            "│       │ k1 │1│\n",
-            "│ key22 ├────┼─┤\n",
-            "│       │ k2 │2│\n",
-            "└───────┴────┴─┘",
+            "┌─────┬────┐\n",
+            "│     │123 │\n",
+            "│     ├────┤\n",
+            "│ 234 │234 │\n",
+            "│     ├────┤\n",
+            "│     │456 │\n",
+            "├─────┼────┤\n",
+            "│key1 │123 │\n",
+            "├─────┼──┬─┤\n",
+            "│     │k1│1│\n",
+            "│key22├──┼─┤\n",
+            "│     │k2│2│\n",
+            "└─────┴──┴─┘",
         )
     );
 }
@@ -115,10 +165,7 @@ fn color_test() {
     );
 
     let mut cfg = GridConfig::default();
-    cfg.set_border_color_global(AnsiColor::new(
-        String::from("\u{1b}[34m"),
-        String::from("\u{1b}[39m"),
-    ));
+    cfg.set_border_color_global(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into()));
 
     let table = json_to_table(&value)
         .set_style(Style::modern())

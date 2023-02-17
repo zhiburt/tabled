@@ -1,3 +1,4 @@
+#![cfg_attr(not(any(feature = "std", test)), no_std)]
 #![warn(
     rust_2018_idioms,
     rust_2018_compatibility,
@@ -16,7 +17,8 @@
 //!
 //! # Example
 //!
-//! ```
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
 //! use papergrid::{
 //!     records::IterRecords,
 //!     dimension::{Estimate},

@@ -1,3 +1,5 @@
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 use crate::grid::spanned::config::{HorizontalLine, VerticalLine};
 
 /// The structure represent a vertical or horizontal line.
@@ -54,6 +56,8 @@ impl Line {
     }
 }
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl From<Line> for HorizontalLine {
     fn from(l: Line) -> Self {
         Self {
@@ -65,6 +69,8 @@ impl From<Line> for HorizontalLine {
     }
 }
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl From<Line> for VerticalLine {
     fn from(l: Line) -> Self {
         Self {
@@ -72,6 +78,17 @@ impl From<Line> for VerticalLine {
             intersection: l.intersection,
             top: l.connector1,
             bottom: l.connector2,
+        }
+    }
+}
+
+impl From<Line> for papergrid::config::Line<char> {
+    fn from(l: Line) -> Self {
+        Self {
+            main: l.main.unwrap_or(' '),
+            intersection: l.intersection,
+            connect1: l.connector1,
+            connect2: l.connector2,
         }
     }
 }

@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 use std::iter::FromIterator;
 
 use tabled::{
@@ -731,7 +733,7 @@ fn multiline_table_test2() {
         ["\u{1b}[37mThis is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\n\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\n\u{1b}[0m"],
     ];
 
-    let mut table = Table::new(&data);
+    let mut table = Table::new(data);
     table.with(Style::modern());
 
     assert_eq!(

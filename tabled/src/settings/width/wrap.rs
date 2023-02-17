@@ -426,7 +426,7 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
     use std::fmt::Write;
 
-    use ansi_str::{AnsiBlock, Style};
+    use ansi_str::Style;
 
     if text.is_empty() || width == 0 {
         return String::new();

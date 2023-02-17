@@ -1,9 +1,6 @@
-use crate::{
-    grid::config::Entity,
-    settings::{CellOption, TableOption},
-};
+use crate::{grid::config::Entity, settings::TableOption};
 
-/// Settigns is a combinator of [`CellOption`] and [`TableOption`].
+/// Settings is a combinator of [`TableOption`]s.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Settings<A = EmptySettings, B = EmptySettings>(A, B);
 
@@ -32,10 +29,12 @@ impl<A, B> Settings<A, B> {
     }
 }
 
-impl<R, C, A, B> CellOption<R, C> for Settings<A, B>
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+impl<R, C, A, B> super::CellOption<R, C> for Settings<A, B>
 where
-    A: CellOption<R, C>,
-    B: CellOption<R, C>,
+    A: super::CellOption<R, C>,
+    B: super::CellOption<R, C>,
 {
     fn change(&mut self, records: &mut R, cfg: &mut C, entity: Entity) {
         self.0.change(records, cfg, entity);
@@ -58,7 +57,9 @@ where
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct EmptySettings;
 
-impl<R, C> CellOption<R, C> for EmptySettings {
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+impl<R, C> super::CellOption<R, C> for EmptySettings {
     fn change(&mut self, _: &mut R, _: &mut C, _: Entity) {}
 }
 

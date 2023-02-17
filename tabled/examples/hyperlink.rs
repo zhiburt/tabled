@@ -34,12 +34,12 @@ fn main() {
     let data = [
         Distribution::new("Debian".into(), false),
         Distribution::new(debian_link.clone(), true),
-        Distribution::new(format!("{} a link followed by text", debian_link), true),
+        Distribution::new(format!("{debian_link} a link followed by text"), true),
         Distribution::new(
-            format!("{} links with intervening text {}", debian_link, wiki_link),
+            format!("{debian_link} links with intervening text {wiki_link}"),
             true,
         ),
-        Distribution::new(format!("a link surrounded {} by text", debian_link), true),
+        Distribution::new(format!("a link surrounded {debian_link} by text"), true),
         Distribution::new(debian_colored_link, true),
         Distribution::new(debian_repeat, false),
     ];

@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 mod util;
 
 use papergrid::config::{AlignmentHorizontal, Borders, Entity, Indent};

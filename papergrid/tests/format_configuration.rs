@@ -1,9 +1,11 @@
+#![cfg(feature = "std")]
+
+mod util;
+
 use papergrid::config::{AlignmentHorizontal, AlignmentVertical, Entity};
 use papergrid::grid::spanned::config::Formatting;
 
 use crate::util::{grid, static_table};
-
-mod util;
 
 #[test]
 fn formatting_test() {

@@ -230,13 +230,18 @@ impl Table {
         dims.estimate(&self.records, &self.cfg);
 
         let total = (0..self.count_columns())
-            .map(|row| dims.get_width(row))
+            .map(|col| dims.get_width(col))
             .sum::<usize>();
         let countv = self.cfg.count_vertical(self.count_columns());
 
         let margin = self.cfg.get_margin();
 
         total + countv + margin.left.size + margin.right.size
+    }
+
+    /// Returns a table config.
+    pub fn get_config(&self) -> &GridConfig {
+        &self.cfg
     }
 }
 

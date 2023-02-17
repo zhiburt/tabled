@@ -1,8 +1,10 @@
-//! A module which contains [GridConfig] which is responsible for grid configuration.
+//! A module which contains configuration of a [`CompactGrid`] which is responsible for grid configuration.
+//! 
+//! [`CompactGrid`]: crate::grid::compact::CompactGrid
 
 use crate::color::StaticColor;
 
-use crate::config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent, Sides};
+use crate::config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent, Line, Sides};
 
 /// This structure represents a settings of a grid.
 ///
@@ -10,6 +12,7 @@ use crate::config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent, Sid
 #[derive(Debug, Clone, Copy)]
 pub struct CompactConfig {
     borders: Borders<char>,
+    horizontal_line1: Option<Line<char>>,
     border_colors: Borders<StaticColor>,
     margin: Sides<Indent>,
     margin_color: Sides<StaticColor>,
@@ -33,6 +36,7 @@ impl CompactConfig {
             tab_width: 4,
             halignment: AlignmentHorizontal::Left,
             valignment: AlignmentVertical::Top,
+            horizontal_line1: None,
             borders: Borders::empty(),
             border_colors: Borders::empty(),
             margin: Sides::filled(Indent::zero()),
@@ -42,12 +46,13 @@ impl CompactConfig {
         }
     }
 
-    /// Set [`Margin`].
-    pub const fn set_margin(mut self, margin: Sides<Indent>) {
+    /// Set grid margin.
+    pub const fn set_margin(mut self, margin: Sides<Indent>) -> Self {
         self.margin = margin;
+        self
     }
 
-    /// Returns a [`Margin`].
+    /// Returns a grid margin.
     pub const fn get_margin(&self) -> &Sides<Indent> {
         &self.margin
     }
@@ -56,6 +61,21 @@ impl CompactConfig {
     pub const fn set_borders(mut self, borders: Borders<char>) -> Self {
         self.borders = borders;
         self
+    }
+
+    /// Set the first horizontal line.
+    ///
+    /// It ignores the [`Borders`] horizontal value if set for 1st row.
+    pub const fn set_first_horizontal_line(mut self, line: Line<char>) -> Self {
+        self.horizontal_line1 = Some(line);
+        self
+    }
+
+    /// Set the first horizontal line.
+    ///
+    /// It ignores the [`Borders`] horizontal value if set for 1st row.
+    pub const fn get_first_horizontal_line(&self) -> Option<Line<char>> {
+        self.horizontal_line1
     }
 
     /// Set tab width in spaces.
@@ -85,7 +105,7 @@ impl CompactConfig {
         self
     }
 
-    /// Get a padding for a given [Entity].
+    /// Get a padding for a given.
     pub const fn get_padding(&self) -> &Sides<Indent> {
         &self.padding
     }
@@ -118,13 +138,13 @@ impl CompactConfig {
         self
     }
 
-    /// Set colors for a [`Margin`] value.
+    /// Set colors for a margin.
     pub const fn set_margin_color(mut self, color: Sides<StaticColor>) -> Self {
         self.margin_color = color;
         self
     }
 
-    /// Returns a [`Margin`] offset.
+    /// Returns a margin color.
     pub const fn get_margin_color(&self) -> &Sides<StaticColor> {
         &self.margin_color
     }

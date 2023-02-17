@@ -60,7 +60,7 @@ fn main() {
             .corner_bottom_right(color_purple),
     );
 
-    let mut table = Table::new(&data);
+    let mut table = Table::new(data);
     table
         .with(Style::psql())
         .with(yellow_color)
@@ -69,5 +69,5 @@ fn main() {
         .with(Modify::new(Columns::single(1)).with(green))
         .with(Modify::new(Columns::single(2)).with(blue));
 
-    println!("{}", table);
+    println!("{table}");
 }

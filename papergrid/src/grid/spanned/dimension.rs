@@ -1,6 +1,6 @@
 //! The module contains a [`ExactDimension`] for [`Grid`] height/width estimation.
 //!
-//! [`Grid`]: crate::Grid
+//! [`Grid`]: crate::grid::spanned::Grid
 
 use std::{
     cmp::{self, max, Ordering},
@@ -18,7 +18,7 @@ use super::config::GridConfig;
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height.
 ///
-/// [`Grid`]: crate::Grid
+/// [`Grid`]: crate::grid::spanned::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct ExactDimension {
     height: Vec<usize>,

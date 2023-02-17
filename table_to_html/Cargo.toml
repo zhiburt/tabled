@@ -8,4 +8,8 @@ repository = "https://github.com/zhiburt/tabled"
 license = "MIT"
 
 [dependencies]
-tabled = "0.10.0"
+tabled = { path = "../tabled", features = ["std"], default-features = false }
+dyn-clone = "*"
+
+[dev-dependencies]
+tabled = { path = "../tabled", features = ["std", "derive"], default-features = false }

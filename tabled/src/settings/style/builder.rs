@@ -1,106 +1,16 @@
-//! This module contains a list of primitives which can be applied to change [`Table`] style.
-//!
-//! ## [`Style`]
-//!
-//! It is responsible for a table border style.
-//! An individual cell border can be set by [`Border`].
-//!  
-//! ### Example
-//!
-//! ```
-//! use tabled::{Table, settings::style::Style};
-//!
-//! let data = vec!["Hello", "2022"];
-//! let mut table = Table::new(&data);
-//! table.with(Style::psql());
-//!
-//! assert_eq!(
-//!     table.to_string(),
-//!     concat!(
-//!         " &str  \n",
-//!         "-------\n",
-//!         " Hello \n",
-//!         " 2022  ",
-//!     )
-//! )
-//! ```
-//!
-//! ## [`BorderText`]
-//!
-//! It's used to override a border with a custom text.
-//!
-//! ### Example
-//!
-//! ```
-//! use tabled::{Table, settings::style::{BorderText, Style}};
-//!
-//! let data = vec!["Hello", "2022"];
-//! let table = Table::new(&data)
-//!     .with(Style::psql())
-//!     .with(BorderText::new(1, "Santa"))
-//!     .to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     concat!(
-//!         " &str  \n",
-//!         "Santa--\n",
-//!         " Hello \n",
-//!         " 2022  ",
-//!     )
-//! )
-//! ```
-//!
-//! ## [`Border`]
-//!
-//! [`Border`] can be used to modify cell's borders.
-//!
-//! It's possible to set a collored border when `color` feature is on.
-//!
-//! ### Example
-//!
-//! ```
-//! use tabled::{Table, settings::{Modify, style::Style}};
-//!
-//! let data = vec!["Hello", "2022"];
-//! let table = Table::new(&data)
-//!     .with(Style::psql())
-//!     .with(Modify::new((0, 0)).with(Style::modern().get_frame()))
-//!     .to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     concat!(
-//!         "┌───────┐\n",
-//!         "│ &str  │\n",
-//!         "└───────┘\n",
-//!         "  Hello  \n",
-//!         "  2022   ",
-//!     )
-//! )
-//! ```
-//!
-//! ## [`RawStyle`]
-//!
-//! A different representatio of [`Style`].
-//! With no checks in place.
-//!
-//! It also contains a list of types to support colors.
-//!
-//! [`Table`]: crate::Table
-//! [`BorderText`]: crate::border_text::BorderText
-//! [`RawStyle`]: crate::raw_style::RawStyle
+//! This module contains a compile time style builder [`Style`].
 
 use core::marker::PhantomData;
 
 use papergrid::grid::compact::CompactConfig;
 
-use crate::{
-    grid::spanned::{config::Borders, GridConfig},
-    settings::TableOption,
-};
+use crate::{grid::config::Borders, settings::TableOption};
 
-use super::{Border, HorizontalLine, Line, VerticalLine};
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+use crate::grid::spanned::GridConfig;
+
+use super::{HorizontalLine, Line, VerticalLine};
 
 /// Style is represents a theme of a [`Table`].
 ///
@@ -144,7 +54,8 @@ use super::{Border, HorizontalLine, Line, VerticalLine};
 ///
 /// # Example
 ///
-/// ```rust,no_run
+#[cfg_attr(feature = "std", doc = "```")]
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
 /// use tabled::{Table, settings::style::Style};
 ///
 /// let style = Style::ascii()
@@ -164,7 +75,7 @@ use super::{Border, HorizontalLine, Line, VerticalLine};
 /// [`Style::top`]: Style.function.top
 #[derive(Debug, Clone)]
 pub struct Style<T, B, L, R, H, V, HLines = HLineArray<0>, VLines = VLineArray<0>> {
-    borders: Borders,
+    borders: Borders<char>,
     horizontals: HLines,
     verticals: VLines,
     _top: PhantomData<T>,
@@ -553,8 +464,10 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     ///     )
     /// );
     /// ```
-    pub const fn get_frame(&self) -> Border {
-        let mut border = Border::filled(' ');
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    pub const fn get_frame(&self) -> super::Border {
+        let mut border = super::Border::filled(' ');
 
         if let Some(c) = self.borders.top {
             border = border.top(c);
@@ -597,7 +510,8 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     ///
     /// # Example
     ///
-    /// ```
+    #[cfg_attr(feature = "std", doc = "```")]
+    #[cfg_attr(not(feature = "std"), doc = "```ignore")]
     /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
     ///
     /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
@@ -632,7 +546,8 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     ///
     /// # Example
     ///
-    /// ```
+    #[cfg_attr(feature = "std", doc = "```")]
+    #[cfg_attr(not(feature = "std"), doc = "```ignore")]
     /// use tabled::{settings::style::{Style, VerticalLine, Line}, Table};
     ///
     /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
@@ -844,7 +759,8 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     ///
     /// # Example
     ///
-    /// ```
+    #[cfg_attr(feature = "derive", doc = "```")]
+    #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
     /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
     ///
     /// let table = Table::new((0..3).map(|i| ("Hello", i)))
@@ -877,7 +793,8 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     ///
     /// # Example
     ///
-    /// ```
+    #[cfg_attr(feature = "derive", doc = "```")]
+    #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
     /// use tabled::{Table, settings::style::{Style, VerticalLine, Line}};
     ///
     /// let table = Table::new((0..3).map(|i| ("Hello", i)))
@@ -1108,7 +1025,7 @@ impl<T, B, L, R, H, HLines, VLines> Style<T, B, L, R, H, On, HLines, VLines> {
 }
 
 impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
-    const fn new(borders: Borders, horizontals: HLines, verticals: VLines) -> Self {
+    const fn new(borders: Borders<char>, horizontals: HLines, verticals: VLines) -> Self {
         Self {
             borders,
             horizontals,
@@ -1123,7 +1040,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     }
 
     /// Return borders of a table.
-    pub const fn get_borders(&self) -> &Borders {
+    pub const fn get_borders(&self) -> &Borders<char> {
         &self.borders
     }
 
@@ -1138,6 +1055,8 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     }
 }
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, GridConfig>
     for Style<T, B, L, R, H, V, HLines, VLines>
 where
@@ -1161,9 +1080,16 @@ where
 
 impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, CompactConfig>
     for Style<T, B, L, R, H, V, HLines, VLines>
+where
+    HLines: IntoIterator<Item = HorizontalLine> + Clone,
 {
-    fn change(&mut self, _: &mut I, cfg: &mut CompactConfig, _: &mut D) {
-        cfg.set_borders(self.borders);
+    fn change(&mut self, records: &mut I, cfg: &mut CompactConfig, dimension: &mut D) {
+        *cfg = cfg.set_borders(self.borders);
+
+        let first_line = self.horizontals.clone().into_iter().next();
+        if let Some(mut line) = first_line {
+            line.change(records, cfg, dimension);
+        }
     }
 }
 
@@ -1272,7 +1198,7 @@ const fn create_borders(
     left: Option<char>,
     right: Option<char>,
     vertical: Option<char>,
-) -> Borders {
+) -> Borders<char> {
     Borders {
         top: top.main,
         bottom: bottom.main,

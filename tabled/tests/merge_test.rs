@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 mod util;
 
 use tabled::{settings::merge::Merge, Table};

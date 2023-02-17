@@ -17,4 +17,4 @@ color = ["tabled/color"]
 
 [dependencies]
 csv = "1"
-tabled = { path = "../tabled" }
+tabled = { path = "../tabled", features = ["std"], default-features = false }

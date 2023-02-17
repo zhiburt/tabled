@@ -1,12 +1,16 @@
 //! A module which contains [`Color`] trait and its implementation [`AnsiColor`].
 
+#[cfg(feature = "std")]
 mod ansi_color;
 mod static_color;
 
-use core::fmt::{self, Write};
-
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use ansi_color::AnsiColor;
+
 pub use static_color::StaticColor;
+
+use core::fmt::{self, Write};
 
 #[allow(unreachable_pub)]
 /// A trait which prints an ANSI prefix and suffix.

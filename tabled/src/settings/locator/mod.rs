@@ -1,7 +1,7 @@
 //! The module contains a [`Locator`] trait and implementations for it.
 
 use std::{
-    iter::Once,
+    iter::{self, Once},
     ops::{Range, RangeBounds},
 };
 
@@ -49,7 +49,7 @@ impl<R> Locator<R> for Column {
     type IntoIter = Once<usize>;
 
     fn locate(&mut self, _: R) -> Self::IntoIter {
-        std::iter::once((*self).into())
+        iter::once((*self).into())
     }
 }
 
@@ -58,7 +58,7 @@ impl<R> Locator<R> for FirstColumn {
     type IntoIter = Once<usize>;
 
     fn locate(&mut self, _: R) -> Self::IntoIter {
-        std::iter::once(0)
+        iter::once(0)
     }
 }
 
@@ -71,9 +71,9 @@ where
 
     fn locate(&mut self, records: R) -> Self::IntoIter {
         if records.count_columns() > 0 {
-            std::iter::once(records.count_columns() - 1)
+            iter::once(records.count_columns() - 1)
         } else {
-            std::iter::once(0)
+            iter::once(0)
         }
     }
 }
@@ -102,7 +102,7 @@ impl<R> Locator<R> for Row {
     type IntoIter = Once<usize>;
 
     fn locate(&mut self, _: R) -> Self::IntoIter {
-        std::iter::once((*self).into())
+        iter::once((*self).into())
     }
 }
 
@@ -111,7 +111,7 @@ impl<R> Locator<R> for FirstRow {
     type IntoIter = Once<usize>;
 
     fn locate(&mut self, _: R) -> Self::IntoIter {
-        std::iter::once(0)
+        iter::once(0)
     }
 }
 
@@ -124,9 +124,9 @@ where
 
     fn locate(&mut self, records: R) -> Self::IntoIter {
         if records.count_rows() > 0 {
-            std::iter::once(records.count_rows() - 1)
+            iter::once(records.count_rows() - 1)
         } else {
-            std::iter::once(0)
+            iter::once(0)
         }
     }
 }

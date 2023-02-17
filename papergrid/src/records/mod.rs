@@ -1,6 +1,6 @@
 //! The module contains a [Records] abstraction of a [`Grid`] trait and its implementers.
 //!
-//! [`Grid`]: crate::Grid
+//! [`Grid`]: crate::grid::spanned::Grid
 
 mod into_records;
 mod iter_records;
