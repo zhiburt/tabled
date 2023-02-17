@@ -14,7 +14,6 @@ Notice that
 <table>
 <tr>
 <th> Example of in memory approach </th>
-<th> Result </th>
 </tr>
 <tr>
 <td>
@@ -35,6 +34,12 @@ fn main() {
 ```
 
 </td>
+</tr>
+<tr>
+    <th> Result </th>
+</tr>
+<tr>
+
 <td style="vertical-align: top;">
 
 ```text
@@ -58,7 +63,6 @@ fn main() {
 <table>
 <tr>
 <th> Example of sniffing approach </th>
-<th> Result </th>
 </tr>
 <tr>
 <td>
@@ -79,6 +83,11 @@ fn main() {
 ```
 
 </td>
+</tr>
+<tr>
+<th> Result </th>
+</tr>
+<tr>
 <td style="vertical-align: top;">
 
 ```text

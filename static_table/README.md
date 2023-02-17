@@ -2,9 +2,9 @@
 
 The library provides a macros to build a pretty tables at compile time.
 
-## Get started
+To find a few features and settings which you can use with the macros please check out the documentation ([docs.rs](https://docs.rs/static_table)).
 
-### Example
+### Get started
 
 ```rust
 use static_table::static_table;
@@ -21,7 +21,7 @@ fn main() {
 }
 ```
 
-### Output
+Output
 
 ```text
 +------+----------------+---------------+
@@ -34,5 +34,3 @@ fn main() {
 | Rust | Graydon Hoare  | 2010          |
 +------+----------------+---------------+
 ```
-
-To find a few features and settings which you can use with the macros please check out the documentation ([docs.rs](https://docs.rs/static_table)).
