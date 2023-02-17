@@ -6,7 +6,7 @@ use tabled::{
 };
 
 #[cfg(feature = "color")]
-use tabled::papergrid::{AnsiColor, GridConfig};
+use tabled::{grid::color::AnsiColor, grid::spanned::GridConfig};
 
 #[test]
 fn config_from_table_test() {
@@ -173,22 +173,24 @@ fn color_test() {
         .collapse()
         .to_string();
 
+    println!("{}", table);
+
     assert_eq!(
         table,
         concat!(
-            "\u{1b}[34m┌───────\u{1b}[39m\u{1b}[34m┬──────┐\u{1b}[39m\n",
-            "\u{1b}[34m│\u{1b}[39m234    \u{1b}[34m│\u{1b}[39m123   \u{1b}[34m│\u{1b}[39m\n",
-            "\u{1b}[34m│\u{1b}[39m       \u{1b}[34m├──────┤\u{1b}[39m\n",
-            "\u{1b}[34m│\u{1b}[39m       \u{1b}[34m│\u{1b}[39m234   \u{1b}[34m│\u{1b}[39m\n",
-            "\u{1b}[34m│\u{1b}[39m       \u{1b}[34m├──────┤\u{1b}[39m\n",
-            "\u{1b}[34m│\u{1b}[39m       \u{1b}[34m│\u{1b}[39m456   \u{1b}[34m│\u{1b}[39m\n",
-            "\u{1b}[34m├───────\u{1b}[39m\u{1b}[34m┼──────┤\u{1b}[39m\n",
-            "\u{1b}[34m│\u{1b}[39mkey1   \u{1b}[34m│\u{1b}[39m123   \u{1b}[34m│\u{1b}[39m\n",
-            "\u{1b}[34m├───────\u{1b}[39m\u{1b}[34m┼────┬─┤\u{1b}[39m\n",
-            "\u{1b}[34m│\u{1b}[39mkey22  \u{1b}[34m│\u{1b}[39mk1  \u{1b}[34m│\u{1b}[39m1\u{1b}[34m│\u{1b}[39m\n",
-            "\u{1b}[34m│\u{1b}[39m       \u{1b}[34m├────\u{1b}[39m\u{1b}[34m┼─┤\u{1b}[39m\n",
-            "\u{1b}[34m│\u{1b}[39m       \u{1b}[34m│\u{1b}[39mk2  \u{1b}[34m│\u{1b}[39m2\u{1b}[34m│\u{1b}[39m\n",
-            "\u{1b}[34m└───────\u{1b}[39m\u{1b}[34m┴────\u{1b}[39m\u{1b}[34m┴─┘\u{1b}[39m",
+            "\u{1b}[34m┌─────\u{1b}[39m\u{1b}[34m┬────┐\u{1b}[39m\n",
+            "\u{1b}[34m│\u{1b}[39m234  \u{1b}[34m│\u{1b}[39m123 \u{1b}[34m│\u{1b}[39m\n",
+            "\u{1b}[34m│\u{1b}[39m     \u{1b}[34m├────┤\u{1b}[39m\n",
+            "\u{1b}[34m│\u{1b}[39m     \u{1b}[34m│\u{1b}[39m234 \u{1b}[34m│\u{1b}[39m\n",
+            "\u{1b}[34m│\u{1b}[39m     \u{1b}[34m├────┤\u{1b}[39m\n",
+            "\u{1b}[34m│\u{1b}[39m     \u{1b}[34m│\u{1b}[39m456 \u{1b}[34m│\u{1b}[39m\n",
+            "\u{1b}[34m├─────\u{1b}[39m\u{1b}[34m┼────┤\u{1b}[39m\n",
+            "\u{1b}[34m│\u{1b}[39mkey1 \u{1b}[34m│\u{1b}[39m123 \u{1b}[34m│\u{1b}[39m\n",
+            "\u{1b}[34m├─────\u{1b}[39m\u{1b}[34m┼──┬─┤\u{1b}[39m\n",
+            "\u{1b}[34m│\u{1b}[39mkey22\u{1b}[34m│\u{1b}[39mk1\u{1b}[34m│\u{1b}[39m1\u{1b}[34m│\u{1b}[39m\n",
+            "\u{1b}[34m│\u{1b}[39m     \u{1b}[34m├──\u{1b}[39m\u{1b}[34m┼─┤\u{1b}[39m\n",
+            "\u{1b}[34m│\u{1b}[39m     \u{1b}[34m│\u{1b}[39mk2\u{1b}[34m│\u{1b}[39m2\u{1b}[34m│\u{1b}[39m\n",
+            "\u{1b}[34m└─────\u{1b}[39m\u{1b}[34m┴──\u{1b}[39m\u{1b}[34m┴─┘\u{1b}[39m"
         )
     );
 }

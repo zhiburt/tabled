@@ -373,16 +373,16 @@ test_table!(
 
         create_table::<2, 2>()
             .with(BorderText::new(2, "-Table213123".blue().on_green().to_string()))
-            .with(Modify::new(Rows::single(1)).with(BorderColor::default().bottom(Color::FG_RED)))
+            .with(Modify::new(Rows::single(1)).with(BorderColor::default().bottom(Color::FG_RED).corner_bottom_right(Color::FG_RED)))
             .with(Modify::new(Rows::single(1)).with(Border::default().bottom('_')))
     },
-    "+---+----------+----------+"
-    "| N | column 0 | column 1 |"
-    "+---+----------+----------+"
-    "| 0 |   0-0    |   0-1    |"
-    "\u{1b}[34;42m-Table213123\u{1b}[0m\u{1b}[31m____\u{1b}[39m+"
-    "| 1 |   1-0    |   1-1    |"
-    "+---+----------+----------+"
+    "+---+----------+----------+\n\
+     | N | column 0 | column 1 |\n\
+     +---+----------+----------+\n\
+     | 0 |   0-0    |   0-1    |\n\
+     \u{1b}[34;42m-\u{1b}[39m\u{1b}[49m\u{1b}[34;42mTab\u{1b}[39m\u{1b}[49m\u{1b}[34;42ml\u{1b}[39m\u{1b}[49m\u{1b}[34;42me213123\u{1b}[0m\u{1b}[31m___+__________+\u{1b}[39m\n\
+     | 1 |   1-0    |   1-1    |\n\
+     +---+----------+----------+"
 );
 
 test_table!(
