@@ -5,7 +5,6 @@ use std::iter::FromIterator;
 use tabled::{
     builder::Builder,
     settings::{
-        color::Color,
         format::Format,
         highlight::Highlight,
         object::{Columns, Rows, Segment},
@@ -24,6 +23,8 @@ use crate::util::{create_table, init_table, static_table, test_table};
 
 #[cfg(feature = "color")]
 use std::convert::TryFrom;
+#[cfg(feature = "color")]
+use tabled::settings::color::Color;
 
 mod util;
 
@@ -365,6 +366,7 @@ test_table!(
     "+---+----------+----------+"
 );
 
+#[cfg(feature = "color")]
 test_table!(
     border_text_colored_default_color,
     {
