@@ -239,7 +239,6 @@ std = ["papergrid/std"]
 derive = ["tabled_derive", "std"]
 color = ["papergrid/color", "ansi-str", "ansitok", "std"]
 macros = ["std"]
-static_table = ["std"]
 
 [dependencies]
 papergrid = { path = "../papergrid", version = "0.7.1", default-features = false }

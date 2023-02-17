@@ -1,6 +1,6 @@
 [package]
 name = "static_table"
-version = "0.5.0"
+version = "0.1.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Derive macros which is used by tabled crate"

@@ -187,7 +187,7 @@
 //! );
 //! ```
 //!
-//! ### Build table using [`row`] and [`col`] macros.
+//! ### Build table using [`row!`] and [`col!`] macros.
 //!
 #![cfg_attr(all(feature = "macros", feature = "std"), doc = "```")]
 #![cfg_attr(not(all(feature = "macros", feature = "std")), doc = "```ignore")]
@@ -259,6 +259,8 @@
 //! [`Builder`]: crate::builder::Builder
 //! [`IterTable`]: crate::tables::iter::IterTable
 //! [`io::Write`]: std::io::Write
+//! [`row!`]: crate::row
+//! [`col!`]: crate::col
 
 #![cfg_attr(not(any(feature = "std", test)), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]

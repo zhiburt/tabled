@@ -1,6 +1,133 @@
-#![allow(clippy::uninlined_format_args)]
+//! Library provides a macros to build a table at a compile time.
+//!
+//! # Get started
+//!
+//! ```
+//! use static_table::static_table;
+//!
+//! const INTRO_TABLE: &str = static_table!([
+//!     ["name", "designed by", "first release"],
+//!     ["C", "Dennis Ritchie", "1972"],
+//!     ["Go", "Rob Pike", "2009"],
+//!     ["Rust", "Graydon Hoare", "2010"],
+//! ]);
+//!
+//! assert_eq!(
+//!     INTRO_TABLE,
+//!     "+------+----------------+---------------+\n\
+//!      | name | designed by    | first release |\n\
+//!      +------+----------------+---------------+\n\
+//!      | C    | Dennis Ritchie | 1972          |\n\
+//!      +------+----------------+---------------+\n\
+//!      | Go   | Rob Pike       | 2009          |\n\
+//!      +------+----------------+---------------+\n\
+//!      | Rust | Graydon Hoare  | 2010          |\n\
+//!      +------+----------------+---------------+"
+//! );
+//! ```
+//!
+//! ## Configuration
+//!
+//! ### Span
+//!
+//! You can configure a span for a cell.
+//!
+//! ```
+//! use static_table::static_table;
+//!
+//! // see here we added a row with a span
+//! let table = static_table!([
+//!     [{"programming languages"; 3}],
+//!     ["name", "designed by", "first release"],
+//!     ["C", "Dennis Ritchie", "1972"],
+//!     ["Go", "Rob Pike", "2009"],
+//!     ["Rust", "Graydon Hoare", "2010"],
+//! ]);
+//!
+//! assert_eq!(
+//!     table,
+//!     "+------+----------------+---------------+\n\
+//!      | programming languages                 |\n\
+//!      +------+----------------+---------------+\n\
+//!      | name | designed by    | first release |\n\
+//!      +------+----------------+---------------+\n\
+//!      | C    | Dennis Ritchie | 1972          |\n\
+//!      +------+----------------+---------------+\n\
+//!      | Go   | Rob Pike       | 2009          |\n\
+//!      +------+----------------+---------------+\n\
+//!      | Rust | Graydon Hoare  | 2010          |\n\
+//!      +------+----------------+---------------+"
+//! );
+//!
+//! // see here we added a column which is fully spanned
+//! let table = static_table!([
+//!     [{"\n\nprogramming\nlanguages"}, "name", "designed by", "first release"],
+//!     [{},               "C", "Dennis Ritchie", "1972"],
+//!     [{},               "Go", "Rob Pike", "2009"],
+//!     [{},               "Rust", "Graydon Hoare", "2010"],
+//! ]);
+//!
+//! assert_eq!(
+//!     table,
+//!     "+-------------+------+----------------+---------------+\n\
+//!      |             | name | designed by    | first release |\n\
+//!      +             +------+----------------+---------------+\n\
+//!      | programming | C    | Dennis Ritchie | 1972          |\n\
+//!      + languages   +------+----------------+---------------+\n\
+//!      |             | Go   | Rob Pike       | 2009          |\n\
+//!      +             +------+----------------+---------------+\n\
+//!      |             | Rust | Graydon Hoare  | 2010          |\n\
+//!      +-------------+------+----------------+---------------+"
+//! );
+//! ```
+//!
+//! ### Settings
+//!
+//! You can change a table table settings, such as `THEME`, `MARGIN`, `PADDING` and `ALIGNMENT`, by using a comma separated `KEY=VALUE` pairs syntax.
+//!
+//! ```
+//! use static_table::static_table;
+//!
+//! const INTRO_TABLE: &str = static_table!(
+//!     [
+//!         ["name", "designed by", "first release"],
+//!         ["C", "Dennis Ritchie", "1972"],
+//!         ["Go", "Rob Pike", "2009"],
+//!         ["Rust", "Graydon Hoare", "2010"]
+//!     ],
+//!     THEME = "EXTENDED",
+//!     ALIGNMENT = "RIGHT",
+//!     PADDING = "3, 0, 1, 0",
+//! );
+//!
+//! assert_eq!(
+//!     INTRO_TABLE,
+//!     "╔═══════╦═════════════════╦════════════════╗\n\
+//!      ║       ║                 ║                ║\n\
+//!      ║   name║      designed by║   first release║\n\
+//!      ╠═══════╬═════════════════╬════════════════╣\n\
+//!      ║       ║                 ║                ║\n\
+//!      ║      C║   Dennis Ritchie║            1972║\n\
+//!      ╠═══════╬═════════════════╬════════════════╣\n\
+//!      ║       ║                 ║                ║\n\
+//!      ║     Go║         Rob Pike║            2009║\n\
+//!      ╠═══════╬═════════════════╬════════════════╣\n\
+//!      ║       ║                 ║                ║\n\
+//!      ║   Rust║    Graydon Hoare║            2010║\n\
+//!      ╚═══════╩═════════════════╩════════════════╝"
+//! )
+//! ```
 
-extern crate proc_macro;
+#![allow(clippy::uninlined_format_args)]
+#![warn(
+    rust_2018_idioms,
+    rust_2018_compatibility,
+    rust_2021_compatibility,
+    missing_debug_implementations,
+    unreachable_pub,
+    missing_docs
+)]
+#![deny(unused_must_use)]
 
 use proc_macro_error::proc_macro_error;
 use quote::{quote, ToTokens};
@@ -29,6 +156,61 @@ use tabled::{
     Table,
 };
 
+/// Build a table.
+///
+/// # Syntax
+///
+/// The input is expected to look like an array.
+///
+/// ```
+/// # use static_table::static_table;
+/// static_table!([["a", "b"], ["c", "d"]]);
+/// ```
+///
+/// Optionally you can set a column span, using the following syntax.
+///
+/// ```
+/// # use static_table::static_table;
+/// static_table!([[{"a"; 2}], ["c", "d"]]);
+/// ```
+///
+/// Optionally you can set a row span, using the following syntax.
+///
+/// ```
+/// # use static_table::static_table;
+/// static_table!([[{"a"}, "b"], [{ }, "d"]]);
+/// ```
+///
+/// Optionally you can add settings to the table, using the following syntax.
+///
+/// ```
+/// # use static_table::static_table;
+/// static_table!([["a", "b"], ["c", "d"]], THEME = "ROUNDED");
+/// ```
+///
+/// Supported settings are:
+///
+/// - THEME
+/// - ALIGNMNET
+/// - PADDING
+/// - MARGIN
+#[proc_macro]
+#[proc_macro_error]
+pub fn static_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let table = parse_macro_input!(input as TableStruct);
+    let table = build_table(&table);
+    match table {
+        Ok(table) => {
+            let out = quote! {
+                #table
+            };
+
+            proc_macro::TokenStream::from(out)
+        }
+        Err(err) => proc_macro::TokenStream::from(err.into_compile_error()),
+    }
+}
+
 #[allow(dead_code)]
 struct MatrixRow {
     bracket_token: token::Bracket,
@@ -46,7 +228,7 @@ enum MatrixRowElements {
 }
 
 impl Parse for MatrixRow {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
         let content;
         let bracket_token = bracketed!(content in input);
 
@@ -101,7 +283,7 @@ enum ScopeVal {
 }
 
 impl Parse for ExprVal {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
         if input.peek(Brace) {
             let mut content;
             let brace_token = braced!(content in input);
@@ -186,7 +368,7 @@ enum MatrixData {
 }
 
 impl Parse for MatrixInput {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
         let content;
         let bracket_token = bracketed!(content in input);
 
@@ -241,7 +423,7 @@ struct KeyValue<V> {
 }
 
 impl<V: Parse> Parse for KeyValue<V> {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
         Ok(Self {
             key: input.parse()?,
             token: input.parse()?,
@@ -258,7 +440,7 @@ struct TableStruct {
 }
 
 impl Parse for TableStruct {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
         let matrix = input.parse()?;
         let mut comma_token = None;
         let mut settings = Punctuated::new();
@@ -296,7 +478,7 @@ struct Padding<T> {
 }
 
 impl<T: Parse> Parse for Padding<T> {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
         Ok(Self {
             left: input.parse()?,
             comma1_tk: input.parse()?,
@@ -588,18 +770,18 @@ fn apply_theme(table: &mut tabled::Table, name: &str) {
 
 fn build_padding(pad: Padding<LitInt>) -> syn::Result<padding::Padding> {
     let left = pad.left.base10_parse::<usize>()?;
-    let right = pad.left.base10_parse::<usize>()?;
-    let top = pad.left.base10_parse::<usize>()?;
-    let bottom = pad.left.base10_parse::<usize>()?;
+    let right = pad.right.base10_parse::<usize>()?;
+    let top = pad.top.base10_parse::<usize>()?;
+    let bottom = pad.bottom.base10_parse::<usize>()?;
 
     Ok(padding::Padding::new(left, right, top, bottom))
 }
 
 fn build_margin(pad: Padding<LitInt>) -> syn::Result<Margin> {
     let left = pad.left.base10_parse::<usize>()?;
-    let right = pad.left.base10_parse::<usize>()?;
-    let top = pad.left.base10_parse::<usize>()?;
-    let bottom = pad.left.base10_parse::<usize>()?;
+    let right = pad.right.base10_parse::<usize>()?;
+    let top = pad.top.base10_parse::<usize>()?;
+    let bottom = pad.bottom.base10_parse::<usize>()?;
 
     Ok(Margin::new(left, right, top, bottom))
 }
@@ -715,21 +897,4 @@ fn create_table(mat: &MatrixInput) -> Result<Table> {
     }
 
     Ok(table)
-}
-
-#[proc_macro]
-#[proc_macro_error]
-pub fn static_table(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let table = parse_macro_input!(input as TableStruct);
-    let table = build_table(&table);
-    match table {
-        Ok(table) => {
-            let out = quote! {
-                #table
-            };
-
-            proc_macro::TokenStream::from(out)
-        }
-        Err(err) => proc_macro::TokenStream::from(err.into_compile_error()),
-    }
 }

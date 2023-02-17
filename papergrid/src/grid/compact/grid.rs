@@ -1,5 +1,5 @@
-//! The module contains a [`CompactGrid`] structure, 
-//! which is a relatively strict grid. 
+//! The module contains a [`CompactGrid`] structure,
+//! which is a relatively strict grid.
 
 use core::{
     borrow::Borrow,

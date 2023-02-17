@@ -1,5 +1,5 @@
 //! A module which contains configuration of a [`CompactGrid`] which is responsible for grid configuration.
-//! 
+//!
 //! [`CompactGrid`]: crate::grid::compact::CompactGrid
 
 use crate::color::StaticColor;
