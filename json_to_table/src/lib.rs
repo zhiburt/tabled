@@ -75,13 +75,14 @@
 //!
 //! [`Table`]: tabled::Table
 
+#![deny(unused_must_use)]
 #![warn(
     missing_docs,
     rust_2018_idioms,
     missing_debug_implementations,
     unreachable_pub
 )]
-#![deny(unused_must_use)]
+#![allow(clippy::uninlined_format_args)]
 
 use serde_json::Value;
 

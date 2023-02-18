@@ -43,7 +43,6 @@ fn print_table(message: String) {
     let main_table = create_main_table(&message);
     let main_table_width = main_table.total_width();
     let small_table_row = create_small_table_list(main_table_width);
-
     println!("{small_table_row}");
     println!("{main_table}");
 }

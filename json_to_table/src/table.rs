@@ -388,7 +388,7 @@ mod json_to_table {
                             .total_width()
                     })
                     .max()
-                    .unwrap_or(0);
+                    .unwrap_or_default();
 
                 let width = match width {
                     Some(width) => width,
@@ -421,7 +421,7 @@ mod json_to_table {
                             .into_iter()
                             .map(|(_, value)| value.total_width())
                             .max()
-                            .unwrap_or(0);
+                            .unwrap_or_default();
 
                         width + max_keys_width
                     }
@@ -617,7 +617,7 @@ mod json_to_table {
                         list.into_iter()
                             .map(|value| value.total_width())
                             .max()
-                            .unwrap_or(0)
+                            .unwrap_or_default()
                     }
                 };
                 let map_length = list.len();

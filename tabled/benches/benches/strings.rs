@@ -4,7 +4,7 @@ pub fn string_width(c: &mut Criterion) {
     let mut group = c.benchmark_group("string_width");
     for size in [1 << 8, 1 << 15, 1 << 22] {
         group.bench_with_input(
-            BenchmarkId::from_parameter(format!("tabled-{}", size)),
+            BenchmarkId::from_parameter(format!("tabled-{size}")),
             &size,
             |b, &size| {
                 let text = black_box(build_string(size));
@@ -13,7 +13,7 @@ pub fn string_width(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::from_parameter(format!("tabled_master-{}", size)),
+            BenchmarkId::from_parameter(format!("tabled_master-{size}")),
             &size,
             |b, &size| {
                 let text = black_box(build_string(size));
@@ -28,7 +28,7 @@ pub fn string_width_multiline(c: &mut Criterion) {
     let mut group = c.benchmark_group("string_width_multiline");
     for size in [1 << 8, 1 << 15, 1 << 22] {
         group.bench_with_input(
-            BenchmarkId::from_parameter(format!("tabled-{}", size)),
+            BenchmarkId::from_parameter(format!("tabled-{size}")),
             &size,
             |b, &size| {
                 let text = black_box(build_string_multiline(size));
@@ -37,7 +37,7 @@ pub fn string_width_multiline(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::from_parameter(format!("tabled_master-{}", size)),
+            BenchmarkId::from_parameter(format!("tabled_master-{size}")),
             &size,
             |b, &size| {
                 let text = black_box(build_string_multiline(size));
@@ -52,7 +52,7 @@ pub fn wrap(c: &mut Criterion) {
     let mut group = c.benchmark_group("wrap");
     for size in [1 << 8, 1 << 15, 1 << 22] {
         group.bench_with_input(
-            BenchmarkId::from_parameter(format!("tabled-{}", size)),
+            BenchmarkId::from_parameter(format!("tabled-{size}")),
             &size,
             |b, &size| {
                 let text = black_box(build_string(size));
@@ -67,13 +67,13 @@ pub fn wrap(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::from_parameter(format!("tabled_master-{}", size)),
+            BenchmarkId::from_parameter(format!("tabled_master-{size}")),
             &size,
             |b, &size| {
                 let text = black_box(build_string(size));
                 b.iter(|| {
                     black_box(
-                        tabled_master::Table::new(&[&text])
+                        tabled_master::Table::new([&text])
                             .with(tabled_master::Width::wrap(1))
                             .to_string(),
                     )

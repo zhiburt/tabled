@@ -225,7 +225,7 @@ fn write_header_template(
     max_field_width: usize,
     max_values_length: usize,
 ) -> std::fmt::Result {
-    let mut template = format!("-[ RECORD {} ]-", index);
+    let mut template = format!("-[ RECORD {index} ]-");
     let default_template_length = template.len();
 
     // 3 - is responsible for ' | ' formatting
@@ -251,7 +251,7 @@ fn write_header_template(
         }
     }
 
-    write!(f, "{}", template)?;
+    write!(f, "{template}")?;
 
     Ok(())
 }
@@ -262,7 +262,7 @@ fn write_record(
     value: &str,
     max_field_width: usize,
 ) -> std::fmt::Result {
-    write!(f, "{:width$} | {}", field, value, width = max_field_width)
+    write!(f, "{field:max_field_width$} | {value}")
 }
 
 fn truncate(text: &mut String, max: usize, suffix: &str) {

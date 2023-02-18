@@ -145,6 +145,6 @@ where
     }
 
     fn headers() -> Vec<Cow<'static, str>> {
-        (0..N).map(|i| Cow::Owned(format!("{}", i))).collect()
+        (0..N).map(|i| Cow::Owned(format!("{i}"))).collect()
     }
 }

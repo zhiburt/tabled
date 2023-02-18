@@ -98,6 +98,5 @@ fn main() {
     let table = table
         .with(Style::modern())
         .with(Modify::new(Columns::new(1..)).with(highlight));
-
     println!("{table}");
 }

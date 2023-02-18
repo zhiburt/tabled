@@ -167,30 +167,29 @@ fn info_from_fields(
     let mut values = Vec::new();
     let mut reorder = HashMap::new();
 
+    let mut skipped = 0;
     for result in fields {
         let (i, field, attributes) = result?;
         if attributes.is_ignored() {
+            skipped += 1;
             continue;
         }
 
         if let Some(order) = attributes.order {
             if order >= count_fields {
                 return Err(Error::message(format!(
-                    "An order index '{}' is out of fields scope",
-                    order
+                    "An order index '{order}' is out of fields scope"
                 )));
             }
 
-            reorder.insert(order, i);
+            reorder.insert(order, i - skipped);
         }
 
         let header = field_headers(field, i, &attributes, header_prefix);
-
         headers.push(header);
 
         let field_name = field_name(i, field);
         let value = get_field_fields(&field_name, &attributes);
-
         values.push(value);
     }
 
@@ -260,7 +259,7 @@ fn field_headers(
     if prefix.is_empty() {
         quote!(vec![::std::borrow::Cow::Borrowed(#header_name)])
     } else {
-        let name = format!("{}{}", prefix, header_name);
+        let name = format!("{prefix}{header_name}");
         quote!(vec![::std::borrow::Cow::Borrowed(#name)])
     }
 }
@@ -394,7 +393,7 @@ fn variant_var_name(index: usize, field: &Field) -> TokenStream {
     match &field.ident {
         Some(indent) => indent.to_token_stream(),
         None => Ident::new(
-            format!("x_{}", index).as_str(),
+            format!("x_{index}").as_str(),
             proc_macro2::Span::call_site(),
         )
         .to_token_stream(),

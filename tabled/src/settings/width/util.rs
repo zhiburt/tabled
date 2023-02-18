@@ -128,7 +128,7 @@ pub(crate) fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
             break;
         };
 
-        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or_default();
 
         // We cut the chars which takes more then 1 symbol to display,
         // in order to archive the necessary width.

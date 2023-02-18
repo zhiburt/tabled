@@ -2300,6 +2300,43 @@ fn min_width_is_used_after_margin() {
     );
 }
 
+#[test]
+fn wrap_keeping_words_0() {
+    let data = vec![["Hello world"]];
+    let table = tabled::Table::new(data)
+        .with(Width::wrap(8).keep_words())
+        .to_string();
+
+    println!("{table}");
+
+    assert_eq!(tabled::grid::util::string::string_width_multiline(&table), 8);
+
+    #[cfg(feature = "color")]
+    let expected = static_table!(
+        "+------+"
+        "| 0    |"
+        "+------+"
+        "| Hell |"
+        "| o    |"
+        "| worl |"
+        "| d    |"
+        "+------+"
+    );
+
+    #[cfg(not(feature = "color"))]
+    let expected = static_table!(
+        "+------+"
+        "| 0    |"
+        "+------+"
+        "| Hell |"
+        "| o wo |"
+        "| rld  |"
+        "+------+"
+    );
+
+    assert_eq!(table, expected,);
+}
+
 #[cfg(feature = "derive")]
 mod derived {
     use super::*;

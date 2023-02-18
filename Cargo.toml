@@ -8,3 +8,6 @@ members = [
     "static_table",
     "table_to_html",
 ]
+
+[workspace.package]
+rust-version = "1.58.1"
