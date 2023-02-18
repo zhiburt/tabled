@@ -6,11 +6,11 @@ authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 repository = "https://github.com/zhiburt/tabled"
 homepage = "https://github.com/zhiburt/tabled"
 documentation = "https://docs.rs/json_to_table"
-license = "MIT"
 keywords = ["table", "print", "pretty-table", "format", "json"]
 categories = ["text-processing", "visualization"]
 readme = "README.md"
 description = "A library for pretty print JSON as a table"
+license = "Unlicense/MIT"
 
 [features]
 color = ["tabled/color"]

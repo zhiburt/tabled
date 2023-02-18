@@ -5,7 +5,7 @@ edition = "2018"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 description = "The library provides a interface to convert a `tabled::Table` into a HTML table (`<table>`)."
 repository = "https://github.com/zhiburt/tabled"
-license = "MIT"
+license = "Unlicense/MIT"
 
 [dependencies]
 tabled = { path = "../tabled", features = ["std"], default-features = false }
