@@ -9,6 +9,10 @@
 )]
 #![allow(clippy::uninlined_format_args)]
 
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
+)]
+
 //! # table_to_html
 //!
 //! The library provides a interface to build a HTML table (`<table>`).
