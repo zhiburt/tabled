@@ -1,5 +1,4 @@
 #![allow(clippy::uninlined_format_args)]
-
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
 )]

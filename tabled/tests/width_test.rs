@@ -2309,7 +2309,10 @@ fn wrap_keeping_words_0() {
 
     println!("{table}");
 
-    assert_eq!(tabled::grid::util::string::string_width_multiline(&table), 8);
+    assert_eq!(
+        tabled::grid::util::string::string_width_multiline(&table),
+        8
+    );
 
     #[cfg(feature = "color")]
     let expected = static_table!(

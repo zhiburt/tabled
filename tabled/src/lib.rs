@@ -264,11 +264,9 @@
 
 #![cfg_attr(not(any(feature = "std", test)), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
-
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
 )]
-
 #![deny(unused_must_use)]
 #![warn(
     missing_docs,

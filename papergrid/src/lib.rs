@@ -1,5 +1,4 @@
 #![cfg_attr(not(any(feature = "std", test)), no_std)]
-
 #![warn(
     rust_2018_idioms,
     rust_2018_compatibility,
@@ -10,7 +9,6 @@
 )]
 #![allow(clippy::uninlined_format_args)]
 #![deny(unused_must_use)]
-
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
 )]
