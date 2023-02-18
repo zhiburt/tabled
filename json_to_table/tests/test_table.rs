@@ -992,3 +992,62 @@ fn test_list_empty_entity_plain_2() {
         )
     );
 }
+
+#[test]
+fn test_multiline_key_height_bigger_then_value() {
+    let value = json!({
+        "config": { "key1": 123, "multi_\n_line_\n_key": false, "key2": {"a long long long key": false} },
+    });
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌────────┬────────┬──────────────────────────────┐\n",
+            "│ config │ key1   │ 123                          │\n",
+            "│        ├────────┼──────────────────────┬───────┤\n",
+            "│        │ key2   │ a long long long key │ false │\n",
+            "│        ├────────┼──────────────────────┴───────┤\n",
+            "│        │ multi_ │ false                        │\n",
+            "│        │ _line_ │                              │\n",
+            "│        │ _key   │                              │\n",
+            "└────────┴────────┴──────────────────────────────┘",
+        )
+    );
+}
+
+#[test]
+fn test_multiline_key_height_less_then_value() {
+    let value = json!({
+        "config": { "key1": 123, "multi_\n_line_\n_key": "1\n2\n3\n4\n5\n6\n7\n", "key2": {"a long long long key": false} },
+    });
+
+    let table = json_to_table(&value)
+        .set_style(Style::modern())
+        .collapse()
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌────────┬────────┬──────────────────────────────┐\n",
+            "│ config │ key1   │ 123                          │\n",
+            "│        ├────────┼──────────────────────┬───────┤\n",
+            "│        │ key2   │ a long long long key │ false │\n",
+            "│        ├────────┼──────────────────────┴───────┤\n",
+            "│        │ multi_ │ 1                            │\n",
+            "│        │ _line_ │ 2                            │\n",
+            "│        │ _key   │ 3                            │\n",
+            "│        │        │ 4                            │\n",
+            "│        │        │ 5                            │\n",
+            "│        │        │ 6                            │\n",
+            "│        │        │ 7                            │\n",
+            "│        │        │                              │\n",
+            "└────────┴────────┴──────────────────────────────┘",
+        )
+    );
+}

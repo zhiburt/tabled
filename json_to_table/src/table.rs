@@ -498,8 +498,6 @@ mod json_to_table {
                         if was_intersection_touched {
                             value.with(BottomLeftChangeSplitToIntersection);
                         }
-
-                        value.with(Width::increase(width));
                     }
 
                     let key = col![key];
@@ -547,22 +545,29 @@ mod json_to_table {
                         }
                     }
 
-                    {
-                        let value_height = value.total_height();
+                    let value_height = value.total_height();
+                    let key_height = key.total_height();
+                    let height = cmp::max(key_height, value_height);
 
+                    value.with(Settings::new(
+                        Width::increase(width),
+                        Height::increase(height),
+                    ));
+
+                    {
                         // set custom chars
                         if i + 1 == map_length {
                             // set for the key
                             key.with(
                                 Settings::default()
                                     .with(Width::increase(max_keys_width))
-                                    .with(Height::increase(value_height))
+                                    .with(Height::increase(height))
                                     .with(SetBottomChars(used_splits, top_intersection)),
                             );
                         } else {
                             key.with(Settings::new(
                                 Width::increase(max_keys_width),
-                                Height::increase(value_height),
+                                Height::increase(height),
                             ));
                         }
                     }
