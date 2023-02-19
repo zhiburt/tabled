@@ -11,7 +11,7 @@ If you're interested in a more friendly one take a look at [`tabled`](https://gi
 use papergrid::{
     height::HeightEstimator,
     records::vec_records::VecRecords,
-    width::{CfgWidthFunction, WidthEstimator},
+    width::{CfgWidthFunc, WidthEstimator},
     AlignmentHorizontal, Borders,
     Entity::Global,
     Estimate, Grid, GridConfig, Indent, Padding,
@@ -57,7 +57,7 @@ fn main() {
         ["", "Just like this", "", ""],
     ];
 
-    let records = VecRecords::new(&data, (2, 4), CfgWidthFunction::from_cfg(&cfg));
+    let records = VecRecords::new(&data, (2, 4), CfgWidthFunc::from_cfg(&cfg));
 
     let mut width = WidthEstimator::default();
     width.estimate(&records, &cfg);

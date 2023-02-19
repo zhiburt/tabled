@@ -1,0 +1,13 @@
+[package]
+name = "show"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+
+[dependencies]
+tabled = { path = "../..", features = ["color", "derive"] }
+crossterm = "0.25.0"
+clap = { version = "3.2.19", features = ["cargo"] }

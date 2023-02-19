@@ -1,0 +1,57 @@
+//! The example can be run by this command
+//! `cargo run --example custom_style`
+
+use tabled::{
+    settings::{
+        alignment::Alignment,
+        object::{FirstRow, Rows},
+        padding::Padding,
+        style::builder::On,
+        style::Style,
+        Modify, ModifyList, Settings,
+    },
+    Table, Tabled,
+};
+
+#[derive(Tabled)]
+struct CodeEditor {
+    name: &'static str,
+    first_release: &'static str,
+    developer: &'static str,
+}
+
+impl CodeEditor {
+    fn new(name: &'static str, first_release: &'static str, developer: &'static str) -> Self {
+        Self {
+            name,
+            first_release,
+            developer,
+        }
+    }
+}
+
+// unfortunately we can't leave it as a blank type, so we need to provide it.
+type TableTheme = Settings<
+    Settings<Settings<Settings, Style<On, On, On, On, On, On>>, Padding>,
+    ModifyList<FirstRow, Alignment>,
+>;
+
+const THEME: TableTheme = Settings::empty()
+    .with(Style::ascii())
+    .with(Padding::new(1, 3, 0, 0))
+    .with(Modify::list(Rows::first(), Alignment::center()));
+
+fn main() {
+    let data = [
+        CodeEditor::new("Sublime Text 3", "2008", "Sublime HQ"),
+        CodeEditor::new("Visual Studio Code", "2015", "Microsoft"),
+        CodeEditor::new("Notepad++", "2003", "Don Ho"),
+        CodeEditor::new("GNU Emacs", "1984", "Richard Stallman"),
+        CodeEditor::new("Neovim", "2015", "Vim community"),
+    ];
+
+    let mut table = Table::new(data);
+    table.with(THEME);
+
+    println!("{table}");
+}

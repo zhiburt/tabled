@@ -13,7 +13,7 @@ pub struct Sides<T> {
 
 impl<T> Sides<T> {
     /// Creates a new object.
-    pub fn new(left: T, right: T, top: T, bottom: T) -> Self {
+    pub const fn new(left: T, right: T, top: T, bottom: T) -> Self {
         Self {
             top,
             bottom,
@@ -21,31 +21,17 @@ impl<T> Sides<T> {
             right,
         }
     }
-}
 
-/// Indent represent a filled space.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Indent {
-    /// A fill character.
-    pub fill: char,
-    /// A number of repeats of a fill character.
-    pub size: usize,
-}
-
-impl Indent {
-    /// Creates a new Indent structure.
-    pub fn new(size: usize, fill: char) -> Self {
-        Self { fill, size }
-    }
-
-    /// Creates a new Indent startucture with space (`' '`) as a fill character.
-    pub fn spaced(size: usize) -> Self {
-        Self { size, fill: ' ' }
-    }
-}
-
-impl Default for Indent {
-    fn default() -> Self {
-        Self { size: 0, fill: ' ' }
+    /// Creates a new object.
+    pub const fn filled(value: T) -> Self
+    where
+        T: Copy,
+    {
+        Self {
+            top: value,
+            bottom: value,
+            left: value,
+            right: value,
+        }
     }
 }

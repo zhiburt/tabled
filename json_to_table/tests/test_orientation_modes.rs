@@ -1,6 +1,6 @@
 use json_to_table::{json_to_table, Orientation};
 use serde_json::json;
-use tabled::{Style, Table};
+use tabled::{settings::style::Style, Table};
 
 #[test]
 fn orientation_test_1() {
@@ -90,8 +90,6 @@ fn orientation_test_2() {
         .set_object_mode(Orientation::Horizontal)
         .set_array_mode(Orientation::Horizontal)
         .to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,

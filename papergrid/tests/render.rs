@@ -10,13 +10,19 @@
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
 
-use std::vec;
-
-use papergrid::{width::CfgWidthFunction, AlignmentHorizontal, AlignmentVertical, Entity};
-
-use crate::util::{grid, test_table};
+#![cfg(feature = "std")]
 
 mod util;
+
+use std::vec;
+
+use papergrid::grid::spanned::{config::GridConfig, Grid};
+use papergrid::{
+    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity},
+    records::IterRecords,
+};
+
+use crate::util::{grid, test_table};
 
 test_table!(render_0x0, grid(0, 0).build(), "");
 
@@ -39,15 +45,15 @@ test_table!(
 test_table!(
     render_1x1_empty_with_height_0,
     {
-        let ctrl = CfgWidthFunction::default();
-        let data = vec![vec![papergrid::records::cell_info::CellInfo::new("", &ctrl)]];
-        let records = papergrid::records::vec_records::VecRecords::new(data, (1, 1), &ctrl);
-        let width = util::EstimationList::from(vec![0]);
-        let height = util::EstimationList::from(vec![0]);
-        let mut cfg = papergrid::GridConfig::default();
+        let data = vec![vec![""]];
+        let data = IterRecords::new(data, 1, Some(1));
+
+        let dims = util::ConstantDimension(vec![0], vec![0]);
+
+        let mut cfg = GridConfig::default();
         cfg.set_borders(util::DEFAULT_BORDERS);
 
-        let grid = papergrid::Grid::new(records, &cfg, &width, &height);
+        let grid = Grid::new(&data, &dims, &cfg);
         grid.to_string()
     },
     "++"
@@ -57,13 +63,12 @@ test_table!(
 test_table!(
     render_1x1_empty_with_height_with_width,
     {
-        let ctrl = CfgWidthFunction::default();
-        let data = vec![vec![papergrid::records::cell_info::CellInfo::new("", &ctrl)]];
-        let records = papergrid::records::vec_records::VecRecords::new(data, (1, 1), &ctrl);
-        let width = util::EstimationList::from(vec![10]);
-        let height = util::EstimationList::from(vec![0]);
-        let mut cfg = papergrid::GridConfig::default();
-        cfg.set_borders(papergrid::Borders {
+        let data = vec![vec![String::from("")]];
+        let data = IterRecords::new(&data, 1, Some(1));
+
+        let dims = util::ConstantDimension(vec![10], vec![0]);
+        let mut cfg = GridConfig::default();
+        cfg.set_borders(Borders {
             top_left: Some('┌'),
             top_right: Some('┐'),
             bottom_left: Some('└'),
@@ -73,7 +78,7 @@ test_table!(
             ..Default::default()
         });
 
-        let grid = papergrid::Grid::new(records, &cfg, &width, &height);
+        let grid = Grid::new(data, &dims, &cfg);
         grid.to_string()
     },
     "┌──────────┐"
