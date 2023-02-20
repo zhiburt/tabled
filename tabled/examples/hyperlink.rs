@@ -44,7 +44,7 @@ fn main() {
         Distribution::new(debian_repeat, false),
     ];
 
-    let mut table = Table::from_iter(&data);
+    let mut table = Table::new(&data);
     table
         .with(Style::ascii_rounded())
         .with(Alignment::left())
@@ -52,7 +52,7 @@ fn main() {
 
     println!("{table}");
 
-    let mut table = Table::from_iter(&data);
+    let mut table = Table::new(&data);
     table
         .with(Style::ascii_rounded())
         .with(Alignment::left())
