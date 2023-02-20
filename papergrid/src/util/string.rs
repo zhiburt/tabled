@@ -6,18 +6,60 @@
 
 /// Returns a string width with correction to tab width.
 pub fn string_width_tab(text: &str, tab_width: usize) -> usize {
-    let width = string_width(text);
-    let count_tabs = count_tabs(text);
+    #[cfg(not(feature = "color"))]
+    {
+        __string_width_tab(text, tab_width)
+    }
 
-    width + count_tabs * tab_width
+    #[cfg(feature = "color")]
+    {
+        // we need to strip ansi because of terminal links
+        // and they're can't be stripped by ansi_str.
+
+        ansitok::parse_ansi(text)
+            .filter(|e| e.kind() == ansitok::ElementKind::Text)
+            .map(|e| &text[e.start()..e.end()])
+            .map(|e| __string_width_tab(e, tab_width))
+            .sum()
+    }
+}
+
+fn __string_width_tab(text: &str, tab_width: usize) -> usize {
+    text.chars().fold(0, |acc, c| {
+        if c == '\t' {
+            acc + tab_width
+        } else {
+            let w = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+            acc + w
+        }
+    })
 }
 
 /// Returns a max per line string width with correction to tab width.
 pub fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
-    text.lines()
-        .map(|line| string_width_tab(line, tab_width))
-        .max()
-        .unwrap_or(0)
+    #[cfg(not(feature = "color"))]
+    {
+        let (acc, max) = text.chars().fold((0, 0), |(acc, max), c| {
+            if c == '\t' {
+                (acc + tab_width, max)
+            } else if c == '\n' {
+                (0, std::cmp::max(acc, max))
+            } else {
+                let w = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+                (acc + w, max)
+            }
+        });
+    
+        std::cmp::max(acc, max)
+    }
+
+    #[cfg(feature = "color")]
+    {
+        text.lines()
+            .map(|line| string_width_tab(line, tab_width))
+            .max()
+            .unwrap_or(0)
+    }
 }
 
 /// Returns a string width.

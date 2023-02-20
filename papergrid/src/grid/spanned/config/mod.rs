@@ -9,8 +9,9 @@ mod offset;
 
 use std::collections::HashMap;
 
-use crate::color::AnsiColor;
+use crate::color::{AnsiColor, StaticColor};
 use crate::config::{AlignmentHorizontal, AlignmentVertical, Entity, Indent, Position, Sides};
+use crate::grid::compact::CompactConfig;
 use borders_config::BordersConfig;
 
 pub use self::{entity_map::EntityMap, formatting::Formatting, offset::Offset};
@@ -672,6 +673,65 @@ impl GridConfig {
 impl From<&GridConfig> for GridConfig {
     fn from(value: &GridConfig) -> Self {
         value.clone()
+    }
+}
+
+impl From<CompactConfig> for GridConfig {
+    fn from(compact: CompactConfig) -> Self {
+        use Entity::Global;
+
+        let mut cfg = Self::default();
+        cfg.set_padding(Global, *compact.get_padding());
+        cfg.set_padding_color(
+            Global,
+            sides_static_color_to_ansi_color(compact.get_padding_color()),
+        );
+        cfg.set_margin(*compact.get_margin());
+        cfg.set_margin_color(sides_static_color_to_ansi_color(compact.get_margin_color()));
+        cfg.set_alignment_horizontal(Global, compact.get_alignment_horizontal());
+        cfg.set_borders(*compact.get_borders());
+        cfg.set_borders_color(borders_static_color_to_ansi_color(
+            *compact.get_borders_color(),
+        ));
+        cfg.set_tab_width(compact.get_tab_width());
+
+        if let Some(line) = compact.get_first_horizontal_line() {
+            cfg.set_horizontal_line(
+                1,
+                HorizontalLine {
+                    intersection: line.intersection,
+                    left: line.connect1,
+                    right: line.connect2,
+                    main: Some(line.main),
+                },
+            );
+        }
+
+        cfg
+    }
+}
+
+fn sides_static_color_to_ansi_color(b: Sides<StaticColor>) -> Sides<AnsiColor<'static>> {
+    Sides::new(b.left.into(), b.right.into(), b.top.into(), b.bottom.into())
+}
+
+fn borders_static_color_to_ansi_color(b: crate::config::Borders<StaticColor>) -> BordersColor {
+    BordersColor {
+        left: b.left.map(|c| c.into()),
+        right: b.right.map(|c| c.into()),
+        top: b.top.map(|c| c.into()),
+        bottom: b.bottom.map(|c| c.into()),
+        bottom_intersection: b.bottom_intersection.map(|c| c.into()),
+        bottom_left: b.bottom_left.map(|c| c.into()),
+        bottom_right: b.bottom_right.map(|c| c.into()),
+        horizontal: b.horizontal.map(|c| c.into()),
+        intersection: b.intersection.map(|c| c.into()),
+        left_intersection: b.left_intersection.map(|c| c.into()),
+        right_intersection: b.right_intersection.map(|c| c.into()),
+        top_intersection: b.top_intersection.map(|c| c.into()),
+        top_left: b.top_left.map(|c| c.into()),
+        top_right: b.top_right.map(|c| c.into()),
+        vertical: b.vertical.map(|c| c.into()),
     }
 }
 

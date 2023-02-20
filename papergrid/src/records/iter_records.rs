@@ -10,7 +10,7 @@ pub struct IterRecords<I> {
 
 impl<I> IterRecords<I> {
     /// Returns a new [IterRecords] object.
-    pub fn new(iter: I, count_columns: usize, count_rows: Option<usize>) -> Self {
+    pub const fn new(iter: I, count_columns: usize, count_rows: Option<usize>) -> Self {
         Self {
             iter,
             count_columns,

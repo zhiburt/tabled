@@ -174,9 +174,8 @@ impl<R, D> TableOption<R, D, GridConfig> for Alignment {
 
 impl<R, D> TableOption<R, D, CompactConfig> for Alignment {
     fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
-        match self.inner {
-            Horizontal(a) => *cfg = cfg.set_alignment_horizontal(a),
-            Vertical(a) => *cfg = cfg.set_alignment_vertical(a),
+        if let Horizontal(a) = self.inner {
+            *cfg = cfg.set_alignment_horizontal(a)
         }
     }
 }

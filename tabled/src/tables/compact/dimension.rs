@@ -3,32 +3,25 @@
 //! [`CompactTable`]: crate::tables::compact::CompactTable
 
 use crate::{
-    grid::{
-        compact::CompactConfig,
-        dimension::{Dimension, Estimate},
-    },
+    grid::dimension::{Dimension, Estimate},
     records::Records,
 };
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-use crate::grid::spanned::GridConfig;
-
 /// A constant size dimension or a value dimension.
 #[derive(Debug, Clone, Copy)]
-pub struct ConstantDimension<const ROWS: usize, const COLUMNS: usize> {
-    width: ConstSize<COLUMNS>,
+pub struct ConstantDimension<const COLUMNS: usize, const ROWS: usize> {
     height: ConstSize<ROWS>,
+    width: ConstSize<COLUMNS>,
 }
 
-impl<const ROWS: usize, const COLUMNS: usize> ConstantDimension<ROWS, COLUMNS> {
+impl<const COLUMNS: usize, const ROWS: usize> ConstantDimension<COLUMNS, ROWS> {
     /// Returns a new dimension object with a given estimates.
-    pub fn new(width: ConstSize<COLUMNS>, height: ConstSize<ROWS>) -> Self {
+    pub const fn new(width: ConstSize<COLUMNS>, height: ConstSize<ROWS>) -> Self {
         Self { width, height }
     }
 }
 
-impl<const ROWS: usize, const COLUMNS: usize> Dimension for ConstantDimension<ROWS, COLUMNS> {
+impl<const COLUMNS: usize, const ROWS: usize> Dimension for ConstantDimension<COLUMNS, ROWS> {
     fn get_width(&self, column: usize) -> usize {
         match self.width {
             ConstSize::List(list) => list[column],
@@ -44,18 +37,16 @@ impl<const ROWS: usize, const COLUMNS: usize> Dimension for ConstantDimension<RO
     }
 }
 
-impl<const ROWS: usize, const COLUMNS: usize> Estimate<CompactConfig>
-    for ConstantDimension<ROWS, COLUMNS>
+impl<const COLUMNS: usize, const ROWS: usize> From<ConstantDimension<COLUMNS, ROWS>>
+    for (ConstSize<COLUMNS>, ConstSize<ROWS>)
 {
-    fn estimate<R: Records>(&mut self, _: R, _: &CompactConfig) {}
+    fn from(value: ConstantDimension<COLUMNS, ROWS>) -> Self {
+        (value.width, value.height)
+    }
 }
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<const ROWS: usize, const COLUMNS: usize> Estimate<GridConfig>
-    for ConstantDimension<ROWS, COLUMNS>
-{
-    fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
+impl<D, const COLUMNS: usize, const ROWS: usize> Estimate<D> for ConstantDimension<COLUMNS, ROWS> {
+    fn estimate<R: Records>(&mut self, _: R, _: &D) {}
 }
 
 /// Const size represents either a const array values or a single value which responsible for the whole list.

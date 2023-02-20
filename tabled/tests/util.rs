@@ -57,6 +57,21 @@ pub fn create_vector<const ROWS: usize, const COLUMNS: usize>() -> Vec<Obj<COLUM
     arr
 }
 
+pub fn create_matrix<const ROWS: usize, const COLUMNS: usize>() -> Vec<Vec<String>> {
+    let mut arr = Vec::with_capacity(ROWS);
+    for row in 0..ROWS {
+        let mut data = Vec::with_capacity(COLUMNS);
+        for column in 0..COLUMNS {
+            let text = format!("{row}-{column}");
+            data.push(text);
+        }
+
+        arr.push(data);
+    }
+
+    arr
+}
+
 #[derive(Debug)]
 pub struct Obj<const N: usize> {
     data: Vec<String>,
@@ -126,3 +141,13 @@ macro_rules! test_table {
 }
 
 pub(crate) use test_table;
+
+macro_rules! assert_table {
+    ($table:expr, $($line:expr)*) => {
+        let table = $table.to_string();
+        println!("{}", table);
+        assert_eq!(table, crate::util::static_table!($($line)*));
+    };
+}
+
+pub(crate) use assert_table;

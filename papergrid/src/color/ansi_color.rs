@@ -3,7 +3,7 @@ use std::{
     fmt::{self, Write},
 };
 
-use super::Color;
+use super::{Color, StaticColor};
 
 /// The structure represents a ANSI color by suffix and prefix.
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
@@ -73,4 +73,13 @@ fn parse_ansi_color(s: &str) -> Option<AnsiColor<'static>> {
     let end = block.end().to_string();
 
     Some(AnsiColor::new(start.into(), end.into()))
+}
+
+impl From<StaticColor> for AnsiColor<'static> {
+    fn from(value: StaticColor) -> Self {
+        Self::new(
+            Cow::Borrowed(value.get_prefix()),
+            Cow::Borrowed(value.get_suffix()),
+        )
+    }
 }

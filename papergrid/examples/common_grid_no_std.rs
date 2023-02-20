@@ -6,8 +6,6 @@ use papergrid::{
 };
 
 fn main() {
-    let cfg = generate_table_config();
-
     let data = [
         ["Papergrid", "is a library", "for print tables", "!"],
         [
@@ -17,9 +15,10 @@ fn main() {
             "H\ne\nl\nl\no",
         ],
     ];
-    let records = IterRecords::new(data, 4, None);
 
-    let dim = ConstDims(&[20, 15, 40, 3], 1);
+    let records = IterRecords::new(data, 4, None);
+    let dim = ConstDims(&[20, 15, 40, 3], 4);
+    let cfg = generate_table_config();
 
     let grid = CompactGrid::new(records, &dim, &cfg);
 
@@ -51,7 +50,7 @@ fn generate_table_config() -> CompactConfig {
         .set_padding(Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),
-            Indent::spaced(0),
+            Indent::spaced(3),
             Indent::spaced(0),
         ))
 }

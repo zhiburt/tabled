@@ -23,12 +23,12 @@ impl StaticColor {
 
 impl StaticColor {
     /// Gets a reference to a prefix.
-    pub fn get_prefix(&self) -> &str {
+    pub fn get_prefix(&self) -> &'static str {
         self.prefix
     }
 
     /// Gets a reference to a suffix.
-    pub fn get_suffix(&self) -> &str {
+    pub fn get_suffix(&self) -> &'static str {
         self.suffix
     }
 }

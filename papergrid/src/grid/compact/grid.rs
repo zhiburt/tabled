@@ -9,7 +9,7 @@ use core::{
 use crate::{
     color::{Color, StaticColor},
     colors::{Colors, NoColors},
-    config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent, Line, Sides},
+    config::{AlignmentHorizontal, Borders, Indent, Line, Sides},
     dimension::Dimension,
     records::Records,
     util::string::string_width_tab,
@@ -143,7 +143,6 @@ fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
     let margin_color = cfg.get_margin_color();
     let pad = create_padding(cfg);
     let align = cfg.get_alignment_horizontal();
-    let valign = cfg.get_alignment_vertical();
     let tab_size = cfg.get_tab_width();
     let mar = (
         (margin.left, margin_color.left),
@@ -217,25 +216,18 @@ fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
             print_indent2(f, margin.right, margin_color.right)?;
         }
 
-        let height = dims.get_height(row);
-
-        if height > 0 {
-            if new_line {
-                f.write_char('\n')?;
-            }
-
-            let columns = columns
-                .enumerate()
-                .map(|(col, text)| (text, colors.get_color((row, col))));
-
-            let widths = widths.clone();
-            print_grid_row(
-                f, columns, widths, height, mar, pad, vert, align, valign, tab_size,
-            )?;
-
-            new_line = true;
+        if new_line {
+            f.write_char('\n')?;
         }
 
+        let columns = columns
+            .enumerate()
+            .map(|(col, text)| (text, colors.get_color((row, col))));
+
+        let widths = widths.clone();
+        print_grid_row(f, columns, widths, mar, pad, vert, align, tab_size)?;
+
+        new_line = true;
         row += 1;
     }
 
@@ -270,14 +262,12 @@ type ColoredIndent = (Indent, StaticColor);
 #[allow(clippy::too_many_arguments)]
 fn print_grid_row<F, I, T, C, D>(
     f: &mut F,
-    mut columns: I,
+    columns: I,
     widths: D,
-    height: usize,
     mar: (ColoredIndent, ColoredIndent),
     pad: Sides<ColoredIndent>,
     vert: (BorderChar, BorderChar, BorderChar),
     align: AlignmentHorizontal,
-    valign: AlignmentVertical,
     tab_size: usize,
 ) -> fmt::Result
 where
@@ -287,33 +277,19 @@ where
     C: Color,
     D: Iterator<Item = usize> + Clone,
 {
-    {
-        let top_indent = top_indent(pad.top.0.size, valign, 1, height);
-        if top_indent > 0 {
-            for _ in 0..top_indent {
-                print_indent2(f, mar.0 .0, mar.0 .1)?;
-                print_columns_empty(f, widths.clone(), vert)?;
-                print_indent2(f, mar.1 .0, mar.1 .1)?;
+    if pad.top.0.size > 0 {
+        for _ in 0..pad.top.0.size {
+            print_indent2(f, mar.0 .0, mar.0 .1)?;
+            print_columns_empty_colored(f, widths.clone(), vert, pad.top.1)?;
+            print_indent2(f, mar.1 .0, mar.1 .1)?;
 
-                f.write_char('\n')?;
-            }
-        }
-    }
-    {
-        if pad.top.0.size > 0 {
-            for _ in 0..pad.top.0.size {
-                print_indent2(f, mar.0 .0, mar.0 .1)?;
-                print_columns_empty_colored(f, widths.clone(), vert, pad.top.1)?;
-                print_indent2(f, mar.1 .0, mar.1 .1)?;
-
-                f.write_char('\n')?;
-            }
+            f.write_char('\n')?;
         }
     }
 
-    let widths1 = widths.clone();
-    let columns = widths1.map(move |width| {
-        let (text, color) = columns.next().expect("must be here");
+    let mut widths1 = widths.clone();
+    let columns = columns.map(move |(text, color)| {
+        let width = widths1.next().expect("must be here");
         (text, color, width)
     });
 
@@ -321,16 +297,12 @@ where
     print_row_columns(f, columns, vert, pad, align, tab_size)?;
     print_indent2(f, mar.1 .0, mar.1 .1)?;
 
-    {
-        if pad.bottom.0.size > 0 {
-            for _ in 0..pad.bottom.0.size {
-                f.write_char('\n')?;
+    for _ in 0..pad.bottom.0.size {
+        f.write_char('\n')?;
 
-                print_indent2(f, mar.0 .0, mar.0 .1)?;
-                print_columns_empty_colored(f, widths.clone(), vert, pad.bottom.1)?;
-                print_indent2(f, mar.1 .0, mar.1 .1)?;
-            }
-        }
+        print_indent2(f, mar.0 .0, mar.0 .1)?;
+        print_columns_empty_colored(f, widths.clone(), vert, pad.bottom.1)?;
+        print_indent2(f, mar.1 .0, mar.1 .1)?;
     }
 
     Ok(())
@@ -414,9 +386,9 @@ fn total_columns_width<D: Dimension>(count_columns: usize, dims: &D) -> usize {
 }
 
 fn count_verticals(cfg: &CompactConfig, count_columns: usize) -> usize {
-    assert!(count_columns > 1);
+    assert!(count_columns > 0);
 
-    let count_verticals = count_columns - 2;
+    let count_verticals = count_columns - 1;
     let borders = cfg.get_borders();
     borders.has_vertical() as usize * count_verticals
         + borders.has_left() as usize
@@ -490,34 +462,6 @@ fn print_columns_empty_colored<F: Write, I: Iterator<Item = usize>>(
         color.fmt_prefix(f)?;
         repeat_char(f, ' ', width)?;
         color.fmt_suffix(f)?;
-    }
-
-    if let Some((c, color)) = borders.2 {
-        print_char(f, c, color)?;
-    }
-
-    Ok(())
-}
-
-fn print_columns_empty<F: Write, I: Iterator<Item = usize>>(
-    f: &mut F,
-    mut columns: I,
-    borders: (BorderChar, BorderChar, BorderChar),
-) -> Result<(), fmt::Error> {
-    if let Some((c, color)) = borders.0 {
-        print_char(f, c, color)?;
-    }
-
-    if let Some(width) = columns.next() {
-        repeat_char(f, ' ', width)?;
-    }
-
-    for width in columns {
-        if let Some((c, color)) = borders.1 {
-            print_char(f, c, color)?;
-        }
-
-        repeat_char(f, ' ', width)?;
     }
 
     if let Some((c, color)) = borders.2 {
@@ -670,26 +614,6 @@ fn prepare_coloring<F: Write>(f: &mut F, clr: &StaticColor, used: &mut StaticCol
     }
 
     Ok(())
-}
-
-fn top_indent(
-    pad_top: usize,
-    valign: AlignmentVertical,
-    cell_height: usize,
-    available: usize,
-) -> usize {
-    let height = available - pad_top;
-    let indent = indent_from_top(valign, height, cell_height);
-
-    indent + pad_top
-}
-
-fn indent_from_top(alignment: AlignmentVertical, available: usize, real: usize) -> usize {
-    match alignment {
-        AlignmentVertical::Top => 0,
-        AlignmentVertical::Bottom => available - real,
-        AlignmentVertical::Center => (available - real) / 2,
-    }
 }
 
 fn calculate_indent(

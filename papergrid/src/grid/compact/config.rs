@@ -4,7 +4,7 @@
 
 use crate::color::StaticColor;
 
-use crate::config::{AlignmentHorizontal, AlignmentVertical, Borders, Indent, Line, Sides};
+use crate::config::{AlignmentHorizontal, Borders, Indent, Line, Sides};
 
 /// This structure represents a settings of a grid.
 ///
@@ -19,7 +19,6 @@ pub struct CompactConfig {
     padding: Sides<Indent>,
     padding_color: Sides<StaticColor>,
     halignment: AlignmentHorizontal,
-    valignment: AlignmentVertical,
     tab_width: usize,
 }
 
@@ -35,7 +34,6 @@ impl CompactConfig {
         Self {
             tab_width: 4,
             halignment: AlignmentHorizontal::Left,
-            valignment: AlignmentVertical::Top,
             horizontal_line1: None,
             borders: Borders::empty(),
             border_colors: Borders::empty(),
@@ -121,17 +119,6 @@ impl CompactConfig {
         self.halignment
     }
 
-    /// Set a horizontal alignment to a given cells.
-    pub const fn set_alignment_vertical(mut self, alignment: AlignmentVertical) -> Self {
-        self.valignment = alignment;
-        self
-    }
-
-    /// Get a alignment vertical.
-    pub const fn get_alignment_vertical(&self) -> AlignmentVertical {
-        self.valignment
-    }
-
     /// Sets colors of border carcass on the grid.
     pub const fn set_borders_color(mut self, borders: Borders<StaticColor>) -> Self {
         self.border_colors = borders;
@@ -145,8 +132,8 @@ impl CompactConfig {
     }
 
     /// Returns a margin color.
-    pub const fn get_margin_color(&self) -> &Sides<StaticColor> {
-        &self.margin_color
+    pub const fn get_margin_color(&self) -> Sides<StaticColor> {
+        self.margin_color
     }
 
     /// Set a padding to a given cells.

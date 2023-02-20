@@ -257,12 +257,13 @@ impl fmt::Display for Table {
     }
 }
 
-impl<T> FromIterator<T> for Table
+impl<T, V> FromIterator<T> for Table
 where
-    T: Tabled,
+    T: IntoIterator<Item = V>,
+    V: Into<String>,
 {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        Self::new(iter)
+        Builder::from_iter(iter.into_iter().map(|i| i.into_iter().map(|s| s.into()))).build()
     }
 }
 

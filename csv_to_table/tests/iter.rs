@@ -48,7 +48,7 @@ fn test_iter() {
 #[cfg(test)]
 #[test]
 fn test_iter_width() {
-    let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes()).width(4);
+    let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes()).width(2);
 
     let table = table.to_string();
 
@@ -103,8 +103,8 @@ fn test_iter_width_zero() {
 #[test]
 fn test_iter_width_and_cols() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes())
-        .width(4)
-        .cols(5);
+        .width(2)
+        .columns(5);
 
     let table = table.to_string();
 
@@ -131,7 +131,7 @@ fn test_iter_width_and_cols() {
 #[cfg(test)]
 #[test]
 fn test_iter_cols() {
-    let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes()).cols(5);
+    let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes()).columns(5);
 
     let table = table.to_string();
 
@@ -212,7 +212,7 @@ fn test_iter_rows() {
 fn test_iter_rows_cols() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes())
         .rows(2)
-        .cols(2);
+        .columns(2);
 
     let table = table.to_string();
 
@@ -233,7 +233,7 @@ fn test_iter_rows_cols() {
 fn test_iter_rows_cols_zero() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes())
         .rows(0)
-        .cols(0);
+        .columns(0);
 
     let table = table.to_string();
 
@@ -319,7 +319,7 @@ fn test_iter_sniff_zero() {
 fn test_iter_sniff_zero_cols() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_2.trim().as_bytes())
         .sniff(0)
-        .cols(3);
+        .columns(3);
 
     let table = table.to_string();
 

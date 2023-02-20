@@ -12,7 +12,7 @@ use super::either_string::EitherString;
 #[derive(Debug)]
 pub struct TruncateContent<'a, I> {
     records: I,
-    width: Width<'a>,
+    width: ExactValue<'a>,
     tab_size: usize,
 }
 
@@ -20,7 +20,7 @@ impl TruncateContent<'_, ()> {
     /// Creates new [`TruncateContent`] object.
     pub fn new<I: IntoRecords>(
         records: I,
-        width: Width<'_>,
+        width: ExactValue<'_>,
         tab_size: usize,
     ) -> TruncateContent<'_, I> {
         TruncateContent {
@@ -52,7 +52,7 @@ where
 #[derive(Debug)]
 pub struct TruncateContentIter<'a, I> {
     iter: I,
-    width: Width<'a>,
+    width: ExactValue<'a>,
     tab_size: usize,
 }
 
@@ -79,7 +79,7 @@ where
 #[derive(Debug)]
 pub struct TruncateContentColumnsIter<'a, I> {
     iter: I,
-    width: Width<'a>,
+    width: ExactValue<'a>,
     tab_size: usize,
     current: usize,
 }
@@ -112,19 +112,37 @@ where
 
 /// A width value.
 #[derive(Debug, Clone)]
-pub enum Width<'a> {
+pub enum ExactValue<'a> {
     /// Const width value.
     Exact(usize),
     /// A list of width values for columns.
     List(Cow<'a, [usize]>),
 }
 
-impl Width<'_> {
+impl<'a> From<&'a [usize]> for ExactValue<'a> {
+    fn from(value: &'a [usize]) -> Self {
+        Self::List(value.into())
+    }
+}
+
+impl From<Vec<usize>> for ExactValue<'_> {
+    fn from(value: Vec<usize>) -> Self {
+        Self::List(value.into())
+    }
+}
+
+impl From<usize> for ExactValue<'_> {
+    fn from(value: usize) -> Self {
+        Self::Exact(value)
+    }
+}
+
+impl ExactValue<'_> {
     /// Get a width by column.
     pub fn get(&self, col: usize) -> usize {
         match self {
-            Width::Exact(val) => *val,
-            Width::List(cols) => cols[col],
+            ExactValue::Exact(val) => *val,
+            ExactValue::List(cols) => cols[col],
         }
     }
 }
