@@ -65,8 +65,8 @@ path = "examples/derive/display_with.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "basic"
-path = "examples/basic.rs"
+name = "table"
+path = "examples/table.rs"
 required-features = ["derive"]
 
 [[example]]
@@ -233,6 +233,11 @@ required-features = []
 name = "compact_table2"
 path = "examples/compact_table2.rs"
 required-features = []
+
+[[example]]
+name = "alphabet"
+path = "examples/alphabet.rs"
+required-features = ["std"]
 
 [features]
 default = ["derive", "macros"]

@@ -54,7 +54,7 @@ fn main() {
         CodeEditor::new("Neovim", "2015", "Vim community"),
     ];
 
-    let table = data.iter().collect::<Table>().with(style).to_string();
+    let table = Table::new(data).with(style).to_string();
 
     println!("{table}");
 }

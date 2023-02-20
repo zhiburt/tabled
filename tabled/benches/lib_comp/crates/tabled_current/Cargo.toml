@@ -1,0 +1,7 @@
+[package]
+name = "tabled_current"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tabled = { path = "../../../..", default-features = false }

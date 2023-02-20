@@ -1,8 +1,6 @@
 //! The example can be run by this command
 //! `cargo run --example basic`
 
-use std::iter::FromIterator;
-
 use tabled::{
     settings::{alignment::Alignment, object::Rows, style::Style, Modify},
     Table, Tabled,
@@ -32,7 +30,7 @@ fn main() {
         Distribution::new("Manjaro", "Arch", true),
     ];
 
-    let mut table = Table::from_iter(&data);
+    let mut table = Table::new(data);
     table
         .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(Alignment::center()));

@@ -49,7 +49,7 @@ pub fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
                 (acc + w, max)
             }
         });
-    
+
         std::cmp::max(acc, max)
     }
 
