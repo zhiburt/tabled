@@ -1,5 +1,5 @@
 //! This module contains [`BorderSpanCorrection`] structure, which can be useful when [`Span`] is used, and
-//! you wan't to fix the intersections symbols which are left intact by default.
+//! you want to fix the intersections symbols which are left intact by default.
 //!
 //! [`Span`]: crate::settings::span::Span
 

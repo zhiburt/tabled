@@ -382,7 +382,7 @@ mod enum_ {
     );
 
     test_enum!(
-        rename_all_enum_inhirited_inside_struct_enum,
+        rename_all_enum_inherited_inside_struct_enum,
         t: #[tabled(rename_all = "snake_case")] {
             #[tabled(inline)]
             VariantName1 { some_field_1: u8, some_field_2: i32 }
@@ -394,7 +394,7 @@ mod enum_ {
     );
 
     test_enum!(
-        rename_all_enum_inhirited_inside_struct_override_by_rename_enum,
+        rename_all_enum_inherited_inside_struct_override_by_rename_enum,
         t: #[tabled(rename_all = "snake_case")] {
             #[tabled(inline)]
             VariantName1 {
@@ -411,7 +411,7 @@ mod enum_ {
     );
 
     test_enum!(
-        rename_all_enum_inhirited_inside_struct_override_by_rename_all_enum,
+        rename_all_enum_inherited_inside_struct_override_by_rename_all_enum,
         t: #[tabled(rename_all = "snake_case")] {
             #[tabled(inline)]
             VariantName1 {
@@ -428,7 +428,7 @@ mod enum_ {
     );
 
     test_enum!(
-        rename_all_variant_inhirited_inside_struct_enum,
+        rename_all_variant_inherited_inside_struct_enum,
         t: #[tabled(rename_all = "snake_case")] {
             #[tabled(inline)]
             #[tabled(rename_all = "snake_case")]
@@ -444,7 +444,7 @@ mod enum_ {
     );
 
     test_enum!(
-        rename_all_variant_inhirited_inside_struct_enum_overridden_by_rename,
+        rename_all_variant_inherited_inside_struct_enum_overridden_by_rename,
         t: #[tabled(rename_all = "snake_case")] {
             #[tabled(inline, rename_all = "snake_case")]
             VariantName1 {
@@ -461,7 +461,7 @@ mod enum_ {
     );
 
     test_enum!(
-        rename_all_variant_inhirited_inside_struct_override_by_rename_all_enum,
+        rename_all_variant_inherited_inside_struct_override_by_rename_all_enum,
         t: #[tabled(rename_all = "snake_case")] {
             #[tabled(rename_all = "snake_case", inline)]
             VariantName1 {
