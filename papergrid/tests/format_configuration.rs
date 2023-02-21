@@ -1,8 +1,11 @@
-use papergrid::{AlignmentHorizontal, AlignmentVertical, Entity, Formatting};
-
-use crate::util::{grid, static_table};
+#![cfg(feature = "std")]
 
 mod util;
+
+use papergrid::config::{AlignmentHorizontal, AlignmentVertical, Entity};
+use papergrid::grid::spanned::config::Formatting;
+
+use crate::util::{grid, static_table};
 
 #[test]
 fn formatting_test() {
@@ -793,7 +796,7 @@ fn formatting_test() {
             .clone()
             .build();
 
-        assert_eq!(table, expected, "test case #{:?} failed", i,);
+        assert_eq!(table, expected, "test case #{i:?} failed");
     }
 }
 

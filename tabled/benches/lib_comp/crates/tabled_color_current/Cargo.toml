@@ -1,0 +1,9 @@
+[package]
+name = "tabled_color_current"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tabled = { path = "../../../..", default-features = false, features = ["color"] }

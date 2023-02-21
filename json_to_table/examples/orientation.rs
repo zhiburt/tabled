@@ -32,7 +32,7 @@ fn main() {
         Orientation::Horizontal
     });
 
-    println!("Vertical mode\n{}", vtable);
-    println!("Horizontal mode\n{}", htable);
-    println!("Custom mode\n{}", ctable);
+    println!("Vertical mode\n{vtable}");
+    println!("Horizontal mode\n{htable}");
+    println!("Custom mode\n{ctable}");
 }

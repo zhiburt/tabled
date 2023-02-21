@@ -1,7 +1,11 @@
 use core::fmt::{self, Display};
 
 use serde_json::Value;
-use tabled::{papergrid::GridConfig, style::RawStyle, Style, Table};
+use tabled::{
+    grid::spanned::GridConfig,
+    settings::style::{RawStyle, Style},
+    Table,
+};
 
 /// Converter of [`Value`] to a table,
 /// with a set of configurations.
@@ -82,7 +86,7 @@ impl<'val, ModeVisitor> JsonTable<'val, ModeVisitor> {
     /// ```
     /// use json_to_table::json_to_table;
     /// use serde_json::json;
-    /// use tabled::{Alignment, Padding, Style, Table};
+    /// use tabled::{settings::{alignment::Alignment, padding::Padding, style::Style}, Table};
     ///
     /// let value = json!({
     ///     "key1": 123,
@@ -110,19 +114,19 @@ impl<'val, ModeVisitor> JsonTable<'val, ModeVisitor> {
     ///    assert_eq!(
     ///        table,
     ///        concat!(
-    ///             "╔═══════╦══════╗\n",  
-    ///             "║    234║   123║\n",  
-    ///             "║       ╠══════╣\n",  
-    ///             "║       ║   234║\n",  
-    ///             "║       ╠══════╣\n",  
-    ///             "║       ║   456║\n",  
-    ///             "╠═══════╬══════╣\n",  
-    ///             "║   key1║   123║\n",  
-    ///             "╠═══════╬════╦═╣\n",  
-    ///             "║  key22║  k1║1║\n",  
-    ///             "║       ╠════╬═╣\n",  
-    ///             "║       ║  k2║2║\n",  
-    ///             "╚═══════╩════╩═╝",
+    ///             "╔═════╦════╗\n",  
+    ///             "║  234║ 123║\n",  
+    ///             "║     ╠════╣\n",  
+    ///             "║     ║ 234║\n",  
+    ///             "║     ╠════╣\n",  
+    ///             "║     ║ 456║\n",  
+    ///             "╠═════╬════╣\n",  
+    ///             "║ key1║ 123║\n",  
+    ///             "╠═════╬══╦═╣\n",  
+    ///             "║key22║k1║1║\n",  
+    ///             "║     ╠══╬═╣\n",  
+    ///             "║     ║k2║2║\n",  
+    ///             "╚═════╩══╩═╝",
     ///        ),
     ///    );
     /// ```
@@ -181,8 +185,16 @@ mod json_to_table {
     use tabled::{
         builder::Builder,
         col,
-        papergrid::{records::Records, util::string_width_multiline},
-        Height, Padding, TableOption, Width,
+        grid::{
+            config::Entity,
+            dimension::{Dimension, Estimate},
+            spanned::config::Offset,
+            util::string::string_width_multiline,
+        },
+        records::Records,
+        settings::{
+            format::Format, height::Height, padding::Padding, width::Width, Settings, TableOption,
+        },
     };
 
     use super::*;
@@ -225,7 +237,7 @@ mod json_to_table {
                         for value in arr {
                             let val =
                                 json_to_table_f(value, config, mode_visitor, false).to_string();
-                            builder.add_record([val]);
+                            builder.push_record([val]);
                         }
                     }
                     Orientation::Horizontal => {
@@ -237,14 +249,11 @@ mod json_to_table {
                         }
 
                         builder.hint_column_size(row.len());
-                        builder.add_record(row);
+                        builder.push_record(row);
                     }
                 }
 
-                let mut table = builder.build();
-                set_table_style(&mut table, config);
-
-                table
+                set_table_style(builder.build(), config)
             }
             Value::Object(map) => {
                 let mut builder = Builder::new();
@@ -259,7 +268,7 @@ mod json_to_table {
                         for (key, value) in map {
                             let val =
                                 json_to_table_f(value, config, mode_visitor, false).to_string();
-                            builder.add_record([key.clone(), val]);
+                            builder.push_record([key.clone(), val]);
                         }
                     }
                     Orientation::Horizontal => {
@@ -273,15 +282,12 @@ mod json_to_table {
                         }
 
                         builder.hint_column_size(map.len());
-                        builder.add_record(keys);
-                        builder.add_record(vals);
+                        builder.push_record(keys);
+                        builder.push_record(vals);
                     }
                 }
 
-                let mut table = builder.build();
-                set_table_style(&mut table, config);
-
-                table
+                set_table_style(builder.build(), config)
             }
             value => {
                 let value = match value {
@@ -296,11 +302,10 @@ mod json_to_table {
 
                 if let Some(value) = value {
                     builder.hint_column_size(1);
-                    builder.add_record([value]);
+                    builder.push_record([value]);
                 }
 
-                let mut table = builder.build();
-                set_table_style(&mut table, config);
+                let mut table = set_table_style(builder.build(), config);
 
                 if !outer {
                     table.with(Style::empty());
@@ -323,9 +328,18 @@ mod json_to_table {
         used_splits: &[usize],
         width: Option<usize>,
     ) -> Table {
+        let wpad = config
+            .cfg
+            .as_ref()
+            .map(|cfg| {
+                let pad = cfg.get_padding(Entity::Global);
+                pad.left.size + pad.right.size
+            })
+            .unwrap_or(2);
+
         match value {
             Value::String(..) | Value::Bool(..) | Value::Number(..) | Value::Null => {
-                let mut table = match value {
+                let table = match value {
                     Value::String(s) => col![s],
                     Value::Bool(b) => col![b],
                     Value::Number(n) => col![n],
@@ -333,17 +347,17 @@ mod json_to_table {
                     _ => unreachable!(),
                 };
 
-                set_table_style(&mut table, config);
+                let mut table = set_table_style(table, config);
 
-                table.with(Width::increase(width.unwrap_or(0)));
-                table.with(SetBottomChars(
-                    used_splits,
-                    table
-                        .get_config()
-                        .get_borders()
-                        .top_intersection
-                        .unwrap_or(' '),
-                ));
+                let mut top_intersection = GetTopIntersection(' ');
+                table.with(&mut top_intersection);
+                let top_intersection = top_intersection.0;
+
+                table.with(
+                    Settings::default()
+                        .with(Width::increase(width.unwrap_or(0)))
+                        .with(SetBottomChars(used_splits, top_intersection)),
+                );
 
                 table
             }
@@ -368,9 +382,13 @@ mod json_to_table {
                 let map_length = obj.len();
                 let max_keys_width = obj
                     .iter()
-                    .map(|(key, _)| col![key].with(NoRightBorders).total_width())
+                    .map(|(key, _)| {
+                        set_table_style(col![key], config)
+                            .with(NoRightBorders)
+                            .total_width()
+                    })
                     .max()
-                    .unwrap_or(0);
+                    .unwrap_or_default();
 
                 let width = match width {
                     Some(width) => width,
@@ -379,7 +397,7 @@ mod json_to_table {
                         let map = obj.iter().enumerate().map(|(i, (key, value))| {
                             let is_last = is_last && i + 1 == map_length;
 
-                            let mut key = col![key];
+                            let mut key = set_table_style(col![key], config);
                             key.with(NoRightBorders);
 
                             let value = json_to_table_r(
@@ -403,7 +421,7 @@ mod json_to_table {
                             .into_iter()
                             .map(|(_, value)| value.total_width())
                             .max()
-                            .unwrap_or(0);
+                            .unwrap_or_default();
 
                         width + max_keys_width
                     }
@@ -418,7 +436,7 @@ mod json_to_table {
                     let mut was_intersection_touched = false;
                     let intersections = if i + 1 < map_length {
                         let (_, (_, value)) = iter.peek().unwrap();
-                        find_top_intersection(value)
+                        find_top_intersection(value, wpad)
                     } else {
                         let mut splits = used_splits.to_owned();
                         if !splits.is_empty() {
@@ -482,14 +500,12 @@ mod json_to_table {
                         }
                     }
 
-                    let mut key = col![key];
-                    set_table_style(&mut key, config);
+                    let key = col![key];
+                    let mut key = set_table_style(key, config);
 
-                    let top_intersection = key
-                        .get_config()
-                        .get_borders()
-                        .top_intersection
-                        .unwrap_or(' ');
+                    let mut top_intersection = GetTopIntersection(' ');
+                    key.with(&mut top_intersection);
+                    let top_intersection = top_intersection.0;
 
                     {
                         key.with(NoRightBorders);
@@ -529,22 +545,34 @@ mod json_to_table {
                         }
                     }
 
-                    {
-                        let value_height = value.total_height();
+                    let value_height = value.total_height();
+                    let key_height = key.total_height();
+                    let height = cmp::max(key_height, value_height);
 
-                        key.with(Width::increase(max_keys_width))
-                            .with(Height::increase(value_height));
-                    }
+                    value.with(Settings::new(
+                        Width::increase(width),
+                        Height::increase(height),
+                    ));
 
                     {
                         // set custom chars
                         if i + 1 == map_length {
                             // set for the key
-                            key.with(SetBottomChars(used_splits, top_intersection));
+                            key.with(
+                                Settings::default()
+                                    .with(Width::increase(max_keys_width))
+                                    .with(Height::increase(height))
+                                    .with(SetBottomChars(used_splits, top_intersection)),
+                            );
+                        } else {
+                            key.with(Settings::new(
+                                Width::increase(max_keys_width),
+                                Height::increase(height),
+                            ));
                         }
                     }
 
-                    builder.add_record([key.to_string(), value.to_string()]);
+                    builder.push_record([key.to_string(), value.to_string()]);
                 }
 
                 let mut table = builder.build();
@@ -594,7 +622,7 @@ mod json_to_table {
                         list.into_iter()
                             .map(|value| value.total_width())
                             .max()
-                            .unwrap_or(0)
+                            .unwrap_or_default()
                     }
                 };
                 let map_length = list.len();
@@ -604,7 +632,7 @@ mod json_to_table {
 
                     let intersections = if i + 1 < map_length {
                         let value = &list[i + 1];
-                        find_top_intersection(value)
+                        find_top_intersection(value, wpad)
                     } else {
                         used_splits.to_owned()
                     };
@@ -663,8 +691,9 @@ mod json_to_table {
 
                     value.with(Width::increase(width));
 
-                    builder.add_record([value.to_string()]);
+                    builder.push_record([value.to_string()]);
                 }
+
                 let mut table = builder.build();
                 table.with(Style::empty()).with(Padding::zero());
                 table
@@ -672,14 +701,14 @@ mod json_to_table {
         }
     }
 
-    fn find_top_intersection(table: &Value) -> Vec<usize> {
+    fn find_top_intersection(table: &Value, padding: usize) -> Vec<usize> {
         let mut intersections = Vec::new();
-        find_top_intersection_r(table, &mut intersections);
+        find_top_intersection_r(table, &mut intersections, padding);
 
         intersections
     }
 
-    fn find_top_intersection_r(table: &Value, chars: &mut Vec<usize>) {
+    fn find_top_intersection_r(table: &Value, chars: &mut Vec<usize>, padding: usize) {
         match table {
             Value::String(_) | Value::Bool(_) | Value::Number(_) | Value::Null => (),
             Value::Object(m) => {
@@ -689,169 +718,183 @@ mod json_to_table {
 
                 let mut max_keys_width = 0;
                 for (key, _) in m.iter() {
-                    let width = string_width_multiline(key) + 2; // + padding
+                    let width = string_width_multiline(key) + padding;
                     max_keys_width = cmp::max(max_keys_width, width);
                 }
 
                 chars.push(max_keys_width);
 
                 let (_, value) = m.iter().next().unwrap();
-                find_top_intersection_r(value, chars);
+                find_top_intersection_r(value, chars, padding);
             }
             Value::Array(list) => {
                 if let Some(value) = list.first() {
-                    find_top_intersection_r(value, chars);
+                    find_top_intersection_r(value, chars, padding);
                 }
             }
         }
     }
 
-    fn set_table_style(table: &mut Table, config: &Config) {
+    fn set_table_style(mut table: Table, config: &Config) -> Table {
         if let Some(cfg) = config.cfg.as_ref() {
-            *table.get_config_mut() = cfg.clone();
+            table.with(Format::config(|c: &mut GridConfig| *c = cfg.clone()));
         }
 
         if let Some(style) = config.style.as_ref() {
             table.with(style);
         }
+
+        table
     }
 
     struct NoTopBorders;
 
-    impl<R> TableOption<R> for NoTopBorders {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
+    impl<R, D> TableOption<R, D, GridConfig> for NoTopBorders {
+        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+            let mut borders = *cfg.get_borders();
             borders.top = None;
             borders.top_intersection = None;
             borders.top_left = None;
             borders.top_right = None;
 
-            table.get_config_mut().set_borders(borders);
+            cfg.set_borders(borders);
         }
     }
 
     struct NoBottomBorders;
 
-    impl<R> TableOption<R> for NoBottomBorders {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
+    impl<R, D> TableOption<R, D, GridConfig> for NoBottomBorders {
+        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+            let mut borders = *cfg.get_borders();
             borders.bottom = None;
             borders.bottom_intersection = None;
             borders.bottom_left = None;
             borders.bottom_right = None;
 
-            table.get_config_mut().set_borders(borders);
+            cfg.set_borders(borders);
         }
     }
 
     struct NoRightBorders;
 
-    impl<R> TableOption<R> for NoRightBorders {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
+    impl<R, D> TableOption<R, D, GridConfig> for NoRightBorders {
+        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+            let mut borders = *cfg.get_borders();
             borders.top_right = None;
             borders.bottom_right = None;
-            borders.vertical_right = None;
-            borders.horizontal_right = None;
+            borders.right = None;
+            borders.right_intersection = None;
 
-            table.get_config_mut().set_borders(borders);
+            cfg.set_borders(borders);
         }
     }
 
     struct NoLeftBorders;
 
-    impl<R> TableOption<R> for NoLeftBorders {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
+    impl<R, D> TableOption<R, D, GridConfig> for NoLeftBorders {
+        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+            let mut borders = *cfg.get_borders();
             borders.top_left = None;
             borders.bottom_left = None;
-            borders.vertical_left = None;
-            borders.horizontal_left = None;
+            borders.left = None;
+            borders.left_intersection = None;
 
-            table.get_config_mut().set_borders(borders);
+            cfg.set_borders(borders);
         }
     }
 
     struct TopLeftChangeSplit;
 
-    impl<R> TableOption<R> for TopLeftChangeSplit {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
+    impl<R, D> TableOption<R, D, GridConfig> for TopLeftChangeSplit {
+        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+            let mut borders = *cfg.get_borders();
             borders.top_left = borders.top_intersection;
 
-            table.get_config_mut().set_borders(borders);
+            cfg.set_borders(borders);
         }
     }
 
     struct BottomLeftChangeSplit;
 
-    impl<R> TableOption<R> for BottomLeftChangeSplit {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
-            borders.bottom_left = borders.horizontal_left;
+    impl<R, D> TableOption<R, D, GridConfig> for BottomLeftChangeSplit {
+        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+            let mut borders = *cfg.get_borders();
+            borders.bottom_left = borders.left_intersection;
 
-            table.get_config_mut().set_borders(borders);
+            cfg.set_borders(borders);
         }
     }
 
     struct BottomLeftChangeSplitToIntersection;
 
-    impl<R> TableOption<R> for BottomLeftChangeSplitToIntersection {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
+    impl<R, D> TableOption<R, D, GridConfig> for BottomLeftChangeSplitToIntersection {
+        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+            let mut borders = *cfg.get_borders();
             borders.bottom_left = borders.intersection;
 
-            table.get_config_mut().set_borders(borders);
+            cfg.set_borders(borders);
         }
     }
 
     struct BottomRightChangeToRight;
 
-    impl<R> TableOption<R> for BottomRightChangeToRight {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
-            borders.bottom_right = borders.horizontal_right;
+    impl<R, D> TableOption<R, D, GridConfig> for BottomRightChangeToRight {
+        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+            let mut borders = *cfg.get_borders();
+            borders.bottom_right = borders.right_intersection;
 
-            table.get_config_mut().set_borders(borders);
+            cfg.set_borders(borders);
         }
     }
 
     struct BottomLeftChangeToBottomIntersection;
 
-    impl<R> TableOption<R> for BottomLeftChangeToBottomIntersection {
-        fn change(&mut self, table: &mut Table<R>) {
-            let mut borders = table.get_config().get_borders().clone();
+    impl<R, D> TableOption<R, D, GridConfig> for BottomLeftChangeToBottomIntersection {
+        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+            let mut borders = *cfg.get_borders();
             borders.bottom_left = borders.bottom_intersection;
 
-            table.get_config_mut().set_borders(borders);
+            cfg.set_borders(borders);
         }
     }
 
     struct SetBottomChars<'a>(&'a [usize], char);
 
-    impl<R> TableOption<R> for SetBottomChars<'_>
+    impl<R, D> TableOption<R, D, GridConfig> for SetBottomChars<'_>
     where
         R: Records,
+        for<'a> &'a R: Records,
+        D: Dimension + Estimate<GridConfig>,
     {
-        fn change(&mut self, table: &mut Table<R>) {
+        fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dims: &mut D) {
             let split_char = self.1;
 
-            let table_width = table.total_width();
+            dims.estimate(&*records, cfg);
+
+            let table_width = (0..records.count_columns())
+                .map(|col| dims.get_width(col))
+                .sum::<usize>()
+                + cfg.count_vertical(records.count_columns());
             let mut current_width = 0;
+
             for pos in self.0 {
                 current_width += pos;
                 if current_width > table_width {
                     break;
                 }
 
-                table.get_config_mut().override_horizontal_border(
-                    (1, 0),
-                    split_char,
-                    tabled::papergrid::Offset::Begin(current_width),
-                );
+                cfg.override_horizontal_border((1, 0), split_char, Offset::Begin(current_width));
 
                 current_width += 1;
             }
+        }
+    }
+
+    struct GetTopIntersection(char);
+
+    impl<R, D> TableOption<R, D, GridConfig> for GetTopIntersection {
+        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+            self.0 = cfg.get_borders().top_intersection.unwrap_or(' ');
         }
     }
 }

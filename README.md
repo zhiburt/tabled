@@ -1598,10 +1598,16 @@ You can convert some formats to a `Table`.
 You can convert arbitrary `json` to a `Table` using [`json_to_table`](/json_to_table/README.md) library.
 See the **[example](/json_to_table/README.md)**.
 
+### `csv` format
+
+You can convert arbitrary `csv` to a `Table` using [`csv_to_table`](/csv_to_table/README.md) library.
+See the **[example](/csv_to_table/README.md)**.
+
 ### `html` format
 
 You can convert a `Table` into `HTML` `<table>` using [`table_to_html`](/table_to_html/README.md) library.
 See the **[example](/json_to_table/README.md)**.
+
 
 ## Notes
 

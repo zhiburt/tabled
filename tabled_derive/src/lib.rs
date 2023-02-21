@@ -1,3 +1,8 @@
+#![allow(clippy::uninlined_format_args)]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
+)]
+
 extern crate proc_macro;
 
 mod attributes;
@@ -176,8 +181,7 @@ fn info_from_fields(
         if let Some(order) = attributes.order {
             if order >= count_fields {
                 return Err(Error::message(format!(
-                    "An order index '{}' is out of fields scope",
-                    order
+                    "An order index '{order}' is out of fields scope"
                 )));
             }
 
@@ -258,7 +262,7 @@ fn field_headers(
     if prefix.is_empty() {
         quote!(vec![::std::borrow::Cow::Borrowed(#header_name)])
     } else {
-        let name = format!("{}{}", prefix, header_name);
+        let name = format!("{prefix}{header_name}");
         quote!(vec![::std::borrow::Cow::Borrowed(#name)])
     }
 }
@@ -392,7 +396,7 @@ fn variant_var_name(index: usize, field: &Field) -> TokenStream {
     match &field.ident {
         Some(indent) => indent.to_token_stream(),
         None => Ident::new(
-            format!("x_{}", index).as_str(),
+            format!("x_{index}").as_str(),
             proc_macro2::Span::call_site(),
         )
         .to_token_stream(),

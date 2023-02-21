@@ -1,11 +1,15 @@
 [package]
 name = "table_to_html"
 version = "0.1.0"
-edition = "2021"
+edition = "2018"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 description = "The library provides a interface to convert a `tabled::Table` into a HTML table (`<table>`)."
 repository = "https://github.com/zhiburt/tabled"
-license = "MIT"
+license = "Unlicense/MIT"
 
 [dependencies]
-tabled = "0.10.0"
+tabled = { path = "../tabled", features = ["std"], default-features = false }
+dyn-clone = "*"
+
+[dev-dependencies]
+tabled = { path = "../tabled", features = ["std", "derive"], default-features = false }

@@ -1,3 +1,4 @@
+#![cfg_attr(not(any(feature = "std", test)), no_std)]
 #![warn(
     rust_2018_idioms,
     rust_2018_compatibility,
@@ -6,7 +7,11 @@
     unreachable_pub,
     missing_docs
 )]
+#![allow(clippy::uninlined_format_args)]
 #![deny(unused_must_use)]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
+)]
 
 //! Papergrid is a library for generating text-based tables.
 //!
@@ -15,12 +20,12 @@
 //!
 //! # Example
 //!
-//! ```
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
 //! use papergrid::{
-//!     height::HeightEstimator,
-//!     records::vec_records::VecRecords,
-//!     width::{CfgWidthFunction, WidthEstimator},
-//!     Borders, Estimate, Grid, GridConfig,
+//!     records::IterRecords,
+//!     dimension::{Estimate},
+//!     grid::spanned::{config::{Borders, GridConfig}, Grid, ExactDimension},
 //! };
 //!
 //! // Creating a borders structure of a grid.
@@ -34,12 +39,12 @@
 //!     bottom_right: Some('+'),
 //!     bottom_intersection: Some('+'),
 //!     horizontal: Some('-'),
-//!     horizontal_left: Some('+'),
-//!     horizontal_right: Some('+'),
 //!     vertical: Some('|'),
-//!     vertical_left: Some('|'),
-//!     vertical_right: Some('|'),
+//!     left: Some('|'),
+//!     right: Some('|'),
 //!     intersection: Some('+'),
+//!     left_intersection: Some('+'),
+//!     right_intersection: Some('+'),
 //! };
 //!
 //! // Creating a grid config.
@@ -48,18 +53,14 @@
 //!
 //! // Creating an actual data for grid.
 //! let records = vec![vec!["Hello", "World"], vec!["Hi", "World"]];
-//! let records = VecRecords::new(&records, (2, 2), CfgWidthFunction::from_cfg(&cfg));
+//! let records = IterRecords::new(records, 2, None);
 //!
-//! // Estimate width space for rendering.
-//! let mut width = WidthEstimator::default();
-//! width.estimate(&records, &cfg);
-//!
-//! // Estimate height space for rendering.
-//! let mut height = HeightEstimator::default();
-//! height.estimate(&records, &cfg);
+//! // Estimate grid dimension.
+//! let mut dimension = ExactDimension::default();
+//! dimension.estimate(&records, &cfg);
 //!
 //! // Creating a grid.
-//! let grid = Grid::new(&records, &cfg, &width, &height).to_string();
+//! let grid = Grid::new(&records, &dimension, &cfg).to_string();
 //!
 //! assert_eq!(
 //!     grid,
@@ -73,26 +74,10 @@
 //! );
 //! ```
 
-mod color;
-mod config;
-mod estimation;
-mod grid;
-
+pub mod color;
+pub mod colors;
+pub mod config;
+pub mod dimension;
+pub mod grid;
 pub mod records;
 pub mod util;
-
-pub use self::{
-    config::{
-        AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, EntityIterator,
-        Formatting, GridConfig, HorizontalLine, Indent, Margin, Offset, Padding, Position, Sides,
-        VerticalLine,
-    },
-    estimation::{height, width, Estimate},
-    grid::Grid,
-};
-
-#[cfg(feature = "color")]
-pub use crate::{
-    color::{AnsiColor, Color},
-    config::{MarginColor, PaddingColor},
-};

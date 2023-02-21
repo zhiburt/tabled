@@ -1,6 +1,6 @@
 # A library for converting `json` to a table.
 
-It uses https://github.com/zhiburt/tabled to build a table.
+It uses [`tabled`](https://github.com/zhiburt/tabled) as a rendering backend.
 
 ## Usage
 

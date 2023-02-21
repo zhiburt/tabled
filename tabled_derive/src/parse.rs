@@ -132,7 +132,7 @@ impl Parse for TabledAttr {
 
         Err(syn::Error::new(
             name.span(),
-            format!("unexpected attribute: {}", name_str),
+            format!("unexpected attribute: {name_str}"),
         ))
     }
 }

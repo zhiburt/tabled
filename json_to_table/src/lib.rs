@@ -75,13 +75,17 @@
 //!
 //! [`Table`]: tabled::Table
 
+#![deny(unused_must_use)]
 #![warn(
     missing_docs,
     rust_2018_idioms,
     missing_debug_implementations,
     unreachable_pub
 )]
-#![deny(unused_must_use)]
+#![allow(clippy::uninlined_format_args)]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg"
+)]
 
 use serde_json::Value;
 

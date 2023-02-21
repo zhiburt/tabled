@@ -20,48 +20,40 @@ jobs:
         features: ["", "color", "derive", "macros", "color,derive", "color,derive,macros"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
-          toolchain: ${{ matrix.rust || 'stable' }}
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --no-default-features --features=${{ matrix.features }}
+          toolchain: ${{ matrix.rust }}
+      - run: cargo check --all-targets --all --no-default-features --features=${{ matrix.features }}
+
+  msrv:
+    name: MSRV
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@1.61.0
+      # check only the root crate for MSRV
+      - run: cargo build --all-features
 
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
           components: rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+      - run: cargo fmt --all -- --check
 
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
           components: clippy
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all -- -D warnings
+      - run: cargo clippy --all --all-targets -- -D warnings
 
   test:
     name: Unit Test Suite
@@ -72,45 +64,28 @@ jobs:
         target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl]
         features: ["", "color"]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
           target: ${{ matrix.target }}
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --workspace --no-fail-fast --target ${{ matrix.target }} --features=${{ matrix.features }}
+      - run: cargo test --workspace --no-fail-fast --target ${{ matrix.target }} --features=${{ matrix.features }}
 
   test_quickcheck:
     name: A quickcheck test suite
     needs: [check, fmt, clippy]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --workspace --no-fail-fast -- --include-ignored qc_
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --workspace --no-fail-fast -- --include-ignored qc_
 
   coverage:
     name: Coveralls
     needs: [test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:

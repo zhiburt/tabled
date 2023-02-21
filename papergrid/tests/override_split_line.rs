@@ -1,6 +1,8 @@
+#![cfg(feature = "std")]
+
 mod util;
 
-use papergrid::Offset;
+use papergrid::grid::spanned::config::Offset;
 use util::{grid, test_table, DEFAULT_BORDERS};
 
 test_table!(

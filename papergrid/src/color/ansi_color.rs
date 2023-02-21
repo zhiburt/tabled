@@ -1,9 +1,9 @@
 use std::{
     borrow::Cow,
-    fmt::{self, Display, Formatter},
+    fmt::{self, Write},
 };
 
-use super::Color;
+use super::{Color, StaticColor};
 
 /// The structure represents a ANSI color by suffix and prefix.
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
@@ -36,6 +36,17 @@ impl AnsiColor<'_> {
     }
 }
 
+impl Color for AnsiColor<'_> {
+    fn fmt_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
+        f.write_str(&self.prefix)
+    }
+
+    fn fmt_suffix<W: Write>(&self, f: &mut W) -> fmt::Result {
+        f.write_str(&self.suffix)
+    }
+}
+
+#[cfg(feature = "color")]
 impl std::convert::TryFrom<&str> for AnsiColor<'static> {
     type Error = ();
 
@@ -44,6 +55,7 @@ impl std::convert::TryFrom<&str> for AnsiColor<'static> {
     }
 }
 
+#[cfg(feature = "color")]
 impl std::convert::TryFrom<String> for AnsiColor<'static> {
     type Error = ();
 
@@ -52,16 +64,7 @@ impl std::convert::TryFrom<String> for AnsiColor<'static> {
     }
 }
 
-impl Color for AnsiColor<'_> {
-    fn fmt_prefix(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.prefix.fmt(f)
-    }
-
-    fn fmt_suffix(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.suffix.fmt(f)
-    }
-}
-
+#[cfg(feature = "color")]
 fn parse_ansi_color(s: &str) -> Option<AnsiColor<'static>> {
     let mut blocks = ansi_str::get_blocks(s);
     let block = blocks.next()?;
@@ -70,4 +73,13 @@ fn parse_ansi_color(s: &str) -> Option<AnsiColor<'static>> {
     let end = block.end().to_string();
 
     Some(AnsiColor::new(start.into(), end.into()))
+}
+
+impl From<StaticColor> for AnsiColor<'static> {
+    fn from(value: StaticColor) -> Self {
+        Self::new(
+            Cow::Borrowed(value.get_prefix()),
+            Cow::Borrowed(value.get_suffix()),
+        )
+    }
 }
