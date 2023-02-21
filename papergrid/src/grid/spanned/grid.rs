@@ -148,8 +148,6 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
         f.write_char('\n')?;
     }
 
-    let mut rbuf = Vec::with_capacity(count_columns);
-
     let mut records_iter = records.iter_rows().into_iter();
     let mut next_columns = records_iter.next();
 
@@ -188,7 +186,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
             }
             _ => {
                 print_multiline_columns(
-                    f, &mut rbuf, columns, cfg, colors, dims, height, row, line, totalh, shape,
+                    f, columns, cfg, colors, dims, height, row, line, totalh, shape,
                 )?;
             }
         }
@@ -241,7 +239,6 @@ type CLines<'a, S, C> = CellLines<'a, S, <C as Colors>::Color>;
 #[allow(clippy::too_many_arguments)]
 fn print_multiline_columns<'a, F, I, D, C>(
     f: &mut F,
-    buf: &mut Vec<CLines<'a, I::Item, C>>,
     columns: I,
     cfg: &'a GridConfig,
     colors: &'a C,
@@ -259,8 +256,9 @@ where
     D: Dimension,
     C: Colors,
 {
-    collect_columns(buf, columns, cfg, colors, dimension, height, row);
-    print_columns_lines(f, buf, height, cfg, line, row, totalh, shape)?;
+    let mut buf = Vec::with_capacity(shape.1);
+    collect_columns(&mut buf, columns, cfg, colors, dimension, height, row);
+    print_columns_lines(f, &mut buf, height, cfg, line, row, totalh, shape)?;
 
     buf.clear();
 
