@@ -164,7 +164,7 @@ where
             count_columns,
         );
 
-        // Cleanup table in case if boundaries are exeeded.
+        // Cleanup table in case if boundaries are exceeded.
         //
         // todo: can be optimized by adding a clear() method to Resizable
         rows.0 = std::cmp::min(rows.0, count_rows);

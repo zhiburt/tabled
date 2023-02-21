@@ -2,7 +2,7 @@
 //!
 //! The library supports different approaches of table building.
 //! You can use [`Tabled`] trait if the data type is known.
-//! Or you can use [`Builder`] to construct the table from stractch.
+//! Or you can use [`Builder`] to construct the table from scratch.
 //!
 //! ## Usage
 //!
@@ -352,7 +352,7 @@ pub use crate::{tabled::Tabled, tables::table::Table};
 ///
 /// ### Hide a column
 ///
-/// You can mark filds as hidden in which case they fill be ignored and not be present on a sheet.
+/// You can mark fields as hidden in which case they fill be ignored and not be present on a sheet.
 ///
 /// A similar affect could be achieved by the means of a `Disable` setting.
 ///

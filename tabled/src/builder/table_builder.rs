@@ -1,6 +1,6 @@
 // todo: I'd rather switch back to -> Self from -> &mut Self
 //
-// but these &self methods are definetely a smell...
+// but these &self methods are definitely a smell...
 
 use std::{borrow::Cow, iter::FromIterator};
 

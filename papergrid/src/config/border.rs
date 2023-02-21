@@ -75,7 +75,7 @@ impl<T> Border<T> {
 impl<T: Copy> Border<T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
     ///
-    /// It behaives like [`Border::full`] with the same character set to each side.
+    /// It behaves like [`Border::full`] with the same character set to each side.
     pub fn filled(c: T) -> Self {
         Self::full(c, c, c, c, c, c, c, c)
     }
@@ -84,7 +84,7 @@ impl<T: Copy> Border<T> {
 impl<T: Copy> Border<&T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
     ///
-    /// It behaives like [`Border::full`] with the same character set to each side.
+    /// It behaves like [`Border::full`] with the same character set to each side.
     pub fn copied(&self) -> Border<T> {
         Border {
             top: self.top.copied(),
@@ -102,7 +102,7 @@ impl<T: Copy> Border<&T> {
 impl<T: Clone> Border<&T> {
     /// This function constructs a cell borders with all sides's char set to a given character.
     ///
-    /// It behaives like [`Border::full`] with the same character set to each side.
+    /// It behaves like [`Border::full`] with the same character set to each side.
     pub fn cloned(&self) -> Border<T> {
         Border {
             top: self.top.cloned(),

@@ -6,15 +6,15 @@ use tabled::{settings::rotate::Rotate, Table, Tabled};
 #[derive(Tabled)]
 struct Linux {
     id: u8,
-    destribution: &'static str,
+    distribution: &'static str,
     link: &'static str,
 }
 
 impl Linux {
-    fn new(id: u8, destribution: &'static str, link: &'static str) -> Self {
+    fn new(id: u8, distribution: &'static str, link: &'static str) -> Self {
         Self {
             id,
-            destribution,
+            distribution,
             link,
         }
     }

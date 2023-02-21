@@ -23,7 +23,7 @@ impl TableDimension<'_> {
 
     /// Set column widths.
     ///
-    /// In general the method is only considered to be usefull to a [`TableOption`].
+    /// In general the method is only considered to be useful to a [`TableOption`].
     ///
     /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided widths.
     ///
@@ -36,7 +36,7 @@ impl TableDimension<'_> {
 
     /// Set rows heights.
     ///
-    /// In general the method is only considered to be usefull to a [`TableOption`].
+    /// In general the method is only considered to be useful to a [`TableOption`].
     ///
     /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided heights.
     ///

@@ -29,7 +29,7 @@ impl Default for CompactConfig {
 }
 
 impl CompactConfig {
-    /// Returns an standart config.
+    /// Returns an standard config.
     pub const fn empty() -> Self {
         Self {
             tab_width: 4,
@@ -55,7 +55,7 @@ impl CompactConfig {
         &self.margin
     }
 
-    /// Set the [`Borders`] value as currect one.
+    /// Set the [`Borders`] value as correct one.
     pub const fn set_borders(mut self, borders: Borders<char>) -> Self {
         self.borders = borders;
         self

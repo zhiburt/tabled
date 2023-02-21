@@ -36,7 +36,7 @@ impl<T> EntityMap<T> {
             Entity::Cell(row, col) => {
                 // todo: optimize;
                 //
-                // Cause we can change rows/columns/cells separetely we need to check them separately.
+                // Cause we can change rows/columns/cells separately we need to check them separately.
                 // But we often doing this checks in `Grid::fmt` and I believe if we could optimize it it could be beneficial.
                 //
                 // Haven't found a solution for that yet.

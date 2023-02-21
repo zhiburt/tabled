@@ -58,9 +58,9 @@ where
     }
 }
 
-/// This is a segment which cantains all cells on the table.
+/// This is a segment which contains all cells on the table.
 ///
-/// Can be crated from [`Segment::all`].
+/// Can be created from [`Segment::all`].
 #[derive(Debug)]
 pub struct SegmentAll;
 
