@@ -6,7 +6,7 @@ use crate::{
 
 /// [`FormatContentPositioned`] is like a [`FormatContent`] an abstraction over a function you can use against a cell.
 ///
-/// It differerent from [`FormatContent`] that it provides a row and column index.
+/// It different from [`FormatContent`] that it provides a row and column index.
 ///
 /// [`FormatContent`]: crate::settings::format::FormatContent
 #[derive(Debug)]

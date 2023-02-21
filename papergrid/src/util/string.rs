@@ -119,8 +119,7 @@ pub fn get_lines(text: &str) -> Lines<'_> {
     #[cfg(not(feature = "color"))]
     {
         // we call `split()` but not `lines()` in order to match colored implementation
-        // specifically how we treat a traling '\n' character.
-
+        // specifically how we treat a trailing '\n' character.
         Lines {
             inner: text.split('\n'),
         }

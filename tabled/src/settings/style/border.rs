@@ -57,7 +57,7 @@ impl Border {
     }
 
     /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [`Border::full`] with the same character set to each side.
+    /// It behaves like [`Border::full`] with the same character set to each side.
     pub const fn filled(c: char) -> Self {
         Self::full(c, c, c, c, c, c, c, c)
     }

@@ -51,7 +51,7 @@ impl BorderColor {
     }
 
     /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaives like [`Border::full`] with the same character set to each side.
+    /// It behaves like [`Border::full`] with the same character set to each side.
     pub fn filled(c: Color) -> Self {
         let c: AnsiColor<'_> = c.into();
 

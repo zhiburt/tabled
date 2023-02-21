@@ -47,13 +47,13 @@ pub enum Rotate {
     Right,
     /// Rotate [`Table`] to the top.
     ///
-    /// So the top becames the bottom.
+    /// So the top becomes the bottom.
     ///
     /// [`Table`]: crate::Table
     Top,
     /// Rotate [`Table`] to the bottom.
     ///
-    /// So the top becames the bottom.
+    /// So the top becomes the bottom.
     ///
     /// [`Table`]: crate::Table
     Bottom,
