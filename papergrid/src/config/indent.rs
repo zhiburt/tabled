@@ -13,12 +13,12 @@ impl Indent {
         Self { fill, size }
     }
 
-    /// Creates a new Indent startucture with space (`' '`) as a fill character.
+    /// Creates a new Indent structure with space (`' '`) as a fill character.
     pub const fn spaced(size: usize) -> Self {
         Self { size, fill: ' ' }
     }
 
-    /// Creates a new Indent startucture with space (`' '`) as a fill character.
+    /// Creates a new Indent structure with space (`' '`) as a fill character.
     pub const fn zero() -> Self {
         Self::new(0, ' ')
     }

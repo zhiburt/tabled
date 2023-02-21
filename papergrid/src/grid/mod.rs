@@ -1,4 +1,4 @@
-//! Module contains a list of backends for pritty print tables.
+//! Module contains a list of backends for pretty print tables.
 
 pub mod compact;
 

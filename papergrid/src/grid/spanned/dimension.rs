@@ -122,11 +122,11 @@ fn adjust_hspans(
         return;
     }
 
-    // The overall height disctribution will be different depend on the order.
+    // The overall height distribution will be different depend on the order.
     //
     // We sort spans in order to prioritize the smaller spans first.
     //
-    // todo: we actually have a span list already.... so we could keep order from the begining
+    // todo: we actually have a span list already.... so we could keep order from the beginning
     let mut spans_orderd = cfg.iter_span_rows().collect::<Vec<_>>();
     spans_orderd.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
         Ordering::Equal => acol.cmp(bcol),
@@ -212,7 +212,7 @@ fn adjust_vspans(
         return;
     }
 
-    // The overall width disctribution will be different depend on the order.
+    // The overall width distribution will be different depend on the order.
     //
     // We sort spans in order to prioritize the smaller spans first.
     let mut spans_ordered = cfg.iter_span_columns().collect::<Vec<_>>();

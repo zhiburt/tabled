@@ -165,7 +165,7 @@ impl GridConfig {
         self.override_vertical_borders.clear();
     }
 
-    /// Set the [`Borders`] value as currect one.
+    /// Set the [`Borders`] value as correct one.
     pub fn set_borders(&mut self, borders: Borders) {
         self.borders.set_borders(borders);
     }

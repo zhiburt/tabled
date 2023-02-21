@@ -84,7 +84,7 @@ impl<R, D, G, C> Grid<R, D, G, C> {
         C: Colors,
     {
         let mut buf = String::new();
-        self.build(&mut buf).expect("It's guaranted to never happen otherwise it's considered an stdlib erorr or impl error");
+        self.build(&mut buf).expect("It's guaranteed to never happen otherwise it's considered an stdlib error or impl error");
         buf
     }
 }
@@ -437,7 +437,7 @@ fn print_split_line<F: Write, D: Dimension>(
             let left = cfg.get_intersection((row, col), shape);
             if let Some(c) = left {
                 if i >= override_text_pos && !override_text.is_empty() {
-                    let (c, rest) = spplit_str_at(&override_text, 1);
+                    let (c, rest) = split_str_at(&override_text, 1);
                     f.write_str(&c)?;
                     override_text = rest.into_owned();
                     if string_width(&override_text) == 0 {
@@ -480,7 +480,7 @@ fn print_split_line<F: Write, D: Dimension>(
         if i >= override_text_pos && !override_text.is_empty() {
             let text_width = string_width_tab(&override_text, cfg.get_tab_width());
             let print_width = cmp::min(text_width, width);
-            let (c, rest) = spplit_str_at(&override_text, print_width);
+            let (c, rest) = split_str_at(&override_text, print_width);
             f.write_str(&c)?;
             override_text = rest.into_owned();
             if string_width(&override_text) == 0 {
@@ -509,7 +509,7 @@ fn print_split_line<F: Write, D: Dimension>(
         let right = cfg.get_intersection((row, col + 1), shape);
         if let Some(c) = right {
             if i >= override_text_pos && !override_text.is_empty() {
-                let (c, rest) = spplit_str_at(&override_text, 1);
+                let (c, rest) = split_str_at(&override_text, 1);
                 f.write_str(&c)?;
                 override_text = rest.into_owned();
                 if string_width(&override_text) == 0 {
@@ -642,7 +642,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             let left = cfg.get_intersection((row, col), shape);
             if let Some(c) = left {
                 if i >= override_text_pos && !override_text.is_empty() {
-                    let (c, rest) = spplit_str_at(&override_text, 1);
+                    let (c, rest) = split_str_at(&override_text, 1);
                     f.write_str(&c)?;
                     override_text = rest.into_owned();
                     if string_width(&override_text) == 0 {
@@ -706,7 +706,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
                 let text_width = string_width_tab(&override_text, cfg.get_tab_width());
                 let print_width = cmp::min(text_width, width);
 
-                let (c, rest) = spplit_str_at(&override_text, print_width);
+                let (c, rest) = split_str_at(&override_text, print_width);
                 f.write_str(&c)?;
 
                 override_text = rest.into_owned();
@@ -735,7 +735,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
         let right = cfg.get_intersection((row, col + 1), shape);
         if let Some(c) = right {
             if i >= override_text_pos && !override_text.is_empty() {
-                let (c, rest) = spplit_str_at(&override_text, 1);
+                let (c, rest) = split_str_at(&override_text, 1);
                 f.write_str(&c)?;
                 override_text = rest.into_owned();
                 if string_width(&override_text) == 0 {
@@ -780,7 +780,7 @@ where
     C: Colors,
 {
     if this_height == 0 {
-        // it's possible that we dont show row but it contains an actuall cell which will be
+        // it's possible that we dont show row but it contains an actual cell which will be
         // rendered after all cause it's a rowspanned
 
         let mut skip = 0;
@@ -1057,7 +1057,7 @@ impl<C> LinesIter<C> {
         C: AsRef<str>,
     {
         // We want to not allocate a String/Vec.
-        // It's currerently not possible due to a lifetime issues. (It's known as self-referential struct)
+        // It's currently not possible due to a lifetime issues. (It's known as self-referential struct)
         //
         // Here we change the lifetime of text.
         //
@@ -1129,7 +1129,7 @@ fn print_text<F: Write>(f: &mut F, s: &str, tab: usize, clr: Option<impl Color>)
 
 fn print_str<F: Write>(f: &mut F, text: &str, tab_width: usize) -> fmt::Result {
     // So to not use replace_tab we are printing by char;
-    // Hopefully it's more affective as it reduceses a number of allocations.
+    // Hopefully it's more effective as it reduces a number of allocations.
     for c in text.chars() {
         match c {
             '\r' => (),
@@ -1507,7 +1507,7 @@ fn convert_count_rows(row: usize, is_last: bool) -> usize {
 /// Get string at
 ///
 /// BE AWARE: width is expected to be in bytes.
-fn spplit_str_at(text: &str, at: usize) -> (Cow<'_, str>, Cow<'_, str>) {
+fn split_str_at(text: &str, at: usize) -> (Cow<'_, str>, Cow<'_, str>) {
     #[cfg(feature = "color")]
     {
         const REPLACEMENT: char = '\u{FFFD}';
@@ -1547,7 +1547,7 @@ fn spplit_str_at(text: &str, at: usize) -> (Cow<'_, str>, Cow<'_, str>) {
 
 /// The function splits a string in the position and
 /// returns a exact number of bytes before the position and in case of a split in an unicode grapheme
-/// a width of a character which was tried to be splited in.
+/// a width of a character which was tried to be splitted in.
 ///
 /// BE AWARE: pos is expected to be in bytes.
 fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
