@@ -258,8 +258,6 @@ where
     collect_columns(&mut buf, columns, cfg, colors, dimension, height, row);
     print_columns_lines(f, &mut buf, height, cfg, line, row, totalh, shape)?;
 
-    buf.clear();
-
     Ok(())
 }
 
