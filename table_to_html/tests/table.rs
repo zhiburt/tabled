@@ -1146,7 +1146,7 @@ fn table_margin() {
 }
 
 #[test]
-fn table_bordr() {
+fn table_border() {
     let builder = Table::builder([["123", "324", "zxc"], ["123", "324", "zxc"]]);
     let mut table = HtmlTable::from(builder);
     table.set_border(10);

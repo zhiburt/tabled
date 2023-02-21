@@ -85,7 +85,7 @@
 //!
 //! ## [`RawStyle`]
 //!
-//! A different representatio of [`Style`].
+//! A different representation of [`Style`].
 //! With no checks in place.
 //!
 //! It also contains a list of types to support colors.

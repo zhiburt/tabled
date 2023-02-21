@@ -194,7 +194,7 @@ use tabled::{
 /// Supported settings are:
 ///
 /// - THEME
-/// - ALIGNMNET
+/// - ALIGNMENT
 /// - PADDING
 /// - MARGIN
 #[proc_macro]
@@ -794,7 +794,7 @@ fn panic_not_supported_theme(ident: &LitStr) {
         ident,
         "The given settings is not supported";
         note="custom themes are yet not supported";
-        help = r#"Supported theames are [EMPTY, BLANK, ASCII, ASCII_ROUNDED, DOTS, MODERN, SHARP, ROUNDED, EXTENDED, RE_STRUCTURED_TEXT, MARKDOWN, PSQL]"#
+        help = r#"Supported themes are [EMPTY, BLANK, ASCII, ASCII_ROUNDED, DOTS, MODERN, SHARP, ROUNDED, EXTENDED, RE_STRUCTURED_TEXT, MARKDOWN, PSQL]"#
     )
 }
 

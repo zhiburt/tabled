@@ -80,7 +80,7 @@ impl<R, D, G, C> CompactGrid<R, D, G, C> {
         C: Colors,
     {
         let mut buf = String::new();
-        self.build(&mut buf).expect("It's guaranted to never happen otherwise it's considered an stdlib erorr or impl error");
+        self.build(&mut buf).expect("It's guaranteed to never happen otherwise it's considered an stdlib error or impl error");
         buf
     }
 }
@@ -594,7 +594,7 @@ fn print_text<F: Write>(f: &mut F, s: &str, tab: usize, clr: Option<impl Color>)
 
 fn print_str<F: Write>(f: &mut F, text: &str, tab_width: usize) -> fmt::Result {
     // So to not use replace_tab we are printing by char;
-    // Hopefully it's more affective as it reduceses a number of allocations.
+    // Hopefully it's more effective as it reduces a number of allocations.
     for c in text.chars() {
         match c {
             '\r' => (),

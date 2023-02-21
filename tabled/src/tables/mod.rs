@@ -11,7 +11,7 @@
 //!
 //! ## [`extended`]
 //!
-//! Has a table which is usefull for large amount of data.
+//! Has a table which is useful for large amount of data.
 
 pub mod compact;
 

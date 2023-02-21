@@ -71,13 +71,13 @@ impl RawStyle {
         self
     }
 
-    /// Set a top interesion character.
+    /// Set a top intersection character.
     pub fn set_intersection_top(&mut self, s: Option<char>) -> &mut Self {
         self.borders.top_intersection = s;
         self
     }
 
-    /// Set a top interesion color.
+    /// Set a top intersection color.
     pub fn set_color_intersection_top(&mut self, color: Color) -> &mut Self {
         self.colors.top_intersection = Some(color.into());
         self
@@ -89,7 +89,7 @@ impl RawStyle {
         self
     }
 
-    /// Set a bottom interesion color.
+    /// Set a bottom intersection color.
     pub fn set_color_intersection_bottom(&mut self, color: Color) -> &mut Self {
         self.colors.bottom_intersection = Some(color.into());
         self
@@ -101,7 +101,7 @@ impl RawStyle {
         self
     }
 
-    /// Set a bottom interesion color.
+    /// Set a bottom intersection color.
     pub fn set_color_intersection_left(&mut self, color: Color) -> &mut Self {
         self.colors.left_intersection = Some(color.into());
         self
@@ -113,7 +113,7 @@ impl RawStyle {
         self
     }
 
-    /// Set a bottom interesion color.
+    /// Set a bottom intersection color.
     pub fn set_color_intersection_right(&mut self, color: Color) -> &mut Self {
         self.colors.right_intersection = Some(color.into());
         self
@@ -125,7 +125,7 @@ impl RawStyle {
         self
     }
 
-    /// Set a bottom interesion color.
+    /// Set a bottom intersection color.
     pub fn set_color_intersection(&mut self, color: Color) -> &mut Self {
         self.colors.intersection = Some(color.into());
         self
@@ -137,7 +137,7 @@ impl RawStyle {
         self
     }
 
-    /// Set a bottom interesion color.
+    /// Set a bottom intersection color.
     pub fn set_color_vertical(&mut self, color: Color) -> &mut Self {
         self.colors.vertical = Some(color.into());
         self
@@ -149,7 +149,7 @@ impl RawStyle {
         self
     }
 
-    /// Set a bottom interesion color.
+    /// Set a bottom intersection color.
     pub fn set_color_horizontal(&mut self, color: Color) -> &mut Self {
         self.colors.horizontal = Some(color.into());
         self
@@ -160,7 +160,7 @@ impl RawStyle {
         self.borders.top_left = s;
         self
     }
-    /// Set a bottom interesion color.
+    /// Set a bottom intersection color.
     pub fn set_color_corner_top_left(&mut self, color: Color) -> &mut Self {
         self.colors.top_left = Some(color.into());
         self
@@ -172,7 +172,7 @@ impl RawStyle {
         self
     }
 
-    /// Set a bottom interesion color.
+    /// Set a bottom intersection color.
     pub fn set_color_corner_top_right(&mut self, color: Color) -> &mut Self {
         self.colors.top_right = Some(color.into());
         self
@@ -183,7 +183,7 @@ impl RawStyle {
         self.borders.bottom_left = s;
         self
     }
-    /// Set a bottom interesion color.
+    /// Set a bottom intersection color.
     pub fn set_color_corner_bottom_left(&mut self, color: Color) -> &mut Self {
         self.colors.bottom_left = Some(color.into());
         self
@@ -194,7 +194,7 @@ impl RawStyle {
         self.borders.bottom_right = s;
         self
     }
-    /// Set a bottom interesion color.
+    /// Set a bottom intersection color.
     pub fn set_color_corner_bottom_right(&mut self, color: Color) -> &mut Self {
         self.colors.bottom_right = Some(color.into());
         self

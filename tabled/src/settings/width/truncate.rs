@@ -92,7 +92,7 @@ where
 impl<'a, W, P> Truncate<'a, W, P> {
     /// Sets a suffix which will be appended to a resultant string.
     ///
-    /// The suffix is used in 3 circamstances:
+    /// The suffix is used in 3 circumstances:
     ///     1. If original string is *bigger* than the suffix.
     ///        We cut more of the original string and append the suffix.
     ///     2. If suffix is bigger than the original string.

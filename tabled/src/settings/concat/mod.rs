@@ -57,13 +57,13 @@ use crate::{
     Table,
 };
 
-/// [`Concat`] concatenate tables along a particular axis [Horizontal | Vertical].
+/// [`Concat`] concatenates tables along a particular axis [Horizontal | Vertical].
 /// It doesn't do any key or column comparisons like SQL's join does.
 ///
 /// When the tables has different sizes, empty cells will be created by default.
 ///
-/// [`Concat`] in horizontal mode has similar behaiviour to tuples `(a, b)`.
-/// But it behaives on tables rather than on an actual data.
+/// [`Concat`] in horizontal mode has similar behaviour to tuples `(a, b)`.
+/// But it behaves on tables rather than on an actual data.
 ///
 /// ```
 /// use tabled::{Table, settings::concat::Concat};
