@@ -1,7 +1,7 @@
 //! This module contains a [`CompactTable`] table.
 //!
 //! In contrast to [`Table`] [`CompactTable`] does no allocations but it consumes an iterator.
-//! It's usefull when you dont want to re/allocate a buffer for your data.
+//! It's useful when you don't want to re/allocate a buffer for your data.
 //!
 //! # Example
 //!

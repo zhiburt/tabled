@@ -1,4 +1,4 @@
-//! This module contains primitivies to create a spread row.
+//! This module contains primitives to create a spread row.
 //! Ultimately it is a cell with a span set to a number of columns on the [`Table`].
 //!
 //! You can use a [`Span`] to set a custom span.

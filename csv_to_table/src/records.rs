@@ -5,16 +5,16 @@ use tabled::records::IntoRecords;
 
 /// A [`IntoRecords`] implementation for a [`csv::Reader`].
 ///
-/// By default all errors are ignored, but you can print them using [`CsvRecords::print_erorrs`].
+/// By default all errors are ignored, but you can print them using [`CsvRecords::print_errors`].
 ///
-/// [`CsvRecords::print_erorrs`]: CsvRecords.print_errors
+/// [`CsvRecords::print_errors`]: CsvRecords.print_errors
 pub struct CsvRecords<R> {
     rows: StringRecordsIntoIter<R>,
-    err_logic: ErorrLogic,
+    err_logic: ErrorLogic,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-enum ErorrLogic {
+enum ErrorLogic {
     Ignore,
     Print,
 }
@@ -27,13 +27,13 @@ impl<R> CsvRecords<R> {
     {
         Self {
             rows: reader.into_records(),
-            err_logic: ErorrLogic::Ignore,
+            err_logic: ErrorLogic::Ignore,
         }
     }
 
     /// Show underlying [Read] errors inside a table.
     pub fn print_errors(mut self) -> Self {
-        self.err_logic = ErorrLogic::Print;
+        self.err_logic = ErrorLogic::Print;
         self
     }
 }
@@ -41,7 +41,7 @@ impl<R> CsvRecords<R> {
 /// A row iterator.
 pub struct CsvStringRecordsRows<R> {
     iter: StringRecordsIntoIter<R>,
-    err_logic: ErorrLogic,
+    err_logic: ErrorLogic,
 }
 
 impl<R> Iterator for CsvStringRecordsRows<R>
@@ -57,8 +57,8 @@ where
             match result {
                 Ok(record) => return Some(CsvStringRecord::new(record)),
                 Err(err) => match self.err_logic {
-                    ErorrLogic::Ignore => continue,
-                    ErorrLogic::Print => {
+                    ErrorLogic::Ignore => continue,
+                    ErrorLogic::Print => {
                         let err = err.to_string();
                         let mut record = StringRecord::with_capacity(err.len(), 1);
                         record.push_field(&err);

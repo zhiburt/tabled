@@ -23,14 +23,14 @@ pub use empty_records::EmptyRecords;
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use vec_records::VecRecords;
 
-/// [Records] extension which guarantess the amount of rows.
+/// [Records] extension which guarantees the amount of rows.
 pub trait ExactRecords {
     /// A cell represented by a string value.
     type Cell: AsRef<str>;
 
     /// Returns an exact amount of rows in records.
     ///
-    /// It must be guarated that an iterator will yield this amount.
+    /// It must be guaranteed that an iterator will yield this amount.
     fn count_rows(&self) -> usize;
 
     /// Returns a text of a cell by an index.
