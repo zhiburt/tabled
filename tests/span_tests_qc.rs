@@ -1,5 +1,5 @@
 use quickcheck::Arbitrary;
-use tabled::{builder::Builder, object::Cell, Modify, Span, Style};
+use tabled::{builder::Builder, object::Cell, Modify, Span, Style, Table};
 
 #[derive(Clone, Debug)]
 struct TableStructure {
@@ -75,7 +75,7 @@ fn test_data_span_test() {
     };
 
     let rows = table_structure.clone().rows;
-    let theme = table_structure.clone().theme;
+    let theme = table_structure.theme;
     let col_count = rows
         .iter()
         .map(|r| r.len())
@@ -168,6 +168,7 @@ fn qc_table_is_consistent_with_spans(table_structure: TableStructure) {
 
     builder.set_columns((1..col_count + 1).map(|head| head.to_string()));
     let mut table = builder.build();
+    set_theme(&mut table, theme);
 
     for rr in 1..row_count {
         if row_span.is_empty() && col_span.is_empty() {
@@ -182,6 +183,17 @@ fn qc_table_is_consistent_with_spans(table_structure: TableStructure) {
         }
     }
 
+    let output = table.to_string();
+
+    let table_lines: Vec<String> = output.lines().map(|l| l.into()).collect();
+    let line_width =
+        tabled::papergrid::util::string_width(table_lines.first().unwrap_or(&"".to_owned()));
+    assert!(table_lines
+        .iter()
+        .all(|l| tabled::papergrid::util::string_width(l) == line_width));
+}
+
+fn set_theme(table: &mut Table, theme: ThemeFixture) {
     use ThemeFixture::*;
     match theme {
         Empty => {
@@ -221,13 +233,4 @@ fn qc_table_is_consistent_with_spans(table_structure: TableStructure) {
             table.with(Style::ascii_rounded());
         }
     }
-
-    let output = table.to_string();
-
-    let table_lines: Vec<String> = output.lines().map(|l| l.into()).collect();
-    let line_width =
-        tabled::papergrid::util::string_width(table_lines.first().unwrap_or(&"".to_owned()));
-    assert!(table_lines
-        .iter()
-        .all(|l| tabled::papergrid::util::string_width(l) == line_width));
 }

@@ -2,7 +2,8 @@ use std::iter::FromIterator;
 
 use quickcheck::Arbitrary;
 
-use tabled::{builder::Builder, Style};
+use tabled::{builder::Builder, Style, Table};
+use tabled::papergrid::util::{string_width, string_width_multiline};
 
 use util::test_table;
 
@@ -832,7 +833,15 @@ fn qc_table_is_consistent_with_borders(table_structure: TableStructure) {
 
     builder.set_columns((1..col_count + 1).map(|head| head.to_string()));
     let mut table = builder.build();
+    set_theme(&mut table, theme);
+    let output = table.to_string();
 
+    if let Some(line) = output.lines().next() {
+        assert_eq!(string_width(line), string_width_multiline(&output));
+    }
+}
+
+fn set_theme(table: &mut Table, theme: ThemeFixture) {
     use ThemeFixture::*;
     match theme {
         Empty => {
@@ -872,13 +881,4 @@ fn qc_table_is_consistent_with_borders(table_structure: TableStructure) {
             table.with(Style::ascii_rounded());
         }
     }
-
-    let output = table.to_string();
-
-    let table_lines: Vec<String> = output.lines().map(|l| l.into()).collect();
-    let line_width =
-        tabled::papergrid::util::string_width(table_lines.first().unwrap_or(&"".to_owned()));
-    assert!(table_lines
-        .iter()
-        .all(|l| tabled::papergrid::util::string_width(l) == line_width));
 }
