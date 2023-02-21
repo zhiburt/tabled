@@ -98,12 +98,11 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let records = &self.records;
-        if records.count_columns() == 0 {
+        if records.count_columns() == 0 || records.hint_count_rows() == Some(0) {
             return Ok(());
         }
 
         let config = self.config.borrow();
-
         print_grid(f, records, config, &self.dimension, &self.colors)
     }
 }
@@ -143,12 +142,10 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
         .hint_count_rows()
         .map(|count_rows| total_height(cfg, dims, count_rows));
 
-    if cfg.get_margin().top.size > 0 {
+    if margin.top.size > 0 {
         print_margin_top(f, cfg, total_width_with_margin)?;
         f.write_char('\n')?;
     }
-
-    let mut rbuf = Vec::with_capacity(count_columns);
 
     let mut records_iter = records.iter_rows().into_iter();
     let mut next_columns = records_iter.next();
@@ -164,13 +161,13 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
         let height = dims.get_height(row);
         let count_rows = convert_count_rows(row, is_last_row);
         let has_horizontal = cfg.has_horizontal(row, count_rows);
+        let shape = (count_rows, count_columns);
 
         if row > 0 && !is_prev_row_skipped && (has_horizontal || height > 0) {
             f.write_char('\n')?;
         }
 
         if has_horizontal {
-            let shape = (count_rows, count_columns);
             print_horizontal_line(f, cfg, line, totalh, dims, row, total_width, shape)?;
 
             line += 1;
@@ -180,7 +177,6 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
             }
         }
 
-        let shape = (count_rows, count_columns);
         match height {
             0 => {}
             1 => {
@@ -188,7 +184,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
             }
             _ => {
                 print_multiline_columns(
-                    f, &mut rbuf, columns, cfg, colors, dims, height, row, line, totalh, shape,
+                    f, columns, cfg, colors, dims, height, row, line, totalh, shape,
                 )?;
             }
         }
@@ -210,7 +206,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
             print_horizontal_line(f, cfg, line, totalh, dims, row, total_width, shape)?;
         }
 
-        if cfg.get_margin().bottom.size > 0 {
+        if margin.bottom.size > 0 {
             f.write_char('\n')?;
             print_margin_bottom(f, cfg, total_width_with_margin)?;
         }
@@ -241,7 +237,6 @@ type CLines<'a, S, C> = CellLines<'a, S, <C as Colors>::Color>;
 #[allow(clippy::too_many_arguments)]
 fn print_multiline_columns<'a, F, I, D, C>(
     f: &mut F,
-    buf: &mut Vec<CLines<'a, I::Item, C>>,
     columns: I,
     cfg: &'a GridConfig,
     colors: &'a C,
@@ -259,8 +254,9 @@ where
     D: Dimension,
     C: Colors,
 {
-    collect_columns(buf, columns, cfg, colors, dimension, height, row);
-    print_columns_lines(f, buf, height, cfg, line, row, totalh, shape)?;
+    let mut buf = Vec::with_capacity(shape.1);
+    collect_columns(&mut buf, columns, cfg, colors, dimension, height, row);
+    print_columns_lines(f, &mut buf, height, cfg, line, row, totalh, shape)?;
 
     buf.clear();
 
@@ -996,8 +992,6 @@ where
     C: Color,
 {
     fn display<F: Write>(&mut self, f: &mut F, tab_width: usize) -> fmt::Result {
-        // todo: fix bottom/top padding and indent symbol issue
-
         let pad = &self.padding;
         let pad_color = &self.padding_color;
         let formatting = &self.formatting;
@@ -1250,8 +1244,6 @@ fn print_vertical_char<F: Write>(
     count_lines: usize,
     shape: (usize, usize),
 ) -> fmt::Result {
-    // todo: Is Adding Border/verticals to CellLines structure to not make these lookup calls
-
     let symbol = match cfg.get_vertical(pos, shape.1) {
         Some(c) => c,
         None => return Ok(()),

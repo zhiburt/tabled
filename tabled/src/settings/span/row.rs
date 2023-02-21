@@ -63,25 +63,24 @@ fn set_span_row(cfg: &mut GridConfig, pos: (usize, usize), span: usize) {
             return;
         }
 
-        let closerow = closest_visible_row(cfg, (row - 1, col));
-        let span = row + 1 - closerow;
-
-        cfg.set_row_span((closerow, col), span);
-
-        return;
+        if let Some(closerow) = closest_visible_row(cfg, (row - 1, col)) {
+            let span = row + 1 - closerow;
+            cfg.set_row_span((closerow, col), span);
+        }
     }
 
     cfg.set_row_span(pos, span);
 }
 
-fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> usize {
+fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
     loop {
         if cfg.is_cell_visible(pos) {
-            return pos.0;
+            return Some(pos.0);
         }
 
         if pos.0 == 0 {
-            unreachable!("must never happen");
+            // can happen if we have a above horizontal spanned cell
+            return None;
         }
 
         pos.0 -= 1;
