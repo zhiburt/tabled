@@ -63,25 +63,23 @@ fn set_span_column(cfg: &mut GridConfig, pos: (usize, usize), span: usize) {
             return;
         }
 
-        let closecol = closest_visible(cfg, (row, col - 1));
-        let span = col + 1 - closecol;
-
-        cfg.set_column_span((row, closecol), span);
-
-        return;
+        if let Some(closecol) = closest_visible(cfg, (row, col - 1)) {
+            let span = col + 1 - closecol;
+            cfg.set_column_span((row, closecol), span);
+        }
     }
 
     cfg.set_column_span(pos, span);
 }
 
-fn closest_visible(cfg: &GridConfig, mut pos: Position) -> usize {
+fn closest_visible(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
     loop {
         if cfg.is_cell_visible(pos) {
-            return pos.1;
+            return Some(pos.1);
         }
 
         if pos.1 == 0 {
-            unreachable!("must never happen");
+            return None;
         }
 
         pos.1 -= 1;

@@ -3,7 +3,7 @@
 //! [`Grid`]: crate::grid::spanned::Grid
 
 use std::{
-    cmp::{self, max, Ordering},
+    cmp::{max, Ordering},
     collections::HashMap,
 };
 
@@ -81,23 +81,19 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
             let cell = cell.as_ref();
 
             let width = get_cell_width(cell, cfg, pos);
-
-            let vspan = cfg.get_span_column(pos);
-            let has_vspan = !matches!(vspan, None | Some(1));
-            if has_vspan {
-                vspans.insert(pos, width);
-            } else {
-                widths[col] = max(widths[col], width);
+            match cfg.get_span_column(pos) {
+                Some(n) if n > 1 => {
+                    vspans.insert(pos, (n, width));
+                }
+                _ => widths[col] = max(widths[col], width),
             }
 
             let height = get_cell_height(cell, cfg, pos);
-
-            let hspan = cfg.get_span_row(pos);
-            let has_hspan = !matches!(hspan, None | Some(1));
-            if has_hspan {
-                hspans.insert(pos, height);
-            } else {
-                row_height = cmp::max(row_height, height);
+            match cfg.get_span_row(pos) {
+                Some(n) if n > 1 => {
+                    hspans.insert(pos, (n, height));
+                }
+                _ => row_height = max(row_height, height),
             }
         }
 
@@ -115,7 +111,7 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
 fn adjust_hspans(
     cfg: &GridConfig,
     len: usize,
-    spans: &HashMap<Position, usize>,
+    spans: &HashMap<Position, (usize, usize)>,
     heights: &mut [usize],
 ) {
     if spans.is_empty() {
@@ -127,27 +123,28 @@ fn adjust_hspans(
     // We sort spans in order to prioritize the smaller spans first.
     //
     // todo: we actually have a span list already.... so we could keep order from the begining
-    let mut spans_orderd = cfg.iter_span_rows().collect::<Vec<_>>();
-    spans_orderd.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
+    let mut spans_ordered = spans
+        .iter()
+        .map(|(k, v)| ((k.0, k.1), *v))
+        .collect::<Vec<_>>();
+    spans_ordered.sort_unstable_by(|(arow, acol), (brow, bcol)| match arow.cmp(brow) {
         Ordering::Equal => acol.cmp(bcol),
         ord => ord,
     });
 
-    for ((row, col), span) in spans_orderd {
-        adjust_row_range(spans, cfg, len, col, row, row + span, heights);
+    for ((row, _), (span, height)) in spans_ordered {
+        adjust_row_range(cfg, height, len, row, row + span, heights);
     }
 }
 
 fn adjust_row_range(
-    span_list: &HashMap<Position, usize>,
     cfg: &GridConfig,
+    max_span_height: usize,
     len: usize,
-    col: usize,
     start: usize,
     end: usize,
     heights: &mut [usize],
 ) {
-    let max_span_height = *span_list.get(&(start, col)).expect("must be there");
     let range_height = range_height(cfg, len, start, end, heights);
     if range_height >= max_span_height {
         return;
@@ -205,40 +202,40 @@ fn inc_range(list: &mut [usize], size: usize, start: usize, end: usize) {
 fn adjust_vspans(
     cfg: &GridConfig,
     len: usize,
-    spans: &HashMap<Position, usize>,
+    spans: &HashMap<Position, (usize, usize)>,
     widths: &mut [usize],
 ) {
-    if !cfg.has_column_spans() {
+    if spans.is_empty() {
         return;
     }
 
     // The overall width disctribution will be different depend on the order.
     //
     // We sort spans in order to prioritize the smaller spans first.
-    let mut spans_ordered = cfg.iter_span_columns().collect::<Vec<_>>();
-    spans_ordered.sort_unstable_by(|a, b| match a.1.cmp(&b.1) {
+    let mut spans_ordered = spans
+        .iter()
+        .map(|(k, v)| ((k.0, k.1), *v))
+        .collect::<Vec<_>>();
+    spans_ordered.sort_unstable_by(|a, b| match a.1 .0.cmp(&b.1 .0) {
         Ordering::Equal => a.0.cmp(&b.0),
         o => o,
     });
 
     // todo: the order is matter here; we need to figure out what is correct.
-    for ((row, col), span) in spans_ordered {
-        adjust_column_range(cfg, len, spans, row, col, col + span, widths);
+    for ((_, col), (span, width)) in spans_ordered {
+        adjust_column_range(cfg, width, len, col, col + span, widths);
     }
 }
 
 fn adjust_column_range(
     cfg: &GridConfig,
+    max_span_width: usize,
     len: usize,
-    spans: &HashMap<Position, usize>,
-    row: usize,
     start: usize,
     end: usize,
     widths: &mut [usize],
 ) {
-    let max_span_width = *spans.get(&(row, start)).expect("must be there");
     let range_width = range_width(cfg, len, start, end, widths);
-
     if range_width >= max_span_width {
         return;
     }
@@ -283,12 +280,11 @@ fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
             }
 
             let height = get_cell_height(cell.as_ref(), cfg, pos);
-
-            let has_hspan = !matches!(cfg.get_span_row(pos), None | Some(1));
-            if has_hspan {
-                hspans.insert(pos, height);
-            } else {
-                row_height = cmp::max(row_height, height);
+            match cfg.get_span_row(pos) {
+                Some(n) if n > 1 => {
+                    hspans.insert(pos, (n, height));
+                }
+                _ => row_height = max(row_height, height),
             }
         }
 
@@ -314,12 +310,11 @@ fn build_width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
             }
 
             let width = get_cell_width(cell.as_ref(), cfg, pos);
-
-            let has_vspan = !matches!(cfg.get_span_column(pos), None | Some(1));
-            if has_vspan {
-                vspans.insert(pos, width);
-            } else {
-                widths[col] = max(widths[col], width);
+            match cfg.get_span_column(pos) {
+                Some(n) if n > 1 => {
+                    vspans.insert(pos, (n, width));
+                }
+                _ => widths[col] = max(widths[col], width),
             }
         }
     }
