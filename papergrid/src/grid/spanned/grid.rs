@@ -232,8 +232,6 @@ fn print_horizontal_line<F: Write, D: Dimension>(
     Ok(())
 }
 
-type CLines<'a, S, C> = CellLines<'a, S, <C as Colors>::Color>;
-
 #[allow(clippy::too_many_arguments)]
 fn print_multiline_columns<'a, F, I, D, C>(
     f: &mut F,
@@ -339,9 +337,9 @@ fn print_single_line_column<F: Write, C: Color>(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn print_columns_lines<S, F: Write, C: Color>(
+fn print_columns_lines<T, F: Write, C: Color>(
     f: &mut F,
-    columns: &mut [CellLines<'_, S, C>],
+    buf: &mut [Cell<T, C>],
     height: usize,
     cfg: &GridConfig,
     line: usize,
@@ -354,7 +352,7 @@ fn print_columns_lines<S, F: Write, C: Color>(
 
         print_margin_left(f, cfg, exact_line, totalh)?;
 
-        for (col, cell) in columns.iter_mut().enumerate() {
+        for (col, cell) in buf.iter_mut().enumerate() {
             print_vertical_char(f, cfg, (row, col), i, height, shape)?;
             cell.display(f, cfg.get_tab_width())?;
         }
@@ -372,12 +370,11 @@ fn print_columns_lines<S, F: Write, C: Color>(
 }
 
 fn collect_columns<'a, I, D, C>(
-    row_columns: &mut Vec<CLines<'a, I::Item, C>>,
-    columns: I,
-    cfg: &'a GridConfig,
+    buf: &mut Vec<Cell<I::Item, &'a C::Color>>,
+    iter: I,
+    cfg: &GridConfig,
     colors: &'a C,
     dimension: &D,
-
     height: usize,
     row: usize,
 ) where
@@ -386,25 +383,13 @@ fn collect_columns<'a, I, D, C>(
     C: Colors,
     D: Dimension,
 {
-    let iter = columns.enumerate().map(|(col, cell)| {
+    let iter = iter.enumerate().map(|(col, cell)| {
         let width = dimension.get_width(col);
-        let pos = (row, col).into();
-
-        CellLines::new(
-            cell,
-            width,
-            height,
-            cfg.get_formatting(pos),
-            cfg.get_padding(pos),
-            cfg.get_padding_color(pos),
-            *cfg.get_alignment_horizontal(pos),
-            *cfg.get_alignment_vertical(pos),
-            cfg.get_tab_width(),
-            colors.get_color((row, col)),
-        )
+        let color = colors.get_color((row, col));
+        Cell::new(cell, width, height, cfg, color, (row, col))
     });
 
-    row_columns.extend(iter);
+    buf.extend(iter);
 }
 
 fn print_split_line<F: Write, D: Dimension>(
@@ -613,7 +598,7 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
 
 fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
     f: &mut F,
-    columns: &mut BTreeMap<usize, (CellLines<'_, S, C>, usize, usize)>,
+    buf: &mut BTreeMap<usize, (Cell<S, C>, usize, usize)>,
     cfg: &GridConfig,
     dimension: &D,
     total_width: usize,
@@ -668,7 +653,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             // means it's part of other a spanned cell
             // so. we just need to use line from other cell.
 
-            let (cell, _, _) = columns.get_mut(&col).unwrap();
+            let (cell, _, _) = buf.get_mut(&col).unwrap();
             cell.display(f, cfg.get_tab_width())?;
 
             // We need to use a correct right split char.
@@ -755,9 +740,9 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn print_spanned_columns<'a, F, I, D, C>(
     f: &mut F,
-    columns: &mut BTreeMap<usize, (CLines<'a, I::Item, C>, usize, usize)>,
+    buf: &mut BTreeMap<usize, (Cell<I::Item, &'a C::Color>, usize, usize)>,
     iter: I,
-    cfg: &'a GridConfig,
+    cfg: &GridConfig,
     colors: &'a C,
     dimension: &D,
     this_height: usize,
@@ -784,7 +769,7 @@ where
                 continue;
             }
 
-            if let Some((_, _, colspan)) = columns.get(&col) {
+            if let Some((_, _, colspan)) = buf.get(&col) {
                 skip = *colspan - 1;
                 continue;
             }
@@ -808,24 +793,13 @@ where
                 dimension.get_width(col)
             };
 
-            let pos = (row, col).into();
-            let cell = CellLines::new(
-                cell,
-                width,
-                height,
-                cfg.get_formatting(pos),
-                cfg.get_padding(pos),
-                cfg.get_padding_color(pos),
-                *cfg.get_alignment_horizontal(pos),
-                *cfg.get_alignment_vertical(pos),
-                cfg.get_tab_width(),
-                colors.get_color((row, col)),
-            );
+            let color = colors.get_color((row, col));
+            let cell = Cell::new(cell, width, height, cfg, color, (row, col));
 
-            columns.insert(col, (cell, rowspan, colspan));
+            buf.insert(col, (cell, rowspan, colspan));
         }
 
-        columns.retain(|_, (_, rowspan, _)| {
+        buf.retain(|_, (_, rowspan, _)| {
             *rowspan -= 1;
             *rowspan != 0
         });
@@ -840,7 +814,7 @@ where
             continue;
         }
 
-        if let Some((_, _, colspan)) = columns.get(&col) {
+        if let Some((_, _, colspan)) = buf.get(&col) {
             skip = *colspan - 1;
             continue;
         }
@@ -861,21 +835,10 @@ where
             this_height
         };
 
-        let pos = (row, col).into();
-        let cell = CellLines::new(
-            cell,
-            width,
-            height,
-            cfg.get_formatting(pos),
-            cfg.get_padding(pos),
-            cfg.get_padding_color(pos),
-            *cfg.get_alignment_horizontal(pos),
-            *cfg.get_alignment_vertical(pos),
-            cfg.get_tab_width(),
-            colors.get_color((row, col)),
-        );
+        let color = colors.get_color((row, col));
+        let cell = Cell::new(cell, width, height, cfg, color, (row, col));
 
-        columns.insert(col, (cell, rowspan, colspan));
+        buf.insert(col, (cell, rowspan, colspan));
     }
 
     for i in 0..this_height {
@@ -884,7 +847,7 @@ where
 
         print_margin_left(f, cfg, exact_line, totalh)?;
 
-        for (&col, (cell, _, _)) in columns.iter_mut() {
+        for (&col, (cell, _, _)) in buf.iter_mut() {
             print_vertical_char(f, cfg, (row, col), cell_line, this_height, shape)?;
             cell.display(f, cfg.get_tab_width())?;
         }
@@ -898,7 +861,7 @@ where
         }
     }
 
-    columns.retain(|_, (_, rowspan, _)| {
+    buf.retain(|_, (_, rowspan, _)| {
         *rowspan -= 1;
         *rowspan != 0
     });
@@ -926,110 +889,126 @@ fn print_horizontal_border<F: Write>(
     Ok(())
 }
 
-struct CellLines<'a, S, C> {
-    lines: LinesIter<S>,
-    maxwidth: usize,
-    top_indent: usize,
-    alignmenth: AlignmentHorizontal,
-    formatting: &'a Formatting,
-    padding: &'a Padding,
-    padding_color: &'a PaddingColor,
-    color: Option<&'a C>,
-    indent: Option<usize>,
+struct Cell<T, C> {
+    lines: LinesIter<T>,
+    width: usize,
+    indent_top: usize,
+    indent_left: Option<usize>,
+    alignh: AlignmentHorizontal,
+    fmt: Formatting,
+    pad: Padding,
+    pad_color: PaddingColor,
+    color: Option<C>,
 }
 
-impl CellLines<'_, (), ()> {
-    #[allow(clippy::too_many_arguments)]
-    fn new<'a, C: Color, A: AsRef<str>>(
-        text: A,
-        maxwidth: usize,
+impl<T, C> Cell<T, C>
+where
+    T: AsRef<str>,
+{
+    fn new(
+        text: T,
+        width: usize,
         height: usize,
-        formatting: &'a Formatting,
-        padding: &'a Padding,
-        padding_color: &'a PaddingColor,
-        alignmenth: AlignmentHorizontal,
-        alignmentv: AlignmentVertical,
-        tab_width: usize,
-        color: Option<&'a C>,
-    ) -> CellLines<'a, A, C> {
-        let (cell_height, vindent) = get_top_bottom_skip(text.as_ref(), formatting);
-        let top_indent = top_indent(padding, alignmentv, cell_height, height);
+        cfg: &GridConfig,
+        color: Option<C>,
+        pos: Position,
+    ) -> Cell<T, C> {
+        let fmt = *cfg.get_formatting(pos.into());
+        let pad = *cfg.get_padding(pos.into());
+        let pad_color = cfg.get_padding_color(pos.into()).clone();
+        let alignh = *cfg.get_alignment_horizontal(pos.into());
+        let alignv = *cfg.get_alignment_vertical(pos.into());
+        let tabwidth = cfg.get_tab_width();
 
-        let mut indent = None;
-        if !formatting.allow_lines_alignment {
-            let available_width = maxwidth - padding.left.size - padding.right.size;
-            let trim = formatting.horizontal_trim;
-            let hindent =
-                get_left_right_indent(text.as_ref(), alignmenth, trim, tab_width, available_width);
-            indent = Some(hindent);
+        let (count_lines, skip) = if fmt.vertical_trim {
+            let (len, top, _) = count_empty_lines(text.as_ref());
+            (len, top)
+        } else {
+            (count_lines(text.as_ref()), 0)
+        };
+
+        let indent_top = top_indent(&pad, alignv, count_lines, height);
+
+        let mut indent_left = None;
+        if !fmt.allow_lines_alignment {
+            // todo: create a sole function which calculate count_rows+left_indent
+
+            let text_width = get_text_width(text.as_ref(), fmt.horizontal_trim, tabwidth);
+            let available = width - pad.left.size - pad.right.size;
+            indent_left = Some(calculate_indent(alignh, text_width, available).0);
         }
 
         let mut lines = LinesIter::new(text);
-        if let Some(top) = vindent {
-            for _ in 0..top {
-                let _ = lines.lines.next();
-            }
+        for _ in 0..skip {
+            let _ = lines.lines.next();
         }
 
-        CellLines {
+        Self {
             lines,
-            indent,
-            top_indent,
-            maxwidth,
-            alignmenth,
-            formatting,
-            padding,
-            padding_color,
+            indent_left,
+            indent_top,
+            width,
+            alignh,
+            fmt,
+            pad,
+            pad_color,
             color,
         }
     }
 }
 
-impl<S, C> CellLines<'_, S, C>
+impl<T, C> Cell<T, C>
 where
     C: Color,
 {
-    fn display<F: Write>(&mut self, f: &mut F, tab_width: usize) -> fmt::Result {
-        let pad = &self.padding;
-        let pad_color = &self.padding_color;
-        let formatting = &self.formatting;
-        let alignment = self.alignmenth;
-        let color = self.color;
-
-        if self.top_indent > 0 {
-            self.top_indent -= 1;
-            return print_indent(f, pad.top.fill, self.maxwidth, &pad_color.top);
+    fn display<F: Write>(&mut self, f: &mut F, tab_width: usize) -> Result<(), fmt::Error> {
+        if self.indent_top > 0 {
+            self.indent_top -= 1;
+            print_indent(f, self.pad.top.fill, self.width, &self.pad_color.top)?;
+            return Ok(());
         }
 
         let line = match self.lines.lines.next() {
             Some(line) => line,
-            None => return print_indent(f, pad.bottom.fill, self.maxwidth, &pad_color.bottom),
+            None => {
+                print_indent(f, self.pad.bottom.fill, self.width, &self.pad_color.bottom)?;
+                return Ok(());
+            }
         };
 
-        let available_width = self.maxwidth - pad.left.size - pad.right.size;
-
-        let line = if formatting.horizontal_trim && !line.is_empty() {
+        let line = if self.fmt.horizontal_trim && !line.is_empty() {
             string_trim(&line)
         } else {
             line
         };
 
         let line_width = string_width_tab(&line, tab_width);
+        let available_width = self.width - self.pad.left.size - self.pad.right.size;
 
-        let (left, right) = if formatting.allow_lines_alignment {
-            calculate_indent(alignment, line_width, available_width)
+        let (left, right) = if self.fmt.allow_lines_alignment {
+            calculate_indent(self.alignh, line_width, available_width)
         } else {
-            let left = self.indent.expect("must be here");
+            let left = self.indent_left.expect("must be here");
             (left, available_width - line_width - left)
         };
 
-        print_indent(f, pad.left.fill, pad.left.size, &pad_color.left)?;
+        print_indent(
+            f,
+            self.pad.left.fill,
+            self.pad.left.size,
+            &self.pad_color.left,
+        )?;
 
         repeat_char(f, DEFAULT_SPACE_CHAR, left)?;
-        print_text(f, &line, tab_width, color)?;
+        print_text(f, &line, tab_width, self.color.as_ref())?;
         repeat_char(f, DEFAULT_SPACE_CHAR, right)?;
 
-        print_indent(f, pad.right.fill, pad.right.size, &pad_color.right)?;
+        print_indent(
+            f,
+            self.pad.right.fill,
+            self.pad.right.size,
+            &self.pad_color.right,
+        )?;
 
         Ok(())
     }
@@ -1070,38 +1049,6 @@ impl<C> LinesIter<C> {
             lines,
         }
     }
-}
-
-fn get_top_bottom_skip(cell: &str, format: &Formatting) -> (usize, Option<usize>) {
-    let count_lines = count_lines(cell);
-    if format.vertical_trim {
-        let (top, bottom) = count_empty_lines(cell);
-        (count_lines - bottom - top, Some(top))
-    } else {
-        (count_lines, None)
-    }
-}
-
-fn get_left_right_indent(
-    cell: &str,
-    alignment: AlignmentHorizontal,
-    trim: bool,
-    tab_width: usize,
-    available: usize,
-) -> usize {
-    let cell_width = if trim {
-        get_lines(cell)
-            .into_iter()
-            .map(|line| string_width_tab(line.trim(), tab_width))
-            .max()
-            .unwrap_or(0)
-    } else {
-        string_width_multiline_tab(cell, tab_width)
-    };
-
-    let (left, _) = calculate_indent(alignment, cell_width, available);
-
-    left
 }
 
 fn print_text<F: Write>(f: &mut F, s: &str, tab: usize, clr: Option<impl Color>) -> fmt::Result {
@@ -1197,33 +1144,6 @@ fn calculate_indent(
             (left, rest)
         }
     }
-}
-
-fn count_empty_lines(cell: &str) -> (usize, usize) {
-    let mut top = 0;
-    let mut bottom = 0;
-    let mut top_check = true;
-
-    for line in get_lines(cell) {
-        let is_empty = line.trim().is_empty();
-        if top_check {
-            if is_empty {
-                top += 1;
-            } else {
-                top_check = false;
-            }
-
-            continue;
-        }
-
-        if is_empty {
-            bottom += 1;
-        } else {
-            bottom = 0;
-        }
-    }
-
-    (top, bottom)
 }
 
 fn repeat_char<F: Write>(f: &mut F, c: char, n: usize) -> fmt::Result {
@@ -1591,6 +1511,48 @@ fn total_height<D: Dimension>(cfg: &GridConfig, dimension: &D, count_rows: usize
         + cfg.count_horizontal(count_rows)
 }
 
+fn count_empty_lines(cell: &str) -> (usize, usize, usize) {
+    let mut len = 0;
+    let mut top = 0;
+    let mut bottom = 0;
+    let mut top_check = true;
+
+    for line in get_lines(cell) {
+        let is_empty = line.trim().is_empty();
+        if top_check {
+            if is_empty {
+                top += 1;
+            } else {
+                len = 1;
+                top_check = false;
+            }
+
+            continue;
+        }
+
+        if is_empty {
+            bottom += 1;
+        } else {
+            len += bottom + 1;
+            bottom = 0;
+        }
+    }
+
+    (len, top, bottom)
+}
+
+fn get_text_width(text: &str, trim: bool, tab_width: usize) -> usize {
+    if trim {
+        get_lines(text)
+            .into_iter()
+            .map(|line| string_width_tab(line.trim(), tab_width))
+            .max()
+            .unwrap_or(0)
+    } else {
+        string_width_multiline_tab(text, tab_width)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     // use crate::util::string_width;
@@ -1642,6 +1604,9 @@ mod tests {
 
     #[test]
     fn count_empty_lines_test() {
-        assert_eq!(count_empty_lines("\n\nsome text\n\n\n"), (2, 3));
+        assert_eq!(count_empty_lines("\n\nsome text\n\n\n"), (1, 2, 3));
+        assert_eq!(count_empty_lines("\n\nsome\ntext\n\n\n"), (2, 2, 3));
+        assert_eq!(count_empty_lines("\n\nsome\nsome\ntext\n\n\n"), (3, 2, 3));
+        assert_eq!(count_empty_lines("\n\n\n\n"), (0, 5, 0));
     }
 }

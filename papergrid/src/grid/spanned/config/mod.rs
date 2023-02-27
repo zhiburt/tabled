@@ -46,6 +46,8 @@ pub type Margin = Sides<Indent>;
 /// Padding represent a 4 indents of cell.
 pub type Padding = Sides<Indent>;
 
+// todo: Make new Indent which takes Color;
+
 /// Margin represent a 4 indents of table as a whole.
 pub type MarginColor = Sides<AnsiColor<'static>>;
 
