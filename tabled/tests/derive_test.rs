@@ -261,7 +261,7 @@ mod enum_ {
         headers: ["A", "K"],
         tests:
             A { a: 1, b: 2 } => ["+", ""],
-            B("") => [],
+            B("") => ["", ""],
             K => ["", "+"],
     );
 
@@ -861,3 +861,22 @@ fn test_order_skip_usage() {
     assert_eq!(Example::headers(), vec!["details", "name"],);
     assert_eq!(Example::default().fields(), vec!["", ""]);
 }
+
+#[test]
+fn test_skip_enum_0() {
+    #[allow(dead_code)]
+    #[derive(Tabled)]
+    enum Letters {
+        Vowels {
+            character: char,
+            lang: u8,
+        },
+        Consonant(char),
+        #[tabled(skip)]
+        Digit,
+    }
+
+    assert_eq!(Letters::headers(), vec!["Vowels", "Consonant"]);
+    assert_eq!(Letters::Consonant('c').fields(), vec!["", "+"]);
+    assert_eq!(Letters::Digit.fields(), vec!["", ""]);
+} 

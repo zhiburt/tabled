@@ -449,7 +449,7 @@ fn values_for_enum(
         #[allow(unused_variables)]
         match &self {
             #stream
-            _ => return vec![], // variant is hidden so we return an empty vector
+            _ => return vec![::std::borrow::Cow::Borrowed(""); size], // variant is hidden so we return an empty vector
         };
 
         out_vec

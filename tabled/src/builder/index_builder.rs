@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use crate::Table;
 
 use super::Builder;
@@ -48,9 +46,9 @@ use super::Builder;
 pub struct IndexBuilder {
     /// Index is an index data.
     /// It's always set.
-    index: Vec<Cow<'static, str>>,
+    index: Vec<String>,
     /// Name of an index
-    name: Option<Cow<'static, str>>,
+    name: Option<String>,
     /// A flag which checks if we need to actually use index.
     ///
     /// It might happen when it's only necessary to [`Self::transpose`] table.
@@ -58,7 +56,7 @@ pub struct IndexBuilder {
     /// A flag which checks if table was transposed.
     transposed: bool,
     /// Data originated in [`Builder`].
-    data: Vec<Vec<Cow<'static, str>>>,
+    data: Vec<Vec<String>>,
 }
 
 impl IndexBuilder {
@@ -94,7 +92,7 @@ impl IndexBuilder {
     /// Set an index name.
     ///
     /// When [`None`] the name won't be used.
-    pub fn name(mut self, name: Option<Cow<'static, str>>) -> Self {
+    pub fn name(mut self, name: Option<String>) -> Self {
         self.name = name;
         self
     }
@@ -224,7 +222,7 @@ fn build_index(mut b: IndexBuilder) -> Builder {
 
     // add index column
     if b.print_index {
-        b.index.insert(0, Cow::default());
+        b.index.insert(0, String::default());
 
         insert_column(&mut b.data, b.index, 0);
     }
@@ -240,8 +238,8 @@ fn build_index(mut b: IndexBuilder) -> Builder {
     Builder::from(b.data)
 }
 
-fn build_range_index(n: usize) -> Vec<Cow<'static, str>> {
-    (0..n).map(|i| Cow::Owned(i.to_string())).collect()
+fn build_range_index(n: usize) -> Vec<String> {
+    (0..n).map(|i| i.to_string()).collect()
 }
 
 fn remove_or_default<T: Default>(v: &mut Vec<T>, i: usize) -> T {

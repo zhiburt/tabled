@@ -114,7 +114,7 @@ impl Concat {
 
 impl<R, D, C> TableOption<R, D, C> for Concat
 where
-    R: Records + ExactRecords + Resizable + RecordsMut<Cow<'static, str>>,
+    R: Records + ExactRecords + Resizable + RecordsMut<String>,
 {
     fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
         let count_rows = records.count_rows();
@@ -131,7 +131,7 @@ where
                     records.push_row();
 
                     for col in 0..records.count_columns() {
-                        records.set((row, col), self.default_cell.clone());
+                        records.set((row, col), self.default_cell.to_string());
                     }
                 }
 
@@ -142,7 +142,7 @@ where
                         let text = cell_text.0;
 
                         let col = col + count_cols;
-                        records.set((row, col), text.into());
+                        records.set((row, col), text);
                     }
                 }
             }
@@ -155,7 +155,7 @@ where
                     records.push_column();
 
                     for row in 0..records.count_rows() {
-                        records.set((row, col), self.default_cell.clone());
+                        records.set((row, col), self.default_cell.to_string());
                     }
                 }
 
@@ -166,7 +166,7 @@ where
                         let text = cell_text.0;
 
                         let row = row + count_rows;
-                        records.set((row, col), text.into());
+                        records.set((row, col), text);
                     }
                 }
             }

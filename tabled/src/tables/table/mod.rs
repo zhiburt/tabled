@@ -58,7 +58,7 @@ use papergrid::{config::Sides, dimension::Dimension};
 /// [`Style::ascii`]: crate::settings::style::Style::ascii
 #[derive(Debug, Clone)]
 pub struct Table {
-    records: VecRecords<Cow<'static, str>>,
+    records: VecRecords<String>,
     cfg: GridConfig,
     dimension: TableDimension<'static>,
 }
@@ -73,17 +73,16 @@ impl Table {
         I: IntoIterator<Item = T>,
         T: Tabled,
     {
-        let mut header = vec![Cow::Borrowed(""); T::LENGTH];
-        for (text, cell) in T::headers().into_iter().zip(header.iter_mut()) {
-            *cell = text;
+        let mut header = Vec::with_capacity(T::LENGTH);
+        for text in T::headers() {
+            header.push(text.into_owned());
         }
 
         let mut records = vec![header];
         for row in iter.into_iter() {
-            let mut list = vec![Cow::Borrowed(""); T::LENGTH];
-            for (col, cell) in row.fields().into_iter().enumerate() {
-                let cell = Cow::Owned(cell.into_owned());
-                list[col] = cell;
+            let mut list = Vec::with_capacity(T::LENGTH);
+            for text in row.fields().into_iter() {
+                list.push(text.into_owned());
             }
 
             records.push(list);
@@ -155,10 +154,9 @@ impl Table {
     {
         let mut records = Vec::new();
         for row in iter {
-            let mut list = vec![Cow::Borrowed(""); T::LENGTH];
-            for (col, cell) in row.fields().into_iter().enumerate() {
-                let cell = Cow::Owned(cell.into_owned());
-                list[col] = cell;
+            let mut list = Vec::with_capacity(T::LENGTH);
+            for text in row.fields().into_iter() {
+                list.push(text.into_owned());
             }
 
             records.push(list);
@@ -173,9 +171,7 @@ impl Table {
     /// With is a generic function which applies options to the [`Table`].
     ///
     /// It applies settings immediately.
-    pub fn with<
-        O: TableOption<VecRecords<Cow<'static, str>>, TableDimension<'static>, GridConfig>,
-    >(
+    pub fn with<O: TableOption<VecRecords<String>, TableDimension<'static>, GridConfig>>(
         &mut self,
         option: O,
     ) -> &mut Self {
@@ -281,12 +277,7 @@ impl From<Builder> for Table {
 }
 
 impl From<Table>
-    for Grid<
-        VecRecords<Cow<'static, str>>,
-        TableDimension<'static>,
-        GridConfig,
-        crate::grid::colors::NoColors,
-    >
+    for Grid<VecRecords<String>, TableDimension<'static>, GridConfig, crate::grid::colors::NoColors>
 {
     fn from(table: Table) -> Self {
         let records = table.records;

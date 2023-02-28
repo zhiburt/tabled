@@ -156,3 +156,9 @@ impl RecordsMut<&'static str> for VecRecords<Cow<'static, str>> {
         self.data[pos.0][pos.1] = Cow::Borrowed(text);
     }
 }
+
+impl RecordsMut<&'static str> for VecRecords<String> {
+    fn set(&mut self, pos: Position, text: &'static str) {
+        self.data[pos.0][pos.1] = text.to_owned();
+    }
+}
