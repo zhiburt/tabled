@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example basic`
+//! `cargo run --example table`
 
 use tabled::{
     settings::{alignment::Alignment, object::Rows, style::Style, Modify},

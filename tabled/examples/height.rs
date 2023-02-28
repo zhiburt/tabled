@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example table_width`
+//! `cargo run --example height`
 
 use tabled::{
     settings::{height::Height, peaker::PriorityMax, style::Style},

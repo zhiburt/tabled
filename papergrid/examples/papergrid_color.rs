@@ -1,3 +1,8 @@
+//! The example can be run by this command
+//! `cargo run --features color --example papergrid_color`
+//!
+//! This example requires the `color` feature.
+
 use std::io::Write;
 
 use papergrid::{

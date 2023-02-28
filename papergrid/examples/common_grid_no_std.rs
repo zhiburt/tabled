@@ -1,3 +1,6 @@
+//! The example can be run by this command
+//! `cargo run --example common_grid_no_std`
+
 use papergrid::{
     config::{AlignmentHorizontal, Borders, Indent, Sides},
     dimension::Dimension,

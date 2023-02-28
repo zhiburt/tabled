@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example highlight`
+//! `cargo run --example highlight_color`
 
 use tabled::{
     settings::{
