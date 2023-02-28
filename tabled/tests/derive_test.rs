@@ -476,6 +476,66 @@ mod enum_ {
         headers: ["SOMEFIELD1", "someField2", "variant_name2", "k"],
         tests:
     );
+
+    test_enum!(
+        inline_enum_as_whole,
+        t: #[tabled(inline)] {
+            AbsdEgh { a: u8, b: i32 }
+            B(String)
+            K
+        },
+        headers: ["TestType"],
+        tests:
+            AbsdEgh { a: 0, b: 0 }  => ["AbsdEgh"],
+            B(String::new()) => ["B"],
+            K => ["K"],
+    );
+
+    test_enum!(
+        inline_enum_as_whole_and_rename,
+        t:
+        #[tabled(inline, rename_all = "snake_case")]
+        {
+            AbsdEgh { a: u8, b: i32 }
+            B(String)
+            K
+        },
+        headers: ["TestType"],
+        tests:
+            AbsdEgh { a: 0, b: 0 }  => ["absd_egh"],
+            B(String::new()) => ["b"],
+            K => ["k"],
+    );
+
+    test_enum!(
+        inline_enum_as_whole_and_rename_inner,
+        t: #[tabled(inline)] {
+            #[tabled(rename_all = "snake_case")]
+            AbsdEgh { a: u8, b: i32 }
+            #[tabled(rename_all = "lowercase")]
+            B(String)
+            K
+        },
+        headers: ["TestType"],
+        tests:
+            AbsdEgh { a: 0, b: 0 }  => ["absd_egh"],
+            B(String::new()) => ["b"],
+            K => ["K"],
+    );
+
+    test_enum!(
+        inline_enum_name,
+        t: #[tabled(inline("A struct name"))] {
+            AbsdEgh { a: u8, b: i32 }
+            B(String)
+            K
+        },
+        headers: ["A struct name"],
+        tests:
+            AbsdEgh { a: 0, b: 0 }  => ["AbsdEgh"],
+            B(String::new()) => ["B"],
+            K => ["K"],
+    );
 }
 
 mod unit {
@@ -879,4 +939,4 @@ fn test_skip_enum_0() {
     assert_eq!(Letters::headers(), vec!["Vowels", "Consonant"]);
     assert_eq!(Letters::Consonant('c').fields(), vec!["", "+"]);
     assert_eq!(Letters::Digit.fields(), vec!["", ""]);
-} 
+}

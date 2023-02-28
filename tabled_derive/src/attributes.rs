@@ -68,15 +68,19 @@ impl Attributes {
     }
 }
 
-pub struct ObjectAttributes {
+pub struct StructAttributes {
     pub rename_all: Option<CasingStyle>,
+    pub inline: bool,
+    pub inline_value: Option<String>,
 }
 
-impl ObjectAttributes {
+impl StructAttributes {
     pub fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
         let attrs = Attributes::parse(attrs)?;
         Ok(Self {
             rename_all: attrs.rename_all,
+            inline: attrs.inline,
+            inline_value: attrs.inline_prefix,
         })
     }
 }
