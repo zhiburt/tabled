@@ -1,6 +1,6 @@
 //! To run this example:
 //! `cargo run --features color --example hyperlink`
-//! 
+//!
 //! This example requires the `color` feature.
 
 use std::iter::FromIterator;

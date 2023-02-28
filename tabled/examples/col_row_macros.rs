@@ -1,6 +1,6 @@
 //! The example can be run by this command
 //! `cargo run --example col_row_macros --features macros`
-//! 
+//!
 //! This example requires the `macros` feature.
 
 use tabled::{
