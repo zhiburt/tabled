@@ -4,6 +4,32 @@
 //!
 //! [`Grid`]: crate::grid::spanned::Grid
 
+/// Returns string width and count lines of a string. It's a combination of [`string_width_multiline_tab`] and [`count_lines`].
+pub fn string_dimension(text: &str, tab_width: usize) -> (usize, usize) {
+    #[cfg(not(feature = "color"))]
+    {
+        let (lines, acc, max) = text.chars().fold((1, 0, 0), |(lines, acc, max), c| {
+            if c == '\t' {
+                (lines, acc + tab_width, max)
+            } else if c == '\n' {
+                (lines + 1, 0, acc.max(max))
+            } else {
+                let w = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+                (lines, acc + w, max)
+            }
+        });
+
+        (lines, acc.max(max))
+    }
+
+    #[cfg(feature = "color")]
+    {
+        text.lines()
+            .map(|line| string_width_tab(line, tab_width))
+            .fold((1, 0), |(lines, acc), width| (lines + 1, acc.max(width)))
+    }
+}
+
 /// Returns a string width with correction to tab width.
 pub fn string_width_tab(text: &str, tab_width: usize) -> usize {
     #[cfg(not(feature = "color"))]
@@ -216,5 +242,14 @@ mod tests {
             string_width("\u{1b}]8;;file:///home/nushell/asd.zip\u{1b}\\asd.zip\u{1b}]8;;\u{1b}\\"),
             7
         );
+    }
+
+    #[test]
+    fn string_dimension_test() {
+        assert_eq!(
+            string_dimension("\u{1b}[37mnow is the time for all good men\n\u{1b}[0m", 4),
+            (2, 36)
+        );
+        assert_eq!(string_dimension("now is the time for all good men\n", 4), (2, 32));
     }
 }

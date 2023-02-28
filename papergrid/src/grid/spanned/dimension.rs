@@ -11,7 +11,7 @@ use crate::{
     config::Position,
     dimension::{Dimension, Estimate},
     records::Records,
-    util::string::{count_lines, string_width_multiline_tab},
+    util::string::{count_lines, string_dimension, string_width_multiline_tab},
 };
 
 use super::config::GridConfig;
@@ -73,14 +73,16 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
         let mut row_height = 0;
         for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col);
-
             if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
-            let cell = cell.as_ref();
+            let text = cell.as_ref();
+            let (height, width) = string_dimension(text, cfg.get_tab_width());
+            let pad = cfg.get_padding(pos.into());
+            let width = width + pad.left.indent.size + pad.right.indent.size;
+            let height = height + pad.top.indent.size + pad.bottom.indent.size;
 
-            let width = get_cell_width(cell, cfg, pos);
             match cfg.get_span_column(pos) {
                 Some(n) if n > 1 => {
                     vspans.insert(pos, (n, width));
@@ -88,7 +90,6 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
                 _ => widths[col] = max(widths[col], width),
             }
 
-            let height = get_cell_height(cell, cfg, pos);
             match cfg.get_span_row(pos) {
                 Some(n) if n > 1 => {
                     hspans.insert(pos, (n, height));
