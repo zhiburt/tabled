@@ -19,7 +19,7 @@ use syn::{
     Type, Variant,
 };
 
-use attributes::{Attributes, StructAttributes};
+use attributes::{Attributes, FuncArg, StructAttributes};
 use error::Error;
 
 #[proc_macro_derive(Tabled, attributes(tabled))]
@@ -368,12 +368,23 @@ fn info_from_variant(
 
     let variant_name = variant_name(variant, attr);
     let value = if let Some(func) = &attr.display_with {
-        let func_call = match attr.display_with_use_self {
-            true => use_function_for(&quote!(&self), func),
-            false => use_function_no_args(func),
+        let args = match &attr.display_with_args {
+            None => None,
+            Some(args) => match args.is_empty() {
+                true => None,
+                false => {
+                    let args = args.iter().map(fnarg_tokens).collect::<Vec<_>>();
+                    Some(quote!( #(#args,)* ))
+                }
+            },
         };
 
-        quote! { ::std::borrow::Cow::from(#func_call) }
+        let call = match args {
+            Some(args) => use_function(&args, func),
+            None => use_function_no_args(func),
+        };
+
+        quote! { ::std::borrow::Cow::from(#call) }
     } else {
         let default_value = "+";
         quote! { ::std::borrow::Cow::Borrowed(#default_value) }
@@ -413,26 +424,37 @@ fn get_field_fields(field: &TokenStream, attr: &Attributes) -> TokenStream {
     }
 
     if let Some(func) = &attr.display_with {
-        let func_call = match attr.display_with_use_self {
-            true => use_function_for(&quote!(&self), func),
-            false => use_function_for(field, func),
+        let args = match &attr.display_with_args {
+            None => Some(quote!(&#field)),
+            Some(args) => match args.is_empty() {
+                true => None,
+                false => {
+                    let args = args.iter().map(fnarg_tokens).collect::<Vec<_>>();
+                    Some(quote!( #(#args,)* ))
+                }
+            },
         };
 
-        return quote!(vec![::std::borrow::Cow::from(#func_call)]);
+        let call = match args {
+            Some(args) => use_function(&args, func),
+            None => use_function_no_args(func),
+        };
+
+        return quote!(vec![::std::borrow::Cow::from(#call)]);
     }
 
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
 }
 
-fn use_function_for(field: &TokenStream, function: &str) -> TokenStream {
+fn use_function(args: &TokenStream, function: &str) -> TokenStream {
     let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
     match path {
         Ok(path) => {
-            quote! { #path(&#field) }
+            quote! { #path(#args) }
         }
         Err(_) => {
             let function = Ident::new(function, proc_macro2::Span::call_site());
-            quote! { #function(&#field) }
+            quote! { #function(#args) }
         }
     }
 }
@@ -588,5 +610,22 @@ fn field_header_name(f: &Field, attr: &Attributes, index: usize) -> String {
 fn merge_attributes(attr: &mut Attributes, global_attr: &StructAttributes) {
     if attr.rename_all.is_none() {
         attr.rename_all = global_attr.rename_all;
+    }
+}
+
+fn fnarg_tokens(arg: &FuncArg) -> TokenStream {
+    match arg {
+        FuncArg::SelfRef => quote! { &self },
+        FuncArg::Byte(val) => quote! { #val },
+        FuncArg::Char(val) => quote! { #val },
+        FuncArg::Bool(val) => quote! { #val },
+        FuncArg::Uint(val) => quote! { #val },
+        FuncArg::Int(val) => quote! { #val },
+        FuncArg::Float(val) => quote! { #val },
+        FuncArg::String(val) => quote! { #val },
+        FuncArg::Bytes(val) => {
+            let val = syn::LitByteStr::new(val, proc_macro2::Span::call_site());
+            quote! { #val }
+        }
     }
 }

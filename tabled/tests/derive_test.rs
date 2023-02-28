@@ -166,6 +166,18 @@ mod tuple {
     );
 
     test_tuple!(
+        display_option_args,
+        t: { u8 #[tabled(display_with("display_option", 1, "234"))] Option<sstr> },
+        init: { 0 Some("v2") },
+        expected: ["0", "1"], ["0", "some 1 234"],
+        pre: {
+            fn display_option(val: usize, text: &str) -> String {
+                format!("some {val} {text}")
+            }
+        }
+    );
+
+    test_tuple!(
         display_option_self,
         t: { u8 #[tabled(display_with = "Self::display_option")] Option<sstr> },
         init: { 0 Some("v2") },
@@ -184,7 +196,7 @@ mod tuple {
 
     test_tuple!(
         display_option_self_2,
-        t: { u8 #[tabled(display_with("Self::display_option", args))] Option<sstr> },
+        t: { u8 #[tabled(display_with("Self::display_option", self))] Option<sstr> },
         init: { 0 Some("v2") },
         expected: ["0", "1"], ["0", "some v2"],
         pre: {
@@ -201,7 +213,7 @@ mod tuple {
 
     test_tuple!(
         display_option_self_3,
-        t: { u8 #[tabled(display_with("display_option", args))] Option<sstr> },
+        t: { u8 #[tabled(display_with("display_option", self))] Option<sstr> },
         init: { 0 Some("v2") },
         expected: ["0", "1"], ["0", "some v2"],
         pre: {
@@ -305,7 +317,7 @@ mod enum_ {
         inline_field_with_display_self_function,
         t: {
             #[tabled(inline("backend::"))]
-            Backend { #[tabled()] #[tabled(display_with("display", args), rename = "name")] value: sstr }
+            Backend { #[tabled()] #[tabled(display_with("display", self), rename = "name")] value: sstr }
             Frontend
         },
         pre: {
@@ -341,7 +353,7 @@ mod enum_ {
         with_display_self,
         t: {
             #[tabled(inline)]
-            A(#[tabled(display_with("Self::format::<4>", args))] sstr)
+            A(#[tabled(display_with("Self::format::<4>", self))] sstr)
             B
         },
         pre: {
@@ -574,11 +586,11 @@ mod enum_ {
     test_enum!(
         enum_display_with_self_variant,
         t: {
-            #[tabled(display_with("display_variant1", args))]
+            #[tabled(display_with("display_variant1", self))]
             AbsdEgh { a: u8, b: i32 }
-            #[tabled(display_with("display_variant2::<200, _>", args))]
+            #[tabled(display_with("display_variant2::<200, _>", self))]
             B(String)
-            #[tabled(display_with("some::bar::display_variant1", args))]
+            #[tabled(display_with("some::bar::display_variant1", self))]
             K
         },
         pre: {
@@ -603,6 +615,32 @@ mod enum_ {
             AbsdEgh { a: 0, b: 0 }  => ["Hello World", "", ""],
             B(String::new()) => ["", "asd 200", ""],
             K => ["", "", "Hello World 123"],
+    );
+
+    test_enum!(
+        enum_display_with_arguments,
+        t: {
+            #[tabled(display_with("display1", 1, 2, self))]
+            AbsdEgh { a: u8, b: i32 }
+            #[tabled(display_with("display2::<200>", "Hello World"))]
+            B(String)
+            #[tabled(display_with("display1", 100, 200, self))]
+            K
+        },
+        pre: {
+            fn display1<D>(val: usize, val2: usize, _: &D) -> String {
+                format!("{val} {val2}")
+            }
+
+            fn display2<const VAL: usize>(val: &str) -> String {
+                format!("asd {VAL} {val}")
+            }
+        }
+        headers: ["AbsdEgh", "B", "K"],
+        tests:
+            AbsdEgh { a: 0, b: 0 }  => ["1 2", "", ""],
+            B(String::new()) => ["", "asd 200 Hello World", ""],
+            K => ["", "", "100 200"],
     );
 }
 
@@ -680,6 +718,21 @@ mod structure {
         expected: ["f1", "f2"], ["0", "some v2"]
     );
     test_struct!(
+        display_with_args,
+        t: {
+            f1: u8,
+            #[tabled(display_with("display_option", 1, 2, 3))]
+            f2: Option<sstr>,
+        }
+        pre: {
+            fn display_option(v1: usize, v2: usize, v3: usize) -> String {
+                format!("{v1} {v2} {v3}")
+            }
+        }
+        init: { f1: 0, f2: Some("v2") }
+        expected: ["f1", "f2"], ["0", "1 2 3"]
+    );
+    test_struct!(
         display_with_self_static_method,
         t: {
             f1: u8,
@@ -703,7 +756,7 @@ mod structure {
         display_with_self_static_method_2,
         t: {
             f1: u8,
-            #[tabled(display_with("Self::display_option", args))]
+            #[tabled(display_with("Self::display_option", self))]
             f2: Option<sstr>,
         }
         pre: {
@@ -723,7 +776,7 @@ mod structure {
         display_with_self_2_self_static_method_2,
         t: {
             f1: u8,
-            #[tabled(display_with("Self::display_option", args))]
+            #[tabled(display_with("Self::display_option", self))]
             f2: Option<sstr>,
         }
         pre: {
@@ -743,7 +796,7 @@ mod structure {
         display_with_self_2_self_static_method,
         t: {
             f1: u8,
-            #[tabled(display_with("display_option", args))]
+            #[tabled(display_with("display_option", self))]
             f2: Option<sstr>,
         }
         pre: {

@@ -10,7 +10,6 @@ pub fn string_dimension(text: &str) -> (usize, usize) {
     {
         let (lines, acc, max) = text.chars().fold((1, 0, 0), |(lines, acc, max), c| {
             if c == '\n' {
-                println!("asdasd");
                 (lines + 1, 0, acc.max(max))
             } else {
                 let w = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);

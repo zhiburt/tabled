@@ -10,7 +10,7 @@ use tabled::{Table, Tabled};
 struct Country {
     name: &'static str,
     capital_city: &'static str,
-    #[tabled(display_with("display_perimeter", args))]
+    #[tabled(display_with("display_perimeter", self))]
     surface_area_km2: f32,
     #[tabled(display_with = "str::to_lowercase")]
     national_currency: &'static str,

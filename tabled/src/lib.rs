@@ -414,7 +414,7 @@ pub use crate::{tabled::Tabled, tables::table::Table};
 /// ```
 ///
 /// It's also possible to change function argument to be `&self`,
-/// using `#[tabled(display_with("some_function", args))]`
+/// using `#[tabled(display_with("some_function", self))]`
 ///
 /// ```rust,no_run
 /// use tabled::Tabled;
@@ -422,7 +422,7 @@ pub use crate::{tabled::Tabled, tables::table::Table};
 /// #[derive(Tabled)]
 /// pub struct MyRecord {
 ///     pub id: i64,
-///     #[tabled(display_with("Self::display_valid", args))]
+///     #[tabled(display_with("Self::display_valid", self))]
 ///     pub valid: Option<bool>
 /// }
 ///
