@@ -26,50 +26,6 @@ fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
         + margin.right.indent.size
 }
 
-/// Replaces tabs in a string with a given width of spaces.
-pub(crate) fn replace_tab(text: &str, n: usize) -> Cow<'_, str> {
-    if !text.contains('\t') {
-        return Cow::Borrowed(text);
-    }
-
-    // it's a general case which probably must be faster?
-    let replaced = if n == 4 {
-        text.replace('\t', "    ")
-    } else {
-        let mut text = text.to_owned();
-        replace_tab_range(&mut text, n);
-        text
-    };
-
-    Cow::Owned(replaced)
-}
-
-fn replace_tab_range(cell: &mut String, n: usize) -> &str {
-    let mut skip = 0;
-    while let &Some(pos) = &cell[skip..].find('\t') {
-        let pos = skip + pos;
-
-        let is_escaped = pos > 0 && cell.get(pos - 1..pos) == Some("\\");
-        if is_escaped {
-            skip = pos + 1;
-        } else if n == 0 {
-            cell.remove(pos);
-            skip = pos;
-        } else {
-            // I'am not sure which version is faster a loop of 'replace'
-            // or allacation of a string for replacement;
-            cell.replace_range(pos..=pos, &" ".repeat(n));
-            skip = pos + 1;
-        }
-
-        if cell.is_empty() || skip >= cell.len() {
-            break;
-        }
-    }
-
-    cell
-}
-
 /// The function cuts the string to a specific width.
 ///
 /// BE AWARE: width is expected to be in bytes.
@@ -215,21 +171,6 @@ mod tests {
 
     #[cfg(feature = "color")]
     use owo_colors::{colors::Yellow, OwoColorize};
-
-    #[test]
-    fn replace_tab_test() {
-        assert_eq!(replace_tab("123\t\tabc\t", 3), "123      abc   ");
-
-        assert_eq!(replace_tab("\t", 0), "");
-        assert_eq!(replace_tab("\t", 3), "   ");
-        assert_eq!(replace_tab("123\tabc", 3), "123   abc");
-        assert_eq!(replace_tab("123\tabc\tzxc", 0), "123abczxc");
-
-        assert_eq!(replace_tab("\\t", 0), "\\t");
-        assert_eq!(replace_tab("\\t", 4), "\\t");
-        assert_eq!(replace_tab("123\\tabc", 0), "123\\tabc");
-        assert_eq!(replace_tab("123\\tabc", 4), "123\\tabc");
-    }
 
     #[test]
     fn strip_test() {

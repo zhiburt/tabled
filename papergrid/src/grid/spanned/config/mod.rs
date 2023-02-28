@@ -23,7 +23,6 @@ pub use self::{entity_map::EntityMap, formatting::Formatting, offset::Offset};
 /// grid: crate::Grid.
 #[derive(Debug, Clone)]
 pub struct GridConfig {
-    tab_width: usize,
     margin: Sides<ColoredMarginIndent>,
     padding: EntityMap<Sides<ColoredIndent>>,
     alignment_h: EntityMap<AlignmentHorizontal>,
@@ -42,7 +41,6 @@ pub struct GridConfig {
 impl Default for GridConfig {
     fn default() -> Self {
         Self {
-            tab_width: 4,
             margin: Sides::default(),
             padding: EntityMap::default(),
             formatting: EntityMap::default(),
@@ -123,16 +121,6 @@ impl GridConfig {
     /// Set the all [`Borders`] values to a char.
     pub fn set_global_border(&mut self, c: char) {
         self.borders.set_global(c);
-    }
-
-    /// Set tab width in spaces.
-    pub fn set_tab_width(&mut self, width: usize) {
-        self.tab_width = width;
-    }
-
-    /// Get tab width value in spaces.
-    pub fn get_tab_width(&self) -> usize {
-        self.tab_width
     }
 
     /// Returns a current [`Borders`] structure.
@@ -621,7 +609,6 @@ impl From<CompactConfig> for GridConfig {
         cfg.set_borders_color(borders_static_color_to_ansi_color(
             *compact.get_borders_color(),
         ));
-        cfg.set_tab_width(compact.get_tab_width());
 
         if let Some(line) = compact.get_first_horizontal_line() {
             cfg.insert_horizontal_line(

@@ -4,7 +4,7 @@
 
 use std::marker::PhantomData;
 
-use papergrid::util::string::{get_lines, string_width_multiline_tab};
+use papergrid::util::string::{get_lines, string_width_multiline};
 
 use crate::{
     grid::config::Entity,
@@ -118,7 +118,7 @@ where
 
         for pos in entity.iter(count_rows, count_columns) {
             let cell = records.get_cell(pos).as_ref();
-            let cell_width = string_width_multiline_tab(cell, cfg.get_tab_width());
+            let cell_width = string_width_multiline(cell);
             if cell_width >= width {
                 continue;
             }

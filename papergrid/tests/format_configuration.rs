@@ -926,7 +926,7 @@ fn formatting_1x1_test() {
 }
 
 #[test]
-fn tab_size_test() {
+fn tabs_arent_handled() {
     let json = "{
 \t\t \"id\": \"1\",
 \t\t \"name\": \"Hello World\",
@@ -939,50 +939,18 @@ fn tab_size_test() {
     let grid = grid(1, 1).data([[json]]);
 
     assert_eq!(
-        grid.clone().build(),
-        static_table!(
-            "+-------------------------------+"
-            "|{                              |"
-            "|         \"id\": \"1\",            |"
-            "|         \"name\": \"Hello World\",|"
-            "|         \"list\": [             |"
-            "|                 [1, 2, 3],    |"
-            "|                 [4, 5, 6],    |"
-            "|         ]                     |"
-            "|}                              |"
-            "+-------------------------------+"
-        ),
-    );
-
-    assert_eq!(
-        grid.clone().config(|cfg| cfg.set_tab_width(1)).build(),
-        static_table!(
-            "+-------------------------+"
-            "|{                        |"
-            "|   \"id\": \"1\",            |"
-            "|   \"name\": \"Hello World\",|"
-            "|   \"list\": [             |"
-            "|     [1, 2, 3],          |"
-            "|     [4, 5, 6],          |"
-            "|   ]                     |"
-            "|}                        |"
-            "+-------------------------+"
-        ),
-    );
-
-    assert_eq!(
-        grid.config(|cfg| cfg.set_tab_width(0)).build(),
+        grid.build(),
         static_table!(
             "+-----------------------+"
             "|{                      |"
-            "| \"id\": \"1\",            |"
-            "| \"name\": \"Hello World\",|"
-            "| \"list\": [             |"
-            "| [1, 2, 3],            |"
-            "| [4, 5, 6],            |"
-            "| ]                     |"
+            "|\t\t \"id\": \"1\",            |"
+            "|\t\t \"name\": \"Hello World\",|"
+            "|\t\t \"list\": [             |"
+            "|\t\t\t\t [1, 2, 3],            |"
+            "|\t\t\t\t [4, 5, 6],            |"
+            "|\t\t ]                     |"
             "|}                      |"
             "+-----------------------+"
-        )
+        ),
     );
 }

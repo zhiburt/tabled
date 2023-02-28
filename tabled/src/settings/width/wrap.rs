@@ -6,7 +6,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-    grid::{config::Entity, spanned::GridConfig, util::string::string_width_multiline_tab},
+    grid::{config::Entity, spanned::GridConfig, util::string::string_width_multiline},
     records::ExactRecords,
     records::{EmptyRecords, Records, RecordsMut},
     settings::{
@@ -18,7 +18,7 @@ use crate::{
     tables::table::TableDimension,
 };
 
-use super::util::{get_table_widths, get_table_widths_with_total, replace_tab, split_at_pos};
+use super::util::{get_table_widths, get_table_widths_with_total, split_at_pos};
 
 /// Wrap wraps a string to a new line in case it exceeds the provided max boundary.
 /// Otherwise keeps the content of a cell untouched.
@@ -135,18 +135,12 @@ where
 
         for pos in entity.iter(count_rows, count_columns) {
             let text = records.get_cell(pos).as_ref();
-
-            let cell_width = string_width_multiline_tab(text, cfg.get_tab_width());
+            let cell_width = string_width_multiline(text);
             if cell_width <= width {
                 continue;
             }
 
-            // todo: Think about it.
-            //       We could eliminate this allocation if we would be allowed to cut '\t' with unknown characters.
-            //       Currently we don't do that.
-            let text = replace_tab(text, cfg.get_tab_width());
-            let wrapped = wrap_text(&text, width, self.keep_words);
-
+            let wrapped = wrap_text(text, width, self.keep_words);
             records.set(pos, wrapped);
         }
     }

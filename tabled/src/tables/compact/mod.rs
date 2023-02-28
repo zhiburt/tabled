@@ -74,7 +74,7 @@ use core::fmt;
 use papergrid::{
     dimension::{Dimension, Estimate},
     grid::compact::{CompactConfig, CompactGrid},
-    util::string::string_width_tab,
+    util::string::string_width,
 };
 
 use crate::{
@@ -239,7 +239,7 @@ where
         for row in mat.iter() {
             for (col, text) in row.iter().enumerate() {
                 let text = text.as_ref();
-                let text_width = string_width_tab(text, 4);
+                let text_width = string_width(text);
                 width[col] = max(width[col], text_width);
             }
         }
@@ -279,7 +279,6 @@ fn build_grid<W: fmt::Write, I: IntoRecords, D: Dimension>(
 
 const fn create_config() -> CompactConfig {
     CompactConfig::empty()
-        .set_tab_width(4)
         .set_padding(Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),

@@ -205,7 +205,6 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
     iter_cfg: &Settings,
     dims: Dims<'_>,
 ) -> Result<(), fmt::Error> {
-    let tab_size = config.get_tab_width();
     let count_rows = iter_cfg.count_rows;
 
     let padding = config.get_padding();
@@ -226,14 +225,12 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
         match count_rows {
             Some(limit) => {
                 let records = LimitRows::new(records, limit);
-                let records =
-                    build_records(records, content_width, count_columns, count_rows, tab_size);
+                let records = build_records(records, content_width, count_columns, count_rows);
                 let cfg = GridConfig::from(config);
                 return Grid::new(records, dims, cfg).build(writer);
             }
             None => {
-                let records =
-                    build_records(records, content_width, count_columns, count_rows, tab_size);
+                let records = build_records(records, content_width, count_columns, count_rows);
                 let cfg = GridConfig::from(config);
                 return Grid::new(records, dims, cfg).build(writer);
             }
@@ -283,12 +280,12 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
     match count_rows {
         Some(limit) => {
             let records = LimitRows::new(records, limit);
-            let records = build_records(records, contentw, count_columns, count_rows, tab_size);
+            let records = build_records(records, contentw, count_columns, count_rows);
             let cfg = GridConfig::from(config);
             Grid::new(records, dimension, cfg).build(writer)
         }
         None => {
-            let records = build_records(records, contentw, count_columns, count_rows, tab_size);
+            let records = build_records(records, contentw, count_columns, count_rows);
             let cfg = GridConfig::from(config);
             Grid::new(records, dimension, cfg).build(writer)
         }
@@ -297,7 +294,6 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
 
 fn create_config() -> CompactConfig {
     CompactConfig::default()
-        .set_tab_width(4)
         .set_padding(Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),
@@ -313,9 +309,8 @@ fn build_records<I: IntoRecords>(
     width: ExactValue<'_>,
     count_columns: usize,
     count_rows: Option<usize>,
-    tab_size: usize,
 ) -> IterRecords<LimitColumns<TruncateContent<'_, I>>> {
-    let records = TruncateContent::new(records, width, tab_size);
+    let records = TruncateContent::new(records, width);
     let records = LimitColumns::new(records, count_columns);
     IterRecords::new(records, count_columns, count_rows)
 }

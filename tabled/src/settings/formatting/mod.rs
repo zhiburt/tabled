@@ -4,12 +4,16 @@
 //!
 //! [`TabSize`] sets a default tab size.
 //!
+//! [`Charset`] responsible for special char treatment.
+//!
 //! [`Alignment`]: crate::settings::alignment::Alignment
 
 mod alignment_strategy;
+mod charset;
 mod tab_size;
 mod trim_strategy;
 
 pub use alignment_strategy::AlignmentStrategy;
+pub use charset::{Charset, CleanCharset};
 pub use tab_size::TabSize;
 pub use trim_strategy::TrimStrategy;

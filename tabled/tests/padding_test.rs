@@ -106,18 +106,18 @@ test_table!(
     {
         use std::convert::TryFrom;
         use owo_colors::OwoColorize;
-        use tabled::settings::{padding::PaddingColor, color::Color};
+        use tabled::settings::{color::Color};
 
-        let padding_color = PaddingColor::new(
+        let padding = Padding::new(2, 2, 2, 2).colorize(
+            Color::try_from(' '.on_yellow().to_string()).unwrap(),
+            Color::try_from(' '.on_blue().to_string()).unwrap(),
             Color::try_from(' '.on_red().to_string()).unwrap(),
             Color::try_from(' '.on_green().to_string()).unwrap(),
-            Color::try_from(' '.on_yellow().to_string()).unwrap(),
-            Color::try_from(' '.on_blue().to_string()).unwrap()
         );
 
         create_table::<3, 3>()
             .with(Style::psql())
-            .with(Modify::new(Rows::new(1..)).with(Padding::new(2, 2, 2, 2)).with(padding_color))
+            .with(Modify::new(Rows::new(1..)).with(padding))
     },
     "  N  | column 0 | column 1 | column 2 \n-----+----------+----------+----------\n\u{1b}[41m     \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m\n\u{1b}[41m     \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m\n\u{1b}[43m  \u{1b}[49m0\u{1b}[44m  \u{1b}[49m|\u{1b}[43m  \u{1b}[49m 0-0  \u{1b}[44m  \u{1b}[49m|\u{1b}[43m  \u{1b}[49m 0-1  \u{1b}[44m  \u{1b}[49m|\u{1b}[43m  \u{1b}[49m 0-2  \u{1b}[44m  \u{1b}[49m\n\u{1b}[42m     \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m\n\u{1b}[42m     \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m\n\u{1b}[41m     \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m\n\u{1b}[41m     \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m\n\u{1b}[43m  \u{1b}[49m1\u{1b}[44m  \u{1b}[49m|\u{1b}[43m  \u{1b}[49m 1-0  \u{1b}[44m  \u{1b}[49m|\u{1b}[43m  \u{1b}[49m 1-1  \u{1b}[44m  \u{1b}[49m|\u{1b}[43m  \u{1b}[49m 1-2  \u{1b}[44m  \u{1b}[49m\n\u{1b}[42m     \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m\n\u{1b}[42m     \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m\n\u{1b}[41m     \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m\n\u{1b}[41m     \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m|\u{1b}[41m          \u{1b}[49m\n\u{1b}[43m  \u{1b}[49m2\u{1b}[44m  \u{1b}[49m|\u{1b}[43m  \u{1b}[49m 2-0  \u{1b}[44m  \u{1b}[49m|\u{1b}[43m  \u{1b}[49m 2-1  \u{1b}[44m  \u{1b}[49m|\u{1b}[43m  \u{1b}[49m 2-2  \u{1b}[44m  \u{1b}[49m\n\u{1b}[42m     \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m\n\u{1b}[42m     \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m|\u{1b}[42m          \u{1b}[49m"
 );

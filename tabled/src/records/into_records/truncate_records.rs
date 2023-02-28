@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 
 use crate::{
-    grid::util::string::string_width_multiline_tab, records::IntoRecords, settings::width::Truncate,
+    grid::util::string::string_width_multiline, records::IntoRecords, settings::width::Truncate,
 };
 
 use super::either_string::EitherString;
@@ -13,21 +13,12 @@ use super::either_string::EitherString;
 pub struct TruncateContent<'a, I> {
     records: I,
     width: ExactValue<'a>,
-    tab_size: usize,
 }
 
 impl TruncateContent<'_, ()> {
     /// Creates new [`TruncateContent`] object.
-    pub fn new<I: IntoRecords>(
-        records: I,
-        width: ExactValue<'_>,
-        tab_size: usize,
-    ) -> TruncateContent<'_, I> {
-        TruncateContent {
-            records,
-            width,
-            tab_size,
-        }
+    pub fn new<I: IntoRecords>(records: I, width: ExactValue<'_>) -> TruncateContent<'_, I> {
+        TruncateContent { records, width }
     }
 }
 
@@ -43,7 +34,6 @@ where
         TruncateContentIter {
             iter: self.records.iter_rows().into_iter(),
             width: self.width.clone(),
-            tab_size: self.tab_size,
         }
     }
 }
@@ -53,7 +43,6 @@ where
 pub struct TruncateContentIter<'a, I> {
     iter: I,
     width: ExactValue<'a>,
-    tab_size: usize,
 }
 
 impl<'a, I> Iterator for TruncateContentIter<'a, I>
@@ -70,7 +59,6 @@ where
             iter: iter.into_iter(),
             current: 0,
             width: self.width.clone(),
-            tab_size: self.tab_size,
         })
     }
 }
@@ -80,7 +68,6 @@ where
 pub struct TruncateContentColumnsIter<'a, I> {
     iter: I,
     width: ExactValue<'a>,
-    tab_size: usize,
     current: usize,
 }
 
@@ -97,12 +84,12 @@ where
         let width = self.width.get(self.current);
         self.current += 1;
 
-        let text_width = string_width_multiline_tab(s.as_ref(), self.tab_size);
+        let text_width = string_width_multiline(s.as_ref());
         if text_width <= width {
             return Some(EitherString::Some(s));
         }
 
-        let text = Truncate::truncate_text(s.as_ref(), width, self.tab_size);
+        let text = Truncate::truncate_text(s.as_ref(), width);
         let text = text.into_owned();
         let text = EitherString::Owned(text);
 

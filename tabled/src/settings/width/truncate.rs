@@ -4,7 +4,7 @@
 
 use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
 
-use papergrid::util::string::{string_width_multiline_tab, string_width_tab};
+use papergrid::util::string::{string_width, string_width_multiline};
 
 use crate::{
     grid::spanned::config::GridConfig,
@@ -18,7 +18,7 @@ use crate::{
     tables::table::TableDimension,
 };
 
-use super::util::{cut_str, get_table_widths, get_table_widths_with_total, replace_tab};
+use super::util::{cut_str, get_table_widths, get_table_widths_with_total};
 
 /// Truncate cut the string to a given width if its length exceeds it.
 /// Otherwise keeps the content of a cell untouched.
@@ -155,16 +155,8 @@ impl<'a, W, P> Truncate<'a, W, P> {
 
 impl Truncate<'_, (), ()> {
     /// Truncate a given string
-    pub fn truncate_text(text: &str, width: usize, tab_width: usize) -> Cow<'_, str> {
-        let text = replace_tab(text, tab_width);
-
-        match text {
-            Cow::Borrowed(text) => truncate_text(text, width, "", false),
-            Cow::Owned(text) => match truncate_text(&text, width, "", false) {
-                Cow::Borrowed(_) => Cow::Owned(text),
-                Cow::Owned(text) => Cow::Owned(text),
-            },
-        }
+    pub fn truncate_text(text: &str, width: usize) -> Cow<'_, str> {
+        truncate_text(text, width, "", false)
     }
 }
 
@@ -181,7 +173,7 @@ where
         let mut suffix = Cow::Borrowed("");
 
         if let Some(x) = self.suffix.as_ref() {
-            let (s, w) = make_suffix(x, width, cfg.get_tab_width());
+            let (s, w) = make_suffix(x, width);
             suffix = s;
             width = w;
         };
@@ -194,7 +186,7 @@ where
         for pos in entity.iter(count_rows, count_columns) {
             let text = records.get_cell(pos).as_ref();
 
-            let cell_width = string_width_multiline_tab(text, cfg.get_tab_width());
+            let cell_width = string_width_multiline(text);
             if truncate_width >= cell_width {
                 continue;
             }
@@ -206,11 +198,7 @@ where
                     Cow::Borrowed(suffix.deref())
                 }
             } else {
-                // todo: Think about it.
-                //       We could eliminate this allocation if we would be allowed to cut '\t' with unknown characters.
-                //       Currently we don't do that.
-                let text = replace_tab(text, cfg.get_tab_width());
-                Cow::Owned(truncate_text(&text, width, &suffix, save_suffix_color).into_owned())
+                truncate_text(text, width, &suffix, save_suffix_color)
             };
 
             records.set(pos, text.into_owned());
@@ -229,12 +217,8 @@ fn need_suffix_color_preservation(_suffix: &Option<TruncateSuffix<'_>>) -> bool 
     }
 }
 
-fn make_suffix<'a>(
-    suffix: &'a TruncateSuffix<'_>,
-    width: usize,
-    tab_width: usize,
-) -> (Cow<'a, str>, usize) {
-    let suffix_length = string_width_tab(&suffix.text, tab_width);
+fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str>, usize) {
+    let suffix_length = string_width(&suffix.text);
     if width > suffix_length {
         return (Cow::Borrowed(suffix.text.as_ref()), width - suffix_length);
     }

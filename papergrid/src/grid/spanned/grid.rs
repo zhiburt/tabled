@@ -13,9 +13,7 @@ use crate::{
     config::{AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides},
     dimension::Dimension,
     records::Records,
-    util::string::{
-        count_lines, get_lines, string_width, string_width_multiline_tab, string_width_tab, Lines,
-    },
+    util::string::{count_lines, get_lines, string_width, string_width_multiline, Lines},
 };
 
 use super::config::{ColoredIndent, Formatting, GridConfig, Offset};
@@ -309,12 +307,12 @@ fn print_single_line_column<F: Write, C: Color>(
 
     let (text, text_width) = if fmt.horizontal_trim && !text.is_empty() {
         let text = string_trim(text);
-        let width = string_width_tab(&text, cfg.get_tab_width());
+        let width = string_width(&text);
 
         (text, width)
     } else {
         let text = Cow::Borrowed(text);
-        let width = string_width_multiline_tab(&text, cfg.get_tab_width());
+        let width = string_width_multiline(&text);
 
         (text, width)
     };
@@ -326,7 +324,7 @@ fn print_single_line_column<F: Write, C: Color>(
     print_padding(f, &pad.left)?;
 
     repeat_char(f, DEFAULT_SPACE_CHAR, left)?;
-    print_text(f, &text, cfg.get_tab_width(), color)?;
+    print_text(f, &text, color)?;
     repeat_char(f, DEFAULT_SPACE_CHAR, right)?;
 
     print_padding(f, &pad.right)?;
@@ -352,7 +350,7 @@ fn print_columns_lines<T, F: Write, C: Color>(
 
         for (col, cell) in buf.iter_mut().enumerate() {
             print_vertical_char(f, cfg, (row, col), i, height, shape)?;
-            cell.display(f, cfg.get_tab_width())?;
+            cell.display(f)?;
         }
 
         print_vertical_char(f, cfg, (row, shape.1), i, height, shape)?;
@@ -455,7 +453,7 @@ fn print_split_line<F: Write, D: Dimension>(
         }
 
         if i >= override_text_pos && !override_text.is_empty() {
-            let text_width = string_width_tab(&override_text, cfg.get_tab_width());
+            let text_width = string_width(&override_text);
             let print_width = cmp::min(text_width, width);
             let (c, rest) = split_str_at(&override_text, print_width);
             f.write_str(&c)?;
@@ -652,7 +650,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             // so. we just need to use line from other cell.
 
             let (cell, _, _) = buf.get_mut(&col).unwrap();
-            cell.display(f, cfg.get_tab_width())?;
+            cell.display(f)?;
 
             // We need to use a correct right split char.
             let original_row = closest_visible_row(cfg, (row, col)).unwrap();
@@ -680,7 +678,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             }
 
             if i >= override_text_pos && !override_text.is_empty() {
-                let text_width = string_width_tab(&override_text, cfg.get_tab_width());
+                let text_width = string_width(&override_text);
                 let print_width = cmp::min(text_width, width);
 
                 let (c, rest) = split_str_at(&override_text, print_width);
@@ -847,7 +845,7 @@ where
 
         for (&col, (cell, _, _)) in buf.iter_mut() {
             print_vertical_char(f, cfg, (row, col), cell_line, this_height, shape)?;
-            cell.display(f, cfg.get_tab_width())?;
+            cell.display(f)?;
         }
 
         print_vertical_char(f, cfg, (row, shape.1), cell_line, this_height, shape)?;
@@ -914,7 +912,6 @@ where
         let pad = cfg.get_padding(pos.into()).clone();
         let alignh = *cfg.get_alignment_horizontal(pos.into());
         let alignv = *cfg.get_alignment_vertical(pos.into());
-        let tabwidth = cfg.get_tab_width();
 
         let (count_lines, skip) = if fmt.vertical_trim {
             let (len, top, _) = count_empty_lines(text.as_ref());
@@ -929,7 +926,7 @@ where
         if !fmt.allow_lines_alignment {
             // todo: create a sole function which calculate count_rows+left_indent
 
-            let text_width = get_text_width(text.as_ref(), fmt.horizontal_trim, tabwidth);
+            let text_width = get_text_width(text.as_ref(), fmt.horizontal_trim);
             let available = width - pad.left.indent.size - pad.right.indent.size;
             indent_left = Some(calculate_indent(alignh, text_width, available).0);
         }
@@ -956,7 +953,7 @@ impl<T, C> Cell<T, C>
 where
     C: Color,
 {
-    fn display<F: Write>(&mut self, f: &mut F, tab_width: usize) -> Result<(), fmt::Error> {
+    fn display<F: Write>(&mut self, f: &mut F) -> Result<(), fmt::Error> {
         if self.indent_top > 0 {
             self.indent_top -= 1;
             print_padding_n(f, &self.pad.top, self.width)?;
@@ -977,7 +974,7 @@ where
             line
         };
 
-        let line_width = string_width_tab(&line, tab_width);
+        let line_width = string_width(&line);
         let available_width = self.width - self.pad.left.indent.size - self.pad.right.indent.size;
 
         let (left, right) = if self.fmt.allow_lines_alignment {
@@ -990,7 +987,7 @@ where
         print_padding(f, &self.pad.left)?;
 
         repeat_char(f, DEFAULT_SPACE_CHAR, left)?;
-        print_text(f, &line, tab_width, self.color.as_ref())?;
+        print_text(f, &line, self.color.as_ref())?;
         repeat_char(f, DEFAULT_SPACE_CHAR, right)?;
 
         print_padding(f, &self.pad.right)?;
@@ -1036,33 +1033,15 @@ impl<C> LinesIter<C> {
     }
 }
 
-fn print_text<F: Write>(f: &mut F, s: &str, tab: usize, clr: Option<impl Color>) -> fmt::Result {
+fn print_text<F: Write>(f: &mut F, text: &str, clr: Option<impl Color>) -> fmt::Result {
     match clr {
         Some(color) => {
             color.fmt_prefix(f)?;
-            print_str(f, s, tab)?;
-            color.fmt_suffix(f)?;
+            f.write_str(text)?;
+            color.fmt_suffix(f)
         }
-        None => {
-            print_str(f, s, tab)?;
-        }
+        None => f.write_str(text),
     }
-
-    Ok(())
-}
-
-fn print_str<F: Write>(f: &mut F, text: &str, tab_width: usize) -> fmt::Result {
-    // So to not use replace_tab we are printing by char;
-    // Hopefully it's more effective as it reduces a number of allocations.
-    for c in text.chars() {
-        match c {
-            '\r' => (),
-            '\t' => repeat_char(f, ' ', tab_width)?,
-            c => f.write_char(c)?,
-        }
-    }
-
-    Ok(())
 }
 
 fn prepare_coloring<'a, F: Write>(
@@ -1524,15 +1503,15 @@ fn count_empty_lines(cell: &str) -> (usize, usize, usize) {
     (len, top, bottom)
 }
 
-fn get_text_width(text: &str, trim: bool, tab_width: usize) -> usize {
+fn get_text_width(text: &str, trim: bool) -> usize {
     if trim {
         get_lines(text)
             .into_iter()
-            .map(|line| string_width_tab(line.trim(), tab_width))
+            .map(|line| string_width(line.trim()))
             .max()
             .unwrap_or(0)
     } else {
-        string_width_multiline_tab(text, tab_width)
+        string_width_multiline(text)
     }
 }
 

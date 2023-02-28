@@ -122,8 +122,7 @@ fn create_small_table(style: RawStyle) -> Table {
 }
 
 fn create_main_table(message: &str) -> Table {
-    let count_lines = string::count_lines(message);
-    let message_width = string::string_width_multiline_tab(message, 4);
+    let (count_lines, message_width) = string::string_dimension(message);
     let count_additional_separators = if count_lines > 2 { count_lines - 2 } else { 0 };
 
     let left_table = format!(

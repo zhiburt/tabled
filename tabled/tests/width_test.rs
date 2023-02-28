@@ -4,7 +4,7 @@ use papergrid::util::string::string_width_multiline;
 
 use tabled::settings::{
     alignment::Alignment,
-    formatting::TrimStrategy,
+    formatting::{TabSize, TrimStrategy},
     margin::Margin,
     object::{Columns, Object, Rows, Segment},
     padding::Padding,
@@ -1674,6 +1674,7 @@ fn justify_width_max_test() {
 #[test]
 fn max_width_when_cell_has_tabs() {
     let table = init_table::<3, 3, _, _>([((1, 1), "\tHello\tWorld\t")])
+        .with(TabSize::new(4))
         .with(Style::markdown())
         .with(Modify::new(Columns::new(..)).with(Width::truncate(1)))
         .to_string();
@@ -1693,6 +1694,7 @@ fn max_width_when_cell_has_tabs() {
 #[test]
 fn max_width_table_when_cell_has_tabs() {
     let table = init_table::<3, 3, _, _>([((1, 1), "\tHello\tWorld\t")])
+        .with(TabSize::new(4))
         .with(Style::markdown())
         .with(Width::truncate(15))
         .to_string();
@@ -2240,6 +2242,7 @@ fn min_width_priority_min() {
 fn max_width_tab_0() {
     let table =
         new_table(["\t\tTigre Ecuador\tOMYA Andina\t3824909999\tCalcium carbonate\tColombia\t"])
+            .with(TabSize::new(4))
             .with(Style::markdown())
             .with(Width::wrap(60))
             .to_string();

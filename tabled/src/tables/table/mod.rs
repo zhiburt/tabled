@@ -321,7 +321,6 @@ fn table_padding(alignment: fmt::Alignment, available: usize) -> (usize, usize) 
 
 fn configure_grid() -> GridConfig {
     let mut cfg = GridConfig::default();
-    cfg.set_tab_width(4);
     cfg.set_padding(
         Entity::Global,
         Sides::new(

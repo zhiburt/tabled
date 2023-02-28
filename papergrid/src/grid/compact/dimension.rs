@@ -7,7 +7,7 @@ use core::cmp::max;
 use crate::{
     dimension::{Dimension, Estimate},
     records::Records,
-    util::string::{count_lines, string_width_multiline_tab},
+    util::string::{count_lines, string_width_multiline},
 };
 
 use super::config::CompactConfig;
@@ -92,7 +92,7 @@ fn get_cell_height(cell: &str, cfg: &CompactConfig) -> usize {
 
 fn get_cell_width(text: &str, cfg: &CompactConfig) -> usize {
     let pad = cfg.get_padding();
-    let width = string_width_multiline_tab(text, cfg.get_tab_width());
+    let width = string_width_multiline(text);
 
     width + pad.left.size + pad.right.size
 }

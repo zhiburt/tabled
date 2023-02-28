@@ -5,13 +5,12 @@
 //! [`Grid`]: crate::grid::spanned::Grid
 
 /// Returns string width and count lines of a string. It's a combination of [`string_width_multiline_tab`] and [`count_lines`].
-pub fn string_dimension(text: &str, tab_width: usize) -> (usize, usize) {
+pub fn string_dimension(text: &str) -> (usize, usize) {
     #[cfg(not(feature = "color"))]
     {
         let (lines, acc, max) = text.chars().fold((1, 0, 0), |(lines, acc, max), c| {
-            if c == '\t' {
-                (lines, acc + tab_width, max)
-            } else if c == '\n' {
+            if c == '\n' {
+                println!("asdasd");
                 (lines + 1, 0, acc.max(max))
             } else {
                 let w = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
@@ -24,67 +23,9 @@ pub fn string_dimension(text: &str, tab_width: usize) -> (usize, usize) {
 
     #[cfg(feature = "color")]
     {
-        text.lines()
-            .map(|line| string_width_tab(line, tab_width))
-            .fold((1, 0), |(lines, acc), width| (lines + 1, acc.max(width)))
-    }
-}
-
-/// Returns a string width with correction to tab width.
-pub fn string_width_tab(text: &str, tab_width: usize) -> usize {
-    #[cfg(not(feature = "color"))]
-    {
-        __string_width_tab(text, tab_width)
-    }
-
-    #[cfg(feature = "color")]
-    {
-        // we need to strip ansi because of terminal links
-        // and they're can't be stripped by ansi_str.
-
-        ansitok::parse_ansi(text)
-            .filter(|e| e.kind() == ansitok::ElementKind::Text)
-            .map(|e| &text[e.start()..e.end()])
-            .map(|e| __string_width_tab(e, tab_width))
-            .sum()
-    }
-}
-
-fn __string_width_tab(text: &str, tab_width: usize) -> usize {
-    text.chars().fold(0, |acc, c| {
-        if c == '\t' {
-            acc + tab_width
-        } else {
-            let w = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
-            acc + w
-        }
-    })
-}
-
-/// Returns a max per line string width with correction to tab width.
-pub fn string_width_multiline_tab(text: &str, tab_width: usize) -> usize {
-    #[cfg(not(feature = "color"))]
-    {
-        let (acc, max) = text.chars().fold((0, 0), |(acc, max), c| {
-            if c == '\t' {
-                (acc + tab_width, max)
-            } else if c == '\n' {
-                (0, std::cmp::max(acc, max))
-            } else {
-                let w = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
-                (acc + w, max)
-            }
-        });
-
-        std::cmp::max(acc, max)
-    }
-
-    #[cfg(feature = "color")]
-    {
-        text.lines()
-            .map(|line| string_width_tab(line, tab_width))
-            .max()
-            .unwrap_or(0)
+        get_lines(text)
+            .map(|line| string_width(&line))
+            .fold((0, 0), |(i, acc), width| (i + 1, acc.max(width)))
     }
 }
 
@@ -189,6 +130,54 @@ impl<'a> Iterator for Lines<'a> {
     }
 }
 
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+/// Replaces tabs in a string with a given width of spaces.
+pub fn replace_tab(text: &str, n: usize) -> std::borrow::Cow<'_, str> {
+    if !text.contains('\t') {
+        return std::borrow::Cow::Borrowed(text);
+    }
+
+    // it's a general case which probably must be faster?
+    let replaced = if n == 4 {
+        text.replace('\t', "    ")
+    } else {
+        let mut text = text.to_owned();
+        replace_tab_range(&mut text, n);
+        text
+    };
+
+    std::borrow::Cow::Owned(replaced)
+}
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+fn replace_tab_range(cell: &mut String, n: usize) -> &str {
+    let mut skip = 0;
+    while let &Some(pos) = &cell[skip..].find('\t') {
+        let pos = skip + pos;
+
+        let is_escaped = pos > 0 && cell.get(pos - 1..pos) == Some("\\");
+        if is_escaped {
+            skip = pos + 1;
+        } else if n == 0 {
+            cell.remove(pos);
+            skip = pos;
+        } else {
+            // I'am not sure which version is faster a loop of 'replace'
+            // or allacation of a string for replacement;
+            cell.replace_range(pos..=pos, &" ".repeat(n));
+            skip = pos + 1;
+        }
+
+        if cell.is_empty() || skip >= cell.len() {
+            break;
+        }
+    }
+
+    cell
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -247,9 +236,38 @@ mod tests {
     #[test]
     fn string_dimension_test() {
         assert_eq!(
-            string_dimension("\u{1b}[37mnow is the time for all good men\n\u{1b}[0m", 4),
-            (2, 36)
+            string_dimension("\u{1b}[37mnow is the time for all good men\n\u{1b}[0m"),
+            {
+                #[cfg(feature = "color")]
+                {
+                    (2, 32)
+                }
+                #[cfg(not(feature = "color"))]
+                {
+                    (2, 36)
+                }
+            }
         );
-        assert_eq!(string_dimension("now is the time for all good men\n", 4), (2, 32));
+        assert_eq!(
+            string_dimension("now is the time for all good men\n"),
+            (2, 32)
+        );
+        assert_eq!(string_dimension("asd"), (1, 3));
+        assert_eq!(string_dimension(""), (1, 0));
+    }
+
+    #[test]
+    fn replace_tab_test() {
+        assert_eq!(replace_tab("123\t\tabc\t", 3), "123      abc   ");
+
+        assert_eq!(replace_tab("\t", 0), "");
+        assert_eq!(replace_tab("\t", 3), "   ");
+        assert_eq!(replace_tab("123\tabc", 3), "123   abc");
+        assert_eq!(replace_tab("123\tabc\tzxc", 0), "123abczxc");
+
+        assert_eq!(replace_tab("\\t", 0), "\\t");
+        assert_eq!(replace_tab("\\t", 4), "\\t");
+        assert_eq!(replace_tab("123\\tabc", 0), "123\\tabc");
+        assert_eq!(replace_tab("123\\tabc", 4), "123\\tabc");
     }
 }

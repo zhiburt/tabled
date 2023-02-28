@@ -12,7 +12,7 @@ use crate::{
     config::{AlignmentHorizontal, Borders, Indent, Line, Sides},
     dimension::Dimension,
     records::Records,
-    util::string::string_width_tab,
+    util::string::string_width,
 };
 
 use super::config::CompactConfig;
@@ -143,7 +143,6 @@ fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
     let margin_color = cfg.get_margin_color();
     let pad = create_padding(cfg);
     let align = cfg.get_alignment_horizontal();
-    let tab_size = cfg.get_tab_width();
     let mar = (
         (margin.left, margin_color.left),
         (margin.right, margin_color.right),
@@ -225,7 +224,7 @@ fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
             .map(|(col, text)| (text, colors.get_color((row, col))));
 
         let widths = widths.clone();
-        print_grid_row(f, columns, widths, mar, pad, vert, align, tab_size)?;
+        print_grid_row(f, columns, widths, mar, pad, vert, align)?;
 
         new_line = true;
         row += 1;
@@ -268,7 +267,6 @@ fn print_grid_row<F, I, T, C, D>(
     pad: Sides<ColoredIndent>,
     vert: (BorderChar, BorderChar, BorderChar),
     align: AlignmentHorizontal,
-    tab_size: usize,
 ) -> fmt::Result
 where
     F: Write,
@@ -294,7 +292,7 @@ where
     });
 
     print_indent2(f, mar.0 .0, mar.0 .1)?;
-    print_row_columns(f, columns, vert, pad, align, tab_size)?;
+    print_row_columns(f, columns, vert, pad, align)?;
     print_indent2(f, mar.1 .0, mar.1 .1)?;
 
     for _ in 0..pad.bottom.0.size {
@@ -403,7 +401,6 @@ fn print_row_columns<F, I, T, C>(
     borders: (BorderChar, BorderChar, BorderChar),
     pad: Sides<ColoredIndent>,
     align: AlignmentHorizontal,
-    tab: usize,
 ) -> Result<(), fmt::Error>
 where
     F: Write,
@@ -418,7 +415,7 @@ where
     if let Some((text, color, width)) = columns.next() {
         let text = text.as_ref();
         let text = text.lines().next().unwrap_or("");
-        print_cell(f, text, width, color, (pad.left, pad.right), align, tab)?;
+        print_cell(f, text, width, color, (pad.left, pad.right), align)?;
     }
 
     for (text, color, width) in columns {
@@ -428,7 +425,7 @@ where
 
         let text = text.as_ref();
         let text = text.lines().next().unwrap_or("");
-        print_cell(f, text, width, color, (pad.left, pad.right), align, tab)?;
+        print_cell(f, text, width, color, (pad.left, pad.right), align)?;
     }
 
     if let Some((c, color)) = borders.2 {
@@ -478,11 +475,10 @@ fn print_cell<F: Write, C: Color>(
     color: Option<C>,
     (pad_l, pad_r): (ColoredIndent, ColoredIndent),
     align: AlignmentHorizontal,
-    tab_size: usize,
 ) -> fmt::Result {
     let available = width - pad_l.0.size - pad_r.0.size;
 
-    let text_width = string_width_tab(text, tab_size);
+    let text_width = string_width(text);
     let (left, right) = if available < text_width {
         (0, 0)
     } else {
@@ -492,7 +488,7 @@ fn print_cell<F: Write, C: Color>(
     print_indent(f, pad_l.0.fill, pad_l.0.size, pad_l.1)?;
 
     repeat_char(f, ' ', left)?;
-    print_text(f, text, tab_size, color)?;
+    print_text(f, text, color)?;
     repeat_char(f, ' ', right)?;
 
     print_indent(f, pad_r.0.fill, pad_r.0.size, pad_r.1)?;
@@ -577,33 +573,15 @@ fn print_split_line<F: Write>(
     Ok(())
 }
 
-fn print_text<F: Write>(f: &mut F, s: &str, tab: usize, clr: Option<impl Color>) -> fmt::Result {
+fn print_text<F: Write>(f: &mut F, text: &str, clr: Option<impl Color>) -> fmt::Result {
     match clr {
         Some(color) => {
             color.fmt_prefix(f)?;
-            print_str(f, s, tab)?;
-            color.fmt_suffix(f)?;
+            f.write_str(text)?;
+            color.fmt_suffix(f)
         }
-        None => {
-            print_str(f, s, tab)?;
-        }
+        None => f.write_str(text),
     }
-
-    Ok(())
-}
-
-fn print_str<F: Write>(f: &mut F, text: &str, tab_width: usize) -> fmt::Result {
-    // So to not use replace_tab we are printing by char;
-    // Hopefully it's more effective as it reduces a number of allocations.
-    for c in text.chars() {
-        match c {
-            '\r' => (),
-            '\t' => repeat_char(f, ' ', tab_width)?,
-            c => f.write_char(c)?,
-        }
-    }
-
-    Ok(())
 }
 
 fn prepare_coloring<F: Write>(f: &mut F, clr: &StaticColor, used: &mut StaticColor) -> fmt::Result {

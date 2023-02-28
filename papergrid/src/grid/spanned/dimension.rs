@@ -11,7 +11,7 @@ use crate::{
     config::Position,
     dimension::{Dimension, Estimate},
     records::Records,
-    util::string::{count_lines, string_dimension, string_width_multiline_tab},
+    util::string::{count_lines, string_dimension, string_width_multiline},
 };
 
 use super::config::GridConfig;
@@ -78,7 +78,7 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
             }
 
             let text = cell.as_ref();
-            let (height, width) = string_dimension(text, cfg.get_tab_width());
+            let (height, width) = string_dimension(text);
             let pad = cfg.get_padding(pos.into());
             let width = width + pad.left.indent.size + pad.right.indent.size;
             let height = height + pad.top.indent.size + pad.bottom.indent.size;
@@ -245,7 +245,7 @@ fn adjust_column_range(
 
 fn get_cell_width(text: &str, cfg: &GridConfig, pos: Position) -> usize {
     let padding = get_cell_padding(cfg, pos); // todo: remove it...
-    let width = string_width_multiline_tab(text, cfg.get_tab_width());
+    let width = string_width_multiline(text);
     width + padding
 }
 

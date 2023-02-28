@@ -19,9 +19,9 @@ use tabled::{
         alignment::Alignment,
         color::Color,
         format::Format,
-        margin::{Margin, MarginColor},
+        margin::Margin,
         object::{Columns, Object, Rows, Segment},
-        padding::{Padding, PaddingColor},
+        padding::Padding,
         style::Style,
         CellOption, Modify,
     },
@@ -93,20 +93,19 @@ fn main() {
     let data_color = Color::try_from(' '.bg_rgb::<200, 200, 220>().to_string()).unwrap();
 
     let header_settings = Modify::new(Rows::first())
-        .with(Padding::new(1, 1, 2, 2))
-        .with(MakeMaxPadding)
-        .with(PaddingColor::new(
+        .with(Padding::new(1, 1, 2, 2).colorize(
             Color::BG_GREEN,
             Color::BG_YELLOW,
             Color::BG_MAGENTA,
             Color::BG_CYAN,
         ))
+        .with(MakeMaxPadding)
         .with(Format::content(|s| s.on_black().white().to_string()));
 
     let data_settings = Modify::new(Rows::first().inverse())
         .with(Alignment::left())
         .with(MakeMaxPadding)
-        .with(PaddingColor::new(
+        .with(Padding::new(1, 1, 0, 0).colorize(
             Color::default(),
             Color::default(),
             data_color.clone(),
@@ -121,8 +120,7 @@ fn main() {
 
     let table = Table::new(data)
         .with(Style::rounded())
-        .with(Margin::new(1, 2, 1, 1))
-        .with(MarginColor::new(
+        .with(Margin::new(1, 2, 1, 1).colorize(
             pane_color.clone(),
             pane_color.clone(),
             pane_color.clone(),
@@ -162,9 +160,9 @@ where
                 let right = available_width - left;
 
                 let pos = (row, col).into();
-                let mut padding = *cfg.get_padding(pos);
-                padding.left.size = left;
-                padding.right.size = right;
+                let mut padding = cfg.get_padding(pos).clone();
+                padding.left.indent.size = left;
+                padding.right.indent.size = right;
 
                 cfg.set_padding(pos, padding);
             }
