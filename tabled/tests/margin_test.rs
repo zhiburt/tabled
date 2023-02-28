@@ -141,16 +141,15 @@ fn table_0_spanned_with_width() {
 
 #[test]
 fn margin_color_test_not_colored_feature() {
-    use tabled::settings::{color::Color, margin::MarginColor};
+    use tabled::settings::color::Color;
 
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^'))
-        .with(MarginColor::new(
-            Color::BG_RED,
-            Color::BG_BLUE,
+        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^').colorize(
             Color::BG_GREEN,
             Color::BG_YELLOW,
+            Color::BG_RED,
+            Color::BG_BLUE,
         ))
         .to_string();
 

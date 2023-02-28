@@ -1,7 +1,7 @@
 use papergrid::{
-    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent},
+    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
     dimension::Estimate,
-    grid::spanned::{config::Padding, dimension::ExactDimension, Grid, GridConfig},
+    grid::spanned::{dimension::ExactDimension, Grid, GridConfig},
     records::IterRecords,
 };
 
@@ -49,7 +49,7 @@ fn generate_table_config() -> GridConfig {
     cfg.set_alignment_vertical(Global, AlignmentVertical::Center);
     cfg.set_padding(
         (0, 0).into(),
-        Padding::new(
+        Sides::new(
             Indent::spaced(4),
             Indent::spaced(4),
             Indent::spaced(1),

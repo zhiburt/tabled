@@ -1,12 +1,8 @@
 use papergrid::{
     color::AnsiColor,
-    config::{AlignmentHorizontal, AlignmentVertical, Entity::Global, Indent},
+    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
     dimension::Estimate,
-    grid::spanned::{
-        config::{Borders, GridConfig, Padding},
-        dimension::ExactDimension,
-        Grid,
-    },
+    grid::spanned::{config::GridConfig, dimension::ExactDimension, Grid},
     records::IterRecords,
 };
 
@@ -28,7 +24,7 @@ fn main() {
 }
 
 fn generate_table_config() -> GridConfig {
-    const STYLE: Borders = Borders {
+    let style = Borders {
         top: Some('-'),
         top_left: Some('+'),
         top_right: Some('+'),
@@ -47,14 +43,14 @@ fn generate_table_config() -> GridConfig {
     };
 
     let mut cfg = GridConfig::default();
-    cfg.set_borders(STYLE);
+    cfg.set_borders(style);
     cfg.set_column_span((1, 1), 3);
     cfg.set_row_span((0, 0), 2);
     cfg.set_alignment_horizontal((1, 0).into(), AlignmentHorizontal::Center);
     cfg.set_alignment_vertical(Global, AlignmentVertical::Center);
     cfg.set_padding(
         (0, 0).into(),
-        Padding::new(
+        Sides::new(
             Indent::spaced(4),
             Indent::spaced(4),
             Indent::spaced(1),

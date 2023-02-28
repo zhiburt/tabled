@@ -2,14 +2,12 @@
 
 mod util;
 
+use crate::util::{grid, test_table};
 use papergrid::config::{
     AlignmentHorizontal, AlignmentVertical, Borders,
     Entity::{self, *},
-    Indent,
+    Indent, Sides,
 };
-use papergrid::grid::spanned::config::Padding;
-
-use crate::util::{grid, test_table};
 
 test_table!(
     _2x2_vertical_alignment_center,
@@ -103,7 +101,7 @@ test_table!(
     grid(3, 2)
         .config(|cfg|{
             cfg.set_row_span((0, 0), 2);
-            cfg.set_padding(Cell(1, 0), Padding::new(Indent::spaced(4), Indent::spaced(4), Indent::default(), Indent::default()));
+            cfg.set_padding(Cell(1, 0), Sides::new(Indent::spaced(4), Indent::spaced(4), Indent::default(), Indent::default()));
         })
         .build(),
     "+---+---+"
@@ -120,7 +118,7 @@ test_table!(
     grid(3, 2)
         .config(|cfg|{
             cfg.set_row_span((0, 0), 2);
-            cfg.set_padding(Cell(0, 0), Padding::new(Indent::spaced(4), Indent::spaced(4), Indent::default(), Indent::default()));
+            cfg.set_padding(Cell(0, 0), Sides::new(Indent::spaced(4), Indent::spaced(4), Indent::default(), Indent::default()));
         })
         .build(),
     "+-----------+---+"
@@ -137,7 +135,7 @@ test_table!(
     grid(3, 2)
         .config(|cfg|{
             cfg.set_row_span((0, 0), 2);
-            cfg.set_padding(Cell(0, 0), Padding::new(Indent::default(), Indent::default(), Indent::spaced(4), Indent::spaced(4)));
+            cfg.set_padding(Cell(0, 0), Sides::new(Indent::default(), Indent::default(), Indent::spaced(4), Indent::spaced(4)));
         })
         .build(),
     "+---+---+"
@@ -910,15 +908,15 @@ test_table!(
             cfg.set_row_span((0, 4), 3);
             cfg.set_padding(
                 Cell(0, 0),
-                Padding::new(Indent::new(2, ' '), Indent::new(2, ' '), Indent::new(2, ' '), Indent::new(2, ' '))
+                Sides::new(Indent::new(2, ' '), Indent::new(2, ' '), Indent::new(2, ' '), Indent::new(2, ' '))
             );
             cfg.set_padding(
                 Cell(0, 3),
-                Padding::new(Indent::new(2, ' '), Indent::new(2, ' '), Indent::new(2, ' '), Indent::new(2, ' '))
+                Sides::new(Indent::new(2, ' '), Indent::new(2, ' '), Indent::new(2, ' '), Indent::new(2, ' '))
             );
             cfg.set_padding(
                 Cell(1, 2),
-                Padding::new(Indent::new(2, ' '), Indent::new(2, ' '), Indent::new(4, ' '), Indent::new(2, ' '))
+                Sides::new(Indent::new(2, ' '), Indent::new(2, ' '), Indent::new(4, ' '), Indent::new(2, ' '))
             );
         })
         .build(),

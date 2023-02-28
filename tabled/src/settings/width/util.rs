@@ -22,8 +22,8 @@ fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
     let margin = cfg.get_margin();
     list.iter().sum::<usize>()
         + cfg.count_vertical(list.len())
-        + margin.left.size
-        + margin.right.size
+        + margin.left.indent.size
+        + margin.right.indent.size
 }
 
 /// Replaces tabs in a string with a given width of spaces.

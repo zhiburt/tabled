@@ -174,7 +174,7 @@ fn count_horizontal_borders(cfg: &GridConfig, len: usize, start: usize, end: usi
 fn get_cell_height(cell: &str, cfg: &GridConfig, pos: Position) -> usize {
     let count_lines = max(1, count_lines(cell));
     let padding = cfg.get_padding(pos.into());
-    count_lines + padding.top.size + padding.bottom.size
+    count_lines + padding.top.indent.size + padding.bottom.indent.size
 }
 
 fn inc_range(list: &mut [usize], size: usize, start: usize, end: usize) {
@@ -250,7 +250,7 @@ fn get_cell_width(text: &str, cfg: &GridConfig, pos: Position) -> usize {
 
 fn get_cell_padding(cfg: &GridConfig, pos: Position) -> usize {
     let padding = cfg.get_padding(pos.into());
-    padding.left.size + padding.right.size
+    padding.left.indent.size + padding.right.indent.size
 }
 
 fn range_width(cfg: &GridConfig, len: usize, start: usize, end: usize, widths: &[usize]) -> usize {

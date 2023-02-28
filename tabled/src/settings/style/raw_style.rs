@@ -3,8 +3,11 @@
 
 use std::collections::HashMap;
 
+use papergrid::color::AnsiColor;
+
 use crate::{
-    grid::spanned::config::{self, Borders, BordersColor, GridConfig},
+    grid::config::Borders,
+    grid::spanned::config::{self, GridConfig},
     records::Records,
     settings::{color::Color, TableOption},
 };
@@ -16,8 +19,8 @@ use super::{Border, HorizontalLine, Line, Style, VerticalLine};
 /// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
 #[derive(Default, Debug, Clone)]
 pub struct RawStyle {
-    borders: Borders,
-    colors: BordersColor,
+    borders: Borders<char>,
+    colors: Borders<AnsiColor<'static>>,
     horizontals: HashMap<usize, Line>,
     verticals: HashMap<usize, Line>,
 }
@@ -346,7 +349,7 @@ impl RawStyle {
 
     /// Returns an outer border of the style.
     pub fn get_frame(&self) -> Border {
-        Border::from(config::Border {
+        Border::from(crate::grid::config::Border {
             top: self.borders.top,
             bottom: self.borders.bottom,
             left: self.borders.left,
@@ -359,13 +362,13 @@ impl RawStyle {
     }
 }
 
-impl From<Borders> for RawStyle {
-    fn from(borders: Borders) -> Self {
+impl From<Borders<char>> for RawStyle {
+    fn from(borders: Borders<char>) -> Self {
         Self {
             borders,
             horizontals: HashMap::new(),
             verticals: HashMap::new(),
-            colors: BordersColor::default(),
+            colors: Borders::default(),
         }
     }
 }
@@ -389,7 +392,7 @@ impl<R, D> TableOption<R, D, GridConfig> for &RawStyle {
             if line.is_empty() {
                 cfg.remove_horizontal_line(row);
             } else {
-                cfg.set_horizontal_line(row, config::HorizontalLine::from(*line));
+                cfg.insert_horizontal_line(row, config::HorizontalLine::from(*line));
             }
         }
 
@@ -397,7 +400,7 @@ impl<R, D> TableOption<R, D, GridConfig> for &RawStyle {
             if line.is_empty() {
                 cfg.remove_vertical_line(col);
             } else {
-                cfg.set_vertical_line(col, config::VerticalLine::from(*line));
+                cfg.insert_vertical_line(col, config::VerticalLine::from(*line));
             }
         }
 
@@ -437,7 +440,7 @@ where
             borders: *style.get_borders(),
             horizontals,
             verticals,
-            colors: BordersColor::default(),
+            colors: Borders::default(),
         }
     }
 }

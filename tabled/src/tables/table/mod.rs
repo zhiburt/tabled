@@ -11,7 +11,7 @@ use crate::{
         config::{Entity, Indent},
         dimension::Estimate,
         spanned::{
-            config::{Formatting, GridConfig, Padding},
+            config::{Formatting, GridConfig},
             Grid,
         },
     },
@@ -21,7 +21,7 @@ use crate::{
 };
 
 pub use dimension::TableDimension;
-use papergrid::dimension::Dimension;
+use papergrid::{config::Sides, dimension::Dimension};
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
 ///
@@ -221,7 +221,7 @@ impl Table {
 
         let margin = self.cfg.get_margin();
 
-        total + counth + margin.top.size + margin.bottom.size
+        total + counth + margin.top.indent.size + margin.bottom.indent.size
     }
 
     /// Returns total widths of a table, including margin and vertical lines.
@@ -236,7 +236,7 @@ impl Table {
 
         let margin = self.cfg.get_margin();
 
-        total + countv + margin.left.size + margin.right.size
+        total + countv + margin.left.indent.size + margin.right.indent.size
     }
 
     /// Returns a table config.
@@ -324,7 +324,7 @@ fn configure_grid() -> GridConfig {
     cfg.set_tab_width(4);
     cfg.set_padding(
         Entity::Global,
-        Padding::new(
+        Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),
             Indent::default(),
@@ -377,21 +377,20 @@ fn set_width_table(f: &fmt::Formatter<'_>, cfg: &mut GridConfig, table: &Table) 
         let alignment = f.align().unwrap_or(fmt::Alignment::Left);
         let (left, right) = table_padding(alignment, available);
 
-        let mut margin = *cfg.get_margin();
-        margin.left.size += left;
-        margin.right.size += right;
+        let mut margin = cfg.get_margin_mut();
+        margin.left.indent.size += left;
+        margin.right.indent.size += right;
 
-        if (margin.left.size > 0 && margin.left.fill == char::default()) || fill != char::default()
-        {
-            margin.left.fill = fill;
-        }
-
-        if (margin.right.size > 0 && margin.right.fill == char::default())
+        if (margin.left.indent.size > 0 && margin.left.indent.fill == char::default())
             || fill != char::default()
         {
-            margin.right.fill = fill;
+            margin.left.indent.fill = fill;
         }
 
-        cfg.set_margin(margin)
+        if (margin.right.indent.size > 0 && margin.right.indent.fill == char::default())
+            || fill != char::default()
+        {
+            margin.right.indent.fill = fill;
+        }
     }
 }

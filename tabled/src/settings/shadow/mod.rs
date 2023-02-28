@@ -114,74 +114,61 @@ impl Shadow {
 
 impl<R, D> TableOption<R, D, GridConfig> for Shadow {
     fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
-        let mut margin = *cfg.get_margin();
+        let mut margin = cfg.get_margin_mut();
 
         if self.direction.top {
-            margin.top.size = self.size;
-            margin.top.fill = self.c;
+            margin.top.indent.size = self.size;
+            margin.top.indent.fill = self.c;
         }
 
         if self.direction.bottom {
-            margin.bottom.size = self.size;
-            margin.bottom.fill = self.c;
+            margin.bottom.indent.size = self.size;
+            margin.bottom.indent.fill = self.c;
         }
 
         if self.direction.left {
-            margin.left.size = self.size;
-            margin.left.fill = self.c;
+            margin.left.indent.size = self.size;
+            margin.left.indent.fill = self.c;
         }
 
         if self.direction.right {
-            margin.right.size = self.size;
-            margin.right.fill = self.c;
+            margin.right.indent.size = self.size;
+            margin.right.indent.fill = self.c;
         }
 
-        let mut offset = Sides::new(
-            Offset::Begin(0),
-            Offset::Begin(0),
-            Offset::Begin(0),
-            Offset::Begin(0),
-        );
-
         if self.direction.right && self.direction.bottom {
-            offset.bottom = Offset::Begin(self.size_offset);
-            offset.right = Offset::Begin(self.size_offset);
+            margin.bottom.offset = Offset::Begin(self.size_offset);
+            margin.right.offset = Offset::Begin(self.size_offset);
         }
 
         if self.direction.right && self.direction.top {
-            offset.top = Offset::Begin(self.size_offset);
-            offset.right = Offset::End(self.size_offset);
+            margin.top.offset = Offset::Begin(self.size_offset);
+            margin.right.offset = Offset::End(self.size_offset);
         }
 
         if self.direction.left && self.direction.bottom {
-            offset.bottom = Offset::End(self.size_offset);
-            offset.left = Offset::Begin(self.size_offset);
+            margin.bottom.offset = Offset::End(self.size_offset);
+            margin.left.offset = Offset::Begin(self.size_offset);
         }
 
         if self.direction.left && self.direction.top {
-            offset.top = Offset::End(self.size_offset);
-            offset.left = Offset::End(self.size_offset);
+            margin.top.offset = Offset::End(self.size_offset);
+            margin.left.offset = Offset::End(self.size_offset);
         }
 
-        cfg.set_margin(margin);
-        cfg.set_margin_offset(offset);
-
         if let Some(color) = self.color.as_ref() {
-            let mut colors = Sides::default();
             if self.direction.top {
-                colors.top = color.clone().into();
+                margin.top.color = Some(color.clone().into());
             }
             if self.direction.bottom {
-                colors.bottom = color.clone().into();
+                margin.bottom.color = Some(color.clone().into());
             }
             if self.direction.left {
-                colors.left = color.clone().into();
+                margin.left.color = Some(color.clone().into());
             }
             if self.direction.right {
-                colors.right = color.clone().into();
+                margin.right.color = Some(color.clone().into());
             }
-
-            cfg.set_margin_color(colors);
         }
     }
 }

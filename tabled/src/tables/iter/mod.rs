@@ -31,6 +31,7 @@ mod utf8_writer;
 
 use std::{cmp, fmt, io};
 
+use papergrid::config::Sides;
 use papergrid::dimension::{Dimension, Estimate};
 
 use crate::grid::compact::{CompactConfig, ExactDimension};
@@ -38,7 +39,7 @@ use crate::grid::spanned::{Grid, GridConfig};
 
 use crate::{
     grid::config::AlignmentHorizontal,
-    grid::{config::Indent, spanned::config::Padding},
+    grid::config::Indent,
     records::{
         into_records::{
             truncate_records::ExactValue, BufColumns, BufRows, LimitColumns, LimitRows,
@@ -297,7 +298,7 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
 fn create_config() -> CompactConfig {
     CompactConfig::default()
         .set_tab_width(4)
-        .set_padding(Padding::new(
+        .set_padding(Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),
             Indent::default(),

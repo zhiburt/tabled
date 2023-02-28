@@ -1,6 +1,6 @@
 use crate::{
-    grid::config::Entity,
-    grid::spanned::config::{Border as GridBorder, GridConfig},
+    grid::config::{Border as GBorder, Entity},
+    grid::spanned::config::GridConfig,
     records::{ExactRecords, Records},
     settings::CellOption,
 };
@@ -29,7 +29,7 @@ use crate::{
 ///     .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
 /// ```
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct Border(GridBorder);
+pub struct Border(GBorder<char>);
 
 impl Border {
     /// This function constructs a cell borders with all sides set.
@@ -44,7 +44,7 @@ impl Border {
         bottom_left: char,
         bottom_right: char,
     ) -> Self {
-        Self(GridBorder::full(
+        Self(GBorder::full(
             top,
             bottom,
             left,
@@ -129,13 +129,13 @@ where
     }
 }
 
-impl From<GridBorder> for Border {
-    fn from(b: GridBorder) -> Border {
+impl From<GBorder<char>> for Border {
+    fn from(b: GBorder<char>) -> Border {
         Border(b)
     }
 }
 
-impl From<Border> for GridBorder {
+impl From<Border> for GBorder<char> {
     fn from(value: Border) -> Self {
         value.0
     }

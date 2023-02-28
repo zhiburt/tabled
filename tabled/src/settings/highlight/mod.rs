@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use crate::{
     grid::config::{Border as GridBorder, Entity, Position},
-    grid::spanned::{config, GridConfig},
+    grid::spanned::GridConfig,
     records::{ExactRecords, Records},
     settings::{object::Object, style::Border, style::BorderColor, TableOption},
 };
@@ -252,8 +252,7 @@ fn set_border(cfg: &mut GridConfig, sector: &HashSet<(usize, usize)>, border: Bo
         return;
     }
 
-    let border: config::Border = border.into();
-
+    let border = border.into();
     for &pos in sector {
         let border = build_cell_border(sector, pos, &border);
         cfg.set_border(pos, border);

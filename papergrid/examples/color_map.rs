@@ -11,13 +11,9 @@ use owo_colors::{
 
 use papergrid::{
     color::Color,
-    config::Position,
+    config::{Borders, Position},
     dimension::Estimate,
-    grid::spanned::{
-        config::{Borders, GridConfig},
-        dimension::ExactDimension,
-        Grid,
-    },
+    grid::spanned::{config::GridConfig, dimension::ExactDimension, Grid},
     records::IterRecords,
 };
 

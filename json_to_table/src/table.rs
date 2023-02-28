@@ -333,7 +333,7 @@ mod json_to_table {
             .as_ref()
             .map(|cfg| {
                 let pad = cfg.get_padding(Entity::Global);
-                pad.left.size + pad.right.size
+                pad.left.indent.size + pad.right.indent.size
             })
             .unwrap_or(2);
 
