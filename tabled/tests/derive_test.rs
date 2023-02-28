@@ -536,6 +536,74 @@ mod enum_ {
             B(String::new()) => ["B"],
             K => ["K"],
     );
+
+    test_enum!(
+        enum_display_with_variant,
+        t: {
+            #[tabled(display_with = "display_variant1")]
+            AbsdEgh { a: u8, b: i32 }
+            #[tabled(display_with = "display_variant2::<200>")]
+            B(String)
+            #[tabled(display_with = "some::bar::display_variant1")]
+            K
+        },
+        pre: {
+            fn display_variant1() -> &'static str {
+                "Hello World"
+            }
+
+            fn display_variant2<const VAL: usize>() -> String {
+                format!("asd {VAL}")
+            }
+
+            pub mod some {
+                pub mod bar {
+                    pub fn display_variant1() -> &'static str {
+                        "Hello World 123"
+                    }
+                }
+            }
+        }
+        headers: ["AbsdEgh", "B", "K"],
+        tests:
+            AbsdEgh { a: 0, b: 0 }  => ["Hello World", "", ""],
+            B(String::new()) => ["", "asd 200", ""],
+            K => ["", "", "Hello World 123"],
+    );
+
+    test_enum!(
+        enum_display_with_self_variant,
+        t: {
+            #[tabled(display_with("display_variant1", args))]
+            AbsdEgh { a: u8, b: i32 }
+            #[tabled(display_with("display_variant2::<200, _>", args))]
+            B(String)
+            #[tabled(display_with("some::bar::display_variant1", args))]
+            K
+        },
+        pre: {
+            fn display_variant1<D>(_: &D) -> &'static str {
+                "Hello World"
+            }
+
+            fn display_variant2<const VAL: usize, D>(_: &D) -> String {
+                format!("asd {VAL}")
+            }
+
+            pub mod some {
+                pub mod bar {
+                    pub fn display_variant1<D>(_: &D) -> &'static str {
+                        "Hello World 123"
+                    }
+                }
+            }
+        }
+        headers: ["AbsdEgh", "B", "K"],
+        tests:
+            AbsdEgh { a: 0, b: 0 }  => ["Hello World", "", ""],
+            B(String::new()) => ["", "asd 200", ""],
+            K => ["", "", "Hello World 123"],
+    );
 }
 
 mod unit {

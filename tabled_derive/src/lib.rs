@@ -35,7 +35,9 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
         .map_err(error::abort)
         .unwrap();
 
-    let length = get_tabled_length(ast, &attrs).map_err(error::abort).unwrap();
+    let length = get_tabled_length(ast, &attrs)
+        .map_err(error::abort)
+        .unwrap();
     let info = collect_info(ast, &attrs).map_err(error::abort).unwrap();
     let fields = info.values;
     let headers = info.headers;
@@ -353,24 +355,34 @@ fn collect_info_enum_inlined(
 
 fn info_from_variant(
     variant: &Variant,
-    attributes: &Attributes,
+    attr: &Attributes,
     attrs: &StructAttributes,
 ) -> Result<Impl, Error> {
-    if attributes.inline {
-        let prefix = attributes
+    if attr.inline {
+        let prefix = attr
             .inline_prefix
             .as_ref()
             .map_or_else(|| "", |s| s.as_str());
         return info_from_fields(&variant.fields, attrs, variant_var_name, prefix);
     }
 
-    let variant_name = variant_name(variant, attributes);
-    let value = "+";
+    let variant_name = variant_name(variant, attr);
+    let value = if let Some(func) = &attr.display_with {
+        let func_call = match attr.display_with_use_self {
+            true => use_function_for(&quote!(&self), func),
+            false => use_function_no_args(func),
+        };
+
+        quote! { ::std::borrow::Cow::from(#func_call) }
+    } else {
+        let default_value = "+";
+        quote! { ::std::borrow::Cow::Borrowed(#default_value) }
+    };
 
     // we need exactly string because of it must be inlined as string
     let headers = quote! { vec![::std::borrow::Cow::Borrowed(#variant_name)] };
     // we need exactly string because of it must be inlined as string
-    let values = quote! { vec![::std::borrow::Cow::Borrowed(#value)] };
+    let values = quote! { vec![#value] };
 
     Ok(Impl { headers, values })
 }
@@ -402,7 +414,7 @@ fn get_field_fields(field: &TokenStream, attr: &Attributes) -> TokenStream {
 
     if let Some(func) = &attr.display_with {
         let func_call = match attr.display_with_use_self {
-            true => use_function_with_self(func),
+            true => use_function_for(&quote!(&self), func),
             false => use_function_for(field, func),
         };
 
@@ -425,15 +437,15 @@ fn use_function_for(field: &TokenStream, function: &str) -> TokenStream {
     }
 }
 
-fn use_function_with_self(function: &str) -> TokenStream {
+fn use_function_no_args(function: &str) -> TokenStream {
     let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
     match path {
         Ok(path) => {
-            quote! { #path(&self) }
+            quote! { #path() }
         }
         Err(_) => {
             let function = Ident::new(function, proc_macro2::Span::call_site());
-            quote! { #function(&self) }
+            quote! { #function() }
         }
     }
 }
