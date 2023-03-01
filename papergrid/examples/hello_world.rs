@@ -17,7 +17,7 @@ fn main() {
     let mut dim = ExactDimension::default();
     dim.estimate(records, &cfg);
 
-    let grid = Grid::new(records, &dim, &cfg);
+    let grid = Grid::new(records, &dim, &cfg).to_string();
 
     println!("{grid}");
 }

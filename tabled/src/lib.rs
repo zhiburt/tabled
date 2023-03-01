@@ -503,7 +503,6 @@ pub use crate::{tabled::Tabled, tables::table::Table};
 ///     price: f32,
 /// }
 /// ```
-// @todo: Move the comment to tabled_derive
 #[cfg(all(feature = "std", feature = "derive"))]
 #[cfg_attr(docsrs, doc(cfg(all(feature = "std", feature = "derive"))))]
 pub use tabled_derive::Tabled;

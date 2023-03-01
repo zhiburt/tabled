@@ -4,7 +4,7 @@ use std::{
     borrow::{Borrow, Cow},
     cmp,
     collections::BTreeMap,
-    fmt::{self, Display, Write},
+    fmt::{self, Write},
 };
 
 use crate::{
@@ -17,9 +17,6 @@ use crate::{
 };
 
 use super::config::{ColoredIndent, Formatting, GridConfig, Offset};
-
-const DEFAULT_SPACE_CHAR: char = ' ';
-const DEFAULT_BORDER_HORIZONTAL_CHAR: char = ' ';
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
@@ -84,24 +81,6 @@ impl<R, D, G, C> Grid<R, D, G, C> {
         let mut buf = String::new();
         self.build(&mut buf).expect("It's guaranteed to never happen otherwise it's considered an stdlib error or impl error");
         buf
-    }
-}
-
-impl<R, D, G, C> Display for Grid<R, D, G, C>
-where
-    for<'a> &'a R: Records,
-    D: Dimension,
-    G: Borrow<GridConfig>,
-    C: Colors,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let records = &self.records;
-        if records.count_columns() == 0 || records.hint_count_rows() == Some(0) {
-            return Ok(());
-        }
-
-        let config = self.config.borrow();
-        print_grid(f, records, config, &self.dimension, &self.colors)
     }
 }
 
@@ -223,7 +202,7 @@ fn print_horizontal_line<F: Write, D: Dimension>(
     row: usize,
     total_width: usize,
     shape: (usize, usize),
-) -> Result<(), fmt::Error> {
+) -> fmt::Result {
     print_margin_left(f, cfg, line, totalh)?;
     print_split_line(f, cfg, dimension, row, total_width, shape)?;
     print_margin_right(f, cfg, line, totalh)?;
@@ -242,7 +221,7 @@ fn print_multiline_columns<'a, F, I, D, C>(
     line: usize,
     totalh: Option<usize>,
     shape: (usize, usize),
-) -> Result<(), fmt::Error>
+) -> fmt::Result
 where
     F: Write,
     I: Iterator,
@@ -268,7 +247,7 @@ fn print_single_line_columns<F, I, D, C>(
     line: usize,
     totalh: Option<usize>,
     shape: (usize, usize),
-) -> Result<(), fmt::Error>
+) -> fmt::Result
 where
     F: Write,
     I: Iterator,
@@ -300,7 +279,7 @@ fn print_single_line_column<F: Write, C: Color>(
     width: usize,
     color: Option<&C>,
     pos: Position,
-) -> Result<(), fmt::Error> {
+) -> fmt::Result {
     let pos = pos.into();
     let pad = cfg.get_padding(pos);
     let fmt = cfg.get_formatting(pos);
@@ -323,9 +302,9 @@ fn print_single_line_column<F: Write, C: Color>(
 
     print_padding(f, &pad.left)?;
 
-    repeat_char(f, DEFAULT_SPACE_CHAR, left)?;
+    repeat_char(f, ' ', left)?;
     print_text(f, &text, color)?;
-    repeat_char(f, DEFAULT_SPACE_CHAR, right)?;
+    repeat_char(f, ' ', right)?;
 
     print_padding(f, &pad.right)?;
 
@@ -342,7 +321,7 @@ fn print_columns_lines<T, F: Write, C: Color>(
     row: usize,
     totalh: Option<usize>,
     shape: (usize, usize),
-) -> Result<(), fmt::Error> {
+) -> fmt::Result {
     for i in 0..height {
         let exact_line = line + i;
 
@@ -448,7 +427,7 @@ fn print_split_line<F: Write, D: Dimension>(
 
                     print_horizontal_border(f, cfg, (row, col), width, c)?;
                 }
-                None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+                None => repeat_char(f, ' ', width)?,
             }
         }
 
@@ -475,7 +454,7 @@ fn print_split_line<F: Write, D: Dimension>(
 
                     print_horizontal_border(f, cfg, (row, col), width, c)?;
                 }
-                None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+                None => repeat_char(f, ' ', width)?,
             }
 
             i += width;
@@ -673,7 +652,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
 
                         print_horizontal_border(f, cfg, (row, col), width, c)?;
                     }
-                    None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+                    None => repeat_char(f, ' ', width)?,
                 }
             }
 
@@ -701,7 +680,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
 
                     print_horizontal_border(f, cfg, (row, col), width, c)?;
                 }
-                None => repeat_char(f, DEFAULT_BORDER_HORIZONTAL_CHAR, width)?,
+                None => repeat_char(f, ' ', width)?,
             }
 
             i += width;
@@ -746,7 +725,7 @@ fn print_spanned_columns<'a, F, I, D, C>(
     line: usize,
     totalh: Option<usize>,
     shape: (usize, usize),
-) -> Result<(), fmt::Error>
+) -> fmt::Result
 where
     F: Write,
     I: Iterator,
@@ -924,8 +903,6 @@ where
 
         let mut indent_left = None;
         if !fmt.allow_lines_alignment {
-            // todo: create a sole function which calculate count_rows+left_indent
-
             let text_width = get_text_width(text.as_ref(), fmt.horizontal_trim);
             let available = width - pad.left.indent.size - pad.right.indent.size;
             indent_left = Some(calculate_indent(alignh, text_width, available).0);
@@ -953,7 +930,7 @@ impl<T, C> Cell<T, C>
 where
     C: Color,
 {
-    fn display<F: Write>(&mut self, f: &mut F) -> Result<(), fmt::Error> {
+    fn display<F: Write>(&mut self, f: &mut F) -> fmt::Result {
         if self.indent_top > 0 {
             self.indent_top -= 1;
             print_padding_n(f, &self.pad.top, self.width)?;
@@ -986,9 +963,9 @@ where
 
         print_padding(f, &self.pad.left)?;
 
-        repeat_char(f, DEFAULT_SPACE_CHAR, left)?;
+        repeat_char(f, ' ', left)?;
         print_text(f, &line, self.color.as_ref())?;
-        repeat_char(f, DEFAULT_SPACE_CHAR, right)?;
+        repeat_char(f, ' ', right)?;
 
         print_padding(f, &self.pad.right)?;
 
@@ -1291,54 +1268,31 @@ fn print_indent<F: Write>(
     }
 }
 
-fn range_width<D: Dimension>(
-    cfg: &GridConfig,
-    dims: &D,
-    start: usize,
-    end: usize,
-    count_columns: usize,
-) -> usize {
-    let count_borders = count_borders_in_range(cfg, start, end, count_columns);
-    let range_width = (start..end).map(|col| dims.get_width(col)).sum::<usize>();
+fn range_width(cfg: &GridConfig, d: impl Dimension, start: usize, end: usize, max: usize) -> usize {
+    let count_borders = count_verticals_in_range(cfg, start, end, max);
+    let range_width = (start..end).map(|col| d.get_width(col)).sum::<usize>();
 
     count_borders + range_width
 }
 
-fn count_borders_in_range(
-    cfg: &GridConfig,
-    start: usize,
-    end: usize,
-    count_columns: usize,
-) -> usize {
-    (start..end)
-        .skip(1)
-        .filter(|&i| cfg.has_vertical(i, count_columns)) // todo: change to sum as usize
-        .count()
-}
-
-fn range_height<D: Dimension>(
-    cfg: &GridConfig,
-    dims: &D,
-    start: usize,
-    end: usize,
-    count_rows: usize,
-) -> usize {
-    let count_borders = count_horizontal_borders_in_range(cfg, start, end, count_rows);
-    let range_width = (start..end).map(|col| dims.get_height(col)).sum::<usize>();
+fn range_height(cfg: &GridConfig, d: impl Dimension, from: usize, end: usize, max: usize) -> usize {
+    let count_borders = count_horizontals_in_range(cfg, from, end, max);
+    let range_width = (from..end).map(|col| d.get_height(col)).sum::<usize>();
 
     count_borders + range_width
 }
 
-fn count_horizontal_borders_in_range(
-    cfg: &GridConfig,
-    start: usize,
-    end: usize,
-    count_rows: usize,
-) -> usize {
+fn count_horizontals_in_range(cfg: &GridConfig, from: usize, end: usize, max: usize) -> usize {
+    (from + 1..end)
+        .map(|i| cfg.has_horizontal(i, max) as usize)
+        .sum()
+}
+
+fn count_verticals_in_range(cfg: &GridConfig, start: usize, end: usize, max: usize) -> usize {
     (start..end)
         .skip(1)
-        .filter(|&i| cfg.has_horizontal(i, count_rows))
-        .count()
+        .map(|i| cfg.has_vertical(i, max) as usize)
+        .sum()
 }
 
 fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {

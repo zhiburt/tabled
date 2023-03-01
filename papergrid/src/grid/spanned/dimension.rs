@@ -119,10 +119,6 @@ fn adjust_hspans(
         return;
     }
 
-    // The overall height distribution will be different depend on the order.
-    // We sort spans in order to prioritize the smaller spans first.
-    //
-    // todo: we actually have a span list already.... so we could keep order from the begining
     let mut spans_ordered = spans
         .iter()
         .map(|(k, v)| ((k.0, k.1), *v))
@@ -221,7 +217,6 @@ fn adjust_vspans(
         o => o,
     });
 
-    // todo: the order is matter here; we need to figure out what is correct.
     for ((_, col), (span, width)) in spans_ordered {
         adjust_column_range(cfg, width, len, col, col + span, widths);
     }
@@ -244,7 +239,7 @@ fn adjust_column_range(
 }
 
 fn get_cell_width(text: &str, cfg: &GridConfig, pos: Position) -> usize {
-    let padding = get_cell_padding(cfg, pos); // todo: remove it...
+    let padding = get_cell_padding(cfg, pos);
     let width = string_width_multiline(text);
     width + padding
 }

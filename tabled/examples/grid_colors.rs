@@ -48,7 +48,7 @@ fn main() {
         ((2, 2), Color::BG_RED),
     ]);
 
-    let grid = Grid::from(table).with_colors(colors);
+    let grid = Grid::from(table).with_colors(colors).to_string();
 
     println!("{grid}");
 }
