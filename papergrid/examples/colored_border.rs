@@ -1,3 +1,8 @@
+//! The example can be run by this command
+//! `cargo run --features color --example colored_border`
+//!
+//! This example requires the `color` feature.
+
 use papergrid::{
     color::AnsiColor,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},

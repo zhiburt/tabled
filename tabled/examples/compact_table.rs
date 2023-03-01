@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example basic`
+//! `cargo run --example compact_table`
 
 use tabled::{settings::style::Style, tables::compact::CompactTable};
 

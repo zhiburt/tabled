@@ -2,7 +2,7 @@
 //!
 //! `cargo run --features color --example padding_color`
 //!
-//! This example requires a `color` feature.
+//! This example requires the `color` feature.
 
 use std::convert::TryFrom;
 

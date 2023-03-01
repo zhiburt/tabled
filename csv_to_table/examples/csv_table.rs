@@ -1,3 +1,6 @@
+//! The example can be run by this command
+//! `cargo run --example csv_table`
+
 fn main() {
     let syscalls = "\
         0,INDIR,,\"int sys_syscall(int number, ...)\"\n\

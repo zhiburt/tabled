@@ -1,3 +1,6 @@
+//! The example can be run by this command
+//! `cargo run --example static_table`
+
 use static_table::static_table;
 
 static LANG_LIST: &str = static_table!([
