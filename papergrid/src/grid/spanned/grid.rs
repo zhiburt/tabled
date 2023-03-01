@@ -110,22 +110,24 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
 ) -> fmt::Result {
     let count_columns = records.count_columns();
 
-    let total_width = total_width(cfg, dims, count_columns);
-
-    let margin = cfg.get_margin();
-    let total_width_with_margin = total_width + margin.left.indent.size + margin.right.indent.size;
-
+    let mut totalw = None;
     let totalh = records
         .hint_count_rows()
         .map(|count_rows| total_height(cfg, dims, count_rows));
 
-    if margin.top.indent.size > 0 {
-        print_margin_top(f, cfg, total_width_with_margin)?;
-        f.write_char('\n')?;
-    }
-
     let mut records_iter = records.iter_rows().into_iter();
     let mut next_columns = records_iter.next();
+
+    if next_columns.is_none() {
+        return Ok(());
+    }
+
+    if cfg.get_margin().top.indent.size > 0 {
+        totalw = Some(output_width(cfg, dims, count_columns));
+
+        print_margin_top(f, cfg, totalw.unwrap())?;
+        f.write_char('\n')?;
+    }
 
     let mut row = 0;
     let mut line = 0;
@@ -145,7 +147,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
         }
 
         if has_horizontal {
-            print_horizontal_line(f, cfg, line, totalh, dims, row, total_width, shape)?;
+            print_horizontal_line(f, cfg, line, totalh, dims, row, shape)?;
 
             line += 1;
 
@@ -154,16 +156,12 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
             }
         }
 
-        match height {
-            0 => {}
-            1 => {
-                print_single_line_columns(f, columns, cfg, colors, dims, row, line, totalh, shape)?
-            }
-            _ => {
-                print_multiline_columns(
-                    f, columns, cfg, colors, dims, height, row, line, totalh, shape,
-                )?;
-            }
+        if height == 1 {
+            print_single_line_columns(f, columns, cfg, colors, dims, row, line, totalh, shape)?
+        } else if height > 0 {
+            print_multiline_columns(
+                f, columns, cfg, colors, dims, height, row, line, totalh, shape,
+            )?;
         }
 
         if height == 0 && !has_horizontal {
@@ -176,20 +174,28 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
         row += 1;
     }
 
-    if row > 0 {
-        if cfg.has_horizontal(row, row) {
-            f.write_char('\n')?;
-            let shape = (row, count_columns);
-            print_horizontal_line(f, cfg, line, totalh, dims, row, total_width, shape)?;
-        }
+    if cfg.has_horizontal(row, row) {
+        f.write_char('\n')?;
+        let shape = (row, count_columns);
+        print_horizontal_line(f, cfg, line, totalh, dims, row, shape)?;
+    }
 
+    {
+        let margin = cfg.get_margin();
         if margin.bottom.indent.size > 0 {
+            let totalw = totalw.unwrap_or_else(|| output_width(cfg, dims, count_columns));
+
             f.write_char('\n')?;
-            print_margin_bottom(f, cfg, total_width_with_margin)?;
+            print_margin_bottom(f, cfg, totalw)?;
         }
     }
 
     Ok(())
+}
+
+fn output_width<D: Dimension>(cfg: &GridConfig, d: D, count_columns: usize) -> usize {
+    let margin = cfg.get_margin();
+    total_width(cfg, &d, count_columns) + margin.left.indent.size + margin.right.indent.size
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -200,11 +206,10 @@ fn print_horizontal_line<F: Write, D: Dimension>(
     totalh: Option<usize>,
     dimension: &D,
     row: usize,
-    total_width: usize,
     shape: (usize, usize),
 ) -> fmt::Result {
     print_margin_left(f, cfg, line, totalh)?;
-    print_split_line(f, cfg, dimension, row, total_width, shape)?;
+    print_split_line(f, cfg, dimension, row, shape)?;
     print_margin_right(f, cfg, line, totalh)?;
     Ok(())
 }
@@ -372,77 +377,27 @@ fn print_split_line<F: Write, D: Dimension>(
     cfg: &GridConfig,
     dimension: &D,
     row: usize,
-    total_width: usize,
     shape: (usize, usize),
 ) -> fmt::Result {
-    let mut override_text = cfg
-        .get_split_line_text(row)
-        .and_then(|text| get_lines(text).next())
-        .unwrap_or_default()
-        .into_owned();
-    let override_text_offset = cfg.get_split_line_offset(row).unwrap_or(Offset::Begin(0));
-    let override_text_pos = offset_start_pos(override_text_offset, total_width);
+    if shape.1 == 0 {
+        return Ok(());
+    }
 
     let mut used_color = None;
 
-    let mut i = 0;
+    let left = cfg.get_intersection((row, 0), shape);
+    if let Some(c) = left {
+        let clr = cfg.get_intersection_color((row, 0), shape);
+        if let Some(clr) = clr {
+            clr.fmt_prefix(f)?;
+            used_color = Some(clr);
+        }
+
+        f.write_char(c)?;
+    }
+
     for col in 0..shape.1 {
-        if col == 0 {
-            let left = cfg.get_intersection((row, col), shape);
-            if let Some(c) = left {
-                if i >= override_text_pos && !override_text.is_empty() {
-                    let (c, rest) = split_str_at(&override_text, 1);
-                    f.write_str(&c)?;
-                    override_text = rest.into_owned();
-                    if string_width(&override_text) == 0 {
-                        override_text = String::new()
-                    }
-                } else {
-                    let clr = cfg.get_intersection_color((row, col), shape);
-                    if let Some(clr) = clr {
-                        clr.fmt_prefix(f)?;
-                        used_color = Some(clr);
-                    }
-
-                    f.write_char(c)?;
-                    i += 1;
-                }
-            }
-        }
-
-        let mut width = dimension.get_width(col);
-
-        // a situation when need to partially print split
-        if i < override_text_pos && i + width >= override_text_pos {
-            let available = override_text_pos - i;
-            width -= available;
-            i += available;
-            let width = available;
-
-            let main = cfg.get_horizontal((row, col), shape.0);
-            match main {
-                Some(c) => {
-                    let clr = cfg.get_horizontal_color((row, col), shape.0);
-                    prepare_coloring(f, clr, &mut used_color)?;
-
-                    print_horizontal_border(f, cfg, (row, col), width, c)?;
-                }
-                None => repeat_char(f, ' ', width)?,
-            }
-        }
-
-        if i >= override_text_pos && !override_text.is_empty() {
-            let text_width = string_width(&override_text);
-            let print_width = cmp::min(text_width, width);
-            let (c, rest) = split_str_at(&override_text, print_width);
-            f.write_str(&c)?;
-            override_text = rest.into_owned();
-            if string_width(&override_text) == 0 {
-                override_text = String::new()
-            }
-
-            width -= print_width;
-        }
+        let width = dimension.get_width(col);
 
         // general case
         if width > 0 {
@@ -456,26 +411,14 @@ fn print_split_line<F: Write, D: Dimension>(
                 }
                 None => repeat_char(f, ' ', width)?,
             }
-
-            i += width;
         }
 
         let right = cfg.get_intersection((row, col + 1), shape);
         if let Some(c) = right {
-            if i >= override_text_pos && !override_text.is_empty() {
-                let (c, rest) = split_str_at(&override_text, 1);
-                f.write_str(&c)?;
-                override_text = rest.into_owned();
-                if string_width(&override_text) == 0 {
-                    override_text = String::new()
-                }
-            } else {
-                let clr = cfg.get_intersection_color((row, col + 1), shape);
-                prepare_coloring(f, clr, &mut used_color)?;
+            let clr = cfg.get_intersection_color((row, col + 1), shape);
+            prepare_coloring(f, clr, &mut used_color)?;
 
-                f.write_char(c)?;
-                i += 1;
-            }
+            f.write_char(c)?;
         }
     }
 
@@ -533,7 +476,7 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
 
         if has_horizontal {
             print_margin_left(f, cfg, line, totalh)?;
-            print_split_line_spanned(f, &mut buf, cfg, dims, total_width, row, shape)?;
+            print_split_line_spanned(f, &mut buf, cfg, dims, row, shape)?;
             print_margin_right(f, cfg, line, totalh)?;
 
             line += 1;
@@ -559,7 +502,7 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
         if cfg.has_horizontal(row, row) {
             f.write_char('\n')?;
             let shape = (row, count_columns);
-            print_horizontal_line(f, cfg, line, totalh, dims, row, total_width, shape)?;
+            print_horizontal_line(f, cfg, line, totalh, dims, row, shape)?;
         }
 
         if margin.bottom.indent.size > 0 {
@@ -576,55 +519,34 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
     buf: &mut BTreeMap<usize, (Cell<S, C>, usize, usize)>,
     cfg: &GridConfig,
     dimension: &D,
-    total_width: usize,
     row: usize,
     shape: (usize, usize),
 ) -> fmt::Result {
-    let mut override_text = cfg
-        .get_split_line_text(row)
-        .and_then(|text| get_lines(text).next())
-        .unwrap_or_default()
-        .into_owned();
-    let override_text_offset = cfg.get_split_line_offset(row).unwrap_or(Offset::Begin(0));
-    let override_text_pos = offset_start_pos(override_text_offset, total_width);
+    if shape.1 == 0 {
+        return Ok(());
+    }
 
     let mut used_color = None;
 
-    let mut i = 0;
-    for col in 0..shape.1 {
-        if col == 0 {
-            let left = cfg.get_intersection((row, col), shape);
-            if let Some(c) = left {
-                if i >= override_text_pos && !override_text.is_empty() {
-                    let (c, rest) = split_str_at(&override_text, 1);
-                    f.write_str(&c)?;
-                    override_text = rest.into_owned();
-                    if string_width(&override_text) == 0 {
-                        override_text = String::new()
-                    }
-                } else {
-                    let clr = cfg.get_intersection_color((row, col), shape);
-                    if let Some(clr) = clr {
-                        clr.fmt_prefix(f)?;
-                        used_color = Some(clr);
-                    }
-
-                    f.write_char(c)?;
-                    i += 1;
-                }
-            }
+    let left = cfg.get_intersection((row, 0), shape);
+    if let Some(c) = left {
+        let clr = cfg.get_intersection_color((row, 0), shape);
+        if let Some(clr) = clr {
+            clr.fmt_prefix(f)?;
+            used_color = Some(clr);
         }
 
+        f.write_char(c)?;
+    }
+
+    for col in 0..shape.1 {
         if cfg.is_cell_covered_by_both_spans((row, col)) {
             continue;
         }
 
-        let is_spanned_split_line_part = cfg.is_cell_covered_by_row_span((row, col));
-
-        let mut width = dimension.get_width(col);
-
+        let width = dimension.get_width(col);
         let mut col = col;
-        if is_spanned_split_line_part {
+        if cfg.is_cell_covered_by_row_span((row, col)) {
             // means it's part of other a spanned cell
             // so. we just need to use line from other cell.
 
@@ -637,40 +559,6 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
                 col += span - 1;
             }
         } else if width > 0 {
-            // a situation when need to partially print split
-            if i < override_text_pos && i + width >= override_text_pos {
-                let available = override_text_pos - i;
-                width -= available;
-                i += available;
-                let width = available;
-
-                let main = cfg.get_horizontal((row, col), shape.0);
-                match main {
-                    Some(c) => {
-                        let clr = cfg.get_horizontal_color((row, col), shape.0);
-                        prepare_coloring(f, clr, &mut used_color)?;
-
-                        print_horizontal_border(f, cfg, (row, col), width, c)?;
-                    }
-                    None => repeat_char(f, ' ', width)?,
-                }
-            }
-
-            if i >= override_text_pos && !override_text.is_empty() {
-                let text_width = string_width(&override_text);
-                let print_width = cmp::min(text_width, width);
-
-                let (c, rest) = split_str_at(&override_text, print_width);
-                f.write_str(&c)?;
-
-                override_text = rest.into_owned();
-                if string_width(&override_text) == 0 {
-                    override_text = String::new()
-                }
-
-                width -= print_width;
-            }
-
             // general case
             let main = cfg.get_horizontal((row, col), shape.0);
             match main {
@@ -682,26 +570,14 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
                 }
                 None => repeat_char(f, ' ', width)?,
             }
-
-            i += width;
         }
 
         let right = cfg.get_intersection((row, col + 1), shape);
         if let Some(c) = right {
-            if i >= override_text_pos && !override_text.is_empty() {
-                let (c, rest) = split_str_at(&override_text, 1);
-                f.write_str(&c)?;
-                override_text = rest.into_owned();
-                if string_width(&override_text) == 0 {
-                    override_text = String::new()
-                }
-            } else {
-                let clr = cfg.get_intersection_color((row, col + 1), shape);
-                prepare_coloring(f, clr, &mut used_color)?;
+            let clr = cfg.get_intersection_color((row, col + 1), shape);
+            prepare_coloring(f, clr, &mut used_color)?;
 
-                f.write_char(c)?;
-                i += 1;
-            }
+            f.write_char(c)?;
         }
     }
 
@@ -1309,95 +1185,12 @@ fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
     }
 }
 
-fn offset_start_pos(offset: Offset, length: usize) -> usize {
-    match offset {
-        Offset::Begin(o) => o,
-        Offset::End(o) => {
-            if o > length {
-                length
-            } else {
-                length - o
-            }
-        }
-    }
-}
-
 fn convert_count_rows(row: usize, is_last: bool) -> usize {
     if is_last {
         row + 1
     } else {
         row + 2
     }
-}
-
-/// Get string at
-///
-/// BE AWARE: width is expected to be in bytes.
-fn split_str_at(text: &str, at: usize) -> (Cow<'_, str>, Cow<'_, str>) {
-    #[cfg(feature = "color")]
-    {
-        const REPLACEMENT: char = '\u{FFFD}';
-
-        let stripped = ansi_str::AnsiStr::ansi_strip(text);
-        let (length, count_unknowns, _) = split_at_pos(&stripped, at);
-
-        let mut buf = ansi_str::AnsiStr::ansi_cut(text, ..length);
-
-        if count_unknowns > 0 {
-            let mut b = buf.into_owned();
-            b.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
-            buf = Cow::Owned(b);
-        }
-
-        let rest = ansi_str::AnsiStr::ansi_cut(text, length..);
-
-        (buf, rest)
-    }
-    #[cfg(not(feature = "color"))]
-    {
-        const REPLACEMENT: char = '\u{FFFD}';
-
-        let (length, count_unknowns, _) = split_at_pos(text, at);
-        let buf = &text[..length];
-        let rest = &text[length..];
-        if count_unknowns == 0 {
-            return (Cow::Borrowed(buf), Cow::Borrowed(rest));
-        }
-
-        let mut buf = buf.to_owned();
-        buf.extend(std::iter::repeat(REPLACEMENT).take(count_unknowns));
-
-        return (Cow::Owned(buf), Cow::Borrowed(rest));
-    }
-}
-
-/// The function splits a string in the position and
-/// returns a exact number of bytes before the position and in case of a split in an unicode grapheme
-/// a width of a character which was tried to be splitted in.
-///
-/// BE AWARE: pos is expected to be in bytes.
-fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
-    let mut length = 0;
-    let mut i = 0;
-    for c in s.chars() {
-        if i == pos {
-            break;
-        };
-
-        let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
-
-        // We cut the chars which takes more then 1 symbol to display,
-        // in order to archive the necessary width.
-        if i + c_width > pos {
-            let count = pos - i;
-            return (length, count, c.len_utf8());
-        }
-
-        i += c_width;
-        length += c.len_utf8();
-    }
-
-    (length, 0, 0)
 }
 
 /// Trims a string.

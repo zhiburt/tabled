@@ -1,6 +1,14 @@
 use std::borrow::Cow;
 
-use crate::{grid::spanned::GridConfig, records::ExactRecords, settings::TableOption};
+use papergrid::{
+    dimension::{Dimension, Estimate},
+    records::Records,
+};
+
+use crate::{
+    grid::spanned::GridConfig, records::ExactRecords, settings::TableOption,
+    tables::table::TableDimension,
+};
 
 use super::Offset;
 
@@ -74,23 +82,145 @@ impl<L> BorderText<'_, L> {
     }
 }
 
-impl<R, D> TableOption<R, D, GridConfig> for BorderText<'_, LineFirst> {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
-        cfg.override_split_line(0, self.text.as_ref(), self.offset.into());
-    }
-}
-
-impl<R, D> TableOption<R, D, GridConfig> for BorderText<'_, LineIndex> {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
-        cfg.override_split_line(self.line.0, self.text.as_ref(), self.offset.into());
-    }
-}
-
-impl<R, D> TableOption<R, D, GridConfig> for BorderText<'_, LineLast>
+impl<R> TableOption<R, TableDimension<'_>, GridConfig> for BorderText<'_, LineIndex>
 where
-    R: ExactRecords,
+    R: Records + ExactRecords,
+    for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
-        cfg.override_split_line(records.count_rows(), self.text.as_ref(), self.offset.into());
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dims: &mut TableDimension<'_>) {
+        set_chars(dims, &*records, cfg, self.offset, self.line.0, &self.text);
     }
+}
+
+impl<R> TableOption<R, TableDimension<'_>, GridConfig> for BorderText<'_, LineFirst>
+where
+    R: Records + ExactRecords,
+    for<'a> &'a R: Records,
+{
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dims: &mut TableDimension<'_>) {
+        set_chars(dims, &*records, cfg, self.offset, 0, &self.text);
+    }
+}
+
+impl<R> TableOption<R, TableDimension<'_>, GridConfig> for BorderText<'_, LineLast>
+where
+    R: Records + ExactRecords,
+    for<'a> &'a R: Records,
+{
+    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dims: &mut TableDimension<'_>) {
+        set_chars(
+            dims,
+            &*records,
+            cfg,
+            self.offset,
+            records.count_rows(),
+            &self.text,
+        );
+    }
+}
+
+fn set_chars<R>(
+    dims: &mut TableDimension<'_>,
+    records: &R,
+    cfg: &mut GridConfig,
+    offset: Offset,
+    line: usize,
+    text: &str,
+) where
+    for<'a> &'a R: Records + ExactRecords,
+{
+    dims.estimate(records, cfg);
+
+    let count_columns = records.count_columns();
+    let count_rows = records.count_rows();
+    let pos = get_start_pos(offset, cfg, dims, count_columns);
+    let pos = match pos {
+        Some(pos) => pos,
+        None => return,
+    };
+
+    let mut chars = text.chars();
+    let mut i = cfg.has_vertical(0, count_columns) as usize;
+    if i == 1 && pos == 0 {
+        match chars.next() {
+            Some(c) => {
+                let mut b = cfg.get_border((line, 0), (count_rows, count_columns));
+                b.left_top_corner = b.left_top_corner.map(|_| c);
+                cfg.set_border((line, 0), b);
+            }
+            None => return,
+        }
+    }
+
+    for col in 0..count_columns {
+        let w = dims.get_width(col);
+        if i + w > pos {
+            for off in 0..w {
+                if i + off < pos {
+                    continue;
+                }
+
+                match chars.next() {
+                    Some(c) => cfg.override_horizontal_border(
+                        (line, col),
+                        c,
+                        crate::grid::spanned::config::Offset::Begin(off),
+                    ),
+                    None => return,
+                }
+            }
+        }
+
+        i += w;
+
+        if cfg.has_vertical(col + 1, count_columns) {
+            i += 1;
+
+            if i > pos {
+                match chars.next() {
+                    Some(c) => {
+                        let mut b = cfg.get_border((line, col), (count_rows, count_columns));
+                        b.right_top_corner = b.right_top_corner.map(|_| c);
+                        cfg.set_border((line, col), b);
+                    }
+                    None => return,
+                }
+            }
+        }
+    }
+}
+
+fn get_start_pos(
+    offset: Offset,
+    cfg: &GridConfig,
+    dims: &TableDimension<'_>,
+    count_columns: usize,
+) -> Option<usize> {
+    let totalw = total_width(cfg, dims, count_columns);
+    match offset {
+        Offset::Begin(i) => {
+            if i > totalw {
+                None
+            } else {
+                Some(i)
+            }
+        }
+        Offset::End(i) => {
+            if i > totalw {
+                None
+            } else {
+                Some(totalw - i)
+            }
+        }
+    }
+}
+
+fn total_width(cfg: &GridConfig, dims: &TableDimension<'_>, count_columns: usize) -> usize {
+    let mut totalw = cfg.has_vertical(0, count_columns) as usize;
+    for col in 0..count_columns {
+        totalw += dims.get_width(col);
+        totalw += cfg.has_vertical(col + 1, count_columns) as usize;
+    }
+
+    totalw
 }

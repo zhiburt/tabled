@@ -32,7 +32,6 @@ pub struct GridConfig {
     span_rows: HashMap<Position, usize>,
     borders: BordersConfig<char>,
     borders_missing_char: char,
-    override_horizontal_lines: HashMap<usize, (String, Offset)>,
     override_horizontal_borders: HashMap<Position, HashMap<Offset, char>>,
     override_vertical_borders: HashMap<Position, HashMap<Offset, char>>,
     border_colors: BordersConfig<AnsiColor<'static>>,
@@ -50,7 +49,6 @@ impl Default for GridConfig {
             borders_missing_char: ' ',
             span_columns: HashMap::default(),
             span_rows: HashMap::default(),
-            override_horizontal_lines: HashMap::default(),
             override_horizontal_borders: HashMap::default(),
             override_vertical_borders: HashMap::default(),
             border_colors: BordersConfig::default(),
@@ -103,7 +101,6 @@ impl GridConfig {
     /// And sets it to default.
     pub fn clear_theme(&mut self) {
         self.borders = BordersConfig::default();
-        self.override_horizontal_lines.clear();
         self.override_horizontal_borders.clear();
         self.override_vertical_borders.clear();
     }
@@ -174,34 +171,6 @@ impl GridConfig {
     /// Row `grid.count_rows()` means the bottom row.
     pub fn get_horizontal_line(&self, line: usize) -> Option<&HorizontalLine> {
         self.borders.get_horizontal_line(line)
-    }
-
-    /// Override the split line with a custom text.
-    ///
-    /// If borders are not set the string won't be rendered.
-    pub fn override_split_line(&mut self, line: usize, text: impl Into<String>, offset: Offset) {
-        self.override_horizontal_lines
-            .insert(line, (text.into(), offset));
-    }
-
-    /// Gets a set text to a border line by index
-    pub fn get_split_line_text(&self, line: usize) -> Option<&str> {
-        self.override_horizontal_lines
-            .get(&line)
-            .map(|(s, _)| s.as_str())
-    }
-
-    /// Gets a set text to a border line by index
-    pub fn get_split_line_offset(&self, line: usize) -> Option<Offset> {
-        self.override_horizontal_lines
-            .get(&line)
-            .map(|(_, offset)| offset)
-            .copied()
-    }
-
-    /// Removes a split line text if any set.
-    pub fn remove_split_line_text(&mut self, line: usize) -> Option<(String, Offset)> {
-        self.override_horizontal_lines.remove(&line)
     }
 
     /// Override a character on a horizontal line.
@@ -544,8 +513,8 @@ impl GridConfig {
     /// Checks if grid would have a vertical border with the current configuration.
     ///
     /// grid: crate::Grid
-    pub fn has_vertical(&self, row: usize, count_columns: usize) -> bool {
-        self.borders.has_vertical(row, count_columns)
+    pub fn has_vertical(&self, col: usize, count_columns: usize) -> bool {
+        self.borders.has_vertical(col, count_columns)
     }
 
     /// Calculates an amount of horizontal lines would present on the grid.
