@@ -16,9 +16,6 @@ use tabled::settings::{
     Modify, Settings,
 };
 
-#[cfg(feature = "color")]
-use std::iter::FromIterator;
-
 use crate::util::{create_table, init_table, is_lines_equal, new_table, static_table};
 
 mod util;
