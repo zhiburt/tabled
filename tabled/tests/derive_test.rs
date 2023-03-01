@@ -642,6 +642,25 @@ mod enum_ {
             B(String::new()) => ["", "asd 200 Hello World", ""],
             K => ["", "", "100 200"],
     );
+
+    test_enum!(order_0, t: { #[tabled(order = 0)] V1(u8) V2(u8) V3(u8) }, headers: ["V1", "V2", "V3"], tests: V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],);
+    test_enum!(order_1, t: { #[tabled(order = 1)] V1(u8) V2(u8) V3(u8) }, headers: ["V2", "V1", "V3"], tests: V1(0) => ["", "+", ""], V2(0) => ["+", "", ""], V3(0) => ["", "", "+"],);
+    test_enum!(order_2, t: { #[tabled(order = 2)] V1(u8) V2(u8) V3(u8) }, headers: ["V2", "V3", "V1"], tests: V1(0) => ["", "", "+"], V2(0) => ["+", "", ""], V3(0) => ["", "+", ""],);
+    test_enum!(order_3, t: { V1(u8) #[tabled(order = 0)] V2(u8) V3(u8) }, headers: ["V2", "V1", "V3"], tests: V1(0) => ["", "+", ""], V2(0) => ["+", "", ""], V3(0) => ["", "", "+"],);
+    test_enum!(order_4, t: { V1(u8) #[tabled(order = 1)] V2(u8) V3(u8) }, headers: ["V1", "V2", "V3"], tests: V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],);
+    test_enum!(order_5, t: { V1(u8) #[tabled(order = 2)] V2(u8) V3(u8) }, headers: ["V1", "V3", "V2"], tests: V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],);
+    test_enum!(order_6, t: { V1(u8) V2(u8) #[tabled(order = 0)] V3(u8) }, headers: ["V3", "V1", "V2"], tests: V1(0) => ["", "+", ""], V2(0) => ["", "", "+"], V3(0) => ["+", "", ""],);
+    test_enum!(order_7, t: { V1(u8) V2(u8) #[tabled(order = 1)] V3(u8) }, headers: ["V1", "V3", "V2"], tests: V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],);
+    test_enum!(order_8, t: { V1(u8) V2(u8) #[tabled(order = 2)] V3(u8) }, headers: ["V1", "V2", "V3"], tests: V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],);
+    test_enum!(order_9, t: { #[tabled(order = 2)] V1(u8) V2(u8) #[tabled(order = 0)] V3(u8) }, headers: ["V3", "V2", "V1"], tests: V1(0) => ["", "", "+"], V2(0) => ["", "+", ""], V3(0) => ["+", "", ""],);
+    test_enum!(order_10, t: { #[tabled(order = 2)] V1(u8) V2(u8) #[tabled(order = 1)] V3(u8) }, headers: ["V2", "V3", "V1"], tests: V1(0) => ["", "", "+"], V2(0) => ["+", "", ""], V3(0) => ["", "+", ""],);
+    test_enum!(order_11, t: { #[tabled(order = 2)] V1(u8) #[tabled(order = 2)] V2(u8) #[tabled(order = 1)] V3(u8) }, headers: ["V1", "V3", "V2"], tests: V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],);
+    test_enum!(order_12, t: { #[tabled(order = 2)] V1(u8) #[tabled(order = 1)] V2(u8) #[tabled(order = 0)] V3(u8) }, headers: ["V3", "V2", "V1"], tests: V1(0) => ["", "", "+"], V2(0) => ["", "+", ""], V3(0) => ["+", "", ""],);
+    test_enum!(order_13, t: { #[tabled(order = 0)] V1(u8) #[tabled(order = 0)] V2(u8) #[tabled(order = 0)] V3(u8) }, headers: ["V3", "V1", "V2"], tests: V1(0) => ["", "+", ""], V2(0) => ["", "", "+"], V3(0) => ["+", "", ""],);
+    test_enum!(order_14, t: { #[tabled(order = 1)] V1(u8) #[tabled(order = 1)] V2(u8) #[tabled(order = 1)] V3(u8) }, headers: ["V1", "V3", "V2"], tests: V1(0) => ["+", "", ""], V2(0) => ["", "", "+"], V3(0) => ["", "+", ""],);
+    test_enum!(order_15, t: { #[tabled(order = 2)] V1(u8) #[tabled(order = 2)] V2(u8) #[tabled(order = 2)] V3(u8) }, headers: ["V1", "V2", "V3"], tests: V1(0) => ["+", "", ""], V2(0) => ["", "+", ""], V3(0) => ["", "", "+"],);
+
+    test_enum!(order_0_inlined, t: #[tabled(inline)] { #[tabled(order = 1)] V1(u8) V2(u8) V3(u8) }, headers: ["TestType"], tests: V1(0) => ["V1"], V2(0) => ["V2"], V3(0) => ["V3"],);
 }
 
 mod unit {

@@ -294,17 +294,20 @@ fn collect_info_enum(
 }
 
 fn _collect_info_enum(ast: &DataEnum, attrs: &StructAttributes) -> Result<Impl, Error> {
+    // reorder variants according to order (if set)
+    let orderedvariants = reodered_variants(ast)?;
+
     let mut headers_list = Vec::new();
     let mut variants = Vec::new();
-    for variant in &ast.variants {
-        let mut attributes = Attributes::parse(&variant.attrs)?;
+    for v in orderedvariants {
+        let mut attributes = Attributes::parse(&v.attrs)?;
         merge_attributes(&mut attributes, attrs);
         if attributes.is_ignored() {
             continue;
         }
 
-        let info = info_from_variant(variant, &attributes, attrs)?;
-        variants.push((variant, info.values));
+        let info = info_from_variant(v, &attributes, attrs)?;
+        variants.push((v, info.values));
         headers_list.push(info.headers);
     }
 
@@ -328,9 +331,11 @@ fn collect_info_enum_inlined(
     attrs: &StructAttributes,
     enum_name: String,
 ) -> Result<Impl, Error> {
+    let orderedvariants = reodered_variants(ast)?;
+
     let mut variants = Vec::new();
     let mut names = Vec::new();
-    for variant in &ast.variants {
+    for variant in orderedvariants {
         let mut attributes = Attributes::parse(&variant.attrs)?;
         merge_attributes(&mut attributes, attrs);
         let mut name = String::new();
@@ -628,4 +633,38 @@ fn fnarg_tokens(arg: &FuncArg) -> TokenStream {
             quote! { #val }
         }
     }
+}
+
+fn reodered_variants(ast: &DataEnum) -> Result<Vec<&Variant>, Error> {
+    let mut reorder = HashMap::new();
+    let mut skip = 0;
+    let count = ast.variants.len();
+    for (i, attr) in ast
+        .variants
+        .iter()
+        .map(|v| Attributes::parse(&v.attrs).unwrap_or_default())
+        .enumerate()
+    {
+        if attr.is_ignored {
+            skip += 1;
+            continue;
+        }
+
+        if let Some(order) = attr.order {
+            if order >= count {
+                return Err(Error::message(format!(
+                    "An order index '{order}' is out of fields scope"
+                )));
+            }
+
+            reorder.insert(order, i - skip);
+        }
+    }
+
+    let mut orderedvariants = ast.variants.iter().collect::<Vec<_>>();
+    if !reorder.is_empty() {
+        orderedvariants = reorder_fields(&reorder, &orderedvariants);
+    }
+
+    Ok(orderedvariants)
 }
