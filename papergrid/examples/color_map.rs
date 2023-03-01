@@ -1,3 +1,8 @@
+//! The example can be run by this command
+//! `cargo run --features color --example color_map`
+//!
+//! This example requires the `color` feature.
+
 use std::{
     collections::HashMap,
     fmt::{Display, Formatter},

@@ -1,4 +1,5 @@
-//! The example can be run using `cargo run --example merge_duplicates2`
+//! The example can be run by this command
+//! `cargo run --example merge_duplicates_2`
 
 use tabled::{
     settings::{

@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --features color --example colored_borders`
 //!
-//! This example requires a `color` feature.
+//! This example requires the `color` feature.
 
 use tabled::{
     settings::{

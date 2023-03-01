@@ -1,3 +1,6 @@
+//! The example can be run by this command
+//! `cargo run --example collapse`
+
 use json_to_table::json_to_table;
 
 fn main() {

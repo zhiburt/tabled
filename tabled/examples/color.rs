@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --features color --example color`
 //!
-//! This example requires a color feature
+//! This example requires the `color` feature.
 
 use std::convert::TryFrom;
 
