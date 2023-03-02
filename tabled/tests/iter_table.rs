@@ -51,7 +51,11 @@ test_table!(
 
 test_table!(
     iter_table_iterator,
-    IterTable::new((0..3).map(|i: usize| (0..5).map(move |j: usize| format!("{i},{j}")))).to_string(),
+    {
+        let mut buf = String::new();
+        IterTable::new((0..3).map(|i: usize| (0..5).map(move |j: usize| format!("{i},{j}")))).fmt(&mut buf).unwrap();
+        buf
+    },
     "+-----+-----+-----+-----+-----+"
     "| 0,0 | 0,1 | 0,2 | 0,3 | 0,4 |"
     "+-----+-----+-----+-----+-----+"

@@ -3,8 +3,6 @@
 //!
 //! This example requires the `color` feature.
 
-use std::iter::FromIterator;
-
 use tabled::{
     settings::{alignment::Alignment, object::Segment, style::Style, width::Width, Modify},
     Table, Tabled,

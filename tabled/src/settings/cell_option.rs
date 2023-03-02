@@ -5,9 +5,6 @@ use crate::{
     records::{ExactRecords, RecordsMut},
 };
 
-// todo: Update documentation
-// todo: Move to settings
-
 /// A trait for configuring a single cell.
 ///
 /// ~~~~ Where cell represented by 'row' and 'column' indexes. ~~~~

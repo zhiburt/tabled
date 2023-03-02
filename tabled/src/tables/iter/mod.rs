@@ -27,12 +27,12 @@
 //! [`Table`]: crate::Table
 
 mod dimension;
-mod utf8_writer;
+pub(crate) mod utf8_writer;
 
 use std::{cmp, fmt, io};
 
 use papergrid::config::Sides;
-use papergrid::dimension::{Dimension, Estimate};
+use papergrid::dimension::Dimension;
 
 use crate::grid::compact::{CompactConfig, ExactDimension};
 use crate::grid::spanned::{Grid, GridConfig};
@@ -177,27 +177,6 @@ impl<I> IterTable<I> {
     }
 }
 
-impl<I> fmt::Display for IterTable<I>
-where
-    for<'a> &'a I: IntoRecords,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(cols) = self.table.count_columns {
-            let records = IterRecords::new(&self.records, cols, self.table.count_rows);
-            let mut dims = ExactDimension::default();
-            dims.estimate(records, &self.cfg);
-
-            let records = IterRecords::new(&self.records, cols, self.table.count_rows);
-
-            let cfg = GridConfig::from(self.cfg);
-            return Grid::new(records, dims, cfg).build(f);
-        }
-
-        let dims = dims_from_exact_dims(self.dim.clone());
-        build_grid(f, &self.records, self.cfg, &self.table, dims)
-    }
-}
-
 fn build_grid<W: fmt::Write, I: IntoRecords>(
     writer: W,
     records: I,
@@ -335,14 +314,6 @@ impl Dimension for Dims<'_> {
     fn get_height(&self, row: usize) -> usize {
         self.height.get(row)
     }
-}
-
-fn dims_from_exact_dims(d: IterTableDimension) -> Dims<'static> {
-    let (width, height) = d.into();
-    let width = exact_list_to_exact_value(width);
-    let height = exact_list_to_exact_value(height);
-    let dims = Dims::new(width, height);
-    dims
 }
 
 fn exact_list_to_exact_value(width: ExactList) -> ExactValue<'static> {

@@ -1,7 +1,7 @@
 use std::fmt;
 use std::io;
 
-pub(super) struct UTF8Writer<W>(W);
+pub(crate) struct UTF8Writer<W>(W);
 
 impl<W> UTF8Writer<W> {
     pub(crate) fn new(writer: W) -> Self {

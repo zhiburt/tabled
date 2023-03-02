@@ -71,9 +71,7 @@ fn build_height<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
 }
 
 fn build_width<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
-    let count_columns = records.count_columns();
-    let mut widths = vec![0; count_columns];
-
+    let mut widths = vec![0; records.count_columns()];
     for columns in records.iter_rows() {
         for (col, cell) in columns.into_iter().enumerate() {
             let width = get_cell_width(cell.as_ref(), cfg);

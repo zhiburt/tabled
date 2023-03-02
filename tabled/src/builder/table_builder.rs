@@ -1,7 +1,3 @@
-// todo: I'd rather switch back to -> Self from -> &mut Self
-//
-// but these &self methods are definitely a smell...
-
 use std::iter::FromIterator;
 
 use crate::Table;

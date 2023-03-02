@@ -34,8 +34,6 @@ use super::Offset;
 /// ```
 #[derive(Debug)]
 pub struct BorderText<'a, Line> {
-    // todo: offset from which we start overriding border
-    // offset: usize,
     text: Cow<'a, str>,
     offset: Offset,
     line: Line,

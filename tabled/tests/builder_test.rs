@@ -2,8 +2,7 @@
 
 use std::iter::FromIterator;
 
-use tabled::grid::util::string::{string_width, string_width_multiline};
-use tabled::{builder::Builder, settings::style::Style, Table};
+use tabled::builder::Builder;
 
 use util::test_table;
 

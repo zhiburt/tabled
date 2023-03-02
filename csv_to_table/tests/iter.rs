@@ -22,7 +22,6 @@ Year,Industry_aggregation_NZSIOC,Industry_name_NZSIOC,Units,Variable_code,Variab
 #[test]
 fn test_iter() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes());
-
     let table = table.to_string();
 
     assert_eq!(

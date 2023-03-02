@@ -243,6 +243,10 @@ impl Table {
 
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.is_empty() {
+            return Ok(());
+        }
+
         let config = use_format_configuration(f, self);
 
         let mut dimension = self.dimension.clone();
