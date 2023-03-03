@@ -26,20 +26,18 @@
 //!
 //! [`Table`]: crate::Table
 
-use papergrid::{
-    color::AnsiColor,
-    grid::spanned::config::{ColoredMarginIndent, Offset},
-};
-
-use crate::grid::color::StaticColor;
 use crate::{
-    grid::compact::CompactConfig,
-    grid::config::{Indent, Sides},
+    grid::{
+        color::{AnsiColor, StaticColor},
+        compact::CompactConfig,
+        config::{Indent, Sides},
+        spanned::config::{ColoredMarginIndent, Offset},
+    },
     settings::TableOption,
 };
 
 #[cfg(feature = "std")]
-use crate::grid::spanned::GridConfig;
+use crate::tables::table::ColoredConfig;
 
 /// Margin is responsible for a left/right/top/bottom outer indent of a grid.
 ///
@@ -95,11 +93,11 @@ impl<Color> Margin<Color> {
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<R, D, C> TableOption<R, D, GridConfig> for Margin<C>
+impl<R, D, C> TableOption<R, D, ColoredConfig> for Margin<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
 {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let margin = cfg.get_margin_mut();
         margin.left = ColoredMarginIndent::new(self.indent.left, Offset::Begin(0), None);
         margin.right = ColoredMarginIndent::new(self.indent.right, Offset::Begin(0), None);

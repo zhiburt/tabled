@@ -2175,34 +2175,22 @@ test_table!(
     "╰───┴──────────┴──────────┴──────────╯"
 );
 
-#[cfg(feature = "color")]
 test_table!(
     border_color,
     {
-        use std::convert::TryFrom;
-        use owo_colors::OwoColorize;
         use tabled::settings::color::Color;
-
-        let color = Color::try_from(' '.on_green().to_string()).unwrap();
-
-        create_table::<3, 3>().with(Style::psql()).with(color)
+        create_table::<3, 3>().with(Style::psql()).with(Color::BG_GREEN)
     },
-    " N \u{1b}[42m|\u{1b}[49m column 0 \u{1b}[42m|\u{1b}[49m column 1 \u{1b}[42m|\u{1b}[49m column 2 \n\u{1b}[42m---+----------+----------+----------\u{1b}[49m\n 0 \u{1b}[42m|\u{1b}[49m   0-0    \u{1b}[42m|\u{1b}[49m   0-1    \u{1b}[42m|\u{1b}[49m   0-2    \n 1 \u{1b}[42m|\u{1b}[49m   1-0    \u{1b}[42m|\u{1b}[49m   1-1    \u{1b}[42m|\u{1b}[49m   1-2    \n 2 \u{1b}[42m|\u{1b}[49m   2-0    \u{1b}[42m|\u{1b}[49m   2-1    \u{1b}[42m|\u{1b}[49m   2-2    "
+    " \u{1b}[42mN\u{1b}[49m | \u{1b}[42mcolumn 0\u{1b}[49m | \u{1b}[42mcolumn 1\u{1b}[49m | \u{1b}[42mcolumn 2\u{1b}[49m \n---+----------+----------+----------\n \u{1b}[42m0\u{1b}[49m |   \u{1b}[42m0-0\u{1b}[49m    |   \u{1b}[42m0-1\u{1b}[49m    |   \u{1b}[42m0-2\u{1b}[49m    \n \u{1b}[42m1\u{1b}[49m |   \u{1b}[42m1-0\u{1b}[49m    |   \u{1b}[42m1-1\u{1b}[49m    |   \u{1b}[42m1-2\u{1b}[49m    \n \u{1b}[42m2\u{1b}[49m |   \u{1b}[42m2-0\u{1b}[49m    |   \u{1b}[42m2-1\u{1b}[49m    |   \u{1b}[42m2-2\u{1b}[49m    "
 );
 
-#[cfg(feature = "color")]
 test_table!(
     text_color,
     {
-        use std::convert::TryFrom;
-        use owo_colors::OwoColorize;
         use tabled::settings::color::Color;
-
-        let color = Color::try_from(' '.on_green().to_string()).unwrap();
-
-        create_table::<3, 3>().with(Style::psql()).with(Modify::new(Segment::all()).with(color))
+        create_table::<3, 3>().with(Style::psql()).with(Modify::new(Segment::all()).with(Color::BG_BLACK))
     },
-    " N \u{1b}[42m|\u{1b}[49m column 0 \u{1b}[42m|\u{1b}[49m column 1 \u{1b}[42m|\u{1b}[49m column 2 \n\u{1b}[42m---+----------+----------+----------\u{1b}[49m\n 0 \u{1b}[42m|\u{1b}[49m   0-0    \u{1b}[42m|\u{1b}[49m   0-1    \u{1b}[42m|\u{1b}[49m   0-2    \n 1 \u{1b}[42m|\u{1b}[49m   1-0    \u{1b}[42m|\u{1b}[49m   1-1    \u{1b}[42m|\u{1b}[49m   1-2    \n 2 \u{1b}[42m|\u{1b}[49m   2-0    \u{1b}[42m|\u{1b}[49m   2-1    \u{1b}[42m|\u{1b}[49m   2-2    "
+    " \u{1b}[40mN\u{1b}[49m | \u{1b}[40mcolumn 0\u{1b}[49m | \u{1b}[40mcolumn 1\u{1b}[49m | \u{1b}[40mcolumn 2\u{1b}[49m \n---+----------+----------+----------\n \u{1b}[40m0\u{1b}[49m |   \u{1b}[40m0-0\u{1b}[49m    |   \u{1b}[40m0-1\u{1b}[49m    |   \u{1b}[40m0-2\u{1b}[49m    \n \u{1b}[40m1\u{1b}[49m |   \u{1b}[40m1-0\u{1b}[49m    |   \u{1b}[40m1-1\u{1b}[49m    |   \u{1b}[40m1-2\u{1b}[49m    \n \u{1b}[40m2\u{1b}[49m |   \u{1b}[40m2-0\u{1b}[49m    |   \u{1b}[40m2-1\u{1b}[49m    |   \u{1b}[40m2-2\u{1b}[49m    "
 );
 
 test_table!(

@@ -1,9 +1,7 @@
-use papergrid::{
+use crate::{
     grid::spanned::{ExactDimension, GridConfig},
-    records::Records,
+    records::{ExactRecords, Records},
 };
-
-use crate::records::ExactRecords;
 
 pub(crate) fn get_table_height<R: Records + ExactRecords>(
     records: R,

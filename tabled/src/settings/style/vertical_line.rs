@@ -1,8 +1,7 @@
 use crate::settings::TableOption;
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-use crate::grid::spanned::{config, GridConfig};
+use crate::{grid::spanned::config::VerticalLine as VLine, tables::table::ColoredConfig};
 
 use super::Line;
 
@@ -92,10 +91,10 @@ impl VerticalLine {
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<R, D> TableOption<R, D, GridConfig> for VerticalLine {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+impl<R, D> TableOption<R, D, ColoredConfig> for VerticalLine {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         match &self.line {
-            Some(line) => cfg.insert_vertical_line(self.index, config::VerticalLine::from(*line)),
+            Some(line) => cfg.insert_vertical_line(self.index, VLine::from(*line)),
             None => cfg.remove_vertical_line(self.index),
         }
     }

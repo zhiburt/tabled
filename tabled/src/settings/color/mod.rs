@@ -6,13 +6,10 @@
 use std::borrow::Cow;
 
 use crate::{
-    grid::{
-        color::AnsiColor,
-        config::{Border, Entity},
-        spanned::GridConfig,
-    },
-    records::{ExactRecords, Records},
+    grid::{color::AnsiColor, config::Entity},
+    records::{ExactRecords, Records, RecordsMut},
     settings::{CellOption, TableOption},
+    tables::table::ColoredConfig,
 };
 
 /// Color represents a color which can be set to things like [`Border`], [`Padding`] and [`Margin`].
@@ -39,6 +36,8 @@ use crate::{
 /// [`Border`]: crate::settings::style::Border
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Color(AnsiColor<'static>);
+
+// todo: Add | operation to combine colors
 
 #[rustfmt::skip]
 impl Color {
@@ -211,35 +210,26 @@ impl std::convert::TryFrom<String> for Color {
     }
 }
 
-impl<R, D> TableOption<R, D, GridConfig> for Color {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
-        let color = self.0.clone();
-        cfg.set_border_color_global(color);
-    }
-}
-
-impl<R> CellOption<R, GridConfig> for Color
+impl<R, D> TableOption<R, D, ColoredConfig> for Color
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
-        let border = border_color(self);
-
-        for pos in entity.iter(records.count_rows(), records.count_columns()) {
-            cfg.set_border_color(pos, border.clone());
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        for row in 0..records.count_rows() {
+            for col in 0..records.count_columns() {
+                cfg.set_color((row, col), self.0.clone());
+            }
         }
     }
 }
 
-impl<'b, R> CellOption<R, GridConfig> for &'b Color
+impl<R> CellOption<R, ColoredConfig> for Color
 where
-    R: Records + ExactRecords,
+    R: Records + ExactRecords + RecordsMut<String>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
-        let border = border_color(self);
-
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         for pos in entity.iter(records.count_rows(), records.count_columns()) {
-            cfg.set_border_color(pos, border.clone());
+            cfg.set_color(pos, self.0.clone());
         }
     }
 }
@@ -256,17 +246,4 @@ impl papergrid::color::Color for Color {
     fn colorize<W: std::fmt::Write>(&self, f: &mut W, text: &str) -> std::fmt::Result {
         self.0.colorize(f, text)
     }
-}
-
-fn border_color(color: &Color) -> Border<AnsiColor<'static>> {
-    Border::full(
-        color.0.clone(),
-        color.0.clone(),
-        color.0.clone(),
-        color.0.clone(),
-        color.0.clone(),
-        color.0.clone(),
-        color.0.clone(),
-        color.0.clone(),
-    )
 }

@@ -31,15 +31,13 @@ pub(crate) mod utf8_writer;
 
 use std::{cmp, fmt, io};
 
-use papergrid::config::Sides;
-use papergrid::dimension::Dimension;
-
-use crate::grid::compact::{CompactConfig, ExactDimension};
-use crate::grid::spanned::{Grid, GridConfig};
-
 use crate::{
-    grid::config::AlignmentHorizontal,
-    grid::config::Indent,
+    grid::{
+        compact::{CompactConfig, ExactDimension},
+        config::{AlignmentHorizontal, Indent, Sides},
+        dimension::Dimension,
+        spanned::{Grid, GridConfig},
+    },
     records::{
         into_records::{
             truncate_records::ExactValue, BufColumns, BufRows, LimitColumns, LimitRows,

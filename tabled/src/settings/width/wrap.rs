@@ -15,7 +15,7 @@ use crate::{
         width::Width,
         CellOption, TableOption,
     },
-    tables::table::TableDimension,
+    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::util::{get_table_widths, get_table_widths_with_total, split_at_pos};
@@ -90,7 +90,7 @@ impl<W, P> Wrap<W, P> {
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>, GridConfig> for Wrap<W, P>
+impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -100,7 +100,7 @@ where
     fn change(
         &mut self,
         records: &mut R,
-        cfg: &mut GridConfig,
+        cfg: &mut ColoredConfig,
         dims: &mut TableDimension<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
@@ -121,13 +121,13 @@ where
     }
 }
 
-impl<W, R> CellOption<R, GridConfig> for Wrap<W>
+impl<W, R> CellOption<R, ColoredConfig> for Wrap<W>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let width = self.width.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -148,7 +148,7 @@ where
 
 fn wrap_total_width<R, P>(
     records: &mut R,
-    cfg: &mut GridConfig,
+    cfg: &mut ColoredConfig,
     mut widths: Vec<usize>,
     total_width: usize,
     width: usize,
@@ -171,7 +171,7 @@ where
     wrap.keep_words = keep_words;
     for ((row, col), width) in points {
         wrap.width = width;
-        <Wrap as CellOption<R, GridConfig>>::change(&mut wrap, records, cfg, (row, col).into());
+        <Wrap as CellOption<R, ColoredConfig>>::change(&mut wrap, records, cfg, (row, col).into());
     }
 
     widths

@@ -1,6 +1,7 @@
-use papergrid::records::Records;
-
-use crate::{records::RecordsMut, settings::TableOption};
+use crate::{
+    records::{Records, RecordsMut},
+    settings::TableOption,
+};
 
 /// A structure to handle special chars.
 #[derive(Debug, Default, Clone)]

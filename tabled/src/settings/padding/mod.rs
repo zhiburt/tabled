@@ -35,17 +35,18 @@
 //!
 //! [`Table`]: crate::Table
 
-use papergrid::{color::AnsiColor, config::Entity, grid::spanned::config::ColoredIndent};
-
-use crate::grid::color::StaticColor;
 use crate::{
-    grid::compact::CompactConfig,
-    grid::config::{Indent, Sides},
+    grid::{
+        color::{AnsiColor, StaticColor},
+        compact::CompactConfig,
+        config::{Entity, Indent, Sides},
+        spanned::config::ColoredIndent,
+    },
     settings::TableOption,
 };
 
 #[cfg(feature = "std")]
-use crate::grid::spanned::GridConfig;
+use crate::tables::table::ColoredConfig;
 
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///
@@ -108,11 +109,11 @@ impl<Color> Padding<Color> {
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<R, C> crate::settings::CellOption<R, GridConfig> for Padding<C>
+impl<R, C> crate::settings::CellOption<R, ColoredConfig> for Padding<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
 {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let pad = create_padding(&self.indent, self.colors.as_ref());
         cfg.set_padding(entity, pad);
     }
@@ -120,11 +121,11 @@ where
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<R, D, C> TableOption<R, D, GridConfig> for Padding<C>
+impl<R, D, C> TableOption<R, D, ColoredConfig> for Padding<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
 {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let pad = create_padding(&self.indent, self.colors.as_ref());
         cfg.set_padding(Entity::Global, pad);
     }

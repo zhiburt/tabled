@@ -1,19 +1,20 @@
 #![cfg(feature = "std")]
 
-use papergrid::util::string::string_width_multiline;
-
-use tabled::settings::{
-    alignment::Alignment,
-    formatting::{TabSize, TrimStrategy},
-    margin::Margin,
-    object::{Columns, Object, Rows, Segment},
-    padding::Padding,
-    panel::Panel,
-    peaker::{PriorityMax, PriorityMin},
-    span::ColumnSpan,
-    style::Style,
-    width::{Justify, MinWidth, SuffixLimit, Width},
-    Modify, Settings,
+use tabled::{
+    grid::util::string::string_width_multiline,
+    settings::{
+        alignment::Alignment,
+        formatting::{TabSize, TrimStrategy},
+        margin::Margin,
+        object::{Columns, Object, Rows, Segment},
+        padding::Padding,
+        panel::Panel,
+        peaker::{PriorityMax, PriorityMin},
+        span::ColumnSpan,
+        style::Style,
+        width::{Justify, MinWidth, SuffixLimit, Width},
+        Modify, Settings,
+    },
 };
 
 use crate::util::{create_table, init_table, is_lines_equal, new_table, static_table};

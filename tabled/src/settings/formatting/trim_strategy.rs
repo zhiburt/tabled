@@ -1,4 +1,4 @@
-use crate::{grid::config::Entity, grid::spanned::GridConfig, settings::CellOption};
+use crate::{grid::config::Entity, settings::CellOption, tables::table::ColoredConfig};
 
 /// `TrimStrategy` determines if it's allowed to use empty space while doing [`Alignment`].
 ///
@@ -81,8 +81,8 @@ pub enum TrimStrategy {
     None,
 }
 
-impl<R> CellOption<R, GridConfig> for TrimStrategy {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
+impl<R> CellOption<R, ColoredConfig> for TrimStrategy {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let mut formatting = *cfg.get_formatting(entity);
 
         // todo: could be changed to be a struct an enum like consts in `impl` block.

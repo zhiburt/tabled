@@ -70,15 +70,13 @@ pub mod dimension;
 use core::cmp::max;
 use core::fmt;
 
-use papergrid::{
-    dimension::{Dimension, Estimate},
-    grid::compact::{CompactConfig, CompactGrid},
-    util::string::string_width,
-};
-
 use crate::{
-    grid::config::AlignmentHorizontal,
-    grid::config::{Indent, Sides},
+    grid::{
+        compact::{CompactConfig, CompactGrid},
+        config::{AlignmentHorizontal, Indent, Sides},
+        dimension::Dimension,
+        util::string::string_width,
+    },
     records::{
         into_records::{LimitColumns, LimitRows},
         IntoRecords, IterRecords,
@@ -149,32 +147,17 @@ impl<I, const ROWS: usize, const COLS: usize> CompactTable<I, ConstantDimension<
 
 impl<I, D> CompactTable<I, D> {
     /// Creates a new [`CompactTable`] structure with a known dimension.
-    /// 
+    ///
     /// Notice that the function will call [`Estimate`].
     pub fn with_dimension(iter: I, dimension: D) -> Self
     where
         I: IntoRecords,
-        for<'a> &'a I: IntoRecords,
-        D: Dimension + Estimate<CompactConfig>,
     {
-        let cfg = create_config();
-
-        let count_cols = (&iter)
-            .iter_rows()
-            .into_iter()
-            .next()
-            .map(|row| row.into_iter().count())
-            .unwrap_or(0);
-
-        let mut dims = dimension;
-        let records = IterRecords::new(&iter, count_cols, None);
-        dims.estimate(records, &cfg);
-
         Self {
             records: iter,
-            dims,
-            cfg,
-            count_columns: count_cols,
+            dims: dimension,
+            cfg: create_config(),
+            count_columns: 0,
             count_rows: None,
         }
     }
@@ -246,6 +229,13 @@ impl<I, D> CompactTable<I, D> {
         let writer = crate::tables::iter::utf8_writer::UTF8Writer::new(writer);
         self.fmt(writer)
             .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))
+    }
+}
+
+impl CompactTable<(), ()> {
+    /// Return a default config.
+    pub fn config() -> CompactConfig {
+        create_config()
     }
 }
 

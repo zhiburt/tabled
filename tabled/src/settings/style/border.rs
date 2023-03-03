@@ -1,8 +1,8 @@
 use crate::{
     grid::config::{Border as GBorder, Entity},
-    grid::spanned::config::GridConfig,
     records::{ExactRecords, Records},
     settings::CellOption,
+    tables::table::ColoredConfig,
 };
 
 /// Border represents a border of a Cell.
@@ -116,11 +116,11 @@ impl Border {
     }
 }
 
-impl<R> CellOption<R, GridConfig> for Border
+impl<R> CellOption<R, ColoredConfig> for Border
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let shape = (records.count_rows(), records.count_columns());
 
         for pos in entity.iter(shape.0, shape.1) {
@@ -144,11 +144,11 @@ impl From<Border> for GBorder<char> {
 #[derive(Debug)]
 pub struct EmptyBorder;
 
-impl<R> CellOption<R, GridConfig> for EmptyBorder
+impl<R> CellOption<R, ColoredConfig> for EmptyBorder
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let shape = (records.count_rows(), records.count_columns());
 
         for pos in entity.iter(shape.0, shape.1) {

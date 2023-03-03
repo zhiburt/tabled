@@ -1,5 +1,4 @@
 use crate::{
-    grid::spanned::GridConfig,
     records::{ExactRecords, Records},
     settings::{
         height::Height,
@@ -7,7 +6,7 @@ use crate::{
         peaker::{Peaker, PriorityNone},
         TableOption,
     },
-    tables::table::TableDimension,
+    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::util::get_table_height;
@@ -43,7 +42,7 @@ impl<W> TableHeightIncrease<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, TableDimension<'static>, GridConfig> for TableHeightIncrease<W, P>
+impl<R, W, P> TableOption<R, TableDimension<'static>, ColoredConfig> for TableHeightIncrease<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
@@ -53,7 +52,7 @@ where
     fn change(
         &mut self,
         records: &mut R,
-        cfg: &mut GridConfig,
+        cfg: &mut ColoredConfig,
         dims: &mut TableDimension<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {

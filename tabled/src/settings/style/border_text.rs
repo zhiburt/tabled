@@ -1,13 +1,13 @@
 use std::borrow::Cow;
 
-use papergrid::{
-    dimension::{Dimension, Estimate},
-    records::Records,
-};
-
 use crate::{
-    grid::spanned::GridConfig, records::ExactRecords, settings::TableOption,
-    tables::table::TableDimension,
+    grid::{
+        dimension::{Dimension, Estimate},
+        spanned::GridConfig,
+    },
+    records::{ExactRecords, Records},
+    settings::TableOption,
+    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::Offset;
@@ -80,32 +80,32 @@ impl<L> BorderText<'_, L> {
     }
 }
 
-impl<R> TableOption<R, TableDimension<'_>, GridConfig> for BorderText<'_, LineIndex>
+impl<R> TableOption<R, TableDimension<'_>, ColoredConfig> for BorderText<'_, LineIndex>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dims: &mut TableDimension<'_>) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut TableDimension<'_>) {
         set_chars(dims, &*records, cfg, self.offset, self.line.0, &self.text);
     }
 }
 
-impl<R> TableOption<R, TableDimension<'_>, GridConfig> for BorderText<'_, LineFirst>
+impl<R> TableOption<R, TableDimension<'_>, ColoredConfig> for BorderText<'_, LineFirst>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dims: &mut TableDimension<'_>) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut TableDimension<'_>) {
         set_chars(dims, &*records, cfg, self.offset, 0, &self.text);
     }
 }
 
-impl<R> TableOption<R, TableDimension<'_>, GridConfig> for BorderText<'_, LineLast>
+impl<R> TableOption<R, TableDimension<'_>, ColoredConfig> for BorderText<'_, LineLast>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dims: &mut TableDimension<'_>) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut TableDimension<'_>) {
         set_chars(
             dims,
             &*records,

@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use papergrid::{
+use crate::{
     grid::spanned::{ExactDimension, GridConfig},
     records::Records,
 };
@@ -167,7 +167,7 @@ pub(crate) fn strip_osc(text: &str) -> (String, Option<String>) {
 mod tests {
     use super::*;
 
-    use papergrid::util::string::string_width;
+    use crate::grid::util::string::string_width;
 
     #[cfg(feature = "color")]
     use owo_colors::{colors::Yellow, OwoColorize};

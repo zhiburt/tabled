@@ -10,6 +10,7 @@ use crate::{
     grid::spanned::GridConfig,
     records::{ExactRecords, Records},
     settings::{object::Object, style::Border, style::BorderColor, TableOption},
+    tables::table::ColoredConfig,
 };
 
 /// Highlight modifies a table style by changing a border of a target [`Table`] segment.
@@ -111,12 +112,12 @@ impl<O> Highlight<O> {
     }
 }
 
-impl<O, R, D> TableOption<R, D, GridConfig> for Highlight<O>
+impl<O, R, D> TableOption<R, D, ColoredConfig> for Highlight<O>
 where
     O: Object<R>,
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -138,12 +139,12 @@ pub struct HighlightColored<O> {
     border: BorderColor,
 }
 
-impl<O, R, D> TableOption<R, D, GridConfig> for HighlightColored<O>
+impl<O, R, D> TableOption<R, D, ColoredConfig> for HighlightColored<O>
 where
     O: Object<R>,
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

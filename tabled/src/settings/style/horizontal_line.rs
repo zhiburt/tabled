@@ -1,10 +1,7 @@
-use papergrid::grid::compact::CompactConfig;
-
-use crate::settings::TableOption;
+use crate::{grid::compact::CompactConfig, settings::TableOption};
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-use crate::grid::spanned::config::{GridConfig, HorizontalLine as GridLine};
+use crate::{grid::spanned::config::HorizontalLine as GridLine, tables::table::ColoredConfig};
 
 use super::Line;
 
@@ -94,8 +91,8 @@ impl HorizontalLine {
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<R, D> TableOption<R, D, GridConfig> for HorizontalLine {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+impl<R, D> TableOption<R, D, ColoredConfig> for HorizontalLine {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         match self.line {
             Some(line) => cfg.insert_horizontal_line(self.index, GridLine::from(line)),
             None => cfg.remove_horizontal_line(self.index),

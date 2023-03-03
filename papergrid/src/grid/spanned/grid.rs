@@ -730,7 +730,6 @@ fn print_horizontal_border<F: Write>(
     if cfg.is_overridden_horizontal(pos) {
         for i in 0..width {
             let c = cfg.lookup_overridden_horizontal(pos, i, width).unwrap_or(c);
-
             f.write_char(c)?;
         }
     } else {

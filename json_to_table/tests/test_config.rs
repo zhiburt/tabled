@@ -169,7 +169,7 @@ fn color_test() {
 
     let table = json_to_table(&value)
         .set_style(Style::modern())
-        .set_config(cfg)
+        .set_config(cfg.into())
         .collapse()
         .to_string();
 

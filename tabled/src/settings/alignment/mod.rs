@@ -61,8 +61,7 @@ use crate::{
 use AlignmentInner::*;
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-use crate::grid::spanned::GridConfig;
+use crate::tables::table::ColoredConfig;
 
 /// Alignment represent a horizontal and vertical alignment setting for any cell on a [`Table`].
 ///
@@ -152,8 +151,8 @@ impl Alignment {
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<R> crate::settings::CellOption<R, GridConfig> for Alignment {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
+impl<R> crate::settings::CellOption<R, ColoredConfig> for Alignment {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         match self.inner {
             Horizontal(a) => cfg.set_alignment_horizontal(entity, a),
             Vertical(a) => cfg.set_alignment_vertical(entity, a),
@@ -163,8 +162,8 @@ impl<R> crate::settings::CellOption<R, GridConfig> for Alignment {
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<R, D> TableOption<R, D, GridConfig> for Alignment {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+impl<R, D> TableOption<R, D, ColoredConfig> for Alignment {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         match self.inner {
             Horizontal(a) => cfg.set_alignment_horizontal(Entity::Global, a),
             Vertical(a) => cfg.set_alignment_vertical(Entity::Global, a),

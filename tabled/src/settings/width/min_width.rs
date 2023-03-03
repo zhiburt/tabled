@@ -4,11 +4,9 @@
 
 use std::marker::PhantomData;
 
-use papergrid::util::string::{get_lines, string_width_multiline};
-
 use crate::{
     grid::config::Entity,
-    grid::spanned::config::GridConfig,
+    grid::util::string::{get_lines, string_width_multiline},
     records::{ExactRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
@@ -16,7 +14,7 @@ use crate::{
         width::Width,
         CellOption, TableOption,
     },
-    tables::table::TableDimension,
+    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::util::get_table_widths_with_total;
@@ -104,13 +102,13 @@ impl<W, P> MinWidth<W, P> {
     }
 }
 
-impl<W, R> CellOption<R, GridConfig> for MinWidth<W>
+impl<W, R> CellOption<R, ColoredConfig> for MinWidth<W>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let width = self.width.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -129,7 +127,7 @@ where
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>, GridConfig> for MinWidth<W, P>
+impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for MinWidth<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -139,7 +137,7 @@ where
     fn change(
         &mut self,
         records: &mut R,
-        cfg: &mut GridConfig,
+        cfg: &mut ColoredConfig,
         dims: &mut TableDimension<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
@@ -181,7 +179,7 @@ where
 }
 
 fn increase_width(s: &str, width: usize, fill_with: char) -> String {
-    use papergrid::util::string::string_width;
+    use crate::grid::util::string::string_width;
     use std::{borrow::Cow, iter::repeat};
 
     get_lines(s)

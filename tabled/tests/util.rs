@@ -8,10 +8,9 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use papergrid::util::string::string_width_multiline;
-
 use tabled::{
     grid::config::Position,
+    grid::util::string::string_width_multiline,
     settings::{alignment::Alignment, object::SegmentAll, Modify},
     Table, Tabled,
 };

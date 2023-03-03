@@ -49,9 +49,8 @@
 
 use std::borrow::Cow;
 
-use papergrid::config::Position;
-
 use crate::{
+    grid::config::Position,
     records::{ExactRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
     Table,

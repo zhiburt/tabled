@@ -1,7 +1,4 @@
-use crate::{
-    grid::{config::Entity, spanned::GridConfig},
-    settings::CellOption,
-};
+use crate::{grid::config::Entity, settings::CellOption, tables::table::ColoredConfig};
 
 /// `AlignmentStrategy` is a responsible for a flow how we apply an alignment.
 /// It mostly matters for multiline strings.
@@ -141,8 +138,8 @@ pub enum AlignmentStrategy {
     PerLine,
 }
 
-impl<R> CellOption<R, GridConfig> for AlignmentStrategy {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, entity: Entity) {
+impl<R> CellOption<R, ColoredConfig> for AlignmentStrategy {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let mut formatting = *cfg.get_formatting(entity);
         match &self {
             AlignmentStrategy::PerCell => formatting.allow_lines_alignment = false,

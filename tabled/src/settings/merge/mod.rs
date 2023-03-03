@@ -3,9 +3,9 @@
 //! [`Span`]: crate::settings::span::Span
 
 use crate::{
-    grid::spanned::config::GridConfig,
     records::{ExactRecords, Records},
     settings::TableOption,
+    tables::table::ColoredConfig,
 };
 
 /// Merge to combine duplicates together, using [`Span`].
@@ -34,11 +34,11 @@ impl Merge {
 #[derive(Debug)]
 pub struct MergeDuplicatesVertical;
 
-impl<R, D> TableOption<R, D, GridConfig> for MergeDuplicatesVertical
+impl<R, D> TableOption<R, D, ColoredConfig> for MergeDuplicatesVertical
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -119,11 +119,11 @@ where
 #[derive(Debug)]
 pub struct MergeDuplicatesHorizontal;
 
-impl<R, D> TableOption<R, D, GridConfig> for MergeDuplicatesHorizontal
+impl<R, D> TableOption<R, D, ColoredConfig> for MergeDuplicatesHorizontal
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

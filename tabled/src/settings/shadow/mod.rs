@@ -29,8 +29,9 @@
 
 use crate::{
     grid::config::Sides,
-    grid::spanned::config::{GridConfig, Offset},
+    grid::spanned::config::Offset,
     settings::{color::Color, TableOption},
+    tables::table::ColoredConfig,
 };
 
 /// The structure represents a shadow of a table.
@@ -112,8 +113,8 @@ impl Shadow {
     }
 }
 
-impl<R, D> TableOption<R, D, GridConfig> for Shadow {
-    fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+impl<R, D> TableOption<R, D, ColoredConfig> for Shadow {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let mut margin = cfg.get_margin_mut();
 
         if self.direction.top {
