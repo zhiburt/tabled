@@ -27,18 +27,17 @@
 //! [`Table`]: crate::Table
 
 mod dimension;
-mod utf8_writer;
+pub(crate) mod utf8_writer;
 
 use std::{cmp, fmt, io};
 
-use papergrid::dimension::{Dimension, Estimate};
-
-use crate::grid::compact::{CompactConfig, ExactDimension};
-use crate::grid::spanned::{Grid, GridConfig};
-
 use crate::{
-    grid::config::AlignmentHorizontal,
-    grid::{config::Indent, spanned::config::Padding},
+    grid::{
+        compact::{CompactConfig, ExactDimension},
+        config::{AlignmentHorizontal, Indent, Sides},
+        dimension::Dimension,
+        spanned::{Grid, GridConfig},
+    },
     records::{
         into_records::{
             truncate_records::ExactValue, BufColumns, BufRows, LimitColumns, LimitRows,
@@ -176,27 +175,6 @@ impl<I> IterTable<I> {
     }
 }
 
-impl<I> fmt::Display for IterTable<I>
-where
-    for<'a> &'a I: IntoRecords,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(cols) = self.table.count_columns {
-            let records = IterRecords::new(&self.records, cols, self.table.count_rows);
-            let mut dims = ExactDimension::default();
-            dims.estimate(records, &self.cfg);
-
-            let records = IterRecords::new(&self.records, cols, self.table.count_rows);
-
-            let cfg = GridConfig::from(self.cfg);
-            return Grid::new(records, dims, cfg).build(f);
-        }
-
-        let dims = dims_from_exact_dims(self.dim.clone());
-        build_grid(f, &self.records, self.cfg, &self.table, dims)
-    }
-}
-
 fn build_grid<W: fmt::Write, I: IntoRecords>(
     writer: W,
     records: I,
@@ -204,7 +182,6 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
     iter_cfg: &Settings,
     dims: Dims<'_>,
 ) -> Result<(), fmt::Error> {
-    let tab_size = config.get_tab_width();
     let count_rows = iter_cfg.count_rows;
 
     let padding = config.get_padding();
@@ -225,14 +202,12 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
         match count_rows {
             Some(limit) => {
                 let records = LimitRows::new(records, limit);
-                let records =
-                    build_records(records, content_width, count_columns, count_rows, tab_size);
+                let records = build_records(records, content_width, count_columns, count_rows);
                 let cfg = GridConfig::from(config);
                 return Grid::new(records, dims, cfg).build(writer);
             }
             None => {
-                let records =
-                    build_records(records, content_width, count_columns, count_rows, tab_size);
+                let records = build_records(records, content_width, count_columns, count_rows);
                 let cfg = GridConfig::from(config);
                 return Grid::new(records, dims, cfg).build(writer);
             }
@@ -282,12 +257,12 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
     match count_rows {
         Some(limit) => {
             let records = LimitRows::new(records, limit);
-            let records = build_records(records, contentw, count_columns, count_rows, tab_size);
+            let records = build_records(records, contentw, count_columns, count_rows);
             let cfg = GridConfig::from(config);
             Grid::new(records, dimension, cfg).build(writer)
         }
         None => {
-            let records = build_records(records, contentw, count_columns, count_rows, tab_size);
+            let records = build_records(records, contentw, count_columns, count_rows);
             let cfg = GridConfig::from(config);
             Grid::new(records, dimension, cfg).build(writer)
         }
@@ -296,8 +271,7 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
 
 fn create_config() -> CompactConfig {
     CompactConfig::default()
-        .set_tab_width(4)
-        .set_padding(Padding::new(
+        .set_padding(Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),
             Indent::default(),
@@ -312,9 +286,8 @@ fn build_records<I: IntoRecords>(
     width: ExactValue<'_>,
     count_columns: usize,
     count_rows: Option<usize>,
-    tab_size: usize,
 ) -> IterRecords<LimitColumns<TruncateContent<'_, I>>> {
-    let records = TruncateContent::new(records, width, tab_size);
+    let records = TruncateContent::new(records, width);
     let records = LimitColumns::new(records, count_columns);
     IterRecords::new(records, count_columns, count_rows)
 }
@@ -339,14 +312,6 @@ impl Dimension for Dims<'_> {
     fn get_height(&self, row: usize) -> usize {
         self.height.get(row)
     }
-}
-
-fn dims_from_exact_dims(d: IterTableDimension) -> Dims<'static> {
-    let (width, height) = d.into();
-    let width = exact_list_to_exact_value(width);
-    let height = exact_list_to_exact_value(height);
-    let dims = Dims::new(width, height);
-    dims
 }
 
 fn exact_list_to_exact_value(width: ExactList) -> ExactValue<'static> {

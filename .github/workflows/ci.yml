@@ -77,7 +77,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo test --workspace --no-fail-fast -- --include-ignored qc_
+      - run: cargo test  --no-fail-fast --manifest-path tabled/tests/qc/Cargo.toml -- --include-ignored qc_
 
   coverage:
     name: Coveralls

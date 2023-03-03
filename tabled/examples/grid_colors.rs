@@ -5,11 +5,8 @@
 //!
 //! [`Grid`]: tabled::grid::Grid
 
-use std::collections::HashMap;
-
 use tabled::{
-    grid::spanned::Grid,
-    settings::{color::Color, style::Style},
+    settings::{color::Color, style::Style, Modify},
     Table, Tabled,
 };
 
@@ -40,15 +37,11 @@ fn main() {
     ];
 
     let mut table = Table::new(data);
-    table.with(Style::psql());
+    table
+        .with(Style::psql())
+        .with(Modify::new((0, 0)).with(Color::BG_BLUE))
+        .with(Modify::new((1, 1)).with(Color::BG_GREEN))
+        .with(Modify::new((2, 2)).with(Color::BG_RED));
 
-    let colors = HashMap::from([
-        ((0, 0), Color::BG_BLUE),
-        ((1, 1), Color::BG_GREEN),
-        ((2, 2), Color::BG_RED),
-    ]);
-
-    let grid = Grid::from(table).with_colors(colors);
-
-    println!("{grid}");
+    println!("{table}");
 }

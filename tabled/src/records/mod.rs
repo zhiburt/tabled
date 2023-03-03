@@ -15,9 +15,8 @@ use core::ops::Index;
 
 use crate::grid::config::Position;
 
-pub use papergrid::records::{IntoRecords, IterRecords, Records};
-
 pub use empty_records::EmptyRecords;
+pub use papergrid::records::{IntoRecords, IterRecords, Records};
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]

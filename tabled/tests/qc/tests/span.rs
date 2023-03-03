@@ -1,10 +1,52 @@
-use papergrid::util::string::{string_width, string_width_multiline};
 use quickcheck::Arbitrary;
+use quickcheck_macros::quickcheck;
+
 use tabled::{
     builder::Builder,
+    grid::util::string::{string_width, string_width_multiline},
     settings::{span::Span, style::Style, Modify},
     Table,
 };
+
+#[quickcheck]
+fn qc_table_is_consistent_with_hspan_and_vspan(table_structure: TableStructure) {
+    let mut table = create_table(table_structure.rows);
+    set_theme(&mut table, table_structure.theme);
+    set_span_hspan(&mut table, &table_structure.row_span);
+    set_span_vspan(&mut table, &table_structure.col_span);
+
+    let output = table.to_string();
+
+    if let Some(line) = output.lines().next() {
+        assert_eq!(string_width(line), string_width_multiline(&output));
+    }
+}
+
+#[quickcheck]
+fn qc_table_is_consistent_with_hspan(table_structure: TableStructure) {
+    let mut table = create_table(table_structure.rows);
+    set_theme(&mut table, table_structure.theme);
+    set_span_hspan(&mut table, &table_structure.row_span);
+
+    let output = table.to_string();
+
+    if let Some(line) = output.lines().next() {
+        assert_eq!(string_width(line), string_width_multiline(&output));
+    }
+}
+
+#[quickcheck]
+fn qc_table_is_consistent_with_vspan(table_structure: TableStructure) {
+    let mut table = create_table(table_structure.rows);
+    set_theme(&mut table, table_structure.theme);
+    set_span_vspan(&mut table, &table_structure.col_span);
+
+    let output = table.to_string();
+
+    if let Some(line) = output.lines().next() {
+        assert_eq!(string_width(line), string_width_multiline(&output));
+    }
+}
 
 #[derive(Clone, Debug)]
 struct TableStructure {
@@ -65,7 +107,6 @@ impl Arbitrary for ThemeFixture {
 }
 
 #[test]
-#[ignore = "Test fails"]
 fn test_data_span_test() {
     let table_structure = TableStructure {
         rows: vec![
@@ -89,49 +130,6 @@ fn test_data_span_test() {
             .with(Span::horizontal(0))
             .with(Span::vertical(10)),
     );
-
-    let output = table.to_string();
-
-    if let Some(line) = output.lines().next() {
-        assert_eq!(string_width(line), string_width_multiline(&output));
-    }
-}
-
-#[quickcheck_macros::quickcheck]
-#[ignore = "Test fails"]
-fn qc_table_is_consistent_with_hspan_and_vspan(table_structure: TableStructure) {
-    let mut table = create_table(table_structure.rows);
-    set_theme(&mut table, table_structure.theme);
-    set_span_hspan(&mut table, &table_structure.row_span);
-    set_span_vspan(&mut table, &table_structure.col_span);
-
-    let output = table.to_string();
-
-    if let Some(line) = output.lines().next() {
-        assert_eq!(string_width(line), string_width_multiline(&output));
-    }
-}
-
-#[quickcheck_macros::quickcheck]
-#[ignore = "Test fails"]
-fn qc_table_is_consistent_with_hspan(table_structure: TableStructure) {
-    let mut table = create_table(table_structure.rows);
-    set_theme(&mut table, table_structure.theme);
-    set_span_hspan(&mut table, &table_structure.row_span);
-
-    let output = table.to_string();
-
-    if let Some(line) = output.lines().next() {
-        assert_eq!(string_width(line), string_width_multiline(&output));
-    }
-}
-
-#[quickcheck_macros::quickcheck]
-#[ignore = "Test fails"]
-fn qc_table_is_consistent_with_vspan(table_structure: TableStructure) {
-    let mut table = create_table(table_structure.rows);
-    set_theme(&mut table, table_structure.theme);
-    set_span_vspan(&mut table, &table_structure.col_span);
 
     let output = table.to_string();
 

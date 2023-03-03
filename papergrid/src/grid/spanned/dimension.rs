@@ -11,7 +11,7 @@ use crate::{
     config::Position,
     dimension::{Dimension, Estimate},
     records::Records,
-    util::string::{count_lines, string_width_multiline_tab},
+    util::string::{count_lines, string_dimension, string_width_multiline},
 };
 
 use super::config::GridConfig;
@@ -73,14 +73,16 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
         let mut row_height = 0;
         for (col, cell) in columns.into_iter().enumerate() {
             let pos = (row, col);
-
             if !cfg.is_cell_visible(pos) {
                 continue;
             }
 
-            let cell = cell.as_ref();
+            let text = cell.as_ref();
+            let (height, width) = string_dimension(text);
+            let pad = cfg.get_padding(pos.into());
+            let width = width + pad.left.indent.size + pad.right.indent.size;
+            let height = height + pad.top.indent.size + pad.bottom.indent.size;
 
-            let width = get_cell_width(cell, cfg, pos);
             match cfg.get_span_column(pos) {
                 Some(n) if n > 1 => {
                     vspans.insert(pos, (n, width));
@@ -88,7 +90,6 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
                 _ => widths[col] = max(widths[col], width),
             }
 
-            let height = get_cell_height(cell, cfg, pos);
             match cfg.get_span_row(pos) {
                 Some(n) if n > 1 => {
                     hspans.insert(pos, (n, height));
@@ -118,10 +119,6 @@ fn adjust_hspans(
         return;
     }
 
-    // The overall height distribution will be different depend on the order.
-    // We sort spans in order to prioritize the smaller spans first.
-    //
-    // todo: we actually have a span list already.... so we could keep order from the begining
     let mut spans_ordered = spans
         .iter()
         .map(|(k, v)| ((k.0, k.1), *v))
@@ -174,7 +171,7 @@ fn count_horizontal_borders(cfg: &GridConfig, len: usize, start: usize, end: usi
 fn get_cell_height(cell: &str, cfg: &GridConfig, pos: Position) -> usize {
     let count_lines = max(1, count_lines(cell));
     let padding = cfg.get_padding(pos.into());
-    count_lines + padding.top.size + padding.bottom.size
+    count_lines + padding.top.indent.size + padding.bottom.indent.size
 }
 
 fn inc_range(list: &mut [usize], size: usize, start: usize, end: usize) {
@@ -220,7 +217,6 @@ fn adjust_vspans(
         o => o,
     });
 
-    // todo: the order is matter here; we need to figure out what is correct.
     for ((_, col), (span, width)) in spans_ordered {
         adjust_column_range(cfg, width, len, col, col + span, widths);
     }
@@ -243,14 +239,14 @@ fn adjust_column_range(
 }
 
 fn get_cell_width(text: &str, cfg: &GridConfig, pos: Position) -> usize {
-    let padding = get_cell_padding(cfg, pos); // todo: remove it...
-    let width = string_width_multiline_tab(text, cfg.get_tab_width());
+    let padding = get_cell_padding(cfg, pos);
+    let width = string_width_multiline(text);
     width + padding
 }
 
 fn get_cell_padding(cfg: &GridConfig, pos: Position) -> usize {
     let padding = cfg.get_padding(pos.into());
-    padding.left.size + padding.right.size
+    padding.left.indent.size + padding.right.indent.size
 }
 
 fn range_width(cfg: &GridConfig, len: usize, start: usize, end: usize, widths: &[usize]) -> usize {

@@ -1,9 +1,7 @@
-use papergrid::{
+use crate::{
     grid::spanned::{ExactDimension, GridConfig},
-    records::Records,
+    records::{ExactRecords, Records},
 };
-
-use crate::records::ExactRecords;
 
 pub(crate) fn get_table_height<R: Records + ExactRecords>(
     records: R,
@@ -12,7 +10,7 @@ pub(crate) fn get_table_height<R: Records + ExactRecords>(
     let count_horizontals = cfg.count_horizontal(records.count_rows());
 
     let margin = cfg.get_margin();
-    let margin_size = margin.top.size + margin.bottom.size;
+    let margin_size = margin.top.indent.size + margin.bottom.indent.size;
 
     let list = ExactDimension::height(records, cfg);
     let total = list.iter().sum::<usize>();

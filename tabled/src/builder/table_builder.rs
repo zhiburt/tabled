@@ -1,8 +1,4 @@
-// todo: I'd rather switch back to -> Self from -> &mut Self
-//
-// but these &self methods are definitely a smell...
-
-use std::{borrow::Cow, iter::FromIterator};
+use std::iter::FromIterator;
 
 use crate::Table;
 
@@ -42,15 +38,15 @@ use super::IndexBuilder;
 #[derive(Debug, Default, Clone)]
 pub struct Builder {
     /// A list of rows.
-    records: Vec<Vec<Cow<'static, str>>>,
+    records: Vec<Vec<String>>,
     /// A columns row.
-    columns: Option<Vec<Cow<'static, str>>>,
+    columns: Option<Vec<String>>,
     /// A number of columns.
     count_columns: usize,
     /// A flag that the rows are not consistent.
     is_consistent: bool,
     /// A content of cells which are created in case rows has different length.
-    empty_cell_text: Option<Cow<'static, str>>,
+    empty_cell_text: Option<String>,
 }
 
 impl Builder {
@@ -76,7 +72,7 @@ impl Builder {
     pub fn set_header<H, T>(mut self, columns: H) -> Self
     where
         H: IntoIterator<Item = T>,
-        T: Into<Cow<'static, str>>,
+        T: Into<String>,
     {
         let list = create_row(columns, self.count_columns);
 
@@ -142,7 +138,7 @@ impl Builder {
     /// ```
     pub fn set_default_text<T>(mut self, text: T) -> Self
     where
-        T: Into<Cow<'static, str>>,
+        T: Into<String>,
     {
         self.empty_cell_text = Some(text.into());
         self
@@ -200,7 +196,7 @@ impl Builder {
     pub fn push_record<R, T>(&mut self, row: R)
     where
         R: IntoIterator<Item = T>,
-        T: Into<Cow<'static, str>>,
+        T: Into<String>,
     {
         let list = create_row(row, self.count_columns);
 
@@ -216,7 +212,7 @@ impl Builder {
     pub fn insert_record<R>(&mut self, index: usize, record: R) -> bool
     where
         R: IntoIterator,
-        R::Item: Into<Cow<'static, str>>,
+        R::Item: Into<String>,
     {
         let list = create_row(record, self.count_columns);
 
@@ -373,7 +369,7 @@ impl Builder {
     }
 }
 
-impl From<Builder> for Vec<Vec<Cow<'static, str>>> {
+impl From<Builder> for Vec<Vec<String>> {
     fn from(mut builder: Builder) -> Self {
         if !builder.is_consistent {
             builder.fix_rows();
@@ -388,7 +384,7 @@ impl From<Builder> for Vec<Vec<Cow<'static, str>>> {
 impl<R, V> FromIterator<R> for Builder
 where
     R: IntoIterator<Item = V>,
-    V: Into<Cow<'static, str>>,
+    V: Into<String>,
 {
     fn from_iter<T: IntoIterator<Item = R>>(iter: T) -> Self {
         let mut builder = Self::default();
@@ -402,15 +398,15 @@ where
 
 impl<D> Extend<D> for Builder
 where
-    D: Into<Cow<'static, str>>,
+    D: Into<String>,
 {
     fn extend<T: IntoIterator<Item = D>>(&mut self, iter: T) {
         self.push_record(iter);
     }
 }
 
-impl From<Vec<Vec<Cow<'static, str>>>> for Builder {
-    fn from(records: Vec<Vec<Cow<'static, str>>>) -> Self {
+impl From<Vec<Vec<String>>> for Builder {
+    fn from(records: Vec<Vec<String>>) -> Self {
         let count_columns = records.get(0).map_or(0, |row| row.len());
 
         Self {
@@ -423,10 +419,10 @@ impl From<Vec<Vec<Cow<'static, str>>>> for Builder {
     }
 }
 
-fn create_row<'a, R, T>(row: R, size: usize) -> Vec<Cow<'a, str>>
+fn create_row<R, T>(row: R, size: usize) -> Vec<String>
 where
     R: IntoIterator<Item = T>,
-    T: Into<Cow<'a, str>>,
+    T: Into<String>,
 {
     let mut list = Vec::with_capacity(size);
     for text in row {
@@ -436,7 +432,7 @@ where
     list
 }
 
-fn append_header<'a>(records: &mut Vec<Vec<Cow<'a, str>>>, columns: Option<Vec<Cow<'a, str>>>) {
+fn append_header(records: &mut Vec<Vec<String>>, columns: Option<Vec<String>>) {
     if let Some(columns) = columns {
         records.insert(0, columns);
     }

@@ -6,7 +6,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-    grid::{config::Entity, spanned::GridConfig, util::string::string_width_multiline_tab},
+    grid::{config::Entity, spanned::GridConfig, util::string::string_width_multiline},
     records::ExactRecords,
     records::{EmptyRecords, Records, RecordsMut},
     settings::{
@@ -15,10 +15,10 @@ use crate::{
         width::Width,
         CellOption, TableOption,
     },
-    tables::table::TableDimension,
+    tables::table::{ColoredConfig, TableDimension},
 };
 
-use super::util::{get_table_widths, get_table_widths_with_total, replace_tab, split_at_pos};
+use super::util::{get_table_widths, get_table_widths_with_total, split_at_pos};
 
 /// Wrap wraps a string to a new line in case it exceeds the provided max boundary.
 /// Otherwise keeps the content of a cell untouched.
@@ -90,7 +90,7 @@ impl<W, P> Wrap<W, P> {
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>, GridConfig> for Wrap<W, P>
+impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -100,7 +100,7 @@ where
     fn change(
         &mut self,
         records: &mut R,
-        cfg: &mut GridConfig,
+        cfg: &mut ColoredConfig,
         dims: &mut TableDimension<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
@@ -121,13 +121,13 @@ where
     }
 }
 
-impl<W, R> CellOption<R, GridConfig> for Wrap<W>
+impl<W, R> CellOption<R, ColoredConfig> for Wrap<W>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let width = self.width.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -135,18 +135,12 @@ where
 
         for pos in entity.iter(count_rows, count_columns) {
             let text = records.get_cell(pos).as_ref();
-
-            let cell_width = string_width_multiline_tab(text, cfg.get_tab_width());
+            let cell_width = string_width_multiline(text);
             if cell_width <= width {
                 continue;
             }
 
-            // todo: Think about it.
-            //       We could eliminate this allocation if we would be allowed to cut '\t' with unknown characters.
-            //       Currently we don't do that.
-            let text = replace_tab(text, cfg.get_tab_width());
-            let wrapped = wrap_text(&text, width, self.keep_words);
-
+            let wrapped = wrap_text(text, width, self.keep_words);
             records.set(pos, wrapped);
         }
     }
@@ -154,7 +148,7 @@ where
 
 fn wrap_total_width<R, P>(
     records: &mut R,
-    cfg: &mut GridConfig,
+    cfg: &mut ColoredConfig,
     mut widths: Vec<usize>,
     total_width: usize,
     width: usize,
@@ -177,7 +171,7 @@ where
     wrap.keep_words = keep_words;
     for ((row, col), width) in points {
         wrap.width = width;
-        <Wrap as CellOption<R, GridConfig>>::change(&mut wrap, records, cfg, (row, col).into());
+        <Wrap as CellOption<R, ColoredConfig>>::change(&mut wrap, records, cfg, (row, col).into());
     }
 
     widths
@@ -630,7 +624,8 @@ fn get_decrease_cell_list(
 
                 if width >= width_min {
                     let padding = cfg.get_padding((row, col).into());
-                    let width = width.saturating_sub(padding.left.size + padding.right.size);
+                    let width =
+                        width.saturating_sub(padding.left.indent.size + padding.right.indent.size);
 
                     points.push(((row, col), width));
                 }

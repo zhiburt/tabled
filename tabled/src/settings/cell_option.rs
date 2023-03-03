@@ -1,12 +1,7 @@
-use papergrid::records::Records;
-
 use crate::{
     grid::config::Entity,
-    records::{ExactRecords, RecordsMut},
+    records::{ExactRecords, Records, RecordsMut},
 };
-
-// todo: Update documentation
-// todo: Move to settings
 
 /// A trait for configuring a single cell.
 ///

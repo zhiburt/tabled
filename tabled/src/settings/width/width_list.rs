@@ -1,9 +1,6 @@
 use std::iter::FromIterator;
 
-use crate::{
-    grid::spanned::config::GridConfig, records::Records, settings::TableOption,
-    tables::table::TableDimension,
-};
+use crate::{records::Records, settings::TableOption, tables::table::TableDimension};
 
 /// A structure used to set [`Table`] width via a list of columns widths.
 ///
@@ -32,16 +29,11 @@ impl FromIterator<usize> for WidthList {
     }
 }
 
-impl<R> TableOption<R, TableDimension<'static>, GridConfig> for WidthList
+impl<R, C> TableOption<R, TableDimension<'static>, C> for WidthList
 where
     R: Records,
 {
-    fn change(
-        &mut self,
-        records: &mut R,
-        _: &mut GridConfig,
-        dimension: &mut TableDimension<'static>,
-    ) {
+    fn change(&mut self, records: &mut R, _: &mut C, dimension: &mut TableDimension<'static>) {
         if self.list.len() < records.count_columns() {
             return;
         }

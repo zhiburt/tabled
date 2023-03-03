@@ -381,7 +381,6 @@
 pub mod html;
 
 use std::{
-    borrow::Cow,
     collections::BTreeMap,
     fmt::{Display, Write},
     iter::FromIterator,
@@ -413,9 +412,12 @@ pub struct HtmlTable {
 
 impl HtmlTable {
     /// Creates a new html table from a given elements.
-    pub fn new<I: IntoIterator<Item = R>, R: IntoIterator<Item = T>, T: Into<Cow<'static, str>>>(
-        iter: I,
-    ) -> Self {
+    pub fn new<I, R, T>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = R>,
+        R: IntoIterator<Item = T>,
+        T: Into<String>,
+    {
         Self::from(Builder::from_iter(
             iter.into_iter()
                 .map(|row| row.into_iter().map(|s| s.into())),
@@ -571,7 +573,7 @@ fn set_cell_attribute(table: &mut HtmlElement, pos: Position, attr: Attribute) {
     });
 }
 
-fn build_table(mut data: Vec<Vec<Cow<'_, str>>>, has_header: bool) -> HtmlElement {
+fn build_table(mut data: Vec<Vec<String>>, has_header: bool) -> HtmlElement {
     let mut elements = vec![];
     if has_header && !data.is_empty() {
         let row = data.remove(0);
@@ -594,15 +596,15 @@ fn build_table(mut data: Vec<Vec<Cow<'_, str>>>, has_header: bool) -> HtmlElemen
     HtmlElement::new("table", vec![], Some(HtmlValue::Elements(elements)))
 }
 
-fn build_tr(row: Vec<Cow<'_, str>>) -> HtmlElement {
+fn build_tr(row: Vec<String>) -> HtmlElement {
     build_row(row, "td")
 }
 
-fn build_th(row: Vec<Cow<'_, str>>) -> HtmlElement {
+fn build_th(row: Vec<String>) -> HtmlElement {
     build_row(row, "th")
 }
 
-fn build_row(row: Vec<Cow<'_, str>>, tag: &str) -> HtmlElement {
+fn build_row(row: Vec<String>, tag: &str) -> HtmlElement {
     let th_list = row
         .into_iter()
         .map(|content| {

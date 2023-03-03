@@ -89,23 +89,23 @@ test_table!(
 );
 
 test_table!(
-    tab_size_test,
+    tab_isnot_handled_by_default_test,
     new_table(tab_data1()).with(Style::psql()),
-    "          N           | column 0 |   column 1   | column 2 "
-    "----------------------+----------+--------------+----------"
-    "          0           |   0-0    |     0-1      |   0-2    "
-    " 123    123    asdasd |   1-0    |     1-1      |   1-2    "
-    "          2           |   2-0    | htt    ps:// |   2-2    "
-    "                      |          | www          |          "
-    "                      |          | .            |          "
-    "                      |          | red    hat   |          "
-    "                      |          | .c    om     |          "
-    "                      |          | /en          |          "
+    "      N       | column 0 | column 1 | column 2 "
+    "--------------+----------+----------+----------"
+    "      0       |   0-0    |   0-1    |   0-2    "
+    " 123\t123\tasdasd |   1-0    |   1-1    |   1-2    "
+    "      2       |   2-0    | htt\tps:// |   2-2    "
+    "              |          | www      |          "
+    "              |          | .        |          "
+    "              |          | red\that   |          "
+    "              |          | .c\tom     |          "
+    "              |          | /en      |          "
 );
 
 test_table!(
     tab_size_test_0,
-    new_table(tab_data1()).with(Style::psql()),
+    new_table(tab_data1()).with(Style::psql()).with(TabSize::new(4)),
     "          N           | column 0 |   column 1   | column 2 "
     "----------------------+----------+--------------+----------"
     "          0           |   0-0    |     0-1      |   0-2    "
@@ -120,7 +120,7 @@ test_table!(
 
 test_table!(
     tab_size_test_1,
-    new_table(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(TabSize(2)),
+    new_table(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(TabSize::new(2)),
     "                N | column 0 |   column 1 | column 2 "
     "------------------+----------+------------+----------"
     "                0 |      0-0 |        0-1 |      0-2 "
@@ -135,7 +135,7 @@ test_table!(
 
 test_table!(
     tab_size_test_2,
-    new_table(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(TabSize(0)),
+    new_table(tab_data1()).with(Style::psql()).with(Modify::new(Segment::all()).with(Alignment::right())).with(TabSize::new(0)),
     "            N | column 0 | column 1 | column 2 "
     "--------------+----------+----------+----------"
     "            0 |      0-0 |      0-1 |      0-2 "
@@ -151,6 +151,7 @@ test_table!(
 test_table!(
     tab_size_span_test,
     new_table(tab_data2())
+        .with(TabSize::new(4))
         .with(Style::psql())
         .with(Modify::new((0, 0)).with(ColumnSpan::new(3)))
         .with(Modify::new((1, 0)).with(ColumnSpan::new(2)))

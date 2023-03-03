@@ -2,6 +2,7 @@ use crate::{
     grid::spanned::config::GridConfig,
     records::{ExactRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
+    tables::table::ColoredConfig,
 };
 
 /// A vertical/row span from 0 to a count columns.
@@ -21,12 +22,12 @@ impl<S> VerticalPanel<S> {
     }
 }
 
-impl<S, R, D> TableOption<R, D, GridConfig> for VerticalPanel<S>
+impl<S, R, D> TableOption<R, D, ColoredConfig> for VerticalPanel<S>
 where
     S: AsRef<str>,
     R: Records + ExactRecords + Resizable + RecordsMut<String>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

@@ -19,7 +19,7 @@ use syn::{
     Type, Variant,
 };
 
-use attributes::{Attributes, ObjectAttributes};
+use attributes::{Attributes, FuncArg, StructAttributes};
 use error::Error;
 
 #[proc_macro_derive(Tabled, attributes(tabled))]
@@ -31,11 +31,13 @@ pub fn tabled(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 fn impl_tabled(ast: &DeriveInput) -> TokenStream {
-    let attrs = ObjectAttributes::parse(&ast.attrs)
+    let attrs = StructAttributes::parse(&ast.attrs)
         .map_err(error::abort)
         .unwrap();
 
-    let length = get_tabled_length(ast).map_err(error::abort).unwrap();
+    let length = get_tabled_length(ast, &attrs)
+        .map_err(error::abort)
+        .unwrap();
     let info = collect_info(ast, &attrs).map_err(error::abort).unwrap();
     let fields = info.values;
     let headers = info.headers;
@@ -59,10 +61,16 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     expanded
 }
 
-fn get_tabled_length(ast: &DeriveInput) -> Result<TokenStream, Error> {
+fn get_tabled_length(ast: &DeriveInput, attrs: &StructAttributes) -> Result<TokenStream, Error> {
     match &ast.data {
         Data::Struct(data) => get_fields_length(&data.fields),
-        Data::Enum(data) => get_enum_length(data),
+        Data::Enum(data) => {
+            if attrs.inline {
+                Ok(quote! { 1 })
+            } else {
+                get_enum_length(data)
+            }
+        }
         Data::Union(_) => Err(Error::message("Union type isn't supported")),
     }
 }
@@ -133,15 +141,15 @@ fn get_enum_variant_length(
         })
 }
 
-fn collect_info(ast: &DeriveInput, attrs: &ObjectAttributes) -> Result<Impl, Error> {
+fn collect_info(ast: &DeriveInput, attrs: &StructAttributes) -> Result<Impl, Error> {
     match &ast.data {
         Data::Struct(data) => collect_info_struct(data, attrs),
-        Data::Enum(data) => collect_info_enum(data, attrs),
+        Data::Enum(data) => collect_info_enum(data, attrs, &ast.ident),
         Data::Union(_) => Err(Error::message("Union type isn't supported")),
     }
 }
 
-fn collect_info_struct(ast: &DataStruct, attrs: &ObjectAttributes) -> Result<Impl, Error> {
+fn collect_info_struct(ast: &DataStruct, attrs: &StructAttributes) -> Result<Impl, Error> {
     info_from_fields(&ast.fields, attrs, field_var_name, "")
 }
 
@@ -150,7 +158,7 @@ fn collect_info_struct(ast: &DataStruct, attrs: &ObjectAttributes) -> Result<Imp
 // So the called would prefix it on its own
 fn info_from_fields(
     fields: &Fields,
-    attrs: &ObjectAttributes,
+    attrs: &StructAttributes,
     field_name: impl Fn(usize, &Field) -> TokenStream,
     header_prefix: &str,
 ) -> Result<Impl, Error> {
@@ -267,18 +275,39 @@ fn field_headers(
     }
 }
 
-fn collect_info_enum(ast: &DataEnum, attrs: &ObjectAttributes) -> Result<Impl, Error> {
+fn collect_info_enum(
+    ast: &DataEnum,
+    attrs: &StructAttributes,
+    name: &Ident,
+) -> Result<Impl, Error> {
+    match &attrs.inline {
+        true => {
+            let enum_name = attrs
+                .inline_value
+                .clone()
+                .unwrap_or_else(|| name.to_string());
+
+            collect_info_enum_inlined(ast, attrs, enum_name)
+        }
+        false => _collect_info_enum(ast, attrs),
+    }
+}
+
+fn _collect_info_enum(ast: &DataEnum, attrs: &StructAttributes) -> Result<Impl, Error> {
+    // reorder variants according to order (if set)
+    let orderedvariants = reodered_variants(ast)?;
+
     let mut headers_list = Vec::new();
     let mut variants = Vec::new();
-    for variant in &ast.variants {
-        let mut attributes = Attributes::parse(&variant.attrs)?;
+    for v in orderedvariants {
+        let mut attributes = Attributes::parse(&v.attrs)?;
         merge_attributes(&mut attributes, attrs);
         if attributes.is_ignored() {
             continue;
         }
 
-        let info = info_from_variant(variant, &attributes, attrs)?;
-        variants.push((variant, info.values));
+        let info = info_from_variant(v, &attributes, attrs)?;
+        variants.push((v, info.values));
         headers_list.push(info.headers);
     }
 
@@ -297,26 +326,79 @@ fn collect_info_enum(ast: &DataEnum, attrs: &ObjectAttributes) -> Result<Impl, E
     Ok(Impl { headers, values })
 }
 
+fn collect_info_enum_inlined(
+    ast: &DataEnum,
+    attrs: &StructAttributes,
+    enum_name: String,
+) -> Result<Impl, Error> {
+    let orderedvariants = reodered_variants(ast)?;
+
+    let mut variants = Vec::new();
+    let mut names = Vec::new();
+    for variant in orderedvariants {
+        let mut attributes = Attributes::parse(&variant.attrs)?;
+        merge_attributes(&mut attributes, attrs);
+        let mut name = String::new();
+        if !attributes.is_ignored() {
+            name = variant_name(variant, &attributes);
+        }
+
+        variants.push(match_variant(variant));
+        names.push(name);
+    }
+
+    let headers = quote! { vec![::std::borrow::Cow::Borrowed(#enum_name)] };
+    let values = quote! {
+        #[allow(unused_variables)]
+        match &self {
+            #(Self::#variants => vec![::std::borrow::Cow::Borrowed(#names)],)*
+        }
+    };
+
+    Ok(Impl { headers, values })
+}
+
 fn info_from_variant(
     variant: &Variant,
-    attributes: &Attributes,
-    attrs: &ObjectAttributes,
+    attr: &Attributes,
+    attrs: &StructAttributes,
 ) -> Result<Impl, Error> {
-    if attributes.inline {
-        let prefix = attributes
+    if attr.inline {
+        let prefix = attr
             .inline_prefix
             .as_ref()
             .map_or_else(|| "", |s| s.as_str());
         return info_from_fields(&variant.fields, attrs, variant_var_name, prefix);
     }
 
-    let variant_name = variant_name(variant, attributes);
-    let value = "+";
+    let variant_name = variant_name(variant, attr);
+    let value = if let Some(func) = &attr.display_with {
+        let args = match &attr.display_with_args {
+            None => None,
+            Some(args) => match args.is_empty() {
+                true => None,
+                false => {
+                    let args = args.iter().map(fnarg_tokens).collect::<Vec<_>>();
+                    Some(quote!( #(#args,)* ))
+                }
+            },
+        };
+
+        let call = match args {
+            Some(args) => use_function(&args, func),
+            None => use_function_no_args(func),
+        };
+
+        quote! { ::std::borrow::Cow::from(#call) }
+    } else {
+        let default_value = "+";
+        quote! { ::std::borrow::Cow::Borrowed(#default_value) }
+    };
 
     // we need exactly string because of it must be inlined as string
     let headers = quote! { vec![::std::borrow::Cow::Borrowed(#variant_name)] };
     // we need exactly string because of it must be inlined as string
-    let values = quote! { vec![::std::borrow::Cow::Borrowed(#value)] };
+    let values = quote! { vec![#value] };
 
     Ok(Impl { headers, values })
 }
@@ -347,39 +429,50 @@ fn get_field_fields(field: &TokenStream, attr: &Attributes) -> TokenStream {
     }
 
     if let Some(func) = &attr.display_with {
-        let func_call = match attr.display_with_use_self {
-            true => use_function_with_self(func),
-            false => use_function_for(field, func),
+        let args = match &attr.display_with_args {
+            None => Some(quote!(&#field)),
+            Some(args) => match args.is_empty() {
+                true => None,
+                false => {
+                    let args = args.iter().map(fnarg_tokens).collect::<Vec<_>>();
+                    Some(quote!( #(#args,)* ))
+                }
+            },
         };
 
-        return quote!(vec![::std::borrow::Cow::from(#func_call)]);
+        let call = match args {
+            Some(args) => use_function(&args, func),
+            None => use_function_no_args(func),
+        };
+
+        return quote!(vec![::std::borrow::Cow::from(#call)]);
     }
 
     quote!(vec![::std::borrow::Cow::Owned(format!("{}", #field))])
 }
 
-fn use_function_for(field: &TokenStream, function: &str) -> TokenStream {
+fn use_function(args: &TokenStream, function: &str) -> TokenStream {
     let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
     match path {
         Ok(path) => {
-            quote! { #path(&#field) }
+            quote! { #path(#args) }
         }
         Err(_) => {
             let function = Ident::new(function, proc_macro2::Span::call_site());
-            quote! { #function(&#field) }
+            quote! { #function(#args) }
         }
     }
 }
 
-fn use_function_with_self(function: &str) -> TokenStream {
+fn use_function_no_args(function: &str) -> TokenStream {
     let path: syn::Result<syn::ExprPath> = syn::parse_str(function);
     match path {
         Ok(path) => {
-            quote! { #path(&self) }
+            quote! { #path() }
         }
         Err(_) => {
             let function = Ident::new(function, proc_macro2::Span::call_site());
-            quote! { #function(&self) }
+            quote! { #function() }
         }
     }
 }
@@ -449,7 +542,7 @@ fn values_for_enum(
         #[allow(unused_variables)]
         match &self {
             #stream
-            _ => return vec![], // variant is hidden so we return an empty vector
+            _ => return vec![::std::borrow::Cow::Borrowed(""); size], // variant is hidden so we return an empty vector
         };
 
         out_vec
@@ -519,8 +612,59 @@ fn field_header_name(f: &Field, attr: &Attributes, index: usize) -> String {
     }
 }
 
-fn merge_attributes(attr: &mut Attributes, global_attr: &ObjectAttributes) {
+fn merge_attributes(attr: &mut Attributes, global_attr: &StructAttributes) {
     if attr.rename_all.is_none() {
         attr.rename_all = global_attr.rename_all;
     }
+}
+
+fn fnarg_tokens(arg: &FuncArg) -> TokenStream {
+    match arg {
+        FuncArg::SelfRef => quote! { &self },
+        FuncArg::Byte(val) => quote! { #val },
+        FuncArg::Char(val) => quote! { #val },
+        FuncArg::Bool(val) => quote! { #val },
+        FuncArg::Uint(val) => quote! { #val },
+        FuncArg::Int(val) => quote! { #val },
+        FuncArg::Float(val) => quote! { #val },
+        FuncArg::String(val) => quote! { #val },
+        FuncArg::Bytes(val) => {
+            let val = syn::LitByteStr::new(val, proc_macro2::Span::call_site());
+            quote! { #val }
+        }
+    }
+}
+
+fn reodered_variants(ast: &DataEnum) -> Result<Vec<&Variant>, Error> {
+    let mut reorder = HashMap::new();
+    let mut skip = 0;
+    let count = ast.variants.len();
+    for (i, attr) in ast
+        .variants
+        .iter()
+        .map(|v| Attributes::parse(&v.attrs).unwrap_or_default())
+        .enumerate()
+    {
+        if attr.is_ignored {
+            skip += 1;
+            continue;
+        }
+
+        if let Some(order) = attr.order {
+            if order >= count {
+                return Err(Error::message(format!(
+                    "An order index '{order}' is out of fields scope"
+                )));
+            }
+
+            reorder.insert(order, i - skip);
+        }
+    }
+
+    let mut orderedvariants = ast.variants.iter().collect::<Vec<_>>();
+    if !reorder.is_empty() {
+        orderedvariants = reorder_fields(&reorder, &orderedvariants);
+    }
+
+    Ok(orderedvariants)
 }

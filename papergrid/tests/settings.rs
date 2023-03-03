@@ -2,8 +2,7 @@
 
 mod util;
 
-use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent};
-use papergrid::grid::spanned::config::Padding;
+use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent, Sides};
 
 use util::{grid, test_table};
 
@@ -61,7 +60,7 @@ test_table!(
             cfg.set_borders(Borders::default());
             cfg.set_padding(
                 Entity::Column(0),
-                Padding {
+                Sides {
                     bottom: Indent::new(3, '$'),
                     ..Default::default()
                 },
@@ -85,14 +84,14 @@ test_table!(
             cfg.set_borders(Borders::default());
             cfg.set_padding(
                 Entity::Column(0),
-                Padding {
+                Sides {
                     bottom: Indent::new(3, '$'),
                     ..Default::default()
                 },
             );
             cfg.set_padding(
                 Entity::Row(1),
-                Padding {
+                Sides {
                     bottom: Indent::new(2, '#'),
                     ..Default::default()
                 },
@@ -115,7 +114,7 @@ test_table!(
             cfg.set_borders(Borders::default());
             cfg.set_padding(
                 Entity::Row(0),
-                Padding {
+                Sides {
                     bottom: Indent::new(3, '$'),
                     ..Default::default()
                 },
@@ -132,14 +131,14 @@ test_table!(
             cfg.set_borders(Borders::default());
             cfg.set_padding(
                 Entity::Row(0),
-                Padding {
+                Sides {
                     bottom: Indent::new(3, '$'),
                     ..Default::default()
                 },
             );
             cfg.set_padding(
                 Entity::Column(1),
-                Padding {
+                Sides {
                     bottom: Indent::new(2, '#'),
                     ..Default::default()
                 },

@@ -13,7 +13,8 @@ fn main() {
     let table = CompactTable::new(data)
         .columns(3)
         .width([7, 5, 5])
-        .with(Style::markdown());
+        .with(Style::markdown())
+        .to_string();
 
     println!("{table}");
 }

@@ -255,8 +255,6 @@ unicode-width = "0.1.9"
 
 [dev-dependencies]
 owo-colors = "3.5.0"
-quickcheck = "1.0.3"
-quickcheck_macros = "1.0.0"
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #

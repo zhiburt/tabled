@@ -35,10 +35,10 @@ macro_rules! create_bench {
             { "tabled_color", lib_comp::tabled_color_current::build },
             { "tabled_iter", lib_comp::tabled_current_iter::build },
             { "tabled_compact", lib_comp::tabled_current_compact::build },
-            { "cli_table", lib_comp::cli_table::build  },
-            { "comfy_table", lib_comp::comfy_table::build },
-            { "term_table", lib_comp::term_table::build  },
-            { "prettytable_rs", lib_comp::prettytable_rs::build },
+            // { "cli_table", lib_comp::cli_table::build  },
+            // { "comfy_table", lib_comp::comfy_table::build },
+            // { "term_table", lib_comp::term_table::build  },
+            // { "prettytable_rs", lib_comp::prettytable_rs::build },
         );
     };
 }

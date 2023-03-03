@@ -31,7 +31,7 @@ pub enum TabledAttrKind {
     Inline(LitBool, Option<LitStr>),
     Rename(LitStr),
     RenameAll(LitStr),
-    DisplayWith(LitStr, bool),
+    DisplayWith(LitStr, Option<Token!(,)>, Punctuated<syn::Expr, Token!(,)>),
     Order(LitInt),
 }
 
@@ -51,7 +51,9 @@ impl Parse for TabledAttr {
                 match name_str.as_str() {
                     "rename" => return Ok(Self::new(name, Rename(lit))),
                     "rename_all" => return Ok(Self::new(name, RenameAll(lit))),
-                    "display_with" => return Ok(Self::new(name, DisplayWith(lit, false))),
+                    "display_with" => {
+                        return Ok(Self::new(name, DisplayWith(lit, None, Punctuated::new())))
+                    }
                     _ => {}
                 }
             }
@@ -89,19 +91,22 @@ impl Parse for TabledAttr {
 
                 match name_str.as_str() {
                     "display_with" => {
-                        let use_self = if nested.peek(Token![,]) {
-                            let _comma = nested.parse::<Token![,]>()?;
-                            if nested.peek(syn::Ident) {
-                                let ident = nested.parse::<syn::Ident>()?;
-                                ident == "args"
-                            } else {
-                                false
+                        let mut args = Punctuated::new();
+                        let mut comma = None;
+                        if nested.peek(Token![,]) {
+                            comma = Some(nested.parse::<Token![,]>()?);
+                            while !nested.is_empty() {
+                                let val = nested.parse()?;
+                                args.push_value(val);
+                                if nested.is_empty() {
+                                    break;
+                                }
+                                let punct = nested.parse()?;
+                                args.push_punct(punct);
                             }
-                        } else {
-                            false
                         };
 
-                        return Ok(Self::new(name, DisplayWith(lit, use_self)));
+                        return Ok(Self::new(name, DisplayWith(lit, comma, args)));
                     }
                     "inline" => {
                         return Ok(Self::new(

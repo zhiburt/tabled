@@ -2,13 +2,14 @@
 
 use core::marker::PhantomData;
 
-use papergrid::grid::compact::CompactConfig;
-
-use crate::{grid::config::Borders, settings::TableOption};
+use crate::{
+    grid::{compact::CompactConfig, config::Borders},
+    settings::TableOption,
+};
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-use crate::grid::spanned::GridConfig;
+use crate::tables::table::ColoredConfig;
 
 use super::{HorizontalLine, Line, VerticalLine};
 
@@ -1057,13 +1058,13 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, GridConfig>
+impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, ColoredConfig>
     for Style<T, B, L, R, H, V, HLines, VLines>
 where
     HLines: IntoIterator<Item = HorizontalLine> + Clone,
     VLines: IntoIterator<Item = VerticalLine> + Clone,
 {
-    fn change(&mut self, records: &mut I, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut I, cfg: &mut ColoredConfig, dimension: &mut D) {
         cfg.clear_theme();
 
         cfg.set_borders(self.borders);

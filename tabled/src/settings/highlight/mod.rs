@@ -7,9 +7,10 @@ use std::collections::HashSet;
 
 use crate::{
     grid::config::{Border as GridBorder, Entity, Position},
-    grid::spanned::{config, GridConfig},
+    grid::spanned::GridConfig,
     records::{ExactRecords, Records},
     settings::{object::Object, style::Border, style::BorderColor, TableOption},
+    tables::table::ColoredConfig,
 };
 
 /// Highlight modifies a table style by changing a border of a target [`Table`] segment.
@@ -111,12 +112,12 @@ impl<O> Highlight<O> {
     }
 }
 
-impl<O, R, D> TableOption<R, D, GridConfig> for Highlight<O>
+impl<O, R, D> TableOption<R, D, ColoredConfig> for Highlight<O>
 where
     O: Object<R>,
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -138,12 +139,12 @@ pub struct HighlightColored<O> {
     border: BorderColor,
 }
 
-impl<O, R, D> TableOption<R, D, GridConfig> for HighlightColored<O>
+impl<O, R, D> TableOption<R, D, ColoredConfig> for HighlightColored<O>
 where
     O: Object<R>,
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -252,8 +253,7 @@ fn set_border(cfg: &mut GridConfig, sector: &HashSet<(usize, usize)>, border: Bo
         return;
     }
 
-    let border: config::Border = border.into();
-
+    let border = border.into();
     for &pos in sector {
         let border = build_cell_border(sector, pos, &border);
         cfg.set_border(pos, border);

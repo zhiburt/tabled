@@ -50,8 +50,7 @@
 
 use std::borrow::Cow;
 
-use papergrid::util::string::string_width;
-
+use crate::grid::util::string::string_width;
 use crate::Tabled;
 
 /// `ExtendedTable` display data in a 'expanded display mode' from postgresql.

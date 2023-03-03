@@ -19,7 +19,6 @@ pub struct CompactConfig {
     padding: Sides<Indent>,
     padding_color: Sides<StaticColor>,
     halignment: AlignmentHorizontal,
-    tab_width: usize,
 }
 
 impl Default for CompactConfig {
@@ -32,7 +31,6 @@ impl CompactConfig {
     /// Returns an standard config.
     pub const fn empty() -> Self {
         Self {
-            tab_width: 4,
             halignment: AlignmentHorizontal::Left,
             horizontal_line1: None,
             borders: Borders::empty(),
@@ -74,17 +72,6 @@ impl CompactConfig {
     /// It ignores the [`Borders`] horizontal value if set for 1st row.
     pub const fn get_first_horizontal_line(&self) -> Option<Line<char>> {
         self.horizontal_line1
-    }
-
-    /// Set tab width in spaces.
-    pub const fn set_tab_width(mut self, width: usize) -> Self {
-        self.tab_width = width;
-        self
-    }
-
-    /// Get tab width value in spaces.
-    pub const fn get_tab_width(&self) -> usize {
-        self.tab_width
     }
 
     /// Returns a current [`Borders`] structure.

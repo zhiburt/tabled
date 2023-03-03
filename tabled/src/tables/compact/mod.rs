@@ -45,15 +45,14 @@
 //!
 //! // See what will happen if the given width is too narrow
 //!
-//! let mut buf = String::new();
-//! CompactTable::new(&data)
+//! let table = CompactTable::new(&data)
 //!     .columns(4)
 //!     .width(5)
 //!     .with(Style::ascii())
-//!     .build(&mut buf);
+//!     .to_string();
 //!
 //! assert_eq!(
-//!     buf,
+//!     table,
 //!     "+-----+-----+-----+-----+\n\
 //!      | FreeBSD | 1993 | William and Lynne Jolitz | ?   |\n\
 //!      |-----+-----+-----+-----|\n\
@@ -71,15 +70,13 @@ pub mod dimension;
 use core::cmp::max;
 use core::fmt;
 
-use papergrid::{
-    dimension::{Dimension, Estimate},
-    grid::compact::{CompactConfig, CompactGrid},
-    util::string::string_width_tab,
-};
-
 use crate::{
-    grid::config::AlignmentHorizontal,
-    grid::config::{Indent, Sides},
+    grid::{
+        compact::{CompactConfig, CompactGrid},
+        config::{AlignmentHorizontal, Indent, Sides},
+        dimension::Dimension,
+        util::string::string_width,
+    },
     records::{
         into_records::{LimitColumns, LimitRows},
         IntoRecords, IterRecords,
@@ -149,11 +146,12 @@ impl<I, const ROWS: usize, const COLS: usize> CompactTable<I, ConstantDimension<
 }
 
 impl<I, D> CompactTable<I, D> {
-    /// Creates a new [`CompactTable`] structure with a width dimension for all columns.
-    pub const fn with_dimension(iter: I, dimension: D) -> Self
+    /// Creates a new [`CompactTable`] structure with a known dimension.
+    ///
+    /// Notice that the function will call [`Estimate`].
+    pub fn with_dimension(iter: I, dimension: D) -> Self
     where
         I: IntoRecords,
-        D: Dimension,
     {
         Self {
             records: iter,
@@ -190,10 +188,11 @@ impl<I, D> CompactTable<I, D> {
     }
 
     /// Format table into [fmt::Write]er.
-    pub fn build<W: fmt::Write>(self, writer: W) -> fmt::Result
+    pub fn fmt<W>(self, writer: W) -> fmt::Result
     where
         I: IntoRecords,
         D: Dimension,
+        W: fmt::Write,
     {
         build_grid(
             writer,
@@ -204,28 +203,39 @@ impl<I, D> CompactTable<I, D> {
             self.count_rows,
         )
     }
+
+    /// Build a string.
+    ///
+    /// We can't implement [`std::string::ToString`] cause it does takes `&self` reference.
+    #[allow(clippy::inherent_to_string)]
+    pub fn to_string(self) -> String
+    where
+        I: IntoRecords,
+        D: Dimension,
+    {
+        let mut buf = String::new();
+        self.fmt(&mut buf).unwrap();
+        buf
+    }
+
+    /// Format table into [`io::Write`]r.
+    #[cfg(feature = "std")]
+    pub fn build<W>(self, writer: W) -> std::io::Result<()>
+    where
+        I: IntoRecords,
+        D: Dimension,
+        W: std::io::Write,
+    {
+        let writer = crate::tables::iter::utf8_writer::UTF8Writer::new(writer);
+        self.fmt(writer)
+            .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))
+    }
 }
 
-impl<I, D> core::fmt::Display for CompactTable<I, D>
-where
-    for<'a> &'a I: IntoRecords,
-    D: Dimension + Estimate<CompactConfig> + Clone,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> core::fmt::Result {
-        let mut dims = self.dims.clone();
-        dims.estimate(
-            IterRecords::new(&self.records, self.count_columns, self.count_rows),
-            &self.cfg,
-        );
-
-        build_grid(
-            f,
-            &self.records,
-            dims,
-            self.cfg,
-            self.count_columns,
-            self.count_rows,
-        )
+impl CompactTable<(), ()> {
+    /// Return a default config.
+    pub fn config() -> CompactConfig {
+        create_config()
     }
 }
 
@@ -239,7 +249,7 @@ where
         for row in mat.iter() {
             for (col, text) in row.iter().enumerate() {
                 let text = text.as_ref();
-                let text_width = string_width_tab(text, 4);
+                let text_width = string_width(text);
                 width[col] = max(width[col], text_width);
             }
         }
@@ -279,7 +289,6 @@ fn build_grid<W: fmt::Write, I: IntoRecords, D: Dimension>(
 
 const fn create_config() -> CompactConfig {
     CompactConfig::empty()
-        .set_tab_width(4)
         .set_padding(Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),

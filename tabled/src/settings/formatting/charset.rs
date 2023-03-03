@@ -3,25 +3,22 @@ use crate::{
     settings::TableOption,
 };
 
-/// Set a tab size.
-///
-/// The size is used in order to calculate width correctly.
-///
-/// Default value is 4 (basically 1 '\t' equals 4 spaces).
-///
-/// IMPORTANT: The tab character might be not present in output,
-/// it might be replaced by spaces.
+/// A structure to handle special chars.
 #[derive(Debug, Default, Clone)]
-pub struct TabSize(usize);
+pub struct Charset;
 
-impl TabSize {
-    /// Creates new [`TabSize`] object.
-    pub fn new(size: usize) -> Self {
-        Self(size)
+impl Charset {
+    /// Returns [`CleanCharset`] which removes all `\t` and `\r` occurences.
+    pub fn clean() -> CleanCharset {
+        CleanCharset
     }
 }
 
-impl<R, D, C> TableOption<R, D, C> for TabSize
+/// [`CleanCharset`] removes all `\t` and `\r` occurences.
+#[derive(Debug, Default, Clone)]
+pub struct CleanCharset;
+
+impl<R, D, C> TableOption<R, D, C> for CleanCharset
 where
     for<'a> &'a R: Records,
     R: RecordsMut<String>,
@@ -30,7 +27,7 @@ where
         let mut list = vec![];
         for (row, cells) in records.iter_rows().into_iter().enumerate() {
             for (col, text) in cells.into_iter().enumerate() {
-                let text = text.as_ref().replace('\t', &" ".repeat(self.0));
+                let text = text.as_ref().replace(['\t', '\r'], "");
                 list.push(((row, col), text));
             }
         }

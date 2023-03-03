@@ -2,8 +2,7 @@
 
 mod util;
 
-use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent};
-use papergrid::grid::spanned::config::Padding;
+use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent, Sides};
 
 #[cfg(feature = "color")]
 use std::convert::TryFrom;
@@ -121,14 +120,19 @@ test_table!(
         .config(|cfg| {
             cfg.set_padding(
                 Entity::Global,
-                Padding::new(
+                Sides::new(
                     Indent::spaced(1),
                     Indent::spaced(1),
                     Indent::spaced(1),
                     Indent::spaced(1),
                 ),
             );
-            cfg.set_padding(Entity::Column(0), Padding::default());
+            cfg.set_padding(Entity::Column(0), Sides::new(
+                Indent::default(),
+                Indent::default(),
+                Indent::default(),
+                Indent::default(),
+            ));
         })
         .build(),
     "+---+-----+"

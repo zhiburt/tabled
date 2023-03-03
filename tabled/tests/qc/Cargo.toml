@@ -1,0 +1,11 @@
+[package]
+name = "qc"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dev-dependencies]
+tabled = { path = "../.." }
+quickcheck = "1.0.3"
+quickcheck_macros = "1.0.0"

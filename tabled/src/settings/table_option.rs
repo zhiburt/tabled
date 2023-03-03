@@ -14,8 +14,3 @@ where
         T::change(self, records, cfg, dimension);
     }
 }
-
-// todo: we can create 2 different TableOptions
-// 1 will do actual calculation and will do NOCache while other will do cache
-//
-// So Width::wrap will be something Wrap(Vec::new()) and will have some methods right in it.

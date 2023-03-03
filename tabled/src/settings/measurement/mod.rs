@@ -2,7 +2,7 @@
 
 use crate::{
     grid::spanned::{ExactDimension, GridConfig},
-    grid::util::string::{self, string_width_multiline_tab},
+    grid::util::string::{self, string_width_multiline},
     records::{ExactRecords, Records},
     settings::height::Height,
     settings::width::Width,
@@ -27,8 +27,8 @@ impl<T> Measurement<T> for usize {
 pub struct Max;
 
 impl Measurement<Width> for Max {
-    fn measure<R: Records + ExactRecords>(&self, records: R, cfg: &GridConfig) -> usize {
-        grid_widths(&records, cfg.get_tab_width())
+    fn measure<R: Records + ExactRecords>(&self, records: R, _: &GridConfig) -> usize {
+        grid_widths(&records)
             .map(|r| r.max().unwrap_or(0))
             .max()
             .unwrap_or(0)
@@ -49,8 +49,8 @@ impl Measurement<Height> for Max {
 pub struct Min;
 
 impl Measurement<Width> for Min {
-    fn measure<R: Records + ExactRecords>(&self, records: R, cfg: &GridConfig) -> usize {
-        grid_widths(&records, cfg.get_tab_width())
+    fn measure<R: Records + ExactRecords>(&self, records: R, _: &GridConfig) -> usize {
+        grid_widths(&records)
             .map(|r| r.min().unwrap_or(0))
             .max()
             .unwrap_or(0)
@@ -92,13 +92,11 @@ impl Measurement<Height> for Percent {
 
 fn grid_widths<R: Records + ExactRecords>(
     records: &R,
-    tab_width: usize,
 ) -> impl Iterator<Item = impl Iterator<Item = usize> + '_> + '_ {
     let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
     (0..count_rows).map(move |row| {
-        (0..count_cols).map(move |col| {
-            string_width_multiline_tab(records.get_cell((row, col)).as_ref(), tab_width)
-        })
+        (0..count_cols)
+            .map(move |col| string_width_multiline(records.get_cell((row, col)).as_ref()))
     })
 }
 

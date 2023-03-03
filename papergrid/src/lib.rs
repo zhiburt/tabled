@@ -25,7 +25,8 @@
 //! use papergrid::{
 //!     records::IterRecords,
 //!     dimension::{Estimate},
-//!     grid::spanned::{config::{Borders, GridConfig}, Grid, ExactDimension},
+//!     config::Borders,
+//!     grid::spanned::{config::GridConfig, Grid, ExactDimension},
 //! };
 //!
 //! // Creating a borders structure of a grid.

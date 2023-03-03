@@ -2,9 +2,9 @@
 //! `cargo run --example hello_world`
 
 use papergrid::{
-    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent},
+    config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
     dimension::Estimate,
-    grid::spanned::{config::Padding, dimension::ExactDimension, Grid, GridConfig},
+    grid::spanned::{dimension::ExactDimension, Grid, GridConfig},
     records::IterRecords,
 };
 
@@ -20,7 +20,7 @@ fn main() {
     let mut dim = ExactDimension::default();
     dim.estimate(records, &cfg);
 
-    let grid = Grid::new(records, &dim, &cfg);
+    let grid = Grid::new(records, &dim, &cfg).to_string();
 
     println!("{grid}");
 }
@@ -52,7 +52,7 @@ fn generate_table_config() -> GridConfig {
     cfg.set_alignment_vertical(Global, AlignmentVertical::Center);
     cfg.set_padding(
         (0, 0).into(),
-        Padding::new(
+        Sides::new(
             Indent::spaced(4),
             Indent::spaced(4),
             Indent::spaced(1),
