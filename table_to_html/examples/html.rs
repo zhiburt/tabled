@@ -1,3 +1,6 @@
+//! The example can be run by this command
+//! `cargo run --example html`
+
 use table_to_html::HtmlTable;
 
 fn main() {

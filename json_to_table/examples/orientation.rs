@@ -1,3 +1,6 @@
+//! The example can be run by this command
+//! `cargo run --example orientation`
+
 use json_to_table::{json_to_table, Orientation};
 
 fn main() {

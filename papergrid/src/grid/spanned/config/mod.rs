@@ -10,7 +10,9 @@ mod offset;
 use std::collections::HashMap;
 
 use crate::color::{AnsiColor, StaticColor};
-use crate::config::{AlignmentHorizontal, AlignmentVertical, Entity, Indent, Position, Sides};
+use crate::config::{
+    AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, Indent, Position, Sides,
+};
 use crate::grid::compact::CompactConfig;
 use borders_config::BordersConfig;
 
@@ -21,10 +23,8 @@ pub use self::{entity_map::EntityMap, formatting::Formatting, offset::Offset};
 /// grid: crate::Grid.
 #[derive(Debug, Clone)]
 pub struct GridConfig {
-    tab_width: usize,
-    margin: Margin,
-    margin_offset: MarginOffset,
-    padding: EntityMap<Padding>,
+    margin: Sides<ColoredMarginIndent>,
+    padding: EntityMap<Sides<ColoredIndent>>,
     alignment_h: EntityMap<AlignmentHorizontal>,
     alignment_v: EntityMap<AlignmentVertical>,
     formatting: EntityMap<Formatting>,
@@ -32,60 +32,15 @@ pub struct GridConfig {
     span_rows: HashMap<Position, usize>,
     borders: BordersConfig<char>,
     borders_missing_char: char,
-    override_horizontal_lines: HashMap<usize, (String, Offset)>,
     override_horizontal_borders: HashMap<Position, HashMap<Offset, char>>,
     override_vertical_borders: HashMap<Position, HashMap<Offset, char>>,
-    margin_color: MarginColor,
-    padding_color: EntityMap<PaddingColor>,
     border_colors: BordersConfig<AnsiColor<'static>>,
 }
 
-/// Margin represent a 4 indents of table as a whole.
-pub type Margin = Sides<Indent>;
-
-/// Padding represent a 4 indents of cell.
-pub type Padding = Sides<Indent>;
-
-/// Margin represent a 4 indents of table as a whole.
-pub type MarginColor = Sides<AnsiColor<'static>>;
-
-/// Margin represent a 4 offsets of table as a whole.
-pub type MarginOffset = Sides<Offset>;
-
-/// PaddingColor represent a 4 indents of a cell.
-pub type PaddingColor = Sides<AnsiColor<'static>>;
-
-/// Borders represents a characters set which are used to build border grid.
-pub type Borders = crate::config::Borders<char>;
-
-/// Borders represents a color set which are used to build border grid.
-pub type BordersColor = crate::config::Borders<AnsiColor<'static>>;
-
-/// HorizontalLine represents a horizontal border line.
-pub type HorizontalLine = borders_config::HorizontalLine<char>;
-
-/// HorizontalLine represents a vertical border line.
-pub type VerticalLine = borders_config::VerticalLine<char>;
-
-/// Border represent a 4 side border lines of a cell.
-pub type Border = crate::config::Border<char>;
-
-/// Border represent a 4 side color for border lines of a cell.
-pub type BorderColor = crate::config::Border<AnsiColor<'static>>;
-
 impl Default for GridConfig {
     fn default() -> Self {
-        let margin_offset = MarginOffset::new(
-            Offset::Begin(0),
-            Offset::Begin(0),
-            Offset::Begin(0),
-            Offset::Begin(0),
-        );
-
         Self {
-            tab_width: 4,
-            margin: Margin::default(),
-            margin_offset,
+            margin: Sides::default(),
             padding: EntityMap::default(),
             formatting: EntityMap::default(),
             alignment_h: EntityMap::new(AlignmentHorizontal::Left),
@@ -94,11 +49,8 @@ impl Default for GridConfig {
             borders_missing_char: ' ',
             span_columns: HashMap::default(),
             span_rows: HashMap::default(),
-            override_horizontal_lines: HashMap::default(),
             override_horizontal_borders: HashMap::default(),
             override_vertical_borders: HashMap::default(),
-            margin_color: MarginColor::default(),
-            padding_color: EntityMap::default(),
             border_colors: BordersConfig::default(),
         }
     }
@@ -111,7 +63,6 @@ impl GridConfig {
     ///
     /// IT'S CALLER RESPONSIBILITY TO MAKE SURE
     /// THAT THERE NO INTERSECTIONS IN PLACE AND THE SPAN VALUE IS CORRECT
-
     pub fn set_column_span(&mut self, pos: Position, span: usize) {
         set_cell_column_span(self, pos, span);
     }
@@ -136,37 +87,26 @@ impl GridConfig {
         !self.span_rows.is_empty()
     }
 
-    /// Set a [`Margin`] value.
-    pub fn set_margin(&mut self, margin: Margin) {
-        self.margin = margin;
-    }
-
     /// Returns a [`Margin`] value currently set.
-    pub fn get_margin(&self) -> &Margin {
+    pub fn get_margin(&self) -> &Sides<ColoredMarginIndent> {
         &self.margin
     }
 
-    /// Set [`Margin`] offset.
-    pub fn set_margin_offset(&mut self, margin: MarginOffset) {
-        self.margin_offset = margin;
-    }
-
-    /// Returns a [`Margin`] offset.
-    pub fn get_margin_offset(&self) -> &MarginOffset {
-        &self.margin_offset
+    /// Set a [`Margin`] value.
+    pub fn get_margin_mut(&mut self) -> &mut Sides<ColoredMarginIndent> {
+        &mut self.margin
     }
 
     /// Clears all theme changes.
     /// And sets it to default.
     pub fn clear_theme(&mut self) {
         self.borders = BordersConfig::default();
-        self.override_horizontal_lines.clear();
         self.override_horizontal_borders.clear();
         self.override_vertical_borders.clear();
     }
 
     /// Set the [`Borders`] value as correct one.
-    pub fn set_borders(&mut self, borders: Borders) {
+    pub fn set_borders(&mut self, borders: Borders<char>) {
         self.borders.set_borders(borders);
     }
 
@@ -180,18 +120,8 @@ impl GridConfig {
         self.borders.set_global(c);
     }
 
-    /// Set tab width in spaces.
-    pub fn set_tab_width(&mut self, width: usize) {
-        self.tab_width = width;
-    }
-
-    /// Get tab width value in spaces.
-    pub fn get_tab_width(&self) -> usize {
-        self.tab_width
-    }
-
     /// Returns a current [`Borders`] structure.
-    pub fn get_borders(&self) -> &Borders {
+    pub fn get_borders(&self) -> &Borders<char> {
         self.borders.get_borders()
     }
 
@@ -199,7 +129,7 @@ impl GridConfig {
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
-    pub fn set_horizontal_line(&mut self, line: usize, val: HorizontalLine) {
+    pub fn insert_horizontal_line(&mut self, line: usize, val: HorizontalLine) {
         self.borders.insert_horizontal_line(line, val);
     }
 
@@ -223,7 +153,7 @@ impl GridConfig {
     ///
     /// Row `0` means the left row.
     /// Row `grid.count_columns()` means the right most row.
-    pub fn set_vertical_line(&mut self, line: usize, val: VerticalLine) {
+    pub fn insert_vertical_line(&mut self, line: usize, val: VerticalLine) {
         self.borders.insert_vertical_line(line, val);
     }
 
@@ -241,34 +171,6 @@ impl GridConfig {
     /// Row `grid.count_rows()` means the bottom row.
     pub fn get_horizontal_line(&self, line: usize) -> Option<&HorizontalLine> {
         self.borders.get_horizontal_line(line)
-    }
-
-    /// Override the split line with a custom text.
-    ///
-    /// If borders are not set the string won't be rendered.
-    pub fn override_split_line(&mut self, line: usize, text: impl Into<String>, offset: Offset) {
-        self.override_horizontal_lines
-            .insert(line, (text.into(), offset));
-    }
-
-    /// Gets a set text to a border line by index
-    pub fn get_split_line_text(&self, line: usize) -> Option<&str> {
-        self.override_horizontal_lines
-            .get(&line)
-            .map(|(s, _)| s.as_str())
-    }
-
-    /// Gets a set text to a border line by index
-    pub fn get_split_line_offset(&self, line: usize) -> Option<Offset> {
-        self.override_horizontal_lines
-            .get(&line)
-            .map(|(_, offset)| offset)
-            .copied()
-    }
-
-    /// Removes a split line text if any set.
-    pub fn remove_split_line_text(&mut self, line: usize) -> Option<(String, Offset)> {
-        self.override_horizontal_lines.remove(&line)
     }
 
     /// Override a character on a horizontal line.
@@ -390,12 +292,18 @@ impl GridConfig {
     }
 
     /// Set a padding to a given cells.
-    pub fn set_padding(&mut self, entity: Entity, padding: Padding) {
-        self.padding.insert(entity, padding);
+    pub fn set_padding(&mut self, entity: Entity, pad: Sides<impl Into<ColoredIndent>>) {
+        let val = Sides::new(
+            pad.left.into(),
+            pad.right.into(),
+            pad.top.into(),
+            pad.bottom.into(),
+        );
+        self.padding.insert(entity, val);
     }
 
     /// Get a padding for a given [Entity].
-    pub fn get_padding(&self, entity: Entity) -> &Padding {
+    pub fn get_padding(&self, entity: Entity) -> &Sides<ColoredIndent> {
         self.padding.get(entity)
     }
 
@@ -430,12 +338,12 @@ impl GridConfig {
     }
 
     /// Set border set a border value to all cells in [`Entity`].
-    pub fn set_border(&mut self, pos: Position, border: Border) {
+    pub fn set_border(&mut self, pos: Position, border: Border<char>) {
         self.borders.insert_border(pos, border);
     }
 
     /// Returns a border of a cell.
-    pub fn get_border(&self, pos: Position, shape: (usize, usize)) -> Border {
+    pub fn get_border(&self, pos: Position, shape: (usize, usize)) -> Border<char> {
         self.borders.get_border(pos, shape).copied()
     }
 
@@ -463,38 +371,18 @@ impl GridConfig {
     }
 
     /// Gets colors of a borders carcass on the grid.
-    pub fn get_color_borders(&self) -> &BordersColor {
+    pub fn get_color_borders(&self) -> &Borders<AnsiColor<'static>> {
         self.border_colors.get_borders()
     }
 
     /// Sets colors of border carcass on the grid.
-    pub fn set_borders_color(&mut self, clrs: BordersColor) {
+    pub fn set_borders_color(&mut self, clrs: Borders<AnsiColor<'static>>) {
         self.border_colors.set_borders(clrs);
     }
 
     /// Sets a color of border of a cell on the grid.
-    pub fn set_border_color(&mut self, pos: Position, border: BorderColor) {
+    pub fn set_border_color(&mut self, pos: Position, border: Border<AnsiColor<'static>>) {
         self.border_colors.insert_border(pos, border)
-    }
-
-    /// Get colors for a [`Margin`] value.
-    pub fn get_margin_color(&self) -> &MarginColor {
-        &self.margin_color
-    }
-
-    /// Set colors for a [`Margin`] value.
-    pub fn set_margin_color(&mut self, color: MarginColor) {
-        self.margin_color = color;
-    }
-
-    /// Get a padding to a given cells.
-    pub fn get_padding_color(&self, entity: Entity) -> &PaddingColor {
-        self.padding_color.get(entity)
-    }
-
-    /// Set a padding to a given cells.
-    pub fn set_padding_color(&mut self, entity: Entity, color: PaddingColor) {
-        self.padding_color.insert(entity, color);
     }
 
     /// Get a span value of the cell, if any is set.
@@ -625,8 +513,8 @@ impl GridConfig {
     /// Checks if grid would have a vertical border with the current configuration.
     ///
     /// grid: crate::Grid
-    pub fn has_vertical(&self, row: usize, count_columns: usize) -> bool {
-        self.borders.has_vertical(row, count_columns)
+    pub fn has_vertical(&self, col: usize, count_columns: usize) -> bool {
+        self.borders.has_vertical(col, count_columns)
     }
 
     /// Calculates an amount of horizontal lines would present on the grid.
@@ -681,22 +569,18 @@ impl From<CompactConfig> for GridConfig {
         use Entity::Global;
 
         let mut cfg = Self::default();
-        cfg.set_padding(Global, *compact.get_padding());
-        cfg.set_padding_color(
-            Global,
-            sides_static_color_to_ansi_color(compact.get_padding_color()),
-        );
-        cfg.set_margin(*compact.get_margin());
-        cfg.set_margin_color(sides_static_color_to_ansi_color(compact.get_margin_color()));
+
+        let pad = to_padding(compact.get_padding(), compact.get_padding_color());
+        cfg.set_padding(Global, pad);
+        *cfg.get_margin_mut() = to_margin(compact.get_margin(), compact.get_margin_color());
         cfg.set_alignment_horizontal(Global, compact.get_alignment_horizontal());
         cfg.set_borders(*compact.get_borders());
         cfg.set_borders_color(borders_static_color_to_ansi_color(
             *compact.get_borders_color(),
         ));
-        cfg.set_tab_width(compact.get_tab_width());
 
         if let Some(line) = compact.get_first_horizontal_line() {
-            cfg.set_horizontal_line(
+            cfg.insert_horizontal_line(
                 1,
                 HorizontalLine {
                     intersection: line.intersection,
@@ -711,12 +595,32 @@ impl From<CompactConfig> for GridConfig {
     }
 }
 
-fn sides_static_color_to_ansi_color(b: Sides<StaticColor>) -> Sides<AnsiColor<'static>> {
+fn to_margin(pad: &Sides<Indent>, colors: Sides<StaticColor>) -> Sides<ColoredMarginIndent> {
+    let colors = to_ansi_color(colors);
+    Sides::new(
+        ColoredMarginIndent::new(pad.left, Offset::Begin(0), Some(colors.left)),
+        ColoredMarginIndent::new(pad.right, Offset::Begin(0), Some(colors.right)),
+        ColoredMarginIndent::new(pad.top, Offset::Begin(0), Some(colors.top)),
+        ColoredMarginIndent::new(pad.bottom, Offset::Begin(0), Some(colors.bottom)),
+    )
+}
+
+fn to_padding(pad: &Sides<Indent>, colors: Sides<StaticColor>) -> Sides<ColoredIndent> {
+    let colors = to_ansi_color(colors);
+    Sides::new(
+        ColoredIndent::new(pad.left, Some(colors.left)),
+        ColoredIndent::new(pad.right, Some(colors.right)),
+        ColoredIndent::new(pad.top, Some(colors.top)),
+        ColoredIndent::new(pad.bottom, Some(colors.bottom)),
+    )
+}
+
+fn to_ansi_color(b: Sides<StaticColor>) -> Sides<AnsiColor<'static>> {
     Sides::new(b.left.into(), b.right.into(), b.top.into(), b.bottom.into())
 }
 
-fn borders_static_color_to_ansi_color(b: crate::config::Borders<StaticColor>) -> BordersColor {
-    BordersColor {
+fn borders_static_color_to_ansi_color(b: Borders<StaticColor>) -> Borders<AnsiColor<'static>> {
+    Borders {
         left: b.left.map(|c| c.into()),
         right: b.right.map(|c| c.into()),
         top: b.top.map(|c| c.into()),
@@ -798,3 +702,65 @@ fn is_cell_covered_by_both_spans(cfg: &GridConfig, pos: Position) -> bool {
             })
     })
 }
+
+/// A colorefull indent.
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
+pub struct ColoredIndent {
+    /// An indent value.
+    pub indent: Indent,
+    /// An color value.
+    pub color: Option<AnsiColor<'static>>,
+}
+
+impl ColoredIndent {
+    /// An creates a new colored indent.
+    pub fn new(indent: Indent, color: Option<AnsiColor<'static>>) -> Self {
+        Self { indent, color }
+    }
+}
+
+impl From<Indent> for ColoredIndent {
+    fn from(indent: Indent) -> Self {
+        Self::new(indent, None)
+    }
+}
+
+/// A colorefull margin indent.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ColoredMarginIndent {
+    /// An indent value.
+    pub indent: Indent,
+    /// An offset value.
+    pub offset: Offset,
+    /// An color value.
+    pub color: Option<AnsiColor<'static>>,
+}
+
+impl ColoredMarginIndent {
+    /// An creates a new colored margin indent.
+    pub fn new(indent: Indent, offset: Offset, color: Option<AnsiColor<'static>>) -> Self {
+        Self {
+            indent,
+            offset,
+            color,
+        }
+    }
+}
+
+impl Default for ColoredMarginIndent {
+    fn default() -> Self {
+        Self::new(Indent::default(), Offset::Begin(0), None)
+    }
+}
+
+impl From<Indent> for ColoredMarginIndent {
+    fn from(indent: Indent) -> Self {
+        Self::new(indent, Offset::Begin(0), None)
+    }
+}
+
+/// HorizontalLine represents a horizontal border line.
+pub type HorizontalLine = borders_config::HorizontalLine<char>;
+
+/// HorizontalLine represents a vertical border line.
+pub type VerticalLine = borders_config::VerticalLine<char>;

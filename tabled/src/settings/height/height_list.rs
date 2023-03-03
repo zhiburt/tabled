@@ -1,7 +1,6 @@
 use std::iter::FromIterator;
 
 use crate::{
-    grid::spanned::GridConfig,
     records::{ExactRecords, Records},
     settings::TableOption,
     tables::table::TableDimension,
@@ -34,11 +33,11 @@ impl FromIterator<usize> for HeightList {
     }
 }
 
-impl<R> TableOption<R, TableDimension<'static>, GridConfig> for HeightList
+impl<R, C> TableOption<R, TableDimension<'static>, C> for HeightList
 where
     R: ExactRecords + Records,
 {
-    fn change(&mut self, records: &mut R, _: &mut GridConfig, dims: &mut TableDimension<'static>) {
+    fn change(&mut self, records: &mut R, _: &mut C, dims: &mut TableDimension<'static>) {
         if self.list.len() < records.count_rows() {
             return;
         }

@@ -1,10 +1,9 @@
 use crate::{
     grid::config::Entity,
-    grid::spanned::GridConfig,
     grid::util::string::{count_lines, get_lines},
     records::{ExactRecords, Records, RecordsMut},
     settings::{height::Height, measurement::Measurement, peaker::Peaker, CellOption, TableOption},
-    tables::table::TableDimension,
+    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::table_height_limit::TableHeightLimit;
@@ -39,13 +38,13 @@ impl<W> CellHeightLimit<W> {
     }
 }
 
-impl<W, R> CellOption<R, GridConfig> for CellHeightLimit<W>
+impl<W, R> CellOption<R, ColoredConfig> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let height = self.height.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -65,7 +64,7 @@ where
     }
 }
 
-impl<R, W> TableOption<R, TableDimension<'static>, GridConfig> for CellHeightLimit<W>
+impl<R, W> TableOption<R, TableDimension<'static>, ColoredConfig> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + RecordsMut<String>,
@@ -74,7 +73,7 @@ where
     fn change(
         &mut self,
         records: &mut R,
-        cfg: &mut GridConfig,
+        cfg: &mut ColoredConfig,
         dims: &mut TableDimension<'static>,
     ) {
         let height = self.height.measure(&*records, cfg);

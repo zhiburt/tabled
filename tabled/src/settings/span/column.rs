@@ -5,6 +5,7 @@ use crate::{
     },
     records::{ExactRecords, Records},
     settings::CellOption,
+    tables::table::ColoredConfig,
 };
 
 /// Columns (Vertical) span.
@@ -25,11 +26,11 @@ impl ColumnSpan {
     }
 }
 
-impl<R> CellOption<R, GridConfig> for ColumnSpan
+impl<R> CellOption<R, ColoredConfig> for ColumnSpan
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

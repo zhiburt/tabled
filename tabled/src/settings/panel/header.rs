@@ -1,7 +1,7 @@
 use crate::{
-    grid::spanned::config::GridConfig,
     records::{ExactRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
+    tables::table::ColoredConfig,
 };
 
 use super::Panel;
@@ -21,12 +21,12 @@ impl<S> Header<S> {
     }
 }
 
-impl<S, R, D> TableOption<R, D, GridConfig> for Header<S>
+impl<S, R, D> TableOption<R, D, ColoredConfig> for Header<S>
 where
     S: AsRef<str>,
     R: Records + ExactRecords + Resizable + RecordsMut<String>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dimension: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dimension: &mut D) {
         Panel::horizontal(0, self.0.as_ref()).change(records, cfg, dimension);
     }
 }

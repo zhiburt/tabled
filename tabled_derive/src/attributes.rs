@@ -1,4 +1,4 @@
-use syn::{Attribute, LitInt};
+use syn::{Attribute, Lit, LitInt};
 
 use crate::{casing_style::CasingStyle, error::Error, parse};
 
@@ -10,7 +10,7 @@ pub struct Attributes {
     pub rename: Option<String>,
     pub rename_all: Option<CasingStyle>,
     pub display_with: Option<String>,
-    pub display_with_use_self: bool,
+    pub display_with_args: Option<Vec<FuncArg>>,
     pub order: Option<usize>,
 }
 
@@ -53,9 +53,15 @@ impl Attributes {
             parse::TabledAttrKind::RenameAll(lit) => {
                 self.rename_all = Some(CasingStyle::from_lit(&lit)?);
             }
-            parse::TabledAttrKind::DisplayWith(path, use_self) => {
+            parse::TabledAttrKind::DisplayWith(path, comma, args) => {
                 self.display_with = Some(path.value());
-                self.display_with_use_self = use_self;
+                if comma.is_some() {
+                    let args = args
+                        .into_iter()
+                        .map(|lit| parse_func_arg(&lit))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    self.display_with_args = Some(args);
+                }
             }
             parse::TabledAttrKind::Order(value) => self.order = Some(lit_int_to_usize(&value)?),
         }
@@ -68,15 +74,19 @@ impl Attributes {
     }
 }
 
-pub struct ObjectAttributes {
+pub struct StructAttributes {
     pub rename_all: Option<CasingStyle>,
+    pub inline: bool,
+    pub inline_value: Option<String>,
 }
 
-impl ObjectAttributes {
+impl StructAttributes {
     pub fn parse(attrs: &[Attribute]) -> Result<Self, Error> {
         let attrs = Attributes::parse(attrs)?;
         Ok(Self {
             rename_all: attrs.rename_all,
+            inline: attrs.inline,
+            inline_value: attrs.inline_prefix,
         })
     }
 }
@@ -89,4 +99,49 @@ fn lit_int_to_usize(value: &LitInt) -> Result<usize, Error> {
             None,
         )
     })
+}
+
+#[derive(Debug)]
+pub enum FuncArg {
+    SelfRef,
+    Byte(u8),
+    Char(char),
+    Bool(bool),
+    Uint(usize),
+    Int(isize),
+    Float(f64),
+    String(String),
+    Bytes(Vec<u8>),
+}
+
+fn parse_func_arg(expr: &syn::Expr) -> syn::Result<FuncArg> {
+    use syn::spanned::Spanned;
+
+    match expr {
+        syn::Expr::Lit(lit) => match &lit.lit {
+            Lit::Str(val) => Ok(FuncArg::String(val.value())),
+            Lit::ByteStr(val) => Ok(FuncArg::Bytes(val.value())),
+            Lit::Byte(val) => Ok(FuncArg::Byte(val.value())),
+            Lit::Char(val) => Ok(FuncArg::Char(val.value())),
+            Lit::Bool(val) => Ok(FuncArg::Bool(val.value())),
+            Lit::Float(val) => val.base10_parse::<f64>().map(FuncArg::Float),
+            Lit::Int(val) => {
+                if val.base10_digits().starts_with('-') {
+                    val.base10_parse::<isize>().map(FuncArg::Int)
+                } else {
+                    val.base10_parse::<usize>().map(FuncArg::Uint)
+                }
+            }
+            Lit::Verbatim(val) => Err(syn::Error::new(val.span(), "unsuported argument")),
+        },
+        syn::Expr::Path(path) => {
+            let indent = path.path.get_ident().map(|indent| indent.to_string());
+            if matches!(indent.as_deref(), Some("self" | "Self")) {
+                Ok(FuncArg::SelfRef)
+            } else {
+                Err(syn::Error::new(path.span(), "unsuported argument"))
+            }
+        }
+        expr => Err(syn::Error::new(expr.span(), "unsuported argument")),
+    }
 }

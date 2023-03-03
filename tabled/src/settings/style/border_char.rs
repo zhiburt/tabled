@@ -3,6 +3,7 @@ use crate::{
     grid::spanned::GridConfig,
     records::{ExactRecords, Records},
     settings::CellOption,
+    tables::table::ColoredConfig,
 };
 
 use super::Offset;
@@ -59,11 +60,11 @@ impl BorderChar {
     }
 }
 
-impl<R> CellOption<R, GridConfig> for BorderChar
+impl<R> CellOption<R, ColoredConfig> for BorderChar
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let cells = entity.iter(records.count_rows(), records.count_columns());
 
         match self.horizontal {

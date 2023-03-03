@@ -2,16 +2,18 @@
 
 mod dimension;
 
-use std::{borrow::Cow, fmt, iter::FromIterator};
+use core::ops::{Deref, DerefMut};
+use std::{borrow::Cow, collections::HashMap, fmt, iter::FromIterator};
 
 use crate::{
     builder::Builder,
     grid::config::AlignmentHorizontal,
     grid::{
-        config::{Entity, Indent},
-        dimension::Estimate,
+        color::AnsiColor,
+        config::{Entity, Indent, Position, Sides},
+        dimension::{Dimension, Estimate},
         spanned::{
-            config::{Formatting, GridConfig, Padding},
+            config::{Formatting, GridConfig},
             Grid,
         },
     },
@@ -21,7 +23,6 @@ use crate::{
 };
 
 pub use dimension::TableDimension;
-use papergrid::dimension::Dimension;
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
 ///
@@ -58,8 +59,8 @@ use papergrid::dimension::Dimension;
 /// [`Style::ascii`]: crate::settings::style::Style::ascii
 #[derive(Debug, Clone)]
 pub struct Table {
-    records: VecRecords<Cow<'static, str>>,
-    cfg: GridConfig,
+    records: VecRecords<String>,
+    config: ColoredConfig,
     dimension: TableDimension<'static>,
 }
 
@@ -73,17 +74,16 @@ impl Table {
         I: IntoIterator<Item = T>,
         T: Tabled,
     {
-        let mut header = vec![Cow::Borrowed(""); T::LENGTH];
-        for (text, cell) in T::headers().into_iter().zip(header.iter_mut()) {
-            *cell = text;
+        let mut header = Vec::with_capacity(T::LENGTH);
+        for text in T::headers() {
+            header.push(text.into_owned());
         }
 
         let mut records = vec![header];
         for row in iter.into_iter() {
-            let mut list = vec![Cow::Borrowed(""); T::LENGTH];
-            for (col, cell) in row.fields().into_iter().enumerate() {
-                let cell = Cow::Owned(cell.into_owned());
-                list[col] = cell;
+            let mut list = Vec::with_capacity(T::LENGTH);
+            for text in row.fields().into_iter() {
+                list.push(text.into_owned());
             }
 
             records.push(list);
@@ -93,7 +93,7 @@ impl Table {
 
         Self {
             records,
-            cfg: configure_grid(),
+            config: ColoredConfig::new(configure_grid(), HashMap::default()),
             dimension: TableDimension::default(),
         }
     }
@@ -155,10 +155,9 @@ impl Table {
     {
         let mut records = Vec::new();
         for row in iter {
-            let mut list = vec![Cow::Borrowed(""); T::LENGTH];
-            for (col, cell) in row.fields().into_iter().enumerate() {
-                let cell = Cow::Owned(cell.into_owned());
-                list[col] = cell;
+            let mut list = Vec::with_capacity(T::LENGTH);
+            for text in row.fields().into_iter() {
+                list.push(text.into_owned());
             }
 
             records.push(list);
@@ -173,9 +172,7 @@ impl Table {
     /// With is a generic function which applies options to the [`Table`].
     ///
     /// It applies settings immediately.
-    pub fn with<
-        O: TableOption<VecRecords<Cow<'static, str>>, TableDimension<'static>, GridConfig>,
-    >(
+    pub fn with<O: TableOption<VecRecords<String>, TableDimension<'static>, ColoredConfig>>(
         &mut self,
         option: O,
     ) -> &mut Self {
@@ -183,7 +180,7 @@ impl Table {
         self.dimension.clear_height();
 
         let mut option = option;
-        option.change(&mut self.records, &mut self.cfg, &mut self.dimension);
+        option.change(&mut self.records, &mut self.config, &mut self.dimension);
 
         self
     }
@@ -212,48 +209,57 @@ impl Table {
     /// Returns total widths of a table, including margin and horizontal lines.
     pub fn total_height(&self) -> usize {
         let mut dims = TableDimension::from_origin(&self.dimension);
-        dims.estimate(&self.records, &self.cfg);
+        dims.estimate(&self.records, &self.config);
 
         let total = (0..self.count_rows())
             .map(|row| dims.get_height(row))
             .sum::<usize>();
-        let counth = self.cfg.count_horizontal(self.count_rows());
+        let counth = self.config.count_horizontal(self.count_rows());
 
-        let margin = self.cfg.get_margin();
+        let margin = self.config.get_margin();
 
-        total + counth + margin.top.size + margin.bottom.size
+        total + counth + margin.top.indent.size + margin.bottom.indent.size
     }
 
     /// Returns total widths of a table, including margin and vertical lines.
     pub fn total_width(&self) -> usize {
         let mut dims = TableDimension::from_origin(&self.dimension);
-        dims.estimate(&self.records, &self.cfg);
+        dims.estimate(&self.records, &self.config);
 
         let total = (0..self.count_columns())
             .map(|col| dims.get_width(col))
             .sum::<usize>();
-        let countv = self.cfg.count_vertical(self.count_columns());
+        let countv = self.config.count_vertical(self.count_columns());
 
-        let margin = self.cfg.get_margin();
+        let margin = self.config.get_margin();
 
-        total + countv + margin.left.size + margin.right.size
+        total + countv + margin.left.indent.size + margin.right.indent.size
     }
 
     /// Returns a table config.
-    pub fn get_config(&self) -> &GridConfig {
-        &self.cfg
+    pub fn get_config(&self) -> &ColoredConfig {
+        &self.config
     }
 }
 
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.is_empty() {
+            return Ok(());
+        }
+
         let config = use_format_configuration(f, self);
 
         let mut dimension = self.dimension.clone();
         dimension.estimate(&self.records, &config);
 
-        let grid = Grid::new(&self.records, &dimension, config.as_ref());
-        grid.build(f)
+        if !self.config.colors.is_empty() {
+            Grid::new(&self.records, &dimension, config.as_ref())
+                .with_colors(&self.config.colors)
+                .build(f)
+        } else {
+            Grid::new(&self.records, &dimension, config.as_ref()).build(f)
+        }
     }
 }
 
@@ -274,28 +280,9 @@ impl From<Builder> for Table {
 
         Self {
             records,
-            cfg: configure_grid(),
+            config: ColoredConfig::new(configure_grid(), HashMap::default()),
             dimension: TableDimension::default(),
         }
-    }
-}
-
-impl From<Table>
-    for Grid<
-        VecRecords<Cow<'static, str>>,
-        TableDimension<'static>,
-        GridConfig,
-        crate::grid::colors::NoColors,
-    >
-{
-    fn from(table: Table) -> Self {
-        let records = table.records;
-        let config = table.cfg;
-
-        let mut dimension = table.dimension;
-        dimension.estimate(&records, &config);
-
-        Grid::new(records, dimension, config)
     }
 }
 
@@ -321,10 +308,9 @@ fn table_padding(alignment: fmt::Alignment, available: usize) -> (usize, usize) 
 
 fn configure_grid() -> GridConfig {
     let mut cfg = GridConfig::default();
-    cfg.set_tab_width(4);
     cfg.set_padding(
         Entity::Global,
-        Padding::new(
+        Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),
             Indent::default(),
@@ -343,14 +329,14 @@ fn use_format_configuration<'a>(
     table: &'a Table,
 ) -> Cow<'a, GridConfig> {
     if f.align().is_some() || f.width().is_some() {
-        let mut cfg = table.cfg.clone();
+        let mut cfg = table.config.config.clone();
 
         set_align_table(f, &mut cfg);
         set_width_table(f, &mut cfg, table);
 
         Cow::Owned(cfg)
     } else {
-        Cow::Borrowed(&table.cfg)
+        Cow::Borrowed(&table.config.config)
     }
 }
 
@@ -377,21 +363,63 @@ fn set_width_table(f: &fmt::Formatter<'_>, cfg: &mut GridConfig, table: &Table) 
         let alignment = f.align().unwrap_or(fmt::Alignment::Left);
         let (left, right) = table_padding(alignment, available);
 
-        let mut margin = *cfg.get_margin();
-        margin.left.size += left;
-        margin.right.size += right;
+        let mut margin = cfg.get_margin_mut();
+        margin.left.indent.size += left;
+        margin.right.indent.size += right;
 
-        if (margin.left.size > 0 && margin.left.fill == char::default()) || fill != char::default()
-        {
-            margin.left.fill = fill;
-        }
-
-        if (margin.right.size > 0 && margin.right.fill == char::default())
+        if (margin.left.indent.size > 0 && margin.left.indent.fill == char::default())
             || fill != char::default()
         {
-            margin.right.fill = fill;
+            margin.left.indent.fill = fill;
         }
 
-        cfg.set_margin(margin)
+        if (margin.right.indent.size > 0 && margin.right.indent.fill == char::default())
+            || fill != char::default()
+        {
+            margin.right.indent.fill = fill;
+        }
+    }
+}
+
+/// A [`Table`] configuration.
+#[derive(Debug, Clone)]
+pub struct ColoredConfig {
+    config: GridConfig,
+    colors: HashMap<Position, AnsiColor<'static>>,
+}
+
+impl ColoredConfig {
+    /// Create a new colored config.
+    pub fn new(config: GridConfig, colors: HashMap<Position, AnsiColor<'static>>) -> Self {
+        Self { config, colors }
+    }
+
+    /// Set a color for a given cell.
+    ///
+    /// The outcome is the same as if you'd use [`Format`] and added a color but it'd work only with `color` feature on.
+    /// While this method works in all contexts.
+    pub fn set_color(&mut self, pos: Position, color: AnsiColor<'static>) -> &mut Self {
+        self.colors.insert(pos, color);
+        self
+    }
+}
+
+impl Deref for ColoredConfig {
+    type Target = GridConfig;
+
+    fn deref(&self) -> &Self::Target {
+        &self.config
+    }
+}
+
+impl DerefMut for ColoredConfig {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.config
+    }
+}
+
+impl From<GridConfig> for ColoredConfig {
+    fn from(value: GridConfig) -> Self {
+        Self::new(value, Default::default())
     }
 }

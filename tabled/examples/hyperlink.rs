@@ -1,7 +1,7 @@
 //! To run this example:
-//! `cargo run --features=color --example hyperlink`
-
-use std::iter::FromIterator;
+//! `cargo run --features color --example hyperlink`
+//!
+//! This example requires the `color` feature.
 
 use tabled::{
     settings::{alignment::Alignment, object::Segment, style::Style, width::Width, Modify},

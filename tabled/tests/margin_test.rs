@@ -141,16 +141,15 @@ fn table_0_spanned_with_width() {
 
 #[test]
 fn margin_color_test_not_colored_feature() {
-    use tabled::settings::{color::Color, margin::MarginColor};
+    use tabled::settings::color::Color;
 
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^'))
-        .with(MarginColor::new(
-            Color::BG_RED,
-            Color::BG_BLUE,
+        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^').colorize(
             Color::BG_GREEN,
             Color::BG_YELLOW,
+            Color::BG_RED,
+            Color::BG_BLUE,
         ))
         .to_string();
 
@@ -175,16 +174,15 @@ fn margin_color_test_not_colored_feature() {
 fn margin_color_test() {
     use owo_colors::OwoColorize;
     use std::convert::TryFrom;
-    use tabled::settings::{color::Color, margin::MarginColor};
+    use tabled::settings::color::Color;
 
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^'))
-        .with(MarginColor::new(
-            Color::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
-            Color::try_from(" ".on_yellow().blue().to_string()).unwrap(),
+        .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^').colorize(
             Color::try_from(" ".red().bold().to_string()).unwrap(),
             Color::try_from(" ".green().to_string()).unwrap(),
+            Color::try_from(" ".on_blue().red().bold().to_string()).unwrap(),
+            Color::try_from(" ".on_yellow().blue().to_string()).unwrap(),
         ))
         .to_string();
 

@@ -1,3 +1,8 @@
+//! The example can be run by this command
+//! `cargo run --features color --example color_map`
+//!
+//! This example requires the `color` feature.
+
 use std::{
     collections::HashMap,
     fmt::{Display, Formatter},
@@ -11,13 +16,9 @@ use owo_colors::{
 
 use papergrid::{
     color::Color,
-    config::Position,
+    config::{Borders, Position},
     dimension::Estimate,
-    grid::spanned::{
-        config::{Borders, GridConfig},
-        dimension::ExactDimension,
-        Grid,
-    },
+    grid::spanned::{config::GridConfig, dimension::ExactDimension, Grid},
     records::IterRecords,
 };
 

@@ -135,13 +135,13 @@ path = "examples/col_row_macros.rs"
 required-features = ["macros", "derive"]
 
 [[example]]
-name = "merge_duplicates1"
-path = "examples/merge_duplicates1.rs"
+name = "merge_duplicates"
+path = "examples/merge_duplicates.rs"
 required-features = ["derive"]
 
 [[example]]
-name = "merge_duplicates2"
-path = "examples/merge_duplicates2.rs"
+name = "merge_duplicates_2"
+path = "examples/merge_duplicates_2.rs"
 required-features = ["derive"]
 
 [[example]]
@@ -230,8 +230,8 @@ path = "examples/compact_table.rs"
 required-features = []
 
 [[example]]
-name = "compact_table2"
-path = "examples/compact_table2.rs"
+name = "compact_table_2"
+path = "examples/compact_table_2.rs"
 required-features = []
 
 [[example]]
@@ -255,8 +255,6 @@ unicode-width = "0.1.9"
 
 [dev-dependencies]
 owo-colors = "3.5.0"
-quickcheck = "1.0.3"
-quickcheck_macros = "1.0.0"
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #

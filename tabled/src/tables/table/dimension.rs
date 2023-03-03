@@ -1,8 +1,10 @@
 use std::borrow::Cow;
 
-use papergrid::{
-    dimension::{Dimension, Estimate},
-    grid::spanned::{ExactDimension, GridConfig},
+use crate::{
+    grid::{
+        dimension::{Dimension, Estimate},
+        spanned::{ExactDimension, GridConfig},
+    },
     records::Records,
 };
 

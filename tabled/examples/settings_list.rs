@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example custom_style`
+//! `cargo run --example settings_list`
 
 use tabled::{
     settings::{

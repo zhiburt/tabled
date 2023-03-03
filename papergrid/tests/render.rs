@@ -217,20 +217,20 @@ test_table!(
 );
 
 test_table!(
-    render_return_carige_0,
+    doesnt_render_return_carige_0,
     grid(2, 2).change_cell((0, 1), "123\r\r\r567").build(),
     "+---+------+"
-    "|0-0|123567|"
+    "|0-0|123\r\r\r567|"
     "+---+------+"
     "|1-0|1-1   |"
     "+---+------+"
 );
 
 test_table!(
-    render_return_carige_1,
+    doesnt_render_return_carige_1,
     grid(2, 2).change_cell((1, 1), "12345678").change_cell((0, 1), "123\r\r\r567").build(),
     "+---+--------+"
-    "|0-0|123567  |"
+    "|0-0|123\r\r\r567  |"
     "+---+--------+"
     "|1-0|12345678|"
     "+---+--------+"

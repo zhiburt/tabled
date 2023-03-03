@@ -2,8 +2,7 @@
 
 mod util;
 
-use papergrid::config::{AlignmentHorizontal, Borders, Entity, Indent};
-use papergrid::grid::spanned::config::Padding;
+use papergrid::config::{AlignmentHorizontal, Borders, Entity, Indent, Sides};
 
 use crate::util::{grid, test_table};
 
@@ -71,7 +70,7 @@ test_table!(
             cfg.set_column_span((0, 0), 2);
             cfg.set_padding(
                 Entity::Cell(1, 0),
-                Padding::new(
+                Sides::new(
                     Indent::spaced(4),
                     Indent::spaced(4),
                     Indent::zero(),

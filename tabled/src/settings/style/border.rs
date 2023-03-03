@@ -1,8 +1,8 @@
 use crate::{
-    grid::config::Entity,
-    grid::spanned::config::{Border as GridBorder, GridConfig},
+    grid::config::{Border as GBorder, Entity},
     records::{ExactRecords, Records},
     settings::CellOption,
+    tables::table::ColoredConfig,
 };
 
 /// Border represents a border of a Cell.
@@ -29,7 +29,7 @@ use crate::{
 ///     .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
 /// ```
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
-pub struct Border(GridBorder);
+pub struct Border(GBorder<char>);
 
 impl Border {
     /// This function constructs a cell borders with all sides set.
@@ -44,7 +44,7 @@ impl Border {
         bottom_left: char,
         bottom_right: char,
     ) -> Self {
-        Self(GridBorder::full(
+        Self(GBorder::full(
             top,
             bottom,
             left,
@@ -116,11 +116,11 @@ impl Border {
     }
 }
 
-impl<R> CellOption<R, GridConfig> for Border
+impl<R> CellOption<R, ColoredConfig> for Border
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let shape = (records.count_rows(), records.count_columns());
 
         for pos in entity.iter(shape.0, shape.1) {
@@ -129,13 +129,13 @@ where
     }
 }
 
-impl From<GridBorder> for Border {
-    fn from(b: GridBorder) -> Border {
+impl From<GBorder<char>> for Border {
+    fn from(b: GBorder<char>) -> Border {
         Border(b)
     }
 }
 
-impl From<Border> for GridBorder {
+impl From<Border> for GBorder<char> {
     fn from(value: Border) -> Self {
         value.0
     }
@@ -144,11 +144,11 @@ impl From<Border> for GridBorder {
 #[derive(Debug)]
 pub struct EmptyBorder;
 
-impl<R> CellOption<R, GridConfig> for EmptyBorder
+impl<R> CellOption<R, ColoredConfig> for EmptyBorder
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let shape = (records.count_rows(), records.count_columns());
 
         for pos in entity.iter(shape.0, shape.1) {

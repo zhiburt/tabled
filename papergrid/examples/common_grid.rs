@@ -1,3 +1,6 @@
+//! The example can be run by this command
+//! `cargo run --example common_grid`
+
 use papergrid::{
     config::{AlignmentHorizontal, Borders, Indent, Sides},
     dimension::Estimate,

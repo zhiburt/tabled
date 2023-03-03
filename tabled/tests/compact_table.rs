@@ -2,8 +2,11 @@
 
 mod util;
 
-use tabled::grid::compact::ExactDimension;
-use tabled::tables::compact::CompactTable;
+use tabled::{
+    grid::{compact::ExactDimension, dimension::Estimate},
+    records::IterRecords,
+    tables::compact::CompactTable,
+};
 use util::{create_matrix, test_table};
 
 test_table!(
@@ -14,7 +17,12 @@ test_table!(
 
 test_table!(
     compact_with_dimension,
-    CompactTable::with_dimension(create_matrix::<3, 3>(), ExactDimension::default()).columns(3).to_string(),
+    {
+        let data = create_matrix::<3, 3>();
+        let mut dims = ExactDimension::default();
+        dims.estimate(IterRecords::new(&data, 3, None), &CompactTable::config());
+        CompactTable::with_dimension(data, dims).columns(3).to_string()
+    },
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "|-----+-----+-----|"

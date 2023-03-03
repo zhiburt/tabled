@@ -4,10 +4,10 @@ use crate::{
     grid::{
         color::AnsiColor,
         config::{Border, Entity},
-        spanned::GridConfig,
     },
     records::{ExactRecords, Records},
     settings::{color::Color, CellOption},
+    tables::table::ColoredConfig,
 };
 
 /// BorderColored represents a colored border of a Cell.
@@ -116,11 +116,11 @@ impl BorderColor {
     }
 }
 
-impl<R> CellOption<R, GridConfig> for BorderColor
+impl<R> CellOption<R, ColoredConfig> for BorderColor
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: Entity) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
 

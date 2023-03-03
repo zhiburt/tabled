@@ -4,10 +4,11 @@
 
 use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
 
-use papergrid::util::string::{string_width_multiline_tab, string_width_tab};
-
 use crate::{
-    grid::spanned::config::GridConfig,
+    grid::{
+        spanned::config::GridConfig,
+        util::string::{string_width, string_width_multiline},
+    },
     records::{EmptyRecords, ExactRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
@@ -15,10 +16,10 @@ use crate::{
         width::Width,
         CellOption, TableOption,
     },
-    tables::table::TableDimension,
+    tables::table::{ColoredConfig, TableDimension},
 };
 
-use super::util::{cut_str, get_table_widths, get_table_widths_with_total, replace_tab};
+use super::util::{cut_str, get_table_widths, get_table_widths_with_total};
 
 /// Truncate cut the string to a given width if its length exceeds it.
 /// Otherwise keeps the content of a cell untouched.
@@ -155,33 +156,30 @@ impl<'a, W, P> Truncate<'a, W, P> {
 
 impl Truncate<'_, (), ()> {
     /// Truncate a given string
-    pub fn truncate_text(text: &str, width: usize, tab_width: usize) -> Cow<'_, str> {
-        let text = replace_tab(text, tab_width);
-
-        match text {
-            Cow::Borrowed(text) => truncate_text(text, width, "", false),
-            Cow::Owned(text) => match truncate_text(&text, width, "", false) {
-                Cow::Borrowed(_) => Cow::Owned(text),
-                Cow::Owned(text) => Cow::Owned(text),
-            },
-        }
+    pub fn truncate_text(text: &str, width: usize) -> Cow<'_, str> {
+        truncate_text(text, width, "", false)
     }
 }
 
-impl<W, P, R> CellOption<R, GridConfig> for Truncate<'_, W, P>
+impl<W, P, R> CellOption<R, ColoredConfig> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, entity: papergrid::config::Entity) {
+    fn change(
+        &mut self,
+        records: &mut R,
+        cfg: &mut ColoredConfig,
+        entity: papergrid::config::Entity,
+    ) {
         let truncate_width = self.width.measure(&*records, cfg);
 
         let mut width = truncate_width;
         let mut suffix = Cow::Borrowed("");
 
         if let Some(x) = self.suffix.as_ref() {
-            let (s, w) = make_suffix(x, width, cfg.get_tab_width());
+            let (s, w) = make_suffix(x, width);
             suffix = s;
             width = w;
         };
@@ -194,7 +192,7 @@ where
         for pos in entity.iter(count_rows, count_columns) {
             let text = records.get_cell(pos).as_ref();
 
-            let cell_width = string_width_multiline_tab(text, cfg.get_tab_width());
+            let cell_width = string_width_multiline(text);
             if truncate_width >= cell_width {
                 continue;
             }
@@ -206,11 +204,7 @@ where
                     Cow::Borrowed(suffix.deref())
                 }
             } else {
-                // todo: Think about it.
-                //       We could eliminate this allocation if we would be allowed to cut '\t' with unknown characters.
-                //       Currently we don't do that.
-                let text = replace_tab(text, cfg.get_tab_width());
-                Cow::Owned(truncate_text(&text, width, &suffix, save_suffix_color).into_owned())
+                truncate_text(text, width, &suffix, save_suffix_color)
             };
 
             records.set(pos, text.into_owned());
@@ -229,12 +223,8 @@ fn need_suffix_color_preservation(_suffix: &Option<TruncateSuffix<'_>>) -> bool 
     }
 }
 
-fn make_suffix<'a>(
-    suffix: &'a TruncateSuffix<'_>,
-    width: usize,
-    tab_width: usize,
-) -> (Cow<'a, str>, usize) {
-    let suffix_length = string_width_tab(&suffix.text, tab_width);
+fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str>, usize) {
+    let suffix_length = string_width(&suffix.text);
     if width > suffix_length {
         return (Cow::Borrowed(suffix.text.as_ref()), width - suffix_length);
     }
@@ -252,7 +242,7 @@ fn make_suffix<'a>(
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>, GridConfig> for Truncate<'_, W, P>
+impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -262,7 +252,7 @@ where
     fn change(
         &mut self,
         records: &mut R,
-        cfg: &mut GridConfig,
+        cfg: &mut ColoredConfig,
         dims: &mut TableDimension<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
@@ -290,7 +280,7 @@ where
 
 fn truncate_total_width<P: Peaker, R: Records + ExactRecords + RecordsMut<String>>(
     records: &mut R,
-    cfg: &mut GridConfig,
+    cfg: &mut ColoredConfig,
     mut widths: Vec<usize>,
     total: usize,
     width: usize,
@@ -392,7 +382,8 @@ fn get_decrease_cell_list(
 
                 if width >= width_min {
                     let padding = cfg.get_padding((row, col).into());
-                    let width = width.saturating_sub(padding.left.size + padding.right.size);
+                    let width =
+                        width.saturating_sub(padding.left.indent.size + padding.right.indent.size);
 
                     points.push(((row, col), width));
                 }

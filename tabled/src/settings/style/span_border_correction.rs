@@ -7,6 +7,7 @@ use crate::{
     grid::{config::Position, spanned::GridConfig},
     records::{ExactRecords, Records},
     settings::TableOption,
+    tables::table::ColoredConfig,
 };
 
 /// A correctness function of style for [`Table`] which has [`Span`]s.
@@ -74,11 +75,11 @@ use crate::{
 #[derive(Debug)]
 pub struct BorderSpanCorrection;
 
-impl<R, D> TableOption<R, D, GridConfig> for BorderSpanCorrection
+impl<R, D> TableOption<R, D, ColoredConfig> for BorderSpanCorrection
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let shape = (records.count_rows(), records.count_columns());
         correct_span_styles(cfg, shape);
     }

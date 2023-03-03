@@ -1,5 +1,5 @@
 //! The example can be run by this command
-//! `cargo run --example basic`
+//! `cargo run --example compact_table_2`
 
 use tabled::{settings::style::Style, tables::compact::CompactTable};
 
@@ -10,7 +10,7 @@ fn main() {
         ["Manjaro", "Arch", "true"],
     ];
 
-    let table = CompactTable::from(data).with(Style::psql());
+    let table = CompactTable::from(data).with(Style::psql()).to_string();
 
     println!("{table}");
 }

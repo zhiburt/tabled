@@ -4,6 +4,7 @@ use serde_json::Value;
 use tabled::{
     grid::spanned::GridConfig,
     settings::style::{RawStyle, Style},
+    tables::table::ColoredConfig,
     Table,
 };
 
@@ -132,7 +133,7 @@ impl<'val, ModeVisitor> JsonTable<'val, ModeVisitor> {
     /// ```
     ///
     /// [`Table`]: tabled::Table
-    pub fn set_config(&mut self, cfg: GridConfig) -> &mut Self {
+    pub fn set_config(&mut self, cfg: ColoredConfig) -> &mut Self {
         self.cfg.cfg = Some(cfg);
         self
     }
@@ -162,7 +163,7 @@ where
 struct Config {
     plain: bool,
     style: Option<RawStyle>,
-    cfg: Option<GridConfig>,
+    cfg: Option<ColoredConfig>,
     object_orientation: Orientation,
     array_orientation: Orientation,
 }
@@ -195,6 +196,7 @@ mod json_to_table {
         settings::{
             format::Format, height::Height, padding::Padding, width::Width, Settings, TableOption,
         },
+        tables::table::ColoredConfig,
     };
 
     use super::*;
@@ -333,7 +335,7 @@ mod json_to_table {
             .as_ref()
             .map(|cfg| {
                 let pad = cfg.get_padding(Entity::Global);
-                pad.left.size + pad.right.size
+                pad.left.indent.size + pad.right.indent.size
             })
             .unwrap_or(2);
 
@@ -737,7 +739,7 @@ mod json_to_table {
 
     fn set_table_style(mut table: Table, config: &Config) -> Table {
         if let Some(cfg) = config.cfg.as_ref() {
-            table.with(Format::config(|c: &mut GridConfig| *c = cfg.clone()));
+            table.with(Format::config(|c: &mut ColoredConfig| *c = cfg.clone()));
         }
 
         if let Some(style) = config.style.as_ref() {
@@ -749,8 +751,8 @@ mod json_to_table {
 
     struct NoTopBorders;
 
-    impl<R, D> TableOption<R, D, GridConfig> for NoTopBorders {
-        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    impl<R, D> TableOption<R, D, ColoredConfig> for NoTopBorders {
+        fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             let mut borders = *cfg.get_borders();
             borders.top = None;
             borders.top_intersection = None;
@@ -763,8 +765,8 @@ mod json_to_table {
 
     struct NoBottomBorders;
 
-    impl<R, D> TableOption<R, D, GridConfig> for NoBottomBorders {
-        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    impl<R, D> TableOption<R, D, ColoredConfig> for NoBottomBorders {
+        fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             let mut borders = *cfg.get_borders();
             borders.bottom = None;
             borders.bottom_intersection = None;
@@ -777,8 +779,8 @@ mod json_to_table {
 
     struct NoRightBorders;
 
-    impl<R, D> TableOption<R, D, GridConfig> for NoRightBorders {
-        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    impl<R, D> TableOption<R, D, ColoredConfig> for NoRightBorders {
+        fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             let mut borders = *cfg.get_borders();
             borders.top_right = None;
             borders.bottom_right = None;
@@ -791,8 +793,8 @@ mod json_to_table {
 
     struct NoLeftBorders;
 
-    impl<R, D> TableOption<R, D, GridConfig> for NoLeftBorders {
-        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    impl<R, D> TableOption<R, D, ColoredConfig> for NoLeftBorders {
+        fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             let mut borders = *cfg.get_borders();
             borders.top_left = None;
             borders.bottom_left = None;
@@ -805,8 +807,8 @@ mod json_to_table {
 
     struct TopLeftChangeSplit;
 
-    impl<R, D> TableOption<R, D, GridConfig> for TopLeftChangeSplit {
-        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    impl<R, D> TableOption<R, D, ColoredConfig> for TopLeftChangeSplit {
+        fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             let mut borders = *cfg.get_borders();
             borders.top_left = borders.top_intersection;
 
@@ -816,8 +818,8 @@ mod json_to_table {
 
     struct BottomLeftChangeSplit;
 
-    impl<R, D> TableOption<R, D, GridConfig> for BottomLeftChangeSplit {
-        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    impl<R, D> TableOption<R, D, ColoredConfig> for BottomLeftChangeSplit {
+        fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             let mut borders = *cfg.get_borders();
             borders.bottom_left = borders.left_intersection;
 
@@ -827,8 +829,8 @@ mod json_to_table {
 
     struct BottomLeftChangeSplitToIntersection;
 
-    impl<R, D> TableOption<R, D, GridConfig> for BottomLeftChangeSplitToIntersection {
-        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    impl<R, D> TableOption<R, D, ColoredConfig> for BottomLeftChangeSplitToIntersection {
+        fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             let mut borders = *cfg.get_borders();
             borders.bottom_left = borders.intersection;
 
@@ -838,8 +840,8 @@ mod json_to_table {
 
     struct BottomRightChangeToRight;
 
-    impl<R, D> TableOption<R, D, GridConfig> for BottomRightChangeToRight {
-        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    impl<R, D> TableOption<R, D, ColoredConfig> for BottomRightChangeToRight {
+        fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             let mut borders = *cfg.get_borders();
             borders.bottom_right = borders.right_intersection;
 
@@ -849,8 +851,8 @@ mod json_to_table {
 
     struct BottomLeftChangeToBottomIntersection;
 
-    impl<R, D> TableOption<R, D, GridConfig> for BottomLeftChangeToBottomIntersection {
-        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    impl<R, D> TableOption<R, D, ColoredConfig> for BottomLeftChangeToBottomIntersection {
+        fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             let mut borders = *cfg.get_borders();
             borders.bottom_left = borders.bottom_intersection;
 
@@ -860,15 +862,13 @@ mod json_to_table {
 
     struct SetBottomChars<'a>(&'a [usize], char);
 
-    impl<R, D> TableOption<R, D, GridConfig> for SetBottomChars<'_>
+    impl<R, D> TableOption<R, D, ColoredConfig> for SetBottomChars<'_>
     where
         R: Records,
         for<'a> &'a R: Records,
         D: Dimension + Estimate<GridConfig>,
     {
-        fn change(&mut self, records: &mut R, cfg: &mut GridConfig, dims: &mut D) {
-            let split_char = self.1;
-
+        fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
             dims.estimate(&*records, cfg);
 
             let table_width = (0..records.count_columns())
@@ -883,6 +883,7 @@ mod json_to_table {
                     break;
                 }
 
+                let split_char = self.1;
                 cfg.override_horizontal_border((1, 0), split_char, Offset::Begin(current_width));
 
                 current_width += 1;
@@ -892,8 +893,8 @@ mod json_to_table {
 
     struct GetTopIntersection(char);
 
-    impl<R, D> TableOption<R, D, GridConfig> for GetTopIntersection {
-        fn change(&mut self, _: &mut R, cfg: &mut GridConfig, _: &mut D) {
+    impl<R, D> TableOption<R, D, ColoredConfig> for GetTopIntersection {
+        fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             self.0 = cfg.get_borders().top_intersection.unwrap_or(' ');
         }
     }

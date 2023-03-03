@@ -1,3 +1,6 @@
+//! The example can be run by this command
+//! `cargo run --example iter`
+
 fn main() {
     let syscalls = "\
         0,INDIR,,\"int sys_syscall(int number, ...)\"\n\

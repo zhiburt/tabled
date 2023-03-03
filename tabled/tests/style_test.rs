@@ -331,60 +331,21 @@ test_table!(
     border_text_colored,
     {
         use owo_colors::OwoColorize;
+        use tabled::settings::style::{BorderColor};
 
         create_table::<2, 2>()
-            .with(BorderText::new(1, "-Table".red().to_string()))
-            .with(BorderText::new(2, "-Table213123".blue().on_green().to_string()))
+            .with(BorderText::new(1, "-Table"))
+            .with(BorderText::new(2, "-Table213123"))
+            .with(Modify::new(Rows::single(1)).with(BorderColor::default().bottom(Color::FG_RED)))
+            .with(Modify::new(Rows::single(2)).with(BorderColor::default().bottom(Color::try_from(" ".blue().on_green().to_string()).unwrap())))
     },
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
-    "\u{1b}[31m-\u{1b}[39m\u{1b}[31mTab\u{1b}[39m\u{1b}[31ml\u{1b}[39m\u{1b}[31me\u{1b}[39m---------+----------+"
+    "-Table---------+----------+"
     "| 0 |   0-0    |   0-1    |"
-    "\u{1b}[34;42m-\u{1b}[39m\u{1b}[49m\u{1b}[34;42mTab\u{1b}[39m\u{1b}[49m\u{1b}[34;42ml\u{1b}[39m\u{1b}[49m\u{1b}[34;42me213123\u{1b}[0m---+----------+"
+    "-\u{1b}[31mTab\u{1b}[39ml\u{1b}[31me213123---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
     "| 1 |   1-0    |   1-1    |"
-    "+---+----------+----------+"
-);
-
-#[cfg(feature = "color")]
-test_table!(
-    border_text_colored_1,
-    {
-        use owo_colors::OwoColorize;
-        use tabled::settings::style::{BorderColor, Border};
-
-        create_table::<2, 2>()
-            .with(BorderText::new(2, "-Table213123".blue().on_green().to_string()))
-            .with(Modify::new(Rows::single(1)).with(BorderColor::default().bottom(Color::try_from(" ".red().to_string()).unwrap())))
-            .with(Modify::new(Rows::single(1)).with(Border::default().bottom('_')))
-    },
-    "+---+----------+----------+"
-    "| N | column 0 | column 1 |"
-    "+---+----------+----------+"
-    "| 0 |   0-0    |   0-1    |"
-    "\u{1b}[34;42m-\u{1b}[39m\u{1b}[49m\u{1b}[34;42mTab\u{1b}[39m\u{1b}[49m\u{1b}[34;42ml\u{1b}[39m\u{1b}[49m\u{1b}[34;42me213123\u{1b}[0m\u{1b}[31m___\u{1b}[39m+\u{1b}[31m__________\u{1b}[39m+"
-    "| 1 |   1-0    |   1-1    |"
-    "+---+----------+----------+"
-);
-
-#[cfg(feature = "color")]
-test_table!(
-    border_text_colored_default_color,
-    {
-        use owo_colors::OwoColorize;
-        use tabled::settings::style::{BorderColor, Border};
-
-        create_table::<2, 2>()
-            .with(BorderText::new(2, "-Table213123".blue().on_green().to_string()))
-            .with(Modify::new(Rows::single(1)).with(BorderColor::default().bottom(Color::FG_RED).corner_bottom_right(Color::FG_RED)))
-            .with(Modify::new(Rows::single(1)).with(Border::default().bottom('_')))
-    },
-    "+---+----------+----------+\n\
-     | N | column 0 | column 1 |\n\
-     +---+----------+----------+\n\
-     | 0 |   0-0    |   0-1    |\n\
-     \u{1b}[34;42m-\u{1b}[39m\u{1b}[49m\u{1b}[34;42mTab\u{1b}[39m\u{1b}[49m\u{1b}[34;42ml\u{1b}[39m\u{1b}[49m\u{1b}[34;42me213123\u{1b}[0m\u{1b}[31m___+__________+\u{1b}[39m\n\
-     | 1 |   1-0    |   1-1    |\n\
-     +---+----------+----------+"
+    "+\u{1b}[34m\u{1b}[42m---\u{1b}[39m\u{1b}[49m+\u{1b}[34m\u{1b}[42m----------\u{1b}[39m\u{1b}[49m+\u{1b}[34m\u{1b}[42m----------\u{1b}[39m\u{1b}[49m+"
 );
 
 test_table!(
@@ -2214,34 +2175,22 @@ test_table!(
     "╰───┴──────────┴──────────┴──────────╯"
 );
 
-#[cfg(feature = "color")]
 test_table!(
     border_color,
     {
-        use std::convert::TryFrom;
-        use owo_colors::OwoColorize;
         use tabled::settings::color::Color;
-
-        let color = Color::try_from(' '.on_green().to_string()).unwrap();
-
-        create_table::<3, 3>().with(Style::psql()).with(color)
+        create_table::<3, 3>().with(Style::psql()).with(Color::BG_GREEN)
     },
-    " N \u{1b}[42m|\u{1b}[49m column 0 \u{1b}[42m|\u{1b}[49m column 1 \u{1b}[42m|\u{1b}[49m column 2 \n\u{1b}[42m---+----------+----------+----------\u{1b}[49m\n 0 \u{1b}[42m|\u{1b}[49m   0-0    \u{1b}[42m|\u{1b}[49m   0-1    \u{1b}[42m|\u{1b}[49m   0-2    \n 1 \u{1b}[42m|\u{1b}[49m   1-0    \u{1b}[42m|\u{1b}[49m   1-1    \u{1b}[42m|\u{1b}[49m   1-2    \n 2 \u{1b}[42m|\u{1b}[49m   2-0    \u{1b}[42m|\u{1b}[49m   2-1    \u{1b}[42m|\u{1b}[49m   2-2    "
+    " \u{1b}[42mN\u{1b}[49m | \u{1b}[42mcolumn 0\u{1b}[49m | \u{1b}[42mcolumn 1\u{1b}[49m | \u{1b}[42mcolumn 2\u{1b}[49m \n---+----------+----------+----------\n \u{1b}[42m0\u{1b}[49m |   \u{1b}[42m0-0\u{1b}[49m    |   \u{1b}[42m0-1\u{1b}[49m    |   \u{1b}[42m0-2\u{1b}[49m    \n \u{1b}[42m1\u{1b}[49m |   \u{1b}[42m1-0\u{1b}[49m    |   \u{1b}[42m1-1\u{1b}[49m    |   \u{1b}[42m1-2\u{1b}[49m    \n \u{1b}[42m2\u{1b}[49m |   \u{1b}[42m2-0\u{1b}[49m    |   \u{1b}[42m2-1\u{1b}[49m    |   \u{1b}[42m2-2\u{1b}[49m    "
 );
 
-#[cfg(feature = "color")]
 test_table!(
     text_color,
     {
-        use std::convert::TryFrom;
-        use owo_colors::OwoColorize;
         use tabled::settings::color::Color;
-
-        let color = Color::try_from(' '.on_green().to_string()).unwrap();
-
-        create_table::<3, 3>().with(Style::psql()).with(Modify::new(Segment::all()).with(color))
+        create_table::<3, 3>().with(Style::psql()).with(Modify::new(Segment::all()).with(Color::BG_BLACK))
     },
-    " N \u{1b}[42m|\u{1b}[49m column 0 \u{1b}[42m|\u{1b}[49m column 1 \u{1b}[42m|\u{1b}[49m column 2 \n\u{1b}[42m---+----------+----------+----------\u{1b}[49m\n 0 \u{1b}[42m|\u{1b}[49m   0-0    \u{1b}[42m|\u{1b}[49m   0-1    \u{1b}[42m|\u{1b}[49m   0-2    \n 1 \u{1b}[42m|\u{1b}[49m   1-0    \u{1b}[42m|\u{1b}[49m   1-1    \u{1b}[42m|\u{1b}[49m   1-2    \n 2 \u{1b}[42m|\u{1b}[49m   2-0    \u{1b}[42m|\u{1b}[49m   2-1    \u{1b}[42m|\u{1b}[49m   2-2    "
+    " \u{1b}[40mN\u{1b}[49m | \u{1b}[40mcolumn 0\u{1b}[49m | \u{1b}[40mcolumn 1\u{1b}[49m | \u{1b}[40mcolumn 2\u{1b}[49m \n---+----------+----------+----------\n \u{1b}[40m0\u{1b}[49m |   \u{1b}[40m0-0\u{1b}[49m    |   \u{1b}[40m0-1\u{1b}[49m    |   \u{1b}[40m0-2\u{1b}[49m    \n \u{1b}[40m1\u{1b}[49m |   \u{1b}[40m1-0\u{1b}[49m    |   \u{1b}[40m1-1\u{1b}[49m    |   \u{1b}[40m1-2\u{1b}[49m    \n \u{1b}[40m2\u{1b}[49m |   \u{1b}[40m2-0\u{1b}[49m    |   \u{1b}[40m2-1\u{1b}[49m    |   \u{1b}[40m2-2\u{1b}[49m    "
 );
 
 test_table!(

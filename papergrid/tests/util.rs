@@ -5,9 +5,9 @@ use std::collections::HashMap;
 
 use papergrid::{
     colors::NoColors,
-    config::Position,
+    config::{Borders, Position},
     dimension::{Dimension, Estimate},
-    grid::spanned::{config::Borders, ExactDimension, Grid, GridConfig},
+    grid::spanned::{ExactDimension, Grid, GridConfig},
     records::{IterRecords, Records},
 };
 
@@ -117,7 +117,7 @@ macro_rules! test_table {
 
 pub(crate) use test_table;
 
-pub const DEFAULT_BORDERS: Borders = Borders {
+pub const DEFAULT_BORDERS: Borders<char> = Borders {
     top: Some('-'),
     top_left: Some('+'),
     top_right: Some('+'),
