@@ -135,6 +135,7 @@ where
     }
 
     fn insert_row(&mut self, row: usize) {
+        self.shape.0 += 1;
         self.data.insert(row, vec![T::default(); self.shape.1]);
     }
 }
