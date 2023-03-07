@@ -103,7 +103,7 @@ pub trait Resizable {
     fn remove_column(&mut self, column: usize);
     /// Inserts a row at index.
     fn insert_row(&mut self, row: usize);
-    // Inserts column at index.
+    /// Inserts column at index.
     fn insert_column(&mut self, column: usize);
 }
 
