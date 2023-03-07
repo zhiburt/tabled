@@ -101,8 +101,10 @@ pub trait Resizable {
     fn remove_row(&mut self, row: usize);
     /// Removes a column from a data set by index.
     fn remove_column(&mut self, column: usize);
-    /// Inserts a row to specific by row index.
+    /// Inserts a row at index.
     fn insert_row(&mut self, row: usize);
+    // Inserts column at index.
+    fn insert_column(&mut self, column: usize);
 }
 
 impl<'a, T> Resizable for &'a mut T
@@ -139,6 +141,10 @@ where
 
     fn insert_row(&mut self, row: usize) {
         T::insert_row(self, row)
+    }
+
+    fn insert_column(&mut self, column: usize) {
+        T::insert_column(self, column)
     }
 }
 
@@ -194,6 +200,12 @@ where
     fn insert_row(&mut self, row: usize) {
         let count_columns = self.get(0).map(|l| l.len()).unwrap_or(0);
         self.insert(row, vec![T::default(); count_columns]);
+    }
+
+    fn insert_column(&mut self, column: usize) {
+        for row in self {
+            row.insert(column, T::default());
+        }
     }
 }
 
