@@ -239,6 +239,11 @@ name = "alphabet"
 path = "examples/alphabet.rs"
 required-features = ["std"]
 
+[[example]]
+name = "split"
+path = "examples/split.rs"
+required-features = ["std"]
+
 [features]
 default = ["derive", "macros"]
 std = ["papergrid/std"]

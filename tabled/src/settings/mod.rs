@@ -103,6 +103,9 @@ pub mod shadow;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod span;
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub mod split;
 pub mod style;
 
 #[cfg(feature = "std")]
