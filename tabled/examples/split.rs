@@ -4,32 +4,26 @@
 use std::iter::FromIterator;
 use tabled::{
     col, row,
-    settings::{split::Split, style::Style},
+    settings::{padding::Padding, split::Split, style::Style},
     Table,
 };
 
 fn main() {
-    let mut table = Table::from_iter(['a'..='z']);
+    let table = Table::from_iter(['a'..='z']);
 
-    table.with(Split::column(6));
+    let table_1 = table.clone().with(Split::column(4)).clone();
+    let table_2 = table_1.clone().with(Split::column(2).zip()).to_string();
+    let table_3 = table_1.clone().with(Split::column(2).concat()).to_string();
+    let table_4 = table_1.clone().with(Split::row(2).zip()).to_string();
+    let table_5 = table_1.clone().with(Split::row(2).concat()).to_string();
 
-    let mut table_1 = table.clone();
-    let mut table_2 = table.clone();
-    let mut table_3 = table.clone();
-    let mut table_4 = table.clone();
+    let mut table = col![
+        table,
+        row![table_1, table_2, table_3, table_4, table_5]
+            .with(Style::blank())
+            .with(Padding::zero()),
+    ];
+    table.with(Style::blank());
 
-    table_1.with(Split::column(2));
-    table_2.with(Split::column(2).append());
-    table_3.with(Split::row(2));
-    table_4.with(Split::row(2).append());
-
-    println!(
-        "{}",
-        col![
-            row![table, table_1, table_2].with(Style::blank()),
-            table_3,
-            table_4
-        ]
-        .with(Style::blank())
-    );
+    println!("{table}");
 }

@@ -40,7 +40,7 @@ impl Split {
         }
     }
 
-    pub fn append(self) -> Self {
+    pub fn concat(self) -> Self {
         Self {
             behavior: Behavior::Append,
             ..self
@@ -55,24 +55,26 @@ impl Split {
     }
 }
 
-impl<RR, D, Cfg> TableOption<RR, D, Cfg> for Split
+impl<R, D, Cfg> TableOption<R, D, Cfg> for Split
 where
-    RR: Records + ExactRecords + Resizable,
+    R: Records + ExactRecords + Resizable,
 {
-    fn change(&mut self, records: &mut RR, _: &mut Cfg, _: &mut D) {
+    fn change(&mut self, records: &mut R, _: &mut Cfg, _: &mut D) {
+        use Behavior::*;
+        use Direction::*;
+
         let columns = records.count_columns();
         let rows = records.count_rows();
+
+        if columns == 0 || rows == 0 {
+            return;
+        }
+
         match (self.direction, self.behavior) {
-            (Direction::Column, Behavior::Append) => {
-                split_column_append(records, columns, rows, self.index)
-            }
-            (Direction::Column, Behavior::Zip) => {
-                split_column_zip(records, columns, rows, self.index)
-            }
-            (Direction::Row, Behavior::Append) => {
-                split_row_append(records, columns, rows, self.index)
-            }
-            (Direction::Row, Behavior::Zip) => split_row_zip(records, columns, rows, self.index),
+            (Column, Append) => split_column_append(records, columns, rows, self.index),
+            (Column, Zip) => split_column_zip(records, columns, rows, self.index),
+            (Row, Append) => split_row_append(records, columns, rows, self.index),
+            (Row, Zip) => split_row_zip(records, columns, rows, self.index),
         }
     }
 }
@@ -81,21 +83,18 @@ fn split_column_append<R>(records: &mut R, columns: usize, rows: usize, index: u
 where
     R: Resizable,
 {
-    let sections_per_row = columns / index + { usize::from(columns % index != 0) };
+    let sections_per_row = ceil_div(columns, index);
 
     for section in 1..sections_per_row {
-        for reference_row in 0..rows {
-            let target_row = reference_row + section * rows;
+        for ref_row in 0..rows {
+            let target_row = ref_row + section * rows;
             records.push_row();
 
-            for target_column in 0..index {
-                let reference_column = target_column + section * index;
+            for target_col in 0..index {
+                let ref_col = target_col + section * index;
 
-                if reference_column < columns {
-                    records.swap(
-                        (target_row, target_column),
-                        (reference_row, reference_column),
-                    );
+                if ref_col < columns {
+                    records.swap((target_row, target_col), (ref_row, ref_col));
                 }
             }
         }
@@ -108,24 +107,20 @@ fn split_column_zip<R>(records: &mut R, columns: usize, rows: usize, index: usiz
 where
     R: Resizable,
 {
-    let sections_per_row = columns / index + { usize::from(columns % index != 0) };
+    let sections_per_row = ceil_div(columns, index);
 
-    for mut reference_row in 0..rows {
-        reference_row *= sections_per_row;
+    for mut ref_row in 0..rows {
+        ref_row *= sections_per_row;
 
         for section in 1..sections_per_row {
-            let target_row = reference_row + section;
-
+            let target_row = ref_row + section;
             records.insert_row(target_row);
 
-            for target_column in 0..index {
-                let reference_column = target_column + (section * index);
+            for target_col in 0..index {
+                let ref_col = target_col + (section * index);
 
-                if reference_column < columns {
-                    records.swap(
-                        (target_row, target_column),
-                        (reference_row, reference_column),
-                    );
+                if ref_col < columns {
+                    records.swap((target_row, target_col), (ref_row, ref_col));
                 }
             }
         }
@@ -138,21 +133,18 @@ fn split_row_append<R>(records: &mut R, columns: usize, rows: usize, index: usiz
 where
     R: Resizable,
 {
-    let sections_per_column = rows / index + { usize::from(rows % index != 0) };
+    let per_column = ceil_div(rows, index);
 
-    for section in 1..sections_per_column {
-        for reference_column in 0..columns {
-            let target_column = reference_column + section * columns;
+    for section in 1..per_column {
+        for ref_col in 0..columns {
+            let target_col = ref_col + section * columns;
             records.push_column();
 
             for target_row in 0..index {
-                let reference_row = target_row + section * index;
+                let ref_row = target_row + section * index;
 
-                if reference_row < rows {
-                    records.swap(
-                        (target_row, target_column),
-                        (reference_row, reference_column),
-                    );
+                if ref_row < rows {
+                    records.swap((target_row, target_col), (ref_row, ref_col));
                 }
             }
         }
@@ -165,24 +157,20 @@ fn split_row_zip<R>(records: &mut R, columns: usize, rows: usize, index: usize)
 where
     R: Resizable,
 {
-    let sections_per_column = rows / index + { usize::from(rows % index != 0) };
+    let per_column = ceil_div(rows, index);
 
-    for mut reference_column in 0..columns {
-        reference_column *= sections_per_column;
+    for col in 0..columns {
+        let ref_col = col * per_column;
 
-        for section in 1..sections_per_column {
-            let target_column = reference_column + section;
-
-            records.insert_column(target_column);
+        for section in 1..per_column {
+            let target_col = ref_col + section;
+            records.insert_column(target_col);
 
             for target_row in 0..index {
-                let reference_row = target_row + (section * index);
+                let ref_row = target_row + (section * index);
 
-                if reference_row < rows {
-                    records.swap(
-                        (target_row, target_column),
-                        (reference_row, reference_column),
-                    );
+                if ref_row < rows {
+                    records.swap((target_row, target_col), (ref_row, ref_col));
                 }
             }
         }
@@ -209,4 +197,9 @@ where
     for column in range {
         records.remove_column(column)
     }
+}
+
+fn ceil_div(x: usize, y: usize) -> usize {
+    debug_assert!(x != 0);
+    1 + ((x - 1) / y)
 }
