@@ -135,7 +135,15 @@ where
     }
 
     fn insert_row(&mut self, row: usize) {
+        self.shape.0 += 1;
         self.data.insert(row, vec![T::default(); self.shape.1]);
+    }
+
+    fn insert_column(&mut self, column: usize) {
+        self.shape.1 += 1;
+        for row in self.data.iter_mut() {
+            row.insert(column, T::default());
+        }
     }
 }
 
