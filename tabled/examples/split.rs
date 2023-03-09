@@ -4,10 +4,7 @@
 use std::iter::FromIterator;
 use tabled::{
     col, row,
-    settings::{
-        split::{Behavior, Split},
-        style::Style,
-    },
+    settings::{split::Split, style::Style},
     Table,
 };
 
@@ -22,9 +19,9 @@ fn main() {
     let mut table_4 = table.clone();
 
     table_1.with(Split::column(2));
-    table_2.with(Split::column(2).set_behavior(Behavior::Append));
+    table_2.with(Split::column(2).append());
     table_3.with(Split::row(2));
-    table_4.with(Split::row(2).set_behavior(Behavior::Append));
+    table_4.with(Split::row(2).append());
 
     println!(
         "{}",
