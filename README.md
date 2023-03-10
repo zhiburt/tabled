@@ -5,7 +5,14 @@
 [<img alt="coverage" src="https://img.shields.io/coveralls/github/zhiburt/tabled/master?style=for-the-badge" height="20">](https://coveralls.io/github/zhiburt/tabled)
 [<img alt="dependency status" src="https://deps.rs/repo/github/zhiburt/tabled/status.svg?style=for-the-badge" height="20">](https://deps.rs/repo/github/zhiburt/tabled)
 
-# tabled
+<h1>
+    <div>
+        <picture style="float:left">
+            <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg" width=35 >
+        </picture>
+        <span> tabled </span>
+    </div>
+</h1>
 
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
