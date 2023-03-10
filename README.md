@@ -11,24 +11,17 @@
 </h1>
 
 <h1>
-    <img alt="logo" align="center" src="https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg" width=30>
+    <img alt="logo" align="center" src="https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg" width=45>
     <span> tabled </span>
 </h1>
-
-<h1>
-    <img alt="logo" align="center" src="https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg" width=20>
-    <span> tabled </span>
-</h1>
-
 
 <h1>
     <img alt="logo" align="center" src="https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg" width=50>
     <span> tabled </span>
 </h1>
 
-
 <h1>
-    <img alt="logo" align="center" src="https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg" width=60>
+    <img alt="logo" align="center" src="https://raw.githubusercontent.com/zhiburt/tabled/86ac146e532ce9f7626608d7fd05072123603a2e/assets/tabled-gear.svg">
     <span> tabled </span>
 </h1>
 
