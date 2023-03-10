@@ -117,7 +117,7 @@ where
         let keep_words = self.keep_words;
         let widths = wrap_total_width(records, cfg, widths, total, width, keep_words, priority);
 
-        dims.set_widths(widths);
+        let _ = dims.set_widths(widths);
     }
 }
 

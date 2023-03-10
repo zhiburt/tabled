@@ -182,11 +182,11 @@ fn split_segments(
 
             match found_segment {
                 Some(segment) => {
-                    segment.insert(cell);
+                    let _ = segment.insert(cell);
                 }
                 None => {
                     let mut segment = HashSet::new();
-                    segment.insert(cell);
+                    let _ = segment.insert(cell);
                     segments.push(segment);
                 }
             }
@@ -201,7 +201,7 @@ fn split_segments(
         while i < segments.len() {
             if is_segment_connected(&segment, &segments[i]) {
                 segment.extend(&segments[i]);
-                segments.remove(i);
+                let _ = segments.remove(i);
             } else {
                 i += 1;
             }

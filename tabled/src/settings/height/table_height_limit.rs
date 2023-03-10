@@ -86,7 +86,7 @@ where
             }
         }
 
-        dims.set_heights(heights);
+        let _ = dims.set_heights(heights);
     }
 }
 

@@ -152,7 +152,7 @@ where
         }
 
         let widths = get_increase_list(widths, nessary_width, total_width, P::create());
-        dims.set_widths(widths);
+        let _ = dims.set_widths(widths);
     }
 }
 

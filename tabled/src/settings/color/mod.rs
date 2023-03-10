@@ -217,7 +217,7 @@ where
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         for row in 0..records.count_rows() {
             for col in 0..records.count_columns() {
-                cfg.set_color((row, col), self.0.clone());
+                let _ = cfg.set_color((row, col), self.0.clone());
             }
         }
     }
@@ -229,7 +229,7 @@ where
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         for pos in entity.iter(records.count_rows(), records.count_columns()) {
-            cfg.set_color(pos, self.0.clone());
+            let _ = cfg.set_color(pos, self.0.clone());
         }
     }
 }

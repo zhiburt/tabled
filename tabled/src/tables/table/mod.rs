@@ -399,7 +399,7 @@ impl ColoredConfig {
     /// The outcome is the same as if you'd use [`Format`] and added a color but it'd work only with `color` feature on.
     /// While this method works in all contexts.
     pub fn set_color(&mut self, pos: Position, color: AnsiColor<'static>) -> &mut Self {
-        self.colors.insert(pos, color);
+        let _ = self.colors.insert(pos, color);
         self
     }
 }

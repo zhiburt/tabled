@@ -137,7 +137,7 @@ where
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
                         let mut cell_text = GetCell(String::new(), (row, col));
-                        rhs.with(&mut cell_text);
+                        let _ = rhs.with(&mut cell_text);
                         let text = cell_text.0;
 
                         let col = col + count_cols;
@@ -161,7 +161,7 @@ where
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
                         let mut cell_text = GetCell(String::new(), (row, col));
-                        rhs.with(&mut cell_text);
+                        let _ = rhs.with(&mut cell_text);
                         let text = cell_text.0;
 
                         let row = row + count_rows;

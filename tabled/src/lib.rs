@@ -271,8 +271,19 @@
 #![warn(
     missing_docs,
     rust_2018_idioms,
+    rust_2018_compatibility,
     missing_debug_implementations,
-    unreachable_pub
+    unreachable_pub,
+    future_incompatible,
+    single_use_lifetimes,
+    trivial_casts,
+    trivial_numeric_casts,
+    unused_extern_crates,
+    unused_import_braces,
+    unused_qualifications,
+    unused_results,
+    unused_variables,
+    variant_size_differences
 )]
 #![allow(clippy::uninlined_format_args)]
 

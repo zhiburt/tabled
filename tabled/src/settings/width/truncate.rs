@@ -274,7 +274,7 @@ where
 
         let widths = truncate_total_width(records, cfg, widths, total, width, P::create(), suffix);
 
-        dims.set_widths(widths);
+        let _ = dims.set_widths(widths);
     }
 }
 

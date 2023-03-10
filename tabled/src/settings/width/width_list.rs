@@ -38,6 +38,6 @@ where
             return;
         }
 
-        dimension.set_widths(self.list.clone());
+        let _ = dimension.set_widths(self.list.clone());
     }
 }

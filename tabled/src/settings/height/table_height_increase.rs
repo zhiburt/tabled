@@ -67,7 +67,7 @@ where
 
         get_increase_list(&mut heights, height, total, self.priority.clone());
 
-        dims.set_heights(heights);
+        let _ = dims.set_heights(heights);
     }
 }
 

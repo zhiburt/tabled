@@ -260,7 +260,7 @@ where
                     continue;
                 }
 
-                self.seen.insert(p);
+                let _ = self.seen.insert(p);
                 return Some(Entity::Cell(p.0, p.1));
             }
         }
@@ -269,7 +269,7 @@ where
             for entity in lhs.by_ref() {
                 let mut iter = entity.iter(self.count_rows, self.count_cols);
                 if let Some(p) = iter.by_ref().next() {
-                    self.seen.insert(p);
+                    let _ = self.seen.insert(p);
                     self.current = Some(iter);
                     return Some(Entity::Cell(p.0, p.1));
                 }
@@ -283,7 +283,7 @@ where
 
             for p in iter.by_ref() {
                 if !self.seen.contains(&p) {
-                    self.seen.insert(p);
+                    let _ = self.seen.insert(p);
                     self.current = Some(iter);
                     return Some(Entity::Cell(p.0, p.1));
                 }
