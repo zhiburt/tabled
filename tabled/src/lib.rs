@@ -298,8 +298,8 @@ pub mod records;
 pub mod settings;
 pub mod tables;
 
-#[cfg(all(feature = "std", feature = "macros"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "std", feature = "macros"))))]
+#[cfg(feature = "macros")]
+#[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
 pub mod macros;
 
 pub mod grid {
@@ -514,6 +514,6 @@ pub use crate::{tabled::Tabled, tables::table::Table};
 ///     price: f32,
 /// }
 /// ```
-#[cfg(all(feature = "std", feature = "derive"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "std", feature = "derive"))))]
+#[cfg(feature = "derive")]
+#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
 pub use tabled_derive::Tabled;
