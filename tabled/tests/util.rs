@@ -11,7 +11,7 @@ use std::{
 use tabled::{
     grid::config::Position,
     grid::util::string::string_width_multiline,
-    settings::{alignment::Alignment, object::SegmentAll, Modify},
+    settings::{object::SegmentAll, Alignment, Modify},
     Table, Tabled,
 };
 

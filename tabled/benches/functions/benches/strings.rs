@@ -59,7 +59,7 @@ pub fn wrap(c: &mut Criterion) {
                 b.iter(|| {
                     black_box(
                         tabled::Table::new(&[&text])
-                            .with(tabled::settings::width::Width::wrap(1))
+                            .with(tabled::settings::Width::wrap(1))
                             .to_string(),
                     )
                 });

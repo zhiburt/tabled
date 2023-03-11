@@ -1,12 +1,10 @@
 #![cfg(feature = "std")]
 
 use tabled::settings::{
-    alignment::Alignment,
-    disable::Disable,
     locator::ByColumnName,
     object::{Columns, Rows, Segment},
     style::{HorizontalLine, Style},
-    Modify,
+    Alignment, Disable, Modify,
 };
 
 use crate::util::{create_table, test_table};

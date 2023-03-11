@@ -3,7 +3,7 @@ use quickcheck_macros::quickcheck;
 use tabled::{
     builder::Builder,
     grid::util::string::{string_width, string_width_multiline},
-    settings::style::Style,
+    settings::Style,
     Table,
 };
 

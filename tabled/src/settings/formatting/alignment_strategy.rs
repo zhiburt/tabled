@@ -9,7 +9,7 @@ use crate::{grid::config::Entity, settings::CellOption, tables::table::ColoredCo
 /// use tabled::{
 ///     Table,
 ///     settings::{
-///         style::Style, Modify, alignment::Alignment, object::Segment,
+///         Style, Modify, Alignment, object::Segment,
 ///         formatting::{AlignmentStrategy, TrimStrategy}
 ///     }
 /// };

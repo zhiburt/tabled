@@ -123,14 +123,14 @@ where
 
     fn remove_row(&mut self, row: usize) {
         self.shape.0 -= 1;
-        self.data.remove(row);
+        let _ = self.data.remove(row);
     }
 
     fn remove_column(&mut self, column: usize) {
         self.shape.1 -= 1;
 
         for row in &mut self.data {
-            row.remove(column);
+            let _ = row.remove(column);
         }
     }
 

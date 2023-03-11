@@ -2,7 +2,7 @@
 //! `cargo run --example height`
 
 use tabled::{
-    settings::{height::Height, peaker::PriorityMax, style::Style},
+    settings::{peaker::PriorityMax, Height, Style},
     Table,
 };
 

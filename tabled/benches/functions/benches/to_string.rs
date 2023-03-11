@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 
 use tabled::{
-    settings::{alignment::Alignment, object::Segment, padding::Padding, style::Style, Modify},
+    settings::{object::Segment, Alignment, Modify, Padding, Style},
     Table, Tabled,
 };
 

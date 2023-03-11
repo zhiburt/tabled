@@ -9,11 +9,9 @@ use owo_colors::OwoColorize;
 
 use tabled::{
     settings::{
-        color::Color,
-        format::Format,
         object::{Columns, Rows},
         style::{BorderColor, Style},
-        Modify,
+        Color, Format, Modify,
     },
     Table, Tabled,
 };

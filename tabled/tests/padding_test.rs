@@ -1,11 +1,8 @@
 #![cfg(feature = "std")]
 
 use tabled::settings::{
-    alignment::Alignment,
     object::{Rows, Segment},
-    padding::Padding,
-    style::Style,
-    Modify,
+    Alignment, Modify, Padding, Style,
 };
 
 use crate::util::{create_table, test_table};
@@ -106,7 +103,7 @@ test_table!(
     {
         use std::convert::TryFrom;
         use owo_colors::OwoColorize;
-        use tabled::settings::{color::Color};
+        use tabled::settings::Color;
 
         let padding = Padding::new(2, 2, 2, 2).colorize(
             Color::try_from(' '.on_yellow().to_string()).unwrap(),

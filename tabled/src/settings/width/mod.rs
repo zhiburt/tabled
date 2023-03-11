@@ -9,7 +9,7 @@
 //! ## Example
 //!
 //! ```
-//! use tabled::{Table, settings::width::Width};
+//! use tabled::{Table, settings::Width};
 //!
 //! let table = Table::new(&["Hello World!"])
 //!     .with(Width::wrap(7))
@@ -71,7 +71,7 @@ pub use self::{
 /// ### Cell change
 ///
 /// ```
-/// use tabled::{Table, settings::{object::Segment, width::Width, style::Style, Modify}};
+/// use tabled::{Table, settings::{object::Segment, Width, Style, Modify}};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -83,7 +83,7 @@ pub use self::{
 /// ### Table change
 ///
 /// ```
-/// use tabled::{Table, settings::width::Width};
+/// use tabled::{Table, settings::Width};
 ///
 /// let table = Table::new(&["Hello World!"]).with(Width::wrap(5));
 /// ```
@@ -91,14 +91,14 @@ pub use self::{
 /// ### Total width
 ///
 /// ```
-/// use tabled::{Table, settings::width::Width};
+/// use tabled::{Table, settings::Width};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Width::wrap(5))
 ///     .with(Width::increase(5));
 /// ```
 ///
-/// [`Padding`]: crate::settings::padding::Padding
+/// [`Padding`]: crate::settings::Padding
 /// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Width;
@@ -133,7 +133,7 @@ impl Width {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, settings::width::Width};
+    /// use tabled::{Table, settings::Width};
     ///
     /// let data = vec![
     ///     ("Some\ndata", "here", "and here"),

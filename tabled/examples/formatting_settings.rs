@@ -3,11 +3,9 @@
 
 use tabled::{
     settings::{
-        alignment::Alignment,
         formatting::{AlignmentStrategy, TrimStrategy},
         object::Segment,
-        style::Style,
-        Modify,
+        Alignment, Modify, Style,
     },
     Table,
 };

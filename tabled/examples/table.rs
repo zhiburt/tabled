@@ -2,7 +2,7 @@
 //! `cargo run --example table`
 
 use tabled::{
-    settings::{alignment::Alignment, object::Rows, style::Style, Modify},
+    settings::{object::Rows, Alignment, Modify, Style},
     Table, Tabled,
 };
 

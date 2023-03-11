@@ -2,7 +2,7 @@
 //! `cargo run --example concat`
 
 use tabled::{
-    settings::{alignment::Alignment, concat::Concat, object::Segment, style::Style, Modify},
+    settings::{object::Segment, Alignment, Concat, Modify, Style},
     Table, Tabled,
 };
 

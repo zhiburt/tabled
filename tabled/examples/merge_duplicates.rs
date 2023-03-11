@@ -3,8 +3,8 @@
 
 use tabled::{
     settings::{
-        merge::Merge,
         style::{BorderSpanCorrection, Style},
+        Merge,
     },
     Table, Tabled,
 };

@@ -2,7 +2,7 @@
 //! `cargo run --example margin`
 
 use tabled::{
-    settings::{margin::Margin, style::Style},
+    settings::{Margin, Style},
     Table,
 };
 

@@ -1,7 +1,7 @@
 //! The example shows how we could spread a table to the size of a terminal.
 
 use tabled::{
-    settings::{height::Height, style::Style, width::Width},
+    settings::{Height, Style, Width},
     Table, Tabled,
 };
 

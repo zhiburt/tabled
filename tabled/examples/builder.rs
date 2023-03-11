@@ -3,7 +3,7 @@
 
 use tabled::{
     builder::Builder,
-    settings::{object::Rows, panel::Panel, style::Style, width::Width, Modify},
+    settings::{object::Rows, Modify, Panel, Style, Width},
 };
 
 fn main() {

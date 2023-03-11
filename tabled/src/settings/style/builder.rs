@@ -57,7 +57,7 @@ use super::{HorizontalLine, Line, VerticalLine};
 ///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// use tabled::{Table, settings::style::Style};
+/// use tabled::{Table, settings::Style};
 ///
 /// let style = Style::ascii()
 ///                 .bottom('*')
@@ -110,7 +110,7 @@ impl Style<(), (), (), (), (), (), (), ()> {
     /// This style can be used as a base style to build a custom one.
     ///
     /// ```rust,no_run
-    /// # use tabled::settings::style::Style;
+    /// # use tabled::settings::Style;
     /// let style = Style::empty()
     ///     .top('*')
     ///     .bottom('*')
@@ -445,7 +445,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, settings::{style::Style, highlight::Highlight, object::Rows}};
+    /// use tabled::{Table, settings::{Style, Highlight, object::Rows}};
     ///
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
     /// let table = Table::new(data)

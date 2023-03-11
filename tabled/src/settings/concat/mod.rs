@@ -4,7 +4,7 @@
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Table, Tabled, settings::{style::Style, concat::Concat}};
+//! use tabled::{Table, Tabled, settings::{Style, Concat}};
 //!
 //! #[derive(Tabled)]
 //! struct Message {
@@ -65,7 +65,7 @@ use crate::{
 /// But it behaves on tables rather than on an actual data.
 ///
 /// ```
-/// use tabled::{Table, settings::concat::Concat};
+/// use tabled::{Table, settings::Concat};
 /// let table1 = Table::new([0, 1, 2, 3]);
 /// let table2 = Table::new(["A", "B", "C", "D"]);
 ///
@@ -137,7 +137,7 @@ where
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
                         let mut cell_text = GetCell(String::new(), (row, col));
-                        rhs.with(&mut cell_text);
+                        let _ = rhs.with(&mut cell_text);
                         let text = cell_text.0;
 
                         let col = col + count_cols;
@@ -161,7 +161,7 @@ where
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
                         let mut cell_text = GetCell(String::new(), (row, col));
-                        rhs.with(&mut cell_text);
+                        let _ = rhs.with(&mut cell_text);
                         let text = cell_text.0;
 
                         let row = row + count_rows;

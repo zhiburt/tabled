@@ -3,13 +3,8 @@
 use tabled::{
     builder::Builder,
     settings::{
-        alignment::Alignment,
-        disable::Disable,
-        extract::Extract,
-        format::Format,
         object::{Rows, Segment},
-        padding::Padding,
-        Modify,
+        Alignment, Disable, Extract, Format, Modify, Padding,
     },
 };
 

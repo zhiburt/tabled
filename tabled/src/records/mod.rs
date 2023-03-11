@@ -36,7 +36,7 @@ pub trait ExactRecords {
     fn get_cell(&self, pos: Position) -> &Self::Cell;
 }
 
-impl<'a, T> ExactRecords for &'a T
+impl<T> ExactRecords for &'_ T
 where
     T: ExactRecords,
 {
@@ -107,7 +107,7 @@ pub trait Resizable {
     fn insert_column(&mut self, column: usize);
 }
 
-impl<'a, T> Resizable for &'a mut T
+impl<T> Resizable for &'_ mut T
 where
     T: Resizable,
 {
@@ -188,12 +188,12 @@ where
     }
 
     fn remove_row(&mut self, row: usize) {
-        self.remove(row);
+        let _ = self.remove(row);
     }
 
     fn remove_column(&mut self, column: usize) {
         for row in self.iter_mut() {
-            row.remove(column);
+            let _ = row.remove(column);
         }
     }
 
@@ -215,7 +215,7 @@ pub trait RecordsMut<Text> {
     fn set(&mut self, pos: Position, text: Text);
 }
 
-impl<'a, T, Text> RecordsMut<Text> for &'a mut T
+impl<T, Text> RecordsMut<Text> for &'_ mut T
 where
     T: RecordsMut<Text>,
 {

@@ -18,7 +18,7 @@ use crate::{
         },
     },
     records::{ExactRecords, Records, VecRecords},
-    settings::{style::Style, TableOption},
+    settings::{Style, TableOption},
     Tabled,
 };
 
@@ -45,7 +45,7 @@ pub use dimension::TableDimension;
 /// ### With settings
 ///
 /// ```rust,no_run
-/// use tabled::{Table, settings::{style::Style, alignment::Alignment}};
+/// use tabled::{Table, settings::{Style, Alignment}};
 ///
 /// let data = vec!["Hello", "2021"];
 /// let mut table = Table::new(&data);
@@ -54,9 +54,9 @@ pub use dimension::TableDimension;
 /// println!("{}", table);
 /// ```
 ///
-/// [`Padding`]: crate::settings::padding::Padding
-/// [`Style`]: crate::settings::style::Style
-/// [`Style::ascii`]: crate::settings::style::Style::ascii
+/// [`Padding`]: crate::settings::Padding
+/// [`Style`]: crate::settings::Style
+/// [`Style::ascii`]: crate::settings::Style::ascii
 #[derive(Debug, Clone)]
 pub struct Table {
     records: VecRecords<String>,
@@ -107,7 +107,7 @@ impl Table {
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
     /// use tabled::{
     ///     Table, Tabled,
-    ///     settings::{object::Segment, Modify, alignment::Alignment}
+    ///     settings::{object::Segment, Modify, Alignment}
     /// };
     ///
     /// #[derive(Tabled)]
@@ -399,7 +399,7 @@ impl ColoredConfig {
     /// The outcome is the same as if you'd use [`Format`] and added a color but it'd work only with `color` feature on.
     /// While this method works in all contexts.
     pub fn set_color(&mut self, pos: Position, color: AnsiColor<'static>) -> &mut Self {
-        self.colors.insert(pos, color);
+        let _ = self.colors.insert(pos, color);
         self
     }
 }

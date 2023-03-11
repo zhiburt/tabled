@@ -9,7 +9,7 @@ use crate::{
     grid::config::{Border as GridBorder, Entity, Position},
     grid::spanned::GridConfig,
     records::{ExactRecords, Records},
-    settings::{object::Object, style::Border, style::BorderColor, TableOption},
+    settings::{object::Object, style::BorderColor, Border, TableOption},
     tables::table::ColoredConfig,
 };
 
@@ -20,7 +20,7 @@ use crate::{
 /// ```
 /// use tabled::{
 ///     Table,
-///     settings::{highlight::Highlight, style::{Border, Style}, object::Segment}
+///     settings::{Highlight, Border, Style, object::Segment}
 /// };
 ///
 /// let data = [
@@ -54,8 +54,7 @@ use crate::{
 /// use tabled::{
 ///     Table,
 ///     settings::{
-///         highlight::Highlight,
-///         style::{Border, Style},
+///         Highlight, Border, Style,
 ///         object::{Segment, Object}
 ///     }
 /// };
@@ -95,6 +94,8 @@ pub struct Highlight<O> {
     target: O,
     border: Border,
 }
+
+// todo: Add BorderColor.
 
 impl<O> Highlight<O> {
     /// Build a new instance of [`Highlight`]
@@ -182,11 +183,11 @@ fn split_segments(
 
             match found_segment {
                 Some(segment) => {
-                    segment.insert(cell);
+                    let _ = segment.insert(cell);
                 }
                 None => {
                     let mut segment = HashSet::new();
-                    segment.insert(cell);
+                    let _ = segment.insert(cell);
                     segments.push(segment);
                 }
             }
@@ -201,7 +202,7 @@ fn split_segments(
         while i < segments.len() {
             if is_segment_connected(&segment, &segments[i]) {
                 segment.extend(&segments[i]);
-                segments.remove(i);
+                let _ = segments.remove(i);
             } else {
                 i += 1;
             }

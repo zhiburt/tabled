@@ -3,8 +3,8 @@
 
 use tabled::{
     settings::{
-        alignment::Alignment,
         style::{HorizontalLine, Style, VerticalLine},
+        Alignment,
     },
     Table, Tabled,
 };
