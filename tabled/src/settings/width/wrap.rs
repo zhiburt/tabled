@@ -37,7 +37,7 @@ use super::util::{get_table_widths, get_table_widths_with_total, split_at_pos};
 ///     .with(Modify::new(Segment::all()).with(Width::wrap(3)));
 /// ```
 ///
-/// [`Padding`]: crate::settings::padding::Padding
+/// [`Padding`]: crate::settings::Padding
 #[derive(Debug, Clone)]
 pub struct Wrap<W = usize, P = PriorityNone> {
     width: W,
@@ -69,7 +69,7 @@ impl<W, P> Wrap<W, P> {
     /// Be aware that it doesn't consider padding.
     /// So if you want to set a exact width you might need to use [`Padding`] to set it to 0.
     ///
-    /// [`Padding`]: crate::settings::padding::Padding
+    /// [`Padding`]: crate::settings::Padding
     /// [`PriorityMax`]: crate::settings::peaker::PriorityMax
     /// [`PriorityMin`]: crate::settings::peaker::PriorityMin
     pub fn priority<PP>(self) -> Wrap<W, PP> {
@@ -117,7 +117,7 @@ where
         let keep_words = self.keep_words;
         let widths = wrap_total_width(records, cfg, widths, total, width, keep_words, priority);
 
-        dims.set_widths(widths);
+        let _ = dims.set_widths(widths);
     }
 }
 

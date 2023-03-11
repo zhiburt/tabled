@@ -23,7 +23,7 @@ impl Format {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, settings::{format::Format, object::Rows, Modify}};
+    /// use tabled::{Table, settings::{Format, object::Rows, Modify}};
     ///
     /// let data = vec![
     ///     (0, "Grodno", true),
@@ -65,7 +65,7 @@ impl Format {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, settings::{format::Format, object::Rows, Modify}};
+    /// use tabled::{Table, settings::{Format, object::Rows, Modify}};
     ///
     /// let data = vec![
     ///     (0, "Grodno", true),

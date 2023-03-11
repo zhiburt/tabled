@@ -13,7 +13,7 @@ use crate::{
 /// BorderColored represents a colored border of a Cell.
 ///
 /// ```rust,no_run
-/// # use tabled::{settings::{style::{Style, BorderColor}, color::Color, object::Rows, Modify}, Table};
+/// # use tabled::{settings::{style::BorderColor, Style, Color, object::Rows, Modify}, Table};
 /// #
 /// # let data: Vec<&'static str> = Vec::new();
 /// #

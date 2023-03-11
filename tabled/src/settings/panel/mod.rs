@@ -6,7 +6,7 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{Table, settings::panel::Panel};
+//! use tabled::{Table, settings::Panel};
 //!
 //! let data = [[1, 2, 3], [4, 5, 6]];
 //!
@@ -58,7 +58,7 @@ impl Panel {
     /// Creates an empty vertical row at given index.
     ///
     /// ```
-    /// use tabled::{settings::panel::Panel, Table};
+    /// use tabled::{settings::Panel, Table};
     ///
     /// let data = [[1, 2, 3], [4, 5, 6]];
     ///
@@ -88,7 +88,7 @@ impl Panel {
     /// Creates an empty horizontal row at given index.
     ///
     /// ```
-    /// use tabled::{Table, settings::panel::Panel};
+    /// use tabled::{Table, settings::Panel};
     ///
     /// let data = [[1, 2, 3], [4, 5, 6]];
     ///

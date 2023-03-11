@@ -6,7 +6,7 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{Table, settings::rotate::Rotate};
+//! use tabled::{Table, settings::Rotate};
 //!
 //! let data = [[1, 2, 3], [4, 5, 6]];
 //!
@@ -28,6 +28,9 @@
 //!
 //! [`Table`]: crate::Table
 //! [`Builder::index`]: crate::builder::Builder::index
+
+// use core::cmp::max;
+use core::cmp::max;
 
 use crate::{
     records::{ExactRecords, Records, Resizable},
@@ -69,7 +72,7 @@ where
 
         match self {
             Self::Left => {
-                let size = std::cmp::max(count_rows, count_cols);
+                let size = max(count_rows, count_cols);
 
                 {
                     for _ in count_rows..size {
@@ -104,7 +107,7 @@ where
                 }
             }
             Self::Right => {
-                let size = std::cmp::max(count_rows, count_cols);
+                let size = max(count_rows, count_cols);
 
                 {
                     for _ in count_rows..size {

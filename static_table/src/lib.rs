@@ -148,14 +148,7 @@ use syn::{
 };
 use tabled::{
     builder::Builder,
-    settings::{
-        alignment::Alignment,
-        margin::Margin,
-        padding,
-        span::{ColumnSpan, RowSpan},
-        style::Style,
-        Modify,
-    },
+    settings::{Alignment, Margin, Modify, Padding, Span, Style},
     Table,
 };
 
@@ -470,7 +463,7 @@ impl Parse for TableStruct {
 }
 
 #[allow(dead_code)]
-struct Padding<T> {
+struct Pad<T> {
     left: T,
     comma1_tk: Token!(,),
     right: T,
@@ -480,7 +473,7 @@ struct Padding<T> {
     bottom: T,
 }
 
-impl<T: Parse> Parse for Padding<T> {
+impl<T: Parse> Parse for Pad<T> {
     fn parse(input: ParseStream<'_>) -> Result<Self> {
         Ok(Self {
             left: input.parse()?,
@@ -771,16 +764,16 @@ fn apply_theme(table: &mut tabled::Table, name: &str) {
     };
 }
 
-fn build_padding(pad: Padding<LitInt>) -> syn::Result<padding::Padding> {
+fn build_padding(pad: Pad<LitInt>) -> syn::Result<Padding> {
     let left = pad.left.base10_parse::<usize>()?;
     let right = pad.right.base10_parse::<usize>()?;
     let top = pad.top.base10_parse::<usize>()?;
     let bottom = pad.bottom.base10_parse::<usize>()?;
 
-    Ok(padding::Padding::new(left, right, top, bottom))
+    Ok(Padding::new(left, right, top, bottom))
 }
 
-fn build_margin(pad: Padding<LitInt>) -> syn::Result<Margin> {
+fn build_margin(pad: Pad<LitInt>) -> syn::Result<Margin> {
     let left = pad.left.base10_parse::<usize>()?;
     let right = pad.right.base10_parse::<usize>()?;
     let top = pad.top.base10_parse::<usize>()?;
@@ -892,11 +885,11 @@ fn create_table(mat: &MatrixInput) -> Result<Table> {
     let mut table = builder.build();
 
     for (pos, span) in vspan {
-        table.with(Modify::new(pos).with(ColumnSpan::new(span)));
+        table.with(Modify::new(pos).with(Span::horizontal(span)));
     }
 
     for (pos, span) in hspan {
-        table.with(Modify::new(pos).with(RowSpan::new(span)));
+        table.with(Modify::new(pos).with(Span::vertical(span)));
     }
 
     Ok(table)

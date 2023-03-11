@@ -3,10 +3,9 @@
 
 use tabled::{
     settings::{
-        merge::Merge,
         object::{Cell, Columns, Object, Rows},
         style::{Border, BorderSpanCorrection, Style},
-        Modify,
+        Merge, Modify,
     },
     Table, Tabled,
 };

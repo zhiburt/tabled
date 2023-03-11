@@ -3,11 +3,9 @@
 
 use tabled::{
     settings::{
-        alignment::Alignment,
         object::Cell,
-        span::{ColumnSpan, RowSpan},
         style::{BorderSpanCorrection, Style},
-        Modify,
+        Alignment, Modify, Span,
     },
     Table,
 };
@@ -15,8 +13,8 @@ use tabled::{
 fn main() {
     let data = [["just 1 column"; 5]; 5];
 
-    let h_span = |r, c, span| Modify::new(Cell::new(r, c)).with(ColumnSpan::new(span));
-    let v_span = |r, c, span| Modify::new(Cell::new(r, c)).with(RowSpan::new(span));
+    let h_span = |r, c, span| Modify::new(Cell::new(r, c)).with(Span::vertical(span));
+    let v_span = |r, c, span| Modify::new(Cell::new(r, c)).with(Span::horizontal(span));
 
     let table = Table::new(data)
         .with(h_span(0, 0, 5).with("span all 5 columns"))

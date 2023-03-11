@@ -4,7 +4,7 @@
 //! This example requires the `color` feature.
 
 use tabled::{
-    settings::{alignment::Alignment, object::Segment, style::Style, width::Width, Modify},
+    settings::{object::Segment, Alignment, Modify, Style, Width},
     Table, Tabled,
 };
 

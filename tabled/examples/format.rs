@@ -5,10 +5,8 @@
 
 use tabled::{
     settings::{
-        format::Format,
         object::{Columns, Object, Rows},
-        style::Style,
-        Modify,
+        Format, Modify, Style,
     },
     Table, Tabled,
 };

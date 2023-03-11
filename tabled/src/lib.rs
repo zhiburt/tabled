@@ -105,7 +105,7 @@
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{
 //!     Tabled, Table,
-//!     settings::{style::Style, alignment::Alignment, Modify, object::{Rows, Columns, Object}}
+//!     settings::{Style, Alignment, Modify, object::{Rows, Columns, Object}}
 //! };
 //!
 //! #[derive(Tabled)]
@@ -153,7 +153,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{builder::Builder, settings::{Modify, object::Rows, alignment::Alignment, style::Style}};
+//! use tabled::{builder::Builder, settings::{Modify, object::Rows, Alignment, Style}};
 //!
 //! let header = std::iter::once(String::from("i")).chain((0..10).map(|i| i.to_string()));
 //!
@@ -271,8 +271,19 @@
 #![warn(
     missing_docs,
     rust_2018_idioms,
+    rust_2018_compatibility,
     missing_debug_implementations,
-    unreachable_pub
+    unreachable_pub,
+    future_incompatible,
+    single_use_lifetimes,
+    trivial_casts,
+    trivial_numeric_casts,
+    unused_extern_crates,
+    unused_import_braces,
+    unused_qualifications,
+    unused_results,
+    unused_variables,
+    variant_size_differences
 )]
 #![allow(clippy::uninlined_format_args)]
 
@@ -287,8 +298,8 @@ pub mod records;
 pub mod settings;
 pub mod tables;
 
-#[cfg(all(feature = "std", feature = "macros"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "std", feature = "macros"))))]
+#[cfg(feature = "macros")]
+#[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
 pub mod macros;
 
 pub mod grid {
@@ -503,6 +514,6 @@ pub use crate::{tabled::Tabled, tables::table::Table};
 ///     price: f32,
 /// }
 /// ```
-#[cfg(all(feature = "std", feature = "derive"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "std", feature = "derive"))))]
+#[cfg(feature = "derive")]
+#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
 pub use tabled_derive::Tabled;

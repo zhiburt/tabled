@@ -9,7 +9,7 @@
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Table, Tabled, settings::style::Style};
+//! use tabled::{Table, Tabled, settings::Style};
 //!
 //! #[derive(Tabled)]
 //! struct Mission {
@@ -64,7 +64,7 @@
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Table, Tabled, settings::style::Style};
+//! use tabled::{Table, Tabled, settings::Style};
 //!
 //! #[derive(Tabled)]
 //! enum Status {

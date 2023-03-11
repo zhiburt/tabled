@@ -1,12 +1,8 @@
 #![cfg(feature = "std")]
 
 use tabled::settings::{
-    alignment::Alignment,
-    format::Format,
     object::{Cell, Columns, Object, Rows, Segment},
-    padding::Padding,
-    style::Style,
-    Modify,
+    Alignment, Format, Modify, Padding, Style,
 };
 
 use crate::util::{create_table, init_table, test_table};

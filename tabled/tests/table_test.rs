@@ -4,9 +4,7 @@ use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
-    settings::{
-        formatting::Charset, height::Height, padding::Padding, style::Style, width::Width, Settings,
-    },
+    settings::{formatting::Charset, Height, Padding, Settings, Style, Width},
     Table,
 };
 

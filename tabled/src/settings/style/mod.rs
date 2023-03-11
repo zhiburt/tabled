@@ -9,7 +9,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::style::Style};
+//! use tabled::{Table, settings::Style};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let mut table = Table::new(&data);
@@ -63,7 +63,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::{Modify, style::Style}};
+//! use tabled::{Table, settings::{Modify, Style}};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
@@ -116,11 +116,10 @@ mod raw_style;
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod span_border_correction;
 
+mod builder;
 mod horizontal_line;
 mod line;
 mod vertical_line;
-
-pub mod builder;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
@@ -129,7 +128,7 @@ pub use self::{
     offset::Offset, raw_style::RawStyle, span_border_correction::BorderSpanCorrection,
 };
 
-pub use builder::Style;
+pub use builder::{HorizontalLineIter, On, Style, VerticalLineIter};
 pub use horizontal_line::HorizontalLine;
 pub use line::Line;
 pub use vertical_line::VerticalLine;

@@ -11,7 +11,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::{Settings, style::Style, padding::Padding}};
+//! use tabled::{Table, settings::{Settings, Style, Padding}};
 //!
 //! let table_config = Settings::default()
 //!     .with(Padding::new(2, 2, 1, 1))
@@ -41,13 +41,7 @@
 //! )
 //! ```
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod cell_option;
-
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-mod modify;
 mod settings_list;
 mod table_option;
 
@@ -55,16 +49,25 @@ mod table_option;
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod object;
 
-pub mod alignment;
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub mod concat;
+mod modify;
+
+mod alignment;
+mod extract;
+mod margin;
+mod padding;
+mod rotate;
+
+#[cfg(feature = "std")]
+mod color;
+#[cfg(feature = "std")]
+mod concat;
+
+pub mod style;
+
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod disable;
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub mod extract;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod format;
@@ -80,14 +83,12 @@ pub mod highlight;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod locator;
-pub mod margin;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod measurement;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod merge;
-pub mod padding;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod panel;
@@ -96,18 +97,13 @@ pub mod panel;
 pub mod peaker;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub mod rotate;
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub mod shadow;
+mod shadow;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod span;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod split;
-pub mod style;
-
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod color;
@@ -115,12 +111,22 @@ pub mod color;
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod width;
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use cell_option::CellOption;
+pub use settings_list::{EmptySettings, Settings};
+pub use table_option::TableOption;
+
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use modify::{Modify, ModifyList};
 
-pub use settings_list::{EmptySettings, Settings};
-pub use table_option::TableOption;
+pub use self::{
+    alignment::Alignment, extract::Extract, margin::Margin, padding::Padding, style::Style,
+};
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub use self::{
+    color::Color, concat::Concat, disable::Disable, format::Format, height::Height,
+    highlight::Highlight, merge::Merge, panel::Panel, rotate::Rotate, shadow::Shadow, span::Span,
+    style::Border, width::Width,
+};

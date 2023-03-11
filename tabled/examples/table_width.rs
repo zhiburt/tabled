@@ -2,10 +2,7 @@
 //! `cargo run --example table_width`
 
 use tabled::{
-    settings::{
-        alignment::Alignment, measurement::Percent, object::Segment, style::Style, width::Width,
-        Modify,
-    },
+    settings::{measurement::Percent, object::Segment, Alignment, Modify, Style, Width},
     Table,
 };
 

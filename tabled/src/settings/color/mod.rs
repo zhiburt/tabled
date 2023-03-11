@@ -1,6 +1,6 @@
 //! This module contains a configuration of a [`Border`] or a [`Table`] to set its borders color via [`Color`].
 //!
-//! [`Border`]: crate::settings::style::Border
+//! [`Border`]: crate::settings::Border
 //! [`Table`]: crate::Table
 
 use std::borrow::Cow;
@@ -17,7 +17,7 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// use tabled::{settings::color::Color, Table};
+/// use tabled::{settings::Color, Table};
 ///
 /// let data = [
 ///     (0u8, "Hello"),
@@ -31,9 +31,9 @@ use crate::{
 /// println!("{}", table);
 /// ```
 ///
-/// [`Padding`]: crate::settings::padding::Padding
-/// [`Margin`]: crate::settings::margin::Margin
-/// [`Border`]: crate::settings::style::Border
+/// [`Padding`]: crate::settings::Padding
+/// [`Margin`]: crate::settings::Margin
+/// [`Border`]: crate::settings::Border
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Color(AnsiColor<'static>);
 
@@ -217,7 +217,7 @@ where
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         for row in 0..records.count_rows() {
             for col in 0..records.count_columns() {
-                cfg.set_color((row, col), self.0.clone());
+                let _ = cfg.set_color((row, col), self.0.clone());
             }
         }
     }
@@ -229,7 +229,7 @@ where
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         for pos in entity.iter(records.count_rows(), records.count_columns()) {
-            cfg.set_color(pos, self.0.clone());
+            let _ = cfg.set_color(pos, self.0.clone());
         }
     }
 }

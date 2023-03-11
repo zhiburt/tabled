@@ -4,7 +4,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{settings::{margin::Margin, style::Style}, Table};
+//! use tabled::{settings::{Margin, Style}, Table};
 //!
 //! let data = vec!["Hello", "World", "!"];
 //!
@@ -28,22 +28,27 @@
 
 use crate::{
     grid::{
-        color::{AnsiColor, StaticColor},
+        color::StaticColor,
         compact::CompactConfig,
         config::{Indent, Sides},
-        spanned::config::{ColoredMarginIndent, Offset},
     },
     settings::TableOption,
 };
 
 #[cfg(feature = "std")]
-use crate::tables::table::ColoredConfig;
+use crate::{
+    grid::{
+        color::AnsiColor,
+        spanned::config::{ColoredMarginIndent, Offset},
+    },
+    tables::table::ColoredConfig,
+};
 
 /// Margin is responsible for a left/right/top/bottom outer indent of a grid.
 ///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// # use tabled::{settings::margin::Margin, Table};
+/// # use tabled::{settings::Margin, Table};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^'));

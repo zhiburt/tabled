@@ -23,13 +23,9 @@ use tabled::{
     grid::util::string,
     row,
     settings::{
-        height::Height,
         object::Cell,
-        padding::Padding,
-        shadow::Shadow,
         style::{BorderChar, Offset, RawStyle, Style},
-        width::Width,
-        Modify,
+        Height, Modify, Padding, Shadow, Width,
     },
     Table,
 };

@@ -4,8 +4,7 @@ use crate::{
     records::{ExactRecords, Records, RecordsMut},
     settings::{
         measurement::{Max, Measurement, Min},
-        width::Width,
-        CellOption, TableOption,
+        CellOption, TableOption, Width,
     },
     tables::table::ColoredConfig,
 };
@@ -18,20 +17,20 @@ use crate::{
 /// ## Examples
 ///
 /// ```
-/// use tabled::{Table, settings::{width::Justify, style::Style, object::Segment, padding::Padding, Modify}};
+/// use tabled::{Table, settings::{Width, Style, object::Segment, Padding, Modify}};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::markdown())
 ///     .with(Modify::new(Segment::all()).with(Padding::zero()))
-///     .with(Justify::new(3));
+///     .with(Width::justify(3));
 /// ```
 ///
 /// [`Max`] usage to justify by a max column width.
 ///
 /// ```
-/// use tabled::{Table, settings::{width::Justify, style::Style}};
+/// use tabled::{Table, settings::{width::Justify, Style}};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -40,7 +39,7 @@ use crate::{
 ///     .with(Justify::max());
 /// ```
 ///
-/// [`Padding`]: crate::settings::padding::Padding
+/// [`Padding`]: crate::settings::Padding
 #[derive(Debug)]
 pub struct Justify<W> {
     width: W,
@@ -54,7 +53,7 @@ where
     ///
     /// Be aware that [`Padding`] is not considered when comparing the width.
     ///
-    /// [`Padding`]: crate::settings::padding::Padding
+    /// [`Padding`]: crate::settings::Padding
     pub fn new(width: W) -> Self {
         Self { width }
     }

@@ -6,11 +6,12 @@
 //! [`Table`]: crate::Table
 //! [`Highlight`]: crate::settings::highlight::Highlight
 
-use std::ops::{RangeBounds, RangeFull};
+use core::cmp::min;
+use core::ops::{Bound, RangeBounds, RangeFull};
 
 use crate::{
     records::{ExactRecords, Records, Resizable},
-    settings::{object::util::bounds_to_usize, TableOption},
+    settings::TableOption,
 };
 
 /// Returns a new [`Table`] that reflects a segment of the referenced [`Table`]
@@ -18,7 +19,7 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, settings::{format::Format, object::Rows, Modify, extract::Extract}};
+/// use tabled::{Table, settings::{Format, object::Rows, Modify, Extract}};
 ///
 /// let data = vec![
 ///     (0, "Grodno", true),
@@ -54,7 +55,7 @@ where
     /// Returns a new [`Table`] that reflects a segment of the referenced [`Table`]
     ///
     /// ```rust,no_run
-    /// # use tabled::settings::extract::Extract;
+    /// # use tabled::settings::Extract;
     /// let rows = 1..3;
     /// let columns = 1..;
     /// Extract::segment(rows, columns);
@@ -89,7 +90,7 @@ where
     /// The segment is defined by [`RangeBounds`] for Rows
     ///
     /// ```rust,no_run
-    /// # use tabled::settings::extract::Extract;
+    /// # use tabled::settings::Extract;
     /// Extract::rows(1..3);
     /// ```
     ///
@@ -123,7 +124,7 @@ where
     /// The segment is defined by [`RangeBounds`] for columns.
     ///
     /// ```rust,no_run
-    /// # use tabled::settings::extract::Extract;
+    /// # use tabled::settings::Extract;
     /// Extract::columns(1..3);
     /// ```
     ///
@@ -167,8 +168,8 @@ where
         // Cleanup table in case if boundaries are exceeded.
         //
         // todo: can be optimized by adding a clear() method to Resizable
-        rows.0 = std::cmp::min(rows.0, count_rows);
-        cols.0 = std::cmp::min(cols.0, count_columns);
+        rows.0 = min(rows.0, count_rows);
+        cols.0 = min(cols.0, count_columns);
 
         extract(records, (count_rows, count_columns), rows, cols);
     }
@@ -231,5 +232,25 @@ fn extract<R>(
     for (i, col) in (end_col..count_cols).enumerate() {
         let col = col - i;
         records.remove_column(col);
+    }
+}
+
+fn bounds_to_usize(
+    left: Bound<&usize>,
+    right: Bound<&usize>,
+    count_elements: usize,
+) -> (usize, usize) {
+    match (left, right) {
+        (Bound::Included(x), Bound::Included(y)) => (*x, y + 1),
+        (Bound::Included(x), Bound::Excluded(y)) => (*x, *y),
+        (Bound::Included(x), Bound::Unbounded) => (*x, count_elements),
+        (Bound::Unbounded, Bound::Unbounded) => (0, count_elements),
+        (Bound::Unbounded, Bound::Included(y)) => (0, y + 1),
+        (Bound::Unbounded, Bound::Excluded(y)) => (0, *y),
+        (Bound::Excluded(_), Bound::Unbounded)
+        | (Bound::Excluded(_), Bound::Included(_))
+        | (Bound::Excluded(_), Bound::Excluded(_)) => {
+            unreachable!("A start bound can't be excluded")
+        }
     }
 }

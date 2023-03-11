@@ -1,15 +1,9 @@
 #![cfg(feature = "std")]
 
 use tabled::settings::{
-    alignment::Alignment,
-    highlight::Highlight,
     object::{Cell, Object, Rows, Segment},
-    panel::Panel,
-    span::Span,
-    style::{Border, Style},
     style::{BorderSpanCorrection, HorizontalLine},
-    width::Width,
-    Modify,
+    Alignment, Border, Highlight, Modify, Panel, Span, Style, Width,
 };
 
 use crate::util::{create_table, new_table, test_table};
