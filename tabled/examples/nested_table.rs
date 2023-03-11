@@ -10,8 +10,7 @@ use tabled::{
     settings::{
         object::{Rows, Segment},
         style::{HorizontalLine, Style},
-        width::Width,
-        Alignment, Modify, Padding,
+        Alignment, Modify, Padding, Width,
     },
     Table,
 };

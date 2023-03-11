@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{
     grid::{color::AnsiColor, config::Borders, spanned::config},
     records::Records,
-    settings::{color::Color, TableOption},
+    settings::{Color, TableOption},
     tables::table::ColoredConfig,
 };
 

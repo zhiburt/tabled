@@ -148,11 +148,7 @@ use syn::{
 };
 use tabled::{
     builder::Builder,
-    settings::{
-        span::{ColumnSpan, RowSpan},
-        style::Style,
-        Alignment, Margin, Modify, Padding,
-    },
+    settings::{Alignment, Margin, Modify, Padding, Span, Style},
     Table,
 };
 
@@ -889,11 +885,11 @@ fn create_table(mat: &MatrixInput) -> Result<Table> {
     let mut table = builder.build();
 
     for (pos, span) in vspan {
-        table.with(Modify::new(pos).with(ColumnSpan::new(span)));
+        table.with(Modify::new(pos).with(Span::horizontal(span)));
     }
 
     for (pos, span) in hspan {
-        table.with(Modify::new(pos).with(RowSpan::new(span)));
+        table.with(Modify::new(pos).with(Span::vertical(span)));
     }
 
     Ok(table)

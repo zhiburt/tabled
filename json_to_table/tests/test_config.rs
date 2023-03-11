@@ -1,7 +1,7 @@
 use json_to_table::json_to_table;
 use serde_json::json;
 use tabled::{
-    settings::{style::Style, Alignment, Padding},
+    settings::{Alignment, Padding, Style},
     Table,
 };
 

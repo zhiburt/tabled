@@ -20,7 +20,7 @@ where
     /// Using this formatting applied for all rows not to a string as a whole.
     ///
     /// ```rust,no_run
-    /// use tabled::{Table, settings::{format::Format, object::Segment, Modify}};
+    /// use tabled::{Table, settings::{Format, object::Segment, Modify}};
     ///
     /// let data: Vec<&'static str> = Vec::new();
     /// let table = Table::new(&data)

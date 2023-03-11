@@ -4,9 +4,7 @@
 use tabled::{
     settings::{
         object::{Cell, Segment},
-        panel::Panel,
-        style::{Border, Style},
-        Alignment, Extract, Highlight, Modify,
+        Alignment, Border, Extract, Highlight, Modify, Panel, Style,
     },
     Table, Tabled,
 };

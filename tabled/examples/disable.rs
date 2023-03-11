@@ -3,10 +3,9 @@
 
 use tabled::{
     settings::{
-        disable::Disable,
         locator::ByColumnName,
         style::{Border, Style},
-        Modify,
+        Disable, Modify,
     },
     Table, Tabled,
 };

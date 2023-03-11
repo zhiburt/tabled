@@ -13,8 +13,7 @@ use crate::{
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
-        width::Width,
-        CellOption, TableOption,
+        CellOption, TableOption, Width,
     },
     tables::table::{ColoredConfig, TableDimension},
 };
@@ -32,13 +31,13 @@ use super::util::{cut_str, get_table_widths, get_table_widths_with_total};
 /// ## Example
 ///
 /// ```
-/// use tabled::{Table, settings::{object::Segment, width::Width, Modify}};
+/// use tabled::{Table, settings::{object::Segment, Width, Modify}};
 ///
 /// let table = Table::new(&["Hello World!"])
 ///     .with(Modify::new(Segment::all()).with(Width::truncate(3)));
 /// ```
 ///
-/// [`Padding`]: crate::settings::padding::Padding
+/// [`Padding`]: crate::settings::Padding
 #[derive(Debug)]
 pub struct Truncate<'a, W = usize, P = PriorityNone> {
     width: W,

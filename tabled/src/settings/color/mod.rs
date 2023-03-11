@@ -1,6 +1,6 @@
 //! This module contains a configuration of a [`Border`] or a [`Table`] to set its borders color via [`Color`].
 //!
-//! [`Border`]: crate::settings::style::Border
+//! [`Border`]: crate::settings::Border
 //! [`Table`]: crate::Table
 
 use std::borrow::Cow;
@@ -31,9 +31,9 @@ use crate::{
 /// println!("{}", table);
 /// ```
 ///
-/// [`Padding`]: crate::settings::padding::Padding
-/// [`Margin`]: crate::settings::margin::Margin
-/// [`Border`]: crate::settings::style::Border
+/// [`Padding`]: crate::settings::Padding
+/// [`Margin`]: crate::settings::Margin
+/// [`Border`]: crate::settings::Border
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct Color(AnsiColor<'static>);
 

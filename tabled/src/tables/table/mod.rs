@@ -18,7 +18,7 @@ use crate::{
         },
     },
     records::{ExactRecords, Records, VecRecords},
-    settings::{style::Style, TableOption},
+    settings::{Style, TableOption},
     Tabled,
 };
 
@@ -54,9 +54,9 @@ pub use dimension::TableDimension;
 /// println!("{}", table);
 /// ```
 ///
-/// [`Padding`]: crate::settings::padding::Padding
-/// [`Style`]: crate::settings::style::Style
-/// [`Style::ascii`]: crate::settings::style::Style::ascii
+/// [`Padding`]: crate::settings::Padding
+/// [`Style`]: crate::settings::Style
+/// [`Style::ascii`]: crate::settings::Style::ascii
 #[derive(Debug, Clone)]
 pub struct Table {
     records: VecRecords<String>,

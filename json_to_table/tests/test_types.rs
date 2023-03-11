@@ -1,6 +1,6 @@
 use json_to_table::json_to_table;
 use serde_json::json;
-use tabled::settings::style::Style;
+use tabled::settings::Style;
 
 #[test]
 fn string_test() {

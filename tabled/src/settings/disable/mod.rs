@@ -7,7 +7,7 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{Table, settings::{disable::Disable, object::Rows}};
+//! use tabled::{Table, settings::{Disable, object::Rows}};
 //!
 //! let data = vec!["Hello", "World", "!!!"];
 //!
@@ -42,7 +42,7 @@ use crate::{
 /// # Example
 ///
 /// ```rust,no_run
-/// # use tabled::{Table, settings::{disable::Disable, object::Rows}};
+/// # use tabled::{Table, settings::{Disable, object::Rows}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data).with(Disable::row(Rows::first()));
 /// ```
@@ -66,7 +66,7 @@ impl<L> Disable<L, TargetColumn> {
     /// - [`ByColumnName`]
     ///
     /// ```rust
-    /// use tabled::{builder::Builder, settings::{disable::Disable, locator::ByColumnName, object::Columns}};
+    /// use tabled::{builder::Builder, settings::{Disable, locator::ByColumnName, object::Columns}};
     ///
     /// let mut builder = Builder::default();
     ///
@@ -111,7 +111,7 @@ impl<L> Disable<L, TargetRow> {
     /// - [`LastRow`]
     ///
     /// ```rust
-    /// use tabled::{settings::{disable::Disable, object::Rows}, builder::Builder};
+    /// use tabled::{settings::{Disable, object::Rows}, builder::Builder};
     ///
     /// let mut builder = Builder::default();
     /// builder.push_record(["col1", "col2", "col3"]);

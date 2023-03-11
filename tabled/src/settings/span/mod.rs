@@ -4,7 +4,7 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{settings::{span::Span, Modify}, Table};
+//! use tabled::{settings::{Span, Modify}, Table};
 //!
 //! let data = [[1, 2, 3], [4, 5, 6]];
 //!
@@ -41,7 +41,7 @@ pub use row::RowSpan;
 ///  - size is bigger then the total number of rows.
 ///
 /// ```rust,no_run
-/// # use tabled::{Table, settings::{style::Style, span::Span, Modify, object::Columns}};
+/// # use tabled::{Table, settings::{Style, Span, Modify, object::Columns}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Modify::new(Columns::single(0)).with(Span::horizontal(2)));

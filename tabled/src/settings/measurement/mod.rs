@@ -4,8 +4,7 @@ use crate::{
     grid::spanned::{ExactDimension, GridConfig},
     grid::util::string::{self, string_width_multiline},
     records::{ExactRecords, Records},
-    settings::height::Height,
-    settings::width::Width,
+    settings::{Height, Width},
 };
 
 /// A width value which can be obtained on behalf of [`Table`].

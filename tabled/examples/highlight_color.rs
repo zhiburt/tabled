@@ -3,10 +3,9 @@
 
 use tabled::{
     settings::{
-        highlight::Highlight,
         object::{Columns, Object, Rows},
         style::BorderColor,
-        Color, Style,
+        Color, Highlight, Style,
     },
     Table,
 };

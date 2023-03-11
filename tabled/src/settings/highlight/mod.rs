@@ -9,7 +9,7 @@ use crate::{
     grid::config::{Border as GridBorder, Entity, Position},
     grid::spanned::GridConfig,
     records::{ExactRecords, Records},
-    settings::{object::Object, style::Border, style::BorderColor, TableOption},
+    settings::{object::Object, style::BorderColor, Border, TableOption},
     tables::table::ColoredConfig,
 };
 
@@ -20,7 +20,7 @@ use crate::{
 /// ```
 /// use tabled::{
 ///     Table,
-///     settings::{highlight::Highlight, style::{Border, Style}, object::Segment}
+///     settings::{Highlight, Border, Style, object::Segment}
 /// };
 ///
 /// let data = [
@@ -54,8 +54,7 @@ use crate::{
 /// use tabled::{
 ///     Table,
 ///     settings::{
-///         highlight::Highlight,
-///         style::{Border, Style},
+///         Highlight, Border, Style,
 ///         object::{Segment, Object}
 ///     }
 /// };

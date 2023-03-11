@@ -45,7 +45,7 @@ use crate::{
         },
         IntoRecords, IterRecords,
     },
-    settings::{style::Style, TableOption},
+    settings::{Style, TableOption},
 };
 
 use self::dimension::ExactList;

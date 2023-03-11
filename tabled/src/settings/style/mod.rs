@@ -9,7 +9,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::style::Style};
+//! use tabled::{Table, settings::Style};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let mut table = Table::new(&data);
@@ -63,7 +63,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::{Modify, style::Style}};
+//! use tabled::{Table, settings::{Modify, Style}};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)

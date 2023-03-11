@@ -2,10 +2,9 @@ use crate::{
     grid::util::string::{count_lines, get_lines},
     records::{ExactRecords, Records, RecordsMut},
     settings::{
-        height::Height,
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
-        TableOption,
+        Height, TableOption,
     },
     tables::table::{ColoredConfig, TableDimension},
 };

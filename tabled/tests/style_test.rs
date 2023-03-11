@@ -327,7 +327,7 @@ test_table!(
     border_text_colored,
     {
         use owo_colors::OwoColorize;
-        use tabled::settings::style::{BorderColor};
+        use tabled::settings::style::BorderColor;
 
         create_table::<2, 2>()
             .with(BorderText::new(1, "-Table"))

@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example matrix`
 
-use tabled::{settings::style::Style, Table};
+use tabled::{settings::Style, Table};
 
 fn matrix<const N: usize>() -> [[usize; N]; N] {
     let mut matrix = [[0; N]; N];

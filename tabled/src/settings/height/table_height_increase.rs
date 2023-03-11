@@ -1,10 +1,9 @@
 use crate::{
     records::{ExactRecords, Records},
     settings::{
-        height::Height,
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
-        TableOption,
+        Height, TableOption,
     },
     tables::table::{ColoredConfig, TableDimension},
 };
