@@ -612,7 +612,6 @@ fn build_row(row: Vec<String>, tag: &str) -> HtmlElement {
                 vec![],
                 Some(HtmlValue::Elements(
                     get_lines(&content)
-                        .into_iter()
                         .map(|line| HtmlValue::Content(line.to_string()))
                         .map(|content| HtmlElement::new("p", vec![], Some(content)))
                         .collect(),
