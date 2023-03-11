@@ -204,6 +204,20 @@ impl<I, D> CompactTable<I, D> {
         )
     }
 
+    /// Format table into [`io::Write`]r.
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    pub fn build<W>(self, writer: W) -> std::io::Result<()>
+    where
+        I: IntoRecords,
+        D: Dimension,
+        W: std::io::Write,
+    {
+        let writer = crate::tables::iter::utf8_writer::UTF8Writer::new(writer);
+        self.fmt(writer)
+            .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))
+    }
+
     /// Build a string.
     ///
     /// We can't implement [`std::string::ToString`] cause it does takes `&self` reference.
@@ -218,20 +232,6 @@ impl<I, D> CompactTable<I, D> {
         let mut buf = String::new();
         self.fmt(&mut buf).unwrap();
         buf
-    }
-
-    /// Format table into [`io::Write`]r.
-    #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-    pub fn build<W>(self, writer: W) -> std::io::Result<()>
-    where
-        I: IntoRecords,
-        D: Dimension,
-        W: std::io::Write,
-    {
-        let writer = crate::tables::iter::utf8_writer::UTF8Writer::new(writer);
-        self.fmt(writer)
-            .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))
     }
 }
 

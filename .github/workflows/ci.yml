@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust: [nightly, stable]
+        rust: [stable]
         os: [ubuntu-latest]
         features: ["", "std", "color", "std,color"]
     runs-on: ${{ matrix.os }}
@@ -58,7 +58,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust: [nightly, stable]
+        rust: [stable]
         os: [ubuntu-latest]
         features: ["", "color"]
     runs-on: ${{ matrix.os }}
@@ -74,7 +74,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust: [nightly, stable]
+        rust: [stable]
         os: [ubuntu-latest]
         features: ["", "color"]
     runs-on: ${{ matrix.os }}
@@ -90,7 +90,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust: [nightly, stable]
+        rust: [stable]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -105,7 +105,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust: [nightly, stable]
+        rust: [stable]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
