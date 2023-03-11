@@ -8,12 +8,9 @@ use std::iter::FromIterator;
 use tabled::{
     builder::Builder,
     settings::{
-        alignment::Alignment,
         object::{Rows, Segment},
-        padding::Padding,
         style::{HorizontalLine, Style},
-        width::Width,
-        Modify,
+        Alignment, Modify, Padding, Width,
     },
     Table,
 };

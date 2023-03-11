@@ -288,12 +288,12 @@ impl Builder {
 
             if is_empty {
                 for row in 0..self.records.len() {
-                    self.records[row].remove(col);
+                    let _ = self.records[row].remove(col);
                 }
 
                 if let Some(columns) = self.columns.as_mut() {
                     if columns.len() > col {
-                        columns.remove(col);
+                        let _ = columns.remove(col);
                     }
                 }
 
@@ -315,7 +315,7 @@ impl Builder {
             }
 
             if is_empty {
-                self.records.remove(row);
+                let _ = self.records.remove(row);
             }
 
             if row == 0 {

@@ -3,10 +3,8 @@
 // todo: add method for SPACING between cells.
 
 use tabled::settings::{
-    highlight::Highlight,
     object::{Cell, Rows},
-    rotate::Rotate,
-    style::Border,
+    Border, Highlight, Rotate,
 };
 
 use crate::util::{new_table, test_table};

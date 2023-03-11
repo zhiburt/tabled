@@ -42,6 +42,6 @@ where
             return;
         }
 
-        dims.set_heights(self.list.clone());
+        let _ = dims.set_heights(self.list.clone());
     }
 }

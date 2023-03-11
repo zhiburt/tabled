@@ -11,8 +11,7 @@ use crate::{
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
-        width::Width,
-        CellOption, TableOption,
+        CellOption, TableOption, Width,
     },
     tables::table::{ColoredConfig, TableDimension},
 };
@@ -37,7 +36,7 @@ use super::util::get_table_widths_with_total;
 /// Cell change
 ///
 /// ```
-/// use tabled::{Table, settings::{object::Segment, width::Width, style::Style, Modify}};
+/// use tabled::{Table, settings::{object::Segment, Width, Style, Modify}};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
@@ -48,12 +47,12 @@ use super::util::get_table_widths_with_total;
 /// Table change
 ///
 /// ```
-/// use tabled::{Table, settings::width::Width};
+/// use tabled::{Table, settings::Width};
 ///
 /// let table = Table::new(&["Hello World!"]).with(Width::increase(5));
 /// ```
 ///
-/// [`Padding`]: crate::settings::padding::Padding
+/// [`Padding`]: crate::settings::Padding
 #[derive(Debug)]
 pub struct MinWidth<W = usize, P = PriorityNone> {
     width: W,
@@ -152,7 +151,7 @@ where
         }
 
         let widths = get_increase_list(widths, nessary_width, total_width, P::create());
-        dims.set_widths(widths);
+        let _ = dims.set_widths(widths);
     }
 }
 

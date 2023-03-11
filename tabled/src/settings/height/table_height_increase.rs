@@ -1,10 +1,9 @@
 use crate::{
     records::{ExactRecords, Records},
     settings::{
-        height::Height,
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
-        TableOption,
+        Height, TableOption,
     },
     tables::table::{ColoredConfig, TableDimension},
 };
@@ -67,7 +66,7 @@ where
 
         get_increase_list(&mut heights, height, total, self.priority.clone());
 
-        dims.set_heights(heights);
+        let _ = dims.set_heights(heights);
     }
 }
 

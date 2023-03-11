@@ -3,12 +3,9 @@
 
 use tabled::{
     settings::{
-        alignment::Alignment,
         object::{FirstRow, Rows},
-        padding::Padding,
-        style::builder::On,
-        style::Style,
-        Modify, ModifyList, Settings,
+        style::On,
+        Alignment, Modify, ModifyList, Padding, Settings, Style,
     },
     Table, Tabled,
 };

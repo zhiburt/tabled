@@ -1,7 +1,7 @@
 use std::ops::Bound;
 
 /// Converts a range bound to its indexes.
-pub(crate) fn bounds_to_usize(
+pub(super) fn bounds_to_usize(
     left: Bound<&usize>,
     right: Bound<&usize>,
     count_elements: usize,

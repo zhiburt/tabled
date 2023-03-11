@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example builder_index`
 
-use tabled::{settings::style::Style, Table, Tabled};
+use tabled::{settings::Style, Table, Tabled};
 
 #[derive(Tabled)]
 struct Distribution {

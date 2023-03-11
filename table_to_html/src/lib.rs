@@ -399,9 +399,8 @@ pub type Padding = Sides<usize>;
 /// A Html element margin in PX.
 pub type Margin = Sides<usize>;
 
-pub use tabled::grid::config::Entity;
-pub use tabled::grid::config::Position;
-pub use tabled::settings::alignment::Alignment;
+pub use tabled::grid::config::{Entity, Position};
+pub use tabled::settings::Alignment;
 
 /// The structure represents an HTML `<table>`.
 #[derive(Debug, Clone)]
@@ -613,7 +612,6 @@ fn build_row(row: Vec<String>, tag: &str) -> HtmlElement {
                 vec![],
                 Some(HtmlValue::Elements(
                     get_lines(&content)
-                        .into_iter()
                         .map(|line| HtmlValue::Content(line.to_string()))
                         .map(|content| HtmlElement::new("p", vec![], Some(content)))
                         .collect(),

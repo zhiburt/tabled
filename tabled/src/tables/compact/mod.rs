@@ -8,7 +8,7 @@
 //! It works smoothly with arrays.
 //!
 //! ```
-//!use tabled::{settings::style::Style, tables::compact::CompactTable};
+//!use tabled::{settings::Style, tables::compact::CompactTable};
 //!
 //! let data = [
 //!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
@@ -35,7 +35,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//!use tabled::{settings::style::Style, tables::compact::CompactTable};
+//!use tabled::{settings::Style, tables::compact::CompactTable};
 //!
 //! let data = [
 //!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
@@ -81,7 +81,7 @@ use crate::{
         into_records::{LimitColumns, LimitRows},
         IntoRecords, IterRecords,
     },
-    settings::{style::Style, TableOption},
+    settings::{Style, TableOption},
 };
 
 use self::dimension::{ConstSize, ConstantDimension};
@@ -204,22 +204,9 @@ impl<I, D> CompactTable<I, D> {
         )
     }
 
-    /// Build a string.
-    ///
-    /// We can't implement [`std::string::ToString`] cause it does takes `&self` reference.
-    #[allow(clippy::inherent_to_string)]
-    pub fn to_string(self) -> String
-    where
-        I: IntoRecords,
-        D: Dimension,
-    {
-        let mut buf = String::new();
-        self.fmt(&mut buf).unwrap();
-        buf
-    }
-
     /// Format table into [`io::Write`]r.
     #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     pub fn build<W>(self, writer: W) -> std::io::Result<()>
     where
         I: IntoRecords,
@@ -229,6 +216,22 @@ impl<I, D> CompactTable<I, D> {
         let writer = crate::tables::iter::utf8_writer::UTF8Writer::new(writer);
         self.fmt(writer)
             .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))
+    }
+
+    /// Build a string.
+    ///
+    /// We can't implement [`std::string::ToString`] cause it does takes `&self` reference.
+    #[allow(clippy::inherent_to_string)]
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    pub fn to_string(self) -> String
+    where
+        I: IntoRecords,
+        D: Dimension,
+    {
+        let mut buf = String::new();
+        self.fmt(&mut buf).unwrap();
+        buf
     }
 }
 

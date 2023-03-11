@@ -3,7 +3,7 @@
 
 use std::io::BufRead;
 
-use tabled::{settings::style::Style, tables::iter::IterTable};
+use tabled::{settings::Style, tables::iter::IterTable};
 
 fn main() {
     let path = file!();

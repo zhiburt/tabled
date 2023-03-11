@@ -25,17 +25,9 @@ use crossterm::{
 
 use tabled::{
     settings::{
-        alignment::Alignment,
-        color::Color,
-        disable::Disable,
-        format::Format,
-        highlight::Highlight,
-        margin::Margin,
         object::{Columns, Object, Rows},
-        panel::Panel,
         style::{Border, BorderColor, BorderText, Style},
-        width::Width,
-        Modify,
+        Alignment, Color, Disable, Format, Highlight, Margin, Modify, Panel, Width,
     },
     Table, Tabled,
 };

@@ -1252,7 +1252,6 @@ fn count_empty_lines(cell: &str) -> (usize, usize, usize) {
 fn get_text_width(text: &str, trim: bool) -> usize {
     if trim {
         get_lines(text)
-            .into_iter()
             .map(|line| string_width(line.trim()))
             .max()
             .unwrap_or(0)

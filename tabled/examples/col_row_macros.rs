@@ -5,7 +5,7 @@
 
 use tabled::{
     col, row,
-    settings::{alignment::Alignment, style::Style},
+    settings::{Alignment, Style},
     Table, Tabled,
 };
 

@@ -4,7 +4,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::{padding::Padding, style::Style, Modify, object::Cell}};
+//! use tabled::{Table, settings::{Padding, Style, Modify, object::Cell}};
 //!
 //! let table = Table::new("2022".chars())
 //!     .with(Style::modern())
@@ -37,22 +37,24 @@
 
 use crate::{
     grid::{
-        color::{AnsiColor, StaticColor},
+        color::StaticColor,
         compact::CompactConfig,
         config::{Entity, Indent, Sides},
-        spanned::config::ColoredIndent,
     },
     settings::TableOption,
 };
 
 #[cfg(feature = "std")]
-use crate::tables::table::ColoredConfig;
+use crate::{
+    grid::{color::AnsiColor, spanned::config::ColoredIndent},
+    tables::table::ColoredConfig,
+};
 
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// # use tabled::{settings::{style::Style, padding::Padding, object::Rows, Modify}, Table};
+/// # use tabled::{settings::{Style, Padding, object::Rows, Modify}, Table};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
 /// ```
@@ -145,6 +147,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 fn create_padding<C: Into<AnsiColor<'static>> + Clone>(
     i: &Sides<Indent>,
     c: Option<&Sides<C>>,

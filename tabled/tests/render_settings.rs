@@ -1,12 +1,9 @@
 #![cfg(feature = "std")]
 
 use tabled::settings::{
-    alignment::Alignment,
     formatting::{AlignmentStrategy, TabSize, TrimStrategy},
     object::Segment,
-    span::ColumnSpan,
-    style::Style,
-    Modify,
+    Alignment, Modify, Span, Style,
 };
 
 use crate::util::{create_vector, new_table, test_table};
@@ -153,9 +150,9 @@ test_table!(
     new_table(tab_data2())
         .with(TabSize::new(4))
         .with(Style::psql())
-        .with(Modify::new((0, 0)).with(ColumnSpan::new(3)))
-        .with(Modify::new((1, 0)).with(ColumnSpan::new(2)))
-        .with(Modify::new((2, 1)).with(ColumnSpan::new(2))),
+        .with(Modify::new((0, 0)).with(Span::horizontal(3)))
+        .with(Modify::new((1, 0)).with(Span::horizontal(2)))
+        .with(Modify::new((2, 1)).with(Span::horizontal(2))),
     "                     N                     | column 2 "
     "----------------------+-----+--------------+----------"
     "     H        ello    World |     0-1      |   0-2    "

@@ -26,7 +26,7 @@ use crate::{
 ///     Table,
 ///     settings::{
 ///         Modify, style::{Style, BorderSpanCorrection},
-///         format::Format, span::Span, object::Cell
+///         Format, Span, object::Cell
 ///     }
 /// };
 ///
@@ -70,7 +70,7 @@ use crate::{
 ///
 /// [`Table`]: crate::Table
 /// [`Span`]: crate::settings::span::Span
-/// [`Style`]: crate::settings::style::Style
+/// [`Style`]: crate::settings::Style
 /// [`Style::correct_spans`]: crate::settings::style::BorderSpanCorrection
 #[derive(Debug)]
 pub struct BorderSpanCorrection;

@@ -3,7 +3,7 @@
 
 use tabled::{
     col, row,
-    settings::{alignment::Alignment, format::Format, object::Segment, padding::Padding, Modify},
+    settings::{format::Format, object::Segment, Alignment, Modify, Padding},
 };
 
 use crate::util::{create_table, test_table};

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::{
     grid::{color::AnsiColor, config::Borders, spanned::config},
     records::Records,
-    settings::{color::Color, TableOption},
+    settings::{Color, TableOption},
     tables::table::ColoredConfig,
 };
 
@@ -239,7 +239,7 @@ impl RawStyle {
 
     /// Insert a horizontal line to a specific row location.
     pub fn insert_horizontal(&mut self, row: usize, line: Line) -> &mut Self {
-        self.horizontals.insert(row, line);
+        let _ = self.horizontals.insert(row, line);
         self
     }
 
@@ -281,7 +281,7 @@ impl RawStyle {
 
     /// Insert a vertical line into specific column location.
     pub fn insert_vertical(&mut self, column: usize, line: Line) -> &mut Self {
-        self.verticals.insert(column, line);
+        let _ = self.verticals.insert(column, line);
         self
     }
 

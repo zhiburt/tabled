@@ -2,10 +2,9 @@ use crate::{
     grid::util::string::{count_lines, get_lines},
     records::{ExactRecords, Records, RecordsMut},
     settings::{
-        height::Height,
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
-        TableOption,
+        Height, TableOption,
     },
     tables::table::{ColoredConfig, TableDimension},
 };
@@ -86,7 +85,7 @@ where
             }
         }
 
-        dims.set_heights(heights);
+        let _ = dims.set_heights(heights);
     }
 }
 

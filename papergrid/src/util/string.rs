@@ -5,6 +5,7 @@
 //! [`Grid`]: crate::grid::spanned::Grid
 
 /// Returns string width and count lines of a string. It's a combination of [`string_width_multiline_tab`] and [`count_lines`].
+#[cfg(feature = "std")]
 pub fn string_dimension(text: &str) -> (usize, usize) {
     #[cfg(not(feature = "color"))]
     {
@@ -232,6 +233,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "std")]
     #[test]
     fn string_dimension_test() {
         assert_eq!(
@@ -255,6 +257,7 @@ mod tests {
         assert_eq!(string_dimension(""), (1, 0));
     }
 
+    #[cfg(feature = "std")]
     #[test]
     fn replace_tab_test() {
         assert_eq!(replace_tab("123\t\tabc\t", 3), "123      abc   ");

@@ -20,7 +20,7 @@ pub use table_height_limit::TableHeightLimit;
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, settings::{height::Height, Settings}};
+/// use tabled::{Table, settings::{Height, Settings}};
 ///
 /// let data = vec![
 ///     ("Some data", "here", "and here"),
@@ -56,7 +56,7 @@ impl Height {
     /// ## Cell height
     ///
     /// ```
-    /// use tabled::{Table, settings::{height::Height, Modify, object::Columns}};
+    /// use tabled::{Table, settings::{Height, Modify, object::Columns}};
     ///
     /// let data = vec![
     ///     ("Some data", "here", "and here"),
@@ -94,7 +94,7 @@ impl Height {
     /// ## Table height
     ///
     /// ```
-    /// use tabled::{Table, settings::height::Height};
+    /// use tabled::{Table, settings::Height};
     ///
     /// let data = vec![
     ///     ("Some data", "here", "and here"),
@@ -130,7 +130,7 @@ impl Height {
     /// ## Cell height
     ///
     /// ```
-    /// use tabled::{Table, settings::{height::Height, Modify, object::Columns}};
+    /// use tabled::{Table, settings::{Height, Modify, object::Columns}};
     ///
     /// let data = vec![
     ///     ("Some\ndata", "here", "and here"),
@@ -156,7 +156,7 @@ impl Height {
     /// ## Table height
     ///
     /// ```
-    /// use tabled::{Table, settings::height::Height};
+    /// use tabled::{Table, settings::Height};
     ///
     /// let data = vec![
     ///     ("Some\ndata", "here", "and here"),
@@ -200,7 +200,7 @@ impl Height {
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, settings::{height::Height, Modify, object::Columns}};
+    /// use tabled::{Table, settings::{Height, Modify, object::Columns}};
     ///
     /// let data = vec![
     ///     ("Some\ndata", "here", "and here"),

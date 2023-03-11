@@ -1,6 +1,6 @@
 use json_to_table::{json_to_table, Orientation};
 use serde_json::json;
-use tabled::{settings::style::Style, Table};
+use tabled::{settings::Style, Table};
 
 #[test]
 fn orientation_test_1() {

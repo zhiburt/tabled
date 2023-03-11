@@ -6,12 +6,8 @@ mod util;
 use owo_colors::OwoColorize;
 
 use tabled::settings::{
-    alignment::Alignment,
-    format::Format,
-    height::Height,
     object::{Columns, Segment},
-    style::Style,
-    Modify,
+    Alignment, Format, Height, Modify, Style,
 };
 
 use util::{create_table, test_table};

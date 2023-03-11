@@ -10,8 +10,7 @@
 //!     Table,
 //!     settings::{
 //!         formatting::AlignmentStrategy,
-//!         object::Segment, alignment::Alignment,
-//!         Modify, style::Style,
+//!         object::Segment, Alignment, Modify, Style,
 //!     }
 //! };
 //!
@@ -67,7 +66,7 @@ use crate::tables::table::ColoredConfig;
 ///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// # use tabled::{Table, settings::{alignment::Alignment, Modify, object::Rows}};
+/// # use tabled::{Table, settings::{Alignment, Modify, object::Rows}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let mut table = Table::new(&data);
 /// table.with(Modify::new(Rows::single(0)).with(Alignment::center()));
