@@ -10,21 +10,110 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  check:
-    name: Check
+  check-tabled:
+    name: Check tabled
     strategy:
       fail-fast: false
       matrix:
         rust: [nightly, stable]
         os: [ubuntu-latest, windows-latest, macos-latest]
-        features: ["", "std", "color", "derive", "macros", "color,derive", "color,macros", "macros,derive", "color,derive,macros"]
+        features:
+          [
+            "",
+            "std",
+            "color",
+            "derive",
+            "macros",
+            "color,derive",
+            "color,macros",
+            "macros,derive",
+            "color,derive,macros",
+          ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - run: cargo check --all-targets --all --no-default-features --features=${{ matrix.features }}
+      - run: cargo check --manifest-path=./tabled/Cargo.toml --all-targets --no-default-features --features=${{ matrix.features }}
+
+  check-papergrid:
+    name: Check papergrid
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [nightly, stable]
+        os: [ubuntu-latest]
+        features: ["", "std", "color", "std,color"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo check --manifest-path=./papergrid/Cargo.toml --all-targets --no-default-features --features=${{ matrix.features }}
+
+  check-csv_to_table:
+    name: Check csv_to_table
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [nightly, stable]
+        os: [ubuntu-latest]
+        features: ["", "color"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo check --manifest-path=./csv_to_table/Cargo.toml --all-targets --no-default-features --features=${{ matrix.features }}
+
+  check-json_to_table:
+    name: Check json_to_table
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [nightly, stable]
+        os: [ubuntu-latest]
+        features: ["", "color"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo check --manifest-path=./json_to_table/Cargo.toml --all-targets --no-default-features --features=${{ matrix.features }}
+
+  check-static_table:
+    name: Check json_to_table
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [nightly, stable]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo check --manifest-path=./static_table/Cargo.toml --all-targets
+
+  check-tabled_derive:
+    name: Check json_to_table
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [nightly, stable]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo check --manifest-path=./tabled_derive/Cargo.toml --all-targets
 
   msrv:
     name: MSRV
@@ -32,8 +121,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@1.61.0
-      # check only the root crate for MSRV
-      - run: cargo build --all-features
+      - run: cargo build --manifest-path=./tabled/Cargo.toml --all-features
 
   fmt:
     name: Rustfmt
@@ -48,16 +136,30 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl]
+        features: ["", "color"]
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
         with:
-          components: clippy
-      - run: cargo clippy --all --all-targets -- -D warnings
+          target: ${{ matrix.target }}
+      - run: cargo clippy --all --all-targets --no-default-features --features=${{ matrix.features }} -- -D warnings
 
   test:
     name: Unit Test Suite
-    needs: [check, fmt, clippy]
+    needs:
+      [
+        check-tabled,
+        check-static_table,
+        check-csv_to_table,
+        check-json_to_table,
+        check-papergrid,
+        check-tabled_derive,
+        fmt,
+        clippy,
+      ]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -72,7 +174,7 @@ jobs:
 
   test_quickcheck:
     name: A quickcheck test suite
-    needs: [check, fmt, clippy]
+    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

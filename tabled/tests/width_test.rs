@@ -2580,7 +2580,7 @@ mod derived {
                 name: text.to_owned(),
                 is_hyperlink: true,
             }];
-            tabled::Table::new(&data)
+            tabled::Table::new(data)
                 .with(
                     Modify::new(Segment::all())
                         .with(Width::wrap(5).keep_words())

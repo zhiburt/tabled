@@ -30,7 +30,7 @@
 //! [`Builder::index`]: crate::builder::Builder::index
 
 // use core::cmp::max;
-use std::cmp::max;
+use core::cmp::max;
 
 use crate::{
     records::{ExactRecords, Records, Resizable},
