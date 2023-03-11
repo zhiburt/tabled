@@ -26,6 +26,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<T, R, D, C> TableOption<R, D, C> for Vec<T>
 where
     T: TableOption<R, D, C>,
