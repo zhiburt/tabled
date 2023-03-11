@@ -96,6 +96,8 @@ pub struct Highlight<O> {
     border: Border,
 }
 
+// todo: Add BorderColor.
+
 impl<O> Highlight<O> {
     /// Build a new instance of [`Highlight`]
     ///

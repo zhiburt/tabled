@@ -3,13 +3,10 @@
 
 use tabled::{
     settings::{
-        alignment::Alignment,
-        extract::Extract,
-        highlight::Highlight,
         object::{Cell, Segment},
         panel::Panel,
         style::{Border, Style},
-        Modify,
+        Alignment, Extract, Highlight, Modify,
     },
     Table, Tabled,
 };

@@ -3,7 +3,7 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{Table, settings::{shadow::Shadow, style::Style}};
+//! use tabled::{Table, settings::{Shadow, Style}};
 //!
 //! let data = vec!["Hello", "World", "!"];
 //!

@@ -85,9 +85,12 @@ impl<'val, ModeVisitor> JsonTable<'val, ModeVisitor> {
     /// # Example
     ///
     /// ```
-    /// use json_to_table::json_to_table;
     /// use serde_json::json;
-    /// use tabled::{settings::{alignment::Alignment, padding::Padding, style::Style}, Table};
+    /// use json_to_table::json_to_table;
+    /// use tabled::{
+    ///     settings::{Alignment, Padding, Style},
+    ///     Table
+    /// };
     ///
     /// let value = json!({
     ///     "key1": 123,
@@ -193,9 +196,7 @@ mod json_to_table {
             util::string::string_width_multiline,
         },
         records::Records,
-        settings::{
-            format::Format, height::Height, padding::Padding, width::Width, Settings, TableOption,
-        },
+        settings::{Format, Height, Padding, Settings, TableOption, Width},
         tables::table::ColoredConfig,
     };
 

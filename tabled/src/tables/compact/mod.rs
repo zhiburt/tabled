@@ -208,6 +208,8 @@ impl<I, D> CompactTable<I, D> {
     ///
     /// We can't implement [`std::string::ToString`] cause it does takes `&self` reference.
     #[allow(clippy::inherent_to_string)]
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     pub fn to_string(self) -> String
     where
         I: IntoRecords,
@@ -220,6 +222,7 @@ impl<I, D> CompactTable<I, D> {
 
     /// Format table into [`io::Write`]r.
     #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     pub fn build<W>(self, writer: W) -> std::io::Result<()>
     where
         I: IntoRecords,

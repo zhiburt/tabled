@@ -5,12 +5,8 @@ use std::fmt::{Display, Formatter};
 
 use tabled::{
     settings::{
-        alignment::Alignment,
-        extract::Extract,
-        format::Format,
         object::{Columns, Rows},
-        style::Style,
-        Modify,
+        Alignment, Extract, Format, Modify, Style,
     },
     Table, Tabled,
 };

@@ -1,6 +1,6 @@
 #![cfg(feature = "std")]
 
-use tabled::settings::{concat::Concat, style::Style};
+use tabled::settings::{style::Style, Concat};
 
 use crate::util::{create_table, init_table, test_table};
 

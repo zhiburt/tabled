@@ -6,7 +6,7 @@
 //! [`Grid`]: tabled::grid::Grid
 
 use tabled::{
-    settings::{color::Color, style::Style, Modify},
+    settings::{Color, Modify, Style},
     Table, Tabled,
 };
 

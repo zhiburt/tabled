@@ -45,7 +45,7 @@ pub use dimension::TableDimension;
 /// ### With settings
 ///
 /// ```rust,no_run
-/// use tabled::{Table, settings::{style::Style, alignment::Alignment}};
+/// use tabled::{Table, settings::{Style, Alignment}};
 ///
 /// let data = vec!["Hello", "2021"];
 /// let mut table = Table::new(&data);
@@ -107,7 +107,7 @@ impl Table {
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
     /// use tabled::{
     ///     Table, Tabled,
-    ///     settings::{object::Segment, Modify, alignment::Alignment}
+    ///     settings::{object::Segment, Modify, Alignment}
     /// };
     ///
     /// #[derive(Tabled)]

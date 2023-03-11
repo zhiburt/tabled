@@ -18,14 +18,14 @@ use crate::{
 /// ## Examples
 ///
 /// ```
-/// use tabled::{Table, settings::{width::Justify, style::Style, object::Segment, padding::Padding, Modify}};
+/// use tabled::{Table, settings::{Width, Style, object::Segment, Padding, Modify}};
 ///
 /// let data = ["Hello", "World", "!"];
 ///
 /// let table = Table::new(&data)
 ///     .with(Style::markdown())
 ///     .with(Modify::new(Segment::all()).with(Padding::zero()))
-///     .with(Justify::new(3));
+///     .with(Width::justify(3));
 /// ```
 ///
 /// [`Max`] usage to justify by a max column width.

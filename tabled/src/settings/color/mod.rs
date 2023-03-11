@@ -17,7 +17,7 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// use tabled::{settings::color::Color, Table};
+/// use tabled::{settings::Color, Table};
 ///
 /// let data = [
 ///     (0u8, "Hello"),

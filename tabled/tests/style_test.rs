@@ -5,16 +5,12 @@ use std::iter::FromIterator;
 use tabled::{
     builder::Builder,
     settings::{
-        format::Format,
-        highlight::Highlight,
         object::{Columns, Rows, Segment},
-        padding::Padding,
-        span::ColumnSpan,
         style::{
             Border, BorderChar, BorderSpanCorrection, BorderText, HorizontalLine, Line, Offset,
             RawStyle, Style, VerticalLine,
         },
-        Modify,
+        Format, Highlight, Modify, Padding, Span,
     },
     Table,
 };
@@ -24,7 +20,7 @@ use crate::util::{create_table, init_table, static_table, test_table};
 #[cfg(feature = "color")]
 use std::convert::TryFrom;
 #[cfg(feature = "color")]
-use tabled::settings::color::Color;
+use tabled::settings::Color;
 
 mod util;
 
@@ -568,14 +564,14 @@ test_table!(
 test_table!(
     span_correct_test_0,
     create_table::<6, 4>()
-        .with(Modify::new((0, 3)).with(ColumnSpan::new(2)))
-        .with(Modify::new((1, 0)).with(ColumnSpan::new(3)))
-        .with(Modify::new((2, 0)).with(ColumnSpan::new(2)))
-        .with(Modify::new((2, 3)).with(ColumnSpan::new(2)))
-        .with(Modify::new((3, 0)).with(ColumnSpan::new(5)))
-        .with(Modify::new((4, 1)).with(ColumnSpan::new(4)))
-        .with(Modify::new((5, 0)).with(ColumnSpan::new(5)))
-        .with(Modify::new((6, 0)).with(ColumnSpan::new(5)))
+        .with(Modify::new((0, 3)).with(Span::horizontal(2)))
+        .with(Modify::new((1, 0)).with(Span::horizontal(3)))
+        .with(Modify::new((2, 0)).with(Span::horizontal(2)))
+        .with(Modify::new((2, 3)).with(Span::horizontal(2)))
+        .with(Modify::new((3, 0)).with(Span::horizontal(5)))
+        .with(Modify::new((4, 1)).with(Span::horizontal(4)))
+        .with(Modify::new((5, 0)).with(Span::horizontal(5)))
+        .with(Modify::new((6, 0)).with(Span::horizontal(5)))
         .with(BorderSpanCorrection),
     "+---+----------+----------+-----------+"
     "| N | column 0 | column 1 | column 2  |"
@@ -597,14 +593,14 @@ test_table!(
 test_table!(
     span_correct_test_1,
     create_table::<6, 4>()
-        .with(Modify::new((0, 0)).with(ColumnSpan::new(5)))
-        .with(Modify::new((1, 0)).with(ColumnSpan::new(3)))
-        .with(Modify::new((2, 0)).with(ColumnSpan::new(2)))
-        .with(Modify::new((2, 3)).with(ColumnSpan::new(2)))
-        .with(Modify::new((3, 0)).with(ColumnSpan::new(5)))
-        .with(Modify::new((4, 1)).with(ColumnSpan::new(4)))
-        .with(Modify::new((5, 0)).with(ColumnSpan::new(5)))
-        .with(Modify::new((6, 0)).with(ColumnSpan::new(5)))
+        .with(Modify::new((0, 0)).with(Span::horizontal(5)))
+        .with(Modify::new((1, 0)).with(Span::horizontal(3)))
+        .with(Modify::new((2, 0)).with(Span::horizontal(2)))
+        .with(Modify::new((2, 3)).with(Span::horizontal(2)))
+        .with(Modify::new((3, 0)).with(Span::horizontal(5)))
+        .with(Modify::new((4, 1)).with(Span::horizontal(4)))
+        .with(Modify::new((5, 0)).with(Span::horizontal(5)))
+        .with(Modify::new((6, 0)).with(Span::horizontal(5)))
         .with(BorderSpanCorrection),
     "+----------------------+"
     "|          N           |"
@@ -2041,7 +2037,7 @@ fn test_default_border_usage() {
 #[test]
 fn border_colored_test() {
     use owo_colors::OwoColorize;
-    use tabled::settings::{color::Color, style::BorderColor};
+    use tabled::settings::{style::BorderColor, Color};
 
     let table = create_table::<2, 2>()
         .with(Style::ascii())
@@ -2114,7 +2110,7 @@ fn border_colored_test() {
 #[test]
 fn style_with_color_test() {
     use owo_colors::OwoColorize;
-    use tabled::settings::color::Color;
+    use tabled::settings::Color;
 
     let mut style: RawStyle = Style::ascii().into();
     style
@@ -2178,7 +2174,7 @@ test_table!(
 test_table!(
     border_color,
     {
-        use tabled::settings::color::Color;
+        use tabled::settings::Color;
         create_table::<3, 3>().with(Style::psql()).with(Color::BG_GREEN)
     },
     " \u{1b}[42mN\u{1b}[49m | \u{1b}[42mcolumn 0\u{1b}[49m | \u{1b}[42mcolumn 1\u{1b}[49m | \u{1b}[42mcolumn 2\u{1b}[49m \n---+----------+----------+----------\n \u{1b}[42m0\u{1b}[49m |   \u{1b}[42m0-0\u{1b}[49m    |   \u{1b}[42m0-1\u{1b}[49m    |   \u{1b}[42m0-2\u{1b}[49m    \n \u{1b}[42m1\u{1b}[49m |   \u{1b}[42m1-0\u{1b}[49m    |   \u{1b}[42m1-1\u{1b}[49m    |   \u{1b}[42m1-2\u{1b}[49m    \n \u{1b}[42m2\u{1b}[49m |   \u{1b}[42m2-0\u{1b}[49m    |   \u{1b}[42m2-1\u{1b}[49m    |   \u{1b}[42m2-2\u{1b}[49m    "
@@ -2187,7 +2183,7 @@ test_table!(
 test_table!(
     text_color,
     {
-        use tabled::settings::color::Color;
+        use tabled::settings::Color;
         create_table::<3, 3>().with(Style::psql()).with(Modify::new(Segment::all()).with(Color::BG_BLACK))
     },
     " \u{1b}[40mN\u{1b}[49m | \u{1b}[40mcolumn 0\u{1b}[49m | \u{1b}[40mcolumn 1\u{1b}[49m | \u{1b}[40mcolumn 2\u{1b}[49m \n---+----------+----------+----------\n \u{1b}[40m0\u{1b}[49m |   \u{1b}[40m0-0\u{1b}[49m    |   \u{1b}[40m0-1\u{1b}[49m    |   \u{1b}[40m0-2\u{1b}[49m    \n \u{1b}[40m1\u{1b}[49m |   \u{1b}[40m1-0\u{1b}[49m    |   \u{1b}[40m1-1\u{1b}[49m    |   \u{1b}[40m1-2\u{1b}[49m    \n \u{1b}[40m2\u{1b}[49m |   \u{1b}[40m2-0\u{1b}[49m    |   \u{1b}[40m2-1\u{1b}[49m    |   \u{1b}[40m2-2\u{1b}[49m    "

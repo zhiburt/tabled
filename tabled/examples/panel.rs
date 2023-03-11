@@ -3,12 +3,9 @@
 
 use tabled::{
     settings::{
-        alignment::Alignment,
         object::{Cell, Segment},
-        panel::Panel,
         style::{BorderSpanCorrection, Style},
-        width::Width,
-        Modify,
+        Alignment, Modify, Panel, Width,
     },
     Table, Tabled,
 };

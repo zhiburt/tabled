@@ -105,7 +105,7 @@
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{
 //!     Tabled, Table,
-//!     settings::{style::Style, alignment::Alignment, Modify, object::{Rows, Columns, Object}}
+//!     settings::{Style, Alignment, Modify, object::{Rows, Columns, Object}}
 //! };
 //!
 //! #[derive(Tabled)]
@@ -153,7 +153,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{builder::Builder, settings::{Modify, object::Rows, alignment::Alignment, style::Style}};
+//! use tabled::{builder::Builder, settings::{Modify, object::Rows, Alignment, Style}};
 //!
 //! let header = std::iter::once(String::from("i")).chain((0..10).map(|i| i.to_string()));
 //!

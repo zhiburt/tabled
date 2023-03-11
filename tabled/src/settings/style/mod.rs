@@ -116,11 +116,10 @@ mod raw_style;
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod span_border_correction;
 
+mod builder;
 mod horizontal_line;
 mod line;
 mod vertical_line;
-
-pub mod builder;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
@@ -129,7 +128,7 @@ pub use self::{
     offset::Offset, raw_style::RawStyle, span_border_correction::BorderSpanCorrection,
 };
 
-pub use builder::Style;
+pub use builder::{HorizontalLineIter, On, Style, VerticalLineIter};
 pub use horizontal_line::HorizontalLine;
 pub use line::Line;
 pub use vertical_line::VerticalLine;
