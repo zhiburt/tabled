@@ -86,7 +86,7 @@ jobs:
       - run: cargo check --manifest-path=./json_to_table/Cargo.toml --all-targets --no-default-features --features=${{ matrix.features }}
 
   check-static_table:
-    name: Check json_to_table
+    name: Check static_table
     strategy:
       fail-fast: false
       matrix:
@@ -101,7 +101,7 @@ jobs:
       - run: cargo check --manifest-path=./static_table/Cargo.toml --all-targets
 
   check-tabled_derive:
-    name: Check json_to_table
+    name: Check tabled_derive
     strategy:
       fail-fast: false
       matrix:
