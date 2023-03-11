@@ -35,6 +35,7 @@ where
         let count_cols = records.count_columns();
 
         set_row_spans(cfg, self.size, entity, (count_rows, count_cols));
+        remove_false_spans(cfg);
     }
 }
 
@@ -104,4 +105,20 @@ fn span_has_intersections(cfg: &GridConfig, (row, col): Position, span: usize) -
     }
 
     false
+}
+
+fn remove_false_spans(cfg: &mut GridConfig) {
+    for (pos, _) in cfg.iter_span_columns().collect::<Vec<_>>() {
+        if !cfg.is_cell_visible(pos) {
+            cfg.set_row_span(pos, 1);
+            cfg.set_column_span(pos, 1);
+        }
+    }
+
+    for (pos, _) in cfg.iter_span_rows().collect::<Vec<_>>() {
+        if !cfg.is_cell_visible(pos) {
+            cfg.set_row_span(pos, 1);
+            cfg.set_column_span(pos, 1);
+        }
+    }
 }

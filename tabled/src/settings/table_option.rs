@@ -14,3 +14,25 @@ where
         T::change(self, records, cfg, dimension);
     }
 }
+
+impl<T, R, D, C> TableOption<R, D, C> for [T]
+where
+    T: TableOption<R, D, C>,
+{
+    fn change(&mut self, records: &mut R, cfg: &mut C, dimension: &mut D) {
+        for opt in self {
+            opt.change(records, cfg, dimension)
+        }
+    }
+}
+
+impl<T, R, D, C> TableOption<R, D, C> for Vec<T>
+where
+    T: TableOption<R, D, C>,
+{
+    fn change(&mut self, records: &mut R, cfg: &mut C, dimension: &mut D) {
+        for opt in self {
+            opt.change(records, cfg, dimension)
+        }
+    }
+}
