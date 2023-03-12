@@ -9,8 +9,8 @@
 //! let data = [[1, 2, 3], [4, 5, 6]];
 //!
 //! let table = Table::new(data)
-//!     .with(Modify::new((2, 0)).with(Span::horizontal(2)))
-//!     .with(Modify::new((0, 1)).with(Span::horizontal(2)))
+//!     .with(Modify::new((2, 0)).with(Span::column(2)))
+//!     .with(Modify::new((0, 1)).with(Span::column(2)))
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -44,7 +44,7 @@ pub use row::RowSpan;
 /// # use tabled::{Table, settings::{Style, Span, Modify, object::Columns}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
-///     .with(Modify::new(Columns::single(0)).with(Span::horizontal(2)));
+///     .with(Modify::new(Columns::single(0)).with(Span::column(2)));
 /// ```
 ///
 /// [`Table`]: crate::Table
@@ -55,14 +55,14 @@ impl Span {
     /// New constructs a horizontal/column [`Span`].
     ///
     /// If size is bigger then the total number of columns it will be ignored.
-    pub fn horizontal(size: usize) -> ColumnSpan {
+    pub fn column(size: usize) -> ColumnSpan {
         ColumnSpan::new(size)
     }
 
     /// New constructs a vertical/row [`Span`].
     ///
     /// If size is bigger then the total number of rows it will be ignored.
-    pub fn vertical(size: usize) -> RowSpan {
+    pub fn row(size: usize) -> RowSpan {
         RowSpan::new(size)
     }
 }

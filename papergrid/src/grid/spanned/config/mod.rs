@@ -57,36 +57,6 @@ impl Default for GridConfig {
 }
 
 impl GridConfig {
-    /// Set a column span to a given cells.
-    ///
-    /// BEWARE
-    ///
-    /// IT'S CALLER RESPONSIBILITY TO MAKE SURE
-    /// THAT THERE NO INTERSECTIONS IN PLACE AND THE SPAN VALUE IS CORRECT
-    pub fn set_column_span(&mut self, pos: Position, span: usize) {
-        set_cell_column_span(self, pos, span);
-    }
-
-    /// Verifies if there's any spans set.
-    pub fn has_column_spans(&self) -> bool {
-        !self.span_columns.is_empty()
-    }
-
-    /// Set a column span to a given cells.
-    ///
-    /// BEWARE
-    ///
-    /// IT'S CALLER RESPONSIBILITY TO MAKE SURE
-    /// THAT THERE NO INTERSECTIONS IN PLACE AND THE SPAN VALUE IS CORRECT
-    pub fn set_row_span(&mut self, pos: Position, span: usize) {
-        set_cell_row_span(self, pos, span);
-    }
-
-    /// Verifies if there's any spans set.
-    pub fn has_row_spans(&self) -> bool {
-        !self.span_rows.is_empty()
-    }
-
     /// Returns a [`Margin`] value currently set.
     pub fn get_margin(&self) -> &Sides<ColoredMarginIndent> {
         &self.margin
@@ -385,36 +355,6 @@ impl GridConfig {
         self.border_colors.insert_border(pos, border)
     }
 
-    /// Get a span value of the cell, if any is set.
-    pub fn iter_span_rows(&self) -> impl Iterator<Item = (Position, usize)> + '_ {
-        self.span_rows.iter().map(|(&pos, &span)| (pos, span))
-    }
-
-    /// Get a span value of the cell, if any is set.
-    pub fn iter_span_columns(&self) -> impl Iterator<Item = (Position, usize)> + '_ {
-        self.span_columns.iter().map(|(&pos, &span)| (pos, span))
-    }
-
-    /// Get a span value of the cell, if any is set.
-    pub fn get_span_column(&self, pos: Position) -> Option<usize> {
-        self.span_columns.get(&pos).copied()
-    }
-
-    /// Get a span value of the cell, if any is set.
-    pub fn get_span_row(&self, pos: Position) -> Option<usize> {
-        self.span_rows.get(&pos).copied()
-    }
-
-    /// Removes column spans.
-    pub fn clear_span_column(&mut self) {
-        self.span_columns.clear()
-    }
-
-    /// Removes row spans.
-    pub fn clear_span_row(&mut self) {
-        self.span_rows.clear()
-    }
-
     /// Sets off all borders possible on the [`Entity`].
     ///
     /// It doesn't changes globally set borders through [`GridConfig::set_borders`].
@@ -429,6 +369,66 @@ impl GridConfig {
     // todo: would be great to remove a shape
     pub fn remove_border_color(&mut self, pos: Position, shape: (usize, usize)) {
         self.border_colors.remove_border(pos, shape);
+    }
+
+    /// Get a span value of the cell, if any is set.
+    pub fn get_column_spans(&self) -> HashMap<Position, usize> {
+        self.span_columns.clone()
+    }
+
+    /// Get a span value of the cell, if any is set.
+    pub fn get_row_spans(&self) -> HashMap<Position, usize> {
+        self.span_rows.clone()
+    }
+
+    /// Get a span value of the cell, if any is set.
+    pub fn get_column_span(&self, pos: Position) -> Option<usize> {
+        self.span_columns.get(&pos).copied()
+    }
+
+    /// Get a span value of the cell, if any is set.
+    pub fn get_row_span(&self, pos: Position) -> Option<usize> {
+        self.span_rows.get(&pos).copied()
+    }
+
+    /// Removes column spans.
+    pub fn remove_column_spans(&mut self) {
+        self.span_columns.clear()
+    }
+
+    /// Removes row spans.
+    pub fn remove_row_spans(&mut self) {
+        self.span_rows.clear()
+    }
+
+    /// Set a column span to a given cells.
+    ///
+    /// BEWARE
+    ///
+    /// IT'S CALLER RESPONSIBILITY TO MAKE SURE
+    /// THAT THERE NO INTERSECTIONS IN PLACE AND THE SPAN VALUE IS CORRECT
+    pub fn set_column_span(&mut self, pos: Position, span: usize) {
+        set_cell_column_span(self, pos, span);
+    }
+
+    /// Verifies if there's any spans set.
+    pub fn has_column_spans(&self) -> bool {
+        !self.span_columns.is_empty()
+    }
+
+    /// Set a column span to a given cells.
+    ///
+    /// BEWARE
+    ///
+    /// IT'S CALLER RESPONSIBILITY TO MAKE SURE
+    /// THAT THERE NO INTERSECTIONS IN PLACE AND THE SPAN VALUE IS CORRECT
+    pub fn set_row_span(&mut self, pos: Position, span: usize) {
+        set_cell_row_span(self, pos, span);
+    }
+
+    /// Verifies if there's any spans set.
+    pub fn has_row_spans(&self) -> bool {
+        !self.span_rows.is_empty()
     }
 }
 
@@ -481,7 +481,11 @@ impl GridConfig {
     }
 
     /// Gets a color of a cell horizontal.
-    pub fn get_horizontal_color(&self, pos: Position, count_rows: usize) -> Option<&AnsiColor<'_>> {
+    pub fn get_horizontal_color(
+        &self,
+        pos: Position,
+        count_rows: usize,
+    ) -> Option<&AnsiColor<'static>> {
         self.border_colors.get_horizontal(pos, count_rows)
     }
 
@@ -490,7 +494,7 @@ impl GridConfig {
         &self,
         pos: Position,
         count_columns: usize,
-    ) -> Option<&AnsiColor<'_>> {
+    ) -> Option<&AnsiColor<'static>> {
         self.border_colors.get_vertical(pos, count_columns)
     }
 
@@ -499,7 +503,7 @@ impl GridConfig {
         &self,
         pos: Position,
         shape: (usize, usize),
-    ) -> Option<&AnsiColor<'_>> {
+    ) -> Option<&AnsiColor<'static>> {
         self.border_colors.get_intersection(pos, shape)
     }
 
@@ -672,21 +676,15 @@ fn set_cell_column_span(cfg: &mut GridConfig, pos: Position, span: usize) {
 }
 
 fn is_cell_covered_by_column_span(cfg: &GridConfig, pos: Position) -> bool {
-    if !cfg.has_column_spans() {
-        return false;
-    }
-
-    cfg.iter_span_columns()
-        .any(|((row, col), span)| pos.1 > col && pos.1 < col + span && row == pos.0)
+    cfg.span_columns
+        .iter()
+        .any(|(&(row, col), span)| pos.1 > col && pos.1 < col + span && row == pos.0)
 }
 
 fn is_cell_covered_by_row_span(cfg: &GridConfig, pos: Position) -> bool {
-    if !cfg.has_row_spans() {
-        return false;
-    }
-
-    cfg.iter_span_rows()
-        .any(|((row, col), span)| pos.0 > row && pos.0 < row + span && col == pos.1)
+    cfg.span_rows
+        .iter()
+        .any(|(&(row, col), span)| pos.0 > row && pos.0 < row + span && col == pos.1)
 }
 
 fn is_cell_covered_by_both_spans(cfg: &GridConfig, pos: Position) -> bool {
@@ -694,8 +692,9 @@ fn is_cell_covered_by_both_spans(cfg: &GridConfig, pos: Position) -> bool {
         return false;
     }
 
-    cfg.iter_span_rows().any(|(p1, row_span)| {
-        cfg.iter_span_columns()
+    cfg.span_rows.iter().any(|(p1, row_span)| {
+        cfg.span_columns
+            .iter()
             .filter(|(p2, _)| &p1 == p2)
             .any(|(_, col_span)| {
                 pos.0 > p1.0 && pos.0 < p1.0 + row_span && pos.1 > p1.1 && pos.1 < p1.1 + col_span

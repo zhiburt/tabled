@@ -23,6 +23,7 @@ use crate::{
 };
 
 pub use dimension::TableDimension;
+use papergrid::colors::NoColors;
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
 ///
@@ -253,12 +254,11 @@ impl fmt::Display for Table {
         let mut dimension = self.dimension.clone();
         dimension.estimate(&self.records, &config);
 
-        if !self.config.colors.is_empty() {
-            Grid::new(&self.records, &dimension, config.as_ref())
-                .with_colors(&self.config.colors)
-                .build(f)
+        let colors = &self.config.colors;
+        if !colors.is_empty() {
+            Grid::new(&self.records, &dimension, config, colors).build(f)
         } else {
-            Grid::new(&self.records, &dimension, config.as_ref()).build(f)
+            Grid::new(&self.records, &dimension, config, NoColors).build(f)
         }
     }
 }

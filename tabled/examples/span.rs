@@ -13,8 +13,8 @@ use tabled::{
 fn main() {
     let data = [["just 1 column"; 5]; 5];
 
-    let h_span = |r, c, span| Modify::new(Cell::new(r, c)).with(Span::vertical(span));
-    let v_span = |r, c, span| Modify::new(Cell::new(r, c)).with(Span::horizontal(span));
+    let h_span = |r, c, span| Modify::new(Cell::new(r, c)).with(Span::row(span));
+    let v_span = |r, c, span| Modify::new(Cell::new(r, c)).with(Span::column(span));
 
     let table = Table::new(data)
         .with(h_span(0, 0, 5).with("span all 5 columns"))

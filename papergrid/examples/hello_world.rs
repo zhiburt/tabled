@@ -2,6 +2,7 @@
 //! `cargo run --example hello_world`
 
 use papergrid::{
+    colors::NoColors,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
     dimension::Estimate,
     grid::spanned::{dimension::ExactDimension, Grid, GridConfig},
@@ -20,7 +21,7 @@ fn main() {
     let mut dim = ExactDimension::default();
     dim.estimate(records, &cfg);
 
-    let grid = Grid::new(records, &dim, &cfg).to_string();
+    let grid = Grid::new(records, &dim, &cfg, NoColors).to_string();
 
     println!("{grid}");
 }

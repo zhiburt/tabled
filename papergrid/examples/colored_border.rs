@@ -5,6 +5,7 @@
 
 use papergrid::{
     color::AnsiColor,
+    colors::NoColors,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
     dimension::Estimate,
     grid::spanned::{config::GridConfig, dimension::ExactDimension, Grid},
@@ -23,7 +24,7 @@ fn main() {
     let mut dim = ExactDimension::default();
     dim.estimate(&records, &cfg);
 
-    let grid = Grid::new(records, &dim, &cfg).to_string();
+    let grid = Grid::new(records, &dim, &cfg, NoColors).to_string();
 
     println!("{grid}");
 }

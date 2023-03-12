@@ -564,14 +564,14 @@ test_table!(
 test_table!(
     span_correct_test_0,
     create_table::<6, 4>()
-        .with(Modify::new((0, 3)).with(Span::horizontal(2)))
-        .with(Modify::new((1, 0)).with(Span::horizontal(3)))
-        .with(Modify::new((2, 0)).with(Span::horizontal(2)))
-        .with(Modify::new((2, 3)).with(Span::horizontal(2)))
-        .with(Modify::new((3, 0)).with(Span::horizontal(5)))
-        .with(Modify::new((4, 1)).with(Span::horizontal(4)))
-        .with(Modify::new((5, 0)).with(Span::horizontal(5)))
-        .with(Modify::new((6, 0)).with(Span::horizontal(5)))
+        .with(Modify::new((0, 3)).with(Span::column(2)))
+        .with(Modify::new((1, 0)).with(Span::column(3)))
+        .with(Modify::new((2, 0)).with(Span::column(2)))
+        .with(Modify::new((2, 3)).with(Span::column(2)))
+        .with(Modify::new((3, 0)).with(Span::column(5)))
+        .with(Modify::new((4, 1)).with(Span::column(4)))
+        .with(Modify::new((5, 0)).with(Span::column(5)))
+        .with(Modify::new((6, 0)).with(Span::column(5)))
         .with(BorderSpanCorrection),
     "+---+----------+----------+-----------+"
     "| N | column 0 | column 1 | column 2  |"
@@ -593,14 +593,14 @@ test_table!(
 test_table!(
     span_correct_test_1,
     create_table::<6, 4>()
-        .with(Modify::new((0, 0)).with(Span::horizontal(5)))
-        .with(Modify::new((1, 0)).with(Span::horizontal(3)))
-        .with(Modify::new((2, 0)).with(Span::horizontal(2)))
-        .with(Modify::new((2, 3)).with(Span::horizontal(2)))
-        .with(Modify::new((3, 0)).with(Span::horizontal(5)))
-        .with(Modify::new((4, 1)).with(Span::horizontal(4)))
-        .with(Modify::new((5, 0)).with(Span::horizontal(5)))
-        .with(Modify::new((6, 0)).with(Span::horizontal(5)))
+        .with(Modify::new((0, 0)).with(Span::column(5)))
+        .with(Modify::new((1, 0)).with(Span::column(3)))
+        .with(Modify::new((2, 0)).with(Span::column(2)))
+        .with(Modify::new((2, 3)).with(Span::column(2)))
+        .with(Modify::new((3, 0)).with(Span::column(5)))
+        .with(Modify::new((4, 1)).with(Span::column(4)))
+        .with(Modify::new((5, 0)).with(Span::column(5)))
+        .with(Modify::new((6, 0)).with(Span::column(5)))
         .with(BorderSpanCorrection),
     "+----------------------+"
     "|          N           |"

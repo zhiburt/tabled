@@ -885,11 +885,11 @@ fn create_table(mat: &MatrixInput) -> Result<Table> {
     let mut table = builder.build();
 
     for (pos, span) in vspan {
-        table.with(Modify::new(pos).with(Span::horizontal(span)));
+        table.with(Modify::new(pos).with(Span::column(span)));
     }
 
     for (pos, span) in hspan {
-        table.with(Modify::new(pos).with(Span::vertical(span)));
+        table.with(Modify::new(pos).with(Span::row(span)));
     }
 
     Ok(table)

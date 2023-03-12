@@ -612,7 +612,7 @@ fn get_decrease_cell_list(
         (0..shape.0)
             .filter(|&row| cfg.is_cell_visible((row, col)))
             .for_each(|row| {
-                let (width, width_min) = match cfg.get_span_column((row, col)) {
+                let (width, width_min) = match cfg.get_column_span((row, col)) {
                     Some(span) => {
                         let width = (col..col + span).map(|i| widths[i]).sum::<usize>();
                         let min_width = (col..col + span).map(|i| min_widths[i]).sum::<usize>();

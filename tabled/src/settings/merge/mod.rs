@@ -59,8 +59,7 @@ where
 
                 // we need to mitigate messing existing spans
                 let is_cell_visible = cfg.is_cell_visible((row, column));
-
-                let is_row_span_cell = cfg.get_span_column((row, column)).is_some();
+                let is_row_span_cell = cfg.get_column_span((row, column)).is_some();
 
                 if !repeat_is_set {
                     if !is_cell_visible {
@@ -145,8 +144,7 @@ where
 
                 // we need to mitigate messing existing spans
                 let is_cell_visible = cfg.is_cell_visible((row, column));
-
-                let is_col_span_cell = cfg.get_span_row((row, column)).is_some();
+                let is_col_span_cell = cfg.get_row_span((row, column)).is_some();
 
                 if !repeat_is_set {
                     if !is_cell_visible {

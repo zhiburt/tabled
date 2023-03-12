@@ -36,7 +36,7 @@ use crate::{
 /// ];
 ///
 /// let mut table = Table::new(data);
-/// table.with(Modify::new((0, 0)).with("date").with(Span::horizontal(3)));
+/// table.with(Modify::new((0, 0)).with("date").with(Span::column(3)));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -86,8 +86,7 @@ where
 }
 
 fn correct_span_styles(cfg: &mut GridConfig, shape: (usize, usize)) {
-    let spans = cfg.iter_span_columns().collect::<Vec<_>>();
-    for &((row, c), span) in &spans {
+    for ((row, c), span) in cfg.get_column_spans() {
         for col in c..c + span {
             if col == 0 {
                 continue;
@@ -131,8 +130,7 @@ fn correct_span_styles(cfg: &mut GridConfig, shape: (usize, usize)) {
         }
     }
 
-    let spans = cfg.iter_span_rows().collect::<Vec<_>>();
-    for &((r, col), span) in &spans {
+    for ((r, col), span) in cfg.get_row_spans() {
         for row in r + 1..r + span {
             let mut border = cfg.get_border((row, col), shape);
             let borders = cfg.get_borders();

@@ -57,19 +57,21 @@ fn move_columns_aside<R: Records + Resizable>(records: &mut R, column: usize) {
 }
 
 fn move_column_spans(cfg: &mut GridConfig, target_column: usize) {
-    let spans = cfg.iter_span_columns().collect::<Vec<_>>();
-    for ((row, col), span) in spans {
-        if col >= target_column {
-            cfg.set_column_span((row, col), 1);
-            cfg.set_column_span((row, col + 1), span);
+    for ((row, col), span) in cfg.get_column_spans() {
+        if col < target_column {
+            continue;
         }
+
+        cfg.set_column_span((row, col), 1);
+        cfg.set_column_span((row, col + 1), span);
     }
 
-    let spans = cfg.iter_span_rows().collect::<Vec<_>>();
-    for ((row, col), span) in spans {
-        if col >= target_column {
-            cfg.set_row_span((row, col), 1);
-            cfg.set_row_span((row, col + 1), span);
+    for ((row, col), span) in cfg.get_row_spans() {
+        if col < target_column {
+            continue;
         }
+
+        cfg.set_row_span((row, col), 1);
+        cfg.set_row_span((row, col + 1), span);
     }
 }

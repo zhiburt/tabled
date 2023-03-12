@@ -1302,8 +1302,8 @@ fn max_width_with_span() {
     let mut table = init_table::<3, 3, _, _>([((0, 1), "a long string")]);
     table
         .with(Style::psql())
-        .with(Modify::new((1, 1)).with(Span::horizontal(2)))
-        .with(Modify::new((2, 2)).with(Span::horizontal(2)));
+        .with(Modify::new((1, 1)).with(Span::column(2)))
+        .with(Modify::new((2, 2)).with(Span::column(2)));
 
     table.with(Width::truncate(40));
 
@@ -1522,7 +1522,7 @@ fn min_width_with_span_1() {
 
     let table = new_table(data)
         .with(Style::markdown())
-        .with(Modify::new((1, 0)).with(Span::horizontal(2)))
+        .with(Modify::new((1, 0)).with(Span::column(2)))
         .with(MinWidth::new(100))
         .to_string();
 
@@ -1550,7 +1550,7 @@ fn min_width_with_span_2() {
 
     let table = new_table(data)
         .with(Style::markdown())
-        .with(Modify::new((2, 0)).with(Span::horizontal(2)))
+        .with(Modify::new((2, 0)).with(Span::column(2)))
         .with(MinWidth::new(100))
         .to_string();
 
@@ -1719,7 +1719,7 @@ fn max_width_table_when_cell_has_tabs() {
 fn max_width_truncate_with_big_span() {
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line; Here we gooooooo")])
         .with(Style::markdown())
-        .with(Modify::new((2, 1)).with(Span::horizontal(3)))
+        .with(Modify::new((2, 1)).with(Span::column(3)))
         .with(Width::truncate(40))
         .to_string();
 
@@ -1740,8 +1740,8 @@ fn max_width_truncate_with_big_span() {
         ((2, 2), "Hello World With Big Line; Here"),
     ])
     .with(Style::markdown())
-    .with(Modify::new((2, 1)).with(Span::horizontal(3)))
-    .with(Modify::new((3, 2)).with(Span::horizontal(2)))
+    .with(Modify::new((2, 1)).with(Span::column(3)))
+    .with(Modify::new((3, 2)).with(Span::column(2)))
     .to_string();
 
     assert_eq!(
@@ -1760,8 +1760,8 @@ fn max_width_truncate_with_big_span() {
         ((2, 2), "Hello World With Big Line; Here"),
     ])
     .with(Style::markdown())
-    .with(Modify::new((2, 1)).with(Span::horizontal(3)))
-    .with(Modify::new((3, 2)).with(Span::horizontal(2)))
+    .with(Modify::new((2, 1)).with(Span::column(3)))
+    .with(Modify::new((3, 2)).with(Span::column(2)))
     .with(Width::truncate(40))
     .to_string();
 
@@ -1782,8 +1782,8 @@ fn max_width_truncate_with_big_span() {
         ((2, 2), "Hello World With Big Line; Here"),
     ])
     .with(Style::markdown())
-    .with(Modify::new((2, 1)).with(Span::horizontal(2)))
-    .with(Modify::new((3, 2)).with(Span::horizontal(2)))
+    .with(Modify::new((2, 1)).with(Span::column(2)))
+    .with(Modify::new((3, 2)).with(Span::column(2)))
     .with(Width::truncate(40))
     .to_string();
 
@@ -1804,8 +1804,8 @@ fn max_width_truncate_with_big_span() {
         ((2, 2), "Hello World With Big L"),
     ])
     .with(Style::markdown())
-    .with(Modify::new((2, 1)).with(Span::horizontal(3)))
-    .with(Modify::new((3, 2)).with(Span::horizontal(2)))
+    .with(Modify::new((2, 1)).with(Span::column(3)))
+    .with(Modify::new((3, 2)).with(Span::column(2)))
     .to_string();
 
     assert_eq!(
@@ -1878,7 +1878,7 @@ fn max_width_truncate_priority_max() {
 fn max_width_truncate_priority_max_with_span() {
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
-        .with(Modify::new((2, 1)).with(Span::horizontal(2)))
+        .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Width::truncate(15).priority::<PriorityMax>())
         .to_string();
 
@@ -1974,7 +1974,7 @@ fn max_width_wrap_priority_max() {
 fn max_width_wrap_priority_max_with_span() {
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
-        .with(Modify::new((2, 1)).with(Span::horizontal(2)))
+        .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Width::wrap(15).priority::<PriorityMax>())
         .to_string();
 
@@ -2066,7 +2066,7 @@ fn max_width_truncate_priority_min() {
 fn max_width_truncate_priority_min_with_span() {
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
-        .with(Modify::new((2, 1)).with(Span::horizontal(2)))
+        .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Width::truncate(15).priority::<PriorityMin>())
         .to_string();
 
@@ -2084,7 +2084,7 @@ fn max_width_truncate_priority_min_with_span() {
 
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
-        .with(Modify::new((2, 1)).with(Span::horizontal(2)))
+        .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Width::truncate(17).priority::<PriorityMin>())
         .to_string();
 
@@ -2164,7 +2164,7 @@ fn max_width_wrap_priority_min() {
 fn max_width_wrap_priority_min_with_span() {
     let table = init_table::<3, 3, _, _>([((1, 1), "Hello World With Big Line")])
         .with(Style::markdown())
-        .with(Modify::new((2, 1)).with(Span::horizontal(2)))
+        .with(Modify::new((2, 1)).with(Span::column(2)))
         .with(Width::wrap(15).priority::<PriorityMin>())
         .to_string();
 
