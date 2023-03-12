@@ -79,7 +79,7 @@ fn build_grid(
     let mut dims = ExactDimension::default();
     dims.estimate(&records, &cfg);
 
-    Grid::new(records, dims, cfg)
+    Grid::new(records, dims, cfg, NoColors)
 }
 
 fn records(rows: usize, cols: usize) -> Vec<Vec<String>> {

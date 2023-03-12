@@ -108,17 +108,21 @@ fn span_has_intersections(cfg: &GridConfig, (row, col): Position, span: usize) -
 }
 
 fn remove_false_spans(cfg: &mut GridConfig) {
-    for (pos, _) in cfg.iter_span_columns().collect::<Vec<_>>() {
-        if !cfg.is_cell_visible(pos) {
-            cfg.set_row_span(pos, 1);
-            cfg.set_column_span(pos, 1);
+    for (pos, _) in cfg.get_column_spans() {
+        if cfg.is_cell_visible(pos) {
+            continue;
         }
+
+        cfg.set_row_span(pos, 1);
+        cfg.set_column_span(pos, 1);
     }
 
-    for (pos, _) in cfg.iter_span_rows().collect::<Vec<_>>() {
-        if !cfg.is_cell_visible(pos) {
-            cfg.set_row_span(pos, 1);
-            cfg.set_column_span(pos, 1);
+    for (pos, _) in cfg.get_row_spans() {
+        if cfg.is_cell_visible(pos) {
+            continue;
         }
+
+        cfg.set_row_span(pos, 1);
+        cfg.set_column_span(pos, 1);
     }
 }

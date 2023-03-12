@@ -33,6 +33,7 @@ use std::{cmp, fmt, io};
 
 use crate::{
     grid::{
+        colors::NoColors,
         compact::{CompactConfig, ExactDimension},
         config::{AlignmentHorizontal, Indent, Sides},
         dimension::Dimension,
@@ -137,19 +138,6 @@ impl<I> IterTable<I> {
         self
     }
 
-    /// Format table into [fmt::Write]er.
-    pub fn fmt<W: fmt::Write>(self, writer: W) -> fmt::Result
-    where
-        I: IntoRecords,
-    {
-        let (width, height) = self.dim.into();
-        let width = exact_list_to_exact_value(width);
-        let height = exact_list_to_exact_value(height);
-        let dims = Dims::new(width, height);
-
-        build_grid(writer, self.records, self.cfg, &self.table, dims)
-    }
-
     /// Build a string.
     ///
     /// We can't implement [`std::string::ToString`] cause it does takes `&self` reference.
@@ -172,6 +160,19 @@ impl<I> IterTable<I> {
         let writer = UTF8Writer::new(writer);
         self.fmt(writer)
             .map_err(|err| io::Error::new(io::ErrorKind::Other, err))
+    }
+
+    /// Format table into [fmt::Write]er.
+    pub fn fmt<W: fmt::Write>(self, writer: W) -> fmt::Result
+    where
+        I: IntoRecords,
+    {
+        let (width, height) = self.dim.into();
+        let width = exact_list_to_exact_value(width);
+        let height = exact_list_to_exact_value(height);
+        let dims = Dims::new(width, height);
+
+        build_grid(writer, self.records, self.cfg, &self.table, dims)
     }
 }
 
@@ -204,12 +205,12 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
                 let records = LimitRows::new(records, limit);
                 let records = build_records(records, content_width, count_columns, count_rows);
                 let cfg = GridConfig::from(config);
-                return Grid::new(records, dims, cfg).build(writer);
+                return Grid::new(records, dims, cfg, NoColors).build(writer);
             }
             None => {
                 let records = build_records(records, content_width, count_columns, count_rows);
                 let cfg = GridConfig::from(config);
-                return Grid::new(records, dims, cfg).build(writer);
+                return Grid::new(records, dims, cfg, NoColors).build(writer);
             }
         }
     }
@@ -259,12 +260,12 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
             let records = LimitRows::new(records, limit);
             let records = build_records(records, contentw, count_columns, count_rows);
             let cfg = GridConfig::from(config);
-            Grid::new(records, dimension, cfg).build(writer)
+            Grid::new(records, dimension, cfg, NoColors).build(writer)
         }
         None => {
             let records = build_records(records, contentw, count_columns, count_rows);
             let cfg = GridConfig::from(config);
-            Grid::new(records, dimension, cfg).build(writer)
+            Grid::new(records, dimension, cfg, NoColors).build(writer)
         }
     }
 }

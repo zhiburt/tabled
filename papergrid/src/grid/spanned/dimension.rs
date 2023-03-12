@@ -83,14 +83,14 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
             let width = width + pad.left.indent.size + pad.right.indent.size;
             let height = height + pad.top.indent.size + pad.bottom.indent.size;
 
-            match cfg.get_span_column(pos) {
+            match cfg.get_column_span(pos) {
                 Some(n) if n > 1 => {
                     vspans.insert(pos, (n, width));
                 }
                 _ => widths[col] = max(widths[col], width),
             }
 
-            match cfg.get_span_row(pos) {
+            match cfg.get_row_span(pos) {
                 Some(n) if n > 1 => {
                     hspans.insert(pos, (n, height));
                 }
@@ -275,7 +275,7 @@ fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
             }
 
             let height = get_cell_height(cell.as_ref(), cfg, pos);
-            match cfg.get_span_row(pos) {
+            match cfg.get_row_span(pos) {
                 Some(n) if n > 1 => {
                     hspans.insert(pos, (n, height));
                 }
@@ -305,7 +305,7 @@ fn build_width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
             }
 
             let width = get_cell_width(cell.as_ref(), cfg, pos);
-            match cfg.get_span_column(pos) {
+            match cfg.get_column_span(pos) {
                 Some(n) if n > 1 => {
                     vspans.insert(pos, (n, width));
                 }

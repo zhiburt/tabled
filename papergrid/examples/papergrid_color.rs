@@ -6,6 +6,7 @@
 use std::io::Write;
 
 use papergrid::{
+    colors::NoColors,
     config::Borders,
     dimension::Estimate,
     grid::spanned::{ExactDimension, Grid, GridConfig},
@@ -24,7 +25,7 @@ fn main() {
     let mut dimension = ExactDimension::default();
     dimension.estimate(&records, &cfg);
 
-    let grid = Grid::new(&records, &dimension, &cfg);
+    let grid = Grid::new(&records, &dimension, &cfg, NoColors);
 
     grid.build(UTF8Stdout(std::io::stdout())).unwrap();
     println!();

@@ -26,6 +26,7 @@
 //!     records::IterRecords,
 //!     dimension::{Estimate},
 //!     config::Borders,
+//!     colors::NoColors,
 //!     grid::spanned::{config::GridConfig, Grid, ExactDimension},
 //! };
 //!
@@ -61,7 +62,7 @@
 //! dimension.estimate(&records, &cfg);
 //!
 //! // Creating a grid.
-//! let grid = Grid::new(&records, &dimension, &cfg).to_string();
+//! let grid = Grid::new(&records, &dimension, &cfg, NoColors).to_string();
 //!
 //! assert_eq!(
 //!     grid,

@@ -9,7 +9,7 @@ use std::{
 
 use crate::{
     color::{AnsiColor, Color},
-    colors::{self, Colors, NoColors},
+    colors::Colors,
     config::{AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides},
     dimension::Dimension,
     records::Records,
@@ -27,29 +27,19 @@ pub struct Grid<R, D, G, C> {
     colors: C,
 }
 
-impl<R, D, G> Grid<R, D, G, NoColors> {
+impl<R, D, G, C> Grid<R, D, G, C> {
     /// The new method creates a grid instance with default styles.
-    pub fn new(records: R, dimension: D, config: G) -> Self {
+    pub fn new(records: R, dimension: D, config: G, colors: C) -> Self {
         Grid {
             records,
             config,
             dimension,
-            colors: NoColors::default(),
+            colors,
         }
     }
 }
 
 impl<R, D, G, C> Grid<R, D, G, C> {
-    /// Sets colors map.
-    pub fn with_colors<Colors: colors::Colors>(self, colors: Colors) -> Grid<R, D, G, Colors> {
-        Grid {
-            records: self.records,
-            config: self.config,
-            dimension: self.dimension,
-            colors,
-        }
-    }
-
     /// Builds a table.
     pub fn build<F>(self, mut f: F) -> fmt::Result
     where
@@ -59,7 +49,7 @@ impl<R, D, G, C> Grid<R, D, G, C> {
         G: Borrow<GridConfig>,
         F: Write,
     {
-        if self.records.count_columns() == 0 {
+        if self.records.count_columns() == 0 || self.records.hint_count_rows() == Some(0) {
             return Ok(());
         }
 
@@ -132,6 +122,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
     let mut row = 0;
     let mut line = 0;
     let mut is_prev_row_skipped = false;
+    let mut buf = None;
     while let Some(columns) = next_columns {
         let columns = columns.into_iter();
         next_columns = records_iter.next();
@@ -159,9 +150,16 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
         if height == 1 {
             print_single_line_columns(f, columns, cfg, colors, dims, row, line, totalh, shape)?
         } else if height > 0 {
+            if buf.is_none() {
+                buf = Some(Vec::with_capacity(count_columns));
+            }
+
+            let buf = buf.as_mut().unwrap();
             print_multiline_columns(
-                f, columns, cfg, colors, dims, height, row, line, totalh, shape,
+                f, columns, cfg, colors, dims, height, row, line, totalh, shape, buf,
             )?;
+
+            buf.clear();
         }
 
         if height == 0 && !has_horizontal {
@@ -226,6 +224,7 @@ fn print_multiline_columns<'a, F, I, D, C>(
     line: usize,
     totalh: Option<usize>,
     shape: (usize, usize),
+    buf: &mut Vec<Cell<I::Item, &'a C::Color>>,
 ) -> fmt::Result
 where
     F: Write,
@@ -234,10 +233,8 @@ where
     D: Dimension,
     C: Colors,
 {
-    let mut buf = Vec::with_capacity(shape.1);
-    collect_columns(&mut buf, columns, cfg, colors, dimension, height, row);
-    print_columns_lines(f, &mut buf, height, cfg, line, row, totalh, shape)?;
-
+    collect_columns(buf, columns, cfg, colors, dimension, height, row);
+    print_columns_lines(f, buf, height, cfg, line, row, totalh, shape)?;
     Ok(())
 }
 
@@ -263,11 +260,11 @@ where
     print_margin_left(f, cfg, line, totalh)?;
 
     for (col, cell) in columns.enumerate() {
-        print_vertical_char(f, cfg, (row, col), 0, 1, shape)?;
-
+        let pos = (row, col);
         let width = dims.get_width(col);
-        let color = colors.get_color((row, col));
-        print_single_line_column(f, cell.as_ref(), cfg, width, color, (row, col))?;
+        let color = colors.get_color(pos);
+        print_vertical_char(f, cfg, pos, 0, 1, shape)?;
+        print_single_line_column(f, cell.as_ref(), cfg, width, color, pos)?;
     }
 
     print_vertical_char(f, cfg, (row, shape.1), 0, 1, shape)?;
@@ -364,9 +361,10 @@ fn collect_columns<'a, I, D, C>(
     D: Dimension,
 {
     let iter = iter.enumerate().map(|(col, cell)| {
+        let pos = (row, col);
         let width = dimension.get_width(col);
-        let color = colors.get_color((row, col));
-        Cell::new(cell, width, height, cfg, color, (row, col))
+        let color = colors.get_color(pos);
+        Cell::new(cell, width, height, cfg, color, pos)
     });
 
     buf.extend(iter);
@@ -379,47 +377,27 @@ fn print_split_line<F: Write, D: Dimension>(
     row: usize,
     shape: (usize, usize),
 ) -> fmt::Result {
-    if shape.1 == 0 {
-        return Ok(());
-    }
-
     let mut used_color = None;
-
-    let left = cfg.get_intersection((row, 0), shape);
-    if let Some(c) = left {
-        let clr = cfg.get_intersection_color((row, 0), shape);
-        if let Some(clr) = clr {
-            clr.fmt_prefix(f)?;
-            used_color = Some(clr);
-        }
-
-        f.write_char(c)?;
-    }
+    print_vertical_intersection(f, cfg, (row, 0), shape, &mut used_color)?;
 
     for col in 0..shape.1 {
         let width = dimension.get_width(col);
 
         // general case
         if width > 0 {
-            let main = cfg.get_horizontal((row, col), shape.0);
+            let pos = (row, col);
+            let main = cfg.get_horizontal(pos, shape.0);
             match main {
                 Some(c) => {
-                    let clr = cfg.get_horizontal_color((row, col), shape.0);
+                    let clr = cfg.get_horizontal_color(pos, shape.0);
                     prepare_coloring(f, clr, &mut used_color)?;
-
-                    print_horizontal_border(f, cfg, (row, col), width, c)?;
+                    print_horizontal_border(f, cfg, pos, width, c)?;
                 }
                 None => repeat_char(f, ' ', width)?,
             }
         }
 
-        let right = cfg.get_intersection((row, col + 1), shape);
-        if let Some(c) = right {
-            let clr = cfg.get_intersection_color((row, col + 1), shape);
-            prepare_coloring(f, clr, &mut used_color)?;
-
-            f.write_char(c)?;
-        }
+        print_vertical_intersection(f, cfg, (row, col + 1), shape, &mut used_color)?;
     }
 
     if let Some(clr) = used_color.take() {
@@ -522,31 +500,18 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
     row: usize,
     shape: (usize, usize),
 ) -> fmt::Result {
-    if shape.1 == 0 {
-        return Ok(());
-    }
-
     let mut used_color = None;
-
-    let left = cfg.get_intersection((row, 0), shape);
-    if let Some(c) = left {
-        let clr = cfg.get_intersection_color((row, 0), shape);
-        if let Some(clr) = clr {
-            clr.fmt_prefix(f)?;
-            used_color = Some(clr);
-        }
-
-        f.write_char(c)?;
-    }
+    print_vertical_intersection(f, cfg, (row, 0), shape, &mut used_color)?;
 
     for col in 0..shape.1 {
-        if cfg.is_cell_covered_by_both_spans((row, col)) {
+        let pos = (row, col);
+        if cfg.is_cell_covered_by_both_spans(pos) {
             continue;
         }
 
         let width = dimension.get_width(col);
         let mut col = col;
-        if cfg.is_cell_covered_by_row_span((row, col)) {
+        if cfg.is_cell_covered_by_row_span(pos) {
             // means it's part of other a spanned cell
             // so. we just need to use line from other cell.
 
@@ -554,31 +519,24 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
             cell.display(f)?;
 
             // We need to use a correct right split char.
-            let original_row = closest_visible_row(cfg, (row, col)).unwrap();
-            if let Some(span) = cfg.get_span_column((original_row, col)) {
+            let original_row = closest_visible_row(cfg, pos).unwrap();
+            if let Some(span) = cfg.get_column_span((original_row, col)) {
                 col += span - 1;
             }
         } else if width > 0 {
             // general case
-            let main = cfg.get_horizontal((row, col), shape.0);
+            let main = cfg.get_horizontal(pos, shape.0);
             match main {
                 Some(c) => {
-                    let clr = cfg.get_horizontal_color((row, col), shape.0);
+                    let clr = cfg.get_horizontal_color(pos, shape.0);
                     prepare_coloring(f, clr, &mut used_color)?;
-
-                    print_horizontal_border(f, cfg, (row, col), width, c)?;
+                    print_horizontal_border(f, cfg, pos, width, c)?;
                 }
                 None => repeat_char(f, ' ', width)?,
             }
         }
 
-        let right = cfg.get_intersection((row, col + 1), shape);
-        if let Some(c) = right {
-            let clr = cfg.get_intersection_color((row, col + 1), shape);
-            prepare_coloring(f, clr, &mut used_color)?;
-
-            f.write_char(c)?;
-        }
+        print_vertical_intersection(f, cfg, (row, col + 1), shape, &mut used_color)?;
     }
 
     if let Some(clr) = used_color.take() {
@@ -586,6 +544,23 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
     }
 
     Ok(())
+}
+
+fn print_vertical_intersection<'a, F: fmt::Write>(
+    f: &mut F,
+    cfg: &'a GridConfig,
+    pos: Position,
+    shape: (usize, usize),
+    used_color: &mut Option<&'a AnsiColor<'static>>,
+) -> fmt::Result {
+    match cfg.get_intersection(pos, shape) {
+        Some(c) => {
+            let clr = cfg.get_intersection_color(pos, shape);
+            prepare_coloring(f, clr, used_color)?;
+            f.write_char(c)
+        }
+        None => Ok(()),
+    }
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -625,7 +600,8 @@ where
                 continue;
             }
 
-            let rowspan = cfg.get_span_row((row, col)).unwrap_or(1);
+            let pos = (row, col);
+            let rowspan = cfg.get_row_span(pos).unwrap_or(1);
             if rowspan < 2 {
                 continue;
             }
@@ -636,7 +612,7 @@ where
                 this_height
             };
 
-            let colspan = cfg.get_span_column((row, col)).unwrap_or(1);
+            let colspan = cfg.get_column_span(pos).unwrap_or(1);
             skip = colspan - 1;
             let width = if colspan > 1 {
                 range_width(cfg, dimension, col, col + colspan, shape.1)
@@ -644,8 +620,8 @@ where
                 dimension.get_width(col)
             };
 
-            let color = colors.get_color((row, col));
-            let cell = Cell::new(cell, width, height, cfg, color, (row, col));
+            let color = colors.get_color(pos);
+            let cell = Cell::new(cell, width, height, cfg, color, pos);
 
             buf.insert(col, (cell, rowspan, colspan));
         }
@@ -670,7 +646,8 @@ where
             continue;
         }
 
-        let colspan = cfg.get_span_column((row, col)).unwrap_or(1);
+        let pos = (row, col);
+        let colspan = cfg.get_column_span(pos).unwrap_or(1);
         skip = colspan - 1;
 
         let width = if colspan > 1 {
@@ -679,15 +656,15 @@ where
             dimension.get_width(col)
         };
 
-        let rowspan = cfg.get_span_row((row, col)).unwrap_or(1);
+        let rowspan = cfg.get_row_span(pos).unwrap_or(1);
         let height = if rowspan > 1 {
             range_height(cfg, dimension, row, row + rowspan, shape.0)
         } else {
             this_height
         };
 
-        let color = colors.get_color((row, col));
-        let cell = Cell::new(cell, width, height, cfg, color, (row, col));
+        let color = colors.get_color(pos);
+        let cell = Cell::new(cell, width, height, cfg, color, pos);
 
         buf.insert(col, (cell, rowspan, colspan));
     }
@@ -896,10 +873,10 @@ fn print_text<F: Write>(f: &mut F, text: &str, clr: Option<impl Color>) -> fmt::
     }
 }
 
-fn prepare_coloring<'a, F: Write>(
+fn prepare_coloring<'a, 'b, F: Write>(
     f: &mut F,
-    clr: Option<&'a AnsiColor<'a>>,
-    used_color: &mut Option<&'a AnsiColor<'a>>,
+    clr: Option<&'a AnsiColor<'b>>,
+    used_color: &mut Option<&'a AnsiColor<'b>>,
 ) -> fmt::Result {
     match clr {
         Some(clr) => match used_color.as_mut() {

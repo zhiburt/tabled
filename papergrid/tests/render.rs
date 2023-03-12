@@ -16,6 +16,7 @@ mod util;
 
 use std::vec;
 
+use papergrid::colors::NoColors;
 use papergrid::grid::spanned::{config::GridConfig, Grid};
 use papergrid::{
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity},
@@ -53,7 +54,7 @@ test_table!(
         let mut cfg = GridConfig::default();
         cfg.set_borders(util::DEFAULT_BORDERS);
 
-        let grid = Grid::new(&data, &dims, &cfg);
+        let grid = Grid::new(&data, &dims, &cfg, NoColors);
         grid.to_string()
     },
     "++"
@@ -78,7 +79,7 @@ test_table!(
             ..Default::default()
         });
 
-        let grid = Grid::new(data, &dims, &cfg);
+        let grid = Grid::new(data, &dims, &cfg, NoColors);
         grid.to_string()
     },
     "┌──────────┐"
