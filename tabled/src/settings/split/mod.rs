@@ -12,7 +12,7 @@ enum Direction {
 
 #[derive(Debug, Clone, Copy)]
 enum Behavior {
-    Append,
+    Concat,
     Zip,
 }
 
@@ -42,7 +42,7 @@ impl Split {
 
     pub fn concat(self) -> Self {
         Self {
-            behavior: Behavior::Append,
+            behavior: Behavior::Concat,
             ..self
         }
     }
@@ -71,29 +71,46 @@ where
         }
 
         match (self.direction, self.behavior) {
-            (Column, Append) => split_column_append(records, columns, rows, self.index),
+            (Column, Concat) => split_column_concat(records, columns, rows, self.index),
             (Column, Zip) => split_column_zip(records, columns, rows, self.index),
-            (Row, Append) => split_row_append(records, columns, rows, self.index),
+            (Row, Concat) => split_row_concat(records, columns, rows, self.index),
             (Row, Zip) => split_row_zip(records, columns, rows, self.index),
         }
     }
 }
 
-fn split_column_append<R>(records: &mut R, columns: usize, rows: usize, index: usize)
+fn split_column_concat<R>(records: &mut R, columns: usize, rows: usize, index: usize)
 where
-    R: Resizable,
+    R: Resizable + ExactRecords,
 {
     let sections_per_row = ceil_div(columns, index);
 
+    let mut thrown_out_sections = 0;
+
     for section in 1..sections_per_row {
-        for ref_row in 0..rows {
-            let target_row = ref_row + section * rows;
+        'outer: for ref_row in 0..rows {
+            let target_row = ref_row + section * rows - thrown_out_sections;
             records.push_row();
 
+            let mut blanks_in_section = 0;
             for target_col in 0..index {
                 let ref_col = target_col + section * index;
 
                 if ref_col < columns {
+                    let cell_is_blank = records.get_cell((ref_row, ref_col)).as_ref() == "";
+                    if cell_is_blank {
+                        blanks_in_section += 1;
+                    }
+                    if (ref_col == columns - 1
+                        && sections_per_row != (columns / index)
+                        && cell_is_blank)
+                        || blanks_in_section == index
+                    {
+                        records.remove_row(target_row);
+                        thrown_out_sections += 1;
+                        continue 'outer;
+                    }
+
                     records.swap((target_row, target_col), (ref_row, ref_col));
                 }
             }
@@ -105,21 +122,38 @@ where
 
 fn split_column_zip<R>(records: &mut R, columns: usize, rows: usize, index: usize)
 where
-    R: Resizable,
+    R: Resizable + ExactRecords,
 {
     let sections_per_row = ceil_div(columns, index);
+
+    let mut thrown_out_sections = 0;
 
     for mut ref_row in 0..rows {
         ref_row *= sections_per_row;
 
-        for section in 1..sections_per_row {
-            let target_row = ref_row + section;
+        'outer: for section in 1..sections_per_row {
+            let target_row = ref_row + section - thrown_out_sections;
             records.insert_row(target_row);
 
+            let mut blanks_in_section = 0;
             for target_col in 0..index {
                 let ref_col = target_col + (section * index);
 
                 if ref_col < columns {
+                    let cell_is_blank = records.get_cell((ref_row, ref_col)).as_ref() == "";
+                    if cell_is_blank {
+                        blanks_in_section += 1;
+                    }
+                    if (ref_col == columns - 1
+                        && sections_per_row != (columns / index)
+                        && cell_is_blank)
+                        || blanks_in_section == index
+                    {
+                        records.remove_row(target_row);
+                        thrown_out_sections += 1;
+                        continue 'outer;
+                    }
+
                     records.swap((target_row, target_col), (ref_row, ref_col));
                 }
             }
@@ -129,21 +163,38 @@ where
     clean_columns(records, (index..columns).rev())
 }
 
-fn split_row_append<R>(records: &mut R, columns: usize, rows: usize, index: usize)
+fn split_row_concat<R>(records: &mut R, columns: usize, rows: usize, index: usize)
 where
-    R: Resizable,
+    R: Resizable + ExactRecords,
 {
-    let per_column = ceil_div(rows, index);
+    let sections_per_column = ceil_div(rows, index);
 
-    for section in 1..per_column {
+    let mut thrown_out_sections = 0;
+
+    for section in 1..sections_per_column {
         for ref_col in 0..columns {
-            let target_col = ref_col + section * columns;
+            let target_col = ref_col + section * columns - thrown_out_sections;
             records.push_column();
 
+            let mut blanks_in_section = 0;
             for target_row in 0..index {
                 let ref_row = target_row + section * index;
 
                 if ref_row < rows {
+                    let cell_is_blank = records.get_cell((ref_row, ref_col)).as_ref() == "";
+                    if cell_is_blank {
+                        blanks_in_section += 1;
+                    }
+                    if (section == sections_per_column - 1
+                        && sections_per_column != (rows / index)
+                        && cell_is_blank)
+                        || blanks_in_section == index
+                    {
+                        records.remove_column(target_col);
+                        thrown_out_sections += 1;
+                        continue;
+                    }
+
                     records.swap((target_row, target_col), (ref_row, ref_col));
                 }
             }
@@ -155,21 +206,38 @@ where
 
 fn split_row_zip<R>(records: &mut R, columns: usize, rows: usize, index: usize)
 where
-    R: Resizable,
+    R: Resizable + ExactRecords,
 {
-    let per_column = ceil_div(rows, index);
+    let sections_per_column = ceil_div(rows, index);
 
-    for col in 0..columns {
-        let ref_col = col * per_column;
+    let mut thrown_out_sections = 0;
 
-        for section in 1..per_column {
+    for mut ref_col in 0..columns {
+        ref_col = ref_col * sections_per_column - thrown_out_sections;
+
+        for section in 1..sections_per_column {
             let target_col = ref_col + section;
             records.insert_column(target_col);
 
+            let mut blanks_in_section = 0;
             for target_row in 0..index {
                 let ref_row = target_row + (section * index);
 
                 if ref_row < rows {
+                    let cell_is_blank = records.get_cell((ref_row, ref_col)).as_ref() == "";
+                    if cell_is_blank {
+                        blanks_in_section += 1;
+                    }
+                    if (section == sections_per_column - 1
+                        && sections_per_column != (rows / index)
+                        && cell_is_blank)
+                        || blanks_in_section == index
+                    {
+                        records.remove_column(target_col);
+                        thrown_out_sections += 1;
+                        continue;
+                    }
+
                     records.swap((target_row, target_col), (ref_row, ref_col));
                 }
             }
