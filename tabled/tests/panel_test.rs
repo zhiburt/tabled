@@ -296,7 +296,7 @@ test_table!(
         .with(Panel::horizontal(0,"Linux Distributions"))
         .with(Panel::vertical(0,"asd"))
         .with(Panel::vertical(5,"zxc"))
-        .with(Modify::new((1, 3)).with(Span::horizontal(3)).with("wwwww")),
+        .with(Modify::new((1, 3)).with(Span::column(3)).with("wwwww")),
     " asd |       Linux Distributions       | zxc "
     "     +---+----------+-------+----------+     "
     "     | N | column 0 | wwwww | column 2 |     "
@@ -312,7 +312,7 @@ test_table!(
         .with(Panel::horizontal(0,"Linux Distributions"))
         .with(Panel::vertical(0,"asd"))
         .with(Panel::vertical(5,"zxc"))
-        .with(Modify::new((1, 3)).with(Span::horizontal(2)).with("wwwww")),
+        .with(Modify::new((1, 3)).with(Span::column(2)).with("wwwww")),
         " asd |   Linux Distributions    | zxc "
         "     +---+----------+-----+-----+     "
         "     | N | column 0 |   wwwww   |     "
@@ -328,7 +328,7 @@ test_table!(
         .with(Panel::horizontal(2,"Linux Distributions"))
         .with(Panel::vertical(0,"asd"))
         .with(Panel::vertical(5,"zxc"))
-        .with(Modify::new((0, 3)).with(Span::vertical(4)).with("xxxxx")),
+        .with(Modify::new((0, 3)).with(Span::row(4)).with("xxxxx")),
     " asd | N | column 0 | xxxxx | column 2 | zxc "
     "     +---+----------+-------+----------+     "
     "     | 0 |   0-0    |  0-1  |   0-2    |     "

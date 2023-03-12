@@ -36,7 +36,7 @@ use crate::{
 /// ];
 ///
 /// let mut table = Table::new(data);
-/// table.with(Modify::new((0, 0)).with("date").with(Span::horizontal(3)));
+/// table.with(Modify::new((0, 0)).with("date").with(Span::column(3)));
 ///
 /// assert_eq!(
 ///     table.to_string(),

@@ -31,7 +31,7 @@ test_table!(
     margin_without_table_based_on_grid_borders,
     init_table::<3, 3, _, _>([((2, 2), "https://\nwww\n.\nredhat\n.com\n/en")])
         .with(Style::psql())
-        .with(Modify::new(Cell::new(3, 2)).with(Span::horizontal(2)))
+        .with(Modify::new(Cell::new(3, 2)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^')),
     "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
     "> N | column 0 | column 1 | column 2 <"
@@ -51,7 +51,7 @@ test_table!(
     table_with_empty_margin,
     init_table::<3, 3, _, _>([((2, 2), "https://\nwww\n.\nredhat\n.com\n/en")])
         .with(Style::psql())
-        .with(Modify::new(Cell::new(3, 2)).with(Span::horizontal(2)))
+        .with(Modify::new(Cell::new(3, 2)).with(Span::column(2)))
         .with(Margin::new(0, 0, 0, 0).fill('>', '<', 'V', '^')),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
@@ -69,7 +69,7 @@ test_table!(
 fn table_with_margin_and_min_width() {
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell::new(1, 1)).with(Span::horizontal(2)))
+        .with(Modify::new(Cell::new(1, 1)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^'))
         .with(Width::truncate(20))
         .to_string();
@@ -93,7 +93,7 @@ fn table_with_margin_and_min_width() {
 fn table_with_margin_and_max_width() {
     let table = create_table::<3, 3>()
         .with(Style::psql())
-        .with(Modify::new(Cell::new(1, 1)).with(Span::horizontal(2)))
+        .with(Modify::new(Cell::new(1, 1)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^'))
         .with(Width::increase(50))
         .to_string();
@@ -117,14 +117,14 @@ fn table_with_margin_and_max_width() {
 #[ignore = "It's not yet clear what to do with such spans"]
 fn table_0_spanned_with_width() {
     let table = create_table::<0, 0>()
-        .with(Modify::new(Cell::new(0, 0)).with(Span::horizontal(0)))
+        .with(Modify::new(Cell::new(0, 0)).with(Span::column(0)))
         .with(Width::increase(50))
         .to_string();
 
     assert_eq!(table, "++\n|\n++\n");
 
     let table = create_table::<0, 0>()
-        .with(Modify::new(Cell::new(0, 0)).with(Span::horizontal(0)))
+        .with(Modify::new(Cell::new(0, 0)).with(Span::column(0)))
         .with(Width::truncate(50))
         .to_string();
 

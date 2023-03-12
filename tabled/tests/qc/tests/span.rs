@@ -127,8 +127,8 @@ fn test_data_span_test() {
     set_theme(&mut table, theme);
     table.with(
         Modify::new((1, 2))
-            .with(Span::horizontal(0))
-            .with(Span::vertical(10)),
+            .with(Span::column(0))
+            .with(Span::row(10)),
     );
 
     let output = table.to_string();
@@ -147,7 +147,7 @@ fn set_span_hspan(table: &mut Table, list: &[u8]) {
             }
 
             let span = list[i];
-            table.with(Modify::new((r, c)).with(Span::horizontal(span as usize)));
+            table.with(Modify::new((r, c)).with(Span::column(span as usize)));
 
             i += 1;
         }
@@ -163,7 +163,7 @@ fn set_span_vspan(table: &mut Table, list: &[u8]) {
             }
 
             let span = list[i];
-            table.with(Modify::new((r, c)).with(Span::vertical(span as usize)));
+            table.with(Modify::new((r, c)).with(Span::row(span as usize)));
 
             i += 1;
         }
