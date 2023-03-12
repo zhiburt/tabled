@@ -973,11 +973,7 @@ mod row {
         let data = [[1, 2, 3], [4, 5, 6]];
         let table = Table::new(data)
             .with(Modify::new((1, 0)).with(Span::row(2)))
-            .with(
-                Modify::new((0, 1))
-                    .with(Span::row(2))
-                    .with(Span::column(2)),
-            )
+            .with(Modify::new((0, 1)).with(Span::row(2)).with(Span::column(2)))
             .with(Style::ascii())
             .with(BorderSpanCorrection)
             .to_string();
@@ -1077,11 +1073,7 @@ fn highlight_row_col_span_test() {
         ["7", "8", "9", "0"],
     ];
     let table = Table::new(data)
-        .with(
-            Modify::new((1, 1))
-                .with(Span::row(3))
-                .with(Span::column(2)),
-        )
+        .with(Modify::new((1, 1)).with(Span::row(3)).with(Span::column(2)))
         .with(Style::modern())
         .with(Highlight::new(Columns::new(1..3), Border::filled('*')))
         .to_string();
