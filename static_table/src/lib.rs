@@ -489,9 +489,14 @@ impl<T: Parse> Parse for Pad<T> {
 
 fn expr_lit_to_string(expr_lit: &ExprLit) -> String {
     match &expr_lit.lit {
-        Lit::Str(s) => s.value(),
-        Lit::ByteStr(s) => format!("{:?}", s.value()),
-        lit => lit.to_token_stream().to_string(),
+        Lit::Str(val) => val.value(),
+        Lit::ByteStr(val) => format!("{:?}", val.value()),
+        Lit::Int(val) => val.base10_digits().to_string(),
+        Lit::Float(val) => val.base10_digits().to_string(),
+        Lit::Char(val) => val.value().to_string(),
+        Lit::Byte(val) => val.value().to_string(),
+        Lit::Bool(val) => val.value().to_string(),
+        Lit::Verbatim(val) => val.to_token_stream().to_string(),
     }
 }
 
