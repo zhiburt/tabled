@@ -101,6 +101,193 @@ fn static_table_byte_string() {
 }
 
 #[test]
+fn static_table_byte_char() {
+    let table = static_table!([[b'a'], [b'b']]);
+    let expected = "+----+\n\
+                          | 97 |\n\
+                          +----+\n\
+                          | 98 |\n\
+                          +----+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_char() {
+    let table = static_table!([['a'], ['b']]);
+    let expected = "+---+\n\
+                          | a |\n\
+                          +---+\n\
+                          | b |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_bool() {
+    let table = static_table!([[true], [false]]);
+    let expected = "+-------+\n\
+                          | true  |\n\
+                          +-------+\n\
+                          | false |\n\
+                          +-------+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_u64() {
+    let table = static_table!([[0u64], [1u64]]);
+    let expected = "+---+\n\
+                          | 0 |\n\
+                          +---+\n\
+                          | 1 |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_u32() {
+    let table = static_table!([[0u32], [1u32]]);
+    let expected = "+---+\n\
+                          | 0 |\n\
+                          +---+\n\
+                          | 1 |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_u16() {
+    let table = static_table!([[0u16], [1u16]]);
+    let expected = "+---+\n\
+                          | 0 |\n\
+                          +---+\n\
+                          | 1 |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_u8() {
+    let table = static_table!([[0u8], [1u8]]);
+    let expected = "+---+\n\
+                          | 0 |\n\
+                          +---+\n\
+                          | 1 |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_i64() {
+    let table = static_table!([[0u64], [1u64]]);
+    let expected = "+---+\n\
+                          | 0 |\n\
+                          +---+\n\
+                          | 1 |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_i32() {
+    let table = static_table!([[0u32], [1u32]]);
+    let expected = "+---+\n\
+                          | 0 |\n\
+                          +---+\n\
+                          | 1 |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_i16() {
+    let table = static_table!([[0u16], [1u16]]);
+    let expected = "+---+\n\
+                          | 0 |\n\
+                          +---+\n\
+                          | 1 |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_i8() {
+    let table = static_table!([[0u8], [1u8]]);
+    let expected = "+---+\n\
+                          | 0 |\n\
+                          +---+\n\
+                          | 1 |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_isize() {
+    let table = static_table!([[0isize], [1isize]]);
+    let expected = "+---+\n\
+                          | 0 |\n\
+                          +---+\n\
+                          | 1 |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_isize_minus() {
+    let table = static_table!([[-0], [-1isize]]);
+    let expected = "+----+\n\
+                          | -0 |\n\
+                          +----+\n\
+                          | -1 |\n\
+                          +----+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_usize() {
+    let table = static_table!([[0usize], [1usize]]);
+    let expected = "+---+\n\
+                          | 0 |\n\
+                          +---+\n\
+                          | 1 |\n\
+                          +---+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_float32() {
+    let table = static_table!([[0.0f32], [0.1f32]]);
+    let expected = "+-----+\n\
+                          | 0.0 |\n\
+                          +-----+\n\
+                          | 0.1 |\n\
+                          +-----+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_float64() {
+    let table = static_table!([[0.0f64], [0.1f64]]);
+    let expected = "+-----+\n\
+                          | 0.0 |\n\
+                          +-----+\n\
+                          | 0.1 |\n\
+                          +-----+";
+    assert_eq!(table, expected);
+}
+
+#[test]
+fn static_table_float64_minus() {
+    let table = static_table!([[-0.0f64], [0.1f64]]);
+    let expected = "+------+\n\
+                          | -0.0 |\n\
+                          +------+\n\
+                          | 0.1  |\n\
+                          +------+";
+    assert_eq!(table, expected);
+}
+
+#[test]
 fn static_table_dims_differences_0() {
     let table = static_table!([["Hello World"; 2], ["hello"]]);
     let expected = "+-------------+-------------+\n\

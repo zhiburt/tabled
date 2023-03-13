@@ -94,6 +94,11 @@ fn static_table_style() {
     static_table!([[1, 2, 123], [1, 2, 123], [1, 2, 123]], THEME = "MODERN");
 }
 
+// #[test(compail_fail)]
+// fn static_table_verbatim() {
+//     static_table!([[asd], [zxc], [1, 2, 123]]);
+// }
+
 // #[test]
 // fn static_table_with_init_rows() {
 //     static_table::static_table!([[1, 1, 3]; 3]);
