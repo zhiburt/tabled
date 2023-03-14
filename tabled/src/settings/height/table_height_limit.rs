@@ -1,6 +1,6 @@
 use crate::{
     grid::util::string::{count_lines, get_lines},
-    records::{ExactRecords, Records, RecordsMut},
+    records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -46,7 +46,7 @@ impl<R, W, P> TableOption<R, TableDimension<'static>, ColoredConfig> for TableHe
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
-    R: ExactRecords + RecordsMut<String>,
+    R: ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
@@ -72,7 +72,7 @@ where
 
         for (row, &height) in heights.iter().enumerate() {
             for col in 0..count_cols {
-                let text = records.get_cell((row, col)).as_ref();
+                let text = records.get_text((row, col));
                 let count_lines = count_lines(text);
 
                 if count_lines <= height {

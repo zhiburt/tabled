@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{
     grid::{
         dimension::{Dimension, Estimate},
-        spanned::GridConfig,
+        iterable::GridConfig,
     },
     records::{ExactRecords, Records},
     settings::TableOption,
@@ -162,7 +162,7 @@ fn set_chars<R>(
                     Some(c) => cfg.override_horizontal_border(
                         (line, col),
                         c,
-                        crate::grid::spanned::config::Offset::Begin(off),
+                        crate::grid::iterable::config::Offset::Begin(off),
                     ),
                     None => return,
                 }

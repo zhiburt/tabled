@@ -6,7 +6,7 @@ use tabled::{
 };
 
 #[cfg(feature = "color")]
-use tabled::{grid::color::AnsiColor, grid::spanned::GridConfig};
+use tabled::{grid::color::AnsiColor, grid::iterable::GridConfig};
 
 #[test]
 fn config_from_table_test() {

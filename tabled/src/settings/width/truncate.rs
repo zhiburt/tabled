@@ -6,10 +6,10 @@ use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
 
 use crate::{
     grid::{
-        spanned::config::GridConfig,
+        iterable::config::GridConfig,
         util::string::{string_width, string_width_multiline},
     },
-    records::{EmptyRecords, ExactRecords, Records, RecordsMut},
+    records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -163,7 +163,7 @@ impl Truncate<'_, (), ()> {
 impl<W, P, R> CellOption<R, ColoredConfig> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
@@ -189,7 +189,7 @@ where
         let save_suffix_color = need_suffix_color_preservation(&self.suffix);
 
         for pos in entity.iter(count_rows, count_columns) {
-            let text = records.get_cell(pos).as_ref();
+            let text = records.get_text(pos);
 
             let cell_width = string_width_multiline(text);
             if truncate_width >= cell_width {
@@ -245,7 +245,7 @@ impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for Truncat
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
@@ -277,7 +277,10 @@ where
     }
 }
 
-fn truncate_total_width<P: Peaker, R: Records + ExactRecords + RecordsMut<String>>(
+fn truncate_total_width<
+    P: Peaker,
+    R: Records + PeekableRecords + ExactRecords + RecordsMut<String>,
+>(
     records: &mut R,
     cfg: &mut ColoredConfig,
     mut widths: Vec<usize>,

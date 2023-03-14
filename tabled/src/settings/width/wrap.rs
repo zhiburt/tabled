@@ -6,9 +6,9 @@
 use std::marker::PhantomData;
 
 use crate::{
-    grid::{config::Entity, spanned::GridConfig, util::string::string_width_multiline},
+    grid::{config::Entity, iterable::GridConfig, util::string::string_width_multiline},
     records::ExactRecords,
-    records::{EmptyRecords, Records, RecordsMut},
+    records::{EmptyRecords, PeekableRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -94,7 +94,7 @@ impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for Wrap<W,
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
@@ -124,7 +124,7 @@ where
 impl<W, R> CellOption<R, ColoredConfig> for Wrap<W>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
@@ -134,7 +134,7 @@ where
         let count_columns = records.count_columns();
 
         for pos in entity.iter(count_rows, count_columns) {
-            let text = records.get_cell(pos).as_ref();
+            let text = records.get_text(pos);
             let cell_width = string_width_multiline(text);
             if cell_width <= width {
                 continue;
@@ -156,7 +156,7 @@ fn wrap_total_width<R, P>(
     priority: P,
 ) -> Vec<usize>
 where
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     P: Peaker,
     for<'a> &'a R: Records,
 {

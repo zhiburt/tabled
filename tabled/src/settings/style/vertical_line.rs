@@ -1,7 +1,7 @@
 use crate::settings::TableOption;
 
 #[cfg(feature = "std")]
-use crate::{grid::spanned::config::VerticalLine as VLine, tables::table::ColoredConfig};
+use crate::{grid::iterable::config::VerticalLine as VLine, tables::table::ColoredConfig};
 
 use super::Line;
 

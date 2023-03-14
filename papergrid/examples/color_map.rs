@@ -18,7 +18,7 @@ use papergrid::{
     color::Color,
     config::{Borders, Position},
     dimension::Estimate,
-    grid::spanned::{config::GridConfig, dimension::ExactDimension, Grid},
+    grid::iterable::{config::GridConfig, dimension::ExactDimension, Grid},
     records::IterRecords,
 };
 

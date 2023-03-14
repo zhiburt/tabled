@@ -263,11 +263,11 @@ where
         let pos = (row, col);
         let width = dims.get_width(col);
         let color = colors.get_color(pos);
-        print_vertical_char(f, cfg, pos, 0, 1, shape)?;
+        print_vertical_char(f, cfg, pos, 0, 1, shape.1)?;
         print_single_line_column(f, cell.as_ref(), cfg, width, color, pos)?;
     }
 
-    print_vertical_char(f, cfg, (row, shape.1), 0, 1, shape)?;
+    print_vertical_char(f, cfg, (row, shape.1), 0, 1, shape.1)?;
 
     print_margin_right(f, cfg, line, totalh)?;
 
@@ -330,11 +330,11 @@ fn print_columns_lines<T, F: Write, C: Color>(
         print_margin_left(f, cfg, exact_line, totalh)?;
 
         for (col, cell) in buf.iter_mut().enumerate() {
-            print_vertical_char(f, cfg, (row, col), i, height, shape)?;
+            print_vertical_char(f, cfg, (row, col), i, height, shape.1)?;
             cell.display(f)?;
         }
 
-        print_vertical_char(f, cfg, (row, shape.1), i, height, shape)?;
+        print_vertical_char(f, cfg, (row, shape.1), i, height, shape.1)?;
 
         print_margin_right(f, cfg, exact_line, totalh)?;
 
@@ -676,11 +676,11 @@ where
         print_margin_left(f, cfg, exact_line, totalh)?;
 
         for (&col, (cell, _, _)) in buf.iter_mut() {
-            print_vertical_char(f, cfg, (row, col), cell_line, this_height, shape)?;
+            print_vertical_char(f, cfg, (row, col), cell_line, this_height, shape.1)?;
             cell.display(f)?;
         }
 
-        print_vertical_char(f, cfg, (row, shape.1), cell_line, this_height, shape)?;
+        print_vertical_char(f, cfg, (row, shape.1), cell_line, this_height, shape.1)?;
 
         print_margin_right(f, cfg, exact_line, totalh)?;
 
@@ -953,9 +953,9 @@ fn print_vertical_char<F: Write>(
     pos: Position,
     line: usize,
     count_lines: usize,
-    shape: (usize, usize),
+    count_columns: usize,
 ) -> fmt::Result {
-    let symbol = match cfg.get_vertical(pos, shape.1) {
+    let symbol = match cfg.get_vertical(pos, count_columns) {
         Some(c) => c,
         None => return Ok(()),
     };
@@ -966,7 +966,7 @@ fn print_vertical_char<F: Write>(
         .flatten()
         .unwrap_or(symbol);
 
-    match cfg.get_vertical_color(pos, shape.1) {
+    match cfg.get_vertical_color(pos, count_columns) {
         Some(clr) => {
             clr.fmt_prefix(f)?;
             f.write_char(symbol)?;

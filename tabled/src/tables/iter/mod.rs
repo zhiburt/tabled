@@ -37,7 +37,7 @@ use crate::{
         compact::{CompactConfig, ExactDimension},
         config::{AlignmentHorizontal, Indent, Sides},
         dimension::Dimension,
-        spanned::{Grid, GridConfig},
+        iterable::{Grid, GridConfig},
     },
     records::{
         into_records::{

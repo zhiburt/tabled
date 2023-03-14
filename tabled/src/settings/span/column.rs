@@ -1,7 +1,7 @@
 use crate::{
     grid::{
         config::{Entity, Position},
-        spanned::GridConfig,
+        iterable::GridConfig,
     },
     records::{ExactRecords, Records},
     settings::CellOption,

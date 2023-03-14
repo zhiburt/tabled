@@ -6,7 +6,7 @@ use crate::records::Records;
 ///
 /// It's a friend trait of [`Estimate`].
 ///
-/// [`Grid`]: crate::grid::spanned::Grid
+/// [`Grid`]: crate::grid::iterable::Grid
 pub trait Dimension {
     /// Get a column width by index.
     fn get_width(&self, column: usize) -> usize;
@@ -32,7 +32,7 @@ where
 ///
 /// It's a friend trait of [`Dimension`].
 ///
-/// [`Grid`]: crate::grid::spanned::Grid
+/// [`Grid`]: crate::grid::iterable::Grid
 pub trait Estimate<Config> {
     /// Estimates a metric.
     fn estimate<R: Records>(&mut self, records: R, cfg: &Config);

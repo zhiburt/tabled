@@ -1,5 +1,5 @@
 use crate::{
-    grid::spanned::{ExactDimension, GridConfig},
+    grid::iterable::{ExactDimension, GridConfig},
     records::{ExactRecords, Records},
 };
 

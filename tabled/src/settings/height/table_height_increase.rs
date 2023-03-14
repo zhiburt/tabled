@@ -1,5 +1,5 @@
 use crate::{
-    records::{ExactRecords, Records},
+    records::{ExactRecords, PeekableRecords, Records},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -45,7 +45,7 @@ impl<R, W, P> TableOption<R, TableDimension<'static>, ColoredConfig> for TableHe
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
-    R: Records + ExactRecords,
+    R: Records + ExactRecords + PeekableRecords,
     for<'a> &'a R: Records,
 {
     fn change(

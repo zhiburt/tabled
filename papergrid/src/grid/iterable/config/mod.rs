@@ -1,6 +1,6 @@
 //! A module which contains configuration options for a [`Grid`].
 //!
-//! [`Grid`]: crate::grid::spanned::Grid
+//! [`Grid`]: crate::grid::iterable::Grid
 
 mod borders_config;
 mod entity_map;

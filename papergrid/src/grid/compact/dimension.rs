@@ -14,7 +14,7 @@ use super::config::CompactConfig;
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height.
 ///
-/// [`Grid`]: crate::grid::spanned::Grid
+/// [`Grid`]: crate::grid::iterable::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct ExactDimension {
     height: usize,

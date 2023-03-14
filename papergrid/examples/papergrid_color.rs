@@ -9,7 +9,7 @@ use papergrid::{
     colors::NoColors,
     config::Borders,
     dimension::Estimate,
-    grid::spanned::{ExactDimension, Grid, GridConfig},
+    grid::iterable::{ExactDimension, Grid, GridConfig},
     records::IterRecords,
 };
 

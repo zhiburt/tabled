@@ -29,7 +29,7 @@
 
 use crate::{
     grid::config::Sides,
-    grid::spanned::config::Offset,
+    grid::iterable::config::Offset,
     settings::{color::Color, TableOption},
     tables::table::ColoredConfig,
 };

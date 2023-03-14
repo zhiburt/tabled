@@ -39,7 +39,7 @@ use crate::{
 use crate::{
     grid::{
         color::AnsiColor,
-        spanned::config::{ColoredMarginIndent, Offset},
+        iterable::config::{ColoredMarginIndent, Offset},
     },
     tables::table::ColoredConfig,
 };

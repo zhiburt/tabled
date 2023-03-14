@@ -17,7 +17,7 @@ mod util;
 use std::vec;
 
 use papergrid::colors::NoColors;
-use papergrid::grid::spanned::{config::GridConfig, Grid};
+use papergrid::grid::iterable::{config::GridConfig, Grid};
 use papergrid::{
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity},
     records::IterRecords,

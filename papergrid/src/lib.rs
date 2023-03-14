@@ -27,7 +27,7 @@
 //!     dimension::{Estimate},
 //!     config::Borders,
 //!     colors::NoColors,
-//!     grid::spanned::{config::GridConfig, Grid, ExactDimension},
+//!     grid::iterable::{config::GridConfig, Grid, ExactDimension},
 //! };
 //!
 //! // Creating a borders structure of a grid.

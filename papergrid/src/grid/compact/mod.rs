@@ -3,7 +3,7 @@
 //! It has less configuration settings compared to [`Grid`].
 //! But it assumed to have a better performance.
 //!
-//! [`Grid`]: crate::grid::spanned::Grid
+//! [`Grid`]: crate::grid::iterable::Grid
 mod config;
 mod grid;
 

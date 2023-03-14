@@ -7,7 +7,7 @@ use papergrid::{
     colors::NoColors,
     config::{Borders, Position},
     dimension::{Dimension, Estimate},
-    grid::spanned::{ExactDimension, Grid, GridConfig},
+    grid::iterable::{ExactDimension, Grid, GridConfig},
     records::{IterRecords, Records},
 };
 
@@ -141,7 +141,7 @@ pub const DEFAULT_BORDERS: Borders<char> = Borders {
 
 /// A [`Estimate`]or of a width for a [`Grid`].
 ///
-/// [`Grid`]: crate::grid::spanned::Grid
+/// [`Grid`]: crate::grid::iterable::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct ConstantDimension(pub Vec<usize>, pub Vec<usize>);
 

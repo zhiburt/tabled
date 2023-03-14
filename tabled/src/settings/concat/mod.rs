@@ -51,7 +51,7 @@ use std::borrow::Cow;
 
 use crate::{
     grid::config::Position,
-    records::{ExactRecords, Records, RecordsMut, Resizable},
+    records::{ExactRecords, PeekableRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
     Table,
 };
@@ -113,7 +113,7 @@ impl Concat {
 
 impl<R, D, C> TableOption<R, D, C> for Concat
 where
-    R: Records + ExactRecords + Resizable + RecordsMut<String>,
+    R: Records + ExactRecords + Resizable + PeekableRecords + RecordsMut<String>,
 {
     fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
         let count_rows = records.count_rows();
@@ -178,10 +178,10 @@ struct GetCell(String, Position);
 
 impl<R, D, C> TableOption<R, D, C> for GetCell
 where
-    R: ExactRecords,
+    R: PeekableRecords,
 {
     fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
-        let cell = records.get_cell(self.1).as_ref().to_string();
+        let cell = records.get_text(self.1).to_string();
         self.0 = cell;
     }
 }

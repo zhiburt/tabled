@@ -2,7 +2,7 @@ use crate::{
     grid::{
         compact::CompactConfig,
         dimension::{Dimension, Estimate},
-        spanned::GridConfig,
+        iterable::GridConfig,
     },
     records::Records,
 };

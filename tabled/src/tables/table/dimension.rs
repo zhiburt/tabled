@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{
     grid::{
         dimension::{Dimension, Estimate},
-        spanned::{ExactDimension, GridConfig},
+        iterable::{ExactDimension, GridConfig},
     },
     records::Records,
 };

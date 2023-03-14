@@ -12,18 +12,16 @@ use crate::{
         color::AnsiColor,
         config::{Entity, Indent, Position, Sides},
         dimension::{Dimension, Estimate},
-        spanned::{
-            config::{Formatting, GridConfig},
-            Grid,
-        },
+        iterable::config::{Formatting, GridConfig},
+        peekable::PeekableGrid,
     },
-    records::{ExactRecords, Records, VecRecords},
+    records::{vec_records::VecRecords, ExactRecords, Records},
     settings::{Style, TableOption},
     Tabled,
 };
 
 pub use dimension::TableDimension;
-use papergrid::colors::NoColors;
+use papergrid::{colors::NoColors, records::vec_records::CellInfo};
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
 ///
@@ -60,7 +58,7 @@ use papergrid::colors::NoColors;
 /// [`Style::ascii`]: crate::settings::Style::ascii
 #[derive(Debug, Clone)]
 pub struct Table {
-    records: VecRecords<String>,
+    records: VecRecords<CellInfo<String>>,
     config: ColoredConfig,
     dimension: TableDimension<'static>,
 }
@@ -77,14 +75,19 @@ impl Table {
     {
         let mut header = Vec::with_capacity(T::LENGTH);
         for text in T::headers() {
-            header.push(text.into_owned());
+            let text = text.into_owned();
+            let cell = CellInfo::new(text);
+            header.push(cell);
         }
 
         let mut records = vec![header];
         for row in iter.into_iter() {
             let mut list = Vec::with_capacity(T::LENGTH);
             for text in row.fields().into_iter() {
-                list.push(text.into_owned());
+                let text = text.into_owned();
+                let cell = CellInfo::new(text);
+
+                list.push(cell);
             }
 
             records.push(list);
@@ -173,10 +176,10 @@ impl Table {
     /// With is a generic function which applies options to the [`Table`].
     ///
     /// It applies settings immediately.
-    pub fn with<O: TableOption<VecRecords<String>, TableDimension<'static>, ColoredConfig>>(
-        &mut self,
-        option: O,
-    ) -> &mut Self {
+    pub fn with<O>(&mut self, option: O) -> &mut Self
+    where
+        O: TableOption<VecRecords<CellInfo<String>>, TableDimension<'static>, ColoredConfig>,
+    {
         self.dimension.clear_width();
         self.dimension.clear_height();
 
@@ -256,9 +259,9 @@ impl fmt::Display for Table {
 
         let colors = &self.config.colors;
         if !colors.is_empty() {
-            Grid::new(&self.records, &dimension, config, colors).build(f)
+            PeekableGrid::new(&self.records, config, &dimension, colors).build(f)
         } else {
-            Grid::new(&self.records, &dimension, config, NoColors).build(f)
+            PeekableGrid::new(&self.records, config, &dimension, NoColors).build(f)
         }
     }
 }
@@ -275,7 +278,11 @@ where
 
 impl From<Builder> for Table {
     fn from(builder: Builder) -> Self {
-        let data = builder.into();
+        let data: Vec<Vec<String>> = builder.into();
+        let data = data
+            .into_iter()
+            .map(|row| row.into_iter().map(CellInfo::new).collect())
+            .collect();
         let records = VecRecords::new(data);
 
         Self {

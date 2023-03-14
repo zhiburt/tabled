@@ -7,7 +7,7 @@ use std::marker::PhantomData;
 use crate::{
     grid::config::Entity,
     grid::util::string::{get_lines, string_width_multiline},
-    records::{ExactRecords, Records, RecordsMut},
+    records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -104,7 +104,7 @@ impl<W, P> MinWidth<W, P> {
 impl<W, R> CellOption<R, ColoredConfig> for MinWidth<W>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
@@ -114,7 +114,7 @@ where
         let count_columns = records.count_columns();
 
         for pos in entity.iter(count_rows, count_columns) {
-            let cell = records.get_cell(pos).as_ref();
+            let cell = records.get_text(pos);
             let cell_width = string_width_multiline(cell);
             if cell_width >= width {
                 continue;
@@ -130,7 +130,7 @@ impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for MinWidt
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + ExactRecords,
+    R: Records + ExactRecords + PeekableRecords,
     for<'a> &'a R: Records,
 {
     fn change(

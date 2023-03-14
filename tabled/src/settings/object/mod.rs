@@ -474,7 +474,7 @@ impl Iterator for InversionIter {
 
 #[cfg(test)]
 mod tests {
-    use crate::records::VecRecords;
+    use crate::records::vec_records::VecRecords;
 
     use super::*;
 

@@ -319,7 +319,11 @@ pub mod grid {
 
     #[cfg(feature = "std")]
     #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-    pub use papergrid::grid::spanned;
+    pub use papergrid::grid::iterable;
+
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    pub use papergrid::grid::peekable;
 }
 
 #[cfg(feature = "std")]

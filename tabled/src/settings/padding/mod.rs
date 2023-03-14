@@ -46,7 +46,7 @@ use crate::{
 
 #[cfg(feature = "std")]
 use crate::{
-    grid::{color::AnsiColor, spanned::config::ColoredIndent},
+    grid::{color::AnsiColor, iterable::config::ColoredIndent},
     tables::table::ColoredConfig,
 };
 

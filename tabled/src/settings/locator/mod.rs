@@ -8,7 +8,7 @@ use std::{
 
 use crate::{
     grid::config::Entity,
-    records::{ExactRecords, Records},
+    records::{ExactRecords, PeekableRecords, Records},
     settings::object::{
         Column, Columns, FirstColumn, FirstRow, LastColumn, LastRow, Object, Row, Rows,
     },
@@ -151,7 +151,7 @@ impl<S> ByColumnName<S> {
 impl<R, S> Locator<R> for ByColumnName<S>
 where
     S: AsRef<str>,
-    R: Records + ExactRecords,
+    R: Records + ExactRecords + PeekableRecords,
 {
     type Coordinate = usize;
     type IntoIter = Vec<usize>;
@@ -159,7 +159,7 @@ where
     fn locate(&mut self, records: R) -> Self::IntoIter {
         // todo: can be optimized by creating Iterator
         (0..records.count_columns())
-            .filter(|col| records.get_cell((0, *col)).as_ref() == self.0.as_ref())
+            .filter(|col| records.get_text((0, *col)) == self.0.as_ref())
             .collect::<Vec<_>>()
     }
 }
@@ -167,14 +167,14 @@ where
 impl<S, R> Object<R> for ByColumnName<S>
 where
     S: AsRef<str>,
-    R: Records + ExactRecords,
+    R: Records + PeekableRecords + ExactRecords,
 {
     type Iter = std::vec::IntoIter<Entity>;
 
     fn cells(&self, records: &R) -> Self::Iter {
         // todo: can be optimized by creating Iterator
         (0..records.count_columns())
-            .filter(|col| records.get_cell((0, *col)).as_ref() == self.0.as_ref())
+            .filter(|col| records.get_text((0, *col)) == self.0.as_ref())
             .map(Entity::Column)
             .collect::<Vec<_>>()
             .into_iter()

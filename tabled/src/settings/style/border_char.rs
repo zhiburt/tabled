@@ -1,6 +1,6 @@
 use crate::{
     grid::config::{Entity, Position},
-    grid::spanned::GridConfig,
+    grid::iterable::GridConfig,
     records::{ExactRecords, Records},
     settings::CellOption,
     tables::table::ColoredConfig,

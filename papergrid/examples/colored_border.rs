@@ -8,7 +8,7 @@ use papergrid::{
     colors::NoColors,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
     dimension::Estimate,
-    grid::spanned::{config::GridConfig, dimension::ExactDimension, Grid},
+    grid::iterable::{config::GridConfig, dimension::ExactDimension, Grid},
     records::IterRecords,
 };
 

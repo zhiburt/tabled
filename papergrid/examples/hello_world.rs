@@ -5,7 +5,7 @@ use papergrid::{
     colors::NoColors,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
     dimension::Estimate,
-    grid::spanned::{dimension::ExactDimension, Grid, GridConfig},
+    grid::iterable::{dimension::ExactDimension, Grid, GridConfig},
     records::IterRecords,
 };
 
