@@ -1358,8 +1358,24 @@ println!("{}", table);
 
 ### Color
 
-The library doesn't bind you in usage of any color library but to be able to work correctly with color input you should
-add the `color` feature of `tabled` to your `Cargo.toml`
+The library doesn't bind you in usage of any color library but to be able to work correctly with color input, and avoid [miscalculation of string width](https://github.com/zhiburt/tabled/issues/26) because of embedded ansi sequences, you should add the `color` feature of `tabled` to your `Cargo.toml`:
+
+```toml
+tabled = { version = "*", features = ["color"] } 
+```
+
+Then you can use colored strings as values:
+
+```rust
+use owo_colors::OwoColorize;
+// ...
+let mut builder = tabled::builder::Builder::default();
+builder.add_record(vec!["green".green(), "red".red()])
+let mut table = builder.build();
+table.with(tabled::Style::rounded());
+```
+
+Another example:
 
 ```rust
 use tabled::{format::Format, object::Columns, Modify, Style, Table};
