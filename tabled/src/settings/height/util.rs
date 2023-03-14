@@ -1,11 +1,11 @@
 use crate::{
-    grid::iterable::{ExactDimension, GridConfig},
+    grid::iterable::{ExactDimension, SpannedConfig},
     records::{ExactRecords, Records},
 };
 
 pub(crate) fn get_table_height<R: Records + ExactRecords>(
     records: R,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
 ) -> (usize, Vec<usize>) {
     let count_horizontals = cfg.count_horizontal(records.count_rows());
 

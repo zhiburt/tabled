@@ -37,7 +37,7 @@ use crate::{
         compact::{CompactConfig, ExactDimension},
         config::{AlignmentHorizontal, Indent, Sides},
         dimension::Dimension,
-        iterable::{Grid, GridConfig},
+        iterable::{Grid, SpannedConfig},
     },
     records::{
         into_records::{
@@ -204,12 +204,12 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
             Some(limit) => {
                 let records = LimitRows::new(records, limit);
                 let records = build_records(records, content_width, count_columns, count_rows);
-                let cfg = GridConfig::from(config);
+                let cfg = SpannedConfig::from(config);
                 return Grid::new(records, dims, cfg, NoColors).build(writer);
             }
             None => {
                 let records = build_records(records, content_width, count_columns, count_rows);
-                let cfg = GridConfig::from(config);
+                let cfg = SpannedConfig::from(config);
                 return Grid::new(records, dims, cfg, NoColors).build(writer);
             }
         }
@@ -259,12 +259,12 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
         Some(limit) => {
             let records = LimitRows::new(records, limit);
             let records = build_records(records, contentw, count_columns, count_rows);
-            let cfg = GridConfig::from(config);
+            let cfg = SpannedConfig::from(config);
             Grid::new(records, dimension, cfg, NoColors).build(writer)
         }
         None => {
             let records = build_records(records, contentw, count_columns, count_rows);
-            let cfg = GridConfig::from(config);
+            let cfg = SpannedConfig::from(config);
             Grid::new(records, dimension, cfg, NoColors).build(writer)
         }
     }

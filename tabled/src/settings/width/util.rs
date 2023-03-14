@@ -1,24 +1,24 @@
 use std::borrow::Cow;
 
 use crate::{
-    grid::iterable::{ExactDimension, GridConfig},
+    grid::iterable::{ExactDimension, SpannedConfig},
     records::Records,
 };
 
-pub(crate) fn get_table_widths<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
+pub(crate) fn get_table_widths<R: Records>(records: R, cfg: &SpannedConfig) -> Vec<usize> {
     ExactDimension::width(records, cfg)
 }
 
 pub(crate) fn get_table_widths_with_total<R: Records>(
     records: R,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
 ) -> (Vec<usize>, usize) {
     let widths = ExactDimension::width(records, cfg);
     let total_width = get_table_total_width(&widths, cfg);
     (widths, total_width)
 }
 
-fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
+fn get_table_total_width(list: &[usize], cfg: &SpannedConfig) -> usize {
     let margin = cfg.get_margin();
     list.iter().sum::<usize>()
         + cfg.count_vertical(list.len())

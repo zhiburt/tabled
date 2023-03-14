@@ -5,7 +5,7 @@ use papergrid::{
     colors::NoColors,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
     dimension::Estimate,
-    grid::iterable::{dimension::ExactDimension, Grid, GridConfig},
+    grid::iterable::{dimension::ExactDimension, Grid, SpannedConfig},
     records::IterRecords,
 };
 
@@ -26,7 +26,7 @@ fn main() {
     println!("{grid}");
 }
 
-fn generate_table_config() -> GridConfig {
+fn generate_table_config() -> SpannedConfig {
     const STYLE: Borders<char> = Borders {
         top: Some('-'),
         top_left: Some('+'),
@@ -45,7 +45,7 @@ fn generate_table_config() -> GridConfig {
         intersection: Some('+'),
     };
 
-    let mut cfg = GridConfig::default();
+    let mut cfg = SpannedConfig::default();
     cfg.set_borders(STYLE);
     cfg.set_column_span((1, 1), 3);
     cfg.set_row_span((0, 0), 2);

@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{
     grid::{
         dimension::{Dimension, Estimate},
-        iterable::GridConfig,
+        iterable::SpannedConfig,
     },
     records::{ExactRecords, Records},
     settings::TableOption,
@@ -120,7 +120,7 @@ where
 fn set_chars<R>(
     dims: &mut TableDimension<'_>,
     records: &R,
-    cfg: &mut GridConfig,
+    cfg: &mut SpannedConfig,
     offset: Offset,
     line: usize,
     text: &str,
@@ -190,7 +190,7 @@ fn set_chars<R>(
 
 fn get_start_pos(
     offset: Offset,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     dims: &TableDimension<'_>,
     count_columns: usize,
 ) -> Option<usize> {
@@ -213,7 +213,7 @@ fn get_start_pos(
     }
 }
 
-fn total_width(cfg: &GridConfig, dims: &TableDimension<'_>, count_columns: usize) -> usize {
+fn total_width(cfg: &SpannedConfig, dims: &TableDimension<'_>, count_columns: usize) -> usize {
     let mut totalw = cfg.has_vertical(0, count_columns) as usize;
     for col in 0..count_columns {
         totalw += dims.get_width(col);

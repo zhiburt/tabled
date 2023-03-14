@@ -1,6 +1,6 @@
 use crate::{
     grid::config::{Entity, Position},
-    grid::iterable::GridConfig,
+    grid::iterable::SpannedConfig,
     records::{ExactRecords, Records},
     settings::CellOption,
     tables::table::ColoredConfig,
@@ -75,7 +75,7 @@ where
 }
 
 fn add_char_vertical<I: Iterator<Item = Position>>(
-    cfg: &mut GridConfig,
+    cfg: &mut SpannedConfig,
     c: char,
     offset: Offset,
     cells: I,
@@ -88,7 +88,7 @@ fn add_char_vertical<I: Iterator<Item = Position>>(
 }
 
 fn add_char_horizontal<I: Iterator<Item = Position>>(
-    cfg: &mut GridConfig,
+    cfg: &mut SpannedConfig,
     c: char,
     offset: Offset,
     cells: I,

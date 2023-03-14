@@ -6,7 +6,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-    grid::{config::Entity, iterable::GridConfig, util::string::string_width_multiline},
+    grid::{config::Entity, iterable::SpannedConfig, util::string::string_width_multiline},
     records::ExactRecords,
     records::{EmptyRecords, PeekableRecords, Records, RecordsMut},
     settings::{
@@ -602,7 +602,7 @@ fn decrease_widths<F>(
 }
 
 fn get_decrease_cell_list(
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     widths: &[usize],
     min_widths: &[usize],
     shape: (usize, usize),
@@ -635,7 +635,7 @@ fn get_decrease_cell_list(
     points
 }
 
-fn count_borders(cfg: &GridConfig, start: usize, end: usize, count_columns: usize) -> usize {
+fn count_borders(cfg: &SpannedConfig, start: usize, end: usize, count_columns: usize) -> usize {
     (start..end)
         .skip(1)
         .filter(|&i| cfg.has_vertical(i, count_columns))

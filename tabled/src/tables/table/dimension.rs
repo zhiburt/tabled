@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use crate::{
     grid::{
         dimension::{Dimension, Estimate},
-        iterable::{ExactDimension, GridConfig},
+        iterable::{ExactDimension, SpannedConfig},
     },
     records::Records,
 };
@@ -88,8 +88,8 @@ impl Dimension for TableDimension<'_> {
     }
 }
 
-impl Estimate<GridConfig> for TableDimension<'_> {
-    fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {
+impl Estimate<SpannedConfig> for TableDimension<'_> {
+    fn estimate<R: Records>(&mut self, records: R, cfg: &SpannedConfig) {
         match (self.width.is_some(), self.height.is_some()) {
             (true, true) => {}
             (true, false) => {

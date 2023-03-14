@@ -27,7 +27,7 @@
 //!     dimension::{Estimate},
 //!     config::Borders,
 //!     colors::NoColors,
-//!     grid::iterable::{config::GridConfig, Grid, ExactDimension},
+//!     grid::iterable::{config::SpannedConfig, Grid, ExactDimension},
 //! };
 //!
 //! // Creating a borders structure of a grid.
@@ -50,7 +50,7 @@
 //! };
 //!
 //! // Creating a grid config.
-//! let mut cfg = GridConfig::default();
+//! let mut cfg = SpannedConfig::default();
 //! cfg.set_borders(borders);
 //!
 //! // Creating an actual data for grid.

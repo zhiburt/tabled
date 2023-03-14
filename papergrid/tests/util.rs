@@ -7,7 +7,7 @@ use papergrid::{
     colors::NoColors,
     config::{Borders, Position},
     dimension::{Dimension, Estimate},
-    grid::iterable::{ExactDimension, Grid, GridConfig},
+    grid::iterable::{ExactDimension, Grid, SpannedConfig},
     records::{IterRecords, Records},
 };
 
@@ -18,13 +18,13 @@ pub fn grid(rows: usize, cols: usize) -> GridBuilder {
 #[derive(Debug, Default, Clone)]
 pub struct GridBuilder {
     size: (usize, usize),
-    cfg: GridConfig,
+    cfg: SpannedConfig,
     data: HashMap<Position, String>,
 }
 
 impl GridBuilder {
     pub fn new(rows: usize, cols: usize) -> Self {
-        let mut cfg = GridConfig::default();
+        let mut cfg = SpannedConfig::default();
         cfg.set_borders(DEFAULT_BORDERS);
 
         Self {
@@ -34,7 +34,7 @@ impl GridBuilder {
         }
     }
 
-    pub fn config(mut self, mut f: impl FnMut(&mut GridConfig)) -> Self {
+    pub fn config(mut self, mut f: impl FnMut(&mut SpannedConfig)) -> Self {
         f(&mut self.cfg);
         self
     }
@@ -71,9 +71,9 @@ impl GridBuilder {
 
 fn build_grid(
     data: Vec<Vec<String>>,
-    cfg: GridConfig,
+    cfg: SpannedConfig,
     shape: (usize, usize),
-) -> Grid<IterRecords<Vec<Vec<String>>>, ExactDimension, GridConfig, NoColors> {
+) -> Grid<IterRecords<Vec<Vec<String>>>, ExactDimension, SpannedConfig, NoColors> {
     let records = IterRecords::new(data, shape.1, Some(shape.0));
 
     let mut dims = ExactDimension::default();
@@ -155,6 +155,6 @@ impl Dimension for ConstantDimension {
     }
 }
 
-impl Estimate<GridConfig> for ConstantDimension {
-    fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
+impl Estimate<SpannedConfig> for ConstantDimension {
+    fn estimate<R: Records>(&mut self, _: R, _: &SpannedConfig) {}
 }

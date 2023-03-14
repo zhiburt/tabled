@@ -18,7 +18,7 @@ use papergrid::{
     color::Color,
     config::{Borders, Position},
     dimension::Estimate,
-    grid::iterable::{config::GridConfig, dimension::ExactDimension, Grid},
+    grid::iterable::{config::SpannedConfig, dimension::ExactDimension, Grid},
     records::IterRecords,
 };
 
@@ -46,8 +46,8 @@ fn generate_colors() -> HashMap<Position, Style> {
     ])
 }
 
-fn generate_table_config() -> GridConfig {
-    let mut cfg = GridConfig::default();
+fn generate_table_config() -> SpannedConfig {
+    let mut cfg = SpannedConfig::default();
     cfg.set_borders(Borders {
         top: Some('-'),
         bottom: Some('-'),

@@ -1,5 +1,5 @@
 use crate::{
-    grid::iterable::config::GridConfig,
+    grid::iterable::config::SpannedConfig,
     records::{ExactRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
     tables::table::ColoredConfig,
@@ -54,7 +54,7 @@ fn move_rows_aside<R: ExactRecords + Resizable>(records: &mut R, row: usize) {
     }
 }
 
-fn move_row_spans(cfg: &mut GridConfig, target_row: usize) {
+fn move_row_spans(cfg: &mut SpannedConfig, target_row: usize) {
     for ((row, col), span) in cfg.get_column_spans() {
         if row < target_row {
             continue;

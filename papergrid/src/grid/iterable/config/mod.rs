@@ -22,7 +22,7 @@ pub use self::{entity_map::EntityMap, formatting::Formatting, offset::Offset};
 ///
 /// grid: crate::Grid.
 #[derive(Debug, Clone)]
-pub struct GridConfig {
+pub struct SpannedConfig {
     margin: Sides<ColoredMarginIndent>,
     padding: EntityMap<Sides<ColoredIndent>>,
     alignment_h: EntityMap<AlignmentHorizontal>,
@@ -37,7 +37,7 @@ pub struct GridConfig {
     border_colors: BordersConfig<AnsiColor<'static>>,
 }
 
-impl Default for GridConfig {
+impl Default for SpannedConfig {
     fn default() -> Self {
         Self {
             margin: Sides::default(),
@@ -56,7 +56,7 @@ impl Default for GridConfig {
     }
 }
 
-impl GridConfig {
+impl SpannedConfig {
     /// Returns a [`Margin`] value currently set.
     pub fn get_margin(&self) -> &Sides<ColoredMarginIndent> {
         &self.margin
@@ -357,7 +357,7 @@ impl GridConfig {
 
     /// Sets off all borders possible on the [`Entity`].
     ///
-    /// It doesn't changes globally set borders through [`GridConfig::set_borders`].
+    /// It doesn't changes globally set borders through [`SpannedConfig::set_borders`].
     //
     // todo: would be great to remove a shape
     pub fn remove_border(&mut self, pos: Position, shape: (usize, usize)) {
@@ -432,7 +432,7 @@ impl GridConfig {
     }
 }
 
-impl GridConfig {
+impl SpannedConfig {
     /// Gets an intersection character which would be rendered on the grid.
     ///
     /// grid: crate::Grid
@@ -562,13 +562,13 @@ impl GridConfig {
     }
 }
 
-impl From<&GridConfig> for GridConfig {
-    fn from(value: &GridConfig) -> Self {
+impl From<&SpannedConfig> for SpannedConfig {
+    fn from(value: &SpannedConfig) -> Self {
         value.clone()
     }
 }
 
-impl From<CompactConfig> for GridConfig {
+impl From<CompactConfig> for SpannedConfig {
     fn from(compact: CompactConfig) -> Self {
         use Entity::Global;
 
@@ -643,7 +643,7 @@ fn borders_static_color_to_ansi_color(b: Borders<StaticColor>) -> Borders<AnsiCo
     }
 }
 
-fn set_cell_row_span(cfg: &mut GridConfig, pos: Position, span: usize) {
+fn set_cell_row_span(cfg: &mut SpannedConfig, pos: Position, span: usize) {
     // such spans aren't supported
     if span == 0 {
         return;
@@ -659,7 +659,7 @@ fn set_cell_row_span(cfg: &mut GridConfig, pos: Position, span: usize) {
     cfg.span_rows.insert(pos, span);
 }
 
-fn set_cell_column_span(cfg: &mut GridConfig, pos: Position, span: usize) {
+fn set_cell_column_span(cfg: &mut SpannedConfig, pos: Position, span: usize) {
     // such spans aren't supported
     if span == 0 {
         return;
@@ -675,19 +675,19 @@ fn set_cell_column_span(cfg: &mut GridConfig, pos: Position, span: usize) {
     cfg.span_columns.insert(pos, span);
 }
 
-fn is_cell_covered_by_column_span(cfg: &GridConfig, pos: Position) -> bool {
+fn is_cell_covered_by_column_span(cfg: &SpannedConfig, pos: Position) -> bool {
     cfg.span_columns
         .iter()
         .any(|(&(row, col), span)| pos.1 > col && pos.1 < col + span && row == pos.0)
 }
 
-fn is_cell_covered_by_row_span(cfg: &GridConfig, pos: Position) -> bool {
+fn is_cell_covered_by_row_span(cfg: &SpannedConfig, pos: Position) -> bool {
     cfg.span_rows
         .iter()
         .any(|(&(row, col), span)| pos.0 > row && pos.0 < row + span && col == pos.1)
 }
 
-fn is_cell_covered_by_both_spans(cfg: &GridConfig, pos: Position) -> bool {
+fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
     if !cfg.has_column_spans() || !cfg.has_row_spans() {
         return false;
     }

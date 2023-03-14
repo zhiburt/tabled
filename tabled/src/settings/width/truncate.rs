@@ -6,7 +6,7 @@ use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
 
 use crate::{
     grid::{
-        iterable::config::GridConfig,
+        iterable::config::SpannedConfig,
         util::string::{string_width, string_width_multiline},
     },
     records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
@@ -362,7 +362,7 @@ fn truncate_text<'a>(
 }
 
 fn get_decrease_cell_list(
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     widths: &[usize],
     min_widths: &[usize],
     shape: (usize, usize),
@@ -435,7 +435,7 @@ fn decrease_widths<F>(
     }
 }
 
-fn count_borders(cfg: &GridConfig, start: usize, end: usize, count_columns: usize) -> usize {
+fn count_borders(cfg: &SpannedConfig, start: usize, end: usize, count_columns: usize) -> usize {
     (start..end)
         .skip(1)
         .filter(|&i| cfg.has_vertical(i, count_columns))

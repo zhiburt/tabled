@@ -14,7 +14,7 @@ use crate::{
     util::string::{count_lines, string_dimension, string_width_multiline},
 };
 
-use super::config::GridConfig;
+use super::config::SpannedConfig;
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height.
 ///
@@ -27,12 +27,12 @@ pub struct ExactDimension {
 
 impl ExactDimension {
     /// Calculates height of rows.
-    pub fn height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
+    pub fn height<R: Records>(records: R, cfg: &SpannedConfig) -> Vec<usize> {
         build_height(records, cfg)
     }
 
     /// Calculates width of columns.
-    pub fn width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
+    pub fn width<R: Records>(records: R, cfg: &SpannedConfig) -> Vec<usize> {
         build_width(records, cfg)
     }
 
@@ -52,15 +52,15 @@ impl Dimension for ExactDimension {
     }
 }
 
-impl Estimate<GridConfig> for ExactDimension {
-    fn estimate<R: Records>(&mut self, records: R, cfg: &GridConfig) {
+impl Estimate<SpannedConfig> for ExactDimension {
+    fn estimate<R: Records>(&mut self, records: R, cfg: &SpannedConfig) {
         let (width, height) = build_dimensions(records, cfg);
         self.width = width;
         self.height = height;
     }
 }
 
-fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Vec<usize>) {
+fn build_dimensions<R: Records>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, Vec<usize>) {
     let count_columns = records.count_columns();
 
     let mut widths = vec![0; count_columns];
@@ -110,7 +110,7 @@ fn build_dimensions<R: Records>(records: R, cfg: &GridConfig) -> (Vec<usize>, Ve
 }
 
 fn adjust_hspans(
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     len: usize,
     spans: &HashMap<Position, (usize, usize)>,
     heights: &mut [usize],
@@ -134,7 +134,7 @@ fn adjust_hspans(
 }
 
 fn adjust_row_range(
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     max_span_height: usize,
     len: usize,
     start: usize,
@@ -150,7 +150,7 @@ fn adjust_row_range(
 }
 
 fn range_height(
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     len: usize,
     start: usize,
     end: usize,
@@ -161,14 +161,14 @@ fn range_height(
     count_borders + range_height
 }
 
-fn count_horizontal_borders(cfg: &GridConfig, len: usize, start: usize, end: usize) -> usize {
+fn count_horizontal_borders(cfg: &SpannedConfig, len: usize, start: usize, end: usize) -> usize {
     (start..end)
         .skip(1)
         .filter(|&i| cfg.has_horizontal(i, len))
         .count()
 }
 
-fn get_cell_height(cell: &str, cfg: &GridConfig, pos: Position) -> usize {
+fn get_cell_height(cell: &str, cfg: &SpannedConfig, pos: Position) -> usize {
     let count_lines = max(1, count_lines(cell));
     let padding = cfg.get_padding(pos.into());
     count_lines + padding.top.indent.size + padding.bottom.indent.size
@@ -196,7 +196,7 @@ fn inc_range(list: &mut [usize], size: usize, start: usize, end: usize) {
 }
 
 fn adjust_vspans(
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     len: usize,
     spans: &HashMap<Position, (usize, usize)>,
     widths: &mut [usize],
@@ -223,7 +223,7 @@ fn adjust_vspans(
 }
 
 fn adjust_column_range(
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     max_span_width: usize,
     len: usize,
     start: usize,
@@ -238,31 +238,31 @@ fn adjust_column_range(
     inc_range(widths, max_span_width - range_width, start, end);
 }
 
-fn get_cell_width(text: &str, cfg: &GridConfig, pos: Position) -> usize {
+fn get_cell_width(text: &str, cfg: &SpannedConfig, pos: Position) -> usize {
     let padding = get_cell_padding(cfg, pos);
     let width = string_width_multiline(text);
     width + padding
 }
 
-fn get_cell_padding(cfg: &GridConfig, pos: Position) -> usize {
+fn get_cell_padding(cfg: &SpannedConfig, pos: Position) -> usize {
     let padding = cfg.get_padding(pos.into());
     padding.left.indent.size + padding.right.indent.size
 }
 
-fn range_width(cfg: &GridConfig, len: usize, start: usize, end: usize, widths: &[usize]) -> usize {
+fn range_width(cfg: &SpannedConfig, len: usize, start: usize, end: usize, widths: &[usize]) -> usize {
     let count_borders = count_vertical_borders(cfg, len, start, end);
     let range_width = widths[start..end].iter().sum::<usize>();
     count_borders + range_width
 }
 
-fn count_vertical_borders(cfg: &GridConfig, len: usize, start: usize, end: usize) -> usize {
+fn count_vertical_borders(cfg: &SpannedConfig, len: usize, start: usize, end: usize) -> usize {
     (start..end)
         .skip(1)
         .filter(|&i| cfg.has_vertical(i, len))
         .count()
 }
 
-fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
+fn build_height<R: Records>(records: R, cfg: &SpannedConfig) -> Vec<usize> {
     let mut heights = vec![];
     let mut hspans = HashMap::new();
 
@@ -291,7 +291,7 @@ fn build_height<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
     heights
 }
 
-fn build_width<R: Records>(records: R, cfg: &GridConfig) -> Vec<usize> {
+fn build_width<R: Records>(records: R, cfg: &SpannedConfig) -> Vec<usize> {
     let count_columns = records.count_columns();
 
     let mut widths = vec![0; count_columns];

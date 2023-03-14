@@ -18,7 +18,7 @@ use crate::{
 
 use super::iterable::{
     config::{ColoredIndent, Formatting, Offset},
-    GridConfig,
+    SpannedConfig,
 };
 
 /// Grid provides a set of methods for building a text-based table.
@@ -49,7 +49,7 @@ impl<R, G, D, C> PeekableGrid<R, G, D, C> {
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
         C: Colors,
-        G: Borrow<GridConfig>,
+        G: Borrow<SpannedConfig>,
         F: Write,
     {
         if self.records.count_columns() == 0 || self.records.hint_count_rows() == Some(0) {
@@ -68,7 +68,7 @@ impl<R, G, D, C> PeekableGrid<R, G, D, C> {
     where
         R: Records + PeekableRecords + ExactRecords,
         D: Dimension,
-        G: Borrow<GridConfig>,
+        G: Borrow<SpannedConfig>,
         C: Colors,
     {
         let mut buf = String::new();
@@ -80,7 +80,7 @@ impl<R, G, D, C> PeekableGrid<R, G, D, C> {
 fn print_grid<F: Write, R: Records + PeekableRecords + ExactRecords, D: Dimension, C: Colors>(
     f: &mut F,
     records: R,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     dimension: &D,
     colors: &C,
 ) -> fmt::Result {
@@ -94,7 +94,7 @@ fn print_grid<F: Write, R: Records + PeekableRecords + ExactRecords, D: Dimensio
 fn build_grid<F: Write, R: Records + PeekableRecords + ExactRecords, D: Dimension, C: Colors>(
     f: &mut F,
     records: &R,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     dimension: &D,
     colors: &C,
 ) -> fmt::Result {
@@ -182,7 +182,7 @@ fn build_grid<F: Write, R: Records + PeekableRecords + ExactRecords, D: Dimensio
 
 fn print_split_line<F: Write, D: Dimension>(
     f: &mut F,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     dimension: &D,
     row: usize,
     shape: (usize, usize),
@@ -219,7 +219,7 @@ fn print_split_line<F: Write, D: Dimension>(
 
 fn print_vertical_intersection<'a, F: fmt::Write>(
     f: &mut F,
-    cfg: &'a GridConfig,
+    cfg: &'a SpannedConfig,
     pos: Position,
     shape: (usize, usize),
     used_color: &mut Option<&'a AnsiColor<'static>>,
@@ -265,7 +265,7 @@ fn prepare_coloring<'a, 'b, F: Write>(
 
 fn print_vertical_char<F: Write>(
     f: &mut F,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     pos: Position,
     line: usize,
     count_lines: usize,
@@ -302,7 +302,7 @@ fn build_grid_spanned<
 >(
     f: &mut F,
     records: &R,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     dims: &D,
     colors: &C,
 ) -> fmt::Result {
@@ -433,7 +433,7 @@ fn print_split_line_spanned<
 >(
     f: &mut F,
     records: &R,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     dims: &D,
     colors: &C,
     row: usize,
@@ -510,7 +510,7 @@ fn print_split_line_spanned<
 
 fn print_horizontal_border<F: Write>(
     f: &mut F,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     pos: Position,
     width: usize,
     c: char,
@@ -532,7 +532,7 @@ fn print_horizontal_border<F: Write>(
 fn print_cell_line<F: Write, R: Records + PeekableRecords + ExactRecords, C: Colors>(
     f: &mut F,
     records: &R,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     colors: &C,
     width: usize,
     height: usize,
@@ -721,27 +721,27 @@ where
         .count()
 }
 
-fn total_width<D: Dimension>(cfg: &GridConfig, dimension: &D, count_columns: usize) -> usize {
+fn total_width<D: Dimension>(cfg: &SpannedConfig, dimension: &D, count_columns: usize) -> usize {
     (0..count_columns)
         .map(|i| dimension.get_width(i))
         .sum::<usize>()
         + cfg.count_vertical(count_columns)
 }
 
-fn total_height<D: Dimension>(cfg: &GridConfig, dimension: &D, count_rows: usize) -> usize {
+fn total_height<D: Dimension>(cfg: &SpannedConfig, dimension: &D, count_rows: usize) -> usize {
     (0..count_rows)
         .map(|i| dimension.get_height(i))
         .sum::<usize>()
         + cfg.count_horizontal(count_rows)
 }
 
-fn print_margin_top<F: Write>(f: &mut F, cfg: &GridConfig, width: usize) -> fmt::Result {
+fn print_margin_top<F: Write>(f: &mut F, cfg: &SpannedConfig, width: usize) -> fmt::Result {
     let m = cfg.get_margin();
     let (indent, offset, color) = (m.top.indent, m.top.offset, m.top.color.as_ref());
     print_indent_lines(f, &indent, &offset, color, width)
 }
 
-fn print_margin_bottom<F: Write>(f: &mut F, cfg: &GridConfig, width: usize) -> fmt::Result {
+fn print_margin_bottom<F: Write>(f: &mut F, cfg: &SpannedConfig, width: usize) -> fmt::Result {
     let m = cfg.get_margin();
     let (indent, offset, color) = (m.bottom.indent, m.bottom.offset, m.bottom.color.as_ref());
     print_indent_lines(f, &indent, &offset, color, width)
@@ -749,7 +749,7 @@ fn print_margin_bottom<F: Write>(f: &mut F, cfg: &GridConfig, width: usize) -> f
 
 fn print_margin_left<F: Write>(
     f: &mut F,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     line: usize,
     height: usize,
 ) -> fmt::Result {
@@ -760,7 +760,7 @@ fn print_margin_left<F: Write>(
 
 fn print_margin_right<F: Write>(
     f: &mut F,
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     line: usize,
     height: usize,
 ) -> fmt::Result {
@@ -870,7 +870,7 @@ fn print_indent<F: Write>(
     }
 }
 
-fn get_cell_width<D: Dimension>(cfg: &GridConfig, dims: &D, pos: Position, max: usize) -> usize {
+fn get_cell_width<D: Dimension>(cfg: &SpannedConfig, dims: &D, pos: Position, max: usize) -> usize {
     match cfg.get_column_span(pos) {
         Some(span) => {
             let start = pos.1;
@@ -885,13 +885,13 @@ fn range_width<D: Dimension>(dims: &D, start: usize, end: usize) -> usize {
     (start..end).map(|col| dims.get_width(col)).sum::<usize>()
 }
 
-fn count_verticals_range(cfg: &GridConfig, start: usize, end: usize, max: usize) -> usize {
+fn count_verticals_range(cfg: &SpannedConfig, start: usize, end: usize, max: usize) -> usize {
     (start + 1..end)
         .map(|i| cfg.has_vertical(i, max) as usize)
         .sum()
 }
 
-fn get_cell_height<D: Dimension>(cfg: &GridConfig, dims: &D, pos: Position, max: usize) -> usize {
+fn get_cell_height<D: Dimension>(cfg: &SpannedConfig, dims: &D, pos: Position, max: usize) -> usize {
     match cfg.get_row_span(pos) {
         Some(span) => {
             let start = pos.0;
@@ -906,13 +906,13 @@ fn range_height<D: Dimension>(dims: &D, start: usize, end: usize) -> usize {
     (start..end).map(|col| dims.get_height(col)).sum::<usize>()
 }
 
-fn count_horizontals_range(cfg: &GridConfig, start: usize, end: usize, max: usize) -> usize {
+fn count_horizontals_range(cfg: &SpannedConfig, start: usize, end: usize, max: usize) -> usize {
     (start + 1..end)
         .map(|i| cfg.has_horizontal(i, max) as usize)
         .sum()
 }
 
-fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
+fn closest_visible_row(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
     loop {
         if cfg.is_cell_visible(pos) {
             return Some(pos.0);

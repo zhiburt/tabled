@@ -2,7 +2,7 @@ use core::fmt::{self, Display};
 
 use serde_json::Value;
 use tabled::{
-    grid::iterable::GridConfig,
+    grid::iterable::SpannedConfig,
     settings::style::{RawStyle, Style},
     tables::table::ColoredConfig,
     Table,
@@ -867,7 +867,7 @@ mod json_to_table {
     where
         R: Records,
         for<'a> &'a R: Records,
-        D: Dimension + Estimate<GridConfig>,
+        D: Dimension + Estimate<SpannedConfig>,
     {
         fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
             dims.estimate(&*records, cfg);

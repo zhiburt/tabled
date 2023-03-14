@@ -2,7 +2,7 @@ use crate::{
     grid::{
         compact::CompactConfig,
         dimension::{Dimension, Estimate},
-        iterable::GridConfig,
+        iterable::SpannedConfig,
     },
     records::Records,
 };
@@ -39,8 +39,8 @@ impl Estimate<CompactConfig> for IterTableDimension {
     fn estimate<R: Records>(&mut self, _: R, _: &CompactConfig) {}
 }
 
-impl Estimate<GridConfig> for IterTableDimension {
-    fn estimate<R: Records>(&mut self, _: R, _: &GridConfig) {}
+impl Estimate<SpannedConfig> for IterTableDimension {
+    fn estimate<R: Records>(&mut self, _: R, _: &SpannedConfig) {}
 }
 
 /// A dimension value.

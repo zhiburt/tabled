@@ -6,7 +6,7 @@ use tabled::{
 };
 
 #[cfg(feature = "color")]
-use tabled::{grid::color::AnsiColor, grid::iterable::GridConfig};
+use tabled::{grid::color::AnsiColor, grid::iterable::SpannedConfig};
 
 #[test]
 fn config_from_table_test() {
@@ -164,7 +164,7 @@ fn color_test() {
         }
     );
 
-    let mut cfg = GridConfig::default();
+    let mut cfg = SpannedConfig::default();
     cfg.set_border_color_global(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into()));
 
     let table = json_to_table(&value)

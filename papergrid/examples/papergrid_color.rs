@@ -9,7 +9,7 @@ use papergrid::{
     colors::NoColors,
     config::Borders,
     dimension::Estimate,
-    grid::iterable::{ExactDimension, Grid, GridConfig},
+    grid::iterable::{ExactDimension, Grid, SpannedConfig},
     records::IterRecords,
 };
 
@@ -31,8 +31,8 @@ fn main() {
     println!();
 }
 
-fn generate_table_config() -> GridConfig {
-    let mut cfg = GridConfig::default();
+fn generate_table_config() -> SpannedConfig {
+    let mut cfg = SpannedConfig::default();
     cfg.set_borders(Borders {
         top: Some('-'),
         bottom: Some('-'),

@@ -4,7 +4,7 @@
 //! [`Span`]: crate::settings::span::Span
 
 use crate::{
-    grid::{config::Position, iterable::GridConfig},
+    grid::{config::Position, iterable::SpannedConfig},
     records::{ExactRecords, Records},
     settings::TableOption,
     tables::table::ColoredConfig,
@@ -85,7 +85,7 @@ where
     }
 }
 
-fn correct_span_styles(cfg: &mut GridConfig, shape: (usize, usize)) {
+fn correct_span_styles(cfg: &mut SpannedConfig, shape: (usize, usize)) {
     for ((row, c), span) in cfg.get_column_spans() {
         for col in c..c + span {
             if col == 0 {
@@ -183,7 +183,7 @@ fn correct_span_styles(cfg: &mut GridConfig, shape: (usize, usize)) {
     }
 }
 
-fn has_left(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+fn has_left(cfg: &SpannedConfig, pos: Position, shape: (usize, usize)) -> bool {
     if cfg.is_cell_covered_by_both_spans(pos) || cfg.is_cell_covered_by_column_span(pos) {
         return false;
     }
@@ -192,7 +192,7 @@ fn has_left(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
     border.left.is_some() || border.left_top_corner.is_some() || border.left_bottom_corner.is_some()
 }
 
-fn has_top(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
+fn has_top(cfg: &SpannedConfig, pos: Position, shape: (usize, usize)) -> bool {
     if cfg.is_cell_covered_by_both_spans(pos) || cfg.is_cell_covered_by_row_span(pos) {
         return false;
     }
@@ -202,7 +202,7 @@ fn has_top(cfg: &GridConfig, pos: Position, shape: (usize, usize)) -> bool {
 }
 
 fn iter_totaly_spanned_cells(
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     shape: (usize, usize),
 ) -> impl Iterator<Item = Position> + '_ {
     // todo: can be optimized

@@ -12,7 +12,7 @@ use crate::{
         color::AnsiColor,
         config::{Entity, Indent, Position, Sides},
         dimension::{Dimension, Estimate},
-        iterable::config::{Formatting, GridConfig},
+        iterable::config::{Formatting, SpannedConfig},
         peekable::PeekableGrid,
     },
     records::{vec_records::VecRecords, ExactRecords, Records},
@@ -313,8 +313,8 @@ fn table_padding(alignment: fmt::Alignment, available: usize) -> (usize, usize) 
     }
 }
 
-fn configure_grid() -> GridConfig {
-    let mut cfg = GridConfig::default();
+fn configure_grid() -> SpannedConfig {
+    let mut cfg = SpannedConfig::default();
     cfg.set_padding(
         Entity::Global,
         Sides::new(
@@ -334,7 +334,7 @@ fn configure_grid() -> GridConfig {
 fn use_format_configuration<'a>(
     f: &mut fmt::Formatter<'_>,
     table: &'a Table,
-) -> Cow<'a, GridConfig> {
+) -> Cow<'a, SpannedConfig> {
     if f.align().is_some() || f.width().is_some() {
         let mut cfg = table.config.config.clone();
 
@@ -347,14 +347,14 @@ fn use_format_configuration<'a>(
     }
 }
 
-fn set_align_table(f: &fmt::Formatter<'_>, cfg: &mut GridConfig) {
+fn set_align_table(f: &fmt::Formatter<'_>, cfg: &mut SpannedConfig) {
     if let Some(alignment) = f.align() {
         let alignment = convert_fmt_alignment(alignment);
         cfg.set_alignment_horizontal(Entity::Global, alignment);
     }
 }
 
-fn set_width_table(f: &fmt::Formatter<'_>, cfg: &mut GridConfig, table: &Table) {
+fn set_width_table(f: &fmt::Formatter<'_>, cfg: &mut SpannedConfig, table: &Table) {
     if let Some(width) = f.width() {
         let total_width = table.total_width();
         if total_width >= width {
@@ -391,13 +391,13 @@ fn set_width_table(f: &fmt::Formatter<'_>, cfg: &mut GridConfig, table: &Table) 
 /// A [`Table`] configuration.
 #[derive(Debug, Clone)]
 pub struct ColoredConfig {
-    config: GridConfig,
+    config: SpannedConfig,
     colors: HashMap<Position, AnsiColor<'static>>,
 }
 
 impl ColoredConfig {
     /// Create a new colored config.
-    pub fn new(config: GridConfig, colors: HashMap<Position, AnsiColor<'static>>) -> Self {
+    pub fn new(config: SpannedConfig, colors: HashMap<Position, AnsiColor<'static>>) -> Self {
         Self { config, colors }
     }
 
@@ -412,7 +412,7 @@ impl ColoredConfig {
 }
 
 impl Deref for ColoredConfig {
-    type Target = GridConfig;
+    type Target = SpannedConfig;
 
     fn deref(&self) -> &Self::Target {
         &self.config
@@ -425,8 +425,8 @@ impl DerefMut for ColoredConfig {
     }
 }
 
-impl From<GridConfig> for ColoredConfig {
-    fn from(value: GridConfig) -> Self {
+impl From<SpannedConfig> for ColoredConfig {
+    fn from(value: SpannedConfig) -> Self {
         Self::new(value, Default::default())
     }
 }
