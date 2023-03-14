@@ -119,8 +119,9 @@ where
                     ),
                     Behavior::Zip => (
                         inner_index,
-                        outer_index * sections_per_direction - filtered_sections,
-                        outer_index * sections_per_direction - filtered_sections + inner_index,
+                        usize::checked_sub(outer_index * sections_per_direction, filtered_sections)
+                            .unwrap_or(0),
+                        outer_index * sections_per_direction + inner_index - filtered_sections,
                     ),
                 };
 
