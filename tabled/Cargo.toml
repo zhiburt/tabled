@@ -242,7 +242,7 @@ required-features = ["std"]
 [[example]]
 name = "split"
 path = "examples/split.rs"
-required-features = []
+required-features = ["std", "macros"]
 
 [features]
 default = ["derive", "macros"]
