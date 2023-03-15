@@ -3,7 +3,7 @@
 //!
 #![cfg_attr(feature = "derive", doc = "```")]
 #![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Tabled, tables::ExtendedTable};
+//! use tabled::{Tabled, tables::extended::ExtendedTable};
 //!
 //! #[derive(Tabled)]
 //! struct Language {
@@ -62,7 +62,7 @@ use crate::Tabled;
 /// Because of that ANSI sequences will be not be rendered too so colores will not be showed.
 ///
 /// ```
-/// use tabled::tables::ExtendedTable;
+/// use tabled::tables::extended::ExtendedTable;
 ///
 /// let data = vec!["Hello", "2021"];
 /// let table = ExtendedTable::new(&data).to_string();

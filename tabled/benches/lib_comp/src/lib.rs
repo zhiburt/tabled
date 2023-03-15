@@ -65,7 +65,7 @@ pub mod tabled_current_iter {
 }
 
 pub mod tabled_current_compact {
-    use tabled_current::tables::CompactTable;
+    use tabled_current::tables::compact::CompactTable;
     use tabled_current::grid::compact::ExactDimension;
 
     #[inline]
