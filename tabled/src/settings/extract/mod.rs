@@ -18,7 +18,8 @@ use crate::{
 ///
 /// # Example
 ///
-/// ```
+#[cfg_attr(feature = "std", doc = "```")]
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
 /// use tabled::{Table, settings::{Format, object::Rows, Modify, Extract}};
 ///
 /// let data = vec![

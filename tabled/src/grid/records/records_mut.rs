@@ -1,7 +1,6 @@
-use papergrid::{
-    config::Position,
-    records::vec_records::{CellInfo, VecRecords},
-};
+use crate::grid::config::Position;
+#[cfg(feature = "std")]
+use crate::grid::records::vec_records::{CellInfo, VecRecords};
 
 /// A [`Records`] representation which can modify cell by (row, column) index.
 pub trait RecordsMut<Text> {
@@ -18,12 +17,14 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl RecordsMut<String> for VecRecords<CellInfo<String>> {
     fn set(&mut self, (row, col): Position, text: String) {
         self[row][col] = CellInfo::new(text);
     }
 }
 
+#[cfg(feature = "std")]
 impl RecordsMut<&str> for VecRecords<CellInfo<String>> {
     fn set(&mut self, (row, col): Position, text: &str) {
         self[row][col] = CellInfo::new(text.to_string());

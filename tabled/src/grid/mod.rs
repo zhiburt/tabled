@@ -4,7 +4,7 @@
 //!
 //! [`TableOption`]: crate::settings::TableOption
 //! [`CellOption`]: crate::settings::CellOption
-
+#[cfg(feature = "std")]
 mod colored_config;
 
 pub mod dimension;
@@ -17,16 +17,21 @@ pub use papergrid::util;
 pub mod config {
     //! Module contains a list of configs for varios tables/grids.
 
-    pub use super::colored_config::ColoredConfig;
     pub use papergrid::config::{
-        compact::CompactConfig,
-        spanned::{
-            ColoredIndent, ColoredMarginIndent, Formatting, HorizontalLine, Offset, SpannedConfig,
-            VerticalLine,
-        },
-        AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, EntityIterator, Indent,
-        Line, Position, Sides,
+        compact::CompactConfig, AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity,
+        EntityIterator, Indent, Line, Position, Sides,
     };
+
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    pub use papergrid::config::spanned::{
+        ColoredIndent, ColoredMarginIndent, Formatting, HorizontalLine, Offset, SpannedConfig,
+        VerticalLine,
+    };
+
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    pub use super::colored_config::ColoredConfig;
 }
 
 pub use papergrid::grid::compact::CompactGrid;

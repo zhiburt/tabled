@@ -7,8 +7,9 @@
 //!
 //! It works smoothly with arrays.
 //!
-//! ```
-//!use tabled::{settings::Style, tables::compact::CompactTable};
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
+//!use tabled::{settings::Style, tables::CompactTable};
 //!
 //! let data = [
 //!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
