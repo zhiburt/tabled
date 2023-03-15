@@ -242,7 +242,7 @@ where
         } = *self;
         let columns = records.count_columns();
         let rows = records.count_rows();
-        if columns == 0 || rows == 0 {
+        if columns == 0 || rows == 0 || section_length == 0 {
             return;
         }
         let (primary_length, secondary_length) = match direction {
