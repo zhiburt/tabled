@@ -7,8 +7,6 @@ pub mod compact;
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod spanned;
 
-use crate::records::Records;
-
 /// Dimension of a [`Grid`]
 ///
 /// It's a friend trait of [`Estimate`].
@@ -40,7 +38,7 @@ where
 /// It's a friend trait of [`Dimension`].
 ///
 /// [`Grid`]: crate::grid::iterable::Grid
-pub trait Estimate<Config> {
+pub trait Estimate<R, C> {
     /// Estimates a metric.
-    fn estimate<R: Records>(&mut self, records: R, cfg: &Config);
+    fn estimate(&mut self, records: R, config: &C);
 }

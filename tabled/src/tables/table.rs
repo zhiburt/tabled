@@ -8,7 +8,7 @@ use crate::{
         config::{
             AlignmentHorizontal, ColoredConfig, Entity, Formatting, Indent, Sides, SpannedConfig,
         },
-        dimension::CompleteDimension,
+        dimension::{CompleteDimension, PeekableDimension},
         dimension::{Dimension, Estimate},
         records::{vec_records::VecRecords, ExactRecords, Records},
         PeekableGrid,
@@ -17,7 +17,9 @@ use crate::{
     Tabled,
 };
 
-use papergrid::{colors::NoColors, records::vec_records::CellInfo};
+use papergrid::{
+    color::AnsiColor, colors::NoColors, config::Position, records::vec_records::CellInfo,
+};
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
 ///
@@ -249,15 +251,18 @@ impl fmt::Display for Table {
         }
 
         let config = use_format_configuration(f, self);
-
-        let mut dimension = self.dimension.clone();
-        dimension.estimate(&self.records, config.as_ref());
-
         let colors = self.config.get_colors();
-        if !colors.is_empty() {
-            PeekableGrid::new(&self.records, config, &dimension, colors).build(f)
+
+        if !self.dimension.is_empty() {
+            let mut dims = self.dimension.clone();
+            dims.estimate(&self.records, config.as_ref());
+
+            print_grid(f, &self.records, &config, &dims, colors)
         } else {
-            PeekableGrid::new(&self.records, config, &dimension, NoColors).build(f)
+            let mut dims = PeekableDimension::default();
+            dims.estimate(&self.records, &config);
+
+            print_grid(f, &self.records, &config, &dims, colors)
         }
     }
 }
@@ -381,5 +386,19 @@ fn set_width_table(f: &fmt::Formatter<'_>, cfg: &mut SpannedConfig, table: &Tabl
         {
             margin.right.indent.fill = fill;
         }
+    }
+}
+
+fn print_grid<F: fmt::Write, D: Dimension>(
+    f: &mut F,
+    records: &VecRecords<CellInfo<String>>,
+    cfg: &SpannedConfig,
+    dims: D,
+    colors: &HashMap<Position, AnsiColor<'static>>,
+) -> fmt::Result {
+    if !colors.is_empty() {
+        PeekableGrid::new(records, cfg, &dims, colors).build(f)
+    } else {
+        PeekableGrid::new(records, cfg, &dims, NoColors).build(f)
     }
 }

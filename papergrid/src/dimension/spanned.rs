@@ -52,8 +52,11 @@ impl Dimension for SpannedGridDimension {
     }
 }
 
-impl Estimate<SpannedConfig> for SpannedGridDimension {
-    fn estimate<R: Records>(&mut self, records: R, cfg: &SpannedConfig) {
+impl<R> Estimate<R, SpannedConfig> for SpannedGridDimension
+where
+    R: Records,
+{
+    fn estimate(&mut self, records: R, cfg: &SpannedConfig) {
         let (width, height) = build_dimensions(records, cfg);
         self.width = width;
         self.height = height;

@@ -157,6 +157,6 @@ impl Dimension for ConstantDimension {
     }
 }
 
-impl Estimate<SpannedConfig> for ConstantDimension {
-    fn estimate<R: Records>(&mut self, _: R, _: &SpannedConfig) {}
+impl<R> Estimate<R, SpannedConfig> for ConstantDimension {
+    fn estimate(&mut self, _: R, _: &SpannedConfig) {}
 }

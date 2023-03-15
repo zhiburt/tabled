@@ -1,7 +1,4 @@
-use crate::grid::{
-    dimension::{Dimension, Estimate},
-    records::Records,
-};
+use crate::grid::dimension::{Dimension, Estimate};
 
 /// A constant dimension.
 #[derive(Debug, Clone)]
@@ -33,8 +30,8 @@ impl Dimension for StaticDimension {
     }
 }
 
-impl<C> Estimate<C> for StaticDimension {
-    fn estimate<R: Records>(&mut self, _: R, _: &C) {}
+impl<R, C> Estimate<R, C> for StaticDimension {
+    fn estimate(&mut self, _: R, _: &C) {}
 }
 
 /// A dimension value.

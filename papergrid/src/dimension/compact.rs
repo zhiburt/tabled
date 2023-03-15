@@ -17,7 +17,7 @@ use crate::config::compact::CompactConfig;
 /// [`Grid`]: crate::grid::iterable::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct CompactGridDimension {
-    height: Vec<usize>,
+    height: usize,
     width: Vec<usize>,
 }
 
@@ -31,11 +31,6 @@ impl CompactGridDimension {
     pub fn width<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
         build_width(records, cfg)
     }
-
-    /// Return width and height lists.
-    pub fn get_values(self) -> (Vec<usize>, Vec<usize>) {
-        (self.width, self.height)
-    }
 }
 
 impl Dimension for CompactGridDimension {
@@ -43,40 +38,20 @@ impl Dimension for CompactGridDimension {
         self.width[column]
     }
 
-    fn get_height(&self, row: usize) -> usize {
-        self.height[row]
+    fn get_height(&self, _: usize) -> usize {
+        self.height
     }
 }
 
-impl Estimate<CompactConfig> for CompactGridDimension {
-    fn estimate<R: Records>(&mut self, records: R, cfg: &CompactConfig) {
-        let (w, h) = build_dimensions(records, cfg);
-        self.width = w;
-        self.height = h;
+impl<R> Estimate<R, CompactConfig> for CompactGridDimension
+where
+    R: Records,
+{
+    fn estimate(&mut self, records: R, cfg: &CompactConfig) {
+        self.width = build_width(records, cfg);
+        let pad = cfg.get_padding();
+        self.height = 1 + pad.top.size + pad.bottom.size;
     }
-}
-
-fn build_dimensions<R: Records>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<usize>) {
-    let count_columns = records.count_columns();
-
-    let mut widths = vec![0; count_columns];
-    let mut heights = vec![];
-
-    for columns in records.iter_rows() {
-        let mut row_height = 0;
-        for (col, cell) in columns.into_iter().enumerate() {
-            let text = cell.as_ref();
-            let height = get_cell_height(text, cfg);
-            let width = get_cell_width(text, cfg);
-
-            widths[col] = max(widths[col], width);
-            row_height = max(row_height, height);
-        }
-
-        heights.push(row_height);
-    }
-
-    (widths, heights)
 }
 
 fn build_height<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {

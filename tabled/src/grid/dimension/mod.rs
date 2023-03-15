@@ -3,14 +3,17 @@
 mod const_dimension;
 
 #[cfg(feature = "std")]
-mod comlete_dimension;
+mod complete_dimension;
+#[cfg(feature = "std")]
+mod peekable_dimension;
 #[cfg(feature = "std")]
 mod static_dimension;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
-    comlete_dimension::CompleteDimension,
+    complete_dimension::CompleteDimension,
+    peekable_dimension::PeekableDimension,
     static_dimension::{ExactList, StaticDimension},
 };
 pub use const_dimension::{ConstDimension, ConstSize};

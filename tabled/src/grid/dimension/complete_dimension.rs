@@ -1,9 +1,7 @@
 use std::borrow::Cow;
 
-use papergrid::dimension::compact::CompactGridDimension;
-
 use crate::grid::{
-    config::{CompactConfig, SpannedConfig},
+    config::SpannedConfig,
     dimension::{Dimension, Estimate, SpannedGridDimension},
     records::Records,
 };
@@ -21,6 +19,11 @@ impl CompleteDimension<'_> {
     /// Checks whether is the dimensions is set.
     pub fn is_complete(&self) -> bool {
         self.width.is_some() && self.height.is_some()
+    }
+
+    /// Checks whether is nothing was set.
+    pub fn is_empty(&self) -> bool {
+        self.width.is_none() && self.height.is_none()
     }
 
     /// Set column widths.
@@ -88,8 +91,8 @@ impl Dimension for CompleteDimension<'_> {
     }
 }
 
-impl Estimate<SpannedConfig> for CompleteDimension<'_> {
-    fn estimate<R: Records>(&mut self, records: R, cfg: &SpannedConfig) {
+impl<R: Records> Estimate<R, SpannedConfig> for CompleteDimension<'_> {
+    fn estimate(&mut self, records: R, cfg: &SpannedConfig) {
         match (self.width.is_some(), self.height.is_some()) {
             (true, true) => {}
             (true, false) => {
@@ -100,28 +103,6 @@ impl Estimate<SpannedConfig> for CompleteDimension<'_> {
             }
             (false, false) => {
                 let mut dims = SpannedGridDimension::default();
-                dims.estimate(records, cfg);
-
-                let (width, height) = dims.get_values();
-                self.width = Some(Cow::Owned(width));
-                self.height = Some(Cow::Owned(height));
-            }
-        }
-    }
-}
-
-impl Estimate<CompactConfig> for CompleteDimension<'_> {
-    fn estimate<R: Records>(&mut self, records: R, cfg: &CompactConfig) {
-        match (self.width.is_some(), self.height.is_some()) {
-            (true, true) => {}
-            (true, false) => {
-                self.height = Some(Cow::Owned(CompactGridDimension::height(records, cfg)));
-            }
-            (false, true) => {
-                self.width = Some(Cow::Owned(CompactGridDimension::width(records, cfg)));
-            }
-            (false, false) => {
-                let mut dims = CompactGridDimension::default();
                 dims.estimate(records, cfg);
 
                 let (width, height) = dims.get_values();

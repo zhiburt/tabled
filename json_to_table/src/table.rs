@@ -864,7 +864,7 @@ mod json_to_table {
     where
         R: Records,
         for<'a> &'a R: Records,
-        D: Dimension + Estimate<SpannedConfig>,
+        for<'a> D: Dimension + Estimate<&'a R, SpannedConfig>,
     {
         fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
             dims.estimate(&*records, cfg);

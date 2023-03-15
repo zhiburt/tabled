@@ -36,7 +36,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//!use tabled::{settings::Style, tables::compact::CompactTable};
+//!use tabled::{settings::Style, tables::CompactTable};
 //!
 //! let data = [
 //!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],

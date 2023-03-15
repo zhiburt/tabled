@@ -2,10 +2,7 @@
 //!
 //! [`CompactTable`]: crate::tables::compact::CompactTable
 
-use crate::grid::{
-    dimension::{Dimension, Estimate},
-    records::Records,
-};
+use crate::grid::dimension::{Dimension, Estimate};
 
 /// A constant size dimension or a value dimension.
 #[derive(Debug, Clone, Copy)]
@@ -45,8 +42,10 @@ impl<const COLUMNS: usize, const ROWS: usize> From<ConstDimension<COLUMNS, ROWS>
     }
 }
 
-impl<D, const COLUMNS: usize, const ROWS: usize> Estimate<D> for ConstDimension<COLUMNS, ROWS> {
-    fn estimate<R: Records>(&mut self, _: R, _: &D) {}
+impl<R, D, const COLUMNS: usize, const ROWS: usize> Estimate<R, D>
+    for ConstDimension<COLUMNS, ROWS>
+{
+    fn estimate(&mut self, _: R, _: &D) {}
 }
 
 /// Const size represents either a const array values or a single value which responsible for the whole list.
