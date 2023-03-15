@@ -1,4 +1,7 @@
-//! Split setting is a work in progress
+//! This module contains a [`Split`] setting which is used to
+//! format the cells of a [`Table`] by a provided index, direction, behavior, and display preference.
+//!
+//! [`Table`]: crate::Table
 
 use papergrid::config::Position;
 
@@ -24,6 +27,45 @@ enum Display {
     Retain,
 }
 
+/// Returns a new [`Table`] formatted with several optional parameters.
+///
+/// The required index parameter determines how many columns/rows a table will be redistributed into.
+///
+/// - index [`usize`]
+/// - direction [`Direction`]
+/// - behavior [`Behavior`] DEFAULT [`Behavior::Zip`]
+/// - display [`Display`] DEFAULT [`Display::Clean`]
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use std::iter::FromIterator;
+/// use tabled::{
+///     settings::split::Split,
+///     Table,
+/// };
+///
+/// let mut table = Table::from_iter(['a'..='z']);
+/// let table = table.with(Split::column(4)).to_string();
+///
+/// assert_eq!(table, "+---+---+---+---+\n\
+///                    | a | b | c | d |\n\
+///                    +---+---+---+---+\n\
+///                    | e | f | g | h |\n\
+///                    +---+---+---+---+\n\
+///                    | i | j | k | l |\n\
+///                    +---+---+---+---+\n\
+///                    | m | n | o | p |\n\
+///                    +---+---+---+---+\n\
+///                    | q | r | s | t |\n\
+///                    +---+---+---+---+\n\
+///                    | u | v | w | x |\n\
+///                    +---+---+---+---+\n\
+///                    | y | z |   |   |\n\
+///                    +---+---+---+---+")
+/// ```
+///
+/// [`Table`]: crate::Table
 #[derive(Debug, Clone, Copy)]
 pub struct Split {
     direction: Direction,
@@ -33,6 +75,18 @@ pub struct Split {
 }
 
 impl Split {
+    /// Returns a new [`Table`] split on the column at the provided index.
+    ///
+    /// The column found at that index becomes the new right-most column in the returned table.
+    /// Columns found beyond the index are redistributed into the table based on other defined
+    /// parameters.
+    ///
+    /// ```rust,no_run
+    /// # use tabled::settings::split::Split;
+    /// Split::column(4);
+    /// ```
+    ///
+    /// [`Table`]: crate::Table
     pub fn column(index: usize) -> Self {
         Split {
             direction: Direction::Column,
@@ -42,6 +96,18 @@ impl Split {
         }
     }
 
+    /// Returns a new [`Table`] split on the row at the provided index.
+    ///
+    /// The row found at that index becomes the new bottom row in the returned table.
+    /// Rows found beyond the index are redistributed into the table based on other defined
+    /// parameters.
+    ///
+    /// ```rust,no_run
+    /// # use tabled::settings::split::Split;
+    /// Split::row(4);
+    /// ```
+    ///
+    /// [`Table`]: crate::Table
     pub fn row(index: usize) -> Self {
         Split {
             direction: Direction::Row,
@@ -51,6 +117,25 @@ impl Split {
         }
     }
 
+    /// Returns a split [`Table`] with the redistributed cells pushed to the back of the new shape.
+    ///
+    /// ```text
+    ///                                                 +---+---+
+    ///                                                 | a | b |
+    ///                                                 +---+---+
+    /// +---+---+---+---+---+                           | f | g |
+    /// | a | b | c | d | e | Split::column(2).concat() +---+---+
+    /// +---+---+---+---+---+           =>              | c | d |
+    /// | f | g | h | i | j |                           +---+---+
+    /// +---+---+---+---+---+                           | h | i |
+    ///                                                 +---+---+
+    ///                                                 | e |   |
+    ///                                                 +---+---+
+    ///                                                 | j |   |
+    ///                                                 +---+---+
+    /// ```
+    ///
+    /// [`Table`]: crate::Table
     pub fn concat(self) -> Self {
         Self {
             behavior: Behavior::Concat,
@@ -58,6 +143,26 @@ impl Split {
         }
     }
 
+    /// Returns a split [`Table`] with the redistributed cells inserted behind
+    /// the first correlating column/row one after another.
+    ///
+    /// ```text
+    ///                                              +---+---+
+    ///                                              | a | b |
+    ///                                              +---+---+
+    /// +---+---+---+---+---+                        | c | d |
+    /// | a | b | c | d | e | Split::column(2).zip() +---+---+
+    /// +---+---+---+---+---+           =>           | e |   |
+    /// | f | g | h | i | j |                        +---+---+
+    /// +---+---+---+---+---+                        | f | g |
+    ///                                              +---+---+
+    ///                                              | h | i |
+    ///                                              +---+---+
+    ///                                              | j |   |
+    ///                                              +---+---+
+    /// ```
+    ///
+    /// [`Table`]: crate::Table
     pub fn zip(self) -> Self {
         Self {
             behavior: Behavior::Zip,
@@ -65,6 +170,29 @@ impl Split {
         }
     }
 
+    /// Returns a split [`Table`] with the empty columns/rows filtered out.
+    ///
+    /// ```text
+    ///                                                
+    ///                                                
+    ///                                                +---+---+---+
+    /// +---+---+---+---+---+                          | a | b | c |
+    /// | a | b | c | d | e | Split::column(3).clean() +---+---+---+
+    /// +---+---+---+---+---+           =>             | d | e |   |
+    /// | f | g | h |   |   |                          +---+---+---+
+    /// +---+---+---+---+---+                          | f | g | h |
+    ///               ^   ^                            +---+---+---+
+    ///               these cells are filtered
+    ///               from the resulting table
+    /// ```
+    ///
+    /// ## Notes
+    ///
+    /// This is apart of the default configuration for Split.
+    ///
+    /// See [`retain`] for an alternative display option.
+    ///
+    /// [`Table`]: crate::Table
     pub fn clean(self) -> Self {
         Self {
             display: Display::Clean,
@@ -72,6 +200,26 @@ impl Split {
         }
     }
 
+    /// Returns a split [`Table`] with all cells retained.
+    ///
+    /// ```text
+    ///                                                 +---+---+---+
+    ///                                                 | a | b | c |
+    ///                                                 +---+---+---+
+    /// +---+---+---+---+---+                           | d | e |   |
+    /// | a | b | c | d | e | Split::column(3).retain() +---+---+---+
+    /// +---+---+---+---+---+           =>              | f | g | h |
+    /// | f | g | h |   |   |                           +---+---+---+
+    /// +---+---+---+---+---+             |-----------> |   |   |   |
+    ///               ^   ^               |             +---+---+---+
+    ///               |___|_____cells are kept!
+    /// ```
+    ///
+    /// ## Notes
+    ///
+    /// See [`clean`] for an alternative display option.
+    ///
+    /// [`Table`]: crate::Table
     pub fn retain(self) -> Self {
         Self {
             display: Display::Retain,
