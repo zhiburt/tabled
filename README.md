@@ -1116,8 +1116,8 @@ use tabled::{Table, settings::split::Split};
 
 let mut table = Table::new(&data);
 
-table.with(Split::column(2).zip());
 table.with(Split::column(2).concat());
+table.with(Split::column(2).zip());
 ```
 
 ```text
@@ -1170,7 +1170,7 @@ let mut table = Table::from_iter(['a'..='z']);
 
 table.with(Split::column(25)).with(Style::modern());
 table.clone().with(Split::column(1).concat().retain());
-table.clone().with(Split::column(1).concat()); // .clean() is not necessary as it is the default property 
+table.clone().with(Split::column(1).concat()); // .clean() is not necessary as it is the default display property 
 ```
 
 ```text
