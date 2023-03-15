@@ -1,5 +1,5 @@
-use crate::{
-    grid::config::Entity,
+use crate::grid::{
+    config::Entity,
     records::{ExactRecords, Records, RecordsMut},
 };
 

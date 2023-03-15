@@ -1,31 +1,29 @@
-use crate::{
-    grid::{
-        config::compact::CompactConfig,
-        config::spanned::SpannedConfig,
-        dimension::{Dimension, Estimate},
-    },
+use crate::grid::{
+    dimension::{Dimension, Estimate},
     records::Records,
 };
 
+/// A constant dimension.
 #[derive(Debug, Clone)]
-pub struct IterTableDimension {
+pub struct StaticDimension {
     width: ExactList,
     height: ExactList,
 }
 
-impl IterTableDimension {
+impl StaticDimension {
+    /// Creates a constant dimension.
     pub fn new(width: ExactList, height: ExactList) -> Self {
         Self { width, height }
     }
 }
 
-impl From<IterTableDimension> for (ExactList, ExactList) {
-    fn from(value: IterTableDimension) -> Self {
+impl From<StaticDimension> for (ExactList, ExactList) {
+    fn from(value: StaticDimension) -> Self {
         (value.width, value.height)
     }
 }
 
-impl Dimension for IterTableDimension {
+impl Dimension for StaticDimension {
     fn get_width(&self, column: usize) -> usize {
         self.width.get(column)
     }
@@ -35,12 +33,8 @@ impl Dimension for IterTableDimension {
     }
 }
 
-impl Estimate<CompactConfig> for IterTableDimension {
-    fn estimate<R: Records>(&mut self, _: R, _: &CompactConfig) {}
-}
-
-impl Estimate<SpannedConfig> for IterTableDimension {
-    fn estimate<R: Records>(&mut self, _: R, _: &SpannedConfig) {}
+impl<C> Estimate<C> for StaticDimension {
+    fn estimate<R: Records>(&mut self, _: R, _: &C) {}
 }
 
 /// A dimension value.

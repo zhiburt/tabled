@@ -10,17 +10,18 @@ use owo_colors::OwoColorize;
 
 use tabled::{
     grid::{
-        config::Entity, dimension::spanned::ExactDimension, util::string::string_width_multiline,
-    },
-    records::{
-        vec_records::{Cell, VecRecords},
-        ExactRecords, PeekableRecords, Records,
+        config::{ColoredConfig, Entity},
+        dimension::SpannedGridDimension,
+        records::{
+            vec_records::{Cell, VecRecords},
+            ExactRecords, PeekableRecords, Records,
+        },
+        util::string::string_width_multiline,
     },
     settings::{
         object::{Columns, Object, Rows, Segment},
         Alignment, CellOption, Color, Format, Margin, Modify, Padding, Style,
     },
-    tables::table::ColoredConfig,
     Table, Tabled,
 };
 
@@ -140,7 +141,7 @@ where
     T: Cell + AsRef<str>,
 {
     fn change(&mut self, records: &mut VecRecords<T>, cfg: &mut ColoredConfig, entity: Entity) {
-        let widths = ExactDimension::width(&*records, cfg);
+        let widths = SpannedGridDimension::width(&*records, cfg);
 
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();

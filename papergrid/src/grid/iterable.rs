@@ -16,7 +16,7 @@ use crate::{
     util::string::{count_lines, get_lines, string_width, string_width_multiline, Lines},
 };
 
-use crate::config::spanned::{ColoredIndent, Formatting, SpannedConfig, Offset};
+use crate::config::spanned::{ColoredIndent, Formatting, Offset, SpannedConfig};
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
@@ -1120,14 +1120,26 @@ fn print_indent<F: Write>(
     }
 }
 
-fn range_width(cfg: &SpannedConfig, d: impl Dimension, start: usize, end: usize, max: usize) -> usize {
+fn range_width(
+    cfg: &SpannedConfig,
+    d: impl Dimension,
+    start: usize,
+    end: usize,
+    max: usize,
+) -> usize {
     let count_borders = count_verticals_in_range(cfg, start, end, max);
     let range_width = (start..end).map(|col| d.get_width(col)).sum::<usize>();
 
     count_borders + range_width
 }
 
-fn range_height(cfg: &SpannedConfig, d: impl Dimension, from: usize, end: usize, max: usize) -> usize {
+fn range_height(
+    cfg: &SpannedConfig,
+    d: impl Dimension,
+    from: usize,
+    end: usize,
+    max: usize,
+) -> usize {
     let count_borders = count_horizontals_in_range(cfg, from, end, max);
     let range_width = (from..end).map(|col| d.get_height(col)).sum::<usize>();
 

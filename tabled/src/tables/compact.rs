@@ -8,7 +8,7 @@
 //! It works smoothly with arrays.
 //!
 //! ```
-//!use tabled::{settings::Style, tables::compact::CompactTable};
+//!use tabled::{settings::Style, tables::CompactTable};
 //!
 //! let data = [
 //!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
@@ -35,7 +35,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//!use tabled::{settings::Style, tables::compact::CompactTable};
+//!use tabled::{settings::Style, tables::CompactTable};
 //!
 //! let data = [
 //!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
@@ -65,27 +65,22 @@
 //!
 //! [`Table`]: crate::Table
 
-pub mod dimension;
-
 use core::cmp::max;
 use core::fmt;
 
 use crate::{
     grid::{
-        compact::CompactGrid,
-        config::compact::CompactConfig,
-        config::{AlignmentHorizontal, Indent, Sides},
-        dimension::Dimension,
+        config::{AlignmentHorizontal, CompactConfig, Indent, Sides},
+        dimension::{ConstDimension, ConstSize, Dimension},
+        records::{
+            into_records::{LimitColumns, LimitRows},
+            IntoRecords, IterRecords,
+        },
         util::string::string_width,
-    },
-    records::{
-        into_records::{LimitColumns, LimitRows},
-        IntoRecords, IterRecords,
+        CompactGrid,
     },
     settings::{Style, TableOption},
 };
-
-use self::dimension::{ConstSize, ConstantDimension};
 
 /// A table which consumes an [`IntoRecords`] iterator.
 /// It assumes that the content has only single line.
@@ -98,7 +93,7 @@ pub struct CompactTable<I, D> {
     count_rows: Option<usize>,
 }
 
-impl<I> CompactTable<I, ConstantDimension<0, 0>> {
+impl<I> CompactTable<I, ConstDimension<0, 0>> {
     /// Creates a new [`CompactTable`] structure with a width dimension for all columns.
     pub const fn new(iter: I) -> Self
     where
@@ -109,20 +104,20 @@ impl<I> CompactTable<I, ConstantDimension<0, 0>> {
             cfg: create_config(),
             count_columns: 0,
             count_rows: None,
-            dims: ConstantDimension::new(ConstSize::Value(2), ConstSize::Value(1)),
+            dims: ConstDimension::new(ConstSize::Value(2), ConstSize::Value(1)),
         }
     }
 }
 
-impl<I, const ROWS: usize, const COLS: usize> CompactTable<I, ConstantDimension<COLS, ROWS>> {
+impl<I, const ROWS: usize, const COLS: usize> CompactTable<I, ConstDimension<COLS, ROWS>> {
     /// Set a height for each row.
     pub fn height<S: Into<ConstSize<COUNT_ROWS>>, const COUNT_ROWS: usize>(
         self,
         size: S,
-    ) -> CompactTable<I, ConstantDimension<COLS, COUNT_ROWS>> {
+    ) -> CompactTable<I, ConstDimension<COLS, COUNT_ROWS>> {
         let (width, _) = self.dims.into();
         CompactTable {
-            dims: ConstantDimension::new(width, size.into()),
+            dims: ConstDimension::new(width, size.into()),
             records: self.records,
             cfg: self.cfg,
             count_columns: self.count_columns,
@@ -134,10 +129,10 @@ impl<I, const ROWS: usize, const COLS: usize> CompactTable<I, ConstantDimension<
     pub fn width<S: Into<ConstSize<COUNT_COLUMNS>>, const COUNT_COLUMNS: usize>(
         self,
         size: S,
-    ) -> CompactTable<I, ConstantDimension<COUNT_COLUMNS, ROWS>> {
+    ) -> CompactTable<I, ConstDimension<COUNT_COLUMNS, ROWS>> {
         let (_, height) = self.dims.into();
         CompactTable {
-            dims: ConstantDimension::new(size.into(), height),
+            dims: ConstDimension::new(size.into(), height),
             records: self.records,
             cfg: self.cfg,
             count_columns: self.count_columns,
@@ -214,7 +209,7 @@ impl<I, D> CompactTable<I, D> {
         D: Dimension,
         W: std::io::Write,
     {
-        let writer = crate::tables::iter::utf8_writer::UTF8Writer::new(writer);
+        let writer = super::util::utf8_writer::UTF8Writer::new(writer);
         self.fmt(writer)
             .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))
     }
@@ -244,7 +239,7 @@ impl CompactTable<(), ()> {
 }
 
 impl<T, const ROWS: usize, const COLS: usize> From<[[T; COLS]; ROWS]>
-    for CompactTable<[[T; COLS]; ROWS], ConstantDimension<COLS, ROWS>>
+    for CompactTable<[[T; COLS]; ROWS], ConstDimension<COLS, ROWS>>
 where
     T: AsRef<str>,
 {
@@ -263,7 +258,7 @@ where
             *w += 2;
         }
 
-        let dims = ConstantDimension::new(ConstSize::List(width), ConstSize::Value(1));
+        let dims = ConstDimension::new(ConstSize::List(width), ConstSize::Value(1));
         Self::with_dimension(mat, dims).columns(COLS).rows(ROWS)
     }
 }

@@ -3,7 +3,8 @@
 use std::borrow::Cow;
 
 use crate::{
-    grid::util::string::string_width_multiline, records::IntoRecords, settings::width::Truncate,
+    grid::records::IntoRecords, grid::util::string::string_width_multiline,
+    settings::width::Truncate,
 };
 
 use super::either_string::EitherString;

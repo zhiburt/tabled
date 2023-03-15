@@ -4,10 +4,11 @@
 //! [`Span`]: crate::settings::span::Span
 
 use crate::{
-    grid::{config::Position, config::spanned::SpannedConfig},
-    records::{ExactRecords, Records},
+    grid::{
+        config::{ColoredConfig, Position, SpannedConfig},
+        records::{ExactRecords, Records},
+    },
     settings::TableOption,
-    tables::table::ColoredConfig,
 };
 
 /// A correctness function of style for [`Table`] which has [`Span`]s.

@@ -20,12 +20,12 @@ use crate::config::spanned::SpannedConfig;
 ///
 /// [`Grid`]: crate::grid::iterable::Grid
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct ExactDimension {
+pub struct SpannedGridDimension {
     height: Vec<usize>,
     width: Vec<usize>,
 }
 
-impl ExactDimension {
+impl SpannedGridDimension {
     /// Calculates height of rows.
     pub fn height<R: Records>(records: R, cfg: &SpannedConfig) -> Vec<usize> {
         build_height(records, cfg)
@@ -42,7 +42,7 @@ impl ExactDimension {
     }
 }
 
-impl Dimension for ExactDimension {
+impl Dimension for SpannedGridDimension {
     fn get_width(&self, column: usize) -> usize {
         self.width[column]
     }
@@ -52,7 +52,7 @@ impl Dimension for ExactDimension {
     }
 }
 
-impl Estimate<SpannedConfig> for ExactDimension {
+impl Estimate<SpannedConfig> for SpannedGridDimension {
     fn estimate<R: Records>(&mut self, records: R, cfg: &SpannedConfig) {
         let (width, height) = build_dimensions(records, cfg);
         self.width = width;
@@ -249,7 +249,13 @@ fn get_cell_padding(cfg: &SpannedConfig, pos: Position) -> usize {
     padding.left.indent.size + padding.right.indent.size
 }
 
-fn range_width(cfg: &SpannedConfig, len: usize, start: usize, end: usize, widths: &[usize]) -> usize {
+fn range_width(
+    cfg: &SpannedConfig,
+    len: usize,
+    start: usize,
+    end: usize,
+    widths: &[usize],
+) -> usize {
     let count_borders = count_vertical_borders(cfg, len, start, end);
     let range_width = widths[start..end].iter().sum::<usize>();
     count_borders + range_width

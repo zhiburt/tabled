@@ -1,5 +1,8 @@
 use papergrid::config::Position;
 
+#[cfg(feature = "std")]
+use crate::grid::records::vec_records::VecRecords;
+
 /// A records representation which can be modified by moving rows/columns around.
 pub trait Resizable {
     /// Swap cells with one another.
@@ -64,7 +67,6 @@ where
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<T> Resizable for Vec<Vec<T>>
 where
     T: Default + Clone,
@@ -125,8 +127,7 @@ where
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<T> Resizable for crate::records::vec_records::VecRecords<T>
+impl<T> Resizable for VecRecords<T>
 where
     T: Default + Clone,
 {
@@ -153,64 +154,64 @@ where
     }
 
     fn push_row(&mut self) {
-        let records = std::mem::replace(self, crate::records::vec_records::VecRecords::new(vec![]));
+        let records = std::mem::replace(self, VecRecords::new(vec![]));
         let mut data: Vec<Vec<_>> = records.into();
 
         let count_columns = data.get(0).map(|l| l.len()).unwrap_or(0);
         data.push(vec![T::default(); count_columns]);
 
-        *self = crate::records::vec_records::VecRecords::new(data);
+        *self = VecRecords::new(data);
     }
 
     fn push_column(&mut self) {
-        let records = std::mem::replace(self, crate::records::vec_records::VecRecords::new(vec![]));
+        let records = std::mem::replace(self, VecRecords::new(vec![]));
         let mut data: Vec<Vec<_>> = records.into();
 
         for row in &mut data {
             row.push(T::default());
         }
 
-        *self = crate::records::vec_records::VecRecords::new(data);
+        *self = VecRecords::new(data);
     }
 
     fn remove_row(&mut self, row: usize) {
-        let records = std::mem::replace(self, crate::records::vec_records::VecRecords::new(vec![]));
+        let records = std::mem::replace(self, VecRecords::new(vec![]));
         let mut data: Vec<Vec<_>> = records.into();
 
         let _ = data.remove(row);
 
-        *self = crate::records::vec_records::VecRecords::new(data);
+        *self = VecRecords::new(data);
     }
 
     fn remove_column(&mut self, column: usize) {
-        let records = std::mem::replace(self, crate::records::vec_records::VecRecords::new(vec![]));
+        let records = std::mem::replace(self, VecRecords::new(vec![]));
         let mut data: Vec<Vec<_>> = records.into();
 
         for row in &mut data {
             let _ = row.remove(column);
         }
 
-        *self = crate::records::vec_records::VecRecords::new(data);
+        *self = VecRecords::new(data);
     }
 
     fn insert_row(&mut self, row: usize) {
-        let records = std::mem::replace(self, crate::records::vec_records::VecRecords::new(vec![]));
+        let records = std::mem::replace(self, VecRecords::new(vec![]));
         let mut data: Vec<Vec<_>> = records.into();
 
         let count_columns = data.get(0).map(|l| l.len()).unwrap_or(0);
         data.insert(row, vec![T::default(); count_columns]);
 
-        *self = crate::records::vec_records::VecRecords::new(data);
+        *self = VecRecords::new(data);
     }
 
     fn insert_column(&mut self, column: usize) {
-        let records = std::mem::replace(self, crate::records::vec_records::VecRecords::new(vec![]));
+        let records = std::mem::replace(self, VecRecords::new(vec![]));
         let mut data: Vec<Vec<_>> = records.into();
 
         for row in &mut data {
             row.insert(column, T::default());
         }
 
-        *self = crate::records::vec_records::VecRecords::new(data);
+        *self = VecRecords::new(data);
     }
 }

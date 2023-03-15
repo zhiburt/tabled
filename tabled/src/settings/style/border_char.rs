@@ -1,9 +1,7 @@
 use crate::{
-    grid::config::{Entity, Position},
-    grid::config::spanned::SpannedConfig,
-    records::{ExactRecords, Records},
+    grid::config::{ColoredConfig, Entity, Position, SpannedConfig},
+    grid::records::{ExactRecords, Records},
     settings::CellOption,
-    tables::table::ColoredConfig,
 };
 
 use super::Offset;

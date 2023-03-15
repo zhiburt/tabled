@@ -1,23 +1,23 @@
 use std::borrow::Cow;
 
-use crate::{
-    grid::{
-        config::spanned::SpannedConfig,
-        dimension::{spanned::ExactDimension, Dimension, Estimate},
-    },
+use papergrid::dimension::compact::CompactGridDimension;
+
+use crate::grid::{
+    config::{CompactConfig, SpannedConfig},
+    dimension::{Dimension, Estimate, SpannedGridDimension},
     records::Records,
 };
 
-/// TableDimension is a [`Dimension`] implementation for a [`Table`]
+/// CompleteDimension is a [`Dimension`] implementation for a [`Table`]
 ///
 /// [`Table`]: crate::Table
 #[derive(Debug, Default, Clone)]
-pub struct TableDimension<'a> {
+pub struct CompleteDimension<'a> {
     width: Option<Cow<'a, [usize]>>,
     height: Option<Cow<'a, [usize]>>,
 }
 
-impl TableDimension<'_> {
+impl CompleteDimension<'_> {
     /// Checks whether is the dimensions is set.
     pub fn is_complete(&self) -> bool {
         self.width.is_some() && self.height.is_some()
@@ -60,15 +60,15 @@ impl TableDimension<'_> {
     }
 
     /// Copies a reference from self.
-    pub fn from_origin(&self) -> TableDimension<'_> {
+    pub fn from_origin(&self) -> CompleteDimension<'_> {
         let width = self.width.as_deref().map(Cow::Borrowed);
         let height = self.height.as_deref().map(Cow::Borrowed);
 
-        TableDimension { width, height }
+        CompleteDimension { width, height }
     }
 }
 
-impl Dimension for TableDimension<'_> {
+impl Dimension for CompleteDimension<'_> {
     fn get_width(&self, column: usize) -> usize {
         let width = self
             .width
@@ -88,18 +88,40 @@ impl Dimension for TableDimension<'_> {
     }
 }
 
-impl Estimate<SpannedConfig> for TableDimension<'_> {
+impl Estimate<SpannedConfig> for CompleteDimension<'_> {
     fn estimate<R: Records>(&mut self, records: R, cfg: &SpannedConfig) {
         match (self.width.is_some(), self.height.is_some()) {
             (true, true) => {}
             (true, false) => {
-                self.height = Some(Cow::Owned(ExactDimension::height(records, cfg)));
+                self.height = Some(Cow::Owned(SpannedGridDimension::height(records, cfg)));
             }
             (false, true) => {
-                self.width = Some(Cow::Owned(ExactDimension::width(records, cfg)));
+                self.width = Some(Cow::Owned(SpannedGridDimension::width(records, cfg)));
             }
             (false, false) => {
-                let mut dims = ExactDimension::default();
+                let mut dims = SpannedGridDimension::default();
+                dims.estimate(records, cfg);
+
+                let (width, height) = dims.get_values();
+                self.width = Some(Cow::Owned(width));
+                self.height = Some(Cow::Owned(height));
+            }
+        }
+    }
+}
+
+impl Estimate<CompactConfig> for CompleteDimension<'_> {
+    fn estimate<R: Records>(&mut self, records: R, cfg: &CompactConfig) {
+        match (self.width.is_some(), self.height.is_some()) {
+            (true, true) => {}
+            (true, false) => {
+                self.height = Some(Cow::Owned(CompactGridDimension::height(records, cfg)));
+            }
+            (false, true) => {
+                self.width = Some(Cow::Owned(CompactGridDimension::width(records, cfg)));
+            }
+            (false, false) => {
+                let mut dims = CompactGridDimension::default();
                 dims.estimate(records, cfg);
 
                 let (width, height) = dims.get_values();

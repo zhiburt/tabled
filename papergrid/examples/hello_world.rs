@@ -5,7 +5,7 @@ use papergrid::{
     colors::NoColors,
     config::spanned::SpannedConfig,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
-    dimension::spanned::ExactDimension,
+    dimension::spanned::SpannedGridDimension,
     dimension::Estimate,
     grid::iterable::Grid,
     records::IterRecords,
@@ -20,7 +20,7 @@ fn main() {
     ];
     let records = IterRecords::new(data, 4, None);
 
-    let mut dim = ExactDimension::default();
+    let mut dim = SpannedGridDimension::default();
     dim.estimate(records, &cfg);
 
     let grid = Grid::new(records, &dim, &cfg, NoColors).to_string();

@@ -10,11 +10,11 @@ use std::{
 use crate::{
     color::{AnsiColor, Color},
     colors::Colors,
+    config::spanned::{ColoredIndent, Formatting, Offset, SpannedConfig},
     config::{AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides},
     dimension::Dimension,
     records::{ExactRecords, PeekableRecords, Records},
     util::string::string_width,
-    config::spanned::{ColoredIndent, Formatting, Offset, SpannedConfig}
 };
 
 /// Grid provides a set of methods for building a text-based table.

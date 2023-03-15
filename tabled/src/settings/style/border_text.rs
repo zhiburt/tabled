@@ -2,12 +2,11 @@ use std::borrow::Cow;
 
 use crate::{
     grid::{
-        config::spanned::{self, SpannedConfig},
-        dimension::{Dimension, Estimate},
+        config::{self, ColoredConfig, SpannedConfig},
+        dimension::{CompleteDimension, Dimension, Estimate},
+        records::{ExactRecords, Records},
     },
-    records::{ExactRecords, Records},
     settings::TableOption,
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::Offset;
@@ -80,32 +79,47 @@ impl<L> BorderText<'_, L> {
     }
 }
 
-impl<R> TableOption<R, TableDimension<'_>, ColoredConfig> for BorderText<'_, LineIndex>
+impl<R> TableOption<R, CompleteDimension<'_>, ColoredConfig> for BorderText<'_, LineIndex>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut TableDimension<'_>) {
+    fn change(
+        &mut self,
+        records: &mut R,
+        cfg: &mut ColoredConfig,
+        dims: &mut CompleteDimension<'_>,
+    ) {
         set_chars(dims, &*records, cfg, self.offset, self.line.0, &self.text);
     }
 }
 
-impl<R> TableOption<R, TableDimension<'_>, ColoredConfig> for BorderText<'_, LineFirst>
+impl<R> TableOption<R, CompleteDimension<'_>, ColoredConfig> for BorderText<'_, LineFirst>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut TableDimension<'_>) {
+    fn change(
+        &mut self,
+        records: &mut R,
+        cfg: &mut ColoredConfig,
+        dims: &mut CompleteDimension<'_>,
+    ) {
         set_chars(dims, &*records, cfg, self.offset, 0, &self.text);
     }
 }
 
-impl<R> TableOption<R, TableDimension<'_>, ColoredConfig> for BorderText<'_, LineLast>
+impl<R> TableOption<R, CompleteDimension<'_>, ColoredConfig> for BorderText<'_, LineLast>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut TableDimension<'_>) {
+    fn change(
+        &mut self,
+        records: &mut R,
+        cfg: &mut ColoredConfig,
+        dims: &mut CompleteDimension<'_>,
+    ) {
         set_chars(
             dims,
             &*records,
@@ -118,7 +132,7 @@ where
 }
 
 fn set_chars<R>(
-    dims: &mut TableDimension<'_>,
+    dims: &mut CompleteDimension<'_>,
     records: &R,
     cfg: &mut SpannedConfig,
     offset: Offset,
@@ -160,7 +174,7 @@ fn set_chars<R>(
 
                 match chars.next() {
                     Some(c) => {
-                        cfg.override_horizontal_border((line, col), c, spanned::Offset::Begin(off))
+                        cfg.override_horizontal_border((line, col), c, config::Offset::Begin(off))
                     }
                     None => return,
                 }
@@ -189,7 +203,7 @@ fn set_chars<R>(
 fn get_start_pos(
     offset: Offset,
     cfg: &SpannedConfig,
-    dims: &TableDimension<'_>,
+    dims: &CompleteDimension<'_>,
     count_columns: usize,
 ) -> Option<usize> {
     let totalw = total_width(cfg, dims, count_columns);
@@ -211,7 +225,7 @@ fn get_start_pos(
     }
 }
 
-fn total_width(cfg: &SpannedConfig, dims: &TableDimension<'_>, count_columns: usize) -> usize {
+fn total_width(cfg: &SpannedConfig, dims: &CompleteDimension<'_>, count_columns: usize) -> usize {
     let mut totalw = cfg.has_vertical(0, count_columns) as usize;
     for col in 0..count_columns {
         totalw += dims.get_width(col);

@@ -51,7 +51,7 @@ use std::borrow::Cow;
 
 use crate::{
     grid::config::Position,
-    records::{ExactRecords, PeekableRecords, Records, RecordsMut, Resizable},
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
     Table,
 };

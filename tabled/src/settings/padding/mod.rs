@@ -38,16 +38,16 @@
 use crate::{
     grid::{
         color::StaticColor,
-        config::compact::CompactConfig,
+        config::CompactConfig,
         config::{Entity, Indent, Sides},
     },
     settings::TableOption,
 };
 
 #[cfg(feature = "std")]
-use crate::{
-    grid::{color::AnsiColor, config::spanned::ColoredIndent},
-    tables::table::ColoredConfig,
+use crate::grid::{
+    color::AnsiColor,
+    config::{ColoredConfig, ColoredIndent},
 };
 
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.

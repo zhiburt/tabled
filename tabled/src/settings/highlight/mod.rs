@@ -6,11 +6,11 @@
 use std::collections::HashSet;
 
 use crate::{
-    grid::config::{Border as GridBorder, Entity, Position},
-    grid::config::spanned::SpannedConfig,
-    records::{ExactRecords, Records},
+    grid::{
+        config::{Border as GridBorder, ColoredConfig, Entity, Position, SpannedConfig},
+        records::{ExactRecords, Records},
+    },
     settings::{object::Object, style::BorderColor, Border, TableOption},
-    tables::table::ColoredConfig,
 };
 
 /// Highlight modifies a table style by changing a border of a target [`Table`] segment.
@@ -158,7 +158,11 @@ where
     }
 }
 
-fn set_border_color(cfg: &mut SpannedConfig, sector: HashSet<(usize, usize)>, border: &BorderColor) {
+fn set_border_color(
+    cfg: &mut SpannedConfig,
+    sector: HashSet<(usize, usize)>,
+    border: &BorderColor,
+) {
     if sector.is_empty() {
         return;
     }

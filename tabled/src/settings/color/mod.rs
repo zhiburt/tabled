@@ -6,10 +6,10 @@
 use std::borrow::Cow;
 
 use crate::{
+    grid::config::ColoredConfig,
+    grid::records::{ExactRecords, Records, RecordsMut},
     grid::{color::AnsiColor, config::Entity},
-    records::{ExactRecords, Records, RecordsMut},
     settings::{CellOption, TableOption},
-    tables::table::ColoredConfig,
 };
 
 /// Color represents a color which can be set to things like [`Border`], [`Padding`] and [`Margin`].

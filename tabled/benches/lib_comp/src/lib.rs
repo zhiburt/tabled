@@ -51,7 +51,7 @@ pub mod tabled_color_current {
 }
 
 pub mod tabled_current_iter {
-    use tabled_current::tables::iter::IterTable;
+    use tabled_current::tables::IterTable;
 
     #[inline]
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
@@ -65,7 +65,7 @@ pub mod tabled_current_iter {
 }
 
 pub mod tabled_current_compact {
-    use tabled_current::tables::compact::CompactTable;
+    use tabled_current::tables::CompactTable;
     use tabled_current::grid::compact::ExactDimension;
 
     #[inline]

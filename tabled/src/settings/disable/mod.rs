@@ -30,7 +30,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-    records::{ExactRecords, Records, Resizable},
+    grid::records::{ExactRecords, Records, Resizable},
     settings::{locator::Locator, TableOption},
 };
 

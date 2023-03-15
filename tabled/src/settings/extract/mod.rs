@@ -10,7 +10,7 @@ use core::cmp::min;
 use core::ops::{Bound, RangeBounds, RangeFull};
 
 use crate::{
-    records::{ExactRecords, Records, Resizable},
+    grid::records::{ExactRecords, Records, Resizable},
     settings::TableOption,
 };
 

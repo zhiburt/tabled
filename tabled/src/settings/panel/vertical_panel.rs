@@ -1,8 +1,7 @@
 use crate::{
-    grid::config::spanned::SpannedConfig,
-    records::{ExactRecords, Records, RecordsMut, Resizable},
+    grid::config::{ColoredConfig, SpannedConfig},
+    grid::records::{ExactRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
-    tables::table::ColoredConfig,
 };
 
 /// A vertical/row span from 0 to a count columns.

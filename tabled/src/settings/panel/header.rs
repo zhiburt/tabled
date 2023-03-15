@@ -1,7 +1,7 @@
 use crate::{
-    records::{ExactRecords, Records, RecordsMut, Resizable},
+    grid::config::ColoredConfig,
+    grid::records::{ExactRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
-    tables::table::ColoredConfig,
 };
 
 use super::Panel;

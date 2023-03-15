@@ -16,7 +16,7 @@ use self::segment::SectorCellsIter;
 
 use crate::{
     grid::config::{Entity, EntityIterator},
-    records::{ExactRecords, Records},
+    grid::records::{ExactRecords, Records},
 };
 
 pub use cell::{Cell, EntityOnce};
@@ -32,7 +32,7 @@ pub trait Object<R> {
     /// An [`Iterator`] which returns a list of cells.
     type Iter: Iterator<Item = Entity>;
 
-    /// Cells returns a set of coordinates of cells
+    /// Cells returns a set of coordinates of cells.
     fn cells(&self, records: &R) -> Self::Iter;
 
     /// Combines cells.
@@ -474,7 +474,7 @@ impl Iterator for InversionIter {
 
 #[cfg(test)]
 mod tests {
-    use crate::records::vec_records::VecRecords;
+    use crate::grid::records::vec_records::VecRecords;
 
     use super::*;
 

@@ -60,7 +60,7 @@ mod records;
 use std::{io::Read, path::Path};
 
 use csv::{Reader, ReaderBuilder};
-use tabled::{builder::Builder, tables::iter::IterTable, Table};
+use tabled::{builder::Builder, tables::IterTable, Table};
 
 pub mod iter {
     //! The module contains [`CsvRecords`] which is an [`Iterator`] abstraction for [`IterTable`].

@@ -10,10 +10,10 @@ mod offset;
 use std::collections::HashMap;
 
 use crate::color::{AnsiColor, StaticColor};
+use crate::config::compact::CompactConfig;
 use crate::config::{
     AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, Indent, Position, Sides,
 };
-use crate::config::compact::CompactConfig;
 use borders_config::BordersConfig;
 
 pub use self::{entity_map::EntityMap, formatting::Formatting, offset::Offset};

@@ -1,6 +1,6 @@
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-use crate::grid::config::spanned::{HorizontalLine, VerticalLine};
+use crate::grid::config::{HorizontalLine, VerticalLine};
 
 /// The structure represent a vertical or horizontal line.
 #[derive(Debug, Default, Clone, Copy)]

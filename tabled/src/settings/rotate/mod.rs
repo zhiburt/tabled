@@ -33,7 +33,7 @@
 use core::cmp::max;
 
 use crate::{
-    records::{ExactRecords, Records, Resizable},
+    grid::records::{ExactRecords, Records, Resizable},
     settings::TableOption,
 };
 

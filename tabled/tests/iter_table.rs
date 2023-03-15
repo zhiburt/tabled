@@ -2,7 +2,7 @@
 
 mod util;
 
-use tabled::tables::iter::IterTable;
+use tabled::tables::IterTable;
 use util::{create_matrix, test_table};
 
 test_table!(

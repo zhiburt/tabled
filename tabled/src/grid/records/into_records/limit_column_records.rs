@@ -1,6 +1,6 @@
 //! The module contains [`LimitColumns`] records iterator.
 
-use crate::records::IntoRecords;
+use crate::grid::records::IntoRecords;
 
 /// An iterator which limits amount of columns.
 #[derive(Debug)]

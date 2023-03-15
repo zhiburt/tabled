@@ -1,6 +1,6 @@
 use crate::{
     grid::config::Entity,
-    records::{ExactRecords, PeekableRecords, Records, RecordsMut},
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::CellOption,
 };
 

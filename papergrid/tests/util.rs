@@ -7,7 +7,7 @@ use papergrid::{
     colors::NoColors,
     config::spanned::SpannedConfig,
     config::{Borders, Position},
-    dimension::spanned::ExactDimension,
+    dimension::spanned::SpannedGridDimension,
     dimension::{Dimension, Estimate},
     grid::iterable::Grid,
     records::{IterRecords, Records},
@@ -75,10 +75,10 @@ fn build_grid(
     data: Vec<Vec<String>>,
     cfg: SpannedConfig,
     shape: (usize, usize),
-) -> Grid<IterRecords<Vec<Vec<String>>>, ExactDimension, SpannedConfig, NoColors> {
+) -> Grid<IterRecords<Vec<Vec<String>>>, SpannedGridDimension, SpannedConfig, NoColors> {
     let records = IterRecords::new(data, shape.1, Some(shape.0));
 
-    let mut dims = ExactDimension::default();
+    let mut dims = SpannedGridDimension::default();
     dims.estimate(&records, &cfg);
 
     Grid::new(records, dims, cfg, NoColors)

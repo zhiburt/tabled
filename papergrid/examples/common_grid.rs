@@ -4,7 +4,7 @@
 use papergrid::{
     config::compact::CompactConfig,
     config::{AlignmentHorizontal, Borders, Indent, Sides},
-    dimension::compact::ExactDimension,
+    dimension::compact::CompactGridDimension,
     dimension::Estimate,
     grid::compact::CompactGrid,
     records::IterRecords,
@@ -24,7 +24,7 @@ fn main() {
     ];
     let records = IterRecords::new(data, 4, None);
 
-    let mut dim = ExactDimension::default();
+    let mut dim = CompactGridDimension::default();
     dim.estimate(records, &cfg);
 
     let grid = CompactGrid::new(records, &dim, &cfg);

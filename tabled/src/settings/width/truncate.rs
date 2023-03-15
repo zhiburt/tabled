@@ -6,16 +6,16 @@ use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
 
 use crate::{
     grid::{
-        config::spanned::SpannedConfig,
+        config::{ColoredConfig, SpannedConfig},
+        dimension::CompleteDimension,
+        records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
         util::string::{string_width, string_width_multiline},
     },
-    records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
         CellOption, TableOption, Width,
     },
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::util::{cut_str, get_table_widths, get_table_widths_with_total};
@@ -241,7 +241,7 @@ fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for Truncate<'_, W, P>
+impl<W, P, R> TableOption<R, CompleteDimension<'static>, ColoredConfig> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -252,7 +252,7 @@ where
         &mut self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut TableDimension<'static>,
+        dims: &mut CompleteDimension<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;

@@ -1,26 +1,22 @@
 //! This module contains a main table representation [`Table`].
 
-mod dimension;
-
-use core::ops::{Deref, DerefMut};
 use std::{borrow::Cow, collections::HashMap, fmt, iter::FromIterator};
 
 use crate::{
     builder::Builder,
-    grid::config::AlignmentHorizontal,
     grid::{
-        color::AnsiColor,
-        config::spanned::{Formatting, SpannedConfig},
-        config::{Entity, Indent, Position, Sides},
+        config::{
+            AlignmentHorizontal, ColoredConfig, Entity, Formatting, Indent, Sides, SpannedConfig,
+        },
+        dimension::CompleteDimension,
         dimension::{Dimension, Estimate},
-        peekable::PeekableGrid,
+        records::{vec_records::VecRecords, ExactRecords, Records},
+        PeekableGrid,
     },
-    records::{vec_records::VecRecords, ExactRecords, Records},
     settings::{Style, TableOption},
     Tabled,
 };
 
-pub use dimension::TableDimension;
 use papergrid::{colors::NoColors, records::vec_records::CellInfo};
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
@@ -60,7 +56,7 @@ use papergrid::{colors::NoColors, records::vec_records::CellInfo};
 pub struct Table {
     records: VecRecords<CellInfo<String>>,
     config: ColoredConfig,
-    dimension: TableDimension<'static>,
+    dimension: CompleteDimension<'static>,
 }
 
 impl Table {
@@ -98,7 +94,7 @@ impl Table {
         Self {
             records,
             config: ColoredConfig::new(configure_grid(), HashMap::default()),
-            dimension: TableDimension::default(),
+            dimension: CompleteDimension::default(),
         }
     }
 
@@ -178,7 +174,7 @@ impl Table {
     /// It applies settings immediately.
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        O: TableOption<VecRecords<CellInfo<String>>, TableDimension<'static>, ColoredConfig>,
+        O: TableOption<VecRecords<CellInfo<String>>, CompleteDimension<'static>, ColoredConfig>,
     {
         self.dimension.clear_width();
         self.dimension.clear_height();
@@ -212,8 +208,8 @@ impl Table {
 
     /// Returns total widths of a table, including margin and horizontal lines.
     pub fn total_height(&self) -> usize {
-        let mut dims = TableDimension::from_origin(&self.dimension);
-        dims.estimate(&self.records, &self.config);
+        let mut dims = CompleteDimension::from_origin(&self.dimension);
+        dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_rows())
             .map(|row| dims.get_height(row))
@@ -227,8 +223,8 @@ impl Table {
 
     /// Returns total widths of a table, including margin and vertical lines.
     pub fn total_width(&self) -> usize {
-        let mut dims = TableDimension::from_origin(&self.dimension);
-        dims.estimate(&self.records, &self.config);
+        let mut dims = CompleteDimension::from_origin(&self.dimension);
+        dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_columns())
             .map(|col| dims.get_width(col))
@@ -255,9 +251,9 @@ impl fmt::Display for Table {
         let config = use_format_configuration(f, self);
 
         let mut dimension = self.dimension.clone();
-        dimension.estimate(&self.records, &config);
+        dimension.estimate(&self.records, config.as_ref());
 
-        let colors = &self.config.colors;
+        let colors = self.config.get_colors();
         if !colors.is_empty() {
             PeekableGrid::new(&self.records, config, &dimension, colors).build(f)
         } else {
@@ -288,7 +284,7 @@ impl From<Builder> for Table {
         Self {
             records,
             config: ColoredConfig::new(configure_grid(), HashMap::default()),
-            dimension: TableDimension::default(),
+            dimension: CompleteDimension::default(),
         }
     }
 }
@@ -336,14 +332,14 @@ fn use_format_configuration<'a>(
     table: &'a Table,
 ) -> Cow<'a, SpannedConfig> {
     if f.align().is_some() || f.width().is_some() {
-        let mut cfg = table.config.config.clone();
+        let mut cfg = table.config.as_ref().clone();
 
         set_align_table(f, &mut cfg);
         set_width_table(f, &mut cfg, table);
 
         Cow::Owned(cfg)
     } else {
-        Cow::Borrowed(&table.config.config)
+        Cow::Borrowed(table.config.as_ref())
     }
 }
 
@@ -385,48 +381,5 @@ fn set_width_table(f: &fmt::Formatter<'_>, cfg: &mut SpannedConfig, table: &Tabl
         {
             margin.right.indent.fill = fill;
         }
-    }
-}
-
-/// A [`Table`] configuration.
-#[derive(Debug, Clone)]
-pub struct ColoredConfig {
-    config: SpannedConfig,
-    colors: HashMap<Position, AnsiColor<'static>>,
-}
-
-impl ColoredConfig {
-    /// Create a new colored config.
-    pub fn new(config: SpannedConfig, colors: HashMap<Position, AnsiColor<'static>>) -> Self {
-        Self { config, colors }
-    }
-
-    /// Set a color for a given cell.
-    ///
-    /// The outcome is the same as if you'd use [`Format`] and added a color but it'd work only with `color` feature on.
-    /// While this method works in all contexts.
-    pub fn set_color(&mut self, pos: Position, color: AnsiColor<'static>) -> &mut Self {
-        let _ = self.colors.insert(pos, color);
-        self
-    }
-}
-
-impl Deref for ColoredConfig {
-    type Target = SpannedConfig;
-
-    fn deref(&self) -> &Self::Target {
-        &self.config
-    }
-}
-
-impl DerefMut for ColoredConfig {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.config
-    }
-}
-
-impl From<SpannedConfig> for ColoredConfig {
-    fn from(value: SpannedConfig) -> Self {
-        Self::new(value, Default::default())
     }
 }

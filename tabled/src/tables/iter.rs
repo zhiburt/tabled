@@ -6,7 +6,7 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{records::IterRecords, tables::iter::IterTable};
+//! use tabled::{grid::records::IterRecords, tables::IterTable};
 //!
 //! let iterator = vec![vec!["First", "row"], vec!["Second", "row"]];
 //! let records = IterRecords::new(iterator, 2, Some(2));
@@ -26,33 +26,26 @@
 //!
 //! [`Table`]: crate::Table
 
-mod dimension;
-pub(crate) mod utf8_writer;
-
 use std::{cmp, fmt, io};
 
 use crate::{
     grid::{
         colors::NoColors,
-        config::compact::CompactConfig,
-        config::spanned::SpannedConfig,
-        config::{AlignmentHorizontal, Indent, Sides},
-        dimension::compact::ExactDimension,
-        dimension::Dimension,
-        iterable::Grid,
-    },
-    records::{
-        into_records::{
-            truncate_records::ExactValue, BufColumns, BufRows, LimitColumns, LimitRows,
-            TruncateContent,
+        config::{AlignmentHorizontal, CompactConfig, Indent, Sides, SpannedConfig},
+        dimension::{CompactGridDimension, Dimension, ExactList, StaticDimension},
+        records::{
+            into_records::{
+                truncate_records::ExactValue, BufColumns, BufRows, LimitColumns, LimitRows,
+                TruncateContent,
+            },
+            IntoRecords, IterRecords,
         },
-        IntoRecords, IterRecords,
+        Grid,
     },
     settings::{Style, TableOption},
 };
 
-use self::dimension::ExactList;
-use self::{dimension::IterTableDimension, utf8_writer::UTF8Writer};
+use super::util::utf8_writer::UTF8Writer;
 
 /// A table which consumes an [`IntoRecords`] iterator.
 ///
@@ -63,7 +56,7 @@ use self::{dimension::IterTableDimension, utf8_writer::UTF8Writer};
 pub struct IterTable<I> {
     records: I,
     cfg: CompactConfig,
-    dim: IterTableDimension,
+    dim: StaticDimension,
     table: Settings,
 }
 
@@ -83,7 +76,7 @@ impl<I> IterTable<I> {
         Self {
             records: iter,
             cfg: create_config(),
-            dim: IterTableDimension::new(ExactList::Exact(0), ExactList::Exact(1)),
+            dim: StaticDimension::new(ExactList::Exact(0), ExactList::Exact(1)),
             table: Settings {
                 sniff: 1000,
                 count_columns: None,
@@ -95,7 +88,7 @@ impl<I> IterTable<I> {
     /// With is a generic function which applies options to the [`IterTable`].
     pub fn with<O>(mut self, mut option: O) -> Self
     where
-        for<'a> O: TableOption<IterRecords<&'a I>, IterTableDimension, CompactConfig>,
+        for<'a> O: TableOption<IterRecords<&'a I>, StaticDimension, CompactConfig>,
     {
         let count_columns = self.table.count_columns.unwrap_or(0);
         let mut records = IterRecords::new(&self.records, count_columns, self.table.count_rows);
@@ -127,7 +120,7 @@ impl<I> IterTable<I> {
         let pad = self.cfg.get_padding();
         let pad = pad.top.size + pad.bottom.size;
         let (w, _) = self.dim.into();
-        self.dim = IterTableDimension::new(w, ExactList::Exact(size + pad));
+        self.dim = StaticDimension::new(w, ExactList::Exact(size + pad));
         self
     }
 
@@ -136,7 +129,7 @@ impl<I> IterTable<I> {
         let pad = self.cfg.get_padding();
         let pad = pad.left.size + pad.right.size;
         let (_, h) = self.dim.into();
-        self.dim = IterTableDimension::new(ExactList::Exact(size + pad), h);
+        self.dim = StaticDimension::new(ExactList::Exact(size + pad), h);
         self
     }
 
@@ -234,7 +227,7 @@ fn build_grid<W: fmt::Write, I: IntoRecords>(
         ExactValue::Exact(0) => {
             let records = LimitColumns::new(records.as_slice(), count_columns);
             let records = IterRecords::new(records, count_columns, None);
-            let width = ExactDimension::width(records, &config);
+            let width = CompactGridDimension::width(records, &config);
 
             let dims_width = width.iter().map(|i| cmp::max(*i, padding)).collect();
             let content_width = width.iter().map(|i| i.saturating_sub(padding)).collect();

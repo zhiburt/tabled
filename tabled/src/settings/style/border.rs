@@ -1,8 +1,9 @@
 use crate::{
-    grid::config::{Border as GBorder, Entity},
-    records::{ExactRecords, Records},
+    grid::{
+        config::{Border as GBorder, ColoredConfig, Entity},
+        records::{ExactRecords, Records},
+    },
     settings::CellOption,
-    tables::table::ColoredConfig,
 };
 
 /// Border represents a border of a Cell.

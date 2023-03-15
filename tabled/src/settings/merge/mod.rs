@@ -3,9 +3,9 @@
 //! [`Span`]: crate::settings::span::Span
 
 use crate::{
-    records::{ExactRecords, PeekableRecords, Records},
+    grid::config::ColoredConfig,
+    grid::records::{ExactRecords, PeekableRecords, Records},
     settings::TableOption,
-    tables::table::ColoredConfig,
 };
 
 /// Merge to combine duplicates together, using [`Span`].

@@ -1,7 +1,7 @@
-use crate::{grid::config::compact::CompactConfig, settings::TableOption};
+use crate::{grid::config::CompactConfig, settings::TableOption};
 
 #[cfg(feature = "std")]
-use crate::{grid::config::spanned::HorizontalLine as GridLine, tables::table::ColoredConfig};
+use crate::grid::config::{ColoredConfig, HorizontalLine as GridLine};
 
 use super::Line;
 

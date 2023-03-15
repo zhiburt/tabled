@@ -3,7 +3,7 @@
 #[cfg(feature = "color")]
 use owo_colors::{AnsiColors, OwoColorize};
 
-use tabled::{tables::extended::ExtendedTable, Tabled};
+use tabled::{tables::ExtendedTable, Tabled};
 
 mod util;
 

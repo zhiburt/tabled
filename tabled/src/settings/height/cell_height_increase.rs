@@ -1,9 +1,10 @@
 use crate::{
+    grid::config::ColoredConfig,
     grid::config::Entity,
+    grid::dimension::CompleteDimension,
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     grid::util::string::count_lines,
-    records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::{measurement::Measurement, peaker::Peaker, CellOption, Height, TableOption},
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::TableHeightIncrease;
@@ -65,7 +66,7 @@ where
     }
 }
 
-impl<R, W> TableOption<R, TableDimension<'static>, ColoredConfig> for CellHeightIncrease<W>
+impl<R, W> TableOption<R, CompleteDimension<'static>, ColoredConfig> for CellHeightIncrease<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + PeekableRecords,
@@ -75,7 +76,7 @@ where
         &mut self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut TableDimension<'static>,
+        dims: &mut CompleteDimension<'static>,
     ) {
         let height = self.height.measure(&*records, cfg);
         TableHeightIncrease::new(height).change(records, cfg, dims)

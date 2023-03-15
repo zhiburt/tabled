@@ -1,19 +1,18 @@
 use std::borrow::Cow;
 
 use crate::{
-    grid::config::spanned::SpannedConfig, grid::dimension::spanned::ExactDimension,
-    records::Records,
+    grid::config::SpannedConfig, grid::dimension::SpannedGridDimension, grid::records::Records,
 };
 
 pub(crate) fn get_table_widths<R: Records>(records: R, cfg: &SpannedConfig) -> Vec<usize> {
-    ExactDimension::width(records, cfg)
+    SpannedGridDimension::width(records, cfg)
 }
 
 pub(crate) fn get_table_widths_with_total<R: Records>(
     records: R,
     cfg: &SpannedConfig,
 ) -> (Vec<usize>, usize) {
-    let widths = ExactDimension::width(records, cfg);
+    let widths = SpannedGridDimension::width(records, cfg);
     let total_width = get_table_total_width(&widths, cfg);
     (widths, total_width)
 }

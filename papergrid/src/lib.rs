@@ -29,7 +29,7 @@
 //!     colors::NoColors,
 //!     grid::iterable::Grid,
 //!     config::spanned::SpannedConfig,
-//!     dimension::spanned::ExactDimension,
+//!     dimension::spanned::SpannedGridDimension,
 //! };
 //!
 //! // Creating a borders structure of a grid.
@@ -60,7 +60,7 @@
 //! let records = IterRecords::new(records, 2, None);
 //!
 //! // Estimate grid dimension.
-//! let mut dimension = ExactDimension::default();
+//! let mut dimension = SpannedGridDimension::default();
 //! dimension.estimate(&records, &cfg);
 //!
 //! // Creating a grid.

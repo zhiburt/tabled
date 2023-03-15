@@ -8,7 +8,7 @@ use std::{
 
 use crate::{
     grid::config::Entity,
-    records::{ExactRecords, PeekableRecords, Records},
+    grid::records::{ExactRecords, PeekableRecords, Records},
     settings::object::{
         Column, Columns, FirstColumn, FirstRow, LastColumn, LastRow, Object, Row, Rows,
     },

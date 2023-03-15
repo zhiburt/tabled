@@ -3,7 +3,7 @@
 //! Almoust always they both can be used interchangeably but [`BufRows`] is supposed to be lighter cause it
 //! does not reads columns.
 
-use crate::records::IntoRecords;
+use crate::grid::records::IntoRecords;
 
 use super::either_string::EitherString;
 

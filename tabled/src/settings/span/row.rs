@@ -1,11 +1,9 @@
 use crate::{
     grid::{
-        config::spanned::SpannedConfig,
-        config::{Entity, Position},
+        config::{ColoredConfig, Entity, Position, SpannedConfig},
+        records::{ExactRecords, Records},
     },
-    records::{ExactRecords, Records},
     settings::CellOption,
-    tables::table::ColoredConfig,
 };
 
 /// Row (vertical) span.

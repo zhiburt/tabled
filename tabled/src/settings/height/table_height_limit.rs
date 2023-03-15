@@ -1,12 +1,13 @@
 use crate::{
+    grid::config::ColoredConfig,
+    grid::dimension::CompleteDimension,
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     grid::util::string::{count_lines, get_lines},
-    records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
         Height, TableOption,
     },
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::util::get_table_height;
@@ -42,7 +43,7 @@ impl<W> TableHeightLimit<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, TableDimension<'static>, ColoredConfig> for TableHeightLimit<W, P>
+impl<R, W, P> TableOption<R, CompleteDimension<'static>, ColoredConfig> for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
@@ -53,7 +54,7 @@ where
         &mut self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut TableDimension<'static>,
+        dims: &mut CompleteDimension<'static>,
     ) {
         let count_rows = records.count_rows();
         let count_cols = (&*records).count_columns();

@@ -6,16 +6,16 @@
 use std::marker::PhantomData;
 
 use crate::{
-    grid::{config::Entity, config::spanned::SpannedConfig, util::string::string_width_multiline},
-    records::ExactRecords,
-    records::{EmptyRecords, PeekableRecords, Records, RecordsMut},
+    grid::config::ColoredConfig,
+    grid::dimension::CompleteDimension,
+    grid::records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
+    grid::{config::Entity, config::SpannedConfig, util::string::string_width_multiline},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
         width::Width,
         CellOption, TableOption,
     },
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::util::{get_table_widths, get_table_widths_with_total, split_at_pos};
@@ -90,7 +90,7 @@ impl<W, P> Wrap<W, P> {
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for Wrap<W, P>
+impl<W, P, R> TableOption<R, CompleteDimension<'static>, ColoredConfig> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -101,7 +101,7 @@ where
         &mut self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut TableDimension<'static>,
+        dims: &mut CompleteDimension<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;

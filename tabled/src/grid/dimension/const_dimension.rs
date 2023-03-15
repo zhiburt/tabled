@@ -1,27 +1,27 @@
 //! Module contains a dimension estimator for [`CompactTable`]
 //!
-//! [`CompactTable`]: crate::tables::compact::CompactTable
+//! [`CompactTable`]: crate::tables::CompactTable
 
-use crate::{
-    grid::dimension::{Dimension, Estimate},
+use crate::grid::{
+    dimension::{Dimension, Estimate},
     records::Records,
 };
 
 /// A constant size dimension or a value dimension.
 #[derive(Debug, Clone, Copy)]
-pub struct ConstantDimension<const COLUMNS: usize, const ROWS: usize> {
+pub struct ConstDimension<const COLUMNS: usize, const ROWS: usize> {
     height: ConstSize<ROWS>,
     width: ConstSize<COLUMNS>,
 }
 
-impl<const COLUMNS: usize, const ROWS: usize> ConstantDimension<COLUMNS, ROWS> {
+impl<const COLUMNS: usize, const ROWS: usize> ConstDimension<COLUMNS, ROWS> {
     /// Returns a new dimension object with a given estimates.
     pub const fn new(width: ConstSize<COLUMNS>, height: ConstSize<ROWS>) -> Self {
         Self { width, height }
     }
 }
 
-impl<const COLUMNS: usize, const ROWS: usize> Dimension for ConstantDimension<COLUMNS, ROWS> {
+impl<const COLUMNS: usize, const ROWS: usize> Dimension for ConstDimension<COLUMNS, ROWS> {
     fn get_width(&self, column: usize) -> usize {
         match self.width {
             ConstSize::List(list) => list[column],
@@ -37,15 +37,15 @@ impl<const COLUMNS: usize, const ROWS: usize> Dimension for ConstantDimension<CO
     }
 }
 
-impl<const COLUMNS: usize, const ROWS: usize> From<ConstantDimension<COLUMNS, ROWS>>
+impl<const COLUMNS: usize, const ROWS: usize> From<ConstDimension<COLUMNS, ROWS>>
     for (ConstSize<COLUMNS>, ConstSize<ROWS>)
 {
-    fn from(value: ConstantDimension<COLUMNS, ROWS>) -> Self {
+    fn from(value: ConstDimension<COLUMNS, ROWS>) -> Self {
         (value.width, value.height)
     }
 }
 
-impl<D, const COLUMNS: usize, const ROWS: usize> Estimate<D> for ConstantDimension<COLUMNS, ROWS> {
+impl<D, const COLUMNS: usize, const ROWS: usize> Estimate<D> for ConstDimension<COLUMNS, ROWS> {
     fn estimate<R: Records>(&mut self, _: R, _: &D) {}
 }
 

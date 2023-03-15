@@ -1,7 +1,7 @@
 //! The example can be run by this command
 //! `cargo run --example compact_table`
 
-use tabled::{settings::Style, tables::compact::CompactTable};
+use tabled::{settings::Style, tables::CompactTable};
 
 fn main() {
     let data = [

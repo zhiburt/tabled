@@ -1,10 +1,10 @@
 //! The module contains [`Measurement`] trait and its implementations to be used in [`Height`] and [`Width`].;
 
 use crate::{
-    grid::config::spanned::SpannedConfig,
-    grid::dimension::spanned::ExactDimension,
+    grid::config::SpannedConfig,
+    grid::dimension::SpannedGridDimension,
+    grid::records::{ExactRecords, PeekableRecords, Records},
     grid::util::string::{self, string_width_multiline},
-    records::{ExactRecords, PeekableRecords, Records},
     settings::{Height, Width},
 };
 
@@ -123,7 +123,7 @@ fn get_table_widths_with_total<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize
 where
     R: Records,
 {
-    let widths = ExactDimension::width(records, cfg);
+    let widths = SpannedGridDimension::width(records, cfg);
     let total_width = get_table_total_width(&widths, cfg);
     (widths, total_width)
 }
@@ -148,7 +148,7 @@ fn get_table_heights_width_total<R>(records: R, cfg: &SpannedConfig) -> (Vec<usi
 where
     R: Records,
 {
-    let list = ExactDimension::height(records, cfg);
+    let list = SpannedGridDimension::height(records, cfg);
     let total = get_table_total_height(&list, cfg);
     (list, total)
 }

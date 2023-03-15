@@ -18,7 +18,7 @@ use papergrid::{
     color::Color,
     config::spanned::SpannedConfig,
     config::{Borders, Position},
-    dimension::spanned::ExactDimension,
+    dimension::spanned::SpannedGridDimension,
     dimension::Estimate,
     grid::iterable::Grid,
     records::IterRecords,
@@ -30,7 +30,7 @@ fn main() {
 
     let cfg = generate_table_config();
 
-    let mut dimension = ExactDimension::default();
+    let mut dimension = SpannedGridDimension::default();
     dimension.estimate(records, &cfg);
 
     let colors = generate_colors();
