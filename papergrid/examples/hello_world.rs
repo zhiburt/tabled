@@ -3,9 +3,11 @@
 
 use papergrid::{
     colors::NoColors,
+    config::spanned::SpannedConfig,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
+    dimension::spanned::ExactDimension,
     dimension::Estimate,
-    grid::iterable::{dimension::ExactDimension, Grid, SpannedConfig},
+    grid::iterable::Grid,
     records::IterRecords,
 };
 

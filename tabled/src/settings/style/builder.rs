@@ -3,7 +3,7 @@
 use core::marker::PhantomData;
 
 use crate::{
-    grid::{compact::CompactConfig, config::Borders},
+    grid::{config::compact::CompactConfig, config::Borders},
     settings::TableOption,
 };
 

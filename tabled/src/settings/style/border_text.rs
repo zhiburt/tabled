@@ -2,8 +2,8 @@ use std::borrow::Cow;
 
 use crate::{
     grid::{
+        config::spanned::{self, SpannedConfig},
         dimension::{Dimension, Estimate},
-        iterable::SpannedConfig,
     },
     records::{ExactRecords, Records},
     settings::TableOption,
@@ -159,11 +159,9 @@ fn set_chars<R>(
                 }
 
                 match chars.next() {
-                    Some(c) => cfg.override_horizontal_border(
-                        (line, col),
-                        c,
-                        crate::grid::iterable::config::Offset::Begin(off),
-                    ),
+                    Some(c) => {
+                        cfg.override_horizontal_border((line, col), c, spanned::Offset::Begin(off))
+                    }
                     None => return,
                 }
             }

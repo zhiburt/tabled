@@ -16,7 +16,7 @@ use crate::{
     util::string::{count_lines, get_lines, string_width, string_width_multiline, Lines},
 };
 
-use super::config::{ColoredIndent, Formatting, SpannedConfig, Offset};
+use crate::config::spanned::{ColoredIndent, Formatting, SpannedConfig, Offset};
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]

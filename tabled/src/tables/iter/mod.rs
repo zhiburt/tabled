@@ -34,10 +34,12 @@ use std::{cmp, fmt, io};
 use crate::{
     grid::{
         colors::NoColors,
-        compact::{CompactConfig, ExactDimension},
+        config::compact::CompactConfig,
+        config::spanned::SpannedConfig,
         config::{AlignmentHorizontal, Indent, Sides},
+        dimension::compact::ExactDimension,
         dimension::Dimension,
-        iterable::{Grid, SpannedConfig},
+        iterable::Grid,
     },
     records::{
         into_records::{

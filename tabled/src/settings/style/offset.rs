@@ -1,4 +1,4 @@
-use crate::grid::iterable::config;
+use crate::grid::config::spanned;
 
 /// The structure represents an offset in a text.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -9,11 +9,11 @@ pub enum Offset {
     End(usize),
 }
 
-impl From<Offset> for config::Offset {
+impl From<Offset> for spanned::Offset {
     fn from(o: Offset) -> Self {
         match o {
-            Offset::Begin(i) => config::Offset::Begin(i),
-            Offset::End(i) => config::Offset::End(i),
+            Offset::Begin(i) => spanned::Offset::Begin(i),
+            Offset::End(i) => spanned::Offset::End(i),
         }
     }
 }

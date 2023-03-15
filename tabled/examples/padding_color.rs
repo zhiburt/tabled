@@ -9,7 +9,9 @@ use std::convert::TryFrom;
 use owo_colors::OwoColorize;
 
 use tabled::{
-    grid::{config::Entity, iterable::ExactDimension, util::string::string_width_multiline},
+    grid::{
+        config::Entity, dimension::spanned::ExactDimension, util::string::string_width_multiline,
+    },
     records::{
         vec_records::{Cell, VecRecords},
         ExactRecords, PeekableRecords, Records,

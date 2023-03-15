@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use crate::{
-    grid::iterable::{ExactDimension, SpannedConfig},
+    grid::config::spanned::SpannedConfig, grid::dimension::spanned::ExactDimension,
     records::Records,
 };
 

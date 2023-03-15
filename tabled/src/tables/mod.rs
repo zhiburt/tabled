@@ -24,3 +24,5 @@ pub mod iter;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod table;
+
+// todo: make it private/public

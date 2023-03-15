@@ -6,7 +6,7 @@ use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
 
 use crate::{
     grid::{
-        iterable::config::SpannedConfig,
+        config::spanned::SpannedConfig,
         util::string::{string_width, string_width_multiline},
     },
     records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},

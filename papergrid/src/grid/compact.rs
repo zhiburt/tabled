@@ -15,7 +15,7 @@ use crate::{
     util::string::string_width,
 };
 
-use super::config::CompactConfig;
+use crate::config::compact::CompactConfig;
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]

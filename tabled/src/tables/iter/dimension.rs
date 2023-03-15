@@ -1,8 +1,8 @@
 use crate::{
     grid::{
-        compact::CompactConfig,
+        config::compact::CompactConfig,
+        config::spanned::SpannedConfig,
         dimension::{Dimension, Estimate},
-        iterable::SpannedConfig,
     },
     records::Records,
 };

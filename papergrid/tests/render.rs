@@ -16,10 +16,11 @@ mod util;
 
 use std::vec;
 
-use papergrid::colors::NoColors;
-use papergrid::grid::iterable::{config::SpannedConfig, Grid};
 use papergrid::{
+    colors::NoColors,
+    config::spanned::SpannedConfig,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity},
+    grid::iterable::Grid,
     records::IterRecords,
 };
 

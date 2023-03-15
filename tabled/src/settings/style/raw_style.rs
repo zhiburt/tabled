@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    grid::{color::AnsiColor, config::Borders, iterable::config},
+    grid::{color::AnsiColor, config::spanned, config::Borders},
     records::Records,
     settings::{Color, TableOption},
     tables::table::ColoredConfig,
@@ -390,7 +390,7 @@ impl<R, D> TableOption<R, D, ColoredConfig> for &RawStyle {
             if line.is_empty() {
                 cfg.remove_horizontal_line(row);
             } else {
-                cfg.insert_horizontal_line(row, config::HorizontalLine::from(*line));
+                cfg.insert_horizontal_line(row, spanned::HorizontalLine::from(*line));
             }
         }
 
@@ -398,7 +398,7 @@ impl<R, D> TableOption<R, D, ColoredConfig> for &RawStyle {
             if line.is_empty() {
                 cfg.remove_vertical_line(col);
             } else {
-                cfg.insert_vertical_line(col, config::VerticalLine::from(*line));
+                cfg.insert_vertical_line(col, spanned::VerticalLine::from(*line));
             }
         }
 

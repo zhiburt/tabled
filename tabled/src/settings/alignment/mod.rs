@@ -52,7 +52,7 @@
 //! [`AlignmentStrategy`]: crate::settings::formatting::AlignmentStrategy
 
 use crate::{
-    grid::compact::CompactConfig,
+    grid::config::compact::CompactConfig,
     grid::config::{AlignmentHorizontal, AlignmentVertical, Entity},
     settings::TableOption,
 };

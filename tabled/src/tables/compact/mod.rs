@@ -72,7 +72,8 @@ use core::fmt;
 
 use crate::{
     grid::{
-        compact::{CompactConfig, CompactGrid},
+        compact::CompactGrid,
+        config::compact::CompactConfig,
         config::{AlignmentHorizontal, Indent, Sides},
         dimension::Dimension,
         util::string::string_width,

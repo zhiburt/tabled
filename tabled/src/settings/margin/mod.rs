@@ -29,7 +29,7 @@
 use crate::{
     grid::{
         color::StaticColor,
-        compact::CompactConfig,
+        config::compact::CompactConfig,
         config::{Indent, Sides},
     },
     settings::TableOption,
@@ -39,7 +39,7 @@ use crate::{
 use crate::{
     grid::{
         color::AnsiColor,
-        iterable::config::{ColoredMarginIndent, Offset},
+        config::spanned::{ColoredMarginIndent, Offset},
     },
     tables::table::ColoredConfig,
 };

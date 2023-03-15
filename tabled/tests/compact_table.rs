@@ -3,7 +3,7 @@
 mod util;
 
 use tabled::{
-    grid::{compact::ExactDimension, dimension::Estimate},
+    grid::{dimension::compact::ExactDimension, dimension::Estimate},
     records::IterRecords,
     tables::compact::CompactTable,
 };

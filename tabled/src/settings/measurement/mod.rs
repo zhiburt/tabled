@@ -1,7 +1,8 @@
 //! The module contains [`Measurement`] trait and its implementations to be used in [`Height`] and [`Width`].;
 
 use crate::{
-    grid::iterable::{ExactDimension, SpannedConfig},
+    grid::config::spanned::SpannedConfig,
+    grid::dimension::spanned::ExactDimension,
     grid::util::string::{self, string_width_multiline},
     records::{ExactRecords, PeekableRecords, Records},
     settings::{Height, Width},

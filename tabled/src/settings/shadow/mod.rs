@@ -28,8 +28,8 @@
 //! [`Table`]: crate::Table
 
 use crate::{
+    grid::config::spanned::Offset,
     grid::config::Sides,
-    grid::iterable::config::Offset,
     settings::{color::Color, TableOption},
     tables::table::ColoredConfig,
 };

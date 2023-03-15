@@ -9,6 +9,11 @@ mod line;
 mod position;
 mod sides;
 
+pub mod compact;
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub mod spanned;
+
 pub use alignment::{AlignmentHorizontal, AlignmentVertical};
 pub use border::Border;
 pub use borders::Borders;

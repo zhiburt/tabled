@@ -38,7 +38,7 @@
 use crate::{
     grid::{
         color::StaticColor,
-        compact::CompactConfig,
+        config::compact::CompactConfig,
         config::{Entity, Indent, Sides},
     },
     settings::TableOption,
@@ -46,7 +46,7 @@ use crate::{
 
 #[cfg(feature = "std")]
 use crate::{
-    grid::{color::AnsiColor, iterable::config::ColoredIndent},
+    grid::{color::AnsiColor, config::spanned::ColoredIndent},
     tables::table::ColoredConfig,
 };
 

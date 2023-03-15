@@ -10,7 +10,7 @@ use crate::{
     util::string::{count_lines, string_width_multiline},
 };
 
-use super::config::CompactConfig;
+use crate::config::compact::CompactConfig;
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height.
 ///

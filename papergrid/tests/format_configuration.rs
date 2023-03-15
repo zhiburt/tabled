@@ -2,8 +2,8 @@
 
 mod util;
 
+use papergrid::config::spanned::Formatting;
 use papergrid::config::{AlignmentHorizontal, AlignmentVertical, Entity};
-use papergrid::grid::iterable::config::Formatting;
 
 use crate::util::{grid, static_table};
 

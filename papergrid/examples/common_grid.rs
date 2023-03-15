@@ -2,9 +2,11 @@
 //! `cargo run --example common_grid`
 
 use papergrid::{
+    config::compact::CompactConfig,
     config::{AlignmentHorizontal, Borders, Indent, Sides},
+    dimension::compact::ExactDimension,
     dimension::Estimate,
-    grid::compact::{CompactConfig, CompactGrid, ExactDimension},
+    grid::compact::CompactGrid,
     records::IterRecords,
 };
 

@@ -14,11 +14,7 @@ use crate::{
     dimension::Dimension,
     records::{ExactRecords, PeekableRecords, Records},
     util::string::string_width,
-};
-
-use super::iterable::{
-    config::{ColoredIndent, Formatting, Offset},
-    SpannedConfig,
+    config::spanned::{ColoredIndent, Formatting, Offset, SpannedConfig}
 };
 
 /// Grid provides a set of methods for building a text-based table.
@@ -891,7 +887,12 @@ fn count_verticals_range(cfg: &SpannedConfig, start: usize, end: usize, max: usi
         .sum()
 }
 
-fn get_cell_height<D: Dimension>(cfg: &SpannedConfig, dims: &D, pos: Position, max: usize) -> usize {
+fn get_cell_height<D: Dimension>(
+    cfg: &SpannedConfig,
+    dims: &D,
+    pos: Position,
+    max: usize,
+) -> usize {
     match cfg.get_row_span(pos) {
         Some(span) => {
             let start = pos.0;

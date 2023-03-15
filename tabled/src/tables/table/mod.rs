@@ -10,9 +10,9 @@ use crate::{
     grid::config::AlignmentHorizontal,
     grid::{
         color::AnsiColor,
+        config::spanned::{Formatting, SpannedConfig},
         config::{Entity, Indent, Position, Sides},
         dimension::{Dimension, Estimate},
-        iterable::config::{Formatting, SpannedConfig},
         peekable::PeekableGrid,
     },
     records::{vec_records::VecRecords, ExactRecords, Records},

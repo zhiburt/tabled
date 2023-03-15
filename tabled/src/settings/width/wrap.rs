@@ -6,7 +6,7 @@
 use std::marker::PhantomData;
 
 use crate::{
-    grid::{config::Entity, iterable::SpannedConfig, util::string::string_width_multiline},
+    grid::{config::Entity, config::spanned::SpannedConfig, util::string::string_width_multiline},
     records::ExactRecords,
     records::{EmptyRecords, PeekableRecords, Records, RecordsMut},
     settings::{

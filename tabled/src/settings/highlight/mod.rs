@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 use crate::{
     grid::config::{Border as GridBorder, Entity, Position},
-    grid::iterable::SpannedConfig,
+    grid::config::spanned::SpannedConfig,
     records::{ExactRecords, Records},
     settings::{object::Object, style::BorderColor, Border, TableOption},
     tables::table::ColoredConfig,

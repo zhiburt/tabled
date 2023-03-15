@@ -1,5 +1,5 @@
 use crate::{
-    grid::iterable::config::SpannedConfig,
+    grid::config::spanned::SpannedConfig,
     records::{ExactRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
     tables::table::ColoredConfig,

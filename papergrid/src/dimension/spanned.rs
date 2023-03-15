@@ -14,7 +14,7 @@ use crate::{
     util::string::{count_lines, string_dimension, string_width_multiline},
 };
 
-use super::config::SpannedConfig;
+use crate::config::spanned::SpannedConfig;
 
 /// A [`Dimension`] implementation which calculates exact column/row width/height.
 ///

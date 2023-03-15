@@ -6,9 +6,11 @@
 use papergrid::{
     color::AnsiColor,
     colors::NoColors,
+    config::spanned::SpannedConfig,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
+    dimension::spanned::ExactDimension,
     dimension::Estimate,
-    grid::iterable::{config::SpannedConfig, dimension::ExactDimension, Grid},
+    grid::iterable::Grid,
     records::IterRecords,
 };
 

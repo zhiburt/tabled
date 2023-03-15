@@ -5,9 +5,11 @@ use std::collections::HashMap;
 
 use papergrid::{
     colors::NoColors,
+    config::spanned::SpannedConfig,
     config::{Borders, Position},
+    dimension::spanned::ExactDimension,
     dimension::{Dimension, Estimate},
-    grid::iterable::{ExactDimension, Grid, SpannedConfig},
+    grid::iterable::Grid,
     records::{IterRecords, Records},
 };
 

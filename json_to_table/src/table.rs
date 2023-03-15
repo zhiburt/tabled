@@ -2,7 +2,7 @@ use core::fmt::{self, Display};
 
 use serde_json::Value;
 use tabled::{
-    grid::iterable::SpannedConfig,
+    grid::config::spanned::SpannedConfig,
     settings::style::{RawStyle, Style},
     tables::table::ColoredConfig,
     Table,
@@ -190,9 +190,9 @@ mod json_to_table {
         builder::Builder,
         col,
         grid::{
+            config::spanned::Offset,
             config::Entity,
             dimension::{Dimension, Estimate},
-            iterable::config::Offset,
             util::string::string_width_multiline,
         },
         records::Records,

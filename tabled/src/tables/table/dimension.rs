@@ -2,8 +2,8 @@ use std::borrow::Cow;
 
 use crate::{
     grid::{
-        dimension::{Dimension, Estimate},
-        iterable::{ExactDimension, SpannedConfig},
+        config::spanned::SpannedConfig,
+        dimension::{spanned::ExactDimension, Dimension, Estimate},
     },
     records::Records,
 };

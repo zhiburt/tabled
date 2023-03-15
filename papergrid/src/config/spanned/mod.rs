@@ -13,7 +13,7 @@ use crate::color::{AnsiColor, StaticColor};
 use crate::config::{
     AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, Indent, Position, Sides,
 };
-use crate::grid::compact::CompactConfig;
+use crate::config::compact::CompactConfig;
 use borders_config::BordersConfig;
 
 pub use self::{entity_map::EntityMap, formatting::Formatting, offset::Offset};
@@ -559,12 +559,6 @@ impl SpannedConfig {
     /// The function checks if a cell is hidden indirectly because of a row and column span combination.
     pub fn is_cell_covered_by_both_spans(&self, pos: Position) -> bool {
         is_cell_covered_by_both_spans(self, pos)
-    }
-}
-
-impl From<&SpannedConfig> for SpannedConfig {
-    fn from(value: &SpannedConfig) -> Self {
-        value.clone()
     }
 }
 

@@ -4,7 +4,7 @@
 //! [`Span`]: crate::settings::span::Span
 
 use crate::{
-    grid::{config::Position, iterable::SpannedConfig},
+    grid::{config::Position, config::spanned::SpannedConfig},
     records::{ExactRecords, Records},
     settings::TableOption,
     tables::table::ColoredConfig,

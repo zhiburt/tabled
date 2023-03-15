@@ -6,10 +6,8 @@
 use std::io::Write;
 
 use papergrid::{
-    colors::NoColors,
-    config::Borders,
-    dimension::Estimate,
-    grid::iterable::{ExactDimension, Grid, SpannedConfig},
+    colors::NoColors, config::spanned::SpannedConfig, config::Borders,
+    dimension::spanned::ExactDimension, dimension::Estimate, grid::iterable::Grid,
     records::IterRecords,
 };
 
