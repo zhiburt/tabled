@@ -103,6 +103,9 @@ mod shadow;
 pub mod span;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub mod split;
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod width;
 
 pub use cell_option::CellOption;
