@@ -208,9 +208,8 @@ fn print_movies(p: &mut impl Printer, movies: &[Movie]) {
             .with(Highlight::new(Rows::last(), Border::default().top('━')))
             .clone()),
         full_action(|mut t, m, _| {
-            let c = "━".yellow();
-            let statistics_text = format!("{}{}{}", c, c, "Statistics".black().on_yellow());
-            t.with(BorderText::new(m.len()+2, statistics_text)).clone()
+            let color = Color::try_from(" ".black().on_yellow().to_string()).unwrap();
+            t.with(BorderText::new("Statistics").horizontal(m.len()+2).color(color)).clone()
         }),
     ];
 

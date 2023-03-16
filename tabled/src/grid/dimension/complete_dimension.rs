@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use crate::grid::{
-    config::SpannedConfig,
+    config::{ColoredConfig, SpannedConfig},
     dimension::{Dimension, Estimate, SpannedGridDimension},
     records::Records,
 };
@@ -93,6 +93,28 @@ impl Dimension for CompleteDimension<'_> {
 
 impl<R: Records> Estimate<R, SpannedConfig> for CompleteDimension<'_> {
     fn estimate(&mut self, records: R, cfg: &SpannedConfig) {
+        match (self.width.is_some(), self.height.is_some()) {
+            (true, true) => {}
+            (true, false) => {
+                self.height = Some(Cow::Owned(SpannedGridDimension::height(records, cfg)));
+            }
+            (false, true) => {
+                self.width = Some(Cow::Owned(SpannedGridDimension::width(records, cfg)));
+            }
+            (false, false) => {
+                let mut dims = SpannedGridDimension::default();
+                dims.estimate(records, cfg);
+
+                let (width, height) = dims.get_values();
+                self.width = Some(Cow::Owned(width));
+                self.height = Some(Cow::Owned(height));
+            }
+        }
+    }
+}
+
+impl<R: Records> Estimate<R, ColoredConfig> for CompleteDimension<'_> {
+    fn estimate(&mut self, records: R, cfg: &ColoredConfig) {
         match (self.width.is_some(), self.height.is_some()) {
             (true, true) => {}
             (true, false) => {

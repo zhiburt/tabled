@@ -2,7 +2,10 @@
 //! `cargo run --example border_text`
 
 use tabled::{
-    settings::style::{BorderText, HorizontalLine, Style},
+    settings::{
+        object::Rows,
+        style::{BorderText, HorizontalLine, Style},
+    },
     Table,
 };
 
@@ -15,9 +18,9 @@ fn main() {
                 .remove_horizontal()
                 .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]),
         )
-        .with(BorderText::first(" Numbers "))
-        .with(BorderText::new(1, " More numbers "))
-        .with(BorderText::last(" end. "))
+        .with(BorderText::new(" Numbers ").horizontal(Rows::first()))
+        .with(BorderText::new(" More numbers ").horizontal(1))
+        .with(BorderText::new(" end. ").horizontal(Rows::last()))
         .to_string();
 
     println!("{table}");

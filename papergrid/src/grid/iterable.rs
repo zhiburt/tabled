@@ -391,7 +391,7 @@ fn print_split_line<F: Write, D: Dimension>(
                 Some(c) => {
                     let clr = cfg.get_horizontal_color(pos, shape.0);
                     prepare_coloring(f, clr, &mut used_color)?;
-                    print_horizontal_border(f, cfg, pos, width, c)?;
+                    print_horizontal_border(f, cfg, pos, width, c, &used_color)?;
                 }
                 None => repeat_char(f, ' ', width)?,
             }
@@ -530,7 +530,7 @@ fn print_split_line_spanned<S, F: Write, D: Dimension, C: Color>(
                 Some(c) => {
                     let clr = cfg.get_horizontal_color(pos, shape.0);
                     prepare_coloring(f, clr, &mut used_color)?;
-                    print_horizontal_border(f, cfg, pos, width, c)?;
+                    print_horizontal_border(f, cfg, pos, width, c, &used_color)?;
                 }
                 None => repeat_char(f, ' ', width)?,
             }
@@ -703,14 +703,31 @@ fn print_horizontal_border<F: Write>(
     pos: Position,
     width: usize,
     c: char,
+    used_color: &Option<&AnsiColor<'static>>,
 ) -> fmt::Result {
-    if cfg.is_overridden_horizontal(pos) {
-        for i in 0..width {
-            let c = cfg.lookup_overridden_horizontal(pos, i, width).unwrap_or(c);
-            f.write_char(c)?;
+    if !cfg.is_overridden_horizontal(pos) {
+        return repeat_char(f, c, width);
+    }
+
+    for i in 0..width {
+        let c = cfg.lookup_horizontal_char(pos, i, width).unwrap_or(c);
+        match cfg.lookup_horizontal_color(pos, i, width) {
+            Some(color) => match used_color {
+                Some(clr) => {
+                    clr.fmt_suffix(f)?;
+                    color.fmt_prefix(f)?;
+                    f.write_char(c)?;
+                    color.fmt_suffix(f)?;
+                    clr.fmt_prefix(f)?;
+                }
+                None => {
+                    color.fmt_prefix(f)?;
+                    f.write_char(c)?;
+                    color.fmt_suffix(f)?;
+                }
+            },
+            _ => f.write_char(c)?,
         }
-    } else {
-        repeat_char(f, c, width)?;
     }
 
     Ok(())
@@ -962,7 +979,7 @@ fn print_vertical_char<F: Write>(
 
     let symbol = cfg
         .is_overridden_vertical(pos)
-        .then(|| cfg.lookup_overridden_vertical(pos, line, count_lines))
+        .then(|| cfg.lookup_vertical_char(pos, line, count_lines))
         .flatten()
         .unwrap_or(symbol);
 

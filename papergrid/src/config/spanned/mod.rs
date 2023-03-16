@@ -31,10 +31,12 @@ pub struct SpannedConfig {
     span_columns: HashMap<Position, usize>,
     span_rows: HashMap<Position, usize>,
     borders: BordersConfig<char>,
+    borders_colors: BordersConfig<AnsiColor<'static>>,
     borders_missing_char: char,
-    override_horizontal_borders: HashMap<Position, HashMap<Offset, char>>,
-    override_vertical_borders: HashMap<Position, HashMap<Offset, char>>,
-    border_colors: BordersConfig<AnsiColor<'static>>,
+    horizontal_chars: HashMap<Position, HashMap<Offset, char>>,
+    horizontal_colors: HashMap<Position, HashMap<Offset, AnsiColor<'static>>>,
+    vertical_chars: HashMap<Position, HashMap<Offset, char>>,
+    vertical_colors: HashMap<Position, HashMap<Offset, AnsiColor<'static>>>,
 }
 
 impl Default for SpannedConfig {
@@ -45,13 +47,15 @@ impl Default for SpannedConfig {
             formatting: EntityMap::default(),
             alignment_h: EntityMap::new(AlignmentHorizontal::Left),
             alignment_v: EntityMap::new(AlignmentVertical::Top),
-            borders: BordersConfig::default(),
-            borders_missing_char: ' ',
             span_columns: HashMap::default(),
             span_rows: HashMap::default(),
-            override_horizontal_borders: HashMap::default(),
-            override_vertical_borders: HashMap::default(),
-            border_colors: BordersConfig::default(),
+            borders: BordersConfig::default(),
+            borders_colors: BordersConfig::default(),
+            borders_missing_char: ' ',
+            horizontal_chars: HashMap::default(),
+            horizontal_colors: HashMap::default(),
+            vertical_chars: HashMap::default(),
+            vertical_colors: HashMap::default(),
         }
     }
 }
@@ -71,8 +75,10 @@ impl SpannedConfig {
     /// And sets it to default.
     pub fn clear_theme(&mut self) {
         self.borders = BordersConfig::default();
-        self.override_horizontal_borders.clear();
-        self.override_vertical_borders.clear();
+        self.horizontal_chars.clear();
+        self.vertical_chars.clear();
+        self.horizontal_colors.clear();
+        self.vertical_colors.clear();
     }
 
     /// Set the [`Borders`] value as correct one.
@@ -149,9 +155,9 @@ impl SpannedConfig {
     ///
     /// It takes not cell position but line as row and column of a cell;
     /// So its range is line <= count_rows && col < count_columns.
-    pub fn override_horizontal_border(&mut self, pos: Position, c: char, offset: Offset) {
+    pub fn set_horizontal_char(&mut self, pos: Position, c: char, offset: Offset) {
         let chars = self
-            .override_horizontal_borders
+            .horizontal_chars
             .entry(pos)
             .or_insert_with(|| HashMap::with_capacity(1));
 
@@ -162,13 +168,8 @@ impl SpannedConfig {
     ///
     /// It takes not cell position but line as row and column of a cell;
     /// So its range is line <= count_rows && col < count_columns.
-    pub fn lookup_overridden_horizontal(
-        &self,
-        pos: Position,
-        offset: usize,
-        end: usize,
-    ) -> Option<char> {
-        self.override_horizontal_borders
+    pub fn lookup_horizontal_char(&self, pos: Position, offset: usize, end: usize) -> Option<char> {
+        self.horizontal_chars
             .get(&pos)
             .and_then(|chars| {
                 chars.get(&Offset::Begin(offset)).or_else(|| {
@@ -191,7 +192,7 @@ impl SpannedConfig {
     /// It takes not cell position but line as row and column of a cell;
     /// So its range is line <= count_rows && col < count_columns.
     pub fn is_overridden_horizontal(&self, pos: Position) -> bool {
-        self.override_horizontal_borders.get(&pos).is_some()
+        self.horizontal_chars.get(&pos).is_some()
     }
 
     /// Removes a list of overridden chars in a horizontal border.
@@ -199,7 +200,7 @@ impl SpannedConfig {
     /// It takes not cell position but line as row and column of a cell;
     /// So its range is line <= count_rows && col < count_columns.
     pub fn remove_overridden_horizontal(&mut self, pos: Position) {
-        self.override_horizontal_borders.remove(&pos);
+        self.horizontal_chars.remove(&pos);
     }
 
     /// Override a vertical split line.
@@ -208,9 +209,9 @@ impl SpannedConfig {
     ///
     /// It takes not cell position but cell row and column of a line;
     /// So its range is row < count_rows && col <= count_columns.
-    pub fn override_vertical_border(&mut self, pos: Position, c: char, offset: Offset) {
+    pub fn set_vertical_char(&mut self, pos: Position, c: char, offset: Offset) {
         let chars = self
-            .override_vertical_borders
+            .vertical_chars
             .entry(pos)
             .or_insert_with(|| HashMap::with_capacity(1));
 
@@ -221,13 +222,8 @@ impl SpannedConfig {
     ///
     /// It takes not cell position but cell row and column of a line;
     /// So its range is row < count_rows && col <= count_columns.
-    pub fn lookup_overridden_vertical(
-        &self,
-        pos: Position,
-        offset: usize,
-        end: usize,
-    ) -> Option<char> {
-        self.override_vertical_borders
+    pub fn lookup_vertical_char(&self, pos: Position, offset: usize, end: usize) -> Option<char> {
+        self.vertical_chars
             .get(&pos)
             .and_then(|chars| {
                 chars.get(&Offset::Begin(offset)).or_else(|| {
@@ -250,7 +246,7 @@ impl SpannedConfig {
     /// It takes not cell position but cell row and column of a line;
     /// So its range is row < count_rows && col <= count_columns.
     pub fn is_overridden_vertical(&self, pos: Position) -> bool {
-        self.override_vertical_borders.get(&pos).is_some()
+        self.vertical_chars.get(&pos).is_some()
     }
 
     /// Removes a list of overridden chars in a horizontal border.
@@ -258,7 +254,71 @@ impl SpannedConfig {
     /// It takes not cell position but cell row and column of a line;
     /// So its range is row < count_rows && col <= count_columns.
     pub fn remove_overridden_vertical(&mut self, pos: Position) {
-        self.override_vertical_borders.remove(&pos);
+        self.vertical_chars.remove(&pos);
+    }
+
+    /// Override a character color on a horizontal line.
+    pub fn set_horizontal_color(&mut self, pos: Position, c: AnsiColor<'static>, offset: Offset) {
+        let chars = self
+            .horizontal_colors
+            .entry(pos)
+            .or_insert_with(|| HashMap::with_capacity(1));
+
+        chars.insert(offset, c);
+    }
+
+    /// Get a overridden color in a horizontal border.
+    pub fn lookup_horizontal_color(
+        &self,
+        pos: Position,
+        offset: usize,
+        end: usize,
+    ) -> Option<&AnsiColor<'static>> {
+        self.horizontal_colors.get(&pos).and_then(|chars| {
+            chars.get(&Offset::Begin(offset)).or_else(|| {
+                if end > offset {
+                    if end == 0 {
+                        chars.get(&Offset::End(0))
+                    } else {
+                        chars.get(&Offset::End(end - offset - 1))
+                    }
+                } else {
+                    None
+                }
+            })
+        })
+    }
+
+    /// Override a character color on a vertical line.
+    pub fn set_vertical_color(&mut self, pos: Position, c: AnsiColor<'static>, offset: Offset) {
+        let chars = self
+            .vertical_colors
+            .entry(pos)
+            .or_insert_with(|| HashMap::with_capacity(1));
+
+        chars.insert(offset, c);
+    }
+
+    /// Get a overridden color in a vertical border.
+    pub fn lookup_vertical_color(
+        &self,
+        pos: Position,
+        offset: usize,
+        end: usize,
+    ) -> Option<&AnsiColor<'static>> {
+        self.vertical_colors.get(&pos).and_then(|chars| {
+            chars.get(&Offset::Begin(offset)).or_else(|| {
+                if end > offset {
+                    if end == 0 {
+                        chars.get(&Offset::End(0))
+                    } else {
+                        chars.get(&Offset::End(end - offset - 1))
+                    }
+                } else {
+                    None
+                }
+            })
+        })
     }
 
     /// Set a padding to a given cells.
@@ -317,6 +377,15 @@ impl SpannedConfig {
         self.borders.get_border(pos, shape).copied()
     }
 
+    /// Returns a border color of a cell.
+    pub fn get_border_color(
+        &self,
+        pos: Position,
+        shape: (usize, usize),
+    ) -> Border<&AnsiColor<'static>> {
+        self.borders_colors.get_border(pos, shape)
+    }
+
     /// Set a character which will be used in case any misconfiguration of borders.
     ///
     /// It will be usde for example when you set a left char for border frame and top but didn't set a top left corner.
@@ -331,28 +400,28 @@ impl SpannedConfig {
 
     /// Gets a color of all borders on the grid.
     pub fn get_border_color_global(&self) -> Option<&AnsiColor<'static>> {
-        self.border_colors.get_global()
+        self.borders_colors.get_global()
     }
 
     /// Sets a color of all borders on the grid.
     pub fn set_border_color_global(&mut self, clr: AnsiColor<'static>) {
-        self.border_colors = BordersConfig::default();
-        self.border_colors.set_global(clr);
+        self.borders_colors = BordersConfig::default();
+        self.borders_colors.set_global(clr);
     }
 
     /// Gets colors of a borders carcass on the grid.
     pub fn get_color_borders(&self) -> &Borders<AnsiColor<'static>> {
-        self.border_colors.get_borders()
+        self.borders_colors.get_borders()
     }
 
     /// Sets colors of border carcass on the grid.
     pub fn set_borders_color(&mut self, clrs: Borders<AnsiColor<'static>>) {
-        self.border_colors.set_borders(clrs);
+        self.borders_colors.set_borders(clrs);
     }
 
     /// Sets a color of border of a cell on the grid.
     pub fn set_border_color(&mut self, pos: Position, border: Border<AnsiColor<'static>>) {
-        self.border_colors.insert_border(pos, border)
+        self.borders_colors.insert_border(pos, border)
     }
 
     /// Sets off all borders possible on the [`Entity`].
@@ -368,7 +437,7 @@ impl SpannedConfig {
     //
     // todo: would be great to remove a shape
     pub fn remove_border_color(&mut self, pos: Position, shape: (usize, usize)) {
-        self.border_colors.remove_border(pos, shape);
+        self.borders_colors.remove_border(pos, shape);
     }
 
     /// Get a span value of the cell, if any is set.
@@ -486,7 +555,7 @@ impl SpannedConfig {
         pos: Position,
         count_rows: usize,
     ) -> Option<&AnsiColor<'static>> {
-        self.border_colors.get_horizontal(pos, count_rows)
+        self.borders_colors.get_horizontal(pos, count_rows)
     }
 
     /// Gets a color of a cell vertical.
@@ -495,7 +564,7 @@ impl SpannedConfig {
         pos: Position,
         count_columns: usize,
     ) -> Option<&AnsiColor<'static>> {
-        self.border_colors.get_vertical(pos, count_columns)
+        self.borders_colors.get_vertical(pos, count_columns)
     }
 
     /// Gets a color of a cell vertical.
@@ -504,7 +573,7 @@ impl SpannedConfig {
         pos: Position,
         shape: (usize, usize),
     ) -> Option<&AnsiColor<'static>> {
-        self.border_colors.get_intersection(pos, shape)
+        self.borders_colors.get_intersection(pos, shape)
     }
 
     /// Checks if grid would have a horizontal border with the current configuration.

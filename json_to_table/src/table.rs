@@ -882,7 +882,7 @@ mod json_to_table {
                 }
 
                 let split_char = self.1;
-                cfg.override_horizontal_border((1, 0), split_char, Offset::Begin(current_width));
+                cfg.set_horizontal_char((1, 0), split_char, Offset::Begin(current_width));
 
                 current_width += 1;
             }
