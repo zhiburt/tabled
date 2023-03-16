@@ -5,9 +5,9 @@
 
 use core::ops::Range;
 
-use papergrid::config::Position;
+use papergrid::{config::Position, records::PeekableRecords};
 
-use crate::records::{ExactRecords, Records, Resizable};
+use crate::grid::records::{ExactRecords, Records, Resizable};
 
 use super::TableOption;
 
@@ -232,7 +232,7 @@ impl Split {
 
 impl<R, D, Cfg> TableOption<R, D, Cfg> for Split
 where
-    R: Records + ExactRecords + Resizable,
+    R: Records + ExactRecords + Resizable + PeekableRecords,
 {
     fn change(&mut self, records: &mut R, _: &mut Cfg, _: &mut D) {
         // variables
@@ -346,7 +346,7 @@ fn copy_section<R>(
     direction: Direction,
 ) -> bool
 where
-    R: ExactRecords + Resizable,
+    R: ExactRecords + Resizable + PeekableRecords,
 {
     let mut section_is_empty = true;
     for to_primary_index in 0..section_length {
@@ -355,7 +355,7 @@ where
         if from_primary_index < primary_length {
             let from_position =
                 format_position(direction, from_primary_index, from_secondary_index);
-            if records.get_cell(from_position).as_ref() != "" {
+            if records.get_text(from_position) != "" {
                 section_is_empty = false;
             }
             records.swap(
