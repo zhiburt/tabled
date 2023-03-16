@@ -64,6 +64,10 @@ An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
   - [Span](#span)
     - [Horizontal span](#horizontal-span)
     - [Vertical span](#vertical-span)
+  - [Split](#split)
+    - [Directions](#directions)
+    - [Behaviors](#behaviors)
+    - [Displays](#displays)
 - [Derive](#derive)
   - [Override a column name](#override-a-column-name)
   - [Hide a column](#hide-a-column)
@@ -1059,6 +1063,130 @@ println!("{}", table);
 +---+---+---+
 ```
 
+### Split
+
+You can `Split` a table on a row or column to redistribute the cells beyond that point 
+into a new shape with the provided point acting as the new, upper boundry in the direction selected.
+
+#### Directions
+
+Direction functions are the entry point for the `Split` setting.
+
+There are two directions available: `column` and `row`.
+
+```rust
+use std::iter::FromIterator;
+use tabled::{Table, settings::split::Split};
+
+let mut table = Table::from_iter(['a'..='z']);
+table.with(Split::column(12));
+table.with(Split::row(2));
+```
+
+```text
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ a │ b │ c │ d │ e │ f │ g │ h │ i │ j │ k │ l │ m │ n │ o │ p │ q │ r │ s │ t │ u │ v │ w │ x │ y │ z │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ a │ b │ c │ d │ e │ f │ g │ h │ i │ j │ k │ l │
+├───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┤
+│ m │ n │ o │ p │ q │ r │ s │ t │ u │ v │ w │ x │
+├───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┤
+│ y │ z │   │   │   │   │   │   │   │   │   │   │<- y and z act as anchors to new empty cells
+└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘   to conform to the new shape
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ a │ y │ b │ z │ c │ d │ e │ f │ g │ h │ i │ j │ k │ l │
+├───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┤<- Display::Clean removes empty cells that would be anchors otherwise
+│ m │   │ n │   │ o │ p │ q │ r │ s │ t │ u │ v │ w │ x │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
+      ^anchors^
+```
+
+
+#### Behaviors
+
+Behaviors determine how cells attempt to conform to the new tables shape.
+
+There are two behaviors available: `zip` and `concat`. 
+
+`zip` is the default behavior.
+
+```rust
+use tabled::{Table, settings::split::Split};
+
+let mut table = Table::new(&data);
+
+table.with(Split::column(2).concat());
+table.with(Split::column(2).zip());
+```
+
+```text
+                                                +---+---+
+                                                | a | b |
+                                                +---+---+
++---+---+---+---+---+                           | f | g |
+| a | b | c | d | e | Split::column(2).concat() +---+---+
++---+---+---+---+---+           =>              | c | d |
+| f | g | h | i | j |                           +---+---+
++---+---+---+---+---+                           | h | i |
+                                                +---+---+
+                                                | e |   |
+                                                +---+---+
+                                                | j |   |
+                                                +---+---+
+
+                  sect 3                        +---+---+
+ sect 1   sect 2 (anchors)                      | a | b |
+  /   \   /   \   /   \                         +---+---+
++---+---+---+---+---+                           | c | d |
+| a | b | c | d | e |  Split::column(2).zip()   +---+---+
++---+---+---+---+---+           =>              | e |   |
+| f | g | h | i | j |                           +---+---+
++---+---+---+---+---+                           | f | g |
+                                                +---+---+
+                                                | h | i |
+                                                +---+---+
+                                                | j |   |
+                                                +---+---+
+```
+
+#### Displays
+
+Display functions give the user the choice to `retain` or `clean` empty sections in a `Split` table result.
+
+- `retain` does not filter any existing or newly added cells when conforming to a new shape.
+
+- `clean` filters out empty columns/rows from the output and prevents empty cells from acting as anchors to newly inserted cells.
+
+`clean` is the default `Display`.
+
+```rust
+use std::iter::FromIterator;
+use tabled::{
+    settings::{split::Split, style::Style},
+    Table,
+};
+let mut table = Table::from_iter(['a'..='z']);
+
+table.with(Split::column(25)).with(Style::modern());
+table.clone().with(Split::column(1).concat().retain());
+table.clone().with(Split::column(1).concat()); // .clean() is not necessary as it is the default display property 
+```
+
+```text
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
+│ a │ b │ c │ d │ e │ f │ g │ h │ i │ j │ k │ l │ m │ n │ o │ p │ q │ r │ s │ t │ u │ v │ w │ x │ y │
+├───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┼───┤
+│ z │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │<- lots of extra cells generated
+└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┐
+│ a │ b │ c │ d │ e │ f │ g │ h │ i │ j │ k │ l │ m │ n │ o │ p │ q │ r │ s │ t │ u │ v │ w │ x │ y │ z │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┘
+┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐ ^ cells retained during concatenation
+│ a │ b │ c │ d │ e │ f │ g │ h │ i │ j │ k │ l │ m │ n │ o │ p │ q │ r │ s │ t │ u │ v │ w │ x │ y │ z │
+└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘<- cells removed during concatenation
+```
+
 ## Derive
 
 To be able to use a `Tabled` macros each field must implement `std::fmt::Display`
@@ -1358,8 +1486,24 @@ println!("{}", table);
 
 ### Color
 
-The library doesn't bind you in usage of any color library but to be able to work correctly with color input you should
-add the `color` feature of `tabled` to your `Cargo.toml`
+The library doesn't bind you in usage of any color library but to be able to work correctly with color input, and avoid [miscalculation of string width](https://github.com/zhiburt/tabled/issues/26) because of embedded ansi sequences, you should add the `color` feature of `tabled` to your `Cargo.toml`:
+
+```toml
+tabled = { version = "*", features = ["color"] } 
+```
+
+Then you can use colored strings as values:
+
+```rust
+use owo_colors::OwoColorize;
+// ...
+let mut builder = tabled::builder::Builder::default();
+builder.add_record(vec!["green".green(), "red".red()])
+let mut table = builder.build();
+table.with(tabled::Style::rounded());
+```
+
+Another example:
 
 ```rust
 use tabled::{format::Format, object::Columns, Modify, Style, Table};
