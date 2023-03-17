@@ -68,9 +68,10 @@ impl std::convert::TryFrom<String> for AnsiColor<'static> {
 fn parse_ansi_color(s: &str) -> Option<AnsiColor<'static>> {
     let mut blocks = ansi_str::get_blocks(s);
     let block = blocks.next()?;
+    let style = block.style();
 
-    let start = block.style().start().to_string();
-    let end = block.style().end().to_string();
+    let start = style.start().to_string();
+    let end = style.end().to_string();
 
     Some(AnsiColor::new(start.into(), end.into()))
 }
