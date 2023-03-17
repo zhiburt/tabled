@@ -3,11 +3,10 @@
 use crate::{
     grid::{
         color::AnsiColor,
-        config::{Border, Entity},
+        config::{Border, ColoredConfig, Entity},
+        records::{ExactRecords, Records},
     },
-    records::{ExactRecords, Records},
     settings::{color::Color, CellOption},
-    tables::table::ColoredConfig,
 };
 
 /// BorderColored represents a colored border of a Cell.

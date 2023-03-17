@@ -1,9 +1,7 @@
 use crate::{
-    grid::config::{Entity, Position},
-    grid::spanned::GridConfig,
-    records::{ExactRecords, Records},
+    grid::config::{ColoredConfig, Entity, Position, SpannedConfig},
+    grid::records::{ExactRecords, Records},
     settings::CellOption,
-    tables::table::ColoredConfig,
 };
 
 use super::Offset;
@@ -75,7 +73,7 @@ where
 }
 
 fn add_char_vertical<I: Iterator<Item = Position>>(
-    cfg: &mut GridConfig,
+    cfg: &mut SpannedConfig,
     c: char,
     offset: Offset,
     cells: I,
@@ -83,12 +81,12 @@ fn add_char_vertical<I: Iterator<Item = Position>>(
     let offset = offset.into();
 
     for pos in cells {
-        cfg.override_vertical_border(pos, c, offset);
+        cfg.set_vertical_char(pos, c, offset);
     }
 }
 
 fn add_char_horizontal<I: Iterator<Item = Position>>(
-    cfg: &mut GridConfig,
+    cfg: &mut SpannedConfig,
     c: char,
     offset: Offset,
     cells: I,
@@ -96,6 +94,6 @@ fn add_char_horizontal<I: Iterator<Item = Position>>(
     let offset = offset.into();
 
     for pos in cells {
-        cfg.override_horizontal_border(pos, c, offset);
+        cfg.set_horizontal_char(pos, c, offset);
     }
 }

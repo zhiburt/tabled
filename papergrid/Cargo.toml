@@ -5,7 +5,7 @@ authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Papergrid is a core library to print a table"
 repository = "https://github.com/zhiburt/tabled"
-license = "Unlicense/MIT"
+license = "MIT"
 
 [features]
 default = ["std"]

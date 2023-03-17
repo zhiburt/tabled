@@ -5,7 +5,8 @@
 //!
 //! # Example
 //!
-//! ```
+#![cfg_attr(feature = "std", doc = "```")]
+#![cfg_attr(not(feature = "std"), doc = "```ignore")]
 //! use tabled::{Table, settings::Rotate};
 //!
 //! let data = [[1, 2, 3], [4, 5, 6]];
@@ -33,7 +34,7 @@
 use core::cmp::max;
 
 use crate::{
-    records::{ExactRecords, Records, Resizable},
+    grid::records::{ExactRecords, Records, Resizable},
     settings::TableOption,
 };
 

@@ -1,7 +1,7 @@
 use std::{fmt::Debug, io::Read, mem::transmute};
 
 use csv::{Reader, StringRecord, StringRecordsIntoIter};
-use tabled::records::IntoRecords;
+use tabled::grid::records::IntoRecords;
 
 /// A [`IntoRecords`] implementation for a [`csv::Reader`].
 ///

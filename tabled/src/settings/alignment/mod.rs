@@ -52,7 +52,7 @@
 //! [`AlignmentStrategy`]: crate::settings::formatting::AlignmentStrategy
 
 use crate::{
-    grid::compact::CompactConfig,
+    grid::config::CompactConfig,
     grid::config::{AlignmentHorizontal, AlignmentVertical, Entity},
     settings::TableOption,
 };
@@ -60,7 +60,7 @@ use crate::{
 use AlignmentInner::*;
 
 #[cfg(feature = "std")]
-use crate::tables::table::ColoredConfig;
+use crate::grid::config::ColoredConfig;
 
 /// Alignment represent a horizontal and vertical alignment setting for any cell on a [`Table`].
 ///

@@ -6,9 +6,11 @@
 use papergrid::{
     color::AnsiColor,
     colors::NoColors,
+    config::spanned::SpannedConfig,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
+    dimension::spanned::SpannedGridDimension,
     dimension::Estimate,
-    grid::spanned::{config::GridConfig, dimension::ExactDimension, Grid},
+    grid::iterable::Grid,
     records::IterRecords,
 };
 
@@ -21,7 +23,7 @@ fn main() {
     ];
     let records = IterRecords::new(data, 4, Some(2));
 
-    let mut dim = ExactDimension::default();
+    let mut dim = SpannedGridDimension::default();
     dim.estimate(&records, &cfg);
 
     let grid = Grid::new(records, &dim, &cfg, NoColors).to_string();
@@ -29,7 +31,7 @@ fn main() {
     println!("{grid}");
 }
 
-fn generate_table_config() -> GridConfig {
+fn generate_table_config() -> SpannedConfig {
     let style = Borders {
         top: Some('-'),
         top_left: Some('+'),
@@ -48,7 +50,7 @@ fn generate_table_config() -> GridConfig {
         intersection: Some('+'),
     };
 
-    let mut cfg = GridConfig::default();
+    let mut cfg = SpannedConfig::default();
     cfg.set_borders(style);
     cfg.set_column_span((1, 1), 3);
     cfg.set_row_span((0, 0), 2);

@@ -656,7 +656,7 @@ Table decrease height to 0
 | 2  | ok |                                                                              |
 | 3  | ok | use std::io::BufRead;                                                        |
 | 4  | ok |                                                                              |
-| 5  | ok | use tabled::{settings::Style, tables::iter::IterTable};               |
+| 5  | ok | use tabled::{settings::Style, tables::IterTable};               |
 | 6  | ok |                                                                              |
 | 7  | ok | fn main() {                                                                  |
 | 8  | ok |     let path = file!();                                                      |

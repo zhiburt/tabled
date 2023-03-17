@@ -2,9 +2,11 @@
 //! `cargo run --example common_grid`
 
 use papergrid::{
+    config::compact::CompactConfig,
     config::{AlignmentHorizontal, Borders, Indent, Sides},
+    dimension::compact::CompactGridDimension,
     dimension::Estimate,
-    grid::compact::{CompactConfig, CompactGrid, ExactDimension},
+    grid::compact::CompactGrid,
     records::IterRecords,
 };
 
@@ -22,7 +24,7 @@ fn main() {
     ];
     let records = IterRecords::new(data, 4, None);
 
-    let mut dim = ExactDimension::default();
+    let mut dim = CompactGridDimension::default();
     dim.estimate(records, &cfg);
 
     let grid = CompactGrid::new(records, &dim, &cfg);

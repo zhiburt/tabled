@@ -50,7 +50,7 @@ where
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<C> Colors for crate::grid::spanned::config::EntityMap<Option<C>>
+impl<C> Colors for crate::config::spanned::EntityMap<Option<C>>
 where
     C: Color,
 {

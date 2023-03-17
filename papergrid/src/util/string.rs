@@ -2,7 +2,7 @@
 //!
 //! You should use it if you want to comply with how [`Grid`].
 //!
-//! [`Grid`]: crate::grid::spanned::Grid
+//! [`Grid`]: crate::grid::iterable::Grid
 
 /// Returns string width and count lines of a string. It's a combination of [`string_width_multiline_tab`] and [`count_lines`].
 #[cfg(feature = "std")]

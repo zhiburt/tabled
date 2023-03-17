@@ -6,16 +6,16 @@ use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
 
 use crate::{
     grid::{
-        spanned::config::GridConfig,
+        config::{ColoredConfig, SpannedConfig},
+        dimension::CompleteDimension,
+        records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
         util::string::{string_width, string_width_multiline},
     },
-    records::{EmptyRecords, ExactRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
         CellOption, TableOption, Width,
     },
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::util::{cut_str, get_table_widths, get_table_widths_with_total};
@@ -163,7 +163,7 @@ impl Truncate<'_, (), ()> {
 impl<W, P, R> CellOption<R, ColoredConfig> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
@@ -189,7 +189,7 @@ where
         let save_suffix_color = need_suffix_color_preservation(&self.suffix);
 
         for pos in entity.iter(count_rows, count_columns) {
-            let text = records.get_cell(pos).as_ref();
+            let text = records.get_text(pos);
 
             let cell_width = string_width_multiline(text);
             if truncate_width >= cell_width {
@@ -241,18 +241,18 @@ fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for Truncate<'_, W, P>
+impl<W, P, R> TableOption<R, CompleteDimension<'static>, ColoredConfig> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
         &mut self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut TableDimension<'static>,
+        dims: &mut CompleteDimension<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
@@ -277,7 +277,10 @@ where
     }
 }
 
-fn truncate_total_width<P: Peaker, R: Records + ExactRecords + RecordsMut<String>>(
+fn truncate_total_width<
+    P: Peaker,
+    R: Records + PeekableRecords + ExactRecords + RecordsMut<String>,
+>(
     records: &mut R,
     cfg: &mut ColoredConfig,
     mut widths: Vec<usize>,
@@ -359,7 +362,7 @@ fn truncate_text<'a>(
 }
 
 fn get_decrease_cell_list(
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     widths: &[usize],
     min_widths: &[usize],
     shape: (usize, usize),
@@ -432,7 +435,7 @@ fn decrease_widths<F>(
     }
 }
 
-fn count_borders(cfg: &GridConfig, start: usize, end: usize, count_columns: usize) -> usize {
+fn count_borders(cfg: &SpannedConfig, start: usize, end: usize, count_columns: usize) -> usize {
     (start..end)
         .skip(1)
         .filter(|&i| cfg.has_vertical(i, count_columns))

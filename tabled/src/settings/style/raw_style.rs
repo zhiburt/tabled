@@ -4,10 +4,8 @@
 use std::collections::HashMap;
 
 use crate::{
-    grid::{color::AnsiColor, config::Borders, spanned::config},
-    records::Records,
+    grid::{color::AnsiColor, config, config::Borders, config::ColoredConfig, records::Records},
     settings::{Color, TableOption},
-    tables::table::ColoredConfig,
 };
 
 use super::{Border, HorizontalLine, Line, Style, VerticalLine};

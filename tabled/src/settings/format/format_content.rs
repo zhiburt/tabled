@@ -1,6 +1,6 @@
 use crate::{
     grid::config::Entity,
-    records::{ExactRecords, Records, RecordsMut},
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::CellOption,
 };
 
@@ -35,7 +35,7 @@ where
 impl<F, R, C> CellOption<R, C> for FormatContent<F>
 where
     F: FnMut(&str) -> String,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
 {
     fn change(&mut self, records: &mut R, cfg: &mut C, entity: Entity) {
         FormatContentPositioned(|s, _| (self.0)(s)).change(records, cfg, entity);

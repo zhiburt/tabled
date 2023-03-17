@@ -1,6 +1,6 @@
 use crate::{
     grid::config::Entity,
-    records::{ExactRecords, Records, RecordsMut},
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::CellOption,
 };
 
@@ -17,14 +17,14 @@ where
 impl<F, R, C> CellOption<R, C> for FormatContentPositioned<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
 {
     fn change(&mut self, records: &mut R, _: &mut C, entity: Entity) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
         for pos in entity.iter(count_rows, count_cols) {
-            let content = records.get_cell(pos).as_ref();
+            let content = records.get_text(pos);
             let content = (self.0)(content, pos);
             records.set(pos, content);
         }

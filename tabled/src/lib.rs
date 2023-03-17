@@ -229,7 +229,7 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{records::IterRecords, tables::iter::IterTable};
+//! use tabled::tables::IterTable;
 //!
 //! let iterator = (0..3).map(|row| (0..4).map(move |col| format!("{}-{}", row, col)));
 //!
@@ -257,7 +257,7 @@
 //! [README.md](https://github.com/zhiburt/tabled/blob/master/README.md)
 //!
 //! [`Builder`]: crate::builder::Builder
-//! [`IterTable`]: crate::tables::iter::IterTable
+//! [`IterTable`]: crate::tables::IterTable
 //! [`io::Write`]: std::io::Write
 //! [`row!`]: crate::row
 //! [`col!`]: crate::col
@@ -294,7 +294,6 @@ mod tabled;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod builder;
-pub mod records;
 pub mod settings;
 pub mod tables;
 
@@ -302,29 +301,11 @@ pub mod tables;
 #[cfg_attr(docsrs, doc(cfg(feature = "macros")))]
 pub mod macros;
 
-pub mod grid {
-    //! Module is responsible for tables underlyign grid.
-    //!
-    //! It might be used when implementing your own [`TableOption`] and [`CellOption`].
-    //!
-    //! [`TableOption`]: crate::settings::TableOption
-    //! [`CellOption`]: crate::settings::CellOption
-
-    pub use papergrid::color;
-    pub use papergrid::colors;
-    pub use papergrid::config;
-    pub use papergrid::dimension;
-    pub use papergrid::grid::compact;
-    pub use papergrid::util;
-
-    #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-    pub use papergrid::grid::spanned;
-}
+pub mod grid;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub use crate::{tabled::Tabled, tables::table::Table};
+pub use crate::{tabled::Tabled, tables::Table};
 
 /// A derive to implement a [`Tabled`] trait.
 ///

@@ -28,10 +28,8 @@
 //! [`Table`]: crate::Table
 
 use crate::{
-    grid::config::Sides,
-    grid::spanned::config::Offset,
+    grid::config::{ColoredConfig, Offset, Sides},
     settings::{color::Color, TableOption},
-    tables::table::ColoredConfig,
 };
 
 /// The structure represents a shadow of a table.

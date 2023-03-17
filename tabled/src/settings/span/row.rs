@@ -1,11 +1,9 @@
 use crate::{
     grid::{
-        config::{Entity, Position},
-        spanned::GridConfig,
+        config::{ColoredConfig, Entity, Position, SpannedConfig},
+        records::{ExactRecords, Records},
     },
-    records::{ExactRecords, Records},
     settings::CellOption,
-    tables::table::ColoredConfig,
 };
 
 /// Row (vertical) span.
@@ -39,7 +37,7 @@ where
     }
 }
 
-fn set_row_spans(cfg: &mut GridConfig, span: usize, entity: Entity, shape: (usize, usize)) {
+fn set_row_spans(cfg: &mut SpannedConfig, span: usize, entity: Entity, shape: (usize, usize)) {
     for pos in entity.iter(shape.0, shape.1) {
         if !is_valid_pos(pos, shape) {
             continue;
@@ -58,7 +56,7 @@ fn set_row_spans(cfg: &mut GridConfig, span: usize, entity: Entity, shape: (usiz
     }
 }
 
-fn set_span_row(cfg: &mut GridConfig, pos: (usize, usize), span: usize) {
+fn set_span_row(cfg: &mut SpannedConfig, pos: (usize, usize), span: usize) {
     if span == 0 {
         let (row, col) = pos;
         if row == 0 {
@@ -74,7 +72,7 @@ fn set_span_row(cfg: &mut GridConfig, pos: (usize, usize), span: usize) {
     cfg.set_row_span(pos, span);
 }
 
-fn closest_visible_row(cfg: &GridConfig, mut pos: Position) -> Option<usize> {
+fn closest_visible_row(cfg: &SpannedConfig, mut pos: Position) -> Option<usize> {
     loop {
         if cfg.is_cell_visible(pos) {
             return Some(pos.0);
@@ -97,7 +95,7 @@ fn is_valid_pos((row, col): Position, (count_rows, count_cols): (usize, usize)) 
     row < count_rows && col < count_cols
 }
 
-fn span_has_intersections(cfg: &GridConfig, (row, col): Position, span: usize) -> bool {
+fn span_has_intersections(cfg: &SpannedConfig, (row, col): Position, span: usize) -> bool {
     for row in row..row + span {
         if !cfg.is_cell_visible((row, col)) {
             return true;
@@ -107,7 +105,7 @@ fn span_has_intersections(cfg: &GridConfig, (row, col): Position, span: usize) -
     false
 }
 
-fn remove_false_spans(cfg: &mut GridConfig) {
+fn remove_false_spans(cfg: &mut SpannedConfig) {
     for (pos, _) in cfg.get_column_spans() {
         if cfg.is_cell_visible(pos) {
             continue;

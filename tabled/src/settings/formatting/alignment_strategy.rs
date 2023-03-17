@@ -1,4 +1,7 @@
-use crate::{grid::config::Entity, settings::CellOption, tables::table::ColoredConfig};
+use crate::{
+    grid::config::{ColoredConfig, Entity},
+    settings::CellOption,
+};
 
 /// `AlignmentStrategy` is a responsible for a flow how we apply an alignment.
 /// It mostly matters for multiline strings.

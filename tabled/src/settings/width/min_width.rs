@@ -5,15 +5,16 @@
 use std::marker::PhantomData;
 
 use crate::{
+    grid::config::ColoredConfig,
     grid::config::Entity,
+    grid::dimension::CompleteDimension,
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     grid::util::string::{get_lines, string_width_multiline},
-    records::{ExactRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
         CellOption, TableOption, Width,
     },
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::util::get_table_widths_with_total;
@@ -104,7 +105,7 @@ impl<W, P> MinWidth<W, P> {
 impl<W, R> CellOption<R, ColoredConfig> for MinWidth<W>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
@@ -114,7 +115,7 @@ where
         let count_columns = records.count_columns();
 
         for pos in entity.iter(count_rows, count_columns) {
-            let cell = records.get_cell(pos).as_ref();
+            let cell = records.get_text(pos);
             let cell_width = string_width_multiline(cell);
             if cell_width >= width {
                 continue;
@@ -126,18 +127,18 @@ where
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for MinWidth<W, P>
+impl<W, P, R> TableOption<R, CompleteDimension<'static>, ColoredConfig> for MinWidth<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + ExactRecords,
+    R: Records + ExactRecords + PeekableRecords,
     for<'a> &'a R: Records,
 {
     fn change(
         &mut self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut TableDimension<'static>,
+        dims: &mut CompleteDimension<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;

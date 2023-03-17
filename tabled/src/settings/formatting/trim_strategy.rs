@@ -1,4 +1,4 @@
-use crate::{grid::config::Entity, settings::CellOption, tables::table::ColoredConfig};
+use crate::{grid::config::ColoredConfig, grid::config::Entity, settings::CellOption};
 
 /// `TrimStrategy` determines if it's allowed to use empty space while doing [`Alignment`].
 ///

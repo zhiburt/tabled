@@ -1,9 +1,10 @@
 //! The module contains [`Measurement`] trait and its implementations to be used in [`Height`] and [`Width`].;
 
 use crate::{
-    grid::spanned::{ExactDimension, GridConfig},
+    grid::config::SpannedConfig,
+    grid::dimension::SpannedGridDimension,
+    grid::records::{ExactRecords, PeekableRecords, Records},
     grid::util::string::{self, string_width_multiline},
-    records::{ExactRecords, Records},
     settings::{Height, Width},
 };
 
@@ -12,11 +13,15 @@ use crate::{
 /// [`Table`]: crate::Table
 pub trait Measurement<Attribute> {
     /// Returns a measurement value.
-    fn measure<R: Records + ExactRecords>(&self, records: R, cfg: &GridConfig) -> usize;
+    fn measure<R: Records + ExactRecords + PeekableRecords>(
+        &self,
+        records: R,
+        cfg: &SpannedConfig,
+    ) -> usize;
 }
 
 impl<T> Measurement<T> for usize {
-    fn measure<R>(&self, _: R, _: &GridConfig) -> usize {
+    fn measure<R>(&self, _: R, _: &SpannedConfig) -> usize {
         *self
     }
 }
@@ -26,7 +31,11 @@ impl<T> Measurement<T> for usize {
 pub struct Max;
 
 impl Measurement<Width> for Max {
-    fn measure<R: Records + ExactRecords>(&self, records: R, _: &GridConfig) -> usize {
+    fn measure<R: Records + ExactRecords + PeekableRecords>(
+        &self,
+        records: R,
+        _: &SpannedConfig,
+    ) -> usize {
         grid_widths(&records)
             .map(|r| r.max().unwrap_or(0))
             .max()
@@ -35,7 +44,11 @@ impl Measurement<Width> for Max {
 }
 
 impl Measurement<Height> for Max {
-    fn measure<R: Records + ExactRecords>(&self, records: R, _: &GridConfig) -> usize {
+    fn measure<R: Records + ExactRecords + PeekableRecords>(
+        &self,
+        records: R,
+        _: &SpannedConfig,
+    ) -> usize {
         records_heights(&records)
             .map(|r| r.max().unwrap_or(0))
             .max()
@@ -48,7 +61,11 @@ impl Measurement<Height> for Max {
 pub struct Min;
 
 impl Measurement<Width> for Min {
-    fn measure<R: Records + ExactRecords>(&self, records: R, _: &GridConfig) -> usize {
+    fn measure<R: Records + ExactRecords + PeekableRecords>(
+        &self,
+        records: R,
+        _: &SpannedConfig,
+    ) -> usize {
         grid_widths(&records)
             .map(|r| r.min().unwrap_or(0))
             .max()
@@ -57,7 +74,11 @@ impl Measurement<Width> for Min {
 }
 
 impl Measurement<Height> for Min {
-    fn measure<R: Records + ExactRecords>(&self, records: R, _: &GridConfig) -> usize {
+    fn measure<R: Records + ExactRecords + PeekableRecords>(
+        &self,
+        records: R,
+        _: &SpannedConfig,
+    ) -> usize {
         records_heights(&records)
             .map(|r| r.max().unwrap_or(0))
             .min()
@@ -70,7 +91,7 @@ impl Measurement<Height> for Min {
 pub struct Percent(pub usize);
 
 impl Measurement<Width> for Percent {
-    fn measure<R>(&self, records: R, cfg: &GridConfig) -> usize
+    fn measure<R>(&self, records: R, cfg: &SpannedConfig) -> usize
     where
         R: Records,
     {
@@ -80,7 +101,7 @@ impl Measurement<Width> for Percent {
 }
 
 impl Measurement<Height> for Percent {
-    fn measure<R>(&self, records: R, cfg: &GridConfig) -> usize
+    fn measure<R>(&self, records: R, cfg: &SpannedConfig) -> usize
     where
         R: Records + ExactRecords,
     {
@@ -89,26 +110,25 @@ impl Measurement<Height> for Percent {
     }
 }
 
-fn grid_widths<R: Records + ExactRecords>(
+fn grid_widths<R: Records + ExactRecords + PeekableRecords>(
     records: &R,
 ) -> impl Iterator<Item = impl Iterator<Item = usize> + '_> + '_ {
     let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
     (0..count_rows).map(move |row| {
-        (0..count_cols)
-            .map(move |col| string_width_multiline(records.get_cell((row, col)).as_ref()))
+        (0..count_cols).map(move |col| string_width_multiline(records.get_text((row, col))))
     })
 }
 
-fn get_table_widths_with_total<R>(records: R, cfg: &GridConfig) -> (Vec<usize>, usize)
+fn get_table_widths_with_total<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, usize)
 where
     R: Records,
 {
-    let widths = ExactDimension::width(records, cfg);
+    let widths = SpannedGridDimension::width(records, cfg);
     let total_width = get_table_total_width(&widths, cfg);
     (widths, total_width)
 }
 
-fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
+fn get_table_total_width(list: &[usize], cfg: &SpannedConfig) -> usize {
     let total = list.iter().sum::<usize>();
 
     total + cfg.count_vertical(list.len())
@@ -116,24 +136,24 @@ fn get_table_total_width(list: &[usize], cfg: &GridConfig) -> usize {
 
 fn records_heights<R>(records: &R) -> impl Iterator<Item = impl Iterator<Item = usize> + '_> + '_
 where
-    R: Records + ExactRecords,
+    R: Records + ExactRecords + PeekableRecords,
 {
     (0..records.count_rows()).map(move |row| {
         (0..records.count_columns())
-            .map(move |col| string::count_lines(records.get_cell((row, col)).as_ref()))
+            .map(move |col| string::count_lines(records.get_text((row, col))))
     })
 }
 
-fn get_table_heights_width_total<R>(records: R, cfg: &GridConfig) -> (Vec<usize>, usize)
+fn get_table_heights_width_total<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, usize)
 where
     R: Records,
 {
-    let list = ExactDimension::height(records, cfg);
+    let list = SpannedGridDimension::height(records, cfg);
     let total = get_table_total_height(&list, cfg);
     (list, total)
 }
 
-fn get_table_total_height(list: &[usize], cfg: &GridConfig) -> usize {
+fn get_table_total_height(list: &[usize], cfg: &SpannedConfig) -> usize {
     let total = list.iter().sum::<usize>();
     let counth = cfg.count_horizontal(list.len());
 

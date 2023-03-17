@@ -16,9 +16,11 @@ use owo_colors::{
 
 use papergrid::{
     color::Color,
+    config::spanned::SpannedConfig,
     config::{Borders, Position},
+    dimension::spanned::SpannedGridDimension,
     dimension::Estimate,
-    grid::spanned::{config::GridConfig, dimension::ExactDimension, Grid},
+    grid::iterable::Grid,
     records::IterRecords,
 };
 
@@ -28,7 +30,7 @@ fn main() {
 
     let cfg = generate_table_config();
 
-    let mut dimension = ExactDimension::default();
+    let mut dimension = SpannedGridDimension::default();
     dimension.estimate(records, &cfg);
 
     let colors = generate_colors();
@@ -46,8 +48,8 @@ fn generate_colors() -> HashMap<Position, Style> {
     ])
 }
 
-fn generate_table_config() -> GridConfig {
-    let mut cfg = GridConfig::default();
+fn generate_table_config() -> SpannedConfig {
+    let mut cfg = SpannedConfig::default();
     cfg.set_borders(Borders {
         top: Some('-'),
         bottom: Some('-'),

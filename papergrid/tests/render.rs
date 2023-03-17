@@ -16,10 +16,11 @@ mod util;
 
 use std::vec;
 
-use papergrid::colors::NoColors;
-use papergrid::grid::spanned::{config::GridConfig, Grid};
 use papergrid::{
+    colors::NoColors,
+    config::spanned::SpannedConfig,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity},
+    grid::iterable::Grid,
     records::IterRecords,
 };
 
@@ -51,7 +52,7 @@ test_table!(
 
         let dims = util::ConstantDimension(vec![0], vec![0]);
 
-        let mut cfg = GridConfig::default();
+        let mut cfg = SpannedConfig::default();
         cfg.set_borders(util::DEFAULT_BORDERS);
 
         let grid = Grid::new(&data, &dims, &cfg, NoColors);
@@ -68,7 +69,7 @@ test_table!(
         let data = IterRecords::new(&data, 1, Some(1));
 
         let dims = util::ConstantDimension(vec![10], vec![0]);
-        let mut cfg = GridConfig::default();
+        let mut cfg = SpannedConfig::default();
         cfg.set_borders(Borders {
             top_left: Some('┌'),
             top_right: Some('┐'),

@@ -1,9 +1,11 @@
 use crate::{
-    grid::config::Entity,
-    grid::util::string::{count_lines, get_lines},
-    records::{ExactRecords, Records, RecordsMut},
+    grid::{
+        config::{ColoredConfig, Entity},
+        dimension::CompleteDimension,
+        records::{ExactRecords, PeekableRecords, Records, RecordsMut},
+        util::string::{count_lines, get_lines},
+    },
     settings::{measurement::Measurement, peaker::Peaker, CellOption, Height, TableOption},
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::table_height_limit::TableHeightLimit;
@@ -41,7 +43,7 @@ impl<W> CellHeightLimit<W> {
 impl<W, R> CellOption<R, ColoredConfig> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
@@ -51,30 +53,30 @@ where
         let count_columns = records.count_columns();
 
         for pos in entity.iter(count_rows, count_columns) {
-            let text = records.get_cell(pos);
-            let count_lines = count_lines(text.as_ref());
+            let text = records.get_text(pos);
+            let count_lines = count_lines(text);
 
             if count_lines <= height {
                 continue;
             }
 
-            let content = limit_lines(text.as_ref(), height);
+            let content = limit_lines(text, height);
             records.set(pos, content);
         }
     }
 }
 
-impl<R, W> TableOption<R, TableDimension<'static>, ColoredConfig> for CellHeightLimit<W>
+impl<R, W> TableOption<R, CompleteDimension<'static>, ColoredConfig> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
         &mut self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut TableDimension<'static>,
+        dims: &mut CompleteDimension<'static>,
     ) {
         let height = self.height.measure(&*records, cfg);
         TableHeightLimit::new(height).change(records, cfg, dims)

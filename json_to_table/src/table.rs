@@ -2,9 +2,8 @@ use core::fmt::{self, Display};
 
 use serde_json::Value;
 use tabled::{
-    grid::spanned::GridConfig,
+    grid::config::{ColoredConfig, SpannedConfig},
     settings::style::{RawStyle, Style},
-    tables::table::ColoredConfig,
     Table,
 };
 
@@ -190,14 +189,12 @@ mod json_to_table {
         builder::Builder,
         col,
         grid::{
-            config::Entity,
+            config::{ColoredConfig, Entity, Offset},
             dimension::{Dimension, Estimate},
-            spanned::config::Offset,
+            records::Records,
             util::string::string_width_multiline,
         },
-        records::Records,
         settings::{Format, Height, Padding, Settings, TableOption, Width},
-        tables::table::ColoredConfig,
     };
 
     use super::*;
@@ -867,7 +864,7 @@ mod json_to_table {
     where
         R: Records,
         for<'a> &'a R: Records,
-        D: Dimension + Estimate<GridConfig>,
+        for<'a> D: Dimension + Estimate<&'a R, SpannedConfig>,
     {
         fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
             dims.estimate(&*records, cfg);
@@ -885,7 +882,7 @@ mod json_to_table {
                 }
 
                 let split_char = self.1;
-                cfg.override_horizontal_border((1, 0), split_char, Offset::Begin(current_width));
+                cfg.set_horizontal_char((1, 0), split_char, Offset::Begin(current_width));
 
                 current_width += 1;
             }

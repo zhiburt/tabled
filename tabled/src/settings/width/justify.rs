@@ -1,12 +1,12 @@
 //! This module contains [`Justify`] structure, used to set an exact width to each column.
 
 use crate::{
-    records::{ExactRecords, Records, RecordsMut},
+    grid::config::ColoredConfig,
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::{
         measurement::{Max, Measurement, Min},
         CellOption, TableOption, Width,
     },
-    tables::table::ColoredConfig,
 };
 
 /// Justify sets all columns widths to the set value.
@@ -76,7 +76,7 @@ impl Justify<Min> {
 impl<R, D, W> TableOption<R, D, ColoredConfig> for Justify<W>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {

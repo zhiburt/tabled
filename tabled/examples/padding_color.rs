@@ -9,13 +9,19 @@ use std::convert::TryFrom;
 use owo_colors::OwoColorize;
 
 use tabled::{
-    grid::{config::Entity, spanned::ExactDimension, util::string::string_width_multiline},
-    records::{ExactRecords, Records, VecRecords},
+    grid::{
+        config::{ColoredConfig, Entity},
+        dimension::SpannedGridDimension,
+        records::{
+            vec_records::{Cell, VecRecords},
+            ExactRecords, PeekableRecords, Records,
+        },
+        util::string::string_width_multiline,
+    },
     settings::{
         object::{Columns, Object, Rows, Segment},
         Alignment, CellOption, Color, Format, Margin, Modify, Padding, Style,
     },
-    tables::table::ColoredConfig,
     Table, Tabled,
 };
 
@@ -132,17 +138,17 @@ struct MakeMaxPadding;
 
 impl<T> CellOption<VecRecords<T>, ColoredConfig> for MakeMaxPadding
 where
-    T: AsRef<str>,
+    T: Cell + AsRef<str>,
 {
     fn change(&mut self, records: &mut VecRecords<T>, cfg: &mut ColoredConfig, entity: Entity) {
-        let widths = ExactDimension::width(&*records, cfg);
+        let widths = SpannedGridDimension::width(&*records, cfg);
 
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
         for (row, col) in entity.iter(count_rows, count_cols) {
             let column_width = widths[col];
-            let text = records.get_cell((row, col)).as_ref();
+            let text = records.get_text((row, col));
             let width = string_width_multiline(text);
 
             if width < column_width {

@@ -3,9 +3,9 @@
 //! [`Span`]: crate::settings::span::Span
 
 use crate::{
-    records::{ExactRecords, Records},
+    grid::config::ColoredConfig,
+    grid::records::{ExactRecords, PeekableRecords, Records},
     settings::TableOption,
-    tables::table::ColoredConfig,
 };
 
 /// Merge to combine duplicates together, using [`Span`].
@@ -36,7 +36,7 @@ pub struct MergeDuplicatesVertical;
 
 impl<R, D> TableOption<R, D, ColoredConfig> for MergeDuplicatesVertical
 where
-    R: Records + ExactRecords,
+    R: Records + PeekableRecords + ExactRecords,
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
@@ -71,7 +71,7 @@ where
                     }
 
                     repeat_length = 1;
-                    repeat_value = records.get_cell((row, column)).as_ref().to_owned();
+                    repeat_value = records.get_text((row, column)).to_owned();
                     repeat_is_set = true;
                     continue;
                 }
@@ -87,8 +87,8 @@ where
                     continue;
                 }
 
-                let text = records.get_cell((row, column));
-                let is_duplicate = text.as_ref() == repeat_value;
+                let text = records.get_text((row, column));
+                let is_duplicate = text == repeat_value;
 
                 if is_duplicate {
                     repeat_length += 1;
@@ -100,7 +100,7 @@ where
                 }
 
                 repeat_length = 1;
-                repeat_value = records.get_cell((row, column)).as_ref().to_owned();
+                repeat_value = records.get_text((row, column)).to_owned();
             }
 
             if repeat_length > 1 {
@@ -120,7 +120,7 @@ pub struct MergeDuplicatesHorizontal;
 
 impl<R, D> TableOption<R, D, ColoredConfig> for MergeDuplicatesHorizontal
 where
-    R: Records + ExactRecords,
+    R: Records + PeekableRecords + ExactRecords,
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
@@ -156,7 +156,7 @@ where
                     }
 
                     repeat_length = 1;
-                    repeat_value = records.get_cell((row, column)).as_ref().to_owned();
+                    repeat_value = records.get_text((row, column)).to_owned();
                     repeat_is_set = true;
                     continue;
                 }
@@ -172,8 +172,8 @@ where
                     continue;
                 }
 
-                let text = records.get_cell((row, column));
-                let is_duplicate = text.as_ref() == repeat_value;
+                let text = records.get_text((row, column));
+                let is_duplicate = text == repeat_value;
 
                 if is_duplicate {
                     repeat_length += 1;
@@ -185,7 +185,7 @@ where
                 }
 
                 repeat_length = 1;
-                repeat_value = records.get_cell((row, column)).as_ref().to_owned();
+                repeat_value = records.get_text((row, column)).to_owned();
             }
 
             if repeat_length > 1 {

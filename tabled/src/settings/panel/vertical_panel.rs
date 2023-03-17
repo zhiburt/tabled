@@ -1,8 +1,7 @@
 use crate::{
-    grid::spanned::config::GridConfig,
-    records::{ExactRecords, Records, RecordsMut, Resizable},
+    grid::config::{ColoredConfig, SpannedConfig},
+    grid::records::{ExactRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
-    tables::table::ColoredConfig,
 };
 
 /// A vertical/row span from 0 to a count columns.
@@ -56,7 +55,7 @@ fn move_columns_aside<R: Records + Resizable>(records: &mut R, column: usize) {
     }
 }
 
-fn move_column_spans(cfg: &mut GridConfig, target_column: usize) {
+fn move_column_spans(cfg: &mut SpannedConfig, target_column: usize) {
     for ((row, col), span) in cfg.get_column_spans() {
         if col < target_column {
             continue;

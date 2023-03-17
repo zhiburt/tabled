@@ -1,9 +1,10 @@
 use crate::{
+    grid::config::ColoredConfig,
     grid::config::Entity,
+    grid::dimension::CompleteDimension,
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     grid::util::string::count_lines,
-    records::{ExactRecords, Records, RecordsMut},
     settings::{measurement::Measurement, peaker::Peaker, CellOption, Height, TableOption},
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::TableHeightIncrease;
@@ -42,7 +43,7 @@ impl<W> CellHeightIncrease<W> {
 impl<W, R> CellOption<R, ColoredConfig> for CellHeightIncrease<W>
 where
     W: Measurement<Height>,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
@@ -52,7 +53,7 @@ where
         let count_columns = records.count_columns();
 
         for pos in entity.iter(count_rows, count_columns) {
-            let text = records.get_cell(pos).as_ref();
+            let text = records.get_text(pos);
 
             let cell_height = count_lines(text);
             if cell_height >= height {
@@ -65,17 +66,17 @@ where
     }
 }
 
-impl<R, W> TableOption<R, TableDimension<'static>, ColoredConfig> for CellHeightIncrease<W>
+impl<R, W> TableOption<R, CompleteDimension<'static>, ColoredConfig> for CellHeightIncrease<W>
 where
     W: Measurement<Height>,
-    R: Records + ExactRecords,
+    R: Records + ExactRecords + PeekableRecords,
     for<'a> &'a R: Records,
 {
     fn change(
         &mut self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut TableDimension<'static>,
+        dims: &mut CompleteDimension<'static>,
     ) {
         let height = self.height.measure(&*records, cfg);
         TableHeightIncrease::new(height).change(records, cfg, dims)

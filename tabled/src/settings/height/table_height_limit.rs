@@ -1,12 +1,13 @@
 use crate::{
+    grid::config::ColoredConfig,
+    grid::dimension::CompleteDimension,
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     grid::util::string::{count_lines, get_lines},
-    records::{ExactRecords, Records, RecordsMut},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
         Height, TableOption,
     },
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::util::get_table_height;
@@ -42,18 +43,18 @@ impl<W> TableHeightLimit<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, TableDimension<'static>, ColoredConfig> for TableHeightLimit<W, P>
+impl<R, W, P> TableOption<R, CompleteDimension<'static>, ColoredConfig> for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
-    R: ExactRecords + RecordsMut<String>,
+    R: ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
         &mut self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut TableDimension<'static>,
+        dims: &mut CompleteDimension<'static>,
     ) {
         let count_rows = records.count_rows();
         let count_cols = (&*records).count_columns();
@@ -72,7 +73,7 @@ where
 
         for (row, &height) in heights.iter().enumerate() {
             for col in 0..count_cols {
-                let text = records.get_cell((row, col)).as_ref();
+                let text = records.get_text((row, col));
                 let count_lines = count_lines(text);
 
                 if count_lines <= height {

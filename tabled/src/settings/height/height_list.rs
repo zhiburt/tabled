@@ -1,9 +1,9 @@
 use std::iter::FromIterator;
 
 use crate::{
-    records::{ExactRecords, Records},
+    grid::dimension::CompleteDimension,
+    grid::records::{ExactRecords, Records},
     settings::TableOption,
-    tables::table::TableDimension,
 };
 
 /// A structure used to set [`Table`] height via a list of rows heights.
@@ -33,11 +33,11 @@ impl FromIterator<usize> for HeightList {
     }
 }
 
-impl<R, C> TableOption<R, TableDimension<'static>, C> for HeightList
+impl<R, C> TableOption<R, CompleteDimension<'static>, C> for HeightList
 where
     R: ExactRecords + Records,
 {
-    fn change(&mut self, records: &mut R, _: &mut C, dims: &mut TableDimension<'static>) {
+    fn change(&mut self, records: &mut R, _: &mut C, dims: &mut CompleteDimension<'static>) {
         if self.list.len() < records.count_rows() {
             return;
         }

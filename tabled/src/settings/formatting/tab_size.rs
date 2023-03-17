@@ -1,5 +1,5 @@
 use crate::{
-    records::{Records, RecordsMut},
+    grid::records::{Records, RecordsMut},
     settings::TableOption,
 };
 

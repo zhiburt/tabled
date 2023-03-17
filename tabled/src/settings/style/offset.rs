@@ -1,4 +1,4 @@
-use crate::grid::spanned::config;
+use crate::grid::config;
 
 /// The structure represents an offset in a text.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]

@@ -51,7 +51,7 @@ pub mod tabled_color_current {
 }
 
 pub mod tabled_current_iter {
-    use tabled_current::tables::iter::IterTable;
+    use tabled_current::tables::IterTable;
 
     #[inline]
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
@@ -65,8 +65,11 @@ pub mod tabled_current_iter {
 }
 
 pub mod tabled_current_compact {
-    use tabled_current::tables::compact::CompactTable;
-    use tabled_current::grid::compact::ExactDimension;
+    use tabled_current::grid::config::{CompactConfig, Indent, Sides};
+    use tabled_current::grid::dimension::CompactGridDimension;
+    use tabled_current::grid::dimension::Estimate;
+    use tabled_current::grid::records::IterRecords;
+    use tabled_current::tables::CompactTable;
 
     #[inline]
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
@@ -75,7 +78,19 @@ pub mod tabled_current_compact {
         let mut data = data;
         data.insert(0, columns);
 
-        CompactTable::with_dimension(data, ExactDimension::default()).columns(count_columns).to_string()
+        let mut dims = CompactGridDimension::default();
+        let cfg = CompactConfig::default().set_padding(Sides::new(
+            Indent::spaced(1),
+            Indent::spaced(1),
+            Indent::zero(),
+            Indent::zero(),
+        ));
+        let records = IterRecords::new(&data, count_columns, Some(data.len()));
+        dims.estimate(&records, &cfg);
+
+        CompactTable::with_dimension(data, dims)
+            .columns(count_columns)
+            .to_string()
     }
 }
 

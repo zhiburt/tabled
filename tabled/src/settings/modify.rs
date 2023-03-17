@@ -1,6 +1,5 @@
 use crate::{
-    records::ExactRecords,
-    records::Records,
+    grid::records::{ExactRecords, Records},
     settings::{object::Object, CellOption, Settings, TableOption},
 };
 

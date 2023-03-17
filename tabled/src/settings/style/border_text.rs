@@ -1,13 +1,14 @@
-use std::borrow::Cow;
-
 use crate::{
     grid::{
+        color::AnsiColor,
+        config::{self, ColoredConfig, SpannedConfig},
         dimension::{Dimension, Estimate},
-        spanned::GridConfig,
+        records::{ExactRecords, Records},
     },
-    records::{ExactRecords, Records},
-    settings::TableOption,
-    tables::table::{ColoredConfig, TableDimension},
+    settings::{
+        object::{FirstRow, LastRow},
+        Color, TableOption,
+    },
 };
 
 use super::Offset;
@@ -17,11 +18,11 @@ use super::Offset;
 /// # Example
 ///
 /// ```rust
-/// use tabled::{Table, settings::style::BorderText};
+/// use tabled::{Table, settings::style::BorderText, settings::object::Rows};
 ///
 /// let mut table = Table::new(["Hello World"]);
 /// table
-///     .with(BorderText::first("+-.table"));
+///     .with(BorderText::new("+-.table").horizontal(Rows::first()));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -33,105 +34,116 @@ use super::Offset;
 /// );
 /// ```
 #[derive(Debug)]
-pub struct BorderText<'a, Line> {
-    text: Cow<'a, str>,
+pub struct BorderText<L> {
+    text: String,
     offset: Offset,
-    line: Line,
+    color: Option<AnsiColor<'static>>,
+    line: L,
 }
 
-#[derive(Debug)]
-pub struct LineIndex(usize);
-
-#[derive(Debug)]
-pub struct LineFirst;
-
-#[derive(Debug)]
-pub struct LineLast;
-
-impl<'a> BorderText<'a, ()> {
+impl BorderText<()> {
     /// Creates a [`BorderText`] instance.
     ///
     /// Lines are numbered from 0 to the `count_rows` included
     /// (`line >= 0 && line <= count_rows`).
-    pub fn new<S: Into<Cow<'a, str>>>(line: usize, text: S) -> BorderText<'a, LineIndex> {
-        BorderText::create(text.into(), Offset::Begin(0), LineIndex(line))
-    }
-
-    /// Creates a [`BorderText`] instance for a top line.
-    pub fn first<S: Into<Cow<'a, str>>>(text: S) -> BorderText<'a, LineFirst> {
-        BorderText::create(text.into(), Offset::Begin(0), LineFirst)
-    }
-
-    /// Creates a [`BorderText`] instance for a bottom line.
-    pub fn last<S: Into<Cow<'a, str>>>(text: S) -> BorderText<'a, LineLast> {
-        BorderText::create(text.into(), Offset::Begin(0), LineLast)
-    }
-
-    fn create<L>(text: Cow<'a, str>, offset: Offset, line: L) -> BorderText<'a, L> {
-        BorderText { text, line, offset }
+    pub fn new<S: Into<String>>(text: S) -> Self {
+        BorderText {
+            text: text.into(),
+            line: (),
+            offset: Offset::Begin(0),
+            color: None,
+        }
     }
 }
 
-impl<L> BorderText<'_, L> {
+impl<Line> BorderText<Line> {
+    /// Set a line on which we will set the text.
+    pub fn horizontal<L>(self, line: L) -> BorderText<L> {
+        BorderText {
+            line,
+            text: self.text,
+            offset: self.offset,
+            color: self.color,
+        }
+    }
+
     /// Set an offset from which the text will be started.
-    pub fn offset(mut self, offset: Offset) -> Self {
-        self.offset = offset;
-        self
+    pub fn offset(self, offset: Offset) -> Self {
+        BorderText {
+            offset,
+            text: self.text,
+            line: self.line,
+            color: self.color,
+        }
+    }
+
+    /// Set a color of the text.
+    pub fn color(self, color: Color) -> Self {
+        BorderText {
+            color: Some(color.into()),
+            text: self.text,
+            line: self.line,
+            offset: self.offset,
+        }
     }
 }
 
-impl<R> TableOption<R, TableDimension<'_>, ColoredConfig> for BorderText<'_, LineIndex>
+impl<R, D> TableOption<R, D, ColoredConfig> for BorderText<usize>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
+    for<'a> D: Estimate<&'a R, ColoredConfig>,
+    D: Dimension,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut TableDimension<'_>) {
-        set_chars(dims, &*records, cfg, self.offset, self.line.0, &self.text);
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+        dims.estimate(records, cfg);
+        let shape = (records.count_rows(), records.count_columns());
+        let line = self.line;
+        set_horizontal_chars(cfg, dims, self.offset, line, &self.text, &self.color, shape);
     }
 }
 
-impl<R> TableOption<R, TableDimension<'_>, ColoredConfig> for BorderText<'_, LineFirst>
+impl<R, D> TableOption<R, D, ColoredConfig> for BorderText<FirstRow>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
+    for<'a> D: Estimate<&'a R, ColoredConfig>,
+    D: Dimension,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut TableDimension<'_>) {
-        set_chars(dims, &*records, cfg, self.offset, 0, &self.text);
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+        dims.estimate(records, cfg);
+        let shape = (records.count_rows(), records.count_columns());
+        let line = 0;
+        set_horizontal_chars(cfg, dims, self.offset, line, &self.text, &self.color, shape);
     }
 }
 
-impl<R> TableOption<R, TableDimension<'_>, ColoredConfig> for BorderText<'_, LineLast>
+impl<R, D> TableOption<R, D, ColoredConfig> for BorderText<LastRow>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
+    for<'a> D: Estimate<&'a R, ColoredConfig>,
+    D: Dimension,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut TableDimension<'_>) {
-        set_chars(
-            dims,
-            &*records,
-            cfg,
-            self.offset,
-            records.count_rows(),
-            &self.text,
-        );
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+        dims.estimate(records, cfg);
+        let shape = (records.count_rows(), records.count_columns());
+        let line = records.count_rows();
+        set_horizontal_chars(cfg, dims, self.offset, line, &self.text, &self.color, shape);
     }
 }
 
-fn set_chars<R>(
-    dims: &mut TableDimension<'_>,
-    records: &R,
-    cfg: &mut GridConfig,
+fn set_horizontal_chars<D: Dimension>(
+    cfg: &mut SpannedConfig,
+    dims: &D,
     offset: Offset,
     line: usize,
     text: &str,
-) where
-    for<'a> &'a R: Records + ExactRecords,
-{
-    dims.estimate(records, cfg);
-
-    let count_columns = records.count_columns();
-    let count_rows = records.count_rows();
-    let pos = get_start_pos(offset, cfg, dims, count_columns);
+    color: &Option<AnsiColor<'static>>,
+    shape: (usize, usize),
+) {
+    let (_, count_columns) = shape;
+    let pos = get_start_pos(cfg, dims, offset, count_columns);
     let pos = match pos {
         Some(pos) => pos,
         None => return,
@@ -140,13 +152,19 @@ fn set_chars<R>(
     let mut chars = text.chars();
     let mut i = cfg.has_vertical(0, count_columns) as usize;
     if i == 1 && pos == 0 {
-        match chars.next() {
-            Some(c) => {
-                let mut b = cfg.get_border((line, 0), (count_rows, count_columns));
-                b.left_top_corner = b.left_top_corner.map(|_| c);
-                cfg.set_border((line, 0), b);
-            }
+        let c = match chars.next() {
+            Some(c) => c,
             None => return,
+        };
+
+        let mut b = cfg.get_border((line, 0), shape);
+        b.left_top_corner = b.left_top_corner.map(|_| c);
+        cfg.set_border((line, 0), b);
+
+        if let Some(color) = color.as_ref() {
+            let mut b = cfg.get_border_color((line, 0), shape).cloned();
+            b.left_top_corner = Some(color.clone());
+            cfg.set_border_color((line, 0), b);
         }
     }
 
@@ -158,13 +176,18 @@ fn set_chars<R>(
                     continue;
                 }
 
-                match chars.next() {
-                    Some(c) => cfg.override_horizontal_border(
-                        (line, col),
-                        c,
-                        crate::grid::spanned::config::Offset::Begin(off),
-                    ),
+                let c = match chars.next() {
+                    Some(c) => c,
                     None => return,
+                };
+
+                cfg.set_horizontal_char((line, col), c, config::Offset::Begin(off));
+                if let Some(color) = color.as_ref() {
+                    cfg.set_horizontal_color(
+                        (line, col),
+                        color.clone(),
+                        config::Offset::Begin(off),
+                    );
                 }
             }
         }
@@ -175,23 +198,29 @@ fn set_chars<R>(
             i += 1;
 
             if i > pos {
-                match chars.next() {
-                    Some(c) => {
-                        let mut b = cfg.get_border((line, col), (count_rows, count_columns));
-                        b.right_top_corner = b.right_top_corner.map(|_| c);
-                        cfg.set_border((line, col), b);
-                    }
+                let c = match chars.next() {
+                    Some(c) => c,
                     None => return,
+                };
+
+                let mut b = cfg.get_border((line, col), shape);
+                b.right_top_corner = b.right_top_corner.map(|_| c);
+                cfg.set_border((line, col), b);
+
+                if let Some(color) = color.as_ref() {
+                    let mut b = cfg.get_border_color((line, col), shape).cloned();
+                    b.right_top_corner = Some(color.clone());
+                    cfg.set_border_color((line, col), b);
                 }
             }
         }
     }
 }
 
-fn get_start_pos(
+fn get_start_pos<D: Dimension>(
+    cfg: &SpannedConfig,
+    dims: &D,
     offset: Offset,
-    cfg: &GridConfig,
-    dims: &TableDimension<'_>,
     count_columns: usize,
 ) -> Option<usize> {
     let totalw = total_width(cfg, dims, count_columns);
@@ -213,7 +242,7 @@ fn get_start_pos(
     }
 }
 
-fn total_width(cfg: &GridConfig, dims: &TableDimension<'_>, count_columns: usize) -> usize {
+fn total_width<D: Dimension>(cfg: &SpannedConfig, dims: &D, count_columns: usize) -> usize {
     let mut totalw = cfg.has_vertical(0, count_columns) as usize;
     for col in 0..count_columns {
         totalw += dims.get_width(col);

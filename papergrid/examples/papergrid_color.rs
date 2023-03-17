@@ -6,10 +6,8 @@
 use std::io::Write;
 
 use papergrid::{
-    colors::NoColors,
-    config::Borders,
-    dimension::Estimate,
-    grid::spanned::{ExactDimension, Grid, GridConfig},
+    colors::NoColors, config::spanned::SpannedConfig, config::Borders,
+    dimension::spanned::SpannedGridDimension, dimension::Estimate, grid::iterable::Grid,
     records::IterRecords,
 };
 
@@ -22,7 +20,7 @@ fn main() {
 
     let cfg = generate_table_config();
 
-    let mut dimension = ExactDimension::default();
+    let mut dimension = SpannedGridDimension::default();
     dimension.estimate(&records, &cfg);
 
     let grid = Grid::new(&records, &dimension, &cfg, NoColors);
@@ -31,8 +29,8 @@ fn main() {
     println!();
 }
 
-fn generate_table_config() -> GridConfig {
-    let mut cfg = GridConfig::default();
+fn generate_table_config() -> SpannedConfig {
+    let mut cfg = SpannedConfig::default();
     cfg.set_borders(Borders {
         top: Some('-'),
         bottom: Some('-'),

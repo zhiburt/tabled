@@ -1,6 +1,6 @@
 use crate::{
     grid::config::Entity,
-    records::{ExactRecords, Records},
+    grid::records::{ExactRecords, Records},
     settings::object::Object,
 };
 

@@ -14,7 +14,7 @@ use papergrid::{
     width::{CfgWidthFunc, WidthEstimator},
     AlignmentHorizontal, Borders,
     Entity::Global,
-    Estimate, Grid, GridConfig, Indent, Padding,
+    Estimate, Grid, SpannedConfig, Indent, Padding,
 };
 
 const STYLE: Borders = Borders {
@@ -36,7 +36,7 @@ const STYLE: Borders = Borders {
 };
 
 fn main() {
-    let mut cfg = GridConfig::default();
+    let mut cfg = SpannedConfig::default();
     cfg.set_borders(STYLE);
     cfg.set_column_span((1, 1), 3);
     cfg.set_row_span((0, 0), 2);

@@ -3,13 +3,13 @@
 use core::marker::PhantomData;
 
 use crate::{
-    grid::{compact::CompactConfig, config::Borders},
+    grid::config::{Borders, CompactConfig},
     settings::TableOption,
 };
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-use crate::tables::table::ColoredConfig;
+use crate::grid::config::ColoredConfig;
 
 use super::{HorizontalLine, Line, VerticalLine};
 

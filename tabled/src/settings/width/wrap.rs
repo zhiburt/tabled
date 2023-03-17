@@ -6,16 +6,16 @@
 use std::marker::PhantomData;
 
 use crate::{
-    grid::{config::Entity, spanned::GridConfig, util::string::string_width_multiline},
-    records::ExactRecords,
-    records::{EmptyRecords, Records, RecordsMut},
+    grid::config::ColoredConfig,
+    grid::dimension::CompleteDimension,
+    grid::records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
+    grid::{config::Entity, config::SpannedConfig, util::string::string_width_multiline},
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
         width::Width,
         CellOption, TableOption,
     },
-    tables::table::{ColoredConfig, TableDimension},
 };
 
 use super::util::{get_table_widths, get_table_widths_with_total, split_at_pos};
@@ -90,18 +90,18 @@ impl<W, P> Wrap<W, P> {
     }
 }
 
-impl<W, P, R> TableOption<R, TableDimension<'static>, ColoredConfig> for Wrap<W, P>
+impl<W, P, R> TableOption<R, CompleteDimension<'static>, ColoredConfig> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(
         &mut self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut TableDimension<'static>,
+        dims: &mut CompleteDimension<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
@@ -124,7 +124,7 @@ where
 impl<W, R> CellOption<R, ColoredConfig> for Wrap<W>
 where
     W: Measurement<Width>,
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
     fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
@@ -134,7 +134,7 @@ where
         let count_columns = records.count_columns();
 
         for pos in entity.iter(count_rows, count_columns) {
-            let text = records.get_cell(pos).as_ref();
+            let text = records.get_text(pos);
             let cell_width = string_width_multiline(text);
             if cell_width <= width {
                 continue;
@@ -156,7 +156,7 @@ fn wrap_total_width<R, P>(
     priority: P,
 ) -> Vec<usize>
 where
-    R: Records + ExactRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     P: Peaker,
     for<'a> &'a R: Records,
 {
@@ -602,7 +602,7 @@ fn decrease_widths<F>(
 }
 
 fn get_decrease_cell_list(
-    cfg: &GridConfig,
+    cfg: &SpannedConfig,
     widths: &[usize],
     min_widths: &[usize],
     shape: (usize, usize),
@@ -635,7 +635,7 @@ fn get_decrease_cell_list(
     points
 }
 
-fn count_borders(cfg: &GridConfig, start: usize, end: usize, count_columns: usize) -> usize {
+fn count_borders(cfg: &SpannedConfig, start: usize, end: usize, count_columns: usize) -> usize {
     (start..end)
         .skip(1)
         .filter(|&i| cfg.has_vertical(i, count_columns))

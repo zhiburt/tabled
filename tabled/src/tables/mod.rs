@@ -13,14 +13,26 @@
 //!
 //! Has a table which is useful for large amount of data.
 
-pub mod compact;
+mod compact;
+mod util;
+
+#[cfg(feature = "std")]
+mod extended;
+#[cfg(feature = "std")]
+mod iter;
+#[cfg(feature = "std")]
+mod table;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub mod extended;
+pub use table::Table;
+
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub mod iter;
+pub use iter::IterTable;
+
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub mod table;
+pub use extended::ExtendedTable;
+
+pub use compact::CompactTable;

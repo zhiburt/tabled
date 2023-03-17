@@ -1,12 +1,17 @@
 //! The module contains an [`Dimension`] trait and its implementations.
 
-use crate::records::Records;
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub mod compact;
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub mod spanned;
 
 /// Dimension of a [`Grid`]
 ///
 /// It's a friend trait of [`Estimate`].
 ///
-/// [`Grid`]: crate::grid::spanned::Grid
+/// [`Grid`]: crate::grid::iterable::Grid
 pub trait Dimension {
     /// Get a column width by index.
     fn get_width(&self, column: usize) -> usize;
@@ -32,8 +37,8 @@ where
 ///
 /// It's a friend trait of [`Dimension`].
 ///
-/// [`Grid`]: crate::grid::spanned::Grid
-pub trait Estimate<Config> {
+/// [`Grid`]: crate::grid::iterable::Grid
+pub trait Estimate<R, C> {
     /// Estimates a metric.
-    fn estimate<R: Records>(&mut self, records: R, cfg: &Config);
+    fn estimate(&mut self, records: R, config: &C);
 }
