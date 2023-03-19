@@ -2,7 +2,7 @@
 //!
 //! [`Table`]: crate::Table
 
-use std::{borrow::Cow, iter, marker::PhantomData, ops::Deref};
+use std::{borrow::Cow, iter, marker::PhantomData};
 
 use crate::{
     grid::{
@@ -42,6 +42,7 @@ use super::util::{cut_str, get_table_widths, get_table_widths_with_total};
 pub struct Truncate<'a, W = usize, P = PriorityNone> {
     width: W,
     suffix: Option<TruncateSuffix<'a>>,
+    multiline: bool,
     _priority: PhantomData<P>,
 }
 
@@ -83,6 +84,7 @@ where
     pub fn new(width: W) -> Truncate<'static, W> {
         Self {
             width,
+            multiline: false,
             suffix: None,
             _priority: PhantomData::default(),
         }
@@ -104,6 +106,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
 
         Truncate {
             width: self.width,
+            multiline: self.multiline,
             suffix: Some(suff),
             _priority: PhantomData::default(),
         }
@@ -116,8 +119,19 @@ impl<'a, W, P> Truncate<'a, W, P> {
 
         Truncate {
             width: self.width,
+            multiline: self.multiline,
             suffix: Some(suff),
             _priority: PhantomData::default(),
+        }
+    }
+
+    /// Use trancate logic per line, not as a string as a whole.
+    pub fn multiline(self) -> Truncate<'a, W, P> {
+        Truncate {
+            width: self.width,
+            multiline: true,
+            suffix: self.suffix,
+            _priority: self._priority,
         }
     }
 
@@ -129,6 +143,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
 
         Truncate {
             width: self.width,
+            multiline: self.multiline,
             suffix: Some(suff),
             _priority: PhantomData::default(),
         }
@@ -147,6 +162,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
     pub fn priority<PP: Peaker>(self) -> Truncate<'a, W, PP> {
         Truncate {
             width: self.width,
+            multiline: self.multiline,
             suffix: self.suffix,
             _priority: PhantomData::default(),
         }
@@ -172,42 +188,78 @@ where
         cfg: &mut ColoredConfig,
         entity: papergrid::config::Entity,
     ) {
-        let truncate_width = self.width.measure(&*records, cfg);
+        let available = self.width.measure(&*records, cfg);
 
-        let mut width = truncate_width;
+        let mut width = available;
         let mut suffix = Cow::Borrowed("");
 
         if let Some(x) = self.suffix.as_ref() {
-            let (s, w) = make_suffix(x, width);
-            suffix = s;
-            width = w;
+            let (cutted_suffix, rest_width) = make_suffix(x, width);
+            suffix = cutted_suffix;
+            width = rest_width;
         };
 
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
 
-        let save_suffix_color = need_suffix_color_preservation(&self.suffix);
+        let colorize = need_suffix_color_preservation(&self.suffix);
 
         for pos in entity.iter(count_rows, count_columns) {
             let text = records.get_text(pos);
 
             let cell_width = string_width_multiline(text);
-            if truncate_width >= cell_width {
+            if available >= cell_width {
                 continue;
             }
 
-            let text = if width == 0 {
-                if truncate_width == 0 {
-                    Cow::Borrowed("")
-                } else {
-                    Cow::Borrowed(suffix.deref())
-                }
-            } else {
-                truncate_text(text, width, &suffix, save_suffix_color)
-            };
+            let text =
+                truncate_multiline(text, &suffix, width, available, colorize, self.multiline);
 
             records.set(pos, text.into_owned());
         }
+    }
+}
+
+fn truncate_multiline<'a>(
+    text: &'a str,
+    suffix: &'a str,
+    width: usize,
+    twidth: usize,
+    suffix_color: bool,
+    multiline: bool,
+) -> Cow<'a, str> {
+    if multiline {
+        let mut buf = String::new();
+        for (i, line) in crate::grid::util::string::get_lines(text).enumerate() {
+            if i != 0 {
+                buf.push('\n');
+            }
+
+            let line = make_text_truncated(&line, suffix, width, twidth, suffix_color);
+            buf.push_str(&line);
+        }
+
+        Cow::Owned(buf)
+    } else {
+        make_text_truncated(text, suffix, width, twidth, suffix_color)
+    }
+}
+
+fn make_text_truncated<'a>(
+    text: &'a str,
+    suffix: &'a str,
+    width: usize,
+    twidth: usize,
+    suffix_color: bool,
+) -> Cow<'a, str> {
+    if width == 0 {
+        if twidth == 0 {
+            Cow::Borrowed("")
+        } else {
+            Cow::Borrowed(suffix)
+        }
+    } else {
+        truncate_text(text, width, suffix, suffix_color)
     }
 }
 
@@ -271,16 +323,18 @@ where
             try_color: s.try_color,
         });
 
-        let widths = truncate_total_width(records, cfg, widths, total, width, P::create(), suffix);
+        let priority = P::create();
+        let multiline = self.multiline;
+        let widths = truncate_total_width(
+            records, cfg, widths, total, width, priority, suffix, multiline,
+        );
 
         let _ = dims.set_widths(widths);
     }
 }
 
-fn truncate_total_width<
-    P: Peaker,
-    R: Records + PeekableRecords + ExactRecords + RecordsMut<String>,
->(
+#[allow(clippy::too_many_arguments)]
+fn truncate_total_width<P, R>(
     records: &mut R,
     cfg: &mut ColoredConfig,
     mut widths: Vec<usize>,
@@ -288,9 +342,12 @@ fn truncate_total_width<
     width: usize,
     priority: P,
     suffix: Option<TruncateSuffix<'_>>,
+    multiline: bool,
 ) -> Vec<usize>
 where
     for<'a> &'a R: Records,
+    P: Peaker,
+    R: Records + PeekableRecords + ExactRecords + RecordsMut<String>,
 {
     let count_rows = records.count_rows();
     let count_columns = records.count_columns();
@@ -303,6 +360,7 @@ where
 
     let mut truncate = Truncate::new(0);
     truncate.suffix = suffix;
+    truncate.multiline = multiline;
     for ((row, col), width) in points {
         truncate.width = width;
         CellOption::change(&mut truncate, records, cfg, (row, col).into());
@@ -312,21 +370,20 @@ where
 }
 
 fn truncate_text<'a>(
-    content: &'a str,
+    text: &'a str,
     width: usize,
     suffix: &str,
-    _suffix_color_try_keeping: bool,
+    _suffix_color: bool,
 ) -> Cow<'a, str> {
-    let content = cut_str(content, width);
-
+    let content = cut_str(text, width);
     if suffix.is_empty() {
         return content;
     }
 
     #[cfg(feature = "color")]
     {
-        if _suffix_color_try_keeping {
-            if let Some(block) = ansi_str::get_blocks(&content).last() {
+        if _suffix_color {
+            if let Some(block) = ansi_str::get_blocks(&text).last() {
                 if block.has_ansi() {
                     let style = block.style();
                     Cow::Owned(format!(

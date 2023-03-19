@@ -2335,6 +2335,113 @@ fn wrap_keeping_words_0() {
     assert_eq!(table, expected,);
 }
 
+#[test]
+fn cell_truncate_multiline() {
+    let table = init_table::<3, 3, _, _>([
+        ((0, 1), "H\nel\nlo World"),
+        ((2, 2), "multi\nline string\n"),
+    ])
+    .with(Style::markdown())
+    .with(Modify::new(Columns::new(1..2).not(Rows::single(0))).with(Width::truncate(1).multiline()))
+    .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "| N | column 0 |  column 1   | column 2 |"
+            "|---|----------|-------------|----------|"
+            "| 0 |    H     |     0-1     |   0-2    |"
+            "|   |    e     |             |          |"
+            "|   |    l     |             |          |"
+            "| 1 |    1     |     1-1     |   1-2    |"
+            "| 2 |    2     | multi       |   2-2    |"
+            "|   |          | line string |          |"
+            "|   |          |             |          |"
+        )
+    );
+}
+
+#[test]
+fn cell_truncate_multiline_with_suffix() {
+    let table = init_table::<3, 3, _, _>([
+        ((0, 1), "H\nel\nlo World"),
+        ((2, 2), "multi\nline string\n"),
+    ])
+    .with(Style::markdown())
+    .with(
+        Modify::new(Columns::new(1..2).not(Rows::single(0)))
+            .with(Width::truncate(1).multiline().suffix(".")),
+    )
+    .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "| N | column 0 |  column 1   | column 2 |"
+            "|---|----------|-------------|----------|"
+            "| 0 |    .     |     0-1     |   0-2    |"
+            "|   |    .     |             |          |"
+            "|   |    .     |             |          |"
+            "| 1 |    .     |     1-1     |   1-2    |"
+            "| 2 |    .     | multi       |   2-2    |"
+            "|   |          | line string |          |"
+            "|   |          |             |          |"
+        )
+    );
+}
+
+#[test]
+fn table_truncate_multiline() {
+    let table = init_table::<3, 3, _, _>([
+        ((0, 1), "H\nel\nlo World"),
+        ((2, 2), "multi\nline string\n"),
+    ])
+    .with(Style::markdown())
+    .with(Width::truncate(20).multiline())
+    .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "|  | c | colu | co |"
+            "|--|---|------|----|"
+            "|  | H | 0-1  | 0- |"
+            "|  | e |      |    |"
+            "|  | l |      |    |"
+            "|  | 1 | 1-1  | 1- |"
+            "|  | 2 | mult | 2- |"
+            "|  |   | line |    |"
+            "|  |   |      |    |"
+        )
+    );
+}
+
+#[test]
+fn table_truncate_multiline_with_suffix() {
+    let table = init_table::<3, 3, _, _>([
+        ((0, 1), "H\nel\nlo World"),
+        ((2, 2), "multi\nline string\n"),
+    ])
+    .with(Style::markdown())
+    .with(Width::truncate(20).suffix(".").multiline())
+    .to_string();
+
+    assert_eq!(
+        table,
+        static_table!(
+            "|  | . | col. | c. |"
+            "|--|---|------|----|"
+            "|  | . | 0-1  | 0. |"
+            "|  | . |      |    |"
+            "|  | . |      |    |"
+            "|  | . | 1-1  | 1. |"
+            "|  | . | mul. | 2. |"
+            "|  |   | lin. |    |"
+            "|  |   | .    |    |"
+        )
+    );
+}
+
 #[cfg(feature = "derive")]
 mod derived {
     use super::*;
