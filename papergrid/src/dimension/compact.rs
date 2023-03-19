@@ -31,6 +31,11 @@ impl CompactGridDimension {
     pub fn width<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
         build_width(records, cfg)
     }
+
+    /// Calculates dimensions of columns.
+    pub fn dimension<R: Records>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<usize>) {
+        build_dims(records, cfg)
+    }
 }
 
 impl Dimension for CompactGridDimension {
@@ -52,6 +57,25 @@ where
         let pad = cfg.get_padding();
         self.height = 1 + pad.top.size + pad.bottom.size;
     }
+}
+
+fn build_dims<R: Records>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<usize>) {
+    let mut heights = vec![];
+    let mut widths = vec![0; records.count_columns()];
+
+    for columns in records.iter_rows() {
+        let mut row_height = 0;
+        for (col, cell) in columns.into_iter().enumerate() {
+            let height = get_cell_height(cell.as_ref(), cfg);
+            let width = get_cell_width(cell.as_ref(), cfg);
+            row_height = max(row_height, height);
+            widths[col] = max(widths[col], width)
+        }
+
+        heights.push(row_height);
+    }
+
+    (widths, heights)
 }
 
 fn build_height<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
@@ -83,14 +107,15 @@ fn build_width<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
 }
 
 fn get_cell_height(cell: &str, cfg: &CompactConfig) -> usize {
-    let padding = cfg.get_padding();
     let count_lines = max(1, count_lines(cell));
-    count_lines + padding.top.size + padding.bottom.size
+    let pad = cfg.get_padding();
+
+    count_lines + pad.top.size + pad.bottom.size
 }
 
 fn get_cell_width(text: &str, cfg: &CompactConfig) -> usize {
-    let pad = cfg.get_padding();
     let width = string_width_multiline(text);
+    let pad = cfg.get_padding();
 
     width + pad.left.size + pad.right.size
 }

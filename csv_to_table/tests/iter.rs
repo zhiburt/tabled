@@ -18,7 +18,6 @@ Year,Industry_aggregation_NZSIOC,Industry_name_NZSIOC,Units,Variable_code,Variab
 2021,Level 1,Machinary,Dollars,H09,Interest and donations,Financial performance,"26,138"
 "#;
 
-#[cfg(test)]
 #[test]
 fn test_iter() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes());
@@ -44,7 +43,6 @@ fn test_iter() {
     )
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_width() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes()).width(2);
@@ -71,7 +69,6 @@ fn test_iter_width() {
     )
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_width_zero() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes()).width(0);
@@ -98,7 +95,6 @@ fn test_iter_width_zero() {
     )
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_width_and_cols() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes())
@@ -127,7 +123,6 @@ fn test_iter_width_and_cols() {
     )
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_cols() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes()).columns(5);
@@ -154,7 +149,6 @@ fn test_iter_cols() {
     )
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_height() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes()).height(2);
@@ -187,7 +181,6 @@ fn test_iter_height() {
     )
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_rows() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes()).rows(2);
@@ -206,7 +199,6 @@ fn test_iter_rows() {
     )
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_rows_cols() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes())
@@ -227,7 +219,6 @@ fn test_iter_rows_cols() {
     )
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_rows_cols_zero() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes())
@@ -239,7 +230,6 @@ fn test_iter_rows_cols_zero() {
     assert_eq!(table, "")
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_rows_zero() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_1.trim().as_bytes()).rows(0);
@@ -249,7 +239,6 @@ fn test_iter_rows_zero() {
     assert_eq!(table, "")
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_1() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_2.trim().as_bytes());
@@ -276,7 +265,6 @@ fn test_iter_1() {
     );
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_sniff() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_2.trim().as_bytes()).sniff(1);
@@ -303,7 +291,6 @@ fn test_iter_sniff() {
     );
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_sniff_zero() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_2.trim().as_bytes()).sniff(0);
@@ -313,7 +300,6 @@ fn test_iter_sniff_zero() {
     assert_eq!(table, "");
 }
 
-#[cfg(test)]
 #[test]
 fn test_iter_sniff_zero_cols() {
     let table = csv_to_table::iter::from_reader(CSV_DATA_2.trim().as_bytes())

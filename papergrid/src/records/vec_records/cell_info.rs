@@ -21,6 +21,11 @@ impl<S> CellInfo<S> {
     {
         create_cell_info(text)
     }
+
+    /// Return a original text value.
+    pub fn into_inner(self) -> S {
+        self.text
+    }
 }
 
 impl<S> AsRef<str> for CellInfo<S>

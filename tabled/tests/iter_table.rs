@@ -7,7 +7,7 @@ use util::{create_matrix, test_table};
 
 test_table!(
     iter_table,
-    IterTable::new(create_matrix::<3, 3>()).to_string(),
+    IterTable::new(create_matrix::<3, 3>()),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "+-----+-----+-----+"
@@ -19,7 +19,7 @@ test_table!(
 
 test_table!(
     iter_table_cols,
-    IterTable::new(create_matrix::<3, 3>()).columns(3).to_string(),
+    IterTable::new(create_matrix::<3, 3>()).columns(3),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "+-----+-----+-----+"
@@ -31,7 +31,7 @@ test_table!(
 
 test_table!(
     iter_table_cols_less,
-    IterTable::new(create_matrix::<3, 3>()).columns(2).to_string(),
+    IterTable::new(create_matrix::<3, 3>()).columns(2),
     "+-----+-----+"
     "| 0-0 | 0-1 |"
     "+-----+-----+"
@@ -43,9 +43,7 @@ test_table!(
 
 test_table!(
     iter_table_cols_zero,
-    IterTable::new(create_matrix::<3, 3>())
-        .columns(0)
-        .to_string(),
+    IterTable::new(create_matrix::<3, 3>()).columns(0),
     ""
 );
 
@@ -67,7 +65,7 @@ test_table!(
 
 test_table!(
     iter_table_width,
-    IterTable::new(create_matrix::<3, 3>()).width(2).to_string(),
+    IterTable::new(create_matrix::<3, 3>()).width(2),
     "+----+----+----+"
     "| 0- | 0- | 0- |"
     "+----+----+----+"
@@ -79,7 +77,7 @@ test_table!(
 
 test_table!(
     iter_table_height_does_not_work,
-    IterTable::new(create_matrix::<3, 3>()).height(5).to_string(),
+    IterTable::new(create_matrix::<3, 3>()).height(5),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "|     |     |     |"
@@ -102,6 +100,59 @@ test_table!(
 );
 
 test_table!(
+    iter_table_sniff_0,
+    IterTable::new(create_matrix::<3, 3>()).sniff(0),
+    ""
+);
+
+test_table!(
+    iter_table_multiline,
+    IterTable::new(
+        vec![
+            vec!["0", "1", "2", "3"],
+            vec!["0\n1\n2\n3\n4", "0\n1\n2\n\n\n3\n4", "0\n1\n2\n3\n4\n\n\n", "0\n1\n2\n\n\n3\n4\n"]
+        ]
+    ),
+    "+---+---+---+---+"
+    "| 0 | 1 | 2 | 3 |"
+    "+---+---+---+---+"
+    "| 0 | 0 | 0 | 0 |"
+    "| 1 | 1 | 1 | 1 |"
+    "| 2 | 2 | 2 | 2 |"
+    "| 3 |   | 3 |   |"
+    "| 4 |   | 4 |   |"
+    "|   | 3 |   | 3 |"
+    "|   | 4 |   | 4 |"
+    "|   |   |   |   |"
+    "+---+---+---+---+"
+);
+
+test_table!(
+    iter_table_multiline_sniff_1,
+    IterTable::new(
+        vec![
+            vec!["0", "1", "2", "3"],
+            vec!["0\n1\n2\n3\n4", "0\n1\n2\n\n\n3\n4", "0\n1\n2\n3\n4\n\n\n", "0\n1\n2\n\n\n3\n4\n"]
+        ]
+    )
+    .sniff(1),
+    "+---+---+---+---+\n| 0 | 1 | 2 | 3 |\n+---+---+---+---+\n| 0\n1\n2\n3\n4 | 0\n1\n2\n\n\n3\n4 | 0\n1\n2\n3\n4\n\n\n | 0\n1\n2\n\n\n3\n4\n |\n+---+---+---+---+"
+);
+
+test_table!(
+    iter_table_multiline_sniff_2,
+    IterTable::new(
+        vec![
+            vec!["0", "1", "2", "3"],
+            vec!["0\n1\n2\n3\n4", "0\n1\n2\n\n\n3\n4", "0\n1\n2\n3\n4\n\n\n", "0\n1\n2\n\n\n3\n4\n"],
+            vec!["0\n1\n2\n3\n4", "0\n1\n2\n\n\n3\n4", "0\n1\n2\n3\n4\n\n\n", "0\n1\n2\n\n\n3\n4\n"],
+        ]
+    )
+    .sniff(2),
+    "+---+---+---+---+\n| 0 | 1 | 2 | 3 |\n+---+---+---+---+\n| 0 | 0 | 0 | 0 |\n| 1 | 1 | 1 | 1 |\n| 2 | 2 | 2 | 2 |\n| 3 |   | 3 |   |\n| 4 |   | 4 |   |\n|   | 3 |   | 3 |\n|   | 4 |   | 4 |\n|   |   |   |   |\n+---+---+---+---+\n| 0\n1\n2\n3\n4 | 0\n1\n2\n\n\n3\n4 | 0\n1\n2\n3\n4\n\n\n | 0\n1\n2\n\n\n3\n4\n |\n+---+---+---+---+"
+);
+
+test_table!(
     iter_table_multiline_height_work,
     IterTable::new(
         vec![
@@ -110,7 +161,7 @@ test_table!(
         ]
     )
     .height(3)
-    .to_string(),
+    ,
     "+---+---+---+---+"
     "| 0 | 1 | 2 | 3 |"
     "|   |   |   |   |"
@@ -132,7 +183,7 @@ test_table!(
         ]
     )
     .sniff(2)
-    .to_string(),
+    ,
     "+----+----+----+----+"
     "| 12 | 12 | 22 | 32 |"
     "+----+----+----+----+"
@@ -152,7 +203,7 @@ test_table!(
         ]
     )
     .sniff(2)
-    .to_string(),
+    ,
     "+-----+-----+-----+-----+"
     "| 023 | 123 | 223 | 323 |"
     "+-----+-----+-----+-----+"
