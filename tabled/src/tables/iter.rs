@@ -26,13 +26,13 @@
 //!
 //! [`Table`]: crate::Table
 
-use std::{cmp, fmt, io};
+use std::{fmt, io};
 
 use crate::{
     grid::{
         colors::NoColors,
         config::{AlignmentHorizontal, CompactConfig, Indent, Sides, SpannedConfig},
-        dimension::{CompactGridDimension, Dimension, ExactList, StaticDimension},
+        dimension::{CompactGridDimension, DimensionValue, StaticDimension},
         records::{
             into_records::{
                 truncate_records::ExactValue, BufColumns, BufRows, LimitColumns, LimitRows,
@@ -56,7 +56,6 @@ use super::util::utf8_writer::UTF8Writer;
 pub struct IterTable<I> {
     records: I,
     cfg: CompactConfig,
-    dim: StaticDimension,
     table: Settings,
 }
 
@@ -65,6 +64,8 @@ struct Settings {
     sniff: usize,
     count_columns: Option<usize>,
     count_rows: Option<usize>,
+    width: Option<usize>,
+    height: Option<usize>,
 }
 
 impl<I> IterTable<I> {
@@ -76,11 +77,12 @@ impl<I> IterTable<I> {
         Self {
             records: iter,
             cfg: create_config(),
-            dim: StaticDimension::new(ExactList::Exact(0), ExactList::Exact(1)),
             table: Settings {
                 sniff: 1000,
                 count_columns: None,
                 count_rows: None,
+                height: None,
+                width: None,
             },
         }
     }
@@ -92,7 +94,8 @@ impl<I> IterTable<I> {
     {
         let count_columns = self.table.count_columns.unwrap_or(0);
         let mut records = IterRecords::new(&self.records, count_columns, self.table.count_rows);
-        option.change(&mut records, &mut self.cfg, &mut self.dim);
+        let mut dims = StaticDimension::new(DimensionValue::Exact(0), DimensionValue::Exact(1));
+        option.change(&mut records, &mut self.cfg, &mut dims);
 
         self
     }
@@ -117,19 +120,13 @@ impl<I> IterTable<I> {
 
     /// Set a height for each row.
     pub fn height(mut self, size: usize) -> Self {
-        let pad = self.cfg.get_padding();
-        let pad = pad.top.size + pad.bottom.size;
-        let (w, _) = self.dim.into();
-        self.dim = StaticDimension::new(w, ExactList::Exact(size + pad));
+        self.table.height = Some(size);
         self
     }
 
     /// Set a width for each column.
     pub fn width(mut self, size: usize) -> Self {
-        let pad = self.cfg.get_padding();
-        let pad = pad.left.size + pad.right.size;
-        let (_, h) = self.dim.into();
-        self.dim = StaticDimension::new(ExactList::Exact(size + pad), h);
+        self.table.width = Some(size);
         self
     }
 
@@ -148,9 +145,10 @@ impl<I> IterTable<I> {
     }
 
     /// Format table into [`io::Write`]r.
-    pub fn build<W: io::Write>(self, writer: W) -> io::Result<()>
+    pub fn build<W>(self, writer: W) -> io::Result<()>
     where
         I: IntoRecords,
+        W: io::Write,
     {
         let writer = UTF8Writer::new(writer);
         self.fmt(writer)
@@ -158,110 +156,167 @@ impl<I> IterTable<I> {
     }
 
     /// Format table into [fmt::Write]er.
-    pub fn fmt<W: fmt::Write>(self, writer: W) -> fmt::Result
+    pub fn fmt<W>(self, writer: W) -> fmt::Result
     where
         I: IntoRecords,
+        W: fmt::Write,
     {
-        let (width, height) = self.dim.into();
-        let width = exact_list_to_exact_value(width);
-        let height = exact_list_to_exact_value(height);
-        let dims = Dims::new(width, height);
-
-        build_grid(writer, self.records, self.cfg, &self.table, dims)
+        build_grid(writer, self.records, self.cfg, self.table)
     }
 }
 
 fn build_grid<W: fmt::Write, I: IntoRecords>(
-    writer: W,
-    records: I,
-    config: CompactConfig,
-    iter_cfg: &Settings,
-    dims: Dims<'_>,
-) -> Result<(), fmt::Error> {
-    let count_rows = iter_cfg.count_rows;
-
-    let padding = config.get_padding();
-    let padding = padding.left.size + padding.right.size;
-
-    let dont_sniff =
-        !matches!(dims.width, ExactValue::Exact(0)) && iter_cfg.count_columns.is_some();
+    f: W,
+    iter: I,
+    cfg: CompactConfig,
+    opts: Settings,
+) -> fmt::Result {
+    let dont_sniff = opts.width.is_some() && opts.count_columns.is_some();
     if dont_sniff {
-        let count_columns = iter_cfg.count_columns.unwrap();
-
-        let content_width = match &dims.width {
-            ExactValue::Exact(w) => ExactValue::Exact(w.saturating_sub(padding)),
-            ExactValue::List(list) => {
-                ExactValue::List(list.iter().map(|w| w.saturating_sub(padding)).collect())
-            }
-        };
-
-        match count_rows {
-            Some(limit) => {
-                let records = LimitRows::new(records, limit);
-                let records = build_records(records, content_width, count_columns, count_rows);
-                let cfg = SpannedConfig::from(config);
-                return Grid::new(records, dims, cfg, NoColors).build(writer);
-            }
-            None => {
-                let records = build_records(records, content_width, count_columns, count_rows);
-                let cfg = SpannedConfig::from(config);
-                return Grid::new(records, dims, cfg, NoColors).build(writer);
-            }
-        }
+        build_table_with_static_dims(f, iter, cfg, opts)
+    } else if opts.width.is_none() {
+        build_table_sniffing_with_unknown_width(f, iter, cfg, opts)
+    } else {
+        build_table_sniffing_with_known_width(f, iter, cfg, opts)
     }
+}
 
-    let records = BufRows::new(records, iter_cfg.sniff);
-    let records = BufColumns::from(records);
+fn build_table_with_static_dims<W, I>(
+    f: W,
+    iter: I,
+    cfg: CompactConfig,
+    opts: Settings,
+) -> fmt::Result
+where
+    W: fmt::Write,
+    I: IntoRecords,
+{
+    let count_columns = opts.count_columns.unwrap();
+    let width = opts.width.unwrap();
+    let height = opts.height.unwrap_or(1);
+    let contentw = ExactValue::Exact(width);
+    let pad = cfg.get_padding();
+    let w = DimensionValue::Exact(width + pad.left.size + pad.right.size);
+    let h = DimensionValue::Exact(height + pad.top.size + pad.bottom.size);
+    let dims = StaticDimension::new(w, h);
+    let cfg = SpannedConfig::from(cfg);
 
-    let count_columns = match iter_cfg.count_columns {
-        Some(size) => size,
-        None => records
-            .as_slice()
-            .iter()
-            .map(|row| row.len())
-            .max()
-            .unwrap_or(0),
-    };
-
-    let (contentw, dimsw) = match dims.width {
-        ExactValue::Exact(0) => {
-            let records = LimitColumns::new(records.as_slice(), count_columns);
-            let records = IterRecords::new(records, count_columns, None);
-            let width = CompactGridDimension::width(records, &config);
-
-            let dims_width = width.iter().map(|i| cmp::max(*i, padding)).collect();
-            let content_width = width.iter().map(|i| i.saturating_sub(padding)).collect();
-
-            (
-                ExactValue::List(content_width),
-                ExactValue::List(dims_width),
-            )
-        }
-        width => {
-            let content_width = match &width {
-                ExactValue::Exact(w) => ExactValue::Exact(w.saturating_sub(padding)),
-                ExactValue::List(list) => {
-                    ExactValue::List(list.iter().map(|w| w.saturating_sub(padding)).collect())
-                }
-            };
-
-            (content_width, width)
-        }
-    };
-
-    let dimension = Dims::new(dimsw, dims.height);
-    match count_rows {
+    match opts.count_rows {
         Some(limit) => {
-            let records = LimitRows::new(records, limit);
-            let records = build_records(records, contentw, count_columns, count_rows);
-            let cfg = SpannedConfig::from(config);
-            Grid::new(records, dimension, cfg, NoColors).build(writer)
+            let records = LimitRows::new(iter, limit);
+            let records = build_records(records, contentw, count_columns, Some(limit));
+            Grid::new(records, dims, cfg, NoColors).build(f)
         }
         None => {
-            let records = build_records(records, contentw, count_columns, count_rows);
-            let cfg = SpannedConfig::from(config);
-            Grid::new(records, dimension, cfg, NoColors).build(writer)
+            let records = build_records(iter, contentw, count_columns, None);
+            Grid::new(records, dims, cfg, NoColors).build(f)
         }
+    }
+}
+
+fn build_table_sniffing_with_unknown_width<W, I>(
+    f: W,
+    iter: I,
+    cfg: CompactConfig,
+    opts: Settings,
+) -> fmt::Result
+where
+    W: fmt::Write,
+    I: IntoRecords,
+{
+    let records = BufRows::new(iter, opts.sniff);
+    let records = BufColumns::from(records);
+
+    let count_columns = get_count_columns(&opts, records.as_slice());
+
+    let (mut width, height) = {
+        let records = LimitColumns::new(records.as_slice(), count_columns);
+        let records = IterRecords::new(records, count_columns, None);
+        CompactGridDimension::dimension(records, &cfg)
+    };
+
+    let padding = cfg.get_padding();
+    let pad = padding.left.size + padding.right.size;
+    let padv = padding.top.size + padding.bottom.size;
+
+    if opts.sniff == 0 {
+        width = std::iter::repeat(pad)
+            .take(count_columns)
+            .collect::<Vec<_>>();
+    }
+
+    let content_width = ExactValue::List(width.iter().map(|i| i.saturating_sub(pad)).collect());
+    let dims_width = DimensionValue::List(width);
+
+    let height_exact = opts.height.unwrap_or(1) + padv;
+    let mut dims_height = DimensionValue::Partial(height, height_exact);
+
+    if opts.height.is_some() {
+        dims_height = DimensionValue::Exact(height_exact);
+    }
+
+    let dims = StaticDimension::new(dims_width, dims_height);
+    let cfg = SpannedConfig::from(cfg);
+
+    match opts.count_rows {
+        Some(limit) => {
+            let records = LimitRows::new(records, limit);
+            let records = build_records(records, content_width, count_columns, Some(limit));
+            Grid::new(records, dims, cfg, NoColors).build(f)
+        }
+        None => {
+            let records = build_records(records, content_width, count_columns, None);
+            Grid::new(records, dims, cfg, NoColors).build(f)
+        }
+    }
+}
+
+fn build_table_sniffing_with_known_width<W, I>(
+    f: W,
+    iter: I,
+    cfg: CompactConfig,
+    opts: Settings,
+) -> fmt::Result
+where
+    W: fmt::Write,
+    I: IntoRecords,
+{
+    let records = BufRows::new(iter, opts.sniff);
+    let records = BufColumns::from(records);
+
+    let count_columns = get_count_columns(&opts, records.as_slice());
+
+    let width = opts.width.unwrap();
+    let contentw = ExactValue::Exact(width);
+
+    let padding = cfg.get_padding();
+    let pad = padding.left.size + padding.right.size;
+    let padv = padding.top.size + padding.bottom.size;
+
+    let height = opts.height.unwrap_or(1) + padv;
+    let dimsh = DimensionValue::Exact(height);
+    let dimsw = DimensionValue::Exact(width + pad);
+    let dims = StaticDimension::new(dimsw, dimsh);
+
+    let cfg = SpannedConfig::from(cfg);
+
+    match opts.count_rows {
+        Some(limit) => {
+            let records = LimitRows::new(records, limit);
+            let records = build_records(records, contentw, count_columns, Some(limit));
+            Grid::new(records, dims, cfg, NoColors).build(f)
+        }
+        None => {
+            let records = build_records(records, contentw, count_columns, None);
+            Grid::new(records, dims, cfg, NoColors).build(f)
+        }
+    }
+}
+
+fn get_count_columns(opts: &Settings, buf: &[Vec<String>]) -> usize {
+    match opts.count_columns {
+        Some(size) => size,
+        None => buf.iter().map(|row| row.len()).max().unwrap_or(0),
     }
 }
 
@@ -286,33 +341,4 @@ fn build_records<I: IntoRecords>(
     let records = TruncateContent::new(records, width);
     let records = LimitColumns::new(records, count_columns);
     IterRecords::new(records, count_columns, count_rows)
-}
-
-#[derive(Debug, Clone)]
-struct Dims<'a> {
-    width: ExactValue<'a>,
-    height: ExactValue<'a>,
-}
-
-impl<'a> Dims<'a> {
-    fn new(width: ExactValue<'a>, height: ExactValue<'a>) -> Self {
-        Self { width, height }
-    }
-}
-
-impl Dimension for Dims<'_> {
-    fn get_width(&self, column: usize) -> usize {
-        self.width.get(column)
-    }
-
-    fn get_height(&self, row: usize) -> usize {
-        self.height.get(row)
-    }
-}
-
-fn exact_list_to_exact_value(width: ExactList) -> ExactValue<'static> {
-    match width {
-        ExactList::Exact(w) => ExactValue::Exact(w),
-        ExactList::List(list) => ExactValue::List(list.into()),
-    }
 }

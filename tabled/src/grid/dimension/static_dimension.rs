@@ -3,18 +3,18 @@ use crate::grid::dimension::{Dimension, Estimate};
 /// A constant dimension.
 #[derive(Debug, Clone)]
 pub struct StaticDimension {
-    width: ExactList,
-    height: ExactList,
+    width: DimensionValue,
+    height: DimensionValue,
 }
 
 impl StaticDimension {
     /// Creates a constant dimension.
-    pub fn new(width: ExactList, height: ExactList) -> Self {
+    pub fn new(width: DimensionValue, height: DimensionValue) -> Self {
         Self { width, height }
     }
 }
 
-impl From<StaticDimension> for (ExactList, ExactList) {
+impl From<StaticDimension> for (DimensionValue, DimensionValue) {
     fn from(value: StaticDimension) -> Self {
         (value.width, value.height)
     }
@@ -36,19 +36,28 @@ impl<R, C> Estimate<R, C> for StaticDimension {
 
 /// A dimension value.
 #[derive(Debug, Clone)]
-pub enum ExactList {
+pub enum DimensionValue {
     /// Const width value.
     Exact(usize),
     /// A list of width values for columns.
     List(Vec<usize>),
+    /// A list of width values for columns and a value for the rest.
+    Partial(Vec<usize>, usize),
 }
 
-impl ExactList {
+impl DimensionValue {
     /// Get a width by column.
     pub fn get(&self, col: usize) -> usize {
         match self {
-            ExactList::Exact(val) => *val,
-            ExactList::List(cols) => cols[col],
+            DimensionValue::Exact(val) => *val,
+            DimensionValue::List(cols) => cols[col],
+            DimensionValue::Partial(cols, val) => {
+                if cols.len() > col {
+                    cols[col]
+                } else {
+                    *val
+                }
+            }
         }
     }
 }

@@ -14,7 +14,7 @@ mod static_dimension;
 pub use self::{
     complete_dimension::CompleteDimension,
     peekable_dimension::PeekableDimension,
-    static_dimension::{ExactList, StaticDimension},
+    static_dimension::{DimensionValue, StaticDimension},
 };
 pub use const_dimension::{ConstDimension, ConstSize};
 pub use papergrid::dimension::{Dimension, Estimate};
