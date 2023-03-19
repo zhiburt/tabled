@@ -86,7 +86,7 @@ pub mod tabled_current_compact {
             Indent::zero(),
         ));
         let records = IterRecords::new(&data, count_columns, Some(data.len()));
-        dims.estimate(&records, &cfg);
+        dims.estimate(records, &cfg);
 
         CompactTable::with_dimension(data, dims)
             .columns(count_columns)
