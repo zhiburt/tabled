@@ -279,11 +279,7 @@ where
 
 impl From<Builder> for Table {
     fn from(builder: Builder) -> Self {
-        let data: Vec<Vec<String>> = builder.into();
-        let data = data
-            .into_iter()
-            .map(|row| row.into_iter().map(CellInfo::new).collect())
-            .collect();
+        let data: Vec<Vec<CellInfo<String>>> = builder.into();
         let records = VecRecords::new(data);
 
         Self {

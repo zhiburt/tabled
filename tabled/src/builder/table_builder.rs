@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 
-use crate::Table;
+use crate::{grid::records::vec_records::CellInfo, Table};
 
 use super::IndexBuilder;
 
@@ -38,9 +38,9 @@ use super::IndexBuilder;
 #[derive(Debug, Default, Clone)]
 pub struct Builder {
     /// A list of rows.
-    records: Vec<Vec<String>>,
+    data: Vec<Vec<CellInfo<String>>>,
     /// A columns row.
-    columns: Option<Vec<String>>,
+    columns: Option<Vec<CellInfo<String>>>,
     /// A number of columns.
     count_columns: usize,
     /// A flag that the rows are not consistent.
@@ -58,7 +58,7 @@ impl Builder {
     /// Creates a [`Builder`] instance.
     pub fn with_capacity(capacity: usize) -> Self {
         let mut b = Self::new();
-        b.records = Vec::with_capacity(capacity);
+        b.data = Vec::with_capacity(capacity);
 
         b
     }
@@ -201,7 +201,7 @@ impl Builder {
         let list = create_row(row, self.count_columns);
 
         self.update_size(list.len());
-        self.records.push(list);
+        self.data.push(list);
     }
 
     /// Insert a row into a specific position.
@@ -217,7 +217,7 @@ impl Builder {
         let list = create_row(record, self.count_columns);
 
         self.update_size(list.len());
-        self.records.insert(index, list);
+        self.data.insert(index, list);
 
         true
     }
@@ -265,7 +265,7 @@ impl Builder {
 
     /// Returns an amount of rows which would be present in a built table.
     pub fn count_rows(&self) -> usize {
-        self.records.len()
+        self.data.len()
     }
 
     /// Checks whether a builder contains a header set.
@@ -279,16 +279,17 @@ impl Builder {
             let col = col - i;
 
             let mut is_empty = true;
-            for row in 0..self.records.len() {
-                if !self.records[row][col].is_empty() {
+            for row in 0..self.data.len() {
+                let cell = &self.data[row][col];
+                if !cell.as_ref().is_empty() {
                     is_empty = false;
                     break;
                 }
             }
 
             if is_empty {
-                for row in 0..self.records.len() {
-                    let _ = self.records[row].remove(col);
+                for row in 0..self.data.len() {
+                    let _ = self.data[row].remove(col);
                 }
 
                 if let Some(columns) = self.columns.as_mut() {
@@ -305,17 +306,18 @@ impl Builder {
     }
 
     fn clean_rows(&mut self) {
-        for row in (0..self.records.len()).rev() {
+        for row in (0..self.data.len()).rev() {
             let mut is_empty = true;
             for col in 0..self.count_columns {
-                if !self.records[row][col].is_empty() {
+                let cell = &self.data[row][col];
+                if !cell.as_ref().is_empty() {
                     is_empty = false;
                     break;
                 }
             }
 
             if is_empty {
-                let _ = self.records.remove(row);
+                let _ = self.data.remove(row);
             }
 
             if row == 0 {
@@ -325,26 +327,28 @@ impl Builder {
     }
 
     fn update_size(&mut self, size: usize) {
+        use std::cmp::Ordering;
+
         match size.cmp(&self.count_columns) {
-            std::cmp::Ordering::Less => {
-                if !self.records.is_empty() {
+            Ordering::Less => {
+                if !self.data.is_empty() {
                     self.is_consistent = false;
                 }
             }
-            std::cmp::Ordering::Greater => {
+            Ordering::Greater => {
                 self.count_columns = size;
 
-                if !self.records.is_empty() || self.columns.is_some() {
+                if !self.data.is_empty() || self.columns.is_some() {
                     self.is_consistent = false;
                 }
             }
-            std::cmp::Ordering::Equal => (),
+            Ordering::Equal => (),
         }
     }
 
     fn get_size(&mut self) -> usize {
         let mut max = self.columns.as_ref().map_or(0, Vec::len);
-        let max_records = self.records.iter().map(Vec::len).max().unwrap_or(0);
+        let max_records = self.data.iter().map(Vec::len).max().unwrap_or(0);
         max = std::cmp::max(max_records, max);
 
         max
@@ -352,18 +356,19 @@ impl Builder {
 
     fn fix_rows(&mut self) {
         let empty_cell = self.empty_cell_text.to_owned().unwrap_or_default();
+        let empty = CellInfo::new(empty_cell);
 
         if let Some(header) = self.columns.as_mut() {
             if self.count_columns > header.len() {
                 let count = self.count_columns - header.len();
-                append_vec(header, empty_cell.clone(), count);
+                append_vec(header, empty.clone(), count);
             }
         }
 
-        for row in &mut self.records {
+        for row in &mut self.data {
             if self.count_columns > row.len() {
                 let count = self.count_columns - row.len();
-                append_vec(row, empty_cell.clone(), count);
+                append_vec(row, empty.clone(), count);
             }
         }
     }
@@ -375,9 +380,29 @@ impl From<Builder> for Vec<Vec<String>> {
             builder.fix_rows();
         }
 
-        append_header(&mut builder.records, builder.columns);
+        if let Some(columns) = builder.columns {
+            builder.data.insert(0, columns);
+        }
 
-        builder.records
+        builder
+            .data
+            .into_iter()
+            .map(|row| row.into_iter().map(|c| c.into_inner()).collect())
+            .collect()
+    }
+}
+
+impl From<Builder> for Vec<Vec<CellInfo<String>>> {
+    fn from(mut builder: Builder) -> Self {
+        if !builder.is_consistent {
+            builder.fix_rows();
+        }
+
+        if let Some(columns) = builder.columns {
+            builder.data.insert(0, columns);
+        }
+
+        builder.data
     }
 }
 
@@ -406,11 +431,16 @@ where
 }
 
 impl From<Vec<Vec<String>>> for Builder {
-    fn from(records: Vec<Vec<String>>) -> Self {
-        let count_columns = records.get(0).map_or(0, |row| row.len());
+    fn from(data: Vec<Vec<String>>) -> Self {
+        let count_columns = data.get(0).map_or(0, |row| row.len());
+
+        let data = data
+            .into_iter()
+            .map(|row| row.into_iter().map(CellInfo::new).collect())
+            .collect();
 
         Self {
-            records,
+            data,
             count_columns,
             columns: None,
             is_consistent: false,
@@ -419,23 +449,33 @@ impl From<Vec<Vec<String>>> for Builder {
     }
 }
 
-fn create_row<R, T>(row: R, size: usize) -> Vec<String>
+impl From<Vec<Vec<CellInfo<String>>>> for Builder {
+    fn from(data: Vec<Vec<CellInfo<String>>>) -> Self {
+        let count_columns = data.get(0).map_or(0, |row| row.len());
+
+        Self {
+            data,
+            count_columns,
+            columns: None,
+            is_consistent: false,
+            empty_cell_text: None,
+        }
+    }
+}
+
+fn create_row<R, T>(row: R, size: usize) -> Vec<CellInfo<String>>
 where
     R: IntoIterator<Item = T>,
     T: Into<String>,
 {
     let mut list = Vec::with_capacity(size);
     for text in row {
-        list.push(text.into());
+        let text = text.into();
+        let info = CellInfo::new(text);
+        list.push(info);
     }
 
     list
-}
-
-fn append_header(records: &mut Vec<Vec<String>>, columns: Option<Vec<String>>) {
-    if let Some(columns) = columns {
-        records.insert(0, columns);
-    }
 }
 
 fn append_vec<T: Clone>(v: &mut Vec<T>, value: T, n: usize) {
