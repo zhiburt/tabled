@@ -383,7 +383,7 @@ fn truncate_text<'a>(
     #[cfg(feature = "color")]
     {
         if _suffix_color {
-            if let Some(block) = ansi_str::get_blocks(&text).last() {
+            if let Some(block) = ansi_str::get_blocks(text).last() {
                 if block.has_ansi() {
                     let style = block.style();
                     Cow::Owned(format!(
