@@ -45,6 +45,7 @@ pub(crate) fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
 
         buf
     }
+
     #[cfg(not(feature = "color"))]
     {
         cut_str_basic(s, width)

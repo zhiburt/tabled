@@ -79,8 +79,6 @@ fn config_from_table_padding_zero_test() {
         .collapse()
         .to_string();
 
-    println!("{table}");
-
     assert_eq!(
         table,
         concat!(
@@ -172,8 +170,6 @@ fn color_test() {
         .set_config(cfg.into())
         .collapse()
         .to_string();
-
-    println!("{}", table);
 
     assert_eq!(
         table,
