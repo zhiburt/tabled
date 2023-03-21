@@ -4,9 +4,9 @@
 //!
 //! This example demonstrates using the [`JsonTable::collapse`] function
 //! to greatly improve the readability of a [`JsonTable`].
-//! 
+//!
 //! ---
-//! 
+//!
 //! * Note that a [`JsonTable`] must be mutably defined to be collapsed.
 
 use json_to_table::json_to_table;

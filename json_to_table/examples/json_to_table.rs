@@ -6,7 +6,7 @@
 //! and then translating that value to a [`JsonTable`] struct.
 //!
 //! ---
-//! 
+//!
 //! * Note how the [`json_to_table`] function is used for easy translations.
 
 use json_to_table::json_to_table;

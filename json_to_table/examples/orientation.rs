@@ -8,7 +8,7 @@
 //! - [`JsonTable::set_array_mode`]
 //! - [`JsonTable::set_object_mode`]
 //! - [`JsonTable::set_mode_visitor`]
-//! 
+//!
 //! ---
 //!
 //! * Note the shared [`Orientation`] enum between these methods.
