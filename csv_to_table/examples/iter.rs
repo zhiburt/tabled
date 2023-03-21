@@ -1,5 +1,14 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example iter`
+//!
+//! This example demonstrates an alternative parsing option for csv-to-table translations.
+//!
+//! ---
+//! 
+//! * The formatting feature `sniff` is used to demonstrate how many
+//! rows will be considered in determining column widths.
+//! This is helpful for controlling large dataset display outputs.
 
 fn main() {
     let syscalls = "\
