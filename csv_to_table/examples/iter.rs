@@ -2,13 +2,13 @@
 //!
 //! `cargo run --example iter`
 //!
-//! This example demonstrates an alternative parsing option for csv-to-table translations.
+//! This example demonstrates an alternative parsing option for [`csv_to_table`] translations.
 //!
 //! ---
 //! 
-//! * The formatting feature `sniff` is used to demonstrate how many
-//! rows will be considered in determining column widths.
-//! This is helpful for controlling large dataset display outputs.
+//! * The [`IterTable::sniff()`] formatting function is used to control how many
+//! rows will be considered in determining column widths. Since the default sniff value is 1000,
+//! this is helpful for controlling large dataset display outputs.
 
 fn main() {
     let syscalls = "\
