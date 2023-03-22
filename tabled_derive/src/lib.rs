@@ -45,7 +45,7 @@ fn impl_tabled(ast: &DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let expanded = quote! {
-        impl #impl_generics Tabled for #name #ty_generics #where_clause {
+        impl #impl_generics ::tabled::Tabled for #name #ty_generics #where_clause {
             const LENGTH: usize = #length;
 
             fn fields(&self) -> Vec<::std::borrow::Cow<'_, str>> {
