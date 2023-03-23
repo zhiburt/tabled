@@ -25,15 +25,6 @@ fn main() {
         .set_object_mode(Orientation::Horizontal);
 
     let ctable = json_to_table(&json);
-    let mut is_root = true;
-    let ctable = ctable.set_mode_visitor(move |_| {
-        if is_root {
-            is_root = false;
-            return Orientation::Vertical;
-        }
-
-        Orientation::Horizontal
-    });
 
     println!("Vertical mode\n{vtable}");
     println!("Horizontal mode\n{htable}");

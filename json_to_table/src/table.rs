@@ -1,4 +1,5 @@
 use core::fmt::{self, Display};
+use std::borrow::Borrow;
 
 use serde_json::Value;
 use tabled::{
@@ -9,16 +10,17 @@ use tabled::{
 
 /// Converter of [`Value`] to a table,
 /// with a set of configurations.
+
+// todo: rename to ValueTable.
 #[derive(Debug, Clone)]
-pub struct JsonTable<'val, ModeVisitor = fn(&Value) -> Orientation> {
-    value: &'val Value,
+pub struct JsonTable<T> {
+    value: T,
     cfg: Config,
-    mode_visitor: Option<ModeVisitor>,
 }
 
-impl JsonTable<'_> {
+impl<T> JsonTable<T> {
     /// Creates a new [`JsonTable`] object.
-    pub fn new(value: &Value) -> JsonTable<'_> {
+    pub fn new(value: T) -> Self {
         JsonTable {
             value,
             cfg: Config {
@@ -28,12 +30,9 @@ impl JsonTable<'_> {
                 array_orientation: Orientation::Vertical,
                 object_orientation: Orientation::Vertical,
             },
-            mode_visitor: None,
         }
     }
-}
 
-impl<'val, ModeVisitor> JsonTable<'val, ModeVisitor> {
     /// Set a style which will be used,
     /// default is [`Style::ascii`].
     pub fn set_style(&mut self, style: impl Into<RawStyle>) -> &mut Self {
@@ -48,33 +47,15 @@ impl<'val, ModeVisitor> JsonTable<'val, ModeVisitor> {
     }
 
     /// Set a table mode for a [`serde_json::Value::Object`].
-    ///
-    /// BE AWARE: The setting works only in not collapsed mode.
     pub fn set_object_mode(&mut self, mode: Orientation) -> &mut Self {
         self.cfg.object_orientation = mode;
         self
     }
 
     /// Set a table mode for a [`serde_json::Value::Array`].
-    ///
-    /// BE AWARE: The setting works only in not collapsed mode.
     pub fn set_array_mode(&mut self, mode: Orientation) -> &mut Self {
         self.cfg.array_orientation = mode;
         self
-    }
-
-    /// Set a visitor which can configure table mode at processing time.
-    ///
-    /// BE AWARE: The setting works only in not collapsed mode.
-    pub fn set_mode_visitor<F>(self, visitor: F) -> JsonTable<'val, F>
-    where
-        F: FnMut(&Value) -> Orientation,
-    {
-        JsonTable {
-            cfg: self.cfg,
-            mode_visitor: Some(visitor),
-            value: self.value,
-        }
     }
 
     /// Set a config which will be used.
@@ -141,23 +122,22 @@ impl<'val, ModeVisitor> JsonTable<'val, ModeVisitor> {
     }
 }
 
-impl<ModeVisitor> Display for JsonTable<'_, ModeVisitor>
+impl<T> Display for JsonTable<T>
 where
-    ModeVisitor: FnMut(&Value) -> Orientation + Clone,
+    T: Borrow<Value>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut mode_visitor = self.mode_visitor.clone();
-        let table = json_to_table::json_to_table(self.value, &self.cfg, mode_visitor.as_mut());
+        let table = json_to_table::json_to_table(self.value.borrow(), &self.cfg);
         table.fmt(f)
     }
 }
 
-impl<ModeVisitor> From<JsonTable<'_, ModeVisitor>> for Table
+impl<T> From<JsonTable<T>> for Table
 where
-    ModeVisitor: FnMut(&Value) -> Orientation,
+    T: Borrow<Value>,
 {
-    fn from(mut t: JsonTable<'_, ModeVisitor>) -> Self {
-        json_to_table::json_to_table(t.value, &t.cfg, t.mode_visitor.as_mut())
+    fn from(t: JsonTable<T>) -> Self {
+        json_to_table::json_to_table(t.value.borrow(), &t.cfg)
     }
 }
 
@@ -172,7 +152,7 @@ struct Config {
 
 /// The structure represents a table mode for a given entity,
 /// either it will be rendered vertically or horizontally.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Orientation {
     /// Vertical mode (from top to bottom).
     Vertical,
@@ -199,52 +179,30 @@ mod json_to_table {
 
     use super::*;
 
-    pub(super) fn json_to_table<F>(
-        value: &Value,
-        cfg: &Config,
-        mut mode_visitor: Option<&mut F>,
-    ) -> Table
-    where
-        F: FnMut(&Value) -> Orientation,
-    {
+    pub(super) fn json_to_table(value: &Value, cfg: &Config) -> Table {
         if cfg.plain {
-            json_to_table_f(value, cfg, &mut mode_visitor, true)
+            json_to_table_f(value, cfg, true)
         } else {
             json_to_table_r(value, cfg, 0, 0, true, true, false, false, &[], None)
         }
     }
 
-    fn json_to_table_f<F>(
-        v: &Value,
-        config: &Config,
-        mode_visitor: &mut Option<&mut F>,
-        outer: bool,
-    ) -> Table
-    where
-        F: FnMut(&Value) -> Orientation,
-    {
+    fn json_to_table_f(v: &Value, config: &Config, outer: bool) -> Table {
         match v {
             Value::Array(arr) => {
                 let mut builder = Builder::new();
 
-                let orientation = mode_visitor
-                    .as_mut()
-                    .map(|f| (f)(v))
-                    .unwrap_or(config.array_orientation);
-
-                match orientation {
+                match config.array_orientation {
                     Orientation::Vertical => {
                         for value in arr {
-                            let val =
-                                json_to_table_f(value, config, mode_visitor, false).to_string();
+                            let val = json_to_table_f(value, config, false).to_string();
                             builder.push_record([val]);
                         }
                     }
                     Orientation::Horizontal => {
                         let mut row = Vec::with_capacity(arr.len());
                         for value in arr {
-                            let val =
-                                json_to_table_f(value, config, mode_visitor, false).to_string();
+                            let val = json_to_table_f(value, config, false).to_string();
                             row.push(val);
                         }
 
@@ -258,16 +216,10 @@ mod json_to_table {
             Value::Object(map) => {
                 let mut builder = Builder::new();
 
-                let orientation = mode_visitor
-                    .as_mut()
-                    .map(|f| (f)(v))
-                    .unwrap_or(config.object_orientation);
-
-                match orientation {
+                match config.object_orientation {
                     Orientation::Vertical => {
                         for (key, value) in map {
-                            let val =
-                                json_to_table_f(value, config, mode_visitor, false).to_string();
+                            let val = json_to_table_f(value, config, false).to_string();
                             builder.push_record([key.clone(), val]);
                         }
                     }
@@ -275,8 +227,7 @@ mod json_to_table {
                         let mut keys = Vec::with_capacity(map.len());
                         let mut vals = Vec::with_capacity(map.len());
                         for (key, value) in map {
-                            let val =
-                                json_to_table_f(value, config, mode_visitor, false).to_string();
+                            let val = json_to_table_f(value, config, false).to_string();
                             vals.push(val);
                             keys.push(key.clone());
                         }
@@ -894,6 +845,23 @@ mod json_to_table {
     impl<R, D> TableOption<R, D, ColoredConfig> for GetTopIntersection {
         fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
             self.0 = cfg.get_borders().top_intersection.unwrap_or(' ');
+        }
+    }
+
+    struct GetWidths(Vec<usize>);
+
+    impl<R, D> TableOption<R, D, ColoredConfig> for GetWidths
+    where
+        R: Records,
+        for<'a> &'a R: Records,
+        for<'a> D: Dimension + Estimate<&'a R, SpannedConfig>,
+    {
+        fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+            dims.estimate(&*records, cfg);
+
+            self.0 = (0..records.count_columns())
+                .map(|col| dims.get_width(col))
+                .collect();
         }
     }
 }

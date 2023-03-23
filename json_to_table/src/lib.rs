@@ -98,6 +98,6 @@ mod table;
 /// See the example in a module documentation.
 ///
 /// [`Table`]: tabled::Table
-pub fn json_to_table(value: &Value) -> JsonTable<'_> {
+pub fn json_to_table(value: &Value) -> JsonTable<&Value> {
     JsonTable::new(value)
 }
