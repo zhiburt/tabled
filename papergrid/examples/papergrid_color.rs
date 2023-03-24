@@ -1,7 +1,16 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --features color --example papergrid_color`
 //!
-//! This example requires the `color` feature.
+//! This example demonstrates using colors to stylize [`Grid`] cells.
+//!
+//! ---
+//!
+//! * 🚩 This example requires the `color` feature.
+//!
+//! * Note that this example uses inline ANSI escape characters to style
+//! grid cells. `Grid::new(_, _, _, NoColors)` indicates that a color
+//! map is not provided. NOT that colors are ignored in the output.
 
 use std::io::Write;
 
