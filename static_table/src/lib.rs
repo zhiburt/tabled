@@ -1,4 +1,4 @@
-//! Library provides a macros to build a table at a compile time.
+//! This library provides a macro to build a table at compile time.
 //!
 //! # Get started
 //!
