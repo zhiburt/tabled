@@ -1,5 +1,20 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example display_with`
+//!
+//! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
+//! [`display_with`] to seamlessly augment field representations in a [`Table`] display.
+//!
+//! ---
+//!
+//! * [`display_with`] functions act as transformers during [`Table`] instantiation.
+//!
+//! * Note how [`display_with`] works with [std] and custom functions alike.
+//!
+//! * [`display_with`] attributes can be constructed in two ways (shown below).
+//!
+//! * Attribute arguments can be directly overridden with static values, effectively ignoring the
+//! augmented fields natural value entirely. Even an entire object can be passed as context with `self`.
 
 use std::borrow::Cow;
 
