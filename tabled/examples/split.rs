@@ -1,5 +1,17 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example split`
+//!
+//! This example demonstrates using the [`Split`] [`TableOption`] to
+//! transform a [`Table`] display in multiple ways.
+//!
+//! ---
+//!
+//! * Several configurations are available to customize a [`Split`] instruction:
+//!     * [`Index`](usize)
+//!     * [`Behavior`]
+//!     * [`Direction`]
+//!     * [`Display`]
 
 use std::iter::FromIterator;
 use tabled::{
