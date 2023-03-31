@@ -1,5 +1,19 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example merge_duplicates`
+//!
+//! This example demonstrates using the [`Merge`] [`TableOption`] to clarify
+//! redundancies in a [`Table`] display.
+//!
+//! ---
+//!
+//! * Note how repetative entries must be consecutive, in their specified direction,
+//! to be merged together.
+//!
+//! * Note how [`BorderSpanCorrection`] is used to resolve display issues incurred
+//! from [`Span`] decisions made through duplicate detection.
+//!
+//! * Merge supports both [`Merge::vertical()`] and [`Merge::horizontal()`].
 
 use tabled::{
     settings::{

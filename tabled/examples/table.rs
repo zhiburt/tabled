@@ -15,8 +15,8 @@
 //! The READMEs, examples, and docs found in this project will show you many dozens
 //! of ways you can build tables, and show you how to use the available tools
 //! to build the data representations that best fit your needs.
-//! 
-//! * [`Table::with()`] plays a central role in giving the user control over their 
+//!
+//! * [`Table::with()`] plays a central role in giving the user control over their
 //! displays. A majority of [`Table`] customizations are implemented through this highly
 //! dynamic function. A few [`TableOptions`](TableOption) include:
 //!     * [`Style`]

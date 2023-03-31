@@ -1,7 +1,17 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example nested_table`
 //!
-//! The table is a take on the one from https://github.com/p-ranav/tabulate#nested-tables/
+//! This example demonstrates how [`Tables`](Table) can be comprised of other tables.
+//!
+//! ---
+//!
+//! * This first nested [`Table`] example showcases the [`Builder`] approach.
+//!
+//! * Note how a great deal of manual customizations have been applied to create a
+//! highly unique display.
+//!
+//! * 🎉 Inspired by https://github.com/p-ranav/tabulate#nested-tables/
 
 use std::iter::FromIterator;
 

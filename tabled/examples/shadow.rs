@@ -1,20 +1,20 @@
-//! The example relays on STDIN to read the message which will be outputted.
+//! This example can be run with the following command:
 //!
-//! The table is inspired by <https://en.wikipedia.org/wiki/Box-drawing_character>
+//! `echo -e -n 'Some text\nIn the box' | cargo run --example shadow`
 //!
+//! This example demonstrates using the [`Shadow`] [`TableOption`] to create
+//! a striking frame around a [`Table`] display.
 //!
-//! ┌───────────────────┐
-//! │  ╔═══╗ Some Text  │▒
-//! │  ╚═╦═╝ in the box │▒
-//! ╞═╤══╩══╤═══════════╡▒
-//! │ ├──┬──┤           │▒
-//! │ └──┴──┘           │▒
-//! └───────────────────┘▒
-//!  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+//! ---
 //!
-//! ## Example
+//! * [`Shadow`] supports several configurations:
+//!     * Thickness
+//!     * Offset
+//!     * Direction
+//!     * Color
+//!     * Fill character
 //!
-//! `echo -e -n 'Some text\nIn the box' | cargo run --package tabled --example shadow`
+//! * 🎉 Inspired by <https://en.wikipedia.org/wiki/Box-drawing_character>
 
 use std::{io::Read, iter::FromIterator};
 

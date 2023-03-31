@@ -1,5 +1,17 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example panel`
+//!
+//! This example demonstrates using the [`Panel`] [`TableOption`] to inject
+//! table-length columns and rows into a [`Table`].
+//! 
+//! ---
+//! 
+//! * [`Panel`] supports four injection options:
+//!     * Horizontal | manual index selection
+//!     * Vertical | manual index selection
+//!     * Header | before first row
+//!     * Footer | after last row
 
 use tabled::{
     settings::{

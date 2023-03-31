@@ -6,12 +6,12 @@
 //! extend [Cells](Cell) over a specified number of columns/rows.
 //!
 //! ---
-//! 
+//!
 //! * Note how [`Span`] is available for [`Cell`] modifications
-//! after the [`Modify`] [`TableOption`] is applied. 
-//! 
+//! after the [`Modify`] [`TableOption`] is applied.
+//!
 //! * ⚠️ `with()` is a reused pattern within [`tabled`] for both [`Table`]
-//! and [`Cell`] modifications. It can be easy for beginners to mistakenly 
+//! and [`Cell`] modifications. It can be easy for beginners to mistakenly
 //! try to pass [`settings`] intended for one to the other.
 
 use tabled::{
