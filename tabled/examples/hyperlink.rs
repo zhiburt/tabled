@@ -1,7 +1,18 @@
-//! To run this example:
+//! This example can be run with the following command:
+//!
 //! `cargo run --features color --example hyperlink`
 //!
-//! This example requires the `color` feature.
+//! This example demonstrates how hyperlinks can be embedded into a [`Table`] display.
+//!
+//! While not a [`tabled`] specific implementation, it is helpful to know that
+//! most users expect certain elements of interactivity based on the purpose of your display.
+//!
+//! ---
+//!
+//! * 🚩 This example requires the `color` feature.
+//!
+//! * ⚠️ Terminal interfaces may differ in how they parse links or make them interactive.
+//! [`tabled`] doesn't have the final say on whether a link is clickable or not.
 
 use tabled::{
     settings::{object::Segment, Alignment, Modify, Style, Width},

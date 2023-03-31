@@ -1,5 +1,13 @@
-//! The example can be run by this command
-//! `cargo run --example highlight_color`
+//! This example can be run with the following command:
+//!
+//! `cargo run --example highlight`
+//!
+//! This example demonstrates using [`Highlight`] in combination with [`BorderColor`] to
+//! frame sections of a [`Table`] with a unique background [`Color`].
+//!
+//! ---
+//!
+//! * Note how [`Highlight::colored()`] is used to accept the necessary input instead of [`Highlight::new()`].
 
 use tabled::{
     settings::{

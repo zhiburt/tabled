@@ -4,9 +4,9 @@
 //!
 //! This example demonstrates using the [`Rotate`] [`TableOption`] to rotate the cells
 //! of a [`Table`].
-//! 
+//!
 //! ---
-//! 
+//!
 //! * [`Rotate`] supports four motions:
 //!     * `Left` | 90 degree shift
 //!     * `Right` | 90 degree shift

@@ -1,17 +1,17 @@
 //! This example can be run with the following command:
 //!
-//! `cargo run --features color --example padding_color`
+//! `cargo run --features color --example colored_padding`
 //!
 //! This example demonstrates using the [`Padding::colorize()`] function in several ways
 //! to give a [`Table`] display a vibrant asthetic.
-//! 
+//!
 //! ---
-//! 
+//!
 //! * 🚩 This example requires the `color` feature.
-//! 
+//!
 //! * Note how the [`Color`] [setting](tabled::settings) is used to simplify creating
-//! reusable themes for text backgrounds, padded whitespace, and borders.
-//! 
+//! reusable themes for text, backgrounds, padded whitespace, and borders.
+//!
 //! * Note how a unique color can be set for each direction.
 
 use std::convert::TryFrom;
