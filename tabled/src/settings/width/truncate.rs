@@ -189,6 +189,11 @@ where
         let save_suffix_color = need_suffix_color_preservation(&self.suffix);
 
         for pos in entity.iter(count_rows, count_columns) {
+            let is_valid_pos = pos.0 < count_rows && pos.1 < count_columns;
+            if !is_valid_pos  {
+                continue;
+            }
+
             let text = records.get_text(pos);
 
             let cell_width = string_width_multiline(text);

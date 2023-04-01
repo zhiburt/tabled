@@ -184,6 +184,10 @@ impl<I, D> CompactTable<I, D> {
         self
     }
 
+    /// Returns a table config.
+    pub fn get_config(&self) -> &CompactConfig {
+        &self.cfg
+    }
     /// Format table into [fmt::Write]er.
     pub fn fmt<W>(self, writer: W) -> fmt::Result
     where
@@ -229,13 +233,6 @@ impl<I, D> CompactTable<I, D> {
         let mut buf = String::new();
         self.fmt(&mut buf).unwrap();
         buf
-    }
-}
-
-impl CompactTable<(), ()> {
-    /// Return a default config.
-    pub fn config() -> CompactConfig {
-        create_config()
     }
 }
 
@@ -297,4 +294,10 @@ const fn create_config() -> CompactConfig {
         ))
         .set_alignment_horizontal(AlignmentHorizontal::Left)
         .set_borders(*Style::ascii().get_borders())
+}
+
+impl<R, D> TableOption<R, D, CompactConfig> for CompactConfig {
+    fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+        *cfg = *self;
+    }
 }

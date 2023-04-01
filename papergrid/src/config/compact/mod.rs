@@ -37,7 +37,12 @@ impl CompactConfig {
             border_colors: Borders::empty(),
             margin: Sides::filled(Indent::zero()),
             margin_color: Sides::filled(StaticColor::new("", "")),
-            padding: Sides::filled(Indent::zero()),
+            padding: Sides::new(
+                Indent::spaced(1),
+                Indent::spaced(1),
+                Indent::zero(),
+                Indent::zero(),
+            ),
             padding_color: Sides::filled(StaticColor::new("", "")),
         }
     }
@@ -132,11 +137,5 @@ impl CompactConfig {
     /// Set a padding to a given cells.
     pub const fn get_padding_color(&self) -> Sides<StaticColor> {
         self.padding_color
-    }
-}
-
-impl From<&CompactConfig> for CompactConfig {
-    fn from(value: &CompactConfig) -> Self {
-        *value
     }
 }

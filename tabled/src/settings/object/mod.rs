@@ -479,6 +479,15 @@ mod tests {
     use super::*;
 
     #[test]
+    fn cell_test() {
+        assert_eq!(vec_cells((0, 0), 2, 3), [Entity::Cell(0, 0)]);
+        assert_eq!(vec_cells((1, 1), 2, 3), [Entity::Cell(1, 1)]);
+        assert_eq!(vec_cells((1, 1), 0, 0), [Entity::Cell(1, 1)]);
+        assert_eq!(vec_cells((1, 100), 2, 3), [Entity::Cell(1, 100)]);
+        assert_eq!(vec_cells((100, 1), 2, 3), [Entity::Cell(100, 1)]);
+    }
+
+    #[test]
     fn columns_test() {
         assert_eq!(
             vec_cells(Columns::new(..), 2, 3),

@@ -241,6 +241,11 @@ impl RawStyle {
         self
     }
 
+    /// Insert a horizontal line to a specific row location.
+    pub fn get_horizontal(&self, row: usize) -> Option<Line> {
+        self.horizontals.get(&row).cloned()
+    }
+
     /// Set vertical border lines.
     ///
     /// # Example
@@ -355,6 +360,11 @@ impl RawStyle {
             left_bottom_corner: self.borders.bottom_left,
             right_bottom_corner: self.borders.bottom_right,
         })
+    }
+
+    /// Returns an general borders configuration of the style.
+    pub fn get_borders(&self) -> Borders<char> {
+        self.borders
     }
 }
 
