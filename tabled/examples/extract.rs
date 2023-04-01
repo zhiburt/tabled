@@ -1,5 +1,19 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example extract`
+//!
+//! This example demonstrates using the [`Extract`] [`TableOption`] to
+//! produce a subsection of a [`Table`].
+//!
+//! ---
+//!
+//! * [`Extract`] can return a new [`Table`] with three functions:
+//!     * `rows()` | yields subset of the initial rows
+//!     * `columns()` | yields subset of the initial columns
+//!     * `segment()` | yields subsection of the initial table
+//!
+//! * Note how [`Extract`] methods accepts [`RangeBounds`] arguments,
+//! making subset specifications concise.
 
 use std::fmt::{Display, Formatter};
 
