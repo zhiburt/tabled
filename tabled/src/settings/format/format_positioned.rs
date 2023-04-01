@@ -24,6 +24,11 @@ where
         let count_cols = records.count_columns();
 
         for pos in entity.iter(count_rows, count_cols) {
+            let is_valid_pos = pos.0 < count_rows && pos.1 < count_cols;
+            if !is_valid_pos {
+                continue;
+            }
+
             let content = records.get_text(pos);
             let content = (self.0)(content, pos);
             records.set(pos, content);

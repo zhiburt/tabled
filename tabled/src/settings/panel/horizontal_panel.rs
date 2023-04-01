@@ -31,6 +31,12 @@ where
             return;
         }
 
+        let is_intersect_vertical_span = (0..records.count_columns())
+            .any(|col| cfg.is_cell_covered_by_row_span((self.row, col)));
+        if is_intersect_vertical_span {
+            return;
+        }
+
         move_rows_aside(records, self.row);
         move_row_spans(cfg, self.row);
 

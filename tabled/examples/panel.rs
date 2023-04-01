@@ -3,7 +3,7 @@
 
 use tabled::{
     settings::{
-        object::{Cell, Segment},
+        object::Segment,
         style::{BorderSpanCorrection, Style},
         Alignment, Modify, Panel, Width,
     },
@@ -47,8 +47,8 @@ fn main() {
         .with(Panel::footer(format!("N - {}", DATA.len())))
         .with(Panel::vertical(0, "Some text goes here"))
         .with(Panel::vertical(5, "Some text goes here"))
-        .with(Modify::new(Cell::new(0, 0)).with(Width::wrap(1)))
-        .with(Modify::new(Cell::new(0, 5)).with(Width::wrap(1)))
+        .with(Modify::new((0, 0)).with(Width::wrap(1)))
+        .with(Modify::new((0, 5)).with(Width::wrap(1)))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::modern())
         .with(BorderSpanCorrection);

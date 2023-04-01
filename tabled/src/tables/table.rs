@@ -1,12 +1,14 @@
 //! This module contains a main table representation [`Table`].
 
+use core::ops::DerefMut;
 use std::{borrow::Cow, collections::HashMap, fmt, iter::FromIterator};
 
 use crate::{
     builder::Builder,
     grid::{
         config::{
-            AlignmentHorizontal, ColoredConfig, Entity, Formatting, Indent, Sides, SpannedConfig,
+            AlignmentHorizontal, ColoredConfig, CompactConfig, Entity, Formatting, Indent, Sides,
+            SpannedConfig,
         },
         dimension::{CompleteDimension, PeekableDimension},
         dimension::{Dimension, Estimate},
@@ -287,6 +289,18 @@ impl From<Builder> for Table {
             config: ColoredConfig::new(configure_grid(), HashMap::default()),
             dimension: CompleteDimension::default(),
         }
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for CompactConfig {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg.deref_mut() = (*self).into();
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for ColoredConfig {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg = self.clone();
     }
 }
 
