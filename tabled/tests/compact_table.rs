@@ -3,7 +3,10 @@
 mod util;
 
 use tabled::{
-    grid::{dimension::CompactGridDimension, dimension::Estimate, records::IterRecords, config::CompactConfig},
+    grid::{
+        config::CompactConfig, dimension::CompactGridDimension, dimension::Estimate,
+        records::IterRecords,
+    },
     tables::CompactTable,
 };
 use util::{create_matrix, test_table};

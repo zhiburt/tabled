@@ -25,7 +25,7 @@ where
 
         for pos in entity.iter(count_rows, count_cols) {
             let is_valid_pos = pos.0 < count_rows && pos.1 < count_cols;
-            if !is_valid_pos  {
+            if !is_valid_pos {
                 continue;
             }
 
