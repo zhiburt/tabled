@@ -1,5 +1,19 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example builder_index`
+//!
+//! This example demonstrates evolving the standard [`Builder`] to an [`IndexBuilder`],
+//! and then manipulating the constructing table with a newly prepended index column.
+//!
+//! ---
+//!
+//! * An [`IndexBuilder`] is capable of several useful manipulations, including:
+//!     * Giving the new index column a name
+//!     * Transposing the index column around a table
+//!     * Choosing a location for the new index column besides 0; the default
+//!
+//! * Note that like with any builder pattern the [`IndexBuilder::build()`] function
+//! is necessary to produce a displayable [`Table`].
 
 use tabled::{settings::Style, Table, Tabled};
 

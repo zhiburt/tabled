@@ -1,7 +1,16 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --features color --example color`
 //!
-//! This example requires the `color` feature.
+//! This example demonstrates using the [`Color`] [setting](tabled::settings) to
+//! stylize text, backgrounds, and borders.
+//!
+//! ---
+//!
+//! * 🚩 This example requires the `color` feature.
+//!
+//! * Note how [`Format::content()`] is used to break out [`CellOption`]
+//! specifications. This is helpful for organizing extensive [`Table`] configurations.
 
 use std::convert::TryFrom;
 

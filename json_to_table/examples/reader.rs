@@ -1,17 +1,23 @@
-//! This example reads a json from STDIN and build a table out of it.
+//! This example can be run with the following command:
 //!
-//! Example usage.
+//! `cat some_interesting_data.json | cargo run --example reader -- --collapse`
 //!
-//! ```
-//! cat some_interesting_data.json | cargo run --example reader -- --collapse
-//! ```
+//! This example demonstrates parsing json from the [`Stdin`]\(standard input) to a [`JsonTable`].
+//!
+//! ---
+//!
+//! * Check out [`serde_json`] for other helpful ways to import json data into your project.
+//! * Check out [`std::env`] and [`std::io`] for more examples of dealing with system streams.
+//! * Windows alternatives for the unix `cat` command:
+//!     - `type` for command prompt
+//!     - `get-content` for powershell
 
-use std::io;
+use std::{env, io};
 
 use json_to_table::json_to_table;
 
 fn main() {
-    let use_collapse = std::env::args().any(|arg| &arg == "--collapse");
+    let use_collapse = env::args().any(|arg| &arg == "--collapse");
 
     let stdin = io::stdin();
     let value = serde_json::from_reader(stdin).expect("failed to read stdin");

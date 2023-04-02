@@ -1,5 +1,12 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example common_grid_no_std`
+//!
+//! This example demonstrates using [`papergrid`] without [The Rust Standard Library](std).
+//!
+//! ---
+//!
+//! * Note the missing, pre-built [`Dimension`] implementations requiring manual design.
 
 use papergrid::{
     config::compact::CompactConfig,
@@ -11,7 +18,7 @@ use papergrid::{
 
 fn main() {
     let data = [
-        ["Papergrid", "is a library", "for print tables", "!"],
+        ["Papergrid", "is a library", "for printing tables", "!"],
         [
             "Just like this",
             "NOTICE",

@@ -1,5 +1,20 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example height`
+//!
+//! This example demonstrates using the [`Height`] [`TableOption`] for adjusting
+//! the height of a [`Table`].
+//!
+//! ---
+//!
+//! * [`Height`] supports three key features:
+//!     * [`CellHeightIncrease`] spreads new whitespace between the [`Table`]
+//! rows up to the specified line count.
+//!     * [`CellHeightLimit`] removes lines from the [`Table`] rows fairly, until
+//! it has no choice but to remove single-line-rows entirely, bottom up.
+//!     * [`HeightList`] accepts an array of height specifications that are applied
+//! to the rows with the same index. This is helpful for granularly specifying individual
+//! row heights irrespective of [`Padding`] or [`Margin`].
 
 use tabled::{
     settings::{peaker::PriorityMax, Height, Style},

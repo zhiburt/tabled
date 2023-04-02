@@ -1,5 +1,14 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example margin`
+//!
+//! This example demonstrates using the [`Margin`] [`TableOption`] to buffer space
+//! around a [`Table`] display.
+//!
+//! ---
+//!
+//! * Note how the [`Margin::fill()`] function allows for overriding the default whitespace
+//! with any [`char`].
 
 use tabled::{
     settings::{Margin, Style},

@@ -1,5 +1,16 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example merge_duplicates_2`
+//!
+//! This example demonstrates using the [`Merge`] [`TableOption`] to clarify
+//! redundancies in a [`Table`] display.
+//!
+//! ---
+//!
+//! * Note how a custom theme is applied to give the [`Merged`](Merge) cells
+//! a unique look.
+//!
+//! * Merge supports both [`Merge::vertical()`] and [`Merge::horizontal()`].
 
 use tabled::{
     settings::{

@@ -1,7 +1,15 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --features color --example color_map`
 //!
-//! This example requires the `color` feature.
+//! This example demonstrates using a [`HashMap`] of colors to simplify styling
+//! sections of a [`Grid`] without embedding ANSI escape characters into cell values.
+//!
+//! ---
+//!
+//! * 🚩 This example requires the `color` feature.
+//!
+//! * Check out [`owo_colors`] for additional styling options available through their API.
 
 use std::{
     collections::HashMap,
