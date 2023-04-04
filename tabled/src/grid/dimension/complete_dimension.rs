@@ -9,7 +9,7 @@ use crate::grid::{
 /// CompleteDimension is a [`Dimension`] implementation for a [`Table`]
 ///
 /// [`Table`]: crate::Table
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct CompleteDimension<'a> {
     width: Option<Cow<'a, [usize]>>,
     height: Option<Cow<'a, [usize]>>,

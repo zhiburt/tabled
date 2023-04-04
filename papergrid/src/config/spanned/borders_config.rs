@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::config::{Border, Borders, Position};
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub(crate) struct BordersConfig<T> {
     global: Option<T>,
     borders: Borders<T>,
@@ -321,14 +321,14 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub(crate) struct BordersMap<T> {
     vertical: HashMap<Position, T>,
     horizontal: HashMap<Position, T>,
     intersection: HashMap<Position, T>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub(crate) struct BordersLayout {
     left: bool,
     right: bool,
@@ -341,7 +341,7 @@ pub(crate) struct BordersLayout {
 }
 
 /// A structure for a custom horizontal line.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct HorizontalLine<T> {
     /// Line character.
     pub main: Option<T>,
@@ -364,7 +364,7 @@ impl<T> HorizontalLine<T> {
 }
 
 /// A structure for a vertical line.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VerticalLine<T> {
     /// Line character.
     pub main: Option<T>,

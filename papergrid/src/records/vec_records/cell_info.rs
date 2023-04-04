@@ -6,7 +6,7 @@ use crate::{
 };
 
 /// The struct is a [Cell] implementation which keeps width information pre allocated.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CellInfo<S> {
     text: S,
     width: usize,
@@ -109,7 +109,7 @@ where
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Clone)]
 struct StrWithWidth<'a> {
     text: Cow<'a, str>,
     width: usize,

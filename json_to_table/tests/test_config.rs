@@ -1,9 +1,6 @@
 use json_to_table::json_to_table;
 use serde_json::json;
-use tabled::{
-    settings::{Alignment, Padding, Style},
-    Table,
-};
+use tabled::settings::{Alignment, Padding, Style};
 
 #[cfg(feature = "color")]
 use tabled::{grid::color::AnsiColor, grid::config::SpannedConfig};
@@ -21,15 +18,10 @@ fn config_from_table_test() {
         }
     );
 
-    let cfg = Table::new([""])
+    let table = json_to_table(&value)
         .with(Alignment::center())
         .with(Alignment::center_vertical())
-        .get_config()
-        .clone();
-
-    let table = json_to_table(&value)
-        .set_style(Style::modern())
-        .set_config(cfg)
+        .with(Style::modern())
         .collapse()
         .to_string();
 
@@ -66,16 +58,11 @@ fn config_from_table_padding_zero_test() {
         }
     );
 
-    let cfg = Table::new([""])
+    let table = json_to_table(&value)
         .with(Padding::zero())
         .with(Alignment::center())
         .with(Alignment::center_vertical())
-        .get_config()
-        .clone();
-
-    let table = json_to_table(&value)
-        .set_style(Style::modern())
-        .set_config(cfg)
+        .with(Style::modern())
         .collapse()
         .to_string();
 
@@ -114,16 +101,11 @@ fn config_from_table_general_test() {
         }
     );
 
-    let cfg = Table::new([""])
+    let table = json_to_table(&value)
         .with(Padding::zero())
         .with(Alignment::center())
         .with(Alignment::center_vertical())
-        .get_config()
-        .clone();
-
-    let table = json_to_table(&value)
-        .set_style(Style::modern())
-        .set_config(cfg)
+        .with(Style::modern())
         .to_string();
 
     assert_eq!(
@@ -153,6 +135,8 @@ fn config_from_table_general_test() {
 #[cfg(feature = "color")]
 #[test]
 fn color_test() {
+    use tabled::grid::config::ColoredConfig;
+
     let value = json!(
         {
             "key1": 123,
@@ -166,10 +150,11 @@ fn color_test() {
 
     let mut cfg = SpannedConfig::default();
     cfg.set_border_color_global(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into()));
+    let cfg = ColoredConfig::new(cfg, Default::default());
 
     let table = json_to_table(&value)
-        .set_style(Style::modern())
-        .set_config(cfg.into())
+        .with(cfg)
+        .with(Style::modern())
         .collapse()
         .to_string();
 
@@ -186,11 +171,11 @@ fn color_test() {
             "\u{1b}[34m│\u{1b}[39m     \u{1b}[34m│\u{1b}[39m456 \u{1b}[34m│\u{1b}[39m\n",
             "\u{1b}[34m├─────\u{1b}[39m\u{1b}[34m┼────┤\u{1b}[39m\n",
             "\u{1b}[34m│\u{1b}[39mkey1 \u{1b}[34m│\u{1b}[39m123 \u{1b}[34m│\u{1b}[39m\n",
-            "\u{1b}[34m├─────\u{1b}[39m\u{1b}[34m┼──┬─┤\u{1b}[39m\n",
+            "\u{1b}[34m├─────\u{1b}[39m\u{1b}[34m┼──\u{1b}[39m\u{1b}[34m┬─┤\u{1b}[39m\n",
             "\u{1b}[34m│\u{1b}[39mkey22\u{1b}[34m│\u{1b}[39mk1\u{1b}[34m│\u{1b}[39m1\u{1b}[34m│\u{1b}[39m\n",
             "\u{1b}[34m│\u{1b}[39m     \u{1b}[34m├──\u{1b}[39m\u{1b}[34m┼─┤\u{1b}[39m\n",
             "\u{1b}[34m│\u{1b}[39m     \u{1b}[34m│\u{1b}[39mk2\u{1b}[34m│\u{1b}[39m2\u{1b}[34m│\u{1b}[39m\n",
-            "\u{1b}[34m└─────\u{1b}[39m\u{1b}[34m┴──\u{1b}[39m\u{1b}[34m┴─┘\u{1b}[39m"
+            "\u{1b}[34m└─────\u{1b}[39m\u{1b}[34m┴──\u{1b}[39m\u{1b}[34m┴─┘\u{1b}[39m",
         )
     );
 }

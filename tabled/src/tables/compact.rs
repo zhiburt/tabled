@@ -188,6 +188,12 @@ impl<I, D> CompactTable<I, D> {
     pub fn get_config(&self) -> &CompactConfig {
         &self.cfg
     }
+
+    /// Returns a table config.
+    pub fn get_config_mut(&mut self) -> &mut CompactConfig {
+        &mut self.cfg
+    }
+
     /// Format table into [fmt::Write]er.
     pub fn fmt<W>(self, writer: W) -> fmt::Result
     where

@@ -34,8 +34,8 @@ fn orientation_test_1() {
     );
 
     let table = json_to_table(&value)
-        .set_style(Style::extended())
-        .set_object_mode(Orientation::Horizontal)
+        .with(Style::extended())
+        .object_orientation(Orientation::Horizontal)
         .to_string();
 
     assert_eq!(
@@ -86,9 +86,9 @@ fn orientation_test_2() {
     );
 
     let table = json_to_table(&value)
-        .set_style(Style::modern())
-        .set_object_mode(Orientation::Horizontal)
-        .set_array_mode(Orientation::Horizontal)
+        .with(Style::modern())
+        .object_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Horizontal)
         .to_string();
 
     assert_eq!(
@@ -157,7 +157,7 @@ fn orientation_visitor_test() {
         }}
     );
 
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
 
     assert_eq!(
         table,

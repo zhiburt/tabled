@@ -37,13 +37,13 @@ impl CompactConfig {
             border_colors: Borders::empty(),
             margin: Sides::filled(Indent::zero()),
             margin_color: Sides::filled(StaticColor::new("", "")),
+            padding_color: Sides::filled(StaticColor::new("", "")),
             padding: Sides::new(
                 Indent::spaced(1),
                 Indent::spaced(1),
                 Indent::zero(),
                 Indent::zero(),
             ),
-            padding_color: Sides::filled(StaticColor::new("", "")),
         }
     }
 
@@ -100,7 +100,7 @@ impl CompactConfig {
         &self.padding
     }
 
-    /// Set a horizontal alignment to a given cells.
+    /// Set a horizontal alignment.
     pub const fn set_alignment_horizontal(mut self, alignment: AlignmentHorizontal) -> Self {
         self.halignment = alignment;
         self

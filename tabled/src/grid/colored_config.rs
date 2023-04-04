@@ -7,7 +7,7 @@ use papergrid::{
 };
 
 /// A [`Table`] configuration.
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub struct ColoredConfig {
     config: SpannedConfig,
     colors: HashMap<Position, AnsiColor<'static>>,

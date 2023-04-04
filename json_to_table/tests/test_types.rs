@@ -5,7 +5,7 @@ use tabled::settings::Style;
 #[test]
 fn string_test() {
     let value = json!("Some text string");
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -20,7 +20,7 @@ fn string_test() {
 #[test]
 fn string_multiline_test() {
     let value = json!("Some text string\ntext on a new line\nmore text\nand a new line");
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -35,7 +35,7 @@ fn string_multiline_test() {
     );
 
     let value = json!("Some text string\ntext on a new line\nmore text\nand a new line\n");
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -54,7 +54,7 @@ fn string_multiline_test() {
 #[test]
 fn number_test() {
     let value = json!(123.2);
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -64,7 +64,7 @@ fn number_test() {
     );
 
     let value = json!(123);
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -77,14 +77,14 @@ fn number_test() {
 #[test]
 fn null_test() {
     let value = json!(null);
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
     assert_eq!(table, "");
 }
 
 #[test]
 fn list_test() {
     let value = json!(["Hello", "World", "123"]);
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -100,7 +100,7 @@ fn list_test() {
     );
 
     let value = json!([{"key": "Hello"}, {"1": "2", "2": "3", "4": "5"}, 123.222229]);
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -127,7 +127,7 @@ fn list_test() {
 #[test]
 fn object_test() {
     let value = json!({"message": "Hello World", "code": "123"});
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -142,7 +142,7 @@ fn object_test() {
 
     let value =
         json!({"message": {"real": "Hello World", "cypher": "2132132"}, "code": ["123", "213"]});
-    let table = json_to_table(&value).set_style(Style::modern()).to_string();
+    let table = json_to_table(&value).with(Style::modern()).to_string();
 
     assert_eq!(
         table,
@@ -171,16 +171,16 @@ mod squashed {
     fn string_test() {
         let value = json!("Some text string");
 
-        let table = json_to_table(&value).set_style(Style::modern()).to_string();
+        let table = json_to_table(&value).with(Style::modern()).to_string();
         let table_squashed = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
         assert_eq!(table, table_squashed);
 
         let table = json_to_table(&json!(""))
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -191,9 +191,9 @@ mod squashed {
     fn string_multiline_test() {
         let value = json!("Some text string\ntext on a new line\nmore text\nand a new line");
 
-        let table = json_to_table(&value).set_style(Style::modern()).to_string();
+        let table = json_to_table(&value).with(Style::modern()).to_string();
         let table_squashed = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -201,9 +201,9 @@ mod squashed {
 
         let value = json!("Some text string\ntext on a new line\nmore text\nand a new line\n");
 
-        let table = json_to_table(&value).set_style(Style::modern()).to_string();
+        let table = json_to_table(&value).with(Style::modern()).to_string();
         let table_squashed = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -214,9 +214,9 @@ mod squashed {
     fn number_test() {
         let value = json!(123.2);
 
-        let table = json_to_table(&value).set_style(Style::modern()).to_string();
+        let table = json_to_table(&value).with(Style::modern()).to_string();
         let table_squashed = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -224,9 +224,9 @@ mod squashed {
 
         let value = json!(123);
 
-        let table = json_to_table(&value).set_style(Style::modern()).to_string();
+        let table = json_to_table(&value).with(Style::modern()).to_string();
         let table_squashed = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -237,7 +237,7 @@ mod squashed {
     fn null_test() {
         let value = json!(null);
         let table_squashed = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -253,7 +253,7 @@ mod squashed {
     fn list_test() {
         let value = json!(["Hello", "World", "123"]);
         let table = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -272,7 +272,7 @@ mod squashed {
 
         let value = json!([{"key": "Hello"}, {"1": "2", "2": "3", "4": "5"}, 123.222229]);
         let table = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -295,7 +295,7 @@ mod squashed {
 
         let value = json!([]);
         let table = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -306,7 +306,7 @@ mod squashed {
     fn object_test() {
         let value = json!({"message": "Hello World", "code": "123"});
         let table = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -323,7 +323,7 @@ mod squashed {
 
         let value = json!({"message": {"real": "Hello World", "cypher": "2132132"}, "code": ["123", "213"]});
         let table = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
@@ -344,7 +344,7 @@ mod squashed {
 
         let value = json!({});
         let table = json_to_table(&value)
-            .set_style(Style::modern())
+            .with(Style::modern())
             .collapse()
             .to_string();
 
