@@ -1,4 +1,4 @@
-use json_to_table::json_to_table;
+use json_to_table::{json_to_table, Orientation};
 use serde_json::json;
 use tabled::settings::Style;
 
@@ -507,7 +507,7 @@ fn many_splits_bettween_map_entries_test() {
 }
 
 #[test]
-fn array_split_test() {
+fn aray_split_test() {
     let value = json!(
         {
             "menu2": [ { "heade1": { "heade3": "SVG Viewe1" } }, { "heade5": { "heade7": "SVG Viewe9" } } ],
@@ -533,6 +533,34 @@ fn array_split_test() {
             "│ menu3 │ heade2 │ heade4 │ SVG Viewe2 │\n",
             "│       ├────────┼────────┼────────────┤\n",
             "│       │ heade6 │ heade8 │ SVG View10 │\n",
+            "└───────┴────────┴────────┴────────────┘",
+        )
+    );
+}
+
+#[test]
+fn aray_split_test2() {
+    let value = json!({
+        "menu2": [
+            { "heade1": { "heade3": "SVG Viewe1" } },
+            { "heade5": { "heade7": "SVG Viewe9" } },
+        ],
+    });
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .to_string();
+
+    println!("{table}");
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌───────┬────────┬────────┬────────────┐\n",
+            "│ menu2 │ heade1 │ heade3 │ SVG Viewe1 │\n",
+            "│       ├────────┼────────┼────────────┤\n",
+            "│       │ heade5 │ heade7 │ SVG Viewe9 │\n",
             "└───────┴────────┴────────┴────────────┘",
         )
     );
@@ -894,6 +922,144 @@ fn test_list_empty_entity_collapsed_2() {
             "│  │\n",
             "└──┘",
         )
+    );
+}
+
+#[test]
+fn test_map_empty_entity_collapsed_1_horizontal() {
+    let value = json!(
+        {
+            "field1" : [],
+            "field2": "Value",
+            "field3" : [],
+            "field4": 3,
+            "field5" : []
+        }
+    );
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .array_orientation(Orientation::Horizontal)
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌────────┬───────┐\n",
+            "│ field1 │       │\n",
+            "├────────┼───────┤\n",
+            "│ field2 │ Value │\n",
+            "├────────┼───────┤\n",
+            "│ field3 │       │\n",
+            "├────────┼───────┤\n",
+            "│ field4 │ 3     │\n",
+            "├────────┼───────┤\n",
+            "│ field5 │       │\n",
+            "└────────┴───────┘",
+        )
+    );
+}
+
+#[test]
+fn test_map_empty_entity_collapsed_2_horizontal() {
+    let value = json!(
+        {
+            "key0": {},
+            "field1" : {
+                "key1": "value1",
+                "key2": []
+            },
+            "field2": "Value",
+            "field3" : [],
+            "field4": [
+                {},
+                "123",
+                {},
+                "sadas",
+                {}
+            ],
+            "field5" : []
+        }
+    );
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .array_orientation(Orientation::Horizontal)
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌────────┬──────┬───────────────┐\n",
+            "│ field1 │ key1 │ value1        │\n",
+            "│        ├──────┼───────────────┤\n",
+            "│        │ key2 │               │\n",
+            "├────────┼──────┴───────────────┤\n",
+            "│ field2 │ Value                │\n",
+            "├────────┼──────────────────────┤\n",
+            "│ field3 │                      │\n",
+            "├────────┼──┬─────┬──┬───────┬──┤\n",
+            "│ field4 │  │ 123 │  │ sadas │  │\n",
+            "├────────┼──┴─────┴──┴───────┴──┤\n",
+            "│ field5 │                      │\n",
+            "├────────┼──────────────────────┤\n",
+            "│ key0   │                      │\n",
+            "└────────┴──────────────────────┘",
+        )
+    );
+}
+
+#[test]
+fn test_list_empty_entity_collapsed_0_horizontal() {
+    let value = json!([{}, "field1", {}, "field2", {}]);
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .array_orientation(Orientation::Horizontal)
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!(
+            "┌──┬────────┬──┬────────┬──┐\n",
+            "│  │ field1 │  │ field2 │  │\n",
+            "└──┴────────┴──┴────────┴──┘",
+        )
+    );
+}
+
+#[test]
+fn test_list_empty_entity_collapsed_1_horizontal() {
+    let value = json!([{}, {}, {}]);
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .array_orientation(Orientation::Horizontal)
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!("┌──┬──┬──┐\n", "│  │  │  │\n", "└──┴──┴──┘",)
+    );
+}
+
+#[test]
+fn test_list_empty_entity_collapsed_2_horizontal() {
+    let value = json!([[], [], []]);
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .array_orientation(Orientation::Horizontal)
+        .to_string();
+
+    assert_eq!(
+        table,
+        concat!("┌──┬──┬──┐\n", "│  │  │  │\n", "└──┴──┴──┘",)
     );
 }
 
