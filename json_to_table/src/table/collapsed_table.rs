@@ -14,11 +14,12 @@ use tabled::{
         records::Records,
         util::string::{count_lines, get_lines, string_dimension, string_width},
     },
-    settings::{split, Padding, TableOption},
+    settings::{Padding, TableOption},
 };
 
 use super::*;
 
+#[derive(Debug, Default)]
 struct PrintContext {
     pos: usize,
     is_last_col: bool,
@@ -35,20 +36,23 @@ struct PrintContext {
     lean_top: bool,
     top_intersection: bool,
     top_left: bool,
-    splits: Vec<usize>,
+    intersections_horizontal: Vec<usize>,
+    intersections_vertical: Vec<usize>,
     size: Dim,
 }
 
 struct CellData {
     content: String,
-    intersections: Vec<usize>,
+    intersections_horizontal: Vec<usize>,
+    intersections_vertical: Vec<usize>,
 }
 
 impl CellData {
-    fn new(content: String, intersections: Vec<usize>) -> Self {
+    fn new(content: String, i_horizontal: Vec<usize>, i_vertical: Vec<usize>) -> Self {
         Self {
             content,
-            intersections,
+            intersections_horizontal: i_horizontal,
+            intersections_vertical: i_vertical,
         }
     }
 }
@@ -56,23 +60,12 @@ impl CellData {
 pub(super) fn collapsed_table(value: &Value, cfg: &Config) -> String {
     let dims = collect_table_dimensions(value, cfg);
     let ctx = PrintContext {
-        pos: 0,
         is_last_col: true,
         is_last_row: true,
         is_first_col: true,
         is_first_row: true,
-        kv: false,
-        kv_is_first: false,
-        list: false,
-        list_is_first: false,
-        no_left: false,
-        no_right: false,
-        no_bottom: false,
-        lean_top: false,
-        top_intersection: false,
-        top_left: false,
-        splits: Vec::new(),
         size: *dims.all.get(&0).unwrap(),
+        ..Default::default()
     };
     _collapsed_table(value, cfg, &dims, ctx).content
 }
@@ -88,7 +81,6 @@ fn _collapsed_table(val: &Value, cfg: &Config, dims: &Dimensions, ctx: PrintCont
                 _ => unreachable!(),
             };
 
-            let value = config_string(&value, &cfg.cfg, ctx.size.width, ctx.size.height);
             generate_value_cell(&value, cfg, ctx)
         }
         Value::Object(obj) => {
@@ -128,18 +120,26 @@ fn generate_vertical_array(
     let additional_height = ctx.size.height - height;
     let (chunk_height, rest_height) = split_value(additional_height, list.len());
 
-    let mut splits = ctx.splits;
+    let mut intersections_horizontal = ctx.intersections_horizontal;
+    let mut intersections_vertical = ctx.intersections_vertical;
+    let mut next_vsplit = false;
+    let mut next_intersections_vertical = vec![];
+
     let mut builder = Builder::new();
     for (i, val) in list.iter().enumerate() {
         let val_pos = *array_dims.index.get(&i).unwrap();
 
-        let size = {
-            let mut height = dims.all.get(&val_pos).unwrap().height + chunk_height;
-            if i == 0 {
-                height += rest_height;
-            }
-            Dim::new(ctx.size.width, height)
-        };
+        let mut height = dims.all.get(&val_pos).unwrap().height + chunk_height;
+        if i == 0 {
+            height += rest_height;
+        }
+        let size = Dim::new(ctx.size.width, height);
+
+        let (split, intersections_vertical) =
+            short_splits3(&mut intersections_vertical, size.height);
+        let old_split = next_vsplit;
+        next_vsplit = split;
+
         let is_prev_list_not_first = ctx.list && !ctx.list_is_first;
         let valctx = PrintContext {
             pos: val_pos,
@@ -155,19 +155,18 @@ fn generate_vertical_array(
             no_right: ctx.no_right,
             no_bottom: ctx.no_bottom && i + 1 == list.len(),
             lean_top: ctx.lean_top && i == 0,
-            top_intersection: ctx.top_intersection && i == 0,
-            top_left: ctx.top_left && i == 0,
-            splits,
+            top_intersection: (ctx.top_intersection && i == 0) || old_split,
+            top_left: ctx.top_left || i > 0,
+            intersections_horizontal,
+            intersections_vertical,
             size,
         };
 
-        let CellData {
-            content,
-            intersections,
-        } = _collapsed_table(val, cfg, dims, valctx);
-        splits = intersections;
+        let data = _collapsed_table(val, cfg, dims, valctx);
+        intersections_horizontal = data.intersections_horizontal;
+        next_intersections_vertical.extend(data.intersections_vertical);
 
-        builder.push_record([content]);
+        builder.push_record([data.content]);
     }
 
     let table = builder
@@ -176,7 +175,7 @@ fn generate_vertical_array(
         .with(Padding::zero())
         .to_string();
 
-    CellData::new(table, splits)
+    CellData::new(table, intersections_horizontal, next_intersections_vertical)
 }
 
 fn generate_horizontal_array(
@@ -191,8 +190,9 @@ fn generate_horizontal_array(
     let additional_width = ctx.size.width - list_width;
     let (chunk_width, rest_width) = split_value(additional_width, list.len());
 
-    let mut splits = ctx.splits;
-    let mut new_splits = vec![];
+    let mut intersections_horizontal = ctx.intersections_horizontal;
+    let mut intersections_vertical = ctx.intersections_vertical;
+    let mut new_intersections_horizontal = vec![];
     let mut split_next = false;
 
     let mut buf = Vec::with_capacity(list.len());
@@ -205,7 +205,9 @@ fn generate_horizontal_array(
         }
         let size = Dim::new(width, ctx.size.height);
 
-        let (split, intersections) = short_splits3(&mut splits, width);
+        let (split, intersections_horizontal) = short_splits3(&mut intersections_horizontal, width);
+        let old_split = split_next;
+        split_next = split;
 
         let is_prev_list_not_first = ctx.list && !ctx.list_is_first;
         let valctx = PrintContext {
@@ -222,17 +224,18 @@ fn generate_horizontal_array(
             no_right: !(ctx.is_last_col && i + 1 == list.len()),
             no_bottom: false,
             lean_top: !(ctx.is_first_col && i == 0),
-            top_intersection: (ctx.top_intersection && i == 0) || split_next,
+            top_intersection: (ctx.top_intersection && i == 0) || old_split,
             top_left: ctx.top_left && i == 0,
-            splits: intersections,
+            intersections_horizontal,
+            intersections_vertical,
             size,
         };
 
-        split_next = split;
-
         let val = _collapsed_table(val, cfg, dims, valctx);
 
-        new_splits.extend(val.intersections.iter());
+        intersections_vertical = val.intersections_vertical;
+
+        new_intersections_horizontal.extend(val.intersections_horizontal.iter());
         let value = val.content;
 
         buf.push(value);
@@ -247,7 +250,7 @@ fn generate_horizontal_array(
         .with(Padding::zero())
         .to_string();
 
-    CellData::new(table, new_splits)
+    CellData::new(table, new_intersections_horizontal, intersections_vertical)
 }
 
 fn generate_vertical_object(
@@ -260,11 +263,16 @@ fn generate_vertical_object(
     let max_key_width = map_dims.key_max.width;
 
     let has_vertical = cfg.cfg.get_borders().has_left();
+    let has_horizontal = cfg.cfg.get_borders().has_top();
+
     let value_width = ctx.size.width - max_key_width - has_vertical as usize;
 
-    let mut splits = ctx.splits;
+    let mut intersections_horizontal = ctx.intersections_horizontal;
+    let mut intersections_vertical = ctx.intersections_vertical;
+    let mut next_vertical_intersections = vec![];
 
-    let (is_key_intersect, key_splits) = short_splits3(&mut splits, max_key_width);
+    let (is_key_intersect, key_splits) =
+        short_splits3(&mut intersections_horizontal, max_key_width);
 
     let mut builder = Builder::new();
     for (i, (key, val)) in obj.iter().enumerate() {
@@ -273,15 +281,17 @@ fn generate_vertical_object(
 
         let key_height = dims.all.get(&key_pos).unwrap().height;
         let val_height = dims.all.get(&val_pos).unwrap().height;
-
         let entry_height = cmp::max(key_height, val_height);
+
+        let is_last_row = ctx.is_last_row && i + 1 == obj.len();
+        let is_first_row = ctx.is_first_row && i == 0;
 
         let valctx = PrintContext {
             pos: val_pos,
-            is_last_col: ctx.is_last_col,
-            is_last_row: ctx.is_last_row && i + 1 == obj.len(),
+            is_first_row,
+            is_last_row,
             is_first_col: false,
-            is_first_row: ctx.is_first_row && i == 0,
+            is_last_col: ctx.is_last_col,
             kv: true,
             kv_is_first: i == 0,
             list: false,
@@ -292,9 +302,16 @@ fn generate_vertical_object(
             lean_top: i == 0,
             top_intersection: i > 0 || (i == 0 && is_key_intersect),
             top_left: false,
-            splits,
+            intersections_horizontal,
+            intersections_vertical: vec![],
             size: Dim::new(value_width, entry_height),
         };
+
+        let val = _collapsed_table(val, cfg, dims, valctx);
+        intersections_horizontal = val.intersections_horizontal;
+        next_vertical_intersections.extend(val.intersections_vertical);
+
+        let (_, key_vsplits) = short_splits3(&mut intersections_vertical, entry_height);
 
         let key = config_string(key, &cfg.cfg, max_key_width, entry_height);
 
@@ -302,15 +319,15 @@ fn generate_vertical_object(
         key.with(&cfg.cfg);
         key.with(NoRightBorders);
 
-        if !valctx.is_last_row {
+        if !is_last_row {
             key.with(NoBottomBorders);
         }
 
-        if !ctx.is_first_col && valctx.is_last_row {
+        if !ctx.is_first_col && is_last_row {
             key.with(BottomLeftChangeToBottomIntersection);
         }
 
-        if !valctx.is_first_row {
+        if !is_first_row {
             key.with(TopLeftChangeToLeft);
         }
 
@@ -326,7 +343,7 @@ fn generate_vertical_object(
             key.with(TopLeftChangeToLeft);
         }
 
-        if !ctx.is_first_col && valctx.is_first_row {
+        if !ctx.is_first_col && is_first_row {
             key.with(TopLeftChangeTopIntersection);
         }
 
@@ -338,17 +355,20 @@ fn generate_vertical_object(
             key.with(TopLeftChangeIntersection);
         }
 
-        if i == 0 && has_vertical {
+        if i == 0 && has_vertical && !key_splits.is_empty() {
             let c = cfg.cfg.get_borders().bottom_intersection.unwrap_or(' ');
             key.with(SetTopChars(&key_splits, c));
         }
 
-        let val = _collapsed_table(val, cfg, dims, valctx);
-        splits = val.intersections;
-        let val = val.content;
+        if has_horizontal && !key_vsplits.is_empty() {
+            let c = cfg.cfg.get_borders().right_intersection.unwrap_or(' ');
+            key.with(SetLeftChars(&key_vsplits, c));
+        }
 
-        builder.push_record([key.to_string(), val]);
+        builder.push_record([key.to_string(), val.content]);
     }
+
+    intersections_horizontal.insert(0, max_key_width);
 
     let table = builder
         .build()
@@ -356,9 +376,7 @@ fn generate_vertical_object(
         .with(Padding::zero())
         .to_string();
 
-    splits.insert(0, max_key_width);
-
-    CellData::new(table, splits)
+    CellData::new(table, intersections_horizontal, next_vertical_intersections)
 }
 
 fn generate_horizontal_object(
@@ -377,10 +395,12 @@ fn generate_horizontal_object(
     let additional_width = ctx.size.width - map_width;
     let (chunk_width, rest_width) = split_value(additional_width, obj.len());
 
-    println!("---- {} {}", map_width, ctx.size.width);
-
-    let mut splits = ctx.splits;
+    let mut intersections_horizontal = ctx.intersections_horizontal;
+    let mut intersections_vertical = ctx.intersections_vertical;
     let mut split_next = false;
+
+    let (vsplit, mut first_key_intersections_horizontal) =
+        short_splits3(&mut intersections_vertical, key_height);
 
     let mut row1 = Vec::with_capacity(obj.len());
     for (i, val) in obj.keys().enumerate() {
@@ -395,9 +415,7 @@ fn generate_horizontal_object(
             width += rest_width;
         }
 
-        println!("---- {val:?} {width:?}");
-
-        let (split, intersections) = short_splits3(&mut splits, width);
+        let (split, intersections_horizontal) = short_splits3(&mut intersections_horizontal, width);
         let old_split = split_next;
         split_next = split;
 
@@ -419,18 +437,23 @@ fn generate_horizontal_object(
             lean_top: !(ctx.is_first_col && i == 0),
             top_intersection: (ctx.top_intersection && i == 0) || old_split,
             top_left: ctx.top_left && i == 0,
-            splits: intersections,
+            intersections_horizontal,
+            intersections_vertical: first_key_intersections_horizontal,
             size,
         };
 
-        let val = config_string(val, &cfg.cfg, valctx.size.width, valctx.size.height);
-        let val = generate_value_cell(&val, cfg, valctx);
+        first_key_intersections_horizontal = vec![];
+
+        println!("{val} {} {}", ctx.top_intersection, i);
+
+        let val = generate_value_cell(val, cfg, valctx);
         let value = val.content;
 
         row1.push(value);
     }
 
-    let mut new_splits = vec![];
+    let mut next_intersections_horizontal = vec![];
+
     let mut row2 = Vec::with_capacity(obj.len());
     for (i, val) in obj.values().enumerate() {
         let key_pos = ctx.pos + i + 1;
@@ -460,18 +483,35 @@ fn generate_horizontal_object(
             no_right: !(ctx.is_last_col && i + 1 == obj.len()),
             no_bottom: false,
             lean_top: false,
-            top_intersection: i > 0 || ctx.top_intersection,
+            top_intersection: i > 0 || (i == 0 && vsplit),
             top_left: i == 0,
-            splits: vec![],
+            intersections_horizontal: vec![],
+            intersections_vertical,
             size,
         };
 
-        let val = _collapsed_table(val, cfg, dims, valctx);
-        new_splits.extend(val.intersections);
-        let value = val.content;
+        println!(
+            "---- {:?} {:?} {:?}",
+            obj.keys().nth(i).unwrap(),
+            valctx.intersections_vertical,
+            vsplit,
+        );
 
-        row2.push(value);
+        let val = _collapsed_table(val, cfg, dims, valctx);
+
+        println!(
+            "---- {:?} {:?}",
+            obj.keys().nth(i).unwrap(),
+            val.intersections_vertical
+        );
+
+        intersections_vertical = val.intersections_vertical;
+        next_intersections_horizontal.extend(val.intersections_horizontal);
+
+        row2.push(val.content);
     }
+
+    intersections_vertical.insert(0, key_height);
 
     let mut b = Builder::with_capacity(2);
     b.hint_column_size(obj.len());
@@ -483,13 +523,12 @@ fn generate_horizontal_object(
         .with(Padding::zero())
         .to_string();
 
-    println!("{} {}", ctx.size.width, chunk_width);
-    println!("{}", table);
-
-    CellData::new(table, new_splits)
+    CellData::new(table, next_intersections_horizontal, intersections_vertical)
 }
 
 fn generate_value_cell(value: &str, cfg: &Config, ctx: PrintContext) -> CellData {
+    let value = config_string(value, &cfg.cfg, ctx.size.width, ctx.size.height);
+
     let mut table = col![value];
     table.with(&cfg.cfg);
 
@@ -529,17 +568,17 @@ fn generate_value_cell(value: &str, cfg: &Config, ctx: PrintContext) -> CellData
         table.with(TopLeftChangeTopIntersection);
     }
 
-    if ctx.top_intersection {
-        table.with(TopLeftChangeIntersection);
-    }
-
     if ctx.top_left {
         table.with(TopLeftChangeToLeft);
     }
 
+    if ctx.top_intersection {
+        table.with(TopLeftChangeIntersection);
+    }
+
     let has_vertical = cfg.cfg.get_borders().has_left();
-    if !ctx.splits.is_empty() && has_vertical {
-        let mut splits = ctx.splits;
+    if !ctx.intersections_horizontal.is_empty() && has_vertical {
+        let mut splits = ctx.intersections_horizontal;
         let mut splits = short_splits(&mut splits, ctx.size.width);
         squash_splits(&mut splits);
 
@@ -547,9 +586,19 @@ fn generate_value_cell(value: &str, cfg: &Config, ctx: PrintContext) -> CellData
         table.with(SetTopChars(&splits, c));
     }
 
+    let has_horizontal = cfg.cfg.get_borders().has_top();
+    if !ctx.intersections_vertical.is_empty() && has_horizontal {
+        let mut splits = ctx.intersections_vertical;
+        let mut splits = short_splits(&mut splits, ctx.size.width);
+        squash_splits(&mut splits);
+
+        let c = cfg.cfg.get_borders().right_intersection.unwrap_or(' ');
+        table.with(SetLeftChars(&splits, c));
+    }
+
     let table = table.to_string();
 
-    CellData::new(table, vec![ctx.size.width])
+    CellData::new(table, vec![ctx.size.width], vec![ctx.size.height])
 }
 
 struct NoTopBorders;
@@ -734,6 +783,16 @@ impl<R, D> TableOption<R, D, ColoredConfig> for SetTopChars<'_> {
         for &split in self.0 {
             let offset = split;
             cfg.set_horizontal_char((0, 0), self.1, Offset::Begin(offset));
+        }
+    }
+}
+
+struct SetLeftChars<'a>(&'a [usize], char);
+
+impl<R, D> TableOption<R, D, ColoredConfig> for SetLeftChars<'_> {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        for &offset in self.0 {
+            cfg.set_vertical_char((0, 0), self.1, Offset::Begin(offset));
         }
     }
 }
@@ -1057,27 +1116,6 @@ fn short_splits(splits: &mut Vec<usize>, width: usize) -> Vec<usize> {
     out
 }
 
-fn short_splits2(splits: &mut Vec<usize>, width: usize) -> Vec<usize> {
-    if splits.is_empty() {
-        return Vec::new();
-    }
-
-    let mut out = Vec::new();
-    let mut pos = 0;
-    for &split in splits.iter() {
-        if pos + split >= width {
-            break;
-        }
-
-        pos += split;
-        out.push(split);
-    }
-
-    splits.drain(..out.len());
-
-    out
-}
-
 fn short_splits3(splits: &mut Vec<usize>, width: usize) -> (bool, Vec<usize>) {
     if splits.is_empty() {
         return (false, Vec::new());
@@ -1113,24 +1151,21 @@ fn short_splits3(splits: &mut Vec<usize>, width: usize) -> (bool, Vec<usize>) {
     (false, out)
 }
 
-fn flatten_splits(splits: &mut [usize]) {
-    if splits.len() < 2 {
-        return;
-    }
-
-    let mut i = splits.len() - 1;
-    while i > 0 {
-        splits[i] -= splits[i - 1];
-        i -= 1;
-    }
-}
-
 fn squash_splits(splits: &mut [usize]) {
     splits.iter_mut().enumerate().for_each(|(i, s)| *s += i);
 }
 
-fn intersections_to_splits(splits: &mut [usize]) {
-    for split in splits.iter_mut() {
-        *split += 1;
-    }
-}
+// struct RecursiveTable<V> {
+//     config: cfg,
+//     value: V,
+// }
+
+// trait TableValueVisitor {
+//     fn visit() -> TableValue
+// }
+
+// enum TableValue {
+//     HorizontalList(Vec<TableValue>),
+//     VerticalList(Vec<TableValue>),
+//     Cell(String),
+// }
