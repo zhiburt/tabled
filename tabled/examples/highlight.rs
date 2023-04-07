@@ -1,5 +1,14 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example highlight`
+//!
+//! This example demonstrates using the [`Highlight`] [`TableOption`] to
+//! decorate sections of a [`Table`] with a unique [`Border`].
+//!
+//! ---
+//!
+//! * Note how [`Highlight`] arguments can be chained together to
+//! create cross-sections and non-symmetrical shapes.
 
 use tabled::{
     settings::{

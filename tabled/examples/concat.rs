@@ -1,5 +1,16 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example concat`
+//!
+//! This example demonstrates using the [`Concat`] [`TableOption`] to concatenate
+//! [`tables`](Table) together.
+//!
+//! ---
+//!
+//! * [`Concat`] supports appending tables vertically and horizontally.
+//!
+//! * Note how the base tables style settings take take precedence over the appended table.
+//! If the two tables are of unequal shape, additional blank cells are added as needed.
 
 use tabled::{
     settings::{object::Segment, Alignment, Concat, Modify, Style},

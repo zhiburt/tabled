@@ -1,13 +1,13 @@
 //! This example can be run with the following command:
 //!
-//! `cargo run --example collapse`
+//! `cargo run --example json_to_table`
 //!
-//! This example demonstrates using the [`JsonTable::collapse`] function
-//! to greatly improve the readability of a [`JsonTable`].
+//! This example demonstrates parsing a JSON literal to a [`Value`],
+//! and then translating that value to a [`JsonTable`] struct.
 //!
 //! ---
 //!
-//! * Note that a [`JsonTable`] must be mutably defined to be collapsed.
+//! * Note how the [`json_to_table`] function is used for easy translations.
 
 use json_to_table::json_to_table;
 
@@ -25,8 +25,7 @@ fn main() {
         ],
     });
 
-    let mut table = json_to_table(&json);
-    table.collapse();
+    let table = json_to_table(&json);
 
     println!("{table}");
 }

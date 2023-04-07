@@ -1,9 +1,14 @@
-//! We can set colors for particular cells by using [`Grid`]
+//! This example can be run with the following command:
 //!
-//! The example can be run by this command
 //! `cargo run --example grid_colors`
 //!
-//! [`Grid`]: tabled::grid::Grid
+//! This example demonstrates using [`Color`] as a [`CellOption`] modifier to stylize
+//! the cells of a [`Table`].
+//!
+//! ---
+//!
+//! * Note how the [`Color`] [setting](tabled::settings) is used to simplify creating
+//! reusable themes for backgrounds.
 
 use tabled::{
     settings::{Color, Modify, Style},

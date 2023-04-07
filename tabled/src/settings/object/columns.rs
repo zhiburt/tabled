@@ -197,7 +197,7 @@ impl Iterator for ColumnsIter {
     type Item = Entity;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.start == self.end {
+        if self.start >= self.end {
             return None;
         }
 

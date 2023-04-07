@@ -1,5 +1,17 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example custom_style`
+//!
+//! This example demonstrates customizing one of the [`tabled`] default [styles](Style)
+//! to create a unique [`Table`] display.
+//!
+//! ---
+//!
+//! * Note that all predesigned styles can be configured completely.
+//! Styles can also be created from scratch!
+//!
+//! * Note that adding and removing borders with a [`Style`] theme doesn't affect the
+//! number of functional columns and rows.
 
 use tabled::{
     settings::{

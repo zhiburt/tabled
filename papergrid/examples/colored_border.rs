@@ -1,7 +1,16 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --features color --example colored_border`
 //!
-//! This example requires the `color` feature.
+//! This example demonstrates using colors to stylize [`Grid`] borders.
+//! Borders can be set globally with [`SpannedConfig::set_border_color_global()`]
+//! or individually with [`SpannedConfig::set_border_color()`].
+//!
+//! ---
+//!
+//! * 🚩 This example requires the `color` feature.
+//!
+//! * [`CompactConfig`] also supports colorization when the `color` feature is enabled.
 
 use papergrid::{
     color::AnsiColor,
@@ -18,7 +27,7 @@ fn main() {
     let cfg = generate_table_config();
 
     let data = vec![
-        vec!["Papergrid", "is a library", "for print tables", "!"],
+        vec!["Papergrid", "is a library", "for printing tables", "!"],
         vec!["", "Just like this", "", ""],
     ];
     let records = IterRecords::new(data, 4, Some(2));

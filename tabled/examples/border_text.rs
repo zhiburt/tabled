@@ -1,5 +1,28 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example border_text`
+//!
+//! This example demonstrates inserting text into the borders
+//! of a [`Table`] with [`BorderText`]; a powerful labeling tool.
+//!
+//! ---
+//!
+//! * [`BorderText`] currently supports:
+//!     * Horizontal border placement
+//!     * Placement starting column offset
+//!     * Text colorization
+//!
+//! * Note how the flexibility of [`Style`] is utilized
+//! to remove horizontal borders from the table entirely,
+//! and then granularly reinserts one for a highly customized
+//! visualization.
+//!
+//! * Note how the [`Rows`] utility object is used to idiomatically
+//! reference the first and last rows of a [`Table`] without writing
+//! the necessary logic by hand.
+//!
+//! * 🚀 Combining several easy-to-use tools,
+//! to create unique data representations is what makes [`tabled`] great!
 
 use tabled::{
     settings::{

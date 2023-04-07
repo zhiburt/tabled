@@ -18,11 +18,16 @@ coveralls = { repository = "https://github.com/zhiburt/tabled", branch = "master
 maintenance = { status = "actively-developed" }
 
 [[example]]
+name = "color"
+required-features = ["color", "derive"]
+
+[[example]]
 name = "colored_borders"
 required-features = ["derive"]
 
 [[example]]
-name = "color"
+name = "colored_padding"
+path = "examples/colored_padding.rs"
 required-features = ["color", "derive"]
 
 [[example]]
@@ -123,11 +128,6 @@ required-features = ["derive"]
 name = "nested_table_3"
 path = "examples/nested_table_3.rs"
 required-features = ["derive"]
-
-[[example]]
-name = "padding_color"
-path = "examples/padding_color.rs"
-required-features = ["color", "derive"]
 
 [[example]]
 name = "col_row_macros"

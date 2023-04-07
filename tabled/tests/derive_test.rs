@@ -1080,3 +1080,11 @@ fn test_skip_enum_0() {
     assert_eq!(Letters::Consonant('c').fields(), vec!["", "+"]);
     assert_eq!(Letters::Digit.fields(), vec!["", ""]);
 }
+
+mod __ {
+    #[test]
+    fn dont_import_the_trait() {
+        #[derive(tabled::Tabled)]
+        struct __;
+    }
+}

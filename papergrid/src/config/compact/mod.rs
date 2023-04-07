@@ -37,13 +37,13 @@ impl CompactConfig {
             border_colors: Borders::empty(),
             margin: Sides::filled(Indent::zero()),
             margin_color: Sides::filled(StaticColor::new("", "")),
-            padding_color: Sides::filled(StaticColor::new("", "")),
             padding: Sides::new(
                 Indent::spaced(1),
                 Indent::spaced(1),
                 Indent::zero(),
                 Indent::zero(),
             ),
+            padding_color: Sides::filled(StaticColor::new("", "")),
         }
     }
 

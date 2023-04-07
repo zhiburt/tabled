@@ -56,7 +56,7 @@ use crate::Tabled;
 /// `ExtendedTable` display data in a 'expanded display mode' from postgresql.
 /// It may be useful for a large data sets with a lot of fields.
 ///
-/// See 'Examples' in <https://www.postgresql.org/docs/current/app-psql.html.>.
+/// See 'Examples' in <https://www.postgresql.org/docs/current/app-psql.html>.
 ///
 /// It escapes strings to resolve a multi-line ones.
 /// Because of that ANSI sequences will be not be rendered too so colores will not be showed.

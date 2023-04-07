@@ -1,7 +1,19 @@
-//! The example can be run by this command
-//! `cargo run --example col_row_macros --features macros`
+//! This example can be run with the following command:
 //!
-//! This example requires the `macros` feature.
+//! `cargo run --features macros --example col_row_macros`
+//!
+//! This example demonstrates using the [`col!`] and [`row!`] macros to easily
+//! organize multiple tables together into a single, new [`Table`] display.
+//!
+//! ---
+//!
+//! * 🚩 This example requires the `macros` feature.
+//!
+//! * Note how both macros can be used in combination to layer
+//! several table arrangements together.
+//!
+//! * Note how [`col!`] and [`row!`] support idiomatic argument duplication
+//! with the familiar `[T; N]` syntax.
 
 use tabled::{
     col, row,

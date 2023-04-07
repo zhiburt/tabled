@@ -1,5 +1,19 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example inline_enum`
+//!
+//! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
+//! [`inline`] to expand enum fields to individual columns in a [`Table`] display.
+//!
+//! ---
+//!
+//! * Note how the optional [`inline`] argument is used to apply prefixes
+//! to decomposed column headers. This is helpful for organizing tables
+//! with repetative fields that would normally result in confusing headers.
+//!
+//! * Note that without inlining a struct or enum field, those objects
+//! must implement the [`Display`] trait as they will be represented in
+//! a single column with the value of their [`ToString`] output.
 
 use tabled::{Table, Tabled};
 

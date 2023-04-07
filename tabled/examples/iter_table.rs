@@ -1,5 +1,21 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example iter_table`
+//!
+//! This example demonstrates using [`IterTable`], an [allocation](https://doc.rust-lang.org/nomicon/vec/vec-alloc.html)
+//! free [`Table`] alternative that translates an iterator into a display.
+//!
+//! ---
+//!
+//! * Note how [`IterTable`] supports the familiar `.with()` syntax for applying display
+//! modifications.
+//!
+//! * [`IterTable`] supports manual configuration of:
+//!     * Record sniffing (default 1000 rows)
+//!     * Row cutoff
+//!     * Row height
+//!     * Column cutoff
+//!     * Column width
 
 use std::io::BufRead;
 

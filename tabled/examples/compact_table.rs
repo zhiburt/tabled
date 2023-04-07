@@ -1,5 +1,14 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example compact_table`
+//!
+//! This example demonstrates creating a `new()` [`CompactTable`] with
+//! manual specifications for column count, column widths, and border styling.
+//!
+//! ---
+//!
+//! * [`CompactTable`] is a [`Table`] alternative that trades off reduced
+//! flexibility for improved performance.
 
 use tabled::{settings::Style, tables::CompactTable};
 

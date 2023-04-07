@@ -1,5 +1,15 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example common_grid`
+//!
+//! This example demonstrates the flexibility of [`papergrid`] with manual configurations
+//! of [`Borders`], [`CompactConfig`], and column counts with [`IterRecords`].
+//!
+//! ---
+//!
+//! * For an alternative to [`CompactGrid`] and [`CompactGridDimension`] with
+//! flexible row height, variable intra-column spans, and multiline cell support
+//! see [`Grid`] and [`SpannedGridDimension`].
 
 use papergrid::{
     config::compact::CompactConfig,
@@ -14,7 +24,7 @@ fn main() {
     let cfg = generate_table_config();
 
     let data = [
-        ["Papergrid", "is a library", "for print tables", "!"],
+        ["Papergrid", "is a library", "for printing tables", "!"],
         [
             "Just like this",
             "NOTICE",

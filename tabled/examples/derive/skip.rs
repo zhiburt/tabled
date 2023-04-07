@@ -1,5 +1,14 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example skip`
+//!
+//! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
+//! [`skip`] to omit specific fields from becoming columns in a [`Table`] display.
+//!
+//! ---
+//!
+//! * Note how [`skip`] annoys [clippy](https://doc.rust-lang.org/clippy/) with `dead_code`
+//! warnings. This can be addressed with compiler overrides like `#[allow(dead_code)]`.
 
 use tabled::{Table, Tabled};
 

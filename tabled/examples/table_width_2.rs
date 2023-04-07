@@ -1,5 +1,11 @@
-//! The example can be run by this command
+//! This example can be run with the following command:
+//!
 //! `cargo run --example table_width_2`
+//!
+//! This example demonstrates using [`Wrap::keep_words()`] to preserve
+//! word shape while truncating a table to the specified size. Without
+//! this setting enabled, a word could possibly be split into pieces,
+//! greatly reducing the legibility of the display.
 
 use tabled::{
     settings::{object::Segment, Alignment, Modify, Style, Width},
