@@ -211,6 +211,41 @@ test_table!(
 );
 
 test_table!(
+    pool_table_example,
+    {
+        let data = vec![
+            vec!["Hello World", "Hello World", "Hello World"],
+            vec!["Hello", "", "Hello"],
+            vec!["W", "o", "r", "l", "d"],
+        ];
+
+        let data = TableValue::Column(
+            data.into_iter()
+                .map(|row| {
+                    TableValue::Row(
+                        row.into_iter()
+                            .map(|text| TableValue::Cell(text.to_owned()))
+                            .collect(),
+                    )
+                })
+                .collect(),
+        );
+
+        PoolTable::from(data)
+            .with(Style::modern())
+            .with(Alignment::center())
+            .to_string()
+    },
+    "┌─────────────┬─────────────┬─────────────┐"
+    "│ Hello World │ Hello World │ Hello World │"
+    "├─────────────┴──┬─────────┬┴─────────────┤"
+    "│     Hello      │         │    Hello     │"
+    "├─────────┬──────┴┬───────┬┴──────┬───────┤"
+    "│    W    │   o   │   r   │   l   │   d   │"
+    "└─────────┴───────┴───────┴───────┴───────┘"
+);
+
+test_table!(
     pool_table_value_empty_row,
     PoolTable::from(TableValue::Row(vec![]))
     .with(Style::modern()),
@@ -393,4 +428,37 @@ test_table!(
     "|      |            3            |  2   |"
     "|      |  3                      |      |"
     "+------+-------------------------+------+"
+);
+
+test_table!(
+    pool_table_style_empty,
+    PoolTable::new(create_matrix::<3, 3>()).with(Style::empty()),
+    " 0-0  0-1  0-2 "
+    " 1-0  1-1  1-2 "
+    " 2-0  2-1  2-2 "
+);
+
+test_table!(
+    pool_table_style_markdown,
+    PoolTable::new(create_matrix::<3, 3>()).with(Style::markdown()),
+    "| 0-0  | 0-1  | 0-2 |"
+    "|-----||-----||-----|"
+    "| 1-0  | 1-1  | 1-2 |"
+    "|-----||-----||-----|"
+    "| 2-0  | 2-1  | 2-2 |"
+    "|-----||-----||-----|"
+);
+
+test_table!(
+    pool_table_style_rounded,
+    PoolTable::new(create_matrix::<3, 3>()).with(Style::rounded()),
+    "╭───── ┬───── ┬─────╮"
+    "│ 0-0  │ 0-1  │ 0-2 │"
+    "├─────┤├─────┤├─────┤"
+    " ─────  ─────  ───── "
+    "│ 1-0  │ 1-1  │ 1-2 │"
+    "├─────┤├─────┤├─────┤"
+    " ─────  ─────  ───── "
+    "│ 2-0  │ 2-1  │ 2-2 │"
+    "├─────┤├─────┤├─────┤"
 );

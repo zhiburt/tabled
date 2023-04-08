@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example compact_table_3`
-//!
 //! This example demonstrates how [`CompactTable`] is limited to single
 //! line rows.
-//!
-//! ---
 //!
 //! * Note how the multiline data is accepted, but then truncated in the display.
 

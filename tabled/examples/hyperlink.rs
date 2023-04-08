@@ -1,13 +1,7 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --features color --example hyperlink`
-//!
 //! This example demonstrates how hyperlinks can be embedded into a [`Table`] display.
 //!
 //! While not a [`tabled`] specific implementation, it is helpful to know that
 //! most users expect certain elements of interactivity based on the purpose of your display.
-//!
-//! ---
 //!
 //! * 🚩 This example requires the `color` feature.
 //!

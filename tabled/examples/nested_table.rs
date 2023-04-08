@@ -1,10 +1,4 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example nested_table`
-//!
 //! This example demonstrates how [`Tables`](Table) can be comprised of other tables.
-//!
-//! ---
 //!
 //! * This first nested [`Table`] example showcases the [`Builder`] approach.
 //!

@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --features macros --example col_row_macros`
-//!
 //! This example demonstrates using the [`col!`] and [`row!`] macros to easily
 //! organize multiple tables together into a single, new [`Table`] display.
-//!
-//! ---
 //!
 //! * 🚩 This example requires the `macros` feature.
 //!

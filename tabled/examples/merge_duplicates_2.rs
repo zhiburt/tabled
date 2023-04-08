@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example merge_duplicates_2`
-//!
 //! This example demonstrates using the [`Merge`] [`TableOption`] to clarify
 //! redundancies in a [`Table`] display.
-//!
-//! ---
 //!
 //! * Note how a custom theme is applied to give the [`Merged`](Merge) cells
 //! a unique look.

@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example order`
-//!
 //! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
 //! [`order`] to relocate fields to specified indexes in a [`Table`] display.
-//!
-//! ---
 //!
 //! * By default, [`Table`] columns are shown in the same ordered they are
 //! defined in the deriving struct/enum definition.

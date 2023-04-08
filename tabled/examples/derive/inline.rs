@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example inline`
-//!
 //! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
 //! [`inline`] to expand struct fields to individual columns in a [`Table`] display.
-//!
-//! ---
 //!
 //! * Note that without inlining a struct or enum field, those objects
 //! must implement the [`Display`] trait as they will be represented in

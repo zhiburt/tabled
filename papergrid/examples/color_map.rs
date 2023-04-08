@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --features color --example color_map`
-//!
 //! This example demonstrates using a [`HashMap`] of colors to simplify styling
 //! sections of a [`Grid`] without embedding ANSI escape characters into cell values.
-//!
-//! ---
 //!
 //! * 🚩 This example requires the `color` feature.
 //!

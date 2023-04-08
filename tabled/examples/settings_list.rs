@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example settings_list`
-//!
 //! This example demonstrates using the [`Settings`] [`TableOption`] to array
 //! [`Table`] configurations in a separate step from instantiation.
-//!
-//! ---
 //!
 //! * Note how this methodoly can lead to huge performance gains
 //! with compile-time constants.

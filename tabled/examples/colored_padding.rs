@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --features color --example colored_padding`
-//!
 //! This example demonstrates using the [`Padding::colorize()`] function in several ways
 //! to give a [`Table`] display a vibrant asthetic.
-//!
-//! ---
 //!
 //! * 🚩 This example requires the `color` feature.
 //!
@@ -167,7 +161,7 @@ where
                 let right = available_width - left;
 
                 let pos = (row, col).into();
-                let mut pad = cfg.get_padding(pos).clone();
+                let mut pad = cfg.get_padding(pos);
                 pad.left.size = left;
                 pad.right.size = right;
 

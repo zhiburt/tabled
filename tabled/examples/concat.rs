@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example concat`
-//!
 //! This example demonstrates using the [`Concat`] [`TableOption`] to concatenate
 //! [`tables`](Table) together.
-//!
-//! ---
 //!
 //! * [`Concat`] supports appending tables vertically and horizontally.
 //!

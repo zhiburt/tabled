@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example nested_table_3`
-//!
 //! This example demonstrates creating a nested [`Table`] by instantiating a new
 //! [`Table`] from a collection of other [`Tables`](Table).
-//!
-//! ---
 //!
 //! * This third nested [`Table`] example showcases the [`Table::new()`] approach.
 

@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example format`
-//!
 //! This example demonstrates using the [`Format`] [`CellOption`] factory to alter
 //! the cells of a [`Table`].
-//!
-//! ---
 //!
 //! * Note how [`Format::content()`] gives access to the respective cell content for replacement.
 //! And [`Format::positioned()`] additionally provides the index coordinates of that cell.

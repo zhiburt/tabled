@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example border_text`
-//!
 //! This example demonstrates inserting text into the borders
 //! of a [`Table`] with [`BorderText`]; a powerful labeling tool.
-//!
-//! ---
 //!
 //! * [`BorderText`] currently supports:
 //!     * Horizontal border placement

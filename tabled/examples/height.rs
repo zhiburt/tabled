@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example height`
-//!
 //! This example demonstrates using the [`Height`] [`TableOption`] for adjusting
 //! the height of a [`Table`].
-//!
-//! ---
 //!
 //! * [`Height`] supports three key features:
 //!     * [`CellHeightIncrease`] spreads new whitespace between the [`Table`]

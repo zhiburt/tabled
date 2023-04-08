@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example grid_colors`
-//!
 //! This example demonstrates using [`Color`] as a [`CellOption`] modifier to stylize
 //! the cells of a [`Table`].
-//!
-//! ---
 //!
 //! * Note how the [`Color`] [setting](tabled::settings) is used to simplify creating
 //! reusable themes for backgrounds.

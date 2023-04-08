@@ -1,13 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example extended_display`
-//!
 //! This example demonstrates using [ExtendedTable], a [Table] alternative with
 //! limited flexibility but a greater emphasis on large data displays.
-//!
-//! ---
-//!
-//! * 🎉 Inspired by https://www.postgresql.org/docs/current/app-psql.html
 
 use tabled::{tables::ExtendedTable, Tabled};
 

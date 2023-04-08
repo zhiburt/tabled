@@ -5,8 +5,6 @@
 //! This example demonstrates using the [`Shadow`] [`TableOption`] to create
 //! a striking frame around a [`Table`] display.
 //!
-//! ---
-//!
 //! * [`Shadow`] supports several configurations:
 //!     * Thickness
 //!     * Offset

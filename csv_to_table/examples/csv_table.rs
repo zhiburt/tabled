@@ -1,10 +1,4 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example csv_table`
-//!
 //! This example demonstrates reading a csv string to a [`Table`] struct.
-//!
-//! ---
 //!
 //! * Note the necessary step of representing the string as a byte array.
 

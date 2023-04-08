@@ -1,10 +1,4 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example iter`
-//!
 //! This example demonstrates an alternative parsing option for [`csv_to_table`] translations.
-//!
-//! ---
 //!
 //! * The [`IterTable::sniff()`] formatting function is used to control how many
 //! rows will be considered in determining column widths. Since the default sniff value is 1000,

@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example formatting_settings`
-//!
 //! This example demonstrates using the [`Alignment`], [`AlignmentStrategy`], and [`TrimStrategy`] [`CellOptions`]
 //! to align the content of a [`Table`] in several nuanced ways.
-//!
-//! ---
 //!
 //! * Note how [`AlignmentStrategy`] and [`TrimStrategy`] provide useful tools for managing multiline cells and
 //! cell values that are bloated with whitespace.

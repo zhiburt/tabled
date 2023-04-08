@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example inline_enum`
-//!
 //! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
 //! [`inline`] to expand enum fields to individual columns in a [`Table`] display.
-//!
-//! ---
 //!
 //! * Note how the optional [`inline`] argument is used to apply prefixes
 //! to decomposed column headers. This is helpful for organizing tables

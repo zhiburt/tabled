@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example split`
-//!
 //! This example demonstrates using the [`Split`] [`TableOption`] to
 //! transform a [`Table`] display in multiple ways.
-//!
-//! ---
 //!
 //! * Several configurations are available to customize a [`Split`] instruction:
 //!     * [`Index`](usize)
