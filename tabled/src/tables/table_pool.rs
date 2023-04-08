@@ -224,7 +224,6 @@ mod print {
 
     use crate::{
         builder::Builder,
-        col,
         grid::{
             config::{
                 AlignmentHorizontal, AlignmentVertical, ColoredConfig, CompactMultilineConfig,
@@ -235,6 +234,7 @@ mod print {
             util::string::{count_lines, get_lines, string_dimension, string_width},
         },
         settings::{Padding, Style, TableOption},
+        Table,
     };
 
     use super::TableValue;
@@ -475,7 +475,7 @@ mod print {
         let config: SpannedConfig = (*cfg).into();
 
         let value = config_string(value, cfg, width, height);
-        let mut table = col![value];
+        let mut table = Table::new([value]);
 
         let _ = table.with(config);
         let _ = table.with(ConfigCell(ctx));
