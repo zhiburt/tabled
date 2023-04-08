@@ -1,9 +1,9 @@
 //! This module contains a compile time style builder [`Style`].
 
-use core::marker::PhantomData;
+use core::{marker::PhantomData, ops::DerefMut};
 
 use crate::{
-    grid::config::{Borders, CompactConfig},
+    grid::config::{Borders, CompactConfig, CompactMultilineConfig},
     settings::TableOption,
 };
 
@@ -1091,6 +1091,16 @@ where
         if let Some(mut line) = first_line {
             line.change(records, cfg, dimension);
         }
+    }
+}
+
+impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, CompactMultilineConfig>
+    for Style<T, B, L, R, H, V, HLines, VLines>
+where
+    HLines: IntoIterator<Item = HorizontalLine> + Clone,
+{
+    fn change(&mut self, records: &mut I, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
+        self.change(records, cfg.deref_mut(), dimension)
     }
 }
 

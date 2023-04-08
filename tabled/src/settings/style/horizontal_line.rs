@@ -1,4 +1,9 @@
-use crate::{grid::config::CompactConfig, settings::TableOption};
+use core::ops::DerefMut;
+
+use crate::{
+    grid::config::{CompactConfig, CompactMultilineConfig},
+    settings::TableOption,
+};
 
 #[cfg(feature = "std")]
 use crate::grid::config::{ColoredConfig, HorizontalLine as GridLine};
@@ -107,5 +112,11 @@ impl<R, D> TableOption<R, D, CompactConfig> for HorizontalLine {
                 *cfg = cfg.set_first_horizontal_line(papergrid::config::Line::from(line));
             }
         }
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactMultilineConfig> for HorizontalLine {
+    fn change(&mut self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
+        self.change(records, cfg.deref_mut(), dimension)
     }
 }

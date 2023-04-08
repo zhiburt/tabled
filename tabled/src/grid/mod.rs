@@ -7,6 +7,8 @@
 #[cfg(feature = "std")]
 mod colored_config;
 
+mod compact_multiline_config;
+
 pub mod dimension;
 pub mod records;
 
@@ -32,6 +34,8 @@ pub mod config {
     #[cfg(feature = "std")]
     #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     pub use super::colored_config::ColoredConfig;
+
+    pub use super::compact_multiline_config::CompactMultilineConfig;
 }
 
 pub use papergrid::grid::compact::CompactGrid;

@@ -444,8 +444,6 @@ fn generate_horizontal_object(
 
         first_key_intersections_horizontal = vec![];
 
-        println!("{val} {} {}", ctx.top_intersection, i);
-
         let val = generate_value_cell(val, cfg, valctx);
         let value = val.content;
 
@@ -490,20 +488,7 @@ fn generate_horizontal_object(
             size,
         };
 
-        println!(
-            "---- {:?} {:?} {:?}",
-            obj.keys().nth(i).unwrap(),
-            valctx.intersections_vertical,
-            vsplit,
-        );
-
         let val = _collapsed_table(val, cfg, dims, valctx);
-
-        println!(
-            "---- {:?} {:?}",
-            obj.keys().nth(i).unwrap(),
-            val.intersections_vertical
-        );
 
         intersections_vertical = val.intersections_vertical;
         next_intersections_horizontal.extend(val.intersections_horizontal);
@@ -1154,18 +1139,3 @@ fn short_splits3(splits: &mut Vec<usize>, width: usize) -> (bool, Vec<usize>) {
 fn squash_splits(splits: &mut [usize]) {
     splits.iter_mut().enumerate().for_each(|(i, s)| *s += i);
 }
-
-// struct RecursiveTable<V> {
-//     config: cfg,
-//     value: V,
-// }
-
-// trait TableValueVisitor {
-//     fn visit() -> TableValue
-// }
-
-// enum TableValue {
-//     HorizontalList(Vec<TableValue>),
-//     VerticalList(Vec<TableValue>),
-//     Cell(String),
-// }

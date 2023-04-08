@@ -67,6 +67,10 @@ impl SpannedConfig {
     }
 
     /// Set a [`Margin`] value.
+    ///
+
+    // todo: change back to set_margin()
+
     pub fn get_margin_mut(&mut self) -> &mut Sides<ColoredMarginIndent> {
         &mut self.margin
     }

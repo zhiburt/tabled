@@ -313,6 +313,12 @@ impl<R, D> TableOption<R, D, ColoredConfig> for CompactConfig {
     }
 }
 
+impl<R, D> TableOption<R, D, ColoredConfig> for &CompactConfig {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg.deref_mut() = (**self).into();
+    }
+}
+
 impl<R, D> TableOption<R, D, ColoredConfig> for ColoredConfig {
     fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         *cfg = self.clone();
@@ -325,9 +331,15 @@ impl<R, D> TableOption<R, D, ColoredConfig> for &ColoredConfig {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for &CompactConfig {
+impl<R, D> TableOption<R, D, ColoredConfig> for SpannedConfig {
     fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg.deref_mut() = (**self).into();
+        *cfg.deref_mut() = self.clone();
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for &SpannedConfig {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg.deref_mut() = self.clone();
     }
 }
 

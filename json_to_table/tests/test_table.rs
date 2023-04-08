@@ -1064,6 +1064,150 @@ fn test_list_empty_entity_collapsed_2_horizontal() {
 }
 
 #[test]
+fn test_map_empty_entity_collapsed_1_horizontal_map() {
+    let value = json!(
+        {
+            "field1" : [],
+            "field2": "Value",
+            "field3" : [],
+            "field4": 3,
+            "field5" : []
+        }
+    );
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .object_orientation(Orientation::Horizontal)
+        .to_string();
+
+    assert_eq!(
+        table,
+        "┌────────┬────────┬────────┬────────┬────────┐\n\
+         │ field1 │ field2 │ field3 │ field4 │ field5 │\n\
+         ├────────┼────────┼────────┼────────┼────────┤\n\
+         │        │ Value  │        │ 3      │        │\n\
+         └────────┴────────┴────────┴────────┴────────┘"
+    );
+}
+
+#[test]
+fn test_map_empty_entity_collapsed_2_horizontal_map() {
+    let value = json!(
+        {
+            "key0": {},
+            "field1" : {
+                "key1": "value1",
+                "key2": []
+            },
+            "field2": "Value",
+            "field3" : [],
+            "field4": [
+                {},
+                "123",
+                {},
+                "sadas",
+                {}
+            ],
+            "field5" : []
+        }
+    );
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .object_orientation(Orientation::Horizontal)
+        .to_string();
+
+    assert_eq!(
+        table,
+        "┌───────────────┬────────┬────────┬────────┬────────┬──────┐\n\
+         │ field1        │ field2 │ field3 │ field4 │ field5 │ key0 │\n\
+         ├────────┬──────┼────────┼────────┼────────┼────────┼──────┤\n\
+         │ key1   │ key2 │ Value  │        │        │        │      │\n\
+         ├────────┼──────┤        │        ├────────┤        │      │\n\
+         │ value1 │      │        │        │ 123    │        │      │\n\
+         │        │      │        │        ├────────┤        │      │\n\
+         │        │      │        │        │        │        │      │\n\
+         │        │      │        │        ├────────┤        │      │\n\
+         │        │      │        │        │ sadas  │        │      │\n\
+         │        │      │        │        ├────────┤        │      │\n\
+         │        │      │        │        │        │        │      │\n\
+         └────────┴──────┴────────┴────────┴────────┴────────┴──────┘"
+    );
+}
+
+#[test]
+fn test_list_empty_entity_collapsed_0_horizontal_map() {
+    let value = json!([{}, "field1", {}, "field2", {}]);
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .object_orientation(Orientation::Horizontal)
+        .to_string();
+
+    assert_eq!(
+        table,
+        "┌────────┐\n\
+         │        │\n\
+         ├────────┤\n\
+         │ field1 │\n\
+         ├────────┤\n\
+         │        │\n\
+         ├────────┤\n\
+         │ field2 │\n\
+         ├────────┤\n\
+         │        │\n\
+         └────────┘"
+    );
+}
+
+#[test]
+fn test_list_empty_entity_collapsed_1_horizontal_map() {
+    let value = json!([{}, {}, {}]);
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .object_orientation(Orientation::Horizontal)
+        .to_string();
+
+    assert_eq!(
+        table,
+        "┌──┐\n\
+         │  │\n\
+         ├──┤\n\
+         │  │\n\
+         ├──┤\n\
+         │  │\n\
+         └──┘"
+    );
+}
+
+#[test]
+fn test_list_empty_entity_collapsed_2_horizontal_map() {
+    let value = json!([[], [], []]);
+
+    let table = json_to_table(&value)
+        .with(Style::modern())
+        .collapse()
+        .object_orientation(Orientation::Horizontal)
+        .to_string();
+
+    assert_eq!(
+        table,
+        "┌──┐\n\
+         │  │\n\
+         ├──┤\n\
+         │  │\n\
+         ├──┤\n\
+         │  │\n\
+         └──┘"
+    );
+}
+
+#[test]
 fn test_map_empty_entity_plain_0() {
     let value = json!(
         {
