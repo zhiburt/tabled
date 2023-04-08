@@ -196,7 +196,7 @@ fn main() {
     );
 
     let table = json_to_table(&value)
-        .set_object_mode(Orientation::Horizontal)
+        .set_object_mode(Orientation::Row)
         .to_string();
 
     println!("{}", table)

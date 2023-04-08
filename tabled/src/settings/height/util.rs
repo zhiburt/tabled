@@ -11,7 +11,7 @@ pub(crate) fn get_table_height<R: Records + ExactRecords>(
     let count_horizontals = cfg.count_horizontal(records.count_rows());
 
     let margin = cfg.get_margin();
-    let margin_size = margin.top.indent.size + margin.bottom.indent.size;
+    let margin_size = margin.top.size + margin.bottom.size;
 
     let list = SpannedGridDimension::height(records, cfg);
     let total = list.iter().sum::<usize>();

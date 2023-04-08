@@ -83,8 +83,8 @@ fn build_dimensions<R: Records>(records: R, cfg: &SpannedConfig) -> (Vec<usize>,
             let text = cell.as_ref();
             let (height, width) = string_dimension(text);
             let pad = cfg.get_padding(pos.into());
-            let width = width + pad.left.indent.size + pad.right.indent.size;
-            let height = height + pad.top.indent.size + pad.bottom.indent.size;
+            let width = width + pad.left.size + pad.right.size;
+            let height = height + pad.top.size + pad.bottom.size;
 
             match cfg.get_column_span(pos) {
                 Some(n) if n > 1 => {
@@ -174,7 +174,7 @@ fn count_horizontal_borders(cfg: &SpannedConfig, len: usize, start: usize, end: 
 fn get_cell_height(cell: &str, cfg: &SpannedConfig, pos: Position) -> usize {
     let count_lines = max(1, count_lines(cell));
     let padding = cfg.get_padding(pos.into());
-    count_lines + padding.top.indent.size + padding.bottom.indent.size
+    count_lines + padding.top.size + padding.bottom.size
 }
 
 fn inc_range(list: &mut [usize], size: usize, start: usize, end: usize) {
@@ -249,7 +249,7 @@ fn get_cell_width(text: &str, cfg: &SpannedConfig, pos: Position) -> usize {
 
 fn get_cell_padding(cfg: &SpannedConfig, pos: Position) -> usize {
     let padding = cfg.get_padding(pos.into());
-    padding.left.indent.size + padding.right.indent.size
+    padding.left.size + padding.right.size
 }
 
 fn range_width(

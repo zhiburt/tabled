@@ -218,6 +218,7 @@ fn configure_grid() -> CompactMultilineConfig {
 }
 
 mod print {
+    use core::iter::FromIterator;
     use std::{cmp::max, collections::HashMap, iter::repeat};
 
     use papergrid::config::{spanned::SpannedConfig, Borders};
@@ -475,7 +476,7 @@ mod print {
         let config: SpannedConfig = (*cfg).into();
 
         let value = config_string(value, cfg, width, height);
-        let mut table = Table::new([value]);
+        let mut table = Table::from_iter([[value]]);
 
         let _ = table.with(config);
         let _ = table.with(ConfigCell(ctx));

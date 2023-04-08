@@ -167,11 +167,11 @@ where
                 let right = available_width - left;
 
                 let pos = (row, col).into();
-                let mut padding = cfg.get_padding(pos).clone();
-                padding.left.indent.size = left;
-                padding.right.indent.size = right;
+                let mut pad = cfg.get_padding(pos).clone();
+                pad.left.size = left;
+                pad.right.size = right;
 
-                cfg.set_padding(pos, padding);
+                cfg.set_padding(pos, pad);
             }
         }
     }

@@ -27,6 +27,8 @@
 //!
 //! [`Table`]: crate::Table
 
+use papergrid::{color::AnsiColor, config::Indent};
+
 use crate::{
     grid::config::{ColoredConfig, Offset, Sides},
     settings::{color::Color, TableOption},
@@ -113,61 +115,82 @@ impl Shadow {
 
 impl<R, D> TableOption<R, D, ColoredConfig> for Shadow {
     fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let mut margin = cfg.get_margin_mut();
+        set_margin(cfg, self.size, self.c, &self.direction);
+        set_margin_offset(cfg, self.size_offset, &self.direction);
 
-        if self.direction.top {
-            margin.top.indent.size = self.size;
-            margin.top.indent.fill = self.c;
-        }
-
-        if self.direction.bottom {
-            margin.bottom.indent.size = self.size;
-            margin.bottom.indent.fill = self.c;
-        }
-
-        if self.direction.left {
-            margin.left.indent.size = self.size;
-            margin.left.indent.fill = self.c;
-        }
-
-        if self.direction.right {
-            margin.right.indent.size = self.size;
-            margin.right.indent.fill = self.c;
-        }
-
-        if self.direction.right && self.direction.bottom {
-            margin.bottom.offset = Offset::Begin(self.size_offset);
-            margin.right.offset = Offset::Begin(self.size_offset);
-        }
-
-        if self.direction.right && self.direction.top {
-            margin.top.offset = Offset::Begin(self.size_offset);
-            margin.right.offset = Offset::End(self.size_offset);
-        }
-
-        if self.direction.left && self.direction.bottom {
-            margin.bottom.offset = Offset::End(self.size_offset);
-            margin.left.offset = Offset::Begin(self.size_offset);
-        }
-
-        if self.direction.left && self.direction.top {
-            margin.top.offset = Offset::End(self.size_offset);
-            margin.left.offset = Offset::End(self.size_offset);
-        }
-
-        if let Some(color) = self.color.as_ref() {
-            if self.direction.top {
-                margin.top.color = Some(color.clone().into());
-            }
-            if self.direction.bottom {
-                margin.bottom.color = Some(color.clone().into());
-            }
-            if self.direction.left {
-                margin.left.color = Some(color.clone().into());
-            }
-            if self.direction.right {
-                margin.right.color = Some(color.clone().into());
-            }
+        if let Some(color) = &self.color {
+            set_margin_color(cfg, color.clone().into(), &self.direction);
         }
     }
+}
+
+fn set_margin(cfg: &mut ColoredConfig, size: usize, c: char, direction: &Sides<bool>) {
+    let mut margin: Sides<Indent> = Sides::default();
+    if direction.top {
+        margin.top.size = size;
+        margin.top.fill = c;
+    }
+
+    if direction.bottom {
+        margin.bottom.size = size;
+        margin.bottom.fill = c;
+    }
+
+    if direction.left {
+        margin.left.size = size;
+        margin.left.fill = c;
+    }
+
+    if direction.right {
+        margin.right.size = size;
+        margin.right.fill = c;
+    }
+
+    cfg.set_margin(margin);
+}
+
+fn set_margin_offset(cfg: &mut ColoredConfig, size: usize, direction: &Sides<bool>) {
+    let mut margin = Sides::filled(Offset::Begin(0));
+    if direction.right && direction.bottom {
+        margin.bottom = Offset::Begin(size);
+        margin.right = Offset::Begin(size);
+    }
+
+    if direction.right && direction.top {
+        margin.top = Offset::Begin(size);
+        margin.right = Offset::End(size);
+    }
+
+    if direction.left && direction.bottom {
+        margin.bottom = Offset::End(size);
+        margin.left = Offset::Begin(size);
+    }
+
+    if direction.left && direction.top {
+        margin.top = Offset::End(size);
+        margin.left = Offset::End(size);
+    }
+
+    cfg.set_margin_offset(margin);
+}
+
+fn set_margin_color(cfg: &mut ColoredConfig, color: AnsiColor<'static>, direction: &Sides<bool>) {
+    let mut margin: Sides<Option<AnsiColor<'static>>> = Sides::default();
+    if direction.right {
+        margin.right = Some(color.clone());
+    }
+
+    if direction.top {
+        margin.top = Some(color.clone());
+    }
+
+    if direction.left {
+        margin.left = Some(color.clone());
+    }
+
+    if direction.bottom {
+        margin.bottom = Some(color.clone());
+    }
+
+    cfg.set_margin_color(margin);
 }

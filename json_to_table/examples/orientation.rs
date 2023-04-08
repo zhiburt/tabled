@@ -33,8 +33,8 @@ fn main() {
 
     let mut htable = json_to_table(&json);
     htable
-        .array_orientation(Orientation::Horizontal)
-        .object_orientation(Orientation::Horizontal);
+        .array_orientation(Orientation::Row)
+        .object_orientation(Orientation::Row);
 
     let ctable = json_to_table(&json);
 

@@ -16,7 +16,7 @@ use crate::{
     util::string::{count_lines, get_lines, string_width, string_width_multiline, Lines},
 };
 
-use crate::config::spanned::{ColoredIndent, Formatting, Offset, SpannedConfig};
+use crate::config::spanned::{Formatting, Offset, SpannedConfig};
 
 /// Grid provides a set of methods for building a text-based table.
 #[derive(Debug, Clone)]
@@ -112,7 +112,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
         return Ok(());
     }
 
-    if cfg.get_margin().top.indent.size > 0 {
+    if cfg.get_margin().top.size > 0 {
         totalw = Some(output_width(cfg, dims, count_columns));
 
         print_margin_top(f, cfg, totalw.unwrap())?;
@@ -180,7 +180,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
 
     {
         let margin = cfg.get_margin();
-        if margin.bottom.indent.size > 0 {
+        if margin.bottom.size > 0 {
             let totalw = totalw.unwrap_or_else(|| output_width(cfg, dims, count_columns));
 
             f.write_char('\n')?;
@@ -193,7 +193,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
 
 fn output_width<D: Dimension>(cfg: &SpannedConfig, d: D, count_columns: usize) -> usize {
     let margin = cfg.get_margin();
-    total_width(cfg, &d, count_columns) + margin.left.indent.size + margin.right.indent.size
+    total_width(cfg, &d, count_columns) + margin.left.size + margin.right.size
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -284,6 +284,7 @@ fn print_single_line_column<F: Write, C: Color>(
 ) -> fmt::Result {
     let pos = pos.into();
     let pad = cfg.get_padding(pos);
+    let pad_color = cfg.get_padding_color(pos);
     let fmt = cfg.get_formatting(pos);
 
     let (text, text_width) = if fmt.horizontal_trim && !text.is_empty() {
@@ -299,16 +300,16 @@ fn print_single_line_column<F: Write, C: Color>(
     };
 
     let alignment = *cfg.get_alignment_horizontal(pos);
-    let available_width = width - pad.left.indent.size - pad.right.indent.size;
+    let available_width = width - pad.left.size - pad.right.size;
     let (left, right) = calculate_indent(alignment, text_width, available_width);
 
-    print_padding(f, &pad.left)?;
+    print_padding(f, &pad.left, pad_color.left.as_ref())?;
 
     repeat_char(f, ' ', left)?;
     print_text(f, &text, color)?;
     repeat_char(f, ' ', right)?;
 
-    print_padding(f, &pad.right)?;
+    print_padding(f, &pad.right, pad_color.right.as_ref())?;
 
     Ok(())
 }
@@ -418,13 +419,13 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
 
     let total_width = total_width(cfg, dims, count_columns);
     let margin = cfg.get_margin();
-    let total_width_with_margin = total_width + margin.left.indent.size + margin.right.indent.size;
+    let total_width_with_margin = total_width + margin.left.size + margin.right.size;
 
     let totalh = records
         .hint_count_rows()
         .map(|rows| total_height(cfg, dims, rows));
 
-    if margin.top.indent.size > 0 {
+    if margin.top.size > 0 {
         print_margin_top(f, cfg, total_width_with_margin)?;
         f.write_char('\n')?;
     }
@@ -483,7 +484,7 @@ fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
             print_horizontal_line(f, cfg, line, totalh, dims, row, shape)?;
         }
 
-        if margin.bottom.indent.size > 0 {
+        if margin.bottom.size > 0 {
             f.write_char('\n')?;
             print_margin_bottom(f, cfg, total_width_with_margin)?;
         }
@@ -740,7 +741,8 @@ struct Cell<T, C> {
     indent_left: Option<usize>,
     alignh: AlignmentHorizontal,
     fmt: Formatting,
-    pad: Sides<ColoredIndent>,
+    pad: Sides<Indent>,
+    pad_color: Sides<Option<AnsiColor<'static>>>,
     color: Option<C>,
 }
 
@@ -757,7 +759,8 @@ where
         pos: Position,
     ) -> Cell<T, C> {
         let fmt = *cfg.get_formatting(pos.into());
-        let pad = cfg.get_padding(pos.into()).clone();
+        let pad = cfg.get_padding(pos.into());
+        let pad_color = cfg.get_padding_color(pos.into()).clone();
         let alignh = *cfg.get_alignment_horizontal(pos.into());
         let alignv = *cfg.get_alignment_vertical(pos.into());
 
@@ -773,7 +776,7 @@ where
         let mut indent_left = None;
         if !fmt.allow_lines_alignment {
             let text_width = get_text_width(text.as_ref(), fmt.horizontal_trim);
-            let available = width - pad.left.indent.size - pad.right.indent.size;
+            let available = width - pad.left.size - pad.right.size;
             indent_left = Some(calculate_indent(alignh, text_width, available).0);
         }
 
@@ -790,6 +793,7 @@ where
             alignh,
             fmt,
             pad,
+            pad_color,
             color,
         }
     }
@@ -802,14 +806,15 @@ where
     fn display<F: Write>(&mut self, f: &mut F) -> fmt::Result {
         if self.indent_top > 0 {
             self.indent_top -= 1;
-            print_padding_n(f, &self.pad.top, self.width)?;
+            print_padding_n(f, &self.pad.top, self.pad_color.top.as_ref(), self.width)?;
             return Ok(());
         }
 
         let line = match self.lines.lines.next() {
             Some(line) => line,
             None => {
-                print_padding_n(f, &self.pad.bottom, self.width)?;
+                let color = self.pad_color.bottom.as_ref();
+                print_padding_n(f, &self.pad.bottom, color, self.width)?;
                 return Ok(());
             }
         };
@@ -821,7 +826,7 @@ where
         };
 
         let line_width = string_width(&line);
-        let available_width = self.width - self.pad.left.indent.size - self.pad.right.indent.size;
+        let available_width = self.width - self.pad.left.size - self.pad.right.size;
 
         let (left, right) = if self.fmt.allow_lines_alignment {
             calculate_indent(self.alignh, line_width, available_width)
@@ -830,13 +835,13 @@ where
             (left, available_width - line_width - left)
         };
 
-        print_padding(f, &self.pad.left)?;
+        print_padding(f, &self.pad.left, self.pad_color.left.as_ref())?;
 
         repeat_char(f, ' ', left)?;
         print_text(f, &line, self.color.as_ref())?;
         repeat_char(f, ' ', right)?;
 
-        print_padding(f, &self.pad.right)?;
+        print_padding(f, &self.pad.right, self.pad_color.right.as_ref())?;
 
         Ok(())
     }
@@ -920,15 +925,15 @@ fn prepare_coloring<'a, 'b, F: Write>(
 }
 
 fn top_indent(
-    padding: &Sides<ColoredIndent>,
+    padding: &Sides<Indent>,
     alignment: AlignmentVertical,
     cell_height: usize,
     available: usize,
 ) -> usize {
-    let height = available - padding.top.indent.size;
+    let height = available - padding.top.size;
     let indent = indent_from_top(alignment, height, cell_height);
 
-    indent + padding.top.indent.size
+    indent + padding.top.size
 }
 
 fn indent_from_top(alignment: AlignmentVertical, available: usize, real: usize) -> usize {
@@ -996,14 +1001,18 @@ fn print_vertical_char<F: Write>(
 }
 
 fn print_margin_top<F: Write>(f: &mut F, cfg: &SpannedConfig, width: usize) -> fmt::Result {
-    let m = cfg.get_margin();
-    let (indent, offset, color) = (m.top.indent, m.top.offset, m.top.color.as_ref());
+    let indent = cfg.get_margin().top;
+    let offset = cfg.get_margin_offset().top;
+    let color = cfg.get_margin_color();
+    let color = color.top.as_ref();
     print_indent_lines(f, &indent, &offset, color, width)
 }
 
 fn print_margin_bottom<F: Write>(f: &mut F, cfg: &SpannedConfig, width: usize) -> fmt::Result {
-    let m = cfg.get_margin();
-    let (indent, offset, color) = (m.bottom.indent, m.bottom.offset, m.bottom.color.as_ref());
+    let indent = cfg.get_margin().bottom;
+    let offset = cfg.get_margin_offset().bottom;
+    let color = cfg.get_margin_color();
+    let color = color.bottom.as_ref();
     print_indent_lines(f, &indent, &offset, color, width)
 }
 
@@ -1013,8 +1022,10 @@ fn print_margin_left<F: Write>(
     line: usize,
     height: Option<usize>,
 ) -> fmt::Result {
-    let m = cfg.get_margin();
-    let (indent, offset, color) = (m.left.indent, m.left.offset, m.left.color.as_ref());
+    let indent = cfg.get_margin().left;
+    let offset = cfg.get_margin_offset().left;
+    let color = cfg.get_margin_color();
+    let color = color.left.as_ref();
     print_margin_vertical(f, indent, offset, color, line, height)
 }
 
@@ -1024,8 +1035,10 @@ fn print_margin_right<F: Write>(
     line: usize,
     height: Option<usize>,
 ) -> fmt::Result {
-    let m = cfg.get_margin();
-    let (indent, offset, color) = (m.right.indent, m.right.offset, m.right.color.as_ref());
+    let indent = cfg.get_margin().right;
+    let offset = cfg.get_margin_offset().right;
+    let color = cfg.get_margin_color();
+    let color = color.right.as_ref();
     print_margin_vertical(f, indent, offset, color, line, height)
 }
 
@@ -1113,12 +1126,17 @@ fn print_indent_lines<F: Write>(
     Ok(())
 }
 
-fn print_padding<F: Write>(f: &mut F, pad: &ColoredIndent) -> fmt::Result {
-    print_indent(f, pad.indent.fill, pad.indent.size, pad.color.as_ref())
+fn print_padding<F: Write>(f: &mut F, pad: &Indent, color: Option<&AnsiColor<'_>>) -> fmt::Result {
+    print_indent(f, pad.fill, pad.size, color)
 }
 
-fn print_padding_n<F: Write>(f: &mut F, pad: &ColoredIndent, n: usize) -> fmt::Result {
-    print_indent(f, pad.indent.fill, n, pad.color.as_ref())
+fn print_padding_n<F: Write>(
+    f: &mut F,
+    pad: &Indent,
+    color: Option<&AnsiColor<'_>>,
+    n: usize,
+) -> fmt::Result {
+    print_indent(f, pad.fill, n, color)
 }
 
 fn print_indent<F: Write>(

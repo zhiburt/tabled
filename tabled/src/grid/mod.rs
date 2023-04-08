@@ -27,8 +27,7 @@ pub mod config {
     #[cfg(feature = "std")]
     #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     pub use papergrid::config::spanned::{
-        ColoredIndent, ColoredMarginIndent, Formatting, HorizontalLine, Offset, SpannedConfig,
-        VerticalLine,
+        Formatting, HorizontalLine, Offset, SpannedConfig, VerticalLine,
     };
 
     #[cfg(feature = "std")]

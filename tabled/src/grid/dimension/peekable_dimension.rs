@@ -94,8 +94,8 @@ mod estimation {
                 let width = cell.width();
 
                 let pad = cfg.get_padding(pos.into());
-                let width = width + pad.left.indent.size + pad.right.indent.size;
-                let height = height + pad.top.indent.size + pad.bottom.indent.size;
+                let width = width + pad.left.size + pad.right.size;
+                let height = height + pad.top.size + pad.bottom.size;
 
                 match cfg.get_column_span(pos) {
                     Some(n) if n > 1 => {

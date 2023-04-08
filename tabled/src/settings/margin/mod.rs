@@ -38,10 +38,7 @@ use crate::{
 };
 
 #[cfg(feature = "std")]
-use crate::grid::{
-    color::AnsiColor,
-    config::{ColoredConfig, ColoredMarginIndent, Offset},
-};
+use crate::grid::{color::AnsiColor, config::ColoredConfig};
 
 /// Margin is responsible for a left/right/top/bottom outer indent of a grid.
 ///
@@ -102,17 +99,18 @@ where
     C: Into<AnsiColor<'static>> + Clone,
 {
     fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let margin = cfg.get_margin_mut();
-        margin.left = ColoredMarginIndent::new(self.indent.left, Offset::Begin(0), None);
-        margin.right = ColoredMarginIndent::new(self.indent.right, Offset::Begin(0), None);
-        margin.top = ColoredMarginIndent::new(self.indent.top, Offset::Begin(0), None);
-        margin.bottom = ColoredMarginIndent::new(self.indent.bottom, Offset::Begin(0), None);
+        let indent = self.indent;
+        let margin = Sides::new(indent.left, indent.right, indent.top, indent.bottom);
+        cfg.set_margin(margin);
 
-        if let Some(colors) = self.colors.clone() {
-            margin.left.color = Some(colors.left.into());
-            margin.right.color = Some(colors.right.into());
-            margin.top.color = Some(colors.top.into());
-            margin.bottom.color = Some(colors.bottom.into());
+        if let Some(colors) = &self.colors {
+            let margin = Sides::new(
+                Some(colors.left.clone().into()),
+                Some(colors.right.clone().into()),
+                Some(colors.top.clone().into()),
+                Some(colors.bottom.clone().into()),
+            );
+            cfg.set_margin_color(margin);
         }
     }
 }

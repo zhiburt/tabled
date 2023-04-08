@@ -11,7 +11,7 @@ pub(super) fn plain_table(v: &Value, cfg: &Config) -> String {
 fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
     match v {
         Value::Array(arr) => match cfg.array_orientation {
-            Orientation::Vertical => {
+            Orientation::Column => {
                 let mut buf = Builder::with_capacity(1);
                 buf.hint_column_size(1);
                 for value in arr {
@@ -21,7 +21,7 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
 
                 buf.build().with(&cfg.cfg).to_string()
             }
-            Orientation::Horizontal => {
+            Orientation::Row => {
                 let mut buf = Vec::with_capacity(arr.len());
                 for value in arr {
                     let val = _plain_table(value, cfg, false);
@@ -32,7 +32,7 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
             }
         },
         Value::Object(map) => match cfg.object_orientation {
-            Orientation::Vertical => {
+            Orientation::Column => {
                 let mut buf = Builder::with_capacity(map.len());
                 for (key, value) in map {
                     let val = _plain_table(value, cfg, false);
@@ -41,7 +41,7 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
 
                 buf.build().with(&cfg.cfg).to_string()
             }
-            Orientation::Horizontal => {
+            Orientation::Row => {
                 let mut keys = Vec::with_capacity(map.len());
                 let mut vals = Vec::with_capacity(map.len());
                 for (key, value) in map {

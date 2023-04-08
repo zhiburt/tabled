@@ -17,7 +17,6 @@ mod plain_table;
 
 /// Converter of [`Value`] to a table,
 /// with a set of configurations.
-// todo: rename to ValueTable.
 #[derive(Debug, Clone)]
 pub struct JsonTable<T> {
     value: T,
@@ -32,8 +31,8 @@ impl<T> JsonTable<T> {
             cfg: Config {
                 plain: true,
                 cfg: ColoredConfig::new(configure_grid(), Default::default()),
-                array_orientation: Orientation::Vertical,
-                object_orientation: Orientation::Vertical,
+                array_orientation: Orientation::Column,
+                object_orientation: Orientation::Column,
             },
         }
     }
@@ -144,9 +143,9 @@ struct Config {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Orientation {
     /// Vertical mode (from top to bottom).
-    Vertical,
+    Row,
     /// Horizontal mode (from left to right).
-    Horizontal,
+    Column,
 }
 
 fn configure_grid() -> SpannedConfig {

@@ -35,7 +35,7 @@ fn orientation_test_1() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -87,8 +87,8 @@ fn orientation_test_2() {
 
     let table = json_to_table(&value)
         .with(Style::modern())
-        .object_orientation(Orientation::Horizontal)
-        .array_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
+        .array_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -297,7 +297,7 @@ fn collapse_array_orientation_test_1() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -348,7 +348,7 @@ fn collapse_array_orientation_test_2() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -401,7 +401,7 @@ fn collapse_array_orientation_test_3() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -444,7 +444,7 @@ fn collapse_array_orientation_test_4() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -474,7 +474,7 @@ fn collapse_array_orientation_test_5() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -503,7 +503,7 @@ fn collapse_array_orientation_test_6() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -547,7 +547,7 @@ fn collapse_object_orientation_test_1() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -592,7 +592,7 @@ fn collapse_object_orientation_test_2() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -645,7 +645,7 @@ fn collapse_object_orientation_test_3() {
 
     let table = json_to_table(&value)
         .with(Style::modern())
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -688,7 +688,7 @@ fn collapse_object_orientation_test_4() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -736,7 +736,7 @@ fn collapse_object_orientation_test_5() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -785,7 +785,7 @@ fn collapse_object_orientation_test_6() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -843,8 +843,8 @@ fn collapse_object_array_orientation_test_1() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
-        .array_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -885,8 +885,8 @@ fn collapse_object_array_orientation_test_2() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
-        .array_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -929,8 +929,8 @@ fn collapse_object_array_orientation_test_3() {
 
     let table = json_to_table(&value)
         .with(Style::modern())
-        .object_orientation(Orientation::Horizontal)
-        .array_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -961,8 +961,8 @@ fn collapse_object_array_orientation_test_4() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
-        .array_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -988,8 +988,8 @@ fn collapse_object_array_orientation_test_5() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
-        .array_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -1016,8 +1016,8 @@ fn collapse_object_array_orientation_test_6() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
-        .array_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -1069,8 +1069,8 @@ fn collapse_object_array_orientation_test_7() {
 
     let table = json_to_table(&value)
         .with(Style::extended())
-        .object_orientation(Orientation::Horizontal)
-        .array_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
+        .array_orientation(Orientation::Row)
         .collapse()
         .to_string();
 
@@ -1114,7 +1114,7 @@ fn collapse_object_array_orientation_test_7() {
 //     let table = json_to_table(&value)
 //         .set_style(Style::extended())
 //         .collapse()
-//         .set_object_mode(Orientation::Vertical)
+//         .set_object_mode(Orientation::Column)
 //         .to_string();
 
 //     println!("{table}");
