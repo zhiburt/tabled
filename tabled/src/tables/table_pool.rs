@@ -1,10 +1,10 @@
-use papergrid::{
-    config::{compact::CompactConfig, AlignmentHorizontal, Indent, Sides},
-    records::IntoRecords,
-};
-
 use crate::{
-    grid::{config::CompactMultilineConfig, dimension::CompleteDimension, records::EmptyRecords},
+    grid::{
+        config::{AlignmentHorizontal, CompactConfig, CompactMultilineConfig, Indent, Sides},
+        dimension::CompleteDimension,
+        records::EmptyRecords,
+        records::IntoRecords,
+    },
     settings::{Style, TableOption},
 };
 

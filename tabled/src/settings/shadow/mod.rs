@@ -27,10 +27,9 @@
 //!
 //! [`Table`]: crate::Table
 
-use papergrid::{color::AnsiColor, config::Indent};
-
 use crate::{
-    grid::config::{ColoredConfig, Offset, Sides},
+    grid::color::AnsiColor,
+    grid::config::{ColoredConfig, Indent, Offset, Sides},
     settings::{color::Color, TableOption},
 };
 
