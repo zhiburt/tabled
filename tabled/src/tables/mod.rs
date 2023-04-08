@@ -12,9 +12,9 @@
 //! ## [`ExtendedTable`]
 //!
 //! It's a table which is useful for large amount of data.
-//! 
+//!
 //! ## [`PoolTable`]
-//! 
+//!
 //! A table with a greather controll of a layout.
 
 mod compact;
