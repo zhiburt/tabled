@@ -1,5 +1,5 @@
 /// Indent represent a filled space.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Indent {
     /// A fill character.
     pub fill: char,

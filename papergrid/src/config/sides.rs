@@ -1,5 +1,5 @@
 /// A structure which represents 4 box sides.
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Sides<T> {
     /// Top side.
     pub top: T,

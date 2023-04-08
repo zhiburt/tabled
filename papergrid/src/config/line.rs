@@ -1,5 +1,5 @@
 /// A line data structure.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
 pub struct Line<T> {
     /// A horizontal/vertical character.
     pub main: T,

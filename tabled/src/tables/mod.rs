@@ -1,17 +1,21 @@
 //! Module contains a list of table representatives.
 //!
-//! ## [`table`]
+//! ## [`Table`]
 //!
 //! A default table implementation.
 //!
-//! ## [`iter`]
+//! ## [`IterTable`]
 //!
 //! Just like [`table`] but it's API is a bit different to serve better in context
 //! where there are a memory limits.
 //!
-//! ## [`extended`]
+//! ## [`ExtendedTable`]
 //!
-//! Has a table which is useful for large amount of data.
+//! It's a table which is useful for large amount of data.
+//!
+//! ## [`PoolTable`]
+//!
+//! A table with a greather controll of a layout.
 
 mod compact;
 mod util;
@@ -22,6 +26,8 @@ mod extended;
 mod iter;
 #[cfg(feature = "std")]
 mod table;
+#[cfg(feature = "std")]
+mod table_pool;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
@@ -34,5 +40,9 @@ pub use iter::IterTable;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use extended::ExtendedTable;
+
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub use table_pool::{PoolTable, TableValue};
 
 pub use compact::CompactTable;

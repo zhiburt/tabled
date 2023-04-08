@@ -51,9 +51,11 @@
 //! [`Table`]: crate::Table
 //! [`AlignmentStrategy`]: crate::settings::formatting::AlignmentStrategy
 
+use core::ops::DerefMut;
+
 use crate::{
     grid::config::CompactConfig,
-    grid::config::{AlignmentHorizontal, AlignmentVertical, Entity},
+    grid::config::{AlignmentHorizontal, AlignmentVertical, CompactMultilineConfig, Entity},
     settings::TableOption,
 };
 
@@ -174,6 +176,15 @@ impl<R, D> TableOption<R, D, CompactConfig> for Alignment {
     fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         if let Horizontal(a) = self.inner {
             *cfg = cfg.set_alignment_horizontal(a)
+        }
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactMultilineConfig> for Alignment {
+    fn change(&mut self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
+        match self.inner {
+            Horizontal(a) => *cfg.deref_mut() = cfg.set_alignment_horizontal(a),
+            Vertical(a) => *cfg = cfg.set_alignment_vertical(a),
         }
     }
 }

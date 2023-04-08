@@ -21,7 +21,7 @@ pub use self::{entity_map::EntityMap, formatting::Formatting, offset::Offset};
 /// This structure represents a settings of a grid.
 ///
 /// grid: crate::Grid.
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct SpannedConfig {
     margin: Sides<ColoredMarginIndent>,
     padding: EntityMap<Sides<ColoredIndent>>,
@@ -67,6 +67,10 @@ impl SpannedConfig {
     }
 
     /// Set a [`Margin`] value.
+    ///
+
+    // todo: change back to set_margin()
+
     pub fn get_margin_mut(&mut self) -> &mut Sides<ColoredMarginIndent> {
         &mut self.margin
     }
@@ -764,6 +768,8 @@ fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
             })
     })
 }
+
+// todo:: Get back to original PAdding + PaddingColor
 
 /// A colorefull indent.
 #[derive(Default, Debug, Clone, PartialEq, Eq)]

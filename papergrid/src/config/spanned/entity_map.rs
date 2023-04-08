@@ -3,7 +3,7 @@ use fnv::FnvHashMap;
 use crate::config::{Entity, Position};
 
 /// A structure to keep information for [`Entity`] as a key.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct EntityMap<T> {
     // we have a global type to allocate in on stack.
     // because most of the time no changes are made to the [`EntityMap`].

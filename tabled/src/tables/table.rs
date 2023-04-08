@@ -56,7 +56,7 @@ use papergrid::{
 /// [`Padding`]: crate::settings::Padding
 /// [`Style`]: crate::settings::Style
 /// [`Style::ascii`]: crate::settings::Style::ascii
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Table {
     records: VecRecords<CellInfo<String>>,
     config: ColoredConfig,
@@ -244,6 +244,21 @@ impl Table {
     pub fn get_config(&self) -> &ColoredConfig {
         &self.config
     }
+
+    /// Returns a table config.
+    pub fn get_config_mut(&mut self) -> &mut ColoredConfig {
+        &mut self.config
+    }
+}
+
+impl Default for Table {
+    fn default() -> Self {
+        Self {
+            records: VecRecords::default(),
+            config: ColoredConfig::new(configure_grid(), HashMap::default()),
+            dimension: CompleteDimension::default(),
+        }
+    }
 }
 
 impl fmt::Display for Table {
@@ -298,9 +313,33 @@ impl<R, D> TableOption<R, D, ColoredConfig> for CompactConfig {
     }
 }
 
+impl<R, D> TableOption<R, D, ColoredConfig> for &CompactConfig {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg.deref_mut() = (**self).into();
+    }
+}
+
 impl<R, D> TableOption<R, D, ColoredConfig> for ColoredConfig {
     fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         *cfg = self.clone();
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for &ColoredConfig {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg = self.clone();
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for SpannedConfig {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg.deref_mut() = self.clone();
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for &SpannedConfig {
+    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg.deref_mut() = self.clone();
     }
 }
 

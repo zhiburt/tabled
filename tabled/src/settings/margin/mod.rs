@@ -26,10 +26,12 @@
 //!
 //! [`Table`]: crate::Table
 
+use core::ops::DerefMut;
+
 use crate::{
     grid::{
         color::StaticColor,
-        config::CompactConfig,
+        config::{CompactConfig, CompactMultilineConfig},
         config::{Indent, Sides},
     },
     settings::TableOption,
@@ -127,5 +129,14 @@ where
             let colors = Sides::new(c.left.into(), c.right.into(), c.top.into(), c.bottom.into());
             *cfg = cfg.set_margin_color(colors);
         }
+    }
+}
+
+impl<R, D, C> TableOption<R, D, CompactMultilineConfig> for Margin<C>
+where
+    C: Into<StaticColor> + Clone,
+{
+    fn change(&mut self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
+        self.change(records, cfg.deref_mut(), dimension)
     }
 }

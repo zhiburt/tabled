@@ -9,7 +9,7 @@ use crate::config::{AlignmentHorizontal, Borders, Indent, Line, Sides};
 /// This structure represents a settings of a grid.
 ///
 /// grid: crate::Grid.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CompactConfig {
     borders: Borders<char>,
     horizontal_line1: Option<Line<char>>,
@@ -100,7 +100,7 @@ impl CompactConfig {
         &self.padding
     }
 
-    /// Set a horizontal alignment to a given cells.
+    /// Set a horizontal alignment.
     pub const fn set_alignment_horizontal(mut self, alignment: AlignmentHorizontal) -> Self {
         self.halignment = alignment;
         self

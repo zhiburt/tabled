@@ -15,7 +15,7 @@ pub use cell::Cell;
 pub use cell_info::CellInfo;
 
 /// A [Records] implementation based on allocated buffers.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VecRecords<T> {
     data: Vec<Vec<T>>,
     shape: (usize, usize),
