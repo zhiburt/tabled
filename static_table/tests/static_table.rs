@@ -551,3 +551,23 @@ fn static_table_with_theme_padding_margin() {
     );
     assert_eq!(table, expected);
 }
+
+#[test]
+fn static_table_pool_0() {
+    #[rustfmt::skip]
+    let table = static_table!([
+        [{{"Hello"}}, "World"],
+        ["123", "456"],
+        [{{"7"}}, "8"],
+    ]);
+    assert_eq!(
+        table,
+        "+-------+-------+\n\
+         | Hello | World |\n\
+         +-------+-------+\n\
+         | 123   | 456   |\n\
+         +-------+-------+\n\
+         | 7     | 8     |\n\
+         +-------+-------+"
+    );
+}

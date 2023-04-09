@@ -1045,8 +1045,6 @@ test_table!(
 //     grid.set(Entity::Cell(0, 1), Settings::new().span(2));
 //     grid.set(Entity::Cell(0, 2), Settings::new().span(2));
 
-//     println!("{}", grid);
-
 //     assert_eq!(
 //         grid.to_string(),
 //         concat!(
