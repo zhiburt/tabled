@@ -8,7 +8,6 @@ use crate::{
 };
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 use crate::grid::config::ColoredConfig;
 
 use super::{HorizontalLine, Line, VerticalLine};
@@ -1045,7 +1044,6 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, ColoredConfig>
     for Style<T, B, L, R, H, V, HLines, VLines>
 where

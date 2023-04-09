@@ -93,7 +93,6 @@ impl<Color> Margin<Color> {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<R, D, C> TableOption<R, D, ColoredConfig> for Margin<C>
 where
     C: Into<AnsiColor<'static>> + Clone,

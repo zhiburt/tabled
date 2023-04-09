@@ -113,7 +113,6 @@ pub struct Lines<'a> {
     inner: ansi_str::AnsiSplit<'a>,
 }
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<'a> Iterator for Lines<'a> {
     type Item = std::borrow::Cow<'a, str>;
 

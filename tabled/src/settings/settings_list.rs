@@ -30,7 +30,6 @@ impl<A, B> Settings<A, B> {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<R, C, A, B> super::CellOption<R, C> for Settings<A, B>
 where
     A: super::CellOption<R, C>,
@@ -58,7 +57,6 @@ where
 pub struct EmptySettings;
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<R, C> super::CellOption<R, C> for EmptySettings {
     fn change(&mut self, _: &mut R, _: &mut C, _: Entity) {}
 }

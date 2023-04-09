@@ -131,7 +131,6 @@ where
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<R, D, C> TableOption<R, D, ColoredConfig> for Padding<C>
 where
     C: Into<AnsiColor<'static>> + Clone,

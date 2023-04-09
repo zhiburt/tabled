@@ -1,5 +1,4 @@
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 use crate::grid::config::{HorizontalLine, VerticalLine};
 
 /// The structure represent a vertical or horizontal line.
@@ -57,7 +56,6 @@ impl Line {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl From<Line> for HorizontalLine {
     fn from(l: Line) -> Self {
         Self {
@@ -70,7 +68,6 @@ impl From<Line> for HorizontalLine {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl From<Line> for VerticalLine {
     fn from(l: Line) -> Self {
         Self {

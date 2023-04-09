@@ -288,7 +288,6 @@
 #![allow(clippy::uninlined_format_args)]
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 mod tabled;
 
 #[cfg(feature = "std")]

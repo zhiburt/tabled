@@ -151,7 +151,6 @@ impl Alignment {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<R> crate::settings::CellOption<R, ColoredConfig> for Alignment {
     fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         match self.inner {
@@ -162,7 +161,6 @@ impl<R> crate::settings::CellOption<R, ColoredConfig> for Alignment {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<R, D> TableOption<R, D, ColoredConfig> for Alignment {
     fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         match self.inner {
