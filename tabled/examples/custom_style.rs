@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example custom_style`
-//!
 //! This example demonstrates customizing one of the [`tabled`] default [styles](Style)
 //! to create a unique [`Table`] display.
-//!
-//! ---
 //!
 //! * Note that all predesigned styles can be configured completely.
 //! Styles can also be created from scratch!

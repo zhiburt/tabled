@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example compact_table_2`
-//!
 //! This example demonstrates creating a [`CompactTable`] `from()` a
 //! multidimensional array.
-//!
-//! ---
 //!
 //! * Note how [`CompactTable::from()`] inherits the lengths of the nested arrays
 //! as typed definitions through [const generics](https://practice.rs/generics-traits/const-generics.html).

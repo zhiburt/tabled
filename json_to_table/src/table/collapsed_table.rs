@@ -90,8 +90,8 @@ fn _collapsed_table(val: &Value, cfg: &Config, dims: &Dimensions, ctx: PrintCont
             }
 
             match cfg.object_orientation {
-                Orientation::Vertical => generate_vertical_object(obj, cfg, dims, ctx),
-                Orientation::Horizontal => generate_horizontal_object(obj, cfg, dims, ctx),
+                Orientation::Column => generate_vertical_object(obj, cfg, dims, ctx),
+                Orientation::Row => generate_horizontal_object(obj, cfg, dims, ctx),
             }
         }
         Value::Array(list) => {
@@ -101,8 +101,8 @@ fn _collapsed_table(val: &Value, cfg: &Config, dims: &Dimensions, ctx: PrintCont
             }
 
             match cfg.array_orientation {
-                Orientation::Vertical => generate_vertical_array(list, cfg, dims, ctx),
-                Orientation::Horizontal => generate_horizontal_array(list, cfg, dims, ctx),
+                Orientation::Column => generate_vertical_array(list, cfg, dims, ctx),
+                Orientation::Row => generate_horizontal_array(list, cfg, dims, ctx),
             }
         }
     }
@@ -895,13 +895,13 @@ fn __collect_table_dims(
             let has_horizontal = cfg.cfg.get_borders().has_top();
 
             match cfg.object_orientation {
-                Orientation::Vertical => {
+                Orientation::Column => {
                     let total_width = key_max.width + val_max.width + has_vertical as usize;
                     total_height += has_horizontal as usize * (obj.len() - 1);
 
                     (Dim::new(total_width, total_height), count_elements)
                 }
-                Orientation::Horizontal => {
+                Orientation::Row => {
                     let total_height = key_max.height + val_max.height + has_horizontal as usize;
                     total_width += has_vertical as usize * (obj.len() - 1);
 
@@ -947,13 +947,13 @@ fn __collect_table_dims(
             buf.arrays.insert(pos, index);
 
             match cfg.array_orientation {
-                Orientation::Vertical => {
+                Orientation::Column => {
                     let has_horizontal = cfg.cfg.get_borders().has_top();
                     total_height += has_horizontal as usize * (list.len() - 1);
 
                     (Dim::new(max_width, total_height), count_elements)
                 }
-                Orientation::Horizontal => {
+                Orientation::Row => {
                     let has_vertical = cfg.cfg.get_borders().has_left();
                     total_width += has_vertical as usize * (list.len() - 1);
 
@@ -992,12 +992,12 @@ fn str_dimension(text: &str, cfg: &Config) -> Dim {
 
 fn get_padding_horizontal(cfg: &Config) -> usize {
     let pad = cfg.cfg.get_padding(Entity::Global);
-    pad.left.indent.size + pad.right.indent.size
+    pad.left.size + pad.right.size
 }
 
 fn get_padding_vertical(cfg: &Config) -> usize {
     let pad = cfg.cfg.get_padding(Entity::Global);
-    pad.top.indent.size + pad.bottom.indent.size
+    pad.top.size + pad.bottom.size
 }
 
 fn split_value(value: usize, by: usize) -> (usize, usize) {
@@ -1008,8 +1008,8 @@ fn split_value(value: usize, by: usize) -> (usize, usize) {
 
 fn config_string(value: &str, cfg: &ColoredConfig, width: usize, height: usize) -> String {
     let pad = cfg.get_padding(Entity::Global);
-    let width = width - pad.left.indent.size - pad.right.indent.size;
-    let height = height - pad.bottom.indent.size - pad.top.indent.size;
+    let width = width - pad.left.size - pad.right.size;
+    let height = height - pad.bottom.size - pad.top.size;
     let ah = *cfg.get_alignment_horizontal(Entity::Global);
     let av = *cfg.get_alignment_vertical(Entity::Global);
     set_string_dimension(value, width, height, ah, av)

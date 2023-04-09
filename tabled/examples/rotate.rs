@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example rotate`
-//!
 //! This example demonstrates using the [`Rotate`] [`TableOption`] to rotate the cells
 //! of a [`Table`].
-//!
-//! ---
 //!
 //! * [`Rotate`] supports four motions:
 //!     * `Left` | 90 degree shift

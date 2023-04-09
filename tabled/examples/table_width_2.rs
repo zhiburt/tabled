@@ -1,7 +1,3 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example table_width_2`
-//!
 //! This example demonstrates using [`Wrap::keep_words()`] to preserve
 //! word shape while truncating a table to the specified size. Without
 //! this setting enabled, a word could possibly be split into pieces,

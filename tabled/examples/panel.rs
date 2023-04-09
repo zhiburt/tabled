@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example panel`
-//!
 //! This example demonstrates using the [`Panel`] [`TableOption`] to inject
 //! table-length columns and rows into a [`Table`].
-//!
-//! ---
 //!
 //! * [`Panel`] supports four injection options:
 //!     * Horizontal | manual index selection

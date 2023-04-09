@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example extract`
-//!
 //! This example demonstrates using the [`Extract`] [`TableOption`] to
 //! produce a subsection of a [`Table`].
-//!
-//! ---
 //!
 //! * [`Extract`] can return a new [`Table`] with three functions:
 //!     * `rows()` | yields subset of the initial rows

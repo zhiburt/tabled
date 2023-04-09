@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example disable`
-//!
 //! This example demonstrates using the [`Disable`] [`TableOption`] to remove specific
 //! cell data from a [`Table`] display.
-//!
-//! ---
 //!
 //! * ⚠️ Using [`Disable`] in combination with other [`Style`] customizations may yield unexpected results.
 //! It is safest to use [`Disable`] last in a chain of alterations.

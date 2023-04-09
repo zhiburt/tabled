@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example rename_all`
-//!
 //! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
 //! [`rename_all`] to apply table-wide header formatting in a [`Table`] display.
-//!
-//! ---
 //!
 //! * Supported formatting rules include:
 //!     * 'camelCase'

@@ -1,17 +1,9 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example hello_world`
-//!
 //! This example demonstrates the flexibility of [`papergrid`] with manual configurations
 //! of [`Borders`], [`SpannedConfig`], and column counts with [`IterRecords`].
 //!
-//! ---
-//!
 //! * For an alternative to [`Grid`] and [`SpannedGridDimension`] with
 //! uniform row height and intra-column spans see [`CompactGrid`] and [`CompactGridDimension`].
-//!
 //! * Note that [`Grid`] supports multiline cells whereas [`CompactGrid`] does not.
-//!
 //! * Note that [`Dimension`] implementations rely on [`Dimension::estimate()`]
 //! to correctly format outputs, and typically trigger index-out-of-bounds errors otherwise.
 

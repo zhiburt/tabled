@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example nested_table_2`
-//!
 //! This example demonstrates a minimalist implementation of [`Tabling`](Table) records
 //! with struct fields.
-//!
-//! ---
 //!
 //! * This second nested [`Table`] example showcases the [`derive`] approach.
 //!

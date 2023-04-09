@@ -1,14 +1,8 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example builder`
-//!
 //! This example demonstrates an alternative method for creating a [`Table`].
 //! [`Builder`] is an efficient implementation of the [builder design pattern](https://en.wikipedia.org/wiki/Builder_pattern).
 //!
 //! > The intent of the Builder design pattern is to separate the construction of a complex object from its representation.
 //! > -- <cite>Wikipedia</cite>
-//!
-//! ---
 //!
 //! * Note how [Builder] can be used to define a table's shape manually
 //!  and can be populated through iteration if it is mutable. This flexibility

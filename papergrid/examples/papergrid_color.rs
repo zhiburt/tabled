@@ -1,10 +1,4 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --features color --example papergrid_color`
-//!
 //! This example demonstrates using colors to stylize [`Grid`] cells.
-//!
-//! ---
 //!
 //! * 🚩 This example requires the `color` feature.
 //!

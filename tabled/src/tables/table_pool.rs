@@ -1,10 +1,10 @@
-use papergrid::{
-    config::{compact::CompactConfig, AlignmentHorizontal, Indent, Sides},
-    records::IntoRecords,
-};
-
 use crate::{
-    grid::{config::CompactMultilineConfig, dimension::CompleteDimension, records::EmptyRecords},
+    grid::{
+        config::{AlignmentHorizontal, CompactConfig, CompactMultilineConfig, Indent, Sides},
+        dimension::CompleteDimension,
+        records::EmptyRecords,
+        records::IntoRecords,
+    },
     settings::{Style, TableOption},
 };
 
@@ -218,6 +218,7 @@ fn configure_grid() -> CompactMultilineConfig {
 }
 
 mod print {
+    use core::iter::FromIterator;
     use std::{cmp::max, collections::HashMap, iter::repeat};
 
     use papergrid::config::{spanned::SpannedConfig, Borders};
@@ -443,9 +444,7 @@ mod print {
             };
 
             let val = _build_table(val, cfg, dims, valctx);
-
             intersections_vertical = val.intersections_vertical;
-
             new_intersections_horizontal.extend(val.intersections_horizontal.iter());
             let value = val.content;
 
@@ -475,7 +474,7 @@ mod print {
         let config: SpannedConfig = (*cfg).into();
 
         let value = config_string(value, cfg, width, height);
-        let mut table = Table::new([value]);
+        let mut table = Table::from_iter([[value]]);
 
         let _ = table.with(config);
         let _ = table.with(ConfigCell(ctx));
@@ -489,79 +488,96 @@ mod print {
 
     impl<R, D> TableOption<R, D, ColoredConfig> for ConfigCell {
         fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-            let ctx = &mut self.0;
-
             {
+                // we set a horizontal lines to borders to not complicate logic with cleaning it
+
                 let mut borders = *cfg.get_borders();
-
-                let has_vertical = cfg.get_borders().has_left();
-                if !ctx.intersections_horizontal.is_empty() && has_vertical {
-                    let mut splits =
-                        short_splits(&mut ctx.intersections_horizontal, ctx.size.width);
-                    squash_splits(&mut splits);
-
-                    let c = cfg.get_borders().bottom_intersection.unwrap_or(' ');
-                    cfg_set_top_chars(cfg, &splits, c)
+                if let Some(line) = cfg.get_horizontal_line(0) {
+                    borders.top = line.main;
+                    borders.top_left = line.left;
+                    borders.top_right = line.right;
                 }
 
-                let has_horizontal = cfg.get_borders().has_top();
-                if !ctx.intersections_vertical.is_empty() && has_horizontal {
-                    let mut splits = short_splits(&mut ctx.intersections_vertical, ctx.size.width);
-                    squash_splits(&mut splits);
-
-                    let c = cfg.get_borders().right_intersection.unwrap_or(' ');
-                    cfg_set_left_chars(cfg, &splits, c)
+                if let Some(line) = cfg.get_horizontal_line(1) {
+                    borders.bottom = line.main;
+                    borders.bottom_left = line.left;
+                    borders.bottom_right = line.right;
                 }
 
-                // set top_left
-                {
-                    if ctx.kv && ctx.kv_is_first {
-                        borders.top_left = borders.top_intersection;
-                    }
-
-                    if ctx.kv && !ctx.kv_is_first {
-                        borders.top_left = borders.intersection;
-                    }
-
-                    if ctx.kv && ctx.list && !ctx.list_is_first {
-                        borders.top_left = borders.left_intersection;
-                    }
-
-                    if ctx.is_first_col && !ctx.is_first_row {
-                        borders.top_left = borders.left_intersection;
-                    }
-
-                    if ctx.lean_top {
-                        borders.top_left = borders.top_intersection;
-                    }
-
-                    if ctx.top_left {
-                        borders.top_left = borders.left_intersection;
-                    }
-
-                    if ctx.top_intersection {
-                        borders.top_left = borders.intersection;
-                    }
-                }
-
-                if ctx.is_last_col && !ctx.is_first_row {
-                    borders.top_right = borders.right_intersection;
-                }
-
-                if !ctx.is_first_col && ctx.is_last_row {
-                    borders.bottom_left = borders.bottom_intersection;
-                }
-
-                if !ctx.is_last_row || ctx.no_bottom {
-                    cfg_no_bottom_borders(&mut borders);
-                }
-
-                if ctx.no_right {
-                    cfg_no_right_borders(&mut borders);
-                }
-
+                cfg.clear_theme();
                 cfg.set_borders(borders);
             }
+
+            let ctx = &mut self.0;
+
+            let has_vertical = cfg.get_borders().has_left();
+            if !ctx.intersections_horizontal.is_empty() && has_vertical {
+                let mut splits = short_splits(&mut ctx.intersections_horizontal, ctx.size.width);
+                squash_splits(&mut splits);
+
+                let c = cfg.get_borders().bottom_intersection.unwrap_or(' ');
+                cfg_set_top_chars(cfg, &splits, c)
+            }
+
+            let has_horizontal = cfg.get_borders().has_top();
+            if !ctx.intersections_vertical.is_empty() && has_horizontal {
+                let mut splits = short_splits(&mut ctx.intersections_vertical, ctx.size.width);
+                squash_splits(&mut splits);
+
+                let c = cfg.get_borders().right_intersection.unwrap_or(' ');
+                cfg_set_left_chars(cfg, &splits, c)
+            }
+
+            let mut borders = *cfg.get_borders();
+
+            // set top_left
+            {
+                if ctx.kv && ctx.kv_is_first {
+                    borders.top_left = borders.top_intersection;
+                }
+
+                if ctx.kv && !ctx.kv_is_first {
+                    borders.top_left = borders.intersection;
+                }
+
+                if ctx.kv && ctx.list && !ctx.list_is_first {
+                    borders.top_left = borders.left_intersection;
+                }
+
+                if ctx.is_first_col && !ctx.is_first_row {
+                    borders.top_left = borders.left_intersection;
+                }
+
+                if ctx.lean_top {
+                    borders.top_left = borders.top_intersection;
+                }
+
+                if ctx.top_left {
+                    borders.top_left = borders.left_intersection;
+                }
+
+                if ctx.top_intersection {
+                    borders.top_left = borders.intersection;
+                }
+            }
+
+            if ctx.is_last_col && !ctx.is_first_row {
+                borders.top_right = borders.right_intersection;
+            }
+
+            if !ctx.is_first_col && ctx.is_last_row {
+                borders.bottom_left = borders.bottom_intersection;
+            }
+
+            if !ctx.is_last_row || ctx.no_bottom {
+                cfg_no_bottom_borders(&mut borders);
+            }
+
+            if ctx.no_right {
+                cfg_no_right_borders(&mut borders);
+            }
+
+            cfg.set_borders(borders);
         }
     }
 
@@ -570,6 +586,7 @@ mod print {
         borders.bottom_intersection = None;
         borders.bottom_left = None;
         borders.bottom_right = None;
+        borders.horizontal = None;
     }
 
     fn cfg_no_right_borders(borders: &mut Borders<char>) {
@@ -577,6 +594,7 @@ mod print {
         borders.right_intersection = None;
         borders.top_right = None;
         borders.bottom_right = None;
+        borders.vertical = None;
     }
 
     fn cfg_set_top_chars(cfg: &mut ColoredConfig, list: &[usize], c: char) {

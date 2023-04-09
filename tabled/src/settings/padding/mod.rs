@@ -43,14 +43,11 @@ use crate::{
         config::{CompactConfig, CompactMultilineConfig},
         config::{Entity, Indent, Sides},
     },
-    settings::TableOption,
+    settings::{CellOption, TableOption},
 };
 
 #[cfg(feature = "std")]
-use crate::grid::{
-    color::AnsiColor,
-    config::{ColoredConfig, ColoredIndent},
-};
+use crate::grid::{color::AnsiColor, config::ColoredConfig};
 
 /// Padding is responsible for a left/right/top/bottom inner indent of a particular cell.
 ///
@@ -112,14 +109,24 @@ impl<Color> Padding<Color> {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl<R, C> crate::settings::CellOption<R, ColoredConfig> for Padding<C>
+impl<R, C> CellOption<R, ColoredConfig> for Padding<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
 {
     fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
-        let pad = create_padding(&self.indent, self.colors.as_ref());
+        let indent = self.indent;
+        let pad = Sides::new(indent.left, indent.right, indent.top, indent.bottom);
         cfg.set_padding(entity, pad);
+
+        if let Some(colors) = &self.colors {
+            let pad = Sides::new(
+                Some(colors.left.clone().into()),
+                Some(colors.right.clone().into()),
+                Some(colors.top.clone().into()),
+                Some(colors.bottom.clone().into()),
+            );
+            cfg.set_padding_color(entity, pad);
+        }
     }
 }
 
@@ -129,9 +136,8 @@ impl<R, D, C> TableOption<R, D, ColoredConfig> for Padding<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
 {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let pad = create_padding(&self.indent, self.colors.as_ref());
-        cfg.set_padding(Entity::Global, pad);
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        <Self as CellOption<R, ColoredConfig>>::change(self, records, cfg, Entity::Global)
     }
 }
 
@@ -156,17 +162,4 @@ where
     fn change(&mut self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
         self.change(records, cfg.deref_mut(), dimension)
     }
-}
-
-#[cfg(feature = "std")]
-fn create_padding<C: Into<AnsiColor<'static>> + Clone>(
-    i: &Sides<Indent>,
-    c: Option<&Sides<C>>,
-) -> Sides<ColoredIndent> {
-    Sides::new(
-        ColoredIndent::new(i.left, c.as_ref().map(|c| c.left.clone().into())),
-        ColoredIndent::new(i.right, c.as_ref().map(|c| c.right.clone().into())),
-        ColoredIndent::new(i.top, c.as_ref().map(|c| c.top.clone().into())),
-        ColoredIndent::new(i.bottom, c.as_ref().map(|c| c.bottom.clone().into())),
-    )
 }

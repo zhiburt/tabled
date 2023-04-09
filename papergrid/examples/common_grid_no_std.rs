@@ -1,10 +1,4 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example common_grid_no_std`
-//!
 //! This example demonstrates using [`papergrid`] without [The Rust Standard Library](std).
-//!
-//! ---
 //!
 //! * Note the missing, pre-built [`Dimension`] implementations requiring manual design.
 

@@ -1,13 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example json_to_table`
-//!
 //! This example demonstrates parsing a JSON literal to a [`Value`],
 //! and then translating that value to a [`JsonTable`] struct.
-//!
-//! ---
-//!
-//! * Note how the [`json_to_table`] function is used for easy translations.
 
 use json_to_table::json_to_table;
 

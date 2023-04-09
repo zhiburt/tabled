@@ -2160,10 +2160,9 @@ fn style_with_color_test() {
 
 test_table!(
     empty_line_clears_lines,
-    create_table::<3, 3>().with(Style::rounded().horizontals(vec![HorizontalLine::new(1, Line::empty())])),
+    create_table::<3, 3>().with(Style::rounded().remove_horizontals()),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
-    "                                      "
     "│ 0 │   0-0    │   0-1    │   0-2    │"
     "│ 1 │   1-0    │   1-1    │   1-2    │"
     "│ 2 │   2-0    │   2-1    │   2-2    │"
@@ -2172,7 +2171,7 @@ test_table!(
 
 test_table!(
     empty_line_clears_lines_1,
-    create_table::<3, 3>().with(Style::rounded().horizontals(vec![HorizontalLine::empty(1)])),
+    create_table::<3, 3>().with(Style::rounded().remove_horizontals()),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
@@ -2263,22 +2262,6 @@ test_table!(
     "x---x----------x----------x----------x"
     "* 2 *   2-0    *   2-1    *   2-2    *"
     "2---2----------2----------2----------2"
-);
-
-test_table!(
-    verticals_5,
-    create_table::<3, 3>()
-        .with(Style::ascii().verticals((0..10).map(|i| VerticalLine::new(i, Line::new(Some('*'), Some('x'), Some('c'), Some('2'))))))
-        .with(Style::ascii().verticals((0..10).map(VerticalLine::empty))),
-    "+---+----------+----------+----------+"
-    "| N | column 0 | column 1 | column 2 |"
-    "+---+----------+----------+----------+"
-    "| 0 |   0-0    |   0-1    |   0-2    |"
-    "+---+----------+----------+----------+"
-    "| 1 |   1-0    |   1-1    |   1-2    |"
-    "+---+----------+----------+----------+"
-    "| 2 |   2-0    |   2-1    |   2-2    |"
-    "+---+----------+----------+----------+"
 );
 
 test_table!(
@@ -2610,4 +2593,10 @@ test_table!(
     "+-------+xxxx"
     "|     ! |xxxx"
     "+-------+xxxx"
+);
+
+test_table!(
+    table_style_no_bottom_no_new_line,
+    create_table::<0, 0>().with(Style::markdown().remove_horizontals()),
+    "| N |"
 );

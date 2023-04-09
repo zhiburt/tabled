@@ -940,7 +940,7 @@ fn test_map_empty_entity_collapsed_1_horizontal() {
     let table = json_to_table(&value)
         .with(Style::modern())
         .collapse()
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -986,7 +986,7 @@ fn test_map_empty_entity_collapsed_2_horizontal() {
     let table = json_to_table(&value)
         .with(Style::modern())
         .collapse()
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -1018,7 +1018,7 @@ fn test_list_empty_entity_collapsed_0_horizontal() {
     let table = json_to_table(&value)
         .with(Style::modern())
         .collapse()
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -1038,7 +1038,7 @@ fn test_list_empty_entity_collapsed_1_horizontal() {
     let table = json_to_table(&value)
         .with(Style::modern())
         .collapse()
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -1054,7 +1054,7 @@ fn test_list_empty_entity_collapsed_2_horizontal() {
     let table = json_to_table(&value)
         .with(Style::modern())
         .collapse()
-        .array_orientation(Orientation::Horizontal)
+        .array_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -1078,7 +1078,7 @@ fn test_map_empty_entity_collapsed_1_horizontal_map() {
     let table = json_to_table(&value)
         .with(Style::modern())
         .collapse()
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -1116,7 +1116,7 @@ fn test_map_empty_entity_collapsed_2_horizontal_map() {
     let table = json_to_table(&value)
         .with(Style::modern())
         .collapse()
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -1144,7 +1144,7 @@ fn test_list_empty_entity_collapsed_0_horizontal_map() {
     let table = json_to_table(&value)
         .with(Style::modern())
         .collapse()
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -1170,7 +1170,7 @@ fn test_list_empty_entity_collapsed_1_horizontal_map() {
     let table = json_to_table(&value)
         .with(Style::modern())
         .collapse()
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(
@@ -1192,7 +1192,7 @@ fn test_list_empty_entity_collapsed_2_horizontal_map() {
     let table = json_to_table(&value)
         .with(Style::modern())
         .collapse()
-        .object_orientation(Orientation::Horizontal)
+        .object_orientation(Orientation::Row)
         .to_string();
 
     assert_eq!(

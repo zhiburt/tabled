@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example table_width`
-//!
 //! This example demonstrates using the [`Width`] [`TableOption`] to expand and
 //! contract a [`Table`] display.
-//!
-//! ---
 //!
 //! * Note how table-wide size adjustments are applied proportionally to all columns.
 //!

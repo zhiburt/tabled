@@ -108,6 +108,8 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
             self.layout.left = true;
         }
 
+        // todo: when we delete lines these are still left set; so has_horizontal/vertical return true in some cases;
+        // it shall be fixed, but maybe we can improve the logic as it got a bit complicated.
         if line.right.is_some() {
             self.layout.right = true;
         }
@@ -124,8 +126,13 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
         self.horizontals.get(&row)
     }
 
-    pub(crate) fn remove_horizontal_line(&mut self, row: usize) {
+    pub(crate) fn remove_horizontal_line(&mut self, row: usize, count_rows: usize) {
         self.horizontals.remove(&row);
+        self.layout.horizontals.remove(&row);
+
+        if self.has_horizontal(row, count_rows) {
+            self.layout.horizontals.insert(row);
+        }
     }
 
     pub(crate) fn insert_vertical_line(&mut self, row: usize, line: VerticalLine<T>) {
@@ -145,8 +152,13 @@ impl<T: std::fmt::Debug> BordersConfig<T> {
         self.verticals.get(&row)
     }
 
-    pub(crate) fn remove_vertical_line(&mut self, row: usize) {
-        self.verticals.remove(&row);
+    pub(crate) fn remove_vertical_line(&mut self, col: usize, count_columns: usize) {
+        self.verticals.remove(&col);
+        self.layout.verticals.remove(&col);
+
+        if self.has_vertical(col, count_columns) {
+            self.layout.verticals.insert(col);
+        }
     }
 
     pub(crate) fn set_borders(&mut self, borders: Borders<T>) {

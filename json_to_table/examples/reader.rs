@@ -4,8 +4,6 @@
 //!
 //! This example demonstrates parsing json from the [`Stdin`]\(standard input) to a [`JsonTable`].
 //!
-//! ---
-//!
 //! * Check out [`serde_json`] for other helpful ways to import json data into your project.
 //! * Check out [`std::env`] and [`std::io`] for more examples of dealing with system streams.
 //! * Windows alternatives for the unix `cat` command:

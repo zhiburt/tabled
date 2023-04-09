@@ -1,7 +1,3 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example rename`
-//!
 //! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
 //! [`rename`] to alias specific fields in a [`Table`] display.
 

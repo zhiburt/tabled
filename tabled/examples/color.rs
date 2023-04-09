@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --features color --example color`
-//!
 //! This example demonstrates using the [`Color`] [setting](tabled::settings) to
 //! stylize text, backgrounds, and borders.
-//!
-//! ---
 //!
 //! * 🚩 This example requires the `color` feature.
 //!

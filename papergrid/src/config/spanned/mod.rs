@@ -61,18 +61,58 @@ impl Default for SpannedConfig {
 }
 
 impl SpannedConfig {
-    /// Returns a [`Margin`] value currently set.
-    pub fn get_margin(&self) -> &Sides<ColoredMarginIndent> {
-        &self.margin
+    /// Set a margin of a grid.
+    pub fn set_margin(&mut self, margin: Sides<Indent>) {
+        self.margin.left.indent = margin.left;
+        self.margin.right.indent = margin.right;
+        self.margin.top.indent = margin.top;
+        self.margin.bottom.indent = margin.bottom;
     }
 
-    /// Set a [`Margin`] value.
-    ///
+    /// Set a color of margin of a grid.
+    pub fn set_margin_color(&mut self, margin: Sides<Option<AnsiColor<'static>>>) {
+        self.margin.left.color = margin.left;
+        self.margin.right.color = margin.right;
+        self.margin.top.color = margin.top;
+        self.margin.bottom.color = margin.bottom;
+    }
 
-    // todo: change back to set_margin()
+    /// Set an offset of margin of a grid.
+    pub fn set_margin_offset(&mut self, margin: Sides<Offset>) {
+        self.margin.left.offset = margin.left;
+        self.margin.right.offset = margin.right;
+        self.margin.top.offset = margin.top;
+        self.margin.bottom.offset = margin.bottom;
+    }
 
-    pub fn get_margin_mut(&mut self) -> &mut Sides<ColoredMarginIndent> {
-        &mut self.margin
+    /// Returns a [`Margin`] value currently set.
+    pub fn get_margin(&self) -> Sides<Indent> {
+        Sides::new(
+            self.margin.left.indent,
+            self.margin.right.indent,
+            self.margin.top.indent,
+            self.margin.bottom.indent,
+        )
+    }
+
+    /// Returns a [`Margin`] value currently set.
+    pub fn get_margin_color(&self) -> Sides<Option<AnsiColor<'static>>> {
+        Sides::new(
+            self.margin.left.color.clone(),
+            self.margin.right.color.clone(),
+            self.margin.top.color.clone(),
+            self.margin.bottom.color.clone(),
+        )
+    }
+
+    /// Returns a [`Margin`] value currently set.
+    pub fn get_margin_offset(&self) -> Sides<Offset> {
+        Sides::new(
+            self.margin.left.offset,
+            self.margin.right.offset,
+            self.margin.top.offset,
+            self.margin.bottom.offset,
+        )
     }
 
     /// Clears all theme changes.
@@ -117,8 +157,8 @@ impl SpannedConfig {
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
-    pub fn remove_horizontal_line(&mut self, line: usize) {
-        self.borders.remove_horizontal_line(line);
+    pub fn remove_horizontal_line(&mut self, line: usize, count_rows: usize) {
+        self.borders.remove_horizontal_line(line, count_rows);
     }
 
     /// Gets a overridden vertical line.
@@ -141,8 +181,8 @@ impl SpannedConfig {
     ///
     /// Row `0` means the left row.
     /// Row `grid.count_columns()` means the right most row.
-    pub fn remove_vertical_line(&mut self, line: usize) {
-        self.borders.remove_vertical_line(line);
+    pub fn remove_vertical_line(&mut self, line: usize, count_columns: usize) {
+        self.borders.remove_vertical_line(line, count_columns);
     }
 
     /// Gets a overridden line.
@@ -326,19 +366,51 @@ impl SpannedConfig {
     }
 
     /// Set a padding to a given cells.
-    pub fn set_padding(&mut self, entity: Entity, pad: Sides<impl Into<ColoredIndent>>) {
-        let val = Sides::new(
-            pad.left.into(),
-            pad.right.into(),
-            pad.top.into(),
-            pad.bottom.into(),
-        );
-        self.padding.insert(entity, val);
+    pub fn set_padding(&mut self, entity: Entity, padding: Sides<Indent>) {
+        let mut pad = self.padding.get(entity).clone();
+        pad.left.indent = padding.left;
+        pad.right.indent = padding.right;
+        pad.top.indent = padding.top;
+        pad.bottom.indent = padding.bottom;
+
+        self.padding.insert(entity, pad);
+    }
+
+    /// Set a padding to a given cells.
+    pub fn set_padding_color(
+        &mut self,
+        entity: Entity,
+        padding: Sides<Option<AnsiColor<'static>>>,
+    ) {
+        let mut pad = self.padding.get(entity).clone();
+        pad.left.color = padding.left;
+        pad.right.color = padding.right;
+        pad.top.color = padding.top;
+        pad.bottom.color = padding.bottom;
+
+        self.padding.insert(entity, pad);
     }
 
     /// Get a padding for a given [Entity].
-    pub fn get_padding(&self, entity: Entity) -> &Sides<ColoredIndent> {
-        self.padding.get(entity)
+    pub fn get_padding(&self, entity: Entity) -> Sides<Indent> {
+        let pad = self.padding.get(entity);
+        Sides::new(
+            pad.left.indent,
+            pad.right.indent,
+            pad.top.indent,
+            pad.bottom.indent,
+        )
+    }
+
+    /// Get a padding color for a given [Entity].
+    pub fn get_padding_color(&self, entity: Entity) -> Sides<Option<AnsiColor<'static>>> {
+        let pad = self.padding.get(entity);
+        Sides::new(
+            pad.left.color.clone(),
+            pad.right.color.clone(),
+            pad.top.color.clone(),
+            pad.bottom.color.clone(),
+        )
     }
 
     /// Set a formatting to a given cells.
@@ -641,9 +713,10 @@ impl From<CompactConfig> for SpannedConfig {
 
         let mut cfg = Self::default();
 
-        let pad = to_padding(compact.get_padding(), compact.get_padding_color());
-        cfg.set_padding(Global, pad);
-        *cfg.get_margin_mut() = to_margin(compact.get_margin(), compact.get_margin_color());
+        cfg.set_padding(Global, *compact.get_padding());
+        cfg.set_padding_color(Global, to_ansi_color(compact.get_padding_color()));
+        cfg.set_margin(*compact.get_margin());
+        cfg.set_margin_color(to_ansi_color(compact.get_margin_color()));
         cfg.set_alignment_horizontal(Global, compact.get_alignment_horizontal());
         cfg.set_borders(*compact.get_borders());
         cfg.set_borders_color(borders_static_color_to_ansi_color(
@@ -666,28 +739,13 @@ impl From<CompactConfig> for SpannedConfig {
     }
 }
 
-fn to_margin(pad: &Sides<Indent>, colors: Sides<StaticColor>) -> Sides<ColoredMarginIndent> {
-    let colors = to_ansi_color(colors);
+fn to_ansi_color(b: Sides<StaticColor>) -> Sides<Option<AnsiColor<'static>>> {
     Sides::new(
-        ColoredMarginIndent::new(pad.left, Offset::Begin(0), Some(colors.left)),
-        ColoredMarginIndent::new(pad.right, Offset::Begin(0), Some(colors.right)),
-        ColoredMarginIndent::new(pad.top, Offset::Begin(0), Some(colors.top)),
-        ColoredMarginIndent::new(pad.bottom, Offset::Begin(0), Some(colors.bottom)),
+        Some(b.left.into()),
+        Some(b.right.into()),
+        Some(b.top.into()),
+        Some(b.bottom.into()),
     )
-}
-
-fn to_padding(pad: &Sides<Indent>, colors: Sides<StaticColor>) -> Sides<ColoredIndent> {
-    let colors = to_ansi_color(colors);
-    Sides::new(
-        ColoredIndent::new(pad.left, Some(colors.left)),
-        ColoredIndent::new(pad.right, Some(colors.right)),
-        ColoredIndent::new(pad.top, Some(colors.top)),
-        ColoredIndent::new(pad.bottom, Some(colors.bottom)),
-    )
-}
-
-fn to_ansi_color(b: Sides<StaticColor>) -> Sides<AnsiColor<'static>> {
-    Sides::new(b.left.into(), b.right.into(), b.top.into(), b.bottom.into())
 }
 
 fn borders_static_color_to_ansi_color(b: Borders<StaticColor>) -> Borders<AnsiColor<'static>> {
@@ -769,61 +827,30 @@ fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
     })
 }
 
-// todo:: Get back to original PAdding + PaddingColor
-
-/// A colorefull indent.
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
-pub struct ColoredIndent {
-    /// An indent value.
-    pub indent: Indent,
-    /// An color value.
-    pub color: Option<AnsiColor<'static>>,
-}
-
-impl ColoredIndent {
-    /// An creates a new colored indent.
-    pub fn new(indent: Indent, color: Option<AnsiColor<'static>>) -> Self {
-        Self { indent, color }
-    }
-}
-
-impl From<Indent> for ColoredIndent {
-    fn from(indent: Indent) -> Self {
-        Self::new(indent, None)
-    }
+struct ColoredIndent {
+    indent: Indent,
+    color: Option<AnsiColor<'static>>,
 }
 
 /// A colorefull margin indent.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ColoredMarginIndent {
+struct ColoredMarginIndent {
     /// An indent value.
-    pub indent: Indent,
+    indent: Indent,
     /// An offset value.
-    pub offset: Offset,
+    offset: Offset,
     /// An color value.
-    pub color: Option<AnsiColor<'static>>,
-}
-
-impl ColoredMarginIndent {
-    /// An creates a new colored margin indent.
-    pub fn new(indent: Indent, offset: Offset, color: Option<AnsiColor<'static>>) -> Self {
-        Self {
-            indent,
-            offset,
-            color,
-        }
-    }
+    color: Option<AnsiColor<'static>>,
 }
 
 impl Default for ColoredMarginIndent {
     fn default() -> Self {
-        Self::new(Indent::default(), Offset::Begin(0), None)
-    }
-}
-
-impl From<Indent> for ColoredMarginIndent {
-    fn from(indent: Indent) -> Self {
-        Self::new(indent, Offset::Begin(0), None)
+        Self {
+            indent: Indent::default(),
+            offset: Offset::Begin(0),
+            color: None,
+        }
     }
 }
 

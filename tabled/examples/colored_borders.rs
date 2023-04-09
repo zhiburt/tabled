@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --features color --example colored_borders`
-//!
 //! This example demonstrates using the [`RawStyle`] [setting](tabled::settings) to
 //! to granularly specify border colors.
-//!
-//! ---
 //!
 //! * 🚩 This example requires the `color` feature.
 //!

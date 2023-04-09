@@ -1,10 +1,4 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example alphabet`
-//!
 //! This example demonstrates instantiating a [`Table`] from an [`IntoIterator`] compliant object.
-//!
-//! ---
 //!
 //! * Note how [`Range`] [expression syntax](https://doc.rust-lang.org/reference/expressions/range-expr.html)
 //! is used to idiomatically represent the English alphabet.

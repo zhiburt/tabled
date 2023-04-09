@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example builder_index`
-//!
 //! This example demonstrates evolving the standard [`Builder`] to an [`IndexBuilder`],
 //! and then manipulating the constructing table with a newly prepended index column.
-//!
-//! ---
 //!
 //! * An [`IndexBuilder`] is capable of several useful manipulations, including:
 //!     * Giving the new index column a name

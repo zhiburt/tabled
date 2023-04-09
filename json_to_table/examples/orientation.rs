@@ -1,17 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example orientation`
-//!
 //! This example demonstrates several [`JsonTable`] functions for rotating
-//! the arrangement of keys and values with the following functions:
-//!
-//! - [`JsonTable::set_array_mode`]
-//! - [`JsonTable::set_object_mode`]
-//! - [`JsonTable::set_mode_visitor`]
-//!
-//! ---
-//!
-//! * Note the shared [`Orientation`] enum between these methods.
+//! the arrangement of keys and values
 
 use json_to_table::{json_to_table, Orientation};
 
@@ -33,8 +21,8 @@ fn main() {
 
     let mut htable = json_to_table(&json);
     htable
-        .array_orientation(Orientation::Horizontal)
-        .object_orientation(Orientation::Horizontal);
+        .array_orientation(Orientation::Row)
+        .object_orientation(Orientation::Row);
 
     let ctable = json_to_table(&json);
 

@@ -244,6 +244,11 @@ name = "split"
 path = "examples/split.rs"
 required-features = ["std", "macros"]
 
+[[example]]
+name = "pool_table"
+path = "examples/pool_table.rs"
+required-features = ["std"]
+
 [features]
 default = ["derive", "macros"]
 std = ["papergrid/std"]

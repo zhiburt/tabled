@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example display_with`
-//!
 //! This example demonstrates using the [attribute macro](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros)
 //! [`display_with`] to seamlessly augment field representations in a [`Table`] display.
-//!
-//! ---
 //!
 //! * [`display_with`] functions act as transformers during [`Table`] instantiation.
 //!

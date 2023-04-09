@@ -1,11 +1,5 @@
-//! This example can be run with the following command:
-//!
-//! `cargo run --example span`
-//!
 //! This example demonstrates using the [`Span`] [`CellOption`] to
 //! extend [Cells](Cell) over a specified number of columns/rows.
-//!
-//! ---
 //!
 //! * Note how [`Span`] is available for [`Cell`] modifications
 //! after the [`Modify`] [`TableOption`] is applied.
