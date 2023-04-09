@@ -395,19 +395,11 @@ impl<R, D> TableOption<R, D, ColoredConfig> for &RawStyle {
         cfg.set_borders(self.borders);
 
         for (&row, line) in &self.horizontals {
-            if line.is_empty() {
-                cfg.remove_horizontal_line(row);
-            } else {
-                cfg.insert_horizontal_line(row, config::HorizontalLine::from(*line));
-            }
+            cfg.insert_horizontal_line(row, config::HorizontalLine::from(*line));
         }
 
         for (&col, line) in &self.verticals {
-            if line.is_empty() {
-                cfg.remove_vertical_line(col);
-            } else {
-                cfg.insert_vertical_line(col, config::VerticalLine::from(*line));
-            }
+            cfg.insert_vertical_line(col, config::VerticalLine::from(*line));
         }
 
         if !self.colors.is_empty() {
@@ -426,20 +418,14 @@ where
             .get_horizontals()
             .clone()
             .into_iter()
-            .flat_map(|hr| {
-                let index = hr.index;
-                hr.line.map(|line| (index, line))
-            })
+            .map(|hr| (hr.index, hr.line))
             .collect();
 
         let verticals = style
             .get_verticals()
             .clone()
             .into_iter()
-            .flat_map(|hr| {
-                let index = hr.index;
-                hr.line.map(|line| (index, line))
-            })
+            .map(|hr| (hr.index, hr.line))
             .collect();
 
         Self {

@@ -157,8 +157,8 @@ impl SpannedConfig {
     ///
     /// Row `0` means the top row.
     /// Row `grid.count_rows()` means the bottom row.
-    pub fn remove_horizontal_line(&mut self, line: usize) {
-        self.borders.remove_horizontal_line(line);
+    pub fn remove_horizontal_line(&mut self, line: usize, count_rows: usize) {
+        self.borders.remove_horizontal_line(line, count_rows);
     }
 
     /// Gets a overridden vertical line.
@@ -181,8 +181,8 @@ impl SpannedConfig {
     ///
     /// Row `0` means the left row.
     /// Row `grid.count_columns()` means the right most row.
-    pub fn remove_vertical_line(&mut self, line: usize) {
-        self.borders.remove_vertical_line(line);
+    pub fn remove_vertical_line(&mut self, line: usize, count_columns: usize) {
+        self.borders.remove_vertical_line(line, count_columns);
     }
 
     /// Gets a overridden line.

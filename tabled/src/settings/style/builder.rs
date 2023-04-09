@@ -598,9 +598,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         }
 
         for vl in &mut self.verticals {
-            if let Some(line) = &mut vl.line {
-                line.connector1 = Some(c);
-            }
+            vl.line.connector1 = Some(c);
         }
 
         Style::new(self.borders, self.horizontals, self.verticals)
@@ -628,9 +626,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         }
 
         for vl in &mut self.verticals {
-            if let Some(line) = &mut vl.line {
-                line.connector2 = Some(c);
-            }
+            vl.line.connector2 = Some(c);
         }
 
         Style::new(self.borders, self.horizontals, self.verticals)
@@ -658,9 +654,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         }
 
         for hl in &mut self.horizontals {
-            if let Some(line) = &mut hl.line {
-                line.connector1 = Some(c);
-            }
+            hl.line.connector1 = Some(c);
         }
 
         Style::new(self.borders, self.horizontals, self.verticals)
@@ -688,9 +682,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         }
 
         for hl in &mut self.horizontals {
-            if let Some(line) = &mut hl.line {
-                line.connector2 = Some(c);
-            }
+            hl.line.connector2 = Some(c);
         }
 
         Style::new(self.borders, self.horizontals, self.verticals)
@@ -718,9 +710,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         }
 
         for vl in &mut self.verticals {
-            if let Some(line) = &mut vl.line {
-                line.intersection = Some(c);
-            }
+            vl.line.intersection = Some(c);
         }
 
         Style::new(self.borders, self.horizontals, self.verticals)
@@ -748,9 +738,7 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         }
 
         for hl in &mut self.horizontals {
-            if let Some(line) = &mut hl.line {
-                line.intersection = Some(c);
-            }
+            hl.line.intersection = Some(c);
         }
 
         Style::new(self.borders, self.horizontals, self.verticals)
@@ -1133,20 +1121,16 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         let mut hl = self.iter.next()?;
 
-        if let Some(mut line) = hl.line {
-            if self.intersection {
-                line.intersection = None;
-            }
+        if self.intersection {
+            hl.line.intersection = None;
+        }
 
-            if self.left {
-                line.connector1 = None;
-            }
+        if self.left {
+            hl.line.connector1 = None;
+        }
 
-            if self.right {
-                line.connector2 = None;
-            }
-
-            hl.line = Some(line);
+        if self.right {
+            hl.line.connector2 = None;
         }
 
         Some(hl)
@@ -1182,20 +1166,16 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         let mut hl = self.iter.next()?;
 
-        if let Some(mut line) = hl.line {
-            if self.intersection {
-                line.intersection = None;
-            }
+        if self.intersection {
+            hl.line.intersection = None;
+        }
 
-            if self.top {
-                line.connector1 = None;
-            }
+        if self.top {
+            hl.line.connector1 = None;
+        }
 
-            if self.bottom {
-                line.connector2 = None;
-            }
-
-            hl.line = Some(line);
+        if self.bottom {
+            hl.line.connector2 = None;
         }
 
         Some(hl)
