@@ -1,4 +1,4 @@
-//! The module contains a [`ExactDimension`] for [`CompactGrid`] height/width estimation.
+//! The module contains a [`CompactGridDimension`] for [`CompactGrid`] height/width estimation.
 //!
 //! [`CompactGrid`]: crate::grid::compact::CompactGrid
 

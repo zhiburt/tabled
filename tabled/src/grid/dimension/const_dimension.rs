@@ -1,6 +1,6 @@
 //! Module contains a dimension estimator for [`CompactTable`]
 //!
-//! [`CompactTable`]: crate::tables::compact::CompactTable
+//! [`CompactTable`]: crate::tables::CompactTable
 
 use crate::grid::dimension::{Dimension, Estimate};
 

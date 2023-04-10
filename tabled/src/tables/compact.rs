@@ -145,7 +145,9 @@ impl<I, const ROWS: usize, const COLS: usize> CompactTable<I, ConstDimension<COL
 impl<I, D> CompactTable<I, D> {
     /// Creates a new [`CompactTable`] structure with a known dimension.
     ///
-    /// Notice that the function will call [`Estimate`].
+    /// Notice that the function wont call [`Estimate`].
+    ///
+    /// [`Estimate`]: crate::grid::dimension::Estimate
     pub fn with_dimension(iter: I, dimension: D) -> Self
     where
         I: IntoRecords,
@@ -211,7 +213,7 @@ impl<I, D> CompactTable<I, D> {
         )
     }
 
-    /// Format table into [`io::Write`]r.
+    /// Format table into a writer.
     #[cfg(feature = "std")]
     #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     pub fn build<W>(self, writer: W) -> std::io::Result<()>

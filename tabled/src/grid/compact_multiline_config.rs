@@ -3,7 +3,7 @@ use crate::grid::config::{
     AlignmentHorizontal, AlignmentVertical, Borders, CompactConfig, Indent, Line, Sides,
 };
 
-/// A [`Table`] configuration.
+/// A [`CompactConfig`] configuration plus vertical alignment.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CompactMultilineConfig {
     config: CompactConfig,

@@ -3,6 +3,8 @@ use crate::grid::config::Position;
 use crate::grid::records::vec_records::{CellInfo, VecRecords};
 
 /// A [`Records`] representation which can modify cell by (row, column) index.
+///
+/// [`Records`]: crate::grid::records::Records
 pub trait RecordsMut<Text> {
     /// Sets a text to a given cell by index.
     fn set(&mut self, pos: Position, text: Text);

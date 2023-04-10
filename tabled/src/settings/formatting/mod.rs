@@ -6,7 +6,7 @@
 //!
 //! [`Charset`] responsible for special char treatment.
 //!
-//! [`Alignment`]: crate::settings::alignment::Alignment
+//! [`Alignment`]: crate::settings::Alignment
 
 mod alignment_strategy;
 mod charset;

@@ -6,6 +6,16 @@ To find a few features and settings which you can use with the macros please che
 
 ### Get started
 
+
+<table>
+<tr>
+<th> Example </th>
+<th> Result </th>
+</tr>
+<tr>
+<td>
+
+
 ```rust
 use static_table::static_table;
 
@@ -21,7 +31,8 @@ fn main() {
 }
 ```
 
-Output
+</td>
+<td style="vertical-align: top;">
 
 ```text
 +------+----------------+---------------+
@@ -34,6 +45,52 @@ Output
 | Rust | Graydon Hoare  | 2010          |
 +------+----------------+---------------+
 ```
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<th> Example </th>
+<th> Result </th>
+</tr>
+<tr>
+<td>
+
+```rust
+use static_table::pool_table;
+
+static LANG_LIST: &str = pool_table!([
+    ["name", "designed by", "first release"],
+    ["C", "Dennis Ritchie", "1972"],
+    ["Go", "Rob Pike", "2009"],
+    ["Rust", "Graydon Hoare", "2010"],
+]);
+
+fn main() {
+    println!("{LANG_LIST}")
+}
+```
+
+</td>
+<td style="vertical-align: top;">
+
+```text
++------+-------------+---------------+
+| name | designed by | first release |
++------+-------------+-----+---------+
+| C    | Dennis Ritchie    | 1972    |
++------+--+---------------++---------+
+| Go      | Rob Pike      | 2009     |
++---------+---------------+-+--------+
+| Rust    | Graydon Hoare   | 2010   |
++---------+-----------------+--------+
+```
+
+</td>
+</tr>
+</table>
 
 You can even use the macros in the documentation
 

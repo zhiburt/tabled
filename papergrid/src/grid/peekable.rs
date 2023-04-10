@@ -1,4 +1,4 @@
-//! The module contains a [`Grid`] structure.
+//! The module contains a [`PeekableGrid`] structure.
 
 use core::borrow::Borrow;
 use std::{

@@ -68,7 +68,7 @@ use crate::{grid::config::ColoredConfig, grid::config::Entity, settings::CellOpt
 /// );
 /// ```
 ///
-/// [`Alignment`]: crate::settings::alignment::Alignment
+/// [`Alignment`]: crate::settings::Alignment
 #[derive(Debug, Clone)]
 pub enum TrimStrategy {
     /// Allow vertical trim.
