@@ -262,7 +262,6 @@ enum ExprVal {
     Lit(ExprLit),
     Scope {
         brace_token: token::Brace,
-        level: usize,
         expr: Option<ScopeVal>,
     },
 }
@@ -281,19 +280,12 @@ enum ScopeVal {
 impl Parse for ExprVal {
     fn parse(input: ParseStream<'_>) -> Result<Self> {
         if input.peek(Brace) {
-            let mut content;
+            let content;
             let brace_token = braced!(content in input);
-
-            let mut level = 1;
-            while content.peek(Brace) {
-                let _ = braced!(content in content);
-                level += 1;
-            }
 
             if content.is_empty() {
                 return Ok(ExprVal::Scope {
                     brace_token,
-                    level,
                     expr: None,
                 });
             }
@@ -301,7 +293,6 @@ impl Parse for ExprVal {
             if content.peek2(Token![;]) {
                 return Ok(ExprVal::Scope {
                     brace_token,
-                    level,
                     expr: Some(ScopeVal::Sized {
                         elem: content.parse()?,
                         semi_token: content.parse()?,
@@ -315,7 +306,6 @@ impl Parse for ExprVal {
             if content.is_empty() {
                 return Ok(ExprVal::Scope {
                     brace_token,
-                    level,
                     expr: Some(ScopeVal::Expr(elem)),
                 });
             }
@@ -338,7 +328,6 @@ impl Parse for ExprVal {
 
             return Ok(ExprVal::Scope {
                 brace_token,
-                level,
                 expr: Some(ScopeVal::List(elems)),
             });
         }
