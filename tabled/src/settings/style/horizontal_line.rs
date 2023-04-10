@@ -1,5 +1,3 @@
-use core::ops::DerefMut;
-
 use crate::{
     grid::config::{CompactConfig, CompactMultilineConfig},
     settings::TableOption,
@@ -65,6 +63,6 @@ impl<R, D> TableOption<R, D, CompactConfig> for HorizontalLine {
 
 impl<R, D> TableOption<R, D, CompactMultilineConfig> for HorizontalLine {
     fn change(&mut self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
-        self.change(records, cfg.deref_mut(), dimension)
+        self.change(records, cfg.as_mut(), dimension)
     }
 }

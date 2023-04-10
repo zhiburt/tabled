@@ -784,8 +784,6 @@ fn formatting_test() {
         .change_cell((2, 1), "...");
 
     for (i, test) in tests.iter().enumerate() {
-        let expected = test.3;
-
         let table = grid
             .clone()
             .config(|cfg| {
@@ -796,6 +794,7 @@ fn formatting_test() {
             .clone()
             .build();
 
+        let expected = test.3;
         assert_eq!(table, expected, "test case #{i:?} failed");
     }
 }

@@ -37,7 +37,6 @@ where
         let is_intersect_horizontal_span = (0..=records.count_rows())
             .any(|row| cfg.is_cell_covered_by_column_span((row, self.col)));
 
-        println!("{is_intersect_horizontal_span} {}", self.col);
         if is_intersect_horizontal_span {
             return;
         }

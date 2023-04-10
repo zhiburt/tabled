@@ -5,8 +5,6 @@ use tabled::Table;
 fn table_iter_fmt() {
     let table = HtmlTable::new([["123", "324", "zxc"], ["123", "324", "zxc"]]).to_string();
 
-    println!("{table}");
-
     assert_eq!(
         table,
         concat!(
@@ -68,8 +66,6 @@ fn table_iter_fmt() {
 fn table_fmt() {
     let builder = Table::builder([["123", "324", "zxc"], ["123", "324", "zxc"]]);
     let table = HtmlTable::from(builder).to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,
@@ -160,8 +156,6 @@ fn table_fmt_multiline() {
         ["12\n3", "32\n4", "zx\nc"],
     ]);
     let table = HtmlTable::from(builder).to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,
@@ -280,8 +274,6 @@ fn table_padding_cell() {
 
     let table = table.to_string();
 
-    println!("{table}");
-
     assert_eq!(
             table,
             concat!(
@@ -379,8 +371,6 @@ fn table_padding_row() {
     table.set_padding(Entity::Row(1), Padding::filled(4));
 
     let table = table.to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,
@@ -480,8 +470,6 @@ fn table_padding_column() {
 
     let table = table.to_string();
 
-    println!("{table}");
-
     assert_eq!(
         table,
         concat!(
@@ -579,8 +567,6 @@ fn table_padding_global() {
     table.set_padding(Entity::Global, Padding::new(50, 30, 10, 0));
 
     let table = table.to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,
@@ -680,8 +666,6 @@ fn table_alignment_left() {
 
     let table = table.to_string();
 
-    println!("{table}");
-
     assert_eq!(
         table,
         concat!(
@@ -777,8 +761,6 @@ fn table_span_column() {
 
     let table = table.to_string();
 
-    println!("{table}");
-
     assert_eq!(
         table,
         concat!(
@@ -868,8 +850,6 @@ fn table_span_row() {
     table.set_row_span((1, 1), 2);
 
     let table = table.to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,
@@ -962,8 +942,6 @@ fn table_span_row_and_span_col() {
 
     let table = table.to_string();
 
-    println!("{table}");
-
     assert_eq!(
         table,
         concat!(
@@ -1052,8 +1030,6 @@ fn table_margin() {
     let mut table = HtmlTable::from(builder);
     table.set_margin(Margin::new(5, 4, 3, 2));
     let table = table.to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,
@@ -1151,8 +1127,6 @@ fn table_border() {
     let mut table = HtmlTable::from(builder);
     table.set_border(10);
     let table = table.to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,

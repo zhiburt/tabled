@@ -16,7 +16,6 @@ where
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<T> ExactRecords for Vec<T> {
     fn count_rows(&self) -> usize {
         self.len()

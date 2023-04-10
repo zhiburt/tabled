@@ -20,7 +20,6 @@ use crate::{
 ///     .with(Style::ascii())
 ///     .with(Modify::new(Rows::single(0)).with(BorderColor::default().top(Color::FG_RED)));
 /// ```
-#[cfg_attr(docsrs, doc(cfg(feature = "color")))]
 #[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub struct BorderColor(Border<AnsiColor<'static>>);
 

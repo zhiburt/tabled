@@ -1,6 +1,6 @@
 //! This module contains a compile time style builder [`Style`].
 
-use core::{marker::PhantomData, ops::DerefMut};
+use core::marker::PhantomData;
 
 use crate::{
     grid::config::{Borders, CompactConfig, CompactMultilineConfig},
@@ -8,7 +8,6 @@ use crate::{
 };
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 use crate::grid::config::ColoredConfig;
 
 use super::{HorizontalLine, Line, VerticalLine};
@@ -1045,7 +1044,6 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, ColoredConfig>
     for Style<T, B, L, R, H, V, HLines, VLines>
 where
@@ -1088,7 +1086,7 @@ where
     HLines: IntoIterator<Item = HorizontalLine> + Clone,
 {
     fn change(&mut self, records: &mut I, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
-        self.change(records, cfg.deref_mut(), dimension)
+        self.change(records, cfg.as_mut(), dimension)
     }
 }
 

@@ -896,19 +896,6 @@ mod tests {
     fn split_by_line_keeping_words_color_3_test() {
         let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
 
-        println!(
-            "{}",
-            split_keeping_words("\u{1b}[37mthis is a long sentence\u{1b}[0m", 7)
-        );
-
-        println!(
-            "{}",
-            split_keeping_words(
-                "\u{1b}[37m🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻\u{1b}[0m",
-                3,
-            ),
-        );
-
         assert_eq!(
             split_keeping_words(
                 "\u{1b}[37m🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻\u{1b}[0m",

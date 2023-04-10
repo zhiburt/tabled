@@ -69,9 +69,9 @@ impl<R, D, G, C> CompactGrid<R, D, G, C> {
     /// Builds a table into string.
     ///
     /// Notice that it consumes self.
-    #[allow(clippy::inherent_to_string)]
     #[cfg(feature = "std")]
     #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    #[allow(clippy::inherent_to_string)]
     pub fn to_string(self) -> String
     where
         R: Records,

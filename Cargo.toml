@@ -5,6 +5,7 @@ members = [
     "tabled_derive",
     "json_to_table",
     "csv_to_table",
+    "ron_to_table",
     "static_table",
     "table_to_html",
 ]

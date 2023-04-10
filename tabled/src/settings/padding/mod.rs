@@ -35,8 +35,6 @@
 //!
 //! [`Table`]: crate::Table
 
-use core::ops::DerefMut;
-
 use crate::{
     grid::{
         color::StaticColor,
@@ -131,7 +129,6 @@ where
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<R, D, C> TableOption<R, D, ColoredConfig> for Padding<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
@@ -160,6 +157,6 @@ where
     C: Into<StaticColor> + Clone,
 {
     fn change(&mut self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
-        self.change(records, cfg.deref_mut(), dimension)
+        self.change(records, cfg.as_mut(), dimension)
     }
 }

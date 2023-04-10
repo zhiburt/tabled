@@ -1,7 +1,7 @@
 use crate::{
     grid::{
-        config::{AlignmentHorizontal, CompactConfig, CompactMultilineConfig, Indent, Sides},
-        dimension::CompleteDimension,
+        config::{AlignmentHorizontal, CompactMultilineConfig, Indent, Sides},
+        dimension::{DimensionPriority, PoolTableDimension},
         records::EmptyRecords,
         records::IntoRecords,
     },
@@ -52,9 +52,9 @@ use crate::{
 ///
 /// assert_eq!(
 ///     table,
-///     "+----------+--------+----+\n\
-///      | Hello    | World  | !  |\n\
-///      +----------+--------+----+\n\
+///     "+---------+---------+----+\n\
+///      | Hello   | World   | !  |\n\
+///      +---------+---------+----+\n\
 ///      | Salve, mondo!          |\n\
 ///      +------+-------+--+--+---+\n\
 ///      | Hola | mundo |  |  | ! |\n\
@@ -107,6 +107,7 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PoolTable {
     config: CompactMultilineConfig,
+    dims: PoolTableDimension,
     value: TableValue,
 }
 
@@ -129,6 +130,7 @@ impl PoolTable {
 
         Self {
             config: configure_grid(),
+            dims: PoolTableDimension::new(DimensionPriority::List, DimensionPriority::List),
             value,
         }
     }
@@ -165,11 +167,10 @@ impl PoolTable {
     /// ```
     pub fn with<O>(&mut self, mut option: O) -> &mut Self
     where
-        O: TableOption<EmptyRecords, CompleteDimension<'static>, CompactMultilineConfig>,
+        O: TableOption<EmptyRecords, PoolTableDimension, CompactMultilineConfig>,
     {
         let mut records = EmptyRecords::default();
-        let mut dims = CompleteDimension::default();
-        option.change(&mut records, &mut self.config, &mut dims);
+        option.change(&mut records, &mut self.config, &mut self.dims);
 
         self
     }
@@ -179,6 +180,7 @@ impl From<TableValue> for PoolTable {
     fn from(value: TableValue) -> Self {
         Self {
             config: configure_grid(),
+            dims: PoolTableDimension::new(DimensionPriority::List, DimensionPriority::List),
             value,
         }
     }
@@ -186,7 +188,7 @@ impl From<TableValue> for PoolTable {
 
 impl std::fmt::Display for PoolTable {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        print::build_table(&self.value, &self.config).fmt(f)
+        print::build_table(&self.value, &self.config, self.dims).fmt(f)
     }
 }
 
@@ -202,19 +204,29 @@ pub enum TableValue {
 }
 
 fn configure_grid() -> CompactMultilineConfig {
-    let default_padding = Sides::new(
+    let pad = Sides::new(
         Indent::spaced(1),
         Indent::spaced(1),
         Indent::default(),
         Indent::default(),
     );
 
-    CompactMultilineConfig::from(
-        CompactConfig::default()
-            .set_padding(default_padding)
-            .set_alignment_horizontal(AlignmentHorizontal::Left)
-            .set_borders(*Style::ascii().get_borders()),
-    )
+    CompactMultilineConfig::default()
+        .set_padding(pad)
+        .set_alignment_horizontal(AlignmentHorizontal::Left)
+        .set_borders(*Style::ascii().get_borders())
+}
+
+impl<R, C> TableOption<R, PoolTableDimension, C> for PoolTableDimension {
+    fn change(&mut self, _: &mut R, _: &mut C, dimension: &mut PoolTableDimension) {
+        *dimension = *self;
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactMultilineConfig> for CompactMultilineConfig {
+    fn change(&mut self, _: &mut R, config: &mut CompactMultilineConfig, _: &mut D) {
+        *config = *self;
+    }
 }
 
 mod print {
@@ -230,7 +242,7 @@ mod print {
                 AlignmentHorizontal, AlignmentVertical, ColoredConfig, CompactMultilineConfig,
                 Offset,
             },
-            dimension::{Dimension, Estimate},
+            dimension::{Dimension, DimensionPriority, Estimate, PoolTableDimension},
             records::Records,
             util::string::{count_lines, get_lines, string_dimension, string_width},
         },
@@ -278,7 +290,11 @@ mod print {
         }
     }
 
-    pub(super) fn build_table(val: &TableValue, cfg: &CompactMultilineConfig) -> String {
+    pub(super) fn build_table(
+        val: &TableValue,
+        cfg: &CompactMultilineConfig,
+        dims_priority: PoolTableDimension,
+    ) -> String {
         let dims = collect_table_dimensions(val, cfg);
         let ctx = PrintContext {
             is_last_col: true,
@@ -289,7 +305,7 @@ mod print {
             ..Default::default()
         };
 
-        let data = _build_table(val, cfg, &dims, ctx);
+        let data = _build_table(val, cfg, &dims, dims_priority, ctx);
 
         data.content
     }
@@ -298,6 +314,7 @@ mod print {
         val: &TableValue,
         cfg: &CompactMultilineConfig,
         dims: &Dimensions,
+        priority: PoolTableDimension,
         ctx: PrintContext,
     ) -> CellData {
         match val {
@@ -307,14 +324,14 @@ mod print {
                     return generate_value_cell("", cfg, ctx);
                 }
 
-                generate_table_row(list, cfg, dims, ctx)
+                generate_table_row(list, cfg, dims, priority, ctx)
             }
             TableValue::Column(list) => {
                 if list.is_empty() {
                     return generate_value_cell("", cfg, ctx);
                 }
 
-                generate_table_column(list, cfg, dims, ctx)
+                generate_table_column(list, cfg, dims, priority, ctx)
             }
         }
     }
@@ -323,13 +340,14 @@ mod print {
         list: &Vec<TableValue>,
         cfg: &CompactMultilineConfig,
         dims: &Dimensions,
+        priority: PoolTableDimension,
         ctx: PrintContext,
     ) -> CellData {
         let array_dims = dims.arrays.get(&ctx.pos).unwrap();
 
         let height = dims.all.get(&ctx.pos).unwrap().height;
         let additional_height = ctx.size.height - height;
-        let (chunk_height, rest_height) = split_value(additional_height, list.len());
+        let (chunk_height, mut rest_height) = split_value(additional_height, list.len());
 
         let mut intersections_horizontal = ctx.intersections_horizontal;
         let mut intersections_vertical = ctx.intersections_vertical;
@@ -340,10 +358,28 @@ mod print {
         for (i, val) in list.iter().enumerate() {
             let val_pos = *array_dims.index.get(&i).unwrap();
 
-            let mut height = dims.all.get(&val_pos).unwrap().height + chunk_height;
-            if i == 0 {
-                height += rest_height;
+            let mut height = dims.all.get(&val_pos).unwrap().height;
+            match priority.height() {
+                DimensionPriority::First => {
+                    if i == 0 {
+                        height += additional_height;
+                    }
+                }
+                DimensionPriority::Last => {
+                    if i + 1 == list.len() {
+                        height += additional_height;
+                    }
+                }
+                DimensionPriority::List => {
+                    height += chunk_height;
+
+                    if rest_height > 0 {
+                        height += 1;
+                        rest_height -= 1; // must be safe
+                    }
+                }
             }
+
             let size = Dim::new(ctx.size.width, height);
 
             let (split, intersections_vertical) =
@@ -373,7 +409,7 @@ mod print {
                 size,
             };
 
-            let data = _build_table(val, cfg, dims, valctx);
+            let data = _build_table(val, cfg, dims, priority, valctx);
             intersections_horizontal = data.intersections_horizontal;
             next_intersections_vertical.extend(data.intersections_vertical);
 
@@ -393,13 +429,14 @@ mod print {
         list: &Vec<TableValue>,
         cfg: &CompactMultilineConfig,
         dims: &Dimensions,
+        priority: PoolTableDimension,
         ctx: PrintContext,
     ) -> CellData {
         let array_dims = dims.arrays.get(&ctx.pos).unwrap();
 
         let list_width = dims.all.get(&ctx.pos).unwrap().width;
         let additional_width = ctx.size.width - list_width;
-        let (chunk_width, rest_width) = split_value(additional_width, list.len());
+        let (chunk_width, mut rest_width) = split_value(additional_width, list.len());
 
         let mut intersections_horizontal = ctx.intersections_horizontal;
         let mut intersections_vertical = ctx.intersections_vertical;
@@ -410,10 +447,28 @@ mod print {
         for (i, val) in list.iter().enumerate() {
             let val_pos = *array_dims.index.get(&i).unwrap();
 
-            let mut width = dims.all.get(&val_pos).unwrap().width + chunk_width;
-            if i == 0 {
-                width += rest_width;
+            let mut width = dims.all.get(&val_pos).unwrap().width;
+            match priority.width() {
+                DimensionPriority::First => {
+                    if i == 0 {
+                        width += additional_width;
+                    }
+                }
+                DimensionPriority::Last => {
+                    if i + 1 == list.len() {
+                        width += additional_width;
+                    }
+                }
+                DimensionPriority::List => {
+                    width += chunk_width;
+
+                    if rest_width > 0 {
+                        width += 1;
+                        rest_width -= 1; // must be safe
+                    }
+                }
             }
+
             let size = Dim::new(width, ctx.size.height);
 
             let (split, intersections_horizontal) =
@@ -443,7 +498,7 @@ mod print {
                 size,
             };
 
-            let val = _build_table(val, cfg, dims, valctx);
+            let val = _build_table(val, cfg, dims, priority, valctx);
             intersections_vertical = val.intersections_vertical;
             new_intersections_horizontal.extend(val.intersections_horizontal.iter());
             let value = val.content;

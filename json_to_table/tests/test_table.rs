@@ -520,8 +520,6 @@ fn aray_split_test() {
         .collapse()
         .to_string();
 
-    println!("{table}");
-
     assert_eq!(
         table,
         concat!(
@@ -551,8 +549,6 @@ fn aray_split_test2() {
         .with(Style::modern())
         .collapse()
         .to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,
@@ -640,8 +636,6 @@ fn array_split_3_test() {
         .with(Style::modern())
         .collapse()
         .to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,
@@ -885,8 +879,6 @@ fn test_list_empty_entity_collapsed_1() {
         .with(Style::modern())
         .collapse()
         .to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,
@@ -1344,8 +1336,6 @@ fn test_multiline_key_height_less_then_value() {
         .with(Style::modern())
         .collapse()
         .to_string();
-
-    println!("{table}");
 
     assert_eq!(
         table,

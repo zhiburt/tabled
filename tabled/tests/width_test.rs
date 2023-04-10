@@ -2302,8 +2302,6 @@ fn wrap_keeping_words_0() {
         .with(Width::wrap(8).keep_words())
         .to_string();
 
-    println!("{table}");
-
     assert_eq!(
         tabled::grid::util::string::string_width_multiline(&table),
         8
