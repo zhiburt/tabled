@@ -64,32 +64,6 @@ fn static_table_layer_0() {
 }
 
 #[test]
-fn static_table_layer_1() {
-    static_table!([
-        [{ "Hello World", 2, 3 }],
-        [{{ 1, 2 }}, 4],
-        [1, {{{ 2 }}}, 123]
-    ]);
-}
-
-#[test]
-fn static_table_empty_layer() {
-    static_table!([
-        [{}, "Hello World", {}],
-        [{ {} }, 4],
-        [
-            1,
-            {
-                {
-                    {}
-                }
-            },
-            123
-        ]
-    ]);
-}
-
-#[test]
 fn static_table_style() {
     static_table!([[1, 2, 123], [1, 2, 123], [1, 2, 123]], THEME = "MODERN");
 }

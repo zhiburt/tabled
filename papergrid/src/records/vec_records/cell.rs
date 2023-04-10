@@ -1,4 +1,6 @@
 /// Cell implementation which can be used with [`VecRecords`].
+///
+/// [`VecRecords`]: crate::records::vec_records::VecRecords
 pub trait Cell {
     /// Gets a text.
     fn text(&self) -> &str;

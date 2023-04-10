@@ -6,8 +6,8 @@
 //!
 //! ## [`IterTable`]
 //!
-//! Just like [`table`] but it's API is a bit different to serve better in context
-//! where there are a memory limits.
+//! Just like [`Table`] but it's API is a bit different to serve better in context
+//! where there is a memory limit.
 //!
 //! ## [`ExtendedTable`]
 //!

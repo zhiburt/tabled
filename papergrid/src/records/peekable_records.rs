@@ -1,8 +1,6 @@
 use crate::config::Position;
 
-/// The representation of data, rows and columns of a [`Grid`].
-///
-/// [`Grid`]: crate::Grid
+/// The representation of data, rows and columns of a grid.
 pub trait PeekableRecords {
     /// Returns a text of a cell by an index.
     fn get_text(&self, pos: Position) -> &str;

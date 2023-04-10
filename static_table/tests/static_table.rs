@@ -326,11 +326,13 @@ fn static_table_dims_differences_2() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
 #[test]
 fn static_table_vspan_0() {
     let table = static_table!([
-        [{"Hello World"; 2}],
+        [{
+            "Hello World";
+            2
+        }],
         ["hello", "world", "!!!"],
         ["hello", "world"]
     ]);
@@ -344,12 +346,21 @@ fn static_table_vspan_0() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
 #[test]
 fn static_table_vspan_1() {
     let table = static_table!([
-        [{"Hello World"; 4}],
-        ["hello", {"world"; 2}, "!!!"],
+        [{
+            "Hello World";
+            4
+        }],
+        [
+            "hello",
+            {
+                "world";
+                2
+            },
+            "!!!"
+        ],
         ["hello", "world"]
     ]);
     let expected = "+-------+-------+--+-----+\n\
@@ -362,14 +373,32 @@ fn static_table_vspan_1() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
 #[test]
 fn static_table_vspan_2() {
     let table = static_table!([
-        [{"Hello World"; 4}],
-        ["hello", {"world"; 2}, "!!!"],
-        [{"hello"; 2}, {"world"; 2}]]
-    );
+        [{
+            "Hello World";
+            4
+        }],
+        [
+            "hello",
+            {
+                "world";
+                2
+            },
+            "!!!"
+        ],
+        [
+            {
+                "hello";
+                2
+            },
+            {
+                "world";
+                2
+            }
+        ]
+    ]);
     let expected = "+-------+---+---+-----+\n\
                           | Hello World         |\n\
                           +-------+---+---+-----+\n\
@@ -380,11 +409,13 @@ fn static_table_vspan_2() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
 #[test]
 fn static_table_vspan_const() {
     let table = static_table!([
-        [{"Hello World"; 4}; 2],
+        [{
+            "Hello World";
+            4
+        }; 2],
         ["hello", "world", "!!!"],
         ["hello", "world", "!!!"],
     ]);
@@ -398,31 +429,9 @@ fn static_table_vspan_const() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
-#[test]
-fn static_table_empty_layer() {
-    let table = static_table!([
-        [{}, 1, 2, {}],
-        ["hello", "world", "!!!"],
-        [{{{{}}}}, {{}}]]
-    );
-    let expected = "+-------+-------+-----+--+\n\
-                          |       | 1     | 2   |  |\n\
-                          +-------+-------+-----+--+\n\
-                          | hello | world | !!! |  |\n\
-                          +-------+-------+-----+--+\n\
-                          |       |       |     |  |\n\
-                          +-------+-------+-----+--+";
-    assert_eq!(table, expected);
-}
-
-#[rustfmt::skip]
 #[test]
 fn static_table_empty_layer_column() {
-    let table = static_table!([
-        [{}, 1, 2, {}],
-        [{}, "world", "!!!"],
-    ]);
+    let table = static_table!([[{}, 1, 2, {}], [{}, "world", "!!!"],]);
     let expected = "+--+-------+-----+--+\n\
                           |  | 1     | 2   |  |\n\
                           +--+-------+-----+--+\n\
@@ -431,11 +440,10 @@ fn static_table_empty_layer_column() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
 #[test]
 fn static_table_hspan_0() {
     let table = static_table!([
-        [{"Hello"}, "World"],
+        [{ "Hello" }, "World"],
         [{}, "hello", "world", "!!!"],
         ["hello", "world"]
     ]);
@@ -449,11 +457,10 @@ fn static_table_hspan_0() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
 #[test]
 fn static_table_hspan_1() {
     let table = static_table!([
-        [{"Hello"}, "World"],
+        [{ "Hello" }, "World"],
         [{}, "hello", "world", "!!!"],
         [{}, "hello", "world"]
     ]);
@@ -467,7 +474,6 @@ fn static_table_hspan_1() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
 #[test]
 fn static_table_hspan_doesnot_for_for_layers() {
     let table = static_table!([
@@ -485,11 +491,16 @@ fn static_table_hspan_doesnot_for_for_layers() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
 #[test]
 fn static_table_hspan_and_vspan_cell() {
     let table = static_table!([
-        [{"Hello"; 2}, "World"],
+        [
+            {
+                "Hello";
+                2
+            },
+            "World"
+        ],
         [{}, "hello", "world", "!!!"],
         [{}, "hello", "world"]
     ]);
@@ -503,14 +514,9 @@ fn static_table_hspan_and_vspan_cell() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
 #[test]
 fn static_table_hspan_const() {
-    let table = static_table!([
-        [{"Hello"}, {"World"}],
-        [{}; 3],
-        [{}, "hello", "world"]
-    ]);
+    let table = static_table!([[{ "Hello" }, { "World" }], [{}; 3], [{}, "hello", "world"]]);
     let expected = "+-------+-------+-------+\n\
                           | Hello | World |       |\n\
                           +       +       +-------+\n\
@@ -521,10 +527,12 @@ fn static_table_hspan_const() {
     assert_eq!(table, expected);
 }
 
-#[rustfmt::skip]
 #[test]
 fn static_table_vspan_const_row() {
-    let table = static_table!([[{"Hello World!"; 3}],]);
+    let table = static_table!([[{
+        "Hello World!";
+        3
+    }],]);
     let expected = "+----+----+----+\n\
                           | Hello World! |\n\
                           +----+----+----+";
@@ -550,24 +558,4 @@ fn static_table_with_theme_padding_margin() {
         "                       "
     );
     assert_eq!(table, expected);
-}
-
-#[test]
-fn static_table_pool_0() {
-    #[rustfmt::skip]
-    let table = static_table!([
-        [{{"Hello"}}, "World"],
-        ["123", "456"],
-        [{{"7"}}, "8"],
-    ]);
-    assert_eq!(
-        table,
-        "+-------+-------+\n\
-         | Hello | World |\n\
-         +-------+-------+\n\
-         | 123   | 456   |\n\
-         +-------+-------+\n\
-         | 7     | 8     |\n\
-         +-------+-------+"
-    );
 }

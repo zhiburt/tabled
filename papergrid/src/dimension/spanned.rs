@@ -1,4 +1,4 @@
-//! The module contains a [`ExactDimension`] for [`Grid`] height/width estimation.
+//! The module contains a [`SpannedGridDimension`] for [`Grid`] height/width estimation.
 //!
 //! [`Grid`]: crate::grid::iterable::Grid
 

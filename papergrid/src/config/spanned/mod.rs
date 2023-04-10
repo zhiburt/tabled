@@ -85,7 +85,7 @@ impl SpannedConfig {
         self.margin.bottom.offset = margin.bottom;
     }
 
-    /// Returns a [`Margin`] value currently set.
+    /// Returns a margin value currently set.
     pub fn get_margin(&self) -> Sides<Indent> {
         Sides::new(
             self.margin.left.indent,
@@ -95,7 +95,7 @@ impl SpannedConfig {
         )
     }
 
-    /// Returns a [`Margin`] value currently set.
+    /// Returns a margin color value currently set.
     pub fn get_margin_color(&self) -> Sides<Option<AnsiColor<'static>>> {
         Sides::new(
             self.margin.left.color.clone(),
@@ -105,7 +105,7 @@ impl SpannedConfig {
         )
     }
 
-    /// Returns a [`Margin`] value currently set.
+    /// Returns a margin offset value currently set.
     pub fn get_margin_offset(&self) -> Sides<Offset> {
         Sides::new(
             self.margin.left.offset,

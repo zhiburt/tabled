@@ -1,6 +1,6 @@
 //! The module contains a list of helpers for [`IntoRecords`]
 //!
-//! [`IntoRecords`]: crate::records::IntoRecords
+//! [`IntoRecords`]: crate::grid::records::IntoRecords
 
 pub mod limit_column_records;
 pub mod limit_row_records;

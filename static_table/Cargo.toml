@@ -10,6 +10,9 @@ license = "MIT"
 [lib]
 proc-macro = true
 
+[features]
+color = ["tabled/color"]
+
 [dependencies]
 tabled = { path = "../tabled", features = ["std"], default-features = false }
 syn = { version = "1", features = ["parsing"] }

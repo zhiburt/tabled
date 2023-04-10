@@ -1,4 +1,6 @@
-/// [Records] extension which guarantees the amount of rows.
+/// [`Records`] extension which guarantees the amount of rows.
+///
+/// [`Records`]: crate::records::Records
 pub trait ExactRecords {
     /// Returns an exact amount of rows in records.
     ///

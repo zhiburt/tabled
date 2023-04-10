@@ -4,7 +4,7 @@
 //!
 //! [`Grid`]: crate::grid::iterable::Grid
 
-/// Returns string width and count lines of a string. It's a combination of [`string_width_multiline_tab`] and [`count_lines`].
+/// Returns string width and count lines of a string. It's a combination of [`string_width_multiline`] and [`count_lines`].
 #[cfg(feature = "std")]
 pub fn string_dimension(text: &str) -> (usize, usize) {
     #[cfg(not(feature = "color"))]

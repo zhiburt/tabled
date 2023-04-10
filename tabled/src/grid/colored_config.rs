@@ -6,7 +6,7 @@ use papergrid::{
     config::{spanned::SpannedConfig, Position},
 };
 
-/// A [`Table`] configuration.
+/// A spanned configuration plus colors for cells.
 #[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub struct ColoredConfig {
     config: SpannedConfig,
@@ -23,6 +23,8 @@ impl ColoredConfig {
     ///
     /// The outcome is the same as if you'd use [`Format`] and added a color but it'd work only with `color` feature on.
     /// While this method works in all contexts.
+    ///
+    /// [`Format`]: crate::settings::Format
     pub fn set_color(&mut self, pos: Position, color: AnsiColor<'static>) -> &mut Self {
         let _ = self.colors.insert(pos, color);
         self

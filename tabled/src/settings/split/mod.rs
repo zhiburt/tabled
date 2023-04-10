@@ -33,10 +33,10 @@ enum Display {
 ///
 /// The required index parameter determines how many columns/rows a table will be redistributed into.
 ///
-/// - index [`usize`]
-/// - direction [`Direction`]
-/// - behavior [`Behavior`] DEFAULT [`Behavior::Zip`]
-/// - display [`Display`] DEFAULT [`Display::Clean`]
+/// - index
+/// - direction
+/// - behavior
+/// - display
 ///
 /// # Example
 ///
@@ -195,6 +195,7 @@ impl Split {
     /// See [`retain`] for an alternative display option.
     ///
     /// [`Table`]: crate::Table
+    /// [`retain`]: crate::settings::split::Split::retain
     pub fn clean(self) -> Self {
         Self {
             display: Display::Clean,
@@ -222,6 +223,7 @@ impl Split {
     /// See [`clean`] for an alternative display option.
     ///
     /// [`Table`]: crate::Table
+    /// [`clean`]: crate::settings::split::Split::clean
     pub fn retain(self) -> Self {
         Self {
             display: Display::Retain,
