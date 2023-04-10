@@ -90,8 +90,6 @@ println!("{}", table);
 <td>
 
 ```rust
-//! This example demonstrates usage of [`ron_to_table::RonTable`].
-
 use ron_to_table::RonTable;
 use tabled::settings::Style;
 

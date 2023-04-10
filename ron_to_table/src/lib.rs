@@ -3,11 +3,11 @@
 //! The are 2 types of tables you can create.
 //!     1. Embeded (default)
 //!     2. Collapsed
-//! 
+//!
 //! # Examples
-//! 
+//!
 //! Embeded table.
-//! 
+//!
 //! ```
 //! let data = r#"GameConfig(
 //!     window_size: (800, 600),
@@ -62,9 +62,9 @@
 //!      +----------------------+----------------------------------+"
 //! );
 //! ```
-//! 
+//!
 //! Collapsed table.
-//! 
+//!
 //! ```
 //! let data = r#"GameConfig(
 //!     window_size: (800, 600),
@@ -89,7 +89,7 @@
 //! use ron_to_table::RonTable;
 //! use tabled::settings::Style;
 //! let table = RonTable::default().collapse().with(Style::modern()).build(&scene);
-//! 
+//!
 //! assert_eq!(
 //!     table,
 //!     "┌────────────────────┬──────────────────┬───────┐\n\
