@@ -1,6 +1,6 @@
 //! This module contains a compile time style builder [`Style`].
 
-use core::{marker::PhantomData, ops::DerefMut};
+use core::marker::PhantomData;
 
 use crate::{
     grid::config::{Borders, CompactConfig, CompactMultilineConfig},
@@ -1086,7 +1086,7 @@ where
     HLines: IntoIterator<Item = HorizontalLine> + Clone,
 {
     fn change(&mut self, records: &mut I, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
-        self.change(records, cfg.deref_mut(), dimension)
+        self.change(records, cfg.as_mut(), dimension)
     }
 }
 

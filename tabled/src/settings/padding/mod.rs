@@ -35,8 +35,6 @@
 //!
 //! [`Table`]: crate::Table
 
-use core::ops::DerefMut;
-
 use crate::{
     grid::{
         color::StaticColor,
@@ -159,6 +157,6 @@ where
     C: Into<StaticColor> + Clone,
 {
     fn change(&mut self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
-        self.change(records, cfg.deref_mut(), dimension)
+        self.change(records, cfg.as_mut(), dimension)
     }
 }

@@ -28,8 +28,6 @@ fn test_0() {
 
     let table = table.to_string();
 
-    println!("{table}");
-
     assert_eq!(
         table,
         concat!(
