@@ -13,7 +13,7 @@ use syn::{
 };
 use tabled::{
     builder::Builder,
-    settings::{Alignment, Margin, Modify, Padding, Span, Style},
+    settings::{style::BorderSpanCorrection, Alignment, Margin, Modify, Padding, Span, Style},
     Table,
 };
 
@@ -600,8 +600,16 @@ fn panic_not_supported_alignment(ident: &LitStr) {
     proc_macro_error::abort!(
         ident,
         "The given settings is not supported";
-        note="custom themes are yet not supported";
         help = r#"Supported alignment are [LEFT, RIGHT, CENTER, CENTER_VERTICAL, TOP, BOTTOM]"#
+    )
+}
+
+#[allow(dead_code)]
+fn panic_not_supported_bool(ident: &LitStr) {
+    proc_macro_error::abort!(
+        ident,
+        "Unexpected bool value";
+        help = r#"Expected to get [TRUE, FALSE]"#
     )
 }
 
@@ -618,6 +626,11 @@ pub(crate) fn build_table(table_st: &TableStruct) -> Result<String> {
 
     if table_st.comma_token.is_some() {
         apply_settings(&mut table, &table_st.settings)?;
+    }
+
+    let has_spans = table.get_config().has_column_spans() || table.get_config().has_row_spans();
+    if has_spans {
+        table.with(BorderSpanCorrection);
     }
 
     Ok(table.to_string())
