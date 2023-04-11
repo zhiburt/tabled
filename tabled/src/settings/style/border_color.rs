@@ -6,7 +6,7 @@ use crate::{
         config::{Border, ColoredConfig, Entity},
         records::{ExactRecords, Records},
     },
-    settings::{color::Color, CellOption},
+    settings::{color::Color, CellOption, TableOption},
 };
 
 /// BorderColored represents a colored border of a Cell.
@@ -126,6 +126,24 @@ where
 
         for pos in entity.iter(count_rows, count_columns) {
             cfg.set_border_color(pos, border_color.clone());
+        }
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for BorderColor
+where
+    R: Records + ExactRecords,
+{
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        let count_rows = records.count_rows();
+        let count_columns = records.count_columns();
+
+        let border_color = &self.0;
+
+        for row in 0..count_rows {
+            for col in 0..count_columns {
+                cfg.set_border_color((row, col), border_color.clone());
+            }
         }
     }
 }

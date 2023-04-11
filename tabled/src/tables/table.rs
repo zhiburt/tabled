@@ -167,8 +167,8 @@ impl Table {
             records.push(list);
         }
 
-        let mut b = Builder::from(records).set_header(T::headers());
-        b.hint_column_size(T::LENGTH);
+        let mut b = Builder::from(records);
+        let _ = b.set_header(T::headers()).hint_column_size(T::LENGTH);
 
         b
     }

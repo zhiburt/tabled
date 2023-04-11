@@ -1,3 +1,5 @@
+use core::fmt::{self, Display, Formatter};
+
 use crate::{
     grid::{
         config::{AlignmentHorizontal, CompactMultilineConfig, Indent, Sides},
@@ -186,8 +188,8 @@ impl From<TableValue> for PoolTable {
     }
 }
 
-impl std::fmt::Display for PoolTable {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+impl Display for PoolTable {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         print::build_table(&self.value, &self.config, self.dims).fmt(f)
     }
 }
@@ -413,7 +415,7 @@ mod print {
             intersections_horizontal = data.intersections_horizontal;
             next_intersections_vertical.extend(data.intersections_vertical);
 
-            builder.push_record([data.content]);
+            let _ = builder.push_record([data.content]);
         }
 
         let table = builder
@@ -507,8 +509,7 @@ mod print {
         }
 
         let mut b = Builder::with_capacity(1);
-        b.hint_column_size(buf.len());
-        b.push_record(buf);
+        let _ = b.hint_column_size(buf.len()).push_record(buf);
         let table = b
             .build()
             .with(Style::empty())

@@ -1,6 +1,11 @@
+use papergrid::{
+    config::Entity,
+    records::{ExactRecords, PeekableRecords},
+};
+
 use crate::{
     grid::records::{Records, RecordsMut},
-    settings::TableOption,
+    settings::{CellOption, TableOption},
 };
 
 /// A structure to handle special chars.
@@ -33,6 +38,21 @@ where
         }
 
         for (pos, text) in list {
+            records.set(pos, text);
+        }
+    }
+}
+
+impl<R, C> CellOption<R, C> for CleanCharset
+where
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
+{
+    fn change(&mut self, records: &mut R, _: &mut C, entity: Entity) {
+        let count_rows = records.count_rows();
+        let count_cols = records.count_columns();
+        for pos in entity.iter(count_rows, count_cols) {
+            let text = records.get_text(pos);
+            let text = text.replace(['\t', '\r'], "");
             records.set(pos, text);
         }
     }

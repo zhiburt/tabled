@@ -19,7 +19,8 @@ fn main() {
 
     let oceans = ["Atlantic", "Pacific", "Indian", "Southern", "Arctic"];
 
-    let mut builder = Builder::default().set_header(["#", "Ocean"]);
+    let mut builder = Builder::default();
+    builder.set_header(["#", "Ocean"]);
     for (i, ocean) in oceans.iter().enumerate() {
         builder.push_record([i.to_string(), ocean.to_string()]);
     }

@@ -1,13 +1,3 @@
-# papergrid
-
-This is library for pretty tables.
-
-It has relatively low level API.
-If you're interested in a more friendly one take a look at [`tabled`](https://github.com/zhiburt/tabled).
-
-## Usage
-
-```rust
 use papergrid::{
     colors::NoColors,
     config::{
@@ -71,14 +61,3 @@ fn main() {
 
     println!("{grid}");
 }
-```
-
-Running the example you must see.
-
-```text
-+-----------------+------------+----------------+-+
-|                 |is a library|for print tables|!|
-+    Papergrid    +------------+----------------+-+
-|                 |Just like this                 |
-+-----------------+------------+----------------+-+
-```

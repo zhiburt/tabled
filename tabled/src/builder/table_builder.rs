@@ -11,7 +11,8 @@ use super::IndexBuilder;
 /// ```rust
 /// use tabled::builder::Builder;
 ///
-/// let mut builder = Builder::default().set_header(["index", "measure", "value"]);
+/// let mut builder = Builder::default();
+/// builder.set_header(["index", "measure", "value"]);
 /// builder.push_record(["0", "weight", "0.443"]);
 ///
 /// let table = builder.build();
@@ -67,9 +68,10 @@ impl Builder {
     ///
     /// ```rust
     /// # use tabled::builder::Builder;
-    /// let mut builder = Builder::default().set_header((0..3).map(|i| i.to_string()));
+    /// let mut builder = Builder::default();
+    /// builder.set_header((0..3).map(|i| i.to_string()));
     /// ```
-    pub fn set_header<H, T>(mut self, columns: H) -> Self
+    pub fn set_header<H, T>(&mut self, columns: H) -> &mut Self
     where
         H: IntoIterator<Item = T>,
         T: Into<String>,
@@ -105,7 +107,8 @@ impl Builder {
     /// );
     ///
     ///
-    /// let mut builder = Table::builder(data).remove_header();
+    /// let mut builder = Table::builder(data);
+    /// builder.remove_header();
     /// let table = builder.build().to_string();
     ///
     /// assert_eq!(
@@ -118,7 +121,7 @@ impl Builder {
     /// );
     ///
     /// ```
-    pub fn remove_header(mut self) -> Self {
+    pub fn remove_header(&mut self) -> &mut Self {
         self.columns = None;
         self.count_columns = self.get_size();
 
@@ -131,12 +134,13 @@ impl Builder {
     /// ```rust
     /// use tabled::builder::Builder;
     ///
-    /// let mut builder = Builder::default()
+    /// let mut builder = Builder::default();
+    /// builder
     ///     .set_default_text("undefined")
-    ///     .set_header((0..3).map(|i| i.to_string()));
-    /// builder.push_record(["i"]);
+    ///     .set_header((0..3).map(|i| i.to_string()))
+    ///     .push_record(["i"]);
     /// ```
-    pub fn set_default_text<T>(mut self, text: T) -> Self
+    pub fn set_default_text<T>(&mut self, text: T) -> &mut Self
     where
         T: Into<String>,
     {
@@ -149,7 +153,8 @@ impl Builder {
     /// ```rust
     /// use tabled::builder::Builder;
     ///
-    /// let mut builder = Builder::default().set_header(["i", "column1", "column2"]);
+    /// let mut builder = Builder::default();
+    /// builder.set_header(["i", "column1", "column2"]);
     /// builder.push_record(["0", "value1", "value2"]);
     /// ```
     pub fn build(self) -> Table {
@@ -193,7 +198,7 @@ impl Builder {
     /// builder.push_record((0..3).map(|i| i.to_string()));
     /// builder.push_record(["i", "surname", "lastname"]);
     /// ```
-    pub fn push_record<R, T>(&mut self, row: R)
+    pub fn push_record<R, T>(&mut self, row: R) -> &mut Self
     where
         R: IntoIterator<Item = T>,
         T: Into<String>,
@@ -202,6 +207,8 @@ impl Builder {
 
         self.update_size(list.len());
         self.data.push(list);
+
+        self
     }
 
     /// Insert a row into a specific position.
@@ -245,17 +252,19 @@ impl Builder {
     ///      +-------+"
     /// )
     /// ```
-    pub fn clean(&mut self) {
+    pub fn clean(&mut self) -> &mut Self {
         self.clean_columns();
         self.clean_rows();
+        self
     }
 
     /// Set a column size.
     ///
     /// If it make it lower then it was originally it is considered NOP.
-    pub fn hint_column_size(&mut self, size: usize) {
+    pub fn hint_column_size(&mut self, size: usize) -> &mut Self {
         self.count_columns = size;
         self.is_consistent = true;
+        self
     }
 
     /// Returns an amount of columns which would be present in a built table.
@@ -414,7 +423,7 @@ where
     fn from_iter<T: IntoIterator<Item = R>>(iter: T) -> Self {
         let mut builder = Self::default();
         for row in iter {
-            builder.push_record(row);
+            let _ = builder.push_record(row);
         }
 
         builder
@@ -426,7 +435,7 @@ where
     D: Into<String>,
 {
     fn extend<T: IntoIterator<Item = D>>(&mut self, iter: T) {
-        self.push_record(iter);
+        let _ = self.push_record(iter);
     }
 }
 
