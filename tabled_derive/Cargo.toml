@@ -1,6 +1,6 @@
 [package]
 name = "tabled_derive"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Derive macros which is used by tabled crate"
@@ -14,5 +14,5 @@ proc-macro = true
 syn = "1"
 quote = "1"
 proc-macro2 = "1"
-heck = "0.4.0"
-proc-macro-error = "1.0.4"
+heck = "0.4"
+proc-macro-error = "1.0"
