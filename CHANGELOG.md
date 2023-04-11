@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.11.0] - 2023-04-11
+
+### Added
+
+- Created `static_table` a macro to build tables at compile time.
+- Created `ron_to_table` format convertion library.
+- Added `IterTable` a table with a different backend logic.
+- Added `CompactTable` a table with a different backend logic.
+- Added `PoolTable` a table with a different backend logic.
+- Added `tabled(display_with("function", arg1, arg2))` custom arguments support.
+- Added `Split` setting for `tabled::Table` (by [@IsaacCloos](https://github.com/IsaacCloos)).
+- Added more property based tests (by [@arunma](https://github.com/arunma))
+- Added dependabot integration (by [@danieleades](https://github.com/danieleades))
+- Added MSRV checks to CI (by [@danieleades](https://github.com/danieleades))
+- Documentation improvements (by [@IsaacCloos](https://github.com/IsaacCloos)).
+- Documentation improvements (by [@jondot](https://github.com/jondot)).
+
+### Changed
+
+- Made a different interface for `table_to_html`.
+- Made a list of changes to `tabled` interface.
+- Made a list of changes to `papergrid` interface.
+- Made a list of changes to `json_to_table` interface.
+- Comparision benchmarks were moved to the `master` branch.
+
+### Fixed
+
+- Fixed `Tabled` macros path issue (by [@zjp-CN](https://github.com/zjp-CN)).
+- Fixed header issue in `tabled_to_html` (by [@MRoci](https://github.com/MRoci)).
+- Fixed `Rotate::Left/Right` issue.
+- Fixed a few issues in `json_to_table`.
+- Fixed `Tabled` derive macro issue with `skip`+`order` usage.
+- Fixed `Width::wrap().keep_words()` issue.
+- Fixed a few clippy warnings (by [@danieleades](https://github.com/danieleades))
+- Fixed typos (by Elric Milon).
+- Fixed typos (by [@fn-bruce](https://github.com/fn-bruce))
+- Fixed typos (by [@fa993](https://github.com/fa993))
+- Added missing linence files by [@michel-slm](https://github.com/michel-slm)
+
 ## [0.10.0] - 2022-10-18
 
 ### Added
