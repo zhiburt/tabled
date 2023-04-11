@@ -9,7 +9,6 @@ license = "MIT"
 
 [dependencies]
 tabled = { path = "../tabled", features = ["std"], default-features = false }
-dyn-clone = "*"
 
 [dev-dependencies]
 tabled = { path = "../tabled", features = ["std", "derive"], default-features = false }

@@ -24,6 +24,7 @@ static LANG_LIST: &str = static_table!([
     ["C", "Dennis Ritchie", "1972"],
     ["Go", "Rob Pike", "2009"],
     ["Rust", "Graydon Hoare", "2010"],
+    ["Hare", "Drew DeVault", "2022"],
 ]);
 
 fn main() {
@@ -43,6 +44,8 @@ fn main() {
 | Go   | Rob Pike       | 2009          |
 +------+----------------+---------------+
 | Rust | Graydon Hoare  | 2010          |
++------+----------------+---------------+
+| Hare | Drew DeVault   | 2022          |
 +------+----------------+---------------+
 ```
 
@@ -66,6 +69,7 @@ static LANG_LIST: &str = pool_table!([
     ["C", "Dennis Ritchie", "1972"],
     ["Go", "Rob Pike", "2009"],
     ["Rust", "Graydon Hoare", "2010"],
+    ["Hare", "Drew DeVault", "2022"],
 ]);
 
 fn main() {
@@ -85,6 +89,8 @@ fn main() {
 | Go      | Rob Pike      | 2009     |
 +---------+---------------+-+--------+
 | Rust    | Graydon Hoare   | 2010   |
++---------+-----------------+--------+
+| Hare    | Drew DeVault    | 2022   |
 +---------+-----------------+--------+
 ```
 

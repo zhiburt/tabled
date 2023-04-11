@@ -40,6 +40,7 @@ let languages = vec![
     Language::new("C", "Dennis Ritchie", 1972),
     Language::new("Go", "Rob Pike", 2009),
     Language::new("Rust", "Graydon Hoare", 2010),
+    Language::new("Hare", "Drew DeVault", 2022),
 ];
 
 let table = Table::new(languages).to_string();
@@ -52,6 +53,8 @@ let expected = "+------+----------------+---------------+\n\
                 | Go   | Rob Pike       | 2009          |\n\
                 +------+----------------+---------------+\n\
                 | Rust | Graydon Hoare  | 2010          |\n\
+                +------+----------------+---------------+\n\
+                | Hare | Drew DeVault   | 2022          |\n\
                 +------+----------------+---------------+";
 
 assert_eq!(table, expected);

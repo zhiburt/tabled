@@ -7,8 +7,8 @@ use tabled::{
     settings::{
         object::{Columns, Rows, Segment},
         style::{
-            Border, BorderChar, BorderSpanCorrection, BorderText, HorizontalLine, Line, Offset,
-            RawStyle, Style, VerticalLine,
+            Border, BorderChar, BorderColor, BorderSpanCorrection, BorderText, HorizontalLine,
+            Line, Offset, RawStyle, Style, VerticalLine,
         },
         Color, Format, Highlight, Modify, Padding, Span,
     },
@@ -320,12 +320,23 @@ test_table!(
     " 1    1-0       1-1    "
 );
 
+test_table!(
+    border_color_global,
+    { create_table::<2, 2>().with(BorderColor::default().bottom(Color::FG_RED)) },
+    "+---+----------+----------+\n\
+     | N | column 0 | column 1 |\n\
+     +\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\n\
+     | 0 |   0-0    |   0-1    |\n\
+     +\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\n\
+     | 1 |   1-0    |   1-1    |\n\
+     +\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
+);
+
 #[cfg(feature = "color")]
 test_table!(
     border_text_colored,
     {
         use owo_colors::OwoColorize;
-        use tabled::settings::style::BorderColor;
 
         create_table::<2, 2>()
             .with(BorderText::new("-Table").horizontal(1))

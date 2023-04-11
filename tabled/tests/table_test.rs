@@ -4,7 +4,7 @@ use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
-    settings::{formatting::Charset, Height, Padding, Settings, Style, Width},
+    settings::{formatting::Charset, Height, Modify, Padding, Settings, Style, Width},
     Table,
 };
 
@@ -300,6 +300,26 @@ test_table!(
     multiline_table_test_1,
     Table::new([["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
         .with(Charset::clean())
+        .with(Style::modern())
+        .with(Width::wrap(100)),
+    "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐"
+    "│ 0                                                                                                │"
+    "├──────────────────────────────────────────────────────────────────────────────────────────────────┤"
+    "│ This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: http │"
+    "│ s://www.nushell.sh/blog/2020/09/01/nushell_0_19.html                                             │"
+    "│                                                                                                  │"
+    "│ For convenience, we are providing full build                                                     │"
+    "│ s for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have  │"
+    "│ the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/inst │"
+    "│ allation.md#dependencies                                                                         │"
+    "│                                                                                                  │"
+    "└──────────────────────────────────────────────────────────────────────────────────────────────────┘"
+);
+
+test_table!(
+    multiline_table_test_2,
+    Table::new([["This is the 0.19 release of Nushell. If you'd like to read more about it, please check out: https://www.nushell.sh/blog/2020/09/01/nushell_0_19.html\r\n\r\nFor convenience, we are providing full builds for Windows, Linux, and macOS. These are the \"all extra features\" builds, so be sure you have the requirements to enable all capabilities: https://github.com/nushell/book/blob/master/en/installation.md#dependencies\r\n"]])
+        .with(Modify::new((1, 0)).with(Charset::clean()))
         .with(Style::modern())
         .with(Width::wrap(100)),
     "┌──────────────────────────────────────────────────────────────────────────────────────────────────┐"
