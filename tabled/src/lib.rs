@@ -157,7 +157,8 @@
 //!
 //! let header = std::iter::once(String::from("i")).chain((0..10).map(|i| i.to_string()));
 //!
-//! let mut builder = Builder::default().set_header(header);
+//! let mut builder = Builder::default();
+//! builder.set_header(header);
 //! for i in 0..3 {
 //!     let mut row = vec![];
 //!     row.push(i.to_string());
