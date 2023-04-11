@@ -42,6 +42,11 @@ path = "examples/common_grid.rs"
 required-features = ["std"]
 
 [[example]]
+name = "span_usage"
+path = "examples/span_usage.rs"
+required-features = ["std"]
+
+[[example]]
 name = "common_grid_no_std"
 path = "examples/common_grid_no_std.rs"
 required-features = []
