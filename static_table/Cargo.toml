@@ -18,7 +18,7 @@ proc-macro = true
 color = ["tabled/color"]
 
 [dependencies]
-tabled = { path = "../tabled", features = ["std"], default-features = false }
+tabled = { version = "0.11", features = ["std"], default-features = false }
 syn = { version = "1", features = ["parsing"] }
 quote = "1"
 proc-macro2 = "1"
