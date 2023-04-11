@@ -336,7 +336,7 @@ fn static_table_vspan_0() {
         ["hello", "world", "!!!"],
         ["hello", "world"]
     ]);
-    let expected = "+-------+-------+-----+\n\
+    let expected = "+---------------+-----+\n\
                           | Hello World   |     |\n\
                           +-------+-------+-----+\n\
                           | hello | world | !!! |\n\
@@ -363,9 +363,9 @@ fn static_table_vspan_1() {
         ],
         ["hello", "world"]
     ]);
-    let expected = "+-------+-------+--+-----+\n\
+    let expected = "+------------------------+\n\
                           | Hello World            |\n\
-                          +-------+-------+--+-----+\n\
+                          +-------+----------+-----+\n\
                           | hello | world    | !!! |\n\
                           +-------+-------+--+-----+\n\
                           | hello | world |  |     |\n\
@@ -399,13 +399,13 @@ fn static_table_vspan_2() {
             }
         ]
     ]);
-    let expected = "+-------+---+---+-----+\n\
+    let expected = "+---------------------+\n\
                           | Hello World         |\n\
-                          +-------+---+---+-----+\n\
+                          +-------+-------+-----+\n\
                           | hello | world | !!! |\n\
                           +-------+---+---+-----+\n\
                           | hello     | world   |\n\
-                          +-------+---+---+-----+";
+                          +-----------+---------+";
     assert_eq!(table, expected);
 }
 
@@ -419,7 +419,7 @@ fn static_table_vspan_const() {
         ["hello", "world", "!!!"],
         ["hello", "world", "!!!"],
     ]);
-    let expected = "+-------+-------+-----+--+----+--+--+--+\n\
+    let expected = "+------------------------+-------------+\n\
                           | Hello World            | Hello World |\n\
                           +-------+-------+-----+--+----+--+--+--+\n\
                           | hello | world | !!! |  |    |  |  |  |\n\
@@ -449,7 +449,7 @@ fn static_table_hspan_0() {
     ]);
     let expected = "+-------+-------+-------+-----+\n\
                           | Hello | World |       |     |\n\
-                          +       +-------+-------+-----+\n\
+                          |       +-------+-------+-----+\n\
                           |       | hello | world | !!! |\n\
                           +-------+-------+-------+-----+\n\
                           | hello | world |       |     |\n\
@@ -466,9 +466,9 @@ fn static_table_hspan_1() {
     ]);
     let expected = "+-------+-------+-------+-----+\n\
                           | Hello | World |       |     |\n\
-                          +       +-------+-------+-----+\n\
+                          |       +-------+-------+-----+\n\
                           |       | hello | world | !!! |\n\
-                          +       +-------+-------+-----+\n\
+                          |       +-------+-------+-----+\n\
                           |       | hello | world |     |\n\
                           +-------+-------+-------+-----+";
     assert_eq!(table, expected);
@@ -504,11 +504,11 @@ fn static_table_hspan_and_vspan_cell() {
         [{}, "hello", "world", "!!!"],
         [{}, "hello", "world"]
     ]);
-    let expected = "+---+---+-------+-----+\n\
+    let expected = "+-------+-------+-----+\n\
                           | Hello | World |     |\n\
-                          +       +-------+-----+\n\
+                          |       +-------+-----+\n\
                           |       | world | !!! |\n\
-                          +       +-------+-----+\n\
+                          |       +-------+-----+\n\
                           |       | world |     |\n\
                           +---+---+-------+-----+";
     assert_eq!(table, expected);
@@ -519,9 +519,9 @@ fn static_table_hspan_const() {
     let table = static_table!([[{ "Hello" }, { "World" }], [{}; 3], [{}, "hello", "world"]]);
     let expected = "+-------+-------+-------+\n\
                           | Hello | World |       |\n\
-                          +       +       +-------+\n\
+                          |       |       +-------+\n\
                           |       |       |       |\n\
-                          +       +-------+-------+\n\
+                          |       +-------+-------+\n\
                           |       | hello | world |\n\
                           +-------+-------+-------+";
     assert_eq!(table, expected);
@@ -533,9 +533,9 @@ fn static_table_vspan_const_row() {
         "Hello World!";
         3
     }],]);
-    let expected = "+----+----+----+\n\
+    let expected = "+--------------+\n\
                           | Hello World! |\n\
-                          +----+----+----+";
+                          +--------------+";
     assert_eq!(table, expected);
 }
 
