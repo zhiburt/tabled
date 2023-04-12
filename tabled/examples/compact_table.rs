@@ -13,11 +13,11 @@ fn main() {
         ["Manjaro", "Arch", "true"],
     ];
 
-    let table = CompactTable::new(data)
+    let _table = CompactTable::new(data)
         .columns(3)
         .width([7, 5, 5])
         .with(Style::markdown());
 
     #[cfg(feature = "std")]
-    println!("{}", table.to_string());
+    println!("{}", _table.to_string());
 }

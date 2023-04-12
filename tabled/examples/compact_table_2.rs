@@ -13,8 +13,8 @@ fn main() {
         ["Manjaro", "Arch", "true"],
     ];
 
-    let table = CompactTable::from(data).with(Style::psql());
+    let _table = CompactTable::from(data).with(Style::psql());
 
     #[cfg(feature = "std")]
-    println!("{}", table.to_string());
+    println!("{}", _table.to_string());
 }

@@ -1,11 +1,10 @@
-use crate::settings::TableOption;
-
 #[cfg(feature = "std")]
 use crate::grid::config::{ColoredConfig, VerticalLine as VLine};
 
 use super::Line;
 
 /// A horizontal split line which can be used to set a border.
+#[cfg_attr(not(feature = "std"), allow(dead_code))]
 #[derive(Debug, Clone)]
 pub struct VerticalLine {
     pub(crate) index: usize,
@@ -44,7 +43,7 @@ impl VerticalLine {
 }
 
 #[cfg(feature = "std")]
-impl<R, D> TableOption<R, D, ColoredConfig> for VerticalLine {
+impl<R, D> crate::settings::TableOption<R, D, ColoredConfig> for VerticalLine {
     fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         cfg.insert_vertical_line(self.index, VLine::from(self.line));
     }

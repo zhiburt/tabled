@@ -117,13 +117,14 @@ pub use table_option::TableOption;
 pub use modify::{Modify, ModifyList};
 
 pub use self::{
-    alignment::Alignment, extract::Extract, margin::Margin, padding::Padding, style::Style,
+    alignment::Alignment, extract::Extract, margin::Margin, padding::Padding, rotate::Rotate,
+    style::Style,
 };
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
     color::Color, concat::Concat, disable::Disable, format::Format, height::Height,
-    highlight::Highlight, merge::Merge, panel::Panel, rotate::Rotate, shadow::Shadow, span::Span,
-    style::Border, width::Width,
+    highlight::Highlight, merge::Merge, panel::Panel, shadow::Shadow, span::Span, style::Border,
+    width::Width,
 };

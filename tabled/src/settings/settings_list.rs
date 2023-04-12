@@ -1,4 +1,9 @@
-use crate::{grid::config::Entity, settings::TableOption};
+use crate::settings::TableOption;
+
+#[cfg(feature = "std")]
+use crate::grid::config::Entity;
+#[cfg(feature = "std")]
+use crate::settings::CellOption;
 
 /// Settings is a combinator of [`TableOption`]s.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -30,10 +35,10 @@ impl<A, B> Settings<A, B> {
 }
 
 #[cfg(feature = "std")]
-impl<R, C, A, B> super::CellOption<R, C> for Settings<A, B>
+impl<R, C, A, B> CellOption<R, C> for Settings<A, B>
 where
-    A: super::CellOption<R, C>,
-    B: super::CellOption<R, C>,
+    A: CellOption<R, C>,
+    B: CellOption<R, C>,
 {
     fn change(&mut self, records: &mut R, cfg: &mut C, entity: Entity) {
         self.0.change(records, cfg, entity);
@@ -57,7 +62,7 @@ where
 pub struct EmptySettings;
 
 #[cfg(feature = "std")]
-impl<R, C> super::CellOption<R, C> for EmptySettings {
+impl<R, C> CellOption<R, C> for EmptySettings {
     fn change(&mut self, _: &mut R, _: &mut C, _: Entity) {}
 }
 

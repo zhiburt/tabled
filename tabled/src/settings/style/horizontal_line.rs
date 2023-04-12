@@ -9,10 +9,11 @@ use crate::grid::config::{ColoredConfig, HorizontalLine as GridLine};
 use super::Line;
 
 /// A horizontal split line which can be used to set a border.
+#[cfg_attr(not(feature = "std"), allow(dead_code))]
 #[derive(Debug, Clone)]
 pub struct HorizontalLine {
-    pub(crate) index: usize,
-    pub(crate) line: Line,
+    pub(super) index: usize,
+    pub(super) line: Line,
 }
 
 impl HorizontalLine {
