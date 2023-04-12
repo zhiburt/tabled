@@ -5,7 +5,6 @@ mod ansi_color;
 mod static_color;
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use ansi_color::AnsiColor;
 
 pub use static_color::StaticColor;
