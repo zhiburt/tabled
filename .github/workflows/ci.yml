@@ -139,7 +139,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl]
-        features: ["", "color"]
+        features: ["", "std", "color"]
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable

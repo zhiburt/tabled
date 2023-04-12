@@ -53,14 +53,14 @@
 
 use crate::{
     grid::config::CompactConfig,
-    grid::config::{AlignmentHorizontal, AlignmentVertical, CompactMultilineConfig, Entity},
+    grid::config::{AlignmentHorizontal, AlignmentVertical, CompactMultilineConfig},
     settings::TableOption,
 };
 
 use AlignmentInner::*;
 
 #[cfg(feature = "std")]
-use crate::grid::config::ColoredConfig;
+use crate::grid::config::{ColoredConfig, Entity};
 
 /// Alignment represent a horizontal and vertical alignment setting for any cell on a [`Table`].
 ///
