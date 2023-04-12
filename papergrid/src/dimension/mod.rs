@@ -1,10 +1,8 @@
 //! The module contains an [`Dimension`] trait and its implementations.
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod compact;
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod spanned;
 
 /// Dimension of a [`Grid`]

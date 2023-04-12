@@ -70,7 +70,6 @@ impl<R, D, G, C> CompactGrid<R, D, G, C> {
     ///
     /// Notice that it consumes self.
     #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     #[allow(clippy::inherent_to_string)]
     pub fn to_string(self) -> String
     where

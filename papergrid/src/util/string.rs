@@ -81,7 +81,6 @@ pub fn count_tabs(s: &str) -> usize {
 
 /// Splits the string by lines.
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub fn get_lines(text: &str) -> Lines<'_> {
     #[cfg(not(feature = "color"))]
     {
@@ -105,7 +104,6 @@ pub fn get_lines(text: &str) -> Lines<'_> {
 /// In comparison to `std::str::Lines`, it treats trailing '\n' as a new line.
 #[allow(missing_debug_implementations)]
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub struct Lines<'a> {
     #[cfg(not(feature = "color"))]
     inner: std::str::Split<'a, char>,
@@ -130,7 +128,6 @@ impl<'a> Iterator for Lines<'a> {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 /// Replaces tabs in a string with a given width of spaces.
 pub fn replace_tab(text: &str, n: usize) -> std::borrow::Cow<'_, str> {
     if !text.contains('\t') {
@@ -150,7 +147,6 @@ pub fn replace_tab(text: &str, n: usize) -> std::borrow::Cow<'_, str> {
 }
 
 #[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 fn replace_tab_range(cell: &mut String, n: usize) -> &str {
     let mut skip = 0;
     while let &Some(pos) = &cell[skip..].find('\t') {
