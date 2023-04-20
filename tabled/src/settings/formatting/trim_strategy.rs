@@ -1,4 +1,8 @@
-use crate::{grid::config::ColoredConfig, grid::config::Entity, settings::CellOption};
+use crate::{
+    grid::config::ColoredConfig,
+    grid::config::Entity,
+    settings::{CellOption, TableOption},
+};
 
 /// `TrimStrategy` determines if it's allowed to use empty space while doing [`Alignment`].
 ///
@@ -104,5 +108,11 @@ impl<R> CellOption<R, ColoredConfig> for TrimStrategy {
         }
 
         cfg.set_formatting(entity, formatting);
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for TrimStrategy {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        <Self as CellOption<_, _>>::change(self, records, cfg, Entity::Global)
     }
 }

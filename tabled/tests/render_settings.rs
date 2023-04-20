@@ -36,10 +36,9 @@ test_table!(
     alignment_per_line_with_trim_0,
     new_table(multiline_data1())
         .with(Style::psql())
-        .with(Modify::new(Segment::all())
-            .with(Alignment::right())
-            .with(AlignmentStrategy::PerLine)
-            .with(TrimStrategy::Horizontal)),
+        .with(Alignment::right())
+        .with(AlignmentStrategy::PerLine)
+        .with(TrimStrategy::Horizontal),
     "         N | column 0 | column 1 | column 2 "
     "-----------+----------+----------+----------"
     "         0 |      0-0 |      0-1 |      0-2 "

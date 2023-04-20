@@ -1,6 +1,6 @@
 use crate::{
-    grid::config::{ColoredConfig, Entity},
-    settings::CellOption,
+    grid::config::{ColoredConfig, CompactMultilineConfig, Entity},
+    settings::{CellOption, TableOption},
 };
 
 /// `AlignmentStrategy` is a responsible for a flow how we apply an alignment.
@@ -150,5 +150,20 @@ impl<R> CellOption<R, ColoredConfig> for AlignmentStrategy {
         }
 
         cfg.set_formatting(entity, formatting);
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for AlignmentStrategy {
+    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        <Self as CellOption<R, ColoredConfig>>::change(self, records, cfg, Entity::Global)
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactMultilineConfig> for AlignmentStrategy {
+    fn change(&mut self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
+        match &self {
+            AlignmentStrategy::PerCell => *cfg = cfg.set_line_alignment(false),
+            AlignmentStrategy::PerLine => *cfg = cfg.set_line_alignment(true),
+        }
     }
 }
