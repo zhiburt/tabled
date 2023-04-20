@@ -507,3 +507,49 @@ test_table!(
     "|      | 3                       |      |"
     "+------+-------------------------+------+"
 );
+
+test_table!(
+    pool_table_2_columns_1_cell,
+    PoolTable::from(TableValue::Row(vec![
+        TableValue::Column(vec![
+            TableValue::Cell(String::from("0-0")),
+            TableValue::Cell(String::from("0-1")),
+            TableValue::Cell(String::from("0-2")),
+            TableValue::Cell(String::from("0-3")),
+            TableValue::Cell(String::from("0-4")),
+            TableValue::Cell(String::from("0-5")),
+        ]),
+        TableValue::Column(vec![
+            TableValue::Cell(String::from("1-0")),
+            TableValue::Cell(String::from("1-1")),
+            TableValue::Cell(String::from("1-2")),
+            TableValue::Cell(String::from("1-3")),
+            TableValue::Cell(String::from("1-4")),
+            TableValue::Cell(String::from("1-6")),
+            TableValue::Cell(String::from("1-7")),
+            TableValue::Cell(String::from("1-8")),
+            TableValue::Cell(String::from("1-9")),
+        ]),
+        TableValue::Cell(String::from("2-0")),
+    ]))
+    .with(PoolTableDimension::new(DimensionPriority::Last, DimensionPriority::Last)),
+    "+-----+-----+-----+"
+    "| 0-0 | 1-0 | 2-0 |"
+    "+-----+-----+     |"
+    "| 0-1 | 1-1 |     |"
+    "+-----+-----+     |"
+    "| 0-2 | 1-2 |     |"
+    "+-----+-----+     |"
+    "| 0-3 | 1-3 |     |"
+    "+-----+-----+     |"
+    "| 0-4 | 1-4 |     |"
+    "+-----+-----+     |"
+    "| 0-5 | 1-6 |     |"
+    "|     +-----+     |"
+    "|     | 1-7 |     |"
+    "|     +-----+     |"
+    "|     | 1-8 |     |"
+    "|     +-----+     |"
+    "|     | 1-9 |     |"
+    "+-----+-----+-----+"
+);

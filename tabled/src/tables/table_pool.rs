@@ -526,7 +526,6 @@ mod print {
     ) -> CellData {
         let width = ctx.size.width;
         let height = ctx.size.height;
-
         let config: SpannedConfig = (*cfg).into();
 
         let value = config_string(value, cfg, width, height);
@@ -577,7 +576,7 @@ mod print {
 
             let has_horizontal = cfg.get_borders().has_top();
             if !ctx.intersections_vertical.is_empty() && has_horizontal {
-                let mut splits = short_splits(&mut ctx.intersections_vertical, ctx.size.width);
+                let mut splits = short_splits(&mut ctx.intersections_vertical, ctx.size.height);
                 squash_splits(&mut splits);
 
                 let c = cfg.get_borders().right_intersection.unwrap_or(' ');
