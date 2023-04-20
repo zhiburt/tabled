@@ -133,7 +133,7 @@ use crate::{
 /// │                                                             } │
 /// └───────────────────────────────────────────────────────────────┘"#);
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AlignmentStrategy {
     /// Apply alignment for cell content as a whole.
     PerCell,
