@@ -1,26 +1,25 @@
 //! This module contains a main table representation [`Table`].
 
 use core::ops::DerefMut;
-use std::{borrow::Cow, collections::HashMap, fmt, iter::FromIterator};
+use std::{borrow::Cow, fmt, iter::FromIterator};
 
 use crate::{
     builder::Builder,
     grid::{
+        colors::NoColors,
         config::{
-            AlignmentHorizontal, ColoredConfig, CompactConfig, Entity, Formatting, Indent, Sides,
-            SpannedConfig,
+            AlignmentHorizontal, ColorMap, ColoredConfig, CompactConfig, Entity, Formatting,
+            Indent, Sides, SpannedConfig,
         },
-        dimension::{CompleteDimension, PeekableDimension},
-        dimension::{Dimension, Estimate},
-        records::{vec_records::VecRecords, ExactRecords, Records},
+        dimension::{CompleteDimension, Dimension, Estimate, PeekableDimension},
+        records::{
+            vec_records::{CellInfo, VecRecords},
+            ExactRecords, Records,
+        },
         PeekableGrid,
     },
     settings::{Style, TableOption},
     Tabled,
-};
-
-use papergrid::{
-    color::AnsiColor, colors::NoColors, config::Position, records::vec_records::CellInfo,
 };
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
@@ -97,7 +96,7 @@ impl Table {
 
         Self {
             records,
-            config: ColoredConfig::new(configure_grid(), HashMap::default()),
+            config: ColoredConfig::new(configure_grid()),
             dimension: CompleteDimension::default(),
         }
     }
@@ -255,7 +254,7 @@ impl Default for Table {
     fn default() -> Self {
         Self {
             records: VecRecords::default(),
-            config: ColoredConfig::new(configure_grid(), HashMap::default()),
+            config: ColoredConfig::new(configure_grid()),
             dimension: CompleteDimension::default(),
         }
     }
@@ -301,7 +300,7 @@ impl From<Builder> for Table {
 
         Self {
             records,
-            config: ColoredConfig::new(configure_grid(), HashMap::default()),
+            config: ColoredConfig::new(configure_grid()),
             dimension: CompleteDimension::default(),
         }
     }
@@ -444,7 +443,7 @@ fn print_grid<F: fmt::Write, D: Dimension>(
     records: &VecRecords<CellInfo<String>>,
     cfg: &SpannedConfig,
     dims: D,
-    colors: &HashMap<Position, AnsiColor<'static>>,
+    colors: &ColorMap,
 ) -> fmt::Result {
     if !colors.is_empty() {
         PeekableGrid::new(records, cfg, &dims, colors).build(f)
