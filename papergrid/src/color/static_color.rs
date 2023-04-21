@@ -19,6 +19,11 @@ impl StaticColor {
     pub const fn new(prefix: &'static str, suffix: &'static str) -> Self {
         Self { prefix, suffix }
     }
+
+    /// Verifies if anything was actually set.
+    pub const fn is_empty(&self) -> bool {
+        self.prefix.is_empty() && self.suffix.is_empty()
+    }
 }
 
 impl StaticColor {

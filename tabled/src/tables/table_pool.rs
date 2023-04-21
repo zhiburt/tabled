@@ -232,24 +232,26 @@ impl<R, D> TableOption<R, D, CompactMultilineConfig> for CompactMultilineConfig 
 }
 
 mod print {
-    use core::iter::FromIterator;
     use std::{cmp::max, collections::HashMap, iter::repeat};
 
-    use papergrid::config::{spanned::SpannedConfig, Borders};
+    use papergrid::{
+        color::StaticColor,
+        config::{Border, Borders},
+        util::string::string_width_multiline,
+    };
 
     use crate::{
         builder::Builder,
         grid::{
             config::{
                 AlignmentHorizontal, AlignmentVertical, ColoredConfig, CompactMultilineConfig,
-                Offset,
+                Indent, Offset, Sides,
             },
             dimension::{Dimension, DimensionPriority, Estimate, PoolTableDimension},
             records::Records,
             util::string::{count_lines, get_lines, string_dimension, string_width},
         },
         settings::{Padding, Style, TableOption},
-        Table,
     };
 
     use super::TableValue;
@@ -308,8 +310,18 @@ mod print {
         };
 
         let data = _build_table(val, cfg, &dims, dims_priority, ctx);
+        let mut table = data.content;
 
-        data.content
+        let margin = cfg.get_margin();
+        let has_margin = margin.top.size > 0
+            || margin.bottom.size > 0
+            || margin.left.size > 0
+            || margin.right.size > 0;
+        if has_margin {
+            table = set_margin(&table, *margin, cfg.get_margin_color());
+        }
+
+        table
     }
 
     fn _build_table(
@@ -520,23 +532,457 @@ mod print {
     }
 
     fn generate_value_cell(
-        value: &str,
+        text: &str,
         cfg: &CompactMultilineConfig,
         ctx: PrintContext,
     ) -> CellData {
         let width = ctx.size.width;
         let height = ctx.size.height;
-        let config: SpannedConfig = (*cfg).into();
-
-        let value = config_string(value, cfg, width, height);
-        let mut table = Table::from_iter([[value]]);
-
-        let _ = table.with(config);
-        let _ = table.with(ConfigCell(ctx));
-
-        let table = table.to_string();
-
+        let table = generate_value_table(text, cfg, ctx);
         CellData::new(table, vec![width], vec![height])
+    }
+
+    fn generate_value_table(
+        text: &str,
+        cfg: &CompactMultilineConfig,
+        mut ctx: PrintContext,
+    ) -> String {
+        if ctx.size.width == 0 || ctx.size.height == 0 {
+            return String::new();
+        }
+
+        let halignment = cfg.get_alignment_horizontal();
+        let valignment = cfg.get_alignment_vertical();
+        let pad = cfg.get_padding();
+        let pad_color = cfg.get_padding_color();
+        let pad_color = Sides::new(
+            (!pad_color.left.is_empty()).then_some(pad_color.left),
+            (!pad_color.right.is_empty()).then_some(pad_color.right),
+            (!pad_color.top.is_empty()).then_some(pad_color.top),
+            (!pad_color.bottom.is_empty()).then_some(pad_color.bottom),
+        );
+        let lines_alignemnt = cfg.get_formatting().allow_lines_alignment;
+
+        let mut borders = *cfg.get_borders();
+
+        let bottom_intesection = cfg.get_borders().bottom_intersection.unwrap_or(' ');
+        let mut horizontal_splits = short_splits(&mut ctx.intersections_horizontal, ctx.size.width);
+        squash_splits(&mut horizontal_splits);
+
+        let right_intersection = borders.right_intersection.unwrap_or(' ');
+        let mut vertical_splits = short_splits(&mut ctx.intersections_vertical, ctx.size.height);
+        squash_splits(&mut vertical_splits);
+
+        config_borders(&mut borders, &ctx);
+        let border = create_border(borders);
+
+        let borders_colors = *cfg.get_borders_color();
+        let border_color = create_border(borders_colors);
+
+        let mut height = ctx.size.height;
+        height -= pad.top.size + pad.bottom.size;
+
+        let mut width = ctx.size.width;
+        width -= pad.left.size + pad.right.size;
+
+        let count_lines = count_lines(text);
+        let (top, bottom) = indent_vertical(valignment, height, count_lines);
+
+        let mut buf = String::new();
+        print_top_line(
+            &mut buf,
+            border,
+            border_color,
+            &horizontal_splits,
+            bottom_intesection,
+            ctx.size.width,
+        );
+
+        let mut line_index = 0;
+        let mut vertical_splits = &vertical_splits[..];
+
+        for _ in 0..top {
+            let mut border = border;
+            if vertical_splits.first() == Some(&line_index) {
+                border.left = Some(right_intersection);
+                vertical_splits = &vertical_splits[1..];
+            }
+
+            print_line(&mut buf, border, border_color, None, ' ', ctx.size.width);
+            line_index += 1;
+        }
+
+        for _ in 0..pad.top.size {
+            let mut border = border;
+            if vertical_splits.first() == Some(&line_index) {
+                border.left = Some(right_intersection);
+                vertical_splits = &vertical_splits[1..];
+            }
+
+            print_line(
+                &mut buf,
+                border,
+                border_color,
+                pad_color.top,
+                pad.top.fill,
+                ctx.size.width,
+            );
+            line_index += 1;
+        }
+
+        if lines_alignemnt {
+            for line in get_lines(text) {
+                let line_width = string_width(&line);
+                let (left, right) = indent_horizontal(halignment, width, line_width);
+
+                if border.has_left() {
+                    let mut c = border.left.unwrap_or(' ');
+                    if vertical_splits.first() == Some(&line_index) {
+                        c = right_intersection;
+                        vertical_splits = &vertical_splits[1..];
+                    }
+
+                    print_char(&mut buf, c, border_color.left);
+                }
+
+                print_chars(&mut buf, pad.left.fill, pad_color.left, pad.left.size);
+                buf.extend(repeat(' ').take(left));
+                buf.push_str(&line);
+                buf.extend(repeat(' ').take(right));
+                print_chars(&mut buf, pad.right.fill, pad_color.right, pad.right.size);
+
+                if border.has_right() {
+                    print_char(&mut buf, border.right.unwrap_or(' '), border_color.right);
+                }
+
+                buf.push('\n');
+
+                line_index += 1;
+            }
+        } else {
+            let text_width = string_width_multiline(text);
+            let (left, _) = indent_horizontal(halignment, width, text_width);
+
+            for line in get_lines(text) {
+                let line_width = string_width(&line);
+                let right = width - line_width - left;
+
+                if border.has_left() {
+                    let mut c = border.left.unwrap_or(' ');
+                    if vertical_splits.first() == Some(&line_index) {
+                        c = right_intersection;
+                        vertical_splits = &vertical_splits[1..];
+                    }
+
+                    print_char(&mut buf, c, border_color.left);
+                }
+
+                print_chars(&mut buf, pad.left.fill, pad_color.left, pad.left.size);
+                buf.extend(repeat(' ').take(left));
+                buf.push_str(&line);
+                buf.extend(repeat(' ').take(right));
+                print_chars(&mut buf, pad.right.fill, pad_color.right, pad.right.size);
+
+                if border.has_right() {
+                    print_char(&mut buf, border.right.unwrap_or(' '), border_color.right);
+                }
+
+                buf.push('\n');
+
+                line_index += 1;
+            }
+        }
+
+        for _ in 0..pad.bottom.size {
+            let mut border = border;
+            if vertical_splits.first() == Some(&line_index) {
+                border.left = Some(right_intersection);
+                vertical_splits = &vertical_splits[1..];
+            }
+
+            print_line(
+                &mut buf,
+                border,
+                border_color,
+                pad_color.bottom,
+                pad.bottom.fill,
+                ctx.size.width,
+            );
+
+            line_index += 1;
+        }
+
+        for _ in 0..bottom {
+            let mut border = border;
+            if vertical_splits.first() == Some(&line_index) {
+                border.left = Some(right_intersection);
+                vertical_splits = &vertical_splits[1..];
+            }
+
+            print_line(&mut buf, border, border_color, None, ' ', ctx.size.width);
+            line_index += 1;
+        }
+
+        print_bottom_line(&mut buf, border, border_color, ctx.size.width);
+
+        let _ = buf.remove(buf.len() - 1);
+
+        buf
+    }
+
+    fn print_chars(buf: &mut String, c: char, color: Option<StaticColor>, width: usize) {
+        match color {
+            Some(color) => {
+                buf.push_str(color.get_prefix());
+                buf.extend(repeat(c).take(width));
+                buf.push_str(color.get_suffix());
+            }
+            None => buf.extend(repeat(c).take(width)),
+        }
+    }
+
+    fn print_char(buf: &mut String, c: char, color: Option<StaticColor>) {
+        match color {
+            Some(color) => {
+                buf.push_str(color.get_prefix());
+                buf.push(c);
+                buf.push_str(color.get_suffix());
+            }
+            None => buf.push(c),
+        }
+    }
+
+    fn print_line(
+        buf: &mut String,
+        border: Border<char>,
+        border_color: Border<StaticColor>,
+        color: Option<StaticColor>,
+        c: char,
+        width: usize,
+    ) {
+        if border.has_left() {
+            let c = border.left.unwrap_or(' ');
+            print_char(buf, c, border_color.left);
+        }
+
+        print_chars(buf, c, color, width);
+
+        if border.has_right() {
+            let c = border.right.unwrap_or(' ');
+            print_char(buf, c, border_color.right);
+        }
+
+        buf.push('\n');
+    }
+
+    fn print_top_line(
+        buf: &mut String,
+        border: Border<char>,
+        color: Border<StaticColor>,
+        splits: &[usize],
+        split_char: char,
+        width: usize,
+    ) {
+        if !border.has_top() {
+            return;
+        }
+
+        let mut used_color: Option<StaticColor> = None;
+
+        if border.has_left() {
+            if let Some(color) = color.left_top_corner {
+                used_color = Some(color);
+                buf.push_str(color.get_prefix());
+            }
+
+            let c = border.left_top_corner.unwrap_or(' ');
+            buf.push(c);
+        }
+
+        if let Some(color) = color.top {
+            match used_color {
+                Some(used) => {
+                    if used != color {
+                        buf.push_str(used.get_suffix());
+                        buf.push_str(color.get_prefix());
+                    }
+                }
+                None => {
+                    buf.push_str(color.get_prefix());
+                    used_color = Some(color);
+                }
+            }
+        }
+
+        let c = border.top.unwrap_or(' ');
+        if splits.is_empty() {
+            buf.extend(repeat(c).take(width));
+        } else {
+            let mut splits = splits;
+            for i in 0..width {
+                if splits.first() == Some(&i) {
+                    buf.push(split_char);
+                    splits = &splits[1..];
+                } else {
+                    buf.push(c);
+                }
+            }
+        }
+
+        if border.has_right() {
+            if let Some(color) = color.right_top_corner {
+                match used_color {
+                    Some(used) => {
+                        if used != color {
+                            buf.push_str(used.get_suffix());
+                            buf.push_str(color.get_prefix());
+                        }
+                    }
+                    None => {
+                        buf.push_str(color.get_prefix());
+                        used_color = Some(color);
+                    }
+                }
+            }
+
+            let c = border.right_top_corner.unwrap_or(' ');
+            buf.push(c);
+        }
+
+        if let Some(used) = used_color {
+            buf.push_str(used.get_suffix());
+        }
+
+        buf.push('\n');
+    }
+
+    fn print_bottom_line(
+        buf: &mut String,
+        border: Border<char>,
+        color: Border<StaticColor>,
+        width: usize,
+    ) {
+        if !border.has_bottom() {
+            return;
+        }
+
+        let mut used_color: Option<StaticColor> = None;
+
+        if border.has_left() {
+            if let Some(color) = color.left_bottom_corner {
+                used_color = Some(color);
+                buf.push_str(color.get_prefix());
+            }
+
+            let c = border.left_bottom_corner.unwrap_or(' ');
+            buf.push(c);
+        }
+
+        if let Some(color) = color.bottom {
+            match used_color {
+                Some(used) => {
+                    if used != color {
+                        buf.push_str(used.get_suffix());
+                        buf.push_str(color.get_prefix());
+                    }
+                }
+                None => {
+                    buf.push_str(color.get_prefix());
+                    used_color = Some(color);
+                }
+            }
+        }
+
+        let c = border.bottom.unwrap_or(' ');
+        buf.extend(repeat(c).take(width));
+
+        if border.has_right() {
+            if let Some(color) = color.right_bottom_corner {
+                match used_color {
+                    Some(used) => {
+                        if used != color {
+                            buf.push_str(used.get_suffix());
+                            buf.push_str(color.get_prefix());
+                        }
+                    }
+                    None => {
+                        buf.push_str(color.get_prefix());
+                        used_color = Some(color);
+                    }
+                }
+            }
+
+            let c = border.right_bottom_corner.unwrap_or(' ');
+            buf.push(c);
+        }
+
+        if let Some(used) = used_color {
+            buf.push_str(used.get_suffix());
+        }
+
+        buf.push('\n');
+    }
+
+    fn create_border<T>(borders: Borders<T>) -> Border<T> {
+        Border {
+            top: borders.top,
+            bottom: borders.bottom,
+            left: borders.left,
+            right: borders.right,
+            left_top_corner: borders.top_left,
+            left_bottom_corner: borders.bottom_left,
+            right_top_corner: borders.top_right,
+            right_bottom_corner: borders.bottom_right,
+        }
+    }
+
+    fn config_borders(borders: &mut Borders<char>, ctx: &PrintContext) {
+        // set top_left
+        {
+            if ctx.kv && ctx.kv_is_first {
+                borders.top_left = borders.top_intersection;
+            }
+
+            if ctx.kv && !ctx.kv_is_first {
+                borders.top_left = borders.intersection;
+            }
+
+            if ctx.kv && ctx.list && !ctx.list_is_first {
+                borders.top_left = borders.left_intersection;
+            }
+
+            if ctx.is_first_col && !ctx.is_first_row {
+                borders.top_left = borders.left_intersection;
+            }
+
+            if ctx.lean_top {
+                borders.top_left = borders.top_intersection;
+            }
+
+            if ctx.top_left {
+                borders.top_left = borders.left_intersection;
+            }
+
+            if ctx.top_intersection {
+                borders.top_left = borders.intersection;
+            }
+        }
+
+        if ctx.is_last_col && !ctx.is_first_row {
+            borders.top_right = borders.right_intersection;
+        }
+
+        if !ctx.is_first_col && ctx.is_last_row {
+            borders.bottom_left = borders.bottom_intersection;
+        }
+
+        if !ctx.is_last_row || ctx.no_bottom {
+            cfg_no_bottom_borders(borders);
+        }
+
+        if ctx.no_right {
+            cfg_no_right_borders(borders);
+        }
     }
 
     struct ConfigCell(PrintContext);
@@ -1024,51 +1470,6 @@ mod print {
         (val, rest)
     }
 
-    fn config_string(
-        value: &str,
-        cfg: &CompactMultilineConfig,
-        width: usize,
-        height: usize,
-    ) -> String {
-        let width = width - get_padding_horizontal(cfg);
-        let height = height - get_padding_vertical(cfg);
-        let ah = cfg.get_alignment_horizontal();
-        let av = cfg.get_alignment_vertical();
-        set_string_dimension(value, width, height, ah, av)
-    }
-
-    fn set_string_dimension(
-        text: &str,
-        width: usize,
-        height: usize,
-        ah: AlignmentHorizontal,
-        av: AlignmentVertical,
-    ) -> String {
-        let mut out = Vec::with_capacity(height);
-
-        let count_lines = count_lines(text);
-
-        let (top, bottom) = indent_vertical(av, height, count_lines);
-
-        out.extend(repeat(String::new()).take(top));
-
-        for line in get_lines(text) {
-            let w = string_width(&line);
-            let (left, right) = indent_horizontal(ah, width, w);
-
-            let mut buf = String::new();
-            buf.extend(repeat(' ').take(left));
-            buf.push_str(&line);
-            buf.extend(repeat(' ').take(right));
-
-            out.push(buf);
-        }
-
-        out.extend(repeat(String::new()).take(bottom));
-
-        out.join("\n")
-    }
-
     fn indent_vertical(al: AlignmentVertical, available: usize, real: usize) -> (usize, usize) {
         let top = indent_top(al, available, real);
         let bottom = available - real - top;
@@ -1160,5 +1561,42 @@ mod print {
 
     fn squash_splits(splits: &mut [usize]) {
         splits.iter_mut().enumerate().for_each(|(i, s)| *s += i);
+    }
+
+    fn set_margin(table: &str, margin: Sides<Indent>, color: Sides<StaticColor>) -> String {
+        if table.is_empty() {
+            return String::new();
+        }
+
+        let mut buf = String::new();
+        let width = string_width_multiline(table);
+        let top_color = (!color.top.is_empty()).then_some(color.top);
+        let bottom_color = (!color.bottom.is_empty()).then_some(color.bottom);
+        let left_color = (!color.left.is_empty()).then_some(color.left);
+        let right_color = (!color.right.is_empty()).then_some(color.right);
+        for _ in 0..margin.top.size {
+            print_chars(&mut buf, margin.left.fill, left_color, margin.left.size);
+            print_chars(&mut buf, margin.top.fill, top_color, width);
+            print_chars(&mut buf, margin.right.fill, right_color, margin.right.size);
+            buf.push('\n');
+        }
+
+        for line in get_lines(table) {
+            print_chars(&mut buf, margin.left.fill, left_color, margin.left.size);
+            buf.push_str(&line);
+            print_chars(&mut buf, margin.right.fill, right_color, margin.right.size);
+            buf.push('\n');
+        }
+
+        for _ in 0..margin.bottom.size {
+            print_chars(&mut buf, margin.left.fill, left_color, margin.left.size);
+            print_chars(&mut buf, margin.bottom.fill, bottom_color, width);
+            print_chars(&mut buf, margin.right.fill, right_color, margin.right.size);
+            buf.push('\n');
+        }
+
+        let _ = buf.remove(buf.len() - 1);
+
+        buf
     }
 }

@@ -161,9 +161,12 @@ impl<R, D> TableOption<R, D, ColoredConfig> for AlignmentStrategy {
 
 impl<R, D> TableOption<R, D, CompactMultilineConfig> for AlignmentStrategy {
     fn change(&mut self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
+        let mut f = cfg.get_formatting();
         match &self {
-            AlignmentStrategy::PerCell => *cfg = cfg.set_line_alignment(false),
-            AlignmentStrategy::PerLine => *cfg = cfg.set_line_alignment(true),
+            AlignmentStrategy::PerCell => f.allow_lines_alignment = false,
+            AlignmentStrategy::PerLine => f.allow_lines_alignment = true,
         }
+
+        *cfg = cfg.set_formatting(f);
     }
 }

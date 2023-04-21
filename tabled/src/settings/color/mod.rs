@@ -8,7 +8,10 @@ use std::borrow::Cow;
 use crate::{
     grid::config::ColoredConfig,
     grid::records::{ExactRecords, Records, RecordsMut},
-    grid::{color::AnsiColor, config::Entity},
+    grid::{
+        color::{AnsiColor, StaticColor},
+        config::Entity,
+    },
     settings::{CellOption, TableOption},
 };
 
@@ -189,6 +192,15 @@ impl From<Color> for AnsiColor<'static> {
 impl From<AnsiColor<'static>> for Color {
     fn from(c: AnsiColor<'static>) -> Self {
         Self(c)
+    }
+}
+
+impl From<StaticColor> for Color {
+    fn from(c: StaticColor) -> Self {
+        Self(AnsiColor::new(
+            Cow::Borrowed(c.get_prefix()),
+            Cow::Borrowed(c.get_suffix()),
+        ))
     }
 }
 

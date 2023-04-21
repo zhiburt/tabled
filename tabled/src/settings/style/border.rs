@@ -125,7 +125,7 @@ where
         let shape = (records.count_rows(), records.count_columns());
 
         for pos in entity.iter(shape.0, shape.1) {
-            cfg.set_border(pos, self.0.clone());
+            cfg.set_border(pos, self.0);
         }
     }
 }

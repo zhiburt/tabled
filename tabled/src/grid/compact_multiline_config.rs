@@ -1,6 +1,6 @@
 use crate::grid::color::StaticColor;
 use crate::grid::config::{
-    AlignmentHorizontal, AlignmentVertical, Borders, CompactConfig, Indent, Line, Sides,
+    AlignmentHorizontal, AlignmentVertical, Borders, CompactConfig, Formatting, Indent, Line, Sides,
 };
 
 /// A [`CompactConfig`] configuration plus vertical alignment.
@@ -8,7 +8,7 @@ use crate::grid::config::{
 pub struct CompactMultilineConfig {
     config: CompactConfig,
     alignment_vertical: AlignmentVertical,
-    is_line_alignment: bool,
+    formatting: Formatting,
 }
 
 impl CompactMultilineConfig {
@@ -120,10 +120,15 @@ impl CompactMultilineConfig {
         self.config.get_padding_color()
     }
 
-    /// Set alignment line/cell alignment.
-    pub const fn set_line_alignment(mut self, value: bool) -> Self {
-        self.is_line_alignment = value;
+    /// Set formatting.
+    pub const fn set_formatting(mut self, formatting: Formatting) -> Self {
+        self.formatting = formatting;
         self
+    }
+
+    /// Get formatting.
+    pub const fn get_formatting(&self) -> Formatting {
+        self.formatting
     }
 }
 
@@ -132,7 +137,7 @@ impl Default for CompactMultilineConfig {
         Self {
             config: Default::default(),
             alignment_vertical: AlignmentVertical::Top,
-            is_line_alignment: false,
+            formatting: Formatting::default(),
         }
     }
 }
@@ -142,7 +147,7 @@ impl From<CompactConfig> for CompactMultilineConfig {
         Self {
             config,
             alignment_vertical: AlignmentVertical::Top,
-            is_line_alignment: false,
+            formatting: Formatting::default(),
         }
     }
 }
@@ -166,12 +171,7 @@ impl From<CompactMultilineConfig> for crate::grid::config::SpannedConfig {
 
         let mut cfg = crate::grid::config::SpannedConfig::from(compact.config);
         cfg.set_alignment_vertical(Entity::Global, compact.alignment_vertical);
-
-        if compact.is_line_alignment {
-            let mut formatting = *cfg.get_formatting(Entity::Global);
-            formatting.allow_lines_alignment = compact.is_line_alignment;
-            cfg.set_formatting(Entity::Global, formatting);
-        }
+        cfg.set_formatting(Entity::Global, compact.formatting);
 
         cfg
     }
