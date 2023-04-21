@@ -7,7 +7,7 @@ use crate::{
 };
 
 /// Row (vertical) span.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct RowSpan {
     size: usize,
 }
@@ -28,7 +28,7 @@ impl<R> CellOption<R, ColoredConfig> for RowSpan
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

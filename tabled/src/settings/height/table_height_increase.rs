@@ -51,7 +51,7 @@ where
     for<'a> &'a R: Records,
 {
     fn change(
-        &mut self,
+        self,
         records: &mut R,
         cfg: &mut ColoredConfig,
         dims: &mut CompleteDimension<'static>,
@@ -66,7 +66,7 @@ where
             return;
         }
 
-        get_increase_list(&mut heights, height, total, self.priority.clone());
+        get_increase_list(&mut heights, height, total, self.priority);
 
         let _ = dims.set_heights(heights);
     }

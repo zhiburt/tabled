@@ -40,7 +40,7 @@ use crate::{
 /// ```
 ///
 /// [`Padding`]: crate::settings::Padding
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Justify<W> {
     width: W,
 }
@@ -79,7 +79,7 @@ where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let width = self.width.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -88,8 +88,8 @@ where
         for row in 0..count_rows {
             for col in 0..count_columns {
                 let pos = (row, col).into();
-                CellOption::change(&mut Width::increase(width), records, cfg, pos);
-                CellOption::change(&mut Width::truncate(width), records, cfg, pos);
+                CellOption::change(Width::increase(width), records, cfg, pos);
+                CellOption::change(Width::truncate(width), records, cfg, pos);
             }
         }
     }

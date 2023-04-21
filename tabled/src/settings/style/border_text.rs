@@ -95,7 +95,7 @@ where
     for<'a> D: Estimate<&'a R, ColoredConfig>,
     D: Dimension,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
         dims.estimate(records, cfg);
         let shape = (records.count_rows(), records.count_columns());
         let line = self.line;
@@ -110,7 +110,7 @@ where
     for<'a> D: Estimate<&'a R, ColoredConfig>,
     D: Dimension,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
         dims.estimate(records, cfg);
         let shape = (records.count_rows(), records.count_columns());
         let line = 0;
@@ -125,7 +125,7 @@ where
     for<'a> D: Estimate<&'a R, ColoredConfig>,
     D: Dimension,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
         dims.estimate(records, cfg);
         let shape = (records.count_rows(), records.count_columns());
         let line = records.count_rows();

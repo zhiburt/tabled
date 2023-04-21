@@ -33,11 +33,11 @@ impl<R, C> TableOption<R, CompleteDimension<'static>, C> for WidthList
 where
     R: Records,
 {
-    fn change(&mut self, records: &mut R, _: &mut C, dimension: &mut CompleteDimension<'static>) {
+    fn change(self, records: &mut R, _: &mut C, dimension: &mut CompleteDimension<'static>) {
         if self.list.len() < records.count_columns() {
             return;
         }
 
-        let _ = dimension.set_widths(self.list.clone());
+        let _ = dimension.set_widths(self.list);
     }
 }

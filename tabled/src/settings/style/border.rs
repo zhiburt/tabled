@@ -29,7 +29,7 @@ use crate::{
 ///     .with(Style::ascii())
 ///     .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
 /// ```
-#[derive(Debug, Clone, Default, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Border(GBorder<char>);
 
 impl Border {
@@ -121,7 +121,7 @@ impl<R> CellOption<R, ColoredConfig> for Border
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let shape = (records.count_rows(), records.count_columns());
 
         for pos in entity.iter(shape.0, shape.1) {
@@ -142,14 +142,14 @@ impl From<Border> for GBorder<char> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct EmptyBorder;
 
 impl<R> CellOption<R, ColoredConfig> for EmptyBorder
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let shape = (records.count_rows(), records.count_columns());
 
         for pos in entity.iter(shape.0, shape.1) {

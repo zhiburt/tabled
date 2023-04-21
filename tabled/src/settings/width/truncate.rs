@@ -38,7 +38,7 @@ use super::util::{cut_str, get_table_widths, get_table_widths_with_total};
 /// ```
 ///
 /// [`Padding`]: crate::settings::Padding
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Truncate<'a, W = usize, P = PriorityNone> {
     width: W,
     suffix: Option<TruncateSuffix<'a>>,
@@ -46,7 +46,7 @@ pub struct Truncate<'a, W = usize, P = PriorityNone> {
     _priority: PhantomData<P>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct TruncateSuffix<'a> {
     text: Cow<'a, str>,
     limit: SuffixLimit,
@@ -66,7 +66,7 @@ impl Default for TruncateSuffix<'_> {
 }
 
 /// A suffix limit settings.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SuffixLimit {
     /// Cut the suffix.
     Cut,
@@ -182,12 +182,7 @@ where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(
-        &mut self,
-        records: &mut R,
-        cfg: &mut ColoredConfig,
-        entity: papergrid::config::Entity,
-    ) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: papergrid::config::Entity) {
         let available = self.width.measure(&*records, cfg);
 
         let mut width = available;
@@ -306,7 +301,7 @@ where
     for<'a> &'a R: Records,
 {
     fn change(
-        &mut self,
+        self,
         records: &mut R,
         cfg: &mut ColoredConfig,
         dims: &mut CompleteDimension<'static>,
@@ -363,12 +358,11 @@ where
 
     let points = get_decrease_cell_list(cfg, &widths, &min_widths, (count_rows, count_columns));
 
-    let mut truncate = Truncate::new(0);
-    truncate.suffix = suffix;
-    truncate.multiline = multiline;
     for ((row, col), width) in points {
-        truncate.width = width;
-        CellOption::change(&mut truncate, records, cfg, (row, col).into());
+        let mut truncate = Truncate::new(width);
+        truncate.suffix = suffix.clone();
+        truncate.multiline = multiline;
+        CellOption::change(truncate, records, cfg, (row, col).into());
     }
 
     widths

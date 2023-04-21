@@ -150,7 +150,7 @@ impl Alignment {
 
 #[cfg(feature = "std")]
 impl<R> crate::settings::CellOption<R, ColoredConfig> for Alignment {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         match self.inner {
             Horizontal(a) => cfg.set_alignment_horizontal(entity, a),
             Vertical(a) => cfg.set_alignment_vertical(entity, a),
@@ -160,7 +160,7 @@ impl<R> crate::settings::CellOption<R, ColoredConfig> for Alignment {
 
 #[cfg(feature = "std")]
 impl<R, D> TableOption<R, D, ColoredConfig> for Alignment {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         match self.inner {
             Horizontal(a) => cfg.set_alignment_horizontal(Entity::Global, a),
             Vertical(a) => cfg.set_alignment_vertical(Entity::Global, a),
@@ -169,7 +169,7 @@ impl<R, D> TableOption<R, D, ColoredConfig> for Alignment {
 }
 
 impl<R, D> TableOption<R, D, CompactConfig> for Alignment {
-    fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         if let Horizontal(a) = self.inner {
             *cfg = cfg.set_alignment_horizontal(a)
         }
@@ -177,7 +177,7 @@ impl<R, D> TableOption<R, D, CompactConfig> for Alignment {
 }
 
 impl<R, D> TableOption<R, D, CompactMultilineConfig> for Alignment {
-    fn change(&mut self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
         match self.inner {
             Horizontal(a) => *cfg = cfg.set_alignment_horizontal(a),
             Vertical(a) => *cfg = cfg.set_alignment_vertical(a),

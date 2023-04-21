@@ -51,7 +51,7 @@ where
     for<'a> &'a R: Records,
 {
     fn change(
-        &mut self,
+        self,
         records: &mut R,
         cfg: &mut ColoredConfig,
         dims: &mut CompleteDimension<'static>,
@@ -69,7 +69,7 @@ where
             return;
         }
 
-        decrease_list(&mut heights, total, height, self.priority.clone());
+        decrease_list(&mut heights, total, height, self.priority);
 
         for (row, &height) in heights.iter().enumerate() {
             for col in 0..count_cols {

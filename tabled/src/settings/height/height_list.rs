@@ -37,11 +37,11 @@ impl<R, C> TableOption<R, CompleteDimension<'static>, C> for HeightList
 where
     R: ExactRecords + Records,
 {
-    fn change(&mut self, records: &mut R, _: &mut C, dims: &mut CompleteDimension<'static>) {
+    fn change(self, records: &mut R, _: &mut C, dims: &mut CompleteDimension<'static>) {
         if self.list.len() < records.count_rows() {
             return;
         }
 
-        let _ = dims.set_heights(self.list.clone());
+        let _ = dims.set_heights(self.list);
     }
 }

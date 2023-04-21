@@ -1,7 +1,7 @@
 use crate::{
     grid::config::Entity,
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
-    settings::CellOption,
+    settings::{CellOption, TableOption},
 };
 
 /// [`FormatContentPositioned`] is like a [`FormatContent`] an abstraction over a function you can use against a cell.
@@ -9,17 +9,31 @@ use crate::{
 /// It different from [`FormatContent`] that it provides a row and column index.
 ///
 /// [`FormatContent`]: crate::settings::format::FormatContent
-#[derive(Debug)]
-pub struct FormatContentPositioned<F>(pub F)
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FormatContentPositioned<F>(F);
+
+impl<F> FormatContentPositioned<F> {
+    pub(crate) fn new(f: F) -> Self {
+        Self(f)
+    }
+}
+
+impl<F, R, D, C> TableOption<R, D, C> for FormatContentPositioned<F>
 where
-    F: FnMut(&str, (usize, usize)) -> String;
+    F: FnMut(&str, (usize, usize)) -> String,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
+{
+    fn change(self, records: &mut R, cfg: &mut C, _: &mut D) {
+        CellOption::change(self, records, cfg, Entity::Global);
+    }
+}
 
 impl<F, R, C> CellOption<R, C> for FormatContentPositioned<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
 {
-    fn change(&mut self, records: &mut R, _: &mut C, entity: Entity) {
+    fn change(mut self, records: &mut R, _: &mut C, entity: Entity) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

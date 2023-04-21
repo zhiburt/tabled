@@ -19,7 +19,7 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
                     buf.push_record([val]);
                 }
 
-                buf.build().with(&cfg.cfg).to_string()
+                buf.build().with(cfg.cfg.clone()).to_string()
             }
             Orientation::Row => {
                 let mut buf = Vec::with_capacity(arr.len());
@@ -28,7 +28,7 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
                     buf.push(val);
                 }
 
-                Builder::from(vec![buf]).build().with(&cfg.cfg).to_string()
+                Builder::from(vec![buf]).build().with(cfg.cfg.clone()).to_string()
             }
         },
         Value::Object(map) => match cfg.object_orientation {
@@ -39,7 +39,7 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
                     buf.push_record([key.clone(), val]);
                 }
 
-                buf.build().with(&cfg.cfg).to_string()
+                buf.build().with(cfg.cfg.clone()).to_string()
             }
             Orientation::Row => {
                 let mut keys = Vec::with_capacity(map.len());
@@ -52,7 +52,7 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
 
                 Builder::from(vec![keys, vals])
                     .build()
-                    .with(&cfg.cfg)
+                    .with(cfg.cfg.clone())
                     .to_string()
             }
         },
@@ -66,7 +66,7 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
             };
 
             let mut table = Table::from_iter([[val]]);
-            table.with(&cfg.cfg);
+            table.with(cfg.cfg.clone());
 
             if !outer {
                 table.with(Style::empty());

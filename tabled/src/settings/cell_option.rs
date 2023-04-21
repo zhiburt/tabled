@@ -12,16 +12,7 @@ use crate::grid::{
 /// [`Cell`]: crate::object::Cell
 pub trait CellOption<R, C> {
     /// Modification function of a single cell.
-    fn change(&mut self, records: &mut R, cfg: &mut C, entity: Entity);
-}
-
-impl<T, R, C> CellOption<R, C> for &mut T
-where
-    T: CellOption<R, C> + ?Sized,
-{
-    fn change(&mut self, records: &mut R, cfg: &mut C, entity: Entity) {
-        T::change(self, records, cfg, entity);
-    }
+    fn change(self, records: &mut R, cfg: &mut C, entity: Entity);
 }
 
 #[cfg(feature = "std")]
@@ -29,7 +20,17 @@ impl<R, C> CellOption<R, C> for String
 where
     R: Records + ExactRecords + RecordsMut<String>,
 {
-    fn change(&mut self, records: &mut R, _: &mut C, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut C, entity: Entity) {
+        (&self).change(records, cfg, entity);
+    }
+}
+
+#[cfg(feature = "std")]
+impl<R, C> CellOption<R, C> for &String
+where
+    R: Records + ExactRecords + RecordsMut<String>,
+{
+    fn change(self, records: &mut R, _: &mut C, entity: Entity) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -43,7 +44,7 @@ impl<'a, R, C> CellOption<R, C> for &'a str
 where
     R: Records + ExactRecords + RecordsMut<&'a str>,
 {
-    fn change(&mut self, records: &mut R, _: &mut C, entity: Entity) {
+    fn change(self, records: &mut R, _: &mut C, entity: Entity) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

@@ -236,14 +236,14 @@ impl<R, D, Cfg> TableOption<R, D, Cfg> for Split
 where
     R: Records + ExactRecords + Resizable + PeekableRecords,
 {
-    fn change(&mut self, records: &mut R, _: &mut Cfg, _: &mut D) {
+    fn change(self, records: &mut R, _: &mut Cfg, _: &mut D) {
         // variables
         let Split {
             direction,
             behavior,
             display,
             index: section_length,
-        } = *self;
+        } = self;
         let mut filtered_sections = 0;
 
         // early return check

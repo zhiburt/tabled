@@ -26,7 +26,7 @@ where
     for<'a> &'a R: Records,
     R: RecordsMut<String>,
 {
-    fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
+    fn change(self, records: &mut R, _: &mut C, _: &mut D) {
         let mut list = vec![];
         for (row, cells) in records.iter_rows().into_iter().enumerate() {
             for (col, text) in cells.into_iter().enumerate() {

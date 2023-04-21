@@ -98,7 +98,7 @@ where
     for<'a> &'a R: Records,
 {
     fn change(
-        &mut self,
+        self,
         records: &mut R,
         cfg: &mut ColoredConfig,
         dims: &mut CompleteDimension<'static>,
@@ -127,7 +127,7 @@ where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let width = self.width.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -172,11 +172,10 @@ where
 
     let points = get_decrease_cell_list(cfg, &widths, &min_widths, shape);
 
-    let mut wrap = Wrap::new(0);
-    wrap.keep_words = keep_words;
     for ((row, col), width) in points {
-        wrap.width = width;
-        <Wrap as CellOption<R, ColoredConfig>>::change(&mut wrap, records, cfg, (row, col).into());
+        let mut wrap = Wrap::new(width);
+        wrap.keep_words = keep_words;
+        <Wrap as CellOption<_, _>>::change(wrap, records, cfg, (row, col).into());
     }
 
     widths

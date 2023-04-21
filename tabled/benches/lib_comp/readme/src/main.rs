@@ -196,7 +196,7 @@ impl<R> TableOption<R> for HighlightMin
 where
     R: Records + RecordsMut<String>,
 {
-    fn change(&mut self, table: &mut Table<R>) {
+    fn change(self, table: &mut Table<R>) {
         let (count_rows, count_cols) = table.shape();
         for row in 1..count_rows {
             let values = (1..count_cols)

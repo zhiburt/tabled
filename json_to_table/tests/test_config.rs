@@ -148,7 +148,7 @@ fn color_test() {
 
     let mut cfg = SpannedConfig::default();
     cfg.set_border_color_global(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into()));
-    let cfg = ColoredConfig::new(cfg, Default::default());
+    let cfg = ColoredConfig::new(cfg);
 
     let table = json_to_table(&value)
         .with(cfg)

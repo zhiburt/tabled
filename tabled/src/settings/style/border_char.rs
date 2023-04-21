@@ -31,7 +31,7 @@ use super::Offset;
 ///     ),
 /// );
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BorderChar {
     c: char,
     offset: Offset,
@@ -62,7 +62,7 @@ impl<R> CellOption<R, ColoredConfig> for BorderChar
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let cells = entity.iter(records.count_rows(), records.count_columns());
 
         match self.horizontal {

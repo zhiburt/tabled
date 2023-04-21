@@ -37,7 +37,7 @@ use crate::{
 /// [`Padding`]: crate::settings::Padding
 /// [`Margin`]: crate::settings::Margin
 /// [`Border`]: crate::settings::Border
-#[derive(Debug, Clone, Default, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Color(AnsiColor<'static>);
 
 // todo: Add | operation to combine colors
@@ -226,7 +226,7 @@ impl<R, D> TableOption<R, D, ColoredConfig> for Color
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let _ = cfg.set_color(Entity::Global, self.0.clone());
     }
 }
@@ -235,12 +235,21 @@ impl<R> CellOption<R, ColoredConfig> for Color
 where
     R: Records + ExactRecords + RecordsMut<String>,
 {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let _ = cfg.set_color(entity, self.0.clone());
     }
 }
 
-impl papergrid::color::Color for Color {
+impl<R> CellOption<R, ColoredConfig> for &Color
+where
+    R: Records + ExactRecords + RecordsMut<String>,
+{
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+        let _ = cfg.set_color(entity, self.0.clone());
+    }
+}
+
+impl crate::grid::color::Color for Color {
     fn fmt_prefix<W: std::fmt::Write>(&self, f: &mut W) -> std::fmt::Result {
         self.0.fmt_prefix(f)
     }

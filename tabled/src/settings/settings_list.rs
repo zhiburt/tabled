@@ -40,7 +40,7 @@ where
     A: CellOption<R, C>,
     B: CellOption<R, C>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut C, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut C, entity: Entity) {
         self.0.change(records, cfg, entity);
         self.1.change(records, cfg, entity);
     }
@@ -51,7 +51,7 @@ where
     A: TableOption<R, D, C>,
     B: TableOption<R, D, C>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut C, dims: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut C, dims: &mut D) {
         self.0.change(records, cfg, dims);
         self.1.change(records, cfg, dims);
     }
@@ -63,9 +63,9 @@ pub struct EmptySettings;
 
 #[cfg(feature = "std")]
 impl<R, C> CellOption<R, C> for EmptySettings {
-    fn change(&mut self, _: &mut R, _: &mut C, _: Entity) {}
+    fn change(self, _: &mut R, _: &mut C, _: Entity) {}
 }
 
 impl<R, D, C> TableOption<R, D, C> for EmptySettings {
-    fn change(&mut self, _: &mut R, _: &mut C, _: &mut D) {}
+    fn change(self, _: &mut R, _: &mut C, _: &mut D) {}
 }

@@ -54,7 +54,7 @@ use super::util::get_table_widths_with_total;
 /// ```
 ///
 /// [`Padding`]: crate::settings::Padding
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MinWidth<W = usize, P = PriorityNone> {
     width: W,
     fill: char,
@@ -108,7 +108,7 @@ where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let width = self.width.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -140,7 +140,7 @@ where
     for<'a> &'a R: Records,
 {
     fn change(
-        &mut self,
+        self,
         records: &mut R,
         cfg: &mut ColoredConfig,
         dims: &mut CompleteDimension<'static>,

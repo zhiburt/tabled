@@ -16,7 +16,7 @@ use super::table_height_limit::TableHeightLimit;
 ///
 /// [`PriorityNone`]: crate::settings::peaker::PriorityNone
 /// [`Table`]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CellHeightLimit<W = usize> {
     height: W,
 }
@@ -46,7 +46,7 @@ where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let height = self.height.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -78,7 +78,7 @@ where
     for<'a> &'a R: Records,
 {
     fn change(
-        &mut self,
+        self,
         records: &mut R,
         cfg: &mut ColoredConfig,
         dims: &mut CompleteDimension<'static>,

@@ -182,7 +182,6 @@ impl Table {
         self.dimension.clear_width();
         self.dimension.clear_height();
 
-        let mut option = option;
         option.change(&mut self.records, &mut self.config, &mut self.dimension);
 
         self
@@ -307,37 +306,25 @@ impl From<Builder> for Table {
 }
 
 impl<R, D> TableOption<R, D, ColoredConfig> for CompactConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg.deref_mut() = (*self).into();
-    }
-}
-
-impl<R, D> TableOption<R, D, ColoredConfig> for &CompactConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg.deref_mut() = (**self).into();
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg.deref_mut() = self.into();
     }
 }
 
 impl<R, D> TableOption<R, D, ColoredConfig> for ColoredConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg = self.clone();
-    }
-}
-
-impl<R, D> TableOption<R, D, ColoredConfig> for &ColoredConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg = self.clone();
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg = self;
     }
 }
 
 impl<R, D> TableOption<R, D, ColoredConfig> for SpannedConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg.deref_mut() = self.clone();
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg.deref_mut() = self;
     }
 }
 
 impl<R, D> TableOption<R, D, ColoredConfig> for &SpannedConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         *cfg.deref_mut() = self.clone();
     }
 }
