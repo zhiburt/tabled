@@ -90,6 +90,13 @@ impl<W, P> Wrap<W, P> {
     }
 }
 
+impl Wrap<(), ()> {
+    /// Wrap a given string
+    pub fn wrap_text(text: &str, width: usize, keeping_words: bool) -> String {
+        wrap_text(text, width, keeping_words)
+    }
+}
+
 impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig> for Wrap<W, P>
 where
     W: Measurement<Width>,
