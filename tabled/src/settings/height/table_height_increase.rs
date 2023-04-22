@@ -1,7 +1,9 @@
 use crate::{
-    grid::config::ColoredConfig,
-    grid::dimension::CompleteDimension,
-    grid::records::{ExactRecords, PeekableRecords, Records},
+    grid::{
+        config::ColoredConfig,
+        dimension::CompleteDimensionVecRecords,
+        records::{ExactRecords, PeekableRecords, Records},
+    },
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -42,7 +44,7 @@ impl<W> TableHeightIncrease<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, CompleteDimension<'static>, ColoredConfig>
+impl<R, W, P> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig>
     for TableHeightIncrease<W, P>
 where
     W: Measurement<Height>,
@@ -54,7 +56,7 @@ where
         self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimension<'static>,
+        dims: &mut CompleteDimensionVecRecords<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;

@@ -7,7 +7,7 @@ use std::marker::PhantomData;
 
 use crate::{
     grid::config::ColoredConfig,
-    grid::dimension::CompleteDimension,
+    grid::dimension::CompleteDimensionVecRecords,
     grid::records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
     grid::{config::Entity, config::SpannedConfig, util::string::string_width_multiline},
     settings::{
@@ -90,7 +90,7 @@ impl<W, P> Wrap<W, P> {
     }
 }
 
-impl<W, P, R> TableOption<R, CompleteDimension<'static>, ColoredConfig> for Wrap<W, P>
+impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -101,7 +101,7 @@ where
         self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimension<'static>,
+        dims: &mut CompleteDimensionVecRecords<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;

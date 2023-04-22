@@ -1,7 +1,7 @@
 use crate::{
     grid::{
         config::{ColoredConfig, Entity},
-        dimension::CompleteDimension,
+        dimension::CompleteDimensionVecRecords,
         records::{ExactRecords, PeekableRecords, Records, RecordsMut},
         util::string::{count_lines, get_lines},
     },
@@ -71,7 +71,8 @@ where
     }
 }
 
-impl<R, W> TableOption<R, CompleteDimension<'static>, ColoredConfig> for CellHeightLimit<W>
+impl<R, W> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig>
+    for CellHeightLimit<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
@@ -81,7 +82,7 @@ where
         self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimension<'static>,
+        dims: &mut CompleteDimensionVecRecords<'static>,
     ) {
         let height = self.height.measure(&*records, cfg);
         TableHeightLimit::new(height).change(records, cfg, dims)

@@ -28,7 +28,10 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
                     buf.push(val);
                 }
 
-                Builder::from(vec![buf]).build().with(cfg.cfg.clone()).to_string()
+                Builder::from(vec![buf])
+                    .build()
+                    .with(cfg.cfg.clone())
+                    .to_string()
             }
         },
         Value::Object(map) => match cfg.object_orientation {

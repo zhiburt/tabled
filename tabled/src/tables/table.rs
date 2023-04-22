@@ -11,7 +11,7 @@ use crate::{
             AlignmentHorizontal, ColorMap, ColoredConfig, CompactConfig, Entity, Formatting,
             Indent, Sides, SpannedConfig,
         },
-        dimension::{CompleteDimension, Dimension, Estimate, PeekableDimension},
+        dimension::{CompleteDimensionVecRecords, Dimension, Estimate, PeekableDimension},
         records::{
             vec_records::{CellInfo, VecRecords},
             ExactRecords, Records,
@@ -59,7 +59,7 @@ use crate::{
 pub struct Table {
     records: VecRecords<CellInfo<String>>,
     config: ColoredConfig,
-    dimension: CompleteDimension<'static>,
+    dimension: CompleteDimensionVecRecords<'static>,
 }
 
 impl Table {
@@ -97,7 +97,7 @@ impl Table {
         Self {
             records,
             config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimension::default(),
+            dimension: CompleteDimensionVecRecords::default(),
         }
     }
 
@@ -177,7 +177,11 @@ impl Table {
     /// It applies settings immediately.
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        O: TableOption<VecRecords<CellInfo<String>>, CompleteDimension<'static>, ColoredConfig>,
+        O: TableOption<
+            VecRecords<CellInfo<String>>,
+            CompleteDimensionVecRecords<'static>,
+            ColoredConfig,
+        >,
     {
         self.dimension.clear_width();
         self.dimension.clear_height();
@@ -210,7 +214,7 @@ impl Table {
 
     /// Returns total widths of a table, including margin and horizontal lines.
     pub fn total_height(&self) -> usize {
-        let mut dims = CompleteDimension::from_origin(&self.dimension);
+        let mut dims = CompleteDimensionVecRecords::from_origin(&self.dimension);
         dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_rows())
@@ -225,7 +229,7 @@ impl Table {
 
     /// Returns total widths of a table, including margin and vertical lines.
     pub fn total_width(&self) -> usize {
-        let mut dims = CompleteDimension::from_origin(&self.dimension);
+        let mut dims = CompleteDimensionVecRecords::from_origin(&self.dimension);
         dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_columns())
@@ -254,7 +258,7 @@ impl Default for Table {
         Self {
             records: VecRecords::default(),
             config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimension::default(),
+            dimension: CompleteDimensionVecRecords::default(),
         }
     }
 }
@@ -300,7 +304,7 @@ impl From<Builder> for Table {
         Self {
             records,
             config: ColoredConfig::new(configure_grid()),
-            dimension: CompleteDimension::default(),
+            dimension: CompleteDimensionVecRecords::default(),
         }
     }
 }

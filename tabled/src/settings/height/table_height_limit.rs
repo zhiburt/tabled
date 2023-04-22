@@ -1,8 +1,10 @@
 use crate::{
-    grid::config::ColoredConfig,
-    grid::dimension::CompleteDimension,
-    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
-    grid::util::string::{count_lines, get_lines},
+    grid::{
+        config::ColoredConfig,
+        dimension::CompleteDimensionVecRecords,
+        records::{ExactRecords, PeekableRecords, Records, RecordsMut},
+        util::string::{count_lines, get_lines},
+    },
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -43,7 +45,8 @@ impl<W> TableHeightLimit<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, CompleteDimension<'static>, ColoredConfig> for TableHeightLimit<W, P>
+impl<R, W, P> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig>
+    for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
@@ -54,7 +57,7 @@ where
         self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimension<'static>,
+        dims: &mut CompleteDimensionVecRecords<'static>,
     ) {
         let count_rows = records.count_rows();
         let count_cols = (&*records).count_columns();

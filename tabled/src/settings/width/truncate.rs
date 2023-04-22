@@ -7,7 +7,7 @@ use std::{borrow::Cow, iter, marker::PhantomData};
 use crate::{
     grid::{
         config::{ColoredConfig, SpannedConfig},
-        dimension::CompleteDimension,
+        dimension::CompleteDimensionVecRecords,
         records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
         util::string::{string_width, string_width_multiline},
     },
@@ -293,7 +293,8 @@ fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str
     }
 }
 
-impl<W, P, R> TableOption<R, CompleteDimension<'static>, ColoredConfig> for Truncate<'_, W, P>
+impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig>
+    for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -304,7 +305,7 @@ where
         self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimension<'static>,
+        dims: &mut CompleteDimensionVecRecords<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
