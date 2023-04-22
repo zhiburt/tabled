@@ -309,6 +309,16 @@ impl From<Builder> for Table {
     }
 }
 
+impl From<Table> for Builder {
+    fn from(val: Table) -> Self {
+        let count_columns = val.count_columns();
+        let data: Vec<Vec<CellInfo<String>>> = val.records.into();
+        let mut builder = Builder::from(data);
+        let _ = builder.hint_column_size(count_columns);
+        builder
+    }
+}
+
 impl<R, D> TableOption<R, D, ColoredConfig> for CompactConfig {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         *cfg.deref_mut() = self.into();
