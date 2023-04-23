@@ -1,12 +1,12 @@
 [package]
 name = "static_table"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Library creates pretty tables at compiler time"
 repository = "https://github.com/zhiburt/tabled"
 homepage = "https://github.com/zhiburt/tabled"
-documentation = "https://docs.rs/ron_to_table"
+documentation = "https://docs.rs/static_table"
 keywords = ["table", "print", "pretty-table", "macros", "macro"]
 categories = ["text-processing", "visualization"]
 license = "MIT"
@@ -18,7 +18,7 @@ proc-macro = true
 color = ["tabled/color"]
 
 [dependencies]
-tabled = { path = "../tabled", features = ["std"], default-features = false }
+tabled = { version = "0.12", features = ["std"], default-features = false }
 syn = { version = "1", features = ["parsing"] }
 quote = "1"
 proc-macro2 = "1"
