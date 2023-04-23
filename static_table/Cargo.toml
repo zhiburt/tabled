@@ -19,7 +19,7 @@ color = ["tabled/color"]
 
 [dependencies]
 tabled = { path = "../tabled", features = ["std"], default-features = false }
-syn = { version = "1", features = ["parsing"] }
+syn = { version = "2", features = ["parsing"] }
 quote = "1"
 proc-macro2 = "1"
 proc-macro-error = "1.0.4"
