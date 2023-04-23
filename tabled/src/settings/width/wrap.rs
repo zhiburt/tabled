@@ -7,7 +7,7 @@ use std::marker::PhantomData;
 
 use crate::{
     grid::config::ColoredConfig,
-    grid::dimension::CompleteDimension,
+    grid::dimension::CompleteDimensionVecRecords,
     grid::records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
     grid::{config::Entity, config::SpannedConfig, util::string::string_width_multiline},
     settings::{
@@ -90,7 +90,14 @@ impl<W, P> Wrap<W, P> {
     }
 }
 
-impl<W, P, R> TableOption<R, CompleteDimension<'static>, ColoredConfig> for Wrap<W, P>
+impl Wrap<(), ()> {
+    /// Wrap a given string
+    pub fn wrap_text(text: &str, width: usize, keeping_words: bool) -> String {
+        wrap_text(text, width, keeping_words)
+    }
+}
+
+impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -98,10 +105,10 @@ where
     for<'a> &'a R: Records,
 {
     fn change(
-        &mut self,
+        self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimension<'static>,
+        dims: &mut CompleteDimensionVecRecords<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
@@ -127,7 +134,7 @@ where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let width = self.width.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -172,11 +179,10 @@ where
 
     let points = get_decrease_cell_list(cfg, &widths, &min_widths, shape);
 
-    let mut wrap = Wrap::new(0);
-    wrap.keep_words = keep_words;
     for ((row, col), width) in points {
-        wrap.width = width;
-        <Wrap as CellOption<R, ColoredConfig>>::change(&mut wrap, records, cfg, (row, col).into());
+        let mut wrap = Wrap::new(width);
+        wrap.keep_words = keep_words;
+        <Wrap as CellOption<_, _>>::change(wrap, records, cfg, (row, col).into());
     }
 
     widths

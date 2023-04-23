@@ -383,13 +383,13 @@ impl<R, D> TableOption<R, D, ColoredConfig> for RawStyle
 where
     R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dimension: &mut D) {
-        (&*self).change(records, cfg, dimension)
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dimension: &mut D) {
+        (&self).change(records, cfg, dimension)
     }
 }
 
 impl<R, D> TableOption<R, D, ColoredConfig> for &RawStyle {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         cfg.clear_theme();
 
         cfg.set_borders(self.borders);

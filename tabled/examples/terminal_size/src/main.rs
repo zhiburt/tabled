@@ -1,7 +1,7 @@
 //! The example shows how we could spread a table to the size of a terminal.
 
 use tabled::{
-    settings::{Height, Style, Width},
+    settings::{Height, Settings, Style, Width},
     Table, Tabled,
 };
 
@@ -45,15 +45,17 @@ fn main() {
     table.with(Style::extended());
 
     if use_width {
-        table
-            .with(Width::wrap(width as usize))
-            .with(Width::increase(width as usize));
+        table.with(Settings::new(
+            Width::wrap(width as usize),
+            Width::increase(width as usize),
+        ));
     }
 
     if use_height {
-        table
-            .with(Height::increase(height as usize))
-            .with(Height::limit(height as usize));
+        table.with(Settings::new(
+            Height::increase(height as usize),
+            Height::limit(height as usize),
+        ));
     }
 
     println!("{table}");

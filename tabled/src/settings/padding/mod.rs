@@ -57,7 +57,7 @@ use crate::settings::CellOption;
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Padding<C = StaticColor> {
     indent: Sides<Indent>,
     colors: Option<Sides<C>>,
@@ -113,7 +113,7 @@ impl<R, C> CellOption<R, ColoredConfig> for Padding<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
 {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let indent = self.indent;
         let pad = Sides::new(indent.left, indent.right, indent.top, indent.bottom);
         cfg.set_padding(entity, pad);
@@ -135,7 +135,7 @@ impl<R, D, C> TableOption<R, D, ColoredConfig> for Padding<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         <Self as CellOption<R, ColoredConfig>>::change(self, records, cfg, Entity::Global)
     }
 }
@@ -144,10 +144,10 @@ impl<R, D, C> TableOption<R, D, CompactConfig> for Padding<C>
 where
     C: Into<StaticColor> + Clone,
 {
-    fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         *cfg = cfg.set_padding(self.indent);
 
-        if let Some(c) = self.colors.clone() {
+        if let Some(c) = self.colors {
             let colors = Sides::new(c.left.into(), c.right.into(), c.top.into(), c.bottom.into());
             *cfg = cfg.set_padding_color(colors);
         }
@@ -158,7 +158,7 @@ impl<R, D, C> TableOption<R, D, CompactMultilineConfig> for Padding<C>
 where
     C: Into<StaticColor> + Clone,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
         self.change(records, cfg.as_mut(), dimension)
     }
 }

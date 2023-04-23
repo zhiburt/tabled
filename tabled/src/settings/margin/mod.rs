@@ -95,7 +95,7 @@ impl<R, D, C> TableOption<R, D, ColoredConfig> for Margin<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
 {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let indent = self.indent;
         let margin = Sides::new(indent.left, indent.right, indent.top, indent.bottom);
         cfg.set_margin(margin);
@@ -116,10 +116,10 @@ impl<R, D, C> TableOption<R, D, CompactConfig> for Margin<C>
 where
     C: Into<StaticColor> + Clone,
 {
-    fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         *cfg = cfg.set_margin(self.indent);
 
-        if let Some(c) = self.colors.clone() {
+        if let Some(c) = self.colors {
             // todo: make a new method (BECAUSE INTO doesn't work) try_into();
             let colors = Sides::new(c.left.into(), c.right.into(), c.top.into(), c.bottom.into());
             *cfg = cfg.set_margin_color(colors);
@@ -131,7 +131,7 @@ impl<R, D, C> TableOption<R, D, CompactMultilineConfig> for Margin<C>
 where
     C: Into<StaticColor> + Clone,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
         self.change(records, cfg.as_mut(), dimension)
     }
 }

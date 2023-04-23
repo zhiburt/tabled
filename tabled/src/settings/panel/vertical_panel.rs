@@ -26,7 +26,7 @@ where
     S: AsRef<str>,
     R: Records + ExactRecords + Resizable + RecordsMut<String>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

@@ -30,10 +30,9 @@ pub mod tabled_current {
 
     #[inline]
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
-        Builder::from_iter(data)
-            .set_header(columns)
-            .build()
-            .to_string()
+        let mut b = Builder::from_iter(data);
+        b.set_header(columns);
+        b.build().to_string()
     }
 }
 
@@ -43,10 +42,9 @@ pub mod tabled_color_current {
 
     #[inline]
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
-        Builder::from_iter(data)
-            .set_header(columns)
-            .build()
-            .to_string()
+        let mut b = Builder::from_iter(data);
+        b.set_header(columns);
+        b.build().to_string()
     }
 }
 

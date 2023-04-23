@@ -8,6 +8,7 @@ use crate::grid::config::{
 pub struct CompactMultilineConfig {
     config: CompactConfig,
     alignment_vertical: AlignmentVertical,
+    formatting: Formatting,
 }
 
 impl CompactMultilineConfig {
@@ -108,15 +109,26 @@ impl CompactMultilineConfig {
         self.config.get_margin_color()
     }
 
-    /// Set a padding to a given cells.
+    /// Set a padding color to all cells.
     pub const fn set_padding_color(mut self, color: Sides<StaticColor>) -> Self {
         self.config = self.config.set_padding_color(color);
         self
     }
 
-    /// Set a padding to a given cells.
+    /// get a padding color.
     pub const fn get_padding_color(&self) -> Sides<StaticColor> {
         self.config.get_padding_color()
+    }
+
+    /// Set formatting.
+    pub const fn set_formatting(mut self, formatting: Formatting) -> Self {
+        self.formatting = formatting;
+        self
+    }
+
+    /// Get formatting.
+    pub const fn get_formatting(&self) -> Formatting {
+        self.formatting
     }
 }
 
@@ -125,6 +137,7 @@ impl Default for CompactMultilineConfig {
         Self {
             config: Default::default(),
             alignment_vertical: AlignmentVertical::Top,
+            formatting: Formatting::default(),
         }
     }
 }
@@ -134,6 +147,7 @@ impl From<CompactConfig> for CompactMultilineConfig {
         Self {
             config,
             alignment_vertical: AlignmentVertical::Top,
+            formatting: Formatting::default(),
         }
     }
 }
@@ -157,6 +171,41 @@ impl From<CompactMultilineConfig> for crate::grid::config::SpannedConfig {
 
         let mut cfg = crate::grid::config::SpannedConfig::from(compact.config);
         cfg.set_alignment_vertical(Entity::Global, compact.alignment_vertical);
+        cfg.set_formatting(Entity::Global, compact.formatting.into());
+
         cfg
+    }
+}
+
+/// Formatting represent a logic of formatting of a cell.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Formatting {
+    /// An setting to allow horizontal trim.
+    pub horizontal_trim: bool,
+    /// An setting to allow vertical trim.
+    pub vertical_trim: bool,
+    /// An setting to allow alignment per line.
+    pub allow_lines_alignment: bool,
+}
+
+impl Formatting {
+    /// Creates a new [`Formatting`] structure.
+    pub fn new(horizontal_trim: bool, vertical_trim: bool, allow_lines_alignment: bool) -> Self {
+        Self {
+            horizontal_trim,
+            vertical_trim,
+            allow_lines_alignment,
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl From<Formatting> for crate::grid::config::Formatting {
+    fn from(val: Formatting) -> Self {
+        crate::grid::config::Formatting {
+            allow_lines_alignment: val.allow_lines_alignment,
+            horizontal_trim: val.horizontal_trim,
+            vertical_trim: val.vertical_trim,
+        }
     }
 }

@@ -8,7 +8,7 @@ use crate::{
 ///
 /// Be aware that the settings are applied all to a cell at a time.
 /// So sometimes you may need to make a several calls of [`Modify`] in order to achieve the desired affect.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Modify<O> {
     obj: O,
 }
@@ -70,12 +70,12 @@ impl<O, M1> ModifyList<O, M1> {
 impl<O, M, R, D, C> TableOption<R, D, C> for ModifyList<O, M>
 where
     O: Object<R>,
-    M: CellOption<R, C>,
+    M: CellOption<R, C> + Clone,
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut C, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut C, _: &mut D) {
         for entity in self.obj.cells(records) {
-            self.modifiers.change(records, cfg, entity);
+            self.modifiers.clone().change(records, cfg, entity);
         }
     }
 }

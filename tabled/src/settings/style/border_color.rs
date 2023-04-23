@@ -118,7 +118,7 @@ impl<R> CellOption<R, ColoredConfig> for BorderColor
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
 
@@ -134,7 +134,7 @@ impl<R, D> TableOption<R, D, ColoredConfig> for BorderColor
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
 

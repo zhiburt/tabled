@@ -14,7 +14,7 @@
 ///                             |
 ///                        bottom border
 /// ```
-#[derive(Debug, Clone, Default, Eq, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, PartialOrd, Ord)]
 pub struct Border<T> {
     /// A character for a top.
     pub top: Option<T>,
@@ -69,6 +69,30 @@ impl<T> Border<T> {
             && self.left_top_corner.is_none()
             && self.left.is_none()
             && self.right.is_none()
+    }
+
+    /// Verifies whether anything is set on the top.
+    pub const fn has_top(&self) -> bool {
+        self.top.is_some() || self.left_top_corner.is_some() || self.right_top_corner.is_some()
+    }
+
+    /// Verifies whether anything is set on the bottom.
+    pub const fn has_bottom(&self) -> bool {
+        self.bottom.is_some()
+            || self.left_bottom_corner.is_some()
+            || self.right_bottom_corner.is_some()
+    }
+
+    /// Verifies whether anything is set on the left.
+    pub const fn has_left(&self) -> bool {
+        self.left.is_some() || self.left_top_corner.is_some() || self.left_bottom_corner.is_some()
+    }
+
+    /// Verifies whether anything is set on the right.
+    pub const fn has_right(&self) -> bool {
+        self.right.is_some()
+            || self.right_top_corner.is_some()
+            || self.right_bottom_corner.is_some()
     }
 }
 

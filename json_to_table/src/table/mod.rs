@@ -30,7 +30,7 @@ impl<T> JsonTable<T> {
             value,
             cfg: Config {
                 plain: true,
-                cfg: ColoredConfig::new(configure_grid(), Default::default()),
+                cfg: ColoredConfig::new(configure_grid()),
                 array_orientation: Orientation::Column,
                 object_orientation: Orientation::Column,
             },
@@ -108,7 +108,7 @@ impl<T> JsonTable<T> {
     /// ```
     ///
     /// [`Table`]: tabled::Table
-    pub fn with<O>(&mut self, mut option: O) -> &mut Self
+    pub fn with<O>(&mut self, option: O) -> &mut Self
     where
         O: TableOption<EmptyRecords, CompleteDimension<'static>, ColoredConfig>,
     {

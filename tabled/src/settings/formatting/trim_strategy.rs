@@ -1,4 +1,8 @@
-use crate::{grid::config::ColoredConfig, grid::config::Entity, settings::CellOption};
+use crate::{
+    grid::config::ColoredConfig,
+    grid::config::Entity,
+    settings::{CellOption, TableOption},
+};
 
 /// `TrimStrategy` determines if it's allowed to use empty space while doing [`Alignment`].
 ///
@@ -69,7 +73,7 @@ use crate::{grid::config::ColoredConfig, grid::config::Entity, settings::CellOpt
 /// ```
 ///
 /// [`Alignment`]: crate::settings::Alignment
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TrimStrategy {
     /// Allow vertical trim.
     Vertical,
@@ -82,7 +86,7 @@ pub enum TrimStrategy {
 }
 
 impl<R> CellOption<R, ColoredConfig> for TrimStrategy {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let mut formatting = *cfg.get_formatting(entity);
 
         // todo: could be changed to be a struct an enum like consts in `impl` block.
@@ -104,5 +108,11 @@ impl<R> CellOption<R, ColoredConfig> for TrimStrategy {
         }
 
         cfg.set_formatting(entity, formatting);
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for TrimStrategy {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        <Self as CellOption<_, _>>::change(self, records, cfg, Entity::Global)
     }
 }

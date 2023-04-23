@@ -38,7 +38,7 @@ impl<R, D> TableOption<R, D, ColoredConfig> for MergeDuplicatesVertical
 where
     R: Records + PeekableRecords + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -122,7 +122,7 @@ impl<R, D> TableOption<R, D, ColoredConfig> for MergeDuplicatesHorizontal
 where
     R: Records + PeekableRecords + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

@@ -44,7 +44,7 @@ impl VerticalLine {
 
 #[cfg(feature = "std")]
 impl<R, D> crate::settings::TableOption<R, D, ColoredConfig> for VerticalLine {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         cfg.insert_vertical_line(self.index, VLine::from(self.line));
     }
 }

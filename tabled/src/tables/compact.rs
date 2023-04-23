@@ -167,8 +167,6 @@ impl<I, D> CompactTable<I, D> {
         for<'a> O: TableOption<IterRecords<&'a I>, D, CompactConfig>,
     {
         let mut records = IterRecords::new(&self.records, self.count_columns, self.count_rows);
-
-        let mut option = option;
         option.change(&mut records, &mut self.cfg, &mut self.dims);
 
         self
@@ -305,7 +303,7 @@ const fn create_config() -> CompactConfig {
 }
 
 impl<R, D> TableOption<R, D, CompactConfig> for CompactConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
-        *cfg = *self;
+    fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+        *cfg = self;
     }
 }

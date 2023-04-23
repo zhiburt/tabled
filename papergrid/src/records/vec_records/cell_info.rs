@@ -22,6 +22,11 @@ impl<S> CellInfo<S> {
         create_cell_info(text)
     }
 
+    /// Creates a new instance of the structure with a single line.
+    pub fn exact(text: S, width: usize, lines: Vec<StrWithWidth<'static>>) -> Self {
+        Self { text, width, lines }
+    }
+
     /// Return a original text value.
     pub fn into_inner(self) -> S {
         self.text
@@ -109,14 +114,16 @@ where
     }
 }
 
+/// StrWithWidth is a structure is responsible for a string and it's width.
 #[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Clone)]
-struct StrWithWidth<'a> {
+pub struct StrWithWidth<'a> {
     text: Cow<'a, str>,
     width: usize,
 }
 
 impl<'a> StrWithWidth<'a> {
-    fn new(text: Cow<'a, str>, width: usize) -> Self {
+    /// Creates a new object.
+    pub fn new(text: Cow<'a, str>, width: usize) -> Self {
         Self { text, width }
     }
 }

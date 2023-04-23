@@ -214,7 +214,7 @@ test_table!(
 
 test_table!(
     formatting_content_str_test,
-    create_table::<3, 3>().with(Modify::new(Segment::all()).with(Format::content(|_| "Hello World"))),
+    create_table::<3, 3>().with(Modify::new(Segment::all()).with(Format::content(|_| String::from("Hello World")))),
     "+-------------+-------------+-------------+-------------+"
     "| Hello World | Hello World | Hello World | Hello World |"
     "+-------------+-------------+-------------+-------------+"

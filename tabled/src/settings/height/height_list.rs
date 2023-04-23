@@ -1,7 +1,7 @@
 use std::iter::FromIterator;
 
 use crate::{
-    grid::dimension::CompleteDimension,
+    grid::dimension::CompleteDimensionVecRecords,
     grid::records::{ExactRecords, Records},
     settings::TableOption,
 };
@@ -33,15 +33,15 @@ impl FromIterator<usize> for HeightList {
     }
 }
 
-impl<R, C> TableOption<R, CompleteDimension<'static>, C> for HeightList
+impl<R, C> TableOption<R, CompleteDimensionVecRecords<'static>, C> for HeightList
 where
     R: ExactRecords + Records,
 {
-    fn change(&mut self, records: &mut R, _: &mut C, dims: &mut CompleteDimension<'static>) {
+    fn change(self, records: &mut R, _: &mut C, dims: &mut CompleteDimensionVecRecords<'static>) {
         if self.list.len() < records.count_rows() {
             return;
         }
 
-        let _ = dims.set_heights(self.list.clone());
+        let _ = dims.set_heights(self.list);
     }
 }

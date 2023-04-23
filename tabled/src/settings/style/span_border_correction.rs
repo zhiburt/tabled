@@ -80,7 +80,7 @@ impl<R, D> TableOption<R, D, ColoredConfig> for BorderSpanCorrection
 where
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let shape = (records.count_rows(), records.count_columns());
         correct_span_styles(cfg, shape);
     }

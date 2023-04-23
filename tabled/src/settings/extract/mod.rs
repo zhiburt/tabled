@@ -155,7 +155,7 @@ where
     C: RangeBounds<usize> + Clone,
     RR: Records + ExactRecords + Resizable,
 {
-    fn change(&mut self, records: &mut RR, _: &mut Cfg, _: &mut D) {
+    fn change(self, records: &mut RR, _: &mut Cfg, _: &mut D) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
 

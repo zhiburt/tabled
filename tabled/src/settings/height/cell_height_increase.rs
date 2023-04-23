@@ -1,7 +1,7 @@
 use crate::{
     grid::config::ColoredConfig,
     grid::config::Entity,
-    grid::dimension::CompleteDimension,
+    grid::dimension::CompleteDimensionVecRecords,
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     grid::util::string::count_lines,
     settings::{measurement::Measurement, peaker::Peaker, CellOption, Height, TableOption},
@@ -15,7 +15,7 @@ use super::TableHeightIncrease;
 ///
 /// [`PriorityNone`]: crate::settings::peaker::PriorityNone
 /// [`Table`]: crate::Table
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CellHeightIncrease<W = usize> {
     height: W,
 }
@@ -46,7 +46,7 @@ where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let height = self.height.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -71,17 +71,18 @@ where
     }
 }
 
-impl<R, W> TableOption<R, CompleteDimension<'static>, ColoredConfig> for CellHeightIncrease<W>
+impl<R, W> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig>
+    for CellHeightIncrease<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + PeekableRecords,
     for<'a> &'a R: Records,
 {
     fn change(
-        &mut self,
+        self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimension<'static>,
+        dims: &mut CompleteDimensionVecRecords<'static>,
     ) {
         let height = self.height.measure(&*records, cfg);
         TableHeightIncrease::new(height).change(records, cfg, dims)

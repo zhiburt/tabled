@@ -4,6 +4,8 @@
 pub mod compact;
 #[cfg(feature = "std")]
 pub mod spanned;
+#[cfg(feature = "std")]
+pub mod spanned_vec_records;
 
 /// Dimension of a [`Grid`]
 ///
