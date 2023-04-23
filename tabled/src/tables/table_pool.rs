@@ -318,7 +318,8 @@ mod print {
             || margin.left.size > 0
             || margin.right.size > 0;
         if has_margin {
-            table = set_margin(&table, *margin, cfg.get_margin_color());
+            let color = convert_border_colors(cfg.get_margin_color());
+            table = set_margin(&table, *margin, color);
         }
 
         table
@@ -555,12 +556,7 @@ mod print {
         let valignment = cfg.get_alignment_vertical();
         let pad = cfg.get_padding();
         let pad_color = cfg.get_padding_color();
-        let pad_color = Sides::new(
-            (!pad_color.left.is_empty()).then_some(pad_color.left),
-            (!pad_color.right.is_empty()).then_some(pad_color.right),
-            (!pad_color.top.is_empty()).then_some(pad_color.top),
-            (!pad_color.bottom.is_empty()).then_some(pad_color.bottom),
-        );
+        let pad_color = convert_border_colors(pad_color);
         let lines_alignemnt = cfg.get_formatting().allow_lines_alignment;
 
         let mut borders = *cfg.get_borders();
@@ -1563,17 +1559,17 @@ mod print {
         splits.iter_mut().enumerate().for_each(|(i, s)| *s += i);
     }
 
-    fn set_margin(table: &str, margin: Sides<Indent>, color: Sides<StaticColor>) -> String {
+    fn set_margin(table: &str, margin: Sides<Indent>, color: Sides<Option<StaticColor>>) -> String {
         if table.is_empty() {
             return String::new();
         }
 
         let mut buf = String::new();
         let width = string_width_multiline(table);
-        let top_color = (!color.top.is_empty()).then_some(color.top);
-        let bottom_color = (!color.bottom.is_empty()).then_some(color.bottom);
-        let left_color = (!color.left.is_empty()).then_some(color.left);
-        let right_color = (!color.right.is_empty()).then_some(color.right);
+        let top_color = color.top;
+        let bottom_color = color.bottom;
+        let left_color = color.left;
+        let right_color = color.right;
         for _ in 0..margin.top.size {
             print_chars(&mut buf, margin.left.fill, left_color, margin.left.size);
             print_chars(&mut buf, margin.top.fill, top_color, width);
@@ -1598,5 +1594,14 @@ mod print {
         let _ = buf.remove(buf.len() - 1);
 
         buf
+    }
+
+    fn convert_border_colors(pad_color: Sides<StaticColor>) -> Sides<Option<StaticColor>> {
+        Sides::new(
+            (!pad_color.left.is_empty()).then(|| pad_color.left),
+            (!pad_color.right.is_empty()).then(|| pad_color.right),
+            (!pad_color.top.is_empty()).then(|| pad_color.top),
+            (!pad_color.bottom.is_empty()).then(|| pad_color.bottom),
+        )
     }
 }
