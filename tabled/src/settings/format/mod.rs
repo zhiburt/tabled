@@ -49,12 +49,11 @@ impl Format {
     ///                    +-------+-------------+-----------+");
     /// ```
     ///
-    pub fn content<F, S>(mut f: F) -> FormatContent<impl FnMut(&str) -> String>
+    pub fn content<F>(f: F) -> FormatContent<F>
     where
-        F: FnMut(&str) -> S,
-        S: Into<String>,
+        F: FnMut(&str) -> String,
     {
-        FormatContent(move |s: &str| (f)(s).into())
+        FormatContent::new(f)
     }
 
     /// This function creates a new [`FormatContentPositioned`], so
@@ -94,7 +93,7 @@ impl Format {
     where
         F: FnMut(&str, (usize, usize)) -> String,
     {
-        FormatContentPositioned(f)
+        FormatContentPositioned::new(f)
     }
 
     /// This function creates [`FormatConfig`] function to modify a table config.

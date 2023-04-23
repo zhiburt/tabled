@@ -138,13 +138,14 @@ fn main() {
     println!("\n\n{table}\n\n");
 }
 
+#[derive(Debug, Clone)]
 struct MakeMaxPadding;
 
 impl<T> CellOption<VecRecords<T>, ColoredConfig> for MakeMaxPadding
 where
     T: Cell + AsRef<str>,
 {
-    fn change(&mut self, records: &mut VecRecords<T>, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut VecRecords<T>, cfg: &mut ColoredConfig, entity: Entity) {
         let widths = SpannedGridDimension::width(&*records, cfg);
 
         let count_rows = records.count_rows();

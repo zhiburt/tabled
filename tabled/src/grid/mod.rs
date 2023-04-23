@@ -27,12 +27,12 @@ pub mod config {
     #[cfg(feature = "std")]
     #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     pub use papergrid::config::spanned::{
-        Formatting, HorizontalLine, Offset, SpannedConfig, VerticalLine,
+        EntityMap, Formatting, HorizontalLine, Offset, SpannedConfig, VerticalLine,
     };
 
     #[cfg(feature = "std")]
     #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-    pub use super::colored_config::ColoredConfig;
+    pub use super::colored_config::{ColorMap, ColoredConfig};
 
     pub use super::compact_multiline_config::CompactMultilineConfig;
 }

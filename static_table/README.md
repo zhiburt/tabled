@@ -4,7 +4,7 @@ The library provides a macros to build a pretty tables at compile time.
 
 To find a few features and settings which you can use with the macros please check out the documentation ([docs.rs](https://docs.rs/static_table)).
 
-### Get started
+## Get started
 
 
 <table>
@@ -113,4 +113,20 @@ You can even use the macros in the documentation
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
+```
+
+## Binary size concern
+
+It's something you shall be aware of.
+Using `static_table` MIGHT increase a binary size, because the table will be stored as actuall symbols in a static section of a binary file (ELF, PE etc.).
+
+I have run a few tests in this regard.
+And a binary which used `static_table` has SUBSTATIANALY smaller size than
+a binary with a build table at runtime using `lazy_static`/`once_cell`.
+I am not sure though why it is a case.
+
+```table
+                debug mode      release mode
+static_table    13497232        4501576
+runtime table   12031120        4156024
 ```

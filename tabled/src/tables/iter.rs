@@ -88,7 +88,7 @@ impl<I> IterTable<I> {
     }
 
     /// With is a generic function which applies options to the [`IterTable`].
-    pub fn with<O>(mut self, mut option: O) -> Self
+    pub fn with<O>(mut self, option: O) -> Self
     where
         for<'a> O: TableOption<IterRecords<&'a I>, StaticDimension, CompactConfig>,
     {

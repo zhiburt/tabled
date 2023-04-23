@@ -49,13 +49,13 @@ impl HorizontalLine {
 
 #[cfg(feature = "std")]
 impl<R, D> TableOption<R, D, ColoredConfig> for HorizontalLine {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         cfg.insert_horizontal_line(self.index, GridLine::from(self.line))
     }
 }
 
 impl<R, D> TableOption<R, D, CompactConfig> for HorizontalLine {
-    fn change(&mut self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         if self.index == 1 {
             *cfg = cfg.set_first_horizontal_line(papergrid::config::Line::from(self.line));
         }
@@ -63,7 +63,7 @@ impl<R, D> TableOption<R, D, CompactConfig> for HorizontalLine {
 }
 
 impl<R, D> TableOption<R, D, CompactMultilineConfig> for HorizontalLine {
-    fn change(&mut self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
         self.change(records, cfg.as_mut(), dimension)
     }
 }

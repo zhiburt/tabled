@@ -1050,16 +1050,16 @@ where
     HLines: IntoIterator<Item = HorizontalLine> + Clone,
     VLines: IntoIterator<Item = VerticalLine> + Clone,
 {
-    fn change(&mut self, records: &mut I, cfg: &mut ColoredConfig, dimension: &mut D) {
+    fn change(self, records: &mut I, cfg: &mut ColoredConfig, dimension: &mut D) {
         cfg.clear_theme();
 
         cfg.set_borders(self.borders);
 
-        for mut hl in self.horizontals.clone() {
+        for hl in self.horizontals {
             hl.change(records, cfg, dimension);
         }
 
-        for mut vl in self.verticals.clone() {
+        for vl in self.verticals {
             vl.change(records, cfg, dimension);
         }
     }
@@ -1070,11 +1070,11 @@ impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, CompactConfig>
 where
     HLines: IntoIterator<Item = HorizontalLine> + Clone,
 {
-    fn change(&mut self, records: &mut I, cfg: &mut CompactConfig, dimension: &mut D) {
+    fn change(self, records: &mut I, cfg: &mut CompactConfig, dimension: &mut D) {
         *cfg = cfg.set_borders(self.borders);
 
-        let first_line = self.horizontals.clone().into_iter().next();
-        if let Some(mut line) = first_line {
+        let first_line = self.horizontals.into_iter().next();
+        if let Some(line) = first_line {
             line.change(records, cfg, dimension);
         }
     }
@@ -1085,7 +1085,7 @@ impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, CompactMultilineC
 where
     HLines: IntoIterator<Item = HorizontalLine> + Clone,
 {
-    fn change(&mut self, records: &mut I, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
+    fn change(self, records: &mut I, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
         self.change(records, cfg.as_mut(), dimension)
     }
 }

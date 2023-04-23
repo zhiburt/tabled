@@ -26,7 +26,7 @@ where
     S: AsRef<str>,
     R: Records + ExactRecords + Resizable + RecordsMut<String>,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, dimension: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dimension: &mut D) {
         Panel::horizontal(records.count_rows(), self.0.as_ref()).change(records, cfg, dimension);
     }
 }

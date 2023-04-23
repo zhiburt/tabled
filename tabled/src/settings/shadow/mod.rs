@@ -38,7 +38,7 @@ use crate::{
 /// NOTICE: It uses [`Margin`] therefore it often can't be combined.
 ///
 /// [`Margin`]: crate::settings::Margin
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Shadow {
     c: char,
     size: usize,
@@ -66,54 +66,54 @@ impl Shadow {
     }
 
     /// The function, sets a characters for the [`Shadow`] to be used.
-    pub fn set_fill(&mut self, c: char) -> &mut Self {
+    pub fn set_fill(mut self, c: char) -> Self {
         self.c = c;
         self
     }
 
     /// Set an offset value (default is '1').
-    pub fn set_offset(&mut self, size: usize) -> &mut Self {
+    pub fn set_offset(mut self, size: usize) -> Self {
         self.size_offset = size;
         self
     }
 
     /// Switch shadow to top.
-    pub fn set_top(&mut self) -> &mut Self {
+    pub fn set_top(mut self) -> Self {
         self.direction.top = true;
         self.direction.bottom = false;
         self
     }
 
     /// Switch shadow to bottom.
-    pub fn set_bottom(&mut self) -> &mut Self {
+    pub fn set_bottom(mut self) -> Self {
         self.direction.bottom = true;
         self.direction.top = false;
         self
     }
 
     /// Switch shadow to left.
-    pub fn set_left(&mut self) -> &mut Self {
+    pub fn set_left(mut self) -> Self {
         self.direction.left = true;
         self.direction.right = false;
         self
     }
 
     /// Switch shadow to right.
-    pub fn set_right(&mut self) -> &mut Self {
+    pub fn set_right(mut self) -> Self {
         self.direction.right = true;
         self.direction.left = false;
         self
     }
 
     /// Sets a color for a shadow.
-    pub fn set_color(&mut self, color: Color) -> &mut Self {
+    pub fn set_color(mut self, color: Color) -> Self {
         self.color = Some(color);
         self
     }
 }
 
 impl<R, D> TableOption<R, D, ColoredConfig> for Shadow {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         set_margin(cfg, self.size, self.c, &self.direction);
         set_margin_offset(cfg, self.size_offset, &self.direction);
 

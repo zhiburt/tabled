@@ -118,7 +118,7 @@ where
     O: Object<R>,
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -126,7 +126,7 @@ where
         let segments = split_segments(cells, count_rows, count_cols);
 
         for sector in segments {
-            set_border(cfg, &sector, self.border.clone());
+            set_border(cfg, &sector, self.border);
         }
     }
 }
@@ -145,7 +145,7 @@ where
     O: Object<R>,
     R: Records + ExactRecords,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 

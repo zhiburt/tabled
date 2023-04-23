@@ -1,26 +1,25 @@
 //! This module contains a main table representation [`Table`].
 
 use core::ops::DerefMut;
-use std::{borrow::Cow, collections::HashMap, fmt, iter::FromIterator};
+use std::{borrow::Cow, fmt, iter::FromIterator};
 
 use crate::{
     builder::Builder,
     grid::{
+        colors::NoColors,
         config::{
-            AlignmentHorizontal, ColoredConfig, CompactConfig, Entity, Formatting, Indent, Sides,
-            SpannedConfig,
+            AlignmentHorizontal, ColorMap, ColoredConfig, CompactConfig, Entity, Formatting,
+            Indent, Sides, SpannedConfig,
         },
-        dimension::{CompleteDimension, PeekableDimension},
-        dimension::{Dimension, Estimate},
-        records::{vec_records::VecRecords, ExactRecords, Records},
+        dimension::{CompleteDimensionVecRecords, Dimension, Estimate, PeekableDimension},
+        records::{
+            vec_records::{CellInfo, VecRecords},
+            ExactRecords, Records,
+        },
         PeekableGrid,
     },
     settings::{Style, TableOption},
     Tabled,
-};
-
-use papergrid::{
-    color::AnsiColor, colors::NoColors, config::Position, records::vec_records::CellInfo,
 };
 
 /// The structure provides an interface for building a table for types that implements [`Tabled`].
@@ -60,7 +59,7 @@ use papergrid::{
 pub struct Table {
     records: VecRecords<CellInfo<String>>,
     config: ColoredConfig,
-    dimension: CompleteDimension<'static>,
+    dimension: CompleteDimensionVecRecords<'static>,
 }
 
 impl Table {
@@ -97,8 +96,8 @@ impl Table {
 
         Self {
             records,
-            config: ColoredConfig::new(configure_grid(), HashMap::default()),
-            dimension: CompleteDimension::default(),
+            config: ColoredConfig::new(configure_grid()),
+            dimension: CompleteDimensionVecRecords::default(),
         }
     }
 
@@ -178,12 +177,15 @@ impl Table {
     /// It applies settings immediately.
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        O: TableOption<VecRecords<CellInfo<String>>, CompleteDimension<'static>, ColoredConfig>,
+        O: TableOption<
+            VecRecords<CellInfo<String>>,
+            CompleteDimensionVecRecords<'static>,
+            ColoredConfig,
+        >,
     {
         self.dimension.clear_width();
         self.dimension.clear_height();
 
-        let mut option = option;
         option.change(&mut self.records, &mut self.config, &mut self.dimension);
 
         self
@@ -212,7 +214,7 @@ impl Table {
 
     /// Returns total widths of a table, including margin and horizontal lines.
     pub fn total_height(&self) -> usize {
-        let mut dims = CompleteDimension::from_origin(&self.dimension);
+        let mut dims = CompleteDimensionVecRecords::from_origin(&self.dimension);
         dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_rows())
@@ -227,7 +229,7 @@ impl Table {
 
     /// Returns total widths of a table, including margin and vertical lines.
     pub fn total_width(&self) -> usize {
-        let mut dims = CompleteDimension::from_origin(&self.dimension);
+        let mut dims = CompleteDimensionVecRecords::from_origin(&self.dimension);
         dims.estimate(&self.records, self.config.as_ref());
 
         let total = (0..self.count_columns())
@@ -255,8 +257,8 @@ impl Default for Table {
     fn default() -> Self {
         Self {
             records: VecRecords::default(),
-            config: ColoredConfig::new(configure_grid(), HashMap::default()),
-            dimension: CompleteDimension::default(),
+            config: ColoredConfig::new(configure_grid()),
+            dimension: CompleteDimensionVecRecords::default(),
         }
     }
 }
@@ -301,44 +303,42 @@ impl From<Builder> for Table {
 
         Self {
             records,
-            config: ColoredConfig::new(configure_grid(), HashMap::default()),
-            dimension: CompleteDimension::default(),
+            config: ColoredConfig::new(configure_grid()),
+            dimension: CompleteDimensionVecRecords::default(),
         }
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for CompactConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg.deref_mut() = (*self).into();
+impl From<Table> for Builder {
+    fn from(val: Table) -> Self {
+        let count_columns = val.count_columns();
+        let data: Vec<Vec<CellInfo<String>>> = val.records.into();
+        let mut builder = Builder::from(data);
+        let _ = builder.hint_column_size(count_columns);
+        builder
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for &CompactConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg.deref_mut() = (**self).into();
+impl<R, D> TableOption<R, D, ColoredConfig> for CompactConfig {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg.deref_mut() = self.into();
     }
 }
 
 impl<R, D> TableOption<R, D, ColoredConfig> for ColoredConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg = self.clone();
-    }
-}
-
-impl<R, D> TableOption<R, D, ColoredConfig> for &ColoredConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg = self.clone();
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg = self;
     }
 }
 
 impl<R, D> TableOption<R, D, ColoredConfig> for SpannedConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        *cfg.deref_mut() = self.clone();
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        *cfg.deref_mut() = self;
     }
 }
 
 impl<R, D> TableOption<R, D, ColoredConfig> for &SpannedConfig {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         *cfg.deref_mut() = self.clone();
     }
 }
@@ -444,7 +444,7 @@ fn print_grid<F: fmt::Write, D: Dimension>(
     records: &VecRecords<CellInfo<String>>,
     cfg: &SpannedConfig,
     dims: D,
-    colors: &HashMap<Position, AnsiColor<'static>>,
+    colors: &ColorMap,
 ) -> fmt::Result {
     if !colors.is_empty() {
         PeekableGrid::new(records, cfg, &dims, colors).build(f)

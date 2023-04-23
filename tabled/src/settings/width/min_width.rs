@@ -7,7 +7,7 @@ use std::marker::PhantomData;
 use crate::{
     grid::config::ColoredConfig,
     grid::config::Entity,
-    grid::dimension::CompleteDimension,
+    grid::dimension::CompleteDimensionVecRecords,
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     grid::util::string::{get_lines, string_width_multiline},
     settings::{
@@ -54,7 +54,7 @@ use super::util::get_table_widths_with_total;
 /// ```
 ///
 /// [`Padding`]: crate::settings::Padding
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MinWidth<W = usize, P = PriorityNone> {
     width: W,
     fill: char,
@@ -108,7 +108,7 @@ where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
 {
-    fn change(&mut self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let width = self.width.measure(&*records, cfg);
 
         let count_rows = records.count_rows();
@@ -132,7 +132,7 @@ where
     }
 }
 
-impl<W, P, R> TableOption<R, CompleteDimension<'static>, ColoredConfig> for MinWidth<W, P>
+impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig> for MinWidth<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -140,10 +140,10 @@ where
     for<'a> &'a R: Records,
 {
     fn change(
-        &mut self,
+        self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimension<'static>,
+        dims: &mut CompleteDimensionVecRecords<'static>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;

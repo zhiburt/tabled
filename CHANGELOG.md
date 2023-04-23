@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.12.0] - 2023-04-23
+
+### Added
+
+### Changed
+
+- Made a list of changes to `tabled` .
+- Made a list of changes to `papergrid` interface.
+
+### Fixed
+
+- Fixed `PoolTable` vertical intersection issue.
+
 ## [0.11.0] - 2023-04-12
 
 ### Added

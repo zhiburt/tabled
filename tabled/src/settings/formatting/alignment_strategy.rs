@@ -1,6 +1,6 @@
 use crate::{
-    grid::config::{ColoredConfig, Entity},
-    settings::CellOption,
+    grid::config::{ColoredConfig, CompactMultilineConfig, Entity},
+    settings::{CellOption, TableOption},
 };
 
 /// `AlignmentStrategy` is a responsible for a flow how we apply an alignment.
@@ -133,7 +133,7 @@ use crate::{
 /// │                                                             } │
 /// └───────────────────────────────────────────────────────────────┘"#);
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AlignmentStrategy {
     /// Apply alignment for cell content as a whole.
     PerCell,
@@ -142,7 +142,7 @@ pub enum AlignmentStrategy {
 }
 
 impl<R> CellOption<R, ColoredConfig> for AlignmentStrategy {
-    fn change(&mut self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let mut formatting = *cfg.get_formatting(entity);
         match &self {
             AlignmentStrategy::PerCell => formatting.allow_lines_alignment = false,
@@ -150,5 +150,23 @@ impl<R> CellOption<R, ColoredConfig> for AlignmentStrategy {
         }
 
         cfg.set_formatting(entity, formatting);
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for AlignmentStrategy {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        <Self as CellOption<R, ColoredConfig>>::change(self, records, cfg, Entity::Global)
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactMultilineConfig> for AlignmentStrategy {
+    fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
+        let mut f = cfg.get_formatting();
+        match &self {
+            AlignmentStrategy::PerCell => f.allow_lines_alignment = false,
+            AlignmentStrategy::PerLine => f.allow_lines_alignment = true,
+        }
+
+        *cfg = cfg.set_formatting(f);
     }
 }

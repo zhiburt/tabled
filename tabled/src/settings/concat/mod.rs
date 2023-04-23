@@ -115,7 +115,7 @@ impl<R, D, C> TableOption<R, D, C> for Concat
 where
     R: Records + ExactRecords + Resizable + PeekableRecords + RecordsMut<String>,
 {
-    fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
+    fn change(mut self, records: &mut R, _: &mut C, _: &mut D) {
         let count_rows = records.count_rows();
         let count_cols = records.count_columns();
 
@@ -176,11 +176,11 @@ where
 #[derive(Debug, Default)]
 struct GetCell(String, Position);
 
-impl<R, D, C> TableOption<R, D, C> for GetCell
+impl<R, D, C> TableOption<R, D, C> for &mut GetCell
 where
     R: PeekableRecords,
 {
-    fn change(&mut self, records: &mut R, _: &mut C, _: &mut D) {
+    fn change(self, records: &mut R, _: &mut C, _: &mut D) {
         let cell = records.get_text(self.1).to_string();
         self.0 = cell;
     }
