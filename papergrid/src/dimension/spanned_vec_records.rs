@@ -82,7 +82,7 @@ fn build_dimensions<T: Cell + AsRef<str>>(
     let mut vspans = HashMap::new();
     let mut hspans = HashMap::new();
 
-    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+    for (row, columns) in records.iter_rows().enumerate() {
         let mut row_height = 0;
         for (col, cell) in columns.iter().enumerate() {
             let pos = (row, col);
@@ -278,7 +278,7 @@ fn build_height<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConf
     let mut heights = vec![];
     let mut hspans = HashMap::new();
 
-    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+    for (row, columns) in records.iter_rows().enumerate() {
         let mut row_height = 0;
         for (col, cell) in columns.iter().enumerate() {
             let pos = (row, col);
@@ -309,7 +309,7 @@ fn build_width<T: Cell + AsRef<str>>(records: &VecRecords<T>, cfg: &SpannedConfi
     let mut widths = vec![0; count_columns];
     let mut vspans = HashMap::new();
 
-    for (row, columns) in records.iter_rows().into_iter().enumerate() {
+    for (row, columns) in records.iter_rows().enumerate() {
         for (col, cell) in columns.iter().enumerate() {
             let pos = (row, col);
             if !cfg.is_cell_visible(pos) {
