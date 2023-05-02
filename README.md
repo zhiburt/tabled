@@ -9,6 +9,9 @@
 
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
+This file contains quite a bit of information,
+but you can find even more in a **[examples](/examples/)** folder.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/preview-show.gif">
   <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/preview-show-light.gif">
@@ -165,7 +168,7 @@ println!("{:#^10}", table);
 ### Dynamic table
 
 Sometimes you can't say what type of data you are going to deal with (like parsing `csv`).
-In such cases it may be handy to build table dynamically.
+In such cases it may be handy to build table dynamically (step by step).
 
 ```rust
 use tabled::{builder::Builder, settings::Style};
@@ -1924,6 +1927,56 @@ As you can see Github tricks a bit a return table, but `GNOME terminal` and `Ala
 | Go 🧋   | Rob Pike       | 2009          |
 +---------+----------------+---------------+
 ```
+
+### Terminal size
+
+It's a friquent case where it's nessary to align a table to a terminal width or height.
+You can achieve that by using `Width` and `Height`.
+You can peak a strategy by which a column/row truncation/widening will be done by using `Priority`.
+
+This example uses `terminal_size` crate to determine ones size, but it's possible to use anything.
+
+```rust
+use tabled::{
+    builder::Builder,
+    settings::{peaker::PriorityMax, Height, Settings, Width},
+    Table,
+};
+use terminal_size::{terminal_size, Height as TerminalHeight, Width as TerminalWidth};
+
+fn build_table() -> Table {
+    let data = [
+        ["0.2.1", "2021-06-23", "true", "#[header(inline)] attribute"],
+        ["0.2.0", "2021-06-19", "false", "API changes"],
+        ["0.1.4", "2021-06-07", "false", "display_with attribute"],
+    ];
+
+    Builder::from_iter(data).build()
+}
+
+fn get_terminal_size() -> (usize, usize) {
+    let (TerminalWidth(width), TerminalHeight(height)) =
+        terminal_size().expect("failed to obtain a terminal size");
+
+    (width as usize, height as usize)
+}
+
+fn main() {
+    let (width, height) = get_terminal_size();
+
+    let term_size_settings = Settings::default()
+        .with(Width::wrap(width).priority::<PriorityMax>())
+        .with(Width::increase(width))
+        .with(Height::limit(height))
+        .with(Height::increase(height));
+
+    let mut table = build_table();
+    table.with(term_size_settings);
+
+    println!("{table}");
+}
+```
+
 
 ### Semver
 
