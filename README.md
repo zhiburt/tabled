@@ -9,11 +9,11 @@
 
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
-You can do a lot of things with the library.
-If it doesn't do something which you feel it should be able to or it's not clear how to, please file an issue.
+You can do a lot of things with the library.\
+If it doesn't do something which you feel it should or it's not clear how to, please file an issue.
 
-This file contains a lot of information but it might be not complete,
-you can find more examples in a **[examples](/examples/)** folder.
+This README contains a lot of information but it might be not complete,\
+you can find more examples in an **[examples](/tabled/examples/)** folder.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/preview-show.gif">
@@ -275,7 +275,7 @@ println!("{}", table);
 This section lists the set of settings you can apply to your table.
 Most of the settings are used by `.with` method of `Table`.
 
-You can find a list of show cases in **[examples folder](/examples/README.md)**.
+You can find a list of show cases in **[examples folder](/tabled/examples/README.md)**.
 
 ### Style
 
