@@ -9,8 +9,11 @@
 
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
-This file contains quite a bit of information,
-but you can find even more in a **[examples](/examples/)** folder.
+You can do a lot of things with the library.
+If it doesn't do something which you feel it should be able to or it's not clear how to, please file an issue.
+
+This file contains a lot of information but it might be not complete,
+you can find more examples in a **[examples](/examples/)** folder.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/preview-show.gif">
@@ -611,22 +614,6 @@ table
     .with(Modify::new(Rows::first()).with(Format::new(|s| format!("Head {}", s))))
     .with(Modify::new(Columns::new(1..=2)).with(Format::new(|s| format!("<< {} >>", s))));
 ```
-
-It's also possible to use functions with signature `Fn(&str) -> String` as a formatter.
-
-```rust
-use tabled::{
-    Table,
-    settings::{Modify, object::{Rows, Columns}},
-};
-
-let mut table = Table::new(&data);
-table
-    .with(Modify::new(Columns::single(3)).with(|s: &str| format!("<< {} >>", s)))
-    .with(Modify::new(Rows::first()).with(str::to_lowercase));
-```
-
-IMPORTANT: you may need to specify the type in your lambda otherwise the compiler may be disagreed to work :)
 
 ### Padding
 
