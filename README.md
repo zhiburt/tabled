@@ -9,6 +9,12 @@
 
 An easy to use library for pretty printing tables of Rust `struct`s and `enum`s.
 
+You can do a lot of things with the library.\
+If it doesn't do something which you feel it should or it's not clear how to, please file an issue.
+
+This README contains a lot of information but it might be not complete,\
+you can find more examples in an **[examples](/tabled/examples/)** folder.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/preview-show.gif">
   <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/preview-show-light.gif">
@@ -165,7 +171,7 @@ println!("{:#^10}", table);
 ### Dynamic table
 
 Sometimes you can't say what type of data you are going to deal with (like parsing `csv`).
-In such cases it may be handy to build table dynamically.
+In such cases it may be handy to build table dynamically (step by step).
 
 ```rust
 use tabled::{builder::Builder, settings::Style};
@@ -269,7 +275,7 @@ println!("{}", table);
 This section lists the set of settings you can apply to your table.
 Most of the settings are used by `.with` method of `Table`.
 
-You can find a list of show cases in **[examples folder](/examples/README.md)**.
+You can find a list of show cases in **[examples folder](/tabled/examples/README.md)**.
 
 ### Style
 
@@ -608,22 +614,6 @@ table
     .with(Modify::new(Rows::first()).with(Format::new(|s| format!("Head {}", s))))
     .with(Modify::new(Columns::new(1..=2)).with(Format::new(|s| format!("<< {} >>", s))));
 ```
-
-It's also possible to use functions with signature `Fn(&str) -> String` as a formatter.
-
-```rust
-use tabled::{
-    Table,
-    settings::{Modify, object::{Rows, Columns}},
-};
-
-let mut table = Table::new(&data);
-table
-    .with(Modify::new(Columns::single(3)).with(|s: &str| format!("<< {} >>", s)))
-    .with(Modify::new(Rows::first()).with(str::to_lowercase));
-```
-
-IMPORTANT: you may need to specify the type in your lambda otherwise the compiler may be disagreed to work :)
 
 ### Padding
 
@@ -1924,6 +1914,56 @@ As you can see Github tricks a bit a return table, but `GNOME terminal` and `Ala
 | Go 🧋   | Rob Pike       | 2009          |
 +---------+----------------+---------------+
 ```
+
+### Terminal size
+
+It's a friquent case where it's nessary to align a table to a terminal width or height.
+You can achieve that by using `Width` and `Height`.
+You can peak a strategy by which a column/row truncation/widening will be done by using `Priority`.
+
+This example uses `terminal_size` crate to determine ones size, but it's possible to use anything.
+
+```rust
+use tabled::{
+    builder::Builder,
+    settings::{peaker::PriorityMax, Height, Settings, Width},
+    Table,
+};
+use terminal_size::{terminal_size, Height as TerminalHeight, Width as TerminalWidth};
+
+fn build_table() -> Table {
+    let data = [
+        ["0.2.1", "2021-06-23", "true", "#[header(inline)] attribute"],
+        ["0.2.0", "2021-06-19", "false", "API changes"],
+        ["0.1.4", "2021-06-07", "false", "display_with attribute"],
+    ];
+
+    Builder::from_iter(data).build()
+}
+
+fn get_terminal_size() -> (usize, usize) {
+    let (TerminalWidth(width), TerminalHeight(height)) =
+        terminal_size().expect("failed to obtain a terminal size");
+
+    (width as usize, height as usize)
+}
+
+fn main() {
+    let (width, height) = get_terminal_size();
+
+    let term_size_settings = Settings::default()
+        .with(Width::wrap(width).priority::<PriorityMax>())
+        .with(Width::increase(width))
+        .with(Height::limit(height))
+        .with(Height::increase(height));
+
+    let mut table = build_table();
+    table.with(term_size_settings);
+
+    println!("{table}");
+}
+```
+
 
 ### Semver
 

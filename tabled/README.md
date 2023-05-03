@@ -59,3 +59,32 @@ let expected = "+------+----------------+---------------+\n\
 
 assert_eq!(table, expected);
 ```
+
+The same example but we are building a table step by step.
+
+```rust
+use tabled::{builder::Builder, settings::Style};
+
+let mut builder = Builder::new();
+builder.push_record(["C", "Dennis Ritchie", "1972"]);
+builder.push_record(["Go", "Rob Pike", "2009"]);
+builder.push_record(["Rust", "Graydon Hoare", "2010"]);
+builder.push_record(["Hare", "Drew DeVault", "2022"]);
+
+let mut table = builder.build();
+table.with(Style::ascii_rounded());
+
+let table = table.to_string();
+
+assert_eq!(
+    table,
+    concat!(
+        ".------------------------------.\n",
+        "| C    | Dennis Ritchie | 1972 |\n",
+        "| Go   | Rob Pike       | 2009 |\n",
+        "| Rust | Graydon Hoare  | 2010 |\n",
+        "| Hare | Drew DeVault   | 2022 |\n",
+        "'------------------------------'"
+    )
+);
+```
