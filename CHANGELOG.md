@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.12.1] - 2023-06-02
+
+### Added
+
+### Changed
+
+- Improved `Wrap` by reducing ansi usage (at the end of a line in some cases).
+
+### Fixed
+
+- Fixed ansi issue related to `ansi-str` by bumping it.
+
 ## [0.12.0] - 2023-04-23
 
 ### Added
