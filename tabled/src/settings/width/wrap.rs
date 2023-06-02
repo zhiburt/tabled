@@ -486,7 +486,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
                 word_begin_pos = 0;
 
                 if !is_enough_space {
-                    split(&mut buf, &block_style);
+                    split(&mut buf, block_style);
                     line_width = 0;
                 }
 
@@ -544,7 +544,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
                     // it's not small so we can't do anything about it.
 
                     if !is_empty_buf {
-                        split(&mut buf, &block_style);
+                        split(&mut buf, block_style);
                     }
 
                     let is_big_char = c_width > width;
