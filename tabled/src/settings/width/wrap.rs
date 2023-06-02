@@ -282,41 +282,46 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
     let mut line_width = 0;
 
     for b in ansi_str::get_blocks(s) {
-        if b.text().is_empty() {
+        let text_style = b.style();
+        let mut text_slice = b.text();
+        if text_slice.is_empty() {
             continue;
         }
 
-        let style = b.style();
+        let available_space = width - line_width;
+        if available_space == 0 {
+            list.push(line);
+            line = String::with_capacity(width);
+            line_width = 0;
+        }
 
         line.push_str(prefix);
-        let _ = write!(&mut line, "{}", style.start());
+        let _ = write!(&mut line, "{}", text_style.start());
 
-        let mut part = b.text();
-
-        while !part.is_empty() {
+        while !text_slice.is_empty() {
             let available_space = width - line_width;
 
-            let part_width = unicode_width::UnicodeWidthStr::width(part);
+            let part_width = unicode_width::UnicodeWidthStr::width(text_slice);
             if part_width <= available_space {
-                line.push_str(part);
+                line.push_str(text_slice);
                 line_width += part_width;
 
                 if available_space == 0 {
-                    let _ = write!(&mut line, "{}", style.end());
+                    let _ = write!(&mut line, "{}", text_style.end());
                     line.push_str(suffix);
                     list.push(line);
                     line = String::with_capacity(width);
                     line.push_str(prefix);
                     line_width = 0;
-                    let _ = write!(&mut line, "{}", style.start());
+                    let _ = write!(&mut line, "{}", text_style.start());
                 }
 
                 break;
             }
 
-            let (lhs, rhs, (unknowns, split_char)) = split_string_at(part, available_space);
+            let (lhs, rhs, (unknowns, split_char)) = split_string_at(text_slice, available_space);
 
-            part = &rhs[split_char..];
+            text_slice = &rhs[split_char..];
 
             line.push_str(lhs);
             line_width += unicode_width::UnicodeWidthStr::width(lhs);
@@ -326,18 +331,18 @@ fn chunks(s: &str, width: usize, prefix: &str, suffix: &str) -> Vec<String> {
             line_width += unknowns;
 
             if line_width == width {
-                let _ = write!(&mut line, "{}", style.end());
+                let _ = write!(&mut line, "{}", text_style.end());
                 line.push_str(suffix);
                 list.push(line);
                 line = String::with_capacity(width);
                 line.push_str(prefix);
                 line_width = 0;
-                let _ = write!(&mut line, "{}", style.start());
+                let _ = write!(&mut line, "{}", text_style.start());
             }
         }
 
         if line_width > 0 {
-            let _ = write!(&mut line, "{}", style.end());
+            let _ = write!(&mut line, "{}", text_style.end());
         }
     }
 
@@ -431,7 +436,6 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 #[cfg(feature = "color")]
 fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
     use std::fmt::Write;
-
     use ansi_str::Style;
 
     if text.is_empty() || width == 0 {
@@ -457,15 +461,22 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
     buf.push_str(prefix);
 
     for block in ansi_str::get_blocks(text) {
-        if block.text().is_empty() {
+        let block_text = block.text();
+        let block_style = block.style();
+        if block_text.is_empty() {
             continue;
         }
 
-        let style = block.style();
+        let available_space = width - line_width;
+        if available_space == 0 {
+            buf.push('\n');
+            buf.push_str(prefix);
+            line_width = 0;
+        }
 
-        let _ = write!(buf, "{}", style.start());
+        let _ = write!(buf, "{}", block_style.start());
 
-        for c in block.text().chars() {
+        for c in block_text.chars() {
             let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or_default();
             let is_enough_space = line_width + c_width <= width;
 
@@ -475,7 +486,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
                 word_begin_pos = 0;
 
                 if !is_enough_space {
-                    split(&mut buf, &style);
+                    split(&mut buf, &block_style);
                     line_width = 0;
                 }
 
@@ -512,7 +523,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
                     if !is_empty_buf {
                         // we don't fill the rest of the prev line here
 
-                        let sep = format!("{}{}\n{}{}", style.end(), suffix, prefix, style.start());
+                        let sep = format!("{}{}\n{}{}", block_style.end(), suffix, prefix, block_style.start());
                         buf.insert_str(word_begin_pos, &sep);
                     }
 
@@ -527,7 +538,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
                     // it's not small so we can't do anything about it.
 
                     if !is_empty_buf {
-                        split(&mut buf, &style);
+                        split(&mut buf, &block_style);
                     }
 
                     let is_big_char = c_width > width;
@@ -549,7 +560,7 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
             }
         }
 
-        let _ = write!(buf, "{}", style.end());
+        let _ = write!(buf, "{}", block_style.end());
     }
 
     if line_width > 0 {
@@ -923,7 +934,7 @@ mod tests {
         );
         assert_eq!(
             split_keeping_words("\u{1b}[37mHello Wo\u{1b}[37mrld\u{1b}[0m", 8),
-            "\u{1b}[37mHello \u{1b}[39m\n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m   "
+            "\u{1b}[37mHello Wo\u{1b}[39m\n\u{1b}[37mrld\u{1b}[39m     "
         );
     }
 
@@ -1145,12 +1156,38 @@ mod tests {
     #[test]
     fn chunks_wrap_2() {
         let text = "\u{1b}[30mDebian\u{1b}[0m\u{1b}[31mDebian\u{1b}[0m\u{1b}[32mDebian\u{1b}[0m\u{1b}[33mDebian\u{1b}[0m\u{1b}[34mDebian\u{1b}[0m\u{1b}[35mDebian\u{1b}[0m\u{1b}[36mDebian\u{1b}[0m\u{1b}[37mDebian\u{1b}[0m\u{1b}[40mDebian\u{1b}[0m\u{1b}[41mDebian\u{1b}[0m\u{1b}[42mDebian\u{1b}[0m\u{1b}[43mDebian\u{1b}[0m\u{1b}[44mDebian\u{1b}[0m";
-
         assert_eq!(
             chunks(text, 30, "", ""),
             [
-                "\u{1b}[30mDebian\u{1b}[39m\u{1b}[31mDebian\u{1b}[39m\u{1b}[32mDebian\u{1b}[39m\u{1b}[33mDebian\u{1b}[39m\u{1b}[34mDebian\u{1b}[39m\u{1b}[35m\u{1b}[39m", "\u{1b}[35mDebian\u{1b}[39m\u{1b}[36mDebian\u{1b}[39m\u{1b}[37mDebian\u{1b}[39m\u{1b}[40mDebian\u{1b}[49m\u{1b}[41mDebian\u{1b}[49m\u{1b}[42m\u{1b}[49m", "\u{1b}[42mDebian\u{1b}[49m\u{1b}[43mDebian\u{1b}[49m\u{1b}[44mDebian\u{1b}[49m"
+                "\u{1b}[30mDebian\u{1b}[39m\u{1b}[31mDebian\u{1b}[39m\u{1b}[32mDebian\u{1b}[39m\u{1b}[33mDebian\u{1b}[39m\u{1b}[34mDebian\u{1b}[39m",
+                "\u{1b}[35mDebian\u{1b}[39m\u{1b}[36mDebian\u{1b}[39m\u{1b}[37mDebian\u{1b}[39m\u{1b}[40mDebian\u{1b}[49m\u{1b}[41mDebian\u{1b}[49m",
+                "\u{1b}[42mDebian\u{1b}[49m\u{1b}[43mDebian\u{1b}[49m\u{1b}[44mDebian\u{1b}[49m",
             ]
+        );
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn chunks_wrap_3() {
+        let text = "\u{1b}[37mCreate bytes from the \u{1b}[0m\u{1b}[7;34marg\u{1b}[0m\u{1b}[37muments.\u{1b}[0m";
+
+        assert_eq!(
+            chunks(text, 22, "", ""),
+            [
+                "\u{1b}[37mCreate bytes from the \u{1b}[39m",
+                "\u{1b}[7m\u{1b}[34marg\u{1b}[27m\u{1b}[39m\u{1b}[37muments.\u{1b}[39m"
+            ]
+        );
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn chunks_wrap_3_keeping_words() {
+        let text = "\u{1b}[37mCreate bytes from the \u{1b}[0m\u{1b}[7;34marg\u{1b}[0m\u{1b}[37muments.\u{1b}[0m";
+
+        assert_eq!(
+            split_keeping_words(text, 22, "", ""),
+            "\u{1b}[37mCreate bytes from the \u{1b}[39m\n\u{1b}[7m\u{1b}[34marg\u{1b}[27m\u{1b}[39m\u{1b}[37muments.\u{1b}[39m            "
         );
     }
 }
