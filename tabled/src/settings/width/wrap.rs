@@ -435,8 +435,8 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 
 #[cfg(feature = "color")]
 fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
-    use std::fmt::Write;
     use ansi_str::Style;
+    use std::fmt::Write;
 
     if text.is_empty() || width == 0 {
         return String::new();
@@ -523,7 +523,13 @@ fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> 
                     if !is_empty_buf {
                         // we don't fill the rest of the prev line here
 
-                        let sep = format!("{}{}\n{}{}", block_style.end(), suffix, prefix, block_style.start());
+                        let sep = format!(
+                            "{}{}\n{}{}",
+                            block_style.end(),
+                            suffix,
+                            prefix,
+                            block_style.start()
+                        );
                         buf.insert_str(word_begin_pos, &sep);
                     }
 
