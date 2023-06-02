@@ -1,6 +1,6 @@
 [package]
 name = "static_table"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "Library creates pretty tables at compiler time"
@@ -22,4 +22,4 @@ tabled = { version = "0.12", features = ["std"], default-features = false }
 syn = { version = "1", features = ["parsing"] }
 quote = "1"
 proc-macro2 = "1"
-proc-macro-error = "1.0.4"
+proc-macro-error = "1.0"
