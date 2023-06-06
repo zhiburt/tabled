@@ -435,151 +435,345 @@ fn split_keeping_words(s: &str, width: usize, sep: &str) -> String {
 
 #[cfg(feature = "color")]
 fn split_keeping_words(text: &str, width: usize, prefix: &str, suffix: &str) -> String {
-    use ansi_str::Style;
-    use std::fmt::Write;
-
     if text.is_empty() || width == 0 {
         return String::new();
     }
 
-    let mut buf = String::new();
-    let mut line_width = 0;
-    let mut word_begin_pos = 0;
-    let mut word_length = 0;
-    let mut is_empty_buf = true;
+    let stripped_text = ansi_str::AnsiStr::ansi_strip(text);
+    let mut word_width = 0;
+    let mut word_chars = 0;
+    let mut blocks = parsing::Blocks::new(ansi_str::get_blocks(text));
+    let mut buf = parsing::MultilineBuffer::new(width);
+    buf.set_prefix(prefix);
+    buf.set_suffix(suffix);
 
-    let split = |buf: &mut String, style: &Style| {
-        let _ = write!(buf, "{}", style.end());
-        buf.push_str(suffix);
-        buf.push('\n');
-        buf.push_str(prefix);
-        let _ = write!(buf, "{}", style.start());
-    };
+    for c in stripped_text.chars() {
+        match c {
+            ' ' => {
+                parsing::handle_word(&mut buf, &mut blocks, word_chars, word_width, 1);
+                word_chars = 0;
+                word_width = 0;
+            }
+            '\n' => {
+                parsing::handle_word(&mut buf, &mut blocks, word_chars, word_width, 1);
+                word_chars = 0;
+                word_width = 0;
+            }
+            _ => {
+                word_width += unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+                word_chars += 1;
+            }
+        }
+    }
 
-    // go char by char and split string afterwords
+    if word_chars > 0 {
+        parsing::handle_word(&mut buf, &mut blocks, word_chars, word_width, 0);
+        buf.finish_line(&blocks);
+    }
 
-    buf.push_str(prefix);
+    buf.into_string()
+}
 
-    for block in ansi_str::get_blocks(text) {
-        let block_text = block.text();
-        let block_style = block.style();
-        if block_text.is_empty() {
-            continue;
+#[cfg(feature = "color")]
+mod parsing {
+    use ansi_str::{AnsiBlock, AnsiBlockIter, Style};
+    use std::fmt::Write;
+
+    pub(super) struct Blocks<'a> {
+        iter: AnsiBlockIter<'a>,
+        current: Option<RelativeBlock<'a>>,
+    }
+
+    impl<'a> Blocks<'a> {
+        pub(super) fn new(iter: AnsiBlockIter<'a>) -> Self {
+            Self {
+                iter,
+                current: None,
+            }
         }
 
-        let available_space = width - line_width;
-        if available_space == 0 {
-            buf.push('\n');
-            buf.push_str(prefix);
-            line_width = 0;
+        pub(super) fn next_block(&mut self) -> Option<RelativeBlock<'a>> {
+            self.current
+                .take()
+                .or_else(|| self.iter.next().map(RelativeBlock::new))
+        }
+    }
+
+    pub(super) struct RelativeBlock<'a> {
+        block: AnsiBlock<'a>,
+        pos: usize,
+    }
+
+    impl<'a> RelativeBlock<'a> {
+        pub(super) fn new(block: AnsiBlock<'a>) -> Self {
+            Self { block, pos: 0 }
         }
 
-        let _ = write!(buf, "{}", block_style.start());
+        pub(super) fn get_text(&self) -> &str {
+            &self.block.text()[self.pos..]
+        }
 
-        for c in block_text.chars() {
-            let c_width = unicode_width::UnicodeWidthChar::width(c).unwrap_or_default();
-            let is_enough_space = line_width + c_width <= width;
+        pub(super) fn get_origin(&self) -> &str {
+            self.block.text()
+        }
 
-            let is_space = c == ' ';
-            if is_space {
-                word_length = 0;
-                word_begin_pos = 0;
+        pub(super) fn get_style(&self) -> &Style {
+            self.block.style()
+        }
+    }
 
+    pub(super) struct MultilineBuffer<'a> {
+        buf: String,
+        width_last: usize,
+        width: usize,
+        prefix: &'a str,
+        suffix: &'a str,
+    }
+
+    impl<'a> MultilineBuffer<'a> {
+        pub(super) fn new(width: usize) -> Self {
+            Self {
+                buf: String::new(),
+                width_last: 0,
+                prefix: "",
+                suffix: "",
+                width,
+            }
+        }
+
+        pub(super) fn into_string(self) -> String {
+            self.buf
+        }
+
+        pub(super) fn set_suffix(&mut self, suffix: &'a str) {
+            self.suffix = suffix;
+        }
+
+        pub(super) fn set_prefix(&mut self, prefix: &'a str) {
+            self.prefix = prefix;
+        }
+
+        pub(super) fn max_width(&self) -> usize {
+            self.width
+        }
+
+        pub(super) fn available_width(&self) -> usize {
+            self.width - self.width_last
+        }
+
+        pub(super) fn fill(&mut self, c: char) -> usize {
+            debug_assert_eq!(unicode_width::UnicodeWidthChar::width(c), Some(1));
+
+            let rest_width = self.available_width();
+            for _ in 0..rest_width {
+                self.buf.push(c);
+            }
+
+            rest_width
+        }
+
+        pub(super) fn set_next_line(&mut self, blocks: &Blocks<'_>) {
+            if let Some(block) = &blocks.current {
+                let _ = self
+                    .buf
+                    .write_fmt(format_args!("{}", block.get_style().end()));
+            }
+
+            self.buf.push_str(self.suffix);
+
+            let _ = self.fill(' ');
+            self.buf.push('\n');
+            self.width_last = 0;
+
+            self.buf.push_str(self.prefix);
+
+            if let Some(block) = &blocks.current {
+                let _ = self
+                    .buf
+                    .write_fmt(format_args!("{}", block.get_style().start()));
+            }
+        }
+
+        pub(super) fn finish_line(&mut self, blocks: &Blocks<'_>) {
+            if let Some(block) = &blocks.current {
+                let _ = self
+                    .buf
+                    .write_fmt(format_args!("{}", block.get_style().end()));
+            }
+
+            self.buf.push_str(self.suffix);
+
+            let _ = self.fill(' ');
+            self.width_last = 0;
+        }
+
+        pub(super) fn read_chars(&mut self, block: &RelativeBlock<'_>, n: usize) -> (usize, usize) {
+            let mut count_chars = 0;
+            let mut count_bytes = 0;
+            for c in block.get_text().chars() {
+                if count_chars == n {
+                    break;
+                }
+
+                count_chars += 1;
+                count_bytes += c.len_utf8();
+
+                let cwidth = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+
+                let available_space = self.width - self.width_last;
+                if available_space == 0 {
+                    let _ = self
+                        .buf
+                        .write_fmt(format_args!("{}", block.get_style().end()));
+                    self.buf.push_str(self.suffix);
+                    self.buf.push('\n');
+                    self.buf.push_str(self.prefix);
+                    let _ = self
+                        .buf
+                        .write_fmt(format_args!("{}", block.get_style().start()));
+                    self.width_last = 0;
+                }
+
+                let is_enough_space = self.width_last + cwidth <= self.width;
                 if !is_enough_space {
-                    split(&mut buf, block_style);
-                    line_width = 0;
-                }
+                    // thereatically a cwidth can be 2 but buf_width is 1
+                    // but it handled here too;
 
-                buf.push(c);
-                line_width += 1;
-
-                if is_empty_buf {
-                    is_empty_buf = false;
+                    const REPLACEMENT: char = '\u{FFFD}';
+                    let _ = self.fill(REPLACEMENT);
+                    self.width_last = self.width;
+                } else {
+                    self.buf.push(c);
+                    self.width_last += cwidth;
                 }
-                continue;
             }
 
-            let is_first_c = word_length == 0;
-            if is_first_c {
-                word_begin_pos = buf.len();
+            (count_chars, count_bytes)
+        }
+
+        pub(super) fn read_chars_unchecked(
+            &mut self,
+            block: &RelativeBlock<'_>,
+            n: usize,
+        ) -> (usize, usize) {
+            let mut count_chars = 0;
+            let mut count_bytes = 0;
+            for c in block.get_text().chars() {
+                if count_chars == n {
+                    break;
+                }
+
+                count_chars += 1;
+                count_bytes += c.len_utf8();
+
+                let cwidth = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+                self.width_last += cwidth;
+
+                self.buf.push(c);
             }
 
-            if is_enough_space {
-                buf.push(c);
-                word_length += c_width;
-                line_width += c_width;
+            debug_assert!(self.width_last <= self.width);
 
-                if is_empty_buf {
-                    is_empty_buf = false;
+            (count_chars, count_bytes)
+        }
+    }
+
+    pub(super) fn read_chars(buf: &mut MultilineBuffer<'_>, blocks: &mut Blocks<'_>, n: usize) {
+        let mut n = n;
+        while n > 0 {
+            let is_new_block = blocks.current.is_none();
+            let mut block = blocks.next_block().expect("Must never happen");
+            if is_new_block {
+                buf.buf.push_str(buf.prefix);
+                let _ = buf
+                    .buf
+                    .write_fmt(format_args!("{}", block.get_style().start()));
+            }
+
+            let (read_count, read_bytes) = buf.read_chars(&block, n);
+
+            if block.pos + read_bytes == block.get_origin().len() {
+                let _ = buf
+                    .buf
+                    .write_fmt(format_args!("{}", block.get_style().end()));
+            } else {
+                block.pos += read_bytes;
+                blocks.current = Some(block);
+            }
+
+            n -= read_count;
+        }
+    }
+
+    pub(super) fn read_chars_unchecked(
+        buf: &mut MultilineBuffer<'_>,
+        blocks: &mut Blocks<'_>,
+        n: usize,
+    ) {
+        let mut n = n;
+        while n > 0 {
+            let is_new_block = blocks.current.is_none();
+            let mut block = blocks.next_block().expect("Must never happen");
+
+            if is_new_block {
+                buf.buf.push_str(buf.prefix);
+                let _ = buf
+                    .buf
+                    .write_fmt(format_args!("{}", block.get_style().start()));
+            }
+
+            let (read_count, read_bytes) = buf.read_chars_unchecked(&block, n);
+
+            if block.pos + read_bytes == block.get_origin().len() {
+                let _ = buf
+                    .buf
+                    .write_fmt(format_args!("{}", block.get_style().end()));
+            } else {
+                block.pos += read_bytes;
+                blocks.current = Some(block);
+            }
+
+            n -= read_count;
+        }
+    }
+
+    pub(super) fn handle_word(
+        buf: &mut MultilineBuffer<'_>,
+        blocks: &mut Blocks<'_>,
+        word_chars: usize,
+        word_width: usize,
+        additional_read: usize,
+    ) {
+        if word_chars > 0 {
+            let has_line_space = word_width <= buf.available_width();
+            let is_word_too_big = word_width > buf.max_width();
+
+            if is_word_too_big {
+                read_chars(buf, blocks, word_chars + additional_read);
+            } else if has_line_space {
+                read_chars_unchecked(buf, blocks, word_chars);
+                if additional_read > 0 {
+                    read_chars(buf, blocks, additional_read);
                 }
             } else {
-                // we can't say if the word is really fits in at this time because we may not have the whole word,
-                // but it's good enough.
-                let partial_word_width = word_length + c_width;
-                let is_word_small = partial_word_width <= width;
-                if is_word_small {
-                    // move it to other line
-
-                    if !is_empty_buf {
-                        // we don't fill the rest of the prev line here
-
-                        let sep = format!(
-                            "{}{}\n{}{}",
-                            block_style.end(),
-                            suffix,
-                            prefix,
-                            block_style.start()
-                        );
-                        buf.insert_str(word_begin_pos, &sep);
-                    }
-
-                    buf.push(c);
-                    line_width = partial_word_width;
-                    word_length += c_width;
-
-                    if is_empty_buf {
-                        is_empty_buf = false;
-                    }
-                } else {
-                    // it's not small so we can't do anything about it.
-
-                    if !is_empty_buf {
-                        split(&mut buf, block_style);
-                    }
-
-                    let is_big_char = c_width > width;
-                    if is_big_char {
-                        const REPLACEMENT: char = '\u{FFFD}';
-                        buf.extend(std::iter::repeat(REPLACEMENT).take(width));
-                        line_width = width;
-                        word_length = width;
-                    } else {
-                        buf.push(c);
-                        line_width = c_width;
-                        word_length += c_width;
-                    }
-
-                    if is_empty_buf {
-                        is_empty_buf = false;
-                    }
+                buf.set_next_line(&*blocks);
+                read_chars_unchecked(buf, blocks, word_chars);
+                if additional_read > 0 {
+                    read_chars(buf, blocks, additional_read);
                 }
             }
+
+            return;
         }
 
-        let _ = write!(buf, "{}", block_style.end());
+        let has_current_line_space = additional_read <= buf.available_width();
+        if has_current_line_space {
+            read_chars_unchecked(buf, blocks, additional_read);
+        } else {
+            buf.set_next_line(&*blocks);
+            read_chars_unchecked(buf, blocks, additional_read);
+        }
     }
-
-    if line_width > 0 {
-        buf.push_str(suffix);
-    }
-
-    // fill the remainings in a last line if it has any.
-    if line_width < width {
-        let rest = width - line_width;
-        buf.extend(std::iter::repeat(' ').take(rest));
-    }
-
-    buf
 }
 
 fn split_string_at(text: &str, at: usize) -> (&str, &str, (usize, usize)) {
@@ -759,7 +953,7 @@ mod tests {
 
         let text = "\u{1b}[36mJapanese “vacancy” button\u{1b}[0m";
 
-        assert_eq!(split_keeping_words(text, 2), "\u{1b}[36mJa\u{1b}[39m\n\u{1b}[36mpa\u{1b}[39m\n\u{1b}[36mne\u{1b}[39m\n\u{1b}[36mse\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36m“v\u{1b}[39m\n\u{1b}[36mac\u{1b}[39m\n\u{1b}[36man\u{1b}[39m\n\u{1b}[36mcy\u{1b}[39m\n\u{1b}[36m” \u{1b}[39m\n\u{1b}[36mbu\u{1b}[39m\n\u{1b}[36mtt\u{1b}[39m\n\u{1b}[36mon\u{1b}[39m");
+        assert_eq!(split_keeping_words(text, 2), "\u{1b}[36mJa\u{1b}[39m\n\u{1b}[36mpa\u{1b}[39m\n\u{1b}[36mne\u{1b}[39m\n\u{1b}[36mse\u{1b}[39m\n\u{1b}[36m “\u{1b}[39m\n\u{1b}[36mva\u{1b}[39m\n\u{1b}[36mca\u{1b}[39m\n\u{1b}[36mnc\u{1b}[39m\n\u{1b}[36my”\u{1b}[39m\n\u{1b}[36m b\u{1b}[39m\n\u{1b}[36mut\u{1b}[39m\n\u{1b}[36mto\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m ");
         assert_eq!(split_keeping_words(text, 1), "\u{1b}[36mJ\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mp\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36ms\u{1b}[39m\n\u{1b}[36me\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36m“\u{1b}[39m\n\u{1b}[36mv\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36ma\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m\n\u{1b}[36mc\u{1b}[39m\n\u{1b}[36my\u{1b}[39m\n\u{1b}[36m”\u{1b}[39m\n\u{1b}[36m \u{1b}[39m\n\u{1b}[36mb\u{1b}[39m\n\u{1b}[36mu\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mt\u{1b}[39m\n\u{1b}[36mo\u{1b}[39m\n\u{1b}[36mn\u{1b}[39m");
     }
 
@@ -791,13 +985,12 @@ mod tests {
                 "\u{1b}[37m  \u{1b}[39m",
                 "\u{1b}[37mOM\u{1b}[39m",
                 "\u{1b}[37mYA\u{1b}[39m",
-                "\u{1b}[37m \u{1b}[39m",
-                "\u{1b}[37mAn\u{1b}[39m",
-                "\u{1b}[37mdi\u{1b}[39m",
-                "\u{1b}[37mna\u{1b}[39m",
+                "\u{1b}[37m A\u{1b}[39m",
+                "\u{1b}[37mnd\u{1b}[39m",
+                "\u{1b}[37min\u{1b}[39m",
+                "\u{1b}[37ma \u{1b}[39m",
                 "\u{1b}[37m  \u{1b}[39m",
                 "\u{1b}[37m  \u{1b}[39m",
-                "\u{1b}[37m \u{1b}[39m",
                 "\u{1b}[37m38\u{1b}[39m",
                 "\u{1b}[37m24\u{1b}[39m",
                 "\u{1b}[37m90\u{1b}[39m",
@@ -917,30 +1110,29 @@ mod tests {
     #[cfg(feature = "color")]
     #[test]
     fn split_by_line_keeping_words_color_3_test() {
-        let split_keeping_words = |text, width| split_keeping_words(text, width, "", "");
-
+        let split = |text, width| split_keeping_words(text, width, "", "");
         assert_eq!(
-            split_keeping_words(
+            split(
                 "\u{1b}[37m🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻🚵🏻\u{1b}[0m",
                 3,
             ),
-            "\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m\n\u{1b}[37m🚵\u{1b}[39m\n\u{1b}[37m🏻\u{1b}[39m ",
+            "\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m\n\u{1b}[37m🚵�\u{1b}[39m",
         );
         assert_eq!(
-            split_keeping_words("\u{1b}[37mthis is a long sentence\u{1b}[0m", 7),
-            "\u{1b}[37mthis is\u{1b}[39m\n\u{1b}[37m a long\u{1b}[39m\n\u{1b}[37m \u{1b}[39m\n\u{1b}[37msentenc\u{1b}[39m\n\u{1b}[37me\u{1b}[39m      "
+            split("\u{1b}[37mthis is a long sentence\u{1b}[0m", 7),
+            "\u{1b}[37mthis is\u{1b}[39m\n\u{1b}[37m a long\u{1b}[39m\n\u{1b}[37m senten\u{1b}[39m\n\u{1b}[37mce\u{1b}[39m     "
         );
         assert_eq!(
-            split_keeping_words("\u{1b}[37mHello World\u{1b}[0m", 7),
-            "\u{1b}[37mHello \u{1b}[39m\n\u{1b}[37mWorld\u{1b}[39m  "
+            split("\u{1b}[37mHello World\u{1b}[0m", 7),
+            "\u{1b}[37mHello \u{1b}[39m \n\u{1b}[37mWorld\u{1b}[39m  "
         );
         assert_eq!(
-            split_keeping_words("\u{1b}[37mHello Wo\u{1b}[37mrld\u{1b}[0m", 7),
-            "\u{1b}[37mHello \u{1b}[39m\n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m  "
+            split("\u{1b}[37mHello Wo\u{1b}[37mrld\u{1b}[0m", 7),
+            "\u{1b}[37mHello \u{1b}[39m \n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m  "
         );
         assert_eq!(
-            split_keeping_words("\u{1b}[37mHello Wo\u{1b}[37mrld\u{1b}[0m", 8),
-            "\u{1b}[37mHello Wo\u{1b}[39m\n\u{1b}[37mrld\u{1b}[39m     "
+            split("\u{1b}[37mHello Wo\u{1b}[37mrld\u{1b}[0m", 8),
+            "\u{1b}[37mHello \u{1b}[39m  \n\u{1b}[37mWo\u{1b}[39m\u{1b}[37mrld\u{1b}[39m   "
         );
     }
 
@@ -1035,13 +1227,12 @@ mod tests {
                 "^\u{1b}[37m  \u{1b}[39m$",
                 "^\u{1b}[37mOM\u{1b}[39m$",
                 "^\u{1b}[37mYA\u{1b}[39m$",
-                "^\u{1b}[37m \u{1b}[39m$",
-                "^\u{1b}[37mAn\u{1b}[39m$",
-                "^\u{1b}[37mdi\u{1b}[39m$",
-                "^\u{1b}[37mna\u{1b}[39m$",
+                "^\u{1b}[37m A\u{1b}[39m$",
+                "^\u{1b}[37mnd\u{1b}[39m$",
+                "^\u{1b}[37min\u{1b}[39m$",
+                "^\u{1b}[37ma \u{1b}[39m$",
                 "^\u{1b}[37m  \u{1b}[39m$",
                 "^\u{1b}[37m  \u{1b}[39m$",
-                "^\u{1b}[37m \u{1b}[39m$",
                 "^\u{1b}[37m38\u{1b}[39m$",
                 "^\u{1b}[37m24\u{1b}[39m$",
                 "^\u{1b}[37m90\u{1b}[39m$",
@@ -1196,4 +1387,82 @@ mod tests {
             "\u{1b}[37mCreate bytes from the \u{1b}[39m\n\u{1b}[7m\u{1b}[34marg\u{1b}[27m\u{1b}[39m\u{1b}[37muments.\u{1b}[39m            "
         );
     }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn chunks_wrap_4() {
+        let text = "\u{1b}[37mReturns the floor of a number (l\u{1b}[0m\u{1b}[41;37marg\u{1b}[0m\u{1b}[37mest integer less than or equal to that number).\u{1b}[0m";
+
+        assert_eq!(
+            chunks(text, 10, "", ""),
+            [
+                "\u{1b}[37mReturns th\u{1b}[39m",
+                "\u{1b}[37me floor of\u{1b}[39m",
+                "\u{1b}[37m a number \u{1b}[39m",
+                "\u{1b}[37m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest i\u{1b}[39m",
+                "\u{1b}[37mnteger les\u{1b}[39m",
+                "\u{1b}[37ms than or \u{1b}[39m",
+                "\u{1b}[37mequal to t\u{1b}[39m",
+                "\u{1b}[37mhat number\u{1b}[39m",
+                "\u{1b}[37m).\u{1b}[39m",
+            ]
+        );
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn chunks_wrap_4_keeping_words() {
+        let text = "\u{1b}[37mReturns the floor of a number (l\u{1b}[0m\u{1b}[41;37marg\u{1b}[0m\u{1b}[37mest integer less than or equal to that number).\u{1b}[0m";
+        assert_eq!(
+            split_keeping_words(text, 10, "", ""),
+            concat!(
+                "\u{1b}[37mReturns \u{1b}[39m  \n",
+                "\u{1b}[37mthe floor \u{1b}[39m\n",
+                "\u{1b}[37mof a \u{1b}[39m     \n",
+                "\u{1b}[37mnumber \u{1b}[39m   \n",
+                "\u{1b}[37m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m \n",
+                "\u{1b}[37minteger \u{1b}[39m  \n",
+                "\u{1b}[37mless than \u{1b}[39m\n",
+                "\u{1b}[37mor equal \u{1b}[39m \n",
+                "\u{1b}[37mto that \u{1b}[39m  \n",
+                "\u{1b}[37mnumber).\u{1b}[39m  ",
+            )
+        );
+    }
 }
+
+//  \u{1b}[37mReturns \u{1b}[39m\n
+//  \u{1b}[37mthe floor \u{1b}[39m\n
+//  \u{1b}[37mof a \u{1b}[39m\n
+//  \u{1b}[37mnumber \u{1b}[39m\u{1b}[49m\n
+//  \u{1b}[37m\u{1b}[41m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m\n
+//  \u{1b}[37minteger \u{1b}[39m\n
+//  \u{1b}[37mless than \u{1b}[39m\n
+//  \u{1b}[37mor equal \u{1b}[39m\n
+//  \u{1b}[37mto that \u{1b}[39m\n
+//  \u{1b}[37mnumber).\u{1b}[39m  "
+
+//
+//
+
+//  \u{1b}[37mReturns \u{1b}[39m\n
+//  \u{1b}[37mthe floor \u{1b}[39m\n
+//  \u{1b}[37mof a \u{1b}[39m\n
+//  \u{1b}[37mnumber \u{1b}[39m\u{1b}[49m\n
+//  \u{1b}[37m\u{1b}[41m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest \u{1b}[39m\n
+//  \u{1b}[37minteger \u{1b}[39m\n
+//  \u{1b}[37mless than \u{1b}[39m\n
+//  \u{1b}[37mor equal \u{1b}[39m\n
+//  \u{1b}[37mto that \u{1b}[39m\n
+//  \u{1b}[37mnumber).\u{1b}[39m  "
+
+// "\u{1b}[37mReturns\u{1b}[37m \u{1b}[39m\n
+// \u{1b}[37mthe\u{1b}[37m floor\u{1b}[37m \u{1b}[39m\n
+// \u{1b}[37mof\u{1b}[37m a\u{1b}[37m \u{1b}[39m\n
+// \u{1b}[37mnumber\u{1b}[37m \u{1b}[39m\u{1b}[49m\n
+// \u{1b}[37m\u{1b}[41m(l\u{1b}[39m\u{1b}[37m\u{1b}[41marg\u{1b}[39m\u{1b}[49m\u{1b}[37mest\u{1b}[37m \u{1b}[39m\n
+// \u{1b}[37minteger\u{1b}[37m \u{1b}[39m\n
+// \u{1b}[37mless\u{1b}[37m than\u{1b}[37m \u{1b}[39m\n
+// \u{1b}[37mor\u{1b}[37m equal\u{1b}[37m \u{1b}[39m\n
+// \u{1b}[37mto\u{1b}[37m that\u{1b}[37m \u{1b}[39m\n
+// \u{1b}[37mnumber).\u{1b}[39m  "

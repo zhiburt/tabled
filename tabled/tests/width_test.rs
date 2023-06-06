@@ -341,7 +341,6 @@ fn max_width_wrapped_keep_words_long_word() {
         .with(Modify::new(Segment::all()).with(Width::wrap(17).keep_words()))
         .to_string();
 
-    #[cfg(not(feature = "color"))]
     assert_eq!(
         table,
         static_table!(
@@ -350,18 +349,6 @@ fn max_width_wrapped_keep_words_long_word() {
             "| this is a long se |"
             "| ntencesentencesen |"
             "| tence             |"
-        )
-    );
-
-    #[cfg(feature = "color")]
-    assert_eq!(
-        table,
-        static_table!(
-            "| &str              |"
-            "|-------------------|"
-            "| this is a long    |"
-            "| sentencesentences |"
-            "| entence           |"
         )
     );
 }
@@ -384,14 +371,22 @@ fn max_width_wrapped_keep_words_long_word_color() {
     assert_eq!(
         ansi_str::AnsiStr::ansi_strip(&table),
         static_table!(
-            "| String            |\n|-------------------|\n| this is a long    |\n| sentencesentences |\n| entence           |"
+            "| String            |"
+            "|-------------------|"
+            "| this is a long se |"
+            "| ntencesentencesen |"
+            "| tence             |"
         )
     );
 
     assert_eq!(
         table,
         static_table!(
-            "| String            |\n|-------------------|\n| \u{1b}[32m\u{1b}[40mthis is a long \u{1b}[39m\u{1b}[49m   |\n| \u{1b}[32m\u{1b}[40msentencesentences\u{1b}[39m\u{1b}[49m |\n| \u{1b}[32m\u{1b}[40mentence\u{1b}[39m\u{1b}[49m           |"
+            "| String            |"
+            "|-------------------|"
+            "| \u{1b}[32m\u{1b}[40mthis is a long se\u{1b}[39m\u{1b}[49m |"
+            "| \u{1b}[32m\u{1b}[40mntencesentencesen\u{1b}[39m\u{1b}[49m |"
+            "| \u{1b}[32m\u{1b}[40mtence\u{1b}[39m\u{1b}[49m             |"
         )
     );
 }
@@ -2307,30 +2302,18 @@ fn wrap_keeping_words_0() {
         8
     );
 
-    #[cfg(feature = "color")]
-    let expected = static_table!(
-        "+------+"
-        "| 0    |"
-        "+------+"
-        "| Hell |"
-        "| o    |"
-        "| worl |"
-        "| d    |"
-        "+------+"
+    assert_eq!(
+        table,
+        static_table!(
+            "+------+"
+            "| 0    |"
+            "+------+"
+            "| Hell |"
+            "| o wo |"
+            "| rld  |"
+            "+------+"
+        )
     );
-
-    #[cfg(not(feature = "color"))]
-    let expected = static_table!(
-        "+------+"
-        "| 0    |"
-        "+------+"
-        "| Hell |"
-        "| o wo |"
-        "| rld  |"
-        "+------+"
-    );
-
-    assert_eq!(table, expected,);
 }
 
 #[test]
@@ -2732,22 +2715,106 @@ mod derived {
         );
         assert_eq!(
             table(&text),
-            "+-------+-------+\n\
-             | name  | is_hy |\n\
-             |       | perli |\n\
-             |       | nk    |\n\
-             +-------+-------+\n\
-             | asd   | true  |\n\
-             | Debia |       |\n\
-             | n 2   |       |\n\
-             | links |       |\n\
-             |  in a |       |\n\
-             |       |       |\n\
-             | strin |       |\n\
-             | g     |       |\n\
-             | Debia |       |\n\
-             | n     |       |\n\
-             +-------+-------+"
+            static_table!(
+                "+-------+-------+"
+                "| name  | is_hy |"
+                "|       | perli |"
+                "|       | nk    |"
+                "+-------+-------+"
+                "| asd D | true  |"
+                "| ebian |       |"
+                "|  2    |       |"
+                "| links |       |"
+                "|  in a |       |"
+                "|  stri |       |"
+                "| ng De |       |"
+                "| bian  |       |"
+                "+-------+-------+"
+            )
+        );
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn hyperlinks_with_color() {
+        use owo_colors::OwoColorize;
+
+        #[derive(Tabled)]
+        struct Distribution {
+            name: String,
+            is_hyperlink: bool,
+        }
+
+        let table = |text: &str| {
+            let data = [Distribution {
+                name: text.to_owned(),
+                is_hyperlink: true,
+            }];
+            tabled::Table::new(data)
+                .with(
+                    Modify::new(Segment::all())
+                        .with(Width::wrap(6).keep_words())
+                        .with(Alignment::left()),
+                )
+                .to_string()
+        };
+
+        let text = format_osc8_hyperlink(
+            "https://www.debian.org/",
+            "Debian".red().to_string().as_str(),
+        );
+        assert_eq!(
+            table(&text),
+            static_table!(
+                "+--------+--------+"
+                "| name   | is_hyp |"
+                "|        | erlink |"
+                "+--------+--------+"
+                "| \u{1b}]8;;https://www.debian.org/\u{1b}\\\u{1b}[31mDebian\u{1b}[39m\u{1b}]8;;\u{1b}\\ | true   |"
+                "+--------+--------+"
+            )
+        );
+
+        // if there's more text than a link it will be ignored
+        let text = format!(
+            "{} :link",
+            format_osc8_hyperlink("https://www.debian.org/", "Debian"),
+        );
+        assert_eq!(
+            table(&text),
+            static_table!(
+                "+--------+--------+"
+                "| name   | is_hyp |"
+                "|        | erlink |"
+                "+--------+--------+"
+                "| Debian | true   |"
+                "|  :link |        |"
+                "+--------+--------+"
+            )
+        );
+
+        let text = format!(
+            "asd {} 2 links in a string {}",
+            format_osc8_hyperlink("https://www.debian.org/", "Debian"),
+            format_osc8_hyperlink("https://www.wikipedia.org/", "Debian"),
+        );
+        assert_eq!(
+            table(&text),
+            static_table!(
+                "+--------+--------+"
+                "| name   | is_hyp |"
+                "|        | erlink |"
+                "+--------+--------+"
+                "| asd    | true   |"
+                "| Debian |        |"
+                "|  2     |        |"
+                "| links  |        |"
+                "| in a   |        |"
+                "| string |        |"
+                "|        |        |"
+                "| Debian |        |"
+                "+--------+--------+"
+            )
         );
     }
 }
