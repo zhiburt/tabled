@@ -1,6 +1,6 @@
 [package]
 name = "tabled"
-version = "0.12.1"
+version = "0.12.2"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."
