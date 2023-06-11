@@ -45,13 +45,19 @@ pub struct Truncate<'a, W = usize, P = PriorityNone> {
     multiline: bool,
     _priority: PhantomData<P>,
 }
-
+#[cfg(feature = "color")]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct TruncateSuffix<'a> {
     text: Cow<'a, str>,
     limit: SuffixLimit,
-    #[cfg(feature = "color")]
     try_color: bool,
+}
+
+#[cfg(not(feature = "color"))]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+struct TruncateSuffix<'a> {
+    text: Cow<'a, str>,
+    limit: SuffixLimit,
 }
 
 impl Default for TruncateSuffix<'_> {
