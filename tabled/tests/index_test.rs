@@ -3,10 +3,7 @@
 use std::iter::FromIterator;
 
 use tabled::{builder::Builder, Table};
-
-use crate::util::{create_vector, test_table};
-
-mod util;
+use testing::{create_vector, test_table};
 
 test_table!(
     builder_index,

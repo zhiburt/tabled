@@ -5,10 +5,7 @@ use tabled::settings::{
     object::Segment,
     Alignment, Modify, Span, Style,
 };
-
-use crate::util::{create_vector, new_table, test_table};
-
-mod util;
+use testing::{create_vector, new_table, test_table, Obj};
 
 test_table!(
     alignment_per_line,
@@ -252,28 +249,28 @@ test_table!(
     "           |          | \u{1b}[44m/en\u{1b}[49m      |          "
 );
 
-fn multiline_data1() -> Vec<util::Obj<3_usize>> {
+fn multiline_data1() -> Vec<Obj<3_usize>> {
     let mut data = create_vector::<3, 3>();
     data[1][0] = String::from("asd\n21213123\n\n   asdasd\n\n");
     data[2][2] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
     data
 }
 
-fn multiline_data2() -> Vec<util::Obj<3_usize>> {
+fn multiline_data2() -> Vec<Obj<3_usize>> {
     let mut data = create_vector::<3, 3>();
     data[1][0] = String::from("\n\n\nasd\n21213123   asdasd\n\n\n");
     data[2][2] = String::from("https://\nwww\n.\nredhat\n.com\n/en");
     data
 }
 
-fn tab_data1() -> Vec<util::Obj<3_usize>> {
+fn tab_data1() -> Vec<Obj<3_usize>> {
     let mut data = create_vector::<3, 3>();
     data[1][0] = String::from("123\t123\tasdasd");
     data[2][2] = String::from("htt\tps://\nwww\n.\nred\that\n.c\tom\n/en");
     data
 }
 
-fn tab_data2() -> Vec<util::Obj<3_usize>> {
+fn tab_data2() -> Vec<Obj<3_usize>> {
     let mut data = create_vector::<3, 3>();
     data[0][0] = String::from("\tH\t\tello\tWorld");
     data[1][0] = String::from("123\t123\tasdasd");
@@ -282,7 +279,7 @@ fn tab_data2() -> Vec<util::Obj<3_usize>> {
 }
 
 #[cfg(feature = "color")]
-fn colored_data() -> Vec<util::Obj<3_usize>> {
+fn colored_data() -> Vec<Obj<3_usize>> {
     use owo_colors::OwoColorize;
     let mut data = create_vector::<3, 3>();
     data[1][0] = "asd\n21213123\n\n   asdasd\n\n".red().to_string();

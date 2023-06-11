@@ -7,10 +7,7 @@ use tabled::{
     settings::{formatting::Charset, Height, Modify, Padding, Settings, Style, Width},
     Table,
 };
-
-use crate::util::{create_table, test_table};
-
-mod util;
+use testing::{create_table, test_table};
 
 mod default_types {
     use super::*;
@@ -273,7 +270,7 @@ test_table!(
 
 test_table!(
     build_table_from_iterator,
-    create_table::<3, 3>().with(Style::psql()),
+    Matrix::full(3, 3).with(Style::psql()),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    "

@@ -1,11 +1,9 @@
 #![cfg(feature = "std")]
 
 use std::iter::FromIterator;
+
 use tabled::{builder::Builder, settings::split::Split, Table};
-
-use crate::util::test_table;
-
-mod util;
+use testing::test_table;
 
 test_table!(
     split_column_test,

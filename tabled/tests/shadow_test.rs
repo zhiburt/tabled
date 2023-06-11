@@ -1,6 +1,6 @@
 #![cfg(feature = "std")]
 
-use crate::util::{new_table, test_table};
+use testing::{new_table, test_table};
 use tabled::settings::{Shadow, Style};
 
 #[cfg(feature = "color")]
@@ -9,8 +9,6 @@ use owo_colors::OwoColorize;
 use std::convert::TryFrom;
 #[cfg(feature = "color")]
 use tabled::settings::Color;
-
-mod util;
 
 test_table!(
     test_shadow_bottom_right_0,

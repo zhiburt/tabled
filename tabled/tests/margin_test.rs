@@ -1,14 +1,11 @@
 #![cfg(feature = "std")]
 
 use tabled::settings::{object::Cell, Border, Highlight, Margin, Modify, Span, Style, Width};
-
-use crate::util::{create_table, init_table, is_lines_equal, static_table, test_table};
-
-mod util;
+use testing::{create_table, init_table, is_lines_equal, static_table, test_table};
 
 test_table!(
     margin_with_table_based_on_grid_borders,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::extended())
         .with(Highlight::new(Cell::new(0, 0), Border::filled('+')))
         .with(Highlight::new(Cell::new(1, 1), Border::filled('*')))
@@ -67,7 +64,7 @@ test_table!(
 
 #[test]
 fn table_with_margin_and_min_width() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Cell::new(1, 1)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^'))
@@ -91,7 +88,7 @@ fn table_with_margin_and_min_width() {
 
 #[test]
 fn table_with_margin_and_max_width() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Cell::new(1, 1)).with(Span::column(2)))
         .with(Margin::new(1, 1, 1, 1).fill('>', '<', 'V', '^'))
@@ -135,7 +132,7 @@ fn table_0_spanned_with_width() {
 fn margin_color_test_not_colored_feature() {
     use tabled::settings::Color;
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^').colorize(
             Color::BG_GREEN,
@@ -168,7 +165,7 @@ fn margin_color_test() {
     use std::convert::TryFrom;
     use tabled::settings::Color;
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Margin::new(2, 2, 2, 2).fill('>', '<', 'V', '^').colorize(
             Color::try_from(" ".red().bold().to_string()).unwrap(),

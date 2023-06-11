@@ -5,13 +5,11 @@ use tabled::settings::{
     Alignment, Format, Modify, Padding, Style,
 };
 
-use crate::util::{create_table, init_table, test_table};
-
-mod util;
+use testing::{create_table, init_table, test_table};
 
 test_table!(
     formatting_full_test,
-    create_table::<3, 3>().with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]")))),
+    Matrix::full(3, 3).with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]")))),
     "+-----+------------+------------+------------+"
     "| [N] | [column 0] | [column 1] | [column 2] |"
     "+-----+------------+------------+------------+"
@@ -25,7 +23,7 @@ test_table!(
 
 test_table!(
     formatting_head_test,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(Format::content(|s| format!(":{s}")))),
     "| :N | :column 0 | :column 1 | :column 2 |"
@@ -37,7 +35,7 @@ test_table!(
 
 test_table!(
     formatting_row_test,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Rows::new(1..)).with(Format::content(|s| format!("<{s}>")))),
     "  N  | column 0 | column 1 | column 2 "
@@ -49,7 +47,7 @@ test_table!(
 
 test_table!(
     formatting_column_test,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Columns::single(0)).with(Format::content(|s| format!("(x) {s}")))),
     " (x) N | column 0 | column 1 | column 2 "
@@ -85,7 +83,7 @@ test_table!(
 
 test_table!(
     formatting_cell_test,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Cell::new(0, 0)).with(Format::content(|s| format!("(x) {s}"))))
         .with(Modify::new(Cell::new(0, 1)).with(Format::content(|s| format!("(x) {s}"))))
@@ -99,7 +97,7 @@ test_table!(
 
 test_table!(
     formatting_combination_and_test,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(
             Modify::new(Columns::single(0).and(Rows::single(0)))
@@ -114,7 +112,7 @@ test_table!(
 
 test_table!(
     formatting_combination_not_test,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(
             Modify::new(Columns::single(0).and(Rows::single(0)).not(Cell::new(0, 0)))
@@ -129,7 +127,7 @@ test_table!(
 
 test_table!(
     formatting_combination_inverse_test,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Columns::single(0).inverse()).with(Format::content(|s| format!("(x) {s}")))),
     " N | (x) column 0 | (x) column 1 | (x) column 2 "
@@ -141,7 +139,7 @@ test_table!(
 
 test_table!(
     formatting_combination_intersect_test,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(
             Modify::new(Columns::new(1..3).intersect(Rows::new(1..3)))
@@ -156,7 +154,7 @@ test_table!(
 
 test_table!(
     formatting_using_lambda_test,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(Format::content(|s| format!(":{s}")))),
     "| :N | :column 0 | :column 1 | :column 2 |"
@@ -168,7 +166,7 @@ test_table!(
 
 test_table!(
     formatting_using_function_test,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(Format::content(str::to_uppercase))),
     "| N | COLUMN 0 | COLUMN 1 | COLUMN 2 |"
@@ -180,7 +178,7 @@ test_table!(
 
 test_table!(
     format_with_index,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Rows::first()).with(Format::positioned(|a, (b, c)| match (b, c) {
             (0, 0) => "(0, 0)".to_string(),
@@ -197,7 +195,7 @@ test_table!(
 
 test_table!(
     format_doesnt_change_padding,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
         .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]")))),
@@ -214,7 +212,7 @@ test_table!(
 
 test_table!(
     formatting_content_str_test,
-    create_table::<3, 3>().with(Modify::new(Segment::all()).with(Format::content(|_| String::from("Hello World")))),
+    Matrix::full(3, 3).with(Modify::new(Segment::all()).with(Format::content(|_| String::from("Hello World")))),
     "+-------------+-------------+-------------+-------------+"
     "| Hello World | Hello World | Hello World | Hello World |"
     "+-------------+-------------+-------------+-------------+"
@@ -233,7 +231,7 @@ mod color {
 
     test_table!(
         color_test,
-        create_table::<3, 3>()
+        Matrix::full(3, 3)
             .with(Style::psql())
             .with(
                 Modify::new(Columns::new(..1).and(Columns::new(2..)))

@@ -4,9 +4,7 @@ use std::iter::FromIterator;
 
 use tabled::builder::Builder;
 
-use util::test_table;
-
-mod util;
+use testing::test_table;
 
 test_table!(
     push_record,

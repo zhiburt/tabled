@@ -1,10 +1,7 @@
 #![cfg(feature = "std")]
 
-mod util;
-
 use tabled::{settings::merge::Merge, Table};
-
-use crate::util::test_table;
+use testing::test_table;
 
 test_table!(
     merge_horizontal,

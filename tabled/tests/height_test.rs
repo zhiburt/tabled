@@ -1,7 +1,5 @@
 #![cfg(feature = "std")]
 
-mod util;
-
 #[cfg(feature = "color")]
 use owo_colors::OwoColorize;
 
@@ -10,11 +8,11 @@ use tabled::settings::{
     Alignment, Format, Height, Modify, Style,
 };
 
-use util::{create_table, test_table};
+use testing::{create_table, test_table};
 
 test_table!(
     cell_height_increase,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(
             Modify::new(Columns::first())
@@ -40,7 +38,7 @@ test_table!(
 
 test_table!(
     table_height_increase,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::first()).with(Alignment::center_vertical()))
         .with(Height::increase(10)),
@@ -58,7 +56,7 @@ test_table!(
 
 test_table!(
     cell_height_increase_zero,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(
             Modify::new(Columns::first())
@@ -76,7 +74,7 @@ test_table!(
 
 test_table!(
     table_height_increase_zero,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::first()).with(Alignment::center_vertical()))
         .with(Height::increase(0)),
@@ -89,7 +87,7 @@ test_table!(
 
 test_table!(
     cell_height_limit,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n"))))
         .with(
@@ -108,7 +106,7 @@ test_table!(
 
 test_table!(
     table_height_limit,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n"))))
         .with(Modify::new(Columns::first()).with(Alignment::center_vertical()))
@@ -127,7 +125,7 @@ test_table!(
 
 test_table!(
     table_height_limit_style_change_after,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n"))))
         .with(Modify::new(Columns::first()).with(Alignment::center_vertical()))
@@ -143,7 +141,7 @@ test_table!(
 
 test_table!(
     cell_height_limit_zero,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n"))))
         .with(
@@ -162,7 +160,7 @@ test_table!(
 
 test_table!(
     table_height_limit_zero,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(
             Modify::new(Columns::new(..))
@@ -174,7 +172,7 @@ test_table!(
 
 test_table!(
     table_height_limit_zero_1,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Height::limit(0))
         .with(
@@ -202,7 +200,7 @@ test_table!(
 #[cfg(feature = "color")]
 test_table!(
     cell_height_limit_colored,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n").red().to_string())))
         .with(
@@ -222,7 +220,7 @@ test_table!(
 #[cfg(feature = "color")]
 test_table!(
     table_height_limit_colored,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::first()).with(Format::content(|s| format!("xxxx\n{s}xxxx\nxxxx\n").blue().on_green().to_string())))
         .with(Modify::new(Columns::first()).with(Alignment::center_vertical()))

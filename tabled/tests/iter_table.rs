@@ -1,13 +1,12 @@
 #![cfg(feature = "std")]
 
-mod util;
-
 use tabled::tables::IterTable;
-use util::{create_matrix, test_table};
+
+use testing::{create_matrix, test_table};
 
 test_table!(
     iter_table,
-    IterTable::new(create_matrix::<3, 3>()),
+    IterTable::new(Matrix::new(3, 3)),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "+-----+-----+-----+"
@@ -19,7 +18,7 @@ test_table!(
 
 test_table!(
     iter_table_cols,
-    IterTable::new(create_matrix::<3, 3>()).columns(3),
+    IterTable::new(Matrix::new(3, 3)).columns(3),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "+-----+-----+-----+"
@@ -31,7 +30,7 @@ test_table!(
 
 test_table!(
     iter_table_cols_less,
-    IterTable::new(create_matrix::<3, 3>()).columns(2),
+    IterTable::new(Matrix::new(3, 3)).columns(2),
     "+-----+-----+"
     "| 0-0 | 0-1 |"
     "+-----+-----+"
@@ -43,7 +42,7 @@ test_table!(
 
 test_table!(
     iter_table_cols_zero,
-    IterTable::new(create_matrix::<3, 3>()).columns(0),
+    IterTable::new(Matrix::new(3, 3)).columns(0),
     ""
 );
 
@@ -65,7 +64,7 @@ test_table!(
 
 test_table!(
     iter_table_width,
-    IterTable::new(create_matrix::<3, 3>()).width(2),
+    IterTable::new(Matrix::new(3, 3)).width(2),
     "+----+----+----+"
     "| 0- | 0- | 0- |"
     "+----+----+----+"
@@ -77,7 +76,7 @@ test_table!(
 
 test_table!(
     iter_table_height_does_not_work,
-    IterTable::new(create_matrix::<3, 3>()).height(5),
+    IterTable::new(Matrix::new(3, 3)).height(5),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "|     |     |     |"
@@ -101,7 +100,7 @@ test_table!(
 
 test_table!(
     iter_table_sniff_0,
-    IterTable::new(create_matrix::<3, 3>()).sniff(0),
+    IterTable::new(Matrix::new(3, 3)).sniff(0),
     ""
 );
 

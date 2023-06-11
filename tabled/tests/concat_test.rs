@@ -2,18 +2,13 @@
 
 use tabled::settings::{Concat, Style};
 
-use crate::util::{create_table, init_table, test_table};
-
-mod util;
+use testing::{test_table, Matrix};
 
 test_table!(
     join_vertical_0,
-    {
-        let mut table1 = init_table::<2, 3, _, _>([((0, 0), "123")]);
-        table1.with(Style::psql());
-        let table2 = create_table::<2, 3>();
-        table1.with(Concat::vertical(table2)).to_string()
-    },
+    Matrix::full(2, 3).insert((0, 0), "123").with(Style::psql())
+        .with(Concat::vertical(Matrix::full(2, 3).to_table()))
+        .to_string(),
     "  N  | column 0 | column 1 | column 2 "
     "-----+----------+----------+----------"
     " 123 |   0-0    |   0-1    |   0-2    "
@@ -26,10 +21,9 @@ test_table!(
 test_table!(
     join_vertical_1,
     {
-        let mut table1 = init_table::<2, 3, _, _>([((0, 0), "123")]);
-        table1.with(Style::psql());
-        let mut table2 = create_table::<2, 3>();
-        table2.with(Concat::vertical(table1)).to_string()
+        Matrix::full(2, 3)
+        .with(Concat::vertical(Matrix::full(2, 3).insert((0, 0), "123").with(Style::psql())))
+        .to_string(),
     },
     "+-----+----------+----------+----------+"
     "|  N  | column 0 | column 1 | column 2 |"
@@ -102,7 +96,7 @@ test_table!(
     {
         let mut table1 = create_table::<2, 3>();
         table1.with(Style::psql());
-        let mut table2 = create_table::<3, 3>();
+        let mut table2 = Matrix::full(3, 3);
         table2.with(Style::psql());
         table1.with(Concat::horizontal(table2)).to_string()
     },
@@ -118,7 +112,7 @@ test_table!(
     {
         let mut table1 = create_table::<2, 3>();
         table1.with(Style::psql());
-        let mut table2 = create_table::<3, 3>();
+        let mut table2 = Matrix::full(3, 3);
         table2.with(Style::psql());
         table1.with(Concat::horizontal(table2).default_cell("NaN")).to_string()
     },

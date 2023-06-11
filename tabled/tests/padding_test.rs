@@ -4,14 +4,11 @@ use tabled::settings::{
     object::{Rows, Segment},
     Alignment, Modify, Padding, Style,
 };
-
-use crate::util::{create_table, test_table};
-
-mod util;
+use testing::{create_table, test_table};
 
 test_table!(
     padding,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 0, 2))),
@@ -30,7 +27,7 @@ test_table!(
 
 test_table!(
     padding_with_set_characters,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Padding::new(1, 2, 1, 1).fill('>', '<', 'V', '^'))),
     "VVVV|VVVVVVVVVVV|VVVVVVVVVVV|VVVVVVVVVVV"
@@ -50,7 +47,7 @@ test_table!(
 
 test_table!(
     padding_with_set_characters_and_zero_ident,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Padding::zero().fill('>', '<', '^', 'V'))),
     "N|column 0|column 1|column 2"
@@ -62,7 +59,7 @@ test_table!(
 
 test_table!(
     padding_multiline,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 1, 1))),
     " N | column 0 | column 1 | column 2 "
@@ -80,7 +77,7 @@ test_table!(
 
 test_table!(
     padding_multiline_with_vertical_alignment,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::center()).with(Alignment::center_vertical()))
         .with(Modify::new(Rows::new(1..)).with(Padding::new(1, 1, 1, 1))),
@@ -112,7 +109,7 @@ test_table!(
             Color::try_from(' '.on_green().to_string()).unwrap(),
         );
 
-        create_table::<3, 3>()
+        Matrix::full(3, 3)
             .with(Style::psql())
             .with(Modify::new(Rows::new(1..)).with(padding))
     },
@@ -121,7 +118,7 @@ test_table!(
 
 test_table!(
     padding_table,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Padding::new(1, 1, 0, 2)),
     " N | column 0 | column 1 | column 2 "

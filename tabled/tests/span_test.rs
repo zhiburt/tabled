@@ -3,9 +3,9 @@
 
 use std::iter::FromIterator;
 
-use papergrid::config::Position;
 use tabled::{
     builder::Builder,
+    grid::config::Position,
     settings::{
         object::{Columns, Segment},
         style::{Border, BorderSpanCorrection, Style},
@@ -13,14 +13,11 @@ use tabled::{
     },
     Table,
 };
-
-use crate::util::{create_table, init_table, new_table, static_table, test_table};
-
-mod util;
+use testing::{create_table, init_table, new_table, static_table, test_table};
 
 test_table!(
     span_column_test_0,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Columns::single(0)).with(Span::column(2))),
@@ -33,7 +30,7 @@ test_table!(
 
 test_table!(
     span_column_test_1,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Columns::new(1..2)).with(Span::column(2))),
@@ -46,7 +43,7 @@ test_table!(
 
 test_table!(
     span_column_test_2,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Columns::single(0)).with(Span::column(4))),
@@ -59,7 +56,7 @@ test_table!(
 
 test_table!(
     cell_span_test_0,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new((0, 0)).with(Span::column(2))),
@@ -72,7 +69,7 @@ test_table!(
 
 test_table!(
     cell_span_test_1,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new((1, 0)).with(Span::column(2))),
@@ -85,7 +82,7 @@ test_table!(
 
 test_table!(
     cell_span_test_2,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((2, 0)).with(Span::column(2))),
     " N | column 0 | column 1 | column 2 "
@@ -97,7 +94,7 @@ test_table!(
 
 test_table!(
     cell_span_test_3,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new((3, 0)).with(Span::column(2))),
@@ -110,7 +107,7 @@ test_table!(
 
 test_table!(
     cell_span_test_4,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new((0, 1)).with(Span::column(2))),
@@ -123,7 +120,7 @@ test_table!(
 
 test_table!(
     cell_span_test_5,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new((1, 1)).with(Span::column(2))),
@@ -136,7 +133,7 @@ test_table!(
 
 test_table!(
     cell_span_test_6,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new((2, 1)).with(Span::column(2))),
@@ -149,7 +146,7 @@ test_table!(
 
 test_table!(
     cell_span_test_7,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new((3, 1)).with(Span::column(2))),
@@ -162,7 +159,7 @@ test_table!(
 
 test_table!(
     cell_span_test_8,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((0, 2)).with(Span::column(2))),
     " N | column 0 | column 1  "
@@ -174,7 +171,7 @@ test_table!(
 
 test_table!(
     cell_span_test_9,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((1, 2)).with(Span::column(2))),
     " N | column 0 | column 1 | column 2 "
@@ -186,7 +183,7 @@ test_table!(
 
 test_table!(
     cell_span_test_10,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((2, 2)).with(Span::column(2))),
     " N | column 0 | column 1 | column 2 "
@@ -198,7 +195,7 @@ test_table!(
 
 test_table!(
     cell_span_test_11,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((3, 2)).with(Span::column(2))),
     " N | column 0 | column 1 | column 2 "
@@ -227,7 +224,7 @@ test_table!(
 
 test_table!(
     indent_works_in_spaned_columns,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Padding::new(3, 0, 0, 0)))
         .with(Modify::new(Segment::all()).with(Alignment::left()))
@@ -403,7 +400,7 @@ test_table!(
 fn span_column_exceeds_boundaries_test() {
     // todo: determine if it's the right behaiviour
 
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Modify::new(Columns::single(0)).with(Span::column(100)))
         .to_string();
 }
@@ -415,7 +412,7 @@ fn span_cell_exceeds_boundaries_test() {
     //
     // todo: determine if it's the right behaiviour
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new((0, 0)).with(Span::column(20)))
@@ -432,7 +429,7 @@ fn span_cell_exceeds_boundaries_test() {
         )
     );
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new((1, 1)).with(Span::column(20)))
@@ -449,7 +446,7 @@ fn span_cell_exceeds_boundaries_test() {
         )
     );
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new((1, 0)).with(Span::column(20)))
@@ -470,7 +467,7 @@ fn span_cell_exceeds_boundaries_test() {
 #[test]
 #[ignore = "span zero not yet decided"]
 fn span_zero_test() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((0, 0)).with(Span::column(0)))
         .to_string();
@@ -486,7 +483,7 @@ fn span_zero_test() {
         )
     );
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((0, 1)).with(Span::column(0)))
         .to_string();
@@ -502,7 +499,7 @@ fn span_zero_test() {
         )
     );
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((0, 2)).with(Span::column(0)))
         .to_string();
@@ -518,7 +515,7 @@ fn span_zero_test() {
         )
     );
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((0, 3)).with(Span::column(0)))
         .to_string();
@@ -534,7 +531,7 @@ fn span_zero_test() {
         )
     );
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((0, 4)).with(Span::column(0)))
         .to_string();
@@ -550,7 +547,7 @@ fn span_zero_test() {
         )
     );
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::psql())
         .with(Modify::new((0, 0)).with(Span::column(0)))
         .with(Modify::new((1, 1)).with(Span::column(0)))
@@ -590,7 +587,7 @@ mod row {
 
     #[test]
     fn span_row_test() {
-        let table = create_table::<3, 3>();
+        let table = Matrix::full(3, 3);
         {
             let table_str = table
                 .clone()
@@ -660,7 +657,7 @@ mod row {
 
     #[test]
     fn cell_span_test() {
-        let table = create_table::<3, 3>();
+        let table = Matrix::full(3, 3);
         {
             // first column cells row span = 2
 
@@ -1099,7 +1096,7 @@ fn highlight_row_col_span_test() {
 
 test_table!(
     column_span_bigger_then_max,
-    create_table::<3, 3>().with(Modify::new((0, 0)).with(Span::column(100))),
+    Matrix::full(3, 3).with(Modify::new((0, 0)).with(Span::column(100))),
     "+---+-----+-----+-----+"
     "|          N          |"
     "+---+-----+-----+-----+"
@@ -1113,7 +1110,7 @@ test_table!(
 
 test_table!(
     row_span_bigger_then_max,
-    create_table::<3, 3>().with(Modify::new((0, 0)).with(Span::row(100))),
+    Matrix::full(3, 3).with(Modify::new((0, 0)).with(Span::row(100))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+   +----------+----------+----------+"
@@ -1127,7 +1124,7 @@ test_table!(
 
 test_table!(
     column_span_invalid_position_row,
-    create_table::<3, 3>().with(Modify::new((1000, 0)).with(Span::column(2))),
+    Matrix::full(3, 3).with(Modify::new((1000, 0)).with(Span::column(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -1141,7 +1138,7 @@ test_table!(
 
 test_table!(
     column_span_invalid_position_column,
-    create_table::<3, 3>().with(Modify::new((0, 1000)).with(Span::column(2))),
+    Matrix::full(3, 3).with(Modify::new((0, 1000)).with(Span::column(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -1155,7 +1152,7 @@ test_table!(
 
 test_table!(
     column_span_invalid_position_row_and_column,
-    create_table::<3, 3>().with(Modify::new((1000, 1000)).with(Span::column(2))),
+    Matrix::full(3, 3).with(Modify::new((1000, 1000)).with(Span::column(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -1169,7 +1166,7 @@ test_table!(
 
 test_table!(
     row_span_invalid_position_row,
-    create_table::<3, 3>().with(Modify::new((1000, 0)).with(Span::row(2))),
+    Matrix::full(3, 3).with(Modify::new((1000, 0)).with(Span::row(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -1183,7 +1180,7 @@ test_table!(
 
 test_table!(
     row_span_invalid_position_column,
-    create_table::<3, 3>().with(Modify::new((0, 1000)).with(Span::row(2))),
+    Matrix::full(3, 3).with(Modify::new((0, 1000)).with(Span::row(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -1197,7 +1194,7 @@ test_table!(
 
 test_table!(
     row_span_invalid_position_row_and_column,
-    create_table::<3, 3>().with(Modify::new((1000, 1000)).with(Span::row(2))),
+    Matrix::full(3, 3).with(Modify::new((1000, 1000)).with(Span::row(2))),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"

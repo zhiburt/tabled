@@ -1,0 +1,12 @@
+[package]
+name = "testing"
+version = "0.0.0"
+edition = "2018"
+publish = false
+
+[features]
+macros = []
+table = ["tabled"]
+
+[dependencies]
+tabled = { path = "../tabled", optional = true }

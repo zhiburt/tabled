@@ -15,16 +15,14 @@ use tabled::{
     Table,
 };
 
-use crate::util::{create_table, init_table, static_table, test_table};
+use testing::{create_table, init_table, static_table, test_table};
 
 #[cfg(feature = "color")]
 use std::convert::TryFrom;
 
-mod util;
-
 test_table!(
     default_style,
-    create_table::<3, 3>().with(Style::ascii()),
+    Matrix::full(3, 3).with(Style::ascii()),
     "+---+----------+----------+----------+"
     "| N | column 0 | column 1 | column 2 |"
     "+---+----------+----------+----------+"
@@ -38,7 +36,7 @@ test_table!(
 
 test_table!(
     psql_style,
-    create_table::<3, 3>().with(Style::psql()),
+    Matrix::full(3, 3).with(Style::psql()),
     " N | column 0 | column 1 | column 2 "
     "---+----------+----------+----------"
     " 0 |   0-0    |   0-1    |   0-2    "
@@ -48,7 +46,7 @@ test_table!(
 
 test_table!(
     markdown_style,
-    create_table::<3, 3>().with(Style::markdown()),
+    Matrix::full(3, 3).with(Style::markdown()),
     "| N | column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
     "| 0 |   0-0    |   0-1    |   0-2    |"
@@ -58,7 +56,7 @@ test_table!(
 
 test_table!(
     modern_style,
-    create_table::<3, 3>().with(Style::modern()),
+    Matrix::full(3, 3).with(Style::modern()),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -72,7 +70,7 @@ test_table!(
 
 test_table!(
     rounded_style,
-    create_table::<3, 3>().with(Style::rounded()),
+    Matrix::full(3, 3).with(Style::rounded()),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -84,7 +82,7 @@ test_table!(
 
 test_table!(
     sharp_style,
-    create_table::<3, 3>().with(Style::sharp()),
+    Matrix::full(3, 3).with(Style::sharp()),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -96,7 +94,7 @@ test_table!(
 
 test_table!(
     modern_clean_style,
-    create_table::<3, 3>().with(Style::modern().remove_horizontal().horizontals(vec![HorizontalLine::new(1, Style::modern().get_horizontal())])),
+    Matrix::full(3, 3).with(Style::modern().remove_horizontal().horizontals(vec![HorizontalLine::new(1, Style::modern().get_horizontal())])),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -108,7 +106,7 @@ test_table!(
 
 test_table!(
     blank_style,
-    create_table::<3, 3>().with(Style::blank()),
+    Matrix::full(3, 3).with(Style::blank()),
     " N   column 0   column 1   column 2 "
     " 0     0-0        0-1        0-2    "
     " 1     1-0        1-1        1-2    "
@@ -117,7 +115,7 @@ test_table!(
 
 test_table!(
     extended_style,
-    create_table::<3, 3>().with(Style::extended()),
+    Matrix::full(3, 3).with(Style::extended()),
     "╔═══╦══════════╦══════════╦══════════╗"
     "║ N ║ column 0 ║ column 1 ║ column 2 ║"
     "╠═══╬══════════╬══════════╬══════════╣"
@@ -131,7 +129,7 @@ test_table!(
 
 test_table!(
     ascii_dots_style,
-    create_table::<3, 3>().with(Style::dots()),
+    Matrix::full(3, 3).with(Style::dots()),
     "......................................"
     ": N : column 0 : column 1 : column 2 :"
     ":...:..........:..........:..........:"
@@ -145,7 +143,7 @@ test_table!(
 
 test_table!(
     re_structured_text_style,
-    create_table::<3, 3>().with(Style::re_structured_text()),
+    Matrix::full(3, 3).with(Style::re_structured_text()),
     "=== ========== ========== =========="
     " N   column 0   column 1   column 2 "
     "=== ========== ========== =========="
@@ -157,7 +155,7 @@ test_table!(
 
 test_table!(
     ascii_rounded_style,
-    create_table::<3, 3>().with(Style::ascii_rounded()),
+    Matrix::full(3, 3).with(Style::ascii_rounded()),
     ".------------------------------------."
     "| N | column 0 | column 1 | column 2 |"
     "| 0 |   0-0    |   0-1    |   0-2    |"
@@ -168,7 +166,7 @@ test_table!(
 
 test_table!(
     style_head_changes,
-    create_table::<3, 3>().with(Style::modern().remove_horizontal()),
+    Matrix::full(3, 3).with(Style::modern().remove_horizontal()),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
@@ -179,7 +177,7 @@ test_table!(
 
 test_table!(
     style_frame_changes,
-    create_table::<3, 3>().with(Style::modern().remove_top().remove_bottom().remove_horizontal()),
+    Matrix::full(3, 3).with(Style::modern().remove_top().remove_bottom().remove_horizontal()),
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
     "│ 1 │   1-0    │   1-1    │   1-2    │"
@@ -188,7 +186,7 @@ test_table!(
 
 test_table!(
     custom_style,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::blank()
             .bottom('*')
             .vertical('\'')
@@ -451,7 +449,7 @@ test_table!(
 
 test_table!(
     empty_style,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::empty())
         .with(Modify::new(Segment::all()).with(Padding::zero())),
     "Ncolumn 0column 1column 2"
@@ -737,7 +735,7 @@ test_table!(
 fn custom_style_test() {
     macro_rules! test_style {
         ($style:expr, $expected:expr $(,)*) => {
-            let table = create_table::<3, 3>().with($style).to_string();
+            let table = Matrix::full(3, 3).with($style).to_string();
             assert_eq!(table, $expected);
         };
     }
@@ -2149,7 +2147,7 @@ fn style_with_color_test() {
         .set_color_vertical(Color::FG_YELLOW)
         .set_color_intersection(Color::try_from(' '.purple().to_string()).unwrap());
 
-    let table = create_table::<3, 3>().with(style).to_string();
+    let table = Matrix::full(3, 3).with(style).to_string();
 
     assert_eq!(
         ansi_str::AnsiStr::ansi_strip(&table),
@@ -2171,7 +2169,7 @@ fn style_with_color_test() {
 
 test_table!(
     empty_line_clears_lines,
-    create_table::<3, 3>().with(Style::rounded().remove_horizontals()),
+    Matrix::full(3, 3).with(Style::rounded().remove_horizontals()),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
@@ -2182,7 +2180,7 @@ test_table!(
 
 test_table!(
     empty_line_clears_lines_1,
-    create_table::<3, 3>().with(Style::rounded().remove_horizontals()),
+    Matrix::full(3, 3).with(Style::rounded().remove_horizontals()),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
@@ -2195,7 +2193,7 @@ test_table!(
     border_color,
     {
         use tabled::settings::Color;
-        create_table::<3, 3>().with(Style::psql()).with(Color::BG_GREEN)
+        Matrix::full(3, 3).with(Style::psql()).with(Color::BG_GREEN)
     },
     " \u{1b}[42mN\u{1b}[49m | \u{1b}[42mcolumn 0\u{1b}[49m | \u{1b}[42mcolumn 1\u{1b}[49m | \u{1b}[42mcolumn 2\u{1b}[49m \n---+----------+----------+----------\n \u{1b}[42m0\u{1b}[49m |   \u{1b}[42m0-0\u{1b}[49m    |   \u{1b}[42m0-1\u{1b}[49m    |   \u{1b}[42m0-2\u{1b}[49m    \n \u{1b}[42m1\u{1b}[49m |   \u{1b}[42m1-0\u{1b}[49m    |   \u{1b}[42m1-1\u{1b}[49m    |   \u{1b}[42m1-2\u{1b}[49m    \n \u{1b}[42m2\u{1b}[49m |   \u{1b}[42m2-0\u{1b}[49m    |   \u{1b}[42m2-1\u{1b}[49m    |   \u{1b}[42m2-2\u{1b}[49m    "
 );
@@ -2204,14 +2202,14 @@ test_table!(
     text_color,
     {
         use tabled::settings::Color;
-        create_table::<3, 3>().with(Style::psql()).with(Modify::new(Segment::all()).with(Color::BG_BLACK))
+        Matrix::full(3, 3).with(Style::psql()).with(Modify::new(Segment::all()).with(Color::BG_BLACK))
     },
     " \u{1b}[40mN\u{1b}[49m | \u{1b}[40mcolumn 0\u{1b}[49m | \u{1b}[40mcolumn 1\u{1b}[49m | \u{1b}[40mcolumn 2\u{1b}[49m \n---+----------+----------+----------\n \u{1b}[40m0\u{1b}[49m |   \u{1b}[40m0-0\u{1b}[49m    |   \u{1b}[40m0-1\u{1b}[49m    |   \u{1b}[40m0-2\u{1b}[49m    \n \u{1b}[40m1\u{1b}[49m |   \u{1b}[40m1-0\u{1b}[49m    |   \u{1b}[40m1-1\u{1b}[49m    |   \u{1b}[40m1-2\u{1b}[49m    \n \u{1b}[40m2\u{1b}[49m |   \u{1b}[40m2-0\u{1b}[49m    |   \u{1b}[40m2-1\u{1b}[49m    |   \u{1b}[40m2-2\u{1b}[49m    "
 );
 
 test_table!(
     verticals_0,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::rounded().verticals(vec![VerticalLine::new(0, Line::filled('+')), VerticalLine::new(4, Line::filled('+'))])),
     "+───┬──────────┬──────────┬──────────+"
     "+ N │ column 0 │ column 1 │ column 2 +"
@@ -2224,7 +2222,7 @@ test_table!(
 
 test_table!(
     verticals_1,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::rounded().verticals((1..4).map(|i| VerticalLine::new(i, Line::filled('+'))))),
     "╭───+──────────+──────────+──────────╮"
     "│ N + column 0 + column 1 + column 2 │"
@@ -2237,7 +2235,7 @@ test_table!(
 
 test_table!(
     verticals_2,
-    create_table::<3, 3>().with(Style::rounded().verticals(vec![VerticalLine::new(1, Line::filled('+'))])),
+    Matrix::full(3, 3).with(Style::rounded().verticals(vec![VerticalLine::new(1, Line::filled('+'))])),
     "╭───+──────────┬──────────┬──────────╮"
     "│ N + column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -2249,7 +2247,7 @@ test_table!(
 
 test_table!(
     verticals_3,
-    create_table::<3, 3>().with(Style::ascii().verticals([VerticalLine::new(1, Line::filled('*'))])),
+    Matrix::full(3, 3).with(Style::ascii().verticals([VerticalLine::new(1, Line::filled('*'))])),
     "+---*----------+----------+----------+"
     "| N * column 0 | column 1 | column 2 |"
     "+---*----------+----------+----------+"
@@ -2263,7 +2261,7 @@ test_table!(
 
 test_table!(
     verticals_4,
-    create_table::<3, 3>().with(Style::ascii().verticals((0..10).map(|i| VerticalLine::new(i, Line::new(Some('*'), Some('x'), Some('c'), Some('2')))))),
+    Matrix::full(3, 3).with(Style::ascii().verticals((0..10).map(|i| VerticalLine::new(i, Line::new(Some('*'), Some('x'), Some('c'), Some('2')))))),
     "c---c----------c----------c----------c"
     "* N * column 0 * column 1 * column 2 *"
     "x---x----------x----------x----------x"
@@ -2277,7 +2275,7 @@ test_table!(
 
 test_table!(
     vertical_line_0,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(HorizontalLine::new(1, Line::new(Some('8'), Some('8'), Some('8'), Some('8'))))
         .with(VerticalLine::new(1, Line::new(Some('*'), Some('x'), Some('c'), Some('2')))),
     "+---c----------+----------+----------+"
@@ -2293,7 +2291,7 @@ test_table!(
 
 test_table!(
     vertical_line_1,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::empty())
         .with(VerticalLine::new(1, Line::new(Some('*'), Some('x'), Some('c'), Some('2')))),
     "   c                              "
@@ -2306,7 +2304,7 @@ test_table!(
 
 test_table!(
     vertical_line_2,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::empty())
         .with(VerticalLine::new(1, Line::new(None, Some('x'), Some('c'), Some('2')))),
     "   c                              "
@@ -2319,7 +2317,7 @@ test_table!(
 
 test_table!(
     vertical_line_3,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::empty())
         .with(VerticalLine::new(1, Line::new(Some('*'), Some('x'), None, None))),
     " N * column 0  column 1  column 2 "
@@ -2330,7 +2328,7 @@ test_table!(
 
 test_table!(
     override_horizontal_border_on_line,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Rows::single(1))
             .with(BorderChar::horizontal(':', Offset::Begin(0)))
@@ -2345,7 +2343,7 @@ test_table!(
 
 test_table!(
     override_horizontal_border_on_borders,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Modify::new(Rows::new(..5))
             .with(BorderChar::horizontal(':', Offset::Begin(0)))
             .with(BorderChar::horizontal('y', Offset::Begin(3)))
@@ -2365,7 +2363,7 @@ test_table!(
 
 test_table!(
     override_horizontal_border_on_border,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Modify::new(Rows::new(..5))
             .with(Border::filled('['))
             .with(BorderChar::horizontal(':', Offset::Begin(0)))
@@ -2386,7 +2384,7 @@ test_table!(
 
 test_table!(
     override_vertical_border_on_line,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
             .with(BorderChar::vertical(':', Offset::Begin(0)))
@@ -2400,7 +2398,7 @@ test_table!(
 
 test_table!(
     override_vertical_border_on_line_1,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
             .with(BorderChar::vertical(':', Offset::End(0)))
@@ -2414,7 +2412,7 @@ test_table!(
 
 test_table!(
     override_vertical_border_on_line_multiline,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
@@ -2435,7 +2433,7 @@ test_table!(
 
 test_table!(
     override_vertical_border_on_line_multiline_2,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
@@ -2456,7 +2454,7 @@ test_table!(
 
 test_table!(
     override_vertical_and_horizontal_border_on_line,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::new(..5))

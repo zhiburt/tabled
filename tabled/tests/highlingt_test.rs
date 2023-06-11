@@ -9,13 +9,11 @@ use tabled::{
     },
 };
 
-use crate::util::{create_table, static_table, test_table};
-
-mod util;
+use testing::{create_table, static_table, test_table};
 
 test_table!(
     highlingt_object_exceeds_boundaries,
-    create_table::<3, 3>().with(Style::modern()).with(Highlight::new(Cell::new(1000, 0), Border::filled('+'))),
+    Matrix::full(3, 3).with(Style::modern()).with(Highlight::new(Cell::new(1000, 0), Border::filled('+'))),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -37,7 +35,7 @@ test_table!(
 
 test_table!(
     highlingt_cell,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::modern())
         .with(Highlight::new(Cell::new(0, 0), Border::filled('+')))
         .with(Highlight::new(Cell::new(1, 1), Border::filled('*'))),
@@ -54,7 +52,7 @@ test_table!(
 
 test_table!(
     highlingt_row,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::modern())
         .with(Highlight::new(Rows::single(0), Border::filled('+')))
         .with(Highlight::new(Rows::single(3), Border::filled('*'))),
@@ -71,7 +69,7 @@ test_table!(
 
 test_table!(
     highlingt_column,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::modern())
         .with(Highlight::new(Columns::single(0), Border::filled('+')))
         .with(Highlight::new(Columns::single(2), Border::filled('*'))),
@@ -88,7 +86,7 @@ test_table!(
 
 test_table!(
     highlingt_row_range,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::modern())
         .with(Highlight::new(Rows::new(1..3), Border::filled('+'))),
     "┌───┬──────────┬──────────┬──────────┐"
@@ -104,7 +102,7 @@ test_table!(
 
 test_table!(
     highlingt_column_range,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::modern())
         .with(Highlight::new(Columns::new(..2), Border::filled('+'))),
     "++++++++++++++++──────────┬──────────┐"
@@ -120,7 +118,7 @@ test_table!(
 
 test_table!(
     highlingt_frame,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::modern())
         .with(Highlight::new(
             Frame,
@@ -143,7 +141,7 @@ test_table!(
 
 test_table!(
     highlingt_full,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::modern())
         .with(Highlight::new(
             Segment::all(),
@@ -183,7 +181,7 @@ test_table!(
 
 test_table!(
     highlingt_several_times,
-    create_table::<3, 3>()
+    Matrix::full(3, 3)
         .with(Style::modern())
         .with(Highlight::new(Frame, Border::filled('*')))
         .with(Highlight::new(Cell::new(1, 1), Border::filled('#')))
@@ -232,7 +230,7 @@ fn highlingt_complex_figures() {
                 .corner_bottom_left('@')
                 .corner_bottom_right('.');
 
-            let table = create_table::<3, 3>()
+            let table = Matrix::full(3, 3)
                 .with(Style::modern())
                 .with(Highlight::new($object, border))
                 .to_string();

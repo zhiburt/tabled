@@ -10,14 +10,11 @@ use tabled::{
         Alignment, Margin, Modify, Padding, Panel, Settings, Span, Style,
     },
 };
-
-use crate::util::{create_table, init_table, is_lines_equal, new_table, static_table};
-
-mod util;
+use testing::{create_table, init_table, is_lines_equal, new_table, static_table};
 
 #[test]
 fn max_width() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(1)))
         .to_string();
@@ -36,7 +33,7 @@ fn max_width() {
 
 #[test]
 fn max_width_with_suffix() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(
             Modify::new(Columns::new(1..).not(Rows::single(0)))
@@ -58,7 +55,7 @@ fn max_width_with_suffix() {
 
 #[test]
 fn max_width_doesnt_icrease_width_if_it_is_smaller() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::truncate(50)))
         .to_string();
@@ -77,7 +74,7 @@ fn max_width_doesnt_icrease_width_if_it_is_smaller() {
 
 #[test]
 fn max_width_wrapped() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(2)))
         .to_string();
@@ -99,7 +96,7 @@ fn max_width_wrapped() {
 
 #[test]
 fn max_width_wrapped_does_nothing_if_str_is_smaller() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::new(1..).not(Rows::single(0))).with(Width::wrap(100)))
         .to_string();
@@ -489,7 +486,7 @@ fn max_width_wrapped_collored() {
 
 #[test]
 fn dont_change_content_if_width_is_less_then_max_width() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(Width::truncate(1000).suffix("...")))
         .to_string();
@@ -562,7 +559,7 @@ fn color_chars_are_stripped() {
 
 #[test]
 fn min_width() {
-    let mut table = create_table::<3, 3>();
+    let mut table = Matrix::full(3, 3);
     table
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(12)));
@@ -594,7 +591,7 @@ fn min_width() {
 
 #[test]
 fn min_width_with_filler() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(12).fill_with('.')))
         .to_string();
@@ -613,7 +610,7 @@ fn min_width_with_filler() {
 
 #[test]
 fn min_width_one_column() {
-    let mut table = create_table::<3, 3>();
+    let mut table = Matrix::full(3, 3);
     table
         .with(Style::markdown())
         .with(Modify::new((0, 0)).with(MinWidth::new(5)));
@@ -646,17 +643,17 @@ fn min_width_one_column() {
 #[test]
 fn min_width_on_smaller_content() {
     assert_eq!(
-        create_table::<3, 3>()
+        Matrix::full(3, 3)
             .with(Style::markdown())
             .with(Modify::new(Rows::single(0)).with(MinWidth::new(1)))
             .to_string(),
-        create_table::<3, 3>().with(Style::markdown()).to_string()
+        Matrix::full(3, 3).with(Style::markdown()).to_string()
     );
 }
 
 #[test]
 fn min_with_max_width() {
-    let mut table = create_table::<3, 3>();
+    let mut table = Matrix::full(3, 3);
     table
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
@@ -689,7 +686,7 @@ fn min_with_max_width() {
 
 #[test]
 fn min_with_max_width_truncate_suffix() {
-    let mut table = create_table::<3, 3>();
+    let mut table = Matrix::full(3, 3);
     table
         .with(Style::markdown())
         .with(Modify::new(Rows::single(0)).with(MinWidth::new(3)))
@@ -722,7 +719,7 @@ fn min_with_max_width_truncate_suffix() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_replace() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(
             Modify::new(Rows::single(0)).with(
@@ -747,7 +744,7 @@ fn min_with_max_width_truncate_suffix_limit_replace() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_cut() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(
             Modify::new(Rows::single(0)).with(
@@ -772,7 +769,7 @@ fn min_with_max_width_truncate_suffix_limit_cut() {
 
 #[test]
 fn min_with_max_width_truncate_suffix_limit_ignore() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(
             Modify::new(Rows::single(0)).with(
@@ -877,7 +874,7 @@ fn min_width_color_with_smaller_then_width() {
 
 #[test]
 fn total_width_big() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Width::truncate(80))
         .with(MinWidth::new(80))
@@ -895,7 +892,7 @@ fn total_width_big() {
         )
     );
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Segment::all()).with(TrimStrategy::None))
         .with(Settings::new(Width::truncate(80), Width::increase(80)))
@@ -916,7 +913,7 @@ fn total_width_big() {
 
 #[test]
 fn total_width_big_with_panel() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(
             Modify::new(Segment::all())
@@ -944,7 +941,7 @@ fn total_width_big_with_panel() {
 
 #[test]
 fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
-    let table1 = create_table::<3, 3>()
+    let table1 = Matrix::full(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -952,7 +949,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
         .with(MinWidth::new(80))
         .to_string();
 
-    let table2 = create_table::<3, 3>()
+    let table2 = Matrix::full(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -965,7 +962,7 @@ fn total_width_big_with_panel_with_wrapping_doesnt_affect_increase() {
 
 #[test]
 fn total_width_small() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Width::truncate(14))
         .with(MinWidth::new(14))
@@ -986,7 +983,7 @@ fn total_width_small() {
 
 #[test]
 fn total_width_smaller_then_content() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Width::truncate(8))
         .with(MinWidth::new(8))
@@ -1006,7 +1003,7 @@ fn total_width_smaller_then_content() {
 
 #[test]
 fn total_width_small_with_panel() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::truncate(20))
@@ -1061,7 +1058,7 @@ fn total_width_small_with_panel() {
     );
     assert!(is_lines_equal(&table, 20));
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1082,7 +1079,7 @@ fn total_width_small_with_panel() {
     );
     assert!(is_lines_equal(&table, 20));
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1103,7 +1100,7 @@ fn total_width_small_with_panel() {
     );
     assert!(is_lines_equal(&table, 13));
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1124,7 +1121,7 @@ fn total_width_small_with_panel() {
     );
     assert!(is_lines_equal(&table, 14));
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Panel::horizontal(0, "Hello World 123"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1149,7 +1146,7 @@ fn total_width_small_with_panel() {
 #[cfg(feature = "color")]
 #[test]
 fn total_width_wrapping() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
         .with(Width::wrap(20))
@@ -1199,7 +1196,7 @@ fn total_width_wrapping() {
 
 #[test]
 fn total_width_small_with_panel_using_wrapping() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1226,7 +1223,7 @@ fn total_width_small_with_panel_using_wrapping() {
     );
     assert!(is_lines_equal(&table, 20));
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Panel::horizontal(0, "Hello World"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1261,7 +1258,7 @@ fn total_width_small_with_panel_using_wrapping() {
     );
     assert!(is_lines_equal(&table, 14));
 
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Panel::horizontal(0, "Hello World 123"))
         .with(Modify::new(Segment::all()).with(Alignment::center()))
         .with(Style::markdown())
@@ -1569,7 +1566,7 @@ fn min_width_with_span_2() {
 
 #[test]
 fn justify_width_constant_test() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Justify::new(3))
         .to_string();
@@ -1608,7 +1605,7 @@ fn justify_width_constant_different_sizes_test() {
 
 #[test]
 fn justify_width_constant_0_test() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Justify::new(0))
         .to_string();
@@ -1627,7 +1624,7 @@ fn justify_width_constant_0_test() {
 
 #[test]
 fn justify_width_min_test() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Justify::min())
         .to_string();
@@ -1646,7 +1643,7 @@ fn justify_width_min_test() {
 
 #[test]
 fn justify_width_max_test() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Justify::max())
         .to_string();
@@ -2192,7 +2189,7 @@ fn max_width_wrap_priority_min_with_span() {
 
 #[test]
 fn min_width_priority_max() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(MinWidth::new(60).priority::<PriorityMax>())
         .to_string();
@@ -2212,7 +2209,7 @@ fn min_width_priority_max() {
 
 #[test]
 fn min_width_priority_min() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(MinWidth::new(60).priority::<PriorityMin>())
         .to_string();
@@ -2253,7 +2250,7 @@ fn max_width_tab_0() {
 
 #[test]
 fn min_width_is_not_used_after_padding() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(MinWidth::new(60))
         .with(Modify::new((0, 0)).with(Padding::new(2, 2, 0, 0)))
@@ -2274,7 +2271,7 @@ fn min_width_is_not_used_after_padding() {
 
 #[test]
 fn min_width_is_used_after_margin() {
-    let table = create_table::<3, 3>()
+    let table = Matrix::full(3, 3)
         .with(Style::markdown())
         .with(Margin::new(1, 1, 1, 1))
         .with(Width::increase(60))

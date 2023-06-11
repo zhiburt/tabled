@@ -6,17 +6,15 @@ use tabled::{
     settings::{format::Format, object::Segment, Alignment, Modify, Padding},
 };
 
-use crate::util::{create_table, test_table};
-
-mod util;
+use testing::{test_table, Matrix};
 
 test_table!(
     row_pair_test,
-        row!(create_table::<3, 3>()
+        row!(Matrix::new(3, 3)
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
                 .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]")))),
-            create_table::<4, 4>()
+            Matrix::new(4, 4)
                 .with(Modify::new(Segment::all()).with(Alignment::right()))
                 .with(Modify::new(Segment::all()).with(Padding::new(1, 1, 1, 1)))
                 .with(Modify::new(Segment::all()).with(Format::content(|s| format!("({s})"))))),
@@ -47,11 +45,11 @@ test_table!(
 
 test_table!(
     col_pair_test,
-        col!(create_table::<3, 3>()
+        col!(Matrix::full(3, 3)
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
                 .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]")))),
-            create_table::<4, 4>()
+            Matrix::full(4, 4)
                 .with(Modify::new(Segment::all()).with(Alignment::right()))
                 .with(Modify::new(Segment::all()).with(Padding::new(1, 1, 1, 1)))
                 .with(Modify::new(Segment::all()).with(Format::content(|s| format!("({s})"))))),
@@ -92,7 +90,7 @@ test_table!(
 
 test_table!(
     row_duplication_test,
-        row!(create_table::<3, 3>()
+        row!(Matrix::full(3, 3)
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
                 .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]")))); 3),
@@ -113,16 +111,16 @@ test_table!(
     col_and_rows_test,
         col!(
             row!(
-                create_table::<3, 3>()
+                Matrix::full(3, 3)
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
                     .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
                     .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]")))),
-                create_table::<4, 4>()
+                Matrix::full(4, 4)
                     .with(Modify::new(Segment::all()).with(Alignment::right()))
                     .with(Modify::new(Segment::all()).with(Padding::new(1, 1, 1, 1)))
                     .with(Modify::new(Segment::all()).with(Format::content(|s| format!("({s})")))),
             ),
-            create_table::<3, 5>()
+            Matrix::full(3, 5)
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Segment::all()).with(Padding::new(2, 2, 0, 0)))
                 .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))
@@ -168,16 +166,16 @@ test_table!(
     row_and_col_test,
         row!(
             col!(
-                create_table::<3, 3>()
+                Matrix::full(3, 3)
                     .with(Modify::new(Segment::all()).with(Alignment::left()))
                     .with(Modify::new(Segment::all()).with(Padding::new(3, 1, 0, 0)))
                     .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]")))),
-                create_table::<4, 4>()
+                Matrix::full(4, 4)
                     .with(Modify::new(Segment::all()).with(Alignment::right()))
                     .with(Modify::new(Segment::all()).with(Padding::new(1, 1, 1, 1)))
                     .with(Modify::new(Segment::all()).with(Format::content(|s| format!("({s})")))),
             ),
-            create_table::<3, 5>()
+            Matrix::full(3, 5)
                 .with(Modify::new(Segment::all()).with(Alignment::left()))
                 .with(Modify::new(Segment::all()).with(Padding::new(2, 2, 0, 0)))
                 .with(Modify::new(Segment::all()).with(Format::content(|s| format!("[{s}]"))))

@@ -1,20 +1,18 @@
 #![cfg(feature = "std")]
 
-mod util;
-
 use tabled::{
     grid::dimension::{DimensionPriority, PoolTableDimension},
     settings::{formatting::AlignmentStrategy, Alignment, Margin, Padding, Style},
     tables::{PoolTable, TableValue},
 };
-use util::{create_matrix, test_table};
+use testing::{create_matrix, test_table};
 
 #[cfg(feature = "color")]
 use tabled::grid::color::StaticColor;
 
 test_table!(
     pool_table,
-    PoolTable::new(create_matrix::<3, 3>()),
+    PoolTable::new(Matrix::new(3, 3)),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "+-----+-----+-----+"
@@ -278,7 +276,7 @@ test_table!(
 
 test_table!(
     pool_table_padding,
-    PoolTable::new(create_matrix::<3, 3>()).with(Padding::new(1, 2, 3, 4)),
+    PoolTable::new(Matrix::new(3, 3)).with(Padding::new(1, 2, 3, 4)),
     "+------+------+------+"
     "|      |      |      |"
     "|      |      |      |"
@@ -312,7 +310,7 @@ test_table!(
 #[cfg(feature = "color")]
 test_table!(
     pool_table_padding_2,
-    PoolTable::new(create_matrix::<3, 3>())
+    PoolTable::new(Matrix::new(3, 3))
         .with(Padding::new(1, 2, 3, 4)
             .fill('!', '@', '#', '$')
             .colorize(
@@ -354,7 +352,7 @@ test_table!(
 
 test_table!(
     pool_table_margin,
-    PoolTable::new(create_matrix::<3, 3>()).with(Margin::new(1, 2, 3, 4).fill('!', '@', '#', '$')),
+    PoolTable::new(Matrix::new(3, 3)).with(Margin::new(1, 2, 3, 4).fill('!', '@', '#', '$')),
     "!###################@@"
     "!###################@@"
     "!###################@@"
@@ -513,7 +511,7 @@ test_table!(
 
 test_table!(
     pool_table_style_empty,
-    PoolTable::new(create_matrix::<3, 3>()).with(Style::empty()),
+    PoolTable::new(Matrix::new(3, 3)).with(Style::empty()),
     " 0-0  0-1  0-2 "
     " 1-0  1-1  1-2 "
     " 2-0  2-1  2-2 "
@@ -521,7 +519,7 @@ test_table!(
 
 test_table!(
     pool_table_style_markdown,
-    PoolTable::new(create_matrix::<3, 3>()).with(Style::markdown()),
+    PoolTable::new(Matrix::new(3, 3)).with(Style::markdown()),
     "| 0-0 | 0-1 | 0-2 |"
     "| 1-0 | 1-1 | 1-2 |"
     "| 2-0 | 2-1 | 2-2 |"
@@ -529,7 +527,7 @@ test_table!(
 
 test_table!(
     pool_table_style_rounded,
-    PoolTable::new(create_matrix::<3, 3>()).with(Style::rounded()),
+    PoolTable::new(Matrix::new(3, 3)).with(Style::rounded()),
     "╭─────┬─────┬─────╮"
     "│ 0-0 │ 0-1 │ 0-2 │"
     " ───── ───── ───── "

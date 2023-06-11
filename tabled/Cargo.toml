@@ -270,6 +270,7 @@ unicode-width = "0.1"
 
 [dev-dependencies]
 owo-colors = "3.5"
+testing = { path = "../testing", features = ["table", "macros"] }
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #

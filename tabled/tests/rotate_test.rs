@@ -6,10 +6,7 @@ use tabled::settings::{
     object::{Cell, Rows},
     Border, Highlight, Rotate,
 };
-
-use crate::util::{new_table, test_table};
-
-mod util;
+use testing::{new_table, test_table};
 
 #[test]
 fn test_rotate() {
