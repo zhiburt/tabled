@@ -95,7 +95,7 @@ use tabled::{builder::Builder, Table};
 mod table;
 
 /// The function converts a given [`Value`] to a [`JsonTable`].
-/// 
+///
 /// ```
 /// let json = serde_json::json!({
 ///     "key1": "value1",
@@ -108,11 +108,11 @@ mod table;
 ///         2,
 ///         "asd"
 ///     ],
-///     "key4": 1234.567 
+///     "key4": 1234.567
 /// });
 ///     
 /// let table = json_to_table::json_to_table(&json).to_string();
-/// 
+///
 /// assert_eq!(
 ///     table,
 ///     concat!(
@@ -171,11 +171,11 @@ pub fn json_to_table(value: &Value) -> JsonTable<&Value> {
 ///         2,
 ///         "asd"
 ///     ],
-///     "key4": 1234.567 
+///     "key4": 1234.567
 /// });
 ///     
 /// let table = json_to_table::parse(&json).to_string();
-/// 
+///
 /// assert_eq!(
 ///     table,
 ///     concat!(
