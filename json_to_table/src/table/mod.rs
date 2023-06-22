@@ -3,6 +3,7 @@ use std::borrow::Borrow;
 
 use serde_json::Value;
 use tabled::{
+    builder::Builder,
     grid::{
         config::{AlignmentHorizontal, ColoredConfig, Entity, Indent, Sides, SpannedConfig},
         dimension::CompleteDimension,
@@ -87,24 +88,24 @@ impl<T> JsonTable<T> {
     ///
     /// println!("{}", table);
     ///
-    ///    assert_eq!(
-    ///        table,
-    ///        concat!(
-    ///             "╔═════╦════╗\n",  
-    ///             "║  234║ 123║\n",  
-    ///             "║     ╠════╣\n",  
-    ///             "║     ║ 234║\n",  
-    ///             "║     ╠════╣\n",  
-    ///             "║     ║ 456║\n",  
-    ///             "╠═════╬════╣\n",  
-    ///             "║ key1║ 123║\n",  
-    ///             "╠═════╬══╦═╣\n",  
-    ///             "║key22║k1║1║\n",  
-    ///             "║     ╠══╬═╣\n",  
-    ///             "║     ║k2║2║\n",  
-    ///             "╚═════╩══╩═╝",
-    ///        ),
-    ///    );
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///          "╔═════╦════╗\n",  
+    ///          "║  234║ 123║\n",  
+    ///          "║     ╠════╣\n",  
+    ///          "║     ║ 234║\n",  
+    ///          "║     ╠════╣\n",  
+    ///          "║     ║ 456║\n",  
+    ///          "╠═════╬════╣\n",  
+    ///          "║ key1║ 123║\n",  
+    ///          "╠═════╬══╦═╣\n",  
+    ///          "║key22║k1║1║\n",  
+    ///          "║     ╠══╬═╣\n",  
+    ///          "║     ║k2║2║\n",  
+    ///          "╚═════╩══╩═╝",
+    ///     ),
+    /// );
     /// ```
     ///
     /// [`Table`]: tabled::Table
@@ -117,6 +118,116 @@ impl<T> JsonTable<T> {
         option.change(&mut records, &mut self.cfg.cfg, &mut dims);
 
         self
+    }
+
+    /// Convert the table into a [`Table`].
+    ///
+    /// It does not recognizes collapsed mode.
+    /// 
+    /// 
+    /// ```
+    /// use tabled::settings::style::Style;
+    /// use json_to_table::Orientation;
+    /// 
+    /// let json = serde_json::json!({
+    ///     "key1": "value1",
+    ///     "key2": {
+    ///         "key1": 123,
+    ///         "key2": [1, 2, 3, 4, 5],
+    ///     },
+    ///     "key3": [
+    ///         {"key": 123.3},
+    ///         2,
+    ///         "asd"
+    ///     ],
+    ///     "key4": 1234.567 
+    /// });
+    ///
+    /// let table = json_to_table::json_to_table(&json)
+    ///     .with(Style::modern())
+    ///     .array_orientation(Orientation::Row)
+    ///     .into_table()
+    ///     .with(Style::markdown())
+    ///     .to_string();
+    /// 
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "| key1 | ┌────────┐                                 |\n",
+    ///         "|      | │ value1 │                                 |\n",
+    ///         "|      | └────────┘                                 |\n",
+    ///         "|------|--------------------------------------------|\n",
+    ///         "| key2 | ┌──────┬─────────────────────────────────┐ |\n",
+    ///         "|      | │ key1 │  123                            │ |\n",
+    ///         "|      | ├──────┼─────────────────────────────────┤ |\n",
+    ///         "|      | │ key2 │ ┌─────┬─────┬─────┬─────┬─────┐ │ |\n",
+    ///         "|      | │      │ │  1  │  2  │  3  │  4  │  5  │ │ |\n",
+    ///         "|      | │      │ └─────┴─────┴─────┴─────┴─────┘ │ |\n",
+    ///         "|      | └──────┴─────────────────────────────────┘ |\n",
+    ///         "| key3 | ┌───────────────────┬─────┬───────┐        |\n",
+    ///         "|      | │ ┌─────┬─────────┐ │  2  │  asd  │        |\n",
+    ///         "|      | │ │ key │  123.3  │ │     │       │        |\n",
+    ///         "|      | │ └─────┴─────────┘ │     │       │        |\n",
+    ///         "|      | └───────────────────┴─────┴───────┘        |\n",
+    ///         "| key4 | ┌──────────┐                               |\n",
+    ///         "|      | │ 1234.567 │                               |\n",
+    ///         "|      | └──────────┘                               |",
+    ///     ),
+    /// )
+    /// ```
+    pub fn into_table(&self) -> Table
+    where
+        T: Borrow<Value>,
+    {
+        match self.value.borrow() {
+            Value::Array(array) => {
+                let list = array
+                    .iter()
+                    .map(|value| json_to_table(value, &self.cfg))
+                    .collect::<Vec<_>>();
+
+                match self.cfg.array_orientation {
+                    Orientation::Row => Builder::from(vec![list]).build(),
+                    Orientation::Column => {
+                        let list = list
+                            .into_iter()
+                            .map(|value| vec![value])
+                            .collect::<Vec<_>>();
+                        Builder::from(list).build()
+                    }
+                }
+            }
+            Value::Object(map) => {
+                let list = map
+                    .iter()
+                    .map(|(key, value)| vec![key.clone(), json_to_table(value, &self.cfg)])
+                    .collect::<Vec<_>>();
+
+                match self.cfg.object_orientation {
+                    Orientation::Row => {
+                        let (keys, values) = list.into_iter().fold(
+                            (Vec::with_capacity(map.len()), Vec::with_capacity(map.len())),
+                            |(mut keys, mut values), mut row| {
+                                let value = row.pop().unwrap();
+                                let key = row.pop().unwrap();
+                                keys.push(key);
+                                values.push(value);
+
+                                (keys, values)
+                            },
+                        );
+                        let list = vec![keys, values];
+
+                        Builder::from(list).build()
+                    }
+                    Orientation::Column => Builder::from(list).build(),
+                }
+            }
+            Value::Null | Value::Bool(_) | Value::Number(_) | Value::String(_) => {
+                let value = json_to_table(self.value.borrow(), &self.cfg);
+                Builder::from(vec![vec![value]]).build()
+            }
+        }
     }
 }
 
