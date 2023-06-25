@@ -15,10 +15,10 @@ use crate::matrix::Matrix;
 use testing_table::{is_lines_equal, static_table, test_table};
 
 #[cfg(feature = "color")]
-use ::{
-    ansi_str::AnsiStr,
-    owo_colors::{AnsiColors, OwoColorize},
-};
+use ::{ansi_str::AnsiStr, owo_colors::OwoColorize};
+
+#[cfg(all(feature = "derive", feature = "color"))]
+use ::owo_colors::AnsiColors;
 
 test_table!(
     max_width,
