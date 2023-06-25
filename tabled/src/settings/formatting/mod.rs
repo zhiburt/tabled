@@ -10,10 +10,12 @@
 
 mod alignment_strategy;
 mod charset;
+mod justification;
 mod tab_size;
 mod trim_strategy;
 
 pub use alignment_strategy::AlignmentStrategy;
 pub use charset::{Charset, CleanCharset};
+pub use justification::Justification;
 pub use tab_size::TabSize;
 pub use trim_strategy::TrimStrategy;

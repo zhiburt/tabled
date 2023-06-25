@@ -1,5 +1,6 @@
 #![cfg(feature = "std")]
 
+use papergrid::color::AnsiColor;
 use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent, Sides};
 
 use crate::util::grid;
@@ -149,4 +150,99 @@ test_table!(
         })
         .build(),
     "0-00-1\n$$$###\n$$$###\n$$$###\n1-01-1\n   ###\n   ###"
+);
+
+test_table!(
+    test_justification_char_left_alignment,
+    grid(2, 2)
+        .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
+        .config(|cfg| cfg.set_justification('$'))
+        .build(),
+    "+-----+-----------------------------+"
+    "|Hello|World$$$$$$$$$$$$$$$$$$$$$$$$|"
+    "+-----+-----------------------------+"
+    "|$$$$$|Hello Hello Hello Hello Hello|"
+    "+-----+-----------------------------+"
+);
+
+test_table!(
+    test_justification_char_right_alignment,
+    grid(2, 2)
+        .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
+        .config(|cfg| {
+            cfg.set_justification('$');
+            cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Right);
+        })
+        .build(),
+    "+-----+-----------------------------+"
+    "|Hello|$$$$$$$$$$$$$$$$$$$$$$$$World|"
+    "+-----+-----------------------------+"
+    "|$$$$$|Hello Hello Hello Hello Hello|"
+    "+-----+-----------------------------+"
+);
+
+test_table!(
+    test_justification_char_center_alignment,
+    grid(2, 2)
+        .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
+        .config(|cfg| {
+            cfg.set_justification('$');
+            cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Center);
+        })
+        .build(),
+    "+-----+-----------------------------+"
+    "|Hello|$$$$$$$$$$$$World$$$$$$$$$$$$|"
+    "+-----+-----------------------------+"
+    "|$$$$$|Hello Hello Hello Hello Hello|"
+    "+-----+-----------------------------+"
+);
+
+test_table!(
+    test_justification_color_left_alignment,
+    grid(2, 2)
+        .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
+        .config(|cfg| {
+            cfg.set_justification('$');
+            cfg.set_justification_color(Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+        })
+        .build(),
+        "+-----+-----------------------------+"
+        "|Hello|World\u{1b}[34m$$$$$$$$$$$$$$$$$$$$$$$$\u{1b}[39m|"
+        "+-----+-----------------------------+"
+        "|\u{1b}[34m$$$$$\u{1b}[39m|Hello Hello Hello Hello Hello|"
+        "+-----+-----------------------------+"
+);
+
+test_table!(
+    test_justification_color_right_alignment,
+    grid(2, 2)
+        .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
+        .config(|cfg| {
+            cfg.set_justification('$');
+            cfg.set_justification_color(Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+            cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Right);
+        })
+        .build(),
+        "+-----+-----------------------------+"
+        "|Hello|\u{1b}[34m$$$$$$$$$$$$$$$$$$$$$$$$\u{1b}[39mWorld|"
+        "+-----+-----------------------------+"
+        "|\u{1b}[34m$$$$$\u{1b}[39m|Hello Hello Hello Hello Hello|"
+        "+-----+-----------------------------+"
+);
+
+test_table!(
+    test_justification_color_center_alignment,
+    grid(2, 2)
+        .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
+        .config(|cfg| {
+            cfg.set_justification('$');
+            cfg.set_justification_color(Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+            cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Center);
+        })
+        .build(),
+    "+-----+-----------------------------+"
+    "|Hello|\u{1b}[34m$$$$$$$$$$$$\u{1b}[39mWorld\u{1b}[34m$$$$$$$$$$$$\u{1b}[39m|"
+    "+-----+-----------------------------+"
+    "|\u{1b}[34m$$\u{1b}[39m\u{1b}[34m$$$\u{1b}[39m|Hello Hello Hello Hello Hello|"
+    "+-----+-----------------------------+"
 );
