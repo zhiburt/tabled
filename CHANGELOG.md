@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-## [0.12.1] - 2023-06-02
 
-### Added
+## [0.12.2] - 2023-06-11
+
+### Fixed
+
+- Fixed wrapping algorithm (`tabled::settings::Wrap::keep_words`) for `color` feature.
+
+
+## [0.12.1] - 2023-06-02
 
 ### Changed
 
