@@ -591,8 +591,19 @@ fn print_cell_line<F: Write, R: Records + PeekableRecords + ExactRecords, C: Col
 
     let width = width - pad.left.size - pad.right.size;
     let alignment = *cfg.get_alignment_horizontal(pos.into());
+    let justification = (cfg.get_justification(), cfg.get_justification_color());
     let color = colors.get_color(pos);
-    print_line(f, records, pos, index, alignment, formatting, color, width)?;
+    print_line(
+        f,
+        records,
+        pos,
+        index,
+        alignment,
+        formatting,
+        color,
+        justification,
+        width,
+    )?;
 
     print_indent(f, pad.right.fill, pad.right.size, pad_color.right.as_ref())?;
 
@@ -608,6 +619,7 @@ fn print_line<F: Write, R: Records + PeekableRecords, C: Color>(
     alignment: AlignmentHorizontal,
     formatting: Formatting,
     color: Option<C>,
+    justification: (char, Option<&AnsiColor<'_>>),
     available: usize,
 ) -> fmt::Result {
     let line = records.get_line(pos, index);
@@ -622,7 +634,7 @@ fn print_line<F: Write, R: Records + PeekableRecords, C: Color>(
 
     if formatting.allow_lines_alignment {
         let (left, right) = calculate_indent(alignment, line_width, available);
-        return print_text_with_pad(f, &line, color, left, right);
+        return print_text_with_pad(f, &line, color, justification, left, right);
     }
 
     let cell_width = if formatting.horizontal_trim {
@@ -636,7 +648,7 @@ fn print_line<F: Write, R: Records + PeekableRecords, C: Color>(
     };
 
     let (left, right) = calculate_indent(alignment, cell_width, available);
-    print_text_with_pad(f, &line, color, left, right)?;
+    print_text_with_pad(f, &line, color, justification, left, right)?;
 
     // todo: remove me
     let rest_width = cell_width - line_width;
@@ -649,12 +661,14 @@ fn print_text_with_pad<F: Write, C: Color>(
     f: &mut F,
     text: &str,
     color: Option<C>,
+    justification: (char, Option<&AnsiColor<'_>>),
     left: usize,
     right: usize,
 ) -> fmt::Result {
-    repeat_char(f, ' ', left)?;
+    print_indent(f, justification.0, left, justification.1)?;
     print_text(f, text, color)?;
-    repeat_char(f, ' ', right)
+    print_indent(f, justification.0, right, justification.1)?;
+    Ok(())
 }
 
 fn print_text<F: Write, C: Color>(f: &mut F, text: &str, clr: Option<C>) -> fmt::Result {
@@ -867,12 +881,11 @@ fn print_indent_lines<F: Write>(
     Ok(())
 }
 
-fn print_indent<F: Write>(
-    f: &mut F,
-    c: char,
-    n: usize,
-    color: Option<&AnsiColor<'_>>,
-) -> fmt::Result {
+fn print_indent<F: Write, C: Color>(f: &mut F, c: char, n: usize, color: Option<C>) -> fmt::Result {
+    if n == 0 {
+        return Ok(());
+    }
+
     match color {
         Some(color) => {
             color.fmt_prefix(f)?;

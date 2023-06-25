@@ -37,6 +37,8 @@ pub struct SpannedConfig {
     horizontal_colors: HashMap<Position, HashMap<Offset, AnsiColor<'static>>>,
     vertical_chars: HashMap<Position, HashMap<Offset, char>>,
     vertical_colors: HashMap<Position, HashMap<Offset, AnsiColor<'static>>>,
+    justification_char: char,
+    justification_color: Option<AnsiColor<'static>>,
 }
 
 impl Default for SpannedConfig {
@@ -56,6 +58,8 @@ impl Default for SpannedConfig {
             horizontal_colors: HashMap::default(),
             vertical_chars: HashMap::default(),
             vertical_colors: HashMap::default(),
+            justification_char: ' ',
+            justification_color: None,
         }
     }
 }
@@ -516,6 +520,30 @@ impl SpannedConfig {
         self.borders_colors.remove_border(pos, shape);
     }
 
+    /// Get a justification which will be used while expanding cells width/height.
+    pub fn get_justification(&self) -> char {
+        self.justification_char
+    }
+
+    /// Get a justification color which will be used while expanding cells width/height.
+    ///
+    /// `None` means no color.
+    pub fn get_justification_color(&self) -> Option<&AnsiColor<'static>> {
+        self.justification_color.as_ref()
+    }
+
+    /// Set a justification which will be used while expanding cells width/height.
+    pub fn set_justification(&mut self, c: char) {
+        self.justification_char = c;
+    }
+
+    /// Set a justification color which will be used while expanding cells width/height.
+    ///
+    /// `None` removes it.
+    pub fn set_justification_color(&mut self, color: Option<AnsiColor<'static>>) {
+        self.justification_color = color;
+    }
+
     /// Get a span value of the cell, if any is set.
     pub fn get_column_spans(&self) -> HashMap<Position, usize> {
         self.span_columns.clone()
@@ -575,9 +603,7 @@ impl SpannedConfig {
     pub fn has_row_spans(&self) -> bool {
         !self.span_rows.is_empty()
     }
-}
 
-impl SpannedConfig {
     /// Gets an intersection character which would be rendered on the grid.
     ///
     /// grid: crate::Grid

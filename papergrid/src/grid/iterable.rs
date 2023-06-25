@@ -286,6 +286,8 @@ fn print_single_line_column<F: Write, C: Color>(
     let pad = cfg.get_padding(pos);
     let pad_color = cfg.get_padding_color(pos);
     let fmt = cfg.get_formatting(pos);
+    let space_c = cfg.get_justification();
+    let space_color = cfg.get_justification_color();
 
     let (text, text_width) = if fmt.horizontal_trim && !text.is_empty() {
         let text = string_trim(text);
@@ -305,9 +307,9 @@ fn print_single_line_column<F: Write, C: Color>(
 
     print_padding(f, &pad.left, pad_color.left.as_ref())?;
 
-    repeat_char(f, ' ', left)?;
+    print_indent(f, space_c, left, space_color)?;
     print_text(f, &text, color)?;
-    repeat_char(f, ' ', right)?;
+    print_indent(f, space_c, right, space_color)?;
 
     print_padding(f, &pad.right, pad_color.right.as_ref())?;
 
@@ -744,6 +746,7 @@ struct Cell<T, C> {
     pad: Sides<Indent>,
     pad_color: Sides<Option<AnsiColor<'static>>>,
     color: Option<C>,
+    justification: (char, Option<AnsiColor<'static>>),
 }
 
 impl<T, C> Cell<T, C>
@@ -763,6 +766,10 @@ where
         let pad_color = cfg.get_padding_color(pos.into()).clone();
         let alignh = *cfg.get_alignment_horizontal(pos.into());
         let alignv = *cfg.get_alignment_vertical(pos.into());
+        let justification = (
+            cfg.get_justification(),
+            cfg.get_justification_color().cloned(),
+        );
 
         let (count_lines, skip) = if fmt.vertical_trim {
             let (len, top, _) = count_empty_lines(text.as_ref());
@@ -795,6 +802,7 @@ where
             pad,
             pad_color,
             color,
+            justification,
         }
     }
 }
@@ -835,11 +843,14 @@ where
             (left, available_width - line_width - left)
         };
 
+        let (justification, justification_color) =
+            (self.justification.0, self.justification.1.as_ref());
+
         print_padding(f, &self.pad.left, self.pad_color.left.as_ref())?;
 
-        repeat_char(f, ' ', left)?;
+        print_indent(f, justification, left, justification_color)?;
         print_text(f, &line, self.color.as_ref())?;
-        repeat_char(f, ' ', right)?;
+        print_indent(f, justification, right, justification_color)?;
 
         print_padding(f, &self.pad.right, self.pad_color.right.as_ref())?;
 
@@ -1145,6 +1156,10 @@ fn print_indent<F: Write>(
     n: usize,
     color: Option<&AnsiColor<'_>>,
 ) -> fmt::Result {
+    if n == 0 {
+        return Ok(());
+    }
+
     match color {
         Some(color) => {
             color.fmt_prefix(f)?;
