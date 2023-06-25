@@ -213,8 +213,6 @@ mod tests {
     #[cfg(feature = "color")]
     #[test]
     fn strip_color_test() {
-        use owo_colors::OwoColorize;
-
         let numbers = "123456".red().on_bright_black().to_string();
 
         assert_eq!(cut_str(&numbers, 0), "\u{1b}[31;100m\u{1b}[39m\u{1b}[49m");

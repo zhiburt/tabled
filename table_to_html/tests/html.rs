@@ -1,8 +1,9 @@
 use table_to_html::html::{Attribute, HtmlElement, HtmlValue, HtmlVisitor, HtmlVisitorMut};
+use testing_table::{assert_table, test_table};
 
-#[test]
-fn html_built_element() {
-    let table = HtmlElement::new(
+test_table!(
+    html_built_element,
+    HtmlElement::new(
         "table",
         vec![],
         Some(HtmlValue::Elements(vec![HtmlElement::new(
@@ -14,23 +15,15 @@ fn html_built_element() {
                 Some(HtmlValue::Content(String::from("Hello Wolrd"))),
             )])),
         )])),
-    );
-
-    let buf = table.to_string();
-
-    assert_eq!(
-        buf,
-        concat!(
-            "<table>\n",
-            "    <tr id=\"tr1\">\n",
-            "        <td>\n",
-            "            Hello Wolrd\n",
-            "        </td>\n",
-            "    </tr>\n",
-            "</table>"
-        )
-    )
-}
+    ),
+    "<table>"
+    "    <tr id=\"tr1\">"
+    "        <td>"
+    "            Hello Wolrd"
+    "        </td>"
+    "    </tr>"
+    "</table>"
+);
 
 #[test]
 fn html_element_visitor() {
@@ -118,24 +111,20 @@ fn html_element_visitor_mut() {
     let mut visitor = Visitor(0);
     table.visit_mut(&mut visitor);
 
-    let buf = table.to_string();
-
-    assert_eq!(
-        buf,
-        concat!(
-            "<table>\n",
-            "    <tr id=\"tr1\">\n",
-            "        <p>\n",
-            "            Hello World\n",
-            "        </p>\n",
-            "        <p>\n",
-            "            Hello World\n",
-            "        </p>\n",
-            "        <p>\n",
-            "            Hello World\n",
-            "        </p>\n",
-            "    </tr>\n",
-            "</table>"
-        )
+    assert_table!(
+        table,
+        "<table>"
+        "    <tr id=\"tr1\">"
+        "        <p>"
+        "            Hello World"
+        "        </p>"
+        "        <p>"
+        "            Hello World"
+        "        </p>"
+        "        <p>"
+        "            Hello World"
+        "        </p>"
+        "    </tr>"
+        "</table>"
     );
 }

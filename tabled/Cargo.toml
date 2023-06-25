@@ -255,10 +255,10 @@ path = "examples/pool_table2.rs"
 required-features = ["std"]
 
 [features]
-default = ["derive", "macros"]
+default = ["color", "derive", "macros"]
 std = ["papergrid/std"]
 derive = ["tabled_derive", "std"]
-color = ["papergrid/color", "ansi-str", "ansitok", "std"]
+color = ["papergrid/color", "ansi-str", "ansitok", "std", "testing_table/ansi"]
 macros = ["std"]
 
 [dependencies]
@@ -270,7 +270,7 @@ unicode-width = "0.1"
 
 [dev-dependencies]
 owo-colors = "3.5"
-testing = { path = "../testing", features = ["table", "macros"] }
+testing_table = { path = "../testing_table" }
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #
