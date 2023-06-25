@@ -49,6 +49,7 @@
 //! ```
 
 use std::borrow::Cow;
+use std::fmt::{self, Display};
 
 use crate::grid::util::string::string_width;
 use crate::Tabled;
@@ -164,8 +165,26 @@ impl ExtendedTable {
     }
 }
 
-impl std::fmt::Display for ExtendedTable {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl From<Vec<Vec<String>>> for ExtendedTable {
+    fn from(mut data: Vec<Vec<String>>) -> Self {
+        if data.is_empty() {
+            return Self {
+                fields: vec![],
+                records: vec![],
+            };
+        }
+
+        let fields = data.remove(0);
+
+        Self {
+            fields,
+            records: data,
+        }
+    }
+}
+
+impl Display for ExtendedTable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.records.is_empty() {
             return Ok(());
         }
@@ -219,11 +238,11 @@ fn truncate_fields(records: &mut Vec<String>, max_width: usize, suffix: &str) {
 }
 
 fn write_header_template(
-    f: &mut std::fmt::Formatter<'_>,
+    f: &mut fmt::Formatter<'_>,
     index: usize,
     max_field_width: usize,
     max_values_length: usize,
-) -> std::fmt::Result {
+) -> fmt::Result {
     let mut template = format!("-[ RECORD {index} ]-");
     let default_template_length = template.len();
 
@@ -256,11 +275,11 @@ fn write_header_template(
 }
 
 fn write_record(
-    f: &mut std::fmt::Formatter<'_>,
+    f: &mut fmt::Formatter<'_>,
     field: &str,
     value: &str,
     max_field_width: usize,
-) -> std::fmt::Result {
+) -> fmt::Result {
     write!(f, "{field:max_field_width$} | {value}")
 }
 

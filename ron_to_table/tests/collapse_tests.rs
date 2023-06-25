@@ -1,60 +1,83 @@
 use std::iter::FromIterator;
 
 use ron::{value::Float, Map, Number, Value};
-use ron_to_table::{Orientation, RonTable};
 use tabled::settings::Alignment;
+use testing_table::test_table;
 
-#[test]
-fn test_unit() {
-    let table = build_ron_table(Value::Unit);
-    assert_eq!(table, "+--+\n|  |\n+--+");
-}
+use ron_to_table::{Orientation, RonTable};
 
-#[test]
-fn test_string() {
-    let table = build_ron_table(Value::String(String::from("123456789")));
-    assert_eq!(table, "+-----------+\n| 123456789 |\n+-----------+");
-}
+test_table!(
+    test_unit,
+    build_ron_table(Value::Unit),
+    "+--+"
+    "|  |"
+    "+--+"
+);
 
-#[test]
-fn test_bool() {
-    let table = build_ron_table(Value::Bool(true));
-    assert_eq!(table, "+------+\n| true |\n+------+");
+test_table!(
+    test_string,
+    build_ron_table(Value::String(String::from("123456789"))),
+    "+-----------+"
+    "| 123456789 |"
+    "+-----------+"
+);
 
-    let table = build_ron_table(Value::Bool(false));
-    assert_eq!(table, "+-------+\n| false |\n+-------+");
-}
+test_table!(
+    test_bool_false,
+    build_ron_table(Value::Bool(false)),
+    "+-------+"
+    "| false |"
+    "+-------+"
+);
 
-#[test]
-fn test_char() {
-    let table = build_ron_table(Value::Char('a'));
-    assert_eq!(table, "+---+\n| a |\n+---+");
-}
+test_table!(
+    test_bool_true,
+    build_ron_table(Value::Bool(true)),
+    "+------+"
+    "| true |"
+    "+------+"
+);
 
-#[test]
-fn test_number() {
-    let table = build_ron_table(Value::Number(Number::Integer(123456789)));
-    assert_eq!(table, "+-----------+\n| 123456789 |\n+-----------+");
+test_table!(
+    test_char,
+    build_ron_table(Value::Char('a')),
+    "+---+"
+    "| a |"
+    "+---+"
+);
 
-    let table = build_ron_table(Value::Number(Number::Float(Float::new(123.456789))));
-    assert_eq!(table, "+------------+\n| 123.456789 |\n+------------+");
-}
+test_table!(
+    test_int,
+    build_ron_table(Value::Number(Number::Integer(123456789))),
+    "+-----------+"
+    "| 123456789 |"
+    "+-----------+"
+);
 
-#[test]
-fn test_sequence_0() {
-    let table = build_ron_table(Value::Seq(vec![
+test_table!(
+    test_float,
+    build_ron_table(Value::Number(Number::Float(Float::new(123.456789)))),
+    "+------------+"
+    "| 123.456789 |"
+    "+------------+"
+);
+
+test_table!(
+    test_sequence_0,
+    build_ron_table(Value::Seq(vec![
         Value::String(String::from("Hello")),
         Value::String(String::from("World")),
-    ]));
-    assert_eq!(
-        table,
-        "+-------+\n| Hello |\n+-------+\n| World |\n+-------+"
-    );
-}
+    ])),
+    "+-------+"
+    "| Hello |"
+    "+-------+"
+    "| World |"
+    "+-------+"
+);
 
-#[test]
-fn test_sequence_1() {
-    let table = build_ron_table(Value::Seq(vec![
+test_table!(
+    test_sequence_1,
+    build_ron_table(Value::Seq(vec![
         Value::Seq(vec![
             Value::String(String::from("Hello")),
             Value::String(String::from("World")),
@@ -69,50 +92,44 @@ fn test_sequence_1() {
             Value::String(String::from("Hello")),
             Value::String(String::from("World")),
         ]),
-    ]));
-    assert_eq!(
-        table,
-        "+-------+\n\
-         | Hello |\n\
-         +-------+\n\
-         | World |\n\
-         +-------+\n\
-         | Hello |\n\
-         +-------+\n\
-         | Hello |\n\
-         +-------+\n\
-         | World |\n\
-         +-------+\n\
-         | World |\n\
-         +-------+\n\
-         | Hello |\n\
-         +-------+\n\
-         | World |\n\
-         +-------+"
-    );
-}
+    ])),
+    "+-------+"
+    "| Hello |"
+    "+-------+"
+    "| World |"
+    "+-------+"
+    "| Hello |"
+    "+-------+"
+    "| Hello |"
+    "+-------+"
+    "| World |"
+    "+-------+"
+    "| World |"
+    "+-------+"
+    "| Hello |"
+    "+-------+"
+    "| World |"
+    "+-------+"
+);
 
-#[test]
-fn test_sequence_0_row() {
-    let table = build_ron_table_orientation(
+test_table!(
+    test_sequence_0_row,
+    build_ron_table_orientation(
         Value::Seq(vec![
             Value::String(String::from("Hello")),
             Value::String(String::from("World")),
         ]),
         Orientation::Row,
         Orientation::Column,
-    );
-    assert_eq!(
-        table,
-        "+-------+-------+\n\
-         | Hello | World |\n\
-         +-------+-------+"
-    );
-}
+    ),
+    "+-------+-------+"
+    "| Hello | World |"
+    "+-------+-------+"
+);
 
-#[test]
-fn test_sequence_1_row() {
-    let table = build_ron_table_orientation(
+test_table!(
+    test_sequence_1_row,
+    build_ron_table_orientation(
         Value::Seq(vec![
             Value::Seq(vec![
                 Value::String(String::from("Hello")),
@@ -131,45 +148,29 @@ fn test_sequence_1_row() {
         ]),
         Orientation::Row,
         Orientation::Column,
-    );
-    assert_eq!(
-        table,
-        "+-------+-------+-------+-------+-------+-------+-------+-------+\n\
-         | Hello | World | Hello | Hello | World | World | Hello | World |\n\
-         +-------+-------+-------+-------+-------+-------+-------+-------+"
-    );
-}
+    ),
+    "+-------+-------+-------+-------+-------+-------+-------+-------+"
+    "| Hello | World | Hello | Hello | World | World | Hello | World |"
+    "+-------+-------+-------+-------+-------+-------+-------+-------+"
+);
 
-#[test]
-fn test_map_0() {
-    let table = build_ron_table(Value::Map(Map::from_iter([
-        (
-            Value::String(String::from("Hello Key")),
-            Value::String(String::from("World Value")),
-        ),
-        (
-            Value::String(String::from("Hello Key 2")),
-            Value::String(String::from("Value 1")),
-        ),
-    ])));
+test_table!(
+    test_map_0,
+    build_ron_table(Value::Map(Map::from_iter([
+        (Value::String(String::from("Hello Key")), Value::String(String::from("World Value"))),
+        (Value::String(String::from("Hello Key 2")), Value::String(String::from("Value 1"))),
+    ]))),
+    "+-------------+-------------+"
+    "| Hello Key   | World Value |"
+    "+-------------+-------------+"
+    "| Hello Key 2 | Value 1     |"
+    "+-------------+-------------+"
+);
 
-    assert_eq!(
-        table,
-        "+-------------+-------------+\n\
-         | Hello Key   | World Value |\n\
-         +-------------+-------------+\n\
-         | Hello Key 2 | Value 1     |\n\
-         +-------------+-------------+",
-    );
-}
-
-#[test]
-fn test_map_1() {
-    let table = build_ron_table(Value::Map(Map::from_iter([
-        (
-            Value::String(String::from("Hello Key")),
-            Value::String(String::from("World Value")),
-        ),
+test_table!(
+    test_map_1,
+    build_ron_table(Value::Map(Map::from_iter([
+        (Value::String(String::from("Hello Key")), Value::String(String::from("World Value"))),
         (
             Value::String(String::from("Hello Key 2")),
             Value::Seq(vec![
@@ -177,48 +178,36 @@ fn test_map_1() {
                 Value::String(String::from("World")),
             ]),
         ),
-    ])));
-    assert_eq!(
-        table,
-        "+-------------+-------------+\n\
-         | Hello Key   | World Value |\n\
-         +-------------+-------------+\n\
-         | Hello Key 2 | Hello       |\n\
-         |             +-------------+\n\
-         |             | World       |\n\
-         +-------------+-------------+"
-    );
-}
+    ]))),
+    "+-------------+-------------+"
+    "| Hello Key   | World Value |"
+    "+-------------+-------------+"
+    "| Hello Key 2 | Hello       |"
+    "|             +-------------+"
+    "|             | World       |"
+    "+-------------+-------------+"
+);
 
-#[test]
-fn test_map_0_row() {
-    let table = build_ron_table_orientation(
+test_table!(
+    test_map_0_row,
+    build_ron_table_orientation(
         Value::Map(Map::from_iter([
-            (
-                Value::String(String::from("Hello Key")),
-                Value::String(String::from("World Value")),
-            ),
-            (
-                Value::String(String::from("Hello Key 2")),
-                Value::String(String::from("Value 1")),
-            ),
+            (Value::String(String::from("Hello Key")), Value::String(String::from("World Value"))),
+            (Value::String(String::from("Hello Key 2")), Value::String(String::from("Value 1"))),
         ])),
         Orientation::Row,
         Orientation::Row,
-    );
-    assert_eq!(
-        table,
-        "+-------------+-------------+\n\
-         | Hello Key   | Hello Key 2 |\n\
-         +-------------+-------------+\n\
-         | World Value | Value 1     |\n\
-         +-------------+-------------+"
-    );
-}
+    ),
+    "+-------------+-------------+"
+    "| Hello Key   | Hello Key 2 |"
+    "+-------------+-------------+"
+    "| World Value | Value 1     |"
+    "+-------------+-------------+"
+);
 
-#[test]
-fn test_map_1_row() {
-    let table = build_ron_table_orientation(
+test_table!(
+    test_map_1_row,
+    build_ron_table_orientation(
         Value::Map(Map::from_iter([
             (
                 Value::String(String::from("Hello Key")),
@@ -234,20 +223,17 @@ fn test_map_1_row() {
         ])),
         Orientation::Row,
         Orientation::Row,
-    );
-    assert_eq!(
-        table,
-        "+-------------+---------------+\n\
-         | Hello Key   | Hello Key 2   |\n\
-         +-------------+-------+-------+\n\
-         | World Value | Hello | World |\n\
-         +-------------+-------+-------+"
-    );
-}
+    ),
+    "+-------------+---------------+"
+    "| Hello Key   | Hello Key 2   |"
+    "+-------------+-------+-------+"
+    "| World Value | Hello | World |"
+    "+-------------+-------+-------+"
+);
 
-#[test]
-fn test_map_1_row_column() {
-    let table = build_ron_table_orientation(
+test_table!(
+    test_map_1_row_column,
+    build_ron_table_orientation(
         Value::Map(Map::from_iter([
             (
                 Value::String(String::from("Hello Key")),
@@ -263,22 +249,19 @@ fn test_map_1_row_column() {
         ])),
         Orientation::Column,
         Orientation::Row,
-    );
-    assert_eq!(
-        table,
-        "+-------------+-------------+\n\
-         | Hello Key   | Hello Key 2 |\n\
-         +-------------+-------------+\n\
-         | World Value | Hello       |\n\
-         |             +-------------+\n\
-         |             | World       |\n\
-         +-------------+-------------+"
-    );
-}
+    ),
+    "+-------------+-------------+"
+    "| Hello Key   | Hello Key 2 |"
+    "+-------------+-------------+"
+    "| World Value | Hello       |"
+    "|             +-------------+"
+    "|             | World       |"
+    "+-------------+-------------+"
+);
 
-#[test]
-fn test_sequence_row_column() {
-    let table = build_ron_table_orientation(
+test_table!(
+    test_sequence_row_column,
+    build_ron_table_orientation(
         Value::Seq(vec![
             Value::Map(Map::from_iter([
                 (
@@ -304,34 +287,31 @@ fn test_sequence_row_column() {
         ]),
         Orientation::Column,
         Orientation::Row,
-    );
-    assert_eq!(
-        table,
-        "+-------------+-------------+\n\
-         | Hello Key   | Hello Key 2 |\n\
-         +-------------+-------------+\n\
-         | World Value | Hello       |\n\
-         |             +-------------+\n\
-         |             | World       |\n\
-         +-------------+-------------+\n\
-         | Hello Key 2               |\n\
-         +---------------------------+\n\
-         | Hello                     |\n\
-         +---------------------------+\n\
-         | Wold                      |\n\
-         +---------------------------+\n\
-         | Wod                       |\n\
-         +---------------------------+\n\
-         | Wo                        |\n\
-         +---------------------------+\n\
-         | Wo                        |\n\
-         +---------------------------+"
-    );
-}
+    ),
+    "+-------------+-------------+"
+    "| Hello Key   | Hello Key 2 |"
+    "+-------------+-------------+"
+    "| World Value | Hello       |"
+    "|             +-------------+"
+    "|             | World       |"
+    "+-------------+-------------+"
+    "| Hello Key 2               |"
+    "+---------------------------+"
+    "| Hello                     |"
+    "+---------------------------+"
+    "| Wold                      |"
+    "+---------------------------+"
+    "| Wod                       |"
+    "+---------------------------+"
+    "| Wo                        |"
+    "+---------------------------+"
+    "| Wo                        |"
+    "+---------------------------+"
+);
 
-#[test]
-fn test_sequence_row_column_1() {
-    let table = build_ron_table_orientation(
+test_table!(
+    test_sequence_row_column_1,
+    build_ron_table_orientation(
         Value::Seq(vec![
             Value::Map(Map::from_iter([
                 (
@@ -357,20 +337,17 @@ fn test_sequence_row_column_1() {
         ]),
         Orientation::Row,
         Orientation::Column,
-    );
-    assert_eq!(
-        table,
-        "+-------------+---------------+-------------+-------+------+-----+----+----+\n\
-         | Hello Key   | World Value   | Hello Key 2 | Hello | Wold | Wod | Wo | Wo |\n\
-         +-------------+-------+-------+             |       |      |     |    |    |\n\
-         | Hello Key 2 | Hello | World |             |       |      |     |    |    |\n\
-         +-------------+-------+-------+-------------+-------+------+-----+----+----+"
-    );
-}
+    ),
+    "+-------------+---------------+-------------+-------+------+-----+----+----+"
+    "| Hello Key   | World Value   | Hello Key 2 | Hello | Wold | Wod | Wo | Wo |"
+    "+-------------+-------+-------+             |       |      |     |    |    |"
+    "| Hello Key 2 | Hello | World |             |       |      |     |    |    |"
+    "+-------------+-------+-------+-------------+-------+------+-----+----+----+"
+);
 
-#[test]
-fn test_sequence_row_column_2() {
-    let table = build_ron_table_orientation(
+test_table!(
+    test_sequence_row_column_2,
+    build_ron_table_orientation(
         Value::Seq(vec![
             Value::Map(Map::from_iter([
                 (
@@ -396,20 +373,17 @@ fn test_sequence_row_column_2() {
         ]),
         Orientation::Row,
         Orientation::Row,
-    );
-    assert_eq!(
-        table,
-        "+-------------+---------------+-------------+-------+------+-----+----+----+\n\
-         | Hello Key   | Hello Key 2   | Hello Key 2 | Hello | Wold | Wod | Wo | Wo |\n\
-         +-------------+-------+-------+             |       |      |     |    |    |\n\
-         | World Value | Hello | World |             |       |      |     |    |    |\n\
-         +-------------+-------+-------+-------------+-------+------+-----+----+----+"
-    );
-}
+    ),
+    "+-------------+---------------+-------------+-------+------+-----+----+----+"
+    "| Hello Key   | Hello Key 2   | Hello Key 2 | Hello | Wold | Wod | Wo | Wo |"
+    "+-------------+-------+-------+             |       |      |     |    |    |"
+    "| World Value | Hello | World |             |       |      |     |    |    |"
+    "+-------------+-------+-------+-------------+-------+------+-----+----+----+"
+);
 
-#[test]
-fn test_sequence_row_column_3() {
-    let table = build_ron_table_orientation(
+test_table!(
+    test_sequence_row_column_3,
+    build_ron_table_orientation(
         Value::Seq(vec![
             Value::Map(Map::from_iter([
                 (
@@ -435,60 +409,49 @@ fn test_sequence_row_column_3() {
         ]),
         Orientation::Column,
         Orientation::Column,
-    );
-    assert_eq!(
-        table,
-        "+-------------+-------------+\n\
-         | Hello Key   | World Value |\n\
-         +-------------+-------------+\n\
-         | Hello Key 2 | Hello       |\n\
-         |             +-------------+\n\
-         |             | World       |\n\
-         +-------------+-------------+\n\
-         | Hello Key 2               |\n\
-         +---------------------------+\n\
-         | Hello                     |\n\
-         +---------------------------+\n\
-         | Wold                      |\n\
-         +---------------------------+\n\
-         | Wod                       |\n\
-         +---------------------------+\n\
-         | Wo                        |\n\
-         +---------------------------+\n\
-         | Wo                        |\n\
-         +---------------------------+"
-    );
-}
+    ),
+    "+-------------+-------------+"
+    "| Hello Key   | World Value |"
+    "+-------------+-------------+"
+    "| Hello Key 2 | Hello       |"
+    "|             +-------------+"
+    "|             | World       |"
+    "+-------------+-------------+"
+    "| Hello Key 2               |"
+    "+---------------------------+"
+    "| Hello                     |"
+    "+---------------------------+"
+    "| Wold                      |"
+    "+---------------------------+"
+    "| Wod                       |"
+    "+---------------------------+"
+    "| Wo                        |"
+    "+---------------------------+"
+    "| Wo                        |"
+    "+---------------------------+"
+);
 
-#[test]
-fn test_option_0() {
-    let table = build_ron_table(Value::Option(Some(Box::new(Value::String(String::from(
+test_table!(
+    test_option_some,
+    build_ron_table(Value::Option(Some(Box::new(Value::String(String::from(
         "123",
-    ))))));
+    )))))),
+    "+-----+"
+    "| 123 |"
+    "+-----+"
+);
 
-    assert_eq!(
-        table,
-        "+-----+\n\
-         | 123 |\n\
-         +-----+",
-    );
-}
+test_table!(
+    test_option_none,
+    build_ron_table(Value::Option(None)),
+    "+--+"
+    "|  |"
+    "+--+"
+);
 
-#[test]
-fn test_option_1() {
-    let table = build_ron_table(Value::Option(None));
-
-    assert_eq!(
-        table,
-        "+--+\n\
-         |  |\n\
-         +--+",
-    );
-}
-
-#[test]
-fn test_option_2() {
-    let table = build_ron_table(Value::Map(Map::from_iter([
+test_table!(
+    test_option_2,
+    build_ron_table(Value::Map(Map::from_iter([
         (
             Value::String(String::from("Hello Key")),
             Value::String(String::from("World Value")),
@@ -505,27 +468,23 @@ fn test_option_2() {
             Value::String(String::from("Hello Key 2")),
             Value::String(String::from("Value 1")),
         ),
-    ])));
+    ]))),
+    "+-------------+-------------+"
+    "| Hello       | 123         |"
+    "|             +-------------+"
+    "|             | 1           |"
+    "|             +-------------+"
+    "|             | xasdasd     |"
+    "+-------------+-------------+"
+    "| Hello Key   | World Value |"
+    "+-------------+-------------+"
+    "| Hello Key 2 | Value 1     |"
+    "+-------------+-------------+"
+);
 
-    assert_eq!(
-        table,
-        "+-------------+-------------+\n\
-         | Hello       | 123         |\n\
-         |             +-------------+\n\
-         |             | 1           |\n\
-         |             +-------------+\n\
-         |             | xasdasd     |\n\
-         +-------------+-------------+\n\
-         | Hello Key   | World Value |\n\
-         +-------------+-------------+\n\
-         | Hello Key 2 | Value 1     |\n\
-         +-------------+-------------+"
-    );
-}
-
-#[test]
-fn test_option_3() {
-    let table = build_ron_table(Value::Map(Map::from_iter([
+test_table!(
+    test_option_3,
+    build_ron_table(Value::Map(Map::from_iter([
         (
             Value::String(String::from("Hello Key")),
             Value::String(String::from("World Value")),
@@ -535,23 +494,19 @@ fn test_option_3() {
             Value::String(String::from("Hello Key 2")),
             Value::String(String::from("Value 1")),
         ),
-    ])));
+    ]))),
+    "+-------------+-------------+"
+    "| Hello       |             |"
+    "+-------------+-------------+"
+    "| Hello Key   | World Value |"
+    "+-------------+-------------+"
+    "| Hello Key 2 | Value 1     |"
+    "+-------------+-------------+"
+);
 
-    assert_eq!(
-        table,
-        "+-------------+-------------+\n\
-         | Hello       |             |\n\
-         +-------------+-------------+\n\
-         | Hello Key   | World Value |\n\
-         +-------------+-------------+\n\
-         | Hello Key 2 | Value 1     |\n\
-         +-------------+-------------+"
-    );
-}
-
-#[test]
-fn test_alignment_center() {
-    let table = RonTable::default()
+test_table!(
+    test_alignment_center,
+    RonTable::default()
         .with(Alignment::center_vertical())
         .with(Alignment::center())
         .collapse()
@@ -577,30 +532,27 @@ fn test_alignment_center() {
                 Value::String(String::from("Wo")),
                 Value::String(String::from("Wo")),
             ]),
-        ]));
-    assert_eq!(
-        table,
-        "+-------------+-------------+\n\
-         |  Hello Key  | World Value |\n\
-         +-------------+-------------+\n\
-         |             |    Hello    |\n\
-         | Hello Key 2 +-------------+\n\
-         |             |    World    |\n\
-         +-------------+-------------+\n\
-         |        Hello Key 2        |\n\
-         +---------------------------+\n\
-         |           Hello           |\n\
-         +---------------------------+\n\
-         |           Wold            |\n\
-         +---------------------------+\n\
-         |            Wod            |\n\
-         +---------------------------+\n\
-         |            Wo             |\n\
-         +---------------------------+\n\
-         |            Wo             |\n\
-         +---------------------------+"
-    );
-}
+        ])),
+    "+-------------+-------------+"
+    "|  Hello Key  | World Value |"
+    "+-------------+-------------+"
+    "|             |    Hello    |"
+    "| Hello Key 2 +-------------+"
+    "|             |    World    |"
+    "+-------------+-------------+"
+    "|        Hello Key 2        |"
+    "+---------------------------+"
+    "|           Hello           |"
+    "+---------------------------+"
+    "|           Wold            |"
+    "+---------------------------+"
+    "|            Wod            |"
+    "+---------------------------+"
+    "|            Wo             |"
+    "+---------------------------+"
+    "|            Wo             |"
+    "+---------------------------+"
+);
 
 fn build_ron_table(value: Value) -> String {
     RonTable::default().collapse().build(&value)

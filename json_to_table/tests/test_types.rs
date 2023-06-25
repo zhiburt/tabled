@@ -1,353 +1,251 @@
 use json_to_table::json_to_table;
+
 use serde_json::json;
 use tabled::settings::Style;
 
-#[test]
-fn string_test() {
-    let value = json!("Some text string");
-    let table = json_to_table(&value).with(Style::modern()).to_string();
+use testing_table::test_table;
 
-    assert_eq!(
-        table,
-        concat!(
-            "┌──────────────────┐\n",
-            "│ Some text string │\n",
-            "└──────────────────┘",
-        )
-    );
-}
+test_table!(
+    string_test,
+    json_to_table(&json!("Some text string")).with(Style::modern()),
+    "┌──────────────────┐"
+    "│ Some text string │"
+    "└──────────────────┘"
+);
 
-#[test]
-fn string_multiline_test() {
-    let value = json!("Some text string\ntext on a new line\nmore text\nand a new line");
-    let table = json_to_table(&value).with(Style::modern()).to_string();
+test_table!(
+    string_multiline_test_0,
+    json_to_table(&json!("Some text string\ntext on a new line\nmore text\nand a new line")).with(Style::modern()),
+    "┌────────────────────┐"
+    "│ Some text string   │"
+    "│ text on a new line │"
+    "│ more text          │"
+    "│ and a new line     │"
+    "└────────────────────┘"
+);
 
-    assert_eq!(
-        table,
-        concat!(
-            "┌────────────────────┐\n",
-            "│ Some text string   │\n",
-            "│ text on a new line │\n",
-            "│ more text          │\n",
-            "│ and a new line     │\n",
-            "└────────────────────┘",
-        )
-    );
+test_table!(
+    string_multiline_test_1,
+    json_to_table(&json!("Some text string\ntext on a new line\nmore text\nand a new line\n")).with(Style::modern()),
+    "┌────────────────────┐"
+    "│ Some text string   │"
+    "│ text on a new line │"
+    "│ more text          │"
+    "│ and a new line     │"
+    "│                    │"
+    "└────────────────────┘"
+);
 
-    let value = json!("Some text string\ntext on a new line\nmore text\nand a new line\n");
-    let table = json_to_table(&value).with(Style::modern()).to_string();
+test_table!(
+    number_test_0,
+    json_to_table(&json!(123.2)).with(Style::modern()),
+    "┌───────┐"
+    "│ 123.2 │"
+    "└───────┘"
+);
 
-    assert_eq!(
-        table,
-        concat!(
-            "┌────────────────────┐\n",
-            "│ Some text string   │\n",
-            "│ text on a new line │\n",
-            "│ more text          │\n",
-            "│ and a new line     │\n",
-            "│                    │\n",
-            "└────────────────────┘",
-        )
-    );
-}
+test_table!(
+    number_test_1,
+    json_to_table(&json!(123)).with(Style::modern()),
+    "┌─────┐"
+    "│ 123 │"
+    "└─────┘"
+);
 
-#[test]
-fn number_test() {
-    let value = json!(123.2);
-    let table = json_to_table(&value).with(Style::modern()).to_string();
+test_table!(
+    null_test,
+    json_to_table(&json!(null)).with(Style::modern()),
+    ""
+);
 
-    assert_eq!(
-        table,
-        "┌───────┐\n\
-         │ 123.2 │\n\
-         └───────┘",
-    );
+test_table!(
+    list_test_0,
+    json_to_table(&json!(["Hello", "World", "123"])).with(Style::modern()),
+    "┌─────────┐"
+    "│  Hello  │"
+    "├─────────┤"
+    "│  World  │"
+    "├─────────┤"
+    "│  123    │"
+    "└─────────┘"
+);
 
-    let value = json!(123);
-    let table = json_to_table(&value).with(Style::modern()).to_string();
+test_table!(
+    list_test_1,
+    json_to_table(&json!([{"key": "Hello"}, {"1": "2", "2": "3", "4": "5"}, 123.222229])).with(Style::modern()),
+    "┌───────────────────┐"
+    "│ ┌─────┬─────────┐ │"
+    "│ │ key │  Hello  │ │"
+    "│ └─────┴─────────┘ │"
+    "├───────────────────┤"
+    "│ ┌───┬─────┐       │"
+    "│ │ 1 │  2  │       │"
+    "│ ├───┼─────┤       │"
+    "│ │ 2 │  3  │       │"
+    "│ ├───┼─────┤       │"
+    "│ │ 4 │  5  │       │"
+    "│ └───┴─────┘       │"
+    "├───────────────────┤"
+    "│  123.222229       │"
+    "└───────────────────┘"
+);
 
-    assert_eq!(
-        table,
-        "┌─────┐\n\
-         │ 123 │\n\
-         └─────┘",
-    );
-}
+test_table!(
+    object_test_0,
+    json_to_table(&json!({"message": "Hello World", "code": "123"})).with(Style::modern()),
+    "┌─────────┬───────────────┐"
+    "│ code    │  123          │"
+    "├─────────┼───────────────┤"
+    "│ message │  Hello World  │"
+    "└─────────┴───────────────┘"
+);
 
-#[test]
-fn null_test() {
-    let value = json!(null);
-    let table = json_to_table(&value).with(Style::modern()).to_string();
-    assert_eq!(table, "");
-}
+test_table!(
+    object_test_1,
+    json_to_table(&json!({"message": {"real": "Hello World", "cypher": "2132132"}, "code": ["123", "213"]})).with(Style::modern()),
+    "┌─────────┬────────────────────────────┐"
+    "│ code    │ ┌───────┐                  │"
+    "│         │ │  123  │                  │"
+    "│         │ ├───────┤                  │"
+    "│         │ │  213  │                  │"
+    "│         │ └───────┘                  │"
+    "├─────────┼────────────────────────────┤"
+    "│ message │ ┌────────┬───────────────┐ │"
+    "│         │ │ cypher │  2132132      │ │"
+    "│         │ ├────────┼───────────────┤ │"
+    "│         │ │ real   │  Hello World  │ │"
+    "│         │ └────────┴───────────────┘ │"
+    "└─────────┴────────────────────────────┘"
+);
 
-#[test]
-fn list_test() {
-    let value = json!(["Hello", "World", "123"]);
-    let table = json_to_table(&value).with(Style::modern()).to_string();
+test_table!(
+    collapsed_string_test_0,
+    json_to_table(&json!("Some text string")).with(Style::modern()),
+    json_to_table(&json!("Some text string"))
+        .collapse()
+        .with(Style::modern()),
+);
 
-    assert_eq!(
-        table,
-        concat!(
-            "┌─────────┐\n",
-            "│  Hello  │\n",
-            "├─────────┤\n",
-            "│  World  │\n",
-            "├─────────┤\n",
-            "│  123    │\n",
-            "└─────────┘",
-        )
-    );
+test_table!(
+    collapsed_string_test_1,
+    json_to_table(&json!("")).with(Style::modern()),
+    "┌──┐"
+    "│  │"
+    "└──┘"
+);
 
-    let value = json!([{"key": "Hello"}, {"1": "2", "2": "3", "4": "5"}, 123.222229]);
-    let table = json_to_table(&value).with(Style::modern()).to_string();
+test_table!(
+    collapsed_string_multiline_test_0,
+    json_to_table(&json!(
+        "Some text string\ntext on a new line\nmore text\nand a new line"
+    ))
+    .collapse()
+    .with(Style::modern()),
+    json_to_table(&json!(
+        "Some text string\ntext on a new line\nmore text\nand a new line"
+    ))
+    .with(Style::modern()),
+);
 
-    assert_eq!(
-        table,
-        concat!(
-            "┌───────────────────┐\n",
-            "│ ┌─────┬─────────┐ │\n",
-            "│ │ key │  Hello  │ │\n",
-            "│ └─────┴─────────┘ │\n",
-            "├───────────────────┤\n",
-            "│ ┌───┬─────┐       │\n",
-            "│ │ 1 │  2  │       │\n",
-            "│ ├───┼─────┤       │\n",
-            "│ │ 2 │  3  │       │\n",
-            "│ ├───┼─────┤       │\n",
-            "│ │ 4 │  5  │       │\n",
-            "│ └───┴─────┘       │\n",
-            "├───────────────────┤\n",
-            "│  123.222229       │\n",
-            "└───────────────────┘",
-        )
-    );
-}
+test_table!(
+    collapsed_string_multiline_test_1,
+    json_to_table(&json!(
+        "Some text string\ntext on a new line\nmore text\nand a new line\n"
+    ))
+    .collapse()
+    .with(Style::modern()),
+    json_to_table(&json!(
+        "Some text string\ntext on a new line\nmore text\nand a new line\n"
+    ))
+    .with(Style::modern()),
+);
 
-#[test]
-fn object_test() {
-    let value = json!({"message": "Hello World", "code": "123"});
-    let table = json_to_table(&value).with(Style::modern()).to_string();
+test_table!(
+    collapsed_number_test_0,
+    json_to_table(&json!(123.2))
+        .collapse()
+        .with(Style::modern()),
+    json_to_table(&json!(123.2)).with(Style::modern()),
+);
 
-    assert_eq!(
-        table,
-        concat!(
-            "┌─────────┬───────────────┐\n",
-            "│ code    │  123          │\n",
-            "├─────────┼───────────────┤\n",
-            "│ message │  Hello World  │\n",
-            "└─────────┴───────────────┘",
-        )
-    );
+test_table!(
+    collapsed_number_test_1,
+    json_to_table(&json!(123)).collapse().with(Style::modern()),
+    json_to_table(&json!(123)).with(Style::modern()),
+);
 
-    let value =
-        json!({"message": {"real": "Hello World", "cypher": "2132132"}, "code": ["123", "213"]});
-    let table = json_to_table(&value).with(Style::modern()).to_string();
+test_table!(
+    collapsed_null_test,
+    json_to_table(&json!(null)).collapse().with(Style::modern()),
+    "┌──┐"
+    "│  │"
+    "└──┘"
+);
 
-    assert_eq!(
-        table,
-        concat!(
-            "┌─────────┬────────────────────────────┐\n",
-            "│ code    │ ┌───────┐                  │\n",
-            "│         │ │  123  │                  │\n",
-            "│         │ ├───────┤                  │\n",
-            "│         │ │  213  │                  │\n",
-            "│         │ └───────┘                  │\n",
-            "├─────────┼────────────────────────────┤\n",
-            "│ message │ ┌────────┬───────────────┐ │\n",
-            "│         │ │ cypher │  2132132      │ │\n",
-            "│         │ ├────────┼───────────────┤ │\n",
-            "│         │ │ real   │  Hello World  │ │\n",
-            "│         │ └────────┴───────────────┘ │\n",
-            "└─────────┴────────────────────────────┘",
-        )
-    );
-}
+test_table!(
+    collapsed_list_test_0,
+    json_to_table(&json!(["Hello", "World", "123"])).collapse().with(Style::modern()),
+    "┌───────┐"
+    "│ Hello │"
+    "├───────┤"
+    "│ World │"
+    "├───────┤"
+    "│ 123   │"
+    "└───────┘"
+);
 
-mod squashed {
-    use super::*;
+test_table!(
+    collapsed_list_test_1,
+    json_to_table(&json!([{"key": "Hello"}, {"1": "2", "2": "3", "4": "5"}, 123.222229])).collapse().with(Style::modern()),
+    "┌─────┬───────┐"
+    "│ key │ Hello │"
+    "├───┬─┴───────┤"
+    "│ 1 │ 2       │"
+    "├───┼─────────┤"
+    "│ 2 │ 3       │"
+    "├───┼─────────┤"
+    "│ 4 │ 5       │"
+    "├───┴─────────┤"
+    "│ 123.222229  │"
+    "└─────────────┘"
+);
 
-    #[test]
-    fn string_test() {
-        let value = json!("Some text string");
+test_table!(
+    collapsed_list_test_2,
+    json_to_table(&json!([])).collapse().with(Style::modern()),
+    "┌──┐"
+    "│  │"
+    "└──┘"
+);
 
-        let table = json_to_table(&value).with(Style::modern()).to_string();
-        let table_squashed = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
+test_table!(
+    collapsed_object_test_1,
+    json_to_table(&json!({"message": "Hello World", "code": "123"})).collapse().with(Style::modern()),
+    "┌─────────┬─────────────┐"
+    "│ code    │ 123         │"
+    "├─────────┼─────────────┤"
+    "│ message │ Hello World │"
+    "└─────────┴─────────────┘"
+);
 
-        assert_eq!(table, table_squashed);
+test_table!(
+    collapsed_object_test_2,
+    json_to_table(&json!({"message": {"real": "Hello World", "cypher": "2132132"}, "code": ["123", "213"]})).collapse().with(Style::modern()),
+    "┌─────────┬──────────────────────┐"
+    "│ code    │ 123                  │"
+    "│         ├──────────────────────┤"
+    "│         │ 213                  │"
+    "├─────────┼────────┬─────────────┤"
+    "│ message │ cypher │ 2132132     │"
+    "│         ├────────┼─────────────┤"
+    "│         │ real   │ Hello World │"
+    "└─────────┴────────┴─────────────┘"
+);
 
-        let table = json_to_table(&json!(""))
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(table, "┌──┐\n│  │\n└──┘");
-    }
-
-    #[test]
-    fn string_multiline_test() {
-        let value = json!("Some text string\ntext on a new line\nmore text\nand a new line");
-
-        let table = json_to_table(&value).with(Style::modern()).to_string();
-        let table_squashed = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(table, table_squashed);
-
-        let value = json!("Some text string\ntext on a new line\nmore text\nand a new line\n");
-
-        let table = json_to_table(&value).with(Style::modern()).to_string();
-        let table_squashed = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(table, table_squashed);
-    }
-
-    #[test]
-    fn number_test() {
-        let value = json!(123.2);
-
-        let table = json_to_table(&value).with(Style::modern()).to_string();
-        let table_squashed = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(table, table_squashed);
-
-        let value = json!(123);
-
-        let table = json_to_table(&value).with(Style::modern()).to_string();
-        let table_squashed = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(table, table_squashed);
-    }
-
-    #[test]
-    fn null_test() {
-        let value = json!(null);
-        let table_squashed = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(
-            table_squashed,
-            "┌──┐\n\
-             │  │\n\
-             └──┘"
-        );
-    }
-
-    #[test]
-    fn list_test() {
-        let value = json!(["Hello", "World", "123"]);
-        let table = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(
-            table,
-            concat!(
-                "┌───────┐\n",
-                "│ Hello │\n",
-                "├───────┤\n",
-                "│ World │\n",
-                "├───────┤\n",
-                "│ 123   │\n",
-                "└───────┘",
-            )
-        );
-
-        let value = json!([{"key": "Hello"}, {"1": "2", "2": "3", "4": "5"}, 123.222229]);
-        let table = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(
-            table,
-            concat!(
-                "┌─────┬───────┐\n",
-                "│ key │ Hello │\n",
-                "├───┬─┴───────┤\n",
-                "│ 1 │ 2       │\n",
-                "├───┼─────────┤\n",
-                "│ 2 │ 3       │\n",
-                "├───┼─────────┤\n",
-                "│ 4 │ 5       │\n",
-                "├───┴─────────┤\n",
-                "│ 123.222229  │\n",
-                "└─────────────┘",
-            )
-        );
-
-        let value = json!([]);
-        let table = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(table, "┌──┐\n│  │\n└──┘");
-    }
-
-    #[test]
-    fn object_test() {
-        let value = json!({"message": "Hello World", "code": "123"});
-        let table = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(
-            table,
-            concat!(
-                "┌─────────┬─────────────┐\n",
-                "│ code    │ 123         │\n",
-                "├─────────┼─────────────┤\n",
-                "│ message │ Hello World │\n",
-                "└─────────┴─────────────┘",
-            )
-        );
-
-        let value = json!({"message": {"real": "Hello World", "cypher": "2132132"}, "code": ["123", "213"]});
-        let table = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(
-            table,
-            concat!(
-                "┌─────────┬──────────────────────┐\n",
-                "│ code    │ 123                  │\n",
-                "│         ├──────────────────────┤\n",
-                "│         │ 213                  │\n",
-                "├─────────┼────────┬─────────────┤\n",
-                "│ message │ cypher │ 2132132     │\n",
-                "│         ├────────┼─────────────┤\n",
-                "│         │ real   │ Hello World │\n",
-                "└─────────┴────────┴─────────────┘",
-            )
-        );
-
-        let value = json!({});
-        let table = json_to_table(&value)
-            .with(Style::modern())
-            .collapse()
-            .to_string();
-
-        assert_eq!(table, "┌──┐\n│  │\n└──┘");
-    }
-}
+test_table!(
+    collapsed_object_test_3,
+    json_to_table(&json!({})).collapse().with(Style::modern()),
+    "┌──┐"
+    "│  │"
+    "└──┘"
+);

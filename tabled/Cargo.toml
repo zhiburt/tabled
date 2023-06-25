@@ -258,7 +258,7 @@ required-features = ["std"]
 default = ["derive", "macros"]
 std = ["papergrid/std"]
 derive = ["tabled_derive", "std"]
-color = ["papergrid/color", "ansi-str", "ansitok", "std"]
+color = ["papergrid/color", "ansi-str", "ansitok", "std", "testing_table/ansi"]
 macros = ["std"]
 
 [dependencies]
@@ -270,6 +270,7 @@ unicode-width = "0.1"
 
 [dev-dependencies]
 owo-colors = "3.5"
+testing_table = { path = "../testing_table" }
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #
