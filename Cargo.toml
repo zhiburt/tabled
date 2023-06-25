@@ -8,4 +8,5 @@ members = [
     "ron_to_table",
     "static_table",
     "table_to_html",
+    "testing_table",
 ]
