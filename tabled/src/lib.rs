@@ -153,19 +153,26 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{builder::Builder, settings::{Modify, object::Rows, Alignment, Style}};
+//! use std::iter;
 //!
-//! let header = std::iter::once(String::from("i")).chain((0..10).map(|i| i.to_string()));
+//! use tabled::{
+//!     builder::Builder,
+//!     settings::{Modify, object::Rows, Alignment, Style}
+//! };
+//!
+//! let (x, y) = (3, 10);
 //!
 //! let mut builder = Builder::default();
-//! builder.set_header(header);
-//! for i in 0..3 {
-//!     let mut row = vec![];
-//!     row.push(i.to_string());
-//!     for j in 0..10 {
-//!         row.push((i*j).to_string());
-//!     }
 //!
+//! let header = iter::once(String::from("i"))
+//!     .chain((0..y)
+//!     .map(|i| i.to_string()));
+//! builder.set_header(header);
+//!
+//! for i in 0..x {
+//!     let row = iter::once(i)
+//!         .chain((0..y).map(|j| i * j))
+//!         .map(|i| i.to_string());
 //!     builder.push_record(row);
 //! }
 //!
@@ -198,10 +205,10 @@
 //!     col!["Hello", "World", "!"],
 //!     col!["Hello"; 3],
 //!     col!["World"; 3],
-//! ].to_string();
+//! ];
 //!
 //! assert_eq!(
-//!     table,
+//!     table.to_string(),
 //!     concat!(
 //!         "+-----------+-----------+-----------+\n",
 //!         "| +-------+ | +-------+ | +-------+ |\n",
@@ -221,12 +228,14 @@
 //! ## Alloc
 //!
 //! [`Table`] keeps data buffered, which sometimes not ideal choise.
-//! For such reason there is [`IterTable`].
+//! For such reason there is [`IterTable`] and [`CompactTable`].
 //!
-//! It reuses a given data and does not make copies of it '1.
-//! But because of that it has some limitations compared to [`Table`]
+//! ### Less allocations
 //!
-//! It also can be printed directly to [`io::Write`] to not have any intermidiaries.
+//! [`IterTable`] stands on a middle ground between [`Table`] and [`CompactTable`].
+//!
+//! It does allocate memory but in a much smaller chunks that a [`Table`] does.
+//! The benefit is that it can be used interchangebly with [`Table`].
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
@@ -248,9 +257,37 @@
 //! );
 //! ```
 //!
+//! ## Alloc free (`#nostd`)
+//!
+//! [`CompactTable`] can be configured ('1) to not make any allocations.
+//! But the price is that the set of settings which can be applied to it is limited.  
+//!
+//! It also can be printed directly to [`fmt::Write`] to not have any intermidiaries.
+//!
 //! '1. It does not make any allocations in case you provide it with `width` and `count_rows`.
-//!  
-//! ## Alloc free
+//!
+//! ```
+//! use tabled::{settings::Style, tables::CompactTable};
+//! use core::fmt::{Write, Result};
+//!
+//! struct StubWriter;
+//!
+//! impl Write for StubWriter {
+//!     fn write_str(&mut self, _: &str) -> Result {
+//!         Ok(())
+//!     }
+//! }
+//!
+//! let data = [
+//!     ["FreeBSD", "1993", "William and Lynne Jolitz", "?"],
+//!     ["OpenBSD", "1995", "Theo de Raadt", ""],
+//!     ["HardenedBSD", "2014", "Oliver Pinter and Shawn Webb", ""],
+//! ];
+//!
+//! let table = CompactTable::from(data).with(Style::psql());
+//!
+//! table.fmt(StubWriter);
+//! ```
 //!
 //! ## More information
 //!
@@ -259,7 +296,8 @@
 //!
 //! [`Builder`]: crate::builder::Builder
 //! [`IterTable`]: crate::tables::IterTable
-//! [`io::Write`]: std::io::Write
+//! [`CompactTable`]: crate::tables::CompactTable
+//! [`fmt::Write`]: core::fmt::Write
 //! [`row!`]: crate::row
 //! [`col!`]: crate::col
 

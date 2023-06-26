@@ -1,4 +1,4 @@
-//! The module contains a [`SpannedGridDimension`] for [`Grid`] height/width estimation.
+//! The module contains a [`SpannedVecRecordsDimension`] for [`Grid`] height/width estimation.
 //!
 //! [`Grid`]: crate::grid::iterable::Grid
 
@@ -22,7 +22,7 @@ use crate::config::spanned::SpannedConfig;
 ///
 /// It is a specialization of [`SpannedGridDimension`] for [`VecRecords`].
 ///
-/// [`SpannedGridDimension`]: crate::dimension::SpannedGridDimension
+/// [`SpannedGridDimension`]: crate::dimension::spanned::SpannedGridDimension
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct SpannedVecRecordsDimension {
     height: Vec<usize>,

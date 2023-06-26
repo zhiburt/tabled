@@ -1,55 +1,16 @@
 //! This module contains an [`Alignment`] setting for cells on the [`Table`].
 //!
-//! An alignment strategy can be set by [`AlignmentStrategy`].
-//!
 //! # Example
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{
-//!     Table,
-//!     settings::{
-//!         formatting::AlignmentStrategy,
-//!         object::Segment, Alignment, Modify, Style,
-//!     }
-//! };
-//!
-//! let data = [
-//!     ["1", "2", "3"],
-//!     ["Some\nMulti\nLine\nText", "and a line", "here"],
-//!     ["4", "5", "6"],
-//! ];
-//!
+//! # use tabled::{Table, settings::{Alignment, Modify, object::Rows}};
+//! # let data: Vec<&'static str> = Vec::new();
 //! let mut table = Table::new(&data);
-//! table.with(Style::modern())
-//!      .with(
-//!         Modify::new(Segment::all())
-//!             .with(Alignment::right())
-//!             .with(Alignment::center())
-//!             .with(AlignmentStrategy::PerCell)
-//!     );
-//!
-//! assert_eq!(
-//!     table.to_string(),
-//!     concat!(
-//!         "┌───────┬────────────┬──────┐\n",
-//!         "│   0   │     1      │  2   │\n",
-//!         "├───────┼────────────┼──────┤\n",
-//!         "│   1   │     2      │  3   │\n",
-//!         "├───────┼────────────┼──────┤\n",
-//!         "│ Some  │ and a line │ here │\n",
-//!         "│ Multi │            │      │\n",
-//!         "│ Line  │            │      │\n",
-//!         "│ Text  │            │      │\n",
-//!         "├───────┼────────────┼──────┤\n",
-//!         "│   4   │     5      │  6   │\n",
-//!         "└───────┴────────────┴──────┘",
-//!     ),
-//! )
+//! table.with(Modify::new(Rows::single(0)).with(Alignment::center()));
 //! ```
 //!
 //! [`Table`]: crate::Table
-//! [`AlignmentStrategy`]: crate::settings::formatting::AlignmentStrategy
 
 use crate::{
     grid::config::CompactConfig,
@@ -64,15 +25,56 @@ use crate::grid::config::{ColoredConfig, Entity};
 
 /// Alignment represent a horizontal and vertical alignment setting for any cell on a [`Table`].
 ///
+/// An alignment strategy can be set by [`AlignmentStrategy`].
+///
+/// # Example
+///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// # use tabled::{Table, settings::{Alignment, Modify, object::Rows}};
-/// # let data: Vec<&'static str> = Vec::new();
+/// use tabled::{
+///     Table,
+///     settings::{
+///         formatting::AlignmentStrategy,
+///         object::Segment, Alignment, Modify, Style,
+///     }
+/// };
+///
+/// let data = [
+///     ["1", "2", "3"],
+///     ["Some\nMulti\nLine\nText", "and a line", "here"],
+///     ["4", "5", "6"],
+/// ];
+///
 /// let mut table = Table::new(&data);
-/// table.with(Modify::new(Rows::single(0)).with(Alignment::center()));
+/// table.with(Style::modern())
+///      .with(
+///         Modify::new(Segment::all())
+///             .with(Alignment::right())
+///             .with(Alignment::center())
+///             .with(AlignmentStrategy::PerCell)
+///     );
+///
+/// assert_eq!(
+///     table.to_string(),
+///     concat!(
+///         "┌───────┬────────────┬──────┐\n",
+///         "│   0   │     1      │  2   │\n",
+///         "├───────┼────────────┼──────┤\n",
+///         "│   1   │     2      │  3   │\n",
+///         "├───────┼────────────┼──────┤\n",
+///         "│ Some  │ and a line │ here │\n",
+///         "│ Multi │            │      │\n",
+///         "│ Line  │            │      │\n",
+///         "│ Text  │            │      │\n",
+///         "├───────┼────────────┼──────┤\n",
+///         "│   4   │     5      │  6   │\n",
+///         "└───────┴────────────┴──────┘",
+///     ),
+/// )
 /// ```
 ///
 /// [`Table`]: crate::Table
+/// [`AlignmentStrategy`]: crate::settings::formatting::AlignmentStrategy
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Alignment {
     inner: AlignmentInner,

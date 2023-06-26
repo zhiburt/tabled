@@ -94,6 +94,32 @@ impl IndexBuilder {
     /// Set an index name.
     ///
     /// When [`None`] the name won't be used.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::builder::Builder;
+    ///
+    /// let mut builder = Builder::default();
+    /// builder.set_header(["i", "column1", "column2"]);
+    /// builder.push_record(["0", "value1", "value2"]);
+    ///
+    /// let table = builder.index()
+    ///     .column(1)
+    ///     .name(Some(String::from("index")))
+    ///     .build();
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "+--------+---+---------+\n\
+    ///      |        | i | column2 |\n\
+    ///      +--------+---+---------+\n\
+    ///      | index  |   |         |\n\
+    ///      +--------+---+---------+\n\
+    ///      | value1 | 0 | value2  |\n\
+    ///      +--------+---+---------+"
+    /// )
+    /// ```
     pub fn name(mut self, name: Option<String>) -> Self {
         self.name = name;
         self

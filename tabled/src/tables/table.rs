@@ -251,6 +251,16 @@ impl Table {
     pub fn get_config_mut(&mut self) -> &mut ColoredConfig {
         &mut self.config
     }
+
+    /// Returns a used records.
+    pub fn get_records(&self) -> &VecRecords<CellInfo<String>> {
+        &self.records
+    }
+
+    /// Returns a used records.
+    pub fn get_records_mut(&mut self) -> &mut VecRecords<CellInfo<String>> {
+        &mut self.records
+    }
 }
 
 impl Default for Table {

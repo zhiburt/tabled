@@ -6,7 +6,7 @@ use crate::{
 
 /// Set a justification character and a color.
 ///
-/// Default value is ' ' (<space>) with no color.
+/// Default value is `' '` (`<space>`) with no color.
 ///
 /// # Examples
 ///

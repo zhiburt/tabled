@@ -14,12 +14,61 @@ pub struct Charset;
 
 impl Charset {
     /// Returns [`CleanCharset`] which removes all `\t` and `\r` occurences.
+    ///
+    /// Notice that tab is just removed rather then being replaced with spaces.
+    /// You might be better call [`TabSize`] first if you not expect such behavior.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{Table, settings::formatting::Charset};
+    ///
+    /// let text = "Some\ttext\t\twith \\tabs";
+    ///
+    /// let mut table = Table::new([text]);
+    /// table.with(Charset::clean());
+    ///
+    /// assert_eq!(
+    ///     table.to_string(),
+    ///     "+--------------------+\n\
+    ///      | &str               |\n\
+    ///      +--------------------+\n\
+    ///      | Sometextwith \\tabs |\n\
+    ///      +--------------------+"
+    /// )
+    /// ```
+    ///
+    /// [`TabSize`]: crate::settings::formatting::TabSize
     pub fn clean() -> CleanCharset {
         CleanCharset
     }
 }
 
 /// [`CleanCharset`] removes all `\t` and `\r` occurences.
+///
+/// # Example
+///
+/// ```
+/// use tabled::{Table, settings::formatting::Charset};
+///
+/// let text = "Some text which was created on windows \r\n yes they use this \\r\\n";
+///
+/// let mut builder = Table::builder([text]);
+/// builder.set_header(["win. text"]);
+///
+/// let mut table = builder.build();
+/// table.with(Charset::clean());
+///
+/// assert_eq!(
+///     table.to_string(),
+///     "+-----------------------------------------+\n\
+///      | win. text                               |\n\
+///      +-----------------------------------------+\n\
+///      | Some text which was created on windows  |\n\
+///      |  yes they use this \\r\\n                 |\n\
+///      +-----------------------------------------+"
+/// )
+/// ```
 #[derive(Debug, Default, Clone)]
 pub struct CleanCharset;
 

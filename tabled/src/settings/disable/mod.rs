@@ -1,28 +1,12 @@
 //! This module contains a [`Disable`] structure which helps to
 //! remove an etheir column or row from a [`Table`].
 //!
-//! Generally you should avoid use of [`Disable`] because it's a slow function and modifies the underlying records.
-//! Providing correct data right away is better.
-//!
 //! # Example
 //!
-//! ```
-//! use tabled::{Table, settings::{Disable, object::Rows}};
-//!
-//! let data = vec!["Hello", "World", "!!!"];
-//!
-//! let table = Table::new(data).with(Disable::row(Rows::new(1..2))).to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     "+-------+\n\
-//!      | &str  |\n\
-//!      +-------+\n\
-//!      | World |\n\
-//!      +-------+\n\
-//!      | !!!   |\n\
-//!      +-------+"
-//! );
+//! ```rust,no_run
+//! # use tabled::{Table, settings::{Disable, object::Rows}};
+//! # let data: Vec<&'static str> = Vec::new();
+//! let table = Table::new(&data).with(Disable::row(Rows::first()));
 //! ```
 //!
 //! [`Table`]: crate::Table
@@ -39,14 +23,30 @@ use crate::{
 /// It tries to keeps track of style changes which may occur.
 /// But it's not guaranteed will be the way you would expect it to be.
 ///
+/// Generally you should avoid use of [`Disable`] because it's a slow function and modifies the underlying records.
+/// Providing correct data right away is better.
+///
 /// # Example
 ///
-/// ```rust,no_run
-/// # use tabled::{Table, settings::{Disable, object::Rows}};
-/// # let data: Vec<&'static str> = Vec::new();
-/// let table = Table::new(&data).with(Disable::row(Rows::first()));
 /// ```
+/// use tabled::{Table, settings::{Disable, object::Rows}};
 ///
+/// let data = vec!["Hello", "World", "!!!"];
+///
+/// let table = Table::new(data).with(Disable::row(Rows::new(1..2))).to_string();
+///
+/// assert_eq!(
+///     table,
+///     "+-------+\n\
+///      | &str  |\n\
+///      +-------+\n\
+///      | World |\n\
+///      +-------+\n\
+///      | !!!   |\n\
+///      +-------+"
+/// );
+///
+/// ```
 /// [`Table`]: crate::Table
 #[derive(Debug)]
 pub struct Disable<L, Target> {

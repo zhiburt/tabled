@@ -2,55 +2,18 @@
 //!
 //! # Example
 //!
-#![cfg_attr(feature = "derive", doc = "```")]
-#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{Table, Tabled, settings::{Style, Concat}};
+//! ```
+//! use tabled::{Table, settings::Concat};
+//! let table1 = Table::new([0, 1, 2, 3]);
+//! let table2 = Table::new(["A", "B", "C", "D"]);
 //!
-//! #[derive(Tabled)]
-//! struct Message {
-//!     id: &'static str,
-//!     text: &'static str,
-//! }
-//!
-//! #[derive(Tabled)]
-//! struct Department(#[tabled(rename = "department")] &'static str);
-//!
-//! let messages = [
-//!     Message { id: "0", text: "Hello World" },
-//!     Message { id: "1", text: "Do do do something", },
-//! ];
-//!
-//! let departments = [
-//!     Department("Admins"),
-//!     Department("DevOps"),
-//!     Department("R&D"),
-//! ];
-//!
-//! let mut table = Table::new(messages);
-//! table
-//!     .with(Concat::horizontal(Table::new(departments)))
-//!     .with(Style::extended());
-//!
-//! assert_eq!(
-//!     table.to_string(),
-//!     concat!(
-//!         "╔════╦════════════════════╦════════════╗\n",
-//!         "║ id ║ text               ║ department ║\n",
-//!         "╠════╬════════════════════╬════════════╣\n",
-//!         "║ 0  ║ Hello World        ║ Admins     ║\n",
-//!         "╠════╬════════════════════╬════════════╣\n",
-//!         "║ 1  ║ Do do do something ║ DevOps     ║\n",
-//!         "╠════╬════════════════════╬════════════╣\n",
-//!         "║    ║                    ║ R&D        ║\n",
-//!         "╚════╩════════════════════╩════════════╝",
-//!     )
-//! )
+//! let mut table3 = table1;
+//! table3.with(Concat::horizontal(table2));
 //! ```
 
 use std::borrow::Cow;
 
 use crate::{
-    grid::config::Position,
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut, Resizable},
     settings::TableOption,
     Table,
@@ -64,14 +27,54 @@ use crate::{
 /// [`Concat`] in horizontal mode has similar behaviour to tuples `(a, b)`.
 /// But it behaves on tables rather than on an actual data.
 ///
-/// ```
-/// use tabled::{Table, settings::Concat};
-/// let table1 = Table::new([0, 1, 2, 3]);
-/// let table2 = Table::new(["A", "B", "C", "D"]);
+/// # Example
 ///
-/// let mut table3 = table1;
-/// table3.with(Concat::horizontal(table2));
+///
+#[cfg_attr(feature = "derive", doc = "```")]
+#[cfg_attr(not(feature = "derive"), doc = "```ignore")]
+/// use tabled::{Table, Tabled, settings::{Style, Concat}};
+///
+/// #[derive(Tabled)]
+/// struct Message {
+///     id: &'static str,
+///     text: &'static str,
+/// }
+///
+/// #[derive(Tabled)]
+/// struct Department(#[tabled(rename = "department")] &'static str);
+///
+/// let messages = [
+///     Message { id: "0", text: "Hello World" },
+///     Message { id: "1", text: "Do do do something", },
+/// ];
+///
+/// let departments = [
+///     Department("Admins"),
+///     Department("DevOps"),
+///     Department("R&D"),
+/// ];
+///
+/// let mut table = Table::new(messages);
+/// table
+///     .with(Concat::horizontal(Table::new(departments)))
+///     .with(Style::extended());
+///
+/// assert_eq!(
+///     table.to_string(),
+///     concat!(
+///         "╔════╦════════════════════╦════════════╗\n",
+///         "║ id ║ text               ║ department ║\n",
+///         "╠════╬════════════════════╬════════════╣\n",
+///         "║ 0  ║ Hello World        ║ Admins     ║\n",
+///         "╠════╬════════════════════╬════════════╣\n",
+///         "║ 1  ║ Do do do something ║ DevOps     ║\n",
+///         "╠════╬════════════════════╬════════════╣\n",
+///         "║    ║                    ║ R&D        ║\n",
+///         "╚════╩════════════════════╩════════════╝",
+///     )
+/// )
 /// ```
+
 #[derive(Debug)]
 pub struct Concat {
     table: Table,
@@ -136,10 +139,7 @@ where
 
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
-                        let mut cell_text = GetCell(String::new(), (row, col));
-                        let _ = rhs.with(&mut cell_text);
-                        let text = cell_text.0;
-
+                        let text = rhs.get_records().get_text((row, col)).to_string();
                         let col = col + count_cols;
                         records.set((row, col), text);
                     }
@@ -160,28 +160,12 @@ where
 
                 for row in 0..rhs.shape().0 {
                     for col in 0..rhs.shape().1 {
-                        let mut cell_text = GetCell(String::new(), (row, col));
-                        let _ = rhs.with(&mut cell_text);
-                        let text = cell_text.0;
-
+                        let text = rhs.get_records().get_text((row, col)).to_string();
                         let row = row + count_rows;
                         records.set((row, col), text);
                     }
                 }
             }
         }
-    }
-}
-
-#[derive(Debug, Default)]
-struct GetCell(String, Position);
-
-impl<R, D, C> TableOption<R, D, C> for &mut GetCell
-where
-    R: PeekableRecords,
-{
-    fn change(self, records: &mut R, _: &mut C, _: &mut D) {
-        let cell = records.get_text(self.1).to_string();
-        self.0 = cell;
     }
 }

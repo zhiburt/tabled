@@ -52,11 +52,25 @@ pub struct Builder {
 
 impl Builder {
     /// Creates a [`Builder`] instance.
+    ///
+    /// ```
+    /// use tabled::builder::Builder;
+    ///
+    /// let builder = Builder::new();
+    /// ```
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Creates a [`Builder`] instance.
+    /// Creates a [`Builder`] instance with a given row capacity.
+    ///
+    /// ```
+    /// use tabled::builder::Builder;
+    ///
+    /// let mut builder = Builder::with_capacity(2);
+    /// builder.push_record((0..3).map(|i| i.to_string()));
+    /// builder.push_record(["i", "surname", "lastname"]);
+    /// ```
     pub fn with_capacity(capacity: usize) -> Self {
         let mut b = Self::new();
         b.data = Vec::with_capacity(capacity);
@@ -66,7 +80,7 @@ impl Builder {
 
     /// Sets a [`Table`] header.
     ///
-    /// ```rust
+    /// ```
     /// # use tabled::builder::Builder;
     /// let mut builder = Builder::default();
     /// builder.set_header((0..3).map(|i| i.to_string()));
@@ -191,7 +205,7 @@ impl Builder {
 
     /// Adds a row to a [`Table`].
     ///
-    /// ```rust
+    /// ```
     /// use tabled::builder::Builder;
     ///
     /// let mut builder = Builder::default();
