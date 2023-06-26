@@ -1860,7 +1860,8 @@ See the **[example](/json_to_table/README.md)**.
 
 Since version `0.11` we no longer have special treatment for symbols which WILL break your terminal output such as
 `\t` and `\r`.
-So if your content might contain them you shall either handle it yourself, or call `tabled::settings::formatting::Charset::clean`.
+So if your content might contain them you shall either handle it yourself,
+or call `tabled::settings::formatting::Charset::clean` and `tabled::settings::formatting::Tabsize`.
 
 ### ANSI escape codes
 
@@ -1963,7 +1964,6 @@ fn main() {
     println!("{table}");
 }
 ```
-
 
 ### Semver
 

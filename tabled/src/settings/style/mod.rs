@@ -91,8 +91,8 @@
 //! It also contains a list of types to support colors.
 //!
 //! [`Table`]: crate::Table
-//! [`BorderText`]: crate::border_text::BorderText
-//! [`RawStyle`]: crate::raw_style::RawStyle
+//! [`BorderText`]: crate::settings::style::BorderText
+//! [`RawStyle`]: crate::settings::style::RawStyle
 
 #[cfg(feature = "std")]
 mod border;

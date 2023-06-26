@@ -55,13 +55,13 @@ impl RonTable {
         self
     }
 
-    /// Set a table mode for a [`serde_json::Value::Object`].
+    /// Set a table mode for a [`ron::Value::Map`].
     pub fn map_orientation(&mut self, mode: Orientation) -> &mut Self {
         self.object_orientation = mode;
         self
     }
 
-    /// Set a table mode for a [`serde_json::Value::Array`].
+    /// Set a table mode for a [`ron::Value::Seq`].
     pub fn seq_orientation(&mut self, mode: Orientation) -> &mut Self {
         self.array_orientation = mode;
         self

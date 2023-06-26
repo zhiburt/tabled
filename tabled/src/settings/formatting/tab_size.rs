@@ -11,6 +11,26 @@ use crate::{
 ///
 /// IMPORTANT: The tab character might be not present in output,
 /// it might be replaced by spaces.
+///
+/// # Example
+///
+/// ```
+/// use tabled::{Table, settings::formatting::TabSize};
+///
+/// let text = "Some\ttext\t\twith \\tabs";
+///
+/// let mut table = Table::new([text]);
+/// table.with(TabSize::new(4));
+///
+/// assert_eq!(
+///     table.to_string(),
+///     "+--------------------------------+\n\
+///      | &str                           |\n\
+///      +--------------------------------+\n\
+///      | Some    text        with \\tabs |\n\
+///      +--------------------------------+"
+/// )
+/// ```
 #[derive(Debug, Default, Clone)]
 pub struct TabSize(usize);
 

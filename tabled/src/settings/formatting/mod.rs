@@ -1,10 +1,9 @@
 //! This module contains settings for render strategy of papergrid.
 //!
-//! [`TrimStrategy`] and [`AlignmentStrategy`] allows to set [`Alignment`] settings.
-//!
-//! [`TabSize`] sets a default tab size.
-//!
-//! [`Charset`] responsible for special char treatment.
+//! - [`TrimStrategy`] and [`AlignmentStrategy`] allows to set [`Alignment`] settings.
+//! - [`TabSize`] sets a default tab size.
+//! - [`Charset`] responsible for special char treatment.
+//! - [`Justification`] responsible for justification space of content.
 //!
 //! [`Alignment`]: crate::settings::Alignment
 
