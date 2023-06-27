@@ -1,8 +1,11 @@
 mod alignment_test;
+mod color_test;
+mod column_names_test;
 mod concat_test;
 mod disable_test;
 mod extract_test;
 mod format_test;
+mod formatting_test;
 mod height_test;
 mod highlingt_test;
 mod margin_test;

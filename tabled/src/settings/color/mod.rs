@@ -3,7 +3,7 @@
 //! [`Border`]: crate::settings::Border
 //! [`Table`]: crate::Table
 
-use std::borrow::Cow;
+use std::{borrow::Cow, ops::BitOr};
 
 use crate::{
     grid::config::ColoredConfig,
@@ -173,6 +173,10 @@ impl Color {
     /// 
     /// Notice that the colors are constants so you can't combine them.
     pub const BG_YELLOW:         Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[43m"),  Cow::Borrowed("\u{1b}[49m")));
+    /// A color representation.
+    /// 
+    /// Notice that the colors are constants so you can't combine them.
+    pub const BOLD:              Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[1m"),  Cow::Borrowed("\u{1b}[22m")));
 }
 
 impl Color {
@@ -201,6 +205,29 @@ impl From<StaticColor> for Color {
             Cow::Borrowed(c.get_prefix()),
             Cow::Borrowed(c.get_suffix()),
         ))
+    }
+}
+
+impl BitOr for Color {
+    type Output = Color;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        let l_prefix = self.0.get_prefix();
+        let l_suffix = self.0.get_suffix();
+        let r_prefix = rhs.0.get_prefix();
+        let r_suffix = rhs.0.get_suffix();
+
+        let mut prefix = l_prefix.to_string();
+        if l_prefix != r_prefix {
+            prefix.push_str(r_prefix);
+        }
+
+        let mut suffix = l_suffix.to_string();
+        if l_suffix != r_suffix {
+            suffix.push_str(r_suffix);
+        }
+
+        Self::new(prefix, suffix)
     }
 }
 
@@ -260,5 +287,71 @@ impl crate::grid::color::Color for Color {
 
     fn colorize<W: std::fmt::Write>(&self, f: &mut W, text: &str) -> std::fmt::Result {
         self.0.colorize(f, text)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[cfg(feature = "color")]
+    use ::{owo_colors::OwoColorize, std::convert::TryFrom};
+
+    #[test]
+    fn test_xor_operation() {
+        assert_eq!(
+            Color::FG_BLACK | Color::FG_BLUE,
+            Color::new(
+                String::from("\u{1b}[30m\u{1b}[34m"),
+                String::from("\u{1b}[39m")
+            )
+        );
+        assert_eq!(
+            Color::FG_BRIGHT_GREEN | Color::BG_BLUE,
+            Color::new(
+                String::from("\u{1b}[92m\u{1b}[44m"),
+                String::from("\u{1b}[39m\u{1b}[49m")
+            )
+        );
+        assert_eq!(
+            Color::new(String::from("..."), String::from("!!!"))
+                | Color::new(String::from("@@@"), String::from("###")),
+            Color::new(String::from("...@@@"), String::from("!!!###"))
+        );
+        assert_eq!(
+            Color::new(String::from("..."), String::from("!!!"))
+                | Color::new(String::from("@@@"), String::from("###"))
+                | Color::new(String::from("$$$"), String::from("%%%")),
+            Color::new(String::from("...@@@$$$"), String::from("!!!###%%%"))
+        );
+    }
+
+    #[cfg(feature = "color")]
+    #[test]
+    fn test_try_from() {
+        assert_eq!(Color::try_from(""), Err(()));
+        assert_eq!(Color::try_from("".red().on_green().to_string()), Err(()));
+        assert_eq!(
+            Color::try_from("."),
+            Ok(Color::new(String::new(), String::new()))
+        );
+        assert_eq!(
+            Color::try_from("...."),
+            Ok(Color::new(String::new(), String::new()))
+        );
+        assert_eq!(
+            Color::try_from(".".red().on_green().to_string()),
+            Ok(Color::new(
+                String::from("\u{1b}[31m\u{1b}[42m"),
+                String::from("\u{1b}[39m\u{1b}[49m")
+            ))
+        );
+        assert_eq!(
+            Color::try_from("....".red().on_green().to_string()),
+            Ok(Color::new(
+                String::from("\u{1b}[31m\u{1b}[42m"),
+                String::from("\u{1b}[39m\u{1b}[49m")
+            ))
+        );
     }
 }
