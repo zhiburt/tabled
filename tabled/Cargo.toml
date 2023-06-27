@@ -257,7 +257,7 @@ required-features = ["std"]
 [[example]]
 name = "column_names"
 path = "examples/column_names.rs"
-required-features = ["std"]
+required-features = ["std", "derive"]
 
 [features]
 default = ["derive", "macros"]
