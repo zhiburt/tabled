@@ -254,6 +254,11 @@ name = "pool_table2"
 path = "examples/pool_table2.rs"
 required-features = ["std"]
 
+[[example]]
+name = "column_names"
+path = "examples/column_names.rs"
+required-features = ["std"]
+
 [features]
 default = ["derive", "macros"]
 std = ["papergrid/std"]
