@@ -61,6 +61,13 @@ Bellow there's a list of results of running some examples.
 | 4             | Arctic              |
 ```
 
+## chess
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/zhiburt/tabled/assets/20165848/f474bc84-5ed4-4f49-b6e9-fc204c3ecd5d">
+  <img alt="Preview" src="https://github.com/zhiburt/tabled/assets/20165848/68960bba-c5ba-4e0a-85b4-ba4f36bc0ed0">
+</picture>
+
 ## col_row_macros
 
 ```
@@ -129,6 +136,28 @@ Bellow there's a list of results of running some examples.
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-colored_borders-1-dark.png">
   <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-colored_borders-1-light.png">
+</picture>
+
+## colored_padding
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-padding_color-1-dark.png">
+  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-padding_color-1-light.png">
+</picture>
+
+## colorization
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/zhiburt/tabled/assets/20165848/95ef3c5b-a86d-425c-b95a-b689b61734c5">
+  <img alt="Preview" src="https://github.com/zhiburt/tabled/assets/20165848/b6b8af0a-7c1f-4656-b880-c8ecd130c5be">
+</picture>
+
+## column_names
+
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/zhiburt/tabled/assets/20165848/82d8e285-3c1b-4dd2-a1f4-45fd49f0dabe">
+  <img alt="Preview" src="https://github.com/zhiburt/tabled/assets/20165848/13054c74-0fae-4df1-87e8-60d498d734e4">
 </picture>
 
 ## concat
@@ -389,13 +418,6 @@ vvvvvvvvvvvvvvvvvv
 |  +-----------+-----------------------------+  |
 +-----------------------------------------------+
 ```
-
-## padding_color
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-padding_color-1-dark.png">
-  <img alt="Preview" src="https://raw.githubusercontent.com/zhiburt/tabled/assets/assets/example-padding_color-1-light.png">
-</picture>
 
 ## panel
 
