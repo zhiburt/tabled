@@ -37,7 +37,7 @@ impl CasingStyle {
             "lower" | "lowercase" => Ok(Lower),
             "upper" | "uppercase" => Ok(Upper),
             "verbatim" | "verbatimcase" => Ok(Verbatim),
-            _ => Err(Error::new(format!("unsupported casing: `{:?}`", name.value()), name.span(), Some("supperted values are ['camelCase', 'kebab-case', 'PascalCase', 'SCREAMING_SNAKE_CASE', 'snake_case', 'lowercase', 'UPPERCASE', 'verbatim']".to_owned())))
+            _ => Err(Error::new(format!("unsupported casing: `{:?}`", name.value()), name.span(), Some("supported values are ['camelCase', 'kebab-case', 'PascalCase', 'SCREAMING_SNAKE_CASE', 'snake_case', 'lowercase', 'UPPERCASE', 'verbatim']".to_owned())))
         }
     }
 
