@@ -551,8 +551,10 @@ fn print_cell_line<F: Write, R: Records + PeekableRecords + ExactRecords, C: Col
     pos: Position,
     line: usize,
 ) -> fmt::Result {
+    let entity = pos.into();
+
     let mut cell_height = records.count_lines(pos);
-    let formatting = *cfg.get_formatting(pos.into());
+    let formatting = *cfg.get_formatting(entity);
     if formatting.vertical_trim {
         cell_height -=
             count_empty_lines_at_start(records, pos) + count_empty_lines_at_end(records, pos);
@@ -563,9 +565,9 @@ fn print_cell_line<F: Write, R: Records + PeekableRecords + ExactRecords, C: Col
         cell_height = height;
     }
 
-    let pad = cfg.get_padding(pos.into());
-    let pad_color = cfg.get_padding_color(pos.into());
-    let alignment = cfg.get_alignment_vertical(pos.into());
+    let pad = cfg.get_padding(entity);
+    let pad_color = cfg.get_padding_color(entity);
+    let alignment = cfg.get_alignment_vertical(entity);
     let indent = top_indent(&pad, *alignment, cell_height, height);
     if indent > line {
         return print_indent(f, pad.top.fill, width, pad_color.top.as_ref());
@@ -590,8 +592,11 @@ fn print_cell_line<F: Write, R: Records + PeekableRecords + ExactRecords, C: Col
     print_indent(f, pad.left.fill, pad.left.size, pad_color.left.as_ref())?;
 
     let width = width - pad.left.size - pad.right.size;
-    let alignment = *cfg.get_alignment_horizontal(pos.into());
-    let justification = (cfg.get_justification(), cfg.get_justification_color());
+    let alignment = *cfg.get_alignment_horizontal(entity);
+    let justification = (
+        cfg.get_justification(entity),
+        cfg.get_justification_color(entity),
+    );
     let color = colors.get_color(pos);
     print_line(
         f,

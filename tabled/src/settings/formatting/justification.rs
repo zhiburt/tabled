@@ -1,7 +1,9 @@
 use crate::{
-    grid::color::AnsiColor,
-    grid::config::ColoredConfig,
-    settings::{Color, TableOption},
+    grid::{
+        color::AnsiColor,
+        config::{ColoredConfig, Entity},
+    },
+    settings::{CellOption, Color, TableOption},
 };
 
 /// Set a justification character and a color.
@@ -32,6 +34,7 @@ use crate::{
 ///      +-------+-------+"
 /// );
 /// ```
+///
 /// Setting a justification color.
 ///
 /// ```
@@ -54,6 +57,31 @@ use crate::{
 ///      +-------+-------+"
 /// );
 /// ```
+///
+/// Use different justification for different columns.
+///
+/// ```
+/// use tabled::{
+///     Table,
+///     settings::{Modify, object::Columns, formatting::Justification},
+/// };
+///
+/// let mut table = Table::new(&[("Hello", ""), ("", "World")]);
+/// table.with(Modify::new(Columns::single(0)).with(Justification::new('#')));
+/// table.with(Modify::new(Columns::single(1)).with(Justification::new('@')));
+///
+/// assert_eq!(
+///     table.to_string(),
+///     "+-------+-------+\n\
+///      | &str# | &str@ |\n\
+///      +-------+-------+\n\
+///      | Hello | @@@@@ |\n\
+///      +-------+-------+\n\
+///      | ##### | World |\n\
+///      +-------+-------+"
+/// );
+/// ```
+///
 #[derive(Debug, Default, Clone)]
 pub struct Justification {
     c: Option<char>,
@@ -80,10 +108,20 @@ impl Justification {
 
 impl<R, D> TableOption<R, D, ColoredConfig> for Justification {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let justification_char = self.c.unwrap_or(' ');
-        let justification_color = self.color;
+        let c = self.c.unwrap_or(' ');
+        let color = self.color;
 
-        cfg.set_justification(justification_char);
-        cfg.set_justification_color(justification_color);
+        cfg.set_justification(Entity::Global, c);
+        cfg.set_justification_color(Entity::Global, color);
+    }
+}
+
+impl<R> CellOption<R, ColoredConfig> for Justification {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+        let c = self.c.unwrap_or(' ');
+        let color = self.color;
+
+        cfg.set_justification(entity, c);
+        cfg.set_justification_color(entity, color);
     }
 }

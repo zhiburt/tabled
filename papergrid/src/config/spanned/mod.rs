@@ -37,8 +37,8 @@ pub struct SpannedConfig {
     horizontal_colors: HashMap<Position, HashMap<Offset, AnsiColor<'static>>>,
     vertical_chars: HashMap<Position, HashMap<Offset, char>>,
     vertical_colors: HashMap<Position, HashMap<Offset, AnsiColor<'static>>>,
-    justification_char: char,
-    justification_color: Option<AnsiColor<'static>>,
+    justification: EntityMap<char>,
+    justification_color: EntityMap<Option<AnsiColor<'static>>>,
 }
 
 impl Default for SpannedConfig {
@@ -58,8 +58,8 @@ impl Default for SpannedConfig {
             horizontal_colors: HashMap::default(),
             vertical_chars: HashMap::default(),
             vertical_colors: HashMap::default(),
-            justification_char: ' ',
-            justification_color: None,
+            justification: EntityMap::new(' '),
+            justification_color: EntityMap::default(),
         }
     }
 }
@@ -521,27 +521,27 @@ impl SpannedConfig {
     }
 
     /// Get a justification which will be used while expanding cells width/height.
-    pub fn get_justification(&self) -> char {
-        self.justification_char
+    pub fn get_justification(&self, entity: Entity) -> char {
+        self.justification.get(entity).clone()
     }
 
     /// Get a justification color which will be used while expanding cells width/height.
     ///
     /// `None` means no color.
-    pub fn get_justification_color(&self) -> Option<&AnsiColor<'static>> {
-        self.justification_color.as_ref()
+    pub fn get_justification_color(&self, entity: Entity) -> Option<&AnsiColor<'static>> {
+        self.justification_color.get(entity).as_ref()
     }
 
     /// Set a justification which will be used while expanding cells width/height.
-    pub fn set_justification(&mut self, c: char) {
-        self.justification_char = c;
+    pub fn set_justification(&mut self, entity: Entity, c: char) {
+        self.justification.insert(entity, c);
     }
 
     /// Set a justification color which will be used while expanding cells width/height.
     ///
     /// `None` removes it.
-    pub fn set_justification_color(&mut self, color: Option<AnsiColor<'static>>) {
-        self.justification_color = color;
+    pub fn set_justification_color(&mut self, entity: Entity, color: Option<AnsiColor<'static>>) {
+        self.justification_color.insert(entity, color);
     }
 
     /// Get a span value of the cell, if any is set.

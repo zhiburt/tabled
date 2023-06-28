@@ -156,7 +156,7 @@ test_table!(
     test_justification_char_left_alignment,
     grid(2, 2)
         .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
-        .config(|cfg| cfg.set_justification('$'))
+        .config(|cfg| cfg.set_justification(Entity::Global, '$'))
         .build(),
     "+-----+-----------------------------+"
     "|Hello|World$$$$$$$$$$$$$$$$$$$$$$$$|"
@@ -170,7 +170,7 @@ test_table!(
     grid(2, 2)
         .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
         .config(|cfg| {
-            cfg.set_justification('$');
+            cfg.set_justification(Entity::Global, '$');
             cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Right);
         })
         .build(),
@@ -186,7 +186,7 @@ test_table!(
     grid(2, 2)
         .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
         .config(|cfg| {
-            cfg.set_justification('$');
+            cfg.set_justification(Entity::Global, '$');
             cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Center);
         })
         .build(),
@@ -202,8 +202,8 @@ test_table!(
     grid(2, 2)
         .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
         .config(|cfg| {
-            cfg.set_justification('$');
-            cfg.set_justification_color(Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+            cfg.set_justification(Entity::Global, '$');
+            cfg.set_justification_color(Entity::Global, Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
         })
         .build(),
         "+-----+-----------------------------+"
@@ -218,8 +218,8 @@ test_table!(
     grid(2, 2)
         .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
         .config(|cfg| {
-            cfg.set_justification('$');
-            cfg.set_justification_color(Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+            cfg.set_justification(Entity::Global, '$');
+            cfg.set_justification_color(Entity::Global, Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
             cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Right);
         })
         .build(),
@@ -235,8 +235,8 @@ test_table!(
     grid(2, 2)
         .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
         .config(|cfg| {
-            cfg.set_justification('$');
-            cfg.set_justification_color(Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+            cfg.set_justification(Entity::Global, '$');
+            cfg.set_justification_color(Entity::Global, Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
             cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Center);
         })
         .build(),
@@ -244,5 +244,22 @@ test_table!(
     "|Hello|\u{1b}[34m$$$$$$$$$$$$\u{1b}[39mWorld\u{1b}[34m$$$$$$$$$$$$\u{1b}[39m|"
     "+-----+-----------------------------+"
     "|\u{1b}[34m$$\u{1b}[39m\u{1b}[34m$$$\u{1b}[39m|Hello Hello Hello Hello Hello|"
+    "+-----+-----------------------------+"
+);
+
+test_table!(
+    test_justification_color_center_alignment_entity,
+    grid(2, 2)
+        .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
+        .config(|cfg| {
+            cfg.set_justification(Entity::Cell(0, 0), '$');
+            cfg.set_justification_color(Entity::Column(1), Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+            cfg.set_alignment_horizontal(Entity::Row(2), AlignmentHorizontal::Center);
+        })
+        .build(),
+    "+-----+-----------------------------+"
+    "|Hello|World\u{1b}[34m                        \u{1b}[39m|"
+    "+-----+-----------------------------+"
+    "|     |Hello Hello Hello Hello Hello|"
     "+-----+-----------------------------+"
 );
