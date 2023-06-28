@@ -522,7 +522,7 @@ impl SpannedConfig {
 
     /// Get a justification which will be used while expanding cells width/height.
     pub fn get_justification(&self, entity: Entity) -> char {
-        self.justification.get(entity).clone()
+        *self.justification.get(entity)
     }
 
     /// Get a justification color which will be used while expanding cells width/height.

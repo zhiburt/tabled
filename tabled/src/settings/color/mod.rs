@@ -6,11 +6,9 @@
 use std::{borrow::Cow, ops::BitOr};
 
 use crate::{
-    grid::config::ColoredConfig,
-    grid::records::{ExactRecords, Records, RecordsMut},
     grid::{
         color::{AnsiColor, StaticColor},
-        config::Entity,
+        config::{ColoredConfig, Entity},
     },
     settings::{CellOption, TableOption},
 };
@@ -249,28 +247,19 @@ impl std::convert::TryFrom<String> for Color {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for Color
-where
-    R: Records + ExactRecords,
-{
+impl<R, D> TableOption<R, D, ColoredConfig> for Color {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let _ = cfg.set_color(Entity::Global, self.0.clone());
     }
 }
 
-impl<R> CellOption<R, ColoredConfig> for Color
-where
-    R: Records + ExactRecords + RecordsMut<String>,
-{
+impl<R> CellOption<R, ColoredConfig> for Color {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let _ = cfg.set_color(entity, self.0.clone());
     }
 }
 
-impl<R> CellOption<R, ColoredConfig> for &Color
-where
-    R: Records + ExactRecords + RecordsMut<String>,
-{
+impl<R> CellOption<R, ColoredConfig> for &Color {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let _ = cfg.set_color(entity, self.0.clone());
     }

@@ -259,6 +259,16 @@ name = "column_names"
 path = "examples/column_names.rs"
 required-features = ["std", "derive"]
 
+[[example]]
+name = "colorization"
+path = "examples/colorization.rs"
+required-features = ["std", "derive"]
+
+[[example]]
+name = "chess"
+path = "examples/chess.rs"
+required-features = ["std"]
+
 [features]
 default = ["derive", "macros"]
 std = ["papergrid/std"]

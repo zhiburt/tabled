@@ -1,5 +1,6 @@
 mod alignment_test;
 mod color_test;
+mod colorization;
 mod column_names_test;
 mod concat_test;
 mod disable_test;

@@ -120,21 +120,21 @@ impl Format {
     /// ];
     ///
     /// let table = Table::new(&data)
-    ///                .with(Format::config(|cfg: &mut ColoredConfig| cfg.set_justification('.')))
+    ///                .with(Format::config(|cfg: &mut ColoredConfig| cfg.set_justification((0,1).into(), '.')))
     ///                .to_string();
     ///
     /// assert_eq!(
     ///     table,
     ///     "+-----+---------+-------+\n\
-    ///      | i32 | &str... | bool. |\n\
+    ///      | i32 | &str... | bool  |\n\
     ///      +-----+---------+-------+\n\
-    ///      | 0.. | Grodno. | true. |\n\
+    ///      | 0   | Grodno  | true  |\n\
     ///      +-----+---------+-------+\n\
-    ///      | 1.. | Minsk.. | true. |\n\
+    ///      | 1   | Minsk   | true  |\n\
     ///      +-----+---------+-------+\n\
-    ///      | 2.. | Hamburg | false |\n\
+    ///      | 2   | Hamburg | false |\n\
     ///      +-----+---------+-------+\n\
-    ///      | 3.. | Brest.. | true. |\n\
+    ///      | 3   | Brest   | true  |\n\
     ///      +-----+---------+-------+"
     /// );
     /// ```
