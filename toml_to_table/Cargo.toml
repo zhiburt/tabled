@@ -1,0 +1,23 @@
+[package]
+name = "toml_to_table"
+version = "0.2.0"
+edition = "2018"
+authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
+repository = "https://github.com/zhiburt/tabled"
+homepage = "https://github.com/zhiburt/tabled"
+documentation = "https://docs.rs/ron_to_table"
+keywords = ["table", "print", "pretty-table", "format", "toml"]
+categories = ["text-processing", "visualization"]
+readme = "README.md"
+description = "A library for pretty print TOML as a table"
+license = "MIT"
+
+[features]
+color = ["tabled/color"]
+
+[dependencies]
+toml = "0.7"
+tabled = { version = "0.12", features = ["std"], default-features = false }
+
+[dev-dependencies]
+testing_table = { path = "../testing_table" }

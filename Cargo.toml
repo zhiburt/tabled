@@ -3,10 +3,11 @@ members = [
     "papergrid",
     "tabled",
     "tabled_derive",
+    "static_table",
     "json_to_table",
     "csv_to_table",
     "ron_to_table",
-    "static_table",
+    "toml_to_table",
     "table_to_html",
     "testing_table",
 ]
