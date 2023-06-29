@@ -8,7 +8,7 @@ Add the library to a dependency list.
 
 ```toml
 [dependencies]
-json_to_table = "*"
+json_to_table = "0.6"
 ```
 
 The main and only function you shall use to build a table is `json_to_table`.

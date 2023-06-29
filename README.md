@@ -100,6 +100,7 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
   - [`json` format](#json-format)
   - [`ron` format](#ron-format)
   - [`csv` format](#csv-format)
+  - [`toml` format](#toml-format)
   - [`html` format](#html-format)
 - [Notes](#notes)
   - [Charset](#charset)
@@ -1847,6 +1848,11 @@ See the **[example](/ron_to_table/README.md)**.
 
 You can convert arbitrary `csv` to a `Table` using [`csv_to_table`](/csv_to_table/README.md) library.
 See the **[example](/csv_to_table/README.md)**.
+
+### `toml` format
+
+You can convert arbitrary `toml` to a `Table` using [`toml_to_table`](/toml_to_table/README.md) library.
+See the **[example](/toml_to_table/README.md)**.
 
 ### `html` format
 

@@ -39,8 +39,8 @@ let data = r#"Scene(
         (name: "monster", material: "plastic"),
     ],
 )"#;
-let scene = ron::from_str(data).unwrap();
 
+let scene = ron::from_str(data).unwrap();
 let table = ron_to_table::to_string(&scene);
 
 println!("{}", table);
@@ -93,22 +93,18 @@ println!("{}", table);
 use ron_to_table::RonTable;
 use tabled::settings::Style;
 
-let scene = ron::from_str(
-    r#"
-    Scene(
-        materials: {
-            "metal": (reflectivity: 1.0),
-            "plastic": (reflectivity: 0.5),
-        },
-        entities: [
-            (name: "hero", material: "metal"),
-            (name: "monster", material: "plastic"),
-        ],
-    )
-"#,
-)
-.unwrap();
+let data = r#"Scene(
+    materials: {
+        "metal": (reflectivity: 1.0),
+        "plastic": (reflectivity: 0.5),
+    },
+    entities: [
+        (name: "hero", material: "metal"),
+        (name: "monster", material: "plastic"),
+    ],
+)"#;
 
+let scene = ron::from_str(data).unwrap();
 let table = RonTable::default()
     .collapse()
     .with(Style::extended())

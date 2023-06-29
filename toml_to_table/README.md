@@ -1,4 +1,4 @@
-# A library for converting `ron` to a table.
+# A library for converting `toml` to a table.
 
 It uses [`tabled`](https://github.com/zhiburt/tabled) as a rendering backend.
 
@@ -7,7 +7,7 @@ It uses [`tabled`](https://github.com/zhiburt/tabled) as a rendering backend.
 The library supports 2 modes for a table embeded and collapsed.
 It also provides with a list of options to modify the table, such as style, alignment, padding and more.
 
-You can change an orientation of a `map` and `sequence` via `Orientation`.
+You can change an orientation of a `table` and `array` via `Orientation`.
 
 You'll find to examples for the modes bellow.
 
@@ -17,7 +17,7 @@ Add the library to a dependency list.
 
 ```toml
 [dependencies]
-ron_to_table = "0.1.0"
+toml_to_table = "0.1.0"
 ```
 
 <table>
@@ -29,19 +29,23 @@ ron_to_table = "0.1.0"
 <td>
 
 ```rust
-let data = r#"Scene(
-    materials: {
-        "metal": (reflectivity: 1.0),
-        "plastic": (reflectivity: 0.5),
-    },
-    entities: [
-        (name: "hero", material: "metal"),
-        (name: "monster", material: "plastic"),
-    ],
-)"#;
-let scene = ron::from_str(data).unwrap();
+let data = r#"
+[materials]
+metal = { reflectivity = 1.0 }
+plastic = { reflectivity = 0.5 }
 
-let table = ron_to_table::to_string(&scene);
+[[entities]]
+name = "hero"
+material = "metal"
+
+[[entities]]
+name = "monster"
+material = "plastic"
+"#;
+
+let scene = toml::from_str(data).unwrap();
+
+let table = toml_to_table::to_string(&scene);
 
 println!("{}", table);
 ```
@@ -50,31 +54,31 @@ println!("{}", table);
 <td style="vertical-align: top;">
 
 ```text
-+-------------+--------------------------------------------+
-|  entities   | +----------------------------+             |
-|             | | +------------+---------+   |             |
-|             | | |  material  |  metal  |   |             |
-|             | | +------------+---------+   |             |
-|             | | |  name      |  hero   |   |             |
-|             | | +------------+---------+   |             |
-|             | +----------------------------+             |
-|             | | +------------+-----------+ |             |
-|             | | |  material  |  plastic  | |             |
-|             | | +------------+-----------+ |             |
-|             | | |  name      |  monster  | |             |
-|             | | +------------+-----------+ |             |
-|             | +----------------------------+             |
-+-------------+--------------------------------------------+
-|  materials  | +-----------+----------------------------+ |
-|             | |  metal    | +----------------+-----+   | |
-|             | |           | |  reflectivity  |  1  |   | |
-|             | |           | +----------------+-----+   | |
-|             | +-----------+----------------------------+ |
-|             | |  plastic  | +----------------+-------+ | |
-|             | |           | |  reflectivity  |  0.5  | | |
-|             | |           | +----------------+-------+ | |
-|             | +-----------+----------------------------+ |
-+-------------+--------------------------------------------+
++-----------+----------------------------------------+
+| entities  | +--------------------------+           |
+|           | | +----------+---------+   |           |
+|           | | | material |  metal  |   |           |
+|           | | +----------+---------+   |           |
+|           | | | name     |  hero   |   |           |
+|           | | +----------+---------+   |           |
+|           | +--------------------------+           |
+|           | | +----------+-----------+ |           |
+|           | | | material |  plastic  | |           |
+|           | | +----------+-----------+ |           |
+|           | | | name     |  monster  | |           |
+|           | | +----------+-----------+ |           |
+|           | +--------------------------+           |
++-----------+----------------------------------------+
+| materials | +---------+--------------------------+ |
+|           | | metal   | +--------------+-----+   | |
+|           | |         | | reflectivity |  1  |   | |
+|           | |         | +--------------+-----+   | |
+|           | +---------+--------------------------+ |
+|           | | plastic | +--------------+-------+ | |
+|           | |         | | reflectivity |  0.5  | | |
+|           | |         | +--------------+-------+ | |
+|           | +---------+--------------------------+ |
++-----------+----------------------------------------+
 ```
 
 </td>
@@ -90,29 +94,28 @@ println!("{}", table);
 <td>
 
 ```rust
-use ron_to_table::RonTable;
+use toml_to_table::TomlTable;
 use tabled::settings::Style;
 
-let scene = ron::from_str(
-    r#"
-    Scene(
-        materials: {
-            "metal": (reflectivity: 1.0),
-            "plastic": (reflectivity: 0.5),
-        },
-        entities: [
-            (name: "hero", material: "metal"),
-            (name: "monster", material: "plastic"),
-        ],
-    )
-"#,
-)
-.unwrap();
+let data = r#"
+[materials]
+metal = { reflectivity = 1.0 }
+plastic = { reflectivity = 0.5 }
 
-let table = RonTable::default()
+[[entities]]
+name = "hero"
+material = "metal"
+
+[[entities]]
+name = "monster"
+material = "plastic"
+"#;
+
+let scene = toml::from_str(data).unwrap();
+let table = TomlTable::new(&scene)
     .collapse()
     .with(Style::extended())
-    .build(&scene);
+    .to_string();
 
 println!("{table}");
 ```

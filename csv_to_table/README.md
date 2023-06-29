@@ -2,6 +2,15 @@
 
 It uses [`tabled`](https://github.com/zhiburt/tabled) as a rendering backend.
 
+## Install
+
+Add the library to a dependency list.
+
+```toml
+[dependencies]
+csv_to_table = "0.3"
+```
+
 ## Usage
 
 There's 2 approaches the library provides.
@@ -10,7 +19,6 @@ There's 2 approaches the library provides.
 - Sniffing a csv; so the used memory will be limited.
 - Setting your constrains so no memory will be used. 
 
-Notice that 
 <table>
 <tr>
 <th> Example of in memory approach </th>

@@ -8,7 +8,7 @@ use toml_to_table::{Orientation, TomlTable};
 
 test_table!(
     test_string,
-    build_ron_table(Value::String(String::from("123456789"))),
+    toml_table(Value::String(String::from("123456789"))),
     "+-----------+"
     "| 123456789 |"
     "+-----------+"
@@ -16,7 +16,7 @@ test_table!(
 
 test_table!(
     test_bool_false,
-    build_ron_table(Value::Boolean(false)),
+    toml_table(Value::Boolean(false)),
     "+-------+"
     "| false |"
     "+-------+"
@@ -24,7 +24,7 @@ test_table!(
 
 test_table!(
     test_bool_true,
-    build_ron_table(Value::Boolean(true)),
+    toml_table(Value::Boolean(true)),
     "+------+"
     "| true |"
     "+------+"
@@ -32,7 +32,7 @@ test_table!(
 
 test_table!(
     test_datetime,
-    build_ron_table(Value::Datetime(toml::value::Datetime::from_str("1979-05-27T07:32:00Z").unwrap())),
+    toml_table(Value::Datetime(toml::value::Datetime::from_str("1979-05-27T07:32:00Z").unwrap())),
     "+----------------------+"
     "| 1979-05-27T07:32:00Z |"
     "+----------------------+"
@@ -40,7 +40,7 @@ test_table!(
 
 test_table!(
     test_int,
-    build_ron_table(Value::Integer(123456789)),
+    toml_table(Value::Integer(123456789)),
     "+-----------+"
     "| 123456789 |"
     "+-----------+"
@@ -48,7 +48,7 @@ test_table!(
 
 test_table!(
     test_float,
-    build_ron_table(Value::Float(123.456789)),
+    toml_table(Value::Float(123.456789)),
     "+------------+"
     "| 123.456789 |"
     "+------------+"
@@ -56,7 +56,7 @@ test_table!(
 
 test_table!(
     test_sequence_0,
-    build_ron_table(Value::Array(vec![
+    toml_table(Value::Array(vec![
         Value::String(String::from("Hello")),
         Value::String(String::from("World")),
     ])),
@@ -69,7 +69,7 @@ test_table!(
 
 test_table!(
     test_sequence_1,
-    build_ron_table(Value::Array(vec![
+    toml_table(Value::Array(vec![
         Value::Array(vec![
             Value::String(String::from("Hello")),
             Value::String(String::from("World")),
@@ -106,7 +106,7 @@ test_table!(
 
 test_table!(
     test_sequence_0_row,
-    build_ron_table_orientation(
+    toml_table_orientation(
         Value::Array(vec![
             Value::String(String::from("Hello")),
             Value::String(String::from("World")),
@@ -121,7 +121,7 @@ test_table!(
 
 test_table!(
     test_sequence_1_row,
-    build_ron_table_orientation(
+    toml_table_orientation(
         Value::Array(vec![
             Value::Array(vec![
                 Value::String(String::from("Hello")),
@@ -148,7 +148,7 @@ test_table!(
 
 test_table!(
     test_map_0,
-    build_ron_table(Value::Table(TomlMap::from_iter([
+    toml_table(Value::Table(TomlMap::from_iter([
         (String::from("Hello Key"), Value::String(String::from("World Value"))),
         (String::from("Hello Key 2"), Value::String(String::from("Value 1"))),
     ]))),
@@ -161,7 +161,7 @@ test_table!(
 
 test_table!(
     test_map_1,
-    build_ron_table(Value::Table(TomlMap::from_iter([
+    toml_table(Value::Table(TomlMap::from_iter([
         (String::from("Hello Key"), Value::String(String::from("World Value"))),
         (
             String::from("Hello Key 2"),
@@ -182,7 +182,7 @@ test_table!(
 
 test_table!(
     test_map_0_row,
-    build_ron_table_orientation(
+    toml_table_orientation(
         Value::Table(TomlMap::from_iter([
             (String::from("Hello Key"), Value::String(String::from("World Value"))),
             (String::from("Hello Key 2"), Value::String(String::from("Value 1"))),
@@ -199,7 +199,7 @@ test_table!(
 
 test_table!(
     test_map_1_row,
-    build_ron_table_orientation(
+    toml_table_orientation(
         Value::Table(TomlMap::from_iter([
             (
                 String::from("Hello Key"),
@@ -225,7 +225,7 @@ test_table!(
 
 test_table!(
     test_map_1_row_column,
-    build_ron_table_orientation(
+    toml_table_orientation(
         Value::Table(TomlMap::from_iter([
             (
                 String::from("Hello Key"),
@@ -253,7 +253,7 @@ test_table!(
 
 test_table!(
     test_sequence_row_column,
-    build_ron_table_orientation(
+    toml_table_orientation(
         Value::Array(vec![
             Value::Table(TomlMap::from_iter([
                 (
@@ -303,7 +303,7 @@ test_table!(
 
 test_table!(
     test_sequence_row_column_1,
-    build_ron_table_orientation(
+    toml_table_orientation(
         Value::Array(vec![
             Value::Table(TomlMap::from_iter([
                 (
@@ -339,7 +339,7 @@ test_table!(
 
 test_table!(
     test_sequence_row_column_2,
-    build_ron_table_orientation(
+    toml_table_orientation(
         Value::Array(vec![
             Value::Table(TomlMap::from_iter([
                 (
@@ -375,7 +375,7 @@ test_table!(
 
 test_table!(
     test_sequence_row_column_3,
-    build_ron_table_orientation(
+    toml_table_orientation(
         Value::Array(vec![
             Value::Table(TomlMap::from_iter([
                 (
@@ -473,11 +473,11 @@ test_table!(
     "+---------------------------+"
 );
 
-fn build_ron_table(value: Value) -> String {
+fn toml_table(value: Value) -> String {
     TomlTable::new(value).collapse().to_string()
 }
 
-fn build_ron_table_orientation(value: Value, seq: Orientation, map: Orientation) -> String {
+fn toml_table_orientation(value: Value, seq: Orientation, map: Orientation) -> String {
     TomlTable::new(value)
         .collapse()
         .seq_orientation(seq)

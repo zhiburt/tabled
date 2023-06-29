@@ -2,10 +2,24 @@
 
 The library provides a macros to build a pretty tables at compile time.
 
-To find a few features and settings which you can use with the macros please check out the documentation ([docs.rs](https://docs.rs/static_table)).
+There's 2 types of tables you can buid.
+
+1. Standart adjusted tables (`static_table::static_table`).
+2. Not adjusted, floating tables (`static_table::pool_table`).
+
+To find a more features and settings which you can use with the macros please check out the documentation ([docs.rs](https://docs.rs/static_table)).
 
 ## Get started
 
+Add the library to your `Cargo.toml`.
+
+```toml
+# Cargo.toml
+[dependencies]
+static_table = "0.2"
+```
+
+An example of `static_table` usage.
 
 <table>
 <tr>
@@ -52,6 +66,8 @@ fn main() {
 </td>
 </tr>
 </table>
+
+An example of `pool_table` usage.
 
 <table>
 <tr>
