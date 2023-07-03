@@ -14,7 +14,7 @@ use tabled::grid::color::StaticColor;
 
 test_table!(
     pool_table,
-    PoolTable::new(Matrix::empty(3, 3).to_vec()),
+    PoolTable::new(Matrix::with_no_frame(3, 3).to_vec()),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "+-----+-----+-----+"
@@ -278,7 +278,7 @@ test_table!(
 
 test_table!(
     pool_table_padding,
-    PoolTable::new(Matrix::empty(3, 3).to_vec()).with(Padding::new(1, 2, 3, 4)),
+    PoolTable::new(Matrix::with_no_frame(3, 3).to_vec()).with(Padding::new(1, 2, 3, 4)),
     "+------+------+------+"
     "|      |      |      |"
     "|      |      |      |"
@@ -312,7 +312,7 @@ test_table!(
 #[cfg(feature = "color")]
 test_table!(
     pool_table_padding_2,
-    PoolTable::new(Matrix::empty(3, 3).to_vec())
+    PoolTable::new(Matrix::with_no_frame(3, 3).to_vec())
         .with(Padding::new(1, 2, 3, 4)
             .fill('!', '@', '#', '$')
             .colorize(
@@ -354,7 +354,7 @@ test_table!(
 
 test_table!(
     pool_table_margin,
-    PoolTable::new(Matrix::empty(3, 3).to_vec()).with(Margin::new(1, 2, 3, 4).fill('!', '@', '#', '$')),
+    PoolTable::new(Matrix::with_no_frame(3, 3).to_vec()).with(Margin::new(1, 2, 3, 4).fill('!', '@', '#', '$')),
     "!###################@@"
     "!###################@@"
     "!###################@@"
@@ -513,7 +513,7 @@ test_table!(
 
 test_table!(
     pool_table_style_empty,
-    PoolTable::new(Matrix::empty(3, 3).to_vec()).with(Style::empty()),
+    PoolTable::new(Matrix::with_no_frame(3, 3).to_vec()).with(Style::empty()),
     " 0-0  0-1  0-2 "
     " 1-0  1-1  1-2 "
     " 2-0  2-1  2-2 "
@@ -521,7 +521,7 @@ test_table!(
 
 test_table!(
     pool_table_style_markdown,
-    PoolTable::new(Matrix::empty(3, 3).to_vec()).with(Style::markdown()),
+    PoolTable::new(Matrix::with_no_frame(3, 3).to_vec()).with(Style::markdown()),
     "| 0-0 | 0-1 | 0-2 |"
     "| 1-0 | 1-1 | 1-2 |"
     "| 2-0 | 2-1 | 2-2 |"
@@ -529,7 +529,7 @@ test_table!(
 
 test_table!(
     pool_table_style_rounded,
-    PoolTable::new(Matrix::empty(3, 3).to_vec()).with(Style::rounded()),
+    PoolTable::new(Matrix::with_no_frame(3, 3).to_vec()).with(Style::rounded()),
     "╭─────┬─────┬─────╮"
     "│ 0-0 │ 0-1 │ 0-2 │"
     " ───── ───── ───── "

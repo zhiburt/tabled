@@ -46,8 +46,9 @@ use crate::grid::config::{ColoredConfig, Entity};
 /// ];
 ///
 /// let mut table = Table::new(&data);
-/// table.with(Style::modern())
-///      .with(
+/// table
+///     .with(Style::modern())
+///     .with(
 ///         Modify::new(Segment::all())
 ///             .with(Alignment::right())
 ///             .with(Alignment::center())

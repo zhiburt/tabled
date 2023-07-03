@@ -62,6 +62,8 @@ mod rotate;
 mod color;
 #[cfg(feature = "std")]
 mod concat;
+#[cfg(feature = "std")]
+mod duplicate;
 
 pub mod style;
 
@@ -127,7 +129,7 @@ pub use self::{
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
-    color::Color, concat::Concat, disable::Disable, format::Format, height::Height,
+    color::Color, concat::Concat, disable::Disable, duplicate::Dup, format::Format, height::Height,
     highlight::Highlight, merge::Merge, panel::Panel, shadow::Shadow, span::Span, style::Border,
     width::Width,
 };

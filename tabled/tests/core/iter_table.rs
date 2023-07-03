@@ -7,7 +7,7 @@ use testing_table::test_table;
 
 test_table!(
     iter_table,
-    IterTable::new(Matrix::empty(3, 3).to_vec()),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "+-----+-----+-----+"
@@ -19,7 +19,7 @@ test_table!(
 
 test_table!(
     iter_table_cols,
-    IterTable::new(Matrix::empty(3, 3).to_vec()).columns(3),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).columns(3),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "+-----+-----+-----+"
@@ -31,7 +31,7 @@ test_table!(
 
 test_table!(
     iter_table_cols_less,
-    IterTable::new(Matrix::empty(3, 3).to_vec()).columns(2),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).columns(2),
     "+-----+-----+"
     "| 0-0 | 0-1 |"
     "+-----+-----+"
@@ -43,7 +43,7 @@ test_table!(
 
 test_table!(
     iter_table_cols_zero,
-    IterTable::new(Matrix::empty(3, 3).to_vec()).columns(0),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).columns(0),
     ""
 );
 
@@ -65,7 +65,7 @@ test_table!(
 
 test_table!(
     iter_table_width,
-    IterTable::new(Matrix::empty(3, 3).to_vec()).width(2),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).width(2),
     "+----+----+----+"
     "| 0- | 0- | 0- |"
     "+----+----+----+"
@@ -77,7 +77,7 @@ test_table!(
 
 test_table!(
     iter_table_height_does_not_work,
-    IterTable::new(Matrix::empty(3, 3).to_vec()).height(5),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).height(5),
     "+-----+-----+-----+"
     "| 0-0 | 0-1 | 0-2 |"
     "|     |     |     |"
@@ -101,7 +101,7 @@ test_table!(
 
 test_table!(
     iter_table_sniff_0,
-    IterTable::new(Matrix::empty(3, 3).to_vec()).sniff(0),
+    IterTable::new(Matrix::with_no_frame(3, 3).to_vec()).sniff(0),
     ""
 );
 

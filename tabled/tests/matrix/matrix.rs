@@ -24,11 +24,24 @@ pub struct Matrix {
 }
 
 impl Matrix {
-    pub fn empty(rows: usize, columns: usize) -> Self {
+    pub fn empty() -> Self {
+        Self {
+            data: vec![],
+            size: (0, 0),
+        }
+    }
+
+    pub fn with_no_frame(rows: usize, columns: usize) -> Self {
         Self {
             data: create_matrix(rows, columns),
             size: (rows, columns),
         }
+    }
+
+    pub fn new(rows: usize, columns: usize) -> Self {
+        Self::with_no_frame(rows, columns)
+            .with_header()
+            .with_index()
     }
 
     pub fn vec(rows: usize, columns: usize) -> Vec<Vec<String>> {
@@ -51,10 +64,6 @@ impl Matrix {
         let mut table = tabled::Table::new(iter);
         table.with(Modify::new(Segment::all()).with(Alignment::center()));
         table
-    }
-
-    pub fn new(rows: usize, columns: usize) -> Self {
-        Self::empty(rows, columns).with_header().with_index()
     }
 
     pub fn with_index(mut self) -> Self {

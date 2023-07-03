@@ -4,6 +4,7 @@ mod colorization;
 mod column_names_test;
 mod concat_test;
 mod disable_test;
+mod duplicate_test;
 mod extract_test;
 mod format_test;
 mod formatting_test;
