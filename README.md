@@ -27,7 +27,7 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
     - [Build index](#build-index)
 - [Settings](#settings)
   - [Style](#style)
-    - [Themes](#themes)
+    - [Styles](#styles)
       - [ascii](#ascii)
       - [modern](#modern)
       - [sharp](#sharp)
@@ -44,6 +44,9 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
     - [Cell Border](#cell-border)
     - [Text on borders](#text-on-borders)
     - [Colorize borders](#colorize-borders)
+  - [Theme](#theme)
+    - [Colorize content](#colorize-content)
+    - [Column names](#colorize-content)
   - [Alignment](#alignment)
   - [Format](#format)
   - [Padding](#padding)
@@ -76,6 +79,7 @@ you can find more examples in an **[examples](/tabled/examples/)** folder.
     - [Directions](#directions)
     - [Behaviors](#behaviors)
     - [Displays](#displays)
+  - [Duplicate](#duplicate)
 - [Derive](#derive)
   - [Override a column name](#override-a-column-name)
   - [Hide a column](#hide-a-column)
@@ -280,7 +284,7 @@ You can find a list of show cases in **[examples folder](/tabled/examples/README
 
 ### Style
 
-#### Themes
+#### Styles
 
 There are a list of ready to use styles.
 Each style can be customized.
@@ -583,6 +587,74 @@ You can also set a color border of intividial cell by using `BorderColored`.
 use tabled::settings::{Modify, style::BorderColor, Color, object::Columns};
 
 table.with(Modify::new(Columns::single(2)).with(BorderColor::default().top(Color::FG_GREEN)))
+```
+
+### Theme
+
+#### Colorize content
+
+You can colorize the content by the pattern or a specific cell.
+
+```rust
+use tabled::{
+    builder::Builder,
+    settings::{object::Rows, style::Style, themes::Colorization, Color, Modify},
+};
+
+let data = vec![
+    vec![String::from("header 0"), String::from("header 1")],
+    vec![String::from("Hello"), String::from("World")],
+    vec![String::from("Bonjour"), String::from("le monde")],
+    vec![String::from("Hallo"), String::from("Welt")],
+];
+
+let color1 = Color::BG_WHITE | Color::FG_BLACK;
+let color2 = Color::BG_GREEN | Color::FG_BLACK;
+let color3 = Color::BG_MAGENTA | Color::FG_BLACK;
+let color4 = Color::BG_BLUE | Color::FG_BLACK;
+
+let mut table = Builder::from(data).build();
+table
+    .with(Style::empty())
+    .with(Colorization::columns([color2, color3]))
+    .with(Colorization::exact([color1], Rows::first()))
+    .with(Modify::new(Rows::first()).with(color4));
+```
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/zhiburt/tabled/assets/20165848/7e9b139c-a0fa-470d-9095-a36d1f01b55a">
+  <img alt="Preview" src="https://github.com/zhiburt/tabled/assets/20165848/2096a1a2-aaee-42f1-b00f-ca6f9317cd29">
+</picture>
+
+#### Column names
+
+You can move the header right to the borders.
+
+```rust
+use tabled::{
+    builder::Builder,
+    settings::{style::Style, themes::ColumnNames},
+};
+
+let data = vec![
+    vec![String::from("header 0"), String::from("header 1")],
+    vec![String::from("Hello"), String::from("World")],
+    vec![String::from("Bonjour"), String::from("le monde")],
+    vec![String::from("Hallo"), String::from("Welt")],
+];
+
+let mut table = Builder::from(data).build();
+table.with(Style::modern()).with(ColumnNames::default());
+```
+
+```text
+┌header 0─┬header 1──┐
+│ Hello   │ World    │
+├─────────┼──────────┤
+│ Bonjour │ le monde │
+├─────────┼──────────┤
+│ Hallo   │ Welt     │
+└─────────┴──────────┘
 ```
 
 ### Alignment
@@ -1289,6 +1361,19 @@ table.clone().with(Split::column(1).concat()); // .clean() is not necessary as i
 ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐ ^ cells retained during concatenation
 │ a │ b │ c │ d │ e │ f │ g │ h │ i │ j │ k │ l │ m │ n │ o │ p │ q │ r │ s │ t │ u │ v │ w │ x │ y │ z │
 └───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘<- cells removed during concatenation
+```
+
+#### Duplicate
+
+It's possible to duplicate a given set of cell to another set.
+
+```rust
+use tabled::{Table, settings::{Dup, object::Rows}};
+
+let mut table = Table::new(data);
+
+// copy last line to the first line (first line gets erased).
+table.with(Dup::new(Rows::first(), Rows::last()));
 ```
 
 ## Derive

@@ -92,58 +92,6 @@
 //! # assert_eq!(table.to_string(), expected);
 //! ```
 //!
-//! ### Combination of types via tuples
-//!
-//! Personally I consider this a feature which drives the library to shine.
-//! You can combine any types that implements [`Tabled`] trait into one table.
-//!
-//! You can also see in this example a `#[header("name")]` usage which configures a header
-//! of a table which will be printed.
-//! You could change it dynamically as well.
-//!
-#![cfg_attr(feature = "derive", doc = "```")]
-#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
-//! use tabled::{
-//!     Tabled, Table,
-//!     settings::{Style, Alignment, Modify, object::{Rows, Columns, Object}}
-//! };
-//!
-//! #[derive(Tabled)]
-//! enum Domain {
-//!     Security,
-//!     Embedded,
-//!     Frontend,
-//!     Unknown,
-//! }
-//!
-//! #[derive(Tabled)]
-//! struct Developer(#[tabled(rename = "name")] &'static str);
-//!     
-//! let data = vec![
-//!     (Developer("Terri Kshlerin"), Domain::Embedded),
-//!     (Developer("Catalina Dicki"), Domain::Security),
-//!     (Developer("Jennie Schmeler"), Domain::Frontend),
-//!     (Developer("Maxim Zhiburt"), Domain::Unknown),
-//! ];
-//!     
-//! let table = Table::new(data)
-//!     .with(Style::psql())
-//!     .with(Modify::new(Rows::new(1..).not(Columns::first())).with(Alignment::center()))
-//!     .to_string();
-//!
-//! assert_eq!(
-//!     table,
-//!     concat!(
-//!         " name            | Security | Embedded | Frontend | Unknown \n",
-//!         "-----------------+----------+----------+----------+---------\n",
-//!         " Terri Kshlerin  |          |    +     |          |         \n",
-//!         " Catalina Dicki  |    +     |          |          |         \n",
-//!         " Jennie Schmeler |          |          |    +     |         \n",
-//!         " Maxim Zhiburt   |          |          |          |    +    "
-//!     )
-//! );
-//! ```
-//!
 //! ### Dynamic table
 //!
 //! When you data scheme is not known at compile time.
@@ -222,6 +170,10 @@
 //!     )
 //! );
 //! ```
+//!
+//! ### Settings
+//!
+//! You can use many settings which is found in [`tabled::settings`] module.
 //!
 //! # Advanced
 //!

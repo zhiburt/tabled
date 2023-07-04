@@ -16,6 +16,8 @@ There are more examples and you can find in this [`README`](https://github.com/z
 To print a list of structs or enums as a table your types should implement the the `Tabled` trait or derive it with a `#[derive(Tabled)]` macro.
 Most of the default types implement the trait out of the box.
 
+Most of a table configuration can be found in [`tabled::settings`](https://docs.rs/tabled/latest/tabled/settings/index.html) module.
+
 ```rust
 use tabled::{Table, Tabled};
 
@@ -45,19 +47,20 @@ let languages = vec![
 
 let table = Table::new(languages).to_string();
 
-let expected = "+------+----------------+---------------+\n\
-                | name | designed_by    | invented_year |\n\
-                +------+----------------+---------------+\n\
-                | C    | Dennis Ritchie | 1972          |\n\
-                +------+----------------+---------------+\n\
-                | Go   | Rob Pike       | 2009          |\n\
-                +------+----------------+---------------+\n\
-                | Rust | Graydon Hoare  | 2010          |\n\
-                +------+----------------+---------------+\n\
-                | Hare | Drew DeVault   | 2022          |\n\
-                +------+----------------+---------------+";
-
-assert_eq!(table, expected);
+assert_eq!(
+    table,
+    "+------+----------------+---------------+\n\
+     | name | designed_by    | invented_year |\n\
+     +------+----------------+---------------+\n\
+     | C    | Dennis Ritchie | 1972          |\n\
+     +------+----------------+---------------+\n\
+     | Go   | Rob Pike       | 2009          |\n\
+     +------+----------------+---------------+\n\
+     | Rust | Graydon Hoare  | 2010          |\n\
+     +------+----------------+---------------+\n\
+     | Hare | Drew DeVault   | 2022          |\n\
+     +------+----------------+---------------+"
+);
 ```
 
 The same example but we are building a table step by step.
@@ -71,10 +74,9 @@ builder.push_record(["Go", "Rob Pike", "2009"]);
 builder.push_record(["Rust", "Graydon Hoare", "2010"]);
 builder.push_record(["Hare", "Drew DeVault", "2022"]);
 
-let mut table = builder.build();
-table.with(Style::ascii_rounded());
-
-let table = table.to_string();
+let table = builder.build()
+    .with(Style::ascii_rounded())
+    .to_string();
 
 assert_eq!(
     table,
