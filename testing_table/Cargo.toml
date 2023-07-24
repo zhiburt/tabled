@@ -1,11 +1,11 @@
 [package]
 name = "testing_table"
 version = "0.0.0"
-edition = "2021"
+edition = "2018"
 publish = false
 
 [features]
-ansi = ["ansitok"]
+color = ["ansitok"]
 
 [dependencies]
 ansitok = { version = "0.2", optional = true }

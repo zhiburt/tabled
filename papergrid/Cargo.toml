@@ -21,7 +21,7 @@ ansitok = { version = "0.2", optional = true  }
 
 [dev-dependencies]
 owo-colors = "3.4.0"
-testing_table = { path = "../testing_table" }
+testing_table = { path = "../testing_table", features = ["color"] }
 
 [[example]]
 name = "papergrid_color"

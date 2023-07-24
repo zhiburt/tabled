@@ -20,4 +20,4 @@ toml = "0.7"
 tabled = { version = "0.12", features = ["std"], default-features = false }
 
 [dev-dependencies]
-testing_table = { path = "../testing_table" }
+testing_table = { path = "../testing_table", features = ["color"] }
