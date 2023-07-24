@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.13.0] - 2023-07-24
+
+### Added
+
+- Added `settings::Dup` to toplicate content.
+- Added `settings::themes::ColumnNames` to set text on border (adjusted to cells).
+- Added `Xor` implementation for `Color`.
+- Added `Colorization` to set colors of table by a pattern.
 
 ## [0.12.2] - 2023-06-11
 
