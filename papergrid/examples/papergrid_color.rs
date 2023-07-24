@@ -6,7 +6,10 @@
 //! grid cells. `Grid::new(_, _, _, NoColors)` indicates that a color
 //! map is not provided. NOT that colors are ignored in the output.
 
-use std::io::Write;
+use std::{
+    fmt,
+    io::{self, Write},
+};
 
 use papergrid::{
     colors::NoColors, config::spanned::SpannedConfig, config::Borders,
@@ -28,7 +31,7 @@ fn main() {
 
     let grid = Grid::new(&records, &dimension, &cfg, NoColors);
 
-    grid.build(UTF8Stdout(std::io::stdout())).unwrap();
+    grid.build(UTF8Stdout(io::stdout())).unwrap();
     println!();
 }
 
@@ -48,13 +51,13 @@ fn generate_table_config() -> SpannedConfig {
     cfg
 }
 
-struct UTF8Stdout(std::io::Stdout);
+struct UTF8Stdout(io::Stdout);
 
-impl std::fmt::Write for UTF8Stdout {
-    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+impl fmt::Write for UTF8Stdout {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
         let mut buf = s.as_bytes();
         loop {
-            let n = self.0.write(buf).map_err(|_| std::fmt::Error::default())?;
+            let n = self.0.write(buf).map_err(|_| fmt::Error)?;
             if n == buf.len() {
                 break;
             }
@@ -62,7 +65,7 @@ impl std::fmt::Write for UTF8Stdout {
             buf = &buf[n..];
         }
 
-        self.0.flush().map_err(|_| std::fmt::Error::default())?;
+        self.0.flush().map_err(|_| fmt::Error)?;
 
         Ok(())
     }
