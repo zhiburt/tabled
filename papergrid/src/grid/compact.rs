@@ -33,7 +33,7 @@ impl<R, D, G> CompactGrid<R, D, G, NoColors> {
             records,
             config,
             dimension,
-            colors: NoColors::default(),
+            colors: NoColors,
         }
     }
 }
