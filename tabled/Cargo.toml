@@ -1,6 +1,6 @@
 [package]
 name = "tabled"
-version = "0.12.2"
+version = "0.13.0"
 authors = ["Maxim Zhiburt <zhiburt@gmail.com>"]
 edition = "2018"
 description = "An easy to use library for pretty print tables of Rust `struct`s and `enum`s."
@@ -277,7 +277,7 @@ color = ["papergrid/color", "ansi-str", "ansitok", "std", "testing_table/ansi"]
 macros = ["std"]
 
 [dependencies]
-papergrid = { path = "../papergrid", default-features = false }
+papergrid = { version = "0.10", default-features = false }
 tabled_derive = { version = "0.6", optional = true }
 ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true }
