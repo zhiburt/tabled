@@ -162,12 +162,7 @@ fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
             buf.clear();
         }
 
-        if height == 0 && !has_horizontal {
-            is_prev_row_skipped = true;
-        } else {
-            is_prev_row_skipped = false;
-        }
-
+        is_prev_row_skipped = height == 0 && !has_horizontal;
         line += height;
         row += 1;
     }
