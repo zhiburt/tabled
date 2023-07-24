@@ -92,7 +92,7 @@ where
             width,
             multiline: false,
             suffix: None,
-            _priority: PhantomData::default(),
+            _priority: PhantomData,
         }
     }
 }
@@ -114,7 +114,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
             width: self.width,
             multiline: self.multiline,
             suffix: Some(suff),
-            _priority: PhantomData::default(),
+            _priority: PhantomData,
         }
     }
 
@@ -127,7 +127,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
             width: self.width,
             multiline: self.multiline,
             suffix: Some(suff),
-            _priority: PhantomData::default(),
+            _priority: PhantomData,
         }
     }
 
@@ -151,7 +151,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
             width: self.width,
             multiline: self.multiline,
             suffix: Some(suff),
-            _priority: PhantomData::default(),
+            _priority: PhantomData,
         }
     }
 }
@@ -170,7 +170,7 @@ impl<'a, W, P> Truncate<'a, W, P> {
             width: self.width,
             multiline: self.multiline,
             suffix: self.suffix,
-            _priority: PhantomData::default(),
+            _priority: PhantomData,
         }
     }
 }

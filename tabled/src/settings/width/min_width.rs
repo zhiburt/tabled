@@ -70,7 +70,7 @@ where
         Self {
             width,
             fill: ' ',
-            _priority: PhantomData::default(),
+            _priority: PhantomData,
         }
     }
 }
@@ -97,7 +97,7 @@ impl<W, P> MinWidth<W, P> {
         MinWidth {
             fill: self.fill,
             width: self.width,
-            _priority: PhantomData::default(),
+            _priority: PhantomData,
         }
     }
 }

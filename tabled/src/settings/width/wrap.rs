@@ -54,7 +54,7 @@ impl<W> Wrap<W> {
         Wrap {
             width,
             keep_words: false,
-            _priority: PhantomData::default(),
+            _priority: PhantomData,
         }
     }
 }
@@ -76,7 +76,7 @@ impl<W, P> Wrap<W, P> {
         Wrap {
             width: self.width,
             keep_words: self.keep_words,
-            _priority: PhantomData::default(),
+            _priority: PhantomData,
         }
     }
 
