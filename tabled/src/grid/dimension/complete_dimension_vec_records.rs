@@ -43,6 +43,17 @@ impl CompleteDimensionVecRecords<'_> {
         true
     }
 
+    /// Get column widths.
+    ///
+    /// In general the method is only considered to be useful to a [`TableOption`].
+    ///
+    /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided widths.
+    ///
+    /// [`TableOption`]: crate::settings::TableOption
+    pub fn get_widths(&self) -> Option<&'_ [usize]> {
+        self.width.as_deref()
+    }
+
     /// Set rows heights.
     ///
     /// In general the method is only considered to be useful to a [`TableOption`].
@@ -54,6 +65,17 @@ impl CompleteDimensionVecRecords<'_> {
         self.height = Some(Cow::Owned(rows));
 
         true
+    }
+
+    /// Get row heights.
+    ///
+    /// In general the method is only considered to be useful to a [`TableOption`].
+    ///
+    /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided widths.
+    ///
+    /// [`TableOption`]: crate::settings::TableOption
+    pub fn get_heights(&self) -> Option<&'_ [usize]> {
+        self.height.as_deref()
     }
 
     /// Force width estimation.
