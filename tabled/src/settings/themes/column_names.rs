@@ -2,7 +2,7 @@ use std::cmp;
 
 use crate::{
     grid::{
-        config::{Position, AlignmentHorizontal, ColoredConfig},
+        config::{AlignmentHorizontal, ColoredConfig, Position},
         dimension::{CompleteDimensionVecRecords, Dimension, Estimate},
         records::{
             vec_records::{CellInfo, VecRecords},
