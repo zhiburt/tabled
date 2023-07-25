@@ -244,8 +244,6 @@ impl TableOption<VecRecords<CellInfo<String>>, CompleteDimensionVecRecords<'stat
             .map(|name| name.lines().next().unwrap_or(""))
             .collect::<Vec<_>>();
 
-        println!("{names:?}");
-
         dims.estimate(&*records, cfg);
 
         let widths = (0..count_columns)
