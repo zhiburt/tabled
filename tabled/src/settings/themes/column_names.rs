@@ -68,9 +68,9 @@ use crate::{
 #[derive(Debug, Clone)]
 pub struct ColumnNames {
     names: Option<Vec<String>>,
-    colors: Vec<Option<Color>>,
+    colors: Option<ListValue<Color>>,
+    alignments: ListValue<AlignmentHorizontal>,
     line: usize,
-    alignment: AlignmentHorizontal,
 }
 
 impl Default for ColumnNames {
@@ -79,7 +79,7 @@ impl Default for ColumnNames {
             names: Default::default(),
             colors: Default::default(),
             line: Default::default(),
-            alignment: AlignmentHorizontal::Left,
+            alignments: ListValue::from(AlignmentHorizontal::Left),
         }
     }
 }
@@ -113,9 +113,7 @@ impl ColumnNames {
         let names = names.into_iter().map(Into::into).collect::<Vec<_>>();
         Self {
             names: Some(names),
-            colors: Vec::new(),
-            line: 0,
-            alignment: AlignmentHorizontal::Left,
+            ..Default::default()
         }
     }
 
@@ -131,7 +129,7 @@ impl ColumnNames {
     /// use tabled::settings::{Color, themes::ColumnNames};
     ///
     /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
-    /// table.with(ColumnNames::new(["head1", "head2"]).set_colors([Color::FG_RED]));
+    /// table.with(ColumnNames::new(["head1", "head2"]).set_color(vec![Color::FG_RED]));
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -140,17 +138,15 @@ impl ColumnNames {
     ///      +-------+-------+"
     /// );
     /// ```
-    pub fn set_colors<I>(self, colors: I) -> Self
+    pub fn set_color<T>(self, color: T) -> Self
     where
-        I: IntoIterator,
-        I::Item: Into<Option<Color>>,
+        T: Into<ListValue<Color>>,
     {
-        let colors = colors.into_iter().map(Into::into).collect::<Vec<_>>();
         Self {
             names: self.names,
             line: self.line,
-            alignment: self.alignment,
-            colors,
+            alignments: self.alignments,
+            colors: Some(color.into()),
         }
     }
 
@@ -177,9 +173,9 @@ impl ColumnNames {
     pub fn set_line(self, i: usize) -> Self {
         Self {
             names: self.names,
-            colors: self.colors,
-            alignment: self.alignment,
             line: i,
+            alignments: self.alignments,
+            colors: self.colors,
         }
     }
 
@@ -207,12 +203,15 @@ impl ColumnNames {
     ///      +-------+-------+"
     /// );
     /// ```
-    pub fn set_alignment(self, alignment: AlignmentHorizontal) -> Self {
+    pub fn set_alignment<T>(self, alignment: T) -> Self
+    where
+        T: Into<ListValue<AlignmentHorizontal>>,
+    {
         Self {
             names: self.names,
-            colors: self.colors,
             line: self.line,
-            alignment,
+            alignments: alignment.into(),
+            colors: self.colors,
         }
     }
 }
@@ -260,10 +259,11 @@ impl TableOption<VecRecords<CellInfo<String>>, CompleteDimensionVecRecords<'stat
 
         let mut total_width = 0;
         for (i, (width, name)) in widths.into_iter().zip(names).enumerate() {
-            let left_vertical = get_vertical_width(cfg, (self.line, i), count_columns);
             let color = get_color(&self.colors, i);
+            let alignment = get_alignment(&self.alignments, i);
+            let left_vertical = get_vertical_width(cfg, (self.line, i), count_columns);
             let grid_offset = total_width + left_vertical;
-            let btext = get_border_text(name, grid_offset, width, self.alignment, self.line, color);
+            let btext = get_border_text(name, grid_offset, width, alignment, self.line, color);
             btext.change(records, cfg, dims);
 
             total_width += width + left_vertical;
@@ -304,11 +304,19 @@ fn get_border_text(
     btext
 }
 
-fn get_color(colors: &[Option<Color>], i: usize) -> Option<&Color> {
-    colors.get(i).and_then(|color| match color {
-        Some(color) => Some(color),
+fn get_color(colors: &Option<ListValue<Color>>, i: usize) -> Option<&Color> {
+    match colors {
+        Some(ListValue::List(list)) => list.get(i),
+        Some(ListValue::Static(color)) => Some(color),
         None => None,
-    })
+    }
+}
+
+fn get_alignment(alignments: &ListValue<AlignmentHorizontal>, i: usize) -> AlignmentHorizontal {
+    match alignments {
+        ListValue::List(list) => list.get(i).copied().unwrap_or(AlignmentHorizontal::Left),
+        ListValue::Static(alignment) => *alignment,
+    }
 }
 
 fn get_indent(text: &str, align: AlignmentHorizontal, available: usize) -> usize {
@@ -323,4 +331,31 @@ fn get_vertical_width(cfg: &mut ColoredConfig, pos: Position, count_columns: usi
     cfg.get_vertical(pos, count_columns)
         .and_then(unicode_width::UnicodeWidthChar::width)
         .unwrap_or(0)
+}
+
+#[derive(Debug, Clone)]
+pub enum ListValue<T> {
+    List(Vec<T>),
+    Static(T),
+}
+
+impl<T> From<T> for ListValue<T> {
+    fn from(value: T) -> Self {
+        Self::Static(value)
+    }
+}
+
+impl<T> From<Vec<T>> for ListValue<T> {
+    fn from(value: Vec<T>) -> Self {
+        Self::List(value)
+    }
+}
+
+impl<T> Default for ListValue<T>
+where
+    T: Default,
+{
+    fn default() -> Self {
+        Self::Static(T::default())
+    }
 }
