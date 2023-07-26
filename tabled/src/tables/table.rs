@@ -183,6 +183,9 @@ impl Table {
             ColoredConfig,
         >,
     {
+        // todo: because we do it we can't reuse cached values....
+        // better we set a clear flag and then after option is done check if we need to clear or it was reset by the option.
+
         self.dimension.clear_width();
         self.dimension.clear_height();
 

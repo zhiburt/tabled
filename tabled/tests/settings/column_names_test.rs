@@ -114,78 +114,6 @@ test_table!(
 );
 
 test_table!(
-    alignment_left_offset,
-    Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().set_alignment(AlignmentHorizontal::Left).set_offset(1)),
-    "+-&str--+-&str-----+"
-    "| Hello | World    |"
-    "+-------+----------+"
-    "| and   | looooong |"
-    "|       | word     |"
-    "+-------+----------+"
-);
-
-test_table!(
-    alignment_left_offset_big,
-    Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().set_alignment(AlignmentHorizontal::Left).set_offset(30)),
-    "+------------------------------&str+------------------------------&str+"
-    "| Hello                            | World                            |"
-    "+----------------------------------+----------------------------------+"
-    "| and                              | looooong                         |"
-    "|                                  | word                             |"
-    "+----------------------------------+----------------------------------+"
-);
-
-test_table!(
-    alignment_left_offset_0,
-    Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().set_alignment(AlignmentHorizontal::Left).set_offset(0)),
-    "+&str---+&str------+"
-    "| Hello | World    |"
-    "+-------+----------+"
-    "| and   | looooong |"
-    "|       | word     |"
-    "+-------+----------+"
-);
-
-test_table!(
-    alignment_right_offset,
-    Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().set_alignment(AlignmentHorizontal::Right).set_offset(1)),
-    "+--&str-+-----&str-+"
-    "| Hello | World    |"
-    "+-------+----------+"
-    "| and   | looooong |"
-    "|       | word     |"
-    "+-------+----------+"
-);
-
-test_table!(
-    alignment_right_offset_big,
-    Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().set_alignment(AlignmentHorizontal::Right).set_offset(30)),
-    "+&str------------------------------+&str------------------------------+"
-    "| Hello                            | World                            |"
-    "+----------------------------------+----------------------------------+"
-    "| and                              | looooong                         |"
-    "|                                  | word                             |"
-    "+----------------------------------+----------------------------------+"
-);
-
-test_table!(
-    alignment_right_offset_0,
-    Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().set_alignment(AlignmentHorizontal::Right).set_offset(0)),
-    "+---&str+------&str+"
-    "| Hello | World    |"
-    "+-------+----------+"
-    "| and   | looooong |"
-    "|       | word     |"
-    "+-------+----------+"
-);
-
-test_table!(
     set_line,
     Matrix::new(3, 3).with(ColumnNames::default().set_line(1)),
     "+---+--------+--------+--------+"
@@ -200,13 +128,15 @@ test_table!(
 test_table!(
     set_line_max_out,
     Matrix::new(3, 3).with(ColumnNames::default().set_line(100)),
-    "+---+--------+--------+--------+"
-    "| 0 |  0-0   |  0-1   |  0-2   |"
-    "+---+--------+--------+--------+"
-    "| 1 |  1-0   |  1-1   |  1-2   |"
-    "+---+--------+--------+--------+"
-    "| 2 |  2-0   |  2-1   |  2-2   |"
-    "+---+--------+--------+--------+"
+    "+---+----------+----------+----------+"
+    "| N | column 0 | column 1 | column 2 |"
+    "+---+----------+----------+----------+"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "+---+----------+----------+----------+"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "+---+----------+----------+----------+"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "+---+----------+----------+----------+"
 );
 
 test_table!(

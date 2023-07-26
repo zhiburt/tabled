@@ -35,6 +35,7 @@ use super::Offset;
 /// ```
 #[derive(Debug)]
 pub struct BorderText<L> {
+    // todo: change to T and specify to be As<str>
     text: String,
     offset: Offset,
     color: Option<AnsiColor<'static>>,

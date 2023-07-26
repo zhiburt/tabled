@@ -1,6 +1,8 @@
+use std::cmp;
+
 use crate::{
     grid::{
-        config::{AlignmentHorizontal, ColoredConfig},
+        config::{AlignmentHorizontal, ColoredConfig, Position},
         dimension::{CompleteDimensionVecRecords, Dimension, Estimate},
         records::{
             vec_records::{CellInfo, VecRecords},
@@ -22,7 +24,7 @@ use crate::{
 ///
 /// ```
 /// use std::iter::FromIterator;
-/// use tabled::{Table, settings::themes::ColumnNames};
+/// use tabled::{Table, settings::themes::ColumnNames, grid::config::AlignmentHorizontal};
 ///
 /// let data = vec![
 ///     vec!["Hello", "World"],
@@ -30,15 +32,15 @@ use crate::{
 /// ];
 ///
 /// let mut table = Table::from_iter(data);
-/// table.with(ColumnNames::new(["head1", "head2"]).set_offset(3).set_line(2));
+/// table.with(ColumnNames::new(["head1", "head2"]).set_line(2).set_alignment(AlignmentHorizontal::Right));
 ///
 /// assert_eq!(
 ///     table.to_string(),
-///     "+--------+--------+\n\
-///      | Hello  | World  |\n\
-///      +--------+--------+\n\
-///      | Hello  | World  |\n\
-///      +---head1+---head2+"
+///     "+-------+-------+\n\
+///      | Hello | World |\n\
+///      +-------+-------+\n\
+///      | Hello | World |\n\
+///      +--head1+--head2+"
 /// );
 /// ```
 ///
@@ -67,7 +69,6 @@ use crate::{
 pub struct ColumnNames {
     names: Option<Vec<String>>,
     colors: Vec<Option<Color>>,
-    offset: usize,
     line: usize,
     alignment: AlignmentHorizontal,
 }
@@ -77,7 +78,6 @@ impl Default for ColumnNames {
         Self {
             names: Default::default(),
             colors: Default::default(),
-            offset: Default::default(),
             line: Default::default(),
             alignment: AlignmentHorizontal::Left,
         }
@@ -114,7 +114,6 @@ impl ColumnNames {
         Self {
             names: Some(names),
             colors: Vec::new(),
-            offset: 0,
             line: 0,
             alignment: AlignmentHorizontal::Left,
         }
@@ -149,40 +148,9 @@ impl ColumnNames {
         let colors = colors.into_iter().map(Into::into).collect::<Vec<_>>();
         Self {
             names: self.names,
-            offset: self.offset,
             line: self.line,
             alignment: self.alignment,
             colors,
-        }
-    }
-
-    /// Set a left offset after which the names will be used.
-    ///
-    /// By default there's no offset.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use std::iter::FromIterator;
-    /// use tabled::{Table, settings::themes::ColumnNames};
-    ///
-    /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
-    /// table.with(ColumnNames::new(["head1", "head2"]).set_offset(1));
-    ///
-    /// assert_eq!(
-    ///     table.to_string(),
-    ///     "+-head1-+-head2-+\n\
-    ///      | Hello | World |\n\
-    ///      +-------+-------+"
-    /// );
-    /// ```
-    pub fn set_offset(self, i: usize) -> Self {
-        Self {
-            names: self.names,
-            colors: self.colors,
-            line: self.line,
-            alignment: self.alignment,
-            offset: i,
         }
     }
 
@@ -210,7 +178,6 @@ impl ColumnNames {
         Self {
             names: self.names,
             colors: self.colors,
-            offset: self.offset,
             alignment: self.alignment,
             line: i,
         }
@@ -244,7 +211,6 @@ impl ColumnNames {
         Self {
             names: self.names,
             colors: self.colors,
-            offset: self.offset,
             line: self.line,
             alignment,
         }
@@ -260,78 +226,77 @@ impl TableOption<VecRecords<CellInfo<String>>, CompleteDimensionVecRecords<'stat
         cfg: &mut ColoredConfig,
         dims: &mut CompleteDimensionVecRecords<'static>,
     ) {
+        let count_rows = records.count_rows();
+        let count_columns = records.count_columns();
+
+        if count_columns == 0 || count_rows == 0 || self.line > count_rows {
+            return;
+        }
+
         let names = match self.names {
             Some(names) => names,
-            None => {
-                if records.count_rows() == 0 || records.count_columns() == 0 {
-                    return;
-                }
-
-                let names = (0..records.count_columns())
-                    .map(|column| records.get_text((0, column)))
-                    .map(ToString::to_string)
-                    .collect::<Vec<_>>();
-
-                records.remove_row(0);
-
-                names
-            }
+            None => collect_head(records),
         };
 
-        let names = names.iter().map(|name| name.lines().next().unwrap_or(""));
+        let names = names
+            .iter()
+            .take(count_columns)
+            .map(|name| name.lines().next().unwrap_or(""))
+            .collect::<Vec<_>>();
 
         dims.estimate(&*records, cfg);
 
-        let mut widths = (0..records.count_columns())
-            .map(|column| dims.get_width(column))
+        let widths = (0..count_columns)
+            .map(|column| {
+                let text = names.get(column).unwrap_or(&"");
+                let width = dims.get_width(column);
+
+                (width, text)
+            })
+            .map(|(width, text)| cmp::max(string_width(text), width))
             .collect::<Vec<_>>();
-
-        let names = names.take(widths.len());
-
-        let offset = self.offset;
-        widths
-            .iter_mut()
-            .zip(names.clone())
-            .for_each(|(width, text)| {
-                let name_width = string_width(text) + offset;
-                *width = std::cmp::max(name_width, *width);
-            });
 
         let _ = dims.set_widths(widths.clone());
 
         let mut total_width = 0;
-        for (i, (width, name)) in widths.iter().zip(names).enumerate() {
+        for (i, (width, name)) in widths.into_iter().zip(names).enumerate() {
+            let left_vertical = get_vertical_width(cfg, (self.line, i), count_columns);
             let color = get_color(&self.colors, i);
-            let offset = total_width + 1;
-            let btext = get_border_text(
-                name,
-                offset,
-                *width,
-                self.alignment,
-                self.offset,
-                self.line,
-                color,
-            );
+            let grid_offset = total_width + left_vertical;
+            let btext = get_border_text(name, grid_offset, width, self.alignment, self.line, color);
             btext.change(records, cfg, dims);
 
-            total_width += width + 1;
+            total_width += width + left_vertical;
         }
     }
+}
+
+fn collect_head(records: &mut VecRecords<CellInfo<String>>) -> Vec<String> {
+    if records.count_rows() == 0 || records.count_columns() == 0 {
+        return Vec::new();
+    }
+
+    let names = (0..records.count_columns())
+        .map(|column| records.get_text((0, column)))
+        .map(ToString::to_string)
+        .collect();
+
+    records.remove_row(0);
+
+    names
 }
 
 fn get_border_text(
     text: &str,
     offset: usize,
     available: usize,
-    alignment: AlignmentHorizontal,
-    alignment_offset: usize,
+    align: AlignmentHorizontal,
     line: usize,
     color: Option<&Color>,
 ) -> BorderText<usize> {
-    let name = text.to_string();
-    let left_indent = get_indent(text, alignment, alignment_offset, available);
-    let left_offset = Offset::Begin(offset + left_indent);
-    let mut btext = BorderText::new(name).horizontal(line).offset(left_offset);
+    let left_indent = get_indent(text, align, available);
+    let offset = Offset::Begin(offset + left_indent);
+    let mut btext = BorderText::new(text).horizontal(line).offset(offset);
     if let Some(color) = color {
         btext = btext.color(color.clone());
     }
@@ -346,10 +311,16 @@ fn get_color(colors: &[Option<Color>], i: usize) -> Option<&Color> {
     })
 }
 
-fn get_indent(text: &str, align: AlignmentHorizontal, offset: usize, available: usize) -> usize {
+fn get_indent(text: &str, align: AlignmentHorizontal, available: usize) -> usize {
     match align {
-        AlignmentHorizontal::Left => offset,
-        AlignmentHorizontal::Right => available - string_width(text) - offset,
+        AlignmentHorizontal::Left => 0,
+        AlignmentHorizontal::Right => available - string_width(text),
         AlignmentHorizontal::Center => (available - string_width(text)) / 2,
     }
+}
+
+fn get_vertical_width(cfg: &mut ColoredConfig, pos: Position, count_columns: usize) -> usize {
+    cfg.get_vertical(pos, count_columns)
+        .and_then(unicode_width::UnicodeWidthChar::width)
+        .unwrap_or(0)
 }
