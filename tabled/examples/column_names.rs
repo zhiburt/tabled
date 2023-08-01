@@ -2,8 +2,6 @@
 //!
 //! It sets a `clickhouse` like table style (first seen on).
 
-use std::iter::repeat;
-
 use tabled::{
     grid::config::AlignmentHorizontal,
     settings::{themes::ColumnNames, Color, Style},
@@ -55,7 +53,7 @@ fn main() {
 
     table.with(Style::modern().remove_horizontal()).with(
         ColumnNames::default()
-            .set_colors(repeat(Color::BOLD | Color::BG_BLUE | Color::FG_WHITE).take(3))
+            .set_color(Color::BOLD | Color::BG_BLUE | Color::FG_WHITE)
             .set_alignment(AlignmentHorizontal::Center),
     );
 
