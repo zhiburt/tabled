@@ -1,7 +1,5 @@
-use crate::settings::TableOption;
+use crate::{grid::config::Entity, settings::TableOption};
 
-#[cfg(feature = "std")]
-use crate::grid::config::Entity;
 #[cfg(feature = "std")]
 use crate::settings::CellOption;
 

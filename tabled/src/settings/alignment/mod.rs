@@ -13,15 +13,16 @@
 //! [`Table`]: crate::Table
 
 use crate::{
-    grid::config::CompactConfig,
-    grid::config::{AlignmentHorizontal, AlignmentVertical, CompactMultilineConfig},
+    grid::config::{
+        AlignmentHorizontal, AlignmentVertical, CompactConfig, CompactMultilineConfig, Entity,
+    },
     settings::TableOption,
 };
 
 use AlignmentInner::*;
 
 #[cfg(feature = "std")]
-use crate::grid::config::{ColoredConfig, Entity};
+use crate::grid::config::ColoredConfig;
 
 /// Alignment represent a horizontal and vertical alignment setting for any cell on a [`Table`].
 ///
