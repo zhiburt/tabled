@@ -114,6 +114,10 @@ impl<R, D> TableOption<R, D, ColoredConfig> for Justification {
         cfg.set_justification(Entity::Global, c);
         cfg.set_justification_color(Entity::Global, color);
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
+    }
 }
 
 impl<R> CellOption<R, ColoredConfig> for Justification {
@@ -123,5 +127,9 @@ impl<R> CellOption<R, ColoredConfig> for Justification {
 
         cfg.set_justification(entity, c);
         cfg.set_justification_color(entity, color);
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
     }
 }

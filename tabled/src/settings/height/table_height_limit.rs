@@ -45,7 +45,7 @@ impl<W> TableHeightLimit<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig>
+impl<R, W, P> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig>
     for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,
@@ -57,7 +57,7 @@ where
         self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'static>,
+        dims: &mut CompleteDimensionVecRecords<'_>,
     ) {
         let count_rows = records.count_rows();
         let count_cols = (&*records).count_columns();
@@ -89,7 +89,7 @@ where
             }
         }
 
-        let _ = dims.set_heights(heights);
+        dims.set_heights(heights);
     }
 }
 

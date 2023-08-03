@@ -169,6 +169,10 @@ impl<R, D> TableOption<R, D, ColoredConfig> for Alignment {
             Vertical(a) => cfg.set_alignment_vertical(Entity::Global, a),
         }
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
+    }
 }
 
 impl<R, D> TableOption<R, D, CompactConfig> for Alignment {
@@ -176,6 +180,10 @@ impl<R, D> TableOption<R, D, CompactConfig> for Alignment {
         if let Horizontal(a) = self.inner {
             *cfg = cfg.set_alignment_horizontal(a)
         }
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
     }
 }
 
@@ -185,5 +193,9 @@ impl<R, D> TableOption<R, D, CompactMultilineConfig> for Alignment {
             Horizontal(a) => *cfg = cfg.set_alignment_horizontal(a),
             Vertical(a) => *cfg = cfg.set_alignment_vertical(a),
         }
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
     }
 }

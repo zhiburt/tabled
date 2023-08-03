@@ -38,8 +38,6 @@ use crate::{
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Color(AnsiColor<'static>);
 
-// todo: Add | operation to combine colors
-
 #[rustfmt::skip]
 impl Color {
     /// A color representation.
@@ -251,17 +249,29 @@ impl<R, D> TableOption<R, D, ColoredConfig> for Color {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let _ = cfg.set_color(Entity::Global, self.0.clone());
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
+    }
 }
 
 impl<R> CellOption<R, ColoredConfig> for Color {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let _ = cfg.set_color(entity, self.0.clone());
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
+    }
 }
 
 impl<R> CellOption<R, ColoredConfig> for &Color {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let _ = cfg.set_color(entity, self.0.clone());
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
     }
 }
 

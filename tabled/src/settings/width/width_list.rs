@@ -31,20 +31,15 @@ impl FromIterator<usize> for WidthList {
     }
 }
 
-impl<R, C> TableOption<R, CompleteDimensionVecRecords<'static>, C> for WidthList
+impl<R, C> TableOption<R, CompleteDimensionVecRecords<'_>, C> for WidthList
 where
     R: Records,
 {
-    fn change(
-        self,
-        records: &mut R,
-        _: &mut C,
-        dimension: &mut CompleteDimensionVecRecords<'static>,
-    ) {
+    fn change(self, records: &mut R, _: &mut C, dimension: &mut CompleteDimensionVecRecords<'_>) {
         if self.list.len() < records.count_columns() {
             return;
         }
 
-        let _ = dimension.set_widths(self.list);
+        dimension.set_widths(self.list);
     }
 }

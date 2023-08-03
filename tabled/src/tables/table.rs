@@ -177,19 +177,19 @@ impl Table {
     /// It applies settings immediately.
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        O: TableOption<
+        for<'a> O: TableOption<
             VecRecords<CellInfo<String>>,
-            CompleteDimensionVecRecords<'static>,
+            CompleteDimensionVecRecords<'a>,
             ColoredConfig,
         >,
     {
-        // todo: because we do it we can't reuse cached values....
-        // better we set a clear flag and then after option is done check if we need to clear or it was reset by the option.
+        let reastimation_hint = option.hint_change();
+        let mut dims = self.dimension.from_origin();
 
-        self.dimension.clear_width();
-        self.dimension.clear_height();
+        option.change(&mut self.records, &mut self.config, &mut dims);
 
-        option.change(&mut self.records, &mut self.config, &mut self.dimension);
+        let (widths, heights) = dims.into_inner();
+        dimension_reastimate(&mut self.dimension, widths, heights, reastimation_hint);
 
         self
     }
@@ -463,5 +463,66 @@ fn print_grid<F: fmt::Write, D: Dimension>(
         PeekableGrid::new(records, cfg, &dims, colors).build(f)
     } else {
         PeekableGrid::new(records, cfg, &dims, NoColors).build(f)
+    }
+}
+
+fn dimension_reastimate(
+    dims: &mut CompleteDimensionVecRecords<'_>,
+    widths: Option<Vec<usize>>,
+    heights: Option<Vec<usize>>,
+    hint: Option<Entity>,
+) {
+    let hint = match hint {
+        Some(hint) => hint,
+        None => return,
+    };
+
+    match hint {
+        Entity::Global | Entity::Cell(_, _) => {
+            dims_set_widths(dims, widths);
+            dims_set_heights(dims, heights);
+        }
+        Entity::Column(_) => {
+            dims_set_widths(dims, widths);
+        }
+        Entity::Row(_) => {
+            dims_set_heights(dims, heights);
+        }
+    }
+}
+
+fn dims_set_widths(dims: &mut CompleteDimensionVecRecords<'_>, list: Option<Vec<usize>>) {
+    match list {
+        Some(list) => match dims.get_widths() {
+            Some(widths) => {
+                if widths == list {
+                    dims.clear_width();
+                } else {
+                    dims.set_widths(list);
+                }
+            }
+            None => dims.set_widths(list),
+        },
+        None => {
+            dims.clear_width();
+        }
+    }
+}
+
+fn dims_set_heights(dims: &mut CompleteDimensionVecRecords<'_>, list: Option<Vec<usize>>) {
+    match list {
+        Some(list) => match dims.get_heights() {
+            Some(heights) => {
+                if heights == list {
+                    dims.clear_height();
+                } else {
+                    dims.set_heights(list);
+                }
+            }
+            None => dims.set_heights(list),
+        },
+        None => {
+            dims.clear_height();
+        }
     }
 }

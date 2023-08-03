@@ -299,8 +299,7 @@ fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str
     }
 }
 
-impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig>
-    for Truncate<'_, W, P>
+impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -311,7 +310,7 @@ where
         self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'static>,
+        dims: &mut CompleteDimensionVecRecords<'_>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
@@ -336,7 +335,7 @@ where
             records, cfg, widths, total, width, priority, suffix, multiline,
         );
 
-        let _ = dims.set_widths(widths);
+        dims.set_widths(widths);
     }
 }
 

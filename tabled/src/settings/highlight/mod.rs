@@ -129,6 +129,10 @@ where
             set_border(cfg, &sector, self.border);
         }
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
+    }
 }
 
 /// A [`Highlight`] object which works with a [`BorderColored`]
@@ -155,6 +159,10 @@ where
         for sector in segments {
             set_border_color(cfg, sector, &self.border);
         }
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
     }
 }
 

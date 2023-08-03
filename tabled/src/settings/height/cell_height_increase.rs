@@ -71,8 +71,7 @@ where
     }
 }
 
-impl<R, W> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig>
-    for CellHeightIncrease<W>
+impl<R, W> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig> for CellHeightIncrease<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + PeekableRecords,
@@ -82,10 +81,14 @@ where
         self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'static>,
+        dims: &mut CompleteDimensionVecRecords<'_>,
     ) {
         let height = self.height.measure(&*records, cfg);
         TableHeightIncrease::new(height).change(records, cfg, dims)
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        Some(Entity::Row(0))
     }
 }
 

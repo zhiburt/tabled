@@ -71,8 +71,7 @@ where
     }
 }
 
-impl<R, W> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig>
-    for CellHeightLimit<W>
+impl<R, W> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
@@ -82,7 +81,7 @@ where
         self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'static>,
+        dims: &mut CompleteDimensionVecRecords<'_>,
     ) {
         let height = self.height.measure(&*records, cfg);
         TableHeightLimit::new(height).change(records, cfg, dims)

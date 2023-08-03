@@ -1,5 +1,8 @@
 use crate::{
-    grid::records::{ExactRecords, Records},
+    grid::{
+        config::Entity,
+        records::{ExactRecords, Records},
+    },
     settings::{object::Object, CellOption, Settings, TableOption},
 };
 
@@ -20,6 +23,27 @@ impl<O> Modify<O> {
     }
 
     /// A function which combines together [`Modify::new`] and [`Modify::with`] calls.
+    ///
+    /// ```
+    /// use tabled::{Table, settings::{Modify, Padding, object::Rows}};
+    ///
+    /// let table = Table::new(&["Year", "2021"])
+    ///     .with(Modify::list(Rows::first(), Padding::new(1, 1, 1, 1)))
+    ///     .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     "+------+\n\
+    ///      |      |\n\
+    ///      | &str |\n\
+    ///      |      |\n\
+    ///      +------+\n\
+    ///      | Year |\n\
+    ///      +------+\n\
+    ///      | 2021 |\n\
+    ///      +------+"
+    /// )
+    /// ```
     pub const fn list<M>(obj: O, next: M) -> ModifyList<O, M> {
         ModifyList {
             obj,
@@ -32,6 +56,27 @@ impl<O> Modify<O> {
     /// IMPORTANT:
     ///     The function *doesn't* changes a [`Table`].
     ///     [`Table`] will be changed only after passing [`Modify`] object to [`Table::with`].
+    ///
+    /// ```
+    /// use tabled::{Table, settings::{Modify, Padding, object::Rows}};
+    ///
+    /// let table = Table::new(&["Year", "2021"])
+    ///     .with(Modify::new(Rows::first()).with(Padding::new(1, 1, 1, 1)))
+    ///     .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     "+------+\n\
+    ///      |      |\n\
+    ///      | &str |\n\
+    ///      |      |\n\
+    ///      +------+\n\
+    ///      | Year |\n\
+    ///      +------+\n\
+    ///      | 2021 |\n\
+    ///      +------+"
+    /// )
+    /// ```
     ///
     /// [`Table`]: crate::Table
     /// [`Table::with`]: crate::Table::with
@@ -77,5 +122,9 @@ where
         for entity in self.obj.cells(records) {
             self.modifiers.clone().change(records, cfg, entity);
         }
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        self.modifiers.hint_change()
     }
 }
