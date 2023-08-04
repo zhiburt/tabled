@@ -130,9 +130,13 @@ where
             records.set(pos, content);
         }
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        Some(Entity::Column(0))
+    }
 }
 
-impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'static>, ColoredConfig> for MinWidth<W, P>
+impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig> for MinWidth<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,
@@ -143,7 +147,7 @@ where
         self,
         records: &mut R,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'static>,
+        dims: &mut CompleteDimensionVecRecords<'_>,
     ) {
         if records.count_rows() == 0 || records.count_columns() == 0 {
             return;
@@ -157,7 +161,11 @@ where
         }
 
         let widths = get_increase_list(widths, nessary_width, total_width, P::create());
-        let _ = dims.set_widths(widths);
+        dims.set_widths(widths);
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        Some(Entity::Column(0))
     }
 }
 

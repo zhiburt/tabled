@@ -11,8 +11,26 @@ use crate::grid::{
 ///
 /// [`Cell`]: crate::object::Cell
 pub trait CellOption<R, C> {
-    /// Modification function of a single cell.
+    /// Modification function of a certail part of a grid targeted by [`Entity`].
     fn change(self, records: &mut R, cfg: &mut C, entity: Entity);
+
+    /// A hint whether an [`TableOption`] is going to change table layout.
+    ///
+    /// Return [`None`] if no changes are being done.
+    /// Otherwise return:
+    ///
+    /// - [Entity::Global] - a grand layout changed.
+    /// - [Entity::Row] - a certain row was changed.
+    /// - [Entity::Column] - a certain column was changed.
+    /// - [Entity::Cell] - a certain cell was changed.
+    ///
+    /// By default it's considered to be a grand change.
+    ///
+    /// This methods primarily is used as an optimization,
+    /// to not make unnessary calculations if they're not needed, after using the [`TableOption`].
+    fn hint_change(&self) -> Option<Entity> {
+        Some(Entity::Global)
+    }
 }
 
 #[cfg(feature = "std")]

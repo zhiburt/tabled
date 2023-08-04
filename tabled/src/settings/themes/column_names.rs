@@ -216,14 +216,14 @@ impl ColumnNames {
     }
 }
 
-impl TableOption<VecRecords<CellInfo<String>>, CompleteDimensionVecRecords<'static>, ColoredConfig>
+impl TableOption<VecRecords<CellInfo<String>>, CompleteDimensionVecRecords<'_>, ColoredConfig>
     for ColumnNames
 {
     fn change(
         self,
         records: &mut VecRecords<CellInfo<String>>,
         cfg: &mut ColoredConfig,
-        dims: &mut CompleteDimensionVecRecords<'static>,
+        dims: &mut CompleteDimensionVecRecords<'_>,
     ) {
         let count_rows = records.count_rows();
         let count_columns = records.count_columns();
@@ -255,7 +255,7 @@ impl TableOption<VecRecords<CellInfo<String>>, CompleteDimensionVecRecords<'stat
             .map(|(width, text)| cmp::max(string_width(text), width))
             .collect::<Vec<_>>();
 
-        let _ = dims.set_widths(widths.clone());
+        dims.set_widths(widths.clone());
 
         let mut total_width = 0;
         for (i, (width, name)) in widths.into_iter().zip(names).enumerate() {

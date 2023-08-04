@@ -157,6 +157,10 @@ impl<R, D> TableOption<R, D, ColoredConfig> for AlignmentStrategy {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         <Self as CellOption<R, ColoredConfig>>::change(self, records, cfg, Entity::Global)
     }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
+    }
 }
 
 impl<R, D> TableOption<R, D, CompactMultilineConfig> for AlignmentStrategy {
@@ -168,5 +172,9 @@ impl<R, D> TableOption<R, D, CompactMultilineConfig> for AlignmentStrategy {
         }
 
         *cfg = cfg.set_formatting(f);
+    }
+
+    fn hint_change(&self) -> Option<Entity> {
+        None
     }
 }

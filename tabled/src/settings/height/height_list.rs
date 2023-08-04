@@ -33,15 +33,15 @@ impl FromIterator<usize> for HeightList {
     }
 }
 
-impl<R, C> TableOption<R, CompleteDimensionVecRecords<'static>, C> for HeightList
+impl<R, C> TableOption<R, CompleteDimensionVecRecords<'_>, C> for HeightList
 where
     R: ExactRecords + Records,
 {
-    fn change(self, records: &mut R, _: &mut C, dims: &mut CompleteDimensionVecRecords<'static>) {
+    fn change(self, records: &mut R, _: &mut C, dims: &mut CompleteDimensionVecRecords<'_>) {
         if self.list.len() < records.count_rows() {
             return;
         }
 
-        let _ = dims.set_heights(self.list);
+        dims.set_heights(self.list);
     }
 }

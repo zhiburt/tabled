@@ -37,10 +37,8 @@ impl CompleteDimensionVecRecords<'_> {
     /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided widths.
     ///
     /// [`TableOption`]: crate::settings::TableOption
-    pub fn set_widths(&mut self, columns: Vec<usize>) -> bool {
+    pub fn set_widths(&mut self, columns: Vec<usize>) {
         self.width = Some(Cow::Owned(columns));
-
-        true
     }
 
     /// Get column widths.
@@ -61,10 +59,8 @@ impl CompleteDimensionVecRecords<'_> {
     /// BE CAREFUL WITH THIS METHOD as it supposed that the content is not bigger than the provided heights.
     ///
     /// [`TableOption`]: crate::settings::TableOption
-    pub fn set_heights(&mut self, rows: Vec<usize>) -> bool {
+    pub fn set_heights(&mut self, rows: Vec<usize>) {
         self.height = Some(Cow::Owned(rows));
-
-        true
     }
 
     /// Get row heights.
@@ -94,6 +90,14 @@ impl CompleteDimensionVecRecords<'_> {
         let height = self.height.as_deref().map(Cow::Borrowed);
 
         CompleteDimensionVecRecords { width, height }
+    }
+
+    /// Copies a reference from self.
+    pub fn into_inner(self) -> (Option<Vec<usize>>, Option<Vec<usize>>) {
+        let width = self.width.map(|list| list.into_owned());
+        let height = self.height.map(|list| list.into_owned());
+
+        (width, height)
     }
 }
 
