@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.14.0] - 2023-08-04
+
+### Added
+
+- Added `TableOption::hint_change` method as an optimization vector.
+
+# Changed
+
+- `ColumnNames` interface was changed.
+
+# Fixed
+
+- `ColumnNames` alignment issue.
+
 ## [0.13.0] - 2023-07-24
 
 ### Added
