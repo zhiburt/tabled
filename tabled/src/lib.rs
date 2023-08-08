@@ -69,7 +69,7 @@
 //! ```
 //!
 //! Because `tabled` must know what we're up to print as a field, so
-//! each (almoust) field must implement [`std::fmt::Display`].
+//! each (almost) field must implement [`std::fmt::Display`].
 //!
 //! ### Default implementations
 //!
