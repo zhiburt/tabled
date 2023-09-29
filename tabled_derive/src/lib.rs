@@ -88,7 +88,7 @@ fn get_fields_length(fields: &Fields) -> Result<TokenStream, Error> {
         .map(|(field, attr)| {
             if attr.inline {
                 let field_type = &field.ty;
-                quote!({<#field_type as Tabled>::LENGTH})
+                quote!({<#field_type as tabled::Tabled>::LENGTH})
             } else {
                 quote!({ 1 })
             }
@@ -317,7 +317,7 @@ fn _collect_info_enum(ast: &DataEnum, attrs: &StructAttributes) -> Result<Impl, 
     let values = values_for_enum(variant_sizes, &variants);
 
     let headers = quote! {
-        vec![
+        [
             #(#headers_list,)*
         ]
         .concat()
@@ -410,10 +410,10 @@ struct Impl {
 
 fn get_type_headers(field_type: &Type, inline_prefix: &str, prefix: &str) -> TokenStream {
     if prefix.is_empty() && inline_prefix.is_empty() {
-        quote! { <#field_type as Tabled>::headers() }
+        quote! { <#field_type as tabled::Tabled>::headers() }
     } else {
         quote! {
-            <#field_type as Tabled>::headers().into_iter()
+            <#field_type as tabled::Tabled>::headers().into_iter()
                 .map(|header| {
                     let header = format!("{}{}{}", #prefix, #inline_prefix, header);
                     ::std::borrow::Cow::Owned(header)
@@ -536,7 +536,7 @@ fn values_for_enum(
             offsets[i] += offsets[i-1]
         }
 
-        let size = <Self as Tabled>::LENGTH;
+        let size = <Self as tabled::Tabled>::LENGTH;
         let mut out_vec = vec![::std::borrow::Cow::Borrowed(""); size];
 
         #[allow(unused_variables)]

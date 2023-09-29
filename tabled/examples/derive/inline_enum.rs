@@ -9,9 +9,9 @@
 //! must implement the [`Display`] trait as they will be represented in
 //! a single column with the value of their [`ToString`] output.
 
-use tabled::{Table, Tabled};
+use tabled::Table;
 
-#[derive(Tabled)]
+#[derive(tabled::Tabled)]
 enum Contact {
     #[tabled(inline("telegram::"))]
     Telegram {
@@ -23,7 +23,7 @@ enum Contact {
     Local(#[tabled(inline("local::"))] Number),
 }
 
-#[derive(Tabled)]
+#[derive(tabled::Tabled)]
 struct Number {
     number: &'static str,
     code: usize,
