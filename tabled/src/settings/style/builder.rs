@@ -295,6 +295,36 @@ impl Style<(), (), (), (), (), (), (), ()> {
         )
     }
 
+    /// This style looks like a [`Style::round`] but with horizontal lines.
+    ///
+    /// Beware: It uses UTF-8 characters.
+    ///
+    /// ```text
+    ///     ╭────┬──────────────┬───────────────────────────╮
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     ├────┼──────────────┼───────────────────────────┤    
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     ╰────┴──────────────┴───────────────────────────╯
+    /// ```
+    pub const fn modern_round() -> Style<On, On, On, On, On, On> {
+        Style::new(
+            create_borders(
+                Line::full('─', '┬', '╭', '╮'),
+                Line::full('─', '┴', '╰', '╯'),
+                Line::full('─', '┼', '├', '┤'),
+                Some('│'),
+                Some('│'),
+                Some('│'),
+            ),
+            [],
+            [],
+        )
+    }
+
     /// This style looks like a [`Style::sharp`] but with rounded corners.
     ///
     /// Beware: It uses UTF-8 characters.
