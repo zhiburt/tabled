@@ -12,10 +12,10 @@
 use tabled::Table;
 
 #[derive(tabled::Tabled)]
-enum Contact {
+enum Contact<'a> {
     #[tabled(inline("telegram::"))]
     Telegram {
-        username: &'static str,
+        username: &'a str,
         #[tabled(inline("telegram::"))]
         number: Number,
     },

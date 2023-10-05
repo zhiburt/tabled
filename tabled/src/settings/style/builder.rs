@@ -74,10 +74,10 @@ use super::{HorizontalLine, Line, VerticalLine};
 /// [`Style::left`]: Style.left
 /// [`Style::top`]: Style.function.top
 #[derive(Debug, Clone)]
-pub struct Style<T, B, L, R, H, V, HLines = HLineArray<0>, VLines = VLineArray<0>> {
+pub struct Style<T, B, L, R, H, V, HL = HLineArray<0>, VL = VLineArray<0>> {
     borders: Borders<char>,
-    horizontals: HLines,
-    verticals: VLines,
+    horizontals: HorizontalLineIter<HL>,
+    verticals: VerticalLineIter<VL>,
     _top: PhantomData<T>,
     _bottom: PhantomData<B>,
     _left: PhantomData<L>,
@@ -438,6 +438,250 @@ impl Style<(), (), (), (), (), (), (), ()> {
     }
 }
 
+impl<T, B, L, R, H, V, const HN: usize, const VN: usize>
+    Style<T, B, L, R, H, V, HLineArray<HN>, VLineArray<VN>>
+{
+    /// Set border horizontal lines.
+    ///
+    /// # Example
+    ///
+    #[cfg_attr(feature = "derive", doc = "```")]
+    #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
+    /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
+    ///
+    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
+    ///    .with(Style::rounded().horizontals((1..4).map(|i| HorizontalLine::new(i, Line::filled('#')))))
+    ///    .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "╭───────┬─────╮\n",
+    ///         "│ &str  │ i32 │\n",
+    ///         "###############\n",
+    ///         "│ Hello │ 0   │\n",
+    ///         "###############\n",
+    ///         "│ Hello │ 1   │\n",
+    ///         "###############\n",
+    ///         "│ Hello │ 2   │\n",
+    ///         "╰───────┴─────╯",
+    ///     )
+    /// )
+    /// ```
+    pub const fn horizontals<Lines>(
+        self,
+        lines: Lines,
+    ) -> Style<T, B, L, R, H, V, Lines, VLineArray<VN>>
+    where
+        Lines: IntoIterator<Item = HorizontalLine>,
+    {
+        Style::update(self.borders, HorizontalLineIter::new(lines), self.verticals)
+    }
+
+    /// Set border vertical lines.
+    ///
+    /// # Example
+    ///
+    #[cfg_attr(feature = "derive", doc = "```")]
+    #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
+    /// use tabled::{Table, settings::style::{Style, VerticalLine, Line}};
+    ///
+    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
+    ///    .with(Style::rounded().verticals((0..3).map(|i| VerticalLine::new(i, Line::filled('#')))))
+    ///    .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "#───────#─────#\n",
+    ///         "# &str  # i32 #\n",
+    ///         "├───────┼─────┤\n",
+    ///         "# Hello # 0   #\n",
+    ///         "# Hello # 1   #\n",
+    ///         "# Hello # 2   #\n",
+    ///         "#───────#─────#",
+    ///     )
+    /// )
+    /// ```
+    pub const fn verticals<Lines>(
+        self,
+        lines: Lines,
+    ) -> Style<T, B, L, R, H, V, HLineArray<HN>, Lines>
+    where
+        Lines: IntoIterator<Item = VerticalLine>,
+    {
+        Style::update(self.borders, self.horizontals, VerticalLineIter::new(lines))
+    }
+
+    /// Removes all horizontal lines set by [`Style::horizontals`]
+    pub const fn remove_horizontals(
+        self,
+    ) -> Style<T, B, L, R, H, V, HLineArray<0>, VLineArray<VN>> {
+        Style::update(self.borders, HorizontalLineIter::new([]), self.verticals)
+    }
+
+    /// Removes all verticals lines set by [`Style::verticals`]
+    pub const fn remove_verticals(self) -> Style<T, B, L, R, H, V, HLineArray<HN>, VLineArray<0>> {
+        Style::update(self.borders, self.horizontals, VerticalLineIter::new([]))
+    }
+
+    /// Sets a top border.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub const fn top(
+        mut self,
+        c: char,
+    ) -> Style<On, B, L, R, H, V, HLineArray<HN>, VLineArray<VN>> {
+        self.borders.top = Some(c);
+
+        if self.borders.has_left() {
+            self.borders.top_left = Some(c);
+        }
+
+        if self.borders.has_right() {
+            self.borders.top_right = Some(c);
+        }
+
+        if self.borders.has_vertical() {
+            self.borders.top_intersection = Some(c);
+        }
+
+        self.verticals.top = Some(CharFlag::Set(c));
+
+        Style::update(self.borders, self.horizontals, self.verticals)
+    }
+
+    /// Sets a bottom border.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub const fn bottom(
+        mut self,
+        c: char,
+    ) -> Style<T, On, L, R, H, V, HLineArray<HN>, VLineArray<VN>> {
+        self.borders.bottom = Some(c);
+
+        if self.borders.has_left() {
+            self.borders.bottom_left = Some(c);
+        }
+
+        if self.borders.has_right() {
+            self.borders.bottom_right = Some(c);
+        }
+
+        if self.borders.has_vertical() {
+            self.borders.bottom_intersection = Some(c);
+        }
+
+        self.verticals.bottom = Some(CharFlag::Set(c));
+
+        Style::update(self.borders, self.horizontals, self.verticals)
+    }
+
+    /// Sets a left border.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub const fn left(
+        mut self,
+        c: char,
+    ) -> Style<T, B, On, R, H, V, HLineArray<HN>, VLineArray<VN>> {
+        self.borders.left = Some(c);
+
+        if self.borders.has_top() {
+            self.borders.top_left = Some(c);
+        }
+
+        if self.borders.has_bottom() {
+            self.borders.bottom_left = Some(c);
+        }
+
+        if self.borders.has_horizontal() {
+            self.borders.left_intersection = Some(c);
+        }
+
+        self.horizontals.left = Some(CharFlag::Set(c));
+
+        Style::update(self.borders, self.horizontals, self.verticals)
+    }
+
+    /// Sets a right border.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub const fn right(
+        mut self,
+        c: char,
+    ) -> Style<T, B, L, On, H, V, HLineArray<HN>, VLineArray<VN>> {
+        self.borders.right = Some(c);
+
+        if self.borders.has_top() {
+            self.borders.top_right = Some(c);
+        }
+
+        if self.borders.has_bottom() {
+            self.borders.bottom_right = Some(c);
+        }
+
+        if self.borders.has_horizontal() {
+            self.borders.right_intersection = Some(c);
+        }
+
+        self.horizontals.right = Some(CharFlag::Set(c));
+
+        Style::update(self.borders, self.horizontals, self.verticals)
+    }
+
+    /// Sets a horizontal split line.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub const fn horizontal(
+        mut self,
+        c: char,
+    ) -> Style<T, B, L, R, On, V, HLineArray<HN>, VLineArray<VN>> {
+        self.borders.horizontal = Some(c);
+
+        if self.borders.has_vertical() {
+            self.borders.intersection = Some(c);
+        }
+
+        if self.borders.has_left() {
+            self.borders.left_intersection = Some(c);
+        }
+
+        if self.borders.has_right() {
+            self.borders.right_intersection = Some(c);
+        }
+
+        self.verticals.inter = Some(CharFlag::Set(c));
+
+        Style::update(self.borders, self.horizontals, self.verticals)
+    }
+
+    /// Sets a vertical split line.
+    ///
+    /// Any corners and intersections which were set will be overridden.
+    pub const fn vertical(
+        mut self,
+        c: char,
+    ) -> Style<T, B, L, R, H, On, HLineArray<HN>, VLineArray<VN>> {
+        self.borders.vertical = Some(c);
+
+        if self.borders.has_horizontal() {
+            self.borders.intersection = Some(c);
+        }
+
+        if self.borders.has_top() {
+            self.borders.top_intersection = Some(c);
+        }
+
+        if self.borders.has_bottom() {
+            self.borders.bottom_intersection = Some(c);
+        }
+
+        self.horizontals.inter = Some(CharFlag::Set(c));
+
+        Style::update(self.borders, self.horizontals, self.verticals)
+    }
+}
+
 impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     /// Frame function returns a frame as a border.
     ///
@@ -575,446 +819,252 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         )
     }
 
-    /// Sets a top border.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn top(mut self, c: char) -> Style<On, B, L, R, H, V, HLines, VLines>
-    where
-        for<'a> &'a mut VLines: IntoIterator<Item = &'a mut VerticalLine>,
-    {
-        self.borders.top = Some(c);
-
-        if self.borders.has_left() {
-            self.borders.top_left = Some(c);
-        }
-
-        if self.borders.has_right() {
-            self.borders.top_right = Some(c);
-        }
-
-        if self.borders.has_vertical() {
-            self.borders.top_intersection = Some(c);
-        }
-
-        for vl in &mut self.verticals {
-            vl.line.connector1 = Some(c);
-        }
-
-        Style::new(self.borders, self.horizontals, self.verticals)
+    /// Return borders of a table.
+    pub const fn get_borders(&self) -> &Borders<char> {
+        &self.borders
     }
 
-    /// Sets a bottom border.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn bottom(mut self, c: char) -> Style<T, On, L, R, H, V, HLines, VLines>
-    where
-        for<'a> &'a mut VLines: IntoIterator<Item = &'a mut VerticalLine>,
-    {
-        self.borders.bottom = Some(c);
-
-        if self.borders.has_left() {
-            self.borders.bottom_left = Some(c);
-        }
-
-        if self.borders.has_right() {
-            self.borders.bottom_right = Some(c);
-        }
-
-        if self.borders.has_vertical() {
-            self.borders.bottom_intersection = Some(c);
-        }
-
-        for vl in &mut self.verticals {
-            vl.line.connector2 = Some(c);
-        }
-
-        Style::new(self.borders, self.horizontals, self.verticals)
+    /// Return custom horizontals which were set.
+    pub const fn get_horizontals(&self) -> &HLines {
+        &self.horizontals.iter
     }
 
-    /// Sets a left border.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn left(mut self, c: char) -> Style<T, B, On, R, H, V, HLines, VLines>
-    where
-        for<'a> &'a mut HLines: IntoIterator<Item = &'a mut HorizontalLine>,
-    {
-        self.borders.left = Some(c);
-
-        if self.borders.has_top() {
-            self.borders.top_left = Some(c);
-        }
-
-        if self.borders.has_bottom() {
-            self.borders.bottom_left = Some(c);
-        }
-
-        if self.borders.has_horizontal() {
-            self.borders.left_intersection = Some(c);
-        }
-
-        for hl in &mut self.horizontals {
-            hl.line.connector1 = Some(c);
-        }
-
-        Style::new(self.borders, self.horizontals, self.verticals)
-    }
-
-    /// Sets a right border.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn right(mut self, c: char) -> Style<T, B, L, On, H, V, HLines, VLines>
-    where
-        for<'a> &'a mut HLines: IntoIterator<Item = &'a mut HorizontalLine>,
-    {
-        self.borders.right = Some(c);
-
-        if self.borders.has_top() {
-            self.borders.top_right = Some(c);
-        }
-
-        if self.borders.has_bottom() {
-            self.borders.bottom_right = Some(c);
-        }
-
-        if self.borders.has_horizontal() {
-            self.borders.right_intersection = Some(c);
-        }
-
-        for hl in &mut self.horizontals {
-            hl.line.connector2 = Some(c);
-        }
-
-        Style::new(self.borders, self.horizontals, self.verticals)
-    }
-
-    /// Sets a horizontal split line.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn horizontal(mut self, c: char) -> Style<T, B, L, R, On, V, HLines, VLines>
-    where
-        for<'a> &'a mut VLines: IntoIterator<Item = &'a mut VerticalLine>,
-    {
-        self.borders.horizontal = Some(c);
-
-        if self.borders.has_vertical() {
-            self.borders.intersection = Some(c);
-        }
-
-        if self.borders.has_left() {
-            self.borders.left_intersection = Some(c);
-        }
-
-        if self.borders.has_right() {
-            self.borders.right_intersection = Some(c);
-        }
-
-        for vl in &mut self.verticals {
-            vl.line.intersection = Some(c);
-        }
-
-        Style::new(self.borders, self.horizontals, self.verticals)
-    }
-
-    /// Sets a vertical split line.
-    ///
-    /// Any corners and intersections which were set will be overridden.
-    pub fn vertical(mut self, c: char) -> Style<T, B, L, R, H, On, HLines, VLines>
-    where
-        for<'a> &'a mut HLines: IntoIterator<Item = &'a mut HorizontalLine>,
-    {
-        self.borders.vertical = Some(c);
-
-        if self.borders.has_horizontal() {
-            self.borders.intersection = Some(c);
-        }
-
-        if self.borders.has_top() {
-            self.borders.top_intersection = Some(c);
-        }
-
-        if self.borders.has_bottom() {
-            self.borders.bottom_intersection = Some(c);
-        }
-
-        for hl in &mut self.horizontals {
-            hl.line.intersection = Some(c);
-        }
-
-        Style::new(self.borders, self.horizontals, self.verticals)
-    }
-
-    /// Set border horizontal lines.
-    ///
-    /// # Example
-    ///
-    #[cfg_attr(feature = "derive", doc = "```")]
-    #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
-    ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
-    ///    .with(Style::rounded().horizontals((1..4).map(|i| HorizontalLine::new(i, Line::filled('#')))))
-    ///    .to_string();
-    ///
-    /// assert_eq!(
-    ///     table,
-    ///     concat!(
-    ///         "╭───────┬─────╮\n",
-    ///         "│ &str  │ i32 │\n",
-    ///         "###############\n",
-    ///         "│ Hello │ 0   │\n",
-    ///         "###############\n",
-    ///         "│ Hello │ 1   │\n",
-    ///         "###############\n",
-    ///         "│ Hello │ 2   │\n",
-    ///         "╰───────┴─────╯",
-    ///     )
-    /// )
-    /// ```
-    pub fn horizontals<NewLines>(self, lines: NewLines) -> Style<T, B, L, R, H, V, NewLines, VLines>
-    where
-        NewLines: IntoIterator<Item = HorizontalLine> + Clone,
-    {
-        Style::new(self.borders, lines, self.verticals)
-    }
-
-    /// Set border vertical lines.
-    ///
-    /// # Example
-    ///
-    #[cfg_attr(feature = "derive", doc = "```")]
-    #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{Table, settings::style::{Style, VerticalLine, Line}};
-    ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
-    ///    .with(Style::rounded().verticals((0..3).map(|i| VerticalLine::new(i, Line::filled('#')))))
-    ///    .to_string();
-    ///
-    /// assert_eq!(
-    ///     table,
-    ///     concat!(
-    ///         "#───────#─────#\n",
-    ///         "# &str  # i32 #\n",
-    ///         "├───────┼─────┤\n",
-    ///         "# Hello # 0   #\n",
-    ///         "# Hello # 1   #\n",
-    ///         "# Hello # 2   #\n",
-    ///         "#───────#─────#",
-    ///     )
-    /// )
-    /// ```
-    pub fn verticals<NewLines>(self, lines: NewLines) -> Style<T, B, L, R, H, V, HLines, NewLines>
-    where
-        NewLines: IntoIterator<Item = VerticalLine> + Clone,
-    {
-        Style::new(self.borders, self.horizontals, lines)
-    }
-
-    /// Removes all horizontal lines set by [`Style::horizontals`]
-    pub fn remove_horizontals(self) -> Style<T, B, L, R, H, V, HLineArray<0>, VLines> {
-        Style::new(self.borders, [], self.verticals)
-    }
-
-    /// Removes all verticals lines set by [`Style::verticals`]
-    pub fn remove_verticals(self) -> Style<T, B, L, R, H, V, HLines, VLineArray<0>> {
-        Style::new(self.borders, self.horizontals, [])
+    /// Return custom verticals which were set.
+    pub const fn get_verticals(&self) -> &VLines {
+        &self.verticals.iter
     }
 }
 
-impl<B, R, H, V, HLines, VLines> Style<On, B, On, R, H, V, HLines, VLines> {
+impl<B, R, H, V, const HN: usize, const VN: usize>
+    Style<On, B, On, R, H, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Sets a top left corner.
-    pub fn corner_top_left(mut self, c: char) -> Self {
+    pub const fn corner_top_left(mut self, c: char) -> Self {
         self.borders.top_left = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<B, L, H, V, HLines, VLines> Style<On, B, L, On, H, V, HLines, VLines> {
+impl<B, L, H, V, const HN: usize, const VN: usize>
+    Style<On, B, L, On, H, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Sets a top right corner.
-    pub fn corner_top_right(mut self, c: char) -> Self {
+    pub const fn corner_top_right(mut self, c: char) -> Self {
         self.borders.top_right = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, L, H, V, HLines, VLines> Style<T, On, L, On, H, V, HLines, VLines> {
+impl<T, L, H, V, const HN: usize, const VN: usize>
+    Style<T, On, L, On, H, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Sets a bottom right corner.
-    pub fn corner_bottom_right(mut self, c: char) -> Self {
+    pub const fn corner_bottom_right(mut self, c: char) -> Self {
         self.borders.bottom_right = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, R, H, V, HLines, VLines> Style<T, On, On, R, H, V, HLines, VLines> {
+impl<T, R, H, V, const HN: usize, const VN: usize>
+    Style<T, On, On, R, H, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Sets a bottom left corner.
-    pub fn corner_bottom_left(mut self, c: char) -> Self {
+    pub const fn corner_bottom_left(mut self, c: char) -> Self {
         self.borders.bottom_left = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, R, V, HLines, VLines> Style<T, B, On, R, On, V, HLines, VLines> {
+impl<T, B, R, V, const HN: usize, const VN: usize>
+    Style<T, B, On, R, On, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Sets a left intersection char.
-    pub fn intersection_left(mut self, c: char) -> Self {
+    pub const fn intersection_left(mut self, c: char) -> Self {
         self.borders.left_intersection = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, V, HLines, VLines> Style<T, B, L, On, On, V, HLines, VLines> {
+impl<T, B, L, V, const HN: usize, const VN: usize>
+    Style<T, B, L, On, On, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Sets a right intersection char.
-    pub fn intersection_right(mut self, c: char) -> Self {
+    pub const fn intersection_right(mut self, c: char) -> Self {
         self.borders.right_intersection = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<B, L, R, H, HLines, VLines> Style<On, B, L, R, H, On, HLines, VLines> {
+impl<B, L, R, H, const HN: usize, const VN: usize>
+    Style<On, B, L, R, H, On, HLineArray<HN>, VLineArray<VN>>
+{
     /// Sets a top intersection char.
-    pub fn intersection_top(mut self, c: char) -> Self {
+    pub const fn intersection_top(mut self, c: char) -> Self {
         self.borders.top_intersection = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, L, R, H, HLines, VLines> Style<T, On, L, R, H, On, HLines, VLines> {
+impl<T, L, R, H, const HN: usize, const VN: usize>
+    Style<T, On, L, R, H, On, HLineArray<HN>, VLineArray<VN>>
+{
     /// Sets a bottom intersection char.
-    pub fn intersection_bottom(mut self, c: char) -> Self {
+    pub const fn intersection_bottom(mut self, c: char) -> Self {
         self.borders.bottom_intersection = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, R, HLines, VLines> Style<T, B, L, R, On, On, HLines, VLines> {
+impl<T, B, L, R, const HN: usize, const VN: usize>
+    Style<T, B, L, R, On, On, HLineArray<HN>, VLineArray<VN>>
+{
     /// Sets an inner intersection char.
     /// A char between horizontal and vertical split lines.
-    pub fn intersection(mut self, c: char) -> Self {
+    pub const fn intersection(mut self, c: char) -> Self {
         self.borders.intersection = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        self.horizontals.inter = Some(CharFlag::Set(c));
+        self.verticals.inter = Some(CharFlag::Set(c));
+
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<B, L, R, H, V, HLines, VLines> Style<On, B, L, R, H, V, HLines, VLines> {
+impl<B, L, R, H, V, const HN: usize, const VN: usize>
+    Style<On, B, L, R, H, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Removes top border.
-    pub fn remove_top(
-        mut self,
-    ) -> Style<(), B, L, R, H, V, HLines, VerticalLineIter<VLines::IntoIter>>
-    where
-        VLines: IntoIterator<Item = VerticalLine> + Clone,
-    {
+    pub const fn remove_top(mut self) -> Style<(), B, L, R, H, V, HLineArray<HN>, VLineArray<VN>> {
         self.borders.top = None;
         self.borders.top_intersection = None;
         self.borders.top_left = None;
         self.borders.top_right = None;
 
-        let iter = VerticalLineIter::new(self.verticals.into_iter(), false, true, false);
-        Style::new(self.borders, self.horizontals, iter)
+        self.verticals.top = Some(CharFlag::Unset);
+
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, L, R, H, V, HLines, VLines> Style<T, On, L, R, H, V, HLines, VLines> {
+impl<T, L, R, H, V, const HN: usize, const VN: usize>
+    Style<T, On, L, R, H, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Removes bottom border.
-    pub fn remove_bottom(
+    pub const fn remove_bottom(
         mut self,
-    ) -> Style<T, (), L, R, H, V, HLines, VerticalLineIter<VLines::IntoIter>>
-    where
-        VLines: IntoIterator<Item = VerticalLine> + Clone,
-    {
+    ) -> Style<T, (), L, R, H, V, HLineArray<HN>, VLineArray<VN>> {
         self.borders.bottom = None;
         self.borders.bottom_intersection = None;
         self.borders.bottom_left = None;
         self.borders.bottom_right = None;
 
-        let iter = VerticalLineIter::new(self.verticals.into_iter(), false, false, true);
-        Style::new(self.borders, self.horizontals, iter)
+        self.verticals.bottom = Some(CharFlag::Unset);
+
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, R, H, V, HLines, VLines> Style<T, B, On, R, H, V, HLines, VLines> {
+impl<T, B, R, H, V, const HN: usize, const VN: usize>
+    Style<T, B, On, R, H, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Removes left border.
-    pub fn remove_left(
-        mut self,
-    ) -> Style<T, B, (), R, H, V, HorizontalLineIter<HLines::IntoIter>, VLines>
-    where
-        HLines: IntoIterator<Item = HorizontalLine> + Clone,
-    {
+    pub const fn remove_left(mut self) -> Style<T, B, (), R, H, V, HLineArray<HN>, VLineArray<VN>> {
         self.borders.left = None;
         self.borders.left_intersection = None;
         self.borders.top_left = None;
         self.borders.bottom_left = None;
 
-        let iter = HorizontalLineIter::new(self.horizontals.into_iter(), false, true, false);
-        Style::new(self.borders, iter, self.verticals)
+        self.horizontals.left = Some(CharFlag::Unset);
+
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, H, V, HLines, VLines> Style<T, B, L, On, H, V, HLines, VLines> {
+impl<T, B, L, H, V, const HN: usize, const VN: usize>
+    Style<T, B, L, On, H, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Removes right border.
-    pub fn remove_right(
+    pub const fn remove_right(
         mut self,
-    ) -> Style<T, B, L, (), H, V, HorizontalLineIter<HLines::IntoIter>, VLines>
-    where
-        HLines: IntoIterator<Item = HorizontalLine> + Clone,
-    {
+    ) -> Style<T, B, L, (), H, V, HLineArray<HN>, VLineArray<VN>> {
         self.borders.right = None;
         self.borders.right_intersection = None;
         self.borders.top_right = None;
         self.borders.bottom_right = None;
 
-        let iter = HorizontalLineIter::new(self.horizontals.into_iter(), false, false, true);
-        Style::new(self.borders, iter, self.verticals)
+        self.horizontals.right = Some(CharFlag::Unset);
+
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, R, V, HLines, VLines> Style<T, B, L, R, On, V, HLines, VLines> {
+impl<T, B, L, R, V, const HN: usize, const VN: usize>
+    Style<T, B, L, R, On, V, HLineArray<HN>, VLineArray<VN>>
+{
     /// Removes horizontal split lines.
     ///
     /// Not including custom split lines.
-    pub fn remove_horizontal(
+    pub const fn remove_horizontal(
         mut self,
-    ) -> Style<T, B, L, R, (), V, HLines, VerticalLineIter<VLines::IntoIter>>
-    where
-        VLines: IntoIterator<Item = VerticalLine> + Clone,
-    {
+    ) -> Style<T, B, L, R, (), V, HLineArray<HN>, VLineArray<VN>> {
         self.borders.horizontal = None;
         self.borders.left_intersection = None;
         self.borders.right_intersection = None;
         self.borders.intersection = None;
 
-        let iter = VerticalLineIter::new(self.verticals.into_iter(), true, false, false);
-        Style::new(self.borders, self.horizontals, iter)
+        self.verticals.inter = Some(CharFlag::Unset);
+
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, R, H, HLines, VLines> Style<T, B, L, R, H, On, HLines, VLines> {
+impl<T, B, L, R, H, const HN: usize, const VN: usize>
+    Style<T, B, L, R, H, On, HLineArray<HN>, VLineArray<VN>>
+{
     /// Removes vertical split lines.
-    pub fn remove_vertical(
+    pub const fn remove_vertical(
         mut self,
-    ) -> Style<T, B, L, R, H, (), HorizontalLineIter<HLines::IntoIter>, VLines>
-    where
-        HLines: IntoIterator<Item = HorizontalLine> + Clone,
-    {
+    ) -> Style<T, B, L, R, H, (), HLineArray<HN>, VLineArray<VN>> {
         self.borders.vertical = None;
         self.borders.top_intersection = None;
         self.borders.bottom_intersection = None;
         self.borders.intersection = None;
 
-        let iter = HorizontalLineIter::new(self.horizontals.into_iter(), true, false, false);
-        Style::new(self.borders, iter, self.verticals)
+        self.horizontals.inter = Some(CharFlag::Unset);
+
+        Style::update(self.borders, self.horizontals, self.verticals)
     }
 }
 
 impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
     const fn new(borders: Borders<char>, horizontals: HLines, verticals: VLines) -> Self {
         Self {
+            borders,
+            horizontals: HorizontalLineIter::new(horizontals),
+            verticals: VerticalLineIter::new(verticals),
+            _top: PhantomData,
+            _bottom: PhantomData,
+            _left: PhantomData,
+            _right: PhantomData,
+            _horizontal: PhantomData,
+            _vertical: PhantomData,
+        }
+    }
+
+    const fn update(
+        borders: Borders<char>,
+        horizontals: HorizontalLineIter<HLines>,
+        verticals: VerticalLineIter<VLines>,
+    ) -> Style<T, B, L, R, H, V, HLines, VLines> {
+        Style {
             borders,
             horizontals,
             verticals,
@@ -1026,40 +1076,24 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
             _vertical: PhantomData,
         }
     }
-
-    /// Return borders of a table.
-    pub const fn get_borders(&self) -> &Borders<char> {
-        &self.borders
-    }
-
-    /// Return custom horizontals which were set.
-    pub const fn get_horizontals(&self) -> &HLines {
-        &self.horizontals
-    }
-
-    /// Return custom verticals which were set.
-    pub const fn get_verticals(&self) -> &VLines {
-        &self.verticals
-    }
 }
 
 #[cfg(feature = "std")]
 impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, ColoredConfig>
     for Style<T, B, L, R, H, V, HLines, VLines>
 where
-    HLines: IntoIterator<Item = HorizontalLine> + Clone,
-    VLines: IntoIterator<Item = VerticalLine> + Clone,
+    HLines: IntoIterator<Item = HorizontalLine>,
+    VLines: IntoIterator<Item = VerticalLine>,
 {
     fn change(self, records: &mut I, cfg: &mut ColoredConfig, dimension: &mut D) {
         cfg.clear_theme();
-
         cfg.set_borders(self.borders);
 
-        for hl in self.horizontals {
+        for hl in self.horizontals.iter() {
             hl.change(records, cfg, dimension);
         }
 
-        for vl in self.verticals {
+        for vl in self.verticals.iter() {
             vl.change(records, cfg, dimension);
         }
     }
@@ -1068,12 +1102,12 @@ where
 impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, CompactConfig>
     for Style<T, B, L, R, H, V, HLines, VLines>
 where
-    HLines: IntoIterator<Item = HorizontalLine> + Clone,
+    HLines: IntoIterator<Item = HorizontalLine>,
 {
     fn change(self, records: &mut I, cfg: &mut CompactConfig, dimension: &mut D) {
         *cfg = cfg.set_borders(self.borders);
 
-        let first_line = self.horizontals.into_iter().next();
+        let first_line = self.horizontals.iter().next();
         if let Some(line) = first_line {
             line.change(records, cfg, dimension);
         }
@@ -1094,18 +1128,30 @@ where
 #[derive(Debug, Clone)]
 pub struct HorizontalLineIter<I> {
     iter: I,
-    intersection: bool,
-    left: bool,
-    right: bool,
+    inter: Option<CharFlag>,
+    left: Option<CharFlag>,
+    right: Option<CharFlag>,
 }
 
 impl<I> HorizontalLineIter<I> {
-    fn new(iter: I, intersection: bool, left: bool, right: bool) -> Self {
+    const fn new(iter: I) -> Self {
         Self {
             iter,
-            intersection,
-            left,
-            right,
+            inter: None,
+            left: None,
+            right: None,
+        }
+    }
+
+    fn iter(self) -> HorizontalLineIter<I::IntoIter>
+    where
+        I: IntoIterator,
+    {
+        HorizontalLineIter {
+            iter: self.iter.into_iter(),
+            inter: self.inter,
+            left: self.left,
+            right: self.right,
         }
     }
 }
@@ -1117,21 +1163,13 @@ where
     type Item = HorizontalLine;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut hl = self.iter.next()?;
+        let mut line = self.iter.next()?;
 
-        if self.intersection {
-            hl.line.intersection = None;
-        }
+        line_set_flag_char(&mut line.line.intersection, self.inter);
+        line_set_flag_char(&mut line.line.connector1, self.left);
+        line_set_flag_char(&mut line.line.connector2, self.right);
 
-        if self.left {
-            hl.line.connector1 = None;
-        }
-
-        if self.right {
-            hl.line.connector2 = None;
-        }
-
-        Some(hl)
+        Some(line)
     }
 }
 
@@ -1139,18 +1177,30 @@ where
 #[derive(Debug, Clone)]
 pub struct VerticalLineIter<I> {
     iter: I,
-    intersection: bool,
-    top: bool,
-    bottom: bool,
+    inter: Option<CharFlag>,
+    top: Option<CharFlag>,
+    bottom: Option<CharFlag>,
 }
 
 impl<I> VerticalLineIter<I> {
-    fn new(iter: I, intersection: bool, top: bool, bottom: bool) -> Self {
+    const fn new(iter: I) -> Self {
         Self {
             iter,
-            intersection,
-            top,
-            bottom,
+            inter: None,
+            top: None,
+            bottom: None,
+        }
+    }
+
+    fn iter(self) -> VerticalLineIter<I::IntoIter>
+    where
+        I: IntoIterator,
+    {
+        VerticalLineIter {
+            iter: self.iter.into_iter(),
+            inter: self.inter,
+            top: self.top,
+            bottom: self.bottom,
         }
     }
 }
@@ -1162,21 +1212,31 @@ where
     type Item = VerticalLine;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut hl = self.iter.next()?;
+        let mut line = self.iter.next()?;
 
-        if self.intersection {
-            hl.line.intersection = None;
+        line_set_flag_char(&mut line.line.intersection, self.inter);
+        line_set_flag_char(&mut line.line.connector1, self.top);
+        line_set_flag_char(&mut line.line.connector2, self.bottom);
+
+        Some(line)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum CharFlag {
+    Set(char),
+    Unset,
+}
+
+fn line_set_flag_char(char: &mut Option<char>, flag: Option<CharFlag>) {
+    match flag {
+        Some(CharFlag::Set(c)) => {
+            *char = Some(c);
         }
-
-        if self.top {
-            hl.line.connector1 = None;
+        Some(CharFlag::Unset) => {
+            *char = None;
         }
-
-        if self.bottom {
-            hl.line.connector2 = None;
-        }
-
-        Some(hl)
+        None => {}
     }
 }
 
