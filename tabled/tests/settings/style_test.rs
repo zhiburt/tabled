@@ -8,7 +8,7 @@ use tabled::{
         object::{Columns, Rows, Segment},
         style::{
             Border, BorderChar, BorderColor, BorderSpanCorrection, BorderText, HorizontalLine,
-            Line, Offset, RawStyle, Style, VerticalLine,
+            Line, Offset, On, RawStyle, Style, VerticalLine,
         },
         Color, Format, Highlight, Modify, Padding, Span,
     },
@@ -1232,8 +1232,8 @@ fn custom_style_test() {
 
     test_style!(
         Style::empty()
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('-'))])
-            .top('+'),
+            .top('+')
+            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('-'))]),
         static_table!(
             "+++++++++++++++++++++++++++++++++"
             " N  column 0  column 1  column 2 "
@@ -1245,7 +1245,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('-'))])
+            .horizontals([HorizontalLine::new(1, Line::default()).main(Some('-'))])
             .bottom('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
@@ -1258,7 +1258,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('-'))])
+            .horizontals([HorizontalLine::new(1, Line::default()).main(Some('-'))])
             .left('+'),
         static_table!(
             "+ N  column 0  column 1  column 2 "
@@ -1270,7 +1270,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('-'))])
+            .horizontals([HorizontalLine::new(1, Line::default()).main(Some('-'))])
             .right('+'),
         static_table!(
             " N  column 0  column 1  column 2 +"
@@ -1282,7 +1282,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('-'))])
+            .horizontals([HorizontalLine::new(1, Line::default()).main(Some('-'))])
             .vertical('+'),
         static_table!(
             " N + column 0 + column 1 + column 2 "
@@ -1294,7 +1294,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('-'))])
+            .horizontals([HorizontalLine::new(1, Line::default()).main(Some('-'))])
             .horizontal('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
@@ -1316,7 +1316,7 @@ fn custom_style_test() {
             .left('|')
             .right('*')
             .horizontal('x')
-            .horizontals(vec![HorizontalLine::new(1, Line::filled('z'))])
+            .horizontals([HorizontalLine::new(1, Line::filled('z'))])
             .vertical('#'),
         static_table!(
             "|---#----------#----------#----------*"
@@ -1337,7 +1337,6 @@ fn custom_style_test() {
         .left('|')
         .right('*')
         .horizontal('x')
-        .horizontals(vec![HorizontalLine::new(1, Line::filled(','))])
         .vertical('#')
         .intersection_bottom('@')
         .intersection_top('!')
@@ -1347,7 +1346,8 @@ fn custom_style_test() {
         .corner_top_left(';')
         .corner_bottom_left('?')
         .corner_top_right('.')
-        .corner_bottom_right('%');
+        .corner_bottom_right('%')
+        .horizontals([HorizontalLine::new(1, Line::full(',', '#', ',', ','))]);
     test_style!(
         full_style.clone(),
         static_table!(
@@ -2617,4 +2617,43 @@ test_table!(
     table_style_no_bottom_no_new_line,
     Matrix::table(0, 0).with(Style::markdown().remove_horizontals()),
     "| N |"
+);
+
+test_table!(
+    style_const_modification,
+    {
+        const STYLE: Style<On, On, On, On, On, On, [HorizontalLine; 1]> = Style::ascii()
+            .bottom('x')
+            .horizontals([HorizontalLine::new(1, Line::filled('.'))]);
+        Matrix::new(3, 3).with(STYLE)
+    },
+    "+---+----------+----------+----------+"
+    "| N | column 0 | column 1 | column 2 |"
+    "......................................"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "+---+----------+----------+----------+"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "+---+----------+----------+----------+"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+);
+
+test_table!(
+    style_static_modification,
+    {
+        static STYLE: Style<On, On, On, On, On, On, [HorizontalLine; 1], [VerticalLine; 1]> = Style::ascii()
+            .bottom('x')
+            .horizontals([HorizontalLine::new(1, Line::filled('.'))])
+            .verticals([VerticalLine::new(1, Line::filled('|'))]);
+        Matrix::new(3, 3).with(STYLE.clone())
+    },
+    "+---|----------+----------+----------+"
+    "| N | column 0 | column 1 | column 2 |"
+    "......................................"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "+---|----------+----------+----------+"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "+---|----------+----------+----------+"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "xxxx|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 );
