@@ -1117,7 +1117,7 @@ where
 impl<T, B, L, R, H, V, HLines, VLines, I, D> TableOption<I, D, CompactMultilineConfig>
     for Style<T, B, L, R, H, V, HLines, VLines>
 where
-    HLines: IntoIterator<Item = HorizontalLine> + Clone,
+    HLines: IntoIterator<Item = HorizontalLine>,
 {
     fn change(self, records: &mut I, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
         self.change(records, cfg.as_mut(), dimension)
@@ -1192,6 +1192,7 @@ impl<I> VerticalLineIter<I> {
         }
     }
 
+    #[cfg(feature = "std")]
     fn iter(self) -> VerticalLineIter<I::IntoIter>
     where
         I: IntoIterator,
