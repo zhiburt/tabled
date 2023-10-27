@@ -157,7 +157,7 @@ test_table!(
 );
 
 test_table!(
-    builder_index_invalid_dosnt_panic,
+    builder_index_invalid_doesnt_panic,
     Builder::default().index().column(100).build(),
     ""
 );
@@ -169,6 +169,18 @@ test_table!(
         .name(Some("Hello World".into()))
         .build(),
     ""
+);
+
+test_table!(
+    builder_index_with_header_but_no_data,
+    {
+        let mut b = Builder::default();
+        b.set_header(["one", "two", "three"]);
+        b.index().build()
+    },
+    "+--+-----+-----+-------+"
+    "|  | one | two | three |"
+    "+--+-----+-----+-------+"
 );
 
 #[test]
@@ -191,4 +203,16 @@ fn builder_index_no_name_transpose_transpose() {
     let two_times_transposed_table = builder.transpose().transpose().build().to_string();
 
     assert_eq!(orig_table, two_times_transposed_table,);
+}
+
+#[test]
+fn builder_index_convert_back_to_builder() {
+    let mut b1 = Builder::default();
+    b1.set_header(["one", "two", "three"]);
+    let b2 = Builder::from(b1.clone().index().hide());
+    assert_eq!(b1.clone().build().shape(), b2.clone().build().shape());
+    assert_eq!(
+        b1.clone().build().to_string(),
+        b2.clone().build().to_string()
+    );
 }

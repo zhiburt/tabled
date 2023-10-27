@@ -246,7 +246,8 @@ impl From<IndexBuilder> for Builder {
 }
 
 fn build_index(mut b: IndexBuilder) -> Builder {
-    if b.index.is_empty() {
+    // we can skip the conversion if this builder has neither data rows nor header row
+    if b.index.is_empty() && matrix_count_columns(&b.data) == 0 {
         return Builder::default();
     }
 
