@@ -342,10 +342,10 @@ fn create_horizontal_colors(
     b: &Borders<StaticColor>,
 ) -> (StaticColor, StaticColor, StaticColor, StaticColor) {
     (
-        b.horizontal.unwrap_or(StaticColor::default()),
-        b.left.unwrap_or(StaticColor::default()),
-        b.intersection.unwrap_or(StaticColor::default()),
-        b.right.unwrap_or(StaticColor::default()),
+        b.horizontal.unwrap_or_default(),
+        b.left.unwrap_or_default(),
+        b.intersection.unwrap_or_default(),
+        b.right.unwrap_or_default(),
     )
 }
 
@@ -353,10 +353,10 @@ fn create_horizontal_top_colors(
     b: &Borders<StaticColor>,
 ) -> (StaticColor, StaticColor, StaticColor, StaticColor) {
     (
-        b.top.unwrap_or(StaticColor::default()),
-        b.top_left.unwrap_or(StaticColor::default()),
-        b.top_intersection.unwrap_or(StaticColor::default()),
-        b.top_right.unwrap_or(StaticColor::default()),
+        b.top.unwrap_or_default(),
+        b.top_left.unwrap_or_default(),
+        b.top_intersection.unwrap_or_default(),
+        b.top_right.unwrap_or_default(),
     )
 }
 
@@ -364,10 +364,10 @@ fn create_horizontal_bottom_colors(
     b: &Borders<StaticColor>,
 ) -> (StaticColor, StaticColor, StaticColor, StaticColor) {
     (
-        b.bottom.unwrap_or(StaticColor::default()),
-        b.bottom_left.unwrap_or(StaticColor::default()),
-        b.bottom_intersection.unwrap_or(StaticColor::default()),
-        b.bottom_right.unwrap_or(StaticColor::default()),
+        b.bottom.unwrap_or_default(),
+        b.bottom_left.unwrap_or_default(),
+        b.bottom_intersection.unwrap_or_default(),
+        b.bottom_right.unwrap_or_default(),
     )
 }
 
