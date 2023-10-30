@@ -1,8 +1,10 @@
 //! The module contains a [`Locator`] trait and implementations for it.
 
 mod by_column_name;
+mod by_content;
 
 pub use by_column_name::ByColumnName;
+pub use by_content::ByContent;
 
 use core::ops::Bound;
 use std::{
