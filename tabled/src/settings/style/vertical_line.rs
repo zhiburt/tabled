@@ -40,11 +40,72 @@ impl VerticalLine {
         self.line.connector2 = c;
         self
     }
+
+    /// Get a vertical character.
+    pub const fn get_split(&self) -> Option<char> {
+        self.line.main
+    }
+
+    /// Get a vertical intersection character.
+    pub const fn get_intersection(&self) -> Option<char> {
+        self.line.intersection
+    }
+
+    /// Get a top character.
+    pub const fn get_top(&self) -> Option<char> {
+        self.line.connector1
+    }
+
+    /// Get a bottom character.
+    pub const fn get_bottom(&self) -> Option<char> {
+        self.line.connector2
+    }
 }
 
 #[cfg(feature = "std")]
 impl<R, D> crate::settings::TableOption<R, D, ColoredConfig> for VerticalLine {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         cfg.insert_vertical_line(self.index, VLine::from(self.line));
+    }
+}
+
+#[cfg(feature = "std")]
+impl<R, D> crate::settings::TableOption<R, D, ColoredConfig> for crate::grid::config::VerticalLine {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        let mut borders = *cfg.get_borders();
+        borders.vertical = self.main;
+        borders.top_intersection = self.top;
+        borders.bottom_intersection = self.bottom;
+        borders.intersection = self.intersection;
+
+        cfg.set_borders(borders);
+    }
+}
+
+impl<R, D> crate::settings::TableOption<R, D, crate::grid::config::CompactMultilineConfig>
+    for crate::grid::config::VerticalLine
+{
+    fn change(self, _: &mut R, cfg: &mut crate::grid::config::CompactMultilineConfig, _: &mut D) {
+        let mut borders = *cfg.get_borders();
+        borders.vertical = self.main;
+        borders.top_intersection = self.top;
+        borders.bottom_intersection = self.bottom;
+        borders.intersection = self.intersection;
+
+        *cfg = cfg.set_borders(borders);
+    }
+}
+
+impl<R, D> crate::settings::TableOption<R, D, crate::grid::config::CompactConfig>
+    for crate::grid::config::VerticalLine
+{
+    fn change(self, _: &mut R, cfg: &mut crate::grid::config::CompactConfig, _: &mut D) {
+        let mut borders = *cfg.get_borders();
+        borders.vertical = self.main;
+        borders.top_intersection = self.top;
+        borders.bottom_intersection = self.bottom;
+        borders.intersection = self.intersection;
+
+        *cfg = cfg.set_borders(borders);
     }
 }

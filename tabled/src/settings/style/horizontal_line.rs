@@ -45,6 +45,26 @@ impl HorizontalLine {
         self.line.connector2 = c;
         self
     }
+
+    /// Get a horizontal character.
+    pub const fn get_split(&self) -> Option<char> {
+        self.line.main
+    }
+
+    /// Get a vertical intersection character.
+    pub const fn get_intersection(&self) -> Option<char> {
+        self.line.intersection
+    }
+
+    /// Get a left character.
+    pub const fn get_left(&self) -> Option<char> {
+        self.line.connector1
+    }
+
+    /// Get a right character.
+    pub const fn get_right(&self) -> Option<char> {
+        self.line.connector2
+    }
 }
 
 #[cfg(feature = "std")]
@@ -65,5 +85,42 @@ impl<R, D> TableOption<R, D, CompactConfig> for HorizontalLine {
 impl<R, D> TableOption<R, D, CompactMultilineConfig> for HorizontalLine {
     fn change(self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
         self.change(records, cfg.as_mut(), dimension)
+    }
+}
+
+#[cfg(feature = "std")]
+impl<R, D> TableOption<R, D, ColoredConfig> for crate::grid::config::HorizontalLine {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        let mut borders = *cfg.get_borders();
+        borders.horizontal = self.main;
+        borders.left_intersection = self.left;
+        borders.right_intersection = self.right;
+        borders.intersection = self.intersection;
+
+        cfg.set_borders(borders);
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactMultilineConfig> for crate::grid::config::HorizontalLine {
+    fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
+        let mut borders = *cfg.get_borders();
+        borders.horizontal = self.main;
+        borders.left_intersection = self.left;
+        borders.right_intersection = self.right;
+        borders.intersection = self.intersection;
+
+        *cfg = cfg.set_borders(borders);
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactConfig> for crate::grid::config::HorizontalLine {
+    fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+        let mut borders = *cfg.get_borders();
+        borders.horizontal = self.main;
+        borders.left_intersection = self.left;
+        borders.right_intersection = self.right;
+        borders.intersection = self.intersection;
+
+        *cfg = cfg.set_borders(borders);
     }
 }

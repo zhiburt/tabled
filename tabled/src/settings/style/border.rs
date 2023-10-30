@@ -115,6 +115,46 @@ impl Border {
         self.0.right_bottom_corner = Some(c);
         self
     }
+
+    /// Get a top border character.
+    pub const fn get_top(&self) -> Option<char> {
+        self.0.top
+    }
+
+    /// Get a bottom border character.
+    pub const fn get_bottom(&self) -> Option<char> {
+        self.0.bottom
+    }
+
+    /// Get a left border character.
+    pub const fn get_left(&self) -> Option<char> {
+        self.0.left
+    }
+
+    /// Get a right border character.
+    pub const fn get_right(&self) -> Option<char> {
+        self.0.right
+    }
+
+    /// Get a top left intersection character.
+    pub const fn get_corner_top_left(&self) -> Option<char> {
+        self.0.left_top_corner
+    }
+
+    /// Get a top right intersection character.
+    pub const fn get_corner_top_right(&self) -> Option<char> {
+        self.0.right_top_corner
+    }
+
+    /// Get a bottom left intersection character.
+    pub const fn get_corner_bottom_left(&self) -> Option<char> {
+        self.0.left_bottom_corner
+    }
+
+    /// Get a bottom right intersection character.
+    pub const fn get_corner_bottom_right(&self) -> Option<char> {
+        self.0.right_bottom_corner
+    }
 }
 
 impl<R> CellOption<R, ColoredConfig> for Border

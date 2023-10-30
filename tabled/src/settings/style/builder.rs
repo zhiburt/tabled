@@ -295,36 +295,6 @@ impl Style<(), (), (), (), (), (), (), ()> {
         )
     }
 
-    /// This style looks like a [`Style::round`] but with horizontal lines.
-    ///
-    /// Beware: It uses UTF-8 characters.
-    ///
-    /// ```text
-    ///     ╭────┬──────────────┬───────────────────────────╮
-    ///     │ id │ destribution │           link            │
-    ///     ├────┼──────────────┼───────────────────────────┤
-    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
-    ///     ├────┼──────────────┼───────────────────────────┤    
-    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
-    ///     ├────┼──────────────┼───────────────────────────┤
-    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
-    ///     ╰────┴──────────────┴───────────────────────────╯
-    /// ```
-    pub const fn modern_round() -> Style<On, On, On, On, On, On> {
-        Style::new(
-            create_borders(
-                Line::full('─', '┬', '╭', '╮'),
-                Line::full('─', '┴', '╰', '╯'),
-                Line::full('─', '┼', '├', '┤'),
-                Some('│'),
-                Some('│'),
-                Some('│'),
-            ),
-            [],
-            [],
-        )
-    }
-
     /// This style looks like a [`Style::sharp`] but with rounded corners.
     ///
     /// Beware: It uses UTF-8 characters.
@@ -778,77 +748,6 @@ impl<T, B, L, R, H, V, HLines, VLines> Style<T, B, L, R, H, V, HLines, VLines> {
         border
     }
 
-    /// Get a [`Style`]'s default horizontal line.
-    ///
-    /// It doesn't return an overloaded line via [`Style::horizontals`].
-    ///
-    /// # Example
-    ///
-    #[cfg_attr(feature = "std", doc = "```")]
-    #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-    /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
-    ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
-    ///    .with(Style::ascii().remove_horizontal().horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]))
-    ///    .to_string();
-    ///
-    /// assert_eq!(
-    ///     table,
-    ///     concat!(
-    ///         "+-------+-------+-----+\n",
-    ///         "| &str  | &str  | i32 |\n",
-    ///         "├───────┼───────┼─────┤\n",
-    ///         "| Hello | World | 0   |\n",
-    ///         "| Hello | World | 1   |\n",
-    ///         "| Hello | World | 2   |\n",
-    ///         "+-------+-------+-----+",
-    ///     )
-    /// )
-    /// ```
-    pub const fn get_horizontal(&self) -> Line {
-        Line::new(
-            self.borders.horizontal,
-            self.borders.intersection,
-            self.borders.left_intersection,
-            self.borders.right_intersection,
-        )
-    }
-
-    /// Get a [`Style`]'s default horizontal line.
-    ///
-    /// It doesn't return an overloaded line via [`Style::verticals`].
-    ///
-    /// # Example
-    ///
-    #[cfg_attr(feature = "std", doc = "```")]
-    #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-    /// use tabled::{settings::style::{Style, VerticalLine, Line}, Table};
-    ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
-    ///    .with(Style::ascii().remove_horizontal().verticals([VerticalLine::new(1, Style::modern().get_vertical())]))
-    ///    .to_string();
-    ///
-    /// assert_eq!(
-    ///     table,
-    ///     concat!(
-    ///         "+-------┬-------+-----+\n",
-    ///         "| &str  │ &str  | i32 |\n",
-    ///         "| Hello │ World | 0   |\n",
-    ///         "| Hello │ World | 1   |\n",
-    ///         "| Hello │ World | 2   |\n",
-    ///         "+-------┴-------+-----+",
-    ///     )
-    /// )
-    /// ```
-    pub const fn get_vertical(&self) -> Line {
-        Line::new(
-            self.borders.vertical,
-            self.borders.intersection,
-            self.borders.top_intersection,
-            self.borders.bottom_intersection,
-        )
-    }
-
     /// Return borders of a table.
     pub const fn get_borders(&self) -> &Borders<char> {
         &self.borders
@@ -1054,6 +953,44 @@ impl<T, B, L, R, V, const HN: usize, const VN: usize>
 
         Style::update(self.borders, self.horizontals, self.verticals)
     }
+
+    /// Get a [`Style`]'s default horizontal line.
+    ///
+    /// It doesn't return an overloaded line via [`Style::horizontals`].
+    ///
+    /// # Example
+    ///
+    #[cfg_attr(feature = "std", doc = "```")]
+    #[cfg_attr(not(feature = "std"), doc = "```ignore")]
+    /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
+    ///
+    /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
+    ///    .with(Style::ascii().remove_horizontal().horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]))
+    ///    .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "+-------+-------+-----+\n",
+    ///         "| &str  | &str  | i32 |\n",
+    ///         "├───────┼───────┼─────┤\n",
+    ///         "| Hello | World | 0   |\n",
+    ///         "| Hello | World | 1   |\n",
+    ///         "| Hello | World | 2   |\n",
+    ///         "+-------+-------+-----+",
+    ///     )
+    /// )
+    /// ```
+    pub const fn get_line_horizontal(&self) -> HorizontalLine {
+        let line = Line::new(
+            self.borders.horizontal,
+            self.borders.intersection,
+            self.borders.left_intersection,
+            self.borders.right_intersection,
+        );
+
+        HorizontalLine::new(0, line)
+    }
 }
 
 impl<T, B, L, R, H, const HN: usize, const VN: usize>
@@ -1071,6 +1008,43 @@ impl<T, B, L, R, H, const HN: usize, const VN: usize>
         self.horizontals.inter = Some(CharFlag::Unset);
 
         Style::update(self.borders, self.horizontals, self.verticals)
+    }
+
+    /// Get a [`Style`]'s default horizontal line.
+    ///
+    /// It doesn't return an overloaded line via [`Style::verticals`].
+    ///
+    /// # Example
+    ///
+    #[cfg_attr(feature = "std", doc = "```")]
+    #[cfg_attr(not(feature = "std"), doc = "```ignore")]
+    /// use tabled::{settings::style::{Style, VerticalLine, Line}, Table};
+    ///
+    /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
+    ///    .with(Style::ascii().remove_horizontal().verticals([VerticalLine::new(1, Style::modern().get_vertical())]))
+    ///    .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "+-------┬-------+-----+\n",
+    ///         "| &str  │ &str  | i32 |\n",
+    ///         "| Hello │ World | 0   |\n",
+    ///         "| Hello │ World | 1   |\n",
+    ///         "| Hello │ World | 2   |\n",
+    ///         "+-------┴-------+-----+",
+    ///     )
+    /// )
+    /// ```
+    pub const fn get_line_vertical(&self) -> VerticalLine {
+        let line = Line::new(
+            self.borders.vertical,
+            self.borders.intersection,
+            self.borders.top_intersection,
+            self.borders.bottom_intersection,
+        );
+
+        VerticalLine::new(0, line)
     }
 }
 
@@ -1295,5 +1269,24 @@ const fn create_borders(
         left,
         right,
         vertical,
+    }
+}
+
+#[cfg(feature = "std")]
+impl<I, D> TableOption<I, D, ColoredConfig> for Borders<char> {
+    fn change(self, _: &mut I, cfg: &mut ColoredConfig, _: &mut D) {
+        cfg.set_borders(self);
+    }
+}
+
+impl<I, D> TableOption<I, D, CompactConfig> for Borders<char> {
+    fn change(self, _: &mut I, cfg: &mut CompactConfig, _: &mut D) {
+        *cfg = cfg.set_borders(self);
+    }
+}
+
+impl<I, D> TableOption<I, D, CompactMultilineConfig> for Borders<char> {
+    fn change(self, records: &mut I, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
+        self.change(records, cfg.as_mut(), dimension)
     }
 }

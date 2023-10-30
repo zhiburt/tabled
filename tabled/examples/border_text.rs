@@ -33,7 +33,7 @@ fn main() {
         .with(
             Style::modern()
                 .remove_horizontal()
-                .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]),
+                .horizontals([HorizontalLine::new(1, Style::modern().get_line_horizontal())]),
         )
         .with(BorderText::new(" Numbers ").horizontal(Rows::first()))
         .with(BorderText::new(" More numbers ").horizontal(1))
