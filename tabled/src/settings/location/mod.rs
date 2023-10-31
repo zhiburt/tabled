@@ -1,10 +1,61 @@
 //! The module contains a [`Location`] trait and implementations for it.
+//!
+//! # Example
+//!
+//! ```
+//! use tabled::{Table, Tabled};
+//! use tabled::settings::{
+//!     Modify, object::{Object, Rows},
+//!     location::Locator, Padding, Alignment,
+//! };
+//!
+//! #[derive(Tabled)]
+//! struct Reading {
+//!     link: &'static str,
+//!     comment: &'static str,
+//! }
+//!
+//! let data = [
+//!     Reading { link: "https://www.gnu.org/software/grub/manual/multiboot/multiboot.html", comment: "todo" },
+//!     Reading { link: "https://wiki.debian.org/initramfs", comment: "todo" },
+//!     Reading { link: "http://jdebp.uk/FGA/efi-boot-process.html", comment: "todo,2" },
+//!     Reading { link: "https://wiki.debian.org/UEFI", comment: "todo,2" },
+//! ];
+//!
+//! let mut table = Table::new(data);
+//! table.with(Padding::zero());
+//! table.with(Modify::new(Locator::content("todo,2").intersect(Rows::last())).with(Alignment::right()));
+//! table.with(Modify::new(Locator::content("todo")).with(Alignment::center()));
+//!
+//! let output = table.to_string();
+//!
+//! assert_eq!(
+//!     output,
+//!     concat!(
+//!         "+-----------------------------------------------------------------+-------+\n",
+//!         "|link                                                             |comment|\n",
+//!         "+-----------------------------------------------------------------+-------+\n",
+//!         "|https://www.gnu.org/software/grub/manual/multiboot/multiboot.html| todo  |\n",
+//!         "+-----------------------------------------------------------------+-------+\n",
+//!         "|https://wiki.debian.org/initramfs                                | todo  |\n",
+//!         "+-----------------------------------------------------------------+-------+\n",
+//!         "|http://jdebp.uk/FGA/efi-boot-process.html                        |todo,2 |\n",
+//!         "+-----------------------------------------------------------------+-------+\n",
+//!         "|https://wiki.debian.org/UEFI                                     | todo,2|\n",
+//!         "+-----------------------------------------------------------------+-------+",
+//!     ),
+//! );
+//! ```
+
+// todo: Add .modify method for Table
 
 mod by_column_name;
 mod by_content;
+mod locator;
 
 pub use by_column_name::ByColumnName;
 pub use by_content::ByContent;
+pub use locator::Locator;
 
 use core::ops::Bound;
 use std::{
