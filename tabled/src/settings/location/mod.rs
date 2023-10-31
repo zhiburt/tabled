@@ -2,7 +2,8 @@
 //!
 //! # Example
 //!
-//! ```
+#![cfg_attr(feature = "derive", doc = "```")]
+#![cfg_attr(not(feature = "derive"), doc = "```ignore")]
 //! use tabled::{
 //!     settings::{
 //!         location::Locator,

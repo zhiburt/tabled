@@ -269,6 +269,11 @@ name = "chess"
 path = "examples/chess.rs"
 required-features = ["std"]
 
+[[example]]
+name = "target_content"
+path = "examples/target_content.rs"
+required-features = ["std", "derive"]
+
 [features]
 default = ["derive", "macros"]
 std = ["papergrid/std"]
