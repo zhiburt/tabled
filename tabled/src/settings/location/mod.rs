@@ -1,4 +1,4 @@
-//! The module contains a [`Locator`] trait and implementations for it.
+//! The module contains a [`Location`] trait and implementations for it.
 
 mod by_column_name;
 mod by_content;
@@ -17,9 +17,9 @@ use crate::{
     settings::object::{Column, Columns, FirstColumn, FirstRow, LastColumn, LastRow, Row, Rows},
 };
 
-/// Locator is an interface which searches for a particular thing in the [`Records`],
+/// Location is an interface which searches for a particular thing in the [`Records`],
 /// and returns coordinate of the foundings if any.
-pub trait Locator<Records> {
+pub trait Location<Records> {
     /// A coordinate of the finding.
     type Coordinate;
     /// An iterator of the coordinates.
@@ -27,10 +27,10 @@ pub trait Locator<Records> {
     type IntoIter: IntoIterator<Item = Self::Coordinate>;
 
     /// Search for the thing in [`Records`], returning a list of coordinates.
-    fn locate(&mut self, records: Records) -> Self::IntoIter;
+    fn locate(&mut self, records: &Records) -> Self::IntoIter;
 }
 
-impl<B, R> Locator<R> for Columns<B>
+impl<B, R> Location<R> for Columns<B>
 where
     B: RangeBounds<usize>,
     R: Records,
@@ -38,7 +38,7 @@ where
     type Coordinate = usize;
     type IntoIter = Range<usize>;
 
-    fn locate(&mut self, records: R) -> Self::IntoIter {
+    fn locate(&mut self, records: &R) -> Self::IntoIter {
         let range = self.get_range();
         let max = records.count_columns();
         let (from, to) = bounds_to_usize(range.start_bound(), range.end_bound(), max);
@@ -47,32 +47,32 @@ where
     }
 }
 
-impl<R> Locator<R> for Column {
+impl<R> Location<R> for Column {
     type Coordinate = usize;
     type IntoIter = Once<usize>;
 
-    fn locate(&mut self, _: R) -> Self::IntoIter {
+    fn locate(&mut self, _: &R) -> Self::IntoIter {
         iter::once((*self).into())
     }
 }
 
-impl<R> Locator<R> for FirstColumn {
+impl<R> Location<R> for FirstColumn {
     type Coordinate = usize;
     type IntoIter = Once<usize>;
 
-    fn locate(&mut self, _: R) -> Self::IntoIter {
+    fn locate(&mut self, _: &R) -> Self::IntoIter {
         iter::once(0)
     }
 }
 
-impl<R> Locator<R> for LastColumn
+impl<R> Location<R> for LastColumn
 where
     R: Records,
 {
     type Coordinate = usize;
     type IntoIter = Once<usize>;
 
-    fn locate(&mut self, records: R) -> Self::IntoIter {
+    fn locate(&mut self, records: &R) -> Self::IntoIter {
         if records.count_columns() > 0 {
             iter::once(records.count_columns() - 1)
         } else {
@@ -81,7 +81,7 @@ where
     }
 }
 
-impl<B, R> Locator<R> for Rows<B>
+impl<B, R> Location<R> for Rows<B>
 where
     R: Records,
     B: RangeBounds<usize>,
@@ -89,7 +89,7 @@ where
     type Coordinate = usize;
     type IntoIter = Range<usize>;
 
-    fn locate(&mut self, records: R) -> Self::IntoIter {
+    fn locate(&mut self, records: &R) -> Self::IntoIter {
         let (from, to) = bounds_to_usize(
             self.get_range().start_bound(),
             self.get_range().end_bound(),
@@ -100,32 +100,32 @@ where
     }
 }
 
-impl<R> Locator<R> for Row {
+impl<R> Location<R> for Row {
     type Coordinate = usize;
     type IntoIter = Once<usize>;
 
-    fn locate(&mut self, _: R) -> Self::IntoIter {
+    fn locate(&mut self, _: &R) -> Self::IntoIter {
         iter::once((*self).into())
     }
 }
 
-impl<R> Locator<R> for FirstRow {
+impl<R> Location<R> for FirstRow {
     type Coordinate = usize;
     type IntoIter = Once<usize>;
 
-    fn locate(&mut self, _: R) -> Self::IntoIter {
+    fn locate(&mut self, _: &R) -> Self::IntoIter {
         iter::once(0)
     }
 }
 
-impl<R> Locator<R> for LastRow
+impl<R> Location<R> for LastRow
 where
     R: ExactRecords,
 {
     type Coordinate = usize;
     type IntoIter = Once<usize>;
 
-    fn locate(&mut self, records: R) -> Self::IntoIter {
+    fn locate(&mut self, records: &R) -> Self::IntoIter {
         if records.count_rows() > 0 {
             iter::once(records.count_rows() - 1)
         } else {
@@ -160,7 +160,7 @@ mod tests {
         grid::config::Entity,
         grid::records::vec_records::CellInfo,
         grid::records::vec_records::VecRecords,
-        settings::locator::{ByColumnName, ByContent},
+        settings::location::{ByColumnName, ByContent},
         settings::object::Object,
     };
 
@@ -265,9 +265,9 @@ mod tests {
         O: Object<VecRecords<CellInfo<String>>>,
     {
         let data = data
-            .into_iter()
+            .iter()
             .map(|row| {
-                row.into_iter()
+                row.iter()
                     .map(|n| n.to_string())
                     .map(CellInfo::new)
                     .collect()

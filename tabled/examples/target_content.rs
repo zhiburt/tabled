@@ -7,7 +7,7 @@
 //! specifications. This is helpful for organizing extensive [`Table`] configurations.
 
 use tabled::{
-    settings::{locator::ByContent, style::Style, Color, Modify},
+    settings::{location::ByContent, style::Style, Color, Modify},
     Table, Tabled,
 };
 

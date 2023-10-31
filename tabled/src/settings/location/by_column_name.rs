@@ -1,7 +1,7 @@
 use crate::{
     grid::config::Entity,
     grid::records::{ExactRecords, PeekableRecords, Records},
-    settings::locator::Locator,
+    settings::location::Location,
     settings::object::Object,
 };
 
@@ -22,7 +22,7 @@ impl<S> ByColumnName<S> {
     }
 }
 
-impl<R, S> Locator<R> for ByColumnName<S>
+impl<R, S> Location<R> for ByColumnName<S>
 where
     S: AsRef<str>,
     R: Records + ExactRecords + PeekableRecords,
@@ -30,7 +30,7 @@ where
     type Coordinate = usize;
     type IntoIter = Vec<usize>;
 
-    fn locate(&mut self, records: R) -> Self::IntoIter {
+    fn locate(&mut self, records: &R) -> Self::IntoIter {
         // todo: can be optimized by creating Iterator
         (0..records.count_columns())
             .filter(|col| records.get_text((0, *col)) == self.0.as_ref())

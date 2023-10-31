@@ -4,7 +4,7 @@ use crate::{
         config::Position,
         records::{ExactRecords, PeekableRecords, Records},
     },
-    settings::locator::Locator,
+    settings::location::Location,
     settings::object::Object,
 };
 
@@ -25,7 +25,7 @@ impl<S> ByContent<S> {
     }
 }
 
-impl<R, S> Locator<R> for ByContent<S>
+impl<R, S> Location<R> for ByContent<S>
 where
     S: AsRef<str>,
     R: Records + ExactRecords + PeekableRecords,
@@ -33,7 +33,7 @@ where
     type Coordinate = Position;
     type IntoIter = Vec<Position>;
 
-    fn locate(&mut self, records: R) -> Self::IntoIter {
+    fn locate(&mut self, records: &R) -> Self::IntoIter {
         // todo: can be optimized by creating Iterator
         let text = self.0.as_ref();
 

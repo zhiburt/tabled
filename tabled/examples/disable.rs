@@ -6,7 +6,7 @@
 
 use tabled::{
     settings::{
-        locator::ByColumnName,
+        location::ByColumnName,
         style::{Border, Style},
         Disable, Modify,
     },
