@@ -252,6 +252,7 @@
 //! [`fmt::Write`]: core::fmt::Write
 //! [`row!`]: crate::row
 //! [`col!`]: crate::col
+//! [`tabled::settings`]: crate::settings
 
 #![cfg_attr(not(any(feature = "std", test)), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]

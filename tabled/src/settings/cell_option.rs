@@ -28,6 +28,8 @@ pub trait CellOption<R, C> {
     ///
     /// This methods primarily is used as an optimization,
     /// to not make unnessary calculations if they're not needed, after using the [`TableOption`].
+    ///
+    /// [`TableOption`]: crate::settings::TableOption
     fn hint_change(&self) -> Option<Entity> {
         Some(Entity::Global)
     }

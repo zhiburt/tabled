@@ -8,7 +8,7 @@ use crate::{
     settings::object::Object,
 };
 
-/// The structure is an implementation of [`Locator`] to search for cells with a given content.
+/// The structure is an implementation of [`Location`] to search for cells with a given content.
 #[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ByContent<S>(S);
 

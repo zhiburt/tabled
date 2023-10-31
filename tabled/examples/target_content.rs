@@ -7,7 +7,7 @@
 //! specifications. This is helpful for organizing extensive [`Table`] configurations.
 
 use tabled::{
-    settings::{location::ByContent, style::Style, Color, Modify},
+    settings::{location::Locator, style::Style, Color},
     Table, Tabled,
 };
 
@@ -48,14 +48,14 @@ fn main() {
         Job::new("Kernel Developer", JobStatus::Open),
     ];
 
-    let color_open_jobs = Color::BG_WHITE | Color::FG_BLACK;
-    let color_closed_jobs = Color::BG_GREEN | Color::FG_BLACK;
-
     let mut table = Table::new(data);
     table
         .with(Style::empty())
-        .with(Modify::list(ByContent::new("open"), color_open_jobs))
-        .with(Modify::list(ByContent::new("closed"), color_closed_jobs));
+        .modify(Locator::content("open"), Color::BG_WHITE | Color::FG_BLACK)
+        .modify(
+            Locator::content("closed"),
+            Color::BG_GREEN | Color::FG_BLACK,
+        );
 
     println!("{table}");
 }
