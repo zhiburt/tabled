@@ -295,7 +295,7 @@ impl Style<(), (), (), (), (), (), (), ()> {
         )
     }
 
-    /// This style looks like a [`Style::round`] but with horizontal lines.
+    /// This style looks like a [`Style::modern_round`] but with horizontal lines.
     ///
     /// Beware: It uses UTF-8 characters.
     ///

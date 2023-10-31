@@ -5,7 +5,7 @@ use crate::{
     settings::object::Object,
 };
 
-/// The structure is an implementation of [`Locator`] to search for a column by it's name.
+/// The structure is an implementation of [`Location`] to search for a column by it's name.
 /// A name is considered be a value in a first row.
 ///
 /// So even if in reality there's no header, the first row will be considered to be one.

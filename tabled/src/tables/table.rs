@@ -18,7 +18,7 @@ use crate::{
         },
         PeekableGrid,
     },
-    settings::{Style, TableOption},
+    settings::{object::Object, CellOption, Style, TableOption},
     Tabled,
 };
 
@@ -172,7 +172,7 @@ impl Table {
         b
     }
 
-    /// With is a generic function which applies options to the [`Table`].
+    /// It's a generic function which applies options to the [`Table`].
     ///
     /// It applies settings immediately.
     pub fn with<O>(&mut self, option: O) -> &mut Self
@@ -190,6 +190,30 @@ impl Table {
 
         let (widths, heights) = dims.into_inner();
         dimension_reastimate(&mut self.dimension, widths, heights, reastimation_hint);
+
+        self
+    }
+
+    /// It's a generic function which applies options to a particalar cells on the [`Table`].
+    /// Target cells using [`Object`]s such as [`Cell`], [`Rows`], [`Location`] and more.
+    ///
+    /// It applies settings immediately.
+    ///
+    /// [`Cell`]: crate::settings::object::Cell
+    /// [`Rows`]: crate::settings::object::Rows
+    /// [`Location`]: crate::settings::location::Locator
+    pub fn modify<T, O>(&mut self, target: T, option: O) -> &mut Self
+    where
+        T: Object<VecRecords<CellInfo<String>>>,
+        O: CellOption<VecRecords<CellInfo<String>>, ColoredConfig> + Clone,
+    {
+        for entity in target.cells(&self.records) {
+            let opt = option.clone();
+            opt.change(&mut self.records, &mut self.config, entity);
+        }
+
+        let reastimation_hint = option.hint_change();
+        dimension_reastimate_likely(&mut self.dimension, reastimation_hint);
 
         self
     }
@@ -524,5 +548,23 @@ fn dims_set_heights(dims: &mut CompleteDimensionVecRecords<'_>, list: Option<Vec
         None => {
             dims.clear_height();
         }
+    }
+}
+
+fn dimension_reastimate_likely(dims: &mut CompleteDimensionVecRecords<'_>, hint: Option<Entity>) {
+    let hint = match hint {
+        Some(hint) => hint,
+        None => return,
+    };
+
+    match hint {
+        Entity::Global | Entity::Cell(_, _) => {
+            dims.clear_width();
+            dims.clear_height()
+        }
+        Entity::Column(_) => {
+            dims.clear_width();
+        }
+        Entity::Row(_) => dims.clear_height(),
     }
 }

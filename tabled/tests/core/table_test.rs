@@ -845,3 +845,16 @@ test_table!(
     "├┼┤"
     "└┴┘"
 );
+
+test_table!(
+    table_modify_test,
+    Matrix::new(3, 3)
+        .with(Style::markdown())
+        .modify((1, 0), "Hello World")
+        .modify((0, 1), "Hello World 2"),
+    "|      N      | Hello World 2 | column 1 | column 2 |"
+    "|-------------|---------------|----------|----------|"
+    "| Hello World |      0-0      |   0-1    |   0-2    |"
+    "|      1      |      1-0      |   1-1    |   1-2    |"
+    "|      2      |      2-0      |   2-1    |   2-2    |"
+);
