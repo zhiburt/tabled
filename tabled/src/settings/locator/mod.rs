@@ -153,3 +153,128 @@ fn bounds_to_usize(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        grid::config::Entity,
+        grid::records::vec_records::CellInfo,
+        grid::records::vec_records::VecRecords,
+        settings::locator::{ByColumnName, ByContent},
+        settings::object::Object,
+    };
+
+    use Entity::*;
+
+    #[test]
+    fn object_by_column_name_test() {
+        let data = [
+            vec![vec![1, 2, 3], vec![1, 2, 3], vec![1, 2, 3]],
+            vec![vec![1, 2, 3], vec![1, 1, 3], vec![1, 2, 1]],
+            vec![vec![1, 1, 3], vec![1, 1, 3], vec![1, 1, 1]],
+            vec![vec![1, 1, 1], vec![1, 1, 3], vec![1, 1, 1]],
+            vec![vec![0, 1, 1], vec![1, 1, 3], vec![1, 1, 1]],
+            vec![vec![0, 0, 0], vec![1, 1, 3], vec![1, 1, 1]],
+        ];
+
+        assert_eq!(cells(by_colname("1"), &data[0]), [Column(0)]);
+        assert_eq!(cells(by_colname("1"), &data[1]), [Column(0)]);
+        assert_eq!(cells(by_colname("1"), &data[2]), [Column(0), Column(1)]);
+        assert_eq!(
+            cells(by_colname("1"), &data[3]),
+            [Column(0), Column(1), Column(2)]
+        );
+        assert_eq!(cells(by_colname("1"), &data[4]), [Column(1), Column(2)]);
+        assert_eq!(cells(by_colname("1"), &data[5]), []);
+    }
+
+    #[test]
+    fn object_by_content_test() {
+        let data = [
+            vec![vec![1, 2, 3], vec![1, 2, 3], vec![1, 2, 3]],
+            vec![vec![1, 2, 3], vec![1, 1, 3], vec![1, 2, 1]],
+            vec![vec![1, 1, 3], vec![1, 1, 3], vec![1, 1, 1]],
+            vec![vec![1, 1, 1], vec![1, 1, 3], vec![1, 1, 1]],
+            vec![vec![0, 1, 1], vec![1, 1, 3], vec![1, 1, 1]],
+            vec![vec![0, 0, 0], vec![1, 1, 3], vec![1, 1, 1]],
+        ];
+
+        assert_eq!(cells(by_content("1"), &[]), []);
+        assert_eq!(cells(by_content("1"), &[vec![], vec![], vec![]]), []);
+        assert_eq!(
+            cells(by_content("1"), &data[0]),
+            [Cell(0, 0), Cell(1, 0), Cell(2, 0)]
+        );
+        assert_eq!(
+            cells(by_content("1"), &data[1]),
+            [Cell(0, 0), Cell(1, 0), Cell(1, 1), Cell(2, 0), Cell(2, 2)]
+        );
+        assert_eq!(
+            cells(by_content("1"), &data[2]),
+            [
+                Cell(0, 0),
+                Cell(0, 1),
+                Cell(1, 0),
+                Cell(1, 1),
+                Cell(2, 0),
+                Cell(2, 1),
+                Cell(2, 2)
+            ]
+        );
+        assert_eq!(
+            cells(by_content("1"), &data[3]),
+            [
+                Cell(0, 0),
+                Cell(0, 1),
+                Cell(0, 2),
+                Cell(1, 0),
+                Cell(1, 1),
+                Cell(2, 0),
+                Cell(2, 1),
+                Cell(2, 2)
+            ]
+        );
+        assert_eq!(
+            cells(by_content("1"), &data[4]),
+            [
+                Cell(0, 1),
+                Cell(0, 2),
+                Cell(1, 0),
+                Cell(1, 1),
+                Cell(2, 0),
+                Cell(2, 1),
+                Cell(2, 2)
+            ]
+        );
+        assert_eq!(
+            cells(by_content("1"), &data[5]),
+            [Cell(1, 0), Cell(1, 1), Cell(2, 0), Cell(2, 1), Cell(2, 2)]
+        );
+    }
+
+    fn by_colname(text: &str) -> ByColumnName<&str> {
+        ByColumnName::new(text)
+    }
+
+    fn by_content(text: &str) -> ByContent<&str> {
+        ByContent::new(text)
+    }
+
+    fn cells<O>(o: O, data: &[Vec<usize>]) -> Vec<Entity>
+    where
+        O: Object<VecRecords<CellInfo<String>>>,
+    {
+        let data = data
+            .into_iter()
+            .map(|row| {
+                row.into_iter()
+                    .map(|n| n.to_string())
+                    .map(CellInfo::new)
+                    .collect()
+            })
+            .collect();
+
+        let records = VecRecords::new(data);
+        o.cells(&records).collect::<Vec<_>>()
+    }
+}
