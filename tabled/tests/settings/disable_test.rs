@@ -1,7 +1,7 @@
 #![cfg(feature = "std")]
 
 use tabled::settings::{
-    locator::ByColumnName,
+    location::ByColumnName,
     object::{Columns, Rows, Segment},
     style::{HorizontalLine, Style},
     Alignment, Disable, Modify,

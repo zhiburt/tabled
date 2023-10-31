@@ -262,4 +262,46 @@ mod tests {
             "\u{1b}[5m\u{1b}[48;2;12;200;100m\u{1b}[33mC\u{1b}[25m\u{1b}[39m\u{1b}[49m"
         )
     }
+
+    #[test]
+    #[cfg(feature = "color")]
+    fn test_srip_osc() {
+        assert_eq!(
+            strip_osc("just a string here"),
+            (String::from("just a string here"), None)
+        );
+        assert_eq!(
+            strip_osc("/etc/rc.conf"),
+            (String::from("/etc/rc.conf"), None)
+        );
+        assert_eq!(
+            strip_osc(
+                "https://gitlab.com/finestructure/swiftpackageindex-builder/-/pipelines/1054655982"
+            ),
+            (String::from("https://gitlab.com/finestructure/swiftpackageindex-builder/-/pipelines/1054655982"), None)
+        );
+
+        assert_eq!(
+            strip_osc(&build_link_prefix_suffix("just a string here")),
+            (String::default(), Some(String::from("just a string here")))
+        );
+        assert_eq!(
+            strip_osc(&build_link_prefix_suffix("/etc/rc.conf")),
+            (String::default(), Some(String::from("/etc/rc.conf")))
+        );
+        assert_eq!(
+            strip_osc(
+                &build_link_prefix_suffix("https://gitlab.com/finestructure/swiftpackageindex-builder/-/pipelines/1054655982")
+            ),
+            (String::default(), Some(String::from("https://gitlab.com/finestructure/swiftpackageindex-builder/-/pipelines/1054655982")))
+        );
+
+        #[cfg(feature = "color")]
+        fn build_link_prefix_suffix(url: &str) -> String {
+            // https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
+            let osc8 = "\x1b]8;;";
+            let st = "\x1b\\";
+            format!("{osc8}{url}{st}")
+        }
+    }
 }

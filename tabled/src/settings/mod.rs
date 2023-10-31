@@ -84,7 +84,7 @@ pub mod height;
 pub mod highlight;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub mod locator;
+pub mod location;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub mod measurement;

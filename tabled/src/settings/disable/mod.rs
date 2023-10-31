@@ -15,7 +15,7 @@ use std::marker::PhantomData;
 
 use crate::{
     grid::records::{ExactRecords, Records, Resizable},
-    settings::{locator::Locator, TableOption},
+    settings::{location::Location, TableOption},
 };
 
 /// Disable removes particular rows/columns from a [`Table`].
@@ -66,7 +66,7 @@ impl<L> Disable<L, TargetColumn> {
     /// - [`ByColumnName`]
     ///
     /// ```rust
-    /// use tabled::{builder::Builder, settings::{Disable, locator::ByColumnName, object::Columns}};
+    /// use tabled::{builder::Builder, settings::{Disable, location::ByColumnName, object::Columns}};
     ///
     /// let mut builder = Builder::default();
     ///
@@ -151,7 +151,7 @@ pub struct TargetColumn;
 
 impl<L, R, D, C> TableOption<R, D, C> for Disable<L, TargetColumn>
 where
-    for<'a> L: Locator<&'a R, Coordinate = usize>,
+    L: Location<R, Coordinate = usize>,
     R: Records + Resizable,
 {
     fn change(mut self, records: &mut R, _: &mut C, _: &mut D) {
@@ -174,7 +174,7 @@ where
 
 impl<L, R, D, C> TableOption<R, D, C> for Disable<L, TargetRow>
 where
-    for<'a> L: Locator<&'a R, Coordinate = usize>,
+    L: Location<R, Coordinate = usize>,
     R: ExactRecords + Resizable,
 {
     fn change(mut self, records: &mut R, _: &mut C, _: &mut D) {
