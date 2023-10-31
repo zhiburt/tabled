@@ -91,7 +91,7 @@ impl<L> Disable<L, TargetColumn> {
     /// [`Column`]: crate::settings::object::Column
     /// [`FirstColumn`]: crate::settings::object::FirstColumn
     /// [`LastColumn`]: crate::settings::object::LastColumn
-    /// [`ByColumnName`]: crate::settings::locator::ByColumnName
+    /// [`ByColumnName`]: crate::settings::location::ByColumnName
     pub fn column(locator: L) -> Self {
         Self {
             locator,
