@@ -3,10 +3,13 @@
 //! # Example
 //!
 //! ```
-//! use tabled::{Table, Tabled};
-//! use tabled::settings::{
-//!     Modify, object::{Object, Rows},
-//!     location::Locator, Padding, Alignment,
+//! use tabled::{
+//!     settings::{
+//!         location::Locator,
+//!         object::{Columns, Object},
+//!         Alignment, Modify, Padding,
+//!     },
+//!     Table, Tabled,
 //! };
 //!
 //! #[derive(Tabled)]
@@ -24,25 +27,29 @@
 //!
 //! let mut table = Table::new(data);
 //! table.with(Padding::zero());
-//! table.with(Modify::new(Locator::content("todo,2").intersect(Rows::last())).with(Alignment::right()));
-//! table.with(Modify::new(Locator::content("todo")).with(Alignment::center()));
+//! table.with(Modify::new(Locator::column("link")).with(Alignment::right()));
+//! table.with(Modify::new(Locator::content("todo")).with("todo,1"));
+//! table.with(
+//!     Modify::new(Columns::single(1).intersect(Locator::by(|text| text.contains("todo"))))
+//!         .with(Padding::new(4, 0, 0, 0)),
+//! );
 //!
 //! let output = table.to_string();
 //!
 //! assert_eq!(
 //!     output,
 //!     concat!(
-//!         "+-----------------------------------------------------------------+-------+\n",
-//!         "|link                                                             |comment|\n",
-//!         "+-----------------------------------------------------------------+-------+\n",
-//!         "|https://www.gnu.org/software/grub/manual/multiboot/multiboot.html| todo  |\n",
-//!         "+-----------------------------------------------------------------+-------+\n",
-//!         "|https://wiki.debian.org/initramfs                                | todo  |\n",
-//!         "+-----------------------------------------------------------------+-------+\n",
-//!         "|http://jdebp.uk/FGA/efi-boot-process.html                        |todo,2 |\n",
-//!         "+-----------------------------------------------------------------+-------+\n",
-//!         "|https://wiki.debian.org/UEFI                                     | todo,2|\n",
-//!         "+-----------------------------------------------------------------+-------+",
+//!         "+-----------------------------------------------------------------+----------+\n",
+//!         "|                                                             link|comment   |\n",
+//!         "+-----------------------------------------------------------------+----------+\n",
+//!         "|https://www.gnu.org/software/grub/manual/multiboot/multiboot.html|    todo,1|\n",
+//!         "+-----------------------------------------------------------------+----------+\n",
+//!         "|                                https://wiki.debian.org/initramfs|    todo,1|\n",
+//!         "+-----------------------------------------------------------------+----------+\n",
+//!         "|                        http://jdebp.uk/FGA/efi-boot-process.html|    todo,2|\n",
+//!         "+-----------------------------------------------------------------+----------+\n",
+//!         "|                                     https://wiki.debian.org/UEFI|    todo,2|\n",
+//!         "+-----------------------------------------------------------------+----------+",
 //!     ),
 //! );
 //! ```
@@ -50,10 +57,12 @@
 // todo: Add .modify method for Table
 
 mod by_column_name;
+mod by_condition;
 mod by_content;
 mod locator;
 
 pub use by_column_name::ByColumnName;
+pub use by_condition::ByCondition;
 pub use by_content::ByContent;
 pub use locator::Locator;
 
@@ -211,7 +220,7 @@ mod tests {
         grid::config::Entity,
         grid::records::vec_records::CellInfo,
         grid::records::vec_records::VecRecords,
-        settings::location::{ByColumnName, ByContent},
+        settings::location::{ByColumnName, ByCondition, ByContent},
         settings::object::Object,
     };
 
@@ -303,12 +312,80 @@ mod tests {
         );
     }
 
+    #[test]
+    fn object_by_condition_test() {
+        let data = [
+            vec![vec![1, 2, 3], vec![1, 2, 3], vec![1, 2, 3]],
+            vec![vec![1, 2, 3], vec![1, 1, 3], vec![1, 2, 1]],
+            vec![vec![1, 1, 3], vec![1, 1, 3], vec![1, 1, 1]],
+            vec![vec![1, 1, 1], vec![1, 1, 3], vec![1, 1, 1]],
+            vec![vec![0, 1, 1], vec![1, 1, 3], vec![1, 1, 1]],
+            vec![vec![0, 0, 0], vec![1, 1, 3], vec![1, 1, 1]],
+        ];
+
+        assert_eq!(cells(by_cond("1"), &[]), []);
+        assert_eq!(cells(by_cond("1"), &[vec![], vec![], vec![]]), []);
+        assert_eq!(
+            cells(by_cond("1"), &data[0]),
+            [Cell(0, 0), Cell(1, 0), Cell(2, 0)]
+        );
+        assert_eq!(
+            cells(by_cond("1"), &data[1]),
+            [Cell(0, 0), Cell(1, 0), Cell(1, 1), Cell(2, 0), Cell(2, 2)]
+        );
+        assert_eq!(
+            cells(by_cond("1"), &data[2]),
+            [
+                Cell(0, 0),
+                Cell(0, 1),
+                Cell(1, 0),
+                Cell(1, 1),
+                Cell(2, 0),
+                Cell(2, 1),
+                Cell(2, 2)
+            ]
+        );
+        assert_eq!(
+            cells(by_cond("1"), &data[3]),
+            [
+                Cell(0, 0),
+                Cell(0, 1),
+                Cell(0, 2),
+                Cell(1, 0),
+                Cell(1, 1),
+                Cell(2, 0),
+                Cell(2, 1),
+                Cell(2, 2)
+            ]
+        );
+        assert_eq!(
+            cells(by_cond("1"), &data[4]),
+            [
+                Cell(0, 1),
+                Cell(0, 2),
+                Cell(1, 0),
+                Cell(1, 1),
+                Cell(2, 0),
+                Cell(2, 1),
+                Cell(2, 2)
+            ]
+        );
+        assert_eq!(
+            cells(by_cond("1"), &data[5]),
+            [Cell(1, 0), Cell(1, 1), Cell(2, 0), Cell(2, 1), Cell(2, 2)]
+        );
+    }
+
     fn by_colname(text: &str) -> ByColumnName<&str> {
         ByColumnName::new(text)
     }
 
     fn by_content(text: &str) -> ByContent<&str> {
         ByContent::new(text)
+    }
+
+    fn by_cond(text: &'static str) -> ByCondition<impl Fn(&str) -> bool> {
+        ByCondition::new(move |content| content == text)
     }
 
     fn cells<O>(o: O, data: &[Vec<usize>]) -> Vec<Entity>

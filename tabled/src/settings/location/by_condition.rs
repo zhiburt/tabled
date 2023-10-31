@@ -8,23 +8,23 @@ use crate::{
     settings::object::Object,
 };
 
-/// The structure is an implementation of [`Locator`] to search for cells with a given content.
+/// The structure is an implementation of [`Locator`] to search for cells with a specified condition.
 #[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ByContent<S>(S);
+pub struct ByCondition<F>(F);
 
-impl<S> ByContent<S> {
+impl<F> ByCondition<F> {
     /// Constructs a new object of the structure.
-    pub fn new(text: S) -> Self
+    pub fn new(search: F) -> Self
     where
-        S: AsRef<str>,
+        F: Fn(&str) -> bool,
     {
-        Self(text)
+        Self(search)
     }
 }
 
-impl<R, S> Location<R> for ByContent<S>
+impl<F, R> Location<R> for ByCondition<F>
 where
-    S: AsRef<str>,
+    F: Fn(&str) -> bool,
     R: Records + ExactRecords + PeekableRecords,
 {
     type Coordinate = Position;
@@ -32,13 +32,13 @@ where
 
     fn locate(&mut self, records: &R) -> Self::IntoIter {
         // todo: can be optimized by creating Iterator
-        let text = self.0.as_ref();
+        let cond = &self.0;
 
         let mut out = vec![];
         for row in 0..records.count_rows() {
             for col in 0..records.count_columns() {
-                let cell = records.get_text((row, col));
-                if cell.eq(text) {
+                let text = records.get_text((row, col));
+                if cond(text) {
                     out.push((row, col));
                 }
             }
@@ -48,22 +48,22 @@ where
     }
 }
 
-impl<S, R> Object<R> for ByContent<S>
+impl<F, R> Object<R> for ByCondition<F>
 where
-    S: AsRef<str>,
-    R: Records + PeekableRecords + ExactRecords,
+    F: Fn(&str) -> bool,
+    R: Records + ExactRecords + PeekableRecords,
 {
     type Iter = std::vec::IntoIter<Entity>;
 
     fn cells(&self, records: &R) -> Self::Iter {
         // todo: can be optimized by creating Iterator
-        let text = self.0.as_ref();
+        let cond = &self.0;
 
         let mut out = vec![];
         for row in 0..records.count_rows() {
             for col in 0..records.count_columns() {
-                let cell = records.get_text((row, col));
-                if cell.eq(text) {
+                let text = records.get_text((row, col));
+                if cond(text) {
                     out.push(Entity::Cell(row, col));
                 }
             }

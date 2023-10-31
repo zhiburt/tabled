@@ -9,7 +9,7 @@ use crate::{
 /// A name is considered be a value in a first row.
 ///
 /// So even if in reality there's no header, the first row will be considered to be one.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ByColumnName<S>(S);
 
 impl<S> ByColumnName<S> {

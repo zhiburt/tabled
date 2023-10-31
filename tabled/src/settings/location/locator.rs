@@ -1,4 +1,4 @@
-use super::{ByColumnName, ByContent};
+use super::{ByColumnName, ByCondition, ByContent};
 
 /// An abstract factory for locations, to be used to find different things on the table.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
@@ -19,5 +19,16 @@ impl Locator {
         S: AsRef<str>,
     {
         ByColumnName::new(text)
+    }
+
+    /// Constructs a new location searcher with a specified condition closure.
+    ///
+    /// Return `true` if it shall be included in output.
+    /// Otherwise return `false`.
+    pub fn by<F>(condition: F) -> ByCondition<F>
+    where
+        F: Fn(&str) -> bool,
+    {
+        ByCondition::new(condition)
     }
 }
