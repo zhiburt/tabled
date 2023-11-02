@@ -1,5 +1,5 @@
 /// Borders represents a Table frame with horizontal and vertical split lines.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Borders<T> {
     /// A top horizontal on the frame.
     pub top: Option<T>,

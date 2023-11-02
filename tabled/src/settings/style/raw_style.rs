@@ -4,16 +4,20 @@
 use std::collections::HashMap;
 
 use crate::{
-    grid::{color::AnsiColor, config, config::Borders, config::ColoredConfig, records::Records},
+    grid::{
+        color::AnsiColor,
+        config::{self, Border, Borders, ColoredConfig},
+        records::Records,
+    },
     settings::{Color, TableOption},
 };
 
-use super::{Border, HorizontalLine, Line, Style, VerticalLine};
+use super::{HorizontalLine, Line, Style, VerticalLine};
 
 /// A raw style data, which can be produced safely from [`Style`].
 ///
 /// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RawStyle {
     borders: Borders<char>,
     colors: Borders<AnsiColor<'static>>,
@@ -349,8 +353,8 @@ impl RawStyle {
     }
 
     /// Returns an outer border of the style.
-    pub fn get_frame(&self) -> Border {
-        Border::from(crate::grid::config::Border {
+    pub fn get_frame(&self) -> Border<char> {
+        Border {
             top: self.borders.top,
             bottom: self.borders.bottom,
             left: self.borders.left,
@@ -359,7 +363,7 @@ impl RawStyle {
             right_top_corner: self.borders.top_right,
             left_bottom_corner: self.borders.bottom_left,
             right_bottom_corner: self.borders.bottom_right,
-        })
+        }
     }
 
     /// Returns an general borders configuration of the style.
@@ -408,24 +412,27 @@ impl<R, D> TableOption<R, D, ColoredConfig> for &RawStyle {
     }
 }
 
-impl<T, B, L, R, H, V, HLines, VLines> From<Style<T, B, L, R, H, V, HLines, VLines>> for RawStyle
+impl<T, B, L, R, H, V, HLines, VLines, HL, VL> From<Style<T, B, L, R, H, V, HLines, VLines>>
+    for RawStyle
 where
-    HLines: IntoIterator<Item = HorizontalLine> + Clone,
-    VLines: IntoIterator<Item = VerticalLine> + Clone,
+    HLines: IntoIterator<Item = (usize, HL)> + Clone,
+    VLines: IntoIterator<Item = (usize, VL)> + Clone,
+    HL: Into<Line>,
+    VL: Into<Line>,
 {
     fn from(style: Style<T, B, L, R, H, V, HLines, VLines>) -> Self {
         let horizontals = style
             .get_horizontals()
             .clone()
             .into_iter()
-            .map(|hr| (hr.index, hr.line))
+            .map(|(i, hr)| (i, hr.into()))
             .collect();
 
         let verticals = style
             .get_verticals()
             .clone()
             .into_iter()
-            .map(|hr| (hr.index, hr.line))
+            .map(|(i, hr)| (i, hr.into()))
             .collect();
 
         Self {

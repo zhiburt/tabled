@@ -6,21 +6,21 @@ use crate::{
 
 use super::Offset;
 
-/// [`BorderChar`] sets a char to a specific location on a horizontal line.
+/// [`LineChar`] sets a char to a specific location on a horizontal line.
 ///
 /// # Example
 ///
 /// ```rust
-/// use tabled::{Table, settings::{style::{Style, BorderChar, Offset}, Modify, object::{Object, Rows, Columns}}};
+/// use tabled::{Table, settings::{style::{Style, LineChar, Offset}, Modify, object::{Object, Rows, Columns}}};
 ///
 /// let mut table = Table::new(["Hello World"]);
 /// table
 ///     .with(Style::markdown())
 ///     .with(Modify::new(Rows::single(1))
-///         .with(BorderChar::horizontal(':', Offset::Begin(0)))
-///         .with(BorderChar::horizontal(':', Offset::End(0)))
+///         .with(LineChar::horizontal(':', Offset::Begin(0)))
+///         .with(LineChar::horizontal(':', Offset::End(0)))
 ///     )
-///     .with(Modify::new((1, 0).and((1, 1))).with(BorderChar::vertical('#', Offset::Begin(0))));
+///     .with(Modify::new((1, 0).and((1, 1))).with(LineChar::vertical('#', Offset::Begin(0))));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -32,14 +32,14 @@ use super::Offset;
 /// );
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct BorderChar {
+pub struct LineChar {
     c: char,
     offset: Offset,
     horizontal: bool,
 }
 
-impl BorderChar {
-    /// Creates a [`BorderChar`] which overrides horizontal line.
+impl LineChar {
+    /// Creates a [`LineChar`] which overrides horizontal line.
     pub fn horizontal(c: char, offset: Offset) -> Self {
         Self {
             c,
@@ -48,7 +48,7 @@ impl BorderChar {
         }
     }
 
-    /// Creates a [`BorderChar`] which overrides vertical line.
+    /// Creates a [`LineChar`] which overrides vertical line.
     pub fn vertical(c: char, offset: Offset) -> Self {
         Self {
             c,
@@ -58,7 +58,7 @@ impl BorderChar {
     }
 }
 
-impl<R> CellOption<R, ColoredConfig> for BorderChar
+impl<R> CellOption<R, ColoredConfig> for LineChar
 where
     R: Records + ExactRecords,
 {

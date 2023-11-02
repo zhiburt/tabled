@@ -97,11 +97,11 @@
 #[cfg(feature = "std")]
 mod border;
 #[cfg(feature = "std")]
-mod border_char;
-#[cfg(feature = "std")]
 mod border_color;
 #[cfg(feature = "std")]
 mod border_text;
+#[cfg(feature = "std")]
+mod line_char;
 #[cfg(feature = "std")]
 mod offset;
 #[cfg(feature = "std")]
@@ -117,7 +117,7 @@ mod vertical_line;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
-    border::Border, border_char::BorderChar, border_color::BorderColor, border_text::BorderText,
+    border::Border, border_color::BorderColor, border_text::BorderText, line_char::LineChar,
     offset::Offset, raw_style::RawStyle, span_border_correction::BorderSpanCorrection,
 };
 

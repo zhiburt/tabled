@@ -2,7 +2,7 @@
 use crate::grid::config::{HorizontalLine, VerticalLine};
 
 /// The structure represent a vertical or horizontal line.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Line {
     pub(crate) main: Option<char>,
     pub(crate) intersection: Option<char>,

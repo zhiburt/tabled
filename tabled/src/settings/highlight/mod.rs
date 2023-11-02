@@ -5,13 +5,20 @@
 
 use std::collections::HashSet;
 
+use papergrid::color::AnsiColor;
+
 use crate::{
     grid::{
         config::{Border as GridBorder, ColoredConfig, Entity, Position, SpannedConfig},
         records::{ExactRecords, Records},
     },
-    settings::{object::Object, style::BorderColor, Border, TableOption},
+    settings::{object::Object, Border, TableOption},
 };
+
+#[cfg(feature = "color")]
+use crate::{grid::color::AnsiColor, settings::Color};
+
+use super::{style::BorderColor, Color};
 
 /// Highlight modifies a table style by changing a border of a target [`Table`] segment.
 ///
@@ -92,8 +99,22 @@ use crate::{
 #[derive(Debug)]
 pub struct Highlight<O> {
     target: O,
-    border: Border,
+    border: HighlightInner,
 }
+
+#[derive(Debug)]
+enum HighlightInner {
+    Border(GridBorder<char>),
+    // #[cfg(feature = "color")]
+    Color(GridBorder<AnsiColor<'static>>),
+    // #[cfg(feature = "color")]
+    ColoredBorder(GridBorder<char>, GridBorder<AnsiColor<'static>>),
+}
+
+// todo: Docs testss
+
+// todo: Move colors to Highlight itself
+// todo: Maybe add a default Border and set ask for a char -> Highlight::new(target).border().outline().color().outline_color()
 
 // todo: Add BorderColor.
 
@@ -101,15 +122,57 @@ impl<O> Highlight<O> {
     /// Build a new instance of [`Highlight`]
     ///
     /// BE AWARE: if target exceeds boundaries it may panic.
-    pub fn new(target: O, border: Border) -> Self {
-        Self { target, border }
+    pub const fn border<T, B, L, R>(target: O, border: Border<T, B, L, R>) -> Self {
+        Self {
+            target,
+            border: HighlightInner::Border(border.into_inner()),
+        }
     }
-}
 
-impl<O> Highlight<O> {
-    /// Build a new instance of [`HighlightColored`]
-    pub fn colored(target: O, border: BorderColor) -> HighlightColored<O> {
-        HighlightColored { target, border }
+    /// Build a new instance of [`Highlight`]
+    ///
+    /// BE AWARE: if target exceeds boundaries it may panic.
+    // #[cfg(feature = "color")]
+    pub fn color<T, B, L, R>(target: O, border: BorderColor<T, B, L, R>) -> Self {
+        let color = border.into_inner();
+        let color = color.convert();
+
+        Self {
+            target,
+            border: HighlightInner::Color(color),
+        }
+    }
+
+    /// Build a new instance of [`Highlight`]
+    ///
+    /// BE AWARE: if target exceeds boundaries it may panic.
+    pub const fn outline<T, B, L, R>(target: O, c: char) -> Self {
+        Self::border(target, Border::filled(c))
+    }
+
+    /// Build a new instance of [`Highlight`]
+    ///
+    /// BE AWARE: if target exceeds boundaries it may panic.
+    pub fn colored_outline<T, B, L, R>(target: O, c: char, color: Color) -> Self {
+        Self::colored_border(target, Border::filled(c), BorderColor::filled(color))
+    }
+
+    /// Build a new instance of [`Highlight`]
+    ///
+    /// BE AWARE: if target exceeds boundaries it may panic.
+    // #[cfg(feature = "color")]
+    pub fn colored_border<T, B, L, R>(
+        target: O,
+        border: Border<T, B, L, R>,
+        color: BorderColor<T, B, L, R>,
+    ) -> Self {
+        let border = border.into_inner();
+        let color = color.into_inner().convert();
+
+        Self {
+            target,
+            border: HighlightInner::ColoredBorder(border, color),
+        }
     }
 }
 
@@ -125,39 +188,23 @@ where
         let cells = self.target.cells(records);
         let segments = split_segments(cells, count_rows, count_cols);
 
-        for sector in segments {
-            set_border(cfg, &sector, self.border);
-        }
-    }
-
-    fn hint_change(&self) -> Option<Entity> {
-        None
-    }
-}
-
-/// A [`Highlight`] object which works with a [`BorderColored`]
-///
-/// [`BorderColored`]: crate::settings::style::BorderColor
-#[derive(Debug)]
-pub struct HighlightColored<O> {
-    target: O,
-    border: BorderColor,
-}
-
-impl<O, R, D> TableOption<R, D, ColoredConfig> for HighlightColored<O>
-where
-    O: Object<R>,
-    R: Records + ExactRecords,
-{
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let count_rows = records.count_rows();
-        let count_cols = records.count_columns();
-
-        let cells = self.target.cells(records);
-        let segments = split_segments(cells, count_rows, count_cols);
-
-        for sector in segments {
-            set_border_color(cfg, sector, &self.border);
+        match self.border {
+            HighlightInner::Border(border) => {
+                for sector in segments {
+                    set_border(cfg, &sector, border);
+                }
+            }
+            HighlightInner::Color(color) => {
+                for sector in segments {
+                    set_border_color(cfg, &sector, &color);
+                }
+            }
+            HighlightInner::ColoredBorder(border, color) => {
+                for sector in segments {
+                    set_border(cfg, &sector, border);
+                    set_border_color(cfg, &sector, &color);
+                }
+            }
         }
     }
 
@@ -168,14 +215,14 @@ where
 
 fn set_border_color(
     cfg: &mut SpannedConfig,
-    sector: HashSet<(usize, usize)>,
-    border: &BorderColor,
+    sector: &HashSet<(usize, usize)>,
+    border: &GridBorder<AnsiColor<'static>>,
 ) {
     if sector.is_empty() {
         return;
     }
     let color = border.clone().into();
-    for &(row, col) in &sector {
+    for &(row, col) in sector {
         let border = build_cell_border(&sector, (row, col), &color);
         cfg.set_border_color((row, col), border);
     }
@@ -261,12 +308,11 @@ fn is_segment_connected(
     false
 }
 
-fn set_border(cfg: &mut SpannedConfig, sector: &HashSet<(usize, usize)>, border: Border) {
+fn set_border(cfg: &mut SpannedConfig, sector: &HashSet<(usize, usize)>, border: GridBorder<char>) {
     if sector.is_empty() {
         return;
     }
 
-    let border = border.into();
     for &pos in sector {
         let border = build_cell_border(sector, pos, &border);
         cfg.set_border(pos, border);
@@ -435,6 +481,31 @@ fn is_there_left_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col: 
 
 fn is_there_right_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col: usize) -> bool {
     sector.contains(&(row + 1, col + 1))
+}
+
+fn split_tuple_border<A, B>(border: GridBorder<(A, B)>) -> (GridBorder<A>, GridBorder<B>) {
+    macro_rules! set_border {
+        ($border1:expr, $border2:expr => $symbl:expr) => {
+            if let Some((x1, x2)) = $symbl {
+                $border1 = Some(x1);
+                $border2 = Some(x2);
+            }
+        };
+    }
+
+    let mut a = GridBorder::empty();
+    let mut b = GridBorder::empty();
+
+    set_border!(a.bottom, b.bottom => border.bottom);
+    set_border!(a.top, b.top => border.top);
+    set_border!(a.left, b.left => border.left);
+    set_border!(a.left_top_corner, b.left_top_corner => border.left_top_corner);
+    set_border!(a.left_bottom_corner, b.left_bottom_corner => border.left_bottom_corner);
+    set_border!(a.right, b.right => border.right);
+    set_border!(a.right_top_corner, b.right_top_corner => border.right_top_corner);
+    set_border!(a.right_bottom_corner, b.right_bottom_corner => border.right_bottom_corner);
+
+    (a, b)
 }
 
 #[cfg(test)]
