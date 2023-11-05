@@ -7,7 +7,7 @@
 use tabled::{
     settings::{
         object::{Columns, Object, Rows},
-        style::{Border, Style},
+        style::Style,
         Highlight,
     },
     Table,
@@ -18,9 +18,9 @@ fn main() {
 
     let table = Table::new(data)
         .with(Style::modern())
-        .with(Highlight::new(
+        .with(Highlight::outline(
             Rows::first().and(Columns::single(1)),
-            Border::filled('*'),
+            '*',
         ))
         .to_string();
 

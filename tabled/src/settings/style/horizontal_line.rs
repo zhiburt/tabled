@@ -23,6 +23,18 @@ impl HorizontalLine<(), (), ()> {
     }
 }
 
+impl<L, R, I> HorizontalLine<L, R, I> {
+    /// Creates a stub horizontal line.
+    pub const fn empty() -> Self {
+        Self {
+            line: Line::new(None, None, None, None),
+            _left: PhantomData,
+            _right: PhantomData,
+            _intersection: PhantomData,
+        }
+    }
+}
+
 impl HorizontalLine<On, On, On> {
     /// Creates a new horizontal split line.
     pub const fn full(main: char, left: char, right: char, intersection: char) -> Self {
@@ -45,25 +57,25 @@ impl<L, R, I> HorizontalLine<L, R, I> {
         }
     }
 
-    /// Sets a horizontal character.
+    /// Set a horizontal character.
     pub const fn horizontal(mut self, c: char) -> HorizontalLine<L, R, I> {
         self.line.main = Some(c);
         HorizontalLine::update(self.line)
     }
 
-    /// Sets a vertical intersection character.
+    /// Set a vertical intersection character.
     pub const fn intersection(mut self, c: char) -> HorizontalLine<L, R, On> {
         self.line.intersection = Some(c);
         HorizontalLine::update(self.line)
     }
 
-    /// Sets a left character.
+    /// Set a left character.
     pub const fn left(mut self, c: char) -> HorizontalLine<On, R, I> {
         self.line.connector1 = Some(c);
         HorizontalLine::update(self.line)
     }
 
-    /// Sets a right character.
+    /// Set a right character.
     pub const fn right(mut self, c: char) -> HorizontalLine<L, On, I> {
         self.line.connector2 = Some(c);
         HorizontalLine::update(self.line)
@@ -71,7 +83,7 @@ impl<L, R, I> HorizontalLine<L, R, I> {
 }
 
 impl<L, R, I> HorizontalLine<L, R, I> {
-    /// Gets a horizontal character.
+    /// Get a horizontal character.
     pub const fn get_horizontal(&self) -> char {
         match self.line.main {
             Some(c) => c,
@@ -79,39 +91,57 @@ impl<L, R, I> HorizontalLine<L, R, I> {
         }
     }
 
-    /// Gets a general structure of line.
+    /// Get a general structure of line.
     pub const fn into_inner(&self) -> Line {
         self.line
     }
 }
 
 impl<L, R> HorizontalLine<L, R, On> {
-    /// Sets a vertical intersection character.
+    /// Set a vertical intersection character.
     pub const fn get_intersection(&self) -> char {
         match self.line.intersection {
             Some(c) => c,
             None => unreachable!(),
         }
     }
+
+    /// Remove a vertical intersection character.
+    pub const fn remove_intersection(mut self) -> HorizontalLine<L, R, ()> {
+        self.line.intersection = None;
+        HorizontalLine::update(self.line)
+    }
 }
 
 impl<R, I> HorizontalLine<On, R, I> {
-    /// Gets a left character.
+    /// Get a left character.
     pub const fn get_left(&self) -> char {
         match self.line.connector1 {
             Some(c) => c,
             None => unreachable!(),
         }
     }
+
+    /// Remove a horizontal left character.
+    pub const fn remove_left(mut self) -> HorizontalLine<(), R, I> {
+        self.line.connector1 = None;
+        HorizontalLine::update(self.line)
+    }
 }
 
 impl<L, I> HorizontalLine<L, On, I> {
-    /// Gets a right character.
+    /// Get a right character.
     pub const fn get_right(&self) -> char {
         match self.line.connector2 {
             Some(c) => c,
             None => unreachable!(),
         }
+    }
+
+    /// Remove a horizontal right character.
+    pub const fn remove_right(mut self) -> HorizontalLine<I, (), I> {
+        self.line.connector2 = None;
+        HorizontalLine::update(self.line)
     }
 }
 

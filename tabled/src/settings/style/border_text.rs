@@ -69,7 +69,9 @@ impl<Line> BorderText<Line> {
     }
 
     /// Set an offset from which the text will be started.
-    pub fn offset(self, offset: Offset) -> Self {
+    pub fn offset(self, offset: impl Into<Offset>) -> Self {
+        let offset = offset.into();
+
         BorderText {
             offset,
             text: self.text,

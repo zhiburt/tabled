@@ -23,6 +23,18 @@ impl VerticalLine<(), (), ()> {
     }
 }
 
+impl<L, R, I> VerticalLine<L, R, I> {
+    /// Creates a stub horizontal line.
+    pub const fn empty() -> Self {
+        Self {
+            line: Line::new(None, None, None, None),
+            _top: PhantomData,
+            _bottom: PhantomData,
+            _intersection: PhantomData,
+        }
+    }
+}
+
 impl VerticalLine<On, On, On> {
     /// Creates a new vertical split line.
     pub const fn full(main: char, top: char, bottom: char, intersection: char) -> Self {
@@ -36,25 +48,25 @@ impl VerticalLine<On, On, On> {
 }
 
 impl<T, B, I> VerticalLine<T, B, I> {
-    /// Sets a vertical character.
+    /// Set a vertical character.
     pub const fn vertical(mut self, c: char) -> VerticalLine<T, B, I> {
         self.line.main = Some(c);
         VerticalLine::update(self.line)
     }
 
-    /// Sets a vertical intersection character.
+    /// Set a vertical intersection character.
     pub const fn intersection(mut self, c: char) -> VerticalLine<T, B, On> {
         self.line.intersection = Some(c);
         VerticalLine::update(self.line)
     }
 
-    /// Sets a top character.
+    /// Set a top character.
     pub const fn top(mut self, c: char) -> VerticalLine<On, B, I> {
         self.line.connector1 = Some(c);
         VerticalLine::update(self.line)
     }
 
-    /// Sets a bottom character.
+    /// Set a bottom character.
     pub const fn bottom(mut self, c: char) -> VerticalLine<T, On, I> {
         self.line.connector2 = Some(c);
         VerticalLine::update(self.line)
@@ -71,7 +83,7 @@ impl<T, B, I> VerticalLine<T, B, I> {
         }
     }
 
-    /// Gets a vertical character.
+    /// Get a vertical character.
     pub const fn get_vertical(&self) -> char {
         match self.line.main {
             Some(c) => c,
@@ -79,38 +91,62 @@ impl<T, B, I> VerticalLine<T, B, I> {
         }
     }
 
-    /// Gets a general structure of line.
+    /// Get a general structure of line.
     pub const fn into_inner(&self) -> Line {
         self.line
     }
 }
 
 impl<T, B> VerticalLine<T, B, On> {
-    /// Sets a horizontal intersection character.
+    /// Set a horizontal intersection character.
     pub const fn get_intersection(&self) -> char {
         match self.line.intersection {
             Some(c) => c,
             None => unreachable!(),
         }
     }
+
+    /// Remove a horizontal intersection character.
+    pub const fn remove_intersection(mut self) -> VerticalLine<T, B, ()> {
+        self.line.intersection = None;
+        VerticalLine::update(self.line)
+    }
 }
 
 impl<B, I> VerticalLine<On, B, I> {
-    /// Gets a top character.
+    /// Get a top character.
     pub const fn get_top(&self) -> char {
         match self.line.connector1 {
             Some(c) => c,
             None => unreachable!(),
         }
     }
+
+    /// Remove a vertical top character.
+    pub const fn remove_top(mut self) -> VerticalLine<(), B, I> {
+        self.line.connector1 = None;
+        VerticalLine::update(self.line)
+    }
 }
 
 impl<T, I> VerticalLine<T, On, I> {
-    /// Gets a bottom character.
+    /// Get a bottom character.
     pub const fn get_bottom(&self) -> char {
         match self.line.connector2 {
             Some(c) => c,
             None => unreachable!(),
         }
+    }
+
+    /// Remove a vertical bottom character.
+    pub const fn remove_bottom(mut self) -> VerticalLine<T, (), I> {
+        self.line.connector2 = None;
+        VerticalLine::update(self.line)
+    }
+}
+
+impl<T, B, I> From<VerticalLine<T, B, I>> for Line {
+    fn from(value: VerticalLine<T, B, I>) -> Self {
+        value.line
     }
 }

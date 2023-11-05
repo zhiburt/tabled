@@ -12,7 +12,7 @@ use crate::{
     settings::{Color, TableOption},
 };
 
-use super::{HorizontalLine, Line, Style, VerticalLine};
+use super::{Line, Style};
 
 /// A raw style data, which can be produced safely from [`Style`].
 ///
@@ -412,27 +412,20 @@ impl<R, D> TableOption<R, D, ColoredConfig> for &RawStyle {
     }
 }
 
-impl<T, B, L, R, H, V, HLines, VLines, HL, VL> From<Style<T, B, L, R, H, V, HLines, VLines>>
-    for RawStyle
-where
-    HLines: IntoIterator<Item = (usize, HL)> + Clone,
-    VLines: IntoIterator<Item = (usize, VL)> + Clone,
-    HL: Into<Line>,
-    VL: Into<Line>,
+impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
+    From<Style<T, B, L, R, H, V, HSIZE, VSIZE>> for RawStyle
 {
-    fn from(style: Style<T, B, L, R, H, V, HLines, VLines>) -> Self {
+    fn from(style: Style<T, B, L, R, H, V, HSIZE, VSIZE>) -> Self {
         let horizontals = style
             .get_horizontals()
-            .clone()
             .into_iter()
-            .map(|(i, hr)| (i, hr.into()))
+            .map(|(i, hr)| (*i, hr.into_inner()))
             .collect();
 
         let verticals = style
             .get_verticals()
-            .clone()
             .into_iter()
-            .map(|(i, hr)| (i, hr.into()))
+            .map(|(i, hr)| (*i, hr.into_inner()))
             .collect();
 
         Self {

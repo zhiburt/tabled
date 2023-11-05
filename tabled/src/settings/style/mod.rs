@@ -121,7 +121,7 @@ pub use self::{
     offset::Offset, raw_style::RawStyle, span_border_correction::BorderSpanCorrection,
 };
 
-pub use builder::{HorizontalLineIter, On, Style, VerticalLineIter};
+pub use builder::{On, Style};
 pub use horizontal_line::HorizontalLine;
 pub use line::Line;
 pub use vertical_line::VerticalLine;

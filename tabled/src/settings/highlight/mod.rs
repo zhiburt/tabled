@@ -146,7 +146,7 @@ impl<O> Highlight<O> {
     /// Build a new instance of [`Highlight`]
     ///
     /// BE AWARE: if target exceeds boundaries it may panic.
-    pub const fn outline<T, B, L, R>(target: O, c: char) -> Self {
+    pub const fn outline(target: O, c: char) -> Self {
         Self::border(target, Border::filled(c))
     }
 
