@@ -1,6 +1,6 @@
 //! This module contains a compile time style builder [`Style`].
 
-use core::{array, marker::PhantomData};
+use core::marker::PhantomData;
 
 use crate::{
     grid::config::{Borders, CompactConfig, CompactMultilineConfig},
@@ -486,11 +486,6 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
         self,
         list: HArray<L, R, V, SIZE>,
     ) -> Style<T, B, L, R, H, V, SIZE, VN> {
-        let mut i = 0;
-        while i < SIZE {
-            let _ = list[i];
-        }
-
         Style::new(self.borders, list, self.verticals)
     }
 
@@ -728,210 +723,224 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
         Style::new(self.borders, horizontals, self.verticals)
     }
 
-    // /// Set a vertical line.
-    // /// An equvalent of calling vertical+top_intersection+bottom_intersection+intersion.
-    // ///
-    // /// Notice, that it will clear everything that is outdated, meaning
-    // /// If your style has a top border line and but the given vertical line has not got it then it will be removed.
-    // pub const fn vertical_line<Top, Bottom, Intersection>(
-    //     mut self,
-    //     line: VerticalLine<Top, Bottom, Intersection>,
-    // ) -> Style<Top, Bottom, L, R, Intersection, On, HN, VN> {
-    //     let line = line.into_inner();
+    /// Set a vertical line.
+    /// An equvalent of calling vertical+top_intersection+bottom_intersection+intersion.
+    ///
+    /// Notice, that it will clear everything that is outdated, meaning
+    /// If your style has a top border line and but the given vertical line has not got it then it will be removed.
+    pub const fn vertical_line<Top, Bottom, Intersection>(
+        mut self,
+        line: VerticalLine<Top, Bottom, Intersection>,
+    ) -> Style<Top, Bottom, L, R, Intersection, On, HN, VN>
+    where
+        L: Copy,
+        R: Copy,
+        Top: Copy,
+        Bottom: Copy,
+        Intersection: Copy,
+    {
+        let line = line.into_inner();
 
-    //     self.borders.vertical = line.main;
-    //     self.borders.intersection = line.intersection;
-    //     self.borders.top_intersection = line.connector1;
-    //     self.borders.bottom_intersection = line.connector2;
+        self.borders.vertical = line.main;
+        self.borders.intersection = line.intersection;
+        self.borders.top_intersection = line.connector1;
+        self.borders.bottom_intersection = line.connector2;
 
-    //     if line.intersection.is_none() {
-    //         self.borders.horizontal = None;
-    //         self.borders.left_intersection = None;
-    //         self.borders.right_intersection = None;
-    //         self.borders.intersection = None;
-    //     } else {
-    //         if self.borders.has_left() && self.borders.left_intersection.is_none() {
-    //             self.borders.left_intersection = Some(' ');
-    //         }
+        if line.intersection.is_none() {
+            self.borders.horizontal = None;
+            self.borders.left_intersection = None;
+            self.borders.right_intersection = None;
+            self.borders.intersection = None;
+        } else {
+            if self.borders.has_left() && self.borders.left_intersection.is_none() {
+                self.borders.left_intersection = Some(' ');
+            }
 
-    //         if self.borders.has_right() && self.borders.right_intersection.is_none() {
-    //             self.borders.right_intersection = Some(' ');
-    //         }
+            if self.borders.has_right() && self.borders.right_intersection.is_none() {
+                self.borders.right_intersection = Some(' ');
+            }
 
-    //         if self.borders.horizontal.is_none() {
-    //             self.borders.horizontal = Some(' ');
-    //         }
-    //     }
+            if self.borders.horizontal.is_none() {
+                self.borders.horizontal = Some(' ');
+            }
+        }
 
-    //     if line.connector1.is_none() {
-    //         self.borders.top = None;
-    //         self.borders.top_left = None;
-    //         self.borders.top_right = None;
-    //         self.borders.top_intersection = None;
-    //     } else if self.borders.has_top() && self.borders.top_intersection.is_none() {
-    //         self.borders.top_intersection = Some(' ');
-    //     }
+        if line.connector1.is_none() {
+            self.borders.top = None;
+            self.borders.top_left = None;
+            self.borders.top_right = None;
+            self.borders.top_intersection = None;
+        } else if self.borders.has_top() && self.borders.top_intersection.is_none() {
+            self.borders.top_intersection = Some(' ');
+        }
 
-    //     if line.connector2.is_none() {
-    //         self.borders.bottom = None;
-    //         self.borders.bottom_left = None;
-    //         self.borders.bottom_right = None;
-    //         self.borders.bottom_intersection = None;
-    //     } else if self.borders.has_bottom() && self.borders.bottom_intersection.is_none() {
-    //         self.borders.bottom_intersection = Some(' ');
-    //     }
+        if line.connector2.is_none() {
+            self.borders.bottom = None;
+            self.borders.bottom_left = None;
+            self.borders.bottom_right = None;
+            self.borders.bottom_intersection = None;
+        } else if self.borders.has_bottom() && self.borders.bottom_intersection.is_none() {
+            self.borders.bottom_intersection = Some(' ');
+        }
 
-    //     let verticals = self.verticals;
-    //     let verticals = varray_change(verticals, line.connector1, _set_connector1);
-    //     let verticals = varray_change(verticals, line.connector2, _set_connector2);
-    //     let verticals = varray_change(verticals, line.intersection, _set_intersection);
+        let horizontals = harray_convert(self.horizontals);
+        let horizontals = linearr_set(horizontals, Line::new(None, line.intersection, None, None));
+        let horizontals = linearr_convert_to_harray(horizontals);
 
-    //     let horizontals = harray_change(self.horizontals, line.intersection, _set_intersection);
+        let verticals = varray_convert(self.verticals);
+        let verticals = linearr_set(
+            verticals,
+            Line::new(None, line.intersection, line.connector1, line.connector2),
+        );
+        let verticals = linearr_convert_to_varray(verticals);
 
-    //     Style::new(self.borders, self.horizontals, self.verticals)
-    // }
+        Style::new(self.borders, horizontals, verticals)
+    }
 
-    // /// Set a horizontal line.
-    // /// An equvalent of calling horizontal+left_intersection+right_intersection+intersion.
-    // ///
-    // /// Notice, that it will clear everything that is outdated, meaning
-    // /// If your style has a left border line and but the given vertical line has not got it then it will be removed.
-    // pub const fn horizontal_line<Left, Bottom, Intersection>(
-    //     mut self,
-    //     line: HorizontalLine<Top, Bottom, Intersection>,
-    // ) -> Style<Top, Bottom, L, R, Intersection, On, HN, VN>
-    // where
-    //     L: Copy,
-    //     R: Copy,
-    //     Top: Copy,
-    //     Bottom: Copy,
-    //     Intersection: Copy,
-    // {
-    //     let line = line.into_inner();
+    /// Set a horizontal line.
+    /// An equvalent of calling horizontal+left_intersection+right_intersection+intersion.
+    ///
+    /// Notice, that it will clear everything that is outdated, meaning
+    /// If your style has a left border line and but the given vertical line has not got it then it will be removed.
+    pub const fn horizontal_line<Left, Right, Intersection>(
+        mut self,
+        line: HorizontalLine<Left, Right, Intersection>,
+    ) -> Style<Left, Right, L, R, Intersection, On, HN, VN>
+    where
+        L: Copy,
+        R: Copy,
+        Left: Copy,
+        Right: Copy,
+        Intersection: Copy,
+    {
+        let line = line.into_inner();
 
-    //     self.borders.horizontal = line.main;
-    //     self.borders.intersection = line.intersection;
-    //     self.borders.left_intersection = line.connector1;
-    //     self.borders.right_intersection = line.connector2;
+        self.borders.horizontal = line.main;
+        self.borders.intersection = line.intersection;
+        self.borders.left_intersection = line.connector1;
+        self.borders.right_intersection = line.connector2;
 
-    //     if line.intersection.is_none() {
-    //         self.borders.vertical = None;
-    //         self.borders.top_intersection = None;
-    //         self.borders.bottom_intersection = None;
-    //         self.borders.intersection = None;
-    //     } else {
-    //         if self.borders.has_top() && self.borders.top_intersection.is_none() {
-    //             self.borders.top_intersection = Some(' ');
-    //         }
+        if line.intersection.is_none() {
+            self.borders.vertical = None;
+            self.borders.top_intersection = None;
+            self.borders.bottom_intersection = None;
+            self.borders.intersection = None;
+        } else {
+            if self.borders.has_top() && self.borders.top_intersection.is_none() {
+                self.borders.top_intersection = Some(' ');
+            }
 
-    //         if self.borders.has_bottom() && self.borders.bottom_intersection.is_none() {
-    //             self.borders.bottom_intersection = Some(' ');
-    //         }
+            if self.borders.has_bottom() && self.borders.bottom_intersection.is_none() {
+                self.borders.bottom_intersection = Some(' ');
+            }
 
-    //         if self.borders.vertical.is_none() {
-    //             self.borders.vertical = Some(' ');
-    //         }
-    //     }
+            if self.borders.vertical.is_none() {
+                self.borders.vertical = Some(' ');
+            }
+        }
 
-    //     if line.connector1.is_none() {
-    //         self.borders.left = None;
-    //         self.borders.top_left = None;
-    //         self.borders.bottom_left = None;
-    //         self.borders.left_intersection = None;
-    //     } else if self.borders.has_left() && self.borders.left_intersection.is_none() {
-    //         self.borders.left_intersection = Some(' ');
-    //     }
+        if line.connector1.is_none() {
+            self.borders.left = None;
+            self.borders.top_left = None;
+            self.borders.bottom_left = None;
+            self.borders.left_intersection = None;
+        } else if self.borders.has_left() && self.borders.left_intersection.is_none() {
+            self.borders.left_intersection = Some(' ');
+        }
 
-    //     if line.connector2.is_none() {
-    //         self.borders.right = None;
-    //         self.borders.top_right = None;
-    //         self.borders.bottom_right = None;
-    //         self.borders.right_intersection = None;
-    //     } else if self.borders.has_right() && self.borders.right_intersection.is_none() {
-    //         self.borders.right_intersection = Some(' ');
-    //     }
+        if line.connector2.is_none() {
+            self.borders.right = None;
+            self.borders.top_right = None;
+            self.borders.bottom_right = None;
+            self.borders.right_intersection = None;
+        } else if self.borders.has_right() && self.borders.right_intersection.is_none() {
+            self.borders.right_intersection = Some(' ');
+        }
 
-    //     let horizontals = self.horizontals;
-    //     let horizontals: HArray<L, R, On, HN> = harray_change(horizontals, line.connector1, _set_connector1);
-    //     let horizontals: HArray<L, R, On, HN> = harray_change(horizontals, line.connector2, _set_connector2);
-    //     let horizontals: HArray<L, R, On, HN> = harray_change(horizontals, line.intersection, _set_intersection);
+        let horizontals = harray_convert(self.horizontals);
+        let horizontals = linearr_set(
+            horizontals,
+            Line::new(None, line.intersection, line.connector1, line.connector2),
+        );
+        let horizontals = linearr_convert_to_harray(horizontals);
 
-    //     let verticals = varray_change(self.verticals, line.intersection, _set_intersection);
+        let verticals = varray_convert(self.verticals);
+        let verticals = linearr_set(verticals, Line::new(None, line.intersection, None, None));
+        let verticals = linearr_convert_to_varray(verticals);
 
-    //     Style::new(self.borders, horizontals, verticals)
-    // }
+        Style::new(self.borders, horizontals, verticals)
+    }
 
-    // /// Set a frame for a style.
-    // ///
-    // /// It makes assumptions that a full frame will be set, but it may not be.
-    // ///
-    // /// # Example
-    // ///
-    // /// ```
-    // /// use tabled::{Table, settings::{Style, Highlight, object::Rows}};
-    // ///
-    // /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
-    // /// let table = Table::new(data)
-    // ///     .with(Highlight::new(Rows::first(), Style::modern().frame(Border::empty())))
-    // ///     .to_string();
-    // ///
-    // /// assert_eq!(
-    // ///     table,
-    // ///     concat!(
-    // ///         "┌──────────────────┐\n",
-    // ///         "│ 0        | 1     │\n",
-    // ///         "└──────────────────┘\n",
-    // ///         "| 10:52:19 | Hello |\n",
-    // ///         "+----------+-------+\n",
-    // ///         "| 10:52:20 | World |\n",
-    // ///         "+----------+-------+",
-    // ///     )
-    // /// );
-    // /// ```
-    // #[cfg(feature = "std")]
-    // #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-    // pub const fn frame<Top, Bottom, Left, Right>(
-    //     mut self,
-    //     border: Border<Top, Bottom, Left, Right>,
-    // ) -> Style<Top, Bottom, Left, Right, H, V, HN, VN>
-    // where
-    //     T: Copy,
-    //     B: Copy,
-    //     L: Copy,
-    //     R: Copy,
-    //     H: Copy,
-    //     V: Copy,
-    //     Left: Copy,
-    //     Right: Copy,
-    //     Top: Copy,
-    //     Bottom: Copy,
-    // {
-    //     let border = border.into_inner();
-    //     let border = correct_border(border);
+    /// Set a frame for a style.
+    ///
+    /// It makes assumptions that a full frame will be set, but it may not be.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use tabled::{Table, settings::{Style, Highlight, object::Rows}};
+    ///
+    /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
+    /// let table = Table::new(data)
+    ///     .with(Highlight::new(Rows::first(), Style::modern().frame(Border::empty())))
+    ///     .to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     concat!(
+    ///         "┌──────────────────┐\n",
+    ///         "│ 0        | 1     │\n",
+    ///         "└──────────────────┘\n",
+    ///         "| 10:52:19 | Hello |\n",
+    ///         "+----------+-------+\n",
+    ///         "| 10:52:20 | World |\n",
+    ///         "+----------+-------+",
+    ///     )
+    /// );
+    /// ```
+    #[cfg(feature = "std")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    pub const fn frame<Top, Bottom, Left, Right>(
+        mut self,
+        border: Border<Top, Bottom, Left, Right>,
+    ) -> Style<Top, Bottom, Left, Right, H, V, HN, VN>
+    where
+        T: Copy,
+        B: Copy,
+        L: Copy,
+        R: Copy,
+        H: Copy,
+        V: Copy,
+        Left: Copy,
+        Right: Copy,
+        Top: Copy,
+        Bottom: Copy,
+    {
+        let border = border.into_inner();
+        let border = correct_border(border);
 
-    //     let horizontals = self.horizontals;
-    //     let horizontals: HArray<Left, Right, V, HN> =
-    //         harray_change(horizontals, border.left, _set_connector1);
-    //     let horizontals: HArray<Left, Right, V, HN> =
-    //         harray_change(horizontals, border.right, _set_connector2);
+        let horizontals = harray_convert(self.horizontals);
+        let horizontals = linearr_set(
+            horizontals,
+            Line::new(None, None, border.left, border.right),
+        );
+        let horizontals = linearr_convert_to_harray(horizontals);
 
-    //     let verticals = self.verticals;
-    //     let verticals: VArray<Top, Bottom, H, VN> =
-    //         varray_change(verticals, border.top, _set_connector1);
-    //     let verticals: VArray<Top, Bottom, H, VN> =
-    //         varray_change(verticals, border.bottom, _set_connector2);
+        let verticals = varray_convert(self.verticals);
+        let verticals = linearr_set(verticals, Line::new(None, None, border.top, border.bottom));
+        let verticals = linearr_convert_to_varray(verticals);
 
-    //     self.borders.top = border.top;
-    //     self.borders.bottom = border.bottom;
-    //     self.borders.left = border.left;
-    //     self.borders.top_left = border.left_top_corner;
-    //     self.borders.bottom_left = border.left_bottom_corner;
-    //     self.borders.right = border.right;
-    //     self.borders.top_right = border.right_top_corner;
-    //     self.borders.bottom_right = border.right_bottom_corner;
+        self.borders.top = border.top;
+        self.borders.bottom = border.bottom;
+        self.borders.left = border.left;
+        self.borders.top_left = border.left_top_corner;
+        self.borders.bottom_left = border.left_bottom_corner;
+        self.borders.right = border.right;
+        self.borders.top_right = border.right_top_corner;
+        self.borders.bottom_right = border.right_bottom_corner;
 
-    //     Style::new(self.borders, horizontals, verticals)
-    // }
+        Style::new(self.borders, horizontals, verticals)
+    }
 }
 
 impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
@@ -983,12 +992,22 @@ impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
     }
 
     /// Return custom horizontals which were set.
-    pub const fn get_horizontals(&self) -> HArray<L, R, V, HSIZE> {
+    pub const fn get_horizontals(&self) -> HArray<L, R, V, HSIZE>
+    where
+        L: Copy,
+        R: Copy,
+        V: Copy,
+    {
         self.horizontals
     }
 
     /// Return custom verticals which were set.
-    pub const fn get_verticals(&self) -> VArray<T, B, H, VSIZE> {
+    pub const fn get_verticals(&self) -> VArray<T, B, H, VSIZE>
+    where
+        T: Copy,
+        B: Copy,
+        H: Copy,
+    {
         self.verticals
     }
 }
@@ -1307,14 +1326,14 @@ impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
         cfg.clear_theme();
         cfg.set_borders(self.borders);
 
-        for (i, line) in self.horizontals.into_iter() {
+        for (i, line) in self.horizontals {
             let line = line.into_inner().into();
-            cfg.insert_horizontal_line(*i, line);
+            cfg.insert_horizontal_line(i, line);
         }
 
-        for (i, line) in self.verticals.into_iter() {
+        for (i, line) in self.verticals {
             let line = line.into_inner().into();
-            cfg.insert_vertical_line(*i, line);
+            cfg.insert_vertical_line(i, line);
         }
     }
 }
@@ -1325,8 +1344,7 @@ impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
     fn change(self, _: &mut Data, cfg: &mut CompactConfig, _: &mut Dims) {
         *cfg = cfg.set_borders(self.borders);
 
-        let first_line = self.horizontals.into_iter().next();
-        if let Some((i, line)) = first_line {
+        if let Some((i, line)) = self.horizontals.get(0) {
             if *i == 1 {
                 let line = line.into_inner().into();
                 *cfg = cfg.set_first_horizontal_line(line);
@@ -1408,14 +1426,15 @@ const fn correct_border(
     border
 }
 
-const fn varray_convert<T, B, I, const N: usize>(lines: VArray<T, B, I, N>) -> [Line; N] {
+const fn varray_convert<T, B, I, const N: usize>(lines: VArray<T, B, I, N>) -> [(usize, Line); N] {
     let mut buf = [(0, Line::empty()); N];
     let mut i = 0;
     while i < N {
-        let (line_index, line) = lines[i];
+        let (index, line) = &lines[i];
+        let index = *index;
         let line = line.into_inner();
 
-        buf[i].0 = line_index;
+        buf[i].0 = index;
         buf[i].1 = line;
 
         i += 1;
@@ -1424,14 +1443,15 @@ const fn varray_convert<T, B, I, const N: usize>(lines: VArray<T, B, I, N>) -> [
     buf
 }
 
-const fn harray_convert<L, R, I, const N: usize>(lines: HArray<L, R, I, N>) -> [Line; N] {
+const fn harray_convert<L, R, I, const N: usize>(lines: HArray<L, R, I, N>) -> [(usize, Line); N] {
     let mut buf = [(0, Line::empty()); N];
     let mut i = 0;
     while i < N {
-        let (line_index, line) = lines[i];
+        let (index, line) = &lines[i];
+        let index = *index;
         let line = line.into_inner();
 
-        buf[i].0 = line_index;
+        buf[i].0 = index;
         buf[i].1 = line;
 
         i += 1;
@@ -1441,8 +1461,13 @@ const fn harray_convert<L, R, I, const N: usize>(lines: HArray<L, R, I, N>) -> [
 }
 
 const fn linearr_convert_to_varray<T, B, I, const N: usize>(
-    lines: [Line; N],
-) -> VArray<T, B, I, N> {
+    lines: [(usize, Line); N],
+) -> VArray<T, B, I, N>
+where
+    T: Copy,
+    B: Copy,
+    I: Copy,
+{
     let mut buf = [(0, VerticalLine::empty()); N];
     let mut i = 0;
     while i < N {
@@ -1459,8 +1484,13 @@ const fn linearr_convert_to_varray<T, B, I, const N: usize>(
 }
 
 const fn linearr_convert_to_harray<L, R, I, const N: usize>(
-    lines: [Line; N],
-) -> HArray<L, R, I, N> {
+    lines: [(usize, Line); N],
+) -> HArray<L, R, I, N>
+where
+    L: Copy,
+    R: Copy,
+    I: Copy,
+{
     let mut buf = [(0, HorizontalLine::empty()); N];
     let mut i = 0;
     while i < N {
@@ -1476,12 +1506,11 @@ const fn linearr_convert_to_harray<L, R, I, const N: usize>(
     buf
 }
 
-const fn linearr_set<const N: usize>(lines: [Line; N], set: Line) -> [Line; N] {
+const fn linearr_set<const N: usize>(lines: [(usize, Line); N], set: Line) -> [(usize, Line); N] {
     let mut buf = [(0, Line::empty()); N];
     let mut i = 0;
     while i < N {
-        let (line_index, line) = lines[i];
-        let mut line = *line;
+        let (index, mut line) = lines[i];
 
         if set.connector1.is_some() {
             line.connector1 = set.connector1;
@@ -1499,7 +1528,7 @@ const fn linearr_set<const N: usize>(lines: [Line; N], set: Line) -> [Line; N] {
             line.main = set.main;
         }
 
-        buf[i].0 = line_index;
+        buf[i].0 = index;
         buf[i].1 = line;
 
         i += 1;
@@ -1508,12 +1537,11 @@ const fn linearr_set<const N: usize>(lines: [Line; N], set: Line) -> [Line; N] {
     buf
 }
 
-const fn linearr_unset<const N: usize>(lines: [Line; N], set: Line) -> [Line; N] {
+const fn linearr_unset<const N: usize>(lines: [(usize, Line); N], set: Line) -> [(usize, Line); N] {
     let mut buf = [(0, Line::empty()); N];
     let mut i = 0;
     while i < N {
-        let (line_index, line) = lines[i];
-        let mut line = *line;
+        let (index, mut line) = lines[i];
 
         if set.connector1.is_some() {
             line.connector1 = None;
@@ -1531,7 +1559,7 @@ const fn linearr_unset<const N: usize>(lines: [Line; N], set: Line) -> [Line; N]
             line.main = None;
         }
 
-        buf[i].0 = line_index;
+        buf[i].0 = index;
         buf[i].1 = line;
 
         i += 1;

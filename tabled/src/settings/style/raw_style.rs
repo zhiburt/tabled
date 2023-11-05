@@ -414,18 +414,27 @@ impl<R, D> TableOption<R, D, ColoredConfig> for &RawStyle {
 
 impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
     From<Style<T, B, L, R, H, V, HSIZE, VSIZE>> for RawStyle
+where
+    T: Copy,
+    B: Copy,
+    L: Copy,
+    R: Copy,
+    H: Copy,
+    V: Copy,
 {
     fn from(style: Style<T, B, L, R, H, V, HSIZE, VSIZE>) -> Self {
         let horizontals = style
             .get_horizontals()
-            .into_iter()
-            .map(|(i, hr)| (*i, hr.into_inner()))
+            .map(|(i, hr)| (i, hr.into_inner()))
+            .iter()
+            .cloned()
             .collect();
 
         let verticals = style
             .get_verticals()
-            .into_iter()
-            .map(|(i, hr)| (*i, hr.into_inner()))
+            .map(|(i, hr)| (i, hr.into_inner()))
+            .iter()
+            .cloned()
             .collect();
 
         Self {

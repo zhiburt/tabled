@@ -483,30 +483,30 @@ fn is_there_right_bottom_cell(sector: &HashSet<(usize, usize)>, row: usize, col:
     sector.contains(&(row + 1, col + 1))
 }
 
-fn split_tuple_border<A, B>(border: GridBorder<(A, B)>) -> (GridBorder<A>, GridBorder<B>) {
-    macro_rules! set_border {
-        ($border1:expr, $border2:expr => $symbl:expr) => {
-            if let Some((x1, x2)) = $symbl {
-                $border1 = Some(x1);
-                $border2 = Some(x2);
-            }
-        };
-    }
+// fn split_tuple_border<A, B>(border: GridBorder<(A, B)>) -> (GridBorder<A>, GridBorder<B>) {
+//     macro_rules! set_border {
+//         ($border1:expr, $border2:expr => $symbl:expr) => {
+//             if let Some((x1, x2)) = $symbl {
+//                 $border1 = Some(x1);
+//                 $border2 = Some(x2);
+//             }
+//         };
+//     }
 
-    let mut a = GridBorder::empty();
-    let mut b = GridBorder::empty();
+//     let mut a = GridBorder::empty();
+//     let mut b = GridBorder::empty();
 
-    set_border!(a.bottom, b.bottom => border.bottom);
-    set_border!(a.top, b.top => border.top);
-    set_border!(a.left, b.left => border.left);
-    set_border!(a.left_top_corner, b.left_top_corner => border.left_top_corner);
-    set_border!(a.left_bottom_corner, b.left_bottom_corner => border.left_bottom_corner);
-    set_border!(a.right, b.right => border.right);
-    set_border!(a.right_top_corner, b.right_top_corner => border.right_top_corner);
-    set_border!(a.right_bottom_corner, b.right_bottom_corner => border.right_bottom_corner);
+//     set_border!(a.bottom, b.bottom => border.bottom);
+//     set_border!(a.top, b.top => border.top);
+//     set_border!(a.left, b.left => border.left);
+//     set_border!(a.left_top_corner, b.left_top_corner => border.left_top_corner);
+//     set_border!(a.left_bottom_corner, b.left_bottom_corner => border.left_bottom_corner);
+//     set_border!(a.right, b.right => border.right);
+//     set_border!(a.right_top_corner, b.right_top_corner => border.right_top_corner);
+//     set_border!(a.right_bottom_corner, b.right_bottom_corner => border.right_bottom_corner);
 
-    (a, b)
-}
+//     (a, b)
+// }
 
 #[cfg(test)]
 mod tests {

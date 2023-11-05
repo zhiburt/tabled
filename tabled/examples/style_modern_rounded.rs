@@ -1,7 +1,7 @@
 use tabled::{
     settings::{
-        style::{HorizontalLine, Line, On, RawStyle},
-        Border, Style,
+        style::{On, RawStyle},
+        Style,
     },
     Table,
 };
@@ -11,8 +11,8 @@ type FullStyle = Style<On, On, On, On, On, On>;
 const STYLE_1: FullStyle = Style::modern().frame(Style::rounded().get_frame());
 
 const STYLE_2: FullStyle = Style::rounded()
-    .remove_horizontals()
-    .horizontal_line(Style::modern().get_horizontal_line());
+    .horizontal_line(Style::modern().get_horizontal_line())
+    .remove_horizontals();
 
 fn main() {
     assert_eq!(RawStyle::from(STYLE_1), RawStyle::from(STYLE_2));
