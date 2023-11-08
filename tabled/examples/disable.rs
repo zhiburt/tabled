@@ -8,7 +8,7 @@ use tabled::{
     settings::{
         location::ByColumnName,
         style::{Border, Style},
-        Disable, Modify,
+        Disable,
     },
     Table, Tabled,
 };

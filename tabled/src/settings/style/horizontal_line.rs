@@ -45,6 +45,11 @@ impl HorizontalLine<On, On, On> {
             _intersection: PhantomData,
         }
     }
+
+    /// Creates a new horizontal split line.
+    pub const fn filled(main: char) -> Self {
+        Self::full(main, main, main, main)
+    }
 }
 
 impl<L, R, I> HorizontalLine<L, R, I> {

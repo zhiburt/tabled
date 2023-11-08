@@ -387,15 +387,8 @@ impl<R, D> TableOption<R, D, ColoredConfig> for RawStyle
 where
     R: Records,
 {
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dimension: &mut D) {
-        (&self).change(records, cfg, dimension)
-    }
-}
-
-impl<R, D> TableOption<R, D, ColoredConfig> for &RawStyle {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         cfg.clear_theme();
-
         cfg.set_borders(self.borders);
 
         for (&row, line) in &self.horizontals {
@@ -442,6 +435,31 @@ where
             horizontals,
             verticals,
             colors: Borders::default(),
+        }
+    }
+}
+
+impl From<ColoredConfig> for RawStyle {
+    fn from(cfg: ColoredConfig) -> Self {
+        let horizontals = cfg
+            .get_horizontal_lines()
+            .into_iter()
+            .map(|(i, line)| (i, line.into()))
+            .collect();
+        let verticals = cfg
+            .get_vertical_lines()
+            .into_iter()
+            .map(|(i, line)| (i, line.into()))
+            .collect();
+
+        let borders = *cfg.get_borders();
+        let colors = cfg.get_color_borders().clone();
+
+        Self {
+            borders,
+            horizontals,
+            verticals,
+            colors,
         }
     }
 }

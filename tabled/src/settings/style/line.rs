@@ -68,6 +68,18 @@ impl From<Line> for HorizontalLine {
 }
 
 #[cfg(feature = "std")]
+impl From<HorizontalLine> for Line {
+    fn from(l: HorizontalLine) -> Self {
+        Self {
+            main: l.main,
+            intersection: l.intersection,
+            connector1: l.left,
+            connector2: l.right,
+        }
+    }
+}
+
+#[cfg(feature = "std")]
 impl From<Line> for VerticalLine {
     fn from(l: Line) -> Self {
         Self {
@@ -75,6 +87,18 @@ impl From<Line> for VerticalLine {
             intersection: l.intersection,
             top: l.connector1,
             bottom: l.connector2,
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl From<VerticalLine> for Line {
+    fn from(l: VerticalLine) -> Self {
+        Self {
+            main: l.main,
+            intersection: l.intersection,
+            connector1: l.top,
+            connector2: l.bottom,
         }
     }
 }

@@ -40,20 +40,26 @@ pub struct LineChar {
 
 impl LineChar {
     /// Creates a [`LineChar`] which overrides horizontal line.
-    pub fn horizontal(c: char, offset: Offset) -> Self {
+    pub fn horizontal(c: char, offset: impl Into<Offset>) -> Self {
+        let offset = offset.into();
+        let horizontal = true;
+
         Self {
             c,
             offset,
-            horizontal: true,
+            horizontal,
         }
     }
 
     /// Creates a [`LineChar`] which overrides vertical line.
-    pub fn vertical(c: char, offset: Offset) -> Self {
+    pub fn vertical(c: char, offset: impl Into<Offset>) -> Self {
+        let offset = offset.into();
+        let horizontal = false;
+
         Self {
             c,
             offset,
-            horizontal: false,
+            horizontal,
         }
     }
 }

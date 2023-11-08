@@ -88,8 +88,8 @@ impl BorderColor<On, On, On, On> {
         ))
     }
 
-    /// This function constructs a cell borders with all sides's char set to a given character.
-    /// It behaves like [`Border::full`] with the same character set to each side.
+    /// This function constructs a cell borders with all sides's char set to a given color.
+    /// It behaves like [`Border::full`] with the same color set to each side.
     pub fn filled(c: Color) -> Self {
         Self::full(
             c.clone(),
@@ -105,26 +105,26 @@ impl BorderColor<On, On, On, On> {
 }
 
 impl<T, B, L, R> BorderColor<T, B, L, R> {
-    /// Set a top border character.
-    pub fn top(mut self, c: Color) -> BorderColor<On, B, L, R> {
+    /// Set a top border color.
+    pub fn set_top(mut self, c: Color) -> BorderColor<On, B, L, R> {
         self.inner.top = Some(c);
         BorderColor::from_border(self.inner)
     }
 
-    /// Set a bottom border character.
-    pub fn bottom(mut self, c: Color) -> BorderColor<T, On, L, R> {
+    /// Set a bottom border color.
+    pub fn set_bottom(mut self, c: Color) -> BorderColor<T, On, L, R> {
         self.inner.bottom = Some(c);
         BorderColor::from_border(self.inner)
     }
 
-    /// Set a left border character.
-    pub fn left(mut self, c: Color) -> BorderColor<T, B, On, R> {
+    /// Set a left border color.
+    pub fn set_left(mut self, c: Color) -> BorderColor<T, B, On, R> {
         self.inner.left = Some(c);
         BorderColor::from_border(self.inner)
     }
 
-    /// Set a right border character.
-    pub fn right(mut self, c: Color) -> BorderColor<T, B, L, On> {
+    /// Set a right border color.
+    pub fn set_right(mut self, c: Color) -> BorderColor<T, B, L, On> {
         self.inner.right = Some(c);
         BorderColor::from_border(self.inner)
     }
@@ -135,35 +135,83 @@ impl<T, B, L, R> BorderColor<T, B, L, R> {
     }
 }
 
+impl<T, B, L> BorderColor<T, B, L, On> {
+    /// Get a right color.
+    pub fn get_right(&self) -> Color {
+        get_color(self.inner.right.clone())
+    }
+}
+
+impl<T, B, R> BorderColor<T, B, On, R> {
+    /// Get a left color.
+    pub fn get_left(&self) -> Color {
+        get_color(self.inner.left.clone())
+    }
+}
+
+impl<B, L, R> BorderColor<On, B, L, R> {
+    /// Get a top color.
+    pub fn get_top(&self) -> Color {
+        get_color(self.inner.top.clone())
+    }
+}
+
+impl<T, L, R> BorderColor<T, On, L, R> {
+    /// Get a bottom color.
+    pub fn get_bottom(&self) -> Color {
+        get_color(self.inner.bottom.clone())
+    }
+}
+
 impl<B, R> BorderColor<On, B, On, R> {
-    /// Set a top left intersection character.
-    pub fn corner_top_left(mut self, c: Color) -> Self {
+    /// Set a top left intersection color.
+    pub fn set_corner_top_left(mut self, c: Color) -> Self {
         self.inner.left_top_corner = Some(c);
         self
+    }
+
+    /// Get a top left intersection color.
+    pub fn get_corner_top_left(&self) -> Color {
+        get_color(self.inner.left_top_corner.clone())
     }
 }
 
 impl<B, L> BorderColor<On, B, L, On> {
-    /// Set a top right intersection character.
-    pub fn corner_top_right(mut self, c: Color) -> Self {
+    /// Set a top right intersection color.
+    pub fn set_corner_top_right(mut self, c: Color) -> Self {
         self.inner.right_top_corner = Some(c);
         self
+    }
+
+    /// Get a top right intersection color.
+    pub fn get_corner_top_right(&self) -> Color {
+        get_color(self.inner.right_top_corner.clone())
     }
 }
 
 impl<T, R> BorderColor<T, On, On, R> {
-    /// Set a bottom left intersection character.
-    pub fn corner_bottom_left(mut self, c: Color) -> Self {
+    /// Set a bottom left intersection color.
+    pub fn set_corner_bottom_left(mut self, c: Color) -> Self {
         self.inner.left_bottom_corner = Some(c);
         self
+    }
+
+    /// Get a bottom left intersection color.
+    pub fn get_corner_bottom_left(&self) -> Color {
+        get_color(self.inner.left_bottom_corner.clone())
     }
 }
 
 impl<T, L> BorderColor<T, On, L, On> {
-    /// Set a bottom right intersection character.
-    pub fn corner_bottom_right(mut self, c: Color) -> Self {
+    /// Set a bottom right intersection color.
+    pub fn set_corner_bottom_right(mut self, c: Color) -> Self {
         self.inner.right_bottom_corner = Some(c);
         self
+    }
+
+    /// Get a bottom left intersection color.
+    pub fn get_corner_bottom_right(&self) -> Color {
+        get_color(self.inner.right_bottom_corner.clone())
     }
 }
 
@@ -204,5 +252,12 @@ where
                 cfg.set_border_color((row, col), border_color.clone());
             }
         }
+    }
+}
+
+fn get_color(c: Option<Color>) -> Color {
+    match c {
+        Some(c) => c,
+        None => unreachable!(),
     }
 }

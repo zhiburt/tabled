@@ -220,14 +220,23 @@ fn print_vertical_intersection<'a, F: fmt::Write>(
     shape: (usize, usize),
     used_color: &mut Option<&'a AnsiColor<'static>>,
 ) -> fmt::Result {
-    match cfg.get_intersection(pos, shape) {
-        Some(c) => {
-            let clr = cfg.get_intersection_color(pos, shape);
-            prepare_coloring(f, clr, used_color)?;
-            f.write_char(c)
-        }
-        None => Ok(()),
+    let intersection = match cfg.get_intersection(pos, shape) {
+        Some(c) => c,
+        None => return Ok(()),
+    };
+
+    // We need to make sure that we need to print it.
+    // Specifically for cases where we have a limited amount of verticals.
+    //
+    // todo: Yes... this check very likely degrages performance a bit,
+    //       Surely we need to rethink it. 
+    if !cfg.has_vertical(pos.1, shape.1) {
+        return Ok(());
     }
+
+    let color = cfg.get_intersection_color(pos, shape);
+    prepare_coloring(f, color, used_color)?;
+    f.write_char(intersection)
 }
 
 fn prepare_coloring<'a, 'b, F: Write>(

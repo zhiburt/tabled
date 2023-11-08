@@ -221,9 +221,9 @@ fn set_border_color(
     if sector.is_empty() {
         return;
     }
-    let color = border.clone().into();
+    let color = border.clone();
     for &(row, col) in sector {
-        let border = build_cell_border(&sector, (row, col), &color);
+        let border = build_cell_border(sector, (row, col), &color);
         cfg.set_border_color((row, col), border);
     }
 }

@@ -173,6 +173,14 @@ impl SpannedConfig {
         self.borders.get_vertical_line(line)
     }
 
+    /// Gets all overridden vertical lines.
+    ///
+    /// Row `0` means the top row.
+    /// Row `grid.count_rows()` means the bottom row.
+    pub fn get_vertical_lines(&self) -> HashMap<usize, VerticalLine> {
+        self.borders.get_vertical_lines()
+    }
+
     /// Set the border line by column index.
     ///
     /// Row `0` means the left row.
@@ -195,6 +203,14 @@ impl SpannedConfig {
     /// Row `grid.count_rows()` means the bottom row.
     pub fn get_horizontal_line(&self, line: usize) -> Option<&HorizontalLine> {
         self.borders.get_horizontal_line(line)
+    }
+
+    /// Gets all overridden lines.
+    ///
+    /// Row `0` means the top row.
+    /// Row `grid.count_rows()` means the bottom row.
+    pub fn get_horizontal_lines(&self) -> HashMap<usize, HorizontalLine> {
+        self.borders.get_horizontal_lines()
     }
 
     /// Override a character on a horizontal line.

@@ -551,6 +551,10 @@ fn print_vertical_intersection<'a, F: fmt::Write>(
     shape: (usize, usize),
     used_color: &mut Option<&'a AnsiColor<'static>>,
 ) -> fmt::Result {
+    if !cfg.has_vertical(pos.1, shape.1) {
+        return Ok(());
+    }
+
     match cfg.get_intersection(pos, shape) {
         Some(c) => {
             let clr = cfg.get_intersection_color(pos, shape);

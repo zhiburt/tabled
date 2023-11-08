@@ -1,14 +1,15 @@
 #![cfg(feature = "std")]
 
-use std::iter::FromIterator;
+use std::{collections::HashMap, iter::FromIterator};
 
 use tabled::{
     builder::Builder,
+    grid::config::Border as GridBorder,
     settings::{
         object::{Columns, Rows, Segment},
         style::{
-            Border, BorderChar, BorderColor, BorderSpanCorrection, BorderText, HorizontalLine,
-            Line, Offset, On, RawStyle, Style, VerticalLine,
+            Border, BorderColor, BorderSpanCorrection, BorderText, HorizontalLine, Line, LineChar,
+            Offset, On, RawStyle, Style, VerticalLine,
         },
         Color, Format, Highlight, Modify, Padding, Span,
     },
@@ -83,7 +84,7 @@ test_table!(
 
 test_table!(
     modern_round_style,
-    Matrix::new(3, 3).with(Style::modern_round()),
+    Matrix::new(3, 3).with(Style::modern_rounded()),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -109,7 +110,7 @@ test_table!(
 
 test_table!(
     modern_clean_style,
-    Matrix::new(3, 3).with(Style::modern().remove_horizontal().horizontals(vec![HorizontalLine::new(1, Style::modern().get_horizontal())])),
+    Matrix::new(3, 3).with(Style::modern().remove_horizontal().horizontals([(1, Style::modern().get_horizontal_line())])),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -208,15 +209,15 @@ test_table!(
             .horizontal('`')
             .intersection('\'')
             .intersection_bottom('\'')
-            .horizontals(vec![HorizontalLine::new(1, Line::full('x', '*', 'q', 'w'))])),
-    "  N ' column 0 ' column 1 ' column 2  "
-    "qxxx*xxxxxxxxxx*xxxxxxxxxx*xxxxxxxxxxw"
-    "  0 '   0-0    '   0-1    '   0-2     "
-    " ```'``````````'``````````'`````````` "
-    "  1 '   1-0    '   1-1    '   1-2     "
-    " ```'``````````'``````````'`````````` "
-    "  2 '   2-0    '   2-1    '   2-2     "
-    " ***'**********'**********'********** "
+            .horizontals([(1, HorizontalLine::new('x').intersection('*'))])),
+    " N ' column 0 ' column 1 ' column 2 "
+    "xxx*xxxxxxxxxx*xxxxxxxxxx*xxxxxxxxxx"
+    " 0 '   0-0    '   0-1    '   0-2    "
+    "```'``````````'``````````'``````````"
+    " 1 '   1-0    '   1-1    '   1-2    "
+    "```'``````````'``````````'``````````"
+    " 2 '   2-0    '   2-1    '   2-2    "
+    "***'**********'**********'**********"
 );
 
 test_table!(
@@ -325,7 +326,7 @@ test_table!(
     border_text_0,
     Matrix::table(2, 2)
         .with(Style::empty())
-        .with(Modify::new(Rows::first()).with(Border::default().bottom('-')))
+        .with(Modify::new(Rows::first()).with(Border::new().set_bottom('-')))
         .with(BorderText::new("-Table").horizontal(1)),
     " N  column 0  column 1 "
     "-Table-----------------"
@@ -335,7 +336,7 @@ test_table!(
 
 test_table!(
     border_color_global,
-    { Matrix::table(2, 2).with(BorderColor::default().bottom(Color::FG_RED)) },
+    { Matrix::table(2, 2).with(BorderColor::new().set_bottom(Color::FG_RED)) },
     "+---+----------+----------+\n\
      | N | column 0 | column 1 |\n\
      +\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\n\
@@ -511,7 +512,7 @@ test_table!(
 
 test_table!(
     border_test_0,
-    Matrix::table(2, 2).with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#'))),
+    Matrix::table(2, 2).with(Modify::new(Rows::single(1)).with(Border::filled('*').set_top('#'))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "*###*##########*##########*"
@@ -525,7 +526,7 @@ test_table!(
     border_test_1,
     Matrix::table(2, 2)
         .with(Style::empty())
-        .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#'))),
+        .with(Modify::new(Rows::single(1)).with(Border::filled('*').set_top('#'))),
     "  N   column 0   column 1  "
     "*###*##########*##########*"
     "* 0 *   0-0    *   0-1    *"
@@ -535,7 +536,7 @@ test_table!(
 
 test_table!(
     style_frame_test_0,
-    Matrix::table(2, 2).with(Highlight::new(Rows::single(1), Style::modern().get_frame())),
+    Matrix::table(2, 2).with(Highlight::border(Rows::single(1), Style::modern().get_frame())),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "┌─────────────────────────┐"
@@ -549,8 +550,8 @@ test_table!(
     style_frame_test_1,
     Matrix::table(2, 2)
         .with(Style::blank())
-        .with(Highlight::new(Rows::single(0), Style::extended().get_frame()))
-        .with(Highlight::new(Rows::single(2), Style::extended().get_frame())),
+        .with(Highlight::border(Rows::single(0), Style::extended().get_frame()))
+        .with(Highlight::border(Rows::single(2), Style::extended().get_frame())),
     "╔═════════════════════════╗"
     "║ N   column 0   column 1 ║"
     "╚═════════════════════════╝"
@@ -705,7 +706,7 @@ test_table!(
             style.set_bottom(None);
             style
         })
-        .with(Modify::new(Rows::last()).with(Border::default().corner_bottom_left('*'))),
+        .with(Modify::new(Rows::last()).with(GridBorder { left_bottom_corner: Some('*'), ..Default::default() })),
     "┌───┬─────────────────┬──────────┬──────────┐"
     "│ N │    column 0     │ column 1 │ column 2 │"
     "├───┼─────────────────┼──────────┼──────────┤"
@@ -721,7 +722,7 @@ test_table!(
     border_none_test_0,
     Matrix::table(2, 2)
         .with(Style::ascii())
-        .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
+        .with(Modify::new(Rows::single(1)).with(Border::filled('*').set_top('#')))
         .with(Modify::new(Rows::single(1)).with(Border::empty())),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
@@ -736,7 +737,7 @@ test_table!(
     border_none_test_1,
     Matrix::table(2, 2)
         .with(Style::empty())
-        .with(Modify::new(Rows::single(1)).with(Border::filled('*').top('#')))
+        .with(Modify::new(Rows::single(1)).with(Border::filled('*').set_top('#')))
         .with(Modify::new(Columns::single(1)).with(Border::empty())),
     "  N  column 0  column 1  "
     "*###          ##########*"
@@ -750,6 +751,7 @@ fn custom_style_test() {
     macro_rules! test_style {
         ($style:expr, $expected:expr $(,)*) => {
             let table = Matrix::new(3, 3).with($style).to_string();
+            println!("{table}");
             assert_eq!(table, $expected);
         };
     }
@@ -807,7 +809,7 @@ fn custom_style_test() {
         ),
     );
     test_style!(
-        Style::empty().horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('-'))]),
+        Style::empty().horizontals([(1, HorizontalLine::new('-'))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -885,7 +887,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .top('-')
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('+'))]),
+            .horizontals([(1, HorizontalLine::new('+'))]),
         static_table!(
             "---------------------------------"
             " N  column 0  column 1  column 2 "
@@ -953,7 +955,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .bottom('-')
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('+'))]),
+            .horizontals([(1, HorizontalLine::new('+'))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "+++++++++++++++++++++++++++++++++"
@@ -1017,7 +1019,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .left('-')
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('+'))]),
+            .horizontals([(1, HorizontalLine::new('+').left(' '))]),
         static_table!(
             "- N  column 0  column 1  column 2 "
             " +++++++++++++++++++++++++++++++++"
@@ -1080,7 +1082,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .right('-')
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('+'))]),
+            .horizontals([(1, HorizontalLine::new('+').right(' '))]),
         static_table!(
             " N  column 0  column 1  column 2 -"
             "+++++++++++++++++++++++++++++++++ "
@@ -1143,7 +1145,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .vertical('-')
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('+'))]),
+            .horizontals([(1, HorizontalLine::new('+').intersection(' '))]),
         static_table!(
             " N - column 0 - column 1 - column 2 "
             "+++ ++++++++++ ++++++++++ ++++++++++"
@@ -1218,7 +1220,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .horizontal('-')
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('+'))]),
+            .horizontals([(1, HorizontalLine::new('+'))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "+++++++++++++++++++++++++++++++++"
@@ -1233,7 +1235,7 @@ fn custom_style_test() {
     test_style!(
         Style::empty()
             .top('+')
-            .horizontals(vec![HorizontalLine::new(1, Line::default()).main(Some('-'))]),
+            .horizontals([(1, HorizontalLine::new('-'))]),
         static_table!(
             "+++++++++++++++++++++++++++++++++"
             " N  column 0  column 1  column 2 "
@@ -1245,7 +1247,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .horizontals([HorizontalLine::new(1, Line::default()).main(Some('-'))])
+            .horizontals([(1, HorizontalLine::new('-'))])
             .bottom('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
@@ -1258,7 +1260,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .horizontals([HorizontalLine::new(1, Line::default()).main(Some('-'))])
+            .horizontals([(1, HorizontalLine::new('-'))])
             .left('+'),
         static_table!(
             "+ N  column 0  column 1  column 2 "
@@ -1270,7 +1272,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .horizontals([HorizontalLine::new(1, Line::default()).main(Some('-'))])
+            .horizontals([(1, HorizontalLine::new('-'))])
             .right('+'),
         static_table!(
             " N  column 0  column 1  column 2 +"
@@ -1282,7 +1284,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .horizontals([HorizontalLine::new(1, Line::default()).main(Some('-'))])
+            .horizontals([(1, HorizontalLine::new('-'))])
             .vertical('+'),
         static_table!(
             " N + column 0 + column 1 + column 2 "
@@ -1294,7 +1296,7 @@ fn custom_style_test() {
     );
     test_style!(
         Style::empty()
-            .horizontals([HorizontalLine::new(1, Line::default()).main(Some('-'))])
+            .horizontals([(1, HorizontalLine::new('-'))])
             .horizontal('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
@@ -1316,7 +1318,7 @@ fn custom_style_test() {
             .left('|')
             .right('*')
             .horizontal('x')
-            .horizontals([HorizontalLine::new(1, Line::filled('z'))])
+            .horizontals([(1, HorizontalLine::filled('z').remove_intersection())])
             .vertical('#'),
         static_table!(
             "|---#----------#----------#----------*"
@@ -1347,7 +1349,8 @@ fn custom_style_test() {
         .corner_bottom_left('?')
         .corner_top_right('.')
         .corner_bottom_right('%')
-        .horizontals([HorizontalLine::new(1, Line::full(',', '#', ',', ','))]);
+        .horizontals([(1, HorizontalLine::full(',', ',', ',', '#'))]);
+
     test_style!(
         full_style.clone(),
         static_table!(
@@ -1452,7 +1455,7 @@ fn custom_style_test() {
     test_style!(
         full_style
             .clone()
-            .horizontals(vec![HorizontalLine::new(1, Line::filled('q'))]),
+            .horizontals([(1, HorizontalLine::filled('q'))]),
         static_table!(
             ";---!----------!----------!----------."
             "| N # column 0 # column 1 # column 2 *"
@@ -1484,10 +1487,7 @@ fn custom_style_test() {
     );
     test_style!(Style::empty().vertical('-').remove_vertical(), empty_table);
     test_style!(
-        Style::empty().horizontals(vec![HorizontalLine::new(
-            1,
-            Line::new(Some('-'), None, None, None)
-        )]),
+        Style::empty().horizontals([(1, HorizontalLine::new('-'))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -1608,7 +1608,7 @@ fn test_default_border_usage() {
     }
 
     test_border! {
-        Modify::new((3, 2)).with(Border::default().corner_bottom_left('*')),
+        Modify::new((3, 2)).with(Border::new().set_bottom(' ').set_left(' ').set_corner_bottom_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1618,7 +1618,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().corner_bottom_right('*')),
+        Modify::new((3, 2)).with(Border::new().set_bottom(' ').set_right(' ').set_corner_bottom_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1628,7 +1628,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().bottom('*')),
+        Modify::new((3, 2)).with(Border::new().set_bottom('*')),
         static_table!(
             " N     column 0      column 1  column 2 "
             " 0  a longer string    0-1       0-2    "
@@ -1638,7 +1638,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().bottom('*').corner_bottom_left('#')),
+        Modify::new((3, 2)).with(Border::new().set_bottom('*').set_left(' ').set_corner_bottom_left('#')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1648,7 +1648,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().bottom('*').corner_bottom_right('#')),
+        Modify::new((3, 2)).with(Border::new().set_bottom('*').set_right(' ').set_corner_bottom_right('#')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1658,7 +1658,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().left('*')),
+        Modify::new((3, 2)).with(Border::new().set_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1667,7 +1667,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().corner_top_left('*')),
+        Modify::new((3, 2)).with(Border::new().set_top(' ').set_left(' ').set_corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1677,7 +1677,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().left('#').corner_top_left('*')),
+        Modify::new((3, 2)).with(Border::new().set_left('#').set_top(' ').set_corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1687,7 +1687,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().left('#').corner_bottom_left('@').corner_top_left('*')),
+        Modify::new((3, 2)).with(Border::new().set_left('#').set_top(' ').set_bottom(' ').set_corner_bottom_left('@').set_corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1698,7 +1698,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().right('*')),
+        Modify::new((3, 2)).with(Border::new().set_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1707,7 +1707,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().corner_top_right('*')),
+        Modify::new((3, 2)).with(Border::new().set_top(' ').set_right(' ').set_corner_top_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1717,7 +1717,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().right('#').corner_top_right('*')),
+        Modify::new((3, 2)).with(Border::new().set_top(' ').set_right('#').set_corner_top_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1727,7 +1727,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_right('@')),
+        Modify::new((3, 2)).with(Border::new().set_top(' ').set_bottom(' ').set_right('#').set_corner_top_right('*').set_corner_bottom_right('@')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1738,7 +1738,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((3, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_left('@')),
+        Modify::new((3, 2)).with(Border::new().set_top(' ').set_bottom(' ').set_left(' ').set_right('#').set_corner_top_right('*').set_corner_bottom_left('@')),
         static_table!(
             " N     column 0       column 1   column 2 "
             " 0  a longer string     0-1        0-2    "
@@ -1761,7 +1761,7 @@ fn test_default_border_usage() {
     }
 
     test_border! {
-        Modify::new((1, 2)).with(Border::default().corner_bottom_left('*')),
+        Modify::new((1, 2)).with(Border::new().set_left(' ').set_bottom(' ').set_corner_bottom_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1771,7 +1771,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().corner_bottom_right('*')),
+        Modify::new((1, 2)).with(Border::new().set_right(' ').set_bottom(' ').set_corner_bottom_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1781,7 +1781,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().bottom('*')),
+        Modify::new((1, 2)).with(Border::new().set_bottom('*')),
         static_table!(
             " N     column 0      column 1  column 2 "
             " 0  a longer string    0-1       0-2    "
@@ -1791,7 +1791,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().bottom('*').corner_bottom_left('#')),
+        Modify::new((1, 2)).with(Border::new().set_left(' ').set_bottom('*').set_corner_bottom_left('#')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string     0-1       0-2    "
@@ -1801,7 +1801,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().bottom('*').corner_bottom_right('#')),
+        Modify::new((1, 2)).with(Border::new().set_right(' ').set_bottom('*').set_corner_bottom_right('#')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1811,7 +1811,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().left('*')),
+        Modify::new((1, 2)).with(Border::new().set_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             " 0  a longer string *   0-1       0-2    "
@@ -1820,7 +1820,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().corner_top_left('*')),
+        Modify::new((1, 2)).with(Border::new().set_top(' ').set_left(' ').set_corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             "                    *                    "
@@ -1830,7 +1830,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().left('#').corner_top_left('*')),
+        Modify::new((1, 2)).with(Border::new().set_left('#').set_top(' ').set_corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             "                    *                    "
@@ -1840,7 +1840,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().left('#').corner_bottom_left('@').corner_top_left('*')),
+        Modify::new((1, 2)).with(Border::new().set_top(' ').set_bottom(' ').set_left('#').set_corner_bottom_left('@').set_corner_top_left('*')),
         static_table!(
             " N     column 0       column 1  column 2 "
             "                    *                    "
@@ -1851,7 +1851,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().right('*')),
+        Modify::new((1, 2)).with(Border::new().set_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             " 0  a longer string    0-1    *   0-2    "
@@ -1860,7 +1860,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().corner_top_right('*')),
+        Modify::new((1, 2)).with(Border::new().set_top(' ').set_right(' ').set_corner_top_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             "                              *          "
@@ -1870,7 +1870,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().right('#').corner_top_right('*')),
+        Modify::new((1, 2)).with(Border::new().set_top(' ').set_right('#').set_corner_top_right('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             "                              *          "
@@ -1880,7 +1880,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_right('@')),
+        Modify::new((1, 2)).with(Border::new().set_top(' ').set_bottom(' ').set_right('#').set_corner_top_right('*').set_corner_bottom_right('@')),
         static_table!(
             " N     column 0      column 1   column 2 "
             "                              *          "
@@ -1891,7 +1891,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((1, 2)).with(Border::default().right('#').corner_top_right('*').corner_bottom_left('@')),
+        Modify::new((1, 2)).with(Border::new().set_top(' ').set_bottom(' ').set_left(' ').set_right('#').set_corner_top_right('*').set_corner_bottom_left('@')),
         static_table!(
             " N     column 0       column 1   column 2 "
             "                               *          "
@@ -1914,7 +1914,7 @@ fn test_default_border_usage() {
     }
 
     test_border! {
-        Modify::new((0, 3)).with(Border::default().corner_bottom_left('*')),
+        Modify::new((0, 3)).with(Border::new().set_left(' ').set_bottom(' ').set_corner_bottom_left('*')),
         static_table!(
             " N     column 0      column 1   column 2 "
             "                              *          "
@@ -1924,7 +1924,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().corner_bottom_right('*')),
+        Modify::new((0, 3)).with(Border::new().set_right(' ').set_bottom(' ').set_corner_bottom_right('*')),
         static_table!(
             " N     column 0      column 1  column 2  "
             "                                        *"
@@ -1934,7 +1934,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().bottom('*')),
+        Modify::new((0, 3)).with(Border::new().set_bottom('*')),
         static_table!(
             " N     column 0      column 1  column 2 "
             "                              **********"
@@ -1944,7 +1944,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().bottom('*').corner_bottom_left('#')),
+        Modify::new((0, 3)).with(Border::new().set_left(' ').set_bottom('*').set_corner_bottom_left('#')),
         static_table!(
             " N     column 0      column 1   column 2 "
             "                              #**********"
@@ -1954,7 +1954,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().bottom('*').corner_bottom_right('#')),
+        Modify::new((0, 3)).with(Border::new().set_right(' ').set_bottom('*').set_corner_bottom_right('#')),
         static_table!(
             " N     column 0      column 1  column 2  "
             "                              **********#"
@@ -1964,7 +1964,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().left('*')),
+        Modify::new((0, 3)).with(Border::new().set_left('*')),
         static_table!(
             " N     column 0      column 1 * column 2 "
             " 0  a longer string    0-1        0-2    "
@@ -1973,7 +1973,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().corner_top_left('*')),
+        Modify::new((0, 3)).with(Border::new().set_top(' ').set_left(' ').set_corner_top_left('*')),
         static_table!(
             "                              *          "
             " N     column 0      column 1   column 2 "
@@ -1983,7 +1983,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().left('#').corner_top_left('*')),
+        Modify::new((0, 3)).with(Border::new().set_top(' ').set_left('#').set_corner_top_left('*')),
         static_table!(
             "                              *          "
             " N     column 0      column 1 # column 2 "
@@ -1993,7 +1993,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().left('#').corner_bottom_left('@').corner_top_left('*')),
+        Modify::new((0, 3)).with(Border::new().set_top(' ').set_bottom(' ').set_left('#').set_corner_bottom_left('@').set_corner_top_left('*')),
         static_table!(
             "                              *          "
             " N     column 0      column 1 # column 2 "
@@ -2004,7 +2004,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().right('*')),
+        Modify::new((0, 3)).with(Border::new().set_right('*')),
         static_table!(
             " N     column 0      column 1  column 2 *"
             " 0  a longer string    0-1       0-2     "
@@ -2013,7 +2013,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().corner_top_right('*')),
+        Modify::new((0, 3)).with(Border::new().set_top(' ').set_right(' ').set_corner_top_right('*')),
         static_table!(
             "                                        *"
             " N     column 0      column 1  column 2  "
@@ -2023,7 +2023,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().right('#').corner_top_right('*')),
+        Modify::new((0, 3)).with(Border::new().set_top(' ').set_right('#').set_corner_top_right('*')),
         static_table!(
             "                                        *"
             " N     column 0      column 1  column 2 #"
@@ -2033,7 +2033,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().right('#').corner_top_right('*').corner_bottom_right('@')),
+        Modify::new((0, 3)).with(Border::new().set_top(' ').set_bottom(' ').set_right('#').set_corner_top_right('*').set_corner_bottom_right('@')),
         static_table!(
             "                                        *"
             " N     column 0      column 1  column 2 #"
@@ -2044,7 +2044,7 @@ fn test_default_border_usage() {
         )
     }
     test_border! {
-        Modify::new((0, 3)).with(Border::default().right('#').corner_top_right('*').corner_bottom_left('@')),
+        Modify::new((0, 3)).with(Border::new().set_top(' ').set_bottom(' ').set_left(' ').set_right('#').set_corner_top_right('*').set_corner_bottom_left('@')),
         static_table!(
             "                                         *"
             " N     column 0      column 1   column 2 #"
@@ -2219,7 +2219,7 @@ test_table!(
 test_table!(
     verticals_0,
     Matrix::new(3, 3)
-        .with(Style::rounded().verticals(vec![VerticalLine::new(0, Line::filled('+')), VerticalLine::new(4, Line::filled('+'))])),
+        .with(Style::rounded().verticals([(0, VerticalLine::filled('+').remove_intersection()), (4, VerticalLine::filled('+').remove_intersection())])),
     "+───┬──────────┬──────────┬──────────+"
     "+ N │ column 0 │ column 1 │ column 2 +"
     "├───┼──────────┼──────────┼──────────┤"
@@ -2231,8 +2231,13 @@ test_table!(
 
 test_table!(
     verticals_1,
-    Matrix::new(3, 3)
-        .with(Style::rounded().verticals((1..4).map(|i| VerticalLine::new(i, Line::filled('+'))))),
+    {
+        let verticals = (1..4).map(|i| (i, VerticalLine::filled('+').into_inner())).collect::<HashMap<_, _>>();
+        let mut style = RawStyle::from(Style::rounded());
+        style.set_verticals(verticals);
+
+        Matrix::new(3, 3).with(style)
+    },
     "╭───+──────────+──────────+──────────╮"
     "│ N + column 0 + column 1 + column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -2244,7 +2249,7 @@ test_table!(
 
 test_table!(
     verticals_2,
-    Matrix::new(3, 3).with(Style::rounded().verticals(vec![VerticalLine::new(1, Line::filled('+'))])),
+    Matrix::new(3, 3).with(Style::rounded().verticals([(1, VerticalLine::filled('+').remove_intersection())])),
     "╭───+──────────┬──────────┬──────────╮"
     "│ N + column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -2256,7 +2261,7 @@ test_table!(
 
 test_table!(
     verticals_3,
-    Matrix::new(3, 3).with(Style::ascii().verticals([VerticalLine::new(1, Line::filled('*'))])),
+    Matrix::new(3, 3).with(Style::ascii().verticals([(1, VerticalLine::filled('*'))])),
     "+---*----------+----------+----------+"
     "| N * column 0 | column 1 | column 2 |"
     "+---*----------+----------+----------+"
@@ -2270,7 +2275,13 @@ test_table!(
 
 test_table!(
     verticals_4,
-    Matrix::new(3, 3).with(Style::ascii().verticals((0..10).map(|i| VerticalLine::new(i, Line::new(Some('*'), Some('x'), Some('c'), Some('2')))))),
+    {
+        let mut style = RawStyle::from(Style::ascii());
+        let verticals = (0..10).map(|i| (i, VerticalLine::full('*', 'c', '2', 'x').into_inner())).collect();
+        style.set_verticals(verticals);
+
+        Matrix::new(3, 3).with(style)
+    },
     "c---c----------c----------c----------c"
     "* N * column 0 * column 1 * column 2 *"
     "x---x----------x----------x----------x"
@@ -2284,9 +2295,15 @@ test_table!(
 
 test_table!(
     vertical_line_0,
-    Matrix::new(3, 3)
-        .with(HorizontalLine::new(1, Line::new(Some('8'), Some('8'), Some('8'), Some('8'))))
-        .with(VerticalLine::new(1, Line::new(Some('*'), Some('x'), Some('c'), Some('2')))),
+    {
+        let m = Matrix::new(3, 3);
+
+        let mut style = RawStyle::from(Style::ascii());
+        style.insert_horizontal(1, Line::full('8', '8', '8', '8'));
+        style.insert_vertical(1, Line::full('*', 'x', 'c', '2'));
+
+        m.with(style)
+    },
     "+---c----------+----------+----------+"
     "| N * column 0 | column 1 | column 2 |"
     "88888888888888888888888888888888888888"
@@ -2298,37 +2315,15 @@ test_table!(
     "+---2----------+----------+----------+"
 );
 
+// todo: StyleFromTable()
+//       table.with(&mut StyleFromTable);
+// even better RawStyle::from()
+// todo Add a example for it...
+
 test_table!(
     vertical_line_1,
     Matrix::new(3, 3)
-        .with(Style::empty())
-        .with(VerticalLine::new(1, Line::new(Some('*'), Some('x'), Some('c'), Some('2')))),
-    "   c                              "
-    " N * column 0  column 1  column 2 "
-    " 0 *   0-0       0-1       0-2    "
-    " 1 *   1-0       1-1       1-2    "
-    " 2 *   2-0       2-1       2-2    "
-    "   2                              "
-);
-
-test_table!(
-    vertical_line_2,
-    Matrix::new(3, 3)
-        .with(Style::empty())
-        .with(VerticalLine::new(1, Line::new(None, Some('x'), Some('c'), Some('2')))),
-    "   c                              "
-    " N   column 0  column 1  column 2 "
-    " 0     0-0       0-1       0-2    "
-    " 1     1-0       1-1       1-2    "
-    " 2     2-0       2-1       2-2    "
-    "   2                              "
-);
-
-test_table!(
-    vertical_line_3,
-    Matrix::new(3, 3)
-        .with(Style::empty())
-        .with(VerticalLine::new(1, Line::new(Some('*'), Some('x'), None, None))),
+        .with(Style::empty().verticals([(1, VerticalLine::new('*'))])),
     " N * column 0  column 1  column 2 "
     " 0 *   0-0       0-1       0-2    "
     " 1 *   1-0       1-1       1-2    "
@@ -2340,8 +2335,8 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Rows::single(1))
-            .with(BorderChar::horizontal(':', Offset::Begin(0)))
-            .with(BorderChar::horizontal(':', Offset::End(0)))
+            .with(LineChar::horizontal(':', Offset::Begin(0)))
+            .with(LineChar::horizontal(':', Offset::End(0)))
     ),
     "| N | column 0 | column 1 | column 2 |"
     "|:-:|:--------:|:--------:|:--------:|"
@@ -2354,10 +2349,10 @@ test_table!(
     override_horizontal_border_on_borders,
     Matrix::new(3, 3)
         .with(Modify::new(Rows::new(..5))
-            .with(BorderChar::horizontal(':', Offset::Begin(0)))
-            .with(BorderChar::horizontal('y', Offset::Begin(3)))
-            .with(BorderChar::horizontal(':', Offset::End(0)))
-            .with(BorderChar::horizontal('x', Offset::End(3)))
+            .with(LineChar::horizontal(':', Offset::Begin(0)))
+            .with(LineChar::horizontal('y', Offset::Begin(3)))
+            .with(LineChar::horizontal(':', Offset::End(0)))
+            .with(LineChar::horizontal('x', Offset::End(3)))
     ),
     "+:-:+:--y--x--:+:--y--x--:+:--y--x--:+"
     "| N | column 0 | column 1 | column 2 |"
@@ -2375,10 +2370,10 @@ test_table!(
     Matrix::new(3, 3)
         .with(Modify::new(Rows::new(..5))
             .with(Border::filled('['))
-            .with(BorderChar::horizontal(':', Offset::Begin(0)))
-            .with(BorderChar::horizontal('y', Offset::Begin(3)))
-            .with(BorderChar::horizontal(':', Offset::End(0)))
-            .with(BorderChar::horizontal('x', Offset::End(3)))
+            .with(LineChar::horizontal(':', Offset::Begin(0)))
+            .with(LineChar::horizontal('y', Offset::Begin(3)))
+            .with(LineChar::horizontal(':', Offset::End(0)))
+            .with(LineChar::horizontal('x', Offset::End(3)))
     ),
     "[:[:[:[[y[[x[[:[:[[y[[x[[:[:[[y[[x[[:["
     "[ N [ column 0 [ column 1 [ column 2 ["
@@ -2396,7 +2391,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
-            .with(BorderChar::vertical(':', Offset::Begin(0)))
+            .with(LineChar::vertical(':', Offset::Begin(0)))
     ),
     "| N : column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
@@ -2410,7 +2405,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
-            .with(BorderChar::vertical(':', Offset::End(0)))
+            .with(LineChar::vertical(':', Offset::End(0)))
     ),
     "| N : column 0 | column 1 | column 2 |"
     "|---|----------|----------|----------|"
@@ -2425,7 +2420,7 @@ test_table!(
         .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
-            .with(BorderChar::vertical(':', Offset::Begin(4)))
+            .with(LineChar::vertical(':', Offset::Begin(4)))
     ),
     "|     N     | column 0  | column 1  | column 2  |"
     "|-----------|-----------|-----------|-----------|"
@@ -2446,7 +2441,7 @@ test_table!(
         .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::single(1))
-            .with(BorderChar::vertical(':', Offset::End(4)))
+            .with(LineChar::vertical(':', Offset::End(4)))
     ),
     "|     N     | column 0  | column 1  | column 2  |"
     "|-----------|-----------|-----------|-----------|"
@@ -2467,12 +2462,12 @@ test_table!(
         .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
         .with(Modify::new(Columns::new(..5))
-            .with(BorderChar::vertical('y', Offset::Begin(0)))
-            .with(BorderChar::vertical('^', Offset::End(0)))
+            .with(LineChar::vertical('y', Offset::Begin(0)))
+            .with(LineChar::vertical('^', Offset::End(0)))
         )
         .with(Modify::new(Rows::single(1))
-            .with(BorderChar::horizontal('x', Offset::Begin(0)))
-            .with(BorderChar::horizontal('@', Offset::End(0)))
+            .with(LineChar::horizontal('x', Offset::Begin(0)))
+            .with(LineChar::horizontal('@', Offset::End(0)))
         ),
     "y     N     y column 0  y column 1  y column 2  y"
     "|x---------@|x---------@|x---------@|x---------@|"
@@ -2622,9 +2617,9 @@ test_table!(
 test_table!(
     style_const_modification,
     {
-        const STYLE: Style<On, On, On, On, On, On, [HorizontalLine; 1]> = Style::ascii()
+        const STYLE: Style<On, On, On, On, On, On, 1, 0> = Style::ascii()
             .bottom('x')
-            .horizontals([HorizontalLine::new(1, Line::filled('.'))]);
+            .horizontals([(1, HorizontalLine::filled('.'))]);
         Matrix::new(3, 3).with(STYLE)
     },
     "+---+----------+----------+----------+"
@@ -2641,10 +2636,10 @@ test_table!(
 test_table!(
     style_static_modification,
     {
-        static STYLE: Style<On, On, On, On, On, On, [HorizontalLine; 1], [VerticalLine; 1]> = Style::ascii()
+        static STYLE: Style<On, On, On, On, On, On, 1, 1> = Style::ascii()
             .bottom('x')
-            .horizontals([HorizontalLine::new(1, Line::filled('.'))])
-            .verticals([VerticalLine::new(1, Line::filled('|'))]);
+            .horizontals([(1, HorizontalLine::filled('.'))])
+            .verticals([(1, VerticalLine::filled('|'))]);
         Matrix::new(3, 3).with(STYLE.clone())
     },
     "+---|----------+----------+----------+"

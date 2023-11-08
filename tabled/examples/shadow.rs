@@ -1,6 +1,6 @@
 //! This example can be run with the following command:
 //!
-//! `echo -e -n 'Some text\nIn the box' | cargo run --example shadow`
+//! `cargo run --example shadow -- "Some text" "In the box"`
 //!
 //! This example demonstrates using the [`Shadow`] [`TableOption`] to create
 //! a striking frame around a [`Table`] display.
@@ -14,7 +14,7 @@
 //!
 //! * 🎉 Inspired by <https://en.wikipedia.org/wiki/Box-drawing_character>
 
-use std::{io::Read, iter::FromIterator};
+use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
@@ -22,7 +22,7 @@ use tabled::{
     row,
     settings::{
         object::Cell,
-        style::{BorderChar, Offset, RawStyle, Style},
+        style::{LineChar, RawStyle, Style},
         Height, Modify, Padding, Shadow, Width,
     },
     Table,
@@ -42,8 +42,21 @@ fn print_table(message: String) {
 }
 
 fn read_message() -> String {
+    let args = std::env::args().collect::<Vec<_>>();
+
+    if args.len() < 2 {
+        eprintln!("Expected to get at least 1 argument to be printed");
+        std::process::exit(-1);
+    }
+
     let mut buf = String::new();
-    std::io::stdin().read_to_string(&mut buf).unwrap();
+    for (i, text) in args.iter().skip(1).enumerate() {
+        if i > 0 {
+            buf.push('\n');
+        }
+
+        buf.push_str(text);
+    }
 
     buf
 }
@@ -115,29 +128,28 @@ fn create_small_table(style: RawStyle) -> Table {
     table
 }
 
+// todo: very likely can be simplified
 fn create_main_table(message: &str) -> Table {
     let (count_lines, message_width) = string::string_dimension(message);
     let count_additional_separators = if count_lines > 2 { count_lines - 2 } else { 0 };
+    let left_table_space = (0..count_additional_separators)
+        .map(|_| "    ║   \n")
+        .collect::<String>();
 
     let left_table = format!(
         "  ╔═══╗ \n  ╚═╦═╝ \n{}═╤══╩══╤\n ├──┬──┤\n └──┴──┘",
-        (0..count_additional_separators)
-            .map(|_| "    ║   \n")
-            .collect::<String>()
+        left_table_space
     );
 
-    let message = if count_lines < 2 {
+    let mut message = message.to_owned();
+    if count_lines < 2 {
         let mut i = count_lines;
-        let mut buf = message.to_string();
         while i < 2 {
-            buf.push('\n');
+            message.push('\n');
             i += 1;
         }
+    }
 
-        buf
-    } else {
-        message.to_owned()
-    };
     let count_lines = count_lines.max(2);
 
     let message = format!("{}\n{}", message, "═".repeat(message_width));
@@ -146,14 +158,8 @@ fn create_main_table(message: &str) -> Table {
     table
         .with(Padding::zero())
         .with(Style::modern().remove_vertical())
-        .with(
-            Modify::new(Cell::new(0, 0))
-                .with(BorderChar::vertical('╞', Offset::Begin(count_lines))),
-        )
-        .with(
-            Modify::new(Cell::new(0, 2))
-                .with(BorderChar::vertical('╡', Offset::Begin(count_lines))),
-        )
+        .with(Modify::new(Cell::new(0, 0)).with(LineChar::vertical('╞', count_lines)))
+        .with(Modify::new(Cell::new(0, 2)).with(LineChar::vertical('╡', count_lines)))
         .with(Shadow::new(2));
 
     table

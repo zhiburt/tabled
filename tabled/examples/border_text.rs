@@ -29,18 +29,15 @@ use tabled::{
 fn main() {
     let data = [[5, 6, 7, 8, 9], [10, 11, 12, 13, 14]];
 
-    let style = Style::modern().remove_horizontal().lines(
-        [(
-            1,
-            Style::modern()
-                .get_horizontal_line()
-                .left(Style::modern().get_frame().get_left()),
-        )],
-        [],
-    );
-
     let table = Table::new(data)
-        .with(style)
+        .with(
+            Style::modern().remove_horizontal().horizontals([(
+                1,
+                Style::modern()
+                    .get_horizontal_line()
+                    .left(Style::modern().get_frame().get_left()),
+            )]),
+        )
         .with(
             BorderText::new("Numbers")
                 .horizontal(Rows::first())

@@ -50,7 +50,7 @@ fn main() {
         .with(Extract::rows(1..))
         .with(Style::ascii().remove_horizontal())
         .with(Modify::new(Segment::all()).with(Alignment::center()))
-        .with(Highlight::new(Cell::new(0, 0), Border::filled('*')));
+        .with(Highlight::border(Cell::new(0, 0), Border::filled('*')));
 
     println!("{a_welcome_table}");
 }

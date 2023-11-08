@@ -17,7 +17,7 @@ fn main() {
 
     let table = Table::new(data)
         .with(Style::modern())
-        .with(Highlight::colored(
+        .with(Highlight::color(
             Rows::first().and(Columns::single(1)),
             BorderColor::filled(Color::BG_BRIGHT_BLACK),
         ))

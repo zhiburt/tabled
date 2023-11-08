@@ -218,11 +218,7 @@ where
     Data: Records + ExactRecords,
 {
     fn change(self, records: &mut Data, cfg: &mut ColoredConfig, entity: Entity) {
-        let shape = (records.count_rows(), records.count_columns());
-
-        for pos in entity.iter(shape.0, shape.1) {
-            cfg.set_border(pos, self.inner);
-        }
+        CellOption::change(self.inner, records, cfg, entity)
     }
 }
 
@@ -246,5 +242,18 @@ const fn get_char(c: Option<char>) -> char {
     match c {
         Some(c) => c,
         None => unreachable!(),
+    }
+}
+
+impl<R> CellOption<R, ColoredConfig> for GridBorder<char>
+where
+    R: Records + ExactRecords,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+        let shape = (records.count_rows(), records.count_columns());
+
+        for pos in entity.iter(shape.0, shape.1) {
+            cfg.set_border(pos, self);
+        }
     }
 }

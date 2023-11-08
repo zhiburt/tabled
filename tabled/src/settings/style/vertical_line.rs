@@ -45,6 +45,11 @@ impl VerticalLine<On, On, On> {
             _intersection: PhantomData,
         }
     }
+
+    /// Creates a new vertical split line.
+    pub const fn filled(main: char) -> Self {
+        Self::full(main, main, main, main)
+    }
 }
 
 impl<T, B, I> VerticalLine<T, B, I> {

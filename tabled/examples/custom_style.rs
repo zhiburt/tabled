@@ -8,10 +8,7 @@
 //! number of functional columns and rows.
 
 use tabled::{
-    settings::{
-        style::{HorizontalLine, Style, VerticalLine},
-        Alignment,
-    },
+    settings::{style::Style, Alignment},
     Table, Tabled,
 };
 
@@ -41,29 +38,11 @@ fn main() {
         CodeEditor::new("Neovim", "2015", "Vim community"),
     ];
 
-    // HorizontalLine::from_style(Style::modern());
-    // Style::modern().get_horizontal_line();
-
-    // StyleProjection::style(Style::modern()).left().right().middle()
-
-    // The question is do we need the geters in style as it's SORT OF a builder...
-    // I guess we have to... to -> char but not Option<char>
-
-    // this is a good Idea; so we could remove all geters from Style.
-
-    // todo: lines -> source of truce as we do with frame....
-
-    // todo: maybe turn down custom iterators support and just stick with a const arrays..., custom ones will be achivable by RawStyle;
-    //  this way we will able to remove the Iterators too...
-    //  and have separate methods
-
-    let theme = Style::modern().remove_horizontal().remove_vertical().lines(
-        [(
-            1,
-            Style::modern().get_horizontal_line().remove_intersection(),
-        )],
-        [(1, Style::modern().get_vertical_line().remove_intersection())],
-    ).;
+    let theme = Style::modern()
+        .horizontals([(1, Style::modern().get_horizontal_line())])
+        .verticals([(1, Style::modern().get_vertical_line())])
+        .remove_horizontal()
+        .remove_vertical();
 
     let mut table = Table::new(data);
     table.with(theme).with(Alignment::left());

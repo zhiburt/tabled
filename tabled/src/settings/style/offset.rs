@@ -53,4 +53,3 @@ impl From<usize> for Offset {
         Offset::Begin(value)
     }
 }
-

@@ -320,6 +320,36 @@ impl Style<(), (), (), (), (), ()> {
         )
     }
 
+    /// This style looks like a [`Style::rounded`] but with horizontals lines.
+    ///
+    /// Beware: It uses UTF-8 characters.
+    ///
+    /// ```text
+    ///     ╭────┬──────────────┬───────────────────────────╮
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     ╰────┴──────────────┴───────────────────────────╯
+    /// ```
+    pub const fn modern_rounded() -> Style<On, On, On, On, On, On, 0, 0> {
+        Style::new(
+            create_borders(
+                Line::full('─', '┬', '╭', '╮'),
+                Line::full('─', '┴', '╰', '╯'),
+                Line::full('─', '┼', '├', '┤'),
+                Some('│'),
+                Some('│'),
+                Some('│'),
+            ),
+            [],
+            [],
+        )
+    }
+
     /// This style uses a chars which resembles '2 lines'.
     ///
     /// Beware: It uses UTF8 characters.
@@ -1217,7 +1247,7 @@ impl<T, B, L, R, V, const HN: usize, const VN: usize> Style<T, B, L, R, On, V, H
 
         let verticals = {
             let lines = varray_convert(self.verticals);
-            let lines = linearr_unset(lines, Line::new(None, Some(' '), None, None));
+            // let lines = linearr_unset(lines, Line::new(None, Some(' '), None, None));
             linearr_convert_to_varray(lines)
         };
 
@@ -1275,7 +1305,7 @@ impl<T, B, L, R, H, const HN: usize, const VN: usize> Style<T, B, L, R, H, On, H
 
         let horizontals = {
             let lines = harray_convert(self.horizontals);
-            let lines = linearr_unset(lines, Line::new(None, Some(' '), None, None));
+            // let lines = linearr_unset(lines, Line::new(None, Some(' '), None, None));
             linearr_convert_to_harray(lines)
         };
 
