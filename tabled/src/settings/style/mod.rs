@@ -26,7 +26,7 @@
 //! )
 //! ```
 //!
-//! ## [`BorderText`]
+//! ## [`LineText`]
 //!
 //! It's used to override a border with a custom text.
 //!
@@ -34,12 +34,12 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::style::{BorderText, Style}};
+//! use tabled::{Table, settings::style::{LineText, Style}};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
 //!     .with(Style::psql())
-//!     .with(BorderText::new("Santa").horizontal(1))
+//!     .with(LineText::new("Santa").horizontal(1))
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -68,7 +68,7 @@
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
 //!     .with(Style::psql())
-//!     .with(Modify::new((0, 0)).with(Style::modern().get_frame()))
+//!     .modify((0, 0), Style::modern().get_frame())
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -117,7 +117,7 @@ mod vertical_line;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
-    border::Border, border_color::BorderColor, border_text::BorderText, line_char::LineChar,
+    border::Border, border_color::BorderColor, border_text::LineText, line_char::LineChar,
     offset::Offset, raw_style::RawStyle, span_border_correction::BorderSpanCorrection,
 };
 

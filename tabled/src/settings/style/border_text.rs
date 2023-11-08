@@ -13,16 +13,16 @@ use crate::{
 
 use super::Offset;
 
-/// [`BorderText`] writes a custom text on a border.
+/// [`LineText`] writes a custom text on a border.
 ///
 /// # Example
 ///
 /// ```rust
-/// use tabled::{Table, settings::style::BorderText, settings::object::Rows};
+/// use tabled::{Table, settings::style::LineText, settings::object::Rows};
 ///
 /// let mut table = Table::new(["Hello World"]);
 /// table
-///     .with(BorderText::new("+-.table").horizontal(Rows::first()));
+///     .with(LineText::new("+-.table").horizontal(Rows::first()));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -34,7 +34,7 @@ use super::Offset;
 /// );
 /// ```
 #[derive(Debug)]
-pub struct BorderText<L> {
+pub struct LineText<L> {
     // todo: change to T and specify to be As<str>
     text: String,
     offset: Offset,
@@ -42,13 +42,16 @@ pub struct BorderText<L> {
     line: L,
 }
 
-impl BorderText<()> {
-    /// Creates a [`BorderText`] instance.
+impl LineText<()> {
+    /// Creates a [`LineText`] instance.
     ///
     /// Lines are numbered from 0 to the `count_rows` included
     /// (`line >= 0 && line <= count_rows`).
-    pub fn new<S: Into<String>>(text: S) -> Self {
-        BorderText {
+    pub fn new<S>(text: S) -> Self
+    where
+        S: Into<String>,
+    {
+        LineText {
             text: text.into(),
             line: (),
             offset: Offset::Begin(0),
@@ -57,10 +60,10 @@ impl BorderText<()> {
     }
 }
 
-impl<Line> BorderText<Line> {
+impl<Line> LineText<Line> {
     /// Set a line on which we will set the text.
-    pub fn horizontal<L>(self, line: L) -> BorderText<L> {
-        BorderText {
+    pub fn horizontal<L>(self, line: L) -> LineText<L> {
+        LineText {
             line,
             text: self.text,
             offset: self.offset,
@@ -72,7 +75,7 @@ impl<Line> BorderText<Line> {
     pub fn offset(self, offset: impl Into<Offset>) -> Self {
         let offset = offset.into();
 
-        BorderText {
+        LineText {
             offset,
             text: self.text,
             line: self.line,
@@ -82,7 +85,7 @@ impl<Line> BorderText<Line> {
 
     /// Set a color of the text.
     pub fn color(self, color: Color) -> Self {
-        BorderText {
+        LineText {
             color: Some(color.into()),
             text: self.text,
             line: self.line,
@@ -91,7 +94,7 @@ impl<Line> BorderText<Line> {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for BorderText<usize>
+impl<R, D> TableOption<R, D, ColoredConfig> for LineText<usize>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
@@ -106,7 +109,7 @@ where
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for BorderText<FirstRow>
+impl<R, D> TableOption<R, D, ColoredConfig> for LineText<FirstRow>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
@@ -121,7 +124,7 @@ where
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for BorderText<LastRow>
+impl<R, D> TableOption<R, D, ColoredConfig> for LineText<LastRow>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
@@ -220,12 +223,15 @@ fn set_horizontal_chars<D: Dimension>(
     }
 }
 
-fn get_start_pos<D: Dimension>(
+fn get_start_pos<D>(
     cfg: &SpannedConfig,
     dims: &D,
     offset: Offset,
     count_columns: usize,
-) -> Option<usize> {
+) -> Option<usize>
+where
+    D: Dimension,
+{
     let totalw = total_width(cfg, dims, count_columns);
     match offset {
         Offset::Begin(i) => {

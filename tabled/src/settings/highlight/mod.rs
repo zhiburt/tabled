@@ -38,7 +38,7 @@ use super::{style::BorderColor, Color};
 ///
 /// let table = Table::new(data.iter().enumerate())
 ///                .with(Style::markdown())
-///                .with(Highlight::new(Segment::all(), Border::default().top('^').bottom('v')))
+///                .with(Highlight::border(Segment::all(), Border::new().set_top('^').set_bottom('v')))
 ///                .to_string();
 ///
 /// assert_eq!(
@@ -74,7 +74,7 @@ use super::{style::BorderColor, Color};
 ///
 /// let table = Table::new(data.iter().enumerate())
 ///                .with(Style::markdown())
-///                .with(Highlight::new(Segment::all().not((0,0).and((1, 0)).and((0, 1)).and((0, 3))), Border::filled('*')))
+///                .with(Highlight::border(Segment::all().not((0,0).and((1, 0)).and((0, 1)).and((0, 3))), Border::filled('*')))
 ///                .to_string();
 ///
 /// println!("{}", table);

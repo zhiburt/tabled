@@ -58,11 +58,8 @@ use super::{HorizontalLine, Line, VerticalLine};
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 /// use tabled::{Table, settings::Style};
 ///
-/// let style = Style::ascii()
-///                 .bottom('*')
-///                 .intersection(' ');
-///
 /// let data = vec!["Hello", "2021"];
+/// let style = Style::ascii().bottom('*').intersection(' ');
 /// let table = Table::new(&data).with(style).to_string();
 ///
 /// println!("{}", table);
@@ -493,9 +490,15 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
     /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
     ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
-    ///    .with(Style::rounded().horizontals((1..4).map(|i| HorizontalLine::new(i, Line::filled('#')))))
-    ///    .to_string();
+    /// let data = (0..3).map(|i| ("Hello", i));
+    ///
+    /// let style = Style::rounded().horizontals([
+    ///     (1, HorizontalLine::filled('#')),
+    ///     (2, HorizontalLine::filled('&')),
+    ///     (3, HorizontalLine::filled('@')),
+    /// ]);
+    ///
+    /// let table = Table::new(data).with(style).to_string();
     ///
     /// assert_eq!(
     ///     table,
@@ -504,9 +507,9 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     ///         "│ &str  │ i32 │\n",
     ///         "###############\n",
     ///         "│ Hello │ 0   │\n",
-    ///         "###############\n",
+    ///         "&&&&&&&&&&&&&&&\n",
     ///         "│ Hello │ 1   │\n",
-    ///         "###############\n",
+    ///         "@@@@@@@@@@@@@@@\n",
     ///         "│ Hello │ 2   │\n",
     ///         "╰───────┴─────╯",
     ///     )
@@ -525,22 +528,27 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     ///
     #[cfg_attr(feature = "derive", doc = "```")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{Table, settings::style::{Style, VerticalLine, Line}};
+    /// use tabled::{settings::style::{Style, VerticalLine, Line}, Table};
     ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
-    ///    .with(Style::rounded().verticals((0..3).map(|i| VerticalLine::new(i, Line::filled('#')))))
-    ///    .to_string();
+    /// let data = (0..3).map(|i| ("Hello", "World", i));
+    ///
+    /// let style = Style::rounded().verticals([
+    ///     (1, VerticalLine::new('#').top(':').bottom('.')),
+    ///     (2, VerticalLine::new('&').top(':').bottom('.')),
+    /// ]);
+    ///
+    /// let table = Table::new(data).with(style).to_string();
     ///
     /// assert_eq!(
     ///     table,
     ///     concat!(
-    ///         "#───────#─────#\n",
-    ///         "# &str  # i32 #\n",
-    ///         "├───────┼─────┤\n",
-    ///         "# Hello # 0   #\n",
-    ///         "# Hello # 1   #\n",
-    ///         "# Hello # 2   #\n",
-    ///         "#───────#─────#",
+    ///         "╭───────:───────:─────╮\n",
+    ///         "│ &str  # &str  & i32 │\n",
+    ///         "├───────┼───────┼─────┤\n",
+    ///         "│ Hello # World & 0   │\n",
+    ///         "│ Hello # World & 1   │\n",
+    ///         "│ Hello # World & 2   │\n",
+    ///         "╰───────.───────.─────╯",
     ///     )
     /// )
     /// ```
@@ -908,23 +916,23 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, settings::{Style, Highlight, object::Rows}};
+    /// use tabled::{Table, settings::Style};
     ///
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
     /// let table = Table::new(data)
-    ///     .with(Highlight::new(Rows::first(), Style::modern().frame(Border::empty())))
+    ///     .with(Style::ascii().frame(Style::modern().get_frame()))
     ///     .to_string();
     ///
     /// assert_eq!(
     ///     table,
     ///     concat!(
-    ///         "┌──────────────────┐\n",
+    ///         "┌──────────+───────┐\n",
     ///         "│ 0        | 1     │\n",
-    ///         "└──────────────────┘\n",
-    ///         "| 10:52:19 | Hello |\n",
     ///         "+----------+-------+\n",
-    ///         "| 10:52:20 | World |\n",
-    ///         "+----------+-------+",
+    ///         "│ 10:52:19 | Hello │\n",
+    ///         "+----------+-------+\n",
+    ///         "│ 10:52:20 | World │\n",
+    ///         "└──────────+───────┘",
     ///     )
     /// );
     /// ```
@@ -981,23 +989,22 @@ impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, settings::{Style, Highlight, object::Rows}};
+    /// use tabled::{Table, settings::Style};
     ///
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
     /// let table = Table::new(data)
-    ///     .with(Highlight::new(Rows::first(), Style::modern().get_frame()))
+    ///     .with(Style::re_structured_text().frame(Style::modern().get_frame()))
     ///     .to_string();
     ///
     /// assert_eq!(
     ///     table,
     ///     concat!(
-    ///         "┌──────────────────┐\n",
-    ///         "│ 0        | 1     │\n",
-    ///         "└──────────────────┘\n",
-    ///         "| 10:52:19 | Hello |\n",
-    ///         "+----------+-------+\n",
-    ///         "| 10:52:20 | World |\n",
-    ///         "+----------+-------+",
+    ///         "┌────────── ───────┐\n",
+    ///         "│ 0          1     │\n",
+    ///         "│========== =======│\n",
+    ///         "│ 10:52:19   Hello │\n",
+    ///         "│ 10:52:20   World │\n",
+    ///         "└────────── ───────┘",
     ///     )
     /// );
     /// ```
@@ -1323,7 +1330,7 @@ impl<T, B, L, R, H, const HN: usize, const VN: usize> Style<T, B, L, R, H, On, H
     /// use tabled::{settings::style::{Style, VerticalLine, Line}, Table};
     ///
     /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
-    ///    .with(Style::ascii().remove_horizontal().verticals([(1, Style::modern().get_vertical_line())]))
+    ///    .with(Style::ascii().remove_horizontal().verticals([(1, Style::modern().get_vertical_line().remove_intersection())]))
     ///    .to_string();
     ///
     /// assert_eq!(

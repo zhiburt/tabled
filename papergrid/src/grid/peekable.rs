@@ -229,7 +229,7 @@ fn print_vertical_intersection<'a, F: fmt::Write>(
     // Specifically for cases where we have a limited amount of verticals.
     //
     // todo: Yes... this check very likely degrages performance a bit,
-    //       Surely we need to rethink it. 
+    //       Surely we need to rethink it.
     if !cfg.has_vertical(pos.1, shape.1) {
         return Ok(());
     }

@@ -25,11 +25,11 @@ use crate::{
 /// ```
 ///
 /// ```rust,no_run
-/// # use tabled::{Table, settings::{Modify, style::{Style, Border}, object::Rows}};
+/// # use tabled::{Table, settings::{style::{Style, Border}, object::Rows}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Style::ascii())
-///     .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
+///     .modify(Rows::single(0), Border::new().set_top('x'));
 /// ```
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Border<T, B, L, R> {

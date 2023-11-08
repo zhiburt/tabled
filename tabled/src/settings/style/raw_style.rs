@@ -211,15 +211,14 @@ impl RawStyle {
     /// use std::collections::HashMap;
     /// use tabled::{Table, settings::style::{Style, Line, RawStyle}};
     ///
-    /// let mut style = RawStyle::from(Style::re_structured_text());
+    /// let data = (0..3).map(|i| ("Hello", i));
     ///
+    /// let mut style = RawStyle::from(Style::re_structured_text());
     /// let mut lines = HashMap::new();
-    /// lines.insert(1, Style::extended().get_horizontal());
+    /// lines.insert(1, Style::extended().get_horizontal_line().into_inner());
     /// style.set_horizontals(lines);
     ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
-    ///    .with(style)
-    ///    .to_string();
+    /// let table = Table::new(data).with(style).to_string();
     ///
     /// assert_eq!(
     ///     table,
@@ -258,15 +257,14 @@ impl RawStyle {
     /// use std::collections::HashMap;
     /// use tabled::{Table, settings::style::{Style, Line, RawStyle}};
     ///
-    /// let mut style = RawStyle::from(Style::re_structured_text());
+    /// let data = (0..3).map(|i| ("Hello", i));
     ///
+    /// let mut style = RawStyle::from(Style::re_structured_text());
     /// let mut lines = HashMap::new();
-    /// lines.insert(1, Style::extended().get_horizontal());
+    /// lines.insert(1, Style::extended().get_horizontal_line().into_inner());
     /// style.set_verticals(lines);
     ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
-    ///    .with(style)
-    ///    .to_string();
+    /// let table = Table::new(data).with(style).to_string();
     ///
     /// assert_eq!(
     ///     table,

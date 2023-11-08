@@ -11,7 +11,7 @@ use crate::{
         util::string::string_width,
     },
     settings::{
-        style::{BorderText, Offset},
+        style::{LineText, Offset},
         Color, TableOption,
     },
 };
@@ -293,10 +293,10 @@ fn get_border_text(
     align: AlignmentHorizontal,
     line: usize,
     color: Option<&Color>,
-) -> BorderText<usize> {
+) -> LineText<usize> {
     let left_indent = get_indent(text, align, available);
     let offset = Offset::Begin(offset + left_indent);
-    let mut btext = BorderText::new(text).horizontal(line).offset(offset);
+    let mut btext = LineText::new(text).horizontal(line).offset(offset);
     if let Some(color) = color {
         btext = btext.color(color.clone());
     }

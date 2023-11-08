@@ -29,11 +29,11 @@ use crate::{
 /// # Example
 ///
 /// ```rust,no_run
-/// # use tabled::{Table, settings::{Modify, style::{Style, Border}, object::Rows}};
+/// # use tabled::{Table, settings::{style::{Style, BorderColor}, object::Rows, Color}};
 /// # let data: Vec<&'static str> = Vec::new();
 /// let table = Table::new(&data)
 ///     .with(Style::ascii())
-///     .with(Modify::new(Rows::single(0)).with(Border::default().top('x')));
+///     .modify(Rows::single(0), BorderColor::new().set_top(Color::FG_RED));
 /// ```
 #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BorderColor<T, B, L, R> {
