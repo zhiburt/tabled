@@ -259,7 +259,9 @@ test_table!(
 
 test_table!(
     table_tuple_vec,
+    #[allow(unknown_lints)]
     #[allow(clippy::needless_borrow)]
+    #[allow(clippy::needless_borrows_for_generic_args)]
     Table::new(&[(0, "Monday"), (1, "Thursday")]),
     "+-----+----------+"
     "| i32 | &str     |"

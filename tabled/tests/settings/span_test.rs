@@ -1042,7 +1042,7 @@ mod row {
         let table = Table::new(data)
             .with(Modify::new((1, 1)).with(Span::row(3)))
             .with(Style::modern())
-            .with(Highlight::new(Columns::single(1), Border::filled('*')))
+            .with(Highlight::border(Columns::single(1), Border::filled('*')))
             .to_string();
 
         assert_eq!(
@@ -1075,7 +1075,7 @@ fn highlight_row_col_span_test() {
     let table = Table::new(data)
         .with(Modify::new((1, 1)).with(Span::row(3)).with(Span::column(2)))
         .with(Style::modern())
-        .with(Highlight::new(Columns::new(1..3), Border::filled('*')))
+        .with(Highlight::border(Columns::new(1..3), Border::filled('*')))
         .to_string();
 
     assert_eq!(

@@ -274,6 +274,12 @@ name = "target_content"
 path = "examples/target_content.rs"
 required-features = ["std", "derive"]
 
+[[example]]
+name = "style_modern_rounded"
+path = "examples/style_modern_rounded.rs"
+required-features = ["std"]
+
+
 [features]
 default = ["derive", "macros"]
 std = ["papergrid/std"]
@@ -282,7 +288,7 @@ color = ["papergrid/color", "ansi-str", "ansitok", "std"]
 macros = ["std"]
 
 [dependencies]
-papergrid = { version = "0.10", default-features = false }
+papergrid = { path = "../papergrid", version = "0.10", default-features = false }
 tabled_derive = { path = "../tabled_derive", version = "0.6", optional = true }
 ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true }

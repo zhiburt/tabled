@@ -21,7 +21,7 @@
 use tabled::{
     settings::{
         object::Rows,
-        style::{BorderText, HorizontalLine, Style},
+        style::{LineText, Style},
     },
     Table,
 };
@@ -31,13 +31,16 @@ fn main() {
 
     let table = Table::new(data)
         .with(
-            Style::modern()
-                .remove_horizontal()
-                .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]),
+            Style::modern().remove_horizontal().horizontals([(
+                1,
+                Style::modern()
+                    .get_horizontal_line()
+                    .left(Style::modern().get_frame().get_left()),
+            )]),
         )
-        .with(BorderText::new(" Numbers ").horizontal(Rows::first()))
-        .with(BorderText::new(" More numbers ").horizontal(1))
-        .with(BorderText::new(" end. ").horizontal(Rows::last()))
+        .with(LineText::new("Numbers").horizontal(Rows::first()).offset(1))
+        .with(LineText::new("More numbers").horizontal(1).offset(1))
+        .with(LineText::new("end.").horizontal(Rows::last()).offset(1))
         .to_string();
 
     println!("{table}");

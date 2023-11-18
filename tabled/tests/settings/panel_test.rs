@@ -2,7 +2,7 @@
 
 use tabled::settings::{
     object::{Cell, Object, Rows, Segment},
-    style::{BorderSpanCorrection, HorizontalLine},
+    style::BorderSpanCorrection,
     Alignment, Border, Highlight, Modify, Panel, Span, Style, Width,
 };
 
@@ -25,7 +25,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Panel::horizontal(0,"Linux Distributions"))
         .with(Style::psql())
-        .with(Highlight::new(Cell::new(0, 0), Border::filled('#'))),
+        .with(Highlight::border(Cell::new(0, 0), Border::filled('#'))),
     "#####                                "
     "#        Linux Distributions         "
     "#####----------+----------+----------"
@@ -40,10 +40,10 @@ test_table!(
     Matrix::new(3, 3)
         .with(Panel::horizontal(0,"Linux Distributions"))
         .with(Style::psql())
-        .with(Highlight::new(Cell::new(0, 0), Border::filled('#')))
-        .with(Highlight::new(Cell::new(0, 1), Border::filled('#')))
-        .with(Highlight::new(Cell::new(0, 2), Border::filled('#')))
-        .with(Highlight::new(Cell::new(0, 3), Border::filled('#'))),
+        .with(Highlight::border(Cell::new(0, 0), Border::filled('#')))
+        .with(Highlight::border(Cell::new(0, 1), Border::filled('#')))
+        .with(Highlight::border(Cell::new(0, 2), Border::filled('#')))
+        .with(Highlight::border(Cell::new(0, 3), Border::filled('#'))),
     "######################################"
     "#        Linux Distributions         #"
     "######################################"
@@ -141,7 +141,7 @@ test_table!(
     panel_style_change,
     Matrix::iter([(0, 1)])
         .with(Panel::horizontal(0,"Numbers"))
-        .with(Style::modern().intersection_top('─').horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(Some('┬'))]))
+        .with(Style::modern().intersection_top('─').horizontals([(1, Style::modern().get_horizontal_line().intersection('┬'))]))
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
     "┌───────────┐"
     "│  Numbers  │"
@@ -171,7 +171,7 @@ test_table!(
     panel_style_change_correct,
     Matrix::iter([(0, 1)])
         .with(Panel::horizontal(0,"Numbers"))
-        .with(Style::modern().intersection_top('─').horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(Some('┬'))]))
+        .with(Style::modern().intersection_top('─').horizontals([(1, Style::modern().get_horizontal_line().intersection('┬'))]))
         .with(BorderSpanCorrection)
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
     "┌───────────┐"
@@ -185,7 +185,9 @@ test_table!(
 
 test_table!(
     panel_in_single_column,
+    #[allow(unknown_lints)]
     #[allow(clippy::needless_borrow)]
+    #[allow(clippy::needless_borrows_for_generic_args)]
     Matrix::iter(&[(0)]).with(Panel::horizontal(0,"Numbers")).with(Style::modern()),
     "┌─────────┐"
     "│ Numbers │"

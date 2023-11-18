@@ -59,6 +59,20 @@ impl<T> Border<T> {
         }
     }
 
+    /// This function constructs a cell borders with all sides being empty (set off).
+    pub const fn empty() -> Self {
+        Self {
+            top: None,
+            bottom: None,
+            right: None,
+            right_top_corner: None,
+            right_bottom_corner: None,
+            left: None,
+            left_bottom_corner: None,
+            left_top_corner: None,
+        }
+    }
+
     /// Checks whether any side is set.
     pub const fn is_empty(&self) -> bool {
         self.top.is_none()
@@ -106,9 +120,7 @@ impl<T: Copy> Border<T> {
 }
 
 impl<T: Copy> Border<&T> {
-    /// This function constructs a cell borders with all sides's char set to a given character.
-    ///
-    /// It behaves like [`Border::full`] with the same character set to each side.
+    /// Copies the underlying reference to a new border.
     pub fn copied(&self) -> Border<T> {
         Border {
             top: self.top.copied(),
@@ -124,9 +136,7 @@ impl<T: Copy> Border<&T> {
 }
 
 impl<T: Clone> Border<&T> {
-    /// This function constructs a cell borders with all sides's char set to a given character.
-    ///
-    /// It behaves like [`Border::full`] with the same character set to each side.
+    /// Copies the underlying reference to a new border.
     pub fn cloned(&self) -> Border<T> {
         Border {
             top: self.top.cloned(),
@@ -137,6 +147,34 @@ impl<T: Clone> Border<&T> {
             left_top_corner: self.left_top_corner.cloned(),
             right_bottom_corner: self.right_bottom_corner.cloned(),
             right_top_corner: self.right_top_corner.cloned(),
+        }
+    }
+}
+
+impl<T> Border<T> {
+    /// Convert all values on the border into another ones.
+    pub fn convert<B>(self) -> Border<B>
+    where
+        B: From<T>,
+    {
+        macro_rules! conv_opt {
+            ($opt:expr) => {
+                match $opt {
+                    Some(opt) => Some(B::from(opt)),
+                    None => None,
+                }
+            };
+        }
+
+        Border {
+            top: conv_opt!(self.top),
+            bottom: conv_opt!(self.bottom),
+            left: conv_opt!(self.left),
+            right: conv_opt!(self.right),
+            left_bottom_corner: conv_opt!(self.left_bottom_corner),
+            left_top_corner: conv_opt!(self.left_top_corner),
+            right_bottom_corner: conv_opt!(self.right_bottom_corner),
+            right_top_corner: conv_opt!(self.right_top_corner),
         }
     }
 }

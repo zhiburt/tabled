@@ -12,8 +12,8 @@ test_table!(
     margin_with_table_based_on_grid_borders,
     Matrix::new(3, 3)
         .with(Style::extended())
-        .with(Highlight::new(Cell::new(0, 0), Border::filled('+')))
-        .with(Highlight::new(Cell::new(1, 1), Border::filled('*')))
+        .with(Highlight::border(Cell::new(0, 0), Border::filled('+')))
+        .with(Highlight::border(Cell::new(1, 1), Border::filled('*')))
         .with(Margin::new(1, 2, 1, 2).fill('>', '<', 'V', '^')),
     "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
     ">+++++══════════╦══════════╦══════════╗<<"

@@ -7,11 +7,7 @@
 //! * Merge supports both [`Merge::vertical()`] and [`Merge::horizontal()`].
 
 use tabled::{
-    settings::{
-        object::{Cell, Columns, Object, Rows},
-        style::{Border, BorderSpanCorrection, Style},
-        Merge, Modify,
-    },
+    settings::{style::Style, Merge},
     Table, Tabled,
 };
 
@@ -29,7 +25,7 @@ fn main() {
 
     let mut table = Table::builder(data).index().transpose().build();
     config_theme(&mut table);
-    table.with(Merge::horizontal()).with(BorderSpanCorrection);
+    table.with(Merge::horizontal());
 
     println!("{table}");
 }
@@ -61,18 +57,12 @@ impl DatabaseTable {
 }
 
 fn config_theme(table: &mut Table) {
-    table
-        .with(Style::rounded().remove_vertical())
-        .with(Modify::new(Columns::first()).with(Border::default().right('│')))
-        .with(
-            Modify::new(Cell::new(0, 0)).with(
-                Border::default()
-                    .corner_top_right('┬')
-                    .corner_bottom_right('┼'),
-            ),
-        )
-        .with(
-            Modify::new(Columns::first().intersect(Rows::last()))
-                .with(Border::default().corner_bottom_right('┴')),
-        );
+    let style = Style::modern()
+        .frame(Style::rounded().get_frame())
+        .horizontals([(1, Style::modern().get_horizontal_line())])
+        .verticals([(1, Style::modern().get_vertical_line())])
+        .remove_horizontal()
+        .remove_vertical();
+
+    table.with(style);
 }

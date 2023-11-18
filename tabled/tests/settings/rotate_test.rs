@@ -136,7 +136,7 @@ test_table!(
 test_table!(
     rotate_preserve_border_styles_test_0,
     Matrix::iter([(123, 456, 789), (234, 567, 891), (111, 222, 333)])
-        .with(Highlight::new(Rows::single(0), Border::default().top('*')))
+        .with(Highlight::border(Rows::single(0), Border::new().set_top('*')))
         .with(Rotate::Left),
     "+*****************+-----+"
     "| i32 | 789 | 891 | 333 |"
@@ -154,7 +154,7 @@ test_table!(
 test_table!(
     rotate_preserve_border_styles_test_1,
     Matrix::iter([(123, 456, 789), (234, 567, 891), (111, 222, 333)])
-        .with(Highlight::new(Cell::new(0, 2), Border::default().bottom('*')))
+        .with(Highlight::border(Cell::new(0, 2), Border::new().set_bottom('*')))
         .with(Rotate::Left),
         "+-----+-----+-----+-----+"
         "| i32 | 789 | 891 | 333 |"

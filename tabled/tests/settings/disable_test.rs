@@ -3,7 +3,7 @@
 use tabled::settings::{
     location::ByColumnName,
     object::{Columns, Rows, Segment},
-    style::{HorizontalLine, Style},
+    style::Style,
     Alignment, Disable, Modify,
 };
 
@@ -42,7 +42,7 @@ test_table!(
     Matrix::new(3, 3)
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Disable::row(Rows::new(..1)))
-        .with(Style::modern().remove_horizontal().horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())])),
+        .with(Style::modern().remove_horizontal().horizontals([(1, Style::modern().get_horizontal_line())])),
     "┌───┬─────┬─────┬─────┐"
     "│ 0 │ 0-0 │ 0-1 │ 0-2 │"
     "├───┼─────┼─────┼─────┤"

@@ -8,10 +8,7 @@
 //! number of functional columns and rows.
 
 use tabled::{
-    settings::{
-        style::{HorizontalLine, Style, VerticalLine},
-        Alignment,
-    },
+    settings::{style::Style, Alignment},
     Table, Tabled,
 };
 
@@ -42,10 +39,10 @@ fn main() {
     ];
 
     let theme = Style::modern()
+        .horizontals([(1, Style::modern().get_horizontal_line())])
+        .verticals([(1, Style::modern().get_vertical_line())])
         .remove_horizontal()
-        .remove_vertical()
-        .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal()).intersection(None)])
-        .verticals([VerticalLine::new(1, Style::modern().get_vertical())]);
+        .remove_vertical();
 
     let mut table = Table::new(data);
     table.with(theme).with(Alignment::left());

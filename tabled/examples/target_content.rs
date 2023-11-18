@@ -1,10 +1,4 @@
-//! This example demonstrates using the [`Color`] [setting](tabled::settings) to
-//! stylize text, backgrounds, and borders.
-//!
-//! * 🚩 This example requires the `color` feature.
-//!
-//! * Note how [`Format::content()`] is used to break out [`CellOption`]
-//! specifications. This is helpful for organizing extensive [`Table`] configurations.
+//! This example demonstrates [`Locator`] usage to colorize certain cells.
 
 use tabled::{
     settings::{location::Locator, style::Style, Color},

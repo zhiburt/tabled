@@ -4,16 +4,20 @@
 use std::collections::HashMap;
 
 use crate::{
-    grid::{color::AnsiColor, config, config::Borders, config::ColoredConfig, records::Records},
+    grid::{
+        color::AnsiColor,
+        config::{self, Border, Borders, ColoredConfig},
+        records::Records,
+    },
     settings::{Color, TableOption},
 };
 
-use super::{Border, HorizontalLine, Line, Style, VerticalLine};
+use super::{Line, Style};
 
 /// A raw style data, which can be produced safely from [`Style`].
 ///
 /// It can be useful in order to not have a generics and be able to use it as a variable more conveniently.
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RawStyle {
     borders: Borders<char>,
     colors: Borders<AnsiColor<'static>>,
@@ -207,15 +211,14 @@ impl RawStyle {
     /// use std::collections::HashMap;
     /// use tabled::{Table, settings::style::{Style, Line, RawStyle}};
     ///
-    /// let mut style = RawStyle::from(Style::re_structured_text());
+    /// let data = (0..3).map(|i| ("Hello", i));
     ///
+    /// let mut style = RawStyle::from(Style::re_structured_text());
     /// let mut lines = HashMap::new();
-    /// lines.insert(1, Style::extended().get_horizontal());
+    /// lines.insert(1, Style::extended().get_horizontal_line().into_inner());
     /// style.set_horizontals(lines);
     ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
-    ///    .with(style)
-    ///    .to_string();
+    /// let table = Table::new(data).with(style).to_string();
     ///
     /// assert_eq!(
     ///     table,
@@ -254,15 +257,14 @@ impl RawStyle {
     /// use std::collections::HashMap;
     /// use tabled::{Table, settings::style::{Style, Line, RawStyle}};
     ///
-    /// let mut style = RawStyle::from(Style::re_structured_text());
+    /// let data = (0..3).map(|i| ("Hello", i));
     ///
+    /// let mut style = RawStyle::from(Style::re_structured_text());
     /// let mut lines = HashMap::new();
-    /// lines.insert(1, Style::extended().get_horizontal());
+    /// lines.insert(1, Style::extended().get_horizontal_line().into_inner());
     /// style.set_verticals(lines);
     ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", i)))
-    ///    .with(style)
-    ///    .to_string();
+    /// let table = Table::new(data).with(style).to_string();
     ///
     /// assert_eq!(
     ///     table,
@@ -349,8 +351,8 @@ impl RawStyle {
     }
 
     /// Returns an outer border of the style.
-    pub fn get_frame(&self) -> Border {
-        Border::from(crate::grid::config::Border {
+    pub fn get_frame(&self) -> Border<char> {
+        Border {
             top: self.borders.top,
             bottom: self.borders.bottom,
             left: self.borders.left,
@@ -359,7 +361,7 @@ impl RawStyle {
             right_top_corner: self.borders.top_right,
             left_bottom_corner: self.borders.bottom_left,
             right_bottom_corner: self.borders.bottom_right,
-        })
+        }
     }
 
     /// Returns an general borders configuration of the style.
@@ -383,15 +385,8 @@ impl<R, D> TableOption<R, D, ColoredConfig> for RawStyle
 where
     R: Records,
 {
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dimension: &mut D) {
-        (&self).change(records, cfg, dimension)
-    }
-}
-
-impl<R, D> TableOption<R, D, ColoredConfig> for &RawStyle {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         cfg.clear_theme();
-
         cfg.set_borders(self.borders);
 
         for (&row, line) in &self.horizontals {
@@ -408,24 +403,29 @@ impl<R, D> TableOption<R, D, ColoredConfig> for &RawStyle {
     }
 }
 
-impl<T, B, L, R, H, V, HLines, VLines> From<Style<T, B, L, R, H, V, HLines, VLines>> for RawStyle
+impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
+    From<Style<T, B, L, R, H, V, HSIZE, VSIZE>> for RawStyle
 where
-    HLines: IntoIterator<Item = HorizontalLine> + Clone,
-    VLines: IntoIterator<Item = VerticalLine> + Clone,
+    T: Copy,
+    B: Copy,
+    L: Copy,
+    R: Copy,
+    H: Copy,
+    V: Copy,
 {
-    fn from(style: Style<T, B, L, R, H, V, HLines, VLines>) -> Self {
+    fn from(style: Style<T, B, L, R, H, V, HSIZE, VSIZE>) -> Self {
         let horizontals = style
             .get_horizontals()
-            .clone()
-            .into_iter()
-            .map(|hr| (hr.index, hr.line))
+            .map(|(i, hr)| (i, hr.into_inner()))
+            .iter()
+            .cloned()
             .collect();
 
         let verticals = style
             .get_verticals()
-            .clone()
-            .into_iter()
-            .map(|hr| (hr.index, hr.line))
+            .map(|(i, hr)| (i, hr.into_inner()))
+            .iter()
+            .cloned()
             .collect();
 
         Self {
@@ -433,6 +433,31 @@ where
             horizontals,
             verticals,
             colors: Borders::default(),
+        }
+    }
+}
+
+impl From<ColoredConfig> for RawStyle {
+    fn from(cfg: ColoredConfig) -> Self {
+        let horizontals = cfg
+            .get_horizontal_lines()
+            .into_iter()
+            .map(|(i, line)| (i, line.into()))
+            .collect();
+        let verticals = cfg
+            .get_vertical_lines()
+            .into_iter()
+            .map(|(i, line)| (i, line.into()))
+            .collect();
+
+        let borders = *cfg.get_borders();
+        let colors = cfg.get_color_borders().clone();
+
+        Self {
+            borders,
+            horizontals,
+            verticals,
+            colors,
         }
     }
 }
