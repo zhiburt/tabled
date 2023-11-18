@@ -12,13 +12,8 @@ use crate::{
         config::{Border as GridBorder, ColoredConfig, Entity, Position, SpannedConfig},
         records::{ExactRecords, Records},
     },
-    settings::{object::Object, Border, TableOption},
+    settings::{object::Object, style::BorderColor, Border, Color, TableOption},
 };
-
-#[cfg(feature = "color")]
-use crate::{grid::color::AnsiColor, settings::Color};
-
-use super::{style::BorderColor, Color};
 
 /// Highlight modifies a table style by changing a border of a target [`Table`] segment.
 ///
