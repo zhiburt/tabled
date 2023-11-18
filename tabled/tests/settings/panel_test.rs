@@ -185,7 +185,9 @@ test_table!(
 
 test_table!(
     panel_in_single_column,
+    #[allow(unknown_lints)]
     #[allow(clippy::needless_borrow)]
+    #[allow(clippy::needless_borrows_for_generic_args)]
     Matrix::iter(&[(0)]).with(Panel::horizontal(0,"Numbers")).with(Style::modern()),
     "┌─────────┐"
     "│ Numbers │"
