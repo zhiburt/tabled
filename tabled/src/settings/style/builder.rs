@@ -8,7 +8,10 @@ use crate::{
 };
 
 #[cfg(feature = "std")]
-use crate::{grid::config::ColoredConfig, settings::Border};
+use crate::{
+    grid::config::{Border as GridBorder, ColoredConfig},
+    settings::Border,
+};
 
 use super::{HorizontalLine, Line, VerticalLine};
 
@@ -1425,9 +1428,8 @@ const fn create_borders(
     }
 }
 
-const fn correct_border(
-    mut border: papergrid::config::Border<char>,
-) -> papergrid::config::Border<char> {
+#[cfg(feature = "std")]
+const fn correct_border(mut border: GridBorder<char>) -> GridBorder<char> {
     if border.has_top() && border.top.is_none() {
         border.top = Some(' ');
     }
