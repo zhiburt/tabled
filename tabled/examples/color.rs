@@ -54,18 +54,18 @@ fn main() {
 
     let yellow_color = Color::try_from(' '.yellow().to_string()).unwrap();
 
-    let first_row_style = Modify::new(Rows::first()).with(
-        BorderColor::default()
-            .bottom(color_red)
-            .corner_bottom_left(color_purple.clone())
-            .corner_bottom_right(color_purple),
-    );
+    let border = BorderColor::new()
+        .set_bottom(color_red)
+        .set_left(Color::default())
+        .set_right(Color::default())
+        .set_corner_bottom_left(color_purple.clone())
+        .set_corner_bottom_right(color_purple);
 
     let mut table = Table::new(data);
     table
         .with(Style::psql())
         .with(yellow_color)
-        .with(first_row_style)
+        .modify(Rows::first(), border)
         .with(Modify::new(Columns::single(0)).with(red))
         .with(Modify::new(Columns::single(1)).with(green))
         .with(Modify::new(Columns::single(2)).with(blue));

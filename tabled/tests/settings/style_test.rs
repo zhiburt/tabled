@@ -352,8 +352,8 @@ test_table!(
     Matrix::table(2, 2)
         .with(LineText::new("-Table").horizontal(1))
         .with(LineText::new("-Table213123").horizontal(2))
-        .with(Modify::new(Rows::single(1)).with(BorderColor::default().bottom(Color::FG_RED)))
-        .with(Modify::new(Rows::single(2)).with(BorderColor::default().bottom(Color::try_from(" ".blue().on_green().to_string()).unwrap()))),
+        .with(Modify::new(Rows::single(1)).with(BorderColor::new().set_bottom(Color::FG_RED)))
+        .with(Modify::new(Rows::single(2)).with(BorderColor::new().set_bottom(Color::try_from(" ".blue().on_green().to_string()).unwrap()))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "-Table---------+----------+"
@@ -2076,9 +2076,9 @@ fn border_colored_test() {
             Modify::new(Rows::single(1))
                 .with(
                     BorderColor::filled(Color::try_from('*'.blue().to_string()).unwrap())
-                        .top(Color::try_from('#'.truecolor(12, 220, 100).to_string()).unwrap()),
+                        .set_top(Color::try_from('#'.truecolor(12, 220, 100).to_string()).unwrap()),
                 )
-                .with(Border::filled('*').top('#')),
+                .with(Border::filled('*').set_top('#')),
         )
         .to_string();
 
@@ -2114,9 +2114,9 @@ fn border_colored_test() {
             Modify::new(Rows::single(1))
                 .with(
                     BorderColor::filled(Color::try_from('*'.blue().to_string()).unwrap())
-                        .top(Color::try_from('#'.truecolor(12, 220, 100).to_string()).unwrap()),
+                        .set_top(Color::try_from('#'.truecolor(12, 220, 100).to_string()).unwrap()),
                 )
-                .with(Border::filled('*').top('#')),
+                .with(Border::filled('*').set_top('#')),
         )
         .to_string();
 

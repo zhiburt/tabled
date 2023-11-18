@@ -1274,7 +1274,8 @@ impl<T, B, L, R, V, const HN: usize, const VN: usize> Style<T, B, L, R, On, V, H
     #[cfg_attr(not(feature = "std"), doc = "```ignore")]
     /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
     ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
+    /// let data = (0..3).map(|i| ("Hello", "World", i));
+    /// let table = Table::new(data)
     ///    .with(Style::ascii().remove_horizontal().horizontals([(1, Style::modern().get_horizontal_line())]))
     ///    .to_string();
     ///

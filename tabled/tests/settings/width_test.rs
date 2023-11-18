@@ -405,8 +405,6 @@ fn max_width_wrapped_keep_words_long_word_color() {
 #[cfg(feature = "color")]
 #[test]
 fn max_width_keep_words_1() {
-    use tabled::settings::style::HorizontalLine;
-
     let table = Matrix::iter(["asdf"])
         .with(Width::wrap(7).keep_words())
         .to_string();
@@ -449,7 +447,7 @@ fn max_width_keep_words_1() {
     .with(
         Style::modern()
             .remove_horizontal()
-            .horizontals([HorizontalLine::new(1, Style::modern().get_horizontal())]),
+            .horizontals([(1, Style::modern().get_horizontal_line())]),
     )
     .with(Width::wrap(21).keep_words().priority::<PriorityMax>())
     .with(Alignment::center())
