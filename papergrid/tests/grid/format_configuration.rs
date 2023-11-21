@@ -1,6 +1,6 @@
 #![cfg(feature = "std")]
 
-use papergrid::config::{spanned::Formatting, AlignmentHorizontal, AlignmentVertical, Entity};
+use papergrid::config::{AlignmentHorizontal, AlignmentVertical, Entity, Formatting};
 
 use crate::util::grid;
 use testing_table::static_table;

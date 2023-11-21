@@ -158,7 +158,12 @@ impl<R, D, C> TableOption<R, D, CompactMultilineConfig> for Padding<C>
 where
     C: Into<StaticColor> + Clone,
 {
-    fn change(self, records: &mut R, cfg: &mut CompactMultilineConfig, dimension: &mut D) {
-        self.change(records, cfg.as_mut(), dimension)
+    fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
+        cfg.set_padding(self.indent);
+
+        if let Some(c) = self.colors {
+            let colors = Sides::new(c.left.into(), c.right.into(), c.top.into(), c.bottom.into());
+            cfg.set_padding_color(colors);
+        }
     }
 }

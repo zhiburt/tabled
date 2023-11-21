@@ -8,6 +8,8 @@ use crate::{
     settings::{style::On, CellOption},
 };
 
+use super::StyleBuilder;
+
 /// Border represents a border of a Cell.
 ///
 /// ```text
@@ -93,6 +95,27 @@ impl Border<On, On, On, On> {
     /// Using this function you deconstruct the existing borders.
     pub const fn empty() -> EmptyBorder {
         EmptyBorder
+    }
+}
+
+impl<T, B, L, R> Border<T, B, L, R> {
+    /// Fetches outer border from a style.
+    pub const fn inherit<H, V, const HSIZE: usize, const VSIZE: usize>(
+        style: StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>,
+    ) -> Self {
+        let borders = style.get_borders();
+        let line = GridBorder::new(
+            borders.top,
+            borders.bottom,
+            borders.left,
+            borders.right,
+            borders.top_left,
+            borders.bottom_left,
+            borders.top_right,
+            borders.bottom_right,
+        );
+
+        Self::from_border(line)
     }
 }
 

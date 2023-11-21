@@ -191,8 +191,8 @@ impl<R, D> TableOption<R, D, CompactConfig> for Alignment {
 impl<R, D> TableOption<R, D, CompactMultilineConfig> for Alignment {
     fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
         match self.inner {
-            Horizontal(a) => *cfg = cfg.set_alignment_horizontal(a),
-            Vertical(a) => *cfg = cfg.set_alignment_vertical(a),
+            Horizontal(a) => cfg.set_alignment_horizontal(a),
+            Vertical(a) => cfg.set_alignment_vertical(a),
         }
     }
 

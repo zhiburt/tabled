@@ -209,14 +209,16 @@ fn configure_grid() -> CompactMultilineConfig {
     let pad = Sides::new(
         Indent::spaced(1),
         Indent::spaced(1),
-        Indent::default(),
-        Indent::default(),
+        Indent::zero(),
+        Indent::zero(),
     );
 
-    CompactMultilineConfig::default()
-        .set_padding(pad)
-        .set_alignment_horizontal(AlignmentHorizontal::Left)
-        .set_borders(*Style::ascii().get_borders())
+    let mut cfg = CompactMultilineConfig::new();
+    cfg.set_padding(pad);
+    cfg.set_alignment_horizontal(AlignmentHorizontal::Left);
+    cfg.set_borders(Style::ascii().get_borders());
+
+    cfg
 }
 
 impl<R, C> TableOption<R, PoolTableDimension, C> for PoolTableDimension {
@@ -318,7 +320,7 @@ mod print {
             || margin.left.size > 0
             || margin.right.size > 0;
         if has_margin {
-            let color = convert_border_colors(cfg.get_margin_color());
+            let color = convert_border_colors(*cfg.get_margin_color());
             table = set_margin(&table, *margin, color);
         }
 
@@ -555,8 +557,7 @@ mod print {
         let halignment = cfg.get_alignment_horizontal();
         let valignment = cfg.get_alignment_vertical();
         let pad = cfg.get_padding();
-        let pad_color = cfg.get_padding_color();
-        let pad_color = convert_border_colors(pad_color);
+        let pad_color = convert_border_colors(*cfg.get_padding_color());
         let lines_alignemnt = cfg.get_formatting().allow_lines_alignment;
 
         let mut borders = *cfg.get_borders();

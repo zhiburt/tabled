@@ -2,7 +2,7 @@
 
 use tabled::settings::{
     object::{Cell, Object, Rows, Segment},
-    style::BorderSpanCorrection,
+    style::{BorderSpanCorrection, HorizontalLine},
     Alignment, Border, Highlight, Modify, Panel, Span, Style, Width,
 };
 
@@ -141,7 +141,7 @@ test_table!(
     panel_style_change,
     Matrix::iter([(0, 1)])
         .with(Panel::horizontal(0,"Numbers"))
-        .with(Style::modern().intersection_top('─').horizontals([(1, Style::modern().get_horizontal_line().intersection('┬'))]))
+        .with(Style::modern().intersection_top('─').horizontals([(1, HorizontalLine::inherit(Style::modern()).intersection('┬'))]))
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
     "┌───────────┐"
     "│  Numbers  │"
@@ -171,7 +171,7 @@ test_table!(
     panel_style_change_correct,
     Matrix::iter([(0, 1)])
         .with(Panel::horizontal(0,"Numbers"))
-        .with(Style::modern().intersection_top('─').horizontals([(1, Style::modern().get_horizontal_line().intersection('┬'))]))
+        .with(Style::modern().intersection_top('─').horizontals([(1, HorizontalLine::inherit(Style::modern()).intersection('┬'))]))
         .with(BorderSpanCorrection)
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
     "┌───────────┐"

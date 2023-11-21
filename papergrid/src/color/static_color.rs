@@ -3,7 +3,7 @@ use core::fmt::{self, Write};
 use super::Color;
 
 /// The structure represents a ANSI color by suffix and prefix.
-#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct StaticColor {
     prefix: &'static str,
     suffix: &'static str,

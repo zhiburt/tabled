@@ -8,7 +8,10 @@
 //! number of functional columns and rows.
 
 use tabled::{
-    settings::{style::Style, Alignment},
+    settings::{
+        style::{HorizontalLine, Style, VerticalLine},
+        Alignment,
+    },
     Table, Tabled,
 };
 
@@ -39,8 +42,8 @@ fn main() {
     ];
 
     let theme = Style::modern()
-        .horizontals([(1, Style::modern().get_horizontal_line())])
-        .verticals([(1, Style::modern().get_vertical_line())])
+        .horizontals([(1, HorizontalLine::inherit(Style::modern()))])
+        .verticals([(1, VerticalLine::inherit(Style::modern()))])
         .remove_horizontal()
         .remove_vertical();
 

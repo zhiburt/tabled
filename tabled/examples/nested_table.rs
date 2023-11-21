@@ -13,7 +13,7 @@ use tabled::{
     builder::Builder,
     settings::{
         object::{Rows, Segment},
-        style::Style,
+        style::{HorizontalLine, Style},
         Alignment, Modify, Padding, Width,
     },
     Table,
@@ -69,13 +69,13 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
     ])
     .build();
 
+    let style = Style::ascii()
+        .horizontals([(1, HorizontalLine::inherit(Style::ascii()))])
+        .remove_horizontal()
+        .remove_vertical();
+
     table
-        .with(
-            Style::ascii()
-                .horizontals([(1, Style::ascii().get_horizontal_line())])
-                .remove_horizontal()
-                .remove_vertical(),
-        )
+        .with(style)
         .with(Modify::new(Segment::all()).with(Alignment::left()))
         .with(Modify::new(Rows::first()).with(Alignment::center()));
 

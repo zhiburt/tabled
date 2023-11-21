@@ -105,23 +105,22 @@ mod line_char;
 #[cfg(feature = "std")]
 mod offset;
 #[cfg(feature = "std")]
-mod raw_style;
-#[cfg(feature = "std")]
 mod span_border_correction;
+#[cfg(feature = "std")]
+#[allow(clippy::module_inception)]
+mod style;
 
 mod builder;
 mod horizontal_line;
-mod line;
 mod vertical_line;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
     border::Border, border_color::BorderColor, border_text::LineText, line_char::LineChar,
-    offset::Offset, raw_style::RawStyle, span_border_correction::BorderSpanCorrection,
+    offset::Offset, span_border_correction::BorderSpanCorrection, style::Style,
 };
 
-pub use builder::{On, Style};
+pub use builder::{On, StyleBuilder};
 pub use horizontal_line::HorizontalLine;
-pub use line::Line;
 pub use vertical_line::VerticalLine;

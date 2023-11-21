@@ -22,7 +22,7 @@ use tabled::{
     row,
     settings::{
         object::Cell,
-        style::{LineChar, RawStyle, Style},
+        style::{LineChar, Style},
         Height, Modify, Padding, Shadow, Width,
     },
     Table,
@@ -118,7 +118,7 @@ fn create_small_table_list(width_available: usize) -> String {
     small_table_row
 }
 
-fn create_small_table(style: RawStyle) -> Table {
+fn create_small_table(style: Style) -> Table {
     let mut table = Builder::from_iter(vec![vec![" ", ""], vec![" ", ""]]).build();
     table
         .with(style)

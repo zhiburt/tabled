@@ -1,6 +1,6 @@
 #![cfg(feature = "std")]
 
-use std::{collections::HashMap, iter::FromIterator};
+use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
@@ -8,8 +8,8 @@ use tabled::{
     settings::{
         object::{Columns, Rows, Segment},
         style::{
-            Border, BorderColor, BorderSpanCorrection, HorizontalLine, Line, LineChar, LineText,
-            Offset, On, RawStyle, Style, VerticalLine,
+            Border, BorderColor, BorderSpanCorrection, HorizontalLine, LineChar, LineText, Offset,
+            On, Style, StyleBuilder, VerticalLine,
         },
         Color, Format, Highlight, Modify, Padding, Span,
     },
@@ -110,7 +110,7 @@ test_table!(
 
 test_table!(
     modern_clean_style,
-    Matrix::new(3, 3).with(Style::modern().remove_horizontal().horizontals([(1, Style::modern().get_horizontal_line())])),
+    Matrix::new(3, 3).with(Style::modern().remove_horizontal().horizontals([(1, HorizontalLine::inherit(Style::modern()))])),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -536,7 +536,7 @@ test_table!(
 
 test_table!(
     style_frame_test_0,
-    Matrix::table(2, 2).with(Highlight::border(Rows::single(1), Style::modern().get_frame())),
+    Matrix::table(2, 2).with(Highlight::border(Rows::single(1), Border::inherit(Style::modern()))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "┌─────────────────────────┐"
@@ -550,8 +550,8 @@ test_table!(
     style_frame_test_1,
     Matrix::table(2, 2)
         .with(Style::blank())
-        .with(Highlight::border(Rows::single(0), Style::extended().get_frame()))
-        .with(Highlight::border(Rows::single(2), Style::extended().get_frame())),
+        .with(Highlight::border(Rows::single(0), Border::inherit(Style::extended())))
+        .with(Highlight::border(Rows::single(2), Border::inherit(Style::extended()))),
     "╔═════════════════════════╗"
     "║ N   column 0   column 1 ║"
     "╚═════════════════════════╝"
@@ -655,16 +655,15 @@ test_table!(
     Matrix::new(3, 3)
         .insert((1, 1), "a longer string")
         .with({
-            let mut style: RawStyle = Style::modern().into();
-            style
-                .set_bottom(Some('a'))
-                .set_left(Some('b'))
-                .set_right(None)
-                .set_top(None)
-                .set_intersection(Some('x'))
-                .set_intersection_top(None)
-                .set_corner_top_left(None)
-                .set_corner_top_right(None);
+            let mut style: Style = Style::modern().into();
+            style.set_bottom(Some('a'));
+            style.set_left(Some('b'));
+            style.set_right(None);
+            style.set_top(None);
+            style.set_intersection(Some('x'));
+            style.set_intersection_top(None);
+            style.set_corner_top_left(None);
+            style.set_corner_top_right(None);
             style
         }),
     "b N │    column 0     │ column 1 │ column 2  "
@@ -682,7 +681,7 @@ test_table!(
     Matrix::new(3, 3)
         .insert((1, 1), "a longer string")
         .with({
-            let mut style: RawStyle = Style::modern().into();
+            let mut style: Style = Style::modern().into();
             style.set_bottom(None);
             style
         }),
@@ -702,7 +701,7 @@ test_table!(
     Matrix::new(3, 3)
         .insert((1, 1), "a longer string")
         .with({
-            let mut style: RawStyle = Style::modern().into();
+            let mut style: Style = Style::modern().into();
             style.set_bottom(None);
             style
         })
@@ -2232,8 +2231,8 @@ test_table!(
 test_table!(
     verticals_1,
     {
-        let verticals = (1..4).map(|i| (i, VerticalLine::filled('+').into_inner())).collect::<HashMap<_, _>>();
-        let mut style = RawStyle::from(Style::rounded());
+        let verticals = (1..4).map(|i| (i, VerticalLine::filled('+').into())).collect();
+        let mut style = Style::from(Style::rounded());
         style.set_verticals(verticals);
 
         Matrix::new(3, 3).with(style)
@@ -2276,8 +2275,8 @@ test_table!(
 test_table!(
     verticals_4,
     {
-        let mut style = RawStyle::from(Style::ascii());
-        let verticals = (0..10).map(|i| (i, VerticalLine::full('*', 'c', '2', 'x').into_inner())).collect();
+        let mut style = Style::from(Style::ascii());
+        let verticals = (0..10).map(|i| (i, VerticalLine::full('*', 'c', '2', 'x').into())).collect();
         style.set_verticals(verticals);
 
         Matrix::new(3, 3).with(style)
@@ -2298,9 +2297,9 @@ test_table!(
     {
         let m = Matrix::new(3, 3);
 
-        let mut style = RawStyle::from(Style::ascii());
-        style.insert_horizontal(1, Line::full('8', '8', '8', '8'));
-        style.insert_vertical(1, Line::full('*', 'x', 'c', '2'));
+        let mut style = Style::from(Style::ascii());
+        style.insert_horizontal(1, HorizontalLine::full('8', '8', '8', '8').into());
+        style.insert_vertical(1, VerticalLine::full('*', 'x', 'c', '2').into());
 
         m.with(style)
     },
@@ -2617,7 +2616,7 @@ test_table!(
 test_table!(
     style_const_modification,
     {
-        const STYLE: Style<On, On, On, On, On, On, 1, 0> = Style::ascii()
+        const STYLE: StyleBuilder<On, On, On, On, On, On, 1, 0> = Style::ascii()
             .bottom('x')
             .horizontals([(1, HorizontalLine::filled('.'))]);
         Matrix::new(3, 3).with(STYLE)
@@ -2636,7 +2635,7 @@ test_table!(
 test_table!(
     style_static_modification,
     {
-        static STYLE: Style<On, On, On, On, On, On, 1, 1> = Style::ascii()
+        static STYLE: StyleBuilder<On, On, On, On, On, On, 1, 1> = Style::ascii()
             .bottom('x')
             .horizontals([(1, HorizontalLine::filled('.'))])
             .verticals([(1, VerticalLine::filled('|'))]);

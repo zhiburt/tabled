@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::config::{Border, Borders, Position};
+use crate::config::{Border, Borders, HorizontalLine, Position, VerticalLine};
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub(crate) struct BordersConfig<T> {
@@ -12,13 +12,25 @@ pub(crate) struct BordersConfig<T> {
     layout: BordersLayout,
 }
 
-impl<T> BordersConfig<T> {
-    pub(crate) fn insert_border(&mut self, pos: Position, border: Border<T>)
-    where
-        T: std::fmt::Debug,
-    {
-        dbg!("{:?}", &border);
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub(crate) struct BordersMap<T> {
+    vertical: HashMap<Position, T>,
+    horizontal: HashMap<Position, T>,
+    intersection: HashMap<Position, T>,
+}
 
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub(crate) struct BordersLayout {
+    left: bool,
+    right: bool,
+    top: bool,
+    bottom: bool,
+    horizontals: HashSet<usize>,
+    verticals: HashSet<usize>,
+}
+
+impl<T> BordersConfig<T> {
+    pub(crate) fn insert_border(&mut self, pos: Position, border: Border<T>) {
         if let Some(c) = border.top {
             self.cells.horizontal.insert(pos, c);
             self.layout.horizontals.insert(pos.0);
@@ -339,69 +351,6 @@ impl<T> BordersConfig<T> {
             || (col == count_cols && self.layout.right)
             || self.cells.vertical.keys().any(|&p| p.1 == col)
             || self.cells.intersection.keys().any(|&p| p.1 == col)
-    }
-}
-
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub(crate) struct BordersMap<T> {
-    vertical: HashMap<Position, T>,
-    horizontal: HashMap<Position, T>,
-    intersection: HashMap<Position, T>,
-}
-
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub(crate) struct BordersLayout {
-    left: bool,
-    right: bool,
-    top: bool,
-    bottom: bool,
-    horizontals: HashSet<usize>,
-    verticals: HashSet<usize>,
-}
-
-/// A structure for a custom horizontal line.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct HorizontalLine<T> {
-    /// Line character.
-    pub main: Option<T>,
-    /// Line intersection character.
-    pub intersection: Option<T>,
-    /// Left intersection character.
-    pub left: Option<T>,
-    /// Right intersection character.
-    pub right: Option<T>,
-}
-
-impl<T> HorizontalLine<T> {
-    /// Verifies if the line has any setting set.
-    pub const fn is_empty(&self) -> bool {
-        self.main.is_none()
-            && self.intersection.is_none()
-            && self.left.is_none()
-            && self.right.is_none()
-    }
-}
-
-/// A structure for a vertical line.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub struct VerticalLine<T> {
-    /// Line character.
-    pub main: Option<T>,
-    /// Line intersection character.
-    pub intersection: Option<T>,
-    /// Left intersection character.
-    pub top: Option<T>,
-    /// Right intersection character.
-    pub bottom: Option<T>,
-}
-
-impl<T> VerticalLine<T> {
-    /// Verifies if the line has any setting set.
-    pub const fn is_empty(&self) -> bool {
-        self.main.is_none()
-            && self.intersection.is_none()
-            && self.top.is_none()
-            && self.bottom.is_none()
     }
 }
 

@@ -291,7 +291,7 @@ fn build_grid<W: fmt::Write, I: IntoRecords, D: Dimension>(
 }
 
 const fn create_config() -> CompactConfig {
-    CompactConfig::empty()
+    CompactConfig::new()
         .set_padding(Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),
@@ -299,7 +299,7 @@ const fn create_config() -> CompactConfig {
             Indent::zero(),
         ))
         .set_alignment_horizontal(AlignmentHorizontal::Left)
-        .set_borders(*Style::ascii().get_borders())
+        .set_borders(Style::ascii().get_borders())
 }
 
 impl<R, D> TableOption<R, D, CompactConfig> for CompactConfig {

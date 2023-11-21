@@ -1,11 +1,14 @@
 use core::marker::PhantomData;
 
-use crate::settings::style::{Line, On};
+use crate::grid::config::HorizontalLine as Line;
+use crate::settings::style::On;
+
+use super::StyleBuilder;
 
 /// A horizontal split line which can be used to set a border.
 #[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct HorizontalLine<L, R, I> {
-    line: Line,
+    line: Line<char>,
     _left: PhantomData<L>,
     _right: PhantomData<R>,
     _intersection: PhantomData<I>,
@@ -14,36 +17,67 @@ pub struct HorizontalLine<L, R, I> {
 impl HorizontalLine<(), (), ()> {
     /// Creates a new horizontal split line.
     pub const fn new(main: char) -> Self {
-        Self {
-            line: Line::new(Some(main), None, None, None),
-            _left: PhantomData,
-            _right: PhantomData,
-            _intersection: PhantomData,
-        }
+        Self::update(Line::new(Some(main), None, None, None))
     }
 }
 
 impl<L, R, I> HorizontalLine<L, R, I> {
     /// Creates a stub horizontal line.
     pub const fn empty() -> Self {
-        Self {
-            line: Line::new(None, None, None, None),
-            _left: PhantomData,
-            _right: PhantomData,
-            _intersection: PhantomData,
-        }
+        Self::update(Line::new(None, None, None, None))
+    }
+
+    /// Fetches vertical line from a style.
+    pub const fn inherit<T, B, const HSIZE: usize, const VSIZE: usize>(
+        style: StyleBuilder<T, B, L, R, I, On, HSIZE, VSIZE>,
+    ) -> Self {
+        let borders = style.get_borders();
+        let line = Line::new(
+            borders.horizontal,
+            borders.intersection,
+            borders.left_intersection,
+            borders.right_intersection,
+        );
+
+        Self::update(line)
+    }
+
+    /// Fetches left vertical line from a style.
+    pub const fn inherit_top<T, B, H, V, const HSIZE: usize, const VSIZE: usize>(
+        style: StyleBuilder<On, B, L, R, H, I, HSIZE, VSIZE>,
+    ) -> Self {
+        let borders = style.get_borders();
+        let line = Line::new(
+            borders.top,
+            borders.top_intersection,
+            borders.top_left,
+            borders.top_right,
+        );
+
+        Self::update(line)
+    }
+
+    /// Fetches right vertical line from a style.
+    pub const fn inherit_bottom<T, B, H, V, const HSIZE: usize, const VSIZE: usize>(
+        style: StyleBuilder<T, On, L, R, I, V, HSIZE, VSIZE>,
+    ) -> Self {
+        let borders = style.get_borders();
+        let line = Line::new(
+            borders.bottom,
+            borders.bottom_intersection,
+            borders.bottom_left,
+            borders.bottom_right,
+        );
+
+        Self::update(line)
     }
 }
 
 impl HorizontalLine<On, On, On> {
     /// Creates a new horizontal split line.
     pub const fn full(main: char, left: char, right: char, intersection: char) -> Self {
-        Self {
-            line: Line::new(Some(main), Some(intersection), Some(left), Some(right)),
-            _left: PhantomData,
-            _right: PhantomData,
-            _intersection: PhantomData,
-        }
+        let line = Line::new(Some(main), Some(intersection), Some(left), Some(right));
+        Self::update(line)
     }
 
     /// Creates a new horizontal split line.
@@ -53,7 +87,7 @@ impl HorizontalLine<On, On, On> {
 }
 
 impl<L, R, I> HorizontalLine<L, R, I> {
-    pub(crate) const fn update(line: Line) -> HorizontalLine<L, R, I> {
+    pub(crate) const fn update(line: Line<char>) -> HorizontalLine<L, R, I> {
         Self {
             line,
             _left: PhantomData,
@@ -76,13 +110,13 @@ impl<L, R, I> HorizontalLine<L, R, I> {
 
     /// Set a left character.
     pub const fn left(mut self, c: char) -> HorizontalLine<On, R, I> {
-        self.line.connector1 = Some(c);
+        self.line.left = Some(c);
         HorizontalLine::update(self.line)
     }
 
     /// Set a right character.
     pub const fn right(mut self, c: char) -> HorizontalLine<L, On, I> {
-        self.line.connector2 = Some(c);
+        self.line.right = Some(c);
         HorizontalLine::update(self.line)
     }
 }
@@ -90,14 +124,11 @@ impl<L, R, I> HorizontalLine<L, R, I> {
 impl<L, R, I> HorizontalLine<L, R, I> {
     /// Get a horizontal character.
     pub const fn get_horizontal(&self) -> char {
-        match self.line.main {
-            Some(c) => c,
-            None => unreachable!(),
-        }
+        opt_get(self.line.main)
     }
 
     /// Get a general structure of line.
-    pub const fn into_inner(&self) -> Line {
+    pub const fn into_inner(&self) -> Line<char> {
         self.line
     }
 }
@@ -105,10 +136,7 @@ impl<L, R, I> HorizontalLine<L, R, I> {
 impl<L, R> HorizontalLine<L, R, On> {
     /// Set a vertical intersection character.
     pub const fn get_intersection(&self) -> char {
-        match self.line.intersection {
-            Some(c) => c,
-            None => unreachable!(),
-        }
+        opt_get(self.line.intersection)
     }
 
     /// Remove a vertical intersection character.
@@ -121,15 +149,12 @@ impl<L, R> HorizontalLine<L, R, On> {
 impl<R, I> HorizontalLine<On, R, I> {
     /// Get a left character.
     pub const fn get_left(&self) -> char {
-        match self.line.connector1 {
-            Some(c) => c,
-            None => unreachable!(),
-        }
+        opt_get(self.line.left)
     }
 
     /// Remove a horizontal left character.
     pub const fn remove_left(mut self) -> HorizontalLine<(), R, I> {
-        self.line.connector1 = None;
+        self.line.left = None;
         HorizontalLine::update(self.line)
     }
 }
@@ -137,21 +162,33 @@ impl<R, I> HorizontalLine<On, R, I> {
 impl<L, I> HorizontalLine<L, On, I> {
     /// Get a right character.
     pub const fn get_right(&self) -> char {
-        match self.line.connector2 {
-            Some(c) => c,
-            None => unreachable!(),
-        }
+        opt_get(self.line.right)
     }
 
     /// Remove a horizontal right character.
     pub const fn remove_right(mut self) -> HorizontalLine<I, (), I> {
-        self.line.connector2 = None;
+        self.line.right = None;
         HorizontalLine::update(self.line)
     }
 }
 
-impl<L, R, I> From<HorizontalLine<L, R, I>> for Line {
+impl<L, R, I> From<HorizontalLine<L, R, I>> for Line<char> {
     fn from(value: HorizontalLine<L, R, I>) -> Self {
         value.line
+    }
+}
+
+impl<L, R, I> From<Line<char>> for HorizontalLine<L, R, I> {
+    fn from(value: Line<char>) -> Self {
+        let mut line = Self::empty();
+        line.line = value;
+        line
+    }
+}
+
+const fn opt_get(opt: Option<char>) -> char {
+    match opt {
+        Some(value) => value,
+        None => unreachable!(),
     }
 }

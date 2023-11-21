@@ -46,3 +46,13 @@ pub use extended::ExtendedTable;
 pub use table_pool::{PoolTable, TableValue};
 
 pub use compact::CompactTable;
+
+// todo: Create a PoolTable backend in papergrid with generics so it coulb be used differently
+//       rather then with our own impl of dimension
+//
+// todo: Replace all usage of conrete configs to a AsRef<Config> generics, so some could be used interchangably
+//
+// todo: Think about all the Config hierachly; we probably shall have something like a Decorator approach there.
+//       config(borders) -> config(borders+colors) -> config(borders+colors+spans)
+//
+//       Or maybe many interfacies e.g ColorConfig, BorderConfig, AlignmentConfig etc.

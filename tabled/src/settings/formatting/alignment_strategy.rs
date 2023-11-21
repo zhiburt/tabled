@@ -171,7 +171,7 @@ impl<R, D> TableOption<R, D, CompactMultilineConfig> for AlignmentStrategy {
             AlignmentStrategy::PerLine => f.allow_lines_alignment = true,
         }
 
-        *cfg = cfg.set_formatting(f);
+        cfg.set_formatting(f);
     }
 
     fn hint_change(&self) -> Option<Entity> {
