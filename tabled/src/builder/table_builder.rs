@@ -395,6 +395,96 @@ impl Builder {
             }
         }
     }
+
+    /// Removes a row with a specific position.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `row_index > count_rows`.
+    pub fn remove_row(&mut self, row_index: usize) -> &mut Self {
+        let idx = row_index - 1;
+        let _ = self.data.remove(idx);
+        self
+    }
+
+    /// Removes a column with a specific position.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index > count_columns`.
+    pub fn remove_column(&mut self, column_index: usize) -> &mut Self {
+        let idx = column_index - 1;
+        let columns = &mut self.columns;
+        match columns {
+            Some(columns) => {
+                let _ = columns.remove(idx);
+            },
+            _ => ()
+        }
+        let table_value = &mut self.data;
+        for vec in table_value {
+            let _ = vec.remove(idx);
+        }
+        self.count_columns = self.get_size();
+        self
+    }
+
+    /// Push a column
+    pub fn push_column<H, T>(&mut self, column: H)
+    where
+        H: IntoIterator<Item = T>,
+        T: Into<String>, 
+    {
+        let columns = &mut self.columns;
+        let table_value = &mut self.data;
+        let mut list = create_row(column, self.count_columns);
+        match columns {
+            Some(v) => {
+                let cell = list.remove(0);
+                v.push(cell);
+                self.count_columns = v.len();
+            },
+            None => ()
+        }
+
+        for vec in table_value {
+            let cell = list.remove(0);
+            vec.push(cell);
+        }
+    }
+
+    /// Insert a column with a specific position.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index > count_columns`.
+    pub fn insert_column<H, T>(&mut self, column: H, index: usize)
+    where
+        H: IntoIterator<Item = T>,
+        T: Into<String>,
+    {
+        let columns = &mut self.columns;
+        let table_value = &mut self.data;
+        let mut list = create_row(column, self.count_columns);
+        match columns {
+            Some(v) => {
+                let cell = list.remove(0);
+                v.insert(index, cell);
+                self.count_columns = v.len();
+            },
+            None => ()
+        }
+        for vec in table_value {
+            let cell = list.remove(0);
+            vec.insert(index, cell);
+        }
+    }
+
+    /// Reset table content
+    pub fn reset_table(&mut self) {
+        let table_content = &mut self.data;
+        table_content.clear();
+    }
 }
 
 impl From<Builder> for Vec<Vec<String>> {

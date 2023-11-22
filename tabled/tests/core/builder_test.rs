@@ -77,6 +77,127 @@ test_table!(
 );
 
 test_table!(
+    remove_row_0,
+    {
+        let mut b = Builder::default();
+        b.set_header(["1", "2", "3"]);
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+        b.remove_row(1);
+        b.build()
+    },
+    "+---+---+---+"
+    "| 1 | 2 | 3 |"
+    "+---+---+---+"
+    "| d | e | f |"
+    "+---+---+---+"
+);
+
+test_table!(
+    remove_column_0,
+    {
+        let mut b = Builder::default();
+        b.set_header(["1", "2", "3"]);
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+        b.remove_column(3);
+        b.build()
+    },
+    "+---+---+"
+    "| 1 | 2 |"
+    "+---+---+"
+    "| a | b |"
+    "+---+---+"
+    "| d | e |"
+    "+---+---+"
+);
+
+test_table!(
+    push_column_0,
+    {
+        let mut b = Builder::default();
+        b.set_header(["1", "2", "3"]);
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+        b.push_column(["4", "g", "h"]);
+        b.build()
+    },
+    "+---+---+---+---+"
+    "| 1 | 2 | 3 | 4 |"
+    "+---+---+---+---+"
+    "| a | b | c | g |"
+    "+---+---+---+---+"
+    "| d | e | f | h |"
+    "+---+---+---+---+"
+);
+
+test_table!(
+    push_column_1,
+    {
+        let mut b = Builder::default();
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+        b.push_column(["g", "h"]);
+        b.build()
+    },
+    "+---+---+---+---+"
+    "| a | b | c | g |"
+    "+---+---+---+---+"
+    "| d | e | f | h |"
+    "+---+---+---+---+"
+);
+
+test_table!(
+    insert_column_0,
+    {
+        let mut b = Builder::default();
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+        b.insert_column(["k", "n"], 2);
+        b.build()
+    },
+    "+---+---+---+---+"
+    "| a | b | k | c |"
+    "+---+---+---+---+"
+    "| d | e | n | f |"
+    "+---+---+---+---+"
+);
+
+test_table!(
+    insert_column_1,
+    {
+        let mut b = Builder::default();
+        b.set_header(["1", "2", "3"]);
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+        b.insert_column(["4", "l", "d"], 3);
+        b.build()
+    },
+    "+---+---+---+---+"
+    "| 1 | 2 | 3 | 4 |"
+    "+---+---+---+---+"
+    "| a | b | c | l |"
+    "+---+---+---+---+"
+    "| d | e | f | d |"
+    "+---+---+---+---+"
+);
+
+test_table!(
+    reset_table_0,
+    {
+        let mut b = Builder::default();
+        b.set_header(["1", "2", "3"]);
+        b.push_record(["a", "b", "c"]);
+        b.push_record(["d", "e", "f"]);
+        b.reset_table();
+        b.build()
+    },
+    "+---+---+---+"
+    "| 1 | 2 | 3 |"
+    "+---+---+---+"
+);
+
+test_table!(
     from_iter,
     Builder::from_iter([["n", "name"], ["0", "Dmitriy"], ["1", "Vladislav"]]).build(),
     "+---+-----------+"
