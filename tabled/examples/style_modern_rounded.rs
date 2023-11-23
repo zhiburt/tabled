@@ -7,10 +7,10 @@ use tabled::{
 };
 
 const STYLE_1: StyleBuilder<On, On, On, On, On, On, 0, 0> =
-    Style::modern().frame(Border::inherit(Style::rounded()));
+    StyleBuilder::modern().frame(Border::inherit(StyleBuilder::rounded()));
 
-const STYLE_2: StyleBuilder<On, On, On, On, On, On, 0, 0> = Style::rounded()
-    .line_horizontal(HorizontalLine::inherit(Style::modern()))
+const STYLE_2: StyleBuilder<On, On, On, On, On, On, 0, 0> = StyleBuilder::rounded()
+    .line_horizontal(HorizontalLine::inherit(StyleBuilder::modern()))
     .remove_horizontals();
 
 fn main() {

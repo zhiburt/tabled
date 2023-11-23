@@ -4,7 +4,7 @@
 
 use tabled::{
     grid::config::AlignmentHorizontal,
-    settings::{themes::ColumnNames, Color, Style},
+    settings::{style::StyleBuilder, themes::ColumnNames, Color},
     Table, Tabled,
 };
 
@@ -51,7 +51,7 @@ fn main() {
 
     let mut table = Table::new(data);
 
-    table.with(Style::modern().remove_horizontal()).with(
+    table.with(StyleBuilder::modern().remove_horizontal()).with(
         ColumnNames::default()
             .set_color(Color::BOLD | Color::BG_BLUE | Color::FG_WHITE)
             .set_alignment(AlignmentHorizontal::Center),

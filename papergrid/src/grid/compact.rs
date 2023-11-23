@@ -165,15 +165,6 @@ where
             f.write_char('\n')?;
         }
 
-        print_horizontal_line(
-            f,
-            dims,
-            &horizontal_borders,
-            &horizontal_colors,
-            &margin,
-            count_columns,
-        )?;
-
         let cells = records_first.into_iter();
         print_grid_row(
             f,
@@ -289,12 +280,11 @@ fn create_vertical_borders(
     let intersect = borders
         .vertical
         .map(|c| ColoredIndent::new(0, c, colors.vertical));
-    let left = borders
-        .vertical
-        .map(|c| ColoredIndent::new(0, c, colors.left));
+    let left = borders.left.map(|c| ColoredIndent::new(0, c, colors.left));
     let right = borders
-        .vertical
+        .right
         .map(|c| ColoredIndent::new(0, c, colors.right));
+
     HorizontalLine::new(None, intersect, left, right)
 }
 

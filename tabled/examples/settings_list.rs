@@ -8,7 +8,7 @@ use tabled::{
     settings::{
         object::{FirstRow, Rows},
         style::{On, StyleBuilder},
-        Alignment, Modify, ModifyList, Padding, Settings, Style,
+        Alignment, Modify, ModifyList, Padding, Settings,
     },
     Table, Tabled,
 };
@@ -37,7 +37,7 @@ type TableTheme = Settings<
 >;
 
 const THEME: TableTheme = Settings::empty()
-    .with(Style::ascii())
+    .with(StyleBuilder::ascii())
     .with(Padding::new(1, 3, 0, 0))
     .with(Modify::list(Rows::first(), Alignment::center()));
 

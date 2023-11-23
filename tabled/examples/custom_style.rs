@@ -9,7 +9,7 @@
 
 use tabled::{
     settings::{
-        style::{HorizontalLine, Style, VerticalLine},
+        style::{HorizontalLine, StyleBuilder, VerticalLine},
         Alignment,
     },
     Table, Tabled,
@@ -41,9 +41,9 @@ fn main() {
         CodeEditor::new("Neovim", "2015", "Vim community"),
     ];
 
-    let theme = Style::modern()
-        .horizontals([(1, HorizontalLine::inherit(Style::modern()))])
-        .verticals([(1, VerticalLine::inherit(Style::modern()))])
+    let theme = StyleBuilder::modern()
+        .horizontals([(1, HorizontalLine::inherit(StyleBuilder::modern()))])
+        .verticals([(1, VerticalLine::inherit(StyleBuilder::modern()))])
         .remove_horizontal()
         .remove_vertical();
 

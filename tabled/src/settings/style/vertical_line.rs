@@ -1,5 +1,7 @@
 use core::marker::PhantomData;
 
+use papergrid::config::HorizontalLine;
+
 use crate::grid::config::VerticalLine as Line;
 use crate::settings::style::On;
 
@@ -75,7 +77,7 @@ impl<T, B, I> VerticalLine<T, B, I> {
 
 impl VerticalLine<On, On, On> {
     /// Creates a new vertical split line.
-    pub const fn full(main: char, top: char, bottom: char, intersection: char) -> Self {
+    pub const fn full(main: char, intersection: char, top: char, bottom: char) -> Self {
         Self::update(Line::new(
             Some(main),
             Some(intersection),
@@ -185,6 +187,17 @@ impl<T, I> VerticalLine<T, On, I> {
 impl<T, B, I> From<VerticalLine<T, B, I>> for Line<char> {
     fn from(value: VerticalLine<T, B, I>) -> Self {
         value.line
+    }
+}
+
+impl<T, B, I> From<VerticalLine<T, B, I>> for HorizontalLine<char> {
+    fn from(value: VerticalLine<T, B, I>) -> Self {
+        HorizontalLine::new(
+            value.line.main,
+            value.line.intersection,
+            value.line.top,
+            value.line.bottom,
+        )
     }
 }
 

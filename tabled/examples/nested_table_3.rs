@@ -6,7 +6,8 @@
 use tabled::{
     settings::{
         object::{Cell, Segment},
-        Alignment, Border, Extract, Highlight, Modify, Panel, Style,
+        style::StyleBuilder,
+        Alignment, Border, Extract, Highlight, Modify, Panel,
     },
     Table, Tabled,
 };
@@ -48,8 +49,8 @@ fn main() {
         Table::new([String::from("Thank You"), committers_table, issues_table]);
     a_welcome_table
         .with(Extract::rows(1..))
-        .with(Style::ascii().remove_horizontal())
-        .with(Modify::new(Segment::all()).with(Alignment::center()))
+        .with(StyleBuilder::ascii().remove_horizontal())
+        .with(Alignment::center())
         .with(Highlight::border(Cell::new(0, 0), Border::filled('*')));
 
     println!("{a_welcome_table}");

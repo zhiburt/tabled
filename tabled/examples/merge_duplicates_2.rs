@@ -8,7 +8,7 @@
 
 use tabled::{
     settings::{
-        style::{HorizontalLine, Style, VerticalLine},
+        style::{HorizontalLine, StyleBuilder, VerticalLine},
         Border, Merge,
     },
     Table, Tabled,
@@ -60,10 +60,10 @@ impl DatabaseTable {
 }
 
 fn config_theme(table: &mut Table) {
-    let style = Style::modern()
-        .frame(Border::inherit(Style::rounded()))
-        .horizontals([(1, HorizontalLine::inherit(Style::modern()))])
-        .verticals([(1, VerticalLine::inherit(Style::modern()))])
+    let style = StyleBuilder::modern()
+        .frame(Border::inherit(StyleBuilder::rounded()))
+        .horizontals([(1, HorizontalLine::inherit(StyleBuilder::modern()))])
+        .verticals([(1, VerticalLine::inherit(StyleBuilder::modern()))])
         .remove_horizontal()
         .remove_vertical();
 

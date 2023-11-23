@@ -4,13 +4,17 @@
 use core::iter::FromIterator;
 use std::collections::HashMap;
 
+use papergrid::config::compact::CompactConfig;
+
 use crate::{
     grid::{
         color::AnsiColor,
-        config::{Border, Borders, ColoredConfig, HorizontalLine, VerticalLine},
+        config::{
+            Border, Borders, ColoredConfig, CompactMultilineConfig, HorizontalLine, VerticalLine,
+        },
         records::Records,
     },
-    settings::{style::On, Color, TableOption},
+    settings::{Color, TableOption},
 };
 
 use super::StyleBuilder;
@@ -22,6 +26,7 @@ use super::StyleBuilder;
 pub struct Style {
     borders: Borders<char>,
     colors: Borders<AnsiColor<'static>>,
+    horizontal1: Option<HorizontalLine<char>>,
     horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
     verticals: Option<HashMap<usize, VerticalLine<char>>>,
 }
@@ -42,25 +47,14 @@ impl Style {
     ///
     /// ```rust,no_run
     /// # use tabled::settings::Style;
-    /// let style = StyleBuilder::empty()
-    ///     .top('*')
-    ///     .bottom('*')
-    ///     .vertical('#')
-    ///     .intersection_top('*');
+    /// let mut style = Style::empty();
+    /// style.set_top(Some('*'));
+    /// style.set_bottom(Some('*'));
+    /// style.set_vertical(Some('#'));
+    /// style.set_intersection_top(Some('*'));
     /// ```
-    pub const fn empty() -> StyleBuilder<(), (), (), (), (), (), 0, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::empty(),
-                HorizontalLine::empty(),
-                HorizontalLine::empty(),
-                None,
-                None,
-                None,
-            ),
-            [],
-            [],
-        )
+    pub const fn empty() -> Style {
+        Self::with(StyleBuilder::empty())
     }
 
     /// This style is analog of `empty` but with a vertical space(' ') line.
@@ -71,19 +65,8 @@ impl Style {
     ///      2      OpenSUSE     https://www.opensuse.org/
     ///      3    Endeavouros    https://endeavouros.com/
     /// ```
-    pub const fn blank() -> StyleBuilder<(), (), (), (), (), On, 0, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::empty(),
-                HorizontalLine::empty(),
-                HorizontalLine::empty(),
-                None,
-                None,
-                Some(' '),
-            ),
-            [],
-            [],
-        )
+    pub const fn blank() -> Style {
+        Self::with(StyleBuilder::blank())
     }
 
     /// This is a style which relays only on ASCII charset.
@@ -101,19 +84,8 @@ impl Style {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     +----+--------------+---------------------------+
     /// ```
-    pub const fn ascii() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::full('-', '+', '+', '+'),
-                HorizontalLine::full('-', '+', '+', '+'),
-                HorizontalLine::full('-', '+', '+', '+'),
-                Some('|'),
-                Some('|'),
-                Some('|'),
-            ),
-            [],
-            [],
-        )
+    pub const fn ascii() -> Style {
+        Self::with(StyleBuilder::ascii())
     }
 
     /// `psql` style looks like a table style `PostgreSQL` uses.
@@ -128,19 +100,8 @@ impl Style {
     ///      2  |   OpenSUSE   | https://www.opensuse.org/
     ///      3  | Endeavouros  | https://endeavouros.com/
     /// ```
-    pub const fn psql() -> StyleBuilder<(), (), (), (), (), On, 1, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::empty(),
-                HorizontalLine::empty(),
-                HorizontalLine::empty(),
-                None,
-                None,
-                Some('|'),
-            ),
-            [(1, HorizontalLine::new(Some('-'), Some('+'), None, None))],
-            [],
-        )
+    pub const fn psql() -> Style {
+        Self::with(StyleBuilder::psql())
     }
 
     /// `markdown` style mimics a `Markdown` table style.
@@ -152,19 +113,8 @@ impl Style {
     ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     /// ```
-    pub const fn markdown() -> StyleBuilder<(), (), On, On, (), On, 1, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::empty(),
-                HorizontalLine::empty(),
-                HorizontalLine::empty(),
-                Some('|'),
-                Some('|'),
-                Some('|'),
-            ),
-            [(1, HorizontalLine::full('-', '|', '|', '|'))],
-            [],
-        )
+    pub const fn markdown() -> Style {
+        Self::with(StyleBuilder::markdown())
     }
 
     /// This style is analog of [`StyleBuilder::ascii`] which uses UTF-8 charset.
@@ -182,19 +132,8 @@ impl Style {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
-    pub const fn modern() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::full('─', '┬', '┌', '┐'),
-                HorizontalLine::full('─', '┴', '└', '┘'),
-                HorizontalLine::full('─', '┼', '├', '┤'),
-                Some('│'),
-                Some('│'),
-                Some('│'),
-            ),
-            [],
-            [],
-        )
+    pub const fn modern() -> Style {
+        Self::with(StyleBuilder::modern())
     }
 
     /// This style looks like a [`StyleBuilder::modern`] but without horozizontal lines except a header.
@@ -210,19 +149,8 @@ impl Style {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
-    pub const fn sharp() -> StyleBuilder<On, On, On, On, (), On, 1, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::full('─', '┬', '┌', '┐'),
-                HorizontalLine::full('─', '┴', '└', '┘'),
-                HorizontalLine::empty(),
-                Some('│'),
-                Some('│'),
-                Some('│'),
-            ),
-            [(1, HorizontalLine::full('─', '├', '┤', '┼'))],
-            [],
-        )
+    pub const fn sharp() -> Style {
+        Self::with(StyleBuilder::sharp())
     }
 
     /// This style looks like a [`StyleBuilder::sharp`] but with rounded corners.
@@ -238,19 +166,8 @@ impl Style {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     ╰────┴──────────────┴───────────────────────────╯
     /// ```
-    pub const fn rounded() -> StyleBuilder<On, On, On, On, (), On, 1, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::full('─', '┬', '╭', '╮'),
-                HorizontalLine::full('─', '┴', '╰', '╯'),
-                HorizontalLine::empty(),
-                Some('│'),
-                Some('│'),
-                Some('│'),
-            ),
-            [(1, HorizontalLine::full('─', '├', '┤', '┼'))],
-            [],
-        )
+    pub const fn rounded() -> Style {
+        Self::with(StyleBuilder::rounded())
     }
 
     /// This style looks like a [`StyleBuilder::rounded`] but with horizontals lines.
@@ -268,19 +185,8 @@ impl Style {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     ╰────┴──────────────┴───────────────────────────╯
     /// ```
-    pub const fn modern_rounded() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::full('─', '┬', '╭', '╮'),
-                HorizontalLine::full('─', '┴', '╰', '╯'),
-                HorizontalLine::full('─', '┼', '├', '┤'),
-                Some('│'),
-                Some('│'),
-                Some('│'),
-            ),
-            [],
-            [],
-        )
+    pub const fn modern_rounded() -> Style {
+        Self::with(StyleBuilder::modern_rounded())
     }
 
     /// This style uses a chars which resembles '2 lines'.
@@ -298,19 +204,8 @@ impl Style {
     ///     ║ 3  ║ Endeavouros  ║ https://endeavouros.com/  ║
     ///     ╚════╩══════════════╩═══════════════════════════╝
     /// ```
-    pub const fn extended() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::full('═', '╦', '╔', '╗'),
-                HorizontalLine::full('═', '╩', '╚', '╝'),
-                HorizontalLine::full('═', '╬', '╠', '╣'),
-                Some('║'),
-                Some('║'),
-                Some('║'),
-            ),
-            [],
-            [],
-        )
+    pub const fn extended() -> Style {
+        Self::with(StyleBuilder::extended())
     }
 
     /// This is a style uses only '.' and ':' chars.
@@ -327,19 +222,8 @@ impl Style {
     ///     : 3  : Endeavouros  : https://endeavouros.com/  :
     ///     :....:..............:...........................:
     /// ```
-    pub const fn dots() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::full('.', '.', '.', '.'),
-                HorizontalLine::full('.', ':', ':', ':'),
-                HorizontalLine::full('.', ':', ':', ':'),
-                Some(':'),
-                Some(':'),
-                Some(':'),
-            ),
-            [],
-            [],
-        )
+    pub const fn dots() -> Style {
+        Self::with(StyleBuilder::dots())
     }
 
     /// This style is one of table views in `ReStructuredText`.
@@ -353,19 +237,8 @@ impl Style {
     ///      3    Endeavouros    https://endeavouros.com/  
     ///     ==== ============== ===========================
     /// ```
-    pub const fn re_structured_text() -> StyleBuilder<On, On, (), (), (), On, 1, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::new(Some('='), Some(' '), None, None),
-                HorizontalLine::new(Some('='), Some(' '), None, None),
-                HorizontalLine::empty(),
-                None,
-                None,
-                Some(' '),
-            ),
-            [(1, HorizontalLine::new(Some('='), Some(' '), None, None))],
-            [],
-        )
+    pub const fn re_structured_text() -> Style {
+        Self::with(StyleBuilder::re_structured_text())
     }
 
     /// This is a theme analog of [`StyleBuilder::rounded`], but in using ascii charset and
@@ -379,19 +252,8 @@ impl Style {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     '-----------------------------------------------'
     /// ```
-    pub const fn ascii_rounded() -> StyleBuilder<On, On, On, On, (), On, 0, 0> {
-        StyleBuilder::new(
-            create_borders(
-                HorizontalLine::full('-', '-', '.', '.'),
-                HorizontalLine::full('-', '-', '\'', '\''),
-                HorizontalLine::empty(),
-                Some('|'),
-                Some('|'),
-                Some('|'),
-            ),
-            [],
-            [],
-        )
+    pub const fn ascii_rounded() -> Style {
+        Self::with(StyleBuilder::ascii_rounded())
     }
 }
 
@@ -402,6 +264,34 @@ impl Style {
     pub const fn new() -> Self {
         Self {
             borders: Borders::empty(),
+            colors: Borders::empty(),
+            horizontal1: None,
+            horizontals: None,
+            verticals: None,
+        }
+    }
+
+    const fn with<A, B, C, D, E, J, const HS: usize, const VS: usize>(
+        builder: StyleBuilder<A, B, C, D, E, J, HS, VS>,
+    ) -> Self {
+        let borders = builder.get_borders();
+
+        let horizontals = builder.get_horizontals();
+        let mut horizontal1 = None;
+
+        let mut i = 0;
+        while i < horizontals.len() {
+            let (line, hline) = horizontals[i];
+            if line == 1 {
+                horizontal1 = Some(hline);
+            }
+
+            i += 1;
+        }
+
+        Self {
+            borders,
+            horizontal1,
             colors: Borders::empty(),
             horizontals: None,
             verticals: None,
@@ -580,15 +470,16 @@ impl Style {
     ///
     /// ```
     /// use std::collections::HashMap;
-    /// use tabled::{Table, settings::style::{Style, Line, RawStyle}};
+    /// use tabled::{Table, settings::style::{Style, StyleBuilder, HorizontalLine}};
+    ///
+    /// let mut style = Style::re_structured_text();
+    ///
+    /// let mut lines = HashMap::new();
+    /// lines.insert(1, HorizontalLine::inherit(StyleBuilder::extended()).into());
+    ///
+    /// style.set_lines_horizontal(lines);
     ///
     /// let data = (0..3).map(|i| ("Hello", i));
-    ///
-    /// let mut style = RawStyle::from(Style::re_structured_text());
-    /// let mut lines = HashMap::new();
-    /// lines.insert(1, Style::extended().get_horizontal_line().into_inner());
-    /// style.set_horizontals(lines);
-    ///
     /// let table = Table::new(data).with(style).to_string();
     ///
     /// assert_eq!(
@@ -604,7 +495,7 @@ impl Style {
     ///     ),
     /// )
     /// ```
-    pub fn set_horizontals(&mut self, lines: HashMap<usize, HorizontalLine<char>>) {
+    pub fn set_lines_horizontal(&mut self, lines: HashMap<usize, HorizontalLine<char>>) {
         self.horizontals = Some(lines);
     }
 
@@ -614,15 +505,17 @@ impl Style {
     ///
     /// ```
     /// use std::collections::HashMap;
-    /// use tabled::{Table, settings::style::{Style, Line, RawStyle}};
+    /// use tabled::{Table, settings::style::{Style, StyleBuilder, HorizontalLine}};
+    ///
+    ///
+    /// let mut style = Style::re_structured_text();
+    ///
+    /// let mut lines = HashMap::new();
+    /// lines.insert(1, HorizontalLine::inherit(StyleBuilder::extended()).into());
+    ///
+    /// style.set_lines_vertical(lines);
     ///
     /// let data = (0..3).map(|i| ("Hello", i));
-    ///
-    /// let mut style = RawStyle::from(Style::re_structured_text());
-    /// let mut lines = HashMap::new();
-    /// lines.insert(1, Style::extended().get_horizontal_line().into_inner());
-    /// style.set_verticals(lines);
-    ///
     /// let table = Table::new(data).with(style).to_string();
     ///
     /// assert_eq!(
@@ -638,12 +531,12 @@ impl Style {
     ///     ),
     /// )
     /// ```
-    pub fn set_verticals(&mut self, lines: HashMap<usize, VerticalLine<char>>) {
+    pub fn set_lines_vertical(&mut self, lines: HashMap<usize, VerticalLine<char>>) {
         self.verticals = Some(lines);
     }
 
     /// Insert a vertical line into specific column location.
-    pub fn insert_vertical(&mut self, line: usize, vertical: VerticalLine<char>) {
+    pub fn insert_line_vertical(&mut self, line: usize, vertical: VerticalLine<char>) {
         match &mut self.verticals {
             Some(verticals) => {
                 let _ = verticals.insert(line, vertical);
@@ -653,7 +546,7 @@ impl Style {
     }
 
     /// Insert a horizontal line to a specific row location.
-    pub fn insert_horizontal(&mut self, line: usize, horizontal: HorizontalLine<char>) {
+    pub fn insert_line_horizontal(&mut self, line: usize, horizontal: HorizontalLine<char>) {
         match &mut self.horizontals {
             Some(horizontals) => {
                 let _ = horizontals.insert(line, horizontal);
@@ -662,15 +555,15 @@ impl Style {
         }
     }
 
-    /// Get a horizontal line at the row if any set.
-    pub fn get_vertical(&self, column: usize) -> Option<VerticalLine<char>> {
+    /// Get a vertical line at the row if any set.
+    pub fn get_line_vertical(&self, column: usize) -> Option<VerticalLine<char>> {
         self.verticals
             .as_ref()
             .and_then(|lines| lines.get(&column).cloned())
     }
 
     /// Get a horizontal line at the row if any set.
-    pub fn get_horizontal(&self, row: usize) -> Option<HorizontalLine<char>> {
+    pub fn get_line_horizontal(&self, row: usize) -> Option<HorizontalLine<char>> {
         self.horizontals
             .as_ref()
             .and_then(|list| list.get(&row).cloned())
@@ -762,6 +655,7 @@ impl From<Borders<char>> for Style {
             borders,
             horizontals: None,
             verticals: None,
+            horizontal1: None,
             colors: Borders::default(),
         }
     }
@@ -774,6 +668,10 @@ where
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         cfg.clear_theme();
         cfg.set_borders(self.borders);
+
+        if let Some(line) = self.horizontal1 {
+            cfg.insert_horizontal_line(1, line);
+        }
 
         if let Some(lines) = self.horizontals {
             for (row, line) in lines {
@@ -790,6 +688,18 @@ where
         if !self.colors.is_empty() {
             cfg.set_borders_color(self.colors.clone());
         }
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactConfig> for Style {
+    fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+        *cfg = cfg.set_borders(self.borders);
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactMultilineConfig> for Style {
+    fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
+        cfg.set_borders(self.borders);
     }
 }
 
@@ -818,35 +728,9 @@ impl From<ColoredConfig> for Style {
         Self {
             borders,
             colors,
+            horizontal1: None,
             horizontals: Some(horizontals),
             verticals: Some(verticals),
         }
-    }
-}
-
-const fn create_borders(
-    top: HorizontalLine<char>,
-    bottom: HorizontalLine<char>,
-    horizontal: HorizontalLine<char>,
-    left: Option<char>,
-    right: Option<char>,
-    vertical: Option<char>,
-) -> Borders<char> {
-    Borders {
-        top: top.main,
-        top_left: top.left,
-        top_right: top.right,
-        top_intersection: top.intersection,
-        bottom: bottom.main,
-        bottom_left: bottom.left,
-        bottom_right: bottom.right,
-        bottom_intersection: bottom.intersection,
-        left_intersection: horizontal.left,
-        right_intersection: horizontal.right,
-        horizontal: horizontal.main,
-        intersection: horizontal.intersection,
-        left,
-        right,
-        vertical,
     }
 }

@@ -9,6 +9,7 @@ pub enum Offset {
     End(usize),
 }
 
+#[cfg(feature = "std")]
 impl From<Offset> for config::Offset {
     fn from(o: Offset) -> Self {
         match o {

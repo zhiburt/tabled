@@ -2,6 +2,7 @@
 
 use tabled::settings::{
     object::{Columns, Segment},
+    style::StyleBuilder,
     Alignment, Format, Height, Modify, Style,
 };
 
@@ -253,7 +254,7 @@ test_table!(
 #[cfg(feature = "macros")]
 test_table!(
     cell_height_1x1_no_top_border,
-    tabled::row![tabled::col!["SGML"].with(Style::ascii().remove_top()).with(Height::increase(4))],
+    tabled::row![tabled::col!["SGML"].with(StyleBuilder::ascii().remove_top()).with(Height::increase(4))],
     "+----------+"
     "| | SGML | |"
     "| |      | |"

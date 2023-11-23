@@ -30,7 +30,7 @@ impl CodeEditor {
 }
 
 fn main() {
-    let mut style = Style::extended().build();
+    let mut style = Style::extended();
     style.set_color_top(Color::FG_RED);
     style.set_color_bottom(Color::FG_CYAN);
     style.set_color_left(Color::FG_BLUE);

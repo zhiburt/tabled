@@ -3,14 +3,15 @@
 use core::marker::PhantomData;
 
 use crate::{
-    grid::config::{
-        Border as GridBorder, Borders, ColoredConfig, CompactConfig, CompactMultilineConfig,
-    },
+    grid::config::{Border as GridBorder, Borders, CompactConfig, CompactMultilineConfig},
     settings::{
         style::{HorizontalLine, Style, VerticalLine},
         Border, TableOption,
     },
 };
+
+#[cfg(feature = "std")]
+use crate::grid::config::ColoredConfig;
 
 /// Style is represents a theme of a [`Table`].
 ///
@@ -56,11 +57,13 @@ use crate::{
 ///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// use tabled::{Table, settings::Style};
+/// use tabled::{Table, settings::style::StyleBuilder};
 ///
 /// let data = vec!["Hello", "2021"];
+/// let mut table = Table::new(&data);
+///
 /// let style = StyleBuilder::ascii().bottom('*').intersection(' ');
-/// let table = Table::new(&data).with(style).to_string();
+/// table.with(style);
 ///
 /// println!("{}", table);
 /// ```
@@ -93,6 +96,364 @@ type VArray<const N: usize> = [(usize, VLine); N];
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy, Default, Hash)]
 pub struct On;
 
+impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
+    /// This style is a style with no styling options on,
+    ///
+    /// ```text
+    ///      id  destribution            link
+    ///      0      Fedora      https://getfedora.org/
+    ///      2     OpenSUSE    https://www.opensuse.org/
+    ///      3   Endeavouros   https://endeavouros.com/
+    /// ```
+    ///
+    /// Note: The cells in the example have 1-left and 1-right indent.
+    ///
+    /// This style can be used as a base style to build a custom one.
+    ///
+    /// ```rust,no_run
+    /// # use tabled::settings::style::StyleBuilder;
+    /// let style = StyleBuilder::empty()
+    ///     .top('*')
+    ///     .bottom('*')
+    ///     .vertical('#')
+    ///     .intersection_top('*');
+    /// ```
+    pub const fn empty() -> StyleBuilder<(), (), (), (), (), (), 0, 0> {
+        StyleBuilder::new(Borders::empty(), [], [])
+    }
+
+    /// This style is analog of `empty` but with a vertical space(' ') line.
+    ///
+    /// ```text
+    ///      id   destribution             link
+    ///      0       Fedora       https://getfedora.org/
+    ///      2      OpenSUSE     https://www.opensuse.org/
+    ///      3    Endeavouros    https://endeavouros.com/
+    /// ```
+    pub const fn blank() -> StyleBuilder<(), (), (), (), (), On, 0, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::empty(),
+                HLine::empty(),
+                HLine::empty(),
+                None,
+                None,
+                Some(' '),
+            ),
+            [],
+            [],
+        )
+    }
+
+    /// This is a style which relays only on ASCII charset.
+    ///
+    /// It has horizontal and vertical lines.
+    ///
+    /// ```text
+    ///     +----+--------------+---------------------------+
+    ///     | id | destribution |           link            |
+    ///     +----+--------------+---------------------------+
+    ///     | 0  |    Fedora    |  https://getfedora.org/   |
+    ///     +----+--------------+---------------------------+
+    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
+    ///     +----+--------------+---------------------------+
+    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
+    ///     +----+--------------+---------------------------+
+    /// ```
+    pub const fn ascii() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::full('-', '+', '+', '+'),
+                HLine::full('-', '+', '+', '+'),
+                HLine::full('-', '+', '+', '+'),
+                Some('|'),
+                Some('|'),
+                Some('|'),
+            ),
+            [],
+            [],
+        )
+    }
+
+    /// `psql` style looks like a table style `PostgreSQL` uses.
+    ///
+    /// It has only 1 horizontal line which splits header.
+    /// And no left and right vertical lines.
+    ///
+    /// ```text
+    ///      id | destribution |           link
+    ///     ----+--------------+---------------------------
+    ///      0  |    Fedora    |  https://getfedora.org/
+    ///      2  |   OpenSUSE   | https://www.opensuse.org/
+    ///      3  | Endeavouros  | https://endeavouros.com/
+    /// ```
+    pub const fn psql() -> StyleBuilder<(), (), (), (), (), On, 1, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::empty(),
+                HLine::empty(),
+                HLine::empty(),
+                None,
+                None,
+                Some('|'),
+            ),
+            [(1, HLine::new(Some('-'), Some('+'), None, None))],
+            [],
+        )
+    }
+
+    /// `markdown` style mimics a `Markdown` table style.
+    ///
+    /// ```text
+    ///     | id | destribution |           link            |
+    ///     |----|--------------|---------------------------|
+    ///     | 0  |    Fedora    |  https://getfedora.org/   |
+    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
+    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
+    /// ```
+    pub const fn markdown() -> StyleBuilder<(), (), On, On, (), On, 1, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::empty(),
+                HLine::empty(),
+                HLine::empty(),
+                Some('|'),
+                Some('|'),
+                Some('|'),
+            ),
+            [(1, HLine::full('-', '|', '|', '|'))],
+            [],
+        )
+    }
+
+    /// This style is analog of [`StyleBuilder::ascii`] which uses UTF-8 charset.
+    ///
+    /// It has vertical and horizontal split lines.
+    ///
+    /// ```text
+    ///     ┌────┬──────────────┬───────────────────────────┐
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     └────┴──────────────┴───────────────────────────┘
+    /// ```
+    pub const fn modern() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::full('─', '┬', '┌', '┐'),
+                HLine::full('─', '┴', '└', '┘'),
+                HLine::full('─', '┼', '├', '┤'),
+                Some('│'),
+                Some('│'),
+                Some('│'),
+            ),
+            [],
+            [],
+        )
+    }
+
+    /// This style looks like a [`StyleBuilder::modern`] but without horozizontal lines except a header.
+    ///
+    /// Beware: It uses UTF-8 characters.
+    ///
+    /// ```text
+    ///     ┌────┬──────────────┬───────────────────────────┐
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     └────┴──────────────┴───────────────────────────┘
+    /// ```
+    pub const fn sharp() -> StyleBuilder<On, On, On, On, (), On, 1, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::full('─', '┬', '┌', '┐'),
+                HLine::full('─', '┴', '└', '┘'),
+                HLine::empty(),
+                Some('│'),
+                Some('│'),
+                Some('│'),
+            ),
+            [(1, HLine::full('─', '┼', '├', '┤'))],
+            [],
+        )
+    }
+
+    /// This style looks like a [`StyleBuilder::sharp`] but with rounded corners.
+    ///
+    /// Beware: It uses UTF-8 characters.
+    ///
+    /// ```text
+    ///     ╭────┬──────────────┬───────────────────────────╮
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     ╰────┴──────────────┴───────────────────────────╯
+    /// ```
+    pub const fn rounded() -> StyleBuilder<On, On, On, On, (), On, 1, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::full('─', '┬', '╭', '╮'),
+                HLine::full('─', '┴', '╰', '╯'),
+                HLine::empty(),
+                Some('│'),
+                Some('│'),
+                Some('│'),
+            ),
+            [(1, HLine::full('─', '┼', '├', '┤'))],
+            [],
+        )
+    }
+
+    /// This style looks like a [`StyleBuilder::rounded`] but with horizontals lines.
+    ///
+    /// Beware: It uses UTF-8 characters.
+    ///
+    /// ```text
+    ///     ╭────┬──────────────┬───────────────────────────╮
+    ///     │ id │ destribution │           link            │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 0  │    Fedora    │  https://getfedora.org/   │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 2  │   OpenSUSE   │ https://www.opensuse.org/ │
+    ///     ├────┼──────────────┼───────────────────────────┤
+    ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
+    ///     ╰────┴──────────────┴───────────────────────────╯
+    /// ```
+    pub const fn modern_rounded() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::full('─', '┬', '╭', '╮'),
+                HLine::full('─', '┴', '╰', '╯'),
+                HLine::full('─', '┼', '├', '┤'),
+                Some('│'),
+                Some('│'),
+                Some('│'),
+            ),
+            [],
+            [],
+        )
+    }
+
+    /// This style uses a chars which resembles '2 lines'.
+    ///
+    /// Beware: It uses UTF8 characters.
+    ///
+    /// ```text
+    ///     ╔════╦══════════════╦═══════════════════════════╗
+    ///     ║ id ║ destribution ║           link            ║
+    ///     ╠════╬══════════════╬═══════════════════════════╣
+    ///     ║ 0  ║    Fedora    ║  https://getfedora.org/   ║
+    ///     ╠════╬══════════════╬═══════════════════════════╣
+    ///     ║ 2  ║   OpenSUSE   ║ https://www.opensuse.org/ ║
+    ///     ╠════╬══════════════╬═══════════════════════════╣
+    ///     ║ 3  ║ Endeavouros  ║ https://endeavouros.com/  ║
+    ///     ╚════╩══════════════╩═══════════════════════════╝
+    /// ```
+    pub const fn extended() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::full('═', '╦', '╔', '╗'),
+                HLine::full('═', '╩', '╚', '╝'),
+                HLine::full('═', '╬', '╠', '╣'),
+                Some('║'),
+                Some('║'),
+                Some('║'),
+            ),
+            [],
+            [],
+        )
+    }
+
+    /// This is a style uses only '.' and ':' chars.
+    /// It has a vertical and horizontal split lines.
+    ///
+    /// ```text
+    ///     .................................................
+    ///     : id : destribution :           link            :
+    ///     :....:..............:...........................:
+    ///     : 0  :    Fedora    :  https://getfedora.org/   :
+    ///     :....:..............:...........................:
+    ///     : 2  :   OpenSUSE   : https://www.opensuse.org/ :
+    ///     :....:..............:...........................:
+    ///     : 3  : Endeavouros  : https://endeavouros.com/  :
+    ///     :....:..............:...........................:
+    /// ```
+    pub const fn dots() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::full('.', '.', '.', '.'),
+                HLine::full('.', ':', ':', ':'),
+                HLine::full('.', ':', ':', ':'),
+                Some(':'),
+                Some(':'),
+                Some(':'),
+            ),
+            [],
+            [],
+        )
+    }
+
+    /// This style is one of table views in `ReStructuredText`.
+    ///
+    /// ```text
+    ///     ==== ============== ===========================
+    ///      id   destribution             link            
+    ///     ==== ============== ===========================
+    ///      0       Fedora       https://getfedora.org/   
+    ///      2      OpenSUSE     https://www.opensuse.org/
+    ///      3    Endeavouros    https://endeavouros.com/  
+    ///     ==== ============== ===========================
+    /// ```
+    pub const fn re_structured_text() -> StyleBuilder<On, On, (), (), (), On, 1, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::new(Some('='), Some(' '), None, None),
+                HLine::new(Some('='), Some(' '), None, None),
+                HLine::empty(),
+                None,
+                None,
+                Some(' '),
+            ),
+            [(1, HLine::new(Some('='), Some(' '), None, None))],
+            [],
+        )
+    }
+
+    /// This is a theme analog of [`StyleBuilder::rounded`], but in using ascii charset and
+    /// with no horizontal lines.
+    ///
+    /// ```text
+    ///     .-----------------------------------------------.
+    ///     | id | destribution |           link            |
+    ///     | 0  |    Fedora    |  https://getfedora.org/   |
+    ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
+    ///     | 3  | Endeavouros  | https://endeavouros.com/  |
+    ///     '-----------------------------------------------'
+    /// ```
+    pub const fn ascii_rounded() -> StyleBuilder<On, On, On, On, (), On, 0, 0> {
+        StyleBuilder::new(
+            create_borders(
+                HLine::full('-', '-', '.', '.'),
+                HLine::full('-', '-', '\'', '\''),
+                HLine::empty(),
+                Some('|'),
+                Some('|'),
+                Some('|'),
+            ),
+            [],
+            [],
+        )
+    }
+}
+
 impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
     StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>
 {
@@ -118,6 +479,10 @@ impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
         self.borders
     }
 
+    pub(crate) const fn get_horizontals(&self) -> [(usize, HLine); HSIZE] {
+        self.horizontals
+    }
+
     /// Builder a [`Style`]
     pub fn build(self) -> Style {
         let mut style = Style::new();
@@ -125,12 +490,12 @@ impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
 
         if !self.horizontals.is_empty() {
             let lines = self.horizontals.iter().cloned().collect();
-            style.set_horizontals(lines);
+            style.set_lines_horizontal(lines);
         }
 
         if !self.verticals.is_empty() {
             let lines = self.verticals.iter().cloned().collect();
-            style.set_verticals(lines);
+            style.set_lines_vertical(lines);
         }
 
         style
@@ -144,9 +509,10 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     ///
     #[cfg_attr(feature = "derive", doc = "```")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{settings::StyleBuilder::{Style, HorizontalLine, Line}, Table};
+    /// use tabled::{settings::style::{StyleBuilder, HorizontalLine}, Table};
     ///
     /// let data = (0..3).map(|i| ("Hello", i));
+    /// let mut table = Table::new(data);
     ///
     /// let style = StyleBuilder::rounded().horizontals([
     ///     (1, HorizontalLine::filled('#')),
@@ -154,10 +520,10 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     ///     (3, HorizontalLine::filled('@')),
     /// ]);
     ///
-    /// let table = Table::new(data).with(style).to_string();
+    /// table.with(style);
     ///
     /// assert_eq!(
-    ///     table,
+    ///     table.to_string(),
     ///     concat!(
     ///         "╭───────┬─────╮\n",
     ///         "│ &str  │ i32 │\n",
@@ -185,16 +551,16 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     ///
     #[cfg_attr(feature = "derive", doc = "```")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{settings::StyleBuilder::{Style, VerticalLine, Line}, Table};
+    /// use tabled::{settings::style::{StyleBuilder, VerticalLine}, Table};
     ///
     /// let data = (0..3).map(|i| ("Hello", "World", i));
+    /// let mut table = Table::new(data);
     ///
     /// let style = StyleBuilder::rounded().verticals([
     ///     (1, VerticalLine::new('#').top(':').bottom('.')),
     ///     (2, VerticalLine::new('&').top(':').bottom('.')),
     /// ]);
-    ///
-    /// let table = Table::new(data).with(style).to_string();
+    /// let table = table.with(style).to_string();
     ///
     /// assert_eq!(
     ///     table,
@@ -810,11 +1176,11 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, settings::Style};
+    /// use tabled::{Table, settings::style::{StyleBuilder, Border}};
     ///
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
     /// let table = Table::new(data)
-    ///     .with(StyleBuilder::ascii().frame(StyleBuilder::modern().get_frame()))
+    ///     .with(StyleBuilder::ascii().frame(Border::inherit(StyleBuilder::modern())))
     ///     .to_string();
     ///
     /// assert_eq!(
@@ -1314,4 +1680,31 @@ const fn varr_unset<const N: usize>(lines: VArray<N>, set: VLine) -> VArray<N> {
     }
 
     buf
+}
+
+const fn create_borders(
+    top: HLine,
+    bottom: HLine,
+    horizontal: HLine,
+    left: Option<char>,
+    right: Option<char>,
+    vertical: Option<char>,
+) -> Borders<char> {
+    Borders {
+        top: top.main,
+        top_left: top.left,
+        top_right: top.right,
+        top_intersection: top.intersection,
+        bottom: bottom.main,
+        bottom_left: bottom.left,
+        bottom_right: bottom.right,
+        bottom_intersection: bottom.intersection,
+        left_intersection: horizontal.left,
+        right_intersection: horizontal.right,
+        horizontal: horizontal.main,
+        intersection: horizontal.intersection,
+        left,
+        right,
+        vertical,
+    }
 }

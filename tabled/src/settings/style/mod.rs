@@ -94,25 +94,22 @@
 //! [`BorderText`]: crate::settings::style::BorderText
 //! [`RawStyle`]: crate::settings::style::RawStyle
 
-#[cfg(feature = "std")]
 mod border;
-#[cfg(feature = "std")]
 mod border_color;
+mod builder;
+mod horizontal_line;
+mod offset;
+mod vertical_line;
+
 #[cfg(feature = "std")]
 mod border_text;
 #[cfg(feature = "std")]
 mod line_char;
 #[cfg(feature = "std")]
-mod offset;
-#[cfg(feature = "std")]
 mod span_border_correction;
 #[cfg(feature = "std")]
 #[allow(clippy::module_inception)]
 mod style;
-
-mod builder;
-mod horizontal_line;
-mod vertical_line;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]

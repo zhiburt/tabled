@@ -13,7 +13,7 @@ use tabled::{
     builder::Builder,
     settings::{
         object::{Rows, Segment},
-        style::{HorizontalLine, Style},
+        style::{HorizontalLine, Style, StyleBuilder},
         Alignment, Modify, Padding, Width,
     },
     Table,
@@ -32,19 +32,23 @@ fn main() {
         &["swim", "quack"],
     );
 
-    let mut table = Builder::from_iter([
+    let data = [
         [animal.to_string()],
         [String::from("▲")],
         [String::from("|")],
         [String::from("|")],
         [duck.to_string()],
-    ])
-    .build();
-    table.with(Style::ascii().remove_horizontal()).with(
-        Modify::new(Segment::all())
-            .with(Padding::new(5, 5, 0, 0))
-            .with(Alignment::center()),
-    );
+    ];
+
+    let mut table = Builder::from_iter(data).build();
+
+    let mut style = Style::ascii();
+    style.set_lines_horizontal(Default::default());
+
+    table
+        .with(style)
+        .with(Padding::new(5, 5, 0, 0))
+        .with(Alignment::center());
 
     println!("{table}");
 }
@@ -54,23 +58,24 @@ fn create_class(name: &str, fields: &[(&str, &str, &str)], methods: &[&str]) -> 
         .iter()
         .map(|(field, t, d)| [format_field(field, t, d)]);
     let mut table_fields = Builder::from_iter(fields).build();
-    table_fields.with(Style::ascii().remove_horizontal().remove_vertical());
+    table_fields.with(StyleBuilder::ascii().remove_horizontal().remove_vertical());
 
     let methods = methods.iter().map(|method| [format_method(method)]);
     let mut table_methods = Builder::from_iter(methods).build();
-    table_methods.with(Style::ascii().remove_horizontal().remove_vertical());
+    table_methods.with(StyleBuilder::ascii().remove_horizontal().remove_vertical());
 
     let (table_fields, table_methods) = make_equal_width(table_fields, table_methods);
 
-    let mut table = Builder::from_iter([
+    let data = [
         [name.to_string()],
         [table_fields.to_string()],
         [table_methods.to_string()],
-    ])
-    .build();
+    ];
 
-    let style = Style::ascii()
-        .horizontals([(1, HorizontalLine::inherit(Style::ascii()))])
+    let mut table = Builder::from_iter(data).build();
+
+    let style = StyleBuilder::ascii()
+        .horizontals([(1, HorizontalLine::inherit(StyleBuilder::ascii()))])
         .remove_horizontal()
         .remove_vertical();
 

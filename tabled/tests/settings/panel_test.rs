@@ -1,8 +1,10 @@
 #![cfg(feature = "std")]
 
+use std::{collections::HashMap, iter::FromIterator};
+
 use tabled::settings::{
     object::{Cell, Object, Rows, Segment},
-    style::{BorderSpanCorrection, HorizontalLine},
+    style::{BorderSpanCorrection, HorizontalLine, StyleBuilder},
     Alignment, Border, Highlight, Modify, Panel, Span, Style, Width,
 };
 
@@ -141,7 +143,12 @@ test_table!(
     panel_style_change,
     Matrix::iter([(0, 1)])
         .with(Panel::horizontal(0,"Numbers"))
-        .with(Style::modern().intersection_top('─').horizontals([(1, HorizontalLine::inherit(Style::modern()).intersection('┬'))]))
+        .with({
+            let mut style = Style::modern();
+            style.set_intersection_top(Some('─'));
+            style.set_lines_horizontal(HashMap::from_iter([(1,  HorizontalLine::inherit(StyleBuilder::modern()).intersection('┬').into_inner())]));
+            style
+        })
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
     "┌───────────┐"
     "│  Numbers  │"
@@ -170,8 +177,8 @@ test_table!(
 test_table!(
     panel_style_change_correct,
     Matrix::iter([(0, 1)])
-        .with(Panel::horizontal(0,"Numbers"))
-        .with(Style::modern().intersection_top('─').horizontals([(1, HorizontalLine::inherit(Style::modern()).intersection('┬'))]))
+        .with(Panel::horizontal(0, "Numbers"))
+        .with(StyleBuilder::modern().intersection_top('─').horizontals([(1, HorizontalLine::inherit(StyleBuilder::modern()).intersection('┬'))]))
         .with(BorderSpanCorrection)
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
     "┌───────────┐"
