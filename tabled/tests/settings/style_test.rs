@@ -2145,21 +2145,19 @@ fn border_colored_test() {
 #[cfg(feature = "color")]
 #[test]
 fn style_with_color_test() {
-    let mut style: RawStyle = Style::ascii().into();
-    style
-        .set_left(Some('['))
-        .set_right(Some(']'))
-        .set_top(Some('-'))
-        .set_bottom(Some('-'))
-        .set_vertical(Some('|'))
-        .set_intersection(Some('+'));
-    style
-        .set_color_left(Color::FG_RED)
-        .set_color_right(Color::FG_RED)
-        .set_color_top(Color::FG_BLUE)
-        .set_color_bottom(Color::FG_BLUE)
-        .set_color_vertical(Color::FG_YELLOW)
-        .set_color_intersection(Color::try_from(' '.purple().to_string()).unwrap());
+    let mut style: Style = Style::ascii().into();
+    style.set_left(Some('['));
+    style.set_right(Some(']'));
+    style.set_top(Some('-'));
+    style.set_bottom(Some('-'));
+    style.set_vertical(Some('|'));
+    style.set_intersection(Some('+'));
+    style.set_color_left(Color::FG_RED);
+    style.set_color_right(Color::FG_RED);
+    style.set_color_top(Color::FG_BLUE);
+    style.set_color_bottom(Color::FG_BLUE);
+    style.set_color_vertical(Color::FG_YELLOW);
+    style.set_color_intersection(Color::try_from(' '.purple().to_string()).unwrap());
 
     let table = Matrix::new(3, 3).with(style).to_string();
 
