@@ -5,13 +5,13 @@ use core::marker::PhantomData;
 use crate::{
     grid::config::{Border as GridBorder, Borders, CompactConfig, CompactMultilineConfig},
     settings::{
-        style::{HorizontalLine, Style, VerticalLine},
+        style::{HorizontalLine, VerticalLine},
         Border, TableOption,
     },
 };
 
 #[cfg(feature = "std")]
-use crate::grid::config::ColoredConfig;
+use crate::{grid::config::ColoredConfig, settings::Style};
 
 /// Style is represents a theme of a [`Table`].
 ///
@@ -484,6 +484,7 @@ impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
     }
 
     /// Builder a [`Style`]
+    #[cfg(feature = "std")]
     pub fn build(self) -> Style {
         let mut style = Style::new();
         style.set_borders(self.borders);

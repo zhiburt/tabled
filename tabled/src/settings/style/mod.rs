@@ -95,12 +95,13 @@
 //! [`RawStyle`]: crate::settings::style::RawStyle
 
 mod border;
-mod border_color;
 mod builder;
 mod horizontal_line;
 mod offset;
 mod vertical_line;
 
+#[cfg(feature = "std")]
+mod border_color;
 #[cfg(feature = "std")]
 mod border_text;
 #[cfg(feature = "std")]
@@ -114,10 +115,13 @@ mod style;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
-    border::Border, border_color::BorderColor, border_text::LineText, line_char::LineChar,
-    offset::Offset, span_border_correction::BorderSpanCorrection, style::Style,
+    border_color::BorderColor, border_text::LineText, line_char::LineChar, offset::Offset,
+    span_border_correction::BorderSpanCorrection, style::Style,
 };
 
-pub use builder::{On, StyleBuilder};
-pub use horizontal_line::HorizontalLine;
-pub use vertical_line::VerticalLine;
+pub use self::{
+    border::Border,
+    builder::{On, StyleBuilder},
+    horizontal_line::HorizontalLine,
+    vertical_line::VerticalLine,
+};
