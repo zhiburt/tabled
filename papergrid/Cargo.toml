@@ -14,7 +14,6 @@ color = ["ansi-str", "ansitok"]
 
 [dependencies]
 unicode-width = "0.1"
-bytecount = "0.6"
 fnv = "1.0"
 ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true  }

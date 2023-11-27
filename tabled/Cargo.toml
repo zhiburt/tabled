@@ -288,7 +288,7 @@ color = ["papergrid/color", "ansi-str", "ansitok", "std"]
 macros = ["std"]
 
 [dependencies]
-papergrid = { path = "../papergrid", version = "0.10", default-features = false }
+papergrid = { path = "../papergrid", default-features = false }
 tabled_derive = { path = "../tabled_derive", version = "0.6", optional = true }
 ansi-str = { version = "0.8", optional = true }
 ansitok = { version = "0.2", optional = true }

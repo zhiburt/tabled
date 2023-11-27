@@ -71,12 +71,27 @@ pub fn count_lines(s: &str) -> usize {
         return 1;
     }
 
-    bytecount::count(s.as_bytes(), b'\n') + 1
+    let mut count = 1;
+    for &c in s.as_bytes() {
+        if c == b'\n' {
+            count += 1;
+        }
+    }
+
+    count
+
 }
 
 /// Returns a list of tabs (`\t`) in a string..
 pub fn count_tabs(s: &str) -> usize {
-    bytecount::count(s.as_bytes(), b'\t')
+    let mut count = 0;
+    for &c in s.as_bytes() {
+        if c == b'\t' {
+            count += 1;
+        }
+    }
+
+    count
 }
 
 /// Splits the string by lines.
