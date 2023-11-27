@@ -2145,7 +2145,7 @@ fn border_colored_test() {
 #[cfg(feature = "color")]
 #[test]
 fn style_with_color_test() {
-    let mut style: Style = Style::ascii().into();
+    let mut style = Style::ascii();
     style.set_left(Some('['));
     style.set_right(Some(']'));
     style.set_top(Some('-'));

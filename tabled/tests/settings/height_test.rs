@@ -2,7 +2,6 @@
 
 use tabled::settings::{
     object::{Columns, Segment},
-    style::StyleBuilder,
     Alignment, Format, Height, Modify, Style,
 };
 
@@ -11,6 +10,9 @@ use testing_table::test_table;
 
 #[cfg(feature = "color")]
 use owo_colors::OwoColorize;
+
+#[cfg(feature = "macros")]
+use tabled::settings::style::StyleBuilder;
 
 test_table!(
     cell_height_increase,
