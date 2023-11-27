@@ -115,7 +115,7 @@ mod style;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
-    border_color::BorderColor, border_text::LineText, line_char::LineChar, offset::Offset,
+    border_color::BorderColor, border_text::LineText, line_char::LineChar,
     span_border_correction::BorderSpanCorrection, style::Style,
 };
 
@@ -123,5 +123,6 @@ pub use self::{
     border::Border,
     builder::{On, StyleBuilder},
     horizontal_line::HorizontalLine,
+    offset::Offset,
     vertical_line::VerticalLine,
 };

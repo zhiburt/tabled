@@ -479,6 +479,7 @@ impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
         self.borders
     }
 
+    #[cfg(feature = "std")]
     pub(crate) const fn get_horizontals(&self) -> [(usize, HLine); HSIZE] {
         self.horizontals
     }

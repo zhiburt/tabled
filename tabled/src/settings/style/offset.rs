@@ -1,3 +1,4 @@
+#[cfg(feature = "std")]
 use crate::grid::config;
 
 /// The structure represents an offset in a text.

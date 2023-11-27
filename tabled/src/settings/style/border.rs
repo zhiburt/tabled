@@ -1,15 +1,16 @@
 use core::marker::PhantomData;
 
 use crate::{
-    grid::{
-        config::{Border as GridBorder, Entity},
-        records::{ExactRecords, Records},
-    },
-    settings::{style::On, style::StyleBuilder, CellOption},
+    grid::config::Border as GridBorder,
+    settings::{style::On, style::StyleBuilder},
 };
 
 #[cfg(feature = "std")]
-use crate::grid::config::ColoredConfig;
+use crate::{
+    grid::config::{ColoredConfig, Entity},
+    grid::records::{ExactRecords, Records},
+    settings::CellOption,
+};
 
 /// Border represents a border of a Cell.
 ///
