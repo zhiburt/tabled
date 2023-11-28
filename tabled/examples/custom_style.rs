@@ -8,7 +8,10 @@
 //! number of functional columns and rows.
 
 use tabled::{
-    settings::{style::Style, Alignment},
+    settings::{
+        style::{HorizontalLine, StyleBuilder, VerticalLine},
+        Alignment,
+    },
     Table, Tabled,
 };
 
@@ -38,9 +41,9 @@ fn main() {
         CodeEditor::new("Neovim", "2015", "Vim community"),
     ];
 
-    let theme = Style::modern()
-        .horizontals([(1, Style::modern().get_horizontal_line())])
-        .verticals([(1, Style::modern().get_vertical_line())])
+    let theme = StyleBuilder::modern()
+        .horizontals([(1, HorizontalLine::inherit(StyleBuilder::modern()))])
+        .verticals([(1, VerticalLine::inherit(StyleBuilder::modern()))])
         .remove_horizontal()
         .remove_vertical();
 

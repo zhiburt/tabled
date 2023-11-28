@@ -94,8 +94,12 @@
 //! [`BorderText`]: crate::settings::style::BorderText
 //! [`RawStyle`]: crate::settings::style::RawStyle
 
-#[cfg(feature = "std")]
 mod border;
+mod builder;
+mod horizontal_line;
+mod offset;
+mod vertical_line;
+
 #[cfg(feature = "std")]
 mod border_color;
 #[cfg(feature = "std")]
@@ -103,25 +107,22 @@ mod border_text;
 #[cfg(feature = "std")]
 mod line_char;
 #[cfg(feature = "std")]
-mod offset;
-#[cfg(feature = "std")]
-mod raw_style;
-#[cfg(feature = "std")]
 mod span_border_correction;
-
-mod builder;
-mod horizontal_line;
-mod line;
-mod vertical_line;
+#[cfg(feature = "std")]
+#[allow(clippy::module_inception)]
+mod style;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
-    border::Border, border_color::BorderColor, border_text::LineText, line_char::LineChar,
-    offset::Offset, raw_style::RawStyle, span_border_correction::BorderSpanCorrection,
+    border_color::BorderColor, border_text::LineText, line_char::LineChar,
+    span_border_correction::BorderSpanCorrection, style::Style,
 };
 
-pub use builder::{On, Style};
-pub use horizontal_line::HorizontalLine;
-pub use line::Line;
-pub use vertical_line::VerticalLine;
+pub use self::{
+    border::Border,
+    builder::{On, StyleBuilder},
+    horizontal_line::HorizontalLine,
+    offset::Offset,
+    vertical_line::VerticalLine,
+};

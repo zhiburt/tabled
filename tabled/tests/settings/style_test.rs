@@ -1,6 +1,6 @@
 #![cfg(feature = "std")]
 
-use std::{collections::HashMap, iter::FromIterator};
+use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
@@ -8,8 +8,8 @@ use tabled::{
     settings::{
         object::{Columns, Rows, Segment},
         style::{
-            Border, BorderColor, BorderSpanCorrection, HorizontalLine, Line, LineChar, LineText,
-            Offset, On, RawStyle, Style, VerticalLine,
+            Border, BorderColor, BorderSpanCorrection, HorizontalLine, LineChar, LineText, Offset,
+            On, Style, StyleBuilder, VerticalLine,
         },
         Color, Format, Highlight, Modify, Padding, Span,
     },
@@ -110,7 +110,7 @@ test_table!(
 
 test_table!(
     modern_clean_style,
-    Matrix::new(3, 3).with(Style::modern().remove_horizontal().horizontals([(1, Style::modern().get_horizontal_line())])),
+    Matrix::new(3, 3).with(StyleBuilder::modern().remove_horizontal().horizontals([(1, HorizontalLine::inherit(StyleBuilder::modern()))])),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -182,7 +182,7 @@ test_table!(
 
 test_table!(
     style_head_changes,
-    Matrix::new(3, 3).with(Style::modern().remove_horizontal()),
+    Matrix::new(3, 3).with(StyleBuilder::modern().remove_horizontal()),
     "┌───┬──────────┬──────────┬──────────┐"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
@@ -193,7 +193,7 @@ test_table!(
 
 test_table!(
     style_frame_changes,
-    Matrix::new(3, 3).with(Style::modern().remove_top().remove_bottom().remove_horizontal()),
+    Matrix::new(3, 3).with(StyleBuilder::modern().remove_top().remove_bottom().remove_horizontal()),
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
     "│ 1 │   1-0    │   1-1    │   1-2    │"
@@ -203,7 +203,7 @@ test_table!(
 test_table!(
     custom_style,
     Matrix::new(3, 3)
-        .with(Style::blank()
+        .with(StyleBuilder::blank()
             .bottom('*')
             .vertical('\'')
             .horizontal('`')
@@ -536,7 +536,7 @@ test_table!(
 
 test_table!(
     style_frame_test_0,
-    Matrix::table(2, 2).with(Highlight::border(Rows::single(1), Style::modern().get_frame())),
+    Matrix::table(2, 2).with(Highlight::border(Rows::single(1), Border::inherit(StyleBuilder::modern()))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "┌─────────────────────────┐"
@@ -550,8 +550,8 @@ test_table!(
     style_frame_test_1,
     Matrix::table(2, 2)
         .with(Style::blank())
-        .with(Highlight::border(Rows::single(0), Style::extended().get_frame()))
-        .with(Highlight::border(Rows::single(2), Style::extended().get_frame())),
+        .with(Highlight::border(Rows::single(0), Border::inherit(StyleBuilder::extended())))
+        .with(Highlight::border(Rows::single(2), Border::inherit(StyleBuilder::extended()))),
     "╔═════════════════════════╗"
     "║ N   column 0   column 1 ║"
     "╚═════════════════════════╝"
@@ -563,7 +563,7 @@ test_table!(
 
 test_table!(
     single_column_off_horizontal_test,
-    Matrix::table(3, 0).with(Style::ascii().remove_horizontal().remove_vertical()),
+    Matrix::table(3, 0).with(StyleBuilder::ascii().remove_horizontal().remove_vertical()),
     "+---+"
     "| N |"
     "| 0 |"
@@ -655,16 +655,15 @@ test_table!(
     Matrix::new(3, 3)
         .insert((1, 1), "a longer string")
         .with({
-            let mut style: RawStyle = Style::modern().into();
-            style
-                .set_bottom(Some('a'))
-                .set_left(Some('b'))
-                .set_right(None)
-                .set_top(None)
-                .set_intersection(Some('x'))
-                .set_intersection_top(None)
-                .set_corner_top_left(None)
-                .set_corner_top_right(None);
+            let mut style: Style = Style::modern();
+            style.set_bottom(Some('a'));
+            style.set_left(Some('b'));
+            style.set_right(None);
+            style.set_top(None);
+            style.set_intersection(Some('x'));
+            style.set_intersection_top(None);
+            style.set_corner_top_left(None);
+            style.set_corner_top_right(None);
             style
         }),
     "b N │    column 0     │ column 1 │ column 2  "
@@ -682,7 +681,7 @@ test_table!(
     Matrix::new(3, 3)
         .insert((1, 1), "a longer string")
         .with({
-            let mut style: RawStyle = Style::modern().into();
+            let mut style: Style = Style::modern();
             style.set_bottom(None);
             style
         }),
@@ -702,7 +701,7 @@ test_table!(
     Matrix::new(3, 3)
         .insert((1, 1), "a longer string")
         .with({
-            let mut style: RawStyle = Style::modern().into();
+            let mut style: Style = Style::modern();
             style.set_bottom(None);
             style
         })
@@ -759,7 +758,7 @@ fn custom_style_test() {
     // Single
 
     test_style!(
-        Style::empty().top('-'),
+        StyleBuilder::empty().top('-'),
         static_table!(
             "---------------------------------"
             " N  column 0  column 1  column 2 "
@@ -769,7 +768,7 @@ fn custom_style_test() {
         ),
     );
     test_style!(
-        Style::empty().bottom('-'),
+        StyleBuilder::empty().bottom('-'),
         static_table!(
             " N  column 0  column 1  column 2 "
             " 0    0-0       0-1       0-2    "
@@ -779,7 +778,7 @@ fn custom_style_test() {
         ),
     );
     test_style!(
-        Style::empty().left('-'),
+        StyleBuilder::empty().left('-'),
         static_table!(
             "- N  column 0  column 1  column 2 "
             "- 0    0-0       0-1       0-2    "
@@ -788,7 +787,7 @@ fn custom_style_test() {
         ),
     );
     test_style!(
-        Style::empty().right('-'),
+        StyleBuilder::empty().right('-'),
         static_table!(
             " N  column 0  column 1  column 2 -"
             " 0    0-0       0-1       0-2    -"
@@ -797,7 +796,7 @@ fn custom_style_test() {
         ),
     );
     test_style!(
-        Style::empty().horizontal('-'),
+        StyleBuilder::empty().horizontal('-'),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -809,7 +808,7 @@ fn custom_style_test() {
         ),
     );
     test_style!(
-        Style::empty().horizontals([(1, HorizontalLine::new('-'))]),
+        StyleBuilder::empty().horizontals([(1, HorizontalLine::new('-'))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -819,7 +818,7 @@ fn custom_style_test() {
         ),
     );
     test_style!(
-        Style::empty().vertical('-'),
+        StyleBuilder::empty().vertical('-'),
         static_table!(
             " N - column 0 - column 1 - column 2 "
             " 0 -   0-0    -   0-1    -   0-2    "
@@ -831,7 +830,7 @@ fn custom_style_test() {
     // Combinations
 
     test_style!(
-        Style::empty().top('-').bottom('+'),
+        StyleBuilder::empty().top('-').bottom('+'),
         static_table!(
             "---------------------------------"
             " N  column 0  column 1  column 2 "
@@ -842,7 +841,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().top('-').left('+'),
+        StyleBuilder::empty().top('-').left('+'),
         static_table!(
             "+---------------------------------"
             "+ N  column 0  column 1  column 2 "
@@ -852,7 +851,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().top('-').right('+'),
+        StyleBuilder::empty().top('-').right('+'),
         static_table!(
             "---------------------------------+"
             " N  column 0  column 1  column 2 +"
@@ -862,7 +861,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().top('-').horizontal('+'),
+        StyleBuilder::empty().top('-').horizontal('+'),
         static_table!(
             "---------------------------------"
             " N  column 0  column 1  column 2 "
@@ -875,7 +874,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().top('-').vertical('+'),
+        StyleBuilder::empty().top('-').vertical('+'),
         static_table!(
             "---+----------+----------+----------"
             " N + column 0 + column 1 + column 2 "
@@ -885,7 +884,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .top('-')
             .horizontals([(1, HorizontalLine::new('+'))]),
         static_table!(
@@ -899,7 +898,7 @@ fn custom_style_test() {
     );
 
     test_style!(
-        Style::empty().bottom('-').top('+'),
+        StyleBuilder::empty().bottom('-').top('+'),
         static_table!(
             "+++++++++++++++++++++++++++++++++"
             " N  column 0  column 1  column 2 "
@@ -910,7 +909,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().bottom('-').left('+'),
+        StyleBuilder::empty().bottom('-').left('+'),
         static_table!(
             "+ N  column 0  column 1  column 2 "
             "+ 0    0-0       0-1       0-2    "
@@ -920,7 +919,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().bottom('-').right('+'),
+        StyleBuilder::empty().bottom('-').right('+'),
         static_table!(
             " N  column 0  column 1  column 2 +"
             " 0    0-0       0-1       0-2    +"
@@ -930,7 +929,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().bottom('-').vertical('+'),
+        StyleBuilder::empty().bottom('-').vertical('+'),
         static_table!(
             " N + column 0 + column 1 + column 2 "
             " 0 +   0-0    +   0-1    +   0-2    "
@@ -940,7 +939,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().bottom('-').horizontal('+'),
+        StyleBuilder::empty().bottom('-').horizontal('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
             "+++++++++++++++++++++++++++++++++"
@@ -953,7 +952,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .bottom('-')
             .horizontals([(1, HorizontalLine::new('+'))]),
         static_table!(
@@ -967,7 +966,7 @@ fn custom_style_test() {
     );
 
     test_style!(
-        Style::empty().left('-').top('+'),
+        StyleBuilder::empty().left('-').top('+'),
         static_table!(
             "++++++++++++++++++++++++++++++++++"
             "- N  column 0  column 1  column 2 "
@@ -977,7 +976,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().left('-').bottom('+'),
+        StyleBuilder::empty().left('-').bottom('+'),
         static_table!(
             "- N  column 0  column 1  column 2 "
             "- 0    0-0       0-1       0-2    "
@@ -987,7 +986,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().left('-').right('+'),
+        StyleBuilder::empty().left('-').right('+'),
         static_table!(
             "- N  column 0  column 1  column 2 +"
             "- 0    0-0       0-1       0-2    +"
@@ -996,7 +995,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().left('-').vertical('+'),
+        StyleBuilder::empty().left('-').vertical('+'),
         static_table!(
             "- N + column 0 + column 1 + column 2 "
             "- 0 +   0-0    +   0-1    +   0-2    "
@@ -1005,7 +1004,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().left('-').horizontal('+'),
+        StyleBuilder::empty().left('-').horizontal('+'),
         static_table!(
             "- N  column 0  column 1  column 2 "
             "++++++++++++++++++++++++++++++++++"
@@ -1017,7 +1016,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .left('-')
             .horizontals([(1, HorizontalLine::new('+').left(' '))]),
         static_table!(
@@ -1030,7 +1029,7 @@ fn custom_style_test() {
     );
 
     test_style!(
-        Style::empty().right('-').top('+'),
+        StyleBuilder::empty().right('-').top('+'),
         static_table!(
             "++++++++++++++++++++++++++++++++++"
             " N  column 0  column 1  column 2 -"
@@ -1040,7 +1039,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().right('-').bottom('+'),
+        StyleBuilder::empty().right('-').bottom('+'),
         static_table!(
             " N  column 0  column 1  column 2 -"
             " 0    0-0       0-1       0-2    -"
@@ -1050,7 +1049,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().right('-').left('+'),
+        StyleBuilder::empty().right('-').left('+'),
         static_table!(
             "+ N  column 0  column 1  column 2 -"
             "+ 0    0-0       0-1       0-2    -"
@@ -1059,7 +1058,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().right('-').vertical('+'),
+        StyleBuilder::empty().right('-').vertical('+'),
         static_table!(
             " N + column 0 + column 1 + column 2 -"
             " 0 +   0-0    +   0-1    +   0-2    -"
@@ -1068,7 +1067,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().right('-').horizontal('+'),
+        StyleBuilder::empty().right('-').horizontal('+'),
         static_table!(
             " N  column 0  column 1  column 2 -"
             "++++++++++++++++++++++++++++++++++"
@@ -1080,7 +1079,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .right('-')
             .horizontals([(1, HorizontalLine::new('+').right(' '))]),
         static_table!(
@@ -1093,7 +1092,7 @@ fn custom_style_test() {
     );
 
     test_style!(
-        Style::empty().vertical('-').top('+'),
+        StyleBuilder::empty().vertical('-').top('+'),
         static_table!(
             "++++++++++++++++++++++++++++++++++++"
             " N - column 0 - column 1 - column 2 "
@@ -1103,7 +1102,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().vertical('-').bottom('+'),
+        StyleBuilder::empty().vertical('-').bottom('+'),
         static_table!(
             " N - column 0 - column 1 - column 2 "
             " 0 -   0-0    -   0-1    -   0-2    "
@@ -1113,7 +1112,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().vertical('-').left('+'),
+        StyleBuilder::empty().vertical('-').left('+'),
         static_table!(
             "+ N - column 0 - column 1 - column 2 "
             "+ 0 -   0-0    -   0-1    -   0-2    "
@@ -1122,7 +1121,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().vertical('-').right('+'),
+        StyleBuilder::empty().vertical('-').right('+'),
         static_table!(
             " N - column 0 - column 1 - column 2 +"
             " 0 -   0-0    -   0-1    -   0-2    +"
@@ -1131,7 +1130,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().vertical('-').horizontal('+'),
+        StyleBuilder::empty().vertical('-').horizontal('+'),
         static_table!(
             " N - column 0 - column 1 - column 2 "
             "++++++++++++++++++++++++++++++++++++"
@@ -1143,7 +1142,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .vertical('-')
             .horizontals([(1, HorizontalLine::new('+').intersection(' '))]),
         static_table!(
@@ -1156,7 +1155,7 @@ fn custom_style_test() {
     );
 
     test_style!(
-        Style::empty().horizontal('-').top('+'),
+        StyleBuilder::empty().horizontal('-').top('+'),
         static_table!(
             "+++++++++++++++++++++++++++++++++"
             " N  column 0  column 1  column 2 "
@@ -1169,7 +1168,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().horizontal('-').bottom('+'),
+        StyleBuilder::empty().horizontal('-').bottom('+'),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -1182,7 +1181,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().horizontal('-').left('+'),
+        StyleBuilder::empty().horizontal('-').left('+'),
         static_table!(
             "+ N  column 0  column 1  column 2 "
             "+---------------------------------"
@@ -1194,7 +1193,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().horizontal('-').right('+'),
+        StyleBuilder::empty().horizontal('-').right('+'),
         static_table!(
             " N  column 0  column 1  column 2 +"
             "---------------------------------+"
@@ -1206,7 +1205,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty().horizontal('-').vertical('+'),
+        StyleBuilder::empty().horizontal('-').vertical('+'),
         static_table!(
             " N + column 0 + column 1 + column 2 "
             "---+----------+----------+----------"
@@ -1218,7 +1217,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .horizontal('-')
             .horizontals([(1, HorizontalLine::new('+'))]),
         static_table!(
@@ -1233,7 +1232,7 @@ fn custom_style_test() {
     );
 
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .top('+')
             .horizontals([(1, HorizontalLine::new('-'))]),
         static_table!(
@@ -1246,7 +1245,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .horizontals([(1, HorizontalLine::new('-'))])
             .bottom('+'),
         static_table!(
@@ -1259,7 +1258,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .horizontals([(1, HorizontalLine::new('-'))])
             .left('+'),
         static_table!(
@@ -1271,7 +1270,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .horizontals([(1, HorizontalLine::new('-'))])
             .right('+'),
         static_table!(
@@ -1283,7 +1282,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .horizontals([(1, HorizontalLine::new('-'))])
             .vertical('+'),
         static_table!(
@@ -1295,7 +1294,7 @@ fn custom_style_test() {
         )
     );
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .horizontals([(1, HorizontalLine::new('-'))])
             .horizontal('+'),
         static_table!(
@@ -1312,7 +1311,7 @@ fn custom_style_test() {
     // Full
 
     test_style!(
-        Style::empty()
+        StyleBuilder::empty()
             .top('-')
             .bottom('+')
             .left('|')
@@ -1333,7 +1332,7 @@ fn custom_style_test() {
         ),
     );
 
-    let full_style = Style::empty()
+    let full_style = StyleBuilder::empty()
         .top('-')
         .bottom('+')
         .left('|')
@@ -1349,7 +1348,7 @@ fn custom_style_test() {
         .corner_bottom_left('?')
         .corner_top_right('.')
         .corner_bottom_right('%')
-        .horizontals([(1, HorizontalLine::full(',', ',', ',', '#'))]);
+        .horizontals([(1, HorizontalLine::full(',', '#', ',', ','))]);
 
     test_style!(
         full_style.clone(),
@@ -1477,17 +1476,23 @@ fn custom_style_test() {
         " 1    1-0       1-1       1-2    "
         " 2    2-0       2-1       2-2    "
     );
-    test_style!(Style::empty().top('-').remove_top(), empty_table);
-    test_style!(Style::empty().bottom('-').remove_bottom(), empty_table);
-    test_style!(Style::empty().right('-').remove_right(), empty_table);
-    test_style!(Style::empty().left('-').remove_left(), empty_table);
+    test_style!(StyleBuilder::empty().top('-').remove_top(), empty_table);
     test_style!(
-        Style::empty().horizontal('-').remove_horizontal(),
+        StyleBuilder::empty().bottom('-').remove_bottom(),
         empty_table
     );
-    test_style!(Style::empty().vertical('-').remove_vertical(), empty_table);
+    test_style!(StyleBuilder::empty().right('-').remove_right(), empty_table);
+    test_style!(StyleBuilder::empty().left('-').remove_left(), empty_table);
     test_style!(
-        Style::empty().horizontals([(1, HorizontalLine::new('-'))]),
+        StyleBuilder::empty().horizontal('-').remove_horizontal(),
+        empty_table
+    );
+    test_style!(
+        StyleBuilder::empty().vertical('-').remove_vertical(),
+        empty_table
+    );
+    test_style!(
+        StyleBuilder::empty().horizontals([(1, HorizontalLine::new('-'))]),
         static_table!(
             " N  column 0  column 1  column 2 "
             "---------------------------------"
@@ -2140,21 +2145,19 @@ fn border_colored_test() {
 #[cfg(feature = "color")]
 #[test]
 fn style_with_color_test() {
-    let mut style: RawStyle = Style::ascii().into();
-    style
-        .set_left(Some('['))
-        .set_right(Some(']'))
-        .set_top(Some('-'))
-        .set_bottom(Some('-'))
-        .set_vertical(Some('|'))
-        .set_intersection(Some('+'));
-    style
-        .set_color_left(Color::FG_RED)
-        .set_color_right(Color::FG_RED)
-        .set_color_top(Color::FG_BLUE)
-        .set_color_bottom(Color::FG_BLUE)
-        .set_color_vertical(Color::FG_YELLOW)
-        .set_color_intersection(Color::try_from(' '.purple().to_string()).unwrap());
+    let mut style = Style::ascii();
+    style.set_left(Some('['));
+    style.set_right(Some(']'));
+    style.set_top(Some('-'));
+    style.set_bottom(Some('-'));
+    style.set_vertical(Some('|'));
+    style.set_intersection(Some('+'));
+    style.set_color_left(Color::FG_RED);
+    style.set_color_right(Color::FG_RED);
+    style.set_color_top(Color::FG_BLUE);
+    style.set_color_bottom(Color::FG_BLUE);
+    style.set_color_vertical(Color::FG_YELLOW);
+    style.set_color_intersection(Color::try_from(' '.purple().to_string()).unwrap());
 
     let table = Matrix::new(3, 3).with(style).to_string();
 
@@ -2178,7 +2181,7 @@ fn style_with_color_test() {
 
 test_table!(
     empty_line_clears_lines,
-    Matrix::new(3, 3).with(Style::rounded().remove_horizontals()),
+    Matrix::new(3, 3).with(StyleBuilder::rounded().remove_horizontals()),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
@@ -2189,7 +2192,7 @@ test_table!(
 
 test_table!(
     empty_line_clears_lines_1,
-    Matrix::new(3, 3).with(Style::rounded().remove_horizontals()),
+    Matrix::new(3, 3).with(StyleBuilder::rounded().remove_horizontals()),
     "╭───┬──────────┬──────────┬──────────╮"
     "│ N │ column 0 │ column 1 │ column 2 │"
     "│ 0 │   0-0    │   0-1    │   0-2    │"
@@ -2219,7 +2222,7 @@ test_table!(
 test_table!(
     verticals_0,
     Matrix::new(3, 3)
-        .with(Style::rounded().verticals([(0, VerticalLine::filled('+').remove_intersection()), (4, VerticalLine::filled('+').remove_intersection())])),
+        .with(StyleBuilder::rounded().verticals([(0, VerticalLine::filled('+').remove_intersection()), (4, VerticalLine::filled('+').remove_intersection())])),
     "+───┬──────────┬──────────┬──────────+"
     "+ N │ column 0 │ column 1 │ column 2 +"
     "├───┼──────────┼──────────┼──────────┤"
@@ -2232,9 +2235,9 @@ test_table!(
 test_table!(
     verticals_1,
     {
-        let verticals = (1..4).map(|i| (i, VerticalLine::filled('+').into_inner())).collect::<HashMap<_, _>>();
-        let mut style = RawStyle::from(Style::rounded());
-        style.set_verticals(verticals);
+        let verticals = (1..4).map(|i| (i, VerticalLine::filled('+').into())).collect();
+        let mut style = Style::rounded();
+        style.set_lines_vertical(verticals);
 
         Matrix::new(3, 3).with(style)
     },
@@ -2249,7 +2252,7 @@ test_table!(
 
 test_table!(
     verticals_2,
-    Matrix::new(3, 3).with(Style::rounded().verticals([(1, VerticalLine::filled('+').remove_intersection())])),
+    Matrix::new(3, 3).with(StyleBuilder::rounded().verticals([(1, VerticalLine::filled('+').remove_intersection())])),
     "╭───+──────────┬──────────┬──────────╮"
     "│ N + column 0 │ column 1 │ column 2 │"
     "├───┼──────────┼──────────┼──────────┤"
@@ -2261,7 +2264,7 @@ test_table!(
 
 test_table!(
     verticals_3,
-    Matrix::new(3, 3).with(Style::ascii().verticals([(1, VerticalLine::filled('*'))])),
+    Matrix::new(3, 3).with(StyleBuilder::ascii().verticals([(1, VerticalLine::filled('*'))])),
     "+---*----------+----------+----------+"
     "| N * column 0 | column 1 | column 2 |"
     "+---*----------+----------+----------+"
@@ -2276,9 +2279,9 @@ test_table!(
 test_table!(
     verticals_4,
     {
-        let mut style = RawStyle::from(Style::ascii());
-        let verticals = (0..10).map(|i| (i, VerticalLine::full('*', 'c', '2', 'x').into_inner())).collect();
-        style.set_verticals(verticals);
+        let mut style = Style::ascii();
+        let verticals = (0..10).map(|i| (i, VerticalLine::full('*', 'x', 'c', '2').into())).collect();
+        style.set_lines_vertical(verticals);
 
         Matrix::new(3, 3).with(style)
     },
@@ -2298,9 +2301,9 @@ test_table!(
     {
         let m = Matrix::new(3, 3);
 
-        let mut style = RawStyle::from(Style::ascii());
-        style.insert_horizontal(1, Line::full('8', '8', '8', '8'));
-        style.insert_vertical(1, Line::full('*', 'x', 'c', '2'));
+        let mut style = Style::ascii();
+        style.insert_line_horizontal(1, HorizontalLine::full('8', '8', '8', '8').into());
+        style.insert_line_vertical(1, VerticalLine::full('*', 'x', 'c', '2').into());
 
         m.with(style)
     },
@@ -2323,7 +2326,7 @@ test_table!(
 test_table!(
     vertical_line_1,
     Matrix::new(3, 3)
-        .with(Style::empty().verticals([(1, VerticalLine::new('*'))])),
+        .with(StyleBuilder::empty().verticals([(1, VerticalLine::new('*'))])),
     " N * column 0  column 1  column 2 "
     " 0 *   0-0       0-1       0-2    "
     " 1 *   1-0       1-1       1-2    "
@@ -2610,14 +2613,14 @@ test_table!(
 
 test_table!(
     table_style_no_bottom_no_new_line,
-    Matrix::table(0, 0).with(Style::markdown().remove_horizontals()),
+    Matrix::table(0, 0).with(StyleBuilder::markdown().remove_horizontals()),
     "| N |"
 );
 
 test_table!(
     style_const_modification,
     {
-        const STYLE: Style<On, On, On, On, On, On, 1, 0> = Style::ascii()
+        const STYLE: StyleBuilder<On, On, On, On, On, On, 1, 0> = StyleBuilder::ascii()
             .bottom('x')
             .horizontals([(1, HorizontalLine::filled('.'))]);
         Matrix::new(3, 3).with(STYLE)
@@ -2636,7 +2639,7 @@ test_table!(
 test_table!(
     style_static_modification,
     {
-        static STYLE: Style<On, On, On, On, On, On, 1, 1> = Style::ascii()
+        static STYLE: StyleBuilder<On, On, On, On, On, On, 1, 1> = StyleBuilder::ascii()
             .bottom('x')
             .horizontals([(1, HorizontalLine::filled('.'))])
             .verticals([(1, VerticalLine::filled('|'))]);

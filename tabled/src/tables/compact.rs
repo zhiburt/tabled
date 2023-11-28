@@ -25,7 +25,6 @@
 //!     table,
 //!     concat!(
 //!         " FreeBSD     | 1993 | William and Lynne Jolitz     | ? \n",
-//!         "-------------+------+------------------------------+---\n",
 //!         " OpenBSD     | 1995 | Theo de Raadt                |   \n",
 //!         " HardenedBSD | 2014 | Oliver Pinter and Shawn Webb |   ",
 //!     )
@@ -80,7 +79,7 @@ use crate::{
         util::string::string_width,
         CompactGrid,
     },
-    settings::{Style, TableOption},
+    settings::{style::StyleBuilder, TableOption},
 };
 
 /// A table which consumes an [`IntoRecords`] iterator.
@@ -291,7 +290,7 @@ fn build_grid<W: fmt::Write, I: IntoRecords, D: Dimension>(
 }
 
 const fn create_config() -> CompactConfig {
-    CompactConfig::empty()
+    CompactConfig::new()
         .set_padding(Sides::new(
             Indent::spaced(1),
             Indent::spaced(1),
@@ -299,7 +298,7 @@ const fn create_config() -> CompactConfig {
             Indent::zero(),
         ))
         .set_alignment_horizontal(AlignmentHorizontal::Left)
-        .set_borders(*Style::ascii().get_borders())
+        .set_borders(StyleBuilder::ascii().get_borders())
 }
 
 impl<R, D> TableOption<R, D, CompactConfig> for CompactConfig {

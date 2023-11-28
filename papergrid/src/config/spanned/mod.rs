@@ -4,19 +4,25 @@
 
 mod borders_config;
 mod entity_map;
-mod formatting;
 mod offset;
 
 use std::collections::HashMap;
 
 use crate::color::{AnsiColor, StaticColor};
 use crate::config::compact::CompactConfig;
+use crate::config::Formatting;
 use crate::config::{
     AlignmentHorizontal, AlignmentVertical, Border, Borders, Entity, Indent, Position, Sides,
 };
 use borders_config::BordersConfig;
 
-pub use self::{entity_map::EntityMap, formatting::Formatting, offset::Offset};
+pub use self::{entity_map::EntityMap, offset::Offset};
+
+/// HorizontalLine represents a horizontal border line.
+type HorizontalLine = super::HorizontalLine<char>;
+
+/// VerticalLine represents a vertical border line.
+type VerticalLine = super::VerticalLine<char>;
 
 /// This structure represents a settings of a grid.
 ///
@@ -756,26 +762,14 @@ impl From<CompactConfig> for SpannedConfig {
         let mut cfg = Self::default();
 
         cfg.set_padding(Global, *compact.get_padding());
-        cfg.set_padding_color(Global, to_ansi_color(compact.get_padding_color()));
+        cfg.set_padding_color(Global, to_ansi_color(*compact.get_padding_color()));
         cfg.set_margin(*compact.get_margin());
-        cfg.set_margin_color(to_ansi_color(compact.get_margin_color()));
+        cfg.set_margin_color(to_ansi_color(*compact.get_margin_color()));
         cfg.set_alignment_horizontal(Global, compact.get_alignment_horizontal());
         cfg.set_borders(*compact.get_borders());
         cfg.set_borders_color(borders_static_color_to_ansi_color(
             *compact.get_borders_color(),
         ));
-
-        if let Some(line) = compact.get_first_horizontal_line() {
-            cfg.insert_horizontal_line(
-                1,
-                HorizontalLine {
-                    intersection: line.intersection,
-                    left: line.connect1,
-                    right: line.connect2,
-                    main: Some(line.main),
-                },
-            );
-        }
 
         cfg
     }
@@ -895,9 +889,3 @@ impl Default for ColoredMarginIndent {
         }
     }
 }
-
-/// HorizontalLine represents a horizontal border line.
-pub type HorizontalLine = borders_config::HorizontalLine<char>;
-
-/// HorizontalLine represents a vertical border line.
-pub type VerticalLine = borders_config::VerticalLine<char>;

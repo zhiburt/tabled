@@ -1,35 +1,32 @@
 use tabled::{
     settings::{
-        style::{On, RawStyle},
-        Style,
+        style::{HorizontalLine, On, Style, StyleBuilder},
+        Border,
     },
     Table,
 };
 
-type FullStyle = Style<On, On, On, On, On, On>;
+const STYLE_1: StyleBuilder<On, On, On, On, On, On, 0, 0> =
+    StyleBuilder::modern().frame(Border::inherit(StyleBuilder::rounded()));
 
-const STYLE_1: FullStyle = Style::modern().frame(Style::rounded().get_frame());
-
-const STYLE_2: FullStyle = Style::rounded()
-    .horizontal_line(Style::modern().get_horizontal_line())
+const STYLE_2: StyleBuilder<On, On, On, On, On, On, 0, 0> = StyleBuilder::rounded()
+    .line_horizontal(HorizontalLine::inherit(StyleBuilder::modern()))
     .remove_horizontals();
 
 fn main() {
-    assert_eq!(RawStyle::from(STYLE_1), RawStyle::from(STYLE_2));
+    assert_eq!(Style::from(STYLE_1), Style::from(STYLE_2));
 
-    let data = vec![("Hello", "world", "!"); 5];
+    let data = vec![("Hello", "world", "!"); 3];
 
-    let mut table = Table::new(&data);
-    table.with(STYLE_2);
+    let mut table1 = Table::new(&data);
+    table1.with(STYLE_2);
 
-    let output = table.to_string();
+    let mut table2 = Table::new(&data);
+    table2.with(STYLE_1);
 
-    println!("{output}");
+    let output1 = table1.to_string();
+    let output2 = table2.to_string();
+    let output = Table::new([(output1, output2)]);
 
-    let mut table = Table::new(&data);
-    table.with(STYLE_1);
-
-    let output = table.to_string();
-
-    println!("{output}");
+    println!("{}", output);
 }

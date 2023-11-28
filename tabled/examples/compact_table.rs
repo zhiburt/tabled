@@ -4,7 +4,7 @@
 //! * [`CompactTable`] is a [`Table`] alternative that trades off reduced
 //! flexibility for improved performance.
 
-use tabled::{settings::Style, tables::CompactTable};
+use tabled::{settings::style::StyleBuilder, tables::CompactTable};
 
 fn main() {
     let data = [
@@ -16,7 +16,7 @@ fn main() {
     let _table = CompactTable::new(data)
         .columns(3)
         .width([7, 5, 5])
-        .with(Style::markdown());
+        .with(StyleBuilder::markdown());
 
     #[cfg(feature = "std")]
     println!("{}", _table.to_string());

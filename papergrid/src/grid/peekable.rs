@@ -10,7 +10,10 @@ use std::{
 use crate::{
     color::{AnsiColor, Color},
     colors::Colors,
-    config::spanned::{Formatting, Offset, SpannedConfig},
+    config::{
+        spanned::{Offset, SpannedConfig},
+        Formatting,
+    },
     config::{AlignmentHorizontal, AlignmentVertical, Indent, Position, Sides},
     dimension::Dimension,
     records::{ExactRecords, PeekableRecords, Records},

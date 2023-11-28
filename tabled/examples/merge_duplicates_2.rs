@@ -7,7 +7,10 @@
 //! * Merge supports both [`Merge::vertical()`] and [`Merge::horizontal()`].
 
 use tabled::{
-    settings::{style::Style, Merge},
+    settings::{
+        style::{HorizontalLine, StyleBuilder, VerticalLine},
+        Border, Merge,
+    },
     Table, Tabled,
 };
 
@@ -57,10 +60,10 @@ impl DatabaseTable {
 }
 
 fn config_theme(table: &mut Table) {
-    let style = Style::modern()
-        .frame(Style::rounded().get_frame())
-        .horizontals([(1, Style::modern().get_horizontal_line())])
-        .verticals([(1, Style::modern().get_vertical_line())])
+    let style = StyleBuilder::modern()
+        .frame(Border::inherit(StyleBuilder::rounded()))
+        .horizontals([(1, HorizontalLine::inherit(StyleBuilder::modern()))])
+        .verticals([(1, VerticalLine::inherit(StyleBuilder::modern()))])
         .remove_horizontal()
         .remove_vertical();
 

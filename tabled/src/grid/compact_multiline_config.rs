@@ -1,9 +1,11 @@
-use crate::grid::color::StaticColor;
-use crate::grid::config::{
-    AlignmentHorizontal, AlignmentVertical, Borders, CompactConfig, Indent, Line, Sides,
+use crate::grid::{
+    color::StaticColor,
+    config::{
+        AlignmentHorizontal, AlignmentVertical, Borders, CompactConfig, Formatting, Indent, Sides,
+    },
 };
 
-/// A [`CompactConfig`] configuration plus vertical alignment.
+/// A [`CompactConfig`] based configuration plus vertical alignment and formatting options.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CompactMultilineConfig {
     config: CompactConfig,
@@ -12,15 +14,27 @@ pub struct CompactMultilineConfig {
 }
 
 impl CompactMultilineConfig {
-    /// Create a new colored config.
-    pub fn new(config: CompactConfig) -> Self {
-        Self::from(config)
+    /// Create a new [`CompactMultilineConfig`].
+    pub const fn new() -> Self {
+        Self {
+            config: CompactConfig::new(),
+            alignment_vertical: AlignmentVertical::Top,
+            formatting: Formatting::new(false, false, false),
+        }
+    }
+
+    /// Create a new [`CompactMultilineConfig`].
+    pub const fn from_compact(config: CompactConfig) -> Self {
+        Self {
+            config,
+            alignment_vertical: AlignmentVertical::Top,
+            formatting: Formatting::new(false, false, false),
+        }
     }
 
     /// Set a horizontal alignment.
-    pub const fn set_alignment_vertical(mut self, alignment: AlignmentVertical) -> Self {
-        self.alignment_vertical = alignment;
-        self
+    pub fn set_alignment_vertical(&mut self, alignment: AlignmentVertical) {
+        self.alignment_vertical = alignment
     }
 
     /// Get a alignment horizontal.
@@ -29,9 +43,8 @@ impl CompactMultilineConfig {
     }
 
     /// Set grid margin.
-    pub const fn set_margin(mut self, margin: Sides<Indent>) -> Self {
+    pub fn set_margin(&mut self, margin: Sides<Indent>) {
         self.config = self.config.set_margin(margin);
-        self
     }
 
     /// Returns a grid margin.
@@ -40,24 +53,8 @@ impl CompactMultilineConfig {
     }
 
     /// Set the [`Borders`] value as correct one.
-    pub const fn set_borders(mut self, borders: Borders<char>) -> Self {
-        self.config = self.config.set_borders(borders);
-        self
-    }
-
-    /// Set the first horizontal line.
-    ///
-    /// It ignores the [`Borders`] horizontal value if set for 1st row.
-    pub const fn set_first_horizontal_line(mut self, line: Line<char>) -> Self {
-        self.config = self.config.set_first_horizontal_line(line);
-        self
-    }
-
-    /// Set the first horizontal line.
-    ///
-    /// It ignores the [`Borders`] horizontal value if set for 1st row.
-    pub const fn get_first_horizontal_line(&self) -> Option<Line<char>> {
-        self.config.get_first_horizontal_line()
+    pub fn set_borders(&mut self, borders: Borders<char>) {
+        self.config = self.config.set_borders(borders)
     }
 
     /// Returns a current [`Borders`] structure.
@@ -71,9 +68,8 @@ impl CompactMultilineConfig {
     }
 
     /// Set a padding to a given cells.
-    pub const fn set_padding(mut self, padding: Sides<Indent>) -> Self {
-        self.config = self.config.set_padding(padding);
-        self
+    pub fn set_padding(&mut self, padding: Sides<Indent>) {
+        self.config = self.config.set_padding(padding)
     }
 
     /// Get a padding for a given.
@@ -82,9 +78,8 @@ impl CompactMultilineConfig {
     }
 
     /// Set a horizontal alignment.
-    pub const fn set_alignment_horizontal(mut self, alignment: AlignmentHorizontal) -> Self {
-        self.config = self.config.set_alignment_horizontal(alignment);
-        self
+    pub fn set_alignment_horizontal(&mut self, alignment: AlignmentHorizontal) {
+        self.config = self.config.set_alignment_horizontal(alignment)
     }
 
     /// Get a alignment horizontal.
@@ -93,37 +88,33 @@ impl CompactMultilineConfig {
     }
 
     /// Sets colors of border carcass on the grid.
-    pub const fn set_borders_color(mut self, borders: Borders<StaticColor>) -> Self {
-        self.config = self.config.set_borders_color(borders);
-        self
+    pub fn set_borders_color(&mut self, borders: Borders<StaticColor>) {
+        self.config = self.config.set_borders_color(borders)
     }
 
     /// Set colors for a margin.
-    pub const fn set_margin_color(mut self, color: Sides<StaticColor>) -> Self {
-        self.config = self.config.set_margin_color(color);
-        self
+    pub fn set_margin_color(&mut self, color: Sides<StaticColor>) {
+        self.config = self.config.set_margin_color(color)
     }
 
     /// Returns a margin color.
-    pub const fn get_margin_color(&self) -> Sides<StaticColor> {
+    pub const fn get_margin_color(&self) -> &Sides<StaticColor> {
         self.config.get_margin_color()
     }
 
     /// Set a padding color to all cells.
-    pub const fn set_padding_color(mut self, color: Sides<StaticColor>) -> Self {
-        self.config = self.config.set_padding_color(color);
-        self
+    pub fn set_padding_color(&mut self, color: Sides<StaticColor>) {
+        self.config = self.config.set_padding_color(color)
     }
 
     /// get a padding color.
-    pub const fn get_padding_color(&self) -> Sides<StaticColor> {
+    pub const fn get_padding_color(&self) -> &Sides<StaticColor> {
         self.config.get_padding_color()
     }
 
     /// Set formatting.
-    pub const fn set_formatting(mut self, formatting: Formatting) -> Self {
-        self.formatting = formatting;
-        self
+    pub fn set_formatting(&mut self, formatting: Formatting) {
+        self.formatting = formatting
     }
 
     /// Get formatting.
@@ -142,6 +133,12 @@ impl Default for CompactMultilineConfig {
     }
 }
 
+impl From<CompactMultilineConfig> for CompactConfig {
+    fn from(cfg: CompactMultilineConfig) -> Self {
+        cfg.config
+    }
+}
+
 impl From<CompactConfig> for CompactMultilineConfig {
     fn from(config: CompactConfig) -> Self {
         Self {
@@ -152,60 +149,16 @@ impl From<CompactConfig> for CompactMultilineConfig {
     }
 }
 
-impl AsRef<CompactConfig> for CompactMultilineConfig {
-    fn as_ref(&self) -> &CompactConfig {
-        &self.config
-    }
-}
-
-impl AsMut<CompactConfig> for CompactMultilineConfig {
-    fn as_mut(&mut self) -> &mut CompactConfig {
-        &mut self.config
-    }
-}
-
 #[cfg(feature = "std")]
 impl From<CompactMultilineConfig> for crate::grid::config::SpannedConfig {
     fn from(compact: CompactMultilineConfig) -> Self {
-        use crate::grid::config::Entity;
+        use crate::grid::config::Entity::*;
+        use crate::grid::config::SpannedConfig;
 
-        let mut cfg = crate::grid::config::SpannedConfig::from(compact.config);
-        cfg.set_alignment_vertical(Entity::Global, compact.alignment_vertical);
-        cfg.set_formatting(Entity::Global, compact.formatting.into());
+        let mut cfg = SpannedConfig::from(compact.config);
+        cfg.set_alignment_vertical(Global, compact.alignment_vertical);
+        cfg.set_formatting(Global, compact.formatting);
 
         cfg
-    }
-}
-
-/// Formatting represent a logic of formatting of a cell.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Formatting {
-    /// An setting to allow horizontal trim.
-    pub horizontal_trim: bool,
-    /// An setting to allow vertical trim.
-    pub vertical_trim: bool,
-    /// An setting to allow alignment per line.
-    pub allow_lines_alignment: bool,
-}
-
-impl Formatting {
-    /// Creates a new [`Formatting`] structure.
-    pub fn new(horizontal_trim: bool, vertical_trim: bool, allow_lines_alignment: bool) -> Self {
-        Self {
-            horizontal_trim,
-            vertical_trim,
-            allow_lines_alignment,
-        }
-    }
-}
-
-#[cfg(feature = "std")]
-impl From<Formatting> for crate::grid::config::Formatting {
-    fn from(val: Formatting) -> Self {
-        crate::grid::config::Formatting {
-            allow_lines_alignment: val.allow_lines_alignment,
-            horizontal_trim: val.horizontal_trim,
-            vertical_trim: val.vertical_trim,
-        }
     }
 }

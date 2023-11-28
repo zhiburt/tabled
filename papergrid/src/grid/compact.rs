@@ -9,7 +9,7 @@ use core::{
 use crate::{
     color::{Color, StaticColor},
     colors::{Colors, NoColors},
-    config::{AlignmentHorizontal, Borders, Indent, Line, Sides},
+    config::{AlignmentHorizontal, Borders, HorizontalLine, Indent, Sides},
     dimension::Dimension,
     records::Records,
     util::string::string_width,
@@ -99,13 +99,19 @@ where
     }
 }
 
-fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
+fn print_grid<F, R, D, C>(
     f: &mut F,
     records: R,
     cfg: &CompactConfig,
     dims: &D,
     colors: &C,
-) -> fmt::Result {
+) -> fmt::Result
+where
+    F: Write,
+    R: Records,
+    D: Dimension,
+    C: Colors,
+{
     let count_columns = records.count_columns();
     let count_rows = records.hint_count_rows();
 
@@ -114,192 +120,239 @@ fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
     }
 
     let mut records = records.iter_rows().into_iter();
-    let mut next_columns = records.next();
-
-    if next_columns.is_none() {
-        return Ok(());
-    }
+    let records_first = match records.next() {
+        Some(row) => row,
+        None => return Ok(()),
+    };
 
     let wtotal = total_width(cfg, dims, count_columns);
 
-    let borders = cfg.get_borders();
-    let bcolors = cfg.get_borders_color();
+    let borders_chars = cfg.get_borders();
+    let borders_colors = cfg.get_borders_color();
 
-    let h_chars = create_horizontal(borders);
-    let h_colors = create_horizontal_colors(bcolors);
+    let horizontal_borders = create_horizontal(borders_chars);
+    let horizontal_colors = create_horizontal_colors(borders_colors);
 
-    let has_horizontal = borders.has_horizontal();
-    let has_horizontal_colors = bcolors.has_horizontal();
-    let has_horizontal_second = cfg.get_first_horizontal_line().is_some();
+    let vertical_borders = create_vertical_borders(borders_chars, borders_colors);
 
-    let vert = (
-        borders.left.map(|c| (c, bcolors.left)),
-        borders.vertical.map(|c| (c, bcolors.vertical)),
-        borders.right.map(|c| (c, bcolors.right)),
-    );
-
-    let margin = cfg.get_margin();
-    let margin_color = cfg.get_margin_color();
-    let pad = create_padding(cfg);
-    let align = cfg.get_alignment_horizontal();
-    let mar = (
-        (margin.left, margin_color.left),
-        (margin.right, margin_color.right),
-    );
-
-    let widths = (0..count_columns).map(|col| dims.get_width(col));
+    let margin = create_margin(cfg);
+    let padding = create_padding(cfg);
+    let alignment = cfg.get_alignment_horizontal();
 
     let mut new_line = false;
 
-    if margin.top.size > 0 {
-        let wtotal = wtotal + margin.left.size + margin.right.size;
-        print_indent_lines(f, wtotal, margin.top, margin_color.top)?;
+    if margin.top.space.size > 0 {
+        let width_total = wtotal + margin.left.space.size + margin.right.space.size;
+        let indent = ColoredIndent::new(width_total, margin.top.space.fill, margin.top.color);
+        print_indent_lines(f, indent)?;
         new_line = true;
     }
 
-    if borders.has_top() {
+    if borders_chars.has_top() {
         if new_line {
             f.write_char('\n')?
         }
 
-        print_indent2(f, margin.left, margin_color.left)?;
-
-        let chars = create_horizontal_top(borders);
-        if bcolors.has_top() {
-            let chars_color = create_horizontal_top_colors(bcolors);
-            print_split_line_colored(f, chars, chars_color, dims, count_columns)?;
-        } else {
-            print_split_line(f, chars, dims, count_columns)?;
-        }
-
-        print_indent2(f, margin.right, margin_color.right)?;
+        let borders = create_horizontal_top(borders_chars);
+        let borders_colors = create_horizontal_top_colors(borders_colors);
+        print_horizontal_line(f, dims, &borders, &borders_colors, &margin, count_columns)?;
 
         new_line = true;
     }
 
-    let mut row = 0;
-    while let Some(columns) = next_columns {
-        let columns = columns.into_iter();
-        next_columns = records.next();
-
-        if row > 0 && has_horizontal {
-            if new_line {
-                f.write_char('\n')?;
-            }
-
-            print_indent2(f, margin.left, margin_color.left)?;
-
-            if has_horizontal_colors {
-                print_split_line_colored(f, h_chars, h_colors, dims, count_columns)?;
-            } else {
-                print_split_line(f, h_chars, dims, count_columns)?;
-            }
-
-            print_indent2(f, margin.right, margin_color.right)?;
-        } else if row == 1 && has_horizontal_second {
-            if new_line {
-                f.write_char('\n')?;
-            }
-
-            print_indent2(f, margin.left, margin_color.left)?;
-
-            let h_chars = cfg.get_first_horizontal_line().expect("must be here");
-
-            if has_horizontal_colors {
-                print_split_line_colored(f, h_chars, h_colors, dims, count_columns)?;
-            } else {
-                print_split_line(f, h_chars, dims, count_columns)?;
-            }
-
-            print_indent2(f, margin.right, margin_color.right)?;
-        }
-
+    if borders_chars.has_horizontal() {
         if new_line {
             f.write_char('\n')?;
         }
 
-        let columns = columns
-            .enumerate()
-            .map(|(col, text)| (text, colors.get_color((row, col))));
+        let cells = records_first.into_iter();
+        print_grid_row(
+            f,
+            cells,
+            count_columns,
+            dims,
+            colors,
+            &margin,
+            &padding,
+            &vertical_borders,
+            alignment,
+            0,
+        )?;
 
-        let widths = widths.clone();
-        print_grid_row(f, columns, widths, mar, pad, vert, align)?;
+        for (row, cells) in records.enumerate() {
+            f.write_char('\n')?;
 
-        new_line = true;
-        row += 1;
-    }
+            print_horizontal_line(
+                f,
+                dims,
+                &horizontal_borders,
+                &horizontal_colors,
+                &margin,
+                count_columns,
+            )?;
 
-    if borders.has_bottom() {
-        f.write_char('\n')?;
+            f.write_char('\n')?;
 
-        print_indent2(f, margin.left, margin_color.left)?;
-
-        let chars = create_horizontal_bottom(borders);
-        if bcolors.has_bottom() {
-            let chars_color = create_horizontal_bottom_colors(bcolors);
-            print_split_line_colored(f, chars, chars_color, dims, count_columns)?;
-        } else {
-            print_split_line(f, chars, dims, count_columns)?;
+            let cells = cells.into_iter();
+            print_grid_row(
+                f,
+                cells,
+                count_columns,
+                dims,
+                colors,
+                &margin,
+                &padding,
+                &vertical_borders,
+                alignment,
+                row + 1,
+            )?;
+        }
+    } else {
+        if new_line {
+            f.write_char('\n')?;
         }
 
-        print_indent2(f, margin.right, margin_color.right)?;
+        print_grid_row(
+            f,
+            records_first.into_iter(),
+            count_columns,
+            dims,
+            colors,
+            &margin,
+            &padding,
+            &vertical_borders,
+            alignment,
+            0,
+        )?;
+
+        for (row, cells) in records.enumerate() {
+            f.write_char('\n')?;
+
+            print_grid_row(
+                f,
+                cells.into_iter(),
+                count_columns,
+                dims,
+                colors,
+                &margin,
+                &padding,
+                &vertical_borders,
+                alignment,
+                row + 1,
+            )?;
+        }
+    }
+
+    if borders_chars.has_bottom() {
+        f.write_char('\n')?;
+
+        let borders = create_horizontal_bottom(borders_chars);
+        let colors = create_horizontal_bottom_colors(borders_colors);
+        print_horizontal_line(f, dims, &borders, &colors, &margin, count_columns)?;
     }
 
     if cfg.get_margin().bottom.size > 0 {
         f.write_char('\n')?;
 
-        let wtotal = wtotal + margin.left.size + margin.right.size;
-        print_indent_lines(f, wtotal, margin.bottom, margin_color.bottom)?;
+        let width_total = wtotal + margin.left.space.size + margin.right.space.size;
+        let indent = ColoredIndent::new(width_total, margin.bottom.space.fill, margin.bottom.color);
+        print_indent_lines(f, indent)?;
     }
 
     Ok(())
 }
 
-type ColoredIndent = (Indent, StaticColor);
+fn create_margin(cfg: &CompactConfig) -> Sides<ColoredIndent> {
+    let margin = cfg.get_margin();
+    let margin_color = cfg.get_margin_color();
+    Sides::new(
+        ColoredIndent::from_indent(margin.left, margin_color.left),
+        ColoredIndent::from_indent(margin.right, margin_color.right),
+        ColoredIndent::from_indent(margin.top, margin_color.top),
+        ColoredIndent::from_indent(margin.bottom, margin_color.bottom),
+    )
+}
+
+fn create_vertical_borders(
+    borders: &Borders<char>,
+    colors: &Borders<StaticColor>,
+) -> HorizontalLine<ColoredIndent> {
+    let intersect = borders
+        .vertical
+        .map(|c| ColoredIndent::new(0, c, colors.vertical));
+    let left = borders.left.map(|c| ColoredIndent::new(0, c, colors.left));
+    let right = borders
+        .right
+        .map(|c| ColoredIndent::new(0, c, colors.right));
+
+    HorizontalLine::new(None, intersect, left, right)
+}
+
+fn print_horizontal_line<F, D>(
+    f: &mut F,
+    dims: &D,
+    borders: &HorizontalLine<char>,
+    borders_colors: &HorizontalLine<StaticColor>,
+    margin: &Sides<ColoredIndent>,
+    count_columns: usize,
+) -> fmt::Result
+where
+    F: fmt::Write,
+    D: Dimension,
+{
+    let is_not_colored = borders_colors.is_empty();
+
+    print_indent(f, margin.left)?;
+
+    if is_not_colored {
+        print_split_line(f, dims, borders, count_columns)?;
+    } else {
+        print_split_line_colored(f, dims, borders, borders_colors, count_columns)?;
+    }
+
+    print_indent(f, margin.right)?;
+
+    Ok(())
+}
 
 #[allow(clippy::too_many_arguments)]
 fn print_grid_row<F, I, T, C, D>(
     f: &mut F,
-    columns: I,
-    widths: D,
-    mar: (ColoredIndent, ColoredIndent),
-    pad: Sides<ColoredIndent>,
-    vert: (BorderChar, BorderChar, BorderChar),
-    align: AlignmentHorizontal,
+    data: I,
+    size: usize,
+    dims: &D,
+    colors: &C,
+    margin: &Sides<ColoredIndent>,
+    padding: &Sides<ColoredIndent>,
+    borders: &HorizontalLine<ColoredIndent>,
+    alignemnt: AlignmentHorizontal,
+    row: usize,
 ) -> fmt::Result
 where
     F: Write,
-    I: Iterator<Item = (T, Option<C>)>,
+    I: Iterator<Item = T>,
     T: AsRef<str>,
-    C: Color,
-    D: Iterator<Item = usize> + Clone,
+    C: Colors,
+    D: Dimension,
 {
-    if pad.top.0.size > 0 {
-        for _ in 0..pad.top.0.size {
-            print_indent2(f, mar.0 .0, mar.0 .1)?;
-            print_columns_empty_colored(f, widths.clone(), vert, pad.top.1)?;
-            print_indent2(f, mar.1 .0, mar.1 .1)?;
+    for _ in 0..padding.top.space.size {
+        print_indent(f, margin.left)?;
+        print_columns_empty_colored(f, dims, borders, padding.top.color, size)?;
+        print_indent(f, margin.right)?;
 
-            f.write_char('\n')?;
-        }
+        f.write_char('\n')?;
     }
 
-    let mut widths1 = widths.clone();
-    let columns = columns.map(move |(text, color)| {
-        let width = widths1.next().expect("must be here");
-        (text, color, width)
-    });
+    print_indent(f, margin.left)?;
+    print_row_columns_one_line(f, data, dims, colors, borders, padding, alignemnt, row)?;
+    print_indent(f, margin.right)?;
 
-    print_indent2(f, mar.0 .0, mar.0 .1)?;
-    print_row_columns(f, columns, vert, pad, align)?;
-    print_indent2(f, mar.1 .0, mar.1 .1)?;
-
-    for _ in 0..pad.bottom.0.size {
+    for _ in 0..padding.top.space.size {
         f.write_char('\n')?;
 
-        print_indent2(f, mar.0 .0, mar.0 .1)?;
-        print_columns_empty_colored(f, widths.clone(), vert, pad.bottom.1)?;
-        print_indent2(f, mar.1 .0, mar.1 .1)?;
+        print_indent(f, margin.left)?;
+        print_columns_empty_colored(f, dims, borders, padding.bottom.color, size)?;
+        print_indent(f, margin.right)?;
     }
 
     Ok(())
@@ -307,78 +360,67 @@ where
 
 fn create_padding(cfg: &CompactConfig) -> Sides<ColoredIndent> {
     let pad = cfg.get_padding();
-    let pad_colors = cfg.get_padding_color();
+    let colors = cfg.get_padding_color();
     Sides::new(
-        (pad.left, pad_colors.left),
-        (pad.right, pad_colors.right),
-        (pad.top, pad_colors.top),
-        (pad.bottom, pad_colors.bottom),
+        ColoredIndent::new(pad.left.size, pad.left.fill, create_color(colors.left)),
+        ColoredIndent::new(pad.right.size, pad.right.fill, create_color(colors.right)),
+        ColoredIndent::new(pad.top.size, pad.top.fill, create_color(colors.top)),
+        ColoredIndent::new(
+            pad.bottom.size,
+            pad.bottom.fill,
+            create_color(colors.bottom),
+        ),
     )
 }
 
-fn create_horizontal(b: &Borders<char>) -> Line<char> {
-    Line::new(b.horizontal.unwrap_or(' '), b.intersection, b.left, b.right)
+fn create_horizontal(b: &Borders<char>) -> HorizontalLine<char> {
+    HorizontalLine::new(b.horizontal, b.intersection, b.left, b.right)
 }
 
-fn create_horizontal_top(b: &Borders<char>) -> Line<char> {
-    Line::new(
-        b.top.unwrap_or(' '),
-        b.top_intersection,
-        b.top_left,
-        b.top_right,
-    )
+fn create_horizontal_top(b: &Borders<char>) -> HorizontalLine<char> {
+    HorizontalLine::new(b.top, b.top_intersection, b.top_left, b.top_right)
 }
 
-fn create_horizontal_bottom(b: &Borders<char>) -> Line<char> {
-    Line::new(
-        b.bottom.unwrap_or(' '),
+fn create_horizontal_bottom(b: &Borders<char>) -> HorizontalLine<char> {
+    HorizontalLine::new(
+        b.bottom,
         b.bottom_intersection,
         b.bottom_left,
         b.bottom_right,
     )
 }
 
-fn create_horizontal_colors(
-    b: &Borders<StaticColor>,
-) -> (StaticColor, StaticColor, StaticColor, StaticColor) {
-    (
-        b.horizontal.unwrap_or_default(),
-        b.left.unwrap_or_default(),
-        b.intersection.unwrap_or_default(),
-        b.right.unwrap_or_default(),
+fn create_horizontal_colors(b: &Borders<StaticColor>) -> HorizontalLine<StaticColor> {
+    HorizontalLine::new(b.horizontal, b.intersection, b.left, b.right)
+}
+
+fn create_horizontal_top_colors(b: &Borders<StaticColor>) -> HorizontalLine<StaticColor> {
+    HorizontalLine::new(b.top, b.top_intersection, b.top_left, b.top_right)
+}
+
+fn create_horizontal_bottom_colors(b: &Borders<StaticColor>) -> HorizontalLine<StaticColor> {
+    HorizontalLine::new(
+        b.bottom,
+        b.bottom_intersection,
+        b.bottom_left,
+        b.bottom_right,
     )
 }
 
-fn create_horizontal_top_colors(
-    b: &Borders<StaticColor>,
-) -> (StaticColor, StaticColor, StaticColor, StaticColor) {
-    (
-        b.top.unwrap_or_default(),
-        b.top_left.unwrap_or_default(),
-        b.top_intersection.unwrap_or_default(),
-        b.top_right.unwrap_or_default(),
-    )
-}
-
-fn create_horizontal_bottom_colors(
-    b: &Borders<StaticColor>,
-) -> (StaticColor, StaticColor, StaticColor, StaticColor) {
-    (
-        b.bottom.unwrap_or_default(),
-        b.bottom_left.unwrap_or_default(),
-        b.bottom_intersection.unwrap_or_default(),
-        b.bottom_right.unwrap_or_default(),
-    )
-}
-
-fn total_width<D: Dimension>(cfg: &CompactConfig, dims: &D, count_columns: usize) -> usize {
+fn total_width<D>(cfg: &CompactConfig, dims: &D, count_columns: usize) -> usize
+where
+    D: Dimension,
+{
     let content_width = total_columns_width(count_columns, dims);
     let count_verticals = count_verticals(cfg, count_columns);
 
     content_width + count_verticals
 }
 
-fn total_columns_width<D: Dimension>(count_columns: usize, dims: &D) -> usize {
+fn total_columns_width<D>(count_columns: usize, dims: &D) -> usize
+where
+    D: Dimension,
+{
     (0..count_columns).map(|i| dims.get_width(i)).sum::<usize>()
 }
 
@@ -392,146 +434,203 @@ fn count_verticals(cfg: &CompactConfig, count_columns: usize) -> usize {
         + borders.has_right() as usize
 }
 
-type BorderChar = Option<(char, Option<StaticColor>)>;
-
-fn print_row_columns<F, I, T, C>(
+#[allow(clippy::too_many_arguments)]
+fn print_row_columns_one_line<F, I, T, D, C>(
     f: &mut F,
-    mut columns: I,
-    borders: (BorderChar, BorderChar, BorderChar),
-    pad: Sides<ColoredIndent>,
-    align: AlignmentHorizontal,
-) -> Result<(), fmt::Error>
+    mut data: I,
+    dims: &D,
+    colors: &C,
+    borders: &HorizontalLine<ColoredIndent>,
+    padding: &Sides<ColoredIndent>,
+    alignement: AlignmentHorizontal,
+    row: usize,
+) -> fmt::Result
 where
     F: Write,
-    I: Iterator<Item = (T, Option<C>, usize)>,
+    I: Iterator<Item = T>,
     T: AsRef<str>,
-    C: Color,
+    D: Dimension,
+    C: Colors,
 {
-    if let Some((c, color)) = borders.0 {
-        print_char(f, c, color)?;
+    if let Some(indent) = borders.left {
+        print_char(f, indent.space.fill, indent.color)?;
     }
 
-    if let Some((text, color, width)) = columns.next() {
-        let text = text.as_ref();
-        let text = text.lines().next().unwrap_or("");
-        print_cell(f, text, width, color, (pad.left, pad.right), align)?;
-    }
+    let text = data
+        .next()
+        .expect("we check in the beggining that size must be at least 1 column");
+    let width = dims.get_width(0);
+    let color = colors.get_color((row, 0));
 
-    for (text, color, width) in columns {
-        if let Some((c, color)) = borders.1 {
-            print_char(f, c, color)?;
+    let text = text.as_ref();
+    let text = text.lines().next().unwrap_or("");
+    print_cell(f, text, color, padding, alignement, width)?;
+
+    match borders.intersection {
+        Some(indent) => {
+            for (col, text) in data.enumerate() {
+                let col = col + 1;
+
+                let width = dims.get_width(col);
+                let color = colors.get_color((row, col));
+                let text = text.as_ref();
+                let text = text.lines().next().unwrap_or("");
+
+                print_char(f, indent.space.fill, indent.color)?;
+                print_cell(f, text, color, padding, alignement, width)?;
+            }
         }
+        None => {
+            for (col, text) in data.enumerate() {
+                let col = col + 1;
 
-        let text = text.as_ref();
-        let text = text.lines().next().unwrap_or("");
-        print_cell(f, text, width, color, (pad.left, pad.right), align)?;
+                let width = dims.get_width(col);
+                let color = colors.get_color((row, col));
+                let text = text.as_ref();
+                let text = text.lines().next().unwrap_or("");
+
+                print_cell(f, text, color, padding, alignement, width)?;
+            }
+        }
     }
 
-    if let Some((c, color)) = borders.2 {
-        print_char(f, c, color)?;
+    if let Some(indent) = borders.right {
+        print_char(f, indent.space.fill, indent.color)?;
     }
 
     Ok(())
 }
 
-fn print_columns_empty_colored<F: Write, I: Iterator<Item = usize>>(
+fn print_columns_empty_colored<F, D>(
     f: &mut F,
-    mut columns: I,
-    borders: (BorderChar, BorderChar, BorderChar),
-    color: StaticColor,
-) -> Result<(), fmt::Error> {
-    if let Some((c, color)) = borders.0 {
-        print_char(f, c, color)?;
+    dims: &D,
+    borders: &HorizontalLine<ColoredIndent>,
+    color: Option<StaticColor>,
+    count_columns: usize,
+) -> fmt::Result
+where
+    F: Write,
+    D: Dimension,
+{
+    if let Some(indent) = borders.left {
+        print_char(f, indent.space.fill, indent.color)?;
     }
 
-    if let Some(width) = columns.next() {
-        color.fmt_prefix(f)?;
-        repeat_char(f, ' ', width)?;
-        color.fmt_suffix(f)?;
-    }
+    let width = dims.get_width(0);
+    print_indent(f, ColoredIndent::new(width, ' ', color))?;
 
-    for width in columns {
-        if let Some((c, color)) = borders.1 {
-            print_char(f, c, color)?;
+    match borders.intersection {
+        Some(indent) => {
+            for column in 1..count_columns {
+                let width = dims.get_width(column);
+
+                print_char(f, indent.space.fill, indent.color)?;
+                print_indent(f, ColoredIndent::new(width, ' ', color))?;
+            }
         }
-
-        color.fmt_prefix(f)?;
-        repeat_char(f, ' ', width)?;
-        color.fmt_suffix(f)?;
+        None => {
+            for column in 1..count_columns {
+                let width = dims.get_width(column);
+                print_indent(f, ColoredIndent::new(width, ' ', color))?;
+            }
+        }
     }
 
-    if let Some((c, color)) = borders.2 {
-        print_char(f, c, color)?;
+    if let Some(indent) = borders.right {
+        print_char(f, indent.space.fill, indent.color)?;
     }
 
     Ok(())
 }
 
-fn print_cell<F: Write, C: Color>(
+fn print_cell<F, C>(
     f: &mut F,
     text: &str,
-    width: usize,
     color: Option<C>,
-    (pad_l, pad_r): (ColoredIndent, ColoredIndent),
-    align: AlignmentHorizontal,
-) -> fmt::Result {
-    let available = width - pad_l.0.size - pad_r.0.size;
+    padding: &Sides<ColoredIndent>,
+    alignment: AlignmentHorizontal,
+    width: usize,
+) -> fmt::Result
+where
+    F: Write,
+    C: Color,
+{
+    let available = width - (padding.left.space.size + padding.right.space.size);
 
     let text_width = string_width(text);
-    let (left, right) = if available < text_width {
-        (0, 0)
+    let (left, right) = if available > text_width {
+        calculate_indent(alignment, text_width, available)
     } else {
-        calculate_indent(align, text_width, available)
+        (0, 0)
     };
 
-    print_indent(f, pad_l.0.fill, pad_l.0.size, pad_l.1)?;
+    print_indent(f, padding.left)?;
 
     repeat_char(f, ' ', left)?;
     print_text(f, text, color)?;
     repeat_char(f, ' ', right)?;
 
-    print_indent(f, pad_r.0.fill, pad_r.0.size, pad_r.1)?;
+    print_indent(f, padding.right)?;
 
     Ok(())
 }
 
-fn print_split_line_colored<F: Write>(
+fn print_split_line_colored<F, D>(
     f: &mut F,
-    chars: Line<char>,
-    colors: (StaticColor, StaticColor, StaticColor, StaticColor),
-    dimension: impl Dimension,
+    dimension: &D,
+    borders: &HorizontalLine<char>,
+    borders_colors: &HorizontalLine<StaticColor>,
     count_columns: usize,
-) -> fmt::Result {
+) -> fmt::Result
+where
+    F: Write,
+    D: Dimension,
+{
     let mut used_color = StaticColor::default();
+    let chars_main = borders.main.unwrap_or(' ');
 
-    if let Some(c) = chars.connect1 {
-        colors.1.fmt_prefix(f)?;
+    if let Some(c) = borders.left {
+        if let Some(color) = &borders_colors.right {
+            prepare_coloring(f, color, &mut used_color)?;
+        }
+
         f.write_char(c)?;
-        used_color = colors.1;
     }
 
     let width = dimension.get_width(0);
     if width > 0 {
-        prepare_coloring(f, &colors.0, &mut used_color)?;
-        repeat_char(f, chars.main, width)?;
+        if let Some(color) = borders_colors.main {
+            prepare_coloring(f, &color, &mut used_color)?;
+        }
+
+        repeat_char(f, chars_main, width)?;
     }
 
     for col in 1..count_columns {
-        if let Some(c) = &chars.intersection {
-            prepare_coloring(f, &colors.2, &mut used_color)?;
-            f.write_char(*c)?;
+        if let Some(c) = borders.intersection {
+            if let Some(color) = borders_colors.intersection {
+                prepare_coloring(f, &color, &mut used_color)?;
+            }
+
+            f.write_char(c)?;
         }
 
         let width = dimension.get_width(col);
         if width > 0 {
-            prepare_coloring(f, &colors.0, &mut used_color)?;
-            repeat_char(f, chars.main, width)?;
+            if let Some(color) = borders_colors.main {
+                prepare_coloring(f, &color, &mut used_color)?;
+            }
+
+            repeat_char(f, chars_main, width)?;
         }
     }
 
-    if let Some(c) = &chars.connect2 {
-        prepare_coloring(f, &colors.3, &mut used_color)?;
-        f.write_char(*c)?;
+    if let Some(c) = borders.right {
+        if let Some(color) = &borders_colors.right {
+            prepare_coloring(f, color, &mut used_color)?;
+        }
+
+        f.write_char(c)?;
     }
 
     used_color.fmt_suffix(f)?;
@@ -539,19 +638,25 @@ fn print_split_line_colored<F: Write>(
     Ok(())
 }
 
-fn print_split_line<F: Write>(
+fn print_split_line<F, D>(
     f: &mut F,
-    chars: Line<char>,
-    dimension: impl Dimension,
+    dims: &D,
+    chars: &HorizontalLine<char>,
     count_columns: usize,
-) -> fmt::Result {
-    if let Some(c) = chars.connect1 {
+) -> fmt::Result
+where
+    F: Write,
+    D: Dimension,
+{
+    let chars_main = chars.main.unwrap_or(' ');
+
+    if let Some(c) = chars.left {
         f.write_char(c)?;
     }
 
-    let width = dimension.get_width(0);
+    let width = dims.get_width(0);
     if width > 0 {
-        repeat_char(f, chars.main, width)?;
+        repeat_char(f, chars_main, width)?;
     }
 
     for col in 1..count_columns {
@@ -559,31 +664,42 @@ fn print_split_line<F: Write>(
             f.write_char(c)?;
         }
 
-        let width = dimension.get_width(col);
+        let width = dims.get_width(col);
         if width > 0 {
-            repeat_char(f, chars.main, width)?;
+            repeat_char(f, chars_main, width)?;
         }
     }
 
-    if let Some(c) = chars.connect2 {
+    if let Some(c) = chars.right {
         f.write_char(c)?;
     }
 
     Ok(())
 }
 
-fn print_text<F: Write>(f: &mut F, text: &str, clr: Option<impl Color>) -> fmt::Result {
-    match clr {
+fn print_text<F, C>(f: &mut F, text: &str, color: Option<C>) -> fmt::Result
+where
+    F: Write,
+    C: Color,
+{
+    match color {
         Some(color) => {
             color.fmt_prefix(f)?;
             f.write_str(text)?;
-            color.fmt_suffix(f)
+            color.fmt_suffix(f)?;
         }
-        None => f.write_str(text),
-    }
+        None => {
+            f.write_str(text)?;
+        }
+    };
+
+    Ok(())
 }
 
-fn prepare_coloring<F: Write>(f: &mut F, clr: &StaticColor, used: &mut StaticColor) -> fmt::Result {
+fn prepare_coloring<F>(f: &mut F, clr: &StaticColor, used: &mut StaticColor) -> fmt::Result
+where
+    F: Write,
+{
     if *used != *clr {
         used.fmt_suffix(f)?;
         clr.fmt_prefix(f)?;
@@ -610,7 +726,10 @@ fn calculate_indent(
     }
 }
 
-fn repeat_char<F: Write>(f: &mut F, c: char, n: usize) -> fmt::Result {
+fn repeat_char<F>(f: &mut F, c: char, n: usize) -> fmt::Result
+where
+    F: Write,
+{
     for _ in 0..n {
         f.write_char(c)?;
     }
@@ -618,7 +737,11 @@ fn repeat_char<F: Write>(f: &mut F, c: char, n: usize) -> fmt::Result {
     Ok(())
 }
 
-fn print_char<F: Write>(f: &mut F, c: char, color: Option<StaticColor>) -> fmt::Result {
+// todo: replace Option<StaticColor> to StaticColor and check performance
+fn print_char<F>(f: &mut F, c: char, color: Option<StaticColor>) -> fmt::Result
+where
+    F: Write,
+{
     match color {
         Some(color) => {
             color.fmt_prefix(f)?;
@@ -629,31 +752,65 @@ fn print_char<F: Write>(f: &mut F, c: char, color: Option<StaticColor>) -> fmt::
     }
 }
 
-fn print_indent_lines<F: Write>(
-    f: &mut F,
-    width: usize,
-    indent: Indent,
-    color: StaticColor,
-) -> fmt::Result {
-    print_indent(f, indent.fill, width, color)?;
+fn print_indent_lines<F>(f: &mut F, indent: ColoredIndent) -> fmt::Result
+where
+    F: Write,
+{
+    print_indent(f, indent)?;
     f.write_char('\n')?;
 
-    for _ in 1..indent.size {
+    for _ in 1..indent.space.size {
         f.write_char('\n')?;
-        print_indent(f, indent.fill, width, color)?;
+        print_indent(f, indent)?;
     }
 
     Ok(())
 }
 
-fn print_indent<F: Write>(f: &mut F, c: char, n: usize, color: StaticColor) -> fmt::Result {
-    color.fmt_prefix(f)?;
-    repeat_char(f, c, n)?;
-    color.fmt_suffix(f)?;
+fn print_indent<F>(f: &mut F, indent: ColoredIndent) -> fmt::Result
+where
+    F: Write,
+{
+    match indent.color {
+        Some(color) => {
+            color.fmt_prefix(f)?;
+            repeat_char(f, indent.space.fill, indent.space.size)?;
+            color.fmt_suffix(f)?;
+        }
+        None => {
+            repeat_char(f, indent.space.fill, indent.space.size)?;
+        }
+    }
 
     Ok(())
 }
 
-fn print_indent2<F: Write>(f: &mut F, indent: Indent, color: StaticColor) -> fmt::Result {
-    print_indent(f, indent.fill, indent.size, color)
+#[derive(Debug, Clone, Copy)]
+struct ColoredIndent {
+    space: Indent,
+    color: Option<StaticColor>,
+}
+
+impl ColoredIndent {
+    fn new(width: usize, c: char, color: Option<StaticColor>) -> Self {
+        Self {
+            space: Indent::new(width, c),
+            color,
+        }
+    }
+
+    fn from_indent(indent: Indent, color: StaticColor) -> Self {
+        Self {
+            space: indent,
+            color: create_color(color),
+        }
+    }
+}
+
+fn create_color(color: StaticColor) -> Option<StaticColor> {
+    if color.is_empty() {
+        None
+    } else {
+        Some(color)
+    }
 }

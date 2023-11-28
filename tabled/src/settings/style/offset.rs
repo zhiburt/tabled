@@ -1,3 +1,4 @@
+#[cfg(feature = "std")]
 use crate::grid::config;
 
 /// The structure represents an offset in a text.
@@ -9,6 +10,7 @@ pub enum Offset {
     End(usize),
 }
 
+#[cfg(feature = "std")]
 impl From<Offset> for config::Offset {
     fn from(o: Offset) -> Self {
         match o {

@@ -329,7 +329,7 @@ fn create_config() -> CompactConfig {
             Indent::default(),
         ))
         .set_alignment_horizontal(AlignmentHorizontal::Left)
-        .set_borders(*Style::ascii().get_borders())
+        .set_borders(Style::ascii().get_borders())
 }
 
 fn build_records<I: IntoRecords>(

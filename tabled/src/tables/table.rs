@@ -413,7 +413,7 @@ fn configure_grid() -> SpannedConfig {
     );
     cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Left);
     cfg.set_formatting(Entity::Global, Formatting::new(false, false, false));
-    cfg.set_borders(*Style::ascii().get_borders());
+    cfg.set_borders(Style::ascii().get_borders());
 
     cfg
 }

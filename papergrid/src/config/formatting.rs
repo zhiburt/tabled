@@ -11,11 +11,11 @@ pub struct Formatting {
 
 impl Formatting {
     /// Creates a new [`Formatting`] structure.
-    pub fn new(horizontal_trim: bool, vertical_trim: bool, allow_lines_alignment: bool) -> Self {
+    pub const fn new(horizontal_trim: bool, vertical_trim: bool, lines_alignment: bool) -> Self {
         Self {
             horizontal_trim,
             vertical_trim,
-            allow_lines_alignment,
+            allow_lines_alignment: lines_alignment,
         }
     }
 }

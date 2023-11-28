@@ -1,11 +1,16 @@
 use core::marker::PhantomData;
 
-use crate::settings::style::{Line, On};
+use papergrid::config::HorizontalLine;
+
+use crate::grid::config::VerticalLine as Line;
+use crate::settings::style::On;
+
+use super::StyleBuilder;
 
 /// A vertical split line which can be used to set a border.
 #[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VerticalLine<T, B, I> {
-    line: Line,
+    line: Line<char>,
     _top: PhantomData<T>,
     _bottom: PhantomData<B>,
     _intersection: PhantomData<I>,
@@ -14,36 +19,71 @@ pub struct VerticalLine<T, B, I> {
 impl VerticalLine<(), (), ()> {
     /// Creates a new vertical split line.
     pub const fn new(main: char) -> Self {
-        Self {
-            line: Line::new(Some(main), None, None, None),
-            _top: PhantomData,
-            _bottom: PhantomData,
-            _intersection: PhantomData,
-        }
+        Self::update(Line::new(Some(main), None, None, None))
     }
 }
 
-impl<L, R, I> VerticalLine<L, R, I> {
+impl<T, B, I> VerticalLine<T, B, I> {
     /// Creates a stub horizontal line.
     pub const fn empty() -> Self {
-        Self {
-            line: Line::new(None, None, None, None),
-            _top: PhantomData,
-            _bottom: PhantomData,
-            _intersection: PhantomData,
-        }
+        Self::update(Line::empty())
+    }
+
+    /// Fetches vertical line from a style.
+    pub const fn inherit<L, R, const HSIZE: usize, const VSIZE: usize>(
+        style: StyleBuilder<T, B, L, R, I, On, HSIZE, VSIZE>,
+    ) -> Self {
+        let borders = style.get_borders();
+        let line = Line::new(
+            borders.vertical,
+            borders.intersection,
+            borders.top_intersection,
+            borders.bottom_intersection,
+        );
+
+        Self::update(line)
+    }
+
+    /// Fetches left vertical line from a style.
+    pub const fn inherit_left<R, V, const HSIZE: usize, const VSIZE: usize>(
+        style: StyleBuilder<T, B, On, R, I, V, HSIZE, VSIZE>,
+    ) -> Self {
+        let borders = style.get_borders();
+        let line = Line::new(
+            borders.left,
+            borders.left_intersection,
+            borders.top_left,
+            borders.bottom_left,
+        );
+
+        Self::update(line)
+    }
+
+    /// Fetches right vertical line from a style.
+    pub const fn inherit_right<L, V, const HSIZE: usize, const VSIZE: usize>(
+        style: StyleBuilder<T, B, L, On, I, V, HSIZE, VSIZE>,
+    ) -> Self {
+        let borders = style.get_borders();
+        let line = Line::new(
+            borders.right,
+            borders.right_intersection,
+            borders.top_right,
+            borders.bottom_right,
+        );
+
+        Self::update(line)
     }
 }
 
 impl VerticalLine<On, On, On> {
     /// Creates a new vertical split line.
-    pub const fn full(main: char, top: char, bottom: char, intersection: char) -> Self {
-        Self {
-            line: Line::new(Some(main), Some(intersection), Some(top), Some(bottom)),
-            _top: PhantomData,
-            _bottom: PhantomData,
-            _intersection: PhantomData,
-        }
+    pub const fn full(main: char, intersection: char, top: char, bottom: char) -> Self {
+        Self::update(Line::new(
+            Some(main),
+            Some(intersection),
+            Some(top),
+            Some(bottom),
+        ))
     }
 
     /// Creates a new vertical split line.
@@ -67,19 +107,19 @@ impl<T, B, I> VerticalLine<T, B, I> {
 
     /// Set a top character.
     pub const fn top(mut self, c: char) -> VerticalLine<On, B, I> {
-        self.line.connector1 = Some(c);
+        self.line.top = Some(c);
         VerticalLine::update(self.line)
     }
 
     /// Set a bottom character.
     pub const fn bottom(mut self, c: char) -> VerticalLine<T, On, I> {
-        self.line.connector2 = Some(c);
+        self.line.bottom = Some(c);
         VerticalLine::update(self.line)
     }
 }
 
 impl<T, B, I> VerticalLine<T, B, I> {
-    pub(crate) const fn update(line: Line) -> VerticalLine<T, B, I> {
+    pub(crate) const fn update(line: Line<char>) -> VerticalLine<T, B, I> {
         Self {
             line,
             _top: PhantomData,
@@ -97,7 +137,7 @@ impl<T, B, I> VerticalLine<T, B, I> {
     }
 
     /// Get a general structure of line.
-    pub const fn into_inner(&self) -> Line {
+    pub const fn into_inner(&self) -> Line<char> {
         self.line
     }
 }
@@ -121,15 +161,12 @@ impl<T, B> VerticalLine<T, B, On> {
 impl<B, I> VerticalLine<On, B, I> {
     /// Get a top character.
     pub const fn get_top(&self) -> char {
-        match self.line.connector1 {
-            Some(c) => c,
-            None => unreachable!(),
-        }
+        opt_get(self.line.top)
     }
 
     /// Remove a vertical top character.
     pub const fn remove_top(mut self) -> VerticalLine<(), B, I> {
-        self.line.connector1 = None;
+        self.line.top = None;
         VerticalLine::update(self.line)
     }
 }
@@ -137,21 +174,44 @@ impl<B, I> VerticalLine<On, B, I> {
 impl<T, I> VerticalLine<T, On, I> {
     /// Get a bottom character.
     pub const fn get_bottom(&self) -> char {
-        match self.line.connector2 {
-            Some(c) => c,
-            None => unreachable!(),
-        }
+        opt_get(self.line.bottom)
     }
 
     /// Remove a vertical bottom character.
     pub const fn remove_bottom(mut self) -> VerticalLine<T, (), I> {
-        self.line.connector2 = None;
+        self.line.bottom = None;
         VerticalLine::update(self.line)
     }
 }
 
-impl<T, B, I> From<VerticalLine<T, B, I>> for Line {
+impl<T, B, I> From<VerticalLine<T, B, I>> for Line<char> {
     fn from(value: VerticalLine<T, B, I>) -> Self {
         value.line
+    }
+}
+
+impl<T, B, I> From<VerticalLine<T, B, I>> for HorizontalLine<char> {
+    fn from(value: VerticalLine<T, B, I>) -> Self {
+        HorizontalLine::new(
+            value.line.main,
+            value.line.intersection,
+            value.line.top,
+            value.line.bottom,
+        )
+    }
+}
+
+impl<T, B, I> From<Line<char>> for VerticalLine<T, B, I> {
+    fn from(value: Line<char>) -> Self {
+        let mut line = Self::empty();
+        line.line = value;
+        line
+    }
+}
+
+const fn opt_get(opt: Option<char>) -> char {
+    match opt {
+        Some(value) => value,
+        None => unreachable!(),
     }
 }

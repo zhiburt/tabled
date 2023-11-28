@@ -3,8 +3,7 @@
 //! [`CompactGrid`]: crate::grid::compact::CompactGrid
 
 use crate::color::StaticColor;
-
-use crate::config::{AlignmentHorizontal, Borders, Indent, Line, Sides};
+use crate::config::{AlignmentHorizontal, Borders, Indent, Sides};
 
 /// This structure represents a settings of a grid.
 ///
@@ -12,7 +11,6 @@ use crate::config::{AlignmentHorizontal, Borders, Indent, Line, Sides};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CompactConfig {
     borders: Borders<char>,
-    horizontal_line1: Option<Line<char>>,
     border_colors: Borders<StaticColor>,
     margin: Sides<Indent>,
     margin_color: Sides<StaticColor>,
@@ -23,16 +21,15 @@ pub struct CompactConfig {
 
 impl Default for CompactConfig {
     fn default() -> Self {
-        Self::empty()
+        Self::new()
     }
 }
 
 impl CompactConfig {
     /// Returns an standard config.
-    pub const fn empty() -> Self {
+    pub const fn new() -> Self {
         Self {
             halignment: AlignmentHorizontal::Left,
-            horizontal_line1: None,
             borders: Borders::empty(),
             border_colors: Borders::empty(),
             margin: Sides::filled(Indent::zero()),
@@ -62,21 +59,6 @@ impl CompactConfig {
     pub const fn set_borders(mut self, borders: Borders<char>) -> Self {
         self.borders = borders;
         self
-    }
-
-    /// Set the first horizontal line.
-    ///
-    /// It ignores the [`Borders`] horizontal value if set for 1st row.
-    pub const fn set_first_horizontal_line(mut self, line: Line<char>) -> Self {
-        self.horizontal_line1 = Some(line);
-        self
-    }
-
-    /// Set the first horizontal line.
-    ///
-    /// It ignores the [`Borders`] horizontal value if set for 1st row.
-    pub const fn get_first_horizontal_line(&self) -> Option<Line<char>> {
-        self.horizontal_line1
     }
 
     /// Returns a current [`Borders`] structure.
@@ -124,8 +106,8 @@ impl CompactConfig {
     }
 
     /// Returns a margin color.
-    pub const fn get_margin_color(&self) -> Sides<StaticColor> {
-        self.margin_color
+    pub const fn get_margin_color(&self) -> &Sides<StaticColor> {
+        &self.margin_color
     }
 
     /// Set a padding to a given cells.
@@ -135,7 +117,7 @@ impl CompactConfig {
     }
 
     /// Set a padding to a given cells.
-    pub const fn get_padding_color(&self) -> Sides<StaticColor> {
-        self.padding_color
+    pub const fn get_padding_color(&self) -> &Sides<StaticColor> {
+        &self.padding_color
     }
 }

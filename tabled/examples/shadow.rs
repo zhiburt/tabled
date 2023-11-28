@@ -22,7 +22,7 @@ use tabled::{
     row,
     settings::{
         object::Cell,
-        style::{LineChar, RawStyle, Style},
+        style::{LineChar, Style, StyleBuilder},
         Height, Modify, Padding, Shadow, Width,
     },
     Table,
@@ -62,38 +62,40 @@ fn read_message() -> String {
 }
 
 fn create_small_table_list(width_available: usize) -> String {
+    let style1 = Style::modern();
+    let style2 = Style::extended();
+    let style3 = StyleBuilder::modern()
+        .left('║')
+        .right('║')
+        .intersection_left('╟')
+        .intersection_right('╢')
+        .corner_top_right('╖')
+        .corner_top_left('╓')
+        .corner_bottom_right('╜')
+        .corner_bottom_left('╙')
+        .into();
+    let style4 = StyleBuilder::modern()
+        .top('═')
+        .bottom('═')
+        .corner_top_right('╕')
+        .corner_top_left('╒')
+        .corner_bottom_right('╛')
+        .corner_bottom_left('╘')
+        .horizontal('═')
+        .intersection_left('╞')
+        .intersection_right('╡')
+        .intersection_top('╤')
+        .intersection_bottom('╧')
+        .intersection('╪')
+        .into();
+
     let mut tables = [
-        create_small_table(Style::modern().into()),
-        create_small_table(Style::extended().into()),
-        create_small_table(
-            Style::modern()
-                .left('║')
-                .right('║')
-                .intersection_left('╟')
-                .intersection_right('╢')
-                .corner_top_right('╖')
-                .corner_top_left('╓')
-                .corner_bottom_right('╜')
-                .corner_bottom_left('╙')
-                .into(),
-        ),
-        create_small_table(
-            Style::modern()
-                .top('═')
-                .bottom('═')
-                .corner_top_right('╕')
-                .corner_top_left('╒')
-                .corner_bottom_right('╛')
-                .corner_bottom_left('╘')
-                .horizontal('═')
-                .intersection_left('╞')
-                .intersection_right('╡')
-                .intersection_top('╤')
-                .intersection_bottom('╧')
-                .intersection('╪')
-                .into(),
-        ),
+        create_small_table(style1),
+        create_small_table(style2),
+        create_small_table(style3),
+        create_small_table(style4),
     ];
+
     const TOTAL_TABLE_WIDTH: usize = 19;
 
     if width_available > TOTAL_TABLE_WIDTH {
@@ -118,7 +120,7 @@ fn create_small_table_list(width_available: usize) -> String {
     small_table_row
 }
 
-fn create_small_table(style: RawStyle) -> Table {
+fn create_small_table(style: Style) -> Table {
     let mut table = Builder::from_iter(vec![vec![" ", ""], vec![" ", ""]]).build();
     table
         .with(style)
@@ -157,7 +159,7 @@ fn create_main_table(message: &str) -> Table {
     let mut table = row![left_table, message];
     table
         .with(Padding::zero())
-        .with(Style::modern().remove_vertical())
+        .with(StyleBuilder::modern().remove_vertical())
         .with(Modify::new(Cell::new(0, 0)).with(LineChar::vertical('╞', count_lines)))
         .with(Modify::new(Cell::new(0, 2)).with(LineChar::vertical('╡', count_lines)))
         .with(Shadow::new(2));

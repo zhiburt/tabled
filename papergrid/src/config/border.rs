@@ -37,6 +37,30 @@ pub struct Border<T> {
 impl<T> Border<T> {
     /// This function constructs a cell borders with all sides set.
     #[allow(clippy::too_many_arguments)]
+    pub const fn new(
+        top: Option<T>,
+        bottom: Option<T>,
+        left: Option<T>,
+        right: Option<T>,
+        left_top_corner: Option<T>,
+        left_bottom_corner: Option<T>,
+        right_top_corner: Option<T>,
+        right_bottom_corner: Option<T>,
+    ) -> Self {
+        Self {
+            top,
+            bottom,
+            left,
+            right,
+            left_top_corner,
+            left_bottom_corner,
+            right_top_corner,
+            right_bottom_corner,
+        }
+    }
+
+    /// This function constructs a cell borders with all sides set.
+    #[allow(clippy::too_many_arguments)]
     pub const fn full(
         top: T,
         bottom: T,
@@ -47,30 +71,21 @@ impl<T> Border<T> {
         bottom_left: T,
         bottom_right: T,
     ) -> Self {
-        Self {
-            top: Some(top),
-            bottom: Some(bottom),
-            right: Some(right),
-            right_top_corner: Some(top_right),
-            right_bottom_corner: Some(bottom_right),
-            left: Some(left),
-            left_bottom_corner: Some(bottom_left),
-            left_top_corner: Some(top_left),
-        }
+        Self::new(
+            Some(top),
+            Some(bottom),
+            Some(left),
+            Some(right),
+            Some(top_left),
+            Some(bottom_left),
+            Some(top_right),
+            Some(bottom_right),
+        )
     }
 
     /// This function constructs a cell borders with all sides being empty (set off).
     pub const fn empty() -> Self {
-        Self {
-            top: None,
-            bottom: None,
-            right: None,
-            right_top_corner: None,
-            right_bottom_corner: None,
-            left: None,
-            left_bottom_corner: None,
-            left_top_corner: None,
-        }
+        Self::new(None, None, None, None, None, None, None, None)
     }
 
     /// Checks whether any side is set.

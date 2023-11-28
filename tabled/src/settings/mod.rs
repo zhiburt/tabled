@@ -123,13 +123,13 @@ pub use modify::{Modify, ModifyList};
 
 pub use self::{
     alignment::Alignment, extract::Extract, margin::Margin, padding::Padding, rotate::Rotate,
-    style::Style,
+    style::Border,
 };
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
     color::Color, concat::Concat, disable::Disable, duplicate::Dup, format::Format, height::Height,
-    highlight::Highlight, merge::Merge, panel::Panel, shadow::Shadow, span::Span, style::Border,
+    highlight::Highlight, merge::Merge, panel::Panel, shadow::Shadow, span::Span, style::Style,
     width::Width,
 };

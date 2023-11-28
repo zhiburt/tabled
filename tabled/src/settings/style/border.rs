@@ -1,11 +1,15 @@
 use core::marker::PhantomData;
 
 use crate::{
-    grid::{
-        config::{Border as GridBorder, ColoredConfig, Entity},
-        records::{ExactRecords, Records},
-    },
-    settings::{style::On, CellOption},
+    grid::config::Border as GridBorder,
+    settings::{style::On, style::StyleBuilder},
+};
+
+#[cfg(feature = "std")]
+use crate::{
+    grid::config::{ColoredConfig, Entity},
+    grid::records::{ExactRecords, Records},
+    settings::CellOption,
 };
 
 /// Border represents a border of a Cell.
@@ -93,6 +97,27 @@ impl Border<On, On, On, On> {
     /// Using this function you deconstruct the existing borders.
     pub const fn empty() -> EmptyBorder {
         EmptyBorder
+    }
+}
+
+impl<T, B, L, R> Border<T, B, L, R> {
+    /// Fetches outer border from a style.
+    pub const fn inherit<H, V, const HSIZE: usize, const VSIZE: usize>(
+        style: StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>,
+    ) -> Self {
+        let borders = style.get_borders();
+        let line = GridBorder::new(
+            borders.top,
+            borders.bottom,
+            borders.left,
+            borders.right,
+            borders.top_left,
+            borders.bottom_left,
+            borders.top_right,
+            borders.bottom_right,
+        );
+
+        Self::from_border(line)
     }
 }
 
@@ -213,6 +238,8 @@ impl<T, B, L, R> From<Border<T, B, L, R>> for GridBorder<char> {
     }
 }
 
+#[cfg(feature = "std")]
+
 impl<T, B, L, R, Data> CellOption<Data, ColoredConfig> for Border<T, B, L, R>
 where
     Data: Records + ExactRecords,
@@ -222,9 +249,24 @@ where
     }
 }
 
+#[cfg(feature = "std")]
+impl<R> CellOption<R, ColoredConfig> for GridBorder<char>
+where
+    R: Records + ExactRecords,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
+        let shape = (records.count_rows(), records.count_columns());
+
+        for pos in entity.iter(shape.0, shape.1) {
+            cfg.set_border(pos, self);
+        }
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct EmptyBorder;
 
+#[cfg(feature = "std")]
 impl<R> CellOption<R, ColoredConfig> for EmptyBorder
 where
     R: Records + ExactRecords,
@@ -242,18 +284,5 @@ const fn get_char(c: Option<char>) -> char {
     match c {
         Some(c) => c,
         None => unreachable!(),
-    }
-}
-
-impl<R> CellOption<R, ColoredConfig> for GridBorder<char>
-where
-    R: Records + ExactRecords,
-{
-    fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
-        let shape = (records.count_rows(), records.count_columns());
-
-        for pos in entity.iter(shape.0, shape.1) {
-            cfg.set_border(pos, self);
-        }
     }
 }

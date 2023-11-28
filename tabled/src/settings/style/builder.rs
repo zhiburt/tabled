@@ -3,17 +3,15 @@
 use core::marker::PhantomData;
 
 use crate::{
-    grid::config::{Borders, CompactConfig, CompactMultilineConfig},
-    settings::TableOption,
+    grid::config::{Border as GridBorder, Borders, CompactConfig, CompactMultilineConfig},
+    settings::{
+        style::{HorizontalLine, VerticalLine},
+        Border, TableOption,
+    },
 };
 
 #[cfg(feature = "std")]
-use crate::{
-    grid::config::{Border as GridBorder, ColoredConfig},
-    settings::Border,
-};
-
-use super::{HorizontalLine, Line, VerticalLine};
+use crate::{grid::config::ColoredConfig, settings::Style};
 
 /// Style is represents a theme of a [`Table`].
 ///
@@ -51,7 +49,7 @@ use super::{HorizontalLine, Line, VerticalLine};
 /// ```
 ///
 /// It tries to limit an controlling a valid state of it.
-/// For example, it won't allow to call method [`Style::corner_top_left`] unless [`Style::left`] and [`Style::top`] is set.
+/// For example, it won't allow to call method [`StyleBuilder::corner_top_left`] unless [`StyleBuilder::left`] and [`StyleBuilder::top`] is set.
 ///
 /// You can turn [`Style`] into [`RawStyle`] to have more control using [`Into`] implementation.
 ///
@@ -59,25 +57,27 @@ use super::{HorizontalLine, Line, VerticalLine};
 ///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// use tabled::{Table, settings::Style};
+/// use tabled::{Table, settings::style::StyleBuilder};
 ///
 /// let data = vec!["Hello", "2021"];
-/// let style = Style::ascii().bottom('*').intersection(' ');
-/// let table = Table::new(&data).with(style).to_string();
+/// let mut table = Table::new(&data);
+///
+/// let style = StyleBuilder::ascii().bottom('*').intersection(' ');
+/// table.with(style);
 ///
 /// println!("{}", table);
 /// ```
 ///
 /// [`Table`]: crate::Table
-/// [`RawStyle`]: crate::settings::style::RawStyle
-/// [`Style::corner_top_left`]: Style::corner_top_left
-/// [`Style::left`]: Style.left
-/// [`Style::top`]: Style.function.top
+/// [`RawStyle`]: crate::settings::StyleBuilder::RawStyle
+/// [`StyleBuilder::corner_top_left`]: StyleBuilder::corner_top_left
+/// [`StyleBuilder::left`]: Style.left
+/// [`StyleBuilder::top`]: Style.function.top
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Style<T, B, L, R, H, V, const HSIZE: usize = 0, const VSIZE: usize = 0> {
+pub struct StyleBuilder<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize> {
     borders: Borders<char>,
-    horizontals: HArray<L, R, V, HSIZE>,
-    verticals: VArray<T, B, H, VSIZE>,
+    horizontals: HArray<HSIZE>,
+    verticals: VArray<VSIZE>,
     _top: PhantomData<T>,
     _bottom: PhantomData<B>,
     _left: PhantomData<L>,
@@ -86,14 +86,17 @@ pub struct Style<T, B, L, R, H, V, const HSIZE: usize = 0, const VSIZE: usize = 
     _vertical: PhantomData<V>,
 }
 
-type HArray<L, R, I, const N: usize> = [(usize, HorizontalLine<L, R, I>); N];
-type VArray<T, B, I, const N: usize> = [(usize, VerticalLine<T, B, I>); N];
+type HLine = crate::grid::config::HorizontalLine<char>;
+type VLine = crate::grid::config::VerticalLine<char>;
+
+type HArray<const N: usize> = [(usize, HLine); N];
+type VArray<const N: usize> = [(usize, VLine); N];
 
 /// A marker struct which is used in [`Style`].
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy, Default, Hash)]
 pub struct On;
 
-impl Style<(), (), (), (), (), ()> {
+impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     /// This style is a style with no styling options on,
     ///
     /// ```text
@@ -108,26 +111,15 @@ impl Style<(), (), (), (), (), ()> {
     /// This style can be used as a base style to build a custom one.
     ///
     /// ```rust,no_run
-    /// # use tabled::settings::Style;
-    /// let style = Style::empty()
+    /// # use tabled::settings::style::StyleBuilder;
+    /// let style = StyleBuilder::empty()
     ///     .top('*')
     ///     .bottom('*')
     ///     .vertical('#')
     ///     .intersection_top('*');
     /// ```
-    pub const fn empty() -> Style<(), (), (), (), (), ()> {
-        Style::new(
-            create_borders(
-                Line::empty(),
-                Line::empty(),
-                Line::empty(),
-                None,
-                None,
-                None,
-            ),
-            [],
-            [],
-        )
+    pub const fn empty() -> StyleBuilder<(), (), (), (), (), (), 0, 0> {
+        StyleBuilder::new(Borders::empty(), [], [])
     }
 
     /// This style is analog of `empty` but with a vertical space(' ') line.
@@ -138,12 +130,12 @@ impl Style<(), (), (), (), (), ()> {
     ///      2      OpenSUSE     https://www.opensuse.org/
     ///      3    Endeavouros    https://endeavouros.com/
     /// ```
-    pub const fn blank() -> Style<(), (), (), (), (), On> {
-        Style::new(
+    pub const fn blank() -> StyleBuilder<(), (), (), (), (), On, 0, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::empty(),
-                Line::empty(),
-                Line::empty(),
+                HLine::empty(),
+                HLine::empty(),
+                HLine::empty(),
                 None,
                 None,
                 Some(' '),
@@ -168,12 +160,12 @@ impl Style<(), (), (), (), (), ()> {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     +----+--------------+---------------------------+
     /// ```
-    pub const fn ascii() -> Style<On, On, On, On, On, On> {
-        Style::new(
+    pub const fn ascii() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::full('-', '+', '+', '+'),
-                Line::full('-', '+', '+', '+'),
-                Line::full('-', '+', '+', '+'),
+                HLine::full('-', '+', '+', '+'),
+                HLine::full('-', '+', '+', '+'),
+                HLine::full('-', '+', '+', '+'),
                 Some('|'),
                 Some('|'),
                 Some('|'),
@@ -195,17 +187,17 @@ impl Style<(), (), (), (), (), ()> {
     ///      2  |   OpenSUSE   | https://www.opensuse.org/
     ///      3  | Endeavouros  | https://endeavouros.com/
     /// ```
-    pub const fn psql() -> Style<(), (), (), (), (), On, 1, 0> {
-        Style::new(
+    pub const fn psql() -> StyleBuilder<(), (), (), (), (), On, 1, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::empty(),
-                Line::empty(),
-                Line::empty(),
+                HLine::empty(),
+                HLine::empty(),
+                HLine::empty(),
                 None,
                 None,
                 Some('|'),
             ),
-            [(1, HorizontalLine::new('-').intersection('+'))],
+            [(1, HLine::new(Some('-'), Some('+'), None, None))],
             [],
         )
     }
@@ -219,22 +211,22 @@ impl Style<(), (), (), (), (), ()> {
     ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     /// ```
-    pub const fn markdown() -> Style<(), (), On, On, (), On, 1, 0> {
-        Style::new(
+    pub const fn markdown() -> StyleBuilder<(), (), On, On, (), On, 1, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::empty(),
-                Line::empty(),
-                Line::empty(),
+                HLine::empty(),
+                HLine::empty(),
+                HLine::empty(),
                 Some('|'),
                 Some('|'),
                 Some('|'),
             ),
-            [(1, HorizontalLine::full('-', '|', '|', '|'))],
+            [(1, HLine::full('-', '|', '|', '|'))],
             [],
         )
     }
 
-    /// This style is analog of [`Style::ascii`] which uses UTF-8 charset.
+    /// This style is analog of [`StyleBuilder::ascii`] which uses UTF-8 charset.
     ///
     /// It has vertical and horizontal split lines.
     ///
@@ -249,12 +241,12 @@ impl Style<(), (), (), (), (), ()> {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
-    pub const fn modern() -> Style<On, On, On, On, On, On> {
-        Style::new(
+    pub const fn modern() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::full('─', '┬', '┌', '┐'),
-                Line::full('─', '┴', '└', '┘'),
-                Line::full('─', '┼', '├', '┤'),
+                HLine::full('─', '┬', '┌', '┐'),
+                HLine::full('─', '┴', '└', '┘'),
+                HLine::full('─', '┼', '├', '┤'),
                 Some('│'),
                 Some('│'),
                 Some('│'),
@@ -264,7 +256,7 @@ impl Style<(), (), (), (), (), ()> {
         )
     }
 
-    /// This style looks like a [`Style::modern`] but without horozizontal lines except a header.
+    /// This style looks like a [`StyleBuilder::modern`] but without horozizontal lines except a header.
     ///
     /// Beware: It uses UTF-8 characters.
     ///
@@ -277,22 +269,22 @@ impl Style<(), (), (), (), (), ()> {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
-    pub const fn sharp() -> Style<On, On, On, On, (), On, 1, 0> {
-        Style::new(
+    pub const fn sharp() -> StyleBuilder<On, On, On, On, (), On, 1, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::full('─', '┬', '┌', '┐'),
-                Line::full('─', '┴', '└', '┘'),
-                Line::empty(),
+                HLine::full('─', '┬', '┌', '┐'),
+                HLine::full('─', '┴', '└', '┘'),
+                HLine::empty(),
                 Some('│'),
                 Some('│'),
                 Some('│'),
             ),
-            [(1, HorizontalLine::full('─', '├', '┤', '┼'))],
+            [(1, HLine::full('─', '┼', '├', '┤'))],
             [],
         )
     }
 
-    /// This style looks like a [`Style::sharp`] but with rounded corners.
+    /// This style looks like a [`StyleBuilder::sharp`] but with rounded corners.
     ///
     /// Beware: It uses UTF-8 characters.
     ///
@@ -305,22 +297,22 @@ impl Style<(), (), (), (), (), ()> {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     ╰────┴──────────────┴───────────────────────────╯
     /// ```
-    pub const fn rounded() -> Style<On, On, On, On, (), On, 1, 0> {
-        Style::new(
+    pub const fn rounded() -> StyleBuilder<On, On, On, On, (), On, 1, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::full('─', '┬', '╭', '╮'),
-                Line::full('─', '┴', '╰', '╯'),
-                Line::empty(),
+                HLine::full('─', '┬', '╭', '╮'),
+                HLine::full('─', '┴', '╰', '╯'),
+                HLine::empty(),
                 Some('│'),
                 Some('│'),
                 Some('│'),
             ),
-            [(1, HorizontalLine::full('─', '├', '┤', '┼'))],
+            [(1, HLine::full('─', '┼', '├', '┤'))],
             [],
         )
     }
 
-    /// This style looks like a [`Style::rounded`] but with horizontals lines.
+    /// This style looks like a [`StyleBuilder::rounded`] but with horizontals lines.
     ///
     /// Beware: It uses UTF-8 characters.
     ///
@@ -335,12 +327,12 @@ impl Style<(), (), (), (), (), ()> {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     ╰────┴──────────────┴───────────────────────────╯
     /// ```
-    pub const fn modern_rounded() -> Style<On, On, On, On, On, On, 0, 0> {
-        Style::new(
+    pub const fn modern_rounded() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::full('─', '┬', '╭', '╮'),
-                Line::full('─', '┴', '╰', '╯'),
-                Line::full('─', '┼', '├', '┤'),
+                HLine::full('─', '┬', '╭', '╮'),
+                HLine::full('─', '┴', '╰', '╯'),
+                HLine::full('─', '┼', '├', '┤'),
                 Some('│'),
                 Some('│'),
                 Some('│'),
@@ -365,12 +357,12 @@ impl Style<(), (), (), (), (), ()> {
     ///     ║ 3  ║ Endeavouros  ║ https://endeavouros.com/  ║
     ///     ╚════╩══════════════╩═══════════════════════════╝
     /// ```
-    pub const fn extended() -> Style<On, On, On, On, On, On> {
-        Style::new(
+    pub const fn extended() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::full('═', '╦', '╔', '╗'),
-                Line::full('═', '╩', '╚', '╝'),
-                Line::full('═', '╬', '╠', '╣'),
+                HLine::full('═', '╦', '╔', '╗'),
+                HLine::full('═', '╩', '╚', '╝'),
+                HLine::full('═', '╬', '╠', '╣'),
                 Some('║'),
                 Some('║'),
                 Some('║'),
@@ -394,12 +386,12 @@ impl Style<(), (), (), (), (), ()> {
     ///     : 3  : Endeavouros  : https://endeavouros.com/  :
     ///     :....:..............:...........................:
     /// ```
-    pub const fn dots() -> Style<On, On, On, On, On, On> {
-        Style::new(
+    pub const fn dots() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::full('.', '.', '.', '.'),
-                Line::full('.', ':', ':', ':'),
-                Line::full('.', ':', ':', ':'),
+                HLine::full('.', '.', '.', '.'),
+                HLine::full('.', ':', ':', ':'),
+                HLine::full('.', ':', ':', ':'),
                 Some(':'),
                 Some(':'),
                 Some(':'),
@@ -420,22 +412,22 @@ impl Style<(), (), (), (), (), ()> {
     ///      3    Endeavouros    https://endeavouros.com/  
     ///     ==== ============== ===========================
     /// ```
-    pub const fn re_structured_text() -> Style<On, On, (), (), (), On, 1, 0> {
-        Style::new(
+    pub const fn re_structured_text() -> StyleBuilder<On, On, (), (), (), On, 1, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::new(Some('='), Some(' '), None, None),
-                Line::new(Some('='), Some(' '), None, None),
-                Line::empty(),
+                HLine::new(Some('='), Some(' '), None, None),
+                HLine::new(Some('='), Some(' '), None, None),
+                HLine::empty(),
                 None,
                 None,
                 Some(' '),
             ),
-            [(1, HorizontalLine::new('=').intersection(' '))],
+            [(1, HLine::new(Some('='), Some(' '), None, None))],
             [],
         )
     }
 
-    /// This is a theme analog of [`Style::rounded`], but in using ascii charset and
+    /// This is a theme analog of [`StyleBuilder::rounded`], but in using ascii charset and
     /// with no horizontal lines.
     ///
     /// ```text
@@ -446,12 +438,12 @@ impl Style<(), (), (), (), (), ()> {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     '-----------------------------------------------'
     /// ```
-    pub const fn ascii_rounded() -> Style<On, On, On, On, (), On> {
-        Style::new(
+    pub const fn ascii_rounded() -> StyleBuilder<On, On, On, On, (), On, 0, 0> {
+        StyleBuilder::new(
             create_borders(
-                Line::full('-', '-', '.', '.'),
-                Line::full('-', '-', '\'', '\''),
-                Line::empty(),
+                HLine::full('-', '-', '.', '.'),
+                HLine::full('-', '-', '\'', '\''),
+                HLine::empty(),
                 Some('|'),
                 Some('|'),
                 Some('|'),
@@ -463,12 +455,12 @@ impl Style<(), (), (), (), (), ()> {
 }
 
 impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
-    Style<T, B, L, R, H, V, HSIZE, VSIZE>
+    StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>
 {
-    const fn new(
+    pub(crate) const fn new(
         borders: Borders<char>,
-        horizontals: HArray<L, R, V, HSIZE>,
-        verticals: VArray<T, B, H, VSIZE>,
+        horizontals: HArray<HSIZE>,
+        verticals: VArray<VSIZE>,
     ) -> Self {
         Self {
             borders,
@@ -482,29 +474,58 @@ impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
             _vertical: PhantomData,
         }
     }
+
+    pub(crate) const fn get_borders(&self) -> Borders<char> {
+        self.borders
+    }
+
+    #[cfg(feature = "std")]
+    pub(crate) const fn get_horizontals(&self) -> [(usize, HLine); HSIZE] {
+        self.horizontals
+    }
+
+    /// Builder a [`Style`]
+    #[cfg(feature = "std")]
+    pub fn build(self) -> Style {
+        let mut style = Style::new();
+        style.set_borders(self.borders);
+
+        if !self.horizontals.is_empty() {
+            let lines = self.horizontals.iter().cloned().collect();
+            style.set_lines_horizontal(lines);
+        }
+
+        if !self.verticals.is_empty() {
+            let lines = self.verticals.iter().cloned().collect();
+            style.set_lines_vertical(lines);
+        }
+
+        style
+    }
 }
 
-impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V, HN, VN> {
+impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, H, V, HN, VN> {
     /// Set border horizontal lines.
     ///
     /// # Example
     ///
     #[cfg_attr(feature = "derive", doc = "```")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
+    /// use tabled::{settings::style::{StyleBuilder, HorizontalLine}, Table};
     ///
     /// let data = (0..3).map(|i| ("Hello", i));
+    /// let mut table = Table::new(data);
     ///
-    /// let style = Style::rounded().horizontals([
+    /// let style = StyleBuilder::rounded().horizontals([
     ///     (1, HorizontalLine::filled('#')),
     ///     (2, HorizontalLine::filled('&')),
     ///     (3, HorizontalLine::filled('@')),
     /// ]);
     ///
-    /// let table = Table::new(data).with(style).to_string();
+    /// table.with(style);
     ///
     /// assert_eq!(
-    ///     table,
+    ///     table.to_string(),
     ///     concat!(
     ///         "╭───────┬─────╮\n",
     ///         "│ &str  │ i32 │\n",
@@ -520,9 +541,10 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     /// ```
     pub const fn horizontals<const SIZE: usize>(
         self,
-        list: HArray<L, R, V, SIZE>,
-    ) -> Style<T, B, L, R, H, V, SIZE, VN> {
-        Style::new(self.borders, list, self.verticals)
+        list: [(usize, HorizontalLine<L, R, V>); SIZE],
+    ) -> StyleBuilder<T, B, L, R, H, V, SIZE, VN> {
+        let list = harr_convert(list);
+        StyleBuilder::new(self.borders, list, self.verticals)
     }
 
     /// Set border vertical lines.
@@ -531,16 +553,16 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     ///
     #[cfg_attr(feature = "derive", doc = "```")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{settings::style::{Style, VerticalLine, Line}, Table};
+    /// use tabled::{settings::style::{StyleBuilder, VerticalLine}, Table};
     ///
     /// let data = (0..3).map(|i| ("Hello", "World", i));
+    /// let mut table = Table::new(data);
     ///
-    /// let style = Style::rounded().verticals([
+    /// let style = StyleBuilder::rounded().verticals([
     ///     (1, VerticalLine::new('#').top(':').bottom('.')),
     ///     (2, VerticalLine::new('&').top(':').bottom('.')),
     /// ]);
-    ///
-    /// let table = Table::new(data).with(style).to_string();
+    /// let table = table.with(style).to_string();
     ///
     /// assert_eq!(
     ///     table,
@@ -557,25 +579,26 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     /// ```
     pub const fn verticals<const SIZE: usize>(
         self,
-        list: VArray<T, B, H, SIZE>,
-    ) -> Style<T, B, L, R, H, V, HN, SIZE> {
-        Style::new(self.borders, self.horizontals, list)
+        list: [(usize, VerticalLine<T, B, H>); SIZE],
+    ) -> StyleBuilder<T, B, L, R, H, V, HN, SIZE> {
+        let list = varr_convert(list);
+        StyleBuilder::new(self.borders, self.horizontals, list)
     }
 
-    /// Removes all horizontal lines set by [`Style::horizontals`]
-    pub const fn remove_horizontals(self) -> Style<T, B, L, R, H, V, 0, VN> {
-        Style::new(self.borders, [], self.verticals)
+    /// Removes all horizontal lines set by [`StyleBuilder::horizontals`]
+    pub const fn remove_horizontals(self) -> StyleBuilder<T, B, L, R, H, V, 0, VN> {
+        StyleBuilder::new(self.borders, [], self.verticals)
     }
 
-    /// Removes all verticals lines set by [`Style::verticals`]
-    pub const fn remove_verticals(self) -> Style<T, B, L, R, H, V, HN, 0> {
-        Style::new(self.borders, self.horizontals, [])
+    /// Removes all verticals lines set by [`StyleBuilder::verticals`]
+    pub const fn remove_verticals(self) -> StyleBuilder<T, B, L, R, H, V, HN, 0> {
+        StyleBuilder::new(self.borders, self.horizontals, [])
     }
 
     /// Sets a top border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn top(mut self, c: char) -> Style<On, B, L, R, H, V, HN, VN>
+    pub const fn top(mut self, c: char) -> StyleBuilder<On, B, L, R, H, V, HN, VN>
     where
         T: Copy,
         B: Copy,
@@ -595,19 +618,15 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
             self.borders.top_intersection = Some(c);
         }
 
-        let verticals = {
-            let lines = varray_convert(self.verticals);
-            let lines = linearr_set(lines, Line::new(None, None, Some(c), None));
-            linearr_convert_to_varray(lines)
-        };
+        let verticals = varr_set(self.verticals, VLine::new(None, None, Some(c), None));
 
-        Style::new(self.borders, self.horizontals, verticals)
+        StyleBuilder::new(self.borders, self.horizontals, verticals)
     }
 
     /// Sets a bottom border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn bottom(mut self, c: char) -> Style<T, On, L, R, H, V, HN, VN>
+    pub const fn bottom(mut self, c: char) -> StyleBuilder<T, On, L, R, H, V, HN, VN>
     where
         T: Copy,
         B: Copy,
@@ -627,19 +646,15 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
             self.borders.bottom_intersection = Some(c);
         }
 
-        let verticals = {
-            let lines = varray_convert(self.verticals);
-            let lines = linearr_set(lines, Line::new(None, None, None, Some(c)));
-            linearr_convert_to_varray(lines)
-        };
+        let verticals = varr_set(self.verticals, VLine::new(None, None, None, Some(c)));
 
-        Style::new(self.borders, self.horizontals, verticals)
+        StyleBuilder::new(self.borders, self.horizontals, verticals)
     }
 
     /// Sets a left border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn left(mut self, c: char) -> Style<T, B, On, R, H, V, HN, VN>
+    pub const fn left(mut self, c: char) -> StyleBuilder<T, B, On, R, H, V, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -659,19 +674,15 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
             self.borders.left_intersection = Some(c);
         }
 
-        let horizontals = {
-            let lines = harray_convert(self.horizontals);
-            let lines = linearr_set(lines, Line::new(None, None, Some(c), None));
-            linearr_convert_to_harray(lines)
-        };
+        let horizontals = harr_set(self.horizontals, HLine::new(None, None, Some(c), None));
 
-        Style::new(self.borders, horizontals, self.verticals)
+        StyleBuilder::new(self.borders, horizontals, self.verticals)
     }
 
     /// Sets a right border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn right(mut self, c: char) -> Style<T, B, L, On, H, V, HN, VN>
+    pub const fn right(mut self, c: char) -> StyleBuilder<T, B, L, On, H, V, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -691,19 +702,15 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
             self.borders.right_intersection = Some(c);
         }
 
-        let horizontals = {
-            let lines = harray_convert(self.horizontals);
-            let lines = linearr_set(lines, Line::new(None, None, None, Some(c)));
-            linearr_convert_to_harray(lines)
-        };
+        let horizontals = harr_set(self.horizontals, HLine::new(None, None, None, Some(c)));
 
-        Style::new(self.borders, horizontals, self.verticals)
+        StyleBuilder::new(self.borders, horizontals, self.verticals)
     }
 
     /// Sets a horizontal split line.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn horizontal(mut self, c: char) -> Style<T, B, L, R, On, V, HN, VN>
+    pub const fn horizontal(mut self, c: char) -> StyleBuilder<T, B, L, R, On, V, HN, VN>
     where
         T: Copy,
         B: Copy,
@@ -723,19 +730,15 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
             self.borders.right_intersection = Some(c);
         }
 
-        let verticals = {
-            let lines = varray_convert(self.verticals);
-            let lines = linearr_set(lines, Line::new(None, Some(c), None, None));
-            linearr_convert_to_varray(lines)
-        };
+        let verticals = varr_set(self.verticals, VLine::new(None, Some(c), None, None));
 
-        Style::new(self.borders, self.horizontals, verticals)
+        StyleBuilder::new(self.borders, self.horizontals, verticals)
     }
 
     /// Sets a vertical split line.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn vertical(mut self, c: char) -> Style<T, B, L, R, H, On, HN, VN>
+    pub const fn vertical(mut self, c: char) -> StyleBuilder<T, B, L, R, H, On, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -755,13 +758,9 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
             self.borders.bottom_intersection = Some(c);
         }
 
-        let horizontals = {
-            let lines = harray_convert(self.horizontals);
-            let lines = linearr_set(lines, Line::new(None, Some(c), None, None));
-            linearr_convert_to_harray(lines)
-        };
+        let horizontals = harr_set(self.horizontals, HLine::new(None, Some(c), None, None));
 
-        Style::new(self.borders, horizontals, self.verticals)
+        StyleBuilder::new(self.borders, horizontals, self.verticals)
     }
 
     /// Set a vertical line.
@@ -769,10 +768,10 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     ///
     /// Notice, that it will clear everything that is outdated, meaning
     /// If your style has a top border line and but the given vertical line has not got it then it will be removed.
-    pub const fn vertical_line<Top, Bottom, Intersection>(
+    pub const fn line_vertical<Top, Bottom, Intersection>(
         mut self,
         line: VerticalLine<Top, Bottom, Intersection>,
-    ) -> Style<Top, Bottom, L, R, Intersection, On, HN, VN>
+    ) -> StyleBuilder<Top, Bottom, L, R, Intersection, On, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -784,8 +783,8 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
 
         self.borders.vertical = line.main;
         self.borders.intersection = line.intersection;
-        self.borders.top_intersection = line.connector1;
-        self.borders.bottom_intersection = line.connector2;
+        self.borders.top_intersection = line.top;
+        self.borders.bottom_intersection = line.bottom;
 
         if line.intersection.is_none() {
             self.borders.horizontal = None;
@@ -806,36 +805,30 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
             }
         }
 
-        if line.connector1.is_none() {
+        if line.top.is_none() {
             self.borders.top = None;
             self.borders.top_left = None;
             self.borders.top_right = None;
             self.borders.top_intersection = None;
-        } else if self.borders.has_top() && self.borders.top_intersection.is_none() {
-            self.borders.top_intersection = Some(' ');
         }
 
-        if line.connector2.is_none() {
+        if line.bottom.is_none() {
             self.borders.bottom = None;
             self.borders.bottom_left = None;
             self.borders.bottom_right = None;
             self.borders.bottom_intersection = None;
-        } else if self.borders.has_bottom() && self.borders.bottom_intersection.is_none() {
-            self.borders.bottom_intersection = Some(' ');
         }
 
-        let horizontals = harray_convert(self.horizontals);
-        let horizontals = linearr_set(horizontals, Line::new(None, line.intersection, None, None));
-        let horizontals = linearr_convert_to_harray(horizontals);
-
-        let verticals = varray_convert(self.verticals);
-        let verticals = linearr_set(
-            verticals,
-            Line::new(None, line.intersection, line.connector1, line.connector2),
+        let horizontals = harr_set(
+            self.horizontals,
+            HLine::new(None, line.intersection, None, None),
         );
-        let verticals = linearr_convert_to_varray(verticals);
+        let verticals = varr_set(
+            self.verticals,
+            VLine::new(None, line.intersection, line.top, line.bottom),
+        );
 
-        Style::new(self.borders, horizontals, verticals)
+        StyleBuilder::new(self.borders, horizontals, verticals)
     }
 
     /// Set a horizontal line.
@@ -843,10 +836,10 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     ///
     /// Notice, that it will clear everything that is outdated, meaning
     /// If your style has a left border line and but the given vertical line has not got it then it will be removed.
-    pub const fn horizontal_line<Left, Right, Intersection>(
+    pub const fn line_horizontal<Left, Right, Intersection>(
         mut self,
         line: HorizontalLine<Left, Right, Intersection>,
-    ) -> Style<Left, Right, L, R, Intersection, On, HN, VN>
+    ) -> StyleBuilder<T, B, Left, Right, On, Intersection, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -858,8 +851,8 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
 
         self.borders.horizontal = line.main;
         self.borders.intersection = line.intersection;
-        self.borders.left_intersection = line.connector1;
-        self.borders.right_intersection = line.connector2;
+        self.borders.left_intersection = line.left;
+        self.borders.right_intersection = line.right;
 
         if line.intersection.is_none() {
             self.borders.vertical = None;
@@ -880,36 +873,302 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
             }
         }
 
-        if line.connector1.is_none() {
+        if line.left.is_none() {
             self.borders.left = None;
             self.borders.top_left = None;
             self.borders.bottom_left = None;
             self.borders.left_intersection = None;
-        } else if self.borders.has_left() && self.borders.left_intersection.is_none() {
-            self.borders.left_intersection = Some(' ');
         }
 
-        if line.connector2.is_none() {
+        if line.right.is_none() {
             self.borders.right = None;
             self.borders.top_right = None;
             self.borders.bottom_right = None;
             self.borders.right_intersection = None;
-        } else if self.borders.has_right() && self.borders.right_intersection.is_none() {
-            self.borders.right_intersection = Some(' ');
         }
 
-        let horizontals = harray_convert(self.horizontals);
-        let horizontals = linearr_set(
-            horizontals,
-            Line::new(None, line.intersection, line.connector1, line.connector2),
+        let horizontals = harr_set(
+            self.horizontals,
+            HLine::new(None, line.intersection, line.left, line.right),
         );
-        let horizontals = linearr_convert_to_harray(horizontals);
+        let verticals = varr_set(
+            self.verticals,
+            VLine::new(None, line.intersection, None, None),
+        );
 
-        let verticals = varray_convert(self.verticals);
-        let verticals = linearr_set(verticals, Line::new(None, line.intersection, None, None));
-        let verticals = linearr_convert_to_varray(verticals);
+        StyleBuilder::new(self.borders, horizontals, verticals)
+    }
 
-        Style::new(self.borders, horizontals, verticals)
+    /// Set a horizontal line.
+    /// An equvalent of calling top+cornet_top_right+cornet_top_left+top_intersection.
+    ///
+    /// Notice, that it will clear everything that is outdated, meaning
+    /// If your style has a left border line and but the given vertical line has not got it then it will be removed.
+    pub const fn line_top<Left, Right, Intersection>(
+        mut self,
+        line: HorizontalLine<Left, Right, Intersection>,
+    ) -> StyleBuilder<On, B, Left, Right, H, Intersection, HN, VN>
+    where
+        L: Copy,
+        R: Copy,
+        Left: Copy,
+        Right: Copy,
+        Intersection: Copy,
+    {
+        let line = line.into_inner();
+
+        self.borders.top = line.main;
+        self.borders.top_intersection = line.intersection;
+        self.borders.top_left = line.left;
+        self.borders.top_right = line.right;
+
+        if line.intersection.is_none() {
+            self.borders.vertical = None;
+            self.borders.top_intersection = None;
+            self.borders.bottom_intersection = None;
+            self.borders.intersection = None;
+        } else {
+            if self.borders.has_top() && self.borders.top_intersection.is_none() {
+                self.borders.top_intersection = Some(' ');
+            }
+
+            if self.borders.has_bottom() && self.borders.bottom_intersection.is_none() {
+                self.borders.bottom_intersection = Some(' ');
+            }
+
+            if self.borders.vertical.is_none() {
+                self.borders.vertical = Some(' ');
+            }
+        }
+
+        if line.left.is_none() {
+            self.borders.left = None;
+            self.borders.top_left = None;
+            self.borders.bottom_left = None;
+            self.borders.left_intersection = None;
+        }
+
+        if line.right.is_none() {
+            self.borders.right = None;
+            self.borders.top_right = None;
+            self.borders.bottom_right = None;
+            self.borders.right_intersection = None;
+        }
+
+        let horizontals = harr_set(
+            self.horizontals,
+            HLine::new(None, line.intersection, line.left, line.right),
+        );
+        let verticals = varr_set(
+            self.verticals,
+            VLine::new(None, line.intersection, None, None),
+        );
+
+        StyleBuilder::new(self.borders, horizontals, verticals)
+    }
+
+    /// Set a horizontal line.
+    /// An equvalent of calling bottom+cornet_bottom_right+cornet_bottom_left+bottom_intersection.
+    ///
+    /// Notice, that it will clear everything that is outdated, meaning
+    /// If your style has a left border line and but the given vertical line has not got it then it will be removed.
+    pub const fn line_bottom<Left, Right, Intersection>(
+        mut self,
+        line: HorizontalLine<Left, Right, Intersection>,
+    ) -> StyleBuilder<T, On, Left, Right, H, Intersection, HN, VN>
+    where
+        L: Copy,
+        R: Copy,
+        Left: Copy,
+        Right: Copy,
+        Intersection: Copy,
+    {
+        let line = line.into_inner();
+
+        self.borders.bottom = line.main;
+        self.borders.bottom_intersection = line.intersection;
+        self.borders.bottom_left = line.left;
+        self.borders.bottom_right = line.right;
+
+        if line.intersection.is_none() {
+            self.borders.vertical = None;
+            self.borders.top_intersection = None;
+            self.borders.bottom_intersection = None;
+            self.borders.intersection = None;
+        } else {
+            if self.borders.has_top() && self.borders.top_intersection.is_none() {
+                self.borders.top_intersection = Some(' ');
+            }
+
+            if self.borders.has_bottom() && self.borders.bottom_intersection.is_none() {
+                self.borders.bottom_intersection = Some(' ');
+            }
+
+            if self.borders.vertical.is_none() {
+                self.borders.vertical = Some(' ');
+            }
+        }
+
+        if line.left.is_none() {
+            self.borders.left = None;
+            self.borders.top_left = None;
+            self.borders.bottom_left = None;
+            self.borders.left_intersection = None;
+        }
+
+        if line.right.is_none() {
+            self.borders.right = None;
+            self.borders.top_right = None;
+            self.borders.bottom_right = None;
+            self.borders.right_intersection = None;
+        }
+
+        let horizontals = harr_set(
+            self.horizontals,
+            HLine::new(None, line.intersection, line.left, line.right),
+        );
+        let verticals = varr_set(
+            self.verticals,
+            VLine::new(None, line.intersection, None, None),
+        );
+
+        StyleBuilder::new(self.borders, horizontals, verticals)
+    }
+
+    /// Set a vertical line.
+    /// An equvalent of calling left+corner_top_left+corner_bottom_left+left_intersection.
+    ///
+    /// Notice, that it will clear everything that is outdated, meaning
+    /// If your style has a top border line and but the given vertical line has not got it then it will be removed.
+    pub const fn line_left<Top, Bottom, Intersection>(
+        mut self,
+        line: VerticalLine<Top, Bottom, Intersection>,
+    ) -> StyleBuilder<Top, Bottom, On, R, Intersection, V, HN, VN>
+    where
+        L: Copy,
+        R: Copy,
+        Top: Copy,
+        Bottom: Copy,
+        Intersection: Copy,
+    {
+        let line = line.into_inner();
+
+        self.borders.left = line.main;
+        self.borders.left_intersection = line.intersection;
+        self.borders.top_left = line.top;
+        self.borders.bottom_left = line.bottom;
+
+        if line.intersection.is_none() {
+            self.borders.horizontal = None;
+            self.borders.left_intersection = None;
+            self.borders.right_intersection = None;
+            self.borders.intersection = None;
+        } else {
+            if self.borders.has_left() && self.borders.left_intersection.is_none() {
+                self.borders.left_intersection = Some(' ');
+            }
+
+            if self.borders.has_right() && self.borders.right_intersection.is_none() {
+                self.borders.right_intersection = Some(' ');
+            }
+
+            if self.borders.horizontal.is_none() {
+                self.borders.horizontal = Some(' ');
+            }
+        }
+
+        if line.top.is_none() {
+            self.borders.top = None;
+            self.borders.top_left = None;
+            self.borders.top_right = None;
+            self.borders.top_intersection = None;
+        }
+
+        if line.bottom.is_none() {
+            self.borders.bottom = None;
+            self.borders.bottom_left = None;
+            self.borders.bottom_right = None;
+            self.borders.bottom_intersection = None;
+        }
+
+        let horizontals = harr_set(
+            self.horizontals,
+            HLine::new(None, line.intersection, None, None),
+        );
+        let verticals = varr_set(
+            self.verticals,
+            VLine::new(None, line.intersection, line.top, line.bottom),
+        );
+
+        StyleBuilder::new(self.borders, horizontals, verticals)
+    }
+
+    /// Set a vertical line.
+    /// An equvalent of calling right+corner_top_right+corner_bottom_right+right_intersection.
+    ///
+    /// Notice, that it will clear everything that is outdated, meaning
+    /// If your style has a top border line and but the given vertical line has not got it then it will be removed.
+    pub const fn line_right<Top, Bottom, Intersection>(
+        mut self,
+        line: VerticalLine<Top, Bottom, Intersection>,
+    ) -> StyleBuilder<Top, Bottom, L, On, Intersection, V, HN, VN>
+    where
+        L: Copy,
+        R: Copy,
+        Top: Copy,
+        Bottom: Copy,
+        Intersection: Copy,
+    {
+        let line = line.into_inner();
+
+        self.borders.right = line.main;
+        self.borders.right_intersection = line.intersection;
+        self.borders.top_right = line.top;
+        self.borders.bottom_right = line.bottom;
+
+        if line.intersection.is_none() {
+            self.borders.horizontal = None;
+            self.borders.left_intersection = None;
+            self.borders.right_intersection = None;
+            self.borders.intersection = None;
+        } else {
+            if self.borders.has_left() && self.borders.left_intersection.is_none() {
+                self.borders.left_intersection = Some(' ');
+            }
+
+            if self.borders.has_right() && self.borders.right_intersection.is_none() {
+                self.borders.right_intersection = Some(' ');
+            }
+
+            if self.borders.horizontal.is_none() {
+                self.borders.horizontal = Some(' ');
+            }
+        }
+
+        if line.top.is_none() {
+            self.borders.top = None;
+            self.borders.top_left = None;
+            self.borders.top_right = None;
+            self.borders.top_intersection = None;
+        }
+
+        if line.bottom.is_none() {
+            self.borders.bottom = None;
+            self.borders.bottom_left = None;
+            self.borders.bottom_right = None;
+            self.borders.bottom_intersection = None;
+        }
+
+        let horizontals = harr_set(
+            self.horizontals,
+            HLine::new(None, line.intersection, None, None),
+        );
+        let verticals = varr_set(
+            self.verticals,
+            VLine::new(None, line.intersection, line.top, line.bottom),
+        );
+
+        StyleBuilder::new(self.borders, horizontals, verticals)
     }
 
     /// Set a frame for a style.
@@ -919,11 +1178,11 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, settings::Style};
+    /// use tabled::{Table, settings::style::{StyleBuilder, Border}};
     ///
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
     /// let table = Table::new(data)
-    ///     .with(Style::ascii().frame(Style::modern().get_frame()))
+    ///     .with(StyleBuilder::ascii().frame(Border::inherit(StyleBuilder::modern())))
     ///     .to_string();
     ///
     /// assert_eq!(
@@ -939,12 +1198,10 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
     ///     )
     /// );
     /// ```
-    #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
     pub const fn frame<Top, Bottom, Left, Right>(
         mut self,
         border: Border<Top, Bottom, Left, Right>,
-    ) -> Style<Top, Bottom, Left, Right, H, V, HN, VN>
+    ) -> StyleBuilder<Top, Bottom, Left, Right, H, V, HN, VN>
     where
         T: Copy,
         B: Copy,
@@ -960,16 +1217,14 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
         let border = border.into_inner();
         let border = correct_border(border);
 
-        let horizontals = harray_convert(self.horizontals);
-        let horizontals = linearr_set(
-            horizontals,
-            Line::new(None, None, border.left, border.right),
+        let horizontals = harr_set(
+            self.horizontals,
+            HLine::new(None, None, border.left, border.right),
         );
-        let horizontals = linearr_convert_to_harray(horizontals);
-
-        let verticals = varray_convert(self.verticals);
-        let verticals = linearr_set(verticals, Line::new(None, None, border.top, border.bottom));
-        let verticals = linearr_convert_to_varray(verticals);
+        let verticals = varr_set(
+            self.verticals,
+            VLine::new(None, None, border.top, border.bottom),
+        );
 
         self.borders.top = border.top;
         self.borders.bottom = border.bottom;
@@ -980,151 +1235,83 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V,
         self.borders.top_right = border.right_top_corner;
         self.borders.bottom_right = border.right_bottom_corner;
 
-        Style::new(self.borders, horizontals, verticals)
+        StyleBuilder::new(self.borders, horizontals, verticals)
     }
 }
 
-impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
-    Style<T, B, L, R, H, V, HSIZE, VSIZE>
-{
-    /// Frame function returns a frame as a border.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use tabled::{Table, settings::Style};
-    ///
-    /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
-    /// let table = Table::new(data)
-    ///     .with(Style::re_structured_text().frame(Style::modern().get_frame()))
-    ///     .to_string();
-    ///
-    /// assert_eq!(
-    ///     table,
-    ///     concat!(
-    ///         "┌────────── ───────┐\n",
-    ///         "│ 0          1     │\n",
-    ///         "│========== =======│\n",
-    ///         "│ 10:52:19   Hello │\n",
-    ///         "│ 10:52:20   World │\n",
-    ///         "└────────── ───────┘",
-    ///     )
-    /// );
-    /// ```
-    #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-    pub const fn get_frame(&self) -> Border<T, B, L, R> {
-        crate::settings::Border::from_border(crate::grid::config::Border {
-            top: self.borders.top,
-            bottom: self.borders.bottom,
-            left: self.borders.left,
-            left_top_corner: self.borders.top_left,
-            left_bottom_corner: self.borders.bottom_left,
-            right: self.borders.right,
-            right_top_corner: self.borders.top_right,
-            right_bottom_corner: self.borders.bottom_right,
-        })
-    }
-
-    /// Return borders of a table.
-    pub const fn get_borders(&self) -> &Borders<char> {
-        &self.borders
-    }
-
-    /// Return custom horizontals which were set.
-    pub const fn get_horizontals(&self) -> HArray<L, R, V, HSIZE>
-    where
-        L: Copy,
-        R: Copy,
-        V: Copy,
-    {
-        self.horizontals
-    }
-
-    /// Return custom verticals which were set.
-    pub const fn get_verticals(&self) -> VArray<T, B, H, VSIZE>
-    where
-        T: Copy,
-        B: Copy,
-        H: Copy,
-    {
-        self.verticals
-    }
-}
-
-impl<B, R, H, V, const HN: usize, const VN: usize> Style<On, B, On, R, H, V, HN, VN> {
+impl<B, R, H, V, const HN: usize, const VN: usize> StyleBuilder<On, B, On, R, H, V, HN, VN> {
     /// Sets a top left corner.
     pub const fn corner_top_left(mut self, c: char) -> Self {
         self.borders.top_left = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<B, L, H, V, const HN: usize, const VN: usize> Style<On, B, L, On, H, V, HN, VN> {
+impl<B, L, H, V, const HN: usize, const VN: usize> StyleBuilder<On, B, L, On, H, V, HN, VN> {
     /// Sets a top right corner.
     pub const fn corner_top_right(mut self, c: char) -> Self {
         self.borders.top_right = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, L, H, V, const HN: usize, const VN: usize> Style<T, On, L, On, H, V, HN, VN> {
+impl<T, L, H, V, const HN: usize, const VN: usize> StyleBuilder<T, On, L, On, H, V, HN, VN> {
     /// Sets a bottom right corner.
     pub const fn corner_bottom_right(mut self, c: char) -> Self {
         self.borders.bottom_right = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, R, H, V, const HN: usize, const VN: usize> Style<T, On, On, R, H, V, HN, VN> {
+impl<T, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, On, On, R, H, V, HN, VN> {
     /// Sets a bottom left corner.
     pub const fn corner_bottom_left(mut self, c: char) -> Self {
         self.borders.bottom_left = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, R, V, const HN: usize, const VN: usize> Style<T, B, On, R, On, V, HN, VN> {
+impl<T, B, R, V, const HN: usize, const VN: usize> StyleBuilder<T, B, On, R, On, V, HN, VN> {
     /// Sets a left intersection char.
     pub const fn intersection_left(mut self, c: char) -> Self {
         self.borders.left_intersection = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, V, const HN: usize, const VN: usize> Style<T, B, L, On, On, V, HN, VN> {
+impl<T, B, L, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, On, On, V, HN, VN> {
     /// Sets a right intersection char.
     pub const fn intersection_right(mut self, c: char) -> Self {
         self.borders.right_intersection = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<B, L, R, H, const HN: usize, const VN: usize> Style<On, B, L, R, H, On, HN, VN> {
+impl<B, L, R, H, const HN: usize, const VN: usize> StyleBuilder<On, B, L, R, H, On, HN, VN> {
     /// Sets a top intersection char.
     pub const fn intersection_top(mut self, c: char) -> Self {
         self.borders.top_intersection = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, L, R, H, const HN: usize, const VN: usize> Style<T, On, L, R, H, On, HN, VN> {
+impl<T, L, R, H, const HN: usize, const VN: usize> StyleBuilder<T, On, L, R, H, On, HN, VN> {
     /// Sets a bottom intersection char.
     pub const fn intersection_bottom(mut self, c: char) -> Self {
         self.borders.bottom_intersection = Some(c);
 
-        Style::new(self.borders, self.horizontals, self.verticals)
+        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, R, const HN: usize, const VN: usize> Style<T, B, L, R, On, On, HN, VN> {
+impl<T, B, L, R, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, On, On, HN, VN> {
     /// Sets an inner intersection char.
     /// A char between horizontal and vertical split lines.
     pub const fn intersection(mut self, c: char) -> Self
@@ -1136,25 +1323,16 @@ impl<T, B, L, R, const HN: usize, const VN: usize> Style<T, B, L, R, On, On, HN,
     {
         self.borders.intersection = Some(c);
 
-        let horizontals = {
-            let lines = harray_convert(self.horizontals);
-            let lines = linearr_set(lines, Line::new(None, Some(c), None, None));
-            linearr_convert_to_harray(lines)
-        };
+        let horizontals = harr_set(self.horizontals, HLine::new(None, Some(c), None, None));
+        let verticals = varr_set(self.verticals, VLine::new(None, Some(c), None, None));
 
-        let verticals = {
-            let lines = varray_convert(self.verticals);
-            let lines = linearr_set(lines, Line::new(None, Some(c), None, None));
-            linearr_convert_to_varray(lines)
-        };
-
-        Style::new(self.borders, horizontals, verticals)
+        StyleBuilder::new(self.borders, horizontals, verticals)
     }
 }
 
-impl<B, L, R, H, V, const HN: usize, const VN: usize> Style<On, B, L, R, H, V, HN, VN> {
+impl<B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<On, B, L, R, H, V, HN, VN> {
     /// Removes top border.
-    pub const fn remove_top(mut self) -> Style<(), B, L, R, H, V, HN, VN>
+    pub const fn remove_top(mut self) -> StyleBuilder<(), B, L, R, H, V, HN, VN>
     where
         B: Copy,
         H: Copy,
@@ -1164,19 +1342,15 @@ impl<B, L, R, H, V, const HN: usize, const VN: usize> Style<On, B, L, R, H, V, H
         self.borders.top_left = None;
         self.borders.top_right = None;
 
-        let verticals = {
-            let lines = varray_convert(self.verticals);
-            let lines = linearr_unset(lines, Line::new(None, None, Some(' '), None));
-            linearr_convert_to_varray(lines)
-        };
+        let verticals = varr_unset(self.verticals, VLine::new(None, None, Some(' '), None));
 
-        Style::new(self.borders, self.horizontals, verticals)
+        StyleBuilder::new(self.borders, self.horizontals, verticals)
     }
 }
 
-impl<T, L, R, H, V, const HN: usize, const VN: usize> Style<T, On, L, R, H, V, HN, VN> {
+impl<T, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, On, L, R, H, V, HN, VN> {
     /// Removes bottom border.
-    pub const fn remove_bottom(mut self) -> Style<T, (), L, R, H, V, HN, VN>
+    pub const fn remove_bottom(mut self) -> StyleBuilder<T, (), L, R, H, V, HN, VN>
     where
         T: Copy,
         H: Copy,
@@ -1186,19 +1360,15 @@ impl<T, L, R, H, V, const HN: usize, const VN: usize> Style<T, On, L, R, H, V, H
         self.borders.bottom_left = None;
         self.borders.bottom_right = None;
 
-        let verticals = {
-            let lines = varray_convert(self.verticals);
-            let lines = linearr_unset(lines, Line::new(None, None, None, Some(' ')));
-            linearr_convert_to_varray(lines)
-        };
+        let verticals = varr_unset(self.verticals, VLine::new(None, None, None, Some(' ')));
 
-        Style::new(self.borders, self.horizontals, verticals)
+        StyleBuilder::new(self.borders, self.horizontals, verticals)
     }
 }
 
-impl<T, B, R, H, V, const HN: usize, const VN: usize> Style<T, B, On, R, H, V, HN, VN> {
+impl<T, B, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, On, R, H, V, HN, VN> {
     /// Removes left border.
-    pub const fn remove_left(mut self) -> Style<T, B, (), R, H, V, HN, VN>
+    pub const fn remove_left(mut self) -> StyleBuilder<T, B, (), R, H, V, HN, VN>
     where
         R: Copy,
         V: Copy,
@@ -1208,19 +1378,15 @@ impl<T, B, R, H, V, const HN: usize, const VN: usize> Style<T, B, On, R, H, V, H
         self.borders.top_left = None;
         self.borders.bottom_left = None;
 
-        let horizontals = {
-            let lines = harray_convert(self.horizontals);
-            let lines = linearr_unset(lines, Line::new(None, None, Some(' '), None));
-            linearr_convert_to_harray(lines)
-        };
+        let horizontals = harr_unset(self.horizontals, HLine::new(None, None, Some(' '), None));
 
-        Style::new(self.borders, horizontals, self.verticals)
+        StyleBuilder::new(self.borders, horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, H, V, const HN: usize, const VN: usize> Style<T, B, L, On, H, V, HN, VN> {
+impl<T, B, L, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, On, H, V, HN, VN> {
     /// Removes right border.
-    pub const fn remove_right(mut self) -> Style<T, B, L, (), H, V, HN, VN>
+    pub const fn remove_right(mut self) -> StyleBuilder<T, B, L, (), H, V, HN, VN>
     where
         L: Copy,
         V: Copy,
@@ -1230,21 +1396,17 @@ impl<T, B, L, H, V, const HN: usize, const VN: usize> Style<T, B, L, On, H, V, H
         self.borders.top_right = None;
         self.borders.bottom_right = None;
 
-        let horizontals = {
-            let lines = harray_convert(self.horizontals);
-            let lines = linearr_unset(lines, Line::new(None, None, None, Some(' ')));
-            linearr_convert_to_harray(lines)
-        };
+        let horizontals = harr_unset(self.horizontals, HLine::new(None, None, None, Some(' ')));
 
-        Style::new(self.borders, horizontals, self.verticals)
+        StyleBuilder::new(self.borders, horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, R, V, const HN: usize, const VN: usize> Style<T, B, L, R, On, V, HN, VN> {
+impl<T, B, L, R, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, On, V, HN, VN> {
     /// Removes horizontal split lines.
     ///
     /// Not including custom split lines.
-    pub const fn remove_horizontal(mut self) -> Style<T, B, L, R, (), V, HN, VN>
+    pub const fn remove_horizontal(mut self) -> StyleBuilder<T, B, L, R, (), V, HN, VN>
     where
         T: Copy,
         B: Copy,
@@ -1255,56 +1417,16 @@ impl<T, B, L, R, V, const HN: usize, const VN: usize> Style<T, B, L, R, On, V, H
         self.borders.right_intersection = None;
         self.borders.intersection = None;
 
-        let verticals = {
-            let lines = varray_convert(self.verticals);
-            // let lines = linearr_unset(lines, Line::new(None, Some(' '), None, None));
-            linearr_convert_to_varray(lines)
-        };
+        // let lines = linearr_unset(lines, Line::new(None, Some(' '), None, None));
+        let verticals = self.verticals;
 
-        Style::new(self.borders, self.horizontals, verticals)
-    }
-
-    /// Get a [`Style`]'s default horizontal line.
-    ///
-    /// It doesn't return an overloaded line via [`Style::horizontals`].
-    ///
-    /// # Example
-    ///
-    #[cfg_attr(feature = "std", doc = "```")]
-    #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-    /// use tabled::{settings::style::{Style, HorizontalLine, Line}, Table};
-    ///
-    /// let data = (0..3).map(|i| ("Hello", "World", i));
-    /// let table = Table::new(data)
-    ///    .with(Style::ascii().remove_horizontal().horizontals([(1, Style::modern().get_horizontal_line())]))
-    ///    .to_string();
-    ///
-    /// assert_eq!(
-    ///     table,
-    ///     concat!(
-    ///         "+-------+-------+-----+\n",
-    ///         "| &str  | &str  | i32 |\n",
-    ///         "├───────┼───────┼─────┤\n",
-    ///         "| Hello | World | 0   |\n",
-    ///         "| Hello | World | 1   |\n",
-    ///         "| Hello | World | 2   |\n",
-    ///         "+-------+-------+-----+",
-    ///     )
-    /// )
-    /// ```
-    pub const fn get_horizontal_line(&self) -> HorizontalLine<L, R, V> {
-        HorizontalLine::update(Line::new(
-            self.borders.horizontal,
-            self.borders.intersection,
-            self.borders.left_intersection,
-            self.borders.right_intersection,
-        ))
+        StyleBuilder::new(self.borders, self.horizontals, verticals)
     }
 }
 
-impl<T, B, L, R, H, const HN: usize, const VN: usize> Style<T, B, L, R, H, On, HN, VN> {
+impl<T, B, L, R, H, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, H, On, HN, VN> {
     /// Removes vertical split lines.
-    pub const fn remove_vertical(mut self) -> Style<T, B, L, R, H, (), HN, VN>
+    pub const fn remove_vertical(mut self) -> StyleBuilder<T, B, L, R, H, (), HN, VN>
     where
         R: Copy,
         L: Copy,
@@ -1314,122 +1436,56 @@ impl<T, B, L, R, H, const HN: usize, const VN: usize> Style<T, B, L, R, H, On, H
         self.borders.bottom_intersection = None;
         self.borders.intersection = None;
 
-        let horizontals = {
-            let lines = harray_convert(self.horizontals);
-            // let lines = linearr_unset(lines, Line::new(None, Some(' '), None, None));
-            linearr_convert_to_harray(lines)
-        };
+        // let lines = linearr_unset(lines, Line::new(None, Some(' '), None, None));
+        let horizontals = self.horizontals;
 
-        Style::new(self.borders, horizontals, self.verticals)
-    }
-
-    /// Get a [`Style`]'s default horizontal line.
-    ///
-    /// It doesn't return an overloaded line via [`Style::verticals`].
-    ///
-    /// # Example
-    ///
-    #[cfg_attr(feature = "std", doc = "```")]
-    #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-    /// use tabled::{settings::style::{Style, VerticalLine, Line}, Table};
-    ///
-    /// let table = Table::new((0..3).map(|i| ("Hello", "World", i)))
-    ///    .with(Style::ascii().remove_horizontal().verticals([(1, Style::modern().get_vertical_line().remove_intersection())]))
-    ///    .to_string();
-    ///
-    /// assert_eq!(
-    ///     table,
-    ///     concat!(
-    ///         "+-------┬-------+-----+\n",
-    ///         "| &str  │ &str  | i32 |\n",
-    ///         "| Hello │ World | 0   |\n",
-    ///         "| Hello │ World | 1   |\n",
-    ///         "| Hello │ World | 2   |\n",
-    ///         "+-------┴-------+-----+",
-    ///     )
-    /// )
-    /// ```
-    pub const fn get_vertical_line(&self) -> VerticalLine<T, B, H> {
-        VerticalLine::update(Line::new(
-            self.borders.vertical,
-            self.borders.intersection,
-            self.borders.top_intersection,
-            self.borders.bottom_intersection,
-        ))
+        StyleBuilder::new(self.borders, horizontals, self.verticals)
     }
 }
 
 #[cfg(feature = "std")]
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
-    TableOption<Data, Dims, ColoredConfig> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
+    TableOption<Data, Dims, ColoredConfig> for StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>
 {
     fn change(self, _: &mut Data, cfg: &mut ColoredConfig, _: &mut Dims) {
         cfg.clear_theme();
         cfg.set_borders(self.borders);
 
         for (i, line) in self.horizontals {
-            let line = line.into_inner().into();
             cfg.insert_horizontal_line(i, line);
         }
 
         for (i, line) in self.verticals {
-            let line = line.into_inner().into();
             cfg.insert_vertical_line(i, line);
         }
     }
 }
 
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
-    TableOption<Data, Dims, CompactConfig> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
+    TableOption<Data, Dims, CompactConfig> for StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>
 {
     fn change(self, _: &mut Data, cfg: &mut CompactConfig, _: &mut Dims) {
         *cfg = cfg.set_borders(self.borders);
-
-        if let Some((i, line)) = self.horizontals.get(0) {
-            if *i == 1 {
-                let line = line.into_inner().into();
-                *cfg = cfg.set_first_horizontal_line(line);
-            }
-        }
     }
 }
 
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
-    TableOption<Data, Dims, CompactMultilineConfig> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
+    TableOption<Data, Dims, CompactMultilineConfig>
+    for StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>
 {
-    fn change(self, records: &mut Data, cfg: &mut CompactMultilineConfig, dims: &mut Dims) {
-        self.change(records, cfg.as_mut(), dims)
+    fn change(self, _: &mut Data, cfg: &mut CompactMultilineConfig, _: &mut Dims) {
+        cfg.set_borders(self.borders);
     }
 }
 
-const fn create_borders(
-    top: Line,
-    bottom: Line,
-    horizontal: Line,
-    left: Option<char>,
-    right: Option<char>,
-    vertical: Option<char>,
-) -> Borders<char> {
-    Borders {
-        top: top.main,
-        bottom: bottom.main,
-        top_left: top.connector1,
-        top_right: top.connector2,
-        bottom_left: bottom.connector1,
-        bottom_right: bottom.connector2,
-        top_intersection: top.intersection,
-        bottom_intersection: bottom.intersection,
-        left_intersection: horizontal.connector1,
-        right_intersection: horizontal.connector2,
-        horizontal: horizontal.main,
-        intersection: horizontal.intersection,
-        left,
-        right,
-        vertical,
+impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
+    From<StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>> for Borders<char>
+{
+    fn from(value: StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>) -> Self {
+        value.borders
     }
 }
 
-#[cfg(feature = "std")]
 const fn correct_border(mut border: GridBorder<char>) -> GridBorder<char> {
     if border.has_top() && border.top.is_none() {
         border.top = Some(' ');
@@ -1466,8 +1522,10 @@ const fn correct_border(mut border: GridBorder<char>) -> GridBorder<char> {
     border
 }
 
-const fn varray_convert<T, B, I, const N: usize>(lines: VArray<T, B, I, N>) -> [(usize, Line); N] {
-    let mut buf = [(0, Line::empty()); N];
+const fn varr_convert<T, B, I, const N: usize>(
+    lines: [(usize, VerticalLine<T, B, I>); N],
+) -> VArray<N> {
+    let mut buf = [(0, VLine::empty()); N];
     let mut i = 0;
     while i < N {
         let (index, line) = &lines[i];
@@ -1483,8 +1541,10 @@ const fn varray_convert<T, B, I, const N: usize>(lines: VArray<T, B, I, N>) -> [
     buf
 }
 
-const fn harray_convert<L, R, I, const N: usize>(lines: HArray<L, R, I, N>) -> [(usize, Line); N] {
-    let mut buf = [(0, Line::empty()); N];
+const fn harr_convert<L, R, I, const N: usize>(
+    lines: [(usize, HorizontalLine<L, R, I>); N],
+) -> HArray<N> {
+    let mut buf = [(0, HLine::empty()); N];
     let mut i = 0;
     while i < N {
         let (index, line) = &lines[i];
@@ -1500,64 +1560,18 @@ const fn harray_convert<L, R, I, const N: usize>(lines: HArray<L, R, I, N>) -> [
     buf
 }
 
-const fn linearr_convert_to_varray<T, B, I, const N: usize>(
-    lines: [(usize, Line); N],
-) -> VArray<T, B, I, N>
-where
-    T: Copy,
-    B: Copy,
-    I: Copy,
-{
-    let mut buf = [(0, VerticalLine::empty()); N];
-    let mut i = 0;
-    while i < N {
-        let (index, line) = lines[i];
-        let line = VerticalLine::update(line);
-
-        buf[i].0 = index;
-        buf[i].1 = line;
-
-        i += 1;
-    }
-
-    buf
-}
-
-const fn linearr_convert_to_harray<L, R, I, const N: usize>(
-    lines: [(usize, Line); N],
-) -> HArray<L, R, I, N>
-where
-    L: Copy,
-    R: Copy,
-    I: Copy,
-{
-    let mut buf = [(0, HorizontalLine::empty()); N];
-    let mut i = 0;
-    while i < N {
-        let (index, line) = lines[i];
-        let line = HorizontalLine::update(line);
-
-        buf[i].0 = index;
-        buf[i].1 = line;
-
-        i += 1;
-    }
-
-    buf
-}
-
-const fn linearr_set<const N: usize>(lines: [(usize, Line); N], set: Line) -> [(usize, Line); N] {
-    let mut buf = [(0, Line::empty()); N];
+const fn harr_set<const N: usize>(lines: HArray<N>, set: HLine) -> HArray<N> {
+    let mut buf = [(0, HLine::empty()); N];
     let mut i = 0;
     while i < N {
         let (index, mut line) = lines[i];
 
-        if set.connector1.is_some() {
-            line.connector1 = set.connector1;
+        if set.left.is_some() {
+            line.left = set.left;
         }
 
-        if set.connector2.is_some() {
-            line.connector2 = set.connector2;
+        if set.right.is_some() {
+            line.right = set.right;
         }
 
         if set.intersection.is_some() {
@@ -1577,18 +1591,18 @@ const fn linearr_set<const N: usize>(lines: [(usize, Line); N], set: Line) -> [(
     buf
 }
 
-const fn linearr_unset<const N: usize>(lines: [(usize, Line); N], set: Line) -> [(usize, Line); N] {
-    let mut buf = [(0, Line::empty()); N];
+const fn harr_unset<const N: usize>(lines: HArray<N>, set: HLine) -> HArray<N> {
+    let mut buf = [(0, HLine::empty()); N];
     let mut i = 0;
     while i < N {
         let (index, mut line) = lines[i];
 
-        if set.connector1.is_some() {
-            line.connector1 = None;
+        if set.left.is_some() {
+            line.left = None;
         }
 
-        if set.connector2.is_some() {
-            line.connector2 = None;
+        if set.right.is_some() {
+            line.right = None;
         }
 
         if set.intersection.is_some() {
@@ -1608,4 +1622,91 @@ const fn linearr_unset<const N: usize>(lines: [(usize, Line); N], set: Line) -> 
     buf
 }
 
-// todo: MACROS to reduce duplication of the same code for Varray and Harray
+const fn varr_set<const N: usize>(lines: VArray<N>, set: VLine) -> VArray<N> {
+    let mut buf = [(0, VLine::empty()); N];
+    let mut i = 0;
+    while i < N {
+        let (index, mut line) = lines[i];
+
+        if set.top.is_some() {
+            line.top = set.top;
+        }
+
+        if set.bottom.is_some() {
+            line.bottom = set.bottom;
+        }
+
+        if set.intersection.is_some() {
+            line.intersection = set.intersection;
+        }
+
+        if set.main.is_some() {
+            line.main = set.main;
+        }
+
+        buf[i].0 = index;
+        buf[i].1 = line;
+
+        i += 1;
+    }
+
+    buf
+}
+
+const fn varr_unset<const N: usize>(lines: VArray<N>, set: VLine) -> VArray<N> {
+    let mut buf = [(0, VLine::empty()); N];
+    let mut i = 0;
+    while i < N {
+        let (index, mut line) = lines[i];
+
+        if set.top.is_some() {
+            line.top = None;
+        }
+
+        if set.bottom.is_some() {
+            line.bottom = None;
+        }
+
+        if set.intersection.is_some() {
+            line.intersection = None;
+        }
+
+        if set.main.is_some() {
+            line.main = None;
+        }
+
+        buf[i].0 = index;
+        buf[i].1 = line;
+
+        i += 1;
+    }
+
+    buf
+}
+
+const fn create_borders(
+    top: HLine,
+    bottom: HLine,
+    horizontal: HLine,
+    left: Option<char>,
+    right: Option<char>,
+    vertical: Option<char>,
+) -> Borders<char> {
+    Borders {
+        top: top.main,
+        top_left: top.left,
+        top_right: top.right,
+        top_intersection: top.intersection,
+        bottom: bottom.main,
+        bottom_left: bottom.left,
+        bottom_right: bottom.right,
+        bottom_intersection: bottom.intersection,
+        left_intersection: horizontal.left,
+        right_intersection: horizontal.right,
+        horizontal: horizontal.main,
+        intersection: horizontal.intersection,
+        left,
+        right,
+        vertical,
+    }
+}
