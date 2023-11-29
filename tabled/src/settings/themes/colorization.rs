@@ -40,13 +40,13 @@ use crate::{
 ///
 /// [`RawStyle`]: crate::settings::style::RawStyle
 /// [`BorderColor`]: crate::settings::style::BorderColor
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Colorization {
     pattern: ColorizationPattern,
     colors: Vec<Color>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum ColorizationPattern {
     Column,
     Row,
