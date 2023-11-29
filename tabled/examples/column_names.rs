@@ -38,8 +38,8 @@ fn main() {
 
     table.with(Style::modern().remove_horizontal()).with(
         ColumnNames::default()
-            .set_color(Color::BOLD | Color::BG_BLUE | Color::FG_WHITE)
-            .set_alignment(AlignmentHorizontal::Center),
+            .color(Color::BOLD | Color::BG_BLUE | Color::FG_WHITE)
+            .alignment(AlignmentHorizontal::Center),
     );
 
     println!("{table}");

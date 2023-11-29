@@ -3,6 +3,11 @@
 
 // todo: StyleFromTable()
 //       table.with(&mut StyleFromTable);
+//       vs
+//       Theme::from(table.get_config());
+//           
+// not sure what the best interface is
+// IMHO 2
 
 use core::iter::FromIterator;
 use std::collections::HashMap;
