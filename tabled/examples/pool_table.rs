@@ -1,7 +1,7 @@
 //! This example demonstrates a [`PoolTable`] usage.
 
 use tabled::{
-    settings::{style::StyleBuilder, Alignment},
+    settings::{style::Style, Alignment},
     tables::{PoolTable, TableValue},
 };
 
@@ -25,7 +25,7 @@ fn main() {
     );
 
     let table = PoolTable::from(data)
-        .with(StyleBuilder::modern())
+        .with(Style::modern())
         .with(Alignment::center())
         .to_string();
 

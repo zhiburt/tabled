@@ -9,7 +9,7 @@
 use tabled::{
     settings::{
         object::{Columns, Object, Rows},
-        Format, Modify, Style,
+        Format, Style,
     },
     Table, Tabled,
 };
@@ -42,13 +42,13 @@ fn main() {
 
     let table = Table::new(data)
         .with(Style::psql())
-        .with(
-            Modify::new(Rows::first())
-                .with(Format::positioned(|_, (_, column)| column.to_string())),
+        .modify(
+            Rows::first(),
+            Format::positioned(|_, (_, column)| column.to_string()),
         )
-        .with(
-            Modify::new(Columns::first().not(Rows::first()))
-                .with(Format::content(|s| format!("{s}..."))),
+        .modify(
+            Columns::first().not(Rows::first()),
+            Format::content(|s| format!("{s}...")),
         )
         .to_string();
 

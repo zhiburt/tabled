@@ -11,9 +11,6 @@ use testing_table::test_table;
 #[cfg(feature = "color")]
 use owo_colors::OwoColorize;
 
-#[cfg(feature = "macros")]
-use tabled::settings::style::StyleBuilder;
-
 test_table!(
     cell_height_increase,
     Matrix::new(3, 3)
@@ -256,7 +253,7 @@ test_table!(
 #[cfg(feature = "macros")]
 test_table!(
     cell_height_1x1_no_top_border,
-    tabled::row![tabled::col!["SGML"].with(StyleBuilder::ascii().remove_top()).with(Height::increase(4))],
+    tabled::row![tabled::col!["SGML"].with(Style::ascii().remove_top()).with(Height::increase(4))],
     "+----------+"
     "| | SGML | |"
     "| |      | |"

@@ -18,12 +18,11 @@ use std::iter::FromIterator;
 
 use tabled::{
     builder::Builder,
-    grid::util::string,
+    grid::{config::Borders, util::string},
     row,
     settings::{
-        object::Cell,
-        style::{LineChar, Style, StyleBuilder},
-        Height, Modify, Padding, Shadow, Width,
+        style::{LineChar, Style},
+        Height, Padding, Shadow, Width,
     },
     Table,
 };
@@ -64,7 +63,7 @@ fn read_message() -> String {
 fn create_small_table_list(width_available: usize) -> String {
     let style1 = Style::modern();
     let style2 = Style::extended();
-    let style3 = StyleBuilder::modern()
+    let style3 = Style::modern()
         .left('║')
         .right('║')
         .intersection_left('╟')
@@ -72,9 +71,8 @@ fn create_small_table_list(width_available: usize) -> String {
         .corner_top_right('╖')
         .corner_top_left('╓')
         .corner_bottom_right('╜')
-        .corner_bottom_left('╙')
-        .into();
-    let style4 = StyleBuilder::modern()
+        .corner_bottom_left('╙');
+    let style4 = Style::modern()
         .top('═')
         .bottom('═')
         .corner_top_right('╕')
@@ -86,14 +84,13 @@ fn create_small_table_list(width_available: usize) -> String {
         .intersection_right('╡')
         .intersection_top('╤')
         .intersection_bottom('╧')
-        .intersection('╪')
-        .into();
+        .intersection('╪');
 
     let mut tables = [
-        create_small_table(style1),
-        create_small_table(style2),
-        create_small_table(style3),
-        create_small_table(style4),
+        create_small_table(Borders::from(style1)),
+        create_small_table(Borders::from(style2)),
+        create_small_table(Borders::from(style3)),
+        create_small_table(Borders::from(style4)),
     ];
 
     const TOTAL_TABLE_WIDTH: usize = 19;
@@ -120,7 +117,7 @@ fn create_small_table_list(width_available: usize) -> String {
     small_table_row
 }
 
-fn create_small_table(style: Style) -> Table {
+fn create_small_table(style: Borders<char>) -> Table {
     let mut table = Builder::from_iter(vec![vec![" ", ""], vec![" ", ""]]).build();
     table
         .with(style)
@@ -159,9 +156,9 @@ fn create_main_table(message: &str) -> Table {
     let mut table = row![left_table, message];
     table
         .with(Padding::zero())
-        .with(StyleBuilder::modern().remove_vertical())
-        .with(Modify::new(Cell::new(0, 0)).with(LineChar::vertical('╞', count_lines)))
-        .with(Modify::new(Cell::new(0, 2)).with(LineChar::vertical('╡', count_lines)))
+        .with(Style::modern().remove_vertical())
+        .modify((0, 0), LineChar::vertical('╞', count_lines))
+        .modify((0, 2), LineChar::vertical('╡', count_lines))
         .with(Shadow::new(2));
 
     table

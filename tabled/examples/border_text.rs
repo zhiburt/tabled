@@ -21,7 +21,7 @@
 use tabled::{
     settings::{
         object::Rows,
-        style::{HorizontalLine, LineText, StyleBuilder, VerticalLine},
+        style::{HorizontalLine, LineText, Style, VerticalLine},
     },
     Table,
 };
@@ -29,11 +29,9 @@ use tabled::{
 fn main() {
     let data = [[5, 6, 7, 8, 9], [10, 11, 12, 13, 14]];
 
-    let line = HorizontalLine::inherit(StyleBuilder::modern())
-        .left(VerticalLine::inherit_left(StyleBuilder::modern()).get_vertical());
-    let style = StyleBuilder::modern()
-        .remove_horizontal()
-        .horizontals([(1, line)]);
+    let line = HorizontalLine::inherit(Style::modern())
+        .left(VerticalLine::inherit_left(Style::modern()).get_vertical());
+    let style = Style::modern().remove_horizontal().horizontals([(1, line)]);
 
     let table = Table::new(data)
         .with(style)

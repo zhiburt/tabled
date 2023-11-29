@@ -1,11 +1,9 @@
 use core::marker::PhantomData;
 
-use papergrid::config::HorizontalLine;
-
+use crate::grid::config::HorizontalLine;
 use crate::grid::config::VerticalLine as Line;
 use crate::settings::style::On;
-
-use super::StyleBuilder;
+use crate::settings::Style;
 
 /// A vertical split line which can be used to set a border.
 #[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -31,7 +29,7 @@ impl<T, B, I> VerticalLine<T, B, I> {
 
     /// Fetches vertical line from a style.
     pub const fn inherit<L, R, const HSIZE: usize, const VSIZE: usize>(
-        style: StyleBuilder<T, B, L, R, I, On, HSIZE, VSIZE>,
+        style: Style<T, B, L, R, I, On, HSIZE, VSIZE>,
     ) -> Self {
         let borders = style.get_borders();
         let line = Line::new(
@@ -46,7 +44,7 @@ impl<T, B, I> VerticalLine<T, B, I> {
 
     /// Fetches left vertical line from a style.
     pub const fn inherit_left<R, V, const HSIZE: usize, const VSIZE: usize>(
-        style: StyleBuilder<T, B, On, R, I, V, HSIZE, VSIZE>,
+        style: Style<T, B, On, R, I, V, HSIZE, VSIZE>,
     ) -> Self {
         let borders = style.get_borders();
         let line = Line::new(
@@ -61,7 +59,7 @@ impl<T, B, I> VerticalLine<T, B, I> {
 
     /// Fetches right vertical line from a style.
     pub const fn inherit_right<L, V, const HSIZE: usize, const VSIZE: usize>(
-        style: StyleBuilder<T, B, L, On, I, V, HSIZE, VSIZE>,
+        style: Style<T, B, L, On, I, V, HSIZE, VSIZE>,
     ) -> Self {
         let borders = style.get_borders();
         let line = Line::new(

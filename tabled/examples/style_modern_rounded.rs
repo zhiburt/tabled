@@ -1,20 +1,21 @@
 use tabled::{
+    grid::config::Borders,
     settings::{
-        style::{HorizontalLine, On, Style, StyleBuilder},
+        style::{HorizontalLine, On, Style},
         Border,
     },
     Table,
 };
 
-const STYLE_1: StyleBuilder<On, On, On, On, On, On, 0, 0> =
-    StyleBuilder::modern().frame(Border::inherit(StyleBuilder::rounded()));
+const STYLE_1: Style<On, On, On, On, On, On, 0, 0> =
+    Style::modern().frame(Border::inherit(Style::rounded()));
 
-const STYLE_2: StyleBuilder<On, On, On, On, On, On, 0, 0> = StyleBuilder::rounded()
-    .line_horizontal(HorizontalLine::inherit(StyleBuilder::modern()))
+const STYLE_2: Style<On, On, On, On, On, On, 0, 0> = Style::rounded()
+    .line_horizontal(HorizontalLine::inherit(Style::modern()))
     .remove_horizontals();
 
 fn main() {
-    assert_eq!(Style::from(STYLE_1), Style::from(STYLE_2));
+    assert_eq!(Borders::from(STYLE_1), Borders::from(STYLE_2));
 
     let data = vec![("Hello", "world", "!"); 3];
 

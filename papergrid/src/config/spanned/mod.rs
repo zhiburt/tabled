@@ -125,14 +125,34 @@ impl SpannedConfig {
         )
     }
 
-    /// Clears all theme changes.
-    /// And sets it to default.
-    pub fn clear_theme(&mut self) {
+    /// Removes border changes.
+    pub fn remove_borders(&mut self) {
         self.borders = BordersConfig::default();
-        self.horizontal_chars.clear();
-        self.vertical_chars.clear();
+    }
+
+    /// Removes border changes.
+    pub fn remove_borders_colors(&mut self) {
+        self.borders_colors = BordersConfig::default();
+    }
+
+    /// Removes border changes.
+    pub fn remove_color_line_horizontal(&mut self) {
         self.horizontal_colors.clear();
+    }
+
+    /// Removes border changes.
+    pub fn remove_color_line_vertical(&mut self) {
         self.vertical_colors.clear();
+    }
+
+    /// Removes border changes.
+    pub fn remove_horizontal_chars(&mut self) {
+        self.horizontal_chars.clear();
+    }
+
+    /// Removes border changes.
+    pub fn remove_vertical_chars(&mut self) {
+        self.vertical_chars.clear();
     }
 
     /// Set the [`Borders`] value as correct one.

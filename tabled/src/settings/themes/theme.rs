@@ -1,16 +1,18 @@
 //! This module contains [`RawStyle`] structure, which is analogues to [`Style`] but not generic,
 //! so sometimes it can be used more conviently.
 
+// todo: StyleFromTable()
+//       table.with(&mut StyleFromTable);
+
 use core::iter::FromIterator;
 use std::collections::HashMap;
-
-use papergrid::config::compact::CompactConfig;
 
 use crate::{
     grid::{
         color::AnsiColor,
         config::{
-            Border, Borders, ColoredConfig, CompactMultilineConfig, HorizontalLine, VerticalLine,
+            Border, Borders, ColoredConfig, CompactConfig, CompactMultilineConfig, HorizontalLine,
+            VerticalLine,
         },
         records::Records,
     },
@@ -36,31 +38,11 @@ struct TableBorders {
     colors: Borders<Color>,
 }
 
-impl TableBorders {
-    fn new(chars: Borders<char>, colors: Borders<Color>) -> Self {
-        Self { chars, colors }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct BorderLines {
     horizontal1: Option<HorizontalLine<char>>,
     horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
     verticals: Option<HashMap<usize, VerticalLine<char>>>,
-}
-
-impl BorderLines {
-    fn new(
-        horizontal1: Option<HorizontalLine<char>>,
-        horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
-        verticals: Option<HashMap<usize, VerticalLine<char>>>,
-    ) -> Self {
-        Self {
-            horizontal1,
-            horizontals,
-            verticals,
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -70,24 +52,6 @@ struct Layout {
     reverse_rows: bool,
     reverse_column: bool,
     move_header_on_borders: bool,
-}
-
-impl Layout {
-    fn new(
-        orientation: Orientation,
-        footer: bool,
-        reverse_rows: bool,
-        reverse_column: bool,
-        move_header_on_borders: bool,
-    ) -> Self {
-        Self {
-            orientation,
-            footer,
-            reverse_rows,
-            reverse_column,
-            move_header_on_borders,
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -104,34 +68,15 @@ impl Theme {
     ) -> Self {
         let chars = style.get_borders();
         let horizontals = style.get_horizontals();
-        let mut horizontal1 = hlines_find(horizontals, 1);
+        let horizontal1 = hlines_find(horizontals, 1);
 
         Self::_new(
             TableBorders::new(chars, Borders::empty()),
-            BorderLines::new(None, None, None),
+            BorderLines::new(horizontal1, None, None),
             Layout::new(Orientation::TopBottom, false, false, false, false),
             None,
         )
     }
-}
-
-const fn hlines_find<const N: usize>(
-    lines: [(usize, HorizontalLine<char>); N],
-    search: usize,
-) -> Option<HorizontalLine<char>> {
-    let mut line = None;
-
-    let mut i = 0;
-    while i < lines.len() {
-        let (num, hline) = lines[i];
-        if num == search {
-            line = Some(hline);
-        }
-
-        i += 1;
-    }
-
-    line
 }
 
 impl Theme {
@@ -157,6 +102,24 @@ macro_rules! func_set_chars {
     };
 }
 
+macro_rules! func_remove_chars {
+    ($name:ident, $arg:ident, $desc:expr) => {
+        #[doc = concat!("Remove a border character", " ", "<", $desc, ">", " ", ".")]
+        pub fn $name(&mut self) {
+            self.border.chars.$arg = None;
+        }
+    };
+}
+
+macro_rules! func_get_chars {
+    ($name:ident, $arg:ident, $desc:expr) => {
+        #[doc = concat!("Get a border character", " ", "<", $desc, ">", " ", ".")]
+        pub const fn $name(&self) -> Option<char> {
+            self.border.chars.$arg
+        }
+    };
+}
+
 macro_rules! func_set_colors {
     ($name:ident, $arg:ident, $desc:expr) => {
         #[doc = concat!("Set a border color", " ", "<", $desc, ">", " ", ".")]
@@ -166,11 +129,11 @@ macro_rules! func_set_colors {
     };
 }
 
-macro_rules! func_get_chars {
+macro_rules! func_remove_colors {
     ($name:ident, $arg:ident, $desc:expr) => {
-        #[doc = concat!("Get a border character", " ", "<", $desc, ">", " ", ".")]
-        pub const fn $name(&self, c: char) -> Option<char> {
-            self.border.chars.$arg
+        #[doc = concat!("Remove a border color", " ", "<", $desc, ">", " ", ".")]
+        pub fn $name(&mut self) {
+            self.border.colors.$arg = None;
         }
     };
 }
@@ -178,7 +141,7 @@ macro_rules! func_get_chars {
 macro_rules! func_get_colors {
     ($name:ident, $arg:ident, $desc:expr) => {
         #[doc = concat!("Set a border color", " ", "<", $desc, ">", " ", ".")]
-        pub fn $name(&mut self) -> Option<&Color> {
+        pub fn $name(&self) -> Option<&Color> {
             self.border.colors.$arg.as_ref()
         }
     };
@@ -224,6 +187,25 @@ impl Theme {
 
 #[rustfmt::skip]
 impl Theme {
+    func_remove_chars!(remove_border_top,                      top,                        "top");
+    func_remove_chars!(remove_border_bottom,                   bottom,                     "bottom");
+    func_remove_chars!(remove_border_left,                     left,                       "left");
+    func_remove_chars!(remove_border_right,                    right,                      "right");
+    func_remove_chars!(remove_border_corner_top_left,          top_left,                   "top left corner");
+    func_remove_chars!(remove_border_corner_top_right,         top_right,                  "top right corner");
+    func_remove_chars!(remove_border_corner_bottom_left,       bottom_left,                "bottom left corner");
+    func_remove_chars!(remove_border_corner_bottom_right,      bottom_right,               "bottom right corner");
+    func_remove_chars!(remove_border_intersection_top,         top_intersection,           "top intersection with a vertical line");
+    func_remove_chars!(remove_border_intersection_bottom,      bottom_intersection,        "bottom intersection with a vertical line");
+    func_remove_chars!(remove_border_intersection_left,        left_intersection,          "left intersection with a horizontal line");
+    func_remove_chars!(remove_border_intersection_right,       right_intersection,         "right intersection with a horizontal line");
+    func_remove_chars!(remove_border_intersection,             intersection,               "intersection of horizontal and vertical line");
+    func_remove_chars!(remove_border_horizontal,               horizontal,                 "horizontal");
+    func_remove_chars!(remove_border_vertical,                 vertical,                   "vertical");
+}
+
+#[rustfmt::skip]
+impl Theme {
     func_set_colors!(set_border_color_top,                      top,                        "top");
     func_set_colors!(set_border_color_bottom,                   bottom,                     "bottom");
     func_set_colors!(set_border_color_left,                     left,                       "left");
@@ -239,6 +221,25 @@ impl Theme {
     func_set_colors!(set_border_color_intersection,             intersection,               "intersection of horizontal and vertical line");
     func_set_colors!(set_border_color_horizontal,               horizontal,                 "horizontal");
     func_set_colors!(set_border_color_vertical,                 vertical,                   "vertical");
+}
+
+#[rustfmt::skip]
+impl Theme {
+    func_remove_colors!(remove_border_color_top,                      top,                        "top");
+    func_remove_colors!(remove_border_color_bottom,                   bottom,                     "bottom");
+    func_remove_colors!(remove_border_color_left,                     left,                       "left");
+    func_remove_colors!(remove_border_color_right,                    right,                      "right");
+    func_remove_colors!(remove_border_color_corner_top_left,          top_left,                   "top left corner");
+    func_remove_colors!(remove_border_color_corner_top_right,         top_right,                  "top right corner");
+    func_remove_colors!(remove_border_color_corner_bottom_left,       bottom_left,                "bottom left corner");
+    func_remove_colors!(remove_border_color_corner_bottom_right,      bottom_right,               "bottom right corner");
+    func_remove_colors!(remove_border_color_intersection_top,         top_intersection,           "top intersection with a vertical line");
+    func_remove_colors!(remove_border_color_intersection_bottom,      bottom_intersection,        "bottom intersection with a vertical line");
+    func_remove_colors!(remove_border_color_intersection_left,        left_intersection,          "left intersection with a horizontal line");
+    func_remove_colors!(remove_border_color_intersection_right,       right_intersection,         "right intersection with a horizontal line");
+    func_remove_colors!(remove_border_color_intersection,             intersection,               "intersection of horizontal and vertical line");
+    func_remove_colors!(remove_border_color_horizontal,               horizontal,                 "horizontal");
+    func_remove_colors!(remove_border_color_vertical,                 vertical,                   "vertical");
 }
 
 #[rustfmt::skip]
@@ -329,12 +330,12 @@ impl Theme {
     ///
     /// ```
     /// use std::collections::HashMap;
-    /// use tabled::{Table, settings::style::{Style, StyleBuilder, HorizontalLine}};
+    /// use tabled::{Table, settings::style::{Style, HorizontalLine}, settings::themes::Theme};
     ///
-    /// let mut style = Style::re_structured_text();
+    /// let mut style = Theme::from(Style::re_structured_text());
     ///
     /// let mut lines = HashMap::new();
-    /// lines.insert(1, HorizontalLine::inherit(StyleBuilder::extended()).into());
+    /// lines.insert(1, HorizontalLine::inherit(Style::extended()).into());
     ///
     /// style.set_lines_horizontal(lines);
     ///
@@ -364,13 +365,17 @@ impl Theme {
     ///
     /// ```
     /// use std::collections::HashMap;
-    /// use tabled::{Table, settings::style::{Style, StyleBuilder, HorizontalLine}};
+    /// use tabled::{
+    ///     Table,
+    ///     settings::style::{Style, HorizontalLine},
+    ///     settings::themes::Theme,
+    /// };
     ///
     ///
-    /// let mut style = Style::re_structured_text();
+    /// let mut style = Theme::from_style(Style::re_structured_text());
     ///
     /// let mut lines = HashMap::new();
-    /// lines.insert(1, HorizontalLine::inherit(StyleBuilder::extended()).into());
+    /// lines.insert(1, HorizontalLine::inherit(Style::extended()).into());
     ///
     /// style.set_lines_vertical(lines);
     ///
@@ -450,7 +455,7 @@ impl Theme {
 impl From<Borders<char>> for Theme {
     fn from(borders: Borders<char>) -> Self {
         Self::_new(
-            TableBorders::new(Borders::empty(), Borders::empty()),
+            TableBorders::new(borders, Borders::empty()),
             BorderLines::new(None, None, None),
             Layout::new(Orientation::TopBottom, false, false, false, false),
             None,
@@ -583,6 +588,63 @@ fn cfg_set_custom_lines(cfg: &mut ColoredConfig, lines: BorderLines) {
     if let Some(lines) = lines.verticals {
         for (col, line) in lines {
             cfg.insert_vertical_line(col, line);
+        }
+    }
+}
+
+const fn hlines_find<const N: usize>(
+    lines: [(usize, HorizontalLine<char>); N],
+    search: usize,
+) -> Option<HorizontalLine<char>> {
+    let mut line = None;
+
+    let mut i = 0;
+    while i < lines.len() {
+        let (num, hline) = lines[i];
+        if num == search {
+            line = Some(hline);
+        }
+
+        i += 1;
+    }
+
+    line
+}
+
+impl TableBorders {
+    const fn new(chars: Borders<char>, colors: Borders<Color>) -> Self {
+        Self { chars, colors }
+    }
+}
+
+impl BorderLines {
+    const fn new(
+        horizontal1: Option<HorizontalLine<char>>,
+        horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
+        verticals: Option<HashMap<usize, VerticalLine<char>>>,
+    ) -> Self {
+        Self {
+            horizontal1,
+            horizontals,
+            verticals,
+        }
+    }
+}
+
+impl Layout {
+    const fn new(
+        orientation: Orientation,
+        footer: bool,
+        reverse_rows: bool,
+        reverse_column: bool,
+        move_header_on_borders: bool,
+    ) -> Self {
+        Self {
+            orientation,
+            footer,
+            reverse_rows,
+            reverse_column,
+            move_header_on_borders,
         }
     }
 }

@@ -35,7 +35,7 @@ use crate::{
 /// [`Padding`]: crate::settings::Padding
 /// [`Margin`]: crate::settings::Margin
 /// [`Border`]: crate::settings::Border
-#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Color(AnsiColor<'static>);
 
 #[rustfmt::skip]

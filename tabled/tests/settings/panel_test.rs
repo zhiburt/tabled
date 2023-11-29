@@ -4,8 +4,9 @@ use std::{collections::HashMap, iter::FromIterator};
 
 use tabled::settings::{
     object::{Cell, Object, Rows, Segment},
-    style::{BorderSpanCorrection, HorizontalLine, StyleBuilder},
-    Alignment, Border, Highlight, Modify, Panel, Span, Style, Width,
+    style::{BorderSpanCorrection, HorizontalLine, Style},
+    themes::Theme,
+    Alignment, Border, Highlight, Modify, Panel, Span, Width,
 };
 
 use crate::matrix::Matrix;
@@ -144,9 +145,9 @@ test_table!(
     Matrix::iter([(0, 1)])
         .with(Panel::horizontal(0,"Numbers"))
         .with({
-            let mut style = Style::modern();
-            style.set_intersection_top(Some('─'));
-            style.set_lines_horizontal(HashMap::from_iter([(1,  HorizontalLine::inherit(StyleBuilder::modern()).intersection('┬').into_inner())]));
+            let mut style = Theme::from_style(Style::modern());
+            style.set_border_intersection_top('─');
+            style.set_lines_horizontal(HashMap::from_iter([(1,  HorizontalLine::inherit(Style::modern()).intersection('┬').into_inner())]));
             style
         })
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
@@ -178,7 +179,7 @@ test_table!(
     panel_style_change_correct,
     Matrix::iter([(0, 1)])
         .with(Panel::horizontal(0, "Numbers"))
-        .with(StyleBuilder::modern().intersection_top('─').horizontals([(1, HorizontalLine::inherit(StyleBuilder::modern()).intersection('┬'))]))
+        .with(Style::modern().intersection_top('─').horizontals([(1, HorizontalLine::inherit(Style::modern()).intersection('┬'))]))
         .with(BorderSpanCorrection)
         .with(Modify::new(Cell::new(0, 0)).with(Alignment::center())),
     "┌───────────┐"

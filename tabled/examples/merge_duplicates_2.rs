@@ -8,7 +8,7 @@
 
 use tabled::{
     settings::{
-        style::{HorizontalLine, StyleBuilder, VerticalLine},
+        style::{HorizontalLine, Style, VerticalLine},
         Border, Merge,
     },
     Table, Tabled,
@@ -16,14 +16,14 @@ use tabled::{
 
 fn main() {
     let data = [
-        DatabaseTable::new("database_1", "database_1", "table_1", 10712),
-        DatabaseTable::new("database_1", "database_1", "table_2", 57),
-        DatabaseTable::new("database_1", "database_1", "table_3", 57),
-        DatabaseTable::new("database_2", "", "table_1", 72),
-        DatabaseTable::new("database_2", "", "table_2", 75),
-        DatabaseTable::new("database_3", "database_3", "table_1", 20),
-        DatabaseTable::new("database_3", "", "table_2", 21339),
-        DatabaseTable::new("database_3", "", "table_3", 141723),
+        Database::new("database_1", "database_1", "table_1", 10712),
+        Database::new("database_1", "database_1", "table_2", 57),
+        Database::new("database_1", "database_1", "table_3", 57),
+        Database::new("database_2", "", "table_1", 72),
+        Database::new("database_2", "", "table_2", 75),
+        Database::new("database_3", "database_3", "table_1", 20),
+        Database::new("database_3", "", "table_2", 21339),
+        Database::new("database_3", "", "table_3", 141723),
     ];
 
     let mut table = Table::builder(data).index().transpose().build();
@@ -34,7 +34,7 @@ fn main() {
 }
 
 #[derive(Tabled)]
-struct DatabaseTable {
+struct Database {
     #[tabled(rename = "db")]
     db_name: &'static str,
     origin_db: &'static str,
@@ -43,7 +43,7 @@ struct DatabaseTable {
     total: usize,
 }
 
-impl DatabaseTable {
+impl Database {
     fn new(
         db_name: &'static str,
         origin_db: &'static str,
@@ -60,10 +60,10 @@ impl DatabaseTable {
 }
 
 fn config_theme(table: &mut Table) {
-    let style = StyleBuilder::modern()
-        .frame(Border::inherit(StyleBuilder::rounded()))
-        .horizontals([(1, HorizontalLine::inherit(StyleBuilder::modern()))])
-        .verticals([(1, VerticalLine::inherit(StyleBuilder::modern()))])
+    let style = Style::modern()
+        .frame(Border::inherit(Style::rounded()))
+        .horizontals([(1, HorizontalLine::inherit(Style::modern()))])
+        .verticals([(1, VerticalLine::inherit(Style::modern()))])
         .remove_horizontal()
         .remove_vertical();
 

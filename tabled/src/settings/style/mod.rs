@@ -63,12 +63,12 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::{Modify, Style}};
+//! use tabled::{Table, settings::{Modify, Style, style::Border}};
 //!
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
 //!     .with(Style::psql())
-//!     .modify((0, 0), Style::modern().get_frame())
+//!     .modify((0, 0), Border::inherit(Style::modern()))
 //!     .to_string();
 //!
 //! assert_eq!(
@@ -108,21 +108,54 @@ mod border_text;
 mod line_char;
 #[cfg(feature = "std")]
 mod span_border_correction;
-#[cfg(feature = "std")]
-#[allow(clippy::module_inception)]
-mod style;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
     border_color::BorderColor, border_text::LineText, line_char::LineChar,
-    span_border_correction::BorderSpanCorrection, style::Style,
+    span_border_correction::BorderSpanCorrection,
 };
 
 pub use self::{
     border::Border,
-    builder::{On, StyleBuilder},
+    builder::{On, Style},
     horizontal_line::HorizontalLine,
     offset::Offset,
     vertical_line::VerticalLine,
 };
+
+use crate::grid::config::{Borders, CompactConfig, CompactMultilineConfig};
+use crate::settings::TableOption;
+
+#[cfg(feature = "std")]
+use crate::grid::config::ColoredConfig;
+
+#[cfg(feature = "std")]
+impl<R, D> TableOption<R, D, ColoredConfig> for Borders<char> {
+    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+        cfg_clear_borders(cfg);
+        cfg.set_borders(self);
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactConfig> for Borders<char> {
+    fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
+        *cfg = cfg.set_borders(self);
+    }
+}
+
+impl<R, D> TableOption<R, D, CompactMultilineConfig> for Borders<char> {
+    fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
+        cfg.set_borders(self);
+    }
+}
+
+#[cfg(feature = "std")]
+fn cfg_clear_borders(cfg: &mut ColoredConfig) {
+    cfg.remove_borders();
+    cfg.remove_borders_colors();
+    cfg.remove_vertical_chars();
+    cfg.remove_horizontal_chars();
+    cfg.remove_color_line_horizontal();
+    cfg.remove_color_line_vertical();
+}
