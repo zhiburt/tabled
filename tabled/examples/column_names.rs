@@ -3,8 +3,7 @@
 //! It sets a `clickhouse` like table style (first seen on).
 
 use tabled::{
-    grid::config::AlignmentHorizontal,
-    settings::{style::Style, themes::ColumnNames, Color},
+    settings::{style::Style, themes::ColumnNames, Alignment, Color},
     Table, Tabled,
 };
 
@@ -39,7 +38,7 @@ fn main() {
     table.with(Style::modern().remove_horizontal()).with(
         ColumnNames::default()
             .color(Color::BOLD | Color::BG_BLUE | Color::FG_WHITE)
-            .alignment(AlignmentHorizontal::Center),
+            .alignment(Alignment::center()),
     );
 
     println!("{table}");

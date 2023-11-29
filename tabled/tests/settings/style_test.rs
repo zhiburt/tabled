@@ -237,7 +237,7 @@ test_table!(
 
 test_table!(
     top_border_override_first_test,
-    Matrix::table(2, 2).with(LineText::new("-Table").horizontal(Rows::first())),
+    Matrix::table(2, 2).with(LineText::new("-Table").line(Rows::first())),
     "-Table---------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -249,7 +249,7 @@ test_table!(
 
 test_table!(
     top_border_override_last_test,
-    Matrix::table(2, 2).with(LineText::new("-Table").horizontal(Rows::last())),
+    Matrix::table(2, 2).with(LineText::new("-Table").line(Rows::last())),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -262,8 +262,8 @@ test_table!(
 test_table!(
     top_border_override_new_test,
     Matrix::table(2, 2)
-        .with(LineText::new("-Table").horizontal(1))
-        .with(LineText::new("-Table").horizontal(2)),
+        .with(LineText::new("-Table").line(Rows::single(1)))
+        .with(LineText::new("-Table").line(Rows::single(2))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "-Table---------+----------+"
@@ -275,7 +275,7 @@ test_table!(
 
 test_table!(
     top_border_override_new_doesnt_panic_when_index_is_invalid,
-    Matrix::table(2, 2).with(LineText::new("-Table").horizontal(100)),
+    Matrix::table(2, 2).with(LineText::new("-Table").line(Rows::single(100))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -289,7 +289,7 @@ test_table!(
     top_override_doesnt_work_with_style_with_no_top_border_test,
     Matrix::table(2, 2)
         .with(Style::psql())
-        .with(LineText::new("-Table").horizontal(Rows::first())),
+        .with(LineText::new("-Table").line(Rows::first())),
     " N | column 0 | column 1 "
     "---+----------+----------"
     " 0 |   0-0    |   0-1    "
@@ -299,7 +299,7 @@ test_table!(
 test_table!(
     top_border_override_cleared_after_restyling_test,
     Matrix::table(2, 2)
-        .with(LineText::new("-Table").horizontal(Rows::first()))
+        .with(LineText::new("-Table").line(Rows::first()))
         .with(Style::ascii()),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
@@ -313,7 +313,7 @@ test_table!(
 test_table!(
     top_border_override_with_big_string_test,
     Matrix::table(2, 2)
-        .with(LineText::new("-Tableeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1231").horizontal(Rows::first())),
+        .with(LineText::new("-Tableeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1231").line(Rows::first())),
     "-Tableeeeeeeeeeeeeeeeeeeeee"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -328,7 +328,7 @@ test_table!(
     Matrix::table(2, 2)
         .with(Style::empty())
         .with(Modify::new(Rows::first()).with(Border::new().set_bottom('-')))
-        .with(LineText::new("-Table").horizontal(1)),
+        .with(LineText::new("-Table").line(Rows::single(1))),
     " N  column 0  column 1 "
     "-Table-----------------"
     " 0    0-0       0-1    "
@@ -337,21 +337,21 @@ test_table!(
 
 test_table!(
     border_color_global,
-    { Matrix::table(2, 2).with(BorderColor::new().set_bottom(Color::FG_RED)) },
-    "+---+----------+----------+\n\
-     | N | column 0 | column 1 |\n\
-     +\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\n\
-     | 0 |   0-0    |   0-1    |\n\
-     +\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\n\
-     | 1 |   1-0    |   1-1    |\n\
-     +\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
+    Matrix::table(2, 2).with(BorderColor::new().set_bottom(Color::FG_RED)),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
+    "| 0 |   0-0    |   0-1    |"
+    "+\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
+    "| 1 |   1-0    |   1-1    |"
+    "+\u{1b}[31m---\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+\u{1b}[31m----------\u{1b}[39m+"
 );
 
 #[cfg(feature = "color")]
 test_table!(
     border_text_colored,
     Matrix::table(2, 2)
-        .with(LineText::new("-Table").horizontal(1))
+        .with(LineText::new("-Table").line(1))
         .with(LineText::new("-Table213123").horizontal(2))
         .with(Modify::new(Rows::single(1)).with(BorderColor::new().set_bottom(Color::FG_RED)))
         .with(Modify::new(Rows::single(2)).with(BorderColor::new().set_bottom(Color::try_from(" ".blue().on_green().to_string()).unwrap()))),
@@ -366,7 +366,7 @@ test_table!(
 
 test_table!(
     border_text_offset_test_0,
-    Matrix::table(2, 2).with(LineText::new("-Table").horizontal(1).offset(Offset::Begin(5))),
+    Matrix::table(2, 2).with(LineText::new("-Table").line(Rows::single(1)).offset(Offset::Begin(5))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+-Table----+----------+"
@@ -378,7 +378,7 @@ test_table!(
 
 test_table!(
     border_text_offset_test_1,
-    Matrix::table(2, 2).with(LineText::new("-Table").horizontal(1).offset(Offset::Begin(15))),
+    Matrix::table(2, 2).with(LineText::new("-Table").line(Rows::single(1)).offset(Offset::Begin(15))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+-----------Table-----+"
@@ -390,7 +390,7 @@ test_table!(
 
 test_table!(
     border_text_offset_test_2,
-    Matrix::table(2, 2).with(LineText::new("Table").horizontal(1).offset(Offset::End(5))),
+    Matrix::table(2, 2).with(LineText::new("Table").line(Rows::single(1)).offset(Offset::End(5))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+------Table"
@@ -402,7 +402,7 @@ test_table!(
 
 test_table!(
     border_text_offset_test_3,
-    Matrix::table(2, 2).with(LineText::new("Table").horizontal(1).offset(Offset::End(15))),
+    Matrix::table(2, 2).with(LineText::new("Table").line(Rows::single(1)).offset(Offset::End(15))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+-------Table---------+"
@@ -414,7 +414,7 @@ test_table!(
 
 test_table!(
     border_text_offset_test_4,
-    Matrix::table(2, 2).with(LineText::new("Table").horizontal(1).offset(Offset::End(21))),
+    Matrix::table(2, 2).with(LineText::new("Table").line(Rows::single(1)).offset(Offset::End(21))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+-Table----+----------+"
@@ -426,7 +426,7 @@ test_table!(
 
 test_table!(
     border_text_offset_test_5,
-    Matrix::table(2, 2).with(LineText::new("Table").horizontal(1).offset(Offset::End(25))),
+    Matrix::table(2, 2).with(LineText::new("Table").line(Rows::single(1)).offset(Offset::End(25))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+-Table--------+----------+"
@@ -438,7 +438,7 @@ test_table!(
 
 test_table!(
     border_text_offset_test_6,
-    Matrix::table(2, 2).with(LineText::new("-Table").horizontal(1).offset(Offset::Begin(21))),
+    Matrix::table(2, 2).with(LineText::new("-Table").line(Rows::single(1)).offset(Offset::Begin(21))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+------Table"
@@ -450,7 +450,7 @@ test_table!(
 
 test_table!(
     border_override_color,
-    Matrix::table(2, 2).with(LineText::new("-Table").horizontal(Rows::first()).color(Color::FG_BLUE)),
+    Matrix::table(2, 2).with(LineText::new("-Table").line(Rows::first()).color(Color::FG_BLUE)),
     "\u{1b}[34m-\u{1b}[39m\u{1b}[34mT\u{1b}[39m\u{1b}[34ma\u{1b}[39m\u{1b}[34mb\u{1b}[39m\u{1b}[34ml\u{1b}[39m\u{1b}[34me\u{1b}[39m---------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -583,7 +583,7 @@ test_table!(
 
 test_table!(
     empty_border_text_doesnt_panic_test,
-    Matrix::table(2, 2).with(LineText::new("").horizontal(0)),
+    Matrix::table(2, 2).with(LineText::new("").line(Rows::single(0))),
     "+---+----------+----------+"
     "| N | column 0 | column 1 |"
     "+---+----------+----------+"
@@ -2450,29 +2450,25 @@ test_table!(
 );
 
 test_table!(
-    override_vertical_and_horizontal_border_on_line,
+    override_vertical,
     Matrix::new(3, 3)
-        .with(Modify::new(Rows::single(1)).with(Format::content(|s| format!("\nsome text\ntext\n{s}\ntext\ntext\n"))))
         .with(Style::markdown())
-        .with(Modify::new(Columns::new(..5))
-            .with(LineChar::vertical('y', Offset::Begin(0)))
-            .with(LineChar::vertical('^', Offset::End(0)))
-        )
-        .with(Modify::new(Rows::single(1))
-            .with(LineChar::horizontal('x', Offset::Begin(0)))
-            .with(LineChar::horizontal('@', Offset::End(0)))
-        ),
-    "y     N     y column 0  y column 1  y column 2  y"
-    "|x---------@|x---------@|x---------@|x---------@|"
-    "y           y           y           y           y"
-    "| some text | some text | some text | some text |"
-    "| text      | text      | text      | text      |"
-    "| 0         | 0-0       | 0-1       | 0-2       |"
-    "| text      | text      | text      | text      |"
-    "| text      | text      | text      | text      |"
-    "^           ^           ^           ^           ^"
-    "y     1     y    1-0    y    1-1    y    1-2    y"
-    "y     2     y    2-0    y    2-1    y    2-2    y"
+        .with(Padding::new(1, 1, 1, 1))
+        .modify(Columns::single(1), LineChar::vertical(':', Offset::Begin(0)))
+        .modify(Columns::single(1), LineChar::vertical(':', Offset::End(0))),
+    "|   :          |          |          |"
+    "| N | column 0 | column 1 | column 2 |"
+    "|   :          |          |          |"
+    "|---|----------|----------|----------|"
+    "|   :          |          |          |"
+    "| 0 |   0-0    |   0-1    |   0-2    |"
+    "|   :          |          |          |"
+    "|   :          |          |          |"
+    "| 1 |   1-0    |   1-1    |   1-2    |"
+    "|   :          |          |          |"
+    "|   :          |          |          |"
+    "| 2 |   2-0    |   2-1    |   2-2    |"
+    "|   :          |          |          |"
 );
 
 test_table!(
@@ -2644,4 +2640,16 @@ test_table!(
     "+---|----------+----------+----------+"
     "| 2 |   2-0    |   2-1    |   2-2    |"
     "xxxx|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+);
+
+test_table!(
+    line_text_vertical_0,
+    Matrix::table(2, 2).with(LineText::new("-Table").line(Columns::first())),
+    "----+----------+----------+"
+    "T N | column 0 | column 1 |"
+    "a---+----------+----------+"
+    "b 0 |   0-0    |   0-1    |"
+    "l---+----------+----------+"
+    "e 1 |   1-0    |   1-1    |"
+    "+---+----------+----------+"
 );

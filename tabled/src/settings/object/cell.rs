@@ -33,6 +33,12 @@ impl From<Position> for Cell {
     }
 }
 
+impl From<Cell> for Position {
+    fn from(Cell(row, col): Cell) -> Self {
+        (row, col)
+    }
+}
+
 impl<I> Object<I> for Cell {
     type Iter = EntityOnce;
 

@@ -6,7 +6,7 @@ use crate::{
         records::{ExactRecords, Records},
     },
     settings::{
-        object::{FirstRow, LastRow},
+        object::{Column, FirstColumn, FirstRow, LastColumn, LastRow, Row},
         Color, TableOption,
     },
 };
@@ -42,7 +42,7 @@ pub struct LineText<L> {
     line: L,
 }
 
-impl LineText<()> {
+impl LineText<usize> {
     /// Creates a [`LineText`] instance.
     ///
     /// Lines are numbered from 0 to the `count_rows` included
@@ -53,7 +53,7 @@ impl LineText<()> {
     {
         LineText {
             text: text.into(),
-            line: (),
+            line: 0,
             offset: Offset::Begin(0),
             color: None,
         }
@@ -62,7 +62,7 @@ impl LineText<()> {
 
 impl<Line> LineText<Line> {
     /// Set a line on which we will set the text.
-    pub fn horizontal<L>(self, line: L) -> LineText<L> {
+    pub fn line<L>(self, line: L) -> LineText<L> {
         LineText {
             line,
             text: self.text,
@@ -73,10 +73,8 @@ impl<Line> LineText<Line> {
 
     /// Set an offset from which the text will be started.
     pub fn offset(self, offset: impl Into<Offset>) -> Self {
-        let offset = offset.into();
-
         LineText {
-            offset,
+            offset: offset.into(),
             text: self.text,
             line: self.line,
             color: self.color,
@@ -94,7 +92,7 @@ impl<Line> LineText<Line> {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for LineText<usize>
+impl<R, D> TableOption<R, D, ColoredConfig> for LineText<Row>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
@@ -102,10 +100,8 @@ where
     D: Dimension,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
-        dims.estimate(records, cfg);
-        let shape = (records.count_rows(), records.count_columns());
-        let line = self.line;
-        set_horizontal_chars(cfg, dims, self.offset, line, &self.text, &self.color, shape);
+        let line = self.line.into();
+        change_horizontal_chars(records, dims, cfg, line, self.text, self.offset, self.color)
     }
 }
 
@@ -117,10 +113,7 @@ where
     D: Dimension,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
-        dims.estimate(records, cfg);
-        let shape = (records.count_rows(), records.count_columns());
-        let line = 0;
-        set_horizontal_chars(cfg, dims, self.offset, line, &self.text, &self.color, shape);
+        change_horizontal_chars(records, dims, cfg, 0, self.text, self.offset, self.color)
     }
 }
 
@@ -132,10 +125,46 @@ where
     D: Dimension,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
-        dims.estimate(records, cfg);
-        let shape = (records.count_rows(), records.count_columns());
         let line = records.count_rows();
-        set_horizontal_chars(cfg, dims, self.offset, line, &self.text, &self.color, shape);
+        change_horizontal_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for LineText<Column>
+where
+    R: Records + ExactRecords,
+    for<'a> &'a R: Records,
+    for<'a> D: Estimate<&'a R, ColoredConfig>,
+    D: Dimension,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+        let line = self.line.into();
+        change_vertical_chars(records, dims, cfg, line, self.text, self.offset, self.color)
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for LineText<FirstColumn>
+where
+    R: Records + ExactRecords,
+    for<'a> &'a R: Records,
+    for<'a> D: Estimate<&'a R, ColoredConfig>,
+    D: Dimension,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+        change_vertical_chars(records, dims, cfg, 0, self.text, self.offset, self.color)
+    }
+}
+
+impl<R, D> TableOption<R, D, ColoredConfig> for LineText<LastColumn>
+where
+    R: Records + ExactRecords,
+    for<'a> &'a R: Records,
+    for<'a> D: Estimate<&'a R, ColoredConfig>,
+    D: Dimension,
+{
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, dims: &mut D) {
+        let line = records.count_rows();
+        change_vertical_chars(records, dims, cfg, line, self.text, self.offset, self.color)
     }
 }
 
@@ -223,6 +252,89 @@ fn set_horizontal_chars<D: Dimension>(
     }
 }
 
+fn set_vertical_chars<D>(
+    cfg: &mut SpannedConfig,
+    dims: &D,
+    offset: Offset,
+    line: usize,
+    text: &str,
+    color: &Option<AnsiColor<'static>>,
+    shape: (usize, usize),
+) where
+    D: Dimension,
+{
+    let (count_rows, _) = shape;
+    let pos = get_start_pos(cfg, dims, offset, count_rows);
+    let pos = match pos {
+        Some(pos) => pos,
+        None => return,
+    };
+
+    let mut chars = text.chars();
+    let mut i = cfg.has_horizontal(0, count_rows) as usize;
+    if i == 1 && pos == 0 {
+        let c = match chars.next() {
+            Some(c) => c,
+            None => return,
+        };
+
+        let mut b = cfg.get_border((0, line), shape);
+        b.left_top_corner = b.left_top_corner.map(|_| c);
+        cfg.set_border((line, 0), b);
+
+        if let Some(color) = color.as_ref() {
+            let mut b = cfg.get_border_color((0, line), shape).cloned();
+            b.left_top_corner = Some(color.clone());
+            cfg.set_border_color((0, line), b);
+        }
+    }
+
+    for row in 0..count_rows {
+        let row_height = dims.get_height(row);
+        if i + row_height > pos {
+            for off in 0..row_height {
+                if i + off < pos {
+                    continue;
+                }
+
+                let c = match chars.next() {
+                    Some(c) => c,
+                    None => return,
+                };
+
+                cfg.set_vertical_char((row, line), c, config::Offset::Begin(off)); // todo: is this correct? I thik it shall be off + i
+
+                if let Some(color) = color.as_ref() {
+                    cfg.set_vertical_color((row, line), color.clone(), config::Offset::Begin(off));
+                }
+            }
+        }
+
+        i += row_height;
+
+        if cfg.has_horizontal(row + 1, count_rows) {
+            i += 1;
+
+            if i > pos {
+                let c = match chars.next() {
+                    Some(c) => c,
+                    None => return,
+                };
+
+                let mut b = cfg.get_border((row, line), shape);
+                b.left_bottom_corner = b.left_bottom_corner.map(|_| c);
+                cfg.set_border((row, line), b);
+
+                if let Some(color) = color.as_ref() {
+                    let mut b = cfg.get_border_color((row, line), shape).cloned();
+                    b.left_bottom_corner = Some(color.clone());
+                    cfg.set_border_color((row, line), b);
+                }
+            }
+        }
+    }
+}
+
 fn get_start_pos<D>(
     cfg: &SpannedConfig,
     dims: &D,
@@ -259,4 +371,40 @@ fn total_width<D: Dimension>(cfg: &SpannedConfig, dims: &D, count_columns: usize
     }
 
     totalw
+}
+
+fn change_horizontal_chars<R, D>(
+    records: &mut R,
+    dims: &mut D,
+    cfg: &mut ColoredConfig,
+    line: usize,
+    text: String,
+    offset: Offset,
+    color: Option<AnsiColor<'static>>,
+) where
+    R: Records + ExactRecords,
+    for<'a> D: Estimate<&'a R, ColoredConfig>,
+    D: Dimension,
+{
+    dims.estimate(records, cfg);
+    let shape = (records.count_rows(), records.count_columns());
+    set_horizontal_chars(cfg, dims, offset, line, &text, &color, shape);
+}
+
+fn change_vertical_chars<R, D>(
+    records: &mut R,
+    dims: &mut D,
+    cfg: &mut ColoredConfig,
+    line: usize,
+    text: String,
+    offset: Offset,
+    color: Option<AnsiColor<'static>>,
+) where
+    R: Records + ExactRecords,
+    for<'a> D: Estimate<&'a R, ColoredConfig>,
+    D: Dimension,
+{
+    dims.estimate(records, cfg);
+    let shape = (records.count_rows(), records.count_columns());
+    set_vertical_chars(cfg, dims, offset, line, &text, &color, shape);
 }

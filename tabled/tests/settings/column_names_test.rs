@@ -1,8 +1,7 @@
 #![cfg(feature = "std")]
 
 use tabled::{
-    grid::config::AlignmentHorizontal,
-    settings::{themes::ColumnNames, Color},
+    settings::{object::Column, themes::ColumnNames, Alignment, Color, Padding},
     Table,
 };
 
@@ -80,7 +79,7 @@ test_table!(
 test_table!(
     alignment_left,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(AlignmentHorizontal::Left)),
+        .with(ColumnNames::default().alignment(Alignment::left())),
     "+&str---+&str------+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -92,7 +91,7 @@ test_table!(
 test_table!(
     alignment_right,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(AlignmentHorizontal::Right)),
+        .with(ColumnNames::default().alignment(Alignment::right())),
     "+---&str+------&str+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -104,7 +103,7 @@ test_table!(
 test_table!(
     alignment_center,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(AlignmentHorizontal::Center)),
+        .with(ColumnNames::default().alignment(Alignment::center())),
     "+-&str--+---&str---+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -116,7 +115,7 @@ test_table!(
 test_table!(
     alignment_array,
     Table::new([("Hello", "World"), ("and", "looooong\nword")])
-        .with(ColumnNames::default().alignment(vec![AlignmentHorizontal::Right, AlignmentHorizontal::Center])),
+        .with(ColumnNames::default().alignment(vec![Alignment::right(), Alignment::center()])),
     "+---&str+---&str---+"
     "| Hello | World    |"
     "+-------+----------+"
@@ -209,4 +208,144 @@ test_table!(
     "| and   | looooong |"
     "|       | word     |"
     "+-------+----------+"
+);
+
+test_table!(
+    new_vertical,
+    Matrix::new(3, 3).with(ColumnNames::new(["1", "2", "3", "4"]).alignment(Alignment::top())),
+    "+---+----------+----------+----------+"
+    "1 N | column 0 | column 1 | column 2 |"
+    "+---+----------+----------+----------+"
+    "2 0 |   0-0    |   0-1    |   0-2    |"
+    "+---+----------+----------+----------+"
+    "3 1 |   1-0    |   1-1    |   1-2    |"
+    "+---+----------+----------+----------+"
+    "4 2 |   2-0    |   2-1    |   2-2    |"
+    "+---+----------+----------+----------+"
+);
+
+test_table!(
+    new_vertical_1,
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::new(["1", "2", "3", "4"]).alignment(Alignment::top())),
+    "+---+----------+----------+"
+    "1   |          |          |"
+    "|   |          |          |"
+    "| N | column 0 | column 1 |"
+    "|   |          |          |"
+    "|   |          |          |"
+    "+---+----------+----------+"
+    "2   |          |          |"
+    "|   |          |          |"
+    "| 0 |   0-0    |   0-1    |"
+    "|   |          |          |"
+    "|   |          |          |"
+    "+---+----------+----------+"
+    "3   |          |          |"
+    "|   |          |          |"
+    "| 1 |   1-0    |   1-1    |"
+    "|   |          |          |"
+    "|   |          |          |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    new_vertical_2,
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::new(["1", "2", "3", "4"]).alignment(Alignment::bottom())),
+    "+---+----------+----------+"
+    "|   |          |          |"
+    "|   |          |          |"
+    "| N | column 0 | column 1 |"
+    "|   |          |          |"
+    "1   |          |          |"
+    "+---+----------+----------+"
+    "|   |          |          |"
+    "|   |          |          |"
+    "| 0 |   0-0    |   0-1    |"
+    "|   |          |          |"
+    "2   |          |          |"
+    "+---+----------+----------+"
+    "|   |          |          |"
+    "|   |          |          |"
+    "| 1 |   1-0    |   1-1    |"
+    "|   |          |          |"
+    "3   |          |          |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    new_vertical_3,
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::new(["1", "2", "3", "4"]).alignment(Alignment::center_vertical())),
+    "+---+----------+----------+"
+    "|   |          |          |"
+    "|   |          |          |"
+    "1 N | column 0 | column 1 |"
+    "|   |          |          |"
+    "|   |          |          |"
+    "+---+----------+----------+"
+    "|   |          |          |"
+    "|   |          |          |"
+    "2 0 |   0-0    |   0-1    |"
+    "|   |          |          |"
+    "|   |          |          |"
+    "+---+----------+----------+"
+    "|   |          |          |"
+    "|   |          |          |"
+    "3 1 |   1-0    |   1-1    |"
+    "|   |          |          |"
+    "|   |          |          |"
+    "+---+----------+----------+"
+);
+
+test_table!(
+    new_vertical_default_0,
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::default().alignment(Alignment::top())),
+    "+---+-----+-----+"
+    "N   |     |     |"
+    "|   |     |     |"
+    "| 0 | 0-0 | 0-1 |"
+    "|   |     |     |"
+    "|   |     |     |"
+    "+---+-----+-----+"
+    "c   |     |     |"
+    "o   |     |     |"
+    "l 1 | 1-0 | 1-1 |"
+    "u   |     |     |"
+    "m   |     |     |"
+    "+---+-----+-----+"
+);
+
+test_table!(
+    new_vertical_default_2,
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::default().alignment(Alignment::bottom())),
+    "+---+-----+-----+"
+    "|   |     |     |"
+    "|   |     |     |"
+    "| 0 | 0-0 | 0-1 |"
+    "|   |     |     |"
+    "N   |     |     |"
+    "+---+-----+-----+"
+    "c   |     |     |"
+    "o   |     |     |"
+    "l 1 | 1-0 | 1-1 |"
+    "u   |     |     |"
+    "m   |     |     |"
+    "+---+-----+-----+"
+);
+
+test_table!(
+    new_vertical_default_1,
+    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::default().alignment(Alignment::center_vertical())),
+    "+---+-----+-----+"
+    "|   |     |     |"
+    "|   |     |     |"
+    "N 0 | 0-0 | 0-1 |"
+    "|   |     |     |"
+    "|   |     |     |"
+    "+---+-----+-----+"
+    "|   |     |     |"
+    "|   |     |     |"
+    "c 1 | 1-0 | 1-1 |"
+    "o   |     |     |"
+    "l   |     |     |"
+    "+---+-----+-----+"
 );

@@ -5,7 +5,7 @@
 //       table.with(&mut StyleFromTable);
 //       vs
 //       Theme::from(table.get_config());
-//           
+//
 // not sure what the best interface is
 // IMHO 2
 
