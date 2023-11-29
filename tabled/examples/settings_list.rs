@@ -7,7 +7,7 @@
 use tabled::{
     settings::{
         object::{FirstRow, Rows},
-        style::{On, StyleBuilder},
+        style::{On, Style},
         Alignment, Modify, ModifyList, Padding, Settings,
     },
     Table, Tabled,
@@ -32,12 +32,12 @@ impl CodeEditor {
 
 // unfortunately we can't leave it as a blank type, so we need to provide it.
 type TableTheme = Settings<
-    Settings<Settings<Settings, StyleBuilder<On, On, On, On, On, On, 0, 0>>, Padding>,
+    Settings<Settings<Settings, Style<On, On, On, On, On, On, 0, 0>>, Padding>,
     ModifyList<FirstRow, Alignment>,
 >;
 
 const THEME: TableTheme = Settings::empty()
-    .with(StyleBuilder::ascii())
+    .with(Style::ascii())
     .with(Padding::new(1, 3, 0, 0))
     .with(Modify::list(Rows::first(), Alignment::center()));
 

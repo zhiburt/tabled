@@ -6,7 +6,7 @@ use std::{
 use super::{Color, StaticColor};
 
 /// The structure represents a ANSI color by suffix and prefix.
-#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AnsiColor<'a> {
     prefix: Cow<'a, str>,
     suffix: Cow<'a, str>,

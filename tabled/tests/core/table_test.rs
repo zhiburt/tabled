@@ -343,7 +343,7 @@ mod derived {
 
     use std::collections::{BTreeMap, BTreeSet};
 
-    use tabled::{settings::style::StyleBuilder, Tabled};
+    use tabled::{settings::style::Style, Tabled};
 
     #[derive(Tabled)]
     struct TestType {
@@ -566,7 +566,7 @@ mod derived {
                     invented_year: 2009,
                 },
             ]
-        }).with(StyleBuilder::modern().remove_horizontal()),
+        }).with(Style::modern().remove_horizontal()),
         // Note: It doesn't look good in VS Code
         "┌─────────┬────────────────┬───────────────┐"
         "│ name    │ designed_by    │ invented_year │"

@@ -45,25 +45,24 @@ mod cell_option;
 mod settings_list;
 mod table_option;
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub mod object;
-
-#[cfg(feature = "std")]
 mod modify;
 
 mod alignment;
+mod duplicate;
 mod extract;
 mod margin;
 mod padding;
+mod reverse;
 mod rotate;
 
 #[cfg(feature = "std")]
 mod color;
 #[cfg(feature = "std")]
 mod concat;
+
 #[cfg(feature = "std")]
-mod duplicate;
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub mod object;
 
 pub mod style;
 
@@ -114,22 +113,18 @@ pub mod themes;
 pub mod width;
 
 pub use cell_option::CellOption;
+pub use modify::{Modify, ModifyList};
 pub use settings_list::{EmptySettings, Settings};
 pub use table_option::TableOption;
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub use modify::{Modify, ModifyList};
-
 pub use self::{
-    alignment::Alignment, extract::Extract, margin::Margin, padding::Padding, rotate::Rotate,
-    style::Border,
+    alignment::Alignment, duplicate::Dup, extract::Extract, margin::Margin, padding::Padding,
+    reverse::Reverse, rotate::Rotate, style::Border, style::Style,
 };
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use self::{
-    color::Color, concat::Concat, disable::Disable, duplicate::Dup, format::Format, height::Height,
-    highlight::Highlight, merge::Merge, panel::Panel, shadow::Shadow, span::Span, style::Style,
-    width::Width,
+    color::Color, concat::Concat, disable::Disable, format::Format, height::Height,
+    highlight::Highlight, merge::Merge, panel::Panel, shadow::Shadow, span::Span, width::Width,
 };

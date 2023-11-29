@@ -8,7 +8,7 @@
 //! supports custom colors with [`Color::new()`].
 
 use tabled::{
-    settings::{style::Style, Color},
+    settings::{style::Style, themes::Theme, Color},
     Table, Tabled,
 };
 
@@ -30,22 +30,22 @@ impl CodeEditor {
 }
 
 fn main() {
-    let mut style = Style::extended();
-    style.set_color_top(Color::FG_RED);
-    style.set_color_bottom(Color::FG_CYAN);
-    style.set_color_left(Color::FG_BLUE);
-    style.set_color_right(Color::FG_GREEN);
-    style.set_color_corner_top_left(Color::FG_BLUE);
-    style.set_color_corner_top_right(Color::FG_RED);
-    style.set_color_corner_bottom_left(Color::FG_CYAN);
-    style.set_color_corner_bottom_right(Color::FG_GREEN);
-    style.set_color_intersection_bottom(Color::FG_CYAN);
-    style.set_color_intersection_top(Color::FG_RED);
-    style.set_color_intersection_right(Color::FG_GREEN);
-    style.set_color_intersection_left(Color::FG_BLUE);
-    style.set_color_intersection(Color::FG_MAGENTA);
-    style.set_color_horizontal(Color::FG_MAGENTA);
-    style.set_color_vertical(Color::FG_MAGENTA);
+    let mut style = Theme::from(Style::extended());
+    style.set_border_color_top(Color::FG_RED);
+    style.set_border_color_bottom(Color::FG_CYAN);
+    style.set_border_color_left(Color::FG_BLUE);
+    style.set_border_color_right(Color::FG_GREEN);
+    style.set_border_color_corner_top_left(Color::FG_BLUE);
+    style.set_border_color_corner_top_right(Color::FG_RED);
+    style.set_border_color_corner_bottom_left(Color::FG_CYAN);
+    style.set_border_color_corner_bottom_right(Color::FG_GREEN);
+    style.set_border_color_intersection_bottom(Color::FG_CYAN);
+    style.set_border_color_intersection_top(Color::FG_RED);
+    style.set_border_color_intersection_right(Color::FG_GREEN);
+    style.set_border_color_intersection_left(Color::FG_BLUE);
+    style.set_border_color_intersection(Color::FG_MAGENTA);
+    style.set_border_color_horizontal(Color::FG_MAGENTA);
+    style.set_border_color_vertical(Color::FG_MAGENTA);
 
     let data = [
         CodeEditor::new("Sublime Text 3", "2008", "Sublime HQ"),

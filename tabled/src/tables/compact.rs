@@ -79,7 +79,7 @@ use crate::{
         util::string::string_width,
         CompactGrid,
     },
-    settings::{style::StyleBuilder, TableOption},
+    settings::{style::Style, TableOption},
 };
 
 /// A table which consumes an [`IntoRecords`] iterator.
@@ -298,7 +298,7 @@ const fn create_config() -> CompactConfig {
             Indent::zero(),
         ))
         .set_alignment_horizontal(AlignmentHorizontal::Left)
-        .set_borders(StyleBuilder::ascii().get_borders())
+        .set_borders(Style::ascii().get_borders())
 }
 
 impl<R, D> TableOption<R, D, CompactConfig> for CompactConfig {

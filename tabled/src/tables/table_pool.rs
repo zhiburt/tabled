@@ -1002,7 +1002,7 @@ mod print {
                     borders.bottom_right = line.right;
                 }
 
-                cfg.clear_theme();
+                cfg_clear_borders(cfg);
                 cfg.set_borders(borders);
             }
 
@@ -1604,5 +1604,14 @@ mod print {
             (!pad_color.top.is_empty()).then(|| pad_color.top),
             (!pad_color.bottom.is_empty()).then(|| pad_color.bottom),
         )
+    }
+
+    fn cfg_clear_borders(cfg: &mut ColoredConfig) {
+        cfg.remove_borders();
+        cfg.remove_borders_colors();
+        cfg.remove_vertical_chars();
+        cfg.remove_horizontal_chars();
+        cfg.remove_color_line_horizontal();
+        cfg.remove_color_line_vertical();
     }
 }

@@ -8,3 +8,4 @@ mod theme;
 
 pub use colorization::{Colorization, ExactColorization};
 pub use column_names::ColumnNames;
+pub use theme::Theme;

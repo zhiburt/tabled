@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[cfg(feature = "std")]
-use crate::{grid::config::ColoredConfig, settings::Style};
+use crate::grid::config::ColoredConfig;
 
 /// Style is represents a theme of a [`Table`].
 ///
@@ -49,7 +49,7 @@ use crate::{grid::config::ColoredConfig, settings::Style};
 /// ```
 ///
 /// It tries to limit an controlling a valid state of it.
-/// For example, it won't allow to call method [`StyleBuilder::corner_top_left`] unless [`StyleBuilder::left`] and [`StyleBuilder::top`] is set.
+/// For example, it won't allow to call method [`Style::corner_top_left`] unless [`Style::left`] and [`Style::top`] is set.
 ///
 /// You can turn [`Style`] into [`RawStyle`] to have more control using [`Into`] implementation.
 ///
@@ -57,24 +57,24 @@ use crate::{grid::config::ColoredConfig, settings::Style};
 ///
 #[cfg_attr(feature = "std", doc = "```")]
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-/// use tabled::{Table, settings::style::StyleBuilder};
+/// use tabled::{Table, settings::style::Style};
 ///
 /// let data = vec!["Hello", "2021"];
 /// let mut table = Table::new(&data);
 ///
-/// let style = StyleBuilder::ascii().bottom('*').intersection(' ');
+/// let style = Style::ascii().bottom('*').intersection(' ');
 /// table.with(style);
 ///
 /// println!("{}", table);
 /// ```
 ///
 /// [`Table`]: crate::Table
-/// [`RawStyle`]: crate::settings::StyleBuilder::RawStyle
-/// [`StyleBuilder::corner_top_left`]: StyleBuilder::corner_top_left
-/// [`StyleBuilder::left`]: Style.left
-/// [`StyleBuilder::top`]: Style.function.top
+/// [`RawStyle`]: crate::settings::Style::RawStyle
+/// [`Style::corner_top_left`]: Style::corner_top_left
+/// [`Style::left`]: Style.left
+/// [`Style::top`]: Style.function.top
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct StyleBuilder<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize> {
+pub struct Style<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize> {
     borders: Borders<char>,
     horizontals: HArray<HSIZE>,
     verticals: VArray<VSIZE>,
@@ -96,7 +96,7 @@ type VArray<const N: usize> = [(usize, VLine); N];
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy, Default, Hash)]
 pub struct On;
 
-impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
+impl Style<(), (), (), (), (), (), 0, 0> {
     /// This style is a style with no styling options on,
     ///
     /// ```text
@@ -111,15 +111,15 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     /// This style can be used as a base style to build a custom one.
     ///
     /// ```rust,no_run
-    /// # use tabled::settings::style::StyleBuilder;
-    /// let style = StyleBuilder::empty()
+    /// # use tabled::settings::style::Style;
+    /// let style = Style::empty()
     ///     .top('*')
     ///     .bottom('*')
     ///     .vertical('#')
     ///     .intersection_top('*');
     /// ```
-    pub const fn empty() -> StyleBuilder<(), (), (), (), (), (), 0, 0> {
-        StyleBuilder::new(Borders::empty(), [], [])
+    pub const fn empty() -> Style<(), (), (), (), (), (), 0, 0> {
+        Style::new(Borders::empty(), [], [])
     }
 
     /// This style is analog of `empty` but with a vertical space(' ') line.
@@ -130,8 +130,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///      2      OpenSUSE     https://www.opensuse.org/
     ///      3    Endeavouros    https://endeavouros.com/
     /// ```
-    pub const fn blank() -> StyleBuilder<(), (), (), (), (), On, 0, 0> {
-        StyleBuilder::new(
+    pub const fn blank() -> Style<(), (), (), (), (), On, 0, 0> {
+        Style::new(
             create_borders(
                 HLine::empty(),
                 HLine::empty(),
@@ -160,8 +160,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     +----+--------------+---------------------------+
     /// ```
-    pub const fn ascii() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
-        StyleBuilder::new(
+    pub const fn ascii() -> Style<On, On, On, On, On, On, 0, 0> {
+        Style::new(
             create_borders(
                 HLine::full('-', '+', '+', '+'),
                 HLine::full('-', '+', '+', '+'),
@@ -187,8 +187,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///      2  |   OpenSUSE   | https://www.opensuse.org/
     ///      3  | Endeavouros  | https://endeavouros.com/
     /// ```
-    pub const fn psql() -> StyleBuilder<(), (), (), (), (), On, 1, 0> {
-        StyleBuilder::new(
+    pub const fn psql() -> Style<(), (), (), (), (), On, 1, 0> {
+        Style::new(
             create_borders(
                 HLine::empty(),
                 HLine::empty(),
@@ -211,8 +211,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///     | 2  |   OpenSUSE   | https://www.opensuse.org/ |
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     /// ```
-    pub const fn markdown() -> StyleBuilder<(), (), On, On, (), On, 1, 0> {
-        StyleBuilder::new(
+    pub const fn markdown() -> Style<(), (), On, On, (), On, 1, 0> {
+        Style::new(
             create_borders(
                 HLine::empty(),
                 HLine::empty(),
@@ -226,7 +226,7 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
         )
     }
 
-    /// This style is analog of [`StyleBuilder::ascii`] which uses UTF-8 charset.
+    /// This style is analog of [`Style::ascii`] which uses UTF-8 charset.
     ///
     /// It has vertical and horizontal split lines.
     ///
@@ -241,8 +241,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
-    pub const fn modern() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
-        StyleBuilder::new(
+    pub const fn modern() -> Style<On, On, On, On, On, On, 0, 0> {
+        Style::new(
             create_borders(
                 HLine::full('─', '┬', '┌', '┐'),
                 HLine::full('─', '┴', '└', '┘'),
@@ -256,7 +256,7 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
         )
     }
 
-    /// This style looks like a [`StyleBuilder::modern`] but without horozizontal lines except a header.
+    /// This style looks like a [`Style::modern`] but without horozizontal lines except a header.
     ///
     /// Beware: It uses UTF-8 characters.
     ///
@@ -269,8 +269,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     └────┴──────────────┴───────────────────────────┘
     /// ```
-    pub const fn sharp() -> StyleBuilder<On, On, On, On, (), On, 1, 0> {
-        StyleBuilder::new(
+    pub const fn sharp() -> Style<On, On, On, On, (), On, 1, 0> {
+        Style::new(
             create_borders(
                 HLine::full('─', '┬', '┌', '┐'),
                 HLine::full('─', '┴', '└', '┘'),
@@ -284,7 +284,7 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
         )
     }
 
-    /// This style looks like a [`StyleBuilder::sharp`] but with rounded corners.
+    /// This style looks like a [`Style::sharp`] but with rounded corners.
     ///
     /// Beware: It uses UTF-8 characters.
     ///
@@ -297,8 +297,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     ╰────┴──────────────┴───────────────────────────╯
     /// ```
-    pub const fn rounded() -> StyleBuilder<On, On, On, On, (), On, 1, 0> {
-        StyleBuilder::new(
+    pub const fn rounded() -> Style<On, On, On, On, (), On, 1, 0> {
+        Style::new(
             create_borders(
                 HLine::full('─', '┬', '╭', '╮'),
                 HLine::full('─', '┴', '╰', '╯'),
@@ -312,7 +312,7 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
         )
     }
 
-    /// This style looks like a [`StyleBuilder::rounded`] but with horizontals lines.
+    /// This style looks like a [`Style::rounded`] but with horizontals lines.
     ///
     /// Beware: It uses UTF-8 characters.
     ///
@@ -327,8 +327,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///     │ 3  │ Endeavouros  │ https://endeavouros.com/  │
     ///     ╰────┴──────────────┴───────────────────────────╯
     /// ```
-    pub const fn modern_rounded() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
-        StyleBuilder::new(
+    pub const fn modern_rounded() -> Style<On, On, On, On, On, On, 0, 0> {
+        Style::new(
             create_borders(
                 HLine::full('─', '┬', '╭', '╮'),
                 HLine::full('─', '┴', '╰', '╯'),
@@ -357,8 +357,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///     ║ 3  ║ Endeavouros  ║ https://endeavouros.com/  ║
     ///     ╚════╩══════════════╩═══════════════════════════╝
     /// ```
-    pub const fn extended() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
-        StyleBuilder::new(
+    pub const fn extended() -> Style<On, On, On, On, On, On, 0, 0> {
+        Style::new(
             create_borders(
                 HLine::full('═', '╦', '╔', '╗'),
                 HLine::full('═', '╩', '╚', '╝'),
@@ -386,8 +386,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///     : 3  : Endeavouros  : https://endeavouros.com/  :
     ///     :....:..............:...........................:
     /// ```
-    pub const fn dots() -> StyleBuilder<On, On, On, On, On, On, 0, 0> {
-        StyleBuilder::new(
+    pub const fn dots() -> Style<On, On, On, On, On, On, 0, 0> {
+        Style::new(
             create_borders(
                 HLine::full('.', '.', '.', '.'),
                 HLine::full('.', ':', ':', ':'),
@@ -412,8 +412,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///      3    Endeavouros    https://endeavouros.com/  
     ///     ==== ============== ===========================
     /// ```
-    pub const fn re_structured_text() -> StyleBuilder<On, On, (), (), (), On, 1, 0> {
-        StyleBuilder::new(
+    pub const fn re_structured_text() -> Style<On, On, (), (), (), On, 1, 0> {
+        Style::new(
             create_borders(
                 HLine::new(Some('='), Some(' '), None, None),
                 HLine::new(Some('='), Some(' '), None, None),
@@ -427,7 +427,7 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
         )
     }
 
-    /// This is a theme analog of [`StyleBuilder::rounded`], but in using ascii charset and
+    /// This is a theme analog of [`Style::rounded`], but in using ascii charset and
     /// with no horizontal lines.
     ///
     /// ```text
@@ -438,8 +438,8 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
     ///     | 3  | Endeavouros  | https://endeavouros.com/  |
     ///     '-----------------------------------------------'
     /// ```
-    pub const fn ascii_rounded() -> StyleBuilder<On, On, On, On, (), On, 0, 0> {
-        StyleBuilder::new(
+    pub const fn ascii_rounded() -> Style<On, On, On, On, (), On, 0, 0> {
+        Style::new(
             create_borders(
                 HLine::full('-', '-', '.', '.'),
                 HLine::full('-', '-', '\'', '\''),
@@ -455,7 +455,7 @@ impl StyleBuilder<(), (), (), (), (), (), 0, 0> {
 }
 
 impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
-    StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>
+    Style<T, B, L, R, H, V, HSIZE, VSIZE>
 {
     pub(crate) const fn new(
         borders: Borders<char>,
@@ -483,40 +483,21 @@ impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
     pub(crate) const fn get_horizontals(&self) -> [(usize, HLine); HSIZE] {
         self.horizontals
     }
-
-    /// Builder a [`Style`]
-    #[cfg(feature = "std")]
-    pub fn build(self) -> Style {
-        let mut style = Style::new();
-        style.set_borders(self.borders);
-
-        if !self.horizontals.is_empty() {
-            let lines = self.horizontals.iter().cloned().collect();
-            style.set_lines_horizontal(lines);
-        }
-
-        if !self.verticals.is_empty() {
-            let lines = self.verticals.iter().cloned().collect();
-            style.set_lines_vertical(lines);
-        }
-
-        style
-    }
 }
 
-impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, H, V, HN, VN> {
+impl<T, B, L, R, H, V, const HN: usize, const VN: usize> Style<T, B, L, R, H, V, HN, VN> {
     /// Set border horizontal lines.
     ///
     /// # Example
     ///
     #[cfg_attr(feature = "derive", doc = "```")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{settings::style::{StyleBuilder, HorizontalLine}, Table};
+    /// use tabled::{settings::style::{Style, HorizontalLine}, Table};
     ///
     /// let data = (0..3).map(|i| ("Hello", i));
     /// let mut table = Table::new(data);
     ///
-    /// let style = StyleBuilder::rounded().horizontals([
+    /// let style = Style::rounded().horizontals([
     ///     (1, HorizontalLine::filled('#')),
     ///     (2, HorizontalLine::filled('&')),
     ///     (3, HorizontalLine::filled('@')),
@@ -542,9 +523,9 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     pub const fn horizontals<const SIZE: usize>(
         self,
         list: [(usize, HorizontalLine<L, R, V>); SIZE],
-    ) -> StyleBuilder<T, B, L, R, H, V, SIZE, VN> {
+    ) -> Style<T, B, L, R, H, V, SIZE, VN> {
         let list = harr_convert(list);
-        StyleBuilder::new(self.borders, list, self.verticals)
+        Style::new(self.borders, list, self.verticals)
     }
 
     /// Set border vertical lines.
@@ -553,12 +534,12 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     ///
     #[cfg_attr(feature = "derive", doc = "```")]
     #[cfg_attr(not(feature = "derive"), doc = "```ignore")]
-    /// use tabled::{settings::style::{StyleBuilder, VerticalLine}, Table};
+    /// use tabled::{settings::style::{Style, VerticalLine}, Table};
     ///
     /// let data = (0..3).map(|i| ("Hello", "World", i));
     /// let mut table = Table::new(data);
     ///
-    /// let style = StyleBuilder::rounded().verticals([
+    /// let style = Style::rounded().verticals([
     ///     (1, VerticalLine::new('#').top(':').bottom('.')),
     ///     (2, VerticalLine::new('&').top(':').bottom('.')),
     /// ]);
@@ -580,25 +561,25 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     pub const fn verticals<const SIZE: usize>(
         self,
         list: [(usize, VerticalLine<T, B, H>); SIZE],
-    ) -> StyleBuilder<T, B, L, R, H, V, HN, SIZE> {
+    ) -> Style<T, B, L, R, H, V, HN, SIZE> {
         let list = varr_convert(list);
-        StyleBuilder::new(self.borders, self.horizontals, list)
+        Style::new(self.borders, self.horizontals, list)
     }
 
-    /// Removes all horizontal lines set by [`StyleBuilder::horizontals`]
-    pub const fn remove_horizontals(self) -> StyleBuilder<T, B, L, R, H, V, 0, VN> {
-        StyleBuilder::new(self.borders, [], self.verticals)
+    /// Removes all horizontal lines set by [`Style::horizontals`]
+    pub const fn remove_horizontals(self) -> Style<T, B, L, R, H, V, 0, VN> {
+        Style::new(self.borders, [], self.verticals)
     }
 
-    /// Removes all verticals lines set by [`StyleBuilder::verticals`]
-    pub const fn remove_verticals(self) -> StyleBuilder<T, B, L, R, H, V, HN, 0> {
-        StyleBuilder::new(self.borders, self.horizontals, [])
+    /// Removes all verticals lines set by [`Style::verticals`]
+    pub const fn remove_verticals(self) -> Style<T, B, L, R, H, V, HN, 0> {
+        Style::new(self.borders, self.horizontals, [])
     }
 
     /// Sets a top border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn top(mut self, c: char) -> StyleBuilder<On, B, L, R, H, V, HN, VN>
+    pub const fn top(mut self, c: char) -> Style<On, B, L, R, H, V, HN, VN>
     where
         T: Copy,
         B: Copy,
@@ -620,13 +601,13 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
 
         let verticals = varr_set(self.verticals, VLine::new(None, None, Some(c), None));
 
-        StyleBuilder::new(self.borders, self.horizontals, verticals)
+        Style::new(self.borders, self.horizontals, verticals)
     }
 
     /// Sets a bottom border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn bottom(mut self, c: char) -> StyleBuilder<T, On, L, R, H, V, HN, VN>
+    pub const fn bottom(mut self, c: char) -> Style<T, On, L, R, H, V, HN, VN>
     where
         T: Copy,
         B: Copy,
@@ -648,13 +629,13 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
 
         let verticals = varr_set(self.verticals, VLine::new(None, None, None, Some(c)));
 
-        StyleBuilder::new(self.borders, self.horizontals, verticals)
+        Style::new(self.borders, self.horizontals, verticals)
     }
 
     /// Sets a left border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn left(mut self, c: char) -> StyleBuilder<T, B, On, R, H, V, HN, VN>
+    pub const fn left(mut self, c: char) -> Style<T, B, On, R, H, V, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -676,13 +657,13 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
 
         let horizontals = harr_set(self.horizontals, HLine::new(None, None, Some(c), None));
 
-        StyleBuilder::new(self.borders, horizontals, self.verticals)
+        Style::new(self.borders, horizontals, self.verticals)
     }
 
     /// Sets a right border.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn right(mut self, c: char) -> StyleBuilder<T, B, L, On, H, V, HN, VN>
+    pub const fn right(mut self, c: char) -> Style<T, B, L, On, H, V, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -704,13 +685,13 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
 
         let horizontals = harr_set(self.horizontals, HLine::new(None, None, None, Some(c)));
 
-        StyleBuilder::new(self.borders, horizontals, self.verticals)
+        Style::new(self.borders, horizontals, self.verticals)
     }
 
     /// Sets a horizontal split line.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn horizontal(mut self, c: char) -> StyleBuilder<T, B, L, R, On, V, HN, VN>
+    pub const fn horizontal(mut self, c: char) -> Style<T, B, L, R, On, V, HN, VN>
     where
         T: Copy,
         B: Copy,
@@ -732,13 +713,13 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
 
         let verticals = varr_set(self.verticals, VLine::new(None, Some(c), None, None));
 
-        StyleBuilder::new(self.borders, self.horizontals, verticals)
+        Style::new(self.borders, self.horizontals, verticals)
     }
 
     /// Sets a vertical split line.
     ///
     /// Any corners and intersections which were set will be overridden.
-    pub const fn vertical(mut self, c: char) -> StyleBuilder<T, B, L, R, H, On, HN, VN>
+    pub const fn vertical(mut self, c: char) -> Style<T, B, L, R, H, On, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -760,7 +741,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
 
         let horizontals = harr_set(self.horizontals, HLine::new(None, Some(c), None, None));
 
-        StyleBuilder::new(self.borders, horizontals, self.verticals)
+        Style::new(self.borders, horizontals, self.verticals)
     }
 
     /// Set a vertical line.
@@ -771,7 +752,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     pub const fn line_vertical<Top, Bottom, Intersection>(
         mut self,
         line: VerticalLine<Top, Bottom, Intersection>,
-    ) -> StyleBuilder<Top, Bottom, L, R, Intersection, On, HN, VN>
+    ) -> Style<Top, Bottom, L, R, Intersection, On, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -828,7 +809,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
             VLine::new(None, line.intersection, line.top, line.bottom),
         );
 
-        StyleBuilder::new(self.borders, horizontals, verticals)
+        Style::new(self.borders, horizontals, verticals)
     }
 
     /// Set a horizontal line.
@@ -839,7 +820,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     pub const fn line_horizontal<Left, Right, Intersection>(
         mut self,
         line: HorizontalLine<Left, Right, Intersection>,
-    ) -> StyleBuilder<T, B, Left, Right, On, Intersection, HN, VN>
+    ) -> Style<T, B, Left, Right, On, Intersection, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -896,7 +877,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
             VLine::new(None, line.intersection, None, None),
         );
 
-        StyleBuilder::new(self.borders, horizontals, verticals)
+        Style::new(self.borders, horizontals, verticals)
     }
 
     /// Set a horizontal line.
@@ -907,7 +888,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     pub const fn line_top<Left, Right, Intersection>(
         mut self,
         line: HorizontalLine<Left, Right, Intersection>,
-    ) -> StyleBuilder<On, B, Left, Right, H, Intersection, HN, VN>
+    ) -> Style<On, B, Left, Right, H, Intersection, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -964,7 +945,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
             VLine::new(None, line.intersection, None, None),
         );
 
-        StyleBuilder::new(self.borders, horizontals, verticals)
+        Style::new(self.borders, horizontals, verticals)
     }
 
     /// Set a horizontal line.
@@ -975,7 +956,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     pub const fn line_bottom<Left, Right, Intersection>(
         mut self,
         line: HorizontalLine<Left, Right, Intersection>,
-    ) -> StyleBuilder<T, On, Left, Right, H, Intersection, HN, VN>
+    ) -> Style<T, On, Left, Right, H, Intersection, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -1032,7 +1013,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
             VLine::new(None, line.intersection, None, None),
         );
 
-        StyleBuilder::new(self.borders, horizontals, verticals)
+        Style::new(self.borders, horizontals, verticals)
     }
 
     /// Set a vertical line.
@@ -1043,7 +1024,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     pub const fn line_left<Top, Bottom, Intersection>(
         mut self,
         line: VerticalLine<Top, Bottom, Intersection>,
-    ) -> StyleBuilder<Top, Bottom, On, R, Intersection, V, HN, VN>
+    ) -> Style<Top, Bottom, On, R, Intersection, V, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -1100,7 +1081,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
             VLine::new(None, line.intersection, line.top, line.bottom),
         );
 
-        StyleBuilder::new(self.borders, horizontals, verticals)
+        Style::new(self.borders, horizontals, verticals)
     }
 
     /// Set a vertical line.
@@ -1111,7 +1092,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     pub const fn line_right<Top, Bottom, Intersection>(
         mut self,
         line: VerticalLine<Top, Bottom, Intersection>,
-    ) -> StyleBuilder<Top, Bottom, L, On, Intersection, V, HN, VN>
+    ) -> Style<Top, Bottom, L, On, Intersection, V, HN, VN>
     where
         L: Copy,
         R: Copy,
@@ -1168,7 +1149,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
             VLine::new(None, line.intersection, line.top, line.bottom),
         );
 
-        StyleBuilder::new(self.borders, horizontals, verticals)
+        Style::new(self.borders, horizontals, verticals)
     }
 
     /// Set a frame for a style.
@@ -1178,11 +1159,11 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     /// # Example
     ///
     /// ```
-    /// use tabled::{Table, settings::style::{StyleBuilder, Border}};
+    /// use tabled::{Table, settings::style::{Style, Border}};
     ///
     /// let data = [["10:52:19", "Hello"], ["10:52:20", "World"]];
     /// let table = Table::new(data)
-    ///     .with(StyleBuilder::ascii().frame(Border::inherit(StyleBuilder::modern())))
+    ///     .with(Style::ascii().frame(Border::inherit(Style::modern())))
     ///     .to_string();
     ///
     /// assert_eq!(
@@ -1201,7 +1182,7 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
     pub const fn frame<Top, Bottom, Left, Right>(
         mut self,
         border: Border<Top, Bottom, Left, Right>,
-    ) -> StyleBuilder<Top, Bottom, Left, Right, H, V, HN, VN>
+    ) -> Style<Top, Bottom, Left, Right, H, V, HN, VN>
     where
         T: Copy,
         B: Copy,
@@ -1235,83 +1216,83 @@ impl<T, B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R
         self.borders.top_right = border.right_top_corner;
         self.borders.bottom_right = border.right_bottom_corner;
 
-        StyleBuilder::new(self.borders, horizontals, verticals)
+        Style::new(self.borders, horizontals, verticals)
     }
 }
 
-impl<B, R, H, V, const HN: usize, const VN: usize> StyleBuilder<On, B, On, R, H, V, HN, VN> {
+impl<B, R, H, V, const HN: usize, const VN: usize> Style<On, B, On, R, H, V, HN, VN> {
     /// Sets a top left corner.
     pub const fn corner_top_left(mut self, c: char) -> Self {
         self.borders.top_left = Some(c);
 
-        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
+        Style::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<B, L, H, V, const HN: usize, const VN: usize> StyleBuilder<On, B, L, On, H, V, HN, VN> {
+impl<B, L, H, V, const HN: usize, const VN: usize> Style<On, B, L, On, H, V, HN, VN> {
     /// Sets a top right corner.
     pub const fn corner_top_right(mut self, c: char) -> Self {
         self.borders.top_right = Some(c);
 
-        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
+        Style::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, L, H, V, const HN: usize, const VN: usize> StyleBuilder<T, On, L, On, H, V, HN, VN> {
+impl<T, L, H, V, const HN: usize, const VN: usize> Style<T, On, L, On, H, V, HN, VN> {
     /// Sets a bottom right corner.
     pub const fn corner_bottom_right(mut self, c: char) -> Self {
         self.borders.bottom_right = Some(c);
 
-        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
+        Style::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, On, On, R, H, V, HN, VN> {
+impl<T, R, H, V, const HN: usize, const VN: usize> Style<T, On, On, R, H, V, HN, VN> {
     /// Sets a bottom left corner.
     pub const fn corner_bottom_left(mut self, c: char) -> Self {
         self.borders.bottom_left = Some(c);
 
-        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
+        Style::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, R, V, const HN: usize, const VN: usize> StyleBuilder<T, B, On, R, On, V, HN, VN> {
+impl<T, B, R, V, const HN: usize, const VN: usize> Style<T, B, On, R, On, V, HN, VN> {
     /// Sets a left intersection char.
     pub const fn intersection_left(mut self, c: char) -> Self {
         self.borders.left_intersection = Some(c);
 
-        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
+        Style::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, On, On, V, HN, VN> {
+impl<T, B, L, V, const HN: usize, const VN: usize> Style<T, B, L, On, On, V, HN, VN> {
     /// Sets a right intersection char.
     pub const fn intersection_right(mut self, c: char) -> Self {
         self.borders.right_intersection = Some(c);
 
-        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
+        Style::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<B, L, R, H, const HN: usize, const VN: usize> StyleBuilder<On, B, L, R, H, On, HN, VN> {
+impl<B, L, R, H, const HN: usize, const VN: usize> Style<On, B, L, R, H, On, HN, VN> {
     /// Sets a top intersection char.
     pub const fn intersection_top(mut self, c: char) -> Self {
         self.borders.top_intersection = Some(c);
 
-        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
+        Style::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, L, R, H, const HN: usize, const VN: usize> StyleBuilder<T, On, L, R, H, On, HN, VN> {
+impl<T, L, R, H, const HN: usize, const VN: usize> Style<T, On, L, R, H, On, HN, VN> {
     /// Sets a bottom intersection char.
     pub const fn intersection_bottom(mut self, c: char) -> Self {
         self.borders.bottom_intersection = Some(c);
 
-        StyleBuilder::new(self.borders, self.horizontals, self.verticals)
+        Style::new(self.borders, self.horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, R, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, On, On, HN, VN> {
+impl<T, B, L, R, const HN: usize, const VN: usize> Style<T, B, L, R, On, On, HN, VN> {
     /// Sets an inner intersection char.
     /// A char between horizontal and vertical split lines.
     pub const fn intersection(mut self, c: char) -> Self
@@ -1326,13 +1307,13 @@ impl<T, B, L, R, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, On, 
         let horizontals = harr_set(self.horizontals, HLine::new(None, Some(c), None, None));
         let verticals = varr_set(self.verticals, VLine::new(None, Some(c), None, None));
 
-        StyleBuilder::new(self.borders, horizontals, verticals)
+        Style::new(self.borders, horizontals, verticals)
     }
 }
 
-impl<B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<On, B, L, R, H, V, HN, VN> {
+impl<B, L, R, H, V, const HN: usize, const VN: usize> Style<On, B, L, R, H, V, HN, VN> {
     /// Removes top border.
-    pub const fn remove_top(mut self) -> StyleBuilder<(), B, L, R, H, V, HN, VN>
+    pub const fn remove_top(mut self) -> Style<(), B, L, R, H, V, HN, VN>
     where
         B: Copy,
         H: Copy,
@@ -1344,13 +1325,13 @@ impl<B, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<On, B, L, R, 
 
         let verticals = varr_unset(self.verticals, VLine::new(None, None, Some(' '), None));
 
-        StyleBuilder::new(self.borders, self.horizontals, verticals)
+        Style::new(self.borders, self.horizontals, verticals)
     }
 }
 
-impl<T, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, On, L, R, H, V, HN, VN> {
+impl<T, L, R, H, V, const HN: usize, const VN: usize> Style<T, On, L, R, H, V, HN, VN> {
     /// Removes bottom border.
-    pub const fn remove_bottom(mut self) -> StyleBuilder<T, (), L, R, H, V, HN, VN>
+    pub const fn remove_bottom(mut self) -> Style<T, (), L, R, H, V, HN, VN>
     where
         T: Copy,
         H: Copy,
@@ -1362,13 +1343,13 @@ impl<T, L, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, On, L, R, 
 
         let verticals = varr_unset(self.verticals, VLine::new(None, None, None, Some(' ')));
 
-        StyleBuilder::new(self.borders, self.horizontals, verticals)
+        Style::new(self.borders, self.horizontals, verticals)
     }
 }
 
-impl<T, B, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, On, R, H, V, HN, VN> {
+impl<T, B, R, H, V, const HN: usize, const VN: usize> Style<T, B, On, R, H, V, HN, VN> {
     /// Removes left border.
-    pub const fn remove_left(mut self) -> StyleBuilder<T, B, (), R, H, V, HN, VN>
+    pub const fn remove_left(mut self) -> Style<T, B, (), R, H, V, HN, VN>
     where
         R: Copy,
         V: Copy,
@@ -1380,13 +1361,13 @@ impl<T, B, R, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, On, R, 
 
         let horizontals = harr_unset(self.horizontals, HLine::new(None, None, Some(' '), None));
 
-        StyleBuilder::new(self.borders, horizontals, self.verticals)
+        Style::new(self.borders, horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, On, H, V, HN, VN> {
+impl<T, B, L, H, V, const HN: usize, const VN: usize> Style<T, B, L, On, H, V, HN, VN> {
     /// Removes right border.
-    pub const fn remove_right(mut self) -> StyleBuilder<T, B, L, (), H, V, HN, VN>
+    pub const fn remove_right(mut self) -> Style<T, B, L, (), H, V, HN, VN>
     where
         L: Copy,
         V: Copy,
@@ -1398,15 +1379,15 @@ impl<T, B, L, H, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, On, 
 
         let horizontals = harr_unset(self.horizontals, HLine::new(None, None, None, Some(' ')));
 
-        StyleBuilder::new(self.borders, horizontals, self.verticals)
+        Style::new(self.borders, horizontals, self.verticals)
     }
 }
 
-impl<T, B, L, R, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, On, V, HN, VN> {
+impl<T, B, L, R, V, const HN: usize, const VN: usize> Style<T, B, L, R, On, V, HN, VN> {
     /// Removes horizontal split lines.
     ///
     /// Not including custom split lines.
-    pub const fn remove_horizontal(mut self) -> StyleBuilder<T, B, L, R, (), V, HN, VN>
+    pub const fn remove_horizontal(mut self) -> Style<T, B, L, R, (), V, HN, VN>
     where
         T: Copy,
         B: Copy,
@@ -1420,13 +1401,13 @@ impl<T, B, L, R, V, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, O
         // let lines = linearr_unset(lines, Line::new(None, Some(' '), None, None));
         let verticals = self.verticals;
 
-        StyleBuilder::new(self.borders, self.horizontals, verticals)
+        Style::new(self.borders, self.horizontals, verticals)
     }
 }
 
-impl<T, B, L, R, H, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, H, On, HN, VN> {
+impl<T, B, L, R, H, const HN: usize, const VN: usize> Style<T, B, L, R, H, On, HN, VN> {
     /// Removes vertical split lines.
-    pub const fn remove_vertical(mut self) -> StyleBuilder<T, B, L, R, H, (), HN, VN>
+    pub const fn remove_vertical(mut self) -> Style<T, B, L, R, H, (), HN, VN>
     where
         R: Copy,
         L: Copy,
@@ -1439,30 +1420,23 @@ impl<T, B, L, R, H, const HN: usize, const VN: usize> StyleBuilder<T, B, L, R, H
         // let lines = linearr_unset(lines, Line::new(None, Some(' '), None, None));
         let horizontals = self.horizontals;
 
-        StyleBuilder::new(self.borders, horizontals, self.verticals)
+        Style::new(self.borders, horizontals, self.verticals)
     }
 }
 
 #[cfg(feature = "std")]
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
-    TableOption<Data, Dims, ColoredConfig> for StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>
+    TableOption<Data, Dims, ColoredConfig> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
 {
     fn change(self, _: &mut Data, cfg: &mut ColoredConfig, _: &mut Dims) {
-        cfg.clear_theme();
+        cfg_clear_borders(cfg);
+        cfg_set_custom_lines(cfg, &self.horizontals, &self.verticals);
         cfg.set_borders(self.borders);
-
-        for (i, line) in self.horizontals {
-            cfg.insert_horizontal_line(i, line);
-        }
-
-        for (i, line) in self.verticals {
-            cfg.insert_vertical_line(i, line);
-        }
     }
 }
 
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
-    TableOption<Data, Dims, CompactConfig> for StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>
+    TableOption<Data, Dims, CompactConfig> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
 {
     fn change(self, _: &mut Data, cfg: &mut CompactConfig, _: &mut Dims) {
         *cfg = cfg.set_borders(self.borders);
@@ -1470,8 +1444,7 @@ impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
 }
 
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
-    TableOption<Data, Dims, CompactMultilineConfig>
-    for StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>
+    TableOption<Data, Dims, CompactMultilineConfig> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
 {
     fn change(self, _: &mut Data, cfg: &mut CompactMultilineConfig, _: &mut Dims) {
         cfg.set_borders(self.borders);
@@ -1479,9 +1452,9 @@ impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
 }
 
 impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
-    From<StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>> for Borders<char>
+    From<Style<T, B, L, R, H, V, HSIZE, VSIZE>> for Borders<char>
 {
-    fn from(value: StyleBuilder<T, B, L, R, H, V, HSIZE, VSIZE>) -> Self {
+    fn from(value: Style<T, B, L, R, H, V, HSIZE, VSIZE>) -> Self {
         value.borders
     }
 }
@@ -1709,4 +1682,29 @@ const fn create_borders(
         right,
         vertical,
     }
+}
+
+#[cfg(feature = "std")]
+fn cfg_set_custom_lines(
+    cfg: &mut ColoredConfig,
+    hlines: &[(usize, HLine)],
+    vlines: &[(usize, VLine)],
+) {
+    for &(row, line) in hlines {
+        cfg.insert_horizontal_line(row, line);
+    }
+
+    for &(col, line) in vlines {
+        cfg.insert_vertical_line(col, line);
+    }
+}
+
+#[cfg(feature = "std")]
+fn cfg_clear_borders(cfg: &mut ColoredConfig) {
+    cfg.remove_borders();
+    cfg.remove_borders_colors();
+    cfg.remove_vertical_chars();
+    cfg.remove_horizontal_chars();
+    cfg.remove_color_line_horizontal();
+    cfg.remove_color_line_vertical();
 }

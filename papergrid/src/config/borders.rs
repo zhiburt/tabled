@@ -85,21 +85,21 @@ impl<T> Borders<T> {
 
     /// A verification whether any border was set.
     pub const fn is_empty(&self) -> bool {
-        !(self.top.is_some()
-            || self.top_left.is_some()
-            || self.top_right.is_some()
-            || self.top_intersection.is_some()
-            || self.bottom.is_some()
-            || self.bottom_left.is_some()
-            || self.bottom_right.is_some()
-            || self.bottom_intersection.is_some()
-            || self.horizontal.is_some()
-            || self.left.is_some()
-            || self.right.is_some()
-            || self.vertical.is_some()
-            || self.left_intersection.is_some()
-            || self.right_intersection.is_some()
-            || self.intersection.is_some())
+        self.top.is_none()
+            && self.top_left.is_none()
+            && self.top_right.is_none()
+            && self.top_intersection.is_none()
+            && self.bottom.is_none()
+            && self.bottom_left.is_none()
+            && self.bottom_right.is_none()
+            && self.bottom_intersection.is_none()
+            && self.horizontal.is_none()
+            && self.left.is_none()
+            && self.right.is_none()
+            && self.vertical.is_none()
+            && self.left_intersection.is_none()
+            && self.right_intersection.is_none()
+            && self.intersection.is_none()
     }
 
     /// Verifies if borders has left line set on the frame.
