@@ -92,7 +92,7 @@ enum AlignmentInner {
 
 impl Alignment {
     /// Left constructs a horizontal alignment to [`AlignmentHorizontal::Left`]
-    pub fn left() -> Self {
+    pub const fn left() -> Self {
         Self::horizontal(AlignmentHorizontal::Left)
     }
 
@@ -105,7 +105,7 @@ impl Alignment {
     ///
     /// [`MinWidth`]: crate::settings::width::MinWidth
     /// [`TrimStrategy`]: crate::settings::formatting::TrimStrategy
-    pub fn right() -> Self {
+    pub const fn right() -> Self {
         Self::horizontal(AlignmentHorizontal::Right)
     }
 
@@ -198,5 +198,43 @@ impl<R, D> TableOption<R, D, CompactMultilineConfig> for Alignment {
 
     fn hint_change(&self) -> Option<Entity> {
         None
+    }
+}
+
+impl From<AlignmentHorizontal> for Alignment {
+    fn from(value: AlignmentHorizontal) -> Self {
+        match value {
+            AlignmentHorizontal::Center => Self::center(),
+            AlignmentHorizontal::Left => Self::left(),
+            AlignmentHorizontal::Right => Self::right(),
+        }
+    }
+}
+
+impl From<AlignmentVertical> for Alignment {
+    fn from(value: AlignmentVertical) -> Self {
+        match value {
+            AlignmentVertical::Center => Self::center_vertical(),
+            AlignmentVertical::Top => Self::top(),
+            AlignmentVertical::Bottom => Self::bottom(),
+        }
+    }
+}
+
+impl From<Alignment> for Option<AlignmentHorizontal> {
+    fn from(value: Alignment) -> Self {
+        match value.inner {
+            Horizontal(alignment) => Some(alignment),
+            Vertical(_) => None,
+        }
+    }
+}
+
+impl From<Alignment> for Option<AlignmentVertical> {
+    fn from(value: Alignment) -> Self {
+        match value.inner {
+            Vertical(alignment) => Some(alignment),
+            Horizontal(_) => None,
+        }
     }
 }

@@ -92,6 +92,12 @@ impl From<Row> for usize {
     }
 }
 
+impl From<usize> for Row {
+    fn from(index: usize) -> Row {
+        Row { index }
+    }
+}
+
 /// This structure represents the first row of a [`Table`].
 /// It's often contains headers data.
 ///

@@ -1,5 +1,7 @@
 use std::cmp;
 
+use papergrid::{config::AlignmentVertical, util::string::count_lines};
+
 use crate::{
     grid::{
         config::{AlignmentHorizontal, ColoredConfig, Position},
@@ -11,8 +13,9 @@ use crate::{
         util::string::string_width,
     },
     settings::{
+        object::{Column, Row},
         style::{LineText, Offset},
-        Color, TableOption,
+        Alignment, Color, TableOption,
     },
 };
 
@@ -32,7 +35,7 @@ use crate::{
 /// ];
 ///
 /// let mut table = Table::from_iter(data);
-/// table.with(ColumnNames::new(["head1", "head2"]).set_line(2).set_alignment(AlignmentHorizontal::Right));
+/// table.with(ColumnNames::new(["head1", "head2"]).line(2).alignment(AlignmentHorizontal::Right));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -69,7 +72,7 @@ use crate::{
 pub struct ColumnNames {
     names: Option<Vec<String>>,
     colors: Option<ListValue<Color>>,
-    alignments: ListValue<AlignmentHorizontal>,
+    alignments: ListValue<Alignment>,
     line: usize,
 }
 
@@ -79,7 +82,7 @@ impl Default for ColumnNames {
             names: Default::default(),
             colors: Default::default(),
             line: Default::default(),
-            alignments: ListValue::from(AlignmentHorizontal::Left),
+            alignments: ListValue::Static(Alignment::left()),
         }
     }
 }
@@ -205,7 +208,7 @@ impl ColumnNames {
     /// ```
     pub fn alignment<T>(self, alignment: T) -> Self
     where
-        T: Into<ListValue<AlignmentHorizontal>>,
+        T: Into<ListValue<Alignment>>,
     {
         Self {
             names: self.names,
@@ -232,43 +235,128 @@ impl TableOption<VecRecords<CellInfo<String>>, CompleteDimensionVecRecords<'_>, 
             return;
         }
 
-        let names = match self.names {
-            Some(names) => names,
-            None => collect_head(records),
-        };
+        let alignemnt_horizontal = convert_alignment_value(self.alignments.clone());
+        let alignemnt_vertical = convert_alignment_value(self.alignments.clone());
 
-        let names = names
-            .iter()
-            .take(count_columns)
-            .map(|name| name.lines().next().unwrap_or(""))
-            .collect::<Vec<_>>();
+        if let Some(alignment) = alignemnt_horizontal {
+            let names = get_column_names(records, self.names);
+            let names = vec_set_size(names, records.count_columns());
+            set_column_text(names, self.line, alignment, self.colors, records, dims, cfg);
+            return;
+        }
 
-        dims.estimate(&*records, cfg);
+        if let Some(alignment) = alignemnt_vertical {
+            let names = get_column_names(records, self.names);
+            let names = vec_set_size(names, records.count_rows());
+            set_row_text(names, self.line, alignment, self.colors, records, dims, cfg);
+            return;
+        }
 
-        let widths = (0..count_columns)
-            .map(|column| {
-                let text = names.get(column).unwrap_or(&"");
-                let width = dims.get_width(column);
+        let names = get_column_names(records, self.names);
+        let names = vec_set_size(names, records.count_columns());
+        let alignment = ListValue::Static(AlignmentHorizontal::Left);
+        set_column_text(names, self.line, alignment, self.colors, records, dims, cfg);
+    }
+}
 
-                (width, text)
-            })
-            .map(|(width, text)| cmp::max(string_width(text), width))
-            .collect::<Vec<_>>();
+fn set_column_text(
+    names: Vec<String>,
+    target_line: usize,
+    alignments: ListValue<AlignmentHorizontal>,
+    colors: Option<ListValue<Color>>,
+    records: &mut VecRecords<CellInfo<String>>,
+    dims: &mut CompleteDimensionVecRecords<'_>,
+    cfg: &mut ColoredConfig,
+) {
+    dims.estimate(&*records, cfg);
 
-        dims.set_widths(widths.clone());
+    let count_columns = names.len();
+    let widths = names
+        .iter()
+        .enumerate()
+        .map(|(col, name)| (cmp::max(string_width(name), dims.get_width(col))))
+        .collect::<Vec<_>>();
 
-        let mut total_width = 0;
-        for (i, (width, name)) in widths.into_iter().zip(names).enumerate() {
-            let color = get_color(&self.colors, i);
-            let alignment = get_alignment(&self.alignments, i);
-            let left_vertical = get_vertical_width(cfg, (self.line, i), count_columns);
-            let grid_offset = total_width + left_vertical;
-            let btext = get_border_text(name, grid_offset, width, alignment, self.line, color);
-            btext.change(records, cfg, dims);
+    dims.set_widths(widths.clone());
 
-            total_width += width + left_vertical;
+    let mut total_width = 0;
+    for (column, (width, name)) in widths.into_iter().zip(names).enumerate() {
+        let color = get_color(&colors, column);
+        let alignment = alignments.get(column).unwrap_or(AlignmentHorizontal::Left);
+        let left_vertical = get_vertical_width(cfg, (target_line, column), count_columns);
+        let grid_offset =
+            total_width + left_vertical + get_horizontal_indent(&name, alignment, width);
+        let line = Row::from(target_line);
+
+        let linetext = create_line_text(&name, grid_offset, color, line);
+        linetext.change(records, cfg, dims);
+
+        total_width += width + left_vertical;
+    }
+}
+
+fn set_row_text(
+    names: Vec<String>,
+    target_line: usize,
+    alignments: ListValue<AlignmentVertical>,
+    colors: Option<ListValue<Color>>,
+    records: &mut VecRecords<CellInfo<String>>,
+    dims: &mut CompleteDimensionVecRecords<'_>,
+    cfg: &mut ColoredConfig,
+) {
+    dims.estimate(&*records, cfg);
+
+    let count_rows = names.len();
+    let heights = names
+        .iter()
+        .enumerate()
+        .map(|(row, name)| (cmp::max(count_lines(name), dims.get_height(row))))
+        .collect::<Vec<_>>();
+
+    dims.set_heights(heights.clone());
+
+    let mut total_height = 0;
+    for (row, (width, name)) in heights.into_iter().zip(names).enumerate() {
+        let color = get_color(&colors, row);
+        let alignment = alignments.get(row).unwrap_or(AlignmentVertical::Top);
+        let top_horizontal = get_horizontal_width(cfg, (row, target_line), count_rows);
+        let grid_offset =
+            total_height + top_horizontal + get_vertical_indent(&name, alignment, width);
+        let line = Column::from(target_line);
+
+        let linetext = create_line_text(&name, grid_offset, color, line);
+        linetext.change(records, cfg, dims);
+
+        total_height += width + top_horizontal;
+    }
+}
+
+fn get_column_names(
+    records: &mut VecRecords<CellInfo<String>>,
+    opt: Option<Vec<String>>,
+) -> Vec<String> {
+    match opt {
+        Some(names) => names
+            .into_iter()
+            .map(|name| name.lines().next().unwrap_or("").to_string())
+            .collect::<Vec<_>>(),
+        None => collect_head(records),
+    }
+}
+
+fn vec_set_size(mut data: Vec<String>, size: usize) -> Vec<String> {
+    match data.len().cmp(&size) {
+        cmp::Ordering::Equal => {}
+        cmp::Ordering::Less => {
+            let additional_size = size - data.len();
+            data.extend(std::iter::repeat(String::new()).take(additional_size));
+        }
+        cmp::Ordering::Greater => {
+            data.truncate(size);
         }
     }
+
+    data
 }
 
 fn collect_head(records: &mut VecRecords<CellInfo<String>>) -> Vec<String> {
@@ -277,7 +365,7 @@ fn collect_head(records: &mut VecRecords<CellInfo<String>>) -> Vec<String> {
     }
 
     let names = (0..records.count_columns())
-        .map(|column| records.get_text((0, column)))
+        .map(|column| records.get_line((0, column), 0))
         .map(ToString::to_string)
         .collect();
 
@@ -286,17 +374,9 @@ fn collect_head(records: &mut VecRecords<CellInfo<String>>) -> Vec<String> {
     names
 }
 
-fn get_border_text(
-    text: &str,
-    offset: usize,
-    available: usize,
-    align: AlignmentHorizontal,
-    line: usize,
-    color: Option<&Color>,
-) -> LineText<usize> {
-    let left_indent = get_indent(text, align, available);
-    let offset = Offset::Begin(offset + left_indent);
-    let mut btext = LineText::new(text).horizontal(line).offset(offset);
+fn create_line_text<T>(text: &str, offset: usize, color: Option<&Color>, line: T) -> LineText<T> {
+    let offset = Offset::Begin(offset);
+    let mut btext = LineText::new(text).line(line).offset(offset);
     if let Some(color) = color {
         btext = btext.color(color.clone());
     }
@@ -312,18 +392,19 @@ fn get_color(colors: &Option<ListValue<Color>>, i: usize) -> Option<&Color> {
     }
 }
 
-fn get_alignment(alignments: &ListValue<AlignmentHorizontal>, i: usize) -> AlignmentHorizontal {
-    match alignments {
-        ListValue::List(list) => list.get(i).copied().unwrap_or(AlignmentHorizontal::Left),
-        ListValue::Static(alignment) => *alignment,
-    }
-}
-
-fn get_indent(text: &str, align: AlignmentHorizontal, available: usize) -> usize {
+fn get_horizontal_indent(text: &str, align: AlignmentHorizontal, available: usize) -> usize {
     match align {
         AlignmentHorizontal::Left => 0,
         AlignmentHorizontal::Right => available - string_width(text),
         AlignmentHorizontal::Center => (available - string_width(text)) / 2,
+    }
+}
+
+fn get_vertical_indent(text: &str, align: AlignmentVertical, available: usize) -> usize {
+    match align {
+        AlignmentVertical::Top => 0,
+        AlignmentVertical::Bottom => available - count_lines(text),
+        AlignmentVertical::Center => (available - count_lines(text)) / 2,
     }
 }
 
@@ -333,10 +414,48 @@ fn get_vertical_width(cfg: &mut ColoredConfig, pos: Position, count_columns: usi
         .unwrap_or(0)
 }
 
+fn get_horizontal_width(cfg: &mut ColoredConfig, pos: Position, count_rows: usize) -> usize {
+    cfg.get_horizontal(pos, count_rows)
+        .and_then(unicode_width::UnicodeWidthChar::width)
+        .unwrap_or(0)
+}
+
+fn convert_alignment_value<T>(value: ListValue<Alignment>) -> Option<ListValue<T>>
+where
+    Option<T>: From<Alignment>,
+{
+    match value {
+        ListValue::List(list) => {
+            let new = list
+                .iter()
+                .flat_map(|value| Option::from(*value))
+                .collect::<Vec<_>>();
+            if new.len() == list.len() {
+                Some(ListValue::List(new))
+            } else {
+                None
+            }
+        }
+        ListValue::Static(value) => Option::from(value).map(ListValue::Static),
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum ListValue<T> {
     List(Vec<T>),
     Static(T),
+}
+
+impl<T> ListValue<T> {
+    fn get(&self, i: usize) -> Option<T>
+    where
+        T: Copy,
+    {
+        match self {
+            ListValue::List(list) => list.get(i).copied(),
+            ListValue::Static(alignment) => Some(*alignment),
+        }
+    }
 }
 
 impl<T> From<T> for ListValue<T> {
