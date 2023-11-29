@@ -129,7 +129,7 @@ impl ColumnNames {
     /// use tabled::settings::{Color, themes::ColumnNames};
     ///
     /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
-    /// table.with(ColumnNames::new(["head1", "head2"]).set_color(vec![Color::FG_RED]));
+    /// table.with(ColumnNames::new(["head1", "head2"]).color(vec![Color::FG_RED]));
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -138,7 +138,7 @@ impl ColumnNames {
     ///      +-------+-------+"
     /// );
     /// ```
-    pub fn set_color<T>(self, color: T) -> Self
+    pub fn color<T>(self, color: T) -> Self
     where
         T: Into<ListValue<Color>>,
     {
@@ -161,7 +161,7 @@ impl ColumnNames {
     /// use tabled::{Table, settings::themes::ColumnNames};
     ///
     /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
-    /// table.with(ColumnNames::new(["head1", "head2"]).set_line(1));
+    /// table.with(ColumnNames::new(["head1", "head2"]).line(1));
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -170,7 +170,7 @@ impl ColumnNames {
     ///      +head1--+head2--+"
     /// );
     /// ```
-    pub fn set_line(self, i: usize) -> Self {
+    pub fn line(self, i: usize) -> Self {
         Self {
             names: self.names,
             line: i,
@@ -194,7 +194,7 @@ impl ColumnNames {
     /// };
     ///
     /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
-    /// table.with(ColumnNames::new(["head1", "head2"]).set_alignment(AlignmentHorizontal::Right));
+    /// table.with(ColumnNames::new(["head1", "head2"]).alignment(AlignmentHorizontal::Right));
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -203,7 +203,7 @@ impl ColumnNames {
     ///      +-------+-------+"
     /// );
     /// ```
-    pub fn set_alignment<T>(self, alignment: T) -> Self
+    pub fn alignment<T>(self, alignment: T) -> Self
     where
         T: Into<ListValue<AlignmentHorizontal>>,
     {
