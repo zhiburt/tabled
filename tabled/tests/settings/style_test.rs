@@ -2653,3 +2653,65 @@ test_table!(
     "e 1 |   1-0    |   1-1    |"
     "+---+----------+----------+"
 );
+
+test_table!(
+    line_text_vertical_1,
+    Matrix::table(2, 2).with(LineText::new("-Tablex").line(Columns::last())),
+    "+---+----------+-----------"
+    "| N | column 0 | column 1 T"
+    "+---+----------+----------a"
+    "| 0 |   0-0    |   0-1    b"
+    "+---+----------+----------l"
+    "| 1 |   1-0    |   1-1    e"
+    "+---+----------+----------x"
+);
+
+test_table!(
+    line_text_vertical_2,
+    Matrix::table(2, 2).with(LineText::new("-Tablex").line(Columns::single(2))),
+    "+---+---------------------+"
+    "| N | column 0 T column 1 |"
+    "+---+----------a----------+"
+    "| 0 |   0-0    b   0-1    |"
+    "+---+----------l----------+"
+    "| 1 |   1-0    e   1-1    |"
+    "+---+----------x----------+"
+);
+
+test_table!(
+    line_text_vertical_3,
+    Matrix::table(2, 2).with(LineText::new("-Tablex").line(Columns::single(2)).offset(2)),
+    "+---+----------+----------+"
+    "| N | column 0 | column 1 |"
+    "+---+---------------------+"
+    "| 0 |   0-0    b   0-1    |"
+    "+---+----------l----------+"
+    "| 1 |   1-0    e   1-1    |"
+    "+---+----------x----------+"
+);
+
+test_table!(
+    line_text_vertical_4,
+    Matrix::table(2, 2)
+        .with(Padding::new(0, 0, 2, 2))
+        .with(LineText::new("-Tablex").line(Columns::single(2)).offset(2).color(Color::BG_RED)),
+    "+-+--------+--------+"
+    "| |        |        |"
+    "| |        \u{1b}[41m-\u{1b}[49m        |"
+    "|N|column 0\u{1b}[41mT\u{1b}[49mcolumn 1|"
+    "| |        \u{1b}[41ma\u{1b}[49m        |"
+    "| |        \u{1b}[41mb\u{1b}[49m        |"
+    "+-+--------\u{1b}[41ml\u{1b}[49m--------+"
+    "| |        \u{1b}[41me\u{1b}[49m        |"
+    "| |        \u{1b}[41mx\u{1b}[49m        |"
+    "|0|  0-0   |  0-1   |"
+    "| |        |        |"
+    "| |        |        |"
+    "+-+--------+--------+"
+    "| |        |        |"
+    "| |        |        |"
+    "|1|  1-0   |  1-1   |"
+    "| |        |        |"
+    "| |        |        |"
+    "+-+--------+--------+"
+);

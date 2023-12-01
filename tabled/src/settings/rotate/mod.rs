@@ -68,88 +68,107 @@ where
     R: Records + ExactRecords + Resizable,
 {
     fn change(self, records: &mut R, _: &mut C, _: &mut D) {
-        let count_rows = records.count_rows();
-        let count_cols = records.count_columns();
-
         match self {
-            Self::Left => {
-                let size = max(count_rows, count_cols);
+            Self::Left => rotate_left(records),
+            Self::Right => rotate_right(records),
+            Self::Bottom | Self::Top => rotate_horizontal(records),
+        }
+    }
+}
 
-                {
-                    for _ in count_rows..size {
-                        records.push_row();
-                    }
+fn rotate_horizontal<R>(records: &mut R)
+where
+    R: Records + ExactRecords + Resizable,
+{
+    let count_rows = records.count_rows();
+    let count_cols = records.count_columns();
 
-                    for _ in count_cols..size {
-                        records.push_column();
-                    }
-                }
+    for row in 0..count_rows / 2 {
+        for col in 0..count_cols {
+            let last_row = count_rows - row - 1;
+            records.swap((last_row, col), (row, col));
+        }
+    }
+}
 
-                for col in 0..size {
-                    for row in col..size {
-                        records.swap((col, row), (row, col));
-                    }
-                }
+fn rotate_left<R>(records: &mut R)
+where
+    R: Records + ExactRecords + Resizable,
+{
+    let count_rows = records.count_rows();
+    let count_cols = records.count_columns();
+    let size = max(count_rows, count_cols);
 
-                for row in 0..count_cols / 2 {
-                    records.swap_row(row, count_cols - row - 1);
-                }
+    {
+        for _ in count_rows..size {
+            records.push_row();
+        }
 
-                {
-                    for (shift, row) in (count_rows..size).enumerate() {
-                        let row = row - shift;
-                        records.remove_column(row);
-                    }
+        for _ in count_cols..size {
+            records.push_column();
+        }
+    }
 
-                    for (shift, col) in (count_cols..size).enumerate() {
-                        let col = col - shift;
-                        records.remove_row(col);
-                    }
-                }
-            }
-            Self::Right => {
-                let size = max(count_rows, count_cols);
+    for col in 0..size {
+        for row in col..size {
+            records.swap((col, row), (row, col));
+        }
+    }
 
-                {
-                    for _ in count_rows..size {
-                        records.push_row();
-                    }
+    for row in 0..count_cols / 2 {
+        records.swap_row(row, count_cols - row - 1);
+    }
 
-                    for _ in count_cols..size {
-                        records.push_column();
-                    }
-                }
+    {
+        for (shift, row) in (count_rows..size).enumerate() {
+            let row = row - shift;
+            records.remove_column(row);
+        }
 
-                for col in 0..size {
-                    for row in col..size {
-                        records.swap((col, row), (row, col));
-                    }
-                }
+        for (shift, col) in (count_cols..size).enumerate() {
+            let col = col - shift;
+            records.remove_row(col);
+        }
+    }
+}
 
-                for col in 0..count_rows / 2 {
-                    records.swap_column(col, count_rows - col - 1);
-                }
+fn rotate_right<R>(records: &mut R)
+where
+    R: Records + ExactRecords + Resizable,
+{
+    let count_rows = records.count_rows();
+    let count_cols = records.count_columns();
+    let size = max(count_rows, count_cols);
 
-                {
-                    for (shift, row) in (count_rows..size).enumerate() {
-                        let row = row - shift;
-                        records.remove_column(row);
-                    }
+    {
+        for _ in count_rows..size {
+            records.push_row();
+        }
 
-                    for (shift, col) in (count_cols..size).enumerate() {
-                        let col = col - shift;
-                        records.remove_row(col);
-                    }
-                }
-            }
-            Self::Bottom | Self::Top => {
-                for row in 0..count_rows / 2 {
-                    for col in 0..count_cols {
-                        let last_row = count_rows - row - 1;
-                        records.swap((last_row, col), (row, col));
-                    }
-                }
-            }
+        for _ in count_cols..size {
+            records.push_column();
+        }
+    }
+
+    for col in 0..size {
+        for row in col..size {
+            records.swap((col, row), (row, col));
+        }
+    }
+
+    for col in 0..count_rows / 2 {
+        records.swap_column(col, count_rows - col - 1);
+    }
+
+    {
+        for (shift, row) in (count_rows..size).enumerate() {
+            let row = row - shift;
+            records.remove_column(row);
+        }
+
+        for (shift, col) in (count_cols..size).enumerate() {
+            let col = col - shift;
+            records.remove_row(col);
         }
     }
 }

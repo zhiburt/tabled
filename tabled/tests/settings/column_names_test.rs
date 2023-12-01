@@ -1,7 +1,7 @@
 #![cfg(feature = "std")]
 
 use tabled::{
-    settings::{object::Column, themes::ColumnNames, Alignment, Color, Padding},
+    settings::{themes::ColumnNames, Alignment, Color, Padding},
     Table,
 };
 
@@ -110,6 +110,20 @@ test_table!(
     "| and   | looooong |"
     "|       | word     |"
     "+-------+----------+"
+);
+
+test_table!(
+    alignment_center_long,
+    Table::new([("Hello", "World"), ("and", "looooong\nword")])
+        .with(ColumnNames::new(["&&&&&&&str", "&&&&&&&str"]).alignment(Alignment::center())),
+    "+&&&&&&&str+&&&&&&&str+"
+    "| &str     | &str     |"
+    "+----------+----------+"
+    "| Hello    | World    |"
+    "+----------+----------+"
+    "| and      | looooong |"
+    "|          | word     |"
+    "+----------+----------+"
 );
 
 test_table!(

@@ -57,3 +57,45 @@ where
         data.swap_column(col, count_columns - col - 1);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use papergrid::records::Records;
+
+    use super::{reverse_columns, reverse_rows};
+
+    #[test]
+    fn test_reverse_rows() {
+        assert_eq!(
+            rev_rows(vec![vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 8]]),
+            vec![vec![6, 7, 8], vec![3, 4, 5], vec![0, 1, 2]]
+        )
+    }
+
+    fn rev_rows(mut data: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
+        reverse_rows(&mut data);
+        data
+    }
+
+    fn rev_cols(mut data: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
+        reverse_columns(&mut data);
+        data
+    }
+
+
+    impl Records for Vec<Vec<usize>> {
+        type Iter = std::vec::IntoIter<Vec<usize>>;
+
+        fn iter_rows(self) -> <Self::Iter as papergrid::records::IntoRecords>::IterRows {
+            todo!()
+        }
+
+        fn count_columns(&self) -> usize {
+            todo!()
+        }
+
+        fn hint_count_rows(&self) -> Option<usize> {
+            todo!()
+        }
+    }
+}
