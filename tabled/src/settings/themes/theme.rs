@@ -12,6 +12,11 @@
 use core::iter::FromIterator;
 use std::collections::HashMap;
 
+use papergrid::{
+    config::{AlignmentHorizontal, AlignmentVertical},
+    records::PeekableRecords,
+};
+
 use crate::{
     grid::{
         color::AnsiColor,
@@ -19,12 +24,10 @@ use crate::{
             Border, Borders, ColoredConfig, CompactConfig, CompactMultilineConfig, HorizontalLine,
             VerticalLine,
         },
-        records::Records,
+        records::{ExactRecords, Records, RecordsMut, Resizable},
     },
-    settings::{style::Style, Color, TableOption},
+    settings::{style::Style, themes::Colorization, Alignment, Color, Rotate, TableOption},
 };
-
-use super::Colorization;
 
 /// A raw style data, which can be produced safely from [`Style`].
 ///
@@ -52,22 +55,23 @@ struct BorderLines {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct Layout {
-    orientation: Orientation,
+    orientation: HeadPosition,
     footer: bool,
     reverse_rows: bool,
     reverse_column: bool,
     move_header_on_borders: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum Orientation {
-    TopBottom,
-    BottomTop,
-    LeftRight,
-    RightLeft,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+enum HeadPosition {
+    Top,
+    Bottom,
+    Left,
+    Right,
 }
 
 impl Theme {
+    /// Build a theme out of a style builder.
     pub const fn from_style<T, B, L, R, H, V, const HS: usize, const VS: usize>(
         style: Style<T, B, L, R, H, V, HS, VS>,
     ) -> Self {
@@ -78,7 +82,7 @@ impl Theme {
         Self::_new(
             TableBorders::new(chars, Borders::empty()),
             BorderLines::new(horizontal1, None, None),
-            Layout::new(Orientation::TopBottom, false, false, false, false),
+            Layout::new(HeadPosition::Top, false, false, false, false),
             None,
         )
     }
@@ -92,7 +96,7 @@ impl Theme {
         Self::_new(
             TableBorders::new(Borders::empty(), Borders::empty()),
             BorderLines::new(None, None, None),
-            Layout::new(Orientation::TopBottom, false, false, false, false),
+            Layout::new(HeadPosition::Top, false, false, false, false),
             None,
         )
     }
@@ -328,7 +332,9 @@ impl Theme {
             right_bottom_corner: self.border.colors.bottom_right.as_ref(),
         }
     }
+}
 
+impl Theme {
     /// Set horizontal border lines.
     ///
     /// # Example
@@ -442,6 +448,24 @@ impl Theme {
 }
 
 impl Theme {
+    pub fn reverse_data(&mut self, reverse: bool) {
+        self.layout.reverse_rows = reverse;
+    }
+
+    pub fn reverse_head(&mut self, reverse: bool) {
+        self.layout.reverse_column = reverse;
+    }
+
+    pub fn set_footer(&mut self, footer: bool) {
+        self.layout.footer = footer;
+    }
+
+    pub fn set_head_alignment(&mut self, position: Alignment) {
+        self.layout.orientation = convert_orientation(position);
+    }
+}
+
+impl Theme {
     const fn _new(
         border: TableBorders,
         lines: BorderLines,
@@ -462,7 +486,7 @@ impl From<Borders<char>> for Theme {
         Self::_new(
             TableBorders::new(borders, Borders::empty()),
             BorderLines::new(None, None, None),
-            Layout::new(Orientation::TopBottom, false, false, false, false),
+            Layout::new(HeadPosition::Top, false, false, false, false),
             None,
         )
     }
@@ -470,12 +494,26 @@ impl From<Borders<char>> for Theme {
 
 impl<R, D> TableOption<R, D, ColoredConfig> for Theme
 where
-    R: Records,
+    R: Records + Resizable + ExactRecords + PeekableRecords + RecordsMut<String>,
 {
-    fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+    fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         cfg_clear_borders(cfg);
         cfg_set_custom_lines(cfg, self.lines);
         cfg_set_borders(cfg, self.border);
+
+        move_head_if(records, self.layout.orientation);
+
+        if self.layout.reverse_column {
+            reverse_head(records, self.layout.orientation);
+        }
+
+        if self.layout.reverse_rows {
+            reverse_data(records, self.layout.orientation);
+        }
+
+        if self.layout.footer {
+            copy_head(records, self.layout.orientation);
+        }
     }
 }
 
@@ -493,13 +531,6 @@ impl<R, D> TableOption<R, D, CompactMultilineConfig> for Theme {
 
 impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
     From<Style<T, B, L, R, H, V, HSIZE, VSIZE>> for Theme
-where
-    T: Copy,
-    B: Copy,
-    L: Copy,
-    R: Copy,
-    H: Copy,
-    V: Copy,
 {
     fn from(style: Style<T, B, L, R, H, V, HSIZE, VSIZE>) -> Self {
         Self::from_style(style)
@@ -516,9 +547,47 @@ impl From<ColoredConfig> for Theme {
         Self::_new(
             TableBorders::new(borders, colors),
             BorderLines::new(None, Some(horizontals), Some(verticals)),
-            Layout::new(Orientation::TopBottom, false, false, false, false),
+            Layout::new(HeadPosition::Top, false, false, false, false),
             None,
         )
+    }
+}
+
+impl TableBorders {
+    const fn new(chars: Borders<char>, colors: Borders<Color>) -> Self {
+        Self { chars, colors }
+    }
+}
+
+impl BorderLines {
+    const fn new(
+        horizontal1: Option<HorizontalLine<char>>,
+        horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
+        verticals: Option<HashMap<usize, VerticalLine<char>>>,
+    ) -> Self {
+        Self {
+            horizontal1,
+            horizontals,
+            verticals,
+        }
+    }
+}
+
+impl Layout {
+    const fn new(
+        orientation: HeadPosition,
+        footer: bool,
+        reverse_rows: bool,
+        reverse_column: bool,
+        move_header_on_borders: bool,
+    ) -> Self {
+        Self {
+            orientation,
+            footer,
+            reverse_rows,
+            reverse_column,
+            move_header_on_borders,
+        }
     }
 }
 
@@ -616,40 +685,168 @@ const fn hlines_find<const N: usize>(
     line
 }
 
-impl TableBorders {
-    const fn new(chars: Borders<char>, colors: Borders<Color>) -> Self {
-        Self { chars, colors }
+fn reverse_data<R>(records: &mut R, orientation: HeadPosition)
+where
+    R: Records + Resizable + ExactRecords + PeekableRecords + RecordsMut<String>,
+{
+    let count_rows = records.count_rows();
+    let count_columns = records.count_columns();
+    if count_columns < 2 || count_rows < 2 {
+        return;
+    }
+
+    println!("{orientation:?} {count_rows}");
+
+    match orientation {
+        HeadPosition::Top => reverse_rows(records, 1, count_rows),
+        HeadPosition::Bottom => reverse_rows(records, 0, count_rows - 2),
+        HeadPosition::Left => reverse_columns(records, 1, count_columns),
+        HeadPosition::Right => reverse_columns(records, 0, count_columns - 2),
     }
 }
 
-impl BorderLines {
-    const fn new(
-        horizontal1: Option<HorizontalLine<char>>,
-        horizontals: Option<HashMap<usize, HorizontalLine<char>>>,
-        verticals: Option<HashMap<usize, VerticalLine<char>>>,
-    ) -> Self {
-        Self {
-            horizontal1,
-            horizontals,
-            verticals,
+fn reverse_head<R>(records: &mut R, orientation: HeadPosition)
+where
+    R: Records + Resizable + ExactRecords + PeekableRecords + RecordsMut<String>,
+{
+    match orientation {
+        HeadPosition::Top | HeadPosition::Bottom => {
+            reverse_columns(records, 0, records.count_columns())
+        }
+        HeadPosition::Left | HeadPosition::Right => reverse_rows(records, 0, records.count_rows()),
+    }
+}
+
+fn reverse_rows<R>(data: &mut R, from: usize, to: usize)
+where
+    R: Resizable,
+{
+    for row in from..to / 2 {
+        data.swap_row(row, to - row);
+    }
+}
+
+fn reverse_columns<R>(data: &mut R, from: usize, to: usize)
+where
+    R: Resizable,
+{
+    for col in from..to / 2 {
+        data.swap_column(col, to - col);
+    }
+}
+
+fn copy_head<R>(records: &mut R, orientation: HeadPosition)
+where
+    R: Records + Resizable + ExactRecords + PeekableRecords + RecordsMut<String>,
+{
+    let head = collect_head_by(records, orientation);
+    match orientation {
+        HeadPosition::Top => cp_row(records, head, records.count_rows()),
+        HeadPosition::Bottom => cp_row(records, head, 0),
+        HeadPosition::Left => cp_column(records, head, records.count_columns()),
+        HeadPosition::Right => cp_column(records, head, 0),
+    }
+}
+
+fn collect_head_by<R>(records: &mut R, orientation: HeadPosition) -> Vec<String>
+where
+    R: Records + PeekableRecords + ExactRecords,
+{
+    match orientation {
+        HeadPosition::Top => collect_head(records, 0),
+        HeadPosition::Bottom => collect_head(records, records.count_rows() - 1),
+        HeadPosition::Left => collect_head_vertical(records, 0),
+        HeadPosition::Right => collect_head_vertical(records, records.count_columns() - 1),
+    }
+}
+
+fn cp_row<R>(records: &mut R, row: Vec<String>, pos: usize)
+where
+    R: Records + Resizable + ExactRecords + PeekableRecords + RecordsMut<String>,
+{
+    records.insert_row(pos);
+
+    for (col, text) in row.into_iter().enumerate() {
+        records.set((pos, col), text);
+    }
+}
+
+fn cp_column<R>(records: &mut R, column: Vec<String>, pos: usize)
+where
+    R: Records + Resizable + ExactRecords + PeekableRecords + RecordsMut<String>,
+{
+    records.insert_column(pos);
+
+    for (row, text) in column.into_iter().enumerate() {
+        records.set((row, pos), text);
+    }
+}
+
+fn move_head_if<R>(records: &mut R, orientation: HeadPosition)
+where
+    R: Records + Resizable + ExactRecords + PeekableRecords + RecordsMut<String>,
+{
+    match orientation {
+        HeadPosition::Top => {}
+        HeadPosition::Bottom => {
+            let head = collect_head(records, 0);
+            push_row(records, head);
+            records.remove_row(0);
+        }
+        HeadPosition::Left => {
+            Rotate::Left.change(records, &mut (), &mut ());
+            Rotate::Bottom.change(records, &mut (), &mut ());
+        }
+        HeadPosition::Right => {
+            Rotate::Right.change(records, &mut (), &mut ());
         }
     }
 }
 
-impl Layout {
-    const fn new(
-        orientation: Orientation,
-        footer: bool,
-        reverse_rows: bool,
-        reverse_column: bool,
-        move_header_on_borders: bool,
-    ) -> Self {
-        Self {
-            orientation,
-            footer,
-            reverse_rows,
-            reverse_column,
-            move_header_on_borders,
-        }
+fn collect_head<R>(records: &mut R, row: usize) -> Vec<String>
+where
+    R: Records + PeekableRecords,
+{
+    (0..records.count_columns())
+        .map(|column| records.get_text((row, column)))
+        .map(ToString::to_string)
+        .collect()
+}
+
+fn collect_head_vertical<R>(records: &mut R, column: usize) -> Vec<String>
+where
+    R: Records + PeekableRecords + ExactRecords,
+{
+    (0..records.count_rows())
+        .map(|row| records.get_text((row, column)))
+        .map(ToString::to_string)
+        .collect()
+}
+
+fn push_row<R>(records: &mut R, row: Vec<String>)
+where
+    R: Records + ExactRecords + Resizable + RecordsMut<String>,
+{
+    records.push_row();
+
+    let last_row = records.count_rows() - 1;
+
+    for (col, text) in row.into_iter().enumerate() {
+        records.set((last_row, col), text);
+    }
+}
+
+fn convert_orientation(position: Alignment) -> HeadPosition {
+    let h = Option::from(position);
+    let v = Option::from(position);
+
+    match (h, v) {
+        (None, Some(AlignmentVertical::Top)) => HeadPosition::Top,
+        (None, Some(AlignmentVertical::Bottom)) => HeadPosition::Bottom,
+        (Some(AlignmentHorizontal::Left), None) => HeadPosition::Left,
+        (Some(AlignmentHorizontal::Right), None) => HeadPosition::Right,
+        (None, Some(AlignmentVertical::Center)) => HeadPosition::Top,
+        (Some(AlignmentHorizontal::Center), None) => HeadPosition::Top,
+        (None, None) | (Some(_), Some(_)) => HeadPosition::Top,
     }
 }

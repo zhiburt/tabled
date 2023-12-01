@@ -280,7 +280,7 @@ fn set_vertical_chars<D>(
 
         let mut b = cfg.get_border((0, line), shape);
         b.left_top_corner = b.left_top_corner.map(|_| c);
-        cfg.set_border((line, 0), b);
+        cfg.set_border((0, line), b);
 
         if let Some(color) = color.as_ref() {
             let mut b = cfg.get_border_color((0, line), shape).cloned();

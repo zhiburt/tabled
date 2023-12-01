@@ -20,4 +20,5 @@ mod shadow_test;
 mod span_test;
 mod split_test;
 mod style_test;
+mod theme_test;
 mod width_test;
