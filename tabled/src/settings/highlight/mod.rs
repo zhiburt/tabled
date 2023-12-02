@@ -5,10 +5,9 @@
 
 use std::collections::HashSet;
 
-use papergrid::color::AnsiColor;
-
 use crate::{
     grid::{
+        color::AnsiColor,
         config::{Border as GridBorder, ColoredConfig, Entity, Position, SpannedConfig},
         records::{ExactRecords, Records},
     },

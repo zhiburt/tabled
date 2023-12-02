@@ -1,13 +1,9 @@
 use std::borrow::Cow;
 
-use papergrid::{
-    dimension::spanned_vec_records::SpannedVecRecordsDimension, records::vec_records::VecRecords,
-};
-
 use crate::grid::{
     config::{ColoredConfig, SpannedConfig},
-    dimension::{Dimension, Estimate},
-    records::vec_records::Cell,
+    dimension::{Dimension, Estimate, SpannedVecRecordsDimension},
+    records::vec_records::{Cell, VecRecords},
 };
 
 /// CompleteDimension is a [`Dimension`] implementation for a [`Table`]

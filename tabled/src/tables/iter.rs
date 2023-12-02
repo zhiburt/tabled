@@ -32,12 +32,9 @@ use crate::{
     grid::{
         colors::NoColors,
         config::{AlignmentHorizontal, CompactConfig, Indent, Sides, SpannedConfig},
-        dimension::{CompactGridDimension, DimensionValue, StaticDimension},
+        dimension::{CompactGridDimension, Dimension, DimensionValue, StaticDimension},
         records::{
-            into_records::{
-                truncate_records::ExactValue, BufColumns, BufRows, LimitColumns, LimitRows,
-                TruncateContent,
-            },
+            into_records::{BufRecords, LimitColumns, LimitRows, TruncateContent},
             IntoRecords, IterRecords,
         },
         Grid,
@@ -137,9 +134,11 @@ impl<I> IterTable<I> {
     pub fn to_string(self) -> String
     where
         I: IntoRecords,
+        I::Cell: AsRef<str>,
     {
         let mut buf = String::new();
-        self.fmt(&mut buf).expect("safe");
+        self.fmt(&mut buf)
+            .expect("according to a doc is safe to fmt() a string");
 
         buf
     }
@@ -147,8 +146,9 @@ impl<I> IterTable<I> {
     /// Format table into [`io::Write`]r.
     pub fn build<W>(self, writer: W) -> io::Result<()>
     where
-        I: IntoRecords,
         W: io::Write,
+        I: IntoRecords,
+        I::Cell: AsRef<str>,
     {
         let writer = UTF8Writer::new(writer);
         self.fmt(writer)
@@ -158,26 +158,27 @@ impl<I> IterTable<I> {
     /// Format table into [fmt::Write]er.
     pub fn fmt<W>(self, writer: W) -> fmt::Result
     where
-        I: IntoRecords,
         W: fmt::Write,
+        I: IntoRecords,
+        I::Cell: AsRef<str>,
     {
         build_grid(writer, self.records, self.cfg, self.table)
     }
 }
 
-fn build_grid<W: fmt::Write, I: IntoRecords>(
-    f: W,
-    iter: I,
-    cfg: CompactConfig,
-    opts: Settings,
-) -> fmt::Result {
-    let dont_sniff = opts.width.is_some() && opts.count_columns.is_some();
-    if dont_sniff {
+fn build_grid<W, I>(f: W, iter: I, cfg: CompactConfig, opts: Settings) -> fmt::Result
+where
+    W: fmt::Write,
+    I: IntoRecords,
+    I::Cell: AsRef<str>,
+{
+    let width_config = opts.width.is_some() && opts.count_columns.is_some();
+    if width_config {
         build_table_with_static_dims(f, iter, cfg, opts)
-    } else if opts.width.is_none() {
-        build_table_sniffing_with_unknown_width(f, iter, cfg, opts)
+    } else if opts.width.is_some() {
+        build_table_sniffing_with_width(f, iter, cfg, opts)
     } else {
-        build_table_sniffing_with_known_width(f, iter, cfg, opts)
+        build_table_sniffing(f, iter, cfg, opts)
     }
 }
 
@@ -190,11 +191,12 @@ fn build_table_with_static_dims<W, I>(
 where
     W: fmt::Write,
     I: IntoRecords,
+    I::Cell: AsRef<str>,
 {
     let count_columns = opts.count_columns.unwrap();
     let width = opts.width.unwrap();
     let height = opts.height.unwrap_or(1);
-    let contentw = ExactValue::Exact(width);
+    let contentw = WidthDimension::Exact(width);
     let pad = cfg.get_padding();
     let w = DimensionValue::Exact(width + pad.left.size + pad.right.size);
     let h = DimensionValue::Exact(height + pad.top.size + pad.bottom.size);
@@ -214,18 +216,13 @@ where
     }
 }
 
-fn build_table_sniffing_with_unknown_width<W, I>(
-    f: W,
-    iter: I,
-    cfg: CompactConfig,
-    opts: Settings,
-) -> fmt::Result
+fn build_table_sniffing<W, I>(f: W, iter: I, cfg: CompactConfig, opts: Settings) -> fmt::Result
 where
     W: fmt::Write,
     I: IntoRecords,
+    I::Cell: AsRef<str>,
 {
-    let records = BufRows::new(iter, opts.sniff);
-    let records = BufColumns::from(records);
+    let records = BufRecords::new(iter, opts.sniff);
 
     let count_columns = get_count_columns(&opts, records.as_slice());
 
@@ -245,7 +242,7 @@ where
             .collect::<Vec<_>>();
     }
 
-    let content_width = ExactValue::List(width.iter().map(|i| i.saturating_sub(pad)).collect());
+    let content_width = WidthDimension::List(width.iter().map(|i| i.saturating_sub(pad)).collect());
     let dims_width = DimensionValue::List(width);
 
     let height_exact = opts.height.unwrap_or(1) + padv;
@@ -271,7 +268,7 @@ where
     }
 }
 
-fn build_table_sniffing_with_known_width<W, I>(
+fn build_table_sniffing_with_width<W, I>(
     f: W,
     iter: I,
     cfg: CompactConfig,
@@ -280,14 +277,14 @@ fn build_table_sniffing_with_known_width<W, I>(
 where
     W: fmt::Write,
     I: IntoRecords,
+    I::Cell: AsRef<str>,
 {
-    let records = BufRows::new(iter, opts.sniff);
-    let records = BufColumns::from(records);
+    let records = BufRecords::new(iter, opts.sniff);
 
     let count_columns = get_count_columns(&opts, records.as_slice());
 
     let width = opts.width.unwrap();
-    let contentw = ExactValue::Exact(width);
+    let contentw = WidthDimension::Exact(width);
 
     let padding = cfg.get_padding();
     let pad = padding.left.size + padding.right.size;
@@ -313,7 +310,7 @@ where
     }
 }
 
-fn get_count_columns(opts: &Settings, buf: &[Vec<String>]) -> usize {
+fn get_count_columns<T>(opts: &Settings, buf: &[Vec<T>]) -> usize {
     match opts.count_columns {
         Some(size) => size,
         None => buf.iter().map(|row| row.len()).max().unwrap_or(0),
@@ -332,13 +329,36 @@ fn create_config() -> CompactConfig {
         .set_borders(Style::ascii().get_borders())
 }
 
-fn build_records<I: IntoRecords>(
+fn build_records<I>(
     records: I,
-    width: ExactValue<'_>,
+    width: WidthDimension,
     count_columns: usize,
     count_rows: Option<usize>,
-) -> IterRecords<LimitColumns<TruncateContent<'_, I>>> {
+) -> IterRecords<LimitColumns<TruncateContent<I, WidthDimension>>>
+where
+    I: IntoRecords,
+{
     let records = TruncateContent::new(records, width);
     let records = LimitColumns::new(records, count_columns);
     IterRecords::new(records, count_columns, count_rows)
+}
+
+/// A dimension value.
+#[derive(Debug, Clone)]
+enum WidthDimension {
+    Exact(usize),
+    List(Vec<usize>),
+}
+
+impl Dimension for WidthDimension {
+    fn get_width(&self, column: usize) -> usize {
+        match self {
+            WidthDimension::Exact(value) => *value,
+            WidthDimension::List(list) => list[column],
+        }
+    }
+
+    fn get_height(&self, _row: usize) -> usize {
+        unreachable!("A height method is not supposed to be called");
+    }
 }

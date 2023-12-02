@@ -40,7 +40,7 @@ pub struct SpannedConfig {
     borders_colors: BordersConfig<AnsiColor<'static>>,
     borders_missing_char: char,
     horizontal_chars: HashMap<Position, HashMap<Offset, char>>,
-    horizontal_colors: HashMap<Position, HashMap<Offset, AnsiColor<'static>>>,
+    horizontal_colors: HashMap<Position, HashMap<Offset, AnsiColor<'static>>>, // squash a map to be HashMap<(Pos, Offset), char>
     vertical_chars: HashMap<Position, HashMap<Offset, char>>,
     vertical_colors: HashMap<Position, HashMap<Offset, AnsiColor<'static>>>,
     justification: EntityMap<char>,

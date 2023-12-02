@@ -2,7 +2,7 @@ use crate::{
     grid::{
         config::ColoredConfig,
         dimension::CompleteDimensionVecRecords,
-        records::{ExactRecords, PeekableRecords, Records, RecordsMut},
+        records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{count_lines, get_lines},
     },
     settings::{
@@ -50,8 +50,9 @@ impl<R, W, P> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig>
 where
     W: Measurement<Height>,
     P: Peaker + Clone,
-    R: ExactRecords + PeekableRecords + RecordsMut<String>,
+    R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn change(
         self,
@@ -60,7 +61,7 @@ where
         dims: &mut CompleteDimensionVecRecords<'_>,
     ) {
         let count_rows = records.count_rows();
-        let count_cols = (&*records).count_columns();
+        let count_cols = records.count_columns();
 
         if count_rows == 0 || count_cols == 0 {
             return;

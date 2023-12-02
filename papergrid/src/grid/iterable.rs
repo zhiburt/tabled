@@ -13,7 +13,7 @@ use crate::{
     config::spanned::{Offset, SpannedConfig},
     config::{AlignmentHorizontal, AlignmentVertical, Formatting, Indent, Position, Sides},
     dimension::Dimension,
-    records::Records,
+    records::{IntoRecords, Records},
     util::string::{count_lines, get_lines, string_width, string_width_multiline, Lines},
 };
 
@@ -43,6 +43,7 @@ impl<R, D, G, C> Grid<R, D, G, C> {
     pub fn build<F>(self, mut f: F) -> fmt::Result
     where
         R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
         D: Dimension,
         C: Colors,
         G: Borrow<SpannedConfig>,
@@ -63,6 +64,7 @@ impl<R, D, G, C> Grid<R, D, G, C> {
     pub fn to_string(self) -> String
     where
         R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
         D: Dimension,
         G: Borrow<SpannedConfig>,
         C: Colors,
@@ -73,13 +75,20 @@ impl<R, D, G, C> Grid<R, D, G, C> {
     }
 }
 
-fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
+fn print_grid<F, R, D, C>(
     f: &mut F,
     records: R,
     cfg: &SpannedConfig,
     dimension: &D,
     colors: &C,
-) -> fmt::Result {
+) -> fmt::Result
+where
+    F: Write,
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    D: Dimension,
+    C: Colors,
+{
     // spanned version is a bit more complex and 'supposedly' slower,
     // because spans are considered to be not a general case we are having 2 versions
     let grid_has_spans = cfg.has_column_spans() || cfg.has_row_spans();
@@ -90,13 +99,20 @@ fn print_grid<F: Write, R: Records, D: Dimension, C: Colors>(
     }
 }
 
-fn print_grid_general<F: Write, R: Records, D: Dimension, C: Colors>(
+fn print_grid_general<F, R, D, C>(
     f: &mut F,
     records: R,
     cfg: &SpannedConfig,
     dims: &D,
     colors: &C,
-) -> fmt::Result {
+) -> fmt::Result
+where
+    F: Write,
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    D: Dimension,
+    C: Colors,
+{
     let count_columns = records.count_columns();
 
     let mut totalw = None;
@@ -404,13 +420,20 @@ fn print_split_line<F: Write, D: Dimension>(
     Ok(())
 }
 
-fn print_grid_spanned<F: Write, R: Records, D: Dimension, C: Colors>(
+fn print_grid_spanned<F, R, D, C>(
     f: &mut F,
     records: R,
     cfg: &SpannedConfig,
     dims: &D,
     colors: &C,
-) -> fmt::Result {
+) -> fmt::Result
+where
+    F: Write,
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    D: Dimension,
+    C: Colors,
+{
     let count_columns = records.count_columns();
 
     let total_width = total_width(cfg, dims, count_columns);
@@ -992,12 +1015,14 @@ fn print_vertical_char<F: Write>(
     };
 
     let symbol = cfg
-        .is_overridden_vertical(pos)
-        .then(|| cfg.lookup_vertical_char(pos, line, count_lines))
-        .flatten()
+        .lookup_vertical_char(pos, line, count_lines)
         .unwrap_or(symbol);
 
-    match cfg.get_vertical_color(pos, count_columns) {
+    let color = cfg
+        .get_vertical_color(pos, count_columns)
+        .or_else(|| cfg.lookup_vertical_color(pos, line, count_lines));
+
+    match color {
         Some(clr) => {
             clr.fmt_prefix(f)?;
             f.write_char(symbol)?;
@@ -1168,28 +1193,22 @@ fn print_indent<F: Write>(
     }
 }
 
-fn range_width(
-    cfg: &SpannedConfig,
-    d: impl Dimension,
-    start: usize,
-    end: usize,
-    max: usize,
-) -> usize {
+fn range_width<D>(cfg: &SpannedConfig, dims: D, start: usize, end: usize, max: usize) -> usize
+where
+    D: Dimension,
+{
     let count_borders = count_verticals_in_range(cfg, start, end, max);
-    let range_width = (start..end).map(|col| d.get_width(col)).sum::<usize>();
+    let range_width = (start..end).map(|col| dims.get_width(col)).sum::<usize>();
 
     count_borders + range_width
 }
 
-fn range_height(
-    cfg: &SpannedConfig,
-    d: impl Dimension,
-    from: usize,
-    end: usize,
-    max: usize,
-) -> usize {
+fn range_height<D>(cfg: &SpannedConfig, dims: D, from: usize, end: usize, max: usize) -> usize
+where
+    D: Dimension,
+{
     let count_borders = count_horizontals_in_range(cfg, from, end, max);
-    let range_width = (from..end).map(|col| d.get_height(col)).sum::<usize>();
+    let range_width = (from..end).map(|col| dims.get_height(col)).sum::<usize>();
 
     count_borders + range_width
 }

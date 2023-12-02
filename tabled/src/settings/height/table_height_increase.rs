@@ -2,7 +2,7 @@ use crate::{
     grid::{
         config::{ColoredConfig, Entity},
         dimension::CompleteDimensionVecRecords,
-        records::{ExactRecords, PeekableRecords, Records},
+        records::{ExactRecords, IntoRecords, PeekableRecords, Records},
     },
     settings::{
         measurement::Measurement,
@@ -51,6 +51,7 @@ where
     P: Peaker + Clone,
     R: Records + ExactRecords + PeekableRecords,
     for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn change(
         self,

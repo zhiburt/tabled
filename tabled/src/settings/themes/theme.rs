@@ -9,22 +9,17 @@
 // not sure what the best interface is
 // IMHO 2
 
-use core::iter::FromIterator;
 use std::collections::HashMap;
-
-use papergrid::{
-    config::{AlignmentHorizontal, AlignmentVertical},
-    records::PeekableRecords,
-};
+use std::iter::FromIterator;
 
 use crate::{
     grid::{
         color::AnsiColor,
         config::{
-            Border, Borders, ColoredConfig, CompactConfig, CompactMultilineConfig, HorizontalLine,
-            VerticalLine,
+            AlignmentHorizontal, AlignmentVertical, Border, Borders, ColoredConfig, CompactConfig,
+            CompactMultilineConfig, HorizontalLine, VerticalLine,
         },
-        records::{ExactRecords, Records, RecordsMut, Resizable},
+        records::{ExactRecords, PeekableRecords, Records, RecordsMut, Resizable},
     },
     settings::{style::Style, themes::Colorization, Alignment, Color, Rotate, TableOption},
 };

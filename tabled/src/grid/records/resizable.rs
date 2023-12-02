@@ -1,4 +1,4 @@
-use papergrid::config::Position;
+use crate::grid::config::Position;
 
 #[cfg(feature = "std")]
 use crate::grid::records::vec_records::VecRecords;

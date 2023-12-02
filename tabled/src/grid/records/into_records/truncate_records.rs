@@ -1,136 +1,101 @@
 //! The module contains [`TruncateContent`] records iterator.
 
-use std::borrow::Cow;
-
 use crate::{
+    grid::dimension::Dimension, grid::records::into_records::either_string::EitherString,
     grid::records::IntoRecords, grid::util::string::string_width_multiline,
     settings::width::Truncate,
 };
 
-use super::either_string::EitherString;
-
 /// A records iterator which truncates all cells to a given width.
 #[derive(Debug)]
-pub struct TruncateContent<'a, I> {
+pub struct TruncateContent<I, D> {
     records: I,
-    width: ExactValue<'a>,
+    dimension: D,
 }
 
-impl TruncateContent<'_, ()> {
+impl TruncateContent<(), ()> {
     /// Creates new [`TruncateContent`] object.
-    pub fn new<I: IntoRecords>(records: I, width: ExactValue<'_>) -> TruncateContent<'_, I> {
-        TruncateContent { records, width }
+    pub fn new<I, D>(records: I, dimension: D) -> TruncateContent<I, D> {
+        TruncateContent { records, dimension }
     }
 }
 
-impl<'a, I> IntoRecords for TruncateContent<'a, I>
+impl<I, D> IntoRecords for TruncateContent<I, D>
 where
     I: IntoRecords,
+    I::Cell: AsRef<str>,
+    D: Clone + Dimension,
 {
     type Cell = EitherString<I::Cell>;
-    type IterColumns = TruncateContentColumnsIter<'a, <I::IterColumns as IntoIterator>::IntoIter>;
-    type IterRows = TruncateContentIter<'a, <I::IterRows as IntoIterator>::IntoIter>;
+    type IterColumns = TruncateContentColumnsIter<<I::IterColumns as IntoIterator>::IntoIter, D>;
+    type IterRows = TruncateContentIter<<I::IterRows as IntoIterator>::IntoIter, D>;
 
     fn iter_rows(self) -> Self::IterRows {
         TruncateContentIter {
             iter: self.records.iter_rows().into_iter(),
-            width: self.width.clone(),
+            dimension: self.dimension.clone(),
         }
     }
 }
 
 /// A row iterator for [`TruncateContent`].
 #[derive(Debug)]
-pub struct TruncateContentIter<'a, I> {
+pub struct TruncateContentIter<I, D> {
     iter: I,
-    width: ExactValue<'a>,
+    dimension: D,
 }
 
-impl<'a, I> Iterator for TruncateContentIter<'a, I>
+impl<I, D> Iterator for TruncateContentIter<I, D>
 where
     I: Iterator,
     I::Item: IntoIterator,
-    <I::Item as IntoIterator>::Item: AsRef<str>,
+    D: Clone,
 {
-    type Item = TruncateContentColumnsIter<'a, <I::Item as IntoIterator>::IntoIter>;
+    type Item = TruncateContentColumnsIter<<I::Item as IntoIterator>::IntoIter, D>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let iter = self.iter.next()?;
-        Some(TruncateContentColumnsIter {
+        let iter = TruncateContentColumnsIter {
             iter: iter.into_iter(),
-            current: 0,
-            width: self.width.clone(),
-        })
+            iter_column: 0,
+            dimension: self.dimension.clone(),
+        };
+
+        Some(iter)
     }
 }
 
 /// A column iterator for [`TruncateContent`].
 #[derive(Debug)]
-pub struct TruncateContentColumnsIter<'a, I> {
+pub struct TruncateContentColumnsIter<I, D> {
     iter: I,
-    width: ExactValue<'a>,
-    current: usize,
+    dimension: D,
+    iter_column: usize,
 }
 
-impl<I> Iterator for TruncateContentColumnsIter<'_, I>
+impl<I, D> Iterator for TruncateContentColumnsIter<I, D>
 where
     I: Iterator,
     I::Item: AsRef<str>,
+    D: Dimension,
 {
     type Item = EitherString<I::Item>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let s = self.iter.next()?;
+        let text = self.iter.next()?;
+        let text_ref = text.as_ref();
 
-        let width = self.width.get(self.current);
-        self.current += 1;
+        let width = self.dimension.get_width(self.iter_column);
+        self.iter_column += 1;
 
-        let text_width = string_width_multiline(s.as_ref());
-        if text_width <= width {
-            return Some(EitherString::Some(s));
-        }
-
-        let text = Truncate::truncate_text(s.as_ref(), width);
-        let text = text.into_owned();
-        let text = EitherString::Owned(text);
-
-        Some(text)
-    }
-}
-
-/// A width value.
-#[derive(Debug, Clone)]
-pub enum ExactValue<'a> {
-    /// Const width value.
-    Exact(usize),
-    /// A list of width values for columns.
-    List(Cow<'a, [usize]>),
-}
-
-impl<'a> From<&'a [usize]> for ExactValue<'a> {
-    fn from(value: &'a [usize]) -> Self {
-        Self::List(value.into())
-    }
-}
-
-impl From<Vec<usize>> for ExactValue<'_> {
-    fn from(value: Vec<usize>) -> Self {
-        Self::List(value.into())
-    }
-}
-
-impl From<usize> for ExactValue<'_> {
-    fn from(value: usize) -> Self {
-        Self::Exact(value)
-    }
-}
-
-impl ExactValue<'_> {
-    /// Get a width by column.
-    pub fn get(&self, col: usize) -> usize {
-        match self {
-            ExactValue::Exact(val) => *val,
-            ExactValue::List(cols) => cols[col],
+        let text_width = string_width_multiline(text_ref);
+        let is_small = text_width <= width;
+        if is_small {
+            Some(EitherString::Some(text))
+        } else {
+            let text = Truncate::truncate_text(text_ref, width);
+            let text = text.into_owned();
+            Some(EitherString::Owned(text))
         }
     }
 }

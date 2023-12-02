@@ -1,16 +1,14 @@
 use std::cmp;
 
-use papergrid::{config::AlignmentVertical, util::string::count_lines};
-
 use crate::{
     grid::{
-        config::{AlignmentHorizontal, ColoredConfig, Position},
+        config::{AlignmentHorizontal, AlignmentVertical, ColoredConfig, Position},
         dimension::{CompleteDimensionVecRecords, Dimension, Estimate},
         records::{
             vec_records::{CellInfo, VecRecords},
             ExactRecords, PeekableRecords, Records, Resizable,
         },
-        util::string::string_width,
+        util::string::{count_lines, string_width},
     },
     settings::{
         object::{Column, Row},

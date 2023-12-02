@@ -43,7 +43,6 @@ impl<I> Iterator for LimitRowsIter<I>
 where
     I: Iterator,
     I::Item: IntoIterator,
-    <I::Item as IntoIterator>::Item: AsRef<str>,
 {
     type Item = I::Item;
 

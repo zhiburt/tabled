@@ -1,13 +1,14 @@
 use crate::grid::{
     config::SpannedConfig,
     dimension::SpannedGridDimension,
-    records::{ExactRecords, Records},
+    records::{ExactRecords, IntoRecords, Records},
 };
 
-pub(crate) fn get_table_height<R: Records + ExactRecords>(
-    records: R,
-    cfg: &SpannedConfig,
-) -> (usize, Vec<usize>) {
+pub(crate) fn get_table_height<R>(records: R, cfg: &SpannedConfig) -> (usize, Vec<usize>)
+where
+    R: Records + ExactRecords,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+{
     let count_horizontals = cfg.count_horizontal(records.count_rows());
 
     let margin = cfg.get_margin();

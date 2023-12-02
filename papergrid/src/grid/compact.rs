@@ -11,7 +11,7 @@ use crate::{
     colors::{Colors, NoColors},
     config::{AlignmentHorizontal, Borders, HorizontalLine, Indent, Sides},
     dimension::Dimension,
-    records::Records,
+    records::{IntoRecords, Records},
     util::string::string_width,
 };
 
@@ -53,6 +53,7 @@ impl<R, D, G, C> CompactGrid<R, D, G, C> {
     pub fn build<F>(self, mut f: F) -> fmt::Result
     where
         R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
         D: Dimension,
         C: Colors,
         G: Borrow<CompactConfig>,
@@ -74,6 +75,7 @@ impl<R, D, G, C> CompactGrid<R, D, G, C> {
     pub fn to_string(self) -> String
     where
         R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
         D: Dimension,
         G: Borrow<CompactConfig>,
         C: Colors,
@@ -87,6 +89,7 @@ impl<R, D, G, C> CompactGrid<R, D, G, C> {
 impl<R, D, G, C> Display for CompactGrid<R, D, G, C>
 where
     for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
     D: Dimension,
     G: Borrow<CompactConfig>,
     C: Colors,
@@ -109,6 +112,7 @@ fn print_grid<F, R, D, C>(
 where
     F: Write,
     R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
     D: Dimension,
     C: Colors,
 {

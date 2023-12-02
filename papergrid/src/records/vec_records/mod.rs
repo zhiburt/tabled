@@ -34,10 +34,7 @@ impl<T> VecRecords<T> {
     }
 }
 
-impl<T> Records for VecRecords<T>
-where
-    T: AsRef<str>,
-{
+impl<T> Records for VecRecords<T> {
     type Iter = Vec<Vec<T>>;
 
     fn iter_rows(self) -> <Self::Iter as IntoRecords>::IterRows {
@@ -53,10 +50,7 @@ where
     }
 }
 
-impl<'a, T> Records for &'a VecRecords<T>
-where
-    T: AsRef<str>,
-{
+impl<'a, T> Records for &'a VecRecords<T> {
     type Iter = &'a [Vec<T>];
 
     fn iter_rows(self) -> <Self::Iter as IntoRecords>::IterRows {

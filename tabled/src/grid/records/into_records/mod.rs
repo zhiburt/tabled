@@ -17,7 +17,7 @@ pub mod truncate_records;
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub use buf_records::{BufColumns, BufRows};
+pub use buf_records::BufRecords;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 pub use truncate_records::TruncateContent;

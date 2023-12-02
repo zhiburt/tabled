@@ -1,8 +1,7 @@
-use papergrid::records::vec_records::{CellInfo, VecRecords};
-
 use crate::grid::{
     config::SpannedConfig,
     dimension::{Dimension, Estimate},
+    records::vec_records::{CellInfo, VecRecords},
     records::Records,
 };
 
@@ -63,10 +62,7 @@ mod estimation {
     use core::cmp::{max, Ordering};
     use std::collections::HashMap;
 
-    use papergrid::{
-        config::Position,
-        records::vec_records::{Cell, CellInfo, VecRecords},
-    };
+    use crate::grid::{config::Position, records::vec_records::Cell};
 
     use super::*;
 
