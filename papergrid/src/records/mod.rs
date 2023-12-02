@@ -29,3 +29,13 @@ pub trait Records {
     /// Hint amount of rows in the records.
     fn hint_count_rows(&self) -> Option<usize>;
 }
+
+// todo: Provide a convinient way to iter over columns
+//
+// probably fn iter_columns(self) -> Option<Self::Iter2>
+//
+// it'll likely speed up some algos
+
+// note:
+// Maybe simplify IntoRecords; we know count columns any way....
+// and sometimes buffering and stuff hard to implement with this laye of abstraction

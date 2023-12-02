@@ -115,7 +115,11 @@ pub struct PoolTable {
 
 impl PoolTable {
     /// Creates a [`PoolTable`] out from a record iterator.
-    pub fn new<I: IntoRecords>(iter: I) -> Self {
+    pub fn new<I>(iter: I) -> Self
+    where
+        I: IntoRecords,
+        I::Cell: AsRef<str>,
+    {
         let value = TableValue::Column(
             iter.iter_rows()
                 .into_iter()
@@ -236,22 +240,19 @@ impl<R, D> TableOption<R, D, CompactMultilineConfig> for CompactMultilineConfig 
 mod print {
     use std::{cmp::max, collections::HashMap, iter::repeat};
 
-    use papergrid::{
-        color::StaticColor,
-        config::{Border, Borders},
-        util::string::string_width_multiline,
-    };
-
     use crate::{
         builder::Builder,
         grid::{
+            color::StaticColor,
             config::{
-                AlignmentHorizontal, AlignmentVertical, ColoredConfig, CompactMultilineConfig,
-                Indent, Offset, Sides,
+                AlignmentHorizontal, AlignmentVertical, Border, Borders, ColoredConfig,
+                CompactMultilineConfig, Indent, Offset, Sides,
             },
             dimension::{Dimension, DimensionPriority, Estimate, PoolTableDimension},
             records::Records,
-            util::string::{count_lines, get_lines, string_dimension, string_width},
+            util::string::{
+                count_lines, get_lines, string_dimension, string_width, string_width_multiline,
+            },
         },
         settings::{Padding, Style, TableOption},
     };

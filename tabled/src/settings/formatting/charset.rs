@@ -1,10 +1,6 @@
-use papergrid::{
-    config::Entity,
-    records::{ExactRecords, PeekableRecords},
-};
-
 use crate::{
-    grid::records::{Records, RecordsMut},
+    grid::config::Entity,
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::{CellOption, TableOption},
 };
 
@@ -74,20 +70,16 @@ pub struct CleanCharset;
 
 impl<R, D, C> TableOption<R, D, C> for CleanCharset
 where
-    for<'a> &'a R: Records,
-    R: RecordsMut<String>,
+    R: Records + ExactRecords + RecordsMut<String> + PeekableRecords,
 {
     fn change(self, records: &mut R, _: &mut C, _: &mut D) {
-        let mut list = vec![];
-        for (row, cells) in records.iter_rows().into_iter().enumerate() {
-            for (col, text) in cells.into_iter().enumerate() {
-                let text = text.as_ref().replace(['\t', '\r'], "");
-                list.push(((row, col), text));
+        for row in 0..records.count_rows() {
+            for col in 0..records.count_columns() {
+                let pos = (row, col);
+                let text = records.get_text(pos);
+                let text = text.replace(['\t', '\r'], "");
+                records.set(pos, text);
             }
-        }
-
-        for (pos, text) in list {
-            records.set(pos, text);
         }
     }
 }

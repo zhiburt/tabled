@@ -197,6 +197,7 @@ impl<I, D> CompactTable<I, D> {
     pub fn fmt<W>(self, writer: W) -> fmt::Result
     where
         I: IntoRecords,
+        I::Cell: AsRef<str>,
         D: Dimension,
         W: fmt::Write,
     {
@@ -216,6 +217,7 @@ impl<I, D> CompactTable<I, D> {
     pub fn build<W>(self, writer: W) -> std::io::Result<()>
     where
         I: IntoRecords,
+        I::Cell: AsRef<str>,
         D: Dimension,
         W: std::io::Write,
     {
@@ -233,10 +235,13 @@ impl<I, D> CompactTable<I, D> {
     pub fn to_string(self) -> String
     where
         I: IntoRecords,
+        I::Cell: AsRef<str>,
         D: Dimension,
     {
         let mut buf = String::new();
-        self.fmt(&mut buf).unwrap();
+        self.fmt(&mut buf)
+            .expect("it's expected to be ok according to doc");
+
         buf
     }
 }
@@ -266,14 +271,20 @@ where
     }
 }
 
-fn build_grid<W: fmt::Write, I: IntoRecords, D: Dimension>(
+fn build_grid<W, I, D>(
     writer: W,
     records: I,
     dims: D,
     config: CompactConfig,
     cols: usize,
     rows: Option<usize>,
-) -> Result<(), fmt::Error> {
+) -> Result<(), fmt::Error>
+where
+    W: fmt::Write,
+    I: IntoRecords,
+    I::Cell: AsRef<str>,
+    D: Dimension,
+{
     match rows {
         Some(limit) => {
             let records = LimitRows::new(records, limit);

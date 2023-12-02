@@ -3,21 +3,22 @@
 use crate::{
     grid::config::SpannedConfig,
     grid::dimension::SpannedGridDimension,
-    grid::records::{ExactRecords, PeekableRecords, Records},
+    grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records},
     grid::util::string::{self, string_width_multiline},
     settings::{Height, Width},
 };
+
+// todo: Change the trait to not bind to exact Records
 
 /// A width value which can be obtained on behalf of [`Table`].
 ///
 /// [`Table`]: crate::Table
 pub trait Measurement<Attribute> {
     /// Returns a measurement value.
-    fn measure<R: Records + ExactRecords + PeekableRecords>(
-        &self,
-        records: R,
-        cfg: &SpannedConfig,
-    ) -> usize;
+    fn measure<R>(&self, records: R, cfg: &SpannedConfig) -> usize
+    where
+        R: Records + ExactRecords + PeekableRecords,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>;
 }
 
 impl<T> Measurement<T> for usize {
@@ -94,8 +95,9 @@ impl Measurement<Width> for Percent {
     fn measure<R>(&self, records: R, cfg: &SpannedConfig) -> usize
     where
         R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
     {
-        let (_, total) = get_table_widths_with_total(records, cfg);
+        let total = SpannedGridDimension::width_total(records, cfg);
         (total * self.0) / 100
     }
 }
@@ -104,34 +106,21 @@ impl Measurement<Height> for Percent {
     fn measure<R>(&self, records: R, cfg: &SpannedConfig) -> usize
     where
         R: Records + ExactRecords,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
     {
-        let (_, total) = get_table_heights_width_total(records, cfg);
+        let total = SpannedGridDimension::height_total(records, cfg);
         (total * self.0) / 100
     }
 }
 
-fn grid_widths<R: Records + ExactRecords + PeekableRecords>(
-    records: &R,
-) -> impl Iterator<Item = impl Iterator<Item = usize> + '_> + '_ {
+fn grid_widths<R>(records: &R) -> impl Iterator<Item = impl Iterator<Item = usize> + '_> + '_
+where
+    R: Records + ExactRecords + PeekableRecords,
+{
     let (count_rows, count_cols) = (records.count_rows(), records.count_columns());
     (0..count_rows).map(move |row| {
         (0..count_cols).map(move |col| string_width_multiline(records.get_text((row, col))))
     })
-}
-
-fn get_table_widths_with_total<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, usize)
-where
-    R: Records,
-{
-    let widths = SpannedGridDimension::width(records, cfg);
-    let total_width = get_table_total_width(&widths, cfg);
-    (widths, total_width)
-}
-
-fn get_table_total_width(list: &[usize], cfg: &SpannedConfig) -> usize {
-    let total = list.iter().sum::<usize>();
-
-    total + cfg.count_vertical(list.len())
 }
 
 fn records_heights<R>(records: &R) -> impl Iterator<Item = impl Iterator<Item = usize> + '_> + '_
@@ -142,20 +131,4 @@ where
         (0..records.count_columns())
             .map(move |col| string::count_lines(records.get_text((row, col))))
     })
-}
-
-fn get_table_heights_width_total<R>(records: R, cfg: &SpannedConfig) -> (Vec<usize>, usize)
-where
-    R: Records,
-{
-    let list = SpannedGridDimension::height(records, cfg);
-    let total = get_table_total_height(&list, cfg);
-    (list, total)
-}
-
-fn get_table_total_height(list: &[usize], cfg: &SpannedConfig) -> usize {
-    let total = list.iter().sum::<usize>();
-    let counth = cfg.count_horizontal(list.len());
-
-    total + counth
 }

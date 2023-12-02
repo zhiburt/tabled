@@ -11,7 +11,7 @@ pub struct LimitColumns<I> {
 
 impl LimitColumns<()> {
     /// Creates new [`LimitColumns`].
-    pub fn new<I: IntoRecords>(records: I, limit: usize) -> LimitColumns<I> {
+    pub fn new<I>(records: I, limit: usize) -> LimitColumns<I> {
         LimitColumns { records, limit }
     }
 }
@@ -43,16 +43,17 @@ impl<I> Iterator for LimitColumnsIter<I>
 where
     I: Iterator,
     I::Item: IntoIterator,
-    <I::Item as IntoIterator>::Item: AsRef<str>,
 {
     type Item = LimitColumnsColumnsIter<<I::Item as IntoIterator>::IntoIter>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let iter = self.iter.next()?;
-        Some(LimitColumnsColumnsIter {
+        let iter = LimitColumnsColumnsIter {
             iter: iter.into_iter(),
             limit: self.limit,
-        })
+        };
+
+        Some(iter)
     }
 }
 
@@ -66,7 +67,6 @@ pub struct LimitColumnsColumnsIter<I> {
 impl<I> Iterator for LimitColumnsColumnsIter<I>
 where
     I: Iterator,
-    I::Item: AsRef<str>,
 {
     type Item = I::Item;
 

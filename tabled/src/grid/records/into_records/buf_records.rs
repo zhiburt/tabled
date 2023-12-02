@@ -5,209 +5,105 @@
 
 use crate::grid::records::IntoRecords;
 
-use super::either_string::EitherString;
-
-/// BufRecords inspects [`IntoRecords`] iterator and keeps read data buffered.
-/// So it can be checking before hand.
-#[derive(Debug)]
-pub struct BufRows<I, T> {
-    iter: I,
-    buf: Vec<T>,
-}
-
-impl BufRows<(), ()> {
-    /// Creates a new [`BufRows`] structure, filling the buffer.
-    pub fn new<I: IntoRecords>(
-        records: I,
-        sniff: usize,
-    ) -> BufRows<<I::IterRows as IntoIterator>::IntoIter, I::IterColumns> {
-        let mut buf = vec![];
-
-        let mut iter = records.iter_rows().into_iter();
-        for _ in 0..sniff {
-            match iter.next() {
-                Some(row) => buf.push(row),
-                None => break,
-            }
-        }
-
-        BufRows { iter, buf }
-    }
-}
-
-impl<I, T> BufRows<I, T> {
-    /// Returns a slice of a record buffer.
-    pub fn as_slice(&self) -> &[T] {
-        &self.buf
-    }
-}
-
-impl<I, T> From<BufRows<I, T>> for BufColumns<I>
-where
-    T: IntoIterator,
-    T::Item: AsRef<str>,
-{
-    fn from(value: BufRows<I, T>) -> Self {
-        let buf = value
-            .buf
-            .into_iter()
-            .map(|row| row.into_iter().map(|s| s.as_ref().to_string()).collect())
-            .collect();
-
-        BufColumns {
-            iter: value.iter,
-            buf,
-        }
-    }
-}
-
-impl<I, T> IntoRecords for BufRows<I, T>
-where
-    I: Iterator<Item = T>,
-    T: IntoIterator,
-    T::Item: AsRef<str>,
-{
-    type Cell = T::Item;
-    type IterColumns = T;
-    type IterRows = BufRowIter<I, T>;
-
-    fn iter_rows(self) -> Self::IterRows {
-        BufRowIter {
-            buf: self.buf.into_iter(),
-            iter: self.iter,
-        }
-    }
-}
-
-/// Buffered [`Iterator`].
-#[derive(Debug)]
-pub struct BufRowIter<I, T> {
-    buf: std::vec::IntoIter<T>,
-    iter: I,
-}
-
-impl<I, T> Iterator for BufRowIter<I, T>
-where
-    I: Iterator<Item = T>,
-    T: IntoIterator,
-    T::Item: AsRef<str>,
-{
-    type Item = T;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.buf.next() {
-            Some(i) => Some(i),
-            None => self.iter.next(),
-        }
-    }
-}
-
 /// BufRecords inspects [`IntoRecords`] iterator and keeps read data buffered.
 /// So it can be checking before hand.
 ///
 /// In contrast to [`BufRows`] it keeps records by columns.
 #[derive(Debug)]
-pub struct BufColumns<I> {
+pub struct BufRecords<I, T> {
     iter: I,
-    buf: Vec<Vec<String>>,
+    buf: Vec<Vec<T>>,
 }
 
-impl BufColumns<()> {
+impl BufRecords<(), ()> {
     /// Creates new [`BufColumns`] structure, filling the buffer.
-    pub fn new<I: IntoRecords>(
+    pub fn new<I>(
         records: I,
         sniff: usize,
-    ) -> BufColumns<<I::IterRows as IntoIterator>::IntoIter> {
+    ) -> BufRecords<<I::IterRows as IntoIterator>::IntoIter, I::Cell>
+    where
+        I: IntoRecords,
+    {
         let mut buf = vec![];
 
         let mut iter = records.iter_rows().into_iter();
-        for _ in 0..sniff {
-            match iter.next() {
-                Some(row) => {
-                    let row = row
-                        .into_iter()
-                        .map(|cell| cell.as_ref().to_string())
-                        .collect::<Vec<_>>();
-                    buf.push(row)
-                }
-                None => break,
-            }
+        for data in iter.by_ref().take(sniff) {
+            let data = data.into_iter().collect::<Vec<_>>();
+            buf.push(data)
         }
 
-        BufColumns { iter, buf }
+        BufRecords { iter, buf }
     }
 }
 
-impl<I> BufColumns<I> {
+impl<I, T> BufRecords<I, T> {
     /// Returns a slice of a keeping buffer.
-    pub fn as_slice(&self) -> &[Vec<String>] {
+    pub fn as_slice(&self) -> &[Vec<T>] {
         &self.buf
     }
 }
 
-impl<I> IntoRecords for BufColumns<I>
+impl<I> IntoRecords for BufRecords<I, <I::Item as IntoIterator>::Item>
 where
     I: Iterator,
     I::Item: IntoIterator,
-    <I::Item as IntoIterator>::Item: AsRef<str>,
 {
-    type Cell = EitherString<<I::Item as IntoIterator>::Item>;
-    type IterColumns = EitherRowIterator<<I::Item as IntoIterator>::IntoIter>;
-    type IterRows = BufColumnIter<I>;
+    type Cell = <I::Item as IntoIterator>::Item;
+    type IterColumns = BufIterator<<I::Item as IntoIterator>::IntoIter, Self::Cell>;
+    type IterRows = BufRecordsIter<I, Self::Cell>;
 
     fn iter_rows(self) -> Self::IterRows {
-        BufColumnIter {
-            buf: self.buf.into_iter(),
+        BufRecordsIter {
             iter: self.iter,
+            buf: self.buf.into_iter(),
         }
     }
 }
 
 /// A row iterator for [`BufColumns`]
 #[derive(Debug)]
-pub struct BufColumnIter<I> {
-    buf: std::vec::IntoIter<Vec<String>>,
+pub struct BufRecordsIter<I, T> {
     iter: I,
+    buf: std::vec::IntoIter<Vec<T>>,
 }
 
-impl<I> Iterator for BufColumnIter<I>
+impl<I> Iterator for BufRecordsIter<I, <I::Item as IntoIterator>::Item>
 where
     I: Iterator,
     I::Item: IntoIterator,
-    <I::Item as IntoIterator>::Item: AsRef<str>,
 {
-    type Item = EitherRowIterator<<I::Item as IntoIterator>::IntoIter>;
+    type Item = BufIterator<<I::Item as IntoIterator>::IntoIter, <I::Item as IntoIterator>::Item>;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.buf.next() {
-            Some(i) => Some(EitherRowIterator::Owned(i.into_iter())),
+            Some(i) => Some(BufIterator::Buffered(i.into_iter())),
             None => self
                 .iter
                 .next()
-                .map(|i| EitherRowIterator::Some(i.into_iter())),
+                .map(|i| BufIterator::Iterator(i.into_iter())),
         }
     }
 }
 
 /// An iterator over some iterator or allocated buffer.
 #[derive(Debug)]
-pub enum EitherRowIterator<I> {
+pub enum BufIterator<I, T> {
     /// Allocated iterator.
-    Owned(std::vec::IntoIter<String>),
+    Buffered(std::vec::IntoIter<T>),
     /// Given iterator.
-    Some(I),
+    Iterator(I),
 }
 
-impl<I> Iterator for EitherRowIterator<I>
+impl<I> Iterator for BufIterator<I, I::Item>
 where
     I: Iterator,
 {
-    type Item = EitherString<I::Item>;
+    type Item = I::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self {
-            EitherRowIterator::Owned(iter) => iter.next().map(EitherString::Owned),
-            EitherRowIterator::Some(iter) => iter.next().map(EitherString::Some),
+            BufIterator::Buffered(iter) => iter.next(),
+            BufIterator::Iterator(iter) => iter.next(),
         }
     }
 }

@@ -5,9 +5,10 @@
 
 use core::ops::Range;
 
-use papergrid::{config::Position, records::PeekableRecords};
-
-use crate::grid::records::{ExactRecords, Records, Resizable};
+use crate::grid::{
+    config::Position,
+    records::{ExactRecords, PeekableRecords, Records, Resizable},
+};
 
 use super::TableOption;
 

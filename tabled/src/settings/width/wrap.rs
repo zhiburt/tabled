@@ -6,10 +6,13 @@
 use std::marker::PhantomData;
 
 use crate::{
-    grid::config::ColoredConfig,
-    grid::dimension::CompleteDimensionVecRecords,
-    grid::records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
-    grid::{config::Entity, config::SpannedConfig, util::string::string_width_multiline},
+    grid::{
+        config::SpannedConfig,
+        config::{ColoredConfig, Entity},
+        dimension::CompleteDimensionVecRecords,
+        records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
+        util::string::string_width_multiline,
+    },
     settings::{
         measurement::Measurement,
         peaker::{Peaker, PriorityNone},
@@ -103,6 +106,7 @@ where
     P: Peaker,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn change(
         self,
@@ -133,6 +137,7 @@ where
     W: Measurement<Width>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let width = self.width.measure(&*records, cfg);
@@ -171,6 +176,7 @@ where
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     P: Peaker,
     for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     let shape = (records.count_rows(), records.count_columns());
     let min_widths = get_table_widths(EmptyRecords::from(shape), cfg);

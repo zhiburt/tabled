@@ -1,5 +1,5 @@
 use crate::{
-    grid::records::{Records, RecordsMut},
+    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::TableOption,
 };
 
@@ -43,20 +43,18 @@ impl TabSize {
 
 impl<R, D, C> TableOption<R, D, C> for TabSize
 where
-    for<'a> &'a R: Records,
-    R: RecordsMut<String>,
+    R: Records + ExactRecords + RecordsMut<String> + PeekableRecords,
 {
     fn change(self, records: &mut R, _: &mut C, _: &mut D) {
-        let mut list = vec![];
-        for (row, cells) in records.iter_rows().into_iter().enumerate() {
-            for (col, text) in cells.into_iter().enumerate() {
-                let text = text.as_ref().replace('\t', &" ".repeat(self.0));
-                list.push(((row, col), text));
-            }
-        }
+        let tab_size = self.0;
 
-        for (pos, text) in list {
-            records.set(pos, text);
+        for row in 0..records.count_rows() {
+            for col in 0..records.count_columns() {
+                let pos = (row, col);
+                let text = records.get_text(pos);
+                let text = text.replace('\t', &" ".repeat(tab_size));
+                records.set(pos, text);
+            }
         }
     }
 }

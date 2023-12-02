@@ -60,7 +60,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use papergrid::records::Records;
+    use crate::grid::records::vec_records::VecRecords;
 
     use super::{reverse_columns, reverse_rows};
 
@@ -78,24 +78,9 @@ mod tests {
     }
 
     fn rev_cols(mut data: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
-        reverse_columns(&mut data);
-        data
-    }
+        let mut records = VecRecords::new(data);
+        reverse_columns(&mut records);
 
-
-    impl Records for Vec<Vec<usize>> {
-        type Iter = std::vec::IntoIter<Vec<usize>>;
-
-        fn iter_rows(self) -> <Self::Iter as papergrid::records::IntoRecords>::IterRows {
-            todo!()
-        }
-
-        fn count_columns(&self) -> usize {
-            todo!()
-        }
-
-        fn hint_count_rows(&self) -> Option<usize> {
-            todo!()
-        }
+        records.into()
     }
 }

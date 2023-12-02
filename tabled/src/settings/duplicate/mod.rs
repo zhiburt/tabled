@@ -11,9 +11,8 @@
 //!
 //! [`Table`]: crate::Table
 
-use papergrid::config::Position;
-
 use crate::{
+    grid::config::Position,
     grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
     settings::{object::Object, TableOption},
 };

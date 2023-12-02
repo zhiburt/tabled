@@ -5,10 +5,9 @@
 use std::marker::PhantomData;
 
 use crate::{
-    grid::config::ColoredConfig,
-    grid::config::Entity,
+    grid::config::{ColoredConfig, Entity},
     grid::dimension::CompleteDimensionVecRecords,
-    grid::records::{ExactRecords, PeekableRecords, Records, RecordsMut},
+    grid::records::{ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
     grid::util::string::{get_lines, string_width_multiline},
     settings::{
         measurement::Measurement,
@@ -107,6 +106,7 @@ where
     W: Measurement<Width>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let width = self.width.measure(&*records, cfg);
@@ -142,6 +142,7 @@ where
     P: Peaker,
     R: Records + ExactRecords + PeekableRecords,
     for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn change(
         self,

@@ -1,11 +1,7 @@
-use papergrid::{
-    color::AnsiColor,
-    config::{Entity, Sides},
-};
-
 use crate::{
     grid::{
-        config::ColoredConfig,
+        color::AnsiColor,
+        config::{ColoredConfig, Entity, Sides},
         records::{ExactRecords, Records},
     },
     settings::{object::Object, Color, TableOption},

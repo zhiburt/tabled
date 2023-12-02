@@ -8,7 +8,7 @@ use crate::{
     grid::{
         config::{ColoredConfig, SpannedConfig},
         dimension::CompleteDimensionVecRecords,
-        records::{EmptyRecords, ExactRecords, PeekableRecords, Records, RecordsMut},
+        records::{EmptyRecords, ExactRecords, IntoRecords, PeekableRecords, Records, RecordsMut},
         util::string::{string_width, string_width_multiline},
     },
     settings::{
@@ -187,6 +187,7 @@ where
     W: Measurement<Width>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, entity: papergrid::config::Entity) {
         let available = self.width.measure(&*records, cfg);
@@ -305,6 +306,7 @@ where
     P: Peaker,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,
     for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn change(
         self,
@@ -351,9 +353,10 @@ fn truncate_total_width<P, R>(
     multiline: bool,
 ) -> Vec<usize>
 where
-    for<'a> &'a R: Records,
     P: Peaker,
     R: Records + PeekableRecords + ExactRecords + RecordsMut<String>,
+    for<'a> &'a R: Records,
+    for<'a> <<&'a R as Records>::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     let count_rows = records.count_rows();
     let count_columns = records.count_columns();

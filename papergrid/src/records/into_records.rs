@@ -5,7 +5,7 @@ pub trait IntoRecords {
     /// A string representation of a [`Grid`] cell.
     ///
     /// [`Grid`]: crate::grid::iterable::Grid
-    type Cell: AsRef<str>;
+    type Cell;
 
     /// Cell iterator inside a row.
     type IterColumns: IntoIterator<Item = Self::Cell>;
@@ -21,7 +21,6 @@ impl<T> IntoRecords for T
 where
     T: IntoIterator,
     <T as IntoIterator>::Item: IntoIterator,
-    <<T as IntoIterator>::Item as IntoIterator>::Item: AsRef<str>,
 {
     type Cell = <<T as IntoIterator>::Item as IntoIterator>::Item;
     type IterColumns = <T as IntoIterator>::Item;

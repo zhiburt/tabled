@@ -285,12 +285,14 @@ fn print_vertical_char<F: Write>(
     };
 
     let symbol = cfg
-        .is_overridden_vertical(pos)
-        .then(|| cfg.lookup_vertical_char(pos, line, count_lines))
-        .flatten()
+        .lookup_vertical_char(pos, line, count_lines)
         .unwrap_or(symbol);
 
-    match cfg.get_vertical_color(pos, count_columns) {
+    let color = cfg
+        .get_vertical_color(pos, count_columns)
+        .or_else(|| cfg.lookup_vertical_color(pos, line, count_lines));
+
+    match color {
         Some(clr) => {
             clr.fmt_prefix(f)?;
             f.write_char(symbol)?;

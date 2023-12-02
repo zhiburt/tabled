@@ -6,7 +6,7 @@ use core::cmp::max;
 
 use crate::{
     dimension::{Dimension, Estimate},
-    records::Records,
+    records::{IntoRecords, Records},
     util::string::{count_lines, string_width_multiline},
 };
 
@@ -23,17 +23,29 @@ pub struct CompactGridDimension {
 
 impl CompactGridDimension {
     /// Calculates height of rows.
-    pub fn height<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
+    pub fn height<R>(records: R, cfg: &CompactConfig) -> Vec<usize>
+    where
+        R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    {
         build_height(records, cfg)
     }
 
     /// Calculates width of columns.
-    pub fn width<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
+    pub fn width<R>(records: R, cfg: &CompactConfig) -> Vec<usize>
+    where
+        R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    {
         build_width(records, cfg)
     }
 
     /// Calculates dimensions of columns.
-    pub fn dimension<R: Records>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<usize>) {
+    pub fn dimension<R>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<usize>)
+    where
+        R: Records,
+        <R::Iter as IntoRecords>::Cell: AsRef<str>,
+    {
         build_dims(records, cfg)
     }
 }
@@ -51,6 +63,7 @@ impl Dimension for CompactGridDimension {
 impl<R> Estimate<R, CompactConfig> for CompactGridDimension
 where
     R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
 {
     fn estimate(&mut self, records: R, cfg: &CompactConfig) {
         self.width = build_width(records, cfg);
@@ -59,7 +72,11 @@ where
     }
 }
 
-fn build_dims<R: Records>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<usize>) {
+fn build_dims<R>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<usize>)
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+{
     let mut heights = vec![];
     let mut widths = vec![0; records.count_columns()];
 
@@ -78,7 +95,11 @@ fn build_dims<R: Records>(records: R, cfg: &CompactConfig) -> (Vec<usize>, Vec<u
     (widths, heights)
 }
 
-fn build_height<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
+fn build_height<R>(records: R, cfg: &CompactConfig) -> Vec<usize>
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+{
     let mut heights = vec![];
 
     for columns in records.iter_rows() {
@@ -94,7 +115,11 @@ fn build_height<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
     heights
 }
 
-fn build_width<R: Records>(records: R, cfg: &CompactConfig) -> Vec<usize> {
+fn build_width<R>(records: R, cfg: &CompactConfig) -> Vec<usize>
+where
+    R: Records,
+    <R::Iter as IntoRecords>::Cell: AsRef<str>,
+{
     let mut widths = vec![0; records.count_columns()];
     for columns in records.iter_rows() {
         for (col, cell) in columns.into_iter().enumerate() {
