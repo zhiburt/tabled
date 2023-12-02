@@ -21,8 +21,7 @@ use super::Offset;
 /// use tabled::{Table, settings::style::LineText, settings::object::Rows};
 ///
 /// let mut table = Table::new(["Hello World"]);
-/// table
-///     .with(LineText::new("+-.table").horizontal(Rows::first()));
+/// table.with(LineText::new("+-.table", Rows::first()));
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -42,18 +41,18 @@ pub struct LineText<L> {
     line: L,
 }
 
-impl LineText<usize> {
+impl<Line> LineText<Line> {
     /// Creates a [`LineText`] instance.
     ///
     /// Lines are numbered from 0 to the `count_rows` included
     /// (`line >= 0 && line <= count_rows`).
-    pub fn new<S>(text: S) -> Self
+    pub fn new<S>(text: S, line: Line) -> Self
     where
         S: Into<String>,
     {
         LineText {
             text: text.into(),
-            line: 0,
+            line,
             offset: Offset::Begin(0),
             color: None,
         }
@@ -61,16 +60,6 @@ impl LineText<usize> {
 }
 
 impl<Line> LineText<Line> {
-    /// Set a line on which we will set the text.
-    pub fn line<L>(self, line: L) -> LineText<L> {
-        LineText {
-            line,
-            text: self.text,
-            offset: self.offset,
-            color: self.color,
-        }
-    }
-
     /// Set an offset from which the text will be started.
     pub fn offset(self, offset: impl Into<Offset>) -> Self {
         LineText {
@@ -178,7 +167,9 @@ fn set_horizontal_chars<D: Dimension>(
     shape: (usize, usize),
 ) {
     let (_, count_columns) = shape;
-    let pos = get_start_pos(cfg, dims, offset, count_columns);
+    let total_width = total_width(cfg, dims, count_columns);
+    let pos = get_start_pos(offset, total_width);
+
     let pos = match pos {
         Some(pos) => pos,
         None => return,
@@ -264,7 +255,9 @@ fn set_vertical_chars<D>(
     D: Dimension,
 {
     let (count_rows, _) = shape;
-    let pos = get_start_pos(cfg, dims, offset, count_rows);
+    let total_width = total_height(cfg, dims, count_rows);
+    let pos = get_start_pos(offset, total_width);
+
     let pos = match pos {
         Some(pos) => pos,
         None => return,
@@ -335,42 +328,49 @@ fn set_vertical_chars<D>(
     }
 }
 
-fn get_start_pos<D>(
-    cfg: &SpannedConfig,
-    dims: &D,
-    offset: Offset,
-    count_columns: usize,
-) -> Option<usize>
-where
-    D: Dimension,
-{
-    let totalw = total_width(cfg, dims, count_columns);
+fn get_start_pos(offset: Offset, total: usize) -> Option<usize> {
     match offset {
         Offset::Begin(i) => {
-            if i > totalw {
+            if i > total {
                 None
             } else {
                 Some(i)
             }
         }
         Offset::End(i) => {
-            if i > totalw {
+            if i > total {
                 None
             } else {
-                Some(totalw - i)
+                Some(total - i)
             }
         }
     }
 }
 
-fn total_width<D: Dimension>(cfg: &SpannedConfig, dims: &D, count_columns: usize) -> usize {
-    let mut totalw = cfg.has_vertical(0, count_columns) as usize;
+fn total_width<D>(cfg: &SpannedConfig, dims: &D, count_columns: usize) -> usize
+where
+    D: Dimension,
+{
+    let mut total = cfg.has_vertical(count_columns, count_columns) as usize;
     for col in 0..count_columns {
-        totalw += dims.get_width(col);
-        totalw += cfg.has_vertical(col + 1, count_columns) as usize;
+        total += dims.get_width(col);
+        total += cfg.has_vertical(col, count_columns) as usize;
     }
 
-    totalw
+    total
+}
+
+fn total_height<D>(cfg: &SpannedConfig, dims: &D, count_rows: usize) -> usize
+where
+    D: Dimension,
+{
+    let mut total = cfg.has_horizontal(count_rows, count_rows) as usize;
+    for row in 0..count_rows {
+        total += dims.get_height(row);
+        total += cfg.has_horizontal(row, count_rows) as usize;
+    }
+
+    total
 }
 
 fn change_horizontal_chars<R, D>(

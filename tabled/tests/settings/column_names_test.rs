@@ -325,6 +325,9 @@ test_table!(
     "l 1 | 1-0 | 1-1 |"
     "u   |     |     |"
     "m   |     |     |"
+    "n   |     |     |"
+    "    |     |     |"
+    "0   |     |     |"
     "+---+-----+-----+"
 );
 
@@ -343,23 +346,38 @@ test_table!(
     "l 1 | 1-0 | 1-1 |"
     "u   |     |     |"
     "m   |     |     |"
+    "n   |     |     |"
+    "    |     |     |"
+    "0   |     |     |"
     "+---+-----+-----+"
 );
 
 test_table!(
     new_vertical_default_1,
-    Matrix::new(2, 2).with(Padding::new(1, 1, 2, 2)).with(ColumnNames::default().alignment(Alignment::center_vertical())),
+    Matrix::new(2, 2).with(Padding::new(1, 1, 5, 5)).with(ColumnNames::default().alignment(Alignment::center_vertical())),
     "+---+-----+-----+"
+    "|   |     |     |"
+    "|   |     |     |"
+    "|   |     |     |"
     "|   |     |     |"
     "|   |     |     |"
     "N 0 | 0-0 | 0-1 |"
     "|   |     |     |"
     "|   |     |     |"
+    "|   |     |     |"
+    "|   |     |     |"
+    "|   |     |     |"
     "+---+-----+-----+"
     "|   |     |     |"
-    "|   |     |     |"
-    "c 1 | 1-0 | 1-1 |"
+    "c   |     |     |"
     "o   |     |     |"
     "l   |     |     |"
+    "u   |     |     |"
+    "m 1 | 1-0 | 1-1 |"
+    "n   |     |     |"
+    "    |     |     |"
+    "0   |     |     |"
+    "|   |     |     |"
+    "|   |     |     |"
     "+---+-----+-----+"
 );

@@ -15,10 +15,7 @@ use crate::matrix::Matrix;
 use testing_table::{is_lines_equal, static_table, test_table};
 
 #[cfg(feature = "color")]
-use ::{
-    ansi_str::AnsiStr, owo_colors::OwoColorize, tabled::settings::style::HorizontalLine,
-    tabled::settings::style::StyleBuilder,
-};
+use ::{ansi_str::AnsiStr, owo_colors::OwoColorize, tabled::settings::style::HorizontalLine};
 
 #[cfg(all(feature = "derive", feature = "color"))]
 use ::owo_colors::AnsiColors;
@@ -448,9 +445,9 @@ fn max_width_keep_words_1() {
         ["0", "1", "..."],
     ])
     .with(
-        StyleBuilder::modern()
+        Style::modern()
             .remove_horizontal()
-            .horizontals([(1, HorizontalLine::inherit(StyleBuilder::modern()))]),
+            .horizontals([(1, HorizontalLine::inherit(Style::modern()))]),
     )
     .with(Width::wrap(21).keep_words().priority::<PriorityMax>())
     .with(Alignment::center())

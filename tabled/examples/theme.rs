@@ -33,8 +33,8 @@ fn main() {
     ];
 
     let mut theme = Theme::from_style(Style::ascii());
-    theme.reverse_data(true);
-    theme.reverse_head(true);
+    theme.reverse_rows(true);
+    theme.reverse_columns(true);
     theme.set_footer(true);
 
     let mut table = Table::new(data);

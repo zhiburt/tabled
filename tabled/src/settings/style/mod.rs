@@ -34,12 +34,14 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use tabled::{Table, settings::style::{LineText, Style}};
+//! use tabled::{
+//!     Table, settings::{style::{LineText, Style}, object::Rows},
+//! };
 //!
 //! let data = vec!["Hello", "2022"];
 //! let table = Table::new(&data)
 //!     .with(Style::psql())
-//!     .with(LineText::new("Santa").horizontal(1))
+//!     .with(LineText::new("Santa", Rows::single(1)))
 //!     .to_string();
 //!
 //! assert_eq!(

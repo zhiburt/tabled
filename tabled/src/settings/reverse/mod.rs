@@ -3,16 +3,19 @@ use crate::{
     settings::TableOption,
 };
 
+/// Reverse data on the table.
 #[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Reverse {
     columns: bool,
 }
 
 impl Reverse {
+    /// Reverse columns.
     pub const fn columns() -> Self {
         Self { columns: true }
     }
 
+    /// Reverse rows.
     pub const fn rows() -> Self {
         Self { columns: false }
     }
@@ -59,6 +62,7 @@ where
 }
 
 #[cfg(test)]
+#[cfg(feature = "std")]
 mod tests {
     use crate::grid::records::vec_records::VecRecords;
 
@@ -72,12 +76,20 @@ mod tests {
         )
     }
 
+    #[test]
+    fn test_reverse_columns() {
+        assert_eq!(
+            rev_cols(vec![vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 8]]),
+            vec![vec![2, 1, 0], vec![5, 4, 3], vec![8, 7, 6]]
+        )
+    }
+
     fn rev_rows(mut data: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
         reverse_rows(&mut data);
         data
     }
 
-    fn rev_cols(mut data: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
+    fn rev_cols(data: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
         let mut records = VecRecords::new(data);
         reverse_columns(&mut records);
 

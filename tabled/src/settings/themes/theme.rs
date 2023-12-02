@@ -443,19 +443,25 @@ impl Theme {
 }
 
 impl Theme {
-    pub fn reverse_data(&mut self, reverse: bool) {
+    /// Reverse rows.
+    pub fn reverse_rows(&mut self, reverse: bool) {
         self.layout.reverse_rows = reverse;
     }
 
-    pub fn reverse_head(&mut self, reverse: bool) {
+    /// Reverse columns.
+    pub fn reverse_columns(&mut self, reverse: bool) {
         self.layout.reverse_column = reverse;
     }
 
+    /// Set a footer.
+    ///
+    /// Copy columns names to an apposite side of a table.
     pub fn set_footer(&mut self, footer: bool) {
         self.layout.footer = footer;
     }
 
-    pub fn set_head_alignment(&mut self, position: Alignment) {
+    /// Set column alignment
+    pub fn align_columns(&mut self, position: Alignment) {
         self.layout.orientation = convert_orientation(position);
     }
 }
@@ -690,25 +696,23 @@ where
         return;
     }
 
-    println!("{orientation:?} {count_rows}");
+    println!("==> {orientation:?} {count_rows}");
 
     match orientation {
         HeadPosition::Top => reverse_rows(records, 1, count_rows),
-        HeadPosition::Bottom => reverse_rows(records, 0, count_rows - 2),
+        HeadPosition::Bottom => reverse_rows(records, 0, count_rows - 1),
         HeadPosition::Left => reverse_columns(records, 1, count_columns),
-        HeadPosition::Right => reverse_columns(records, 0, count_columns - 2),
+        HeadPosition::Right => reverse_columns(records, 0, count_columns - 1),
     }
 }
 
-fn reverse_head<R>(records: &mut R, orientation: HeadPosition)
+fn reverse_head<R>(data: &mut R, orientation: HeadPosition)
 where
     R: Records + Resizable + ExactRecords + PeekableRecords + RecordsMut<String>,
 {
     match orientation {
-        HeadPosition::Top | HeadPosition::Bottom => {
-            reverse_columns(records, 0, records.count_columns())
-        }
-        HeadPosition::Left | HeadPosition::Right => reverse_rows(records, 0, records.count_rows()),
+        HeadPosition::Top | HeadPosition::Bottom => reverse_columns(data, 0, data.count_columns()),
+        HeadPosition::Left | HeadPosition::Right => reverse_rows(data, 0, data.count_rows()),
     }
 }
 
@@ -716,8 +720,11 @@ fn reverse_rows<R>(data: &mut R, from: usize, to: usize)
 where
     R: Resizable,
 {
-    for row in from..to / 2 {
-        data.swap_row(row, to - row);
+    let end = to / 2;
+    let mut to = to - 1;
+    for row in from..end {
+        data.swap_row(row, to);
+        to -= 1;
     }
 }
 
@@ -725,8 +732,11 @@ fn reverse_columns<R>(data: &mut R, from: usize, to: usize)
 where
     R: Resizable,
 {
-    for col in from..to / 2 {
-        data.swap_column(col, to - col);
+    let end = to / 2;
+    let mut to = to - 1;
+    for row in from..end {
+        data.swap_column(row, to);
+        to -= 1;
     }
 }
 

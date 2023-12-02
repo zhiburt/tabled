@@ -23,7 +23,7 @@ test_table!(
     theme_reverse_data,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.reverse_data(true);
+        theme.reverse_rows(true);
         theme
     }),
     "┌───┬──────────┬──────────┬──────────┐"
@@ -41,7 +41,7 @@ test_table!(
     theme_reverse_columns,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.reverse_head(true);
+        theme.reverse_columns(true);
         theme
     }),
     "┌──────────┬──────────┬──────────┬───┐"
@@ -59,8 +59,8 @@ test_table!(
     theme_reverse_columns_and_data,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.reverse_data(true);
-        theme.reverse_head(true);
+        theme.reverse_rows(true);
+        theme.reverse_columns(true);
         theme
     }),
     "┌──────────┬──────────┬──────────┬───┐"
@@ -78,7 +78,7 @@ test_table!(
     theme_stick_left,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.set_head_alignment(Alignment::left());
+        theme.align_columns(Alignment::left());
         theme
     }),
     "┌──────────┬─────┬─────┬─────┐"
@@ -96,7 +96,7 @@ test_table!(
     theme_stick_right,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.set_head_alignment(Alignment::right());
+        theme.align_columns(Alignment::right());
         theme
     }),
     "┌─────┬─────┬─────┬──────────┐"
@@ -114,7 +114,7 @@ test_table!(
     theme_stick_bottom,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.set_head_alignment(Alignment::bottom());
+        theme.align_columns(Alignment::bottom());
         theme
     }),
     "┌───┬──────────┬──────────┬──────────┐"
@@ -152,7 +152,7 @@ test_table!(
     theme_stick_left_with_footer,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.set_head_alignment(Alignment::left());
+        theme.align_columns(Alignment::left());
         theme.set_footer(true);
         theme
     }),
@@ -171,7 +171,7 @@ test_table!(
     theme_stick_right_with_footer,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.set_head_alignment(Alignment::right());
+        theme.align_columns(Alignment::right());
         theme.set_footer(true);
         theme
     }),
@@ -190,7 +190,7 @@ test_table!(
     theme_stick_bottom_with_footer,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.set_head_alignment(Alignment::bottom());
+        theme.align_columns(Alignment::bottom());
         theme.set_footer(true);
         theme
     }),
@@ -212,7 +212,7 @@ test_table!(
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
         theme.set_footer(true);
-        theme.reverse_data(true);
+        theme.reverse_rows(true);
         theme
     }),
     "┌───┬──────────┬──────────┬──────────┐"
@@ -233,9 +233,9 @@ test_table!(
     theme_stick_left_with_footer_with_reverse,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.set_head_alignment(Alignment::left());
+        theme.align_columns(Alignment::left());
         theme.set_footer(true);
-        theme.reverse_data(true);
+        theme.reverse_rows(true);
         theme
     }),
     "┌──────────┬─────┬─────┬─────┬──────────┐"
@@ -253,9 +253,9 @@ test_table!(
     theme_stick_right_with_footer_with_reverse,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.set_head_alignment(Alignment::right());
+        theme.align_columns(Alignment::right());
         theme.set_footer(true);
-        theme.reverse_data(true);
+        theme.reverse_rows(true);
         theme
     }),
     "┌──────────┬─────┬─────┬─────┬──────────┐"
@@ -273,9 +273,9 @@ test_table!(
     theme_stick_bottom_with_footer_with_reverse,
     Matrix::new(3, 3).with({
         let mut theme = Theme::from_style(Style::modern());
-        theme.set_head_alignment(Alignment::bottom());
+        theme.align_columns(Alignment::bottom());
         theme.set_footer(true);
-        theme.reverse_data(true);
+        theme.reverse_rows(true);
         theme
     }),
     "┌───┬──────────┬──────────┬──────────┐"
