@@ -8,7 +8,7 @@ use crate::{
             vec_records::{CellInfo, VecRecords},
             ExactRecords, PeekableRecords, Records, Resizable,
         },
-        util::string::{count_lines, string_width},
+        util::string::string_width,
     },
     settings::{
         object::{Column, Row},
@@ -25,7 +25,10 @@ use crate::{
 ///
 /// ```
 /// use std::iter::FromIterator;
-/// use tabled::{Table, settings::themes::ColumnNames, grid::config::AlignmentHorizontal};
+/// use tabled::{
+///     Table,
+///     settings::{themes::ColumnNames, Alignment},
+/// };
 ///
 /// let data = vec![
 ///     vec!["Hello", "World"],
@@ -33,7 +36,11 @@ use crate::{
 /// ];
 ///
 /// let mut table = Table::from_iter(data);
-/// table.with(ColumnNames::new(["head1", "head2"]).line(2).alignment(AlignmentHorizontal::Right));
+/// table.with(
+///     ColumnNames::new(["head1", "head2"])
+///         .line(2)
+///         .alignment(Alignment::right())
+/// );
 ///
 /// assert_eq!(
 ///     table.to_string(),
@@ -190,12 +197,11 @@ impl ColumnNames {
     /// use std::iter::FromIterator;
     /// use tabled::{
     ///     Table,
-    ///     settings::themes::ColumnNames,
-    ///     grid::config::AlignmentHorizontal,
+    ///     settings::{themes::ColumnNames, Alignment},
     /// };
     ///
     /// let mut table = Table::from_iter(vec![vec!["Hello", "World"]]);
-    /// table.with(ColumnNames::new(["head1", "head2"]).alignment(AlignmentHorizontal::Right));
+    /// table.with(ColumnNames::new(["head1", "head2"]).alignment(Alignment::right()));
     ///
     /// assert_eq!(
     ///     table.to_string(),
@@ -308,24 +314,24 @@ fn set_row_text(
     let heights = names
         .iter()
         .enumerate()
-        .map(|(row, name)| (cmp::max(count_lines(name), dims.get_height(row))))
+        .map(|(row, name)| (cmp::max(string_width(name), dims.get_height(row))))
         .collect::<Vec<_>>();
 
     dims.set_heights(heights.clone());
 
     let mut total_height = 0;
-    for (row, (width, name)) in heights.into_iter().zip(names).enumerate() {
+    for (row, (row_height, name)) in heights.into_iter().zip(names).enumerate() {
         let color = get_color(&colors, row);
         let alignment = alignments.get(row).unwrap_or(AlignmentVertical::Top);
         let top_horizontal = get_horizontal_width(cfg, (row, target_line), count_rows);
-        let grid_offset =
-            total_height + top_horizontal + get_vertical_indent(&name, alignment, width);
+        let cell_indent = get_vertical_indent(&name, alignment, row_height);
+        let grid_offset = total_height + top_horizontal + cell_indent;
         let line = Column::from(target_line);
 
         let linetext = create_line_text(&name, grid_offset, color, line);
         linetext.change(records, cfg, dims);
 
-        total_height += width + top_horizontal;
+        total_height += row_height + top_horizontal;
     }
 }
 
@@ -374,7 +380,7 @@ fn collect_head(records: &mut VecRecords<CellInfo<String>>) -> Vec<String> {
 
 fn create_line_text<T>(text: &str, offset: usize, color: Option<&Color>, line: T) -> LineText<T> {
     let offset = Offset::Begin(offset);
-    let mut btext = LineText::new(text).line(line).offset(offset);
+    let mut btext = LineText::new(text, line).offset(offset);
     if let Some(color) = color {
         btext = btext.color(color.clone());
     }
@@ -401,8 +407,8 @@ fn get_horizontal_indent(text: &str, align: AlignmentHorizontal, available: usiz
 fn get_vertical_indent(text: &str, align: AlignmentVertical, available: usize) -> usize {
     match align {
         AlignmentVertical::Top => 0,
-        AlignmentVertical::Bottom => available - count_lines(text),
-        AlignmentVertical::Center => (available - count_lines(text)) / 2,
+        AlignmentVertical::Bottom => available - string_width(text),
+        AlignmentVertical::Center => (available - string_width(text)) / 2,
     }
 }
 

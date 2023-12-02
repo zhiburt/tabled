@@ -35,13 +35,9 @@ fn main() {
 
     let table = Table::new(data)
         .with(style)
-        .with(LineText::new("Numbers").line(Rows::first()).offset(1))
-        .with(
-            LineText::new("More numbers")
-                .line(Rows::single(1))
-                .offset(1),
-        )
-        .with(LineText::new("end.").line(Rows::last()).offset(1))
+        .with(LineText::new("Numbers", Rows::first()).offset(1))
+        .with(LineText::new("More numbers", Rows::single(1)).offset(1))
+        .with(LineText::new("end.", Rows::last()).offset(1))
         .to_string();
 
     println!("{table}");

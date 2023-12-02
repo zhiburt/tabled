@@ -279,6 +279,15 @@ name = "style_modern_rounded"
 path = "examples/style_modern_rounded.rs"
 required-features = ["std"]
 
+[[example]]
+name = "reverse"
+path = "examples/reverse.rs"
+required-features = ["std"]
+
+[[example]]
+name = "theme"
+path = "examples/theme.rs"
+required-features = ["derive", "std"]
 
 [features]
 default = ["derive", "macros"]
