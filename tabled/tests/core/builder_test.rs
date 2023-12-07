@@ -83,13 +83,13 @@ test_table!(
         b.set_header(["1", "2", "3"]);
         b.push_record(["a", "b", "c"]);
         b.push_record(["d", "e", "f"]);
-        b.remove_row(1);
+        b.remove_record(1);
         b.build()
     },
     "+---+---+---+"
     "| 1 | 2 | 3 |"
     "+---+---+---+"
-    "| d | e | f |"
+    "| a | b | c |"
     "+---+---+---+"
 );
 
@@ -100,7 +100,7 @@ test_table!(
         b.set_header(["1", "2", "3"]);
         b.push_record(["a", "b", "c"]);
         b.push_record(["d", "e", "f"]);
-        b.remove_column(3);
+        b.remove_column(2);
         b.build()
     },
     "+---+---+"
@@ -189,7 +189,7 @@ test_table!(
         b.set_header(["1", "2", "3"]);
         b.push_record(["a", "b", "c"]);
         b.push_record(["d", "e", "f"]);
-        b.reset_table();
+        b.clear();
         b.build()
     },
     "+---+---+---+"

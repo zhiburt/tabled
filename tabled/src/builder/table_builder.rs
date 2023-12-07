@@ -85,10 +85,10 @@ impl Builder {
     /// let mut builder = Builder::default();
     /// builder.set_header((0..3).map(|i| i.to_string()));
     /// ```
-    pub fn set_header<H, T>(&mut self, columns: H) -> &mut Self
+    pub fn set_header<H>(&mut self, columns: H) -> &mut Self
     where
-        H: IntoIterator<Item = T>,
-        T: Into<String>,
+        H: IntoIterator,
+        H::Item: Into<String>,
     {
         let list = create_row(columns, self.count_columns);
 
@@ -212,10 +212,10 @@ impl Builder {
     /// builder.push_record((0..3).map(|i| i.to_string()));
     /// builder.push_record(["i", "surname", "lastname"]);
     /// ```
-    pub fn push_record<R, T>(&mut self, row: R) -> &mut Self
+    pub fn push_record<R>(&mut self, row: R) -> &mut Self
     where
-        R: IntoIterator<Item = T>,
-        T: Into<String>,
+        R: IntoIterator,
+        R::Item: Into<String>,
     {
         let list = create_row(row, self.count_columns);
 
@@ -267,8 +267,9 @@ impl Builder {
     /// )
     /// ```
     pub fn clean(&mut self) -> &mut Self {
-        self.clean_columns();
-        self.clean_rows();
+        self.count_columns -= clean_columns(&mut self.data, &mut self.columns, self.count_columns);
+        clean_rows(&mut self.data, self.count_columns);
+
         self
     }
 
@@ -287,7 +288,10 @@ impl Builder {
     }
 
     /// Returns an amount of rows which would be present in a built table.
-    pub fn count_rows(&self) -> usize {
+    ///
+    /// Notice that it does not include header if present;
+    /// It returns only amount of records.
+    pub fn count_records(&self) -> usize {
         self.data.len()
     }
 
@@ -296,57 +300,116 @@ impl Builder {
         self.columns.is_some()
     }
 
-    fn clean_columns(&mut self) {
-        let mut i = 0;
-        for col in 0..self.count_columns {
-            let col = col - i;
-
-            let mut is_empty = true;
-            for row in 0..self.data.len() {
-                let cell = &self.data[row][col];
-                if !cell.as_ref().is_empty() {
-                    is_empty = false;
-                    break;
-                }
-            }
-
-            if is_empty {
-                for row in 0..self.data.len() {
-                    let _ = self.data[row].remove(col);
-                }
-
-                if let Some(columns) = self.columns.as_mut() {
-                    if columns.len() > col {
-                        let _ = columns.remove(col);
-                    }
-                }
-
-                i += 1;
-            }
-        }
-
-        self.count_columns -= i;
+    /// Removes a row with a specific position.
+    ///
+    /// Index expected to be in range.
+    /// `Builder::count_records() < x >= 0`
+    ///
+    /// # Panics
+    ///
+    /// Panics if `row_index > count_rows`.
+    pub fn remove_record(&mut self, index: usize) -> &mut Self {
+        let _ = self.data.remove(index);
+        self
     }
 
-    fn clean_rows(&mut self) {
-        for row in (0..self.data.len()).rev() {
-            let mut is_empty = true;
-            for col in 0..self.count_columns {
-                let cell = &self.data[row][col];
-                if !cell.as_ref().is_empty() {
-                    is_empty = false;
-                    break;
-                }
-            }
-
-            if is_empty {
-                let _ = self.data.remove(row);
-            }
-
-            if row == 0 {
-                break;
-            }
+    /// Removes a column with a specific position.
+    ///
+    /// Index expected to be in range.
+    /// `Builder::count_columns() < x >= 0`
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index > count_columns`.
+    pub fn remove_column(&mut self, index: usize) -> &mut Self {
+        if let Some(columns) = &mut self.columns {
+            let _ = columns.remove(index);
         }
+
+        for row in &mut self.data {
+            let _ = row.remove(index);
+        }
+
+        self.count_columns -= 1;
+
+        self
+    }
+
+    /// Push a column.
+    ///
+    /// First text is considered to be a header if the one present
+    pub fn push_column<I>(&mut self, column: I)
+    where
+        I: IntoIterator,
+        I::Item: Into<String>,
+    {
+        if !self.is_consistent {
+            self.fit_rows_length();
+        }
+
+        let mut iter = column.into_iter();
+        if let Some(columns) = &mut self.columns {
+            let text = match iter.next() {
+                Some(text) => text.into(),
+                None => String::new(),
+            };
+            let cell = CellInfo::new(text);
+
+            columns.push(cell);
+        }
+
+        let cell_list = iter
+            .map(|cell| cell.into())
+            .chain(std::iter::repeat(String::new()));
+        for (text, row) in cell_list.zip(self.data.iter_mut()) {
+            row.push(CellInfo::new(text));
+        }
+
+        self.count_columns += 1;
+    }
+
+    /// Insert a column with a specific position.
+    ///
+    /// In case a column is bigger then the total amount of rows it will be truncated.
+    ///
+    /// # Panics
+    ///self
+    /// Panics if `index > count_columns`.
+    pub fn insert_column<I>(&mut self, column: I, index: usize)
+    where
+        I: IntoIterator,
+        I::Item: Into<String>,
+    {
+        if !self.is_consistent {
+            self.fit_rows_length();
+        }
+
+        let mut iter = column.into_iter();
+
+        if let Some(columns_names) = &mut self.columns {
+            let cell = match iter.next() {
+                Some(cell) => CellInfo::new(cell.into()),
+                None => CellInfo::new(String::new()),
+            };
+
+            columns_names.insert(index, cell);
+        }
+
+        let cell_list = iter
+            .map(|cell| cell.into())
+            .chain(std::iter::repeat(String::new()));
+        for (cell, row) in cell_list.zip(self.data.iter_mut()) {
+            row.insert(index, CellInfo::new(cell));
+        }
+
+        self.count_columns += 1;
+    }
+
+    /// Clear records.
+    pub fn clear(&mut self) {
+        self.data.clear();
+        self.is_consistent = true;
+        self.count_columns = self.columns.as_ref().map(Vec::len).unwrap_or(0);
     }
 
     fn update_size(&mut self, size: usize) {
@@ -377,7 +440,7 @@ impl Builder {
         max
     }
 
-    fn fix_rows(&mut self) {
+    fn fit_rows_length(&mut self) {
         let empty_cell = self.empty_cell_text.to_owned().unwrap_or_default();
         let empty = CellInfo::new(empty_cell);
 
@@ -395,102 +458,12 @@ impl Builder {
             }
         }
     }
-
-    /// Removes a row with a specific position.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `row_index > count_rows`.
-    pub fn remove_row(&mut self, row_index: usize) -> &mut Self {
-        let idx = row_index - 1;
-        let _ = self.data.remove(idx);
-        self
-    }
-
-    /// Removes a column with a specific position.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `index > count_columns`.
-    pub fn remove_column(&mut self, column_index: usize) -> &mut Self {
-        let idx = column_index - 1;
-        let columns = &mut self.columns;
-        match columns {
-            Some(columns) => {
-                let _ = columns.remove(idx);
-            },
-            _ => ()
-        }
-        let table_value = &mut self.data;
-        for vec in table_value {
-            let _ = vec.remove(idx);
-        }
-        self.count_columns = self.get_size();
-        self
-    }
-
-    /// Push a column
-    pub fn push_column<H, T>(&mut self, column: H)
-    where
-        H: IntoIterator<Item = T>,
-        T: Into<String>, 
-    {
-        let columns = &mut self.columns;
-        let table_value = &mut self.data;
-        let mut list = create_row(column, self.count_columns);
-        match columns {
-            Some(v) => {
-                let cell = list.remove(0);
-                v.push(cell);
-                self.count_columns = v.len();
-            },
-            None => ()
-        }
-
-        for vec in table_value {
-            let cell = list.remove(0);
-            vec.push(cell);
-        }
-    }
-
-    /// Insert a column with a specific position.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `index > count_columns`.
-    pub fn insert_column<H, T>(&mut self, column: H, index: usize)
-    where
-        H: IntoIterator<Item = T>,
-        T: Into<String>,
-    {
-        let columns = &mut self.columns;
-        let table_value = &mut self.data;
-        let mut list = create_row(column, self.count_columns);
-        match columns {
-            Some(v) => {
-                let cell = list.remove(0);
-                v.insert(index, cell);
-                self.count_columns = v.len();
-            },
-            None => ()
-        }
-        for vec in table_value {
-            let cell = list.remove(0);
-            vec.insert(index, cell);
-        }
-    }
-
-    /// Reset table content
-    pub fn reset_table(&mut self) {
-        let table_content = &mut self.data;
-        table_content.clear();
-    }
 }
 
 impl From<Builder> for Vec<Vec<String>> {
     fn from(mut builder: Builder) -> Self {
         if !builder.is_consistent {
-            builder.fix_rows();
+            builder.fit_rows_length();
         }
 
         if let Some(columns) = builder.columns {
@@ -508,7 +481,7 @@ impl From<Builder> for Vec<Vec<String>> {
 impl From<Builder> for Vec<Vec<CellInfo<String>>> {
     fn from(mut builder: Builder) -> Self {
         if !builder.is_consistent {
-            builder.fix_rows();
+            builder.fit_rows_length();
         }
 
         if let Some(columns) = builder.columns {
@@ -519,10 +492,10 @@ impl From<Builder> for Vec<Vec<CellInfo<String>>> {
     }
 }
 
-impl<R, V> FromIterator<R> for Builder
+impl<R> FromIterator<R> for Builder
 where
-    R: IntoIterator<Item = V>,
-    V: Into<String>,
+    R: IntoIterator,
+    R::Item: Into<String>,
 {
     fn from_iter<T: IntoIterator<Item = R>>(iter: T) -> Self {
         let mut builder = Self::default();
@@ -576,10 +549,10 @@ impl From<Vec<Vec<CellInfo<String>>>> for Builder {
     }
 }
 
-fn create_row<R, T>(row: R, size: usize) -> Vec<CellInfo<String>>
+fn create_row<R>(row: R, size: usize) -> Vec<CellInfo<String>>
 where
-    R: IntoIterator<Item = T>,
-    T: Into<String>,
+    R: IntoIterator,
+    R::Item: Into<String>,
 {
     let mut list = Vec::with_capacity(size);
     for text in row {
@@ -593,4 +566,62 @@ where
 
 fn append_vec<T: Clone>(v: &mut Vec<T>, value: T, n: usize) {
     v.extend((0..n).map(|_| value.clone()));
+}
+
+fn clean_columns(
+    data: &mut [Vec<CellInfo<String>>],
+    head: &mut Option<Vec<CellInfo<String>>>,
+    count_columns: usize,
+) -> usize {
+    let mut deleted = 0;
+    for col in 0..count_columns {
+        let col = col - deleted;
+
+        let mut is_empty_column = true;
+        for row in data.iter() {
+            let text = &row[col];
+            if !text.as_ref().is_empty() {
+                is_empty_column = false;
+                break;
+            }
+        }
+
+        if is_empty_column {
+            for row in data.iter_mut() {
+                let _ = row.remove(col);
+            }
+
+            if let Some(columns) = head.as_mut() {
+                if columns.len() > col {
+                    let _ = columns.remove(col);
+                }
+            }
+
+            deleted += 1;
+        }
+    }
+
+    deleted
+}
+
+fn clean_rows(data: &mut Vec<Vec<CellInfo<String>>>, count_columns: usize) {
+    let mut deleted = 0;
+
+    for row in 0..data.len() {
+        let row = row - deleted;
+
+        let mut is_empty_row = true;
+        for col in 0..count_columns {
+            let cell = &data[row][col];
+            if !cell.as_ref().is_empty() {
+                is_empty_row = false;
+                break;
+            }
+        }
+
+        if is_empty_row {
+            let _ = data.remove(row);
+            deleted += 1;
+        }
+    }
 }
