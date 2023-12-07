@@ -102,13 +102,11 @@ test_table!(
     builder_index_with_no_columns,
     Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["d", "e", "f"]]).index().build(),
     "+---+---+---+---+"
-    "|   | 0 | 1 | 2 |"
+    "|   | 1 | 2 | 3 |"
     "+---+---+---+---+"
-    "| 0 | 1 | 2 | 3 |"
+    "| 0 | a | b | c |"
     "+---+---+---+---+"
-    "| 1 | a | b | c |"
-    "+---+---+---+---+"
-    "| 2 | d | e | f |"
+    "| 1 | d | e | f |"
     "+---+---+---+---+"
 );
 
@@ -116,18 +114,16 @@ test_table!(
     builder_index_with_no_columns_and_name,
     Builder::from_iter([["1", "2", "3"], ["a", "b", "c"], ["d", "e", "f"]])
         .index()
-        .name(Some("Hello World".into()))
+        .name(Some(String::from("Hello World")))
         .build(),
     "+-------------+---+---+---+"
-    "|             | 0 | 1 | 2 |"
+    "|             | 1 | 2 | 3 |"
     "+-------------+---+---+---+"
     "| Hello World |   |   |   |"
     "+-------------+---+---+---+"
-    "| 0           | 1 | 2 | 3 |"
+    "| 0           | a | b | c |"
     "+-------------+---+---+---+"
-    "| 1           | a | b | c |"
-    "+-------------+---+---+---+"
-    "| 2           | d | e | f |"
+    "| 1           | d | e | f |"
     "+-------------+---+---+---+"
 );
 
@@ -137,15 +133,15 @@ test_table!(
         .index()
         .transpose()
         .build(),
-    "+---+---+---+---+"
-    "|   | 0 | 1 | 2 |"
-    "+---+---+---+---+"
-    "| 0 | 1 | a | d |"
-    "+---+---+---+---+"
-    "| 1 | 2 | b | e |"
-    "+---+---+---+---+"
-    "| 2 | 3 | c | f |"
-    "+---+---+---+---+"
+    "+---+---+---+"
+    "|   | 0 | 1 |"
+    "+---+---+---+"
+    "| 1 | a | d |"
+    "+---+---+---+"
+    "| 2 | b | e |"
+    "+---+---+---+"
+    "| 3 | c | f |"
+    "+---+---+---+"
 );
 
 test_table!(builder_index_empty, Builder::default().index().build(), "");
@@ -175,7 +171,7 @@ test_table!(
     builder_index_with_header_but_no_data,
     {
         let mut b = Builder::default();
-        b.set_header(["one", "two", "three"]);
+        b.push_record(["one", "two", "three"]);
         b.index().build()
     },
     "+--+-----+-----+-------+"
@@ -205,14 +201,84 @@ fn builder_index_no_name_transpose_transpose() {
     assert_eq!(orig_table, two_times_transposed_table,);
 }
 
-#[test]
-fn builder_index_convert_back_to_builder() {
-    let mut b1 = Builder::default();
-    b1.set_header(["one", "two", "three"]);
-    let b2 = Builder::from(b1.clone().index().hide());
-    assert_eq!(b1.clone().build().shape(), b2.clone().build().shape());
-    assert_eq!(
-        b1.clone().build().to_string(),
-        b2.clone().build().to_string()
-    );
-}
+test_table!(
+    builder_index_convert_back_to_builder,
+    {
+        let mut b = Builder::new();
+        b.push_record(["one", "two", "three"]);
+        Builder::from(b.clone().index().hide()).build()
+    },
+    "+-----+-----+-------+"
+    "| one | two | three |"
+    "+-----+-----+-------+"
+);
+
+test_table!(
+    index_column_3_times,
+    Table::builder(Matrix::list::<3, 2>()).index().column(0).column(0).column(0).build(),
+    "+----------+"
+    "|          |"
+    "+----------+"
+    "| column 1 |"
+    "+----------+"
+    "| 0-1      |"
+    "+----------+"
+    "| 1-1      |"
+    "+----------+"
+    "| 2-1      |"
+    "+----------+"
+);
+
+test_table!(
+    index_transpose_with_no_name0,
+    Builder::from_iter([["col1", "col2", "col3"], ["a", "b", "c"], ["d", "e", "f"]])
+        .index()
+        .transpose()
+        .name(Some(String::from("hello world")))
+        .transpose()
+        .build(),
+    "+-------------+------+------+------+"
+    "|             | col1 | col2 | col3 |"
+    "+-------------+------+------+------+"
+    "| hello world |      |      |      |"
+    "+-------------+------+------+------+"
+    "| 0           | a    | b    | c    |"
+    "+-------------+------+------+------+"
+    "| 1           | d    | e    | f    |"
+    "+-------------+------+------+------+"
+);
+
+test_table!(
+    index_transpose_with_no_name1,
+    Builder::from_iter([["col1", "col2", "col3"], ["a", "b", "c"], ["d", "e", "f"]])
+        .index()
+        .transpose()
+        .name(Some(String::from("hello world")))
+        .build(),
+    "+-------------+---+---+"
+    "| hello world | 0 | 1 |"
+    "+-------------+---+---+"
+    "| col1        | a | d |"
+    "+-------------+---+---+"
+    "| col2        | b | e |"
+    "+-------------+---+---+"
+    "| col3        | c | f |"
+    "+-------------+---+---+"
+);
+
+test_table!(
+    index_transpose_with_no_name2,
+    Builder::from_iter([["col1", "col2", "col3"], ["a", "b", "c"], ["d", "e", "f"]])
+        .index()
+        .transpose()
+        .build(),
+    "+------+---+---+"
+    "|      | 0 | 1 |"
+    "+------+---+---+"
+    "| col1 | a | d |"
+    "+------+---+---+"
+    "| col2 | b | e |"
+    "+------+---+---+"
+    "| col3 | c | f |"
+    "+------+---+---+"
+);

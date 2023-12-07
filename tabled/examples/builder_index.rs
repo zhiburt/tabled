@@ -40,8 +40,8 @@ fn main() {
     let mut table = Table::builder(data)
         .index()
         .column(0)
-        .name(None)
         .transpose()
+        .name(None)
         .build();
 
     table.with(Style::modern());

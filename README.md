@@ -200,7 +200,7 @@ for line in song.lines() {
 }
 
 let columns = (0..builder.count_columns()).map(|i| i.to_string());
-builder.set_header(columns);
+builder.insert_record(0, columns);
 
 let mut table = builder.build();
 table.with(Style::ascii_rounded());
@@ -253,10 +253,9 @@ You can use `Builder::index` to make a particular column an index, which will st
 use tabled::{builder::Builder, settings::Style};
 
 let mut builder = Builder::default();
-builder
-    .set_header(["Index", "Language", "Status"])
-    .push_record(["1", "English", "In progress"])
-    .push_record(["2", "Deutsch", "Not ready"]);
+builder.push_record(["Index", "Language", "Status"]);
+builder.push_record(["1", "English", "In progress"]);
+builder.push_record(["2", "Deutsch", "Not ready"]);
 
 let builder = builder.index().column(1).name(None);
 

@@ -1,4 +1,4 @@
-use crate::Table;
+use crate::{grid::records::vec_records::CellInfo, Table};
 
 use super::Builder;
 
@@ -19,7 +19,7 @@ use super::Builder;
 /// use tabled::builder::Builder;
 ///
 /// let mut builder = Builder::default();
-/// builder.set_header(["i", "col-1", "col-2"]);
+/// builder.push_record(["i", "col-1", "col-2"]);
 /// builder.push_record(["0", "value-1", "value-2"]);
 ///
 /// let table = builder.index().build().to_string();
@@ -47,9 +47,9 @@ use super::Builder;
 pub struct IndexBuilder {
     /// Index is an index data.
     /// It's always set.
-    index: Vec<String>,
+    index: Vec<CellInfo<String>>,
     /// Name of an index
-    name: Option<String>,
+    name: Option<CellInfo<String>>,
     /// A flag which checks if we need to actually use index.
     ///
     /// It might happen when it's only necessary to [`Self::transpose`] table.
@@ -57,7 +57,9 @@ pub struct IndexBuilder {
     /// A flag which checks if table was transposed.
     transposed: bool,
     /// Data originated in [`Builder`].
-    data: Vec<Vec<String>>,
+    data: Vec<Vec<CellInfo<String>>>,
+    /// A size of columns
+    count_columns: usize,
 }
 
 impl IndexBuilder {
@@ -69,7 +71,7 @@ impl IndexBuilder {
     /// use tabled::builder::Builder;
     ///
     /// let mut builder = Builder::default();
-    /// builder.set_header(["i", "col-1", "col-2"]);
+    /// builder.push_record(["i", "col-1", "col-2"]);
     /// builder.push_record(["0", "value-1", "value-2"]);
     /// builder.push_record(["2", "value-3", "value-4"]);
     ///
@@ -101,7 +103,7 @@ impl IndexBuilder {
     /// use tabled::builder::Builder;
     ///
     /// let mut builder = Builder::default();
-    /// builder.set_header(["i", "column1", "column2"]);
+    /// builder.push_record(["i", "column1", "column2"]);
     /// builder.push_record(["0", "value1", "value2"]);
     ///
     /// let table = builder.index()
@@ -121,7 +123,7 @@ impl IndexBuilder {
     /// )
     /// ```
     pub fn name(mut self, name: Option<String>) -> Self {
-        self.name = name;
+        self.name = name.map(CellInfo::new);
         self
     }
 
@@ -135,7 +137,7 @@ impl IndexBuilder {
     /// use tabled::builder::Builder;
     ///
     /// let mut builder = Builder::default();
-    /// builder.set_header(["i", "column1", "column2"]);
+    /// builder.push_record(["i", "column1", "column2"]);
     /// builder.push_record(["0", "value1", "value2"]);
     ///
     /// let table = builder.index().column(1).build();
@@ -152,13 +154,13 @@ impl IndexBuilder {
     /// )
     /// ```
     pub fn column(mut self, column: usize) -> Self {
-        if column >= matrix_count_columns(&self.data) {
+        if column >= self.count_columns {
             return self;
         }
 
         self.index = get_column(&mut self.data, column);
 
-        let name = remove_or_default(&mut self.index, 0);
+        let name = self.index.remove(0);
         self.name = Some(name);
 
         self
@@ -172,7 +174,7 @@ impl IndexBuilder {
     /// use tabled::builder::Builder;
     ///
     /// let mut builder = Builder::default();
-    /// builder.set_header(["i", "column-1", "column-2", "column-3"]);
+    /// builder.push_record(["i", "column-1", "column-2", "column-3"]);
     /// builder.push_record(["0", "value-1", "value-2", "value-3"]);
     /// builder.push_record(["1", "value-4", "value-5", "value-6"]);
     /// builder.push_record(["2", "value-7", "value-8", "value-9"]);
@@ -193,16 +195,20 @@ impl IndexBuilder {
     /// )
     /// ```
     pub fn transpose(mut self) -> Self {
-        let columns = &mut self.data[0];
-        std::mem::swap(&mut self.index, columns);
+        if self.data.is_empty() {
+            return self;
+        }
 
-        let columns = self.data.remove(0);
+        let mut columns = self.data.remove(0);
+        std::mem::swap(&mut self.index, &mut columns);
 
-        make_rows_columns(&mut self.data);
+        let count_columns = columns.len();
+        make_rows_columns(&mut self.data, self.index.len());
 
         self.data.insert(0, columns);
 
         self.transposed = !self.transposed;
+        self.count_columns = count_columns;
 
         self
     }
@@ -216,25 +222,23 @@ impl IndexBuilder {
 
 impl From<Builder> for IndexBuilder {
     fn from(builder: Builder) -> Self {
-        let has_header = builder.has_header();
+        let count_columns = builder.count_columns();
+        let data: Vec<Vec<_>> = builder.into();
 
-        let mut data: Vec<Vec<_>> = builder.into();
-
-        if !has_header {
-            let count_columns = matrix_count_columns(&data);
-            data.insert(0, build_range_index(count_columns));
+        let mut index = Vec::new();
+        if !data.is_empty() {
+            // we exclude first row which contains a header
+            let count_rows = data.len() - 1;
+            index = build_range_index(count_rows);
         }
-
-        // we exclude first row which contains a header
-        let data_len = data.len().saturating_sub(1);
-        let index = build_range_index(data_len);
 
         Self {
             index,
+            data,
+            count_columns,
             name: None,
             print_index: true,
             transposed: false,
-            data,
         }
     }
 }
@@ -247,14 +251,13 @@ impl From<IndexBuilder> for Builder {
 
 fn build_index(mut b: IndexBuilder) -> Builder {
     // we can skip the conversion if this builder has neither data rows nor header row
-    if b.index.is_empty() && matrix_count_columns(&b.data) == 0 {
+    if b.index.is_empty() && b.count_columns == 0 {
         return Builder::default();
     }
 
     // add index column
     if b.print_index {
-        b.index.insert(0, String::default());
-
+        b.index.insert(0, CellInfo::default());
         insert_column(&mut b.data, b.index, 0);
     }
 
@@ -262,38 +265,39 @@ fn build_index(mut b: IndexBuilder) -> Builder {
         if b.transposed && b.print_index {
             b.data[0][0] = name;
         } else {
-            b.data.insert(1, vec![name]);
+            let count_columns = b.data[0].len();
+            let mut name_row = vec![CellInfo::default(); count_columns];
+            name_row[0] = name;
+
+            b.data.insert(1, name_row);
         }
     }
 
-    Builder::from(b.data)
+    Builder::from_vec(b.data)
 }
 
-fn build_range_index(n: usize) -> Vec<String> {
-    (0..n).map(|i| i.to_string()).collect()
+fn build_range_index(n: usize) -> Vec<CellInfo<String>> {
+    (0..n).map(|i| i.to_string()).map(CellInfo::new).collect()
 }
 
-fn remove_or_default<T: Default>(v: &mut Vec<T>, i: usize) -> T {
-    if v.len() > i {
-        v.remove(i)
-    } else {
-        T::default()
-    }
-}
-
-fn get_column<T: Default>(v: &mut [Vec<T>], col: usize) -> Vec<T> {
+fn get_column<T>(v: &mut [Vec<T>], col: usize) -> Vec<T>
+where
+    T: Default,
+{
     let mut column = Vec::with_capacity(v.len());
     for row in v.iter_mut() {
-        let value = remove_or_default(row, col);
+        let value = row.remove(col);
         column.push(value);
     }
 
     column
 }
 
-fn make_rows_columns<T: Default>(v: &mut Vec<Vec<T>>) {
-    let count_columns = matrix_count_columns(v);
-
+// todo: Seems like can be hugely simplified.
+fn make_rows_columns<T>(v: &mut Vec<Vec<T>>, count_columns: usize)
+where
+    T: Default,
+{
     let mut columns = Vec::with_capacity(count_columns);
     for _ in 0..count_columns {
         let column = get_column(v, 0);
@@ -309,11 +313,7 @@ fn make_rows_columns<T: Default>(v: &mut Vec<Vec<T>>) {
 
 fn insert_column<T: Default>(v: &mut [Vec<T>], mut column: Vec<T>, col: usize) {
     for row in v.iter_mut() {
-        let value = remove_or_default(&mut column, col);
+        let value = column.remove(col);
         row.insert(col, value);
     }
-}
-
-fn matrix_count_columns<T>(v: &[Vec<T>]) -> usize {
-    v.first().map_or(0, |row| row.len())
 }

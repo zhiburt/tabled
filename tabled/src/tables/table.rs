@@ -156,20 +156,14 @@ impl Table {
         T: Tabled,
         I: IntoIterator<Item = T>,
     {
-        let mut records = Vec::new();
-        for row in iter {
-            let mut list = Vec::with_capacity(T::LENGTH);
-            for text in row.fields().into_iter() {
-                list.push(text.into_owned());
-            }
+        let mut builder = Builder::with_capacity(0, T::LENGTH);
+        builder.push_record(T::headers());
 
-            records.push(list);
+        for row in iter {
+            builder.push_record(row.fields().into_iter());
         }
 
-        let mut b = Builder::from(records);
-        let _ = b.set_header(T::headers()).hint_column_size(T::LENGTH);
-
-        b
+        builder
     }
 
     /// It's a generic function which applies options to the [`Table`].
@@ -323,10 +317,10 @@ impl fmt::Display for Table {
     }
 }
 
-impl<T, V> FromIterator<T> for Table
+impl<T> FromIterator<T> for Table
 where
-    T: IntoIterator<Item = V>,
-    V: Into<String>,
+    T: IntoIterator,
+    T::Item: Into<String>,
 {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         Builder::from_iter(iter.into_iter().map(|i| i.into_iter().map(|s| s.into()))).build()
@@ -335,7 +329,7 @@ where
 
 impl From<Builder> for Table {
     fn from(builder: Builder) -> Self {
-        let data: Vec<Vec<CellInfo<String>>> = builder.into();
+        let data = builder.into();
         let records = VecRecords::new(data);
 
         Self {
@@ -348,11 +342,8 @@ impl From<Builder> for Table {
 
 impl From<Table> for Builder {
     fn from(val: Table) -> Self {
-        let count_columns = val.count_columns();
-        let data: Vec<Vec<CellInfo<String>>> = val.records.into();
-        let mut builder = Builder::from(data);
-        let _ = builder.hint_column_size(count_columns);
-        builder
+        let data = val.records.into();
+        Builder::from_vec(data)
     }
 }
 

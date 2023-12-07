@@ -428,7 +428,7 @@ mod print {
             intersections_horizontal = data.intersections_horizontal;
             next_intersections_vertical.extend(data.intersections_vertical);
 
-            let _ = builder.push_record([data.content]);
+            builder.push_record([data.content]);
         }
 
         let table = builder
@@ -521,13 +521,14 @@ mod print {
             buf.push(value);
         }
 
-        let mut b = Builder::with_capacity(1);
-        let _ = b.hint_column_size(buf.len()).push_record(buf);
-        let table = b
-            .build()
-            .with(Style::empty())
-            .with(Padding::zero())
-            .to_string();
+        let mut builder = Builder::with_capacity(1, buf.len());
+        builder.push_record(buf);
+
+        let mut table = builder.build();
+        let _ = table.with(Style::empty());
+        let _ = table.with(Padding::zero());
+
+        let table = table.to_string();
 
         CellData::new(table, new_intersections_horizontal, intersections_vertical)
     }

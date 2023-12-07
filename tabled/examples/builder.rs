@@ -20,7 +20,8 @@ fn main() {
     let oceans = ["Atlantic", "Pacific", "Indian", "Southern", "Arctic"];
 
     let mut builder = Builder::default();
-    builder.set_header(["#", "Ocean"]);
+    builder.push_record(["#", "Ocean"]);
+
     for (i, ocean) in oceans.iter().enumerate() {
         builder.push_record([i.to_string(), ocean.to_string()]);
     }
