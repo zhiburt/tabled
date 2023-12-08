@@ -109,4 +109,11 @@ impl crate::grid::colors::Colors for ColorMap {
     fn get_color(&self, (row, col): (usize, usize)) -> Option<&Self::Color> {
         self.0.as_ref().map(|map| map.get(Entity::Cell(row, col)))
     }
+
+    fn is_empty(&self) -> bool {
+        self.0
+            .as_ref()
+            .map(|cfg| cfg.is_empty() && cfg.get(Entity::Global).is_empty())
+            .unwrap_or(true)
+    }
 }

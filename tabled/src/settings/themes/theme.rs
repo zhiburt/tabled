@@ -696,8 +696,6 @@ where
         return;
     }
 
-    println!("==> {orientation:?} {count_rows}");
-
     match orientation {
         HeadPosition::Top => reverse_rows(records, 1, count_rows),
         HeadPosition::Bottom => reverse_rows(records, 0, count_rows - 1),

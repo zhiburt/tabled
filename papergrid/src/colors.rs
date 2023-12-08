@@ -9,6 +9,9 @@ pub trait Colors {
 
     /// Returns a color for a given position.
     fn get_color(&self, pos: (usize, usize)) -> Option<&Self::Color>;
+
+    /// Verifies whether a map is empty or not.
+    fn is_empty(&self) -> bool;
 }
 
 impl<C> Colors for &'_ C
@@ -19,6 +22,10 @@ where
 
     fn get_color(&self, pos: Position) -> Option<&Self::Color> {
         C::get_color(self, pos)
+    }
+
+    fn is_empty(&self) -> bool {
+        C::is_empty(self)
     }
 }
 
@@ -32,6 +39,10 @@ where
     fn get_color(&self, pos: Position) -> Option<&Self::Color> {
         self.get(&pos)
     }
+
+    fn is_empty(&self) -> bool {
+        std::collections::HashMap::is_empty(self)
+    }
 }
 
 #[cfg(feature = "std")]
@@ -43,6 +54,10 @@ where
 
     fn get_color(&self, pos: Position) -> Option<&Self::Color> {
         self.get(&pos)
+    }
+
+    fn is_empty(&self) -> bool {
+        std::collections::BTreeMap::is_empty(self)
     }
 }
 
@@ -56,6 +71,11 @@ where
     fn get_color(&self, pos: Position) -> Option<&Self::Color> {
         self.get(pos.into()).as_ref()
     }
+
+    fn is_empty(&self) -> bool {
+        crate::config::spanned::EntityMap::is_empty(self)
+            && self.get(crate::config::Entity::Global).is_none()
+    }
 }
 
 /// The structure represents empty [`Colors`] map.
@@ -67,6 +87,10 @@ impl Colors for NoColors {
 
     fn get_color(&self, _: Position) -> Option<&Self::Color> {
         None
+    }
+
+    fn is_empty(&self) -> bool {
+        true
     }
 }
 

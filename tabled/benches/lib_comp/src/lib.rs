@@ -25,25 +25,33 @@ pub mod tabled_color {
 }
 
 pub mod tabled_current {
-    use std::iter::FromIterator;
     use tabled_current::builder::Builder;
 
     #[inline]
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
-        let mut b = Builder::from_iter(data);
-        b.set_header(columns);
+        let mut b = Builder::with_capacity(data.len() + 1, columns.len());
+        b.push_record(columns);
+
+        for row in data {
+            b.push_record(row);
+        }
+
         b.build().to_string()
     }
 }
 
 pub mod tabled_color_current {
-    use std::iter::FromIterator;
     use tabled_color_current::builder::Builder;
 
     #[inline]
     pub fn build(columns: Vec<String>, data: Vec<Vec<String>>) -> String {
-        let mut b = Builder::from_iter(data);
-        b.set_header(columns);
+        let mut b = Builder::with_capacity(data.len() + 1, columns.len());
+        b.push_record(columns);
+
+        for row in data {
+            b.push_record(row);
+        }
+
         b.build().to_string()
     }
 }

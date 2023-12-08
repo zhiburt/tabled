@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use fnv::FnvHashMap;
 
 use crate::config::{Entity, Position};
@@ -22,6 +24,11 @@ impl<T> EntityMap<T> {
             columns: FnvHashMap::default(),
             cells: FnvHashMap::default(),
         }
+    }
+
+    /// Verifies whether anything was set beside a global entry.
+    pub fn is_empty(&self) -> bool {
+        self.columns.is_empty() && self.rows.is_empty() && self.cells.is_empty()
     }
 
     /// Get a value for an [`Entity`].
@@ -104,5 +111,26 @@ impl<T: Clone> EntityMap<T> {
                 self.global = value
             }
         }
+    }
+}
+
+impl<T> From<EntityMap<T>> for HashMap<Entity, T> {
+    fn from(value: EntityMap<T>) -> Self {
+        let mut m = HashMap::new();
+        m.insert(Entity::Global, value.global);
+
+        for ((row, col), value) in value.cells {
+            m.insert(Entity::Cell(row, col), value);
+        }
+
+        for (row, value) in value.rows {
+            m.insert(Entity::Row(row), value);
+        }
+
+        for (col, value) in value.columns {
+            m.insert(Entity::Column(col), value);
+        }
+
+        m
     }
 }

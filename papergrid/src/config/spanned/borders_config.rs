@@ -19,6 +19,12 @@ pub(crate) struct BordersMap<T> {
     intersection: HashMap<Position, T>,
 }
 
+impl<T> BordersMap<T> {
+    fn is_empty(&self) -> bool {
+        self.vertical.is_empty() && self.horizontal.is_empty() && self.intersection.is_empty()
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub(crate) struct BordersLayout {
     left: bool,
@@ -30,6 +36,14 @@ pub(crate) struct BordersLayout {
 }
 
 impl<T> BordersConfig<T> {
+    pub(crate) fn is_empty(&self) -> bool {
+        self.global.is_none()
+            && self.borders.is_empty()
+            && self.cells.is_empty()
+            && self.horizontals.is_empty()
+            && self.verticals.is_empty()
+    }
+
     pub(crate) fn insert_border(&mut self, pos: Position, border: Border<T>) {
         if let Some(c) = border.top {
             self.cells.horizontal.insert(pos, c);
