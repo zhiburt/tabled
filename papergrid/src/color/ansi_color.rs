@@ -22,6 +22,11 @@ impl<'a> AnsiColor<'a> {
     pub const fn new(prefix: Cow<'a, str>, suffix: Cow<'a, str>) -> Self {
         Self { prefix, suffix }
     }
+
+    /// Checks whether the color is not actually set.
+    pub fn is_empty(&self) -> bool {
+        self.prefix == "" && self.suffix == ""
+    }
 }
 
 impl AnsiColor<'_> {

@@ -646,6 +646,63 @@ impl SpannedConfig {
         !self.span_rows.is_empty()
     }
 
+    /// Verifies if there's any colors set for a borders.
+    pub fn has_border_colors(&self) -> bool {
+        !self.borders_colors.is_empty()
+    }
+
+    /// Verifies if there's any colors set for a borders.
+    pub fn has_offset_chars(&self) -> bool {
+        !self.horizontal_chars.is_empty() || !self.vertical_chars.is_empty()
+    }
+
+    /// Verifies if there's any colors set for a borders.
+    pub fn has_justification(&self) -> bool {
+        !self.justification.is_empty() || !self.justification_color.is_empty()
+    }
+
+    /// Verifies if there's any custom padding set.
+    pub fn has_padding(&self) -> bool {
+        !self.padding.is_empty()
+    }
+
+    /// Verifies if there's any custom padding set.
+    pub fn has_padding_color(&self) -> bool {
+        let map = HashMap::from(self.padding.clone());
+        let mut has_color = false;
+        for (entity, value) in map {
+            if matches!(entity, Entity::Global) {
+                continue;
+            }
+
+            has_color = value.bottom.color.is_some()
+                || value.top.color.is_some()
+                || value.left.color.is_some()
+                || value.right.color.is_some();
+
+            if has_color {
+                break;
+            }
+        }
+
+        has_color
+    }
+
+    /// Verifies if there's any custom formatting set.
+    pub fn has_formatting(&self) -> bool {
+        !self.formatting.is_empty()
+    }
+
+    /// Verifies if there's any custom alignment vertical set.
+    pub fn has_alignemnt_vertical(&self) -> bool {
+        !self.alignment_v.is_empty()
+    }
+
+    /// Verifies if there's any custom alignment horizontal set.
+    pub fn has_alignemnt_horizontal(&self) -> bool {
+        !self.alignment_h.is_empty()
+    }
+
     /// Gets an intersection character which would be rendered on the grid.
     ///
     /// grid: crate::Grid
