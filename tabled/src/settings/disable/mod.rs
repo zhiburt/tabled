@@ -69,7 +69,6 @@ impl<L> Disable<L, TargetColumn> {
     /// use tabled::{builder::Builder, settings::{Disable, location::ByColumnName, object::Columns}};
     ///
     /// let mut builder = Builder::default();
-    ///
     /// builder.push_record(["col1", "col2", "col3"]);
     /// builder.push_record(["Hello", "World", "1"]);
     ///

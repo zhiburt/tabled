@@ -112,21 +112,17 @@
 //!
 //! let mut builder = Builder::default();
 //!
-//! let header = iter::once(String::from("i"))
-//!     .chain((0..y)
-//!     .map(|i| i.to_string()));
-//! builder.set_header(header);
+//! let header = iter::once(String::from("i")).chain((0..y).map(|i| i.to_string()));
+//! builder.push_record(header);
 //!
 //! for i in 0..x {
-//!     let row = iter::once(i)
-//!         .chain((0..y).map(|j| i * j))
-//!         .map(|i| i.to_string());
+//!     let row = iter::once(i).chain((0..y).map(|j| i * j)).map(|i| i.to_string());
 //!     builder.push_record(row);
 //! }
 //!
 //! let table = builder.build()
 //!     .with(Style::rounded())
-//!     .with(Modify::new(Rows::new(1..)).with(Alignment::left()))
+//!     .modify(Rows::new(1..), Alignment::left())
 //!     .to_string();
 //!
 //! assert_eq!(

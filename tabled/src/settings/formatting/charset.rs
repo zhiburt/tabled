@@ -45,12 +45,16 @@ impl Charset {
 /// # Example
 ///
 /// ```
-/// use tabled::{Table, settings::formatting::Charset};
+/// use std::iter::FromIterator;
+/// use tabled::{
+///     Table, builder::Builder,
+///     settings::formatting::Charset,
+/// };
 ///
 /// let text = "Some text which was created on windows \r\n yes they use this \\r\\n";
 ///
-/// let mut builder = Table::builder([text]);
-/// builder.set_header(["win. text"]);
+/// let mut builder = Builder::from(Table::from_iter([[text]]));
+/// builder.insert_record(0, ["win. text"]);
 ///
 /// let mut table = builder.build();
 /// table.with(Charset::clean());
