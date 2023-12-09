@@ -6,6 +6,7 @@ macro_rules! bench_lib {
             let mut group = c.benchmark_group(stringify!($name));
 
             for size in [1, 8, 32, 128, 512] {
+                #[allow(clippy::redundant_closure_call)]
                 let (columns, data) = $data_fn(size);
 
                 $({
@@ -30,13 +31,13 @@ macro_rules! create_bench {
             $name,
             $table,
             { "tabled", lib_comp::tabled_current::build },
-            // { "tabled_color", lib_comp::tabled_color_current::build },
-            // { "tabled_iter", lib_comp::tabled_current_iter::build },
-            // { "tabled_compact", lib_comp::tabled_current_compact::build },
-            // { "cli_table", lib_comp::cli_table::build  },
-            // { "comfy_table", lib_comp::comfy_table::build },
-            // { "term_table", lib_comp::term_table::build  },
-            // { "prettytable_rs", lib_comp::prettytable_rs::build },
+            { "tabled_color", lib_comp::tabled_color_current::build },
+            { "tabled_iter", lib_comp::tabled_current_iter::build },
+            { "tabled_compact", lib_comp::tabled_current_compact::build },
+            { "cli_table", lib_comp::cli_table::build  },
+            { "comfy_table", lib_comp::comfy_table::build },
+            { "term_table", lib_comp::term_table::build  },
+            { "prettytable_rs", lib_comp::prettytable_rs::build },
         );
     };
 }
