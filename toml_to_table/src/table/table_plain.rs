@@ -30,8 +30,7 @@ fn _plain_table(value: &Value, cfg: &Settings, outer: bool) -> String {
 }
 
 fn seq_column_table(arr: &Vec<Value>, cfg: &Settings, config: SpannedConfig) -> String {
-    let mut buf = Builder::with_capacity(1);
-    buf.hint_column_size(1);
+    let mut buf = Builder::with_capacity(1, 1);
     for value in arr {
         let val = _plain_table(value, cfg, false);
         buf.push_record([val]);
@@ -51,7 +50,7 @@ fn seq_row_table(arr: &Vec<Value>, cfg: &Settings, config: SpannedConfig) -> Str
 }
 
 fn map_column_table(map: &TomlMap, cfg: &Settings, config: SpannedConfig) -> String {
-    let mut buf = Builder::with_capacity(map.len());
+    let mut buf = Builder::with_capacity(map.len(), 2);
     for (key, value) in map.iter() {
         let val = _plain_table(value, cfg, false);
         buf.push_record([key.to_owned(), val]);

@@ -47,16 +47,21 @@ fn main() {
         Person::new("Adam Blend", 17, true),
     ];
 
-    let table_a = Table::new(&validated).with(Style::ascii()).to_string();
-    let table_b = Table::new(&not_validated).with(Style::modern()).to_string();
-    let table_c = Table::new(&unsure).with(Style::ascii_rounded()).to_string();
+    let table_validated = Table::new(validated).with(Style::ascii()).to_string();
+    let table_not_validated = Table::new(not_validated).with(Style::modern()).to_string();
+    let table_unsure = Table::new(unsure).with(Style::ascii_rounded()).to_string();
 
-    let row_table = row![table_c, table_b];
+    let output1 = row![table_validated, table_not_validated];
+    let output2 = col![table_unsure; 3];
 
-    let col_table = col![table_c; 3];
+    let output3 = col![
+        row![table_validated, table_not_validated].with(Style::empty()),
+        table_unsure
+    ]
+    .with(Alignment::center())
+    .to_string();
 
-    let mut row_col_table = col![row![table_a, table_b].with(Style::empty()), table_c];
-    row_col_table.with(Alignment::center());
-
-    println!("{row_table}\n{col_table}\n{row_col_table}",);
+    println!("{output1}");
+    println!("{output2}");
+    println!("{output3}");
 }

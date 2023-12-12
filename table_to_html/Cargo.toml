@@ -12,8 +12,8 @@ categories = ["text-processing", "visualization"]
 license = "MIT"
 
 [dependencies]
-tabled = { version = "0.12", features = ["std"], default-features = false }
+tabled = { path = "../tabled", features = ["std"], default-features = false }
 
 [dev-dependencies]
-tabled = { version = "0.12", features = ["std", "derive"], default-features = false }
+tabled = { path = "../tabled", features = ["std", "derive"], default-features = false }
 testing_table = { path = "../testing_table", features = ["color"] }

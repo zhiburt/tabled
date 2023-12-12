@@ -12,8 +12,7 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
     match v {
         Value::Array(arr) => match cfg.array_orientation {
             Orientation::Column => {
-                let mut buf = Builder::with_capacity(1);
-                buf.hint_column_size(1);
+                let mut buf = Builder::with_capacity(1, 1);
                 for value in arr {
                     let val = _plain_table(value, cfg, false);
                     buf.push_record([val]);
@@ -36,7 +35,7 @@ fn _plain_table(v: &Value, cfg: &Config, outer: bool) -> String {
         },
         Value::Object(map) => match cfg.object_orientation {
             Orientation::Column => {
-                let mut buf = Builder::with_capacity(map.len());
+                let mut buf = Builder::with_capacity(map.len(), 2);
                 for (key, value) in map {
                     let val = _plain_table(value, cfg, false);
                     buf.push_record([key.clone(), val]);

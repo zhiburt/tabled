@@ -241,10 +241,10 @@ fn generate_horizontal_array(
         buf.push(value);
     }
 
-    let mut b = Builder::with_capacity(1);
-    b.hint_column_size(buf.len());
-    b.push_record(buf);
-    let table = b
+    let mut builder = Builder::with_capacity(1, buf.len());
+    builder.push_record(buf);
+
+    let table = builder
         .build()
         .with(Style::empty())
         .with(Padding::zero())
@@ -498,11 +498,11 @@ fn generate_horizontal_object(
 
     intersections_vertical.insert(0, key_height);
 
-    let mut b = Builder::with_capacity(2);
-    b.hint_column_size(obj.len());
-    b.push_record(row1);
-    b.push_record(row2);
-    let table = b
+    let mut builder = Builder::with_capacity(2, obj.len());
+    builder.push_record(row1);
+    builder.push_record(row2);
+
+    let table = builder
         .build()
         .with(Style::empty())
         .with(Padding::zero())

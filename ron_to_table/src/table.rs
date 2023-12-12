@@ -96,10 +96,12 @@ fn configure_grid() -> CompactMultilineConfig {
         Indent::default(),
     );
 
-    CompactMultilineConfig::default()
-        .set_padding(pad)
-        .set_alignment_horizontal(AlignmentHorizontal::Left)
-        .set_borders(*Style::ascii().get_borders())
+    let mut cfg = CompactMultilineConfig::new();
+    cfg.set_padding(pad);
+    cfg.set_alignment_horizontal(AlignmentHorizontal::Left);
+    cfg.set_borders(tabled::grid::config::Borders::from(Style::ascii()));
+
+    cfg
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
@@ -390,8 +392,7 @@ fn _plain_table(value: &Value, cfg: &RonTable, outer: bool) -> String {
 }
 
 fn seq_column_table(arr: &Vec<Value>, cfg: &RonTable, config: &SpannedConfig) -> String {
-    let mut buf = Builder::with_capacity(1);
-    buf.hint_column_size(1);
+    let mut buf = Builder::with_capacity(1, 1);
     for value in arr {
         let val = _plain_table(value, cfg, false);
         buf.push_record([val]);
@@ -411,7 +412,7 @@ fn seq_row_table(arr: &Vec<Value>, cfg: &RonTable, config: &SpannedConfig) -> St
 }
 
 fn map_column_table(map: &ron::Map, cfg: &RonTable, config: &SpannedConfig) -> String {
-    let mut buf = Builder::with_capacity(map.len());
+    let mut buf = Builder::with_capacity(map.len(), 2);
     for (key, value) in map.iter() {
         let key = _plain_table(key, cfg, false);
         let val = _plain_table(value, cfg, false);

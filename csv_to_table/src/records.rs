@@ -1,22 +1,16 @@
-use std::{fmt::Debug, io::Read, mem::transmute};
+use std::{fmt::Debug, io::Read};
 
 use csv::{Reader, StringRecord, StringRecordsIntoIter};
 use tabled::grid::records::IntoRecords;
 
 /// A [`IntoRecords`] implementation for a [`csv::Reader`].
 ///
-/// By default all errors are ignored, but you can print them using [`CsvRecords::print_errors`].
+/// By default all errors are ignored,
+/// but you can return them using [`CsvRecordsIter::set_catch`].
 ///
-/// [`CsvRecords::print_errors`]: CsvRecords.print_errors
+/// [`CsvRecordsIter::set_catch`]: CsvRecordsIter.set_catch
 pub struct CsvRecords<R> {
     rows: StringRecordsIntoIter<R>,
-    err_logic: ErrorLogic,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-enum ErrorLogic {
-    Ignore,
-    Print,
 }
 
 impl<R> CsvRecords<R> {
@@ -27,24 +21,61 @@ impl<R> CsvRecords<R> {
     {
         Self {
             rows: reader.into_records(),
-            err_logic: ErrorLogic::Ignore,
         }
     }
+}
 
-    /// Show underlying [Read] errors inside a table.
-    pub fn print_errors(mut self) -> Self {
-        self.err_logic = ErrorLogic::Print;
-        self
+impl<R> IntoRecords for CsvRecords<R>
+where
+    R: Read,
+{
+    type Cell = String;
+    type IterColumns = CsvStringRecord;
+    type IterRows = CsvRecordsIter<R>;
+
+    fn iter_rows(self) -> Self::IterRows {
+        CsvRecordsIter {
+            iter: self.rows,
+            err_logic: ErrorLogic::Ignore,
+            err: None,
+        }
     }
 }
 
 /// A row iterator.
-pub struct CsvStringRecordsRows<R> {
+pub struct CsvRecordsIter<R> {
     iter: StringRecordsIntoIter<R>,
     err_logic: ErrorLogic,
+    err: Option<std::io::Error>,
 }
 
-impl<R> Iterator for CsvStringRecordsRows<R>
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum ErrorLogic {
+    Ignore,
+    Catch,
+}
+
+impl<R> CsvRecordsIter<R> {
+    /// Return a status
+    ///
+    /// It's a cought by a catcher you can set by [`CsvRecordsIter::set_catch`].
+    pub fn status(&self) -> Option<&std::io::Error> {
+        self.err.as_ref()
+    }
+
+    /// Show underlying [Read] errors inside a table.
+    pub fn set_catch(mut self, catch: bool) -> Self {
+        self.err_logic = if catch {
+            ErrorLogic::Catch
+        } else {
+            ErrorLogic::Ignore
+        };
+
+        self
+    }
+}
+
+impl<R> Iterator for CsvRecordsIter<R>
 where
     R: Read,
 {
@@ -58,12 +89,9 @@ where
                 Ok(record) => return Some(CsvStringRecord::new(record)),
                 Err(err) => match self.err_logic {
                     ErrorLogic::Ignore => continue,
-                    ErrorLogic::Print => {
-                        let err = err.to_string();
-                        let mut record = StringRecord::with_capacity(err.len(), 1);
-                        record.push_field(&err);
-
-                        return Some(CsvStringRecord::new(record));
+                    ErrorLogic::Catch => {
+                        self.err = Some(std::io::Error::from(err));
+                        return None;
                     }
                 },
             }
@@ -72,7 +100,7 @@ where
 }
 
 /// A column iterator.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct CsvStringRecord {
     record: StringRecord,
     i: usize,
@@ -85,48 +113,14 @@ impl CsvStringRecord {
 }
 
 impl Iterator for CsvStringRecord {
-    type Item = CsvStrField;
+    type Item = String;
 
     fn next(&mut self) -> Option<Self::Item> {
         let text = self.record.get(self.i)?;
-        let text = unsafe { transmute::<&str, &'static str>(text) };
+        let text = String::from(text);
 
         self.i += 1;
-        Some(CsvStrField(text))
-    }
-}
 
-/// A cell struct.
-///
-/// # SAFETY
-///
-/// NOTICE that it has a &'static lifetime which is not true.
-/// It's made so only cause of trait limitations.
-///
-/// It's unsafe to keep the reference around.
-///
-/// It's OK for [`CsvRecords`] cause we do not keep it internally.
-#[derive(Debug)]
-pub struct CsvStrField(&'static str);
-
-impl AsRef<str> for CsvStrField {
-    fn as_ref(&self) -> &str {
-        self.0
-    }
-}
-
-impl<R> IntoRecords for CsvRecords<R>
-where
-    R: Read,
-{
-    type Cell = CsvStrField;
-    type IterColumns = CsvStringRecord;
-    type IterRows = CsvStringRecordsRows<R>;
-
-    fn iter_rows(self) -> Self::IterRows {
-        CsvStringRecordsRows {
-            iter: self.rows,
-            err_logic: self.err_logic,
-        }
+        Some(text)
     }
 }

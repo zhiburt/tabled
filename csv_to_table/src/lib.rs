@@ -68,23 +68,57 @@ pub mod iter {
     use super::*;
     use std::fs::File;
 
-    pub use super::records::CsvRecords;
-
-    pub mod records {
-        //! A module which contains [`CsvRecords`].
-
-        pub use crate::records::*;
-    }
+    pub use super::records::*;
 
     /// Creates [`IterTable`] from a csv [`Read`]er.
-    pub fn from_reader<R: Read>(reader: R) -> IterTable<CsvRecords<R>> {
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use csv_to_table::iter::from_reader;
+    ///
+    /// let csv = r#"Name,Job Tittle,Number
+    /// Maxim,Plummer,12345
+    /// Alex,Sowftware Developer,45678"#;
+    ///
+    /// let table = from_reader(csv.as_bytes());
+    ///
+    /// let table = table.to_string();
+    ///
+    /// assert_eq!(
+    ///     table,
+    ///     "+-------+---------------------+--------+\n\
+    ///      | Name  | Job Tittle          | Number |\n\
+    ///      +-------+---------------------+--------+\n\
+    ///      | Maxim | Plummer             | 12345  |\n\
+    ///      +-------+---------------------+--------+\n\
+    ///      | Alex  | Sowftware Developer | 45678  |\n\
+    ///      +-------+---------------------+--------+",
+    /// );
+    /// ```
+    pub fn from_reader<R>(reader: R) -> IterTable<CsvRecords<R>>
+    where
+        R: Read,
+    {
         let rdr = ReaderBuilder::new().has_headers(false).from_reader(reader);
 
         IterTable::new(CsvRecords::new(rdr))
     }
 
     /// Creates [`IterTable`] from a [`File`] which suppose to have a csv.
-    pub fn from_path<P: AsRef<Path>>(path: P) -> Result<IterTable<CsvRecords<File>>, csv::Error> {
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use csv_to_table::iter::from_path;
+    ///
+    /// let table = from_path("path/to/a/file").expect("success read");
+    /// let table = table.to_string();
+    /// ```
+    pub fn from_path<P>(path: P) -> Result<IterTable<CsvRecords<File>>, csv::Error>
+    where
+        P: AsRef<Path>,
+    {
         let rdr = ReaderBuilder::new().has_headers(false).from_path(path)?;
 
         let table = IterTable::new(CsvRecords::new(rdr));
@@ -93,9 +127,22 @@ pub mod iter {
     }
 
     /// Creates [`IterTable`] from a [`csv::Reader`].
-    pub fn from_csv_reader<R: Read>(
-        reader: Reader<R>,
-    ) -> Result<IterTable<CsvRecords<R>>, csv::Error> {
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// use csv_to_table::iter::from_csv_reader;
+    /// use csv::Reader;
+    ///
+    /// let reader = Reader::from_path("path/to/a/file").expect("failed to find a file");
+    ///
+    /// let table = from_csv_reader(reader).expect("failed to read from a reader");
+    /// let table = table.to_string();
+    /// ```
+    pub fn from_csv_reader<R>(reader: Reader<R>) -> Result<IterTable<CsvRecords<R>>, csv::Error>
+    where
+        R: Read,
+    {
         let table = IterTable::new(CsvRecords::new(reader));
 
         Ok(table)
@@ -104,8 +151,23 @@ pub mod iter {
 
 /// Creates [`Table`] from [`Read`]er.
 ///
-/// Notice that in case of big files you might better you [`iter::CsvRecords`].
-pub fn from_reader<R: Read>(reader: R) -> Result<Table, csv::Error> {
+/// Notice that in case of big files you might better use [`iter::CsvRecords`].
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use std::fs::File;
+/// use csv_to_table::from_reader;
+///
+/// let file = File::open("/path/to/a/file").expect("failed to open a file");
+///
+/// let table = from_reader(file).expect("failed to read from a file");
+/// let table = table.to_string();
+/// ```
+pub fn from_reader<R>(reader: R) -> Result<Table, csv::Error>
+where
+    R: Read,
+{
     let rdr = ReaderBuilder::new().has_headers(false).from_reader(reader);
 
     read_into_table(rdr)
@@ -113,10 +175,22 @@ pub fn from_reader<R: Read>(reader: R) -> Result<Table, csv::Error> {
 
 /// Creates [`Table`] from a csv [`File`].
 ///
-/// Notice that in case of big files you might better you [`iter::CsvRecords`].
+/// Notice that in case of big files you might better use [`iter::CsvRecords`].
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use csv_to_table::from_path;
+///
+/// let table = from_path("path/to/a/file").expect("success read");
+/// let table = table.to_string();
+/// ```
 ///
 /// [`File`]: std::fs::File
-pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Table, csv::Error> {
+pub fn from_path<P>(path: P) -> Result<Table, csv::Error>
+where
+    P: AsRef<Path>,
+{
     let rdr = ReaderBuilder::new().has_headers(false).from_path(path)?;
 
     read_into_table(rdr)
@@ -124,12 +198,30 @@ pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Table, csv::Error> {
 
 /// Creates [`Table`] from a [`csv::Reader`].
 ///
-/// Notice that in case of big files you might better you [`iter::CsvRecords`].
-pub fn from_csv_reader<R: Read>(reader: Reader<R>) -> Result<Table, csv::Error> {
+/// Notice that in case of big files you might better use [`iter::CsvRecords`].
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use csv_to_table::from_csv_reader;
+/// use csv::Reader;
+///
+/// let reader = Reader::from_path("path/to/a/file").expect("failed to find a file");
+///
+/// let table = from_csv_reader(reader).expect("failed to read from a reader");
+/// let table = table.to_string();
+/// ```
+pub fn from_csv_reader<R>(reader: Reader<R>) -> Result<Table, csv::Error>
+where
+    R: Read,
+{
     read_into_table(reader)
 }
 
-fn read_into_table<R: Read>(reader: Reader<R>) -> Result<Table, csv::Error> {
+fn read_into_table<R>(reader: Reader<R>) -> Result<Table, csv::Error>
+where
+    R: Read,
+{
     let mut builder = Builder::default();
 
     for record in reader.into_records() {
