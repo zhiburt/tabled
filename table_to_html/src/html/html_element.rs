@@ -1,11 +1,11 @@
-//! The module contains a html primitives.
-
 use std::fmt::Display;
 
 use tabled::grid::util::string::get_lines;
 
+use crate::html::{Attribute, HtmlValue, HtmlVisitor, HtmlVisitorMut};
+
 /// A HTML element representation.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct HtmlElement {
     tag: String,
     attrs: Vec<Attribute>,
@@ -16,21 +16,19 @@ impl HtmlElement {
     /// Creates new HTML element
     ///
     /// None value considered to represent void element.
-    pub fn new<S: Into<String>>(tag: S, attrs: Vec<Attribute>, value: Option<HtmlValue>) -> Self {
-        Self {
-            tag: tag.into(),
-            attrs,
-            value,
-        }
+    pub fn new<S>(tag: S, attrs: Vec<Attribute>, value: Option<HtmlValue>) -> Self
+    where
+        S: Into<String>,
+    {
+        Self::__new(tag.into(), attrs, value)
     }
 
     /// Creates a new HTML element with no content.
-    pub fn void<S: Into<String>>(tag: S, attrs: Vec<Attribute>) -> Self {
-        Self {
-            tag: tag.into(),
-            attrs,
-            value: None,
-        }
+    pub fn void<S>(tag: S, attrs: Vec<Attribute>) -> Self
+    where
+        S: Into<String>,
+    {
+        Self::__new(tag.into(), attrs, None)
     }
 
     /// Returns a tag value of an element.
@@ -49,16 +47,25 @@ impl HtmlElement {
     }
 
     /// Visits all desending elements starting from itself.
-    pub fn visit<V: HtmlVisitor>(&self, mut visitor: V) {
+    pub fn visit<V>(&self, mut visitor: V)
+    where
+        V: HtmlVisitor,
+    {
         self.__visit(&mut visitor);
     }
 
     /// Visits all desending elements starting from itself.
-    pub fn visit_mut<V: HtmlVisitorMut>(&mut self, mut visitor: V) {
+    pub fn visit_mut<V>(&mut self, mut visitor: V)
+    where
+        V: HtmlVisitorMut,
+    {
         self.__visit_mut(&mut visitor);
     }
 
-    fn __visit<V: HtmlVisitor>(&self, visitor: &mut V) -> bool {
+    fn __visit<V>(&self, visitor: &mut V) -> bool
+    where
+        V: HtmlVisitor,
+    {
         let ok = visitor.visit_element(self);
         if !ok {
             return false;
@@ -84,7 +91,10 @@ impl HtmlElement {
         true
     }
 
-    fn __visit_mut<V: HtmlVisitorMut>(&mut self, visitor: &mut V) -> bool {
+    fn __visit_mut<V>(&mut self, visitor: &mut V) -> bool
+    where
+        V: HtmlVisitorMut,
+    {
         let ok = visitor.visit_element_mut(self);
         if !ok {
             return false;
@@ -109,6 +119,10 @@ impl HtmlElement {
 
         true
     }
+
+    fn __new(tag: String, attrs: Vec<Attribute>, value: Option<HtmlValue>) -> Self {
+        Self { tag, attrs, value }
+    }
 }
 
 impl Display for HtmlElement {
@@ -117,70 +131,28 @@ impl Display for HtmlElement {
     }
 }
 
-/// HtmlValue represents a children elements of an HTML element.
-#[derive(Debug, Clone)]
-pub enum HtmlValue {
-    /// Children elements.
-    Elements(Vec<HtmlElement>),
-    /// A string content.
-    Content(String),
+fn print_tag(mut f: impl std::fmt::Write, tag: &str, attrs: &[Attribute]) -> std::fmt::Result {
+    if attrs.is_empty() {
+        return write!(f, "<{tag}>");
+    }
+
+    write!(f, "<{tag} ")?;
+    print_attributes(&mut f, attrs)?;
+    write!(f, ">")
 }
 
-/// Attribute represents a HTML `key=value` attribute pair.
-#[derive(Debug, Clone)]
-pub struct Attribute {
-    key: String,
-    value: String,
-}
-
-impl Attribute {
-    /// Creates a new attribute.
-    pub fn new<K: Into<String>, V: Into<String>>(key: K, value: V) -> Self {
-        Self {
-            key: key.into(),
-            value: value.into(),
+fn print_attributes(mut f: impl std::fmt::Write, attrs: &[Attribute]) -> std::fmt::Result {
+    for (i, attr) in attrs.iter().enumerate() {
+        if i > 0 {
+            f.write_char(' ')?;
         }
+
+        f.write_str(attr.key())?;
+        f.write_char('=')?;
+        write!(f, "{:?}", attr.value())?;
     }
 
-    /// Returns a key.
-    pub fn key(&self) -> &str {
-        &self.key
-    }
-
-    /// Returns a value.
-    pub fn value(&self) -> &str {
-        &self.value
-    }
-}
-
-/// A visitor which traverses a HTML elements tree.
-pub trait HtmlVisitor {
-    /// Visit an element.
-    fn visit_element(&mut self, table: &HtmlElement) -> bool;
-}
-
-impl<T> HtmlVisitor for &mut T
-where
-    T: HtmlVisitor,
-{
-    fn visit_element(&mut self, table: &HtmlElement) -> bool {
-        T::visit_element(self, table)
-    }
-}
-
-/// A visitor which traverses a HTML elements tree, while mutating the tree.
-pub trait HtmlVisitorMut {
-    /// Visit an element.
-    fn visit_element_mut(&mut self, table: &mut HtmlElement) -> bool;
-}
-
-impl<T> HtmlVisitorMut for &mut T
-where
-    T: HtmlVisitorMut,
-{
-    fn visit_element_mut(&mut self, table: &mut HtmlElement) -> bool {
-        T::visit_element_mut(self, table)
-    }
+    Ok(())
 }
 
 fn build_html(f: impl std::fmt::Write, e: &HtmlElement) -> std::fmt::Result {
@@ -246,28 +218,4 @@ fn build_html(f: impl std::fmt::Write, e: &HtmlElement) -> std::fmt::Result {
     e.visit(&mut builder);
 
     builder.result
-}
-
-fn print_tag(mut f: impl std::fmt::Write, tag: &str, attrs: &[Attribute]) -> std::fmt::Result {
-    if attrs.is_empty() {
-        return write!(f, "<{tag}>");
-    }
-
-    write!(f, "<{tag} ")?;
-    print_attributes(&mut f, attrs)?;
-    write!(f, ">")
-}
-
-fn print_attributes(mut f: impl std::fmt::Write, attrs: &[Attribute]) -> std::fmt::Result {
-    for (i, attr) in attrs.iter().enumerate() {
-        if i > 0 {
-            f.write_char(' ')?;
-        }
-
-        f.write_str(attr.key())?;
-        f.write_char('=')?;
-        write!(f, "{:?}", attr.value())?;
-    }
-
-    Ok(())
 }
