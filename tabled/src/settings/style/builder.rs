@@ -1702,9 +1702,9 @@ fn cfg_set_custom_lines(
 #[cfg(feature = "std")]
 fn cfg_clear_borders(cfg: &mut ColoredConfig) {
     cfg.remove_borders();
-    cfg.remove_borders_colors();
     cfg.remove_vertical_chars();
     cfg.remove_horizontal_chars();
+    cfg.remove_borders_colors();
     cfg.remove_color_line_horizontal();
     cfg.remove_color_line_vertical();
 }

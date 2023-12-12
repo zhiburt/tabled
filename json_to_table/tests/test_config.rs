@@ -105,21 +105,32 @@ test_table!(
 #[cfg(feature = "color")]
 test_table!(
     color_test,
-    json_to_table(&json!({
+    {
+        struct ColorizeBorders;
+
+        impl<R, D> tabled::settings::TableOption<R, D, ColoredConfig> for ColorizeBorders {
+            fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
+                cfg.set_border_color_global(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into()));
+            }
+        }
+
+        let data = json!({
             "key1": 123,
             "234": ["123", "234", "456"],
             "key22": {
                 "k1": 1,
                 "k2": 2,
             }
-        }))
-        .with(ColoredConfig::new({
-            let mut cfg = SpannedConfig::default();
-            cfg.set_border_color_global(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into()));
-            cfg
-        }))
-        .with(Style::modern())
-        .collapse(),
+        });
+
+        let mut table = json_to_table(&data);
+        table.collapse();
+        table.with(Padding::zero());
+        table.with(Style::modern());
+        table.with(ColorizeBorders);
+
+        table.to_string()
+    },
     "\u{1b}[34m┌─────\u{1b}[39m\u{1b}[34m┬────┐\u{1b}[39m"
     "\u{1b}[34m│\u{1b}[39m234  \u{1b}[34m│\u{1b}[39m123 \u{1b}[34m│\u{1b}[39m"
     "\u{1b}[34m│\u{1b}[39m     \u{1b}[34m├────┤\u{1b}[39m"

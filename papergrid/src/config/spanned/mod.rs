@@ -527,6 +527,8 @@ impl SpannedConfig {
 
     /// Sets a color of all borders on the grid.
     pub fn set_border_color_global(&mut self, clr: AnsiColor<'static>) {
+        // todo: change this _global to insert by Entity
+
         self.borders_colors = BordersConfig::default();
         self.borders_colors.set_global(clr);
     }

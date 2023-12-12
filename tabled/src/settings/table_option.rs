@@ -4,6 +4,8 @@ use crate::grid::config::Entity;
 ///
 /// [`Table`]: crate::Table
 pub trait TableOption<R, D, C> {
+    // todo: change the method or generic order to match :)
+
     /// The function allows modification of records and a grid configuration.
     fn change(self, records: &mut R, cfg: &mut C, dimension: &mut D);
 
