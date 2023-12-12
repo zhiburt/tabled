@@ -5,10 +5,7 @@ use tabled::settings::{Alignment, Padding, Style};
 use testing_table::test_table;
 
 #[cfg(feature = "color")]
-use tabled::{
-    grid::color::AnsiColor,
-    grid::config::{ColoredConfig, SpannedConfig},
-};
+use tabled::{grid::color::AnsiColor, grid::config::ColoredConfig};
 
 test_table!(
     config_from_table_test,
