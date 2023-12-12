@@ -4,7 +4,7 @@ use crate::settings::TableOption;
 #[derive(Debug)]
 pub struct FormatConfig<F>(pub(crate) F);
 
-impl<F, R, D, C> TableOption<R, D, C> for FormatConfig<F>
+impl<F, R, D, C> TableOption<R, C, D> for FormatConfig<F>
 where
     F: FnMut(&mut C),
 {

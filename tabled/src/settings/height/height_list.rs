@@ -33,7 +33,7 @@ impl FromIterator<usize> for HeightList {
     }
 }
 
-impl<R, C> TableOption<R, CompleteDimensionVecRecords<'_>, C> for HeightList
+impl<R, C> TableOption<R, C, CompleteDimensionVecRecords<'_>> for HeightList
 where
     R: ExactRecords + Records,
 {

@@ -114,7 +114,7 @@ impl Concat {
     }
 }
 
-impl<R, D, C> TableOption<R, D, C> for Concat
+impl<R, D, C> TableOption<R, C, D> for Concat
 where
     R: Records + ExactRecords + Resizable + PeekableRecords + RecordsMut<String>,
 {

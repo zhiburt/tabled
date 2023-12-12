@@ -112,7 +112,7 @@ impl<O, M1> ModifyList<O, M1> {
     }
 }
 
-impl<O, M, R, D, C> TableOption<R, D, C> for ModifyList<O, M>
+impl<O, M, R, D, C> TableOption<R, C, D> for ModifyList<O, M>
 where
     O: Object<R>,
     M: CellOption<R, C> + Clone,

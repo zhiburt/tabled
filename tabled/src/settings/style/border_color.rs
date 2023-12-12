@@ -237,7 +237,7 @@ where
     }
 }
 
-impl<Data, D, T, B, L, R> TableOption<Data, D, ColoredConfig> for BorderColor<T, B, L, R>
+impl<Data, D, T, B, L, R> TableOption<Data, ColoredConfig, D> for BorderColor<T, B, L, R>
 where
     Data: Records + ExactRecords,
 {

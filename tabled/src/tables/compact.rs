@@ -163,7 +163,7 @@ impl<I, D> CompactTable<I, D> {
     /// With is a generic function which applies options to the [`CompactTable`].
     pub fn with<O>(mut self, option: O) -> Self
     where
-        for<'a> O: TableOption<IterRecords<&'a I>, D, CompactConfig>,
+        for<'a> O: TableOption<IterRecords<&'a I>, CompactConfig, D>,
     {
         let mut records = IterRecords::new(&self.records, self.count_columns, self.count_rows);
         option.change(&mut records, &mut self.cfg, &mut self.dims);
@@ -312,7 +312,7 @@ const fn create_config() -> CompactConfig {
         .set_borders(Style::ascii().get_borders())
 }
 
-impl<R, D> TableOption<R, D, CompactConfig> for CompactConfig {
+impl<R, D> TableOption<R, CompactConfig, D> for CompactConfig {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         *cfg = self;
     }

@@ -53,10 +53,10 @@ where
     }
 }
 
-impl<R, D, C, A, B> TableOption<R, D, C> for Settings<A, B>
+impl<R, D, C, A, B> TableOption<R, C, D> for Settings<A, B>
 where
-    A: TableOption<R, D, C>,
-    B: TableOption<R, D, C>,
+    A: TableOption<R, C, D>,
+    B: TableOption<R, C, D>,
 {
     fn change(self, records: &mut R, cfg: &mut C, dims: &mut D) {
         self.0.change(records, cfg, dims);
@@ -82,7 +82,7 @@ impl<R, C> CellOption<R, C> for EmptySettings {
     fn change(self, _: &mut R, _: &mut C, _: Entity) {}
 }
 
-impl<R, D, C> TableOption<R, D, C> for EmptySettings {
+impl<R, D, C> TableOption<R, C, D> for EmptySettings {
     fn change(self, _: &mut R, _: &mut C, _: &mut D) {}
 }
 

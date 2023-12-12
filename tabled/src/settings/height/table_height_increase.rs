@@ -44,7 +44,7 @@ impl<W> TableHeightIncrease<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig>
+impl<R, W, P> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>>
     for TableHeightIncrease<W, P>
 where
     W: Measurement<Height>,

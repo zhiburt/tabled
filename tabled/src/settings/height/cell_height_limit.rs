@@ -72,7 +72,7 @@ where
     }
 }
 
-impl<R, W> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig> for CellHeightLimit<W>
+impl<R, W> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for CellHeightLimit<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,

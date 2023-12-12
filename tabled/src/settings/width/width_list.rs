@@ -31,7 +31,7 @@ impl FromIterator<usize> for WidthList {
     }
 }
 
-impl<R, C> TableOption<R, CompleteDimensionVecRecords<'_>, C> for WidthList
+impl<R, C> TableOption<R, C, CompleteDimensionVecRecords<'_>> for WidthList
 where
     R: Records,
 {

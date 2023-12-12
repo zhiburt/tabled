@@ -131,7 +131,7 @@ where
 }
 
 #[cfg(feature = "std")]
-impl<R, D, C> TableOption<R, D, ColoredConfig> for Padding<C>
+impl<R, D, C> TableOption<R, ColoredConfig, D> for Padding<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
 {
@@ -140,7 +140,7 @@ where
     }
 }
 
-impl<R, D, C> TableOption<R, D, CompactConfig> for Padding<C>
+impl<R, D, C> TableOption<R, CompactConfig, D> for Padding<C>
 where
     C: Into<StaticColor> + Clone,
 {
@@ -154,7 +154,7 @@ where
     }
 }
 
-impl<R, D, C> TableOption<R, D, CompactMultilineConfig> for Padding<C>
+impl<R, D, C> TableOption<R, CompactMultilineConfig, D> for Padding<C>
 where
     C: Into<StaticColor> + Clone,
 {

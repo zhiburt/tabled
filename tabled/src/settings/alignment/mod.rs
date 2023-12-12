@@ -163,7 +163,7 @@ impl<R> crate::settings::CellOption<R, ColoredConfig> for Alignment {
 }
 
 #[cfg(feature = "std")]
-impl<R, D> TableOption<R, D, ColoredConfig> for Alignment {
+impl<R, D> TableOption<R, ColoredConfig, D> for Alignment {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         match self.inner {
             Horizontal(a) => cfg.set_alignment_horizontal(Entity::Global, a),
@@ -176,7 +176,7 @@ impl<R, D> TableOption<R, D, ColoredConfig> for Alignment {
     }
 }
 
-impl<R, D> TableOption<R, D, CompactConfig> for Alignment {
+impl<R, D> TableOption<R, CompactConfig, D> for Alignment {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         if let Horizontal(a) = self.inner {
             *cfg = cfg.set_alignment_horizontal(a)
@@ -188,7 +188,7 @@ impl<R, D> TableOption<R, D, CompactConfig> for Alignment {
     }
 }
 
-impl<R, D> TableOption<R, D, CompactMultilineConfig> for Alignment {
+impl<R, D> TableOption<R, CompactMultilineConfig, D> for Alignment {
     fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
         match self.inner {
             Horizontal(a) => cfg.set_alignment_horizontal(a),

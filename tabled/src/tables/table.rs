@@ -173,8 +173,8 @@ impl Table {
     where
         for<'a> O: TableOption<
             VecRecords<CellInfo<String>>,
-            CompleteDimensionVecRecords<'a>,
             ColoredConfig,
+            CompleteDimensionVecRecords<'a>,
         >,
     {
         let reastimation_hint = option.hint_change();
@@ -347,25 +347,25 @@ impl From<Table> for Builder {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for CompactConfig {
+impl<R, D> TableOption<R, ColoredConfig, D> for CompactConfig {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         *cfg.deref_mut() = self.into();
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for ColoredConfig {
+impl<R, D> TableOption<R, ColoredConfig, D> for ColoredConfig {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         *cfg = self;
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for SpannedConfig {
+impl<R, D> TableOption<R, ColoredConfig, D> for SpannedConfig {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         *cfg.deref_mut() = self;
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for &SpannedConfig {
+impl<R, D> TableOption<R, ColoredConfig, D> for &SpannedConfig {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         *cfg.deref_mut() = self.clone();
     }

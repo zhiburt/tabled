@@ -300,7 +300,7 @@ fn make_suffix<'a>(suffix: &'a TruncateSuffix<'_>, width: usize) -> (Cow<'a, str
     }
 }
 
-impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig> for Truncate<'_, W, P>
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for Truncate<'_, W, P>
 where
     W: Measurement<Width>,
     P: Peaker,

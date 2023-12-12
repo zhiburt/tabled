@@ -136,7 +136,7 @@ where
     }
 }
 
-impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig> for MinWidth<W, P>
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for MinWidth<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,

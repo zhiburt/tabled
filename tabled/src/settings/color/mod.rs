@@ -245,7 +245,7 @@ impl std::convert::TryFrom<String> for Color {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for Color {
+impl<R, D> TableOption<R, ColoredConfig, D> for Color {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let _ = cfg.set_color(Entity::Global, self.0.clone());
     }

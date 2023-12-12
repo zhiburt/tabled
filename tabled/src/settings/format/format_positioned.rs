@@ -18,7 +18,7 @@ impl<F> FormatContentPositioned<F> {
     }
 }
 
-impl<F, R, D, C> TableOption<R, D, C> for FormatContentPositioned<F>
+impl<F, R, D, C> TableOption<R, C, D> for FormatContentPositioned<F>
 where
     F: FnMut(&str, (usize, usize)) -> String,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,

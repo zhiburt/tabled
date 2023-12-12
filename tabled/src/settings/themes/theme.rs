@@ -493,7 +493,7 @@ impl From<Borders<char>> for Theme {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for Theme
+impl<R, D> TableOption<R, ColoredConfig, D> for Theme
 where
     R: Records + Resizable + ExactRecords + PeekableRecords + RecordsMut<String>,
 {
@@ -518,13 +518,13 @@ where
     }
 }
 
-impl<R, D> TableOption<R, D, CompactConfig> for Theme {
+impl<R, D> TableOption<R, CompactConfig, D> for Theme {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         *cfg = cfg.set_borders(self.border.chars);
     }
 }
 
-impl<R, D> TableOption<R, D, CompactMultilineConfig> for Theme {
+impl<R, D> TableOption<R, CompactMultilineConfig, D> for Theme {
     fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
         cfg.set_borders(self.border.chars);
     }

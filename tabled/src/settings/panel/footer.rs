@@ -21,7 +21,7 @@ impl<S> Footer<S> {
     }
 }
 
-impl<S, R, D> TableOption<R, D, ColoredConfig> for Footer<S>
+impl<S, R, D> TableOption<R, ColoredConfig, D> for Footer<S>
 where
     S: AsRef<str>,
     R: Records + ExactRecords + Resizable + RecordsMut<String>,

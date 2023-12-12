@@ -72,7 +72,7 @@ impl Charset {
 #[derive(Debug, Default, Clone)]
 pub struct CleanCharset;
 
-impl<R, D, C> TableOption<R, D, C> for CleanCharset
+impl<R, D, C> TableOption<R, C, D> for CleanCharset
 where
     R: Records + ExactRecords + RecordsMut<String> + PeekableRecords,
 {

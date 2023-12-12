@@ -91,7 +91,7 @@ impl<Color> Margin<Color> {
 }
 
 #[cfg(feature = "std")]
-impl<R, D, C> TableOption<R, D, ColoredConfig> for Margin<C>
+impl<R, D, C> TableOption<R, ColoredConfig, D> for Margin<C>
 where
     C: Into<AnsiColor<'static>> + Clone,
 {
@@ -112,7 +112,7 @@ where
     }
 }
 
-impl<R, D, C> TableOption<R, D, CompactConfig> for Margin<C>
+impl<R, D, C> TableOption<R, CompactConfig, D> for Margin<C>
 where
     C: Into<StaticColor> + Clone,
 {
@@ -127,7 +127,7 @@ where
     }
 }
 
-impl<R, D, C> TableOption<R, D, CompactMultilineConfig> for Margin<C>
+impl<R, D, C> TableOption<R, CompactMultilineConfig, D> for Margin<C>
 where
     C: Into<StaticColor> + Clone,
 {

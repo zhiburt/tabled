@@ -87,7 +87,7 @@ impl<I> IterTable<I> {
     /// With is a generic function which applies options to the [`IterTable`].
     pub fn with<O>(mut self, option: O) -> Self
     where
-        for<'a> O: TableOption<IterRecords<&'a I>, StaticDimension, CompactConfig>,
+        for<'a> O: TableOption<IterRecords<&'a I>, CompactConfig, StaticDimension>,
     {
         let count_columns = self.table.count_columns.unwrap_or(0);
         let mut records = IterRecords::new(&self.records, count_columns, self.table.count_rows);

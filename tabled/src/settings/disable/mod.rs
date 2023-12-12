@@ -148,7 +148,7 @@ pub struct TargetRow;
 #[derive(Debug)]
 pub struct TargetColumn;
 
-impl<L, R, D, C> TableOption<R, D, C> for Disable<L, TargetColumn>
+impl<L, R, D, C> TableOption<R, C, D> for Disable<L, TargetColumn>
 where
     L: Location<R, Coordinate = usize>,
     R: Records + Resizable,
@@ -171,7 +171,7 @@ where
     }
 }
 
-impl<L, R, D, C> TableOption<R, D, C> for Disable<L, TargetRow>
+impl<L, R, D, C> TableOption<R, C, D> for Disable<L, TargetRow>
 where
     L: Location<R, Coordinate = usize>,
     R: ExactRecords + Resizable,

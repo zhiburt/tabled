@@ -81,7 +81,7 @@ impl<Line> LineText<Line> {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for LineText<Row>
+impl<R, D> TableOption<R, ColoredConfig, D> for LineText<Row>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
@@ -94,7 +94,7 @@ where
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for LineText<FirstRow>
+impl<R, D> TableOption<R, ColoredConfig, D> for LineText<FirstRow>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
@@ -106,7 +106,7 @@ where
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for LineText<LastRow>
+impl<R, D> TableOption<R, ColoredConfig, D> for LineText<LastRow>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
@@ -119,7 +119,7 @@ where
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for LineText<Column>
+impl<R, D> TableOption<R, ColoredConfig, D> for LineText<Column>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
@@ -132,7 +132,7 @@ where
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for LineText<FirstColumn>
+impl<R, D> TableOption<R, ColoredConfig, D> for LineText<FirstColumn>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,
@@ -144,7 +144,7 @@ where
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for LineText<LastColumn>
+impl<R, D> TableOption<R, ColoredConfig, D> for LineText<LastColumn>
 where
     R: Records + ExactRecords,
     for<'a> &'a R: Records,

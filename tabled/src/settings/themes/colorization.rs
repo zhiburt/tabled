@@ -232,7 +232,7 @@ impl Colorization {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for Colorization
+impl<R, D> TableOption<R, ColoredConfig, D> for Colorization
 where
     R: Records + ExactRecords,
 {
@@ -366,7 +366,7 @@ impl<O> ExactColorization<O> {
     }
 }
 
-impl<R, D, O> TableOption<R, D, ColoredConfig> for ExactColorization<O>
+impl<R, D, O> TableOption<R, ColoredConfig, D> for ExactColorization<O>
 where
     O: Object<R>,
 {

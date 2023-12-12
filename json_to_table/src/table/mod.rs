@@ -311,7 +311,7 @@ impl<T> JsonTable<T> {
     /// [`Table`]: tabled::Table
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        O: TableOption<EmptyRecords, CompleteDimension<'static>, ColoredConfig>,
+        O: TableOption<EmptyRecords, ColoredConfig, CompleteDimension<'static>>,
     {
         let mut records = EmptyRecords::default();
         let mut dims = CompleteDimension::default();

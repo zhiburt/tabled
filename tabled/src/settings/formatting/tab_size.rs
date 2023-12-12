@@ -41,7 +41,7 @@ impl TabSize {
     }
 }
 
-impl<R, D, C> TableOption<R, D, C> for TabSize
+impl<R, D, C> TableOption<R, C, D> for TabSize
 where
     R: Records + ExactRecords + RecordsMut<String> + PeekableRecords,
 {

@@ -161,12 +161,12 @@ impl SpannedConfig {
     }
 
     /// Gets a global border value if set.
-    pub fn get_global_border(&self) -> Option<&char> {
+    pub fn get_border_default(&self) -> Option<&char> {
         self.borders.get_global()
     }
 
     /// Set the all [`Borders`] values to a char.
-    pub fn set_global_border(&mut self, c: char) {
+    pub fn set_border_default(&mut self, c: char) {
         self.borders.set_global(c);
     }
 
@@ -521,14 +521,12 @@ impl SpannedConfig {
     }
 
     /// Gets a color of all borders on the grid.
-    pub fn get_border_color_global(&self) -> Option<&AnsiColor<'static>> {
+    pub fn get_border_color_default(&self) -> Option<&AnsiColor<'static>> {
         self.borders_colors.get_global()
     }
 
     /// Sets a color of all borders on the grid.
-    pub fn set_border_color_global(&mut self, clr: AnsiColor<'static>) {
-        // todo: change this _global to insert by Entity
-
+    pub fn set_border_color_default(&mut self, clr: AnsiColor<'static>) {
         self.borders_colors = BordersConfig::default();
         self.borders_colors.set_global(clr);
     }
