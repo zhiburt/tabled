@@ -72,7 +72,7 @@ where
     }
 }
 
-impl<R, W> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig> for CellHeightIncrease<W>
+impl<R, W> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for CellHeightIncrease<W>
 where
     W: Measurement<Height>,
     R: Records + ExactRecords + PeekableRecords,

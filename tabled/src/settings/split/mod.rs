@@ -233,11 +233,11 @@ impl Split {
     }
 }
 
-impl<R, D, Cfg> TableOption<R, D, Cfg> for Split
+impl<R, D, C> TableOption<R, C, D> for Split
 where
     R: Records + ExactRecords + Resizable + PeekableRecords,
 {
-    fn change(self, records: &mut R, _: &mut Cfg, _: &mut D) {
+    fn change(self, records: &mut R, _: &mut C, _: &mut D) {
         // variables
         let Split {
             direction,

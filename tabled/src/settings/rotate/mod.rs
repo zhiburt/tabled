@@ -63,7 +63,7 @@ pub enum Rotate {
     Bottom,
 }
 
-impl<R, D, C> TableOption<R, D, C> for Rotate
+impl<R, D, C> TableOption<R, C, D> for Rotate
 where
     R: Records + ExactRecords + Resizable,
 {

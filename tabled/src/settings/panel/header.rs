@@ -21,7 +21,7 @@ impl<S> Header<S> {
     }
 }
 
-impl<S, R, D> TableOption<R, D, ColoredConfig> for Header<S>
+impl<S, R, D> TableOption<R, ColoredConfig, D> for Header<S>
 where
     S: AsRef<str>,
     R: Records + ExactRecords + Resizable + RecordsMut<String>,

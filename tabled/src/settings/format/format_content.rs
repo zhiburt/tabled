@@ -38,7 +38,7 @@ impl<F> FormatContent<F> {
     }
 }
 
-impl<F, R, D, C> TableOption<R, D, C> for FormatContent<F>
+impl<F, R, D, C> TableOption<R, C, D> for FormatContent<F>
 where
     F: FnMut(&str) -> String + Clone,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,

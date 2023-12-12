@@ -45,7 +45,7 @@ impl<W> TableHeightLimit<W, PriorityNone> {
     }
 }
 
-impl<R, W, P> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig>
+impl<R, W, P> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>>
     for TableHeightLimit<W, P>
 where
     W: Measurement<Height>,

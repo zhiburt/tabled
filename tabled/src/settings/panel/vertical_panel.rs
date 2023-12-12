@@ -21,7 +21,7 @@ impl<S> VerticalPanel<S> {
     }
 }
 
-impl<S, R, D> TableOption<R, D, ColoredConfig> for VerticalPanel<S>
+impl<S, R, D> TableOption<R, ColoredConfig, D> for VerticalPanel<S>
 where
     S: AsRef<str>,
     R: Records + ExactRecords + Resizable + RecordsMut<String>,

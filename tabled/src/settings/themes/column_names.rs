@@ -223,7 +223,7 @@ impl ColumnNames {
     }
 }
 
-impl TableOption<VecRecords<CellInfo<String>>, CompleteDimensionVecRecords<'_>, ColoredConfig>
+impl TableOption<VecRecords<CellInfo<String>>, ColoredConfig, CompleteDimensionVecRecords<'_>>
     for ColumnNames
 {
     fn change(

@@ -95,8 +95,8 @@ impl Matrix {
     where
         for<'a> O: TableOption<
             VecRecords<CellInfo<String>>,
-            CompleteDimensionVecRecords<'a>,
             ColoredConfig,
+            CompleteDimensionVecRecords<'a>,
         >,
     {
         let mut table = self.to_table();

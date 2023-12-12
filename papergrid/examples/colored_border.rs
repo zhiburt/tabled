@@ -68,7 +68,7 @@ fn generate_table_config() -> SpannedConfig {
             Indent::spaced(1),
         ),
     );
-    cfg.set_border_color_global(AnsiColor::new("\u{1b}[42m".into(), "\u{1b}[0m".into()));
+    cfg.set_border_color_default(AnsiColor::new("\u{1b}[42m".into(), "\u{1b}[0m".into()));
 
     cfg
 }

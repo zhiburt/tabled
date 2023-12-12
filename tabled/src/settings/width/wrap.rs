@@ -100,7 +100,7 @@ impl Wrap<(), ()> {
     }
 }
 
-impl<W, P, R> TableOption<R, CompleteDimensionVecRecords<'_>, ColoredConfig> for Wrap<W, P>
+impl<W, P, R> TableOption<R, ColoredConfig, CompleteDimensionVecRecords<'_>> for Wrap<W, P>
 where
     W: Measurement<Width>,
     P: Peaker,

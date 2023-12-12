@@ -1426,7 +1426,7 @@ impl<T, B, L, R, H, const HN: usize, const VN: usize> Style<T, B, L, R, H, On, H
 
 #[cfg(feature = "std")]
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
-    TableOption<Data, Dims, ColoredConfig> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
+    TableOption<Data, ColoredConfig, Dims> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
 {
     fn change(self, _: &mut Data, cfg: &mut ColoredConfig, _: &mut Dims) {
         cfg_clear_borders(cfg);
@@ -1436,7 +1436,7 @@ impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
 }
 
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
-    TableOption<Data, Dims, CompactConfig> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
+    TableOption<Data, CompactConfig, Dims> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
 {
     fn change(self, _: &mut Data, cfg: &mut CompactConfig, _: &mut Dims) {
         *cfg = cfg.set_borders(self.borders);
@@ -1444,7 +1444,7 @@ impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
 }
 
 impl<T, B, L, R, H, V, Data, Dims, const HSIZE: usize, const VSIZE: usize>
-    TableOption<Data, Dims, CompactMultilineConfig> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
+    TableOption<Data, CompactMultilineConfig, Dims> for Style<T, B, L, R, H, V, HSIZE, VSIZE>
 {
     fn change(self, _: &mut Data, cfg: &mut CompactMultilineConfig, _: &mut Dims) {
         cfg.set_borders(self.borders);

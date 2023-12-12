@@ -105,7 +105,7 @@ test_table!(
     {
         struct ColorizeBorders;
 
-        impl<R, D> tabled::settings::TableOption<R, D, ColoredConfig> for ColorizeBorders {
+        impl<R, D> tabled::settings::TableOption<R, ColoredConfig, D> for ColorizeBorders {
             fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
                 cfg.set_border_color_global(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into()));
             }

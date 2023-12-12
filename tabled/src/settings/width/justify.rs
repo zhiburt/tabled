@@ -73,7 +73,7 @@ impl Justify<Min> {
     }
 }
 
-impl<R, D, W> TableOption<R, D, ColoredConfig> for Justify<W>
+impl<R, D, W> TableOption<R, ColoredConfig, D> for Justify<W>
 where
     W: Measurement<Width>,
     R: Records + ExactRecords + PeekableRecords + RecordsMut<String>,

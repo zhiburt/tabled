@@ -18,7 +18,7 @@ impl<S> HorizontalPanel<S> {
     }
 }
 
-impl<S, R, D> TableOption<R, D, ColoredConfig> for HorizontalPanel<S>
+impl<S, R, D> TableOption<R, ColoredConfig, D> for HorizontalPanel<S>
 where
     S: AsRef<str>,
     R: Records + ExactRecords + Resizable + RecordsMut<String>,

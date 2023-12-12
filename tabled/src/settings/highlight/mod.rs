@@ -170,7 +170,7 @@ impl<O> Highlight<O> {
     }
 }
 
-impl<O, R, D> TableOption<R, D, ColoredConfig> for Highlight<O>
+impl<O, R, D> TableOption<R, ColoredConfig, D> for Highlight<O>
 where
     O: Object<R>,
     R: Records + ExactRecords,

@@ -34,7 +34,7 @@ impl Merge {
 #[derive(Debug)]
 pub struct MergeDuplicatesVertical;
 
-impl<R, D> TableOption<R, D, ColoredConfig> for MergeDuplicatesVertical
+impl<R, D> TableOption<R, ColoredConfig, D> for MergeDuplicatesVertical
 where
     R: Records + PeekableRecords + ExactRecords,
 {
@@ -118,7 +118,7 @@ where
 #[derive(Debug)]
 pub struct MergeDuplicatesHorizontal;
 
-impl<R, D> TableOption<R, D, ColoredConfig> for MergeDuplicatesHorizontal
+impl<R, D> TableOption<R, ColoredConfig, D> for MergeDuplicatesHorizontal
 where
     R: Records + PeekableRecords + ExactRecords,
 {

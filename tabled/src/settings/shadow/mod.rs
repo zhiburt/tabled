@@ -112,7 +112,7 @@ impl Shadow {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for Shadow {
+impl<R, D> TableOption<R, ColoredConfig, D> for Shadow {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         set_margin(cfg, self.size, self.c, &self.direction);
         set_margin_offset(cfg, self.size_offset, &self.direction);

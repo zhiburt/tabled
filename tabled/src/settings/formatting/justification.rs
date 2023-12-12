@@ -106,7 +106,7 @@ impl Justification {
     }
 }
 
-impl<R, D> TableOption<R, D, ColoredConfig> for Justification {
+impl<R, D> TableOption<R, ColoredConfig, D> for Justification {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         let c = self.c.unwrap_or(' ');
         let color = self.color;

@@ -70,7 +70,7 @@ impl RonTable {
     /// Apply settings to the table.
     pub fn with<O>(&mut self, option: O) -> &mut Self
     where
-        O: TableOption<EmptyRecords, CompleteDimension<'static>, CompactMultilineConfig>,
+        O: TableOption<EmptyRecords, CompactMultilineConfig, CompleteDimension<'static>>,
     {
         let mut records = EmptyRecords::default();
         let mut dims = CompleteDimension::default();

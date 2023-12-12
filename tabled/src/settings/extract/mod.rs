@@ -149,7 +149,7 @@ where
     }
 }
 
-impl<R, C, RR, D, Cfg> TableOption<RR, D, Cfg> for Extract<R, C>
+impl<R, C, RR, D, Cfg> TableOption<RR, Cfg, D> for Extract<R, C>
 where
     R: RangeBounds<usize> + Clone,
     C: RangeBounds<usize> + Clone,

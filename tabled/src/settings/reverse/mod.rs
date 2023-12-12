@@ -21,7 +21,7 @@ impl Reverse {
     }
 }
 
-impl<R, D, C> TableOption<R, D, C> for Reverse
+impl<R, D, C> TableOption<R, C, D> for Reverse
 where
     R: Resizable + Records + ExactRecords,
 {

@@ -76,7 +76,7 @@ use crate::{
 #[derive(Debug)]
 pub struct BorderSpanCorrection;
 
-impl<R, D> TableOption<R, D, ColoredConfig> for BorderSpanCorrection
+impl<R, D> TableOption<R, ColoredConfig, D> for BorderSpanCorrection
 where
     R: Records + ExactRecords,
 {

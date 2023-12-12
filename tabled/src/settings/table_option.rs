@@ -3,10 +3,8 @@ use crate::grid::config::Entity;
 /// A trait which is responsible for configuration of a [`Table`].
 ///
 /// [`Table`]: crate::Table
-pub trait TableOption<R, D, C> {
-    // todo: change the method or generic order to match :)
-
-    /// The function allows modification of records and a grid configuration.
+pub trait TableOption<R, C, D> {
+    /// The function modificaties of records and a grid configuration.
     fn change(self, records: &mut R, cfg: &mut C, dimension: &mut D);
 
     /// A hint whether an [`TableOption`] is going to change table layout.
@@ -49,9 +47,9 @@ pub trait TableOption<R, D, C> {
 //     Some(vec![Entity::Global])
 // }
 
-impl<T, R, D, C> TableOption<R, D, C> for &[T]
+impl<T, R, C, D> TableOption<R, C, D> for &[T]
 where
-    for<'a> &'a T: TableOption<R, D, C>,
+    for<'a> &'a T: TableOption<R, C, D>,
 {
     fn change(self, records: &mut R, cfg: &mut C, dimension: &mut D) {
         for opt in self {
@@ -61,9 +59,9 @@ where
 }
 
 #[cfg(feature = "std")]
-impl<T, R, D, C> TableOption<R, D, C> for Vec<T>
+impl<T, R, D, C> TableOption<R, C, D> for Vec<T>
 where
-    T: TableOption<R, D, C>,
+    T: TableOption<R, C, D>,
 {
     fn change(self, records: &mut R, cfg: &mut C, dimension: &mut D) {
         for opt in self {

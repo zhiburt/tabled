@@ -76,7 +76,7 @@ impl<Dst, Src> Dup<Dst, Src> {
     }
 }
 
-impl<Dst, Src, R, D, C> TableOption<R, D, C> for Dup<Dst, Src>
+impl<Dst, Src, R, D, C> TableOption<R, C, D> for Dup<Dst, Src>
 where
     Dst: Object<R>,
     Src: Object<R>,
