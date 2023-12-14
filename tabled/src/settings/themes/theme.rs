@@ -14,7 +14,6 @@ use std::iter::FromIterator;
 
 use crate::{
     grid::{
-        color::AnsiColor,
         config::{
             AlignmentHorizontal, AlignmentVertical, Border, Borders, ColoredConfig, CompactConfig,
             CompactMultilineConfig, HorizontalLine, VerticalLine,
@@ -541,7 +540,7 @@ impl<T, B, L, R, H, V, const HSIZE: usize, const VSIZE: usize>
 impl From<ColoredConfig> for Theme {
     fn from(cfg: ColoredConfig) -> Self {
         let borders = *cfg.get_borders();
-        let colors = borders_convert_ansi_color_to_color(cfg.get_color_borders().clone());
+        let colors = cfg.get_color_borders().clone().convert_into();
         let horizontals = cfg.get_horizontal_lines().into_iter().collect();
         let verticals = cfg.get_vertical_lines().into_iter().collect();
 
@@ -592,46 +591,6 @@ impl Layout {
     }
 }
 
-fn borders_convert_ansi_color_to_color(b: Borders<AnsiColor<'static>>) -> Borders<Color> {
-    Borders {
-        top: b.top.map(Color::from),
-        top_left: b.top_left.map(Color::from),
-        top_right: b.top_right.map(Color::from),
-        top_intersection: b.top_intersection.map(Color::from),
-        bottom: b.bottom.map(Color::from),
-        bottom_left: b.bottom_left.map(Color::from),
-        bottom_right: b.bottom_right.map(Color::from),
-        bottom_intersection: b.bottom_intersection.map(Color::from),
-        horizontal: b.horizontal.map(Color::from),
-        vertical: b.vertical.map(Color::from),
-        intersection: b.intersection.map(Color::from),
-        left: b.left.map(Color::from),
-        left_intersection: b.left_intersection.map(Color::from),
-        right: b.right.map(Color::from),
-        right_intersection: b.right_intersection.map(Color::from),
-    }
-}
-
-fn borders_convert_color_to_ansi_color(b: Borders<Color>) -> Borders<AnsiColor<'static>> {
-    Borders {
-        top: b.top.map(AnsiColor::from),
-        top_left: b.top_left.map(AnsiColor::from),
-        top_right: b.top_right.map(AnsiColor::from),
-        top_intersection: b.top_intersection.map(AnsiColor::from),
-        bottom: b.bottom.map(AnsiColor::from),
-        bottom_left: b.bottom_left.map(AnsiColor::from),
-        bottom_right: b.bottom_right.map(AnsiColor::from),
-        bottom_intersection: b.bottom_intersection.map(AnsiColor::from),
-        horizontal: b.horizontal.map(AnsiColor::from),
-        vertical: b.vertical.map(AnsiColor::from),
-        intersection: b.intersection.map(AnsiColor::from),
-        left: b.left.map(AnsiColor::from),
-        left_intersection: b.left_intersection.map(AnsiColor::from),
-        right: b.right.map(AnsiColor::from),
-        right_intersection: b.right_intersection.map(AnsiColor::from),
-    }
-}
-
 fn cfg_clear_borders(cfg: &mut ColoredConfig) {
     cfg.remove_borders();
     cfg.remove_borders_colors();
@@ -645,7 +604,7 @@ fn cfg_set_borders(cfg: &mut ColoredConfig, border: TableBorders) {
     cfg.set_borders(border.chars);
 
     if !border.colors.is_empty() {
-        cfg.set_borders_color(borders_convert_color_to_ansi_color(border.colors));
+        cfg.set_borders_color(border.colors.convert_into());
     }
 }
 

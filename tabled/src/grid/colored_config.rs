@@ -1,7 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use crate::grid::{
-    color::AnsiColor,
+    color::ColorBuf,
     config::{Entity, EntityMap, SpannedConfig},
 };
 
@@ -27,7 +27,7 @@ impl ColoredConfig {
     /// While this method works in all contexts.
     ///
     /// [`Format`]: crate::settings::Format
-    pub fn set_color(&mut self, pos: Entity, color: AnsiColor<'static>) -> &mut Self {
+    pub fn set_color(&mut self, pos: Entity, color: ColorBuf) -> &mut Self {
         match self.colors.0.as_mut() {
             Some(map) => map.insert(pos, color),
             None => {
@@ -41,7 +41,7 @@ impl ColoredConfig {
     }
 
     /// Set a list of colors.
-    pub fn set_colors(&mut self, colors: EntityMap<AnsiColor<'static>>) -> &mut Self {
+    pub fn set_colors(&mut self, colors: EntityMap<ColorBuf>) -> &mut Self {
         self.colors = ColorMap(Some(colors));
         self
     }
@@ -94,7 +94,7 @@ impl AsRef<SpannedConfig> for ColoredConfig {
 
 /// A colors structure for [`ColoredConfig`].
 #[derive(Debug, Default, PartialEq, Eq, Clone)]
-pub struct ColorMap(Option<EntityMap<AnsiColor<'static>>>);
+pub struct ColorMap(Option<EntityMap<ColorBuf>>);
 
 impl ColorMap {
     /// Checks if any colors is set on.
@@ -104,7 +104,7 @@ impl ColorMap {
 }
 
 impl crate::grid::colors::Colors for ColorMap {
-    type Color = AnsiColor<'static>;
+    type Color = ColorBuf;
 
     fn get_color(&self, (row, col): (usize, usize)) -> Option<&Self::Color> {
         self.0.as_ref().map(|map| map.get(Entity::Cell(row, col)))

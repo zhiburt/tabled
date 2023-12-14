@@ -3,11 +3,11 @@
 //! [`Border`]: crate::settings::Border
 //! [`Table`]: crate::Table
 
-use std::{borrow::Cow, ops::BitOr};
+use std::{fmt, ops::BitOr};
 
 use crate::{
     grid::{
-        color::{AnsiColor, StaticColor},
+        color::{ANSIFmt, Color as StaticColor, ColorBuf},
         config::{ColoredConfig, Entity},
     },
     settings::{CellOption, TableOption},
@@ -35,172 +35,214 @@ use crate::{
 /// [`Padding`]: crate::settings::Padding
 /// [`Margin`]: crate::settings::Margin
 /// [`Border`]: crate::settings::Border
-#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Color(AnsiColor<'static>);
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Color {
+    inner: ColorInner,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+enum ColorInner {
+    Static(StaticColor<'static>),
+    Allocated(ColorBuf),
+}
 
 #[rustfmt::skip]
 impl Color {
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_BLACK:          Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[30m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_BLACK:          Self = Self::new_static("\u{1b}[30m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_BLUE:           Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[34m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_BLUE:           Self = Self::new_static("\u{1b}[34m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_BRIGHT_BLACK:   Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[90m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_BRIGHT_BLACK:   Self = Self::new_static("\u{1b}[90m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_BRIGHT_BLUE:    Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[94m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_BRIGHT_BLUE:    Self = Self::new_static("\u{1b}[94m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_BRIGHT_CYAN:    Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[96m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_BRIGHT_CYAN:    Self = Self::new_static("\u{1b}[96m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_BRIGHT_GREEN:   Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[92m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_BRIGHT_GREEN:   Self = Self::new_static("\u{1b}[92m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_BRIGHT_MAGENTA: Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[95m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_BRIGHT_MAGENTA: Self = Self::new_static("\u{1b}[95m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_BRIGHT_RED:     Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[91m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_BRIGHT_RED:     Self = Self::new_static("\u{1b}[91m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_BRIGHT_WHITE:   Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[97m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_BRIGHT_WHITE:   Self = Self::new_static("\u{1b}[97m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_BRIGHT_YELLOW:  Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[93m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_BRIGHT_YELLOW:  Self = Self::new_static("\u{1b}[93m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_CYAN:           Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[36m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_CYAN:           Self = Self::new_static("\u{1b}[36m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_GREEN:          Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[32m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_GREEN:          Self = Self::new_static("\u{1b}[32m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_MAGENTA:        Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[35m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_MAGENTA:        Self = Self::new_static("\u{1b}[35m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_RED:            Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[31m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_RED:            Self = Self::new_static("\u{1b}[31m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_WHITE:          Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[37m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_WHITE:          Self = Self::new_static("\u{1b}[37m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const FG_YELLOW:         Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[33m"), Cow::Borrowed("\u{1b}[39m")));
+    pub const FG_YELLOW:         Self = Self::new_static("\u{1b}[33m", "\u{1b}[39m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
 
-    pub const BG_BLACK:          Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[40m"),  Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_BLACK:          Self = Self::new_static("\u{1b}[40m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_BLUE:           Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[44m"),  Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_BLUE:           Self = Self::new_static("\u{1b}[44m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_BRIGHT_BLACK:   Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[100m"), Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_BRIGHT_BLACK:   Self = Self::new_static("\u{1b}[100m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_BRIGHT_BLUE:    Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[104m"), Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_BRIGHT_BLUE:    Self = Self::new_static("\u{1b}[104m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_BRIGHT_CYAN:    Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[106m"), Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_BRIGHT_CYAN:    Self = Self::new_static("\u{1b}[106m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_BRIGHT_GREEN:   Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[102m"), Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_BRIGHT_GREEN:   Self = Self::new_static("\u{1b}[102m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_BRIGHT_MAGENTA: Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[105m"), Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_BRIGHT_MAGENTA: Self = Self::new_static("\u{1b}[105m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_BRIGHT_RED:     Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[101m"), Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_BRIGHT_RED:     Self = Self::new_static("\u{1b}[101m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_BRIGHT_WHITE:   Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[107m"), Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_BRIGHT_WHITE:   Self = Self::new_static("\u{1b}[107m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_BRIGHT_YELLOW:  Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[103m"), Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_BRIGHT_YELLOW:  Self = Self::new_static("\u{1b}[103m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_CYAN:           Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[46m"),  Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_CYAN:           Self = Self::new_static("\u{1b}[46m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_GREEN:          Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[42m"),  Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_GREEN:          Self = Self::new_static("\u{1b}[42m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_MAGENTA:        Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[45m"),  Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_MAGENTA:        Self = Self::new_static("\u{1b}[45m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_RED:            Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[41m"),  Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_RED:            Self = Self::new_static("\u{1b}[41m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_WHITE:          Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[47m"),  Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_WHITE:          Self = Self::new_static("\u{1b}[47m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BG_YELLOW:         Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[43m"),  Cow::Borrowed("\u{1b}[49m")));
+    pub const BG_YELLOW:         Self = Self::new_static("\u{1b}[43m", "\u{1b}[49m");
     /// A color representation.
     /// 
     /// Notice that the colors are constants so you can't combine them.
-    pub const BOLD:              Self = Self(AnsiColor::new(Cow::Borrowed("\u{1b}[1m"),  Cow::Borrowed("\u{1b}[22m")));
+    pub const BOLD:              Self = Self::new_static("\u{1b}[1m", "\u{1b}[22m");
 }
 
 impl Color {
     /// Creates a new [`Color`]` instance, with ANSI prefix and ANSI suffix.
     /// You can use [`TryFrom`] to construct it from [`String`].
-    pub fn new(prefix: String, suffix: String) -> Self {
-        Self(AnsiColor::new(prefix.into(), suffix.into()))
+    pub fn new<P, S>(prefix: P, suffix: S) -> Self
+    where
+        P: Into<String>,
+        S: Into<String>,
+    {
+        let color = ColorBuf::new(prefix, suffix);
+        let inner = ColorInner::Allocated(color);
+
+        Self { inner }
+    }
+
+    const fn new_static(prefix: &'static str, suffix: &'static str) -> Self {
+        let color = StaticColor::new(prefix, suffix);
+        let inner = ColorInner::Static(color);
+
+        Self { inner }
+    }
+
+    /// Return a prefix.
+    pub fn get_prefix(&self) -> &str {
+        match &self.inner {
+            ColorInner::Static(color) => color.get_prefix(),
+            ColorInner::Allocated(color) => color.get_prefix(),
+        }
+    }
+
+    /// Return a suffix.
+    pub fn get_suffix(&self) -> &str {
+        match &self.inner {
+            ColorInner::Static(color) => color.get_suffix(),
+            ColorInner::Allocated(color) => color.get_suffix(),
+        }
     }
 }
 
-impl From<Color> for AnsiColor<'static> {
-    fn from(c: Color) -> Self {
-        c.0
+impl Default for Color {
+    fn default() -> Self {
+        Self {
+            inner: ColorInner::Static(StaticColor::default()),
+        }
     }
 }
 
-impl From<AnsiColor<'static>> for Color {
-    fn from(c: AnsiColor<'static>) -> Self {
-        Self(c)
+impl From<Color> for ColorBuf {
+    fn from(color: Color) -> Self {
+        match color.inner {
+            ColorInner::Static(color) => ColorBuf::from(color),
+            ColorInner::Allocated(color) => color,
+        }
     }
 }
 
-impl From<StaticColor> for Color {
-    fn from(c: StaticColor) -> Self {
-        Self(AnsiColor::new(
-            Cow::Borrowed(c.get_prefix()),
-            Cow::Borrowed(c.get_suffix()),
-        ))
+impl From<ColorBuf> for Color {
+    fn from(color: ColorBuf) -> Self {
+        Self {
+            inner: ColorInner::Allocated(color),
+        }
     }
 }
 
@@ -208,10 +250,10 @@ impl BitOr for Color {
     type Output = Color;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        let l_prefix = self.0.get_prefix();
-        let l_suffix = self.0.get_suffix();
-        let r_prefix = rhs.0.get_prefix();
-        let r_suffix = rhs.0.get_suffix();
+        let l_prefix = self.get_prefix();
+        let l_suffix = self.get_suffix();
+        let r_prefix = rhs.get_prefix();
+        let r_suffix = rhs.get_suffix();
 
         let mut prefix = l_prefix.to_string();
         if l_prefix != r_prefix {
@@ -232,7 +274,7 @@ impl std::convert::TryFrom<&str> for Color {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        AnsiColor::try_from(value).map(Color)
+        ColorBuf::try_from(value).map(Color)
     }
 }
 
@@ -241,13 +283,14 @@ impl std::convert::TryFrom<String> for Color {
     type Error = ();
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        AnsiColor::try_from(value).map(Color)
+        ColorBuf::try_from(value).map(Color)
     }
 }
 
 impl<R, D> TableOption<R, ColoredConfig, D> for Color {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
-        let _ = cfg.set_color(Entity::Global, self.0.clone());
+        let color = self.into();
+        let _ = cfg.set_color(Entity::Global, color);
     }
 
     fn hint_change(&self) -> Option<Entity> {
@@ -257,7 +300,8 @@ impl<R, D> TableOption<R, ColoredConfig, D> for Color {
 
 impl<R> CellOption<R, ColoredConfig> for Color {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
-        let _ = cfg.set_color(entity, self.0.clone());
+        let color = self.into();
+        let _ = cfg.set_color(entity, color);
     }
 
     fn hint_change(&self) -> Option<Entity> {
@@ -267,7 +311,8 @@ impl<R> CellOption<R, ColoredConfig> for Color {
 
 impl<R> CellOption<R, ColoredConfig> for &Color {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
-        let _ = cfg.set_color(entity, self.0.clone());
+        let color = self.clone().into();
+        let _ = cfg.set_color(entity, color);
     }
 
     fn hint_change(&self) -> Option<Entity> {
@@ -275,17 +320,26 @@ impl<R> CellOption<R, ColoredConfig> for &Color {
     }
 }
 
-impl crate::grid::color::Color for Color {
-    fn fmt_prefix<W: std::fmt::Write>(&self, f: &mut W) -> std::fmt::Result {
-        self.0.fmt_prefix(f)
+impl ANSIFmt for Color {
+    fn fmt_prefix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
+        match &self.inner {
+            ColorInner::Static(color) => color.fmt_prefix(f),
+            ColorInner::Allocated(color) => color.fmt_prefix(f),
+        }
     }
 
-    fn fmt_suffix<W: std::fmt::Write>(&self, f: &mut W) -> std::fmt::Result {
-        self.0.fmt_suffix(f)
+    fn fmt_suffix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
+        match &self.inner {
+            ColorInner::Static(color) => color.fmt_suffix(f),
+            ColorInner::Allocated(color) => color.fmt_suffix(f),
+        }
     }
 
-    fn colorize<W: std::fmt::Write>(&self, f: &mut W, text: &str) -> std::fmt::Result {
-        self.0.colorize(f, text)
+    fn colorize<W: fmt::Write>(&self, f: &mut W, text: &str) -> fmt::Result {
+        match &self.inner {
+            ColorInner::Static(color) => color.colorize(f, text),
+            ColorInner::Allocated(color) => color.colorize(f, text),
+        }
     }
 }
 
@@ -300,28 +354,19 @@ mod tests {
     fn test_xor_operation() {
         assert_eq!(
             Color::FG_BLACK | Color::FG_BLUE,
-            Color::new(
-                String::from("\u{1b}[30m\u{1b}[34m"),
-                String::from("\u{1b}[39m")
-            )
+            Color::new("\u{1b}[30m\u{1b}[34m", "\u{1b}[39m")
         );
         assert_eq!(
             Color::FG_BRIGHT_GREEN | Color::BG_BLUE,
-            Color::new(
-                String::from("\u{1b}[92m\u{1b}[44m"),
-                String::from("\u{1b}[39m\u{1b}[49m")
-            )
+            Color::new("\u{1b}[92m\u{1b}[44m", "\u{1b}[39m\u{1b}[49m")
         );
         assert_eq!(
-            Color::new(String::from("..."), String::from("!!!"))
-                | Color::new(String::from("@@@"), String::from("###")),
-            Color::new(String::from("...@@@"), String::from("!!!###"))
+            Color::new("...", "!!!") | Color::new("@@@", "###"),
+            Color::new("...@@@", "!!!###")
         );
         assert_eq!(
-            Color::new(String::from("..."), String::from("!!!"))
-                | Color::new(String::from("@@@"), String::from("###"))
-                | Color::new(String::from("$$$"), String::from("%%%")),
-            Color::new(String::from("...@@@$$$"), String::from("!!!###%%%"))
+            Color::new("...", "!!!") | Color::new("@@@", "###") | Color::new("$$$", "%%%"),
+            Color::new("...@@@$$$", "!!!###%%%")
         );
     }
 
@@ -330,27 +375,15 @@ mod tests {
     fn test_try_from() {
         assert_eq!(Color::try_from(""), Err(()));
         assert_eq!(Color::try_from("".red().on_green().to_string()), Err(()));
-        assert_eq!(
-            Color::try_from("."),
-            Ok(Color::new(String::new(), String::new()))
-        );
-        assert_eq!(
-            Color::try_from("...."),
-            Ok(Color::new(String::new(), String::new()))
-        );
+        assert_eq!(Color::try_from("."), Ok(Color::new("", "")));
+        assert_eq!(Color::try_from("...."), Ok(Color::new("", "")));
         assert_eq!(
             Color::try_from(".".red().on_green().to_string()),
-            Ok(Color::new(
-                String::from("\u{1b}[31m\u{1b}[42m"),
-                String::from("\u{1b}[39m\u{1b}[49m")
-            ))
+            Ok(Color::new("\u{1b}[31m\u{1b}[42m", "\u{1b}[39m\u{1b}[49m"))
         );
         assert_eq!(
             Color::try_from("....".red().on_green().to_string()),
-            Ok(Color::new(
-                String::from("\u{1b}[31m\u{1b}[42m"),
-                String::from("\u{1b}[39m\u{1b}[49m")
-            ))
+            Ok(Color::new("\u{1b}[31m\u{1b}[42m", "\u{1b}[39m\u{1b}[49m"))
         );
     }
 }

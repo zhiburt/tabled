@@ -1,5 +1,5 @@
 use crate::grid::{
-    color::StaticColor,
+    color::Color,
     config::{
         AlignmentHorizontal, AlignmentVertical, Borders, CompactConfig, Formatting, Indent, Sides,
     },
@@ -63,7 +63,7 @@ impl CompactMultilineConfig {
     }
 
     /// Returns a current [`Borders`] structure.
-    pub const fn get_borders_color(&self) -> &Borders<StaticColor> {
+    pub const fn get_borders_color(&self) -> &Borders<Color<'static>> {
         self.config.get_borders_color()
     }
 
@@ -88,27 +88,27 @@ impl CompactMultilineConfig {
     }
 
     /// Sets colors of border carcass on the grid.
-    pub fn set_borders_color(&mut self, borders: Borders<StaticColor>) {
+    pub fn set_borders_color(&mut self, borders: Borders<Color<'static>>) {
         self.config = self.config.set_borders_color(borders)
     }
 
     /// Set colors for a margin.
-    pub fn set_margin_color(&mut self, color: Sides<StaticColor>) {
+    pub fn set_margin_color(&mut self, color: Sides<Color<'static>>) {
         self.config = self.config.set_margin_color(color)
     }
 
     /// Returns a margin color.
-    pub const fn get_margin_color(&self) -> &Sides<StaticColor> {
+    pub const fn get_margin_color(&self) -> &Sides<Color<'static>> {
         self.config.get_margin_color()
     }
 
     /// Set a padding color to all cells.
-    pub fn set_padding_color(&mut self, color: Sides<StaticColor>) {
+    pub fn set_padding_color(&mut self, color: Sides<Color<'static>>) {
         self.config = self.config.set_padding_color(color)
     }
 
     /// get a padding color.
-    pub const fn get_padding_color(&self) -> &Sides<StaticColor> {
+    pub const fn get_padding_color(&self) -> &Sides<Color<'static>> {
         self.config.get_padding_color()
     }
 

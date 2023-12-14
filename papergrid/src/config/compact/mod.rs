@@ -2,7 +2,7 @@
 //!
 //! [`CompactGrid`]: crate::grid::compact::CompactGrid
 
-use crate::color::StaticColor;
+use crate::color::Color;
 use crate::config::{AlignmentHorizontal, Borders, Indent, Sides};
 
 /// This structure represents a settings of a grid.
@@ -11,11 +11,11 @@ use crate::config::{AlignmentHorizontal, Borders, Indent, Sides};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CompactConfig {
     borders: Borders<char>,
-    border_colors: Borders<StaticColor>,
+    border_colors: Borders<Color<'static>>,
     margin: Sides<Indent>,
-    margin_color: Sides<StaticColor>,
+    margin_color: Sides<Color<'static>>,
     padding: Sides<Indent>,
-    padding_color: Sides<StaticColor>,
+    padding_color: Sides<Color<'static>>,
     halignment: AlignmentHorizontal,
 }
 
@@ -33,14 +33,14 @@ impl CompactConfig {
             borders: Borders::empty(),
             border_colors: Borders::empty(),
             margin: Sides::filled(Indent::zero()),
-            margin_color: Sides::filled(StaticColor::new("", "")),
+            margin_color: Sides::filled(Color::new("", "")),
             padding: Sides::new(
                 Indent::spaced(1),
                 Indent::spaced(1),
                 Indent::zero(),
                 Indent::zero(),
             ),
-            padding_color: Sides::filled(StaticColor::new("", "")),
+            padding_color: Sides::filled(Color::new("", "")),
         }
     }
 
@@ -67,7 +67,7 @@ impl CompactConfig {
     }
 
     /// Returns a current [`Borders`] structure.
-    pub const fn get_borders_color(&self) -> &Borders<StaticColor> {
+    pub const fn get_borders_color(&self) -> &Borders<Color<'static>> {
         &self.border_colors
     }
 
@@ -94,30 +94,30 @@ impl CompactConfig {
     }
 
     /// Sets colors of border carcass on the grid.
-    pub const fn set_borders_color(mut self, borders: Borders<StaticColor>) -> Self {
+    pub const fn set_borders_color(mut self, borders: Borders<Color<'static>>) -> Self {
         self.border_colors = borders;
         self
     }
 
     /// Set colors for a margin.
-    pub const fn set_margin_color(mut self, color: Sides<StaticColor>) -> Self {
+    pub const fn set_margin_color(mut self, color: Sides<Color<'static>>) -> Self {
         self.margin_color = color;
         self
     }
 
     /// Returns a margin color.
-    pub const fn get_margin_color(&self) -> &Sides<StaticColor> {
+    pub const fn get_margin_color(&self) -> &Sides<Color<'static>> {
         &self.margin_color
     }
 
     /// Set a padding to a given cells.
-    pub const fn set_padding_color(mut self, color: Sides<StaticColor>) -> Self {
+    pub const fn set_padding_color(mut self, color: Sides<Color<'static>>) -> Self {
         self.padding_color = color;
         self
     }
 
     /// Set a padding to a given cells.
-    pub const fn get_padding_color(&self) -> &Sides<StaticColor> {
+    pub const fn get_padding_color(&self) -> &Sides<Color<'static>> {
         &self.padding_color
     }
 }

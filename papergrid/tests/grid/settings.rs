@@ -1,6 +1,6 @@
 #![cfg(feature = "std")]
 
-use papergrid::color::AnsiColor;
+use papergrid::color::ColorBuf;
 use papergrid::config::{AlignmentHorizontal, Border, Borders, Entity, Indent, Sides};
 
 use crate::util::grid;
@@ -203,7 +203,7 @@ test_table!(
         .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
         .config(|cfg| {
             cfg.set_justification(Entity::Global, '$');
-            cfg.set_justification_color(Entity::Global, Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+            cfg.set_justification_color(Entity::Global, Some(ColorBuf::new("\u{1b}[34m", "\u{1b}[39m")));
         })
         .build(),
         "+-----+-----------------------------+"
@@ -219,7 +219,7 @@ test_table!(
         .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
         .config(|cfg| {
             cfg.set_justification(Entity::Global, '$');
-            cfg.set_justification_color(Entity::Global, Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+            cfg.set_justification_color(Entity::Global, Some(ColorBuf::new("\u{1b}[34m", "\u{1b}[39m")));
             cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Right);
         })
         .build(),
@@ -236,7 +236,7 @@ test_table!(
         .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
         .config(|cfg| {
             cfg.set_justification(Entity::Global, '$');
-            cfg.set_justification_color(Entity::Global, Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+            cfg.set_justification_color(Entity::Global, Some(ColorBuf::new("\u{1b}[34m", "\u{1b}[39m")));
             cfg.set_alignment_horizontal(Entity::Global, AlignmentHorizontal::Center);
         })
         .build(),
@@ -253,7 +253,7 @@ test_table!(
         .data([["Hello", "World"], ["", "Hello Hello Hello Hello Hello"]])
         .config(|cfg| {
             cfg.set_justification(Entity::Cell(0, 0), '$');
-            cfg.set_justification_color(Entity::Column(1), Some(AnsiColor::new("\u{1b}[34m".into(), "\u{1b}[39m".into())));
+            cfg.set_justification_color(Entity::Column(1), Some(ColorBuf::new("\u{1b}[34m", "\u{1b}[39m")));
             cfg.set_alignment_horizontal(Entity::Row(2), AlignmentHorizontal::Center);
         })
         .build(),

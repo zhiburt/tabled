@@ -10,7 +10,7 @@ use crate::matrix::Matrix;
 use testing_table::test_table;
 
 #[cfg(feature = "color")]
-use tabled::grid::color::StaticColor;
+use tabled::grid::color::Color;
 
 test_table!(
     pool_table,

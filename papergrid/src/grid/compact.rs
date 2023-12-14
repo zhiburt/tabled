@@ -7,7 +7,7 @@ use core::{
 };
 
 use crate::{
-    color::{Color, StaticColor},
+    color::{ANSIFmt, Color},
     colors::{Colors, NoColors},
     config::{AlignmentHorizontal, Borders, HorizontalLine, Indent, Sides},
     dimension::Dimension,
@@ -279,7 +279,7 @@ fn create_margin(cfg: &CompactConfig) -> Sides<ColoredIndent> {
 
 fn create_vertical_borders(
     borders: &Borders<char>,
-    colors: &Borders<StaticColor>,
+    colors: &Borders<Color<'static>>,
 ) -> HorizontalLine<ColoredIndent> {
     let intersect = borders
         .vertical
@@ -296,7 +296,7 @@ fn print_horizontal_line<F, D>(
     f: &mut F,
     dims: &D,
     borders: &HorizontalLine<char>,
-    borders_colors: &HorizontalLine<StaticColor>,
+    borders_colors: &HorizontalLine<Color<'static>>,
     margin: &Sides<ColoredIndent>,
     count_columns: usize,
 ) -> fmt::Result
@@ -394,15 +394,15 @@ fn create_horizontal_bottom(b: &Borders<char>) -> HorizontalLine<char> {
     )
 }
 
-fn create_horizontal_colors(b: &Borders<StaticColor>) -> HorizontalLine<StaticColor> {
+fn create_horizontal_colors(b: &Borders<Color<'static>>) -> HorizontalLine<Color<'static>> {
     HorizontalLine::new(b.horizontal, b.intersection, b.left, b.right)
 }
 
-fn create_horizontal_top_colors(b: &Borders<StaticColor>) -> HorizontalLine<StaticColor> {
+fn create_horizontal_top_colors(b: &Borders<Color<'static>>) -> HorizontalLine<Color<'static>> {
     HorizontalLine::new(b.top, b.top_intersection, b.top_left, b.top_right)
 }
 
-fn create_horizontal_bottom_colors(b: &Borders<StaticColor>) -> HorizontalLine<StaticColor> {
+fn create_horizontal_bottom_colors(b: &Borders<Color<'static>>) -> HorizontalLine<Color<'static>> {
     HorizontalLine::new(
         b.bottom,
         b.bottom_intersection,
@@ -509,7 +509,7 @@ fn print_columns_empty_colored<F, D>(
     f: &mut F,
     dims: &D,
     borders: &HorizontalLine<ColoredIndent>,
-    color: Option<StaticColor>,
+    color: Option<Color<'static>>,
     count_columns: usize,
 ) -> fmt::Result
 where
@@ -557,7 +557,7 @@ fn print_cell<F, C>(
 ) -> fmt::Result
 where
     F: Write,
-    C: Color,
+    C: ANSIFmt,
 {
     let available = width - (padding.left.space.size + padding.right.space.size);
 
@@ -583,14 +583,14 @@ fn print_split_line_colored<F, D>(
     f: &mut F,
     dimension: &D,
     borders: &HorizontalLine<char>,
-    borders_colors: &HorizontalLine<StaticColor>,
+    borders_colors: &HorizontalLine<Color<'static>>,
     count_columns: usize,
 ) -> fmt::Result
 where
     F: Write,
     D: Dimension,
 {
-    let mut used_color = StaticColor::default();
+    let mut used_color = Color::default();
     let chars_main = borders.main.unwrap_or(' ');
 
     if let Some(c) = borders.left {
@@ -684,7 +684,7 @@ where
 fn print_text<F, C>(f: &mut F, text: &str, color: Option<C>) -> fmt::Result
 where
     F: Write,
-    C: Color,
+    C: ANSIFmt,
 {
     match color {
         Some(color) => {
@@ -700,7 +700,7 @@ where
     Ok(())
 }
 
-fn prepare_coloring<F>(f: &mut F, clr: &StaticColor, used: &mut StaticColor) -> fmt::Result
+fn prepare_coloring<F>(f: &mut F, clr: &Color<'static>, used: &mut Color<'static>) -> fmt::Result
 where
     F: Write,
 {
@@ -742,7 +742,7 @@ where
 }
 
 // todo: replace Option<StaticColor> to StaticColor and check performance
-fn print_char<F>(f: &mut F, c: char, color: Option<StaticColor>) -> fmt::Result
+fn print_char<F>(f: &mut F, c: char, color: Option<Color<'static>>) -> fmt::Result
 where
     F: Write,
 {
@@ -792,18 +792,18 @@ where
 #[derive(Debug, Clone, Copy)]
 struct ColoredIndent {
     space: Indent,
-    color: Option<StaticColor>,
+    color: Option<Color<'static>>,
 }
 
 impl ColoredIndent {
-    fn new(width: usize, c: char, color: Option<StaticColor>) -> Self {
+    fn new(width: usize, c: char, color: Option<Color<'static>>) -> Self {
         Self {
             space: Indent::new(width, c),
             color,
         }
     }
 
-    fn from_indent(indent: Indent, color: StaticColor) -> Self {
+    fn from_indent(indent: Indent, color: Color<'static>) -> Self {
         Self {
             space: indent,
             color: create_color(color),
@@ -811,7 +811,7 @@ impl ColoredIndent {
     }
 }
 
-fn create_color(color: StaticColor) -> Option<StaticColor> {
+fn create_color(color: Color<'static>) -> Option<Color<'static>> {
     if color.is_empty() {
         None
     } else {

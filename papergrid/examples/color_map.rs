@@ -17,7 +17,7 @@ use owo_colors::{
 };
 
 use papergrid::{
-    color::Color,
+    color::ANSIFmt,
     config::spanned::SpannedConfig,
     config::{Borders, Position},
     dimension::spanned::SpannedGridDimension,
@@ -69,7 +69,7 @@ fn generate_table_config() -> SpannedConfig {
 #[derive(Debug, Clone, Default)]
 struct Style(OStyle);
 
-impl Color for Style {
+impl ANSIFmt for Style {
     fn fmt_prefix<W: fmt::Write>(&self, f: &mut W) -> fmt::Result {
         let buf = OStylePrefix(&self.0).to_string();
         f.write_str(&buf)

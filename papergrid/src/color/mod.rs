@@ -5,15 +5,15 @@ mod ansi_color;
 mod static_color;
 
 #[cfg(feature = "std")]
-pub use ansi_color::AnsiColor;
+pub use ansi_color::ColorBuf;
 
-pub use static_color::StaticColor;
+pub use static_color::Color;
 
 use core::fmt::{self, Write};
 
 #[allow(unreachable_pub)]
 /// A trait which prints an ANSI prefix and suffix.
-pub trait Color {
+pub trait ANSIFmt {
     /// Print ANSI prefix.
     fn fmt_prefix<W: Write>(&self, f: &mut W) -> fmt::Result;
 
@@ -33,9 +33,9 @@ pub trait Color {
     }
 }
 
-impl<C> Color for &C
+impl<C> ANSIFmt for &C
 where
-    C: Color,
+    C: ANSIFmt,
 {
     fn fmt_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
         C::fmt_prefix(self, f)
