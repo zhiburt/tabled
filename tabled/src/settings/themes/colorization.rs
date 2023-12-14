@@ -1,6 +1,6 @@
 use crate::{
     grid::{
-        color::AnsiColor,
+        color::ColorBuf,
         config::{ColoredConfig, Entity, Sides},
         records::{ExactRecords, Records},
     },
@@ -337,7 +337,7 @@ fn colorize_diogonals(
 }
 
 fn colorize_entity(color: &Color, pos: Entity, cfg: &mut ColoredConfig) {
-    let ansi_color = AnsiColor::from(color.clone());
+    let ansi_color = ColorBuf::from(color.clone());
     let _ = cfg.set_color(pos, ansi_color.clone());
     cfg.set_justification_color(pos, Some(ansi_color.clone()));
     cfg.set_padding_color(

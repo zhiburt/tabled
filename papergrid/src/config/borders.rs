@@ -149,4 +149,28 @@ impl<T> Borders<T> {
             || self.top_intersection.is_some()
             || self.bottom_intersection.is_some()
     }
+
+    /// Converts borders type into another one.
+    pub fn convert_into<T1>(self) -> Borders<T1>
+    where
+        T1: From<T>,
+    {
+        Borders {
+            left: self.left.map(Into::into),
+            right: self.right.map(Into::into),
+            top: self.top.map(Into::into),
+            bottom: self.bottom.map(Into::into),
+            bottom_intersection: self.bottom_intersection.map(Into::into),
+            bottom_left: self.bottom_left.map(Into::into),
+            bottom_right: self.bottom_right.map(Into::into),
+            horizontal: self.horizontal.map(Into::into),
+            intersection: self.intersection.map(Into::into),
+            left_intersection: self.left_intersection.map(Into::into),
+            right_intersection: self.right_intersection.map(Into::into),
+            top_intersection: self.top_intersection.map(Into::into),
+            top_left: self.top_left.map(Into::into),
+            top_right: self.top_right.map(Into::into),
+            vertical: self.vertical.map(Into::into),
+        }
+    }
 }

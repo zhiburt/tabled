@@ -37,7 +37,7 @@
 
 use crate::{
     grid::{
-        color::StaticColor,
+        color::Color,
         config::{CompactConfig, CompactMultilineConfig},
         config::{Indent, Sides},
     },
@@ -45,7 +45,7 @@ use crate::{
 };
 
 #[cfg(feature = "std")]
-use crate::grid::{color::AnsiColor, config::ColoredConfig, config::Entity};
+use crate::grid::{color::ColorBuf, config::ColoredConfig, config::Entity};
 #[cfg(feature = "std")]
 use crate::settings::CellOption;
 
@@ -58,7 +58,7 @@ use crate::settings::CellOption;
 /// let table = Table::new(&data).with(Modify::new(Rows::single(0)).with(Padding::new(0, 0, 1, 1).fill('>', '<', '^', 'V')));
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Padding<C = StaticColor> {
+pub struct Padding<C = Color<'static>> {
     indent: Sides<Indent>,
     colors: Option<Sides<C>>,
 }
@@ -111,7 +111,7 @@ impl<Color> Padding<Color> {
 #[cfg(feature = "std")]
 impl<R, C> CellOption<R, ColoredConfig> for Padding<C>
 where
-    C: Into<AnsiColor<'static>> + Clone,
+    C: Into<ColorBuf> + Clone,
 {
     fn change(self, _: &mut R, cfg: &mut ColoredConfig, entity: Entity) {
         let indent = self.indent;
@@ -133,7 +133,7 @@ where
 #[cfg(feature = "std")]
 impl<R, D, C> TableOption<R, ColoredConfig, D> for Padding<C>
 where
-    C: Into<AnsiColor<'static>> + Clone,
+    C: Into<ColorBuf> + Clone,
 {
     fn change(self, records: &mut R, cfg: &mut ColoredConfig, _: &mut D) {
         <Self as CellOption<R, ColoredConfig>>::change(self, records, cfg, Entity::Global)
@@ -142,7 +142,7 @@ where
 
 impl<R, D, C> TableOption<R, CompactConfig, D> for Padding<C>
 where
-    C: Into<StaticColor> + Clone,
+    C: Into<Color<'static>> + Clone,
 {
     fn change(self, _: &mut R, cfg: &mut CompactConfig, _: &mut D) {
         *cfg = cfg.set_padding(self.indent);
@@ -156,7 +156,7 @@ where
 
 impl<R, D, C> TableOption<R, CompactMultilineConfig, D> for Padding<C>
 where
-    C: Into<StaticColor> + Clone,
+    C: Into<Color<'static>> + Clone,
 {
     fn change(self, _: &mut R, cfg: &mut CompactMultilineConfig, _: &mut D) {
         cfg.set_padding(self.indent);

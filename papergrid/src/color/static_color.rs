@@ -1,22 +1,22 @@
 use core::fmt::{self, Write};
 
-use super::Color;
+use super::ANSIFmt;
 
 /// The structure represents a ANSI color by suffix and prefix.
 #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash)]
-pub struct StaticColor {
-    prefix: &'static str,
-    suffix: &'static str,
+pub struct Color<'a> {
+    prefix: &'a str,
+    suffix: &'a str,
 }
 
-impl StaticColor {
+impl<'a> Color<'a> {
     /// Constructs a new instance with suffix and prefix.
     ///
     /// They are not checked so you should make sure you provide correct ANSI.
     /// Otherwise you may want to use [`TryFrom`].
     ///
     /// [`TryFrom`]: std::convert::TryFrom
-    pub const fn new(prefix: &'static str, suffix: &'static str) -> Self {
+    pub const fn new(prefix: &'a str, suffix: &'a str) -> Self {
         Self { prefix, suffix }
     }
 
@@ -24,21 +24,19 @@ impl StaticColor {
     pub const fn is_empty(&self) -> bool {
         self.prefix.is_empty() && self.suffix.is_empty()
     }
-}
 
-impl StaticColor {
     /// Gets a reference to a prefix.
-    pub fn get_prefix(&self) -> &'static str {
+    pub fn get_prefix(&self) -> &'a str {
         self.prefix
     }
 
     /// Gets a reference to a suffix.
-    pub fn get_suffix(&self) -> &'static str {
+    pub fn get_suffix(&self) -> &'a str {
         self.suffix
     }
 }
 
-impl Color for StaticColor {
+impl ANSIFmt for Color<'_> {
     fn fmt_prefix<W: Write>(&self, f: &mut W) -> fmt::Result {
         f.write_str(self.prefix)
     }

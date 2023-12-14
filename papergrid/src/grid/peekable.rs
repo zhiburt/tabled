@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{
-    color::{AnsiColor, Color},
+    color::{ANSIFmt, ColorBuf},
     colors::Colors,
     config::{
         spanned::{Offset, SpannedConfig},
@@ -686,7 +686,7 @@ mod grid_not_spanned {
         cfg: &'a SpannedConfig,
         pos: Position,
         shape: Shape,
-        used_color: &mut Option<&'a AnsiColor<'static>>,
+        used_color: &mut Option<&'a ColorBuf>,
     ) -> fmt::Result
     where
         F: fmt::Write,
@@ -713,10 +713,10 @@ mod grid_not_spanned {
         Ok(())
     }
 
-    fn prepare_coloring<'a, 'b, F>(
+    fn prepare_coloring<'a, F>(
         f: &mut F,
-        clr: Option<&'a AnsiColor<'b>>,
-        used_color: &mut Option<&'a AnsiColor<'b>>,
+        clr: Option<&'a ColorBuf>,
+        used_color: &mut Option<&'a ColorBuf>,
     ) -> fmt::Result
     where
         F: Write,
@@ -787,7 +787,7 @@ mod grid_not_spanned {
         pos: Position,
         width: usize,
         c: char,
-        used_color: &Option<&AnsiColor<'static>>,
+        used_color: &Option<&ColorBuf>,
     ) -> fmt::Result
     where
         F: Write,
@@ -899,12 +899,12 @@ mod grid_not_spanned {
         pos: Position,
         index: usize,
         available: usize,
-        cfg: TextCfg<C, &'_ AnsiColor<'static>>,
+        cfg: TextCfg<C, &'_ ColorBuf>,
     ) -> fmt::Result
     where
         F: Write,
         R: Records + PeekableRecords,
-        C: Color,
+        C: ANSIFmt,
     {
         let line = records.get_line(pos, index);
         let (line, line_width) = if cfg.formatting.horizontal_trim {
@@ -951,8 +951,8 @@ mod grid_not_spanned {
     ) -> fmt::Result
     where
         F: Write,
-        C: Color,
-        C1: Color,
+        C: ANSIFmt,
+        C1: ANSIFmt,
     {
         print_indent2(f, &justification, indent.left)?;
         print_text2(f, text)?;
@@ -964,7 +964,7 @@ mod grid_not_spanned {
     fn print_text2<F, C>(f: &mut F, text: Colored<&str, C>) -> fmt::Result
     where
         F: Write,
-        C: Color,
+        C: ANSIFmt,
     {
         match text.color {
             Some(color) => {
@@ -1122,7 +1122,7 @@ mod grid_not_spanned {
         f: &mut F,
         indent: Indent,
         offset: Offset,
-        color: Option<&AnsiColor<'_>>,
+        color: Option<&ColorBuf>,
         line: usize,
         height: usize,
     ) -> fmt::Result
@@ -1161,7 +1161,7 @@ mod grid_not_spanned {
         f: &mut F,
         indent: Indent,
         offset: Offset,
-        color: Option<&AnsiColor<'_>>,
+        color: Option<&ColorBuf>,
         width: usize,
     ) -> fmt::Result
     where
@@ -1204,7 +1204,7 @@ mod grid_not_spanned {
     fn print_indent<F, C>(f: &mut F, c: char, n: usize, color: Option<C>) -> fmt::Result
     where
         F: Write,
-        C: Color,
+        C: ANSIFmt,
     {
         if n == 0 {
             return Ok(());
@@ -1223,7 +1223,7 @@ mod grid_not_spanned {
     fn print_indent2<F, C>(f: &mut F, c: &Colored<char, C>, n: usize) -> fmt::Result
     where
         F: Write,
-        C: Color,
+        C: ANSIFmt,
     {
         if n == 0 {
             return Ok(());
@@ -1546,7 +1546,7 @@ mod grid_spanned {
         cfg: &'a SpannedConfig,
         pos: Position,
         shape: Shape,
-        used_color: &mut Option<&'a AnsiColor<'static>>,
+        used_color: &mut Option<&'a ColorBuf>,
     ) -> fmt::Result
     where
         F: fmt::Write,
@@ -1573,10 +1573,10 @@ mod grid_spanned {
         Ok(())
     }
 
-    fn prepare_coloring<'a, 'b, F>(
+    fn prepare_coloring<'a, F>(
         f: &mut F,
-        clr: Option<&'a AnsiColor<'b>>,
-        used_color: &mut Option<&'a AnsiColor<'b>>,
+        clr: Option<&'a ColorBuf>,
+        used_color: &mut Option<&'a ColorBuf>,
     ) -> fmt::Result
     where
         F: Write,
@@ -1653,7 +1653,7 @@ mod grid_spanned {
         pos: Position,
         width: usize,
         c: char,
-        used_color: &Option<&AnsiColor<'static>>,
+        used_color: &Option<&ColorBuf>,
     ) -> fmt::Result
     where
         F: Write,
@@ -1769,8 +1769,8 @@ mod grid_spanned {
     where
         F: Write,
         R: Records + PeekableRecords,
-        C: Color,
-        C1: Color,
+        C: ANSIFmt,
+        C1: ANSIFmt,
     {
         let line = records.get_line(pos, index);
         let (line, line_width) = if text_cfg.formatting.horizontal_trim {
@@ -1817,8 +1817,8 @@ mod grid_spanned {
     ) -> fmt::Result
     where
         F: Write,
-        C: Color,
-        C1: Color,
+        C: ANSIFmt,
+        C1: ANSIFmt,
     {
         print_indent(f, space.data, indent.left, space.color.as_ref())?;
         print_text(f, text.data, text.color)?;
@@ -1829,7 +1829,7 @@ mod grid_spanned {
     fn print_text<F, C>(f: &mut F, text: &str, clr: Option<C>) -> fmt::Result
     where
         F: Write,
-        C: Color,
+        C: ANSIFmt,
     {
         match clr {
             Some(color) => {
@@ -1987,7 +1987,7 @@ mod grid_spanned {
         f: &mut F,
         indent: Indent,
         offset: Offset,
-        color: Option<&AnsiColor<'_>>,
+        color: Option<&ColorBuf>,
         line: usize,
         height: usize,
     ) -> fmt::Result
@@ -2026,7 +2026,7 @@ mod grid_spanned {
         f: &mut F,
         indent: &Indent,
         offset: &Offset,
-        color: Option<&AnsiColor<'_>>,
+        color: Option<&ColorBuf>,
         width: usize,
     ) -> fmt::Result
     where
@@ -2069,7 +2069,7 @@ mod grid_spanned {
     fn print_indent<F, C>(f: &mut F, c: char, n: usize, color: Option<C>) -> fmt::Result
     where
         F: Write,
-        C: Color,
+        C: ANSIFmt,
     {
         if n == 0 {
             return Ok(());

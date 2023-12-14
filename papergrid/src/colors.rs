@@ -1,11 +1,11 @@
 //! A module which contains [Colors] trait and its blanket implementations.
 
-use crate::{color::Color, config::Position};
+use crate::{color::ANSIFmt, config::Position};
 
 /// A trait which represents map of colors.
 pub trait Colors {
     /// Color implementation.
-    type Color: Color;
+    type Color: ANSIFmt;
 
     /// Returns a color for a given position.
     fn get_color(&self, pos: (usize, usize)) -> Option<&Self::Color>;
@@ -32,7 +32,7 @@ where
 #[cfg(feature = "std")]
 impl<C> Colors for std::collections::HashMap<Position, C>
 where
-    C: Color,
+    C: ANSIFmt,
 {
     type Color = C;
 
@@ -48,7 +48,7 @@ where
 #[cfg(feature = "std")]
 impl<C> Colors for std::collections::BTreeMap<Position, C>
 where
-    C: Color,
+    C: ANSIFmt,
 {
     type Color = C;
 
@@ -64,7 +64,7 @@ where
 #[cfg(feature = "std")]
 impl<C> Colors for crate::config::spanned::EntityMap<Option<C>>
 where
-    C: Color,
+    C: ANSIFmt,
 {
     type Color = C;
 
@@ -98,7 +98,7 @@ impl Colors for NoColors {
 #[derive(Debug)]
 pub struct EmptyColor;
 
-impl Color for EmptyColor {
+impl ANSIFmt for EmptyColor {
     fn fmt_prefix<W: core::fmt::Write>(&self, _: &mut W) -> core::fmt::Result {
         Ok(())
     }
