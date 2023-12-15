@@ -9,7 +9,7 @@ use tabled::settings::{
 use crate::matrix::{Matrix, MatrixList};
 use testing_table::test_table;
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 use owo_colors::OwoColorize;
 
 test_table!(
@@ -181,7 +181,7 @@ test_table!(
     "└─────────────────┘"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     trim_colored_string_test_2,
     Matrix::iter(colored_data())
@@ -204,7 +204,7 @@ test_table!(
     "           |          | \u{1b}[44m/en\u{1b}[49m      |          "
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     trim_colored_string_test_1,
     Matrix::iter(colored_data())
@@ -231,7 +231,7 @@ test_table!(
     "           |          |     \u{1b}[44m.com\u{1b}[49m |          "
     "           |          |      \u{1b}[44m/en\u{1b}[49m |          "
 );
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     trim_colored_string_test_0,
     Matrix::iter(colored_data())
@@ -283,7 +283,7 @@ fn tab_data2() -> Vec<MatrixList<3, true>> {
     data
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 fn colored_data() -> Vec<MatrixList<3, true>> {
     let mut data = Matrix::list::<3, 3>();
     data[1][0] = "asd\n21213123\n\n   asdasd\n\n".red().to_string();

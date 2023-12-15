@@ -7,7 +7,7 @@
 /// Returns string width and count lines of a string. It's a combination of [`string_width_multiline`] and [`count_lines`].
 #[cfg(feature = "std")]
 pub fn string_dimension(text: &str) -> (usize, usize) {
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     {
         let (lines, acc, max) = text.chars().fold((1, 0, 0), |(lines, acc, max), c| {
             if c == '\n' {
@@ -21,7 +21,7 @@ pub fn string_dimension(text: &str) -> (usize, usize) {
         (lines, acc.max(max))
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     {
         get_lines(text)
             .map(|line| string_width(&line))
@@ -31,12 +31,12 @@ pub fn string_dimension(text: &str) -> (usize, usize) {
 
 /// Returns a string width.
 pub fn string_width(text: &str) -> usize {
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     {
         unicode_width::UnicodeWidthStr::width(text)
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     {
         // we need to strip ansi because of terminal links
         // and they're can't be stripped by ansi_str.
@@ -51,7 +51,7 @@ pub fn string_width(text: &str) -> usize {
 
 /// Returns a max string width of a line.
 pub fn string_width_multiline(text: &str) -> usize {
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     {
         text.lines()
             .map(unicode_width::UnicodeWidthStr::width)
@@ -59,7 +59,7 @@ pub fn string_width_multiline(text: &str) -> usize {
             .unwrap_or(0)
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     {
         text.lines().map(string_width).max().unwrap_or(0)
     }
@@ -82,7 +82,7 @@ pub fn count_tabs(s: &str) -> usize {
 /// Splits the string by lines.
 #[cfg(feature = "std")]
 pub fn get_lines(text: &str) -> Lines<'_> {
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     {
         // we call `split()` but not `lines()` in order to match colored implementation
         // specifically how we treat a trailing '\n' character.
@@ -91,7 +91,7 @@ pub fn get_lines(text: &str) -> Lines<'_> {
         }
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     {
         Lines {
             inner: ansi_str::AnsiStr::ansi_split(text, "\n"),
@@ -105,9 +105,9 @@ pub fn get_lines(text: &str) -> Lines<'_> {
 #[allow(missing_debug_implementations)]
 #[cfg(feature = "std")]
 pub struct Lines<'a> {
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     inner: std::str::Split<'a, char>,
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     inner: ansi_str::AnsiSplit<'a>,
 }
 #[cfg(feature = "std")]
@@ -115,12 +115,12 @@ impl<'a> Iterator for Lines<'a> {
     type Item = std::borrow::Cow<'a, str>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        #[cfg(not(feature = "color"))]
+        #[cfg(not(feature = "ansi"))]
         {
             self.inner.next().map(std::borrow::Cow::Borrowed)
         }
 
-        #[cfg(feature = "color")]
+        #[cfg(feature = "ansi")]
         {
             self.inner.next()
         }
@@ -186,7 +186,7 @@ mod tests {
         assert_eq!(string_width_multiline("Go 👍\nC 😎"), 5);
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn colored_string_width_test() {
         use owo_colors::OwoColorize;
@@ -208,7 +208,7 @@ mod tests {
         assert_eq!(count_lines("now is the time for all good men\n"), 2);
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn string_width_multinline_for_link() {
         assert_eq!(
@@ -219,7 +219,7 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn string_width_for_link() {
         assert_eq!(
@@ -234,11 +234,11 @@ mod tests {
         assert_eq!(
             string_dimension("\u{1b}[37mnow is the time for all good men\n\u{1b}[0m"),
             {
-                #[cfg(feature = "color")]
+                #[cfg(feature = "ansi")]
                 {
                     (2, 32)
                 }
-                #[cfg(not(feature = "color"))]
+                #[cfg(not(feature = "ansi"))]
                 {
                     (2, 36)
                 }

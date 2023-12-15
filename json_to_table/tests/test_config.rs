@@ -4,7 +4,7 @@ use tabled::settings::{Alignment, Padding, Style};
 
 use testing_table::test_table;
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 use tabled::{grid::ansi::ANSIBuf, grid::config::ColoredConfig};
 
 test_table!(
@@ -99,7 +99,7 @@ test_table!(
     "└─────┴──────┘"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     color_test,
     {

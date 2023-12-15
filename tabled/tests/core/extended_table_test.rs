@@ -1,6 +1,6 @@
 #![cfg(feature = "std")]
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 use owo_colors::{AnsiColors, OwoColorize};
 
 use tabled::{tables::ExtendedTable, Tabled};
@@ -403,7 +403,7 @@ test_table!(
     "column 2 | 2-2"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn display_colored() {
     let mut data = Matrix::list::<3, 3>();
@@ -439,7 +439,7 @@ fn display_colored() {
     );
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 #[test]
 fn display_with_truncate_colored() {
     let mut data = Matrix::list::<2, 3>();

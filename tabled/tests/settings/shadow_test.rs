@@ -5,7 +5,7 @@ use tabled::settings::{Shadow, Style};
 use crate::matrix::Matrix;
 use testing_table::test_table;
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 use ::{owo_colors::OwoColorize, std::convert::TryFrom, tabled::settings::Color};
 
 test_table!(
@@ -89,7 +89,7 @@ test_table!(
     "   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     test_shadow_set_color_0,
     Matrix::iter([(123, 456, 789), (234, 567, 891)]).with(Shadow::new(2).set_offset(3).set_color(Color::try_from(' '.red().to_string()).unwrap())),

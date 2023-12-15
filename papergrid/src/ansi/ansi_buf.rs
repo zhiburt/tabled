@@ -58,7 +58,7 @@ impl ANSIFmt for ANSIBuf {
     }
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 impl std::convert::TryFrom<&str> for ANSIBuf {
     type Error = ();
 
@@ -67,7 +67,7 @@ impl std::convert::TryFrom<&str> for ANSIBuf {
     }
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 impl std::convert::TryFrom<String> for ANSIBuf {
     type Error = ();
 
@@ -76,7 +76,7 @@ impl std::convert::TryFrom<String> for ANSIBuf {
     }
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 fn parse_ansi_color(s: &str) -> Option<ANSIBuf> {
     let mut blocks = ansi_str::get_blocks(s);
     let block = blocks.next()?;

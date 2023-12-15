@@ -15,7 +15,7 @@ license = "MIT"
 proc-macro = true
 
 [features]
-color = ["tabled/color"]
+ansi = ["tabled/ansi"]
 
 [dependencies]
 tabled = { path = "../tabled", features = ["std"], default-features = false }
@@ -25,4 +25,4 @@ proc-macro2 = "1"
 proc-macro-error = "1.0"
 
 [dev-dependencies]
-testing_table = { path = "../testing_table", features = ["color"] }
+testing_table = { path = "../testing_table", features = ["ansi"] }

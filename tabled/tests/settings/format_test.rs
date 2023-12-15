@@ -8,7 +8,7 @@ use tabled::settings::{
 use crate::matrix::Matrix;
 use testing_table::test_table;
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 use owo_colors::OwoColorize;
 
 test_table!(
@@ -227,7 +227,7 @@ test_table!(
     "+-------------+-------------+-------------+-------------+"
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     color_test,
     Matrix::new(3, 3)
@@ -244,7 +244,7 @@ test_table!(
     " \u{1b}[31m2\u{1b}[39m |   \u{1b}[34m2-0\u{1b}[39m    |   \u{1b}[31m2-1\u{1b}[39m    |   \u{1b}[31m2-2\u{1b}[39m    "
 );
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 test_table!(
     color_multiline_test,
     Matrix::new(3, 3)

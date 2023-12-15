@@ -11,7 +11,6 @@ pub use ansi_str::ANSIStr;
 
 use core::fmt::{self, Write};
 
-#[allow(unreachable_pub)]
 /// A trait which prints an ANSI prefix and suffix.
 pub trait ANSIFmt {
     /// Print ANSI prefix.

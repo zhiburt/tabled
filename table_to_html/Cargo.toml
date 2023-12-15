@@ -16,4 +16,4 @@ tabled = { path = "../tabled", features = ["std"], default-features = false }
 
 [dev-dependencies]
 tabled = { path = "../tabled", features = ["std", "derive"], default-features = false }
-testing_table = { path = "../testing_table", features = ["color"] }
+testing_table = { path = "../testing_table", features = ["ansi"] }

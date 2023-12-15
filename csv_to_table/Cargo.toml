@@ -13,11 +13,11 @@ description = "A library for pretty print CSV as a table"
 license = "MIT"
 
 [features]
-color = ["tabled/color"]
+ansi = ["tabled/ansi"]
 
 [dependencies]
 csv = "1"
 tabled = { path = "../tabled", features = ["std"], default-features = false }
 
 [dev-dependencies]
-testing_table = { path = "../testing_table", features = ["color"] }
+testing_table = { path = "../testing_table", features = ["ansi"] }

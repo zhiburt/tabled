@@ -269,7 +269,7 @@ impl BitOr for Color {
     }
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 impl std::convert::TryFrom<&str> for Color {
     type Error = ();
 
@@ -282,7 +282,7 @@ impl std::convert::TryFrom<&str> for Color {
     }
 }
 
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 impl std::convert::TryFrom<String> for Color {
     type Error = ();
 
@@ -348,7 +348,7 @@ impl ANSIFmt for Color {
 mod tests {
     use super::*;
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     use ::{owo_colors::OwoColorize, std::convert::TryFrom};
 
     #[test]
@@ -371,7 +371,7 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn test_try_from() {
         assert_eq!(Color::try_from(""), Err(()));

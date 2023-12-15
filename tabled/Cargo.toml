@@ -19,7 +19,7 @@ maintenance = { status = "actively-developed" }
 
 [[example]]
 name = "color"
-required-features = ["color", "derive"]
+required-features = ["ansi", "derive"]
 
 [[example]]
 name = "colored_borders"
@@ -28,7 +28,7 @@ required-features = ["derive"]
 [[example]]
 name = "colored_padding"
 path = "examples/colored_padding.rs"
-required-features = ["color", "derive"]
+required-features = ["ansi", "derive"]
 
 [[example]]
 name = "disable"
@@ -147,7 +147,7 @@ required-features = ["derive"]
 [[example]]
 name = "hyperlink"
 path = "examples/hyperlink.rs"
-required-features = ["derive", "color"]
+required-features = ["derive", "ansi"]
 
 [[example]]
 name = "highlight"
@@ -293,7 +293,7 @@ required-features = ["derive", "std"]
 default = ["derive", "macros"]
 std = ["papergrid/std"]
 derive = ["tabled_derive", "std"]
-color = ["papergrid/color", "ansi-str", "ansitok", "std"]
+ansi = ["papergrid/ansi", "ansi-str", "ansitok", "std"]
 macros = ["std"]
 
 [dependencies]
@@ -305,7 +305,7 @@ unicode-width = "0.1"
 
 [dev-dependencies]
 owo-colors = "3.5"
-testing_table = { path = "../testing_table", features = ["color"] }
+testing_table = { path = "../testing_table", features = ["ansi"] }
 
 # To run it locally (probably need to `add #![feature(doc_cfg)]` to the crate attributes to enable.
 #

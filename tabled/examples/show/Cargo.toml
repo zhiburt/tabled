@@ -8,6 +8,6 @@ edition = "2021"
 [workspace]
 
 [dependencies]
-tabled = { path = "../..", features = ["color", "derive"] }
+tabled = { path = "../..", features = ["ansi", "derive"] }
 crossterm = "0.25.0"
 clap = { version = "4.1.6", features = ["cargo", "derive"] }

@@ -36,7 +36,7 @@ fn get_table_total_width(list: &[usize], cfg: &SpannedConfig) -> usize {
 ///
 /// BE AWARE: width is expected to be in bytes.
 pub(crate) fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     {
         const REPLACEMENT: char = '\u{FFFD}';
 
@@ -53,7 +53,7 @@ pub(crate) fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
         buf
     }
 
-    #[cfg(not(feature = "color"))]
+    #[cfg(not(feature = "ansi"))]
     {
         cut_str_basic(s, width)
     }
@@ -62,7 +62,7 @@ pub(crate) fn cut_str(s: &str, width: usize) -> Cow<'_, str> {
 /// The function cuts the string to a specific width.
 ///
 /// BE AWARE: width is expected to be in bytes.
-#[cfg(not(feature = "color"))]
+#[cfg(not(feature = "ansi"))]
 pub(crate) fn cut_str_basic(s: &str, width: usize) -> Cow<'_, str> {
     const REPLACEMENT: char = '\u{FFFD}';
 
@@ -113,7 +113,7 @@ pub(crate) fn split_at_pos(s: &str, pos: usize) -> (usize, usize, usize) {
 /// <https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda>
 ///
 /// The function is based on Dan Davison <https://github.com/dandavison> delta <https://github.com/dandavison/delta> ansi library.
-#[cfg(feature = "color")]
+#[cfg(feature = "ansi")]
 pub(crate) fn strip_osc(text: &str) -> (String, Option<String>) {
     #[derive(Debug)]
     enum ExtractOsc8HyperlinkState {
@@ -176,7 +176,7 @@ mod tests {
 
     use crate::grid::util::string::string_width;
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     use owo_colors::{colors::Yellow, OwoColorize};
 
     #[test]
@@ -217,7 +217,7 @@ mod tests {
         assert_eq!(cut_str("🇻🇬", 4), "🇻🇬");
     }
 
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     #[test]
     fn strip_color_test() {
         let numbers = "123456".red().on_bright_black().to_string();
@@ -257,7 +257,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     fn test_color_strip() {
         let s = "Collored string"
             .fg::<Yellow>()
@@ -271,7 +271,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "color")]
+    #[cfg(feature = "ansi")]
     fn test_srip_osc() {
         assert_eq!(
             strip_osc("just a string here"),
@@ -303,7 +303,7 @@ mod tests {
             (String::default(), Some(String::from("https://gitlab.com/finestructure/swiftpackageindex-builder/-/pipelines/1054655982")))
         );
 
-        #[cfg(feature = "color")]
+        #[cfg(feature = "ansi")]
         fn build_link_prefix_suffix(url: &str) -> String {
             // https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
             let osc8 = "\x1b]8;;";

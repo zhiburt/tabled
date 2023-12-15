@@ -503,12 +503,12 @@ mod grid_basic {
 
     /// Trims a string.
     fn string_trim(text: &str) -> Cow<'_, str> {
-        #[cfg(feature = "color")]
+        #[cfg(feature = "ansi")]
         {
             ansi_str::AnsiStr::ansi_trim(text)
         }
 
-        #[cfg(not(feature = "color"))]
+        #[cfg(not(feature = "ansi"))]
         {
             text.trim().into()
         }
@@ -1241,12 +1241,12 @@ mod grid_not_spanned {
 
     /// Trims a string.
     fn string_trim(text: &str) -> Cow<'_, str> {
-        #[cfg(feature = "color")]
+        #[cfg(feature = "ansi")]
         {
             ansi_str::AnsiStr::ansi_trim(text)
         }
 
-        #[cfg(not(feature = "color"))]
+        #[cfg(not(feature = "ansi"))]
         {
             text.trim().into()
         }
@@ -2155,12 +2155,12 @@ mod grid_spanned {
 
     /// Trims a string.
     fn string_trim(text: &str) -> Cow<'_, str> {
-        #[cfg(feature = "color")]
+        #[cfg(feature = "ansi")]
         {
             ansi_str::AnsiStr::ansi_trim(text)
         }
 
-        #[cfg(not(feature = "color"))]
+        #[cfg(not(feature = "ansi"))]
         {
             text.trim().into()
         }
