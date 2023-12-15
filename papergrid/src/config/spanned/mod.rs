@@ -8,7 +8,7 @@ mod offset;
 
 use std::collections::HashMap;
 
-use crate::color::{Color, ColorBuf};
+use crate::ansi::{ANSIStr, ANSIBuf};
 use crate::config::compact::CompactConfig;
 use crate::config::Formatting;
 use crate::config::{
@@ -37,14 +37,14 @@ pub struct SpannedConfig {
     span_columns: HashMap<Position, usize>,
     span_rows: HashMap<Position, usize>,
     borders: BordersConfig<char>,
-    borders_colors: BordersConfig<ColorBuf>,
+    borders_colors: BordersConfig<ANSIBuf>,
     borders_missing_char: char,
     horizontal_chars: HashMap<Position, HashMap<Offset, char>>,
-    horizontal_colors: HashMap<Position, HashMap<Offset, ColorBuf>>, // squash a map to be HashMap<(Pos, Offset), char>
+    horizontal_colors: HashMap<Position, HashMap<Offset, ANSIBuf>>, // squash a map to be HashMap<(Pos, Offset), char>
     vertical_chars: HashMap<Position, HashMap<Offset, char>>,
-    vertical_colors: HashMap<Position, HashMap<Offset, ColorBuf>>,
+    vertical_colors: HashMap<Position, HashMap<Offset, ANSIBuf>>,
     justification: EntityMap<char>,
-    justification_color: EntityMap<Option<ColorBuf>>,
+    justification_color: EntityMap<Option<ANSIBuf>>,
 }
 
 impl Default for SpannedConfig {
@@ -80,7 +80,7 @@ impl SpannedConfig {
     }
 
     /// Set a color of margin of a grid.
-    pub fn set_margin_color(&mut self, margin: Sides<Option<ColorBuf>>) {
+    pub fn set_margin_color(&mut self, margin: Sides<Option<ANSIBuf>>) {
         self.margin.left.color = margin.left;
         self.margin.right.color = margin.right;
         self.margin.top.color = margin.top;
@@ -106,7 +106,7 @@ impl SpannedConfig {
     }
 
     /// Returns a margin color value currently set.
-    pub fn get_margin_color(&self) -> Sides<Option<ColorBuf>> {
+    pub fn get_margin_color(&self) -> Sides<Option<ANSIBuf>> {
         Sides::new(
             self.margin.left.color.clone(),
             self.margin.right.color.clone(),
@@ -348,7 +348,7 @@ impl SpannedConfig {
     }
 
     /// Override a character color on a horizontal line.
-    pub fn set_horizontal_color(&mut self, pos: Position, c: ColorBuf, offset: Offset) {
+    pub fn set_horizontal_color(&mut self, pos: Position, c: ANSIBuf, offset: Offset) {
         let chars = self
             .horizontal_colors
             .entry(pos)
@@ -363,7 +363,7 @@ impl SpannedConfig {
         pos: Position,
         offset: usize,
         end: usize,
-    ) -> Option<&ColorBuf> {
+    ) -> Option<&ANSIBuf> {
         self.horizontal_colors.get(&pos).and_then(|chars| {
             chars.get(&Offset::Begin(offset)).or_else(|| {
                 if end > offset {
@@ -380,7 +380,7 @@ impl SpannedConfig {
     }
 
     /// Override a character color on a vertical line.
-    pub fn set_vertical_color(&mut self, pos: Position, c: ColorBuf, offset: Offset) {
+    pub fn set_vertical_color(&mut self, pos: Position, c: ANSIBuf, offset: Offset) {
         let chars = self
             .vertical_colors
             .entry(pos)
@@ -395,7 +395,7 @@ impl SpannedConfig {
         pos: Position,
         offset: usize,
         end: usize,
-    ) -> Option<&ColorBuf> {
+    ) -> Option<&ANSIBuf> {
         self.vertical_colors.get(&pos).and_then(|chars| {
             chars.get(&Offset::Begin(offset)).or_else(|| {
                 if end > offset {
@@ -423,7 +423,7 @@ impl SpannedConfig {
     }
 
     /// Set a padding to a given cells.
-    pub fn set_padding_color(&mut self, entity: Entity, padding: Sides<Option<ColorBuf>>) {
+    pub fn set_padding_color(&mut self, entity: Entity, padding: Sides<Option<ANSIBuf>>) {
         let mut pad = self.padding.get(entity).clone();
         pad.left.color = padding.left;
         pad.right.color = padding.right;
@@ -445,7 +445,7 @@ impl SpannedConfig {
     }
 
     /// Get a padding color for a given [Entity].
-    pub fn get_padding_color(&self, entity: Entity) -> Sides<Option<ColorBuf>> {
+    pub fn get_padding_color(&self, entity: Entity) -> Sides<Option<ANSIBuf>> {
         let pad = self.padding.get(entity);
         Sides::new(
             pad.left.color.clone(),
@@ -496,7 +496,7 @@ impl SpannedConfig {
     }
 
     /// Returns a border color of a cell.
-    pub fn get_border_color(&self, pos: Position, shape: (usize, usize)) -> Border<&ColorBuf> {
+    pub fn get_border_color(&self, pos: Position, shape: (usize, usize)) -> Border<&ANSIBuf> {
         self.borders_colors.get_border(pos, shape)
     }
 
@@ -513,28 +513,28 @@ impl SpannedConfig {
     }
 
     /// Gets a color of all borders on the grid.
-    pub fn get_border_color_default(&self) -> Option<&ColorBuf> {
+    pub fn get_border_color_default(&self) -> Option<&ANSIBuf> {
         self.borders_colors.get_global()
     }
 
     /// Sets a color of all borders on the grid.
-    pub fn set_border_color_default(&mut self, clr: ColorBuf) {
+    pub fn set_border_color_default(&mut self, clr: ANSIBuf) {
         self.borders_colors = BordersConfig::default();
         self.borders_colors.set_global(clr);
     }
 
     /// Gets colors of a borders carcass on the grid.
-    pub fn get_color_borders(&self) -> &Borders<ColorBuf> {
+    pub fn get_color_borders(&self) -> &Borders<ANSIBuf> {
         self.borders_colors.get_borders()
     }
 
     /// Sets colors of border carcass on the grid.
-    pub fn set_borders_color(&mut self, clrs: Borders<ColorBuf>) {
+    pub fn set_borders_color(&mut self, clrs: Borders<ANSIBuf>) {
         self.borders_colors.set_borders(clrs);
     }
 
     /// Sets a color of border of a cell on the grid.
-    pub fn set_border_color(&mut self, pos: Position, border: Border<ColorBuf>) {
+    pub fn set_border_color(&mut self, pos: Position, border: Border<ANSIBuf>) {
         self.borders_colors.insert_border(pos, border)
     }
 
@@ -562,7 +562,7 @@ impl SpannedConfig {
     /// Get a justification color which will be used while expanding cells width/height.
     ///
     /// `None` means no color.
-    pub fn get_justification_color(&self, entity: Entity) -> Option<&ColorBuf> {
+    pub fn get_justification_color(&self, entity: Entity) -> Option<&ANSIBuf> {
         self.justification_color.get(entity).as_ref()
     }
 
@@ -574,7 +574,7 @@ impl SpannedConfig {
     /// Set a justification color which will be used while expanding cells width/height.
     ///
     /// `None` removes it.
-    pub fn set_justification_color(&mut self, entity: Entity, color: Option<ColorBuf>) {
+    pub fn set_justification_color(&mut self, entity: Entity, color: Option<ANSIBuf>) {
         self.justification_color.insert(entity, color);
     }
 
@@ -743,12 +743,12 @@ impl SpannedConfig {
     }
 
     /// Gets a color of a cell horizontal.
-    pub fn get_horizontal_color(&self, pos: Position, count_rows: usize) -> Option<&ColorBuf> {
+    pub fn get_horizontal_color(&self, pos: Position, count_rows: usize) -> Option<&ANSIBuf> {
         self.borders_colors.get_horizontal(pos, count_rows)
     }
 
     /// Gets a color of a cell vertical.
-    pub fn get_vertical_color(&self, pos: Position, count_columns: usize) -> Option<&ColorBuf> {
+    pub fn get_vertical_color(&self, pos: Position, count_columns: usize) -> Option<&ANSIBuf> {
         self.borders_colors.get_vertical(pos, count_columns)
     }
 
@@ -757,7 +757,7 @@ impl SpannedConfig {
         &self,
         pos: Position,
         shape: (usize, usize),
-    ) -> Option<&ColorBuf> {
+    ) -> Option<&ANSIBuf> {
         self.borders_colors.get_intersection(pos, shape)
     }
 
@@ -834,7 +834,7 @@ impl From<CompactConfig> for SpannedConfig {
     }
 }
 
-fn to_ansi_color(b: Sides<Color<'_>>) -> Sides<Option<ColorBuf>> {
+fn to_ansi_color(b: Sides<ANSIStr<'_>>) -> Sides<Option<ANSIBuf>> {
     Sides::new(
         Some(b.left.into()),
         Some(b.right.into()),
@@ -905,7 +905,7 @@ fn is_cell_covered_by_both_spans(cfg: &SpannedConfig, pos: Position) -> bool {
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 struct ColoredIndent {
     indent: Indent,
-    color: Option<ColorBuf>,
+    color: Option<ANSIBuf>,
 }
 
 /// A colorefull margin indent.
@@ -916,7 +916,7 @@ struct ColoredMarginIndent {
     /// An offset value.
     offset: Offset,
     /// An color value.
-    color: Option<ColorBuf>,
+    color: Option<ANSIBuf>,
 }
 
 impl Default for ColoredMarginIndent {

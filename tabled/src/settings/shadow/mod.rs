@@ -28,7 +28,7 @@
 //! [`Table`]: crate::Table
 
 use crate::{
-    grid::color::ColorBuf,
+    grid::ansi::ANSIBuf,
     grid::config::{ColoredConfig, Indent, Offset, Sides},
     settings::{color::Color, TableOption},
 };
@@ -173,8 +173,8 @@ fn set_margin_offset(cfg: &mut ColoredConfig, size: usize, direction: &Sides<boo
     cfg.set_margin_offset(margin);
 }
 
-fn set_margin_color(cfg: &mut ColoredConfig, color: ColorBuf, direction: &Sides<bool>) {
-    let mut margin: Sides<Option<ColorBuf>> = Sides::default();
+fn set_margin_color(cfg: &mut ColoredConfig, color: ANSIBuf, direction: &Sides<bool>) {
+    let mut margin: Sides<Option<ANSIBuf>> = Sides::default();
     if direction.right {
         margin.right = Some(color.clone());
     }

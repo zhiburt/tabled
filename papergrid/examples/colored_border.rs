@@ -7,7 +7,7 @@
 //! * [`CompactConfig`] also supports colorization when the `color` feature is enabled.
 
 use papergrid::{
-    color::ColorBuf,
+    ansi::ANSIBuf,
     colors::NoColors,
     config::spanned::SpannedConfig,
     config::{AlignmentHorizontal, AlignmentVertical, Borders, Entity::Global, Indent, Sides},
@@ -68,7 +68,7 @@ fn generate_table_config() -> SpannedConfig {
             Indent::spaced(1),
         ),
     );
-    cfg.set_border_color_default(ColorBuf::new("\u{1b}[42m", "\u{1b}[0m"));
+    cfg.set_border_color_default(ANSIBuf::new("\u{1b}[42m", "\u{1b}[0m"));
 
     cfg
 }

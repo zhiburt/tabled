@@ -7,7 +7,7 @@ use std::{fmt, ops::BitOr};
 
 use crate::{
     grid::{
-        color::{ANSIFmt, Color as StaticColor, ColorBuf},
+        ansi::{ANSIFmt, ANSIStr as StaticColor, ANSIBuf},
         config::{ColoredConfig, Entity},
     },
     settings::{CellOption, TableOption},
@@ -43,7 +43,7 @@ pub struct Color {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum ColorInner {
     Static(StaticColor<'static>),
-    Allocated(ColorBuf),
+    Allocated(ANSIBuf),
 }
 
 #[rustfmt::skip]
@@ -191,7 +191,7 @@ impl Color {
         P: Into<String>,
         S: Into<String>,
     {
-        let color = ColorBuf::new(prefix, suffix);
+        let color = ANSIBuf::new(prefix, suffix);
         let inner = ColorInner::Allocated(color);
 
         Self { inner }
@@ -229,17 +229,17 @@ impl Default for Color {
     }
 }
 
-impl From<Color> for ColorBuf {
+impl From<Color> for ANSIBuf {
     fn from(color: Color) -> Self {
         match color.inner {
-            ColorInner::Static(color) => ColorBuf::from(color),
+            ColorInner::Static(color) => ANSIBuf::from(color),
             ColorInner::Allocated(color) => color,
         }
     }
 }
 
-impl From<ColorBuf> for Color {
-    fn from(color: ColorBuf) -> Self {
+impl From<ANSIBuf> for Color {
+    fn from(color: ANSIBuf) -> Self {
         Self {
             inner: ColorInner::Allocated(color),
         }
@@ -274,7 +274,7 @@ impl std::convert::TryFrom<&str> for Color {
     type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        ColorBuf::try_from(value).map(Color)
+        ANSIBuf::try_from(value).map(Color)
     }
 }
 
@@ -283,7 +283,7 @@ impl std::convert::TryFrom<String> for Color {
     type Error = ();
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        ColorBuf::try_from(value).map(Color)
+        ANSIBuf::try_from(value).map(Color)
     }
 }
 

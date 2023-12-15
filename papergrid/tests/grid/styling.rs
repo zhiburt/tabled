@@ -6,7 +6,7 @@ use crate::util::grid;
 use testing_table::test_table;
 
 #[cfg(feature = "color")]
-use ::{owo_colors::OwoColorize, papergrid::color::ColorBuf, std::convert::TryFrom};
+use ::{owo_colors::OwoColorize, papergrid::ansi::ANSIBuf, std::convert::TryFrom};
 
 test_table!(
     grid_2x2_custom_frame_test,

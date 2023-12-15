@@ -17,7 +17,7 @@ use owo_colors::{
 };
 
 use papergrid::{
-    color::ANSIFmt,
+    ansi::ANSIFmt,
     config::spanned::SpannedConfig,
     config::{Borders, Position},
     dimension::spanned::SpannedGridDimension,

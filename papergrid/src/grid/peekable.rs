@@ -8,7 +8,7 @@ use std::{
 };
 
 use crate::{
-    color::{ANSIFmt, ColorBuf},
+    ansi::{ANSIFmt, ANSIBuf},
     colors::Colors,
     config::{
         spanned::{Offset, SpannedConfig},
@@ -686,7 +686,7 @@ mod grid_not_spanned {
         cfg: &'a SpannedConfig,
         pos: Position,
         shape: Shape,
-        used_color: &mut Option<&'a ColorBuf>,
+        used_color: &mut Option<&'a ANSIBuf>,
     ) -> fmt::Result
     where
         F: fmt::Write,
@@ -715,8 +715,8 @@ mod grid_not_spanned {
 
     fn prepare_coloring<'a, F>(
         f: &mut F,
-        clr: Option<&'a ColorBuf>,
-        used_color: &mut Option<&'a ColorBuf>,
+        clr: Option<&'a ANSIBuf>,
+        used_color: &mut Option<&'a ANSIBuf>,
     ) -> fmt::Result
     where
         F: Write,
@@ -787,7 +787,7 @@ mod grid_not_spanned {
         pos: Position,
         width: usize,
         c: char,
-        used_color: &Option<&ColorBuf>,
+        used_color: &Option<&ANSIBuf>,
     ) -> fmt::Result
     where
         F: Write,
@@ -899,7 +899,7 @@ mod grid_not_spanned {
         pos: Position,
         index: usize,
         available: usize,
-        cfg: TextCfg<C, &'_ ColorBuf>,
+        cfg: TextCfg<C, &'_ ANSIBuf>,
     ) -> fmt::Result
     where
         F: Write,
@@ -1122,7 +1122,7 @@ mod grid_not_spanned {
         f: &mut F,
         indent: Indent,
         offset: Offset,
-        color: Option<&ColorBuf>,
+        color: Option<&ANSIBuf>,
         line: usize,
         height: usize,
     ) -> fmt::Result
@@ -1161,7 +1161,7 @@ mod grid_not_spanned {
         f: &mut F,
         indent: Indent,
         offset: Offset,
-        color: Option<&ColorBuf>,
+        color: Option<&ANSIBuf>,
         width: usize,
     ) -> fmt::Result
     where
@@ -1546,7 +1546,7 @@ mod grid_spanned {
         cfg: &'a SpannedConfig,
         pos: Position,
         shape: Shape,
-        used_color: &mut Option<&'a ColorBuf>,
+        used_color: &mut Option<&'a ANSIBuf>,
     ) -> fmt::Result
     where
         F: fmt::Write,
@@ -1575,8 +1575,8 @@ mod grid_spanned {
 
     fn prepare_coloring<'a, F>(
         f: &mut F,
-        clr: Option<&'a ColorBuf>,
-        used_color: &mut Option<&'a ColorBuf>,
+        clr: Option<&'a ANSIBuf>,
+        used_color: &mut Option<&'a ANSIBuf>,
     ) -> fmt::Result
     where
         F: Write,
@@ -1653,7 +1653,7 @@ mod grid_spanned {
         pos: Position,
         width: usize,
         c: char,
-        used_color: &Option<&ColorBuf>,
+        used_color: &Option<&ANSIBuf>,
     ) -> fmt::Result
     where
         F: Write,
@@ -1987,7 +1987,7 @@ mod grid_spanned {
         f: &mut F,
         indent: Indent,
         offset: Offset,
-        color: Option<&ColorBuf>,
+        color: Option<&ANSIBuf>,
         line: usize,
         height: usize,
     ) -> fmt::Result
@@ -2026,7 +2026,7 @@ mod grid_spanned {
         f: &mut F,
         indent: &Indent,
         offset: &Offset,
-        color: Option<&ColorBuf>,
+        color: Option<&ANSIBuf>,
         width: usize,
     ) -> fmt::Result
     where

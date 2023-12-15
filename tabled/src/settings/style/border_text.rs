@@ -1,6 +1,6 @@
 use crate::{
     grid::{
-        color::ColorBuf,
+        ansi::ANSIBuf,
         config::{self, ColoredConfig, SpannedConfig},
         dimension::{Dimension, Estimate},
         records::{ExactRecords, Records},
@@ -37,7 +37,7 @@ pub struct LineText<L> {
     // todo: change to T and specify to be As<str>
     text: String,
     offset: Offset,
-    color: Option<ColorBuf>,
+    color: Option<ANSIBuf>,
     line: L,
 }
 
@@ -161,7 +161,7 @@ fn set_horizontal_chars<D: Dimension>(
     offset: Offset,
     line: usize,
     text: &str,
-    color: &Option<ColorBuf>,
+    color: &Option<ANSIBuf>,
     shape: (usize, usize),
 ) {
     let (_, count_columns) = shape;
@@ -247,7 +247,7 @@ fn set_vertical_chars<D>(
     offset: Offset,
     line: usize,
     text: &str,
-    color: &Option<ColorBuf>,
+    color: &Option<ANSIBuf>,
     shape: (usize, usize),
 ) where
     D: Dimension,
@@ -378,7 +378,7 @@ fn change_horizontal_chars<R, D>(
     line: usize,
     text: String,
     offset: Offset,
-    color: Option<ColorBuf>,
+    color: Option<ANSIBuf>,
 ) where
     R: Records + ExactRecords,
     for<'a> D: Estimate<&'a R, ColoredConfig>,
@@ -396,7 +396,7 @@ fn change_vertical_chars<R, D>(
     line: usize,
     text: String,
     offset: Offset,
-    color: Option<ColorBuf>,
+    color: Option<ANSIBuf>,
 ) where
     R: Records + ExactRecords,
     for<'a> D: Estimate<&'a R, ColoredConfig>,

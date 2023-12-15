@@ -1,6 +1,6 @@
 //! A module which contains [Colors] trait and its blanket implementations.
 
-use crate::{color::ANSIFmt, config::Position};
+use crate::{ansi::ANSIFmt, config::Position};
 
 /// A trait which represents map of colors.
 pub trait Colors {
